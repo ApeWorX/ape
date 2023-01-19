@@ -1,4 +1,5 @@
 import re
+from copy import deepcopy
 from enum import IntEnum
 from typing import Any, Dict, Iterator, List, Optional, Tuple, Type, Union, cast
 
@@ -588,24 +589,24 @@ class Ethereum(EcosystemAPI):
             receipt = self.chain_manager.get_receipt(call.txn_hash)
             kwargs["sender"] = receipt.sender
 
-        if not kwargs["in_place"]:
-            call = call.copy()
+        enriched_call = call if kwargs["in_place"] else deepcopy(call)
+        enriched_call.calls = [self.enrich_calltree(c, **kwargs) for c in enriched_call.calls]
 
-        call.calls = [self.enrich_calltree(c, **kwargs) for c in call.calls]
-
-        not_address_type: bool = not self.conversion_manager.is_type(call.contract_id, AddressType)
-        if not_address_type and is_hex_address(call.contract_id):
-            call.contract_id = self.decode_address(call.contract_id)
+        not_address_type: bool = not self.conversion_manager.is_type(
+            enriched_call.contract_id, AddressType
+        )
+        if not_address_type and is_hex_address(enriched_call.contract_id):
+            enriched_call.contract_id = self.decode_address(enriched_call.contract_id)
 
         elif not_address_type:
             # Already enriched.
-            return call
+            return enriched_call
 
         # Collapse pre-compile address calls
-        address = cast(AddressType, call.contract_id)
+        address = cast(AddressType, enriched_call.contract_id)
         address_int = int(address, 16)
         if 1 <= address_int <= 9:
-            sub_calls = [self.enrich_calltree(c, **kwargs) for c in call.calls]
+            sub_calls = [self.enrich_calltree(c, **kwargs) for c in enriched_call.calls]
             if len(sub_calls) == 1:
                 return sub_calls[0]
 
@@ -617,17 +618,17 @@ class Ethereum(EcosystemAPI):
 
         contract_type = self.chain_manager.contracts.get(address)
         if not contract_type:
-            return call
+            return enriched_call
 
-        call.contract_id = self._enrich_address(address, **kwargs)
-        method_id_bytes = HexBytes(call.method_id) if call.method_id else None
+        enriched_call.contract_id = self._enrich_address(address, **kwargs)
+        method_id_bytes = HexBytes(enriched_call.method_id) if enriched_call.method_id else None
         if method_id_bytes and method_id_bytes in contract_type.methods:
             method_abi = contract_type.methods[method_id_bytes]
-            call.method_id = method_abi.name or call.method_id
-            call = self._enrich_calldata(call, method_abi, **kwargs)
-            call = self._enrich_returndata(call, method_abi, **kwargs)
+            enriched_call.method_id = method_abi.name or enriched_call.method_id
+            enriched_call = self._enrich_calldata(enriched_call, method_abi, **kwargs)
+            enriched_call = self._enrich_returndata(enriched_call, method_abi, **kwargs)
 
-        return call
+        return enriched_call
 
     def _enrich_address(self, address: AddressType, **kwargs) -> str:
         if address and address == kwargs.get("sender"):
@@ -669,6 +670,8 @@ class Ethereum(EcosystemAPI):
             calldata_arg = HexBytes(calldata)
         elif isinstance(calldata, HexBytes):
             calldata_arg = calldata
+        else:
+            calldata_arg = HexBytes(calldata)
 
         try:
             call.inputs = self.decode_calldata(method_abi, calldata_arg)

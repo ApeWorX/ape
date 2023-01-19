@@ -447,9 +447,11 @@ class GethDev(BaseGethProvider, TestProviderAPI):
         }
 
         evm_call_tree = get_calltree_from_geth_trace(trace_frames, **root_node_kwargs)
-        call_tree = self._create_call_tree_node(evm_call_tree, txn_hash=txn.txn_hash)
-        receiver = txn.receiver
 
+        # NOTE: Don't pass txn_hash here, as it will fail (this is not a real txn).
+        call_tree = self._create_call_tree_node(evm_call_tree)
+
+        receiver = txn.receiver
         if track_gas and show_gas and not show_trace:
             # Optimization to enrich early and in_place=True.
             call_tree.enrich()
