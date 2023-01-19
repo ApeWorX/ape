@@ -240,7 +240,7 @@ class ProjectManager(BaseManager):
 
     @property
     def local_project(self) -> ProjectAPI:
-        return self.get_project(self.path, self.contracts_folder)
+        return self.get_project(self.path, contracts_folder=self.contracts_folder)
 
     def extract_manifest(self) -> PackageManifest:
         """
@@ -292,9 +292,13 @@ class ProjectManager(BaseManager):
         Returns:
             :class:`~ape.api.projects.ProjectAPI`
         """
+
         if path.name in self._cached_projects:
             cached_project = self._cached_projects[path.name]
             if version == cached_project.version:
+                if contracts_folder:
+                    cached_project.contracts_folder = contracts_folder
+
                 return cached_project
 
         contracts_folder = contracts_folder or path / "contracts"
@@ -303,6 +307,7 @@ class ProjectManager(BaseManager):
             path_patterns_to_ignore = self.config_manager.compiler.ignore_files
 
             def find_contracts_folder(sub_dir: Path) -> Optional[Path]:
+                # Check if config file exists
                 files_to_ignore = []
                 for pattern in path_patterns_to_ignore:
                     files_to_ignore.extend(list(sub_dir.glob(pattern)))
@@ -351,7 +356,6 @@ class ProjectManager(BaseManager):
 
         # Try 'ApeProject' last, in case there was a more specific one earlier.
         ape_project = _try_create_project(ApeProject)
-
         if ape_project:
             self._cached_projects[path.name] = ape_project
             return ape_project
