@@ -884,7 +884,7 @@ class Web3Provider(ProviderAPI, ABC):
 
         if track_gas:
             # in_place=False in case show_trace is True
-            receipt.track_gas(call_tree.enrich(in_place=False))
+            receipt.track_gas()
 
         if show_gas:
             # in_place=False in case show_trace is True
@@ -894,7 +894,7 @@ class Web3Provider(ProviderAPI, ABC):
             call_tree = call_tree.enrich(use_symbol_for_tokens=True)
             self.chain_manager._reports.show_trace(call_tree)
 
-        return returndata
+        return HexBytes(returndata)
 
     def _send_call(self, txn: TransactionAPI, **kwargs) -> bytes:
         arguments = self._prepare_call(txn, **kwargs)
