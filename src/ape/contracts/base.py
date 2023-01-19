@@ -70,6 +70,8 @@ class ContractConstructor(ManagerAccessMixin):
         if "sender" in kwargs and isinstance(kwargs["sender"], AccountAPI):
             sender = kwargs["sender"]
             return sender.call(txn, **kwargs)
+        elif "sender" not in kwargs and self.account_manager.default_sender is not None:
+            return self.account_manager.default_sender.call(txn, **kwargs)
 
         return self.provider.send_transaction(txn)
 
@@ -333,6 +335,8 @@ class ContractTransactionHandler(ContractMethodHandler):
     def __call__(self, *args, **kwargs) -> ReceiptAPI:
         function_arguments = self._convert_tuple(args)
         contract_transaction = self._as_transaction(*function_arguments)
+        if "sender" not in kwargs and self.account_manager.default_sender is not None:
+            kwargs["sender"] = self.account_manager.default_sender
         return contract_transaction(*function_arguments, **kwargs)
 
     def _as_transaction(self, *args) -> ContractTransaction:
