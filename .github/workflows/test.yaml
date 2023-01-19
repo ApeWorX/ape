@@ -16,6 +16,8 @@ jobs:
         steps:
         - uses: actions/checkout@v3
 
+        - uses: ApeWorX/github-action@chore/upgrade-actions
+        
         - name: Setup Python
           uses: actions/setup-python@v4
           with:
