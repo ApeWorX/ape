@@ -218,7 +218,7 @@ def _list_to_str(ls: Union[List, Tuple], depth: int = 0) -> str:
         for formatted_list in sub_lists:
             if "\n" in formatted_list:
                 # Multi-line sub list. Append 1 more spacing to each line.
-                indented_item = f"\n{spacing}".join(formatted_list.split("\n"))
+                indented_item = f"\n{spacing}".join(formatted_list.splitlines())
                 value = f"{value}{spacing}{indented_item}"
             else:
                 # Single line sub-list
