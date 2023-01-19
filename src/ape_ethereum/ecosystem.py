@@ -671,7 +671,9 @@ class Ethereum(EcosystemAPI):
         elif isinstance(calldata, HexBytes):
             calldata_arg = calldata
         else:
-            calldata_arg = HexBytes(calldata)
+            # Not sure if we can get here.
+            # Mostly for mypy's sake.
+            return call
 
         try:
             call.inputs = self.decode_calldata(method_abi, calldata_arg)
