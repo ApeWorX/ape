@@ -62,8 +62,14 @@
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="quickstart.html">Overview</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Accounts</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#test-accounts">Test Accounts</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#live-network-accounts">Live Network Accounts</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#test-accounts">Test Accounts</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#default-sender-support">Default Sender Support</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#live-network-accounts">Live Network Accounts</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#id1">Default Sender Support</a></li>
+</ul>
+</li>
 <li class="toctree-l2"><a class="reference internal" href="#automation">Automation</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#hardware-wallets">Hardware Wallets</a></li>
 </ul>
@@ -175,6 +181,20 @@ The accounts generated from this seed are solely for testing and debugging purpo
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">account</span><span class="o">.</span><span class="n">balance</span> <span class="o">+=</span> <span class="nb">int</span><span class="p">(</span><span class="mf">1e18</span><span class="p">)</span>  <span class="c1"># Gives `account` 1 Ether</span>
 </pre></div>
 </div>
+<section id="default-sender-support">
+<h3>Default Sender Support<a class="headerlink" href="#default-sender-support" title="Permalink to this headline"></a></h3>
+<p>In order to eliminate the usage of sender in contract calls, you can use <code class="docutils literal notranslate"><span class="pre">use_sender</span></code> context manager.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">with</span> <span class="n">accounts</span><span class="o">.</span><span class="n">use_sender</span><span class="p">(</span><span class="mi">0</span><span class="p">):</span> <span class="c1"># Use first account from test mnemonic</span>
+  <span class="n">contract</span><span class="o">.</span><span class="n">myFunction</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+
+<span class="k">with</span> <span class="n">accounts</span><span class="o">.</span><span class="n">use_sender</span><span class="p">(</span><span class="s2">&quot;&lt;address&gt;&quot;</span><span class="p">):</span> <span class="c1"># Impersonate an account</span>
+  <span class="n">contract</span><span class="o">.</span><span class="n">myFunction</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+
+<span class="k">with</span> <span class="n">accounts</span><span class="o">.</span><span class="n">use_sender</span><span class="p">(</span><span class="n">a</span><span class="p">):</span> <span class="c1"># a is a `TestAccountAPI` object</span>
+  <span class="n">contract</span><span class="o">.</span><span class="n">myFunction</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
 </section>
 <section id="live-network-accounts">
 <h2>Live Network Accounts<a class="headerlink" href="#live-network-accounts" title="Permalink to this headline"></a></h2>
@@ -239,6 +259,23 @@ All the available CLI commands for this accounts plugin can be found <a class="r
 <span class="n">account</span> <span class="o">=</span> <span class="n">accounts</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;&lt;ALIAS&gt;&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
+<section id="id1">
+<h3>Default Sender Support<a class="headerlink" href="#id1" title="Permalink to this headline"></a></h3>
+<p>In order to reduce repetition of adding <code class="docutils literal notranslate"><span class="pre">sender</span></code> in your contract calls, you can use <code class="docutils literal notranslate"><span class="pre">use_sender</span></code> context manager.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">with</span> <span class="n">accounts</span><span class="o">.</span><span class="n">use_sender</span><span class="p">(</span><span class="mi">0</span><span class="p">):</span>
+  <span class="n">contract</span><span class="o">.</span><span class="n">myFunction</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+
+<span class="k">with</span> <span class="n">accounts</span><span class="o">.</span><span class="n">use_sender</span><span class="p">(</span><span class="s2">&quot;&lt;address&gt;&quot;</span><span class="p">):</span>
+  <span class="n">contract</span><span class="o">.</span><span class="n">myFunction</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+
+<span class="k">with</span> <span class="n">accounts</span><span class="o">.</span><span class="n">use_sender</span><span class="p">(</span><span class="s2">&quot;&lt;alias&gt;&quot;</span><span class="p">):</span>
+  <span class="n">contract</span><span class="o">.</span><span class="n">myFunction</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+
+<span class="k">with</span> <span class="n">accounts</span><span class="o">.</span><span class="n">use_sender</span><span class="p">(</span><span class="n">a</span><span class="p">):</span> <span class="c1"># a is a `AccountAPI` object</span>
+  <span class="n">contract</span><span class="o">.</span><span class="n">myFunction</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
 </section>
 <section id="automation">
 <h2>Automation<a class="headerlink" href="#automation" title="Permalink to this headline"></a></h2>
