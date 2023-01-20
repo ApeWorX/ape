@@ -398,7 +398,7 @@ class Ethereum(EcosystemAPI):
         if isinstance(value, HexBytes):
             try:
                 string_value = value.strip(b"\x00").decode("utf8")
-                return f"'{string_value}'"
+                return f'"{string_value}"'
             except UnicodeDecodeError:
                 # Truncate bytes if very long.
                 if len(value) > 24:
