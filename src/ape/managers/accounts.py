@@ -22,9 +22,11 @@ _DEFAULT_SENDERS: List[AccountAPI] = []
 def _use_sender(
     account: Union[AccountAPI, TestAccountAPI]
 ) -> Generator[AccountAPI, TestAccountAPI, None]:
-    _DEFAULT_SENDERS.append(account)
-    yield account
-    _DEFAULT_SENDERS.pop()
+    try:
+        _DEFAULT_SENDERS.append(account)
+        yield account
+    finally:
+        _DEFAULT_SENDERS.pop()
 
 
 class TestAccountManager(list, ManagerAccessMixin):
