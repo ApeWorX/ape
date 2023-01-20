@@ -340,11 +340,11 @@ class Ethereum(EcosystemAPI):
         return HexBytes(encoded_calldata)
 
     def decode_calldata(self, abi: Union[ConstructorABI, MethodABI], calldata: bytes) -> Dict:
-        input_types_str = [i.canonical_type for i in abi.inputs]
+        raw_input_types = [i.canonical_type for i in abi.inputs]
         input_types = [parse_type(i.dict()) for i in abi.inputs]
 
         try:
-            raw_input_values = decode(input_types_str, calldata)
+            raw_input_values = decode(raw_input_types, calldata)
             input_values = [
                 self.decode_primitive_value(v, t) for v, t in zip(raw_input_values, input_types)
             ]
@@ -414,7 +414,7 @@ class Ethereum(EcosystemAPI):
             address = self.decode_address(value)
             return self._enrich_address(address, **kwargs)
 
-        elif value and isinstance(value, str):
+        elif isinstance(value, str):
             # Surround non-address strings with quotes.
             return f'"{value}"'
 
@@ -696,11 +696,11 @@ class Ethereum(EcosystemAPI):
         else:
             return_value_bytes = None
 
-        if not return_value_bytes:
-            call.outputs = tuple([default_return_value for _ in method_abi.outputs])
-            return call
+        if return_value_bytes is None:
+            values = tuple([default_return_value for _ in method_abi.outputs])
 
         else:
+            return_values = None
             try:
                 return_values = (
                     self.decode_returndata(method_abi, return_value_bytes)
@@ -708,11 +708,17 @@ class Ethereum(EcosystemAPI):
                     else None
                 )
             except (DecodingError, InsufficientDataBytes):
-                return_values = tuple([default_return_value for _ in method_abi.outputs])
+                if return_value_bytes == HexBytes("0x"):
+                    # Empty result, but it failed decoding because of its length.
+                    return_values = ("",)
 
-            values = tuple([self._enrich_value(v, **kwargs) for v in return_values or ()])
-            call.outputs = values[0] if len(values) == 1 else values
+            values = (
+                tuple([default_return_value for _ in method_abi.outputs])
+                if return_values is None
+                else tuple([self._enrich_value(v, **kwargs) for v in return_values or ()])
+            )
 
+        call.outputs = values[0] if len(values) == 1 else values
         return call
 
 
