@@ -204,10 +204,7 @@ class BaseGethProvider(Web3Provider, ABC):
             return DEFAULT_SETTINGS["uri"]
 
         # Use value from config file
-        network_config = config.get(self.network.name)
-        if not network_config:
-            return DEFAULT_SETTINGS["uri"]
-            
+        network_config = config.get(self.network.name) or DEFAULT_SETTINGS
         return network_config.get("uri", DEFAULT_SETTINGS["uri"])
 
     @property
