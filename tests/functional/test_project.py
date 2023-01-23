@@ -27,8 +27,8 @@ def bip122_chain_id(eth_tester_provider):
 
 
 @pytest.fixture
-def base_deployments_path(ape_project, bip122_chain_id):
-    return ape_project._cache_folder / "deployments" / bip122_chain_id
+def base_deployments_path(project_manager, bip122_chain_id):
+    return project_manager._package_deployments_folder / bip122_chain_id
 
 
 @pytest.fixture
@@ -195,18 +195,22 @@ def test_track_deployment(
     receipt = contract.receipt
     name = contract.contract_type.name
     address = vyper_contract_instance.address
+    num_deployments_before = len(project_manager.tracked_deployments)
+
     project_manager.track_deployment(vyper_contract_instance)
+
     expected_block_hash = eth_tester_provider.get_block(receipt.block_number).hash.hex()
     expected_uri = f"blockchain://{bip122_chain_id}/block/{expected_block_hash}"
     expected_name = contract.contract_type.name
     expected_code = contract.contract_type.runtime_bytecode
     actual_from_file = EthPMContractInstance.parse_raw(deployment_path.read_text())
     actual_from_class = project_manager.tracked_deployments[expected_uri][name]
+
     assert actual_from_file.address == actual_from_class.address == address
     assert actual_from_file.contract_type == actual_from_class.contract_type == expected_name
     assert actual_from_file.transaction == actual_from_class.transaction == receipt.txn_hash
     assert actual_from_file.runtime_bytecode == actual_from_class.runtime_bytecode == expected_code
-    assert len(project_manager.tracked_deployments) == 1
+    assert len(project_manager.tracked_deployments) == num_deployments_before + 1
 
 
 def test_track_deployment_from_previously_deployed_contract(
@@ -223,6 +227,7 @@ def test_track_deployment_from_previously_deployed_contract(
     address = receipt.contract_address
     contract = Contract(address, txn_hash=receipt.txn_hash)
     name = contract.contract_type.name
+    num_deployments_before = len(project_manager.tracked_deployments)
 
     project_manager.track_deployment(contract)
 
@@ -237,7 +242,7 @@ def test_track_deployment_from_previously_deployed_contract(
     assert actual_from_file.contract_type == actual_from_class.contract_type == expected_name
     assert actual_from_file.transaction == actual_from_class.transaction == receipt.txn_hash
     assert actual_from_file.runtime_bytecode == actual_from_class.runtime_bytecode == expected_code
-    assert len(project_manager.tracked_deployments) == 1
+    assert len(project_manager.tracked_deployments) == num_deployments_before + 1
 
 
 def test_track_deployment_from_unknown_contract_missing_txn_hash(
