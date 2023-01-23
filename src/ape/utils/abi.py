@@ -111,6 +111,10 @@ class StructParser:
                         }
                         item_type = ABIType.parse_obj(item_type_data)
                         parsed_item = self.parse([item_type], [value])
+                        # If it's an empty array of structs, replace `None` with empty list
+                        if output_type.type == "tuple[]" and parsed_item is None:
+                            parsed_item = []
+
                     else:
                         # Handle tuple of arrays
                         parsed_item = [v for v in value]
@@ -132,6 +136,9 @@ class StructParser:
             name = out_abi.name or self.default_name
 
         components = self._parse_components(out_abi.components, out_value[0])
+        if not components:
+            return None  # Empty struct
+
         result = create_struct(
             name,
             out_abi.components,
