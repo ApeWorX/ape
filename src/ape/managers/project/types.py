@@ -246,7 +246,7 @@ class BrownieProject(BaseProject):
 
         migrated_config_data: Dict[str, Any] = {}
         with open(self.brownie_config_path) as brownie_config_file:
-            brownie_config_data = yaml.safe_load(brownie_config_file)
+            brownie_config_data = yaml.safe_load(brownie_config_file) or {}
 
         # Migrate dependencies
         dependencies = []
