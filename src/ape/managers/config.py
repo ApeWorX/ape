@@ -273,14 +273,14 @@ class ConfigManager(BaseInterfaceModel):
             Generator
         """
         contracts_folder = contracts_folder or project_folder / "contracts"
-        initial_project_folder = self.PROJECT_FOLDER
+        initial_project_folder = self.project_manager.path
         initial_contracts_folder = self.contracts_folder
 
         if (
             initial_project_folder == project_folder
             and initial_contracts_folder == contracts_folder
         ):
-            # Already in project
+            # Already in project.
             yield self.project_manager
             return
 
