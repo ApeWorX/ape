@@ -178,12 +178,12 @@ class ConfigManager(BaseInterfaceModel):
         # NOTE: It is okay for this directory not to exist at this point.
         contracts_folder = user_config.pop("contracts_folder", None)
         contracts_folder = (
-            Path(contracts_folder).expanduser().resolve()
+            (self.project_manager.path / Path(contracts_folder)).expanduser().resolve()
             if contracts_folder
             else self.PROJECT_FOLDER / "contracts"
         )
-        self.contracts_folder = configs["contracts_folder"] = contracts_folder
 
+        self.contracts_folder = configs["contracts_folder"] = contracts_folder
         deployments = user_config.pop("deployments", {})
         valid_ecosystems = dict(self.plugin_manager.ecosystems)
         valid_network_names = [n[1] for n in [e[1] for e in self.plugin_manager.networks]]
@@ -292,8 +292,8 @@ class ConfigManager(BaseInterfaceModel):
 
         try:
             # Process and reload the project's configuration
-            clean_config = self.project_manager.local_project.process_config_file()
             self.load(force_reload=True)
+            clean_config = self.project_manager.local_project.process_config_file()
             yield self.project_manager
 
         finally:
