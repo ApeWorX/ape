@@ -25,6 +25,7 @@ from web3.exceptions import ContractLogicError as Web3ContractLogicError
 from web3.exceptions import TimeExhausted
 from web3.types import RPCEndpoint
 
+from ape.api.accounts import ImpersonatedAccount
 from ape.api.config import PluginConfig
 from ape.api.networks import LOCAL_NETWORK_NAME, NetworkAPI
 from ape.api.query import BlockTransactionQuery
@@ -1046,7 +1047,13 @@ class Web3Provider(ProviderAPI, ABC):
 
     def send_transaction(self, txn: TransactionAPI) -> ReceiptAPI:
         try:
-            txn_hash = self.web3.eth.send_raw_transaction(txn.serialize_transaction())
+            account = self.account_manager[txn.sender]
+            if isinstance(account, ImpersonatedAccount):
+                txn_dict = txn.dict()
+                txn_params = cast(TxParams, txn_dict)
+                txn_hash = self.web3.eth.send_transaction(txn_params)
+            else:
+                txn_hash = self.web3.eth.send_raw_transaction(txn.serialize_transaction())
         except ValueError as err:
             vm_err = self.get_virtual_machine_error(err)
 
