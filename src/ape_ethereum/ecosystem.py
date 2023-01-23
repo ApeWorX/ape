@@ -580,8 +580,6 @@ class Ethereum(EcosystemAPI):
             )
 
     def enrich_calltree(self, call: CallTreeNode, **kwargs) -> CallTreeNode:
-        # Enrich subcalls first to make sure it happens before any _return_ statement.
-
         kwargs["use_symbol_for_tokens"] = kwargs.get("use_symbol_for_tokens", False)
         kwargs["in_place"] = kwargs.get("in_place", True)
 
@@ -589,6 +587,7 @@ class Ethereum(EcosystemAPI):
             receipt = self.chain_manager.get_receipt(call.txn_hash)
             kwargs["sender"] = receipt.sender
 
+        # Enrich subcalls before any _return_ statement.
         enriched_call = call if kwargs["in_place"] else deepcopy(call)
         enriched_call.calls = [self.enrich_calltree(c, **kwargs) for c in enriched_call.calls]
 
