@@ -332,9 +332,11 @@ class ProjectManager(BaseManager):
             contracts_folder = find_contracts_folder(path) or contracts_folder
 
         def _try_create_project(proj_cls: Type[ProjectAPI]) -> Optional[ProjectAPI]:
-            with self.config_manager.using_project(path, contracts_folder=contracts_folder):
+            with self.config_manager.using_project(
+                path, contracts_folder=contracts_folder
+            ) as _project:
                 proj = proj_cls(
-                    contracts_folder=contracts_folder,
+                    contracts_folder=_project.contracts_folder,
                     name=name,
                     path=path,
                     version=version,
