@@ -24,6 +24,13 @@ To execute the script, run the following:
 ape run helloworld
 ```
 
+You can also execute scripts in subdirectories.
+For example, assuming we have script `<project>/scripts/hello/helloworld.py`, we would execute it by running:
+
+```bash
+ape run hello helloworld
+```
+
 Note that by default, `cli` scripts do not have [`ape.cli.network_option`](../methoddocs/cli.html?highlight=options#ape.cli.options.network_option) installed, giving you more flexibility in how you define your scripts.
 However, you can add the `network_option` to your scripts by importing both the `NetworkBoundCommand` and the `network_option` from the `ape.cli` namespace:
 

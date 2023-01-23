@@ -41,12 +41,35 @@ test:
 **WARN**: NEVER put a seed phrase with real funds here.
 The accounts generated from this seed are solely for testing and debugging purposes.
 
+You can create a new test account by doing the following:
+
+```python
+account = accounts.test_accounts.generate_test_account()
+```
+
+**NOTE**: Creating a new test account means it will be unfunded by default.
+
 Learn more about test accounts from the [testing guide](./testing.html#accounts-fixture).
 
 If your testing provider supports this feature, it is possible to directly set the balances of any address by performing the following action:
 
 ```python
 account.balance += int(1e18)  # Gives `account` 1 Ether
+```
+
+### Default Sender Support
+
+In order to eliminate the usage of sender in contract calls, you can use `use_sender` context manager.
+
+```python
+with accounts.use_sender(0): # Use first account from test mnemonic
+  contract.myFunction(1)
+
+with accounts.use_sender("<address>"): # Impersonate an account
+  contract.myFunction(1)
+
+with accounts.use_sender(a): # a is a `TestAccountAPI` object
+  contract.myFunction(1)
 ```
 
 ## Live Network Accounts
@@ -149,6 +172,24 @@ Then, in your scripts, you can [load](../methoddocs/managers.html#ape.managers.a
 from ape import accounts
 
 account = accounts.load("<ALIAS>")
+```
+
+### Default Sender Support
+
+In order to reduce repetition of adding `sender` in your contract calls, you can use `use_sender` context manager.
+
+```python
+with accounts.use_sender(0):
+  contract.myFunction(1)
+
+with accounts.use_sender("<address>"):
+  contract.myFunction(1)
+
+with accounts.use_sender("<alias>"):
+  contract.myFunction(1)
+
+with accounts.use_sender(a): # a is a `AccountAPI` object
+  contract.myFunction(1)
 ```
 
 ## Automation

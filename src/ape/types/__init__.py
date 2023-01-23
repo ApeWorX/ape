@@ -143,9 +143,7 @@ class LogFilter(BaseModel):
         from ape import convert
         from ape.utils.abi import LogInputABICollection, is_dynamic_sized_type
 
-        if hasattr(event, "abi"):
-            event = event.abi  # type: ignore
-
+        event = getattr(event, "abi", event)
         search_topics = search_topics or {}
         topic_filter: List[Optional[HexStr]] = [encode_hex(keccak(text=event.selector))]
         abi_inputs = LogInputABICollection(event)

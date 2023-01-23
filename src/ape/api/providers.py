@@ -168,12 +168,12 @@ class ProviderAPI(BaseInterfaceModel):
         """
 
     @abstractmethod
-    def get_balance(self, address: str) -> int:
+    def get_balance(self, address: AddressType) -> int:
         """
         Get the balance of an account.
 
         Args:
-            address (str): The address of the account.
+            address (``AddressType``): The address of the account.
 
         Returns:
             int: The account balance.
@@ -377,7 +377,7 @@ class ProviderAPI(BaseInterfaceModel):
         """
 
     @raises_not_implemented
-    def revert(self, snapshot_id: SnapshotID):  # type: ignore[empty-body]
+    def revert(self, snapshot_id: SnapshotID):
         """
         Defined to make the ``ProviderAPI`` interchangeable with a
         :class:`~ape.api.providers.TestProviderAPI`, as in
@@ -388,7 +388,7 @@ class ProviderAPI(BaseInterfaceModel):
         """
 
     @raises_not_implemented
-    def set_timestamp(self, new_timestamp: int):  # type: ignore[empty-body]
+    def set_timestamp(self, new_timestamp: int):
         """
         Defined to make the ``ProviderAPI`` interchangeable with a
         :class:`~ape.api.providers.TestProviderAPI`, as in
@@ -399,7 +399,7 @@ class ProviderAPI(BaseInterfaceModel):
         """
 
     @raises_not_implemented
-    def mine(self, num_blocks: int = 1):  # type: ignore[empty-body]
+    def mine(self, num_blocks: int = 1):
         """
         Defined to make the ``ProviderAPI`` interchangeable with a
         :class:`~ape.api.providers.TestProviderAPI`, as in
@@ -410,7 +410,7 @@ class ProviderAPI(BaseInterfaceModel):
         """
 
     @raises_not_implemented
-    def set_balance(self, address: AddressType, amount: int):  # type: ignore[empty-body]
+    def set_balance(self, address: AddressType, amount: int):
         """
         Change the balance of an account.
 
@@ -498,47 +498,6 @@ class ProviderAPI(BaseInterfaceModel):
         Returns:
             :class:`~ape.api.transactions.TransactionAPI`
         """
-
-        # NOTE: Use "expected value" for Chain ID, so if it doesn't match actual, we raise
-        txn.chain_id = self.network.chain_id
-
-        from ape_ethereum.transactions import StaticFeeTransaction, TransactionType
-
-        txn_type = TransactionType(txn.type)
-        if (
-            txn_type == TransactionType.STATIC
-            and isinstance(txn, StaticFeeTransaction)
-            and txn.gas_price is None
-        ):
-            txn.gas_price = self.gas_price
-        elif txn_type == TransactionType.DYNAMIC:
-            if txn.max_priority_fee is None:
-                txn.max_priority_fee = self.priority_fee
-
-            if txn.max_fee is None:
-                txn.max_fee = self.base_fee + txn.max_priority_fee
-            # else: Assume user specified the correct amount or txn will fail and waste gas
-
-        gas_limit = txn.gas_limit or self.network.gas_limit
-        if isinstance(gas_limit, str) and gas_limit.isnumeric():
-            txn.gas_limit = int(gas_limit)
-        elif isinstance(gas_limit, str) and is_hex(gas_limit):
-            txn.gas_limit = int(gas_limit, 16)
-        elif gas_limit == "max":
-            txn.gas_limit = self.max_gas
-        elif gas_limit in ("auto", None):
-            txn.gas_limit = self.estimate_gas_cost(txn)
-        else:
-            txn.gas_limit = gas_limit
-
-        assert txn.gas_limit not in ("auto", "max")
-        # else: Assume user specified the correct amount or txn will fail and waste gas
-
-        if txn.required_confirmations is None:
-            txn.required_confirmations = self.network.required_confirmations
-        elif not isinstance(txn.required_confirmations, int) or txn.required_confirmations < 0:
-            raise TransactionError(message="'required_confirmations' must be a positive integer.")
-
         return txn
 
     def get_virtual_machine_error(self, exception: Exception) -> VirtualMachineError:
@@ -671,7 +630,7 @@ class Web3Provider(ProviderAPI, ABC):
         if not hasattr(block, "base_fee"):
             raise APINotImplementedError("No base fee found in block.")
         else:
-            base_fee = block.base_fee  # type: ignore
+            base_fee = getattr(block, "base_fee")
 
         if base_fee is None:
             # Non-EIP-1559 chains or we time-travelled pre-London fork.
@@ -751,7 +710,7 @@ class Web3Provider(ProviderAPI, ABC):
                 raise tx_error from err
 
             message = gas_estimation_error_message(tx_error)
-            raise TransactionError(base_err=tx_error, message=message) from err
+            raise TransactionError(message, base_err=tx_error) from err
 
     @property
     def chain_id(self) -> int:
@@ -900,7 +859,7 @@ class Web3Provider(ProviderAPI, ABC):
         **kwargs,
     ) -> bytes:
         account = self.account_manager.test_accounts[0]
-        receipt = account.call(txn)
+        receipt = account.call(txn, **kwargs)
         call_tree = receipt.call_tree
         if not call_tree:
             return self._send_call(txn, **kwargs)
@@ -972,7 +931,7 @@ class Web3Provider(ProviderAPI, ABC):
         """
 
         if required_confirmations < 0:
-            raise TransactionError(message="Required confirmations cannot be negative.")
+            raise TransactionError("Required confirmations cannot be negative.")
 
         timeout = (
             timeout if timeout is not None else self.provider.network.transaction_acceptance_timeout
@@ -1042,6 +1001,49 @@ class Web3Provider(ProviderAPI, ABC):
 
         return self._make_request("eth_getLogs", [filter_params])
 
+    def prepare_transaction(self, txn: TransactionAPI) -> TransactionAPI:
+        # NOTE: Use "expected value" for Chain ID, so if it doesn't match actual, we raise
+        txn.chain_id = self.network.chain_id
+
+        from ape_ethereum.transactions import StaticFeeTransaction, TransactionType
+
+        txn_type = TransactionType(txn.type)
+        if (
+            txn_type == TransactionType.STATIC
+            and isinstance(txn, StaticFeeTransaction)
+            and txn.gas_price is None
+        ):
+            txn.gas_price = self.gas_price
+        elif txn_type == TransactionType.DYNAMIC:
+            if txn.max_priority_fee is None:
+                txn.max_priority_fee = self.priority_fee
+
+            if txn.max_fee is None:
+                txn.max_fee = self.base_fee + txn.max_priority_fee
+            # else: Assume user specified the correct amount or txn will fail and waste gas
+
+        gas_limit = txn.gas_limit or self.network.gas_limit
+        if isinstance(gas_limit, str) and gas_limit.isnumeric():
+            txn.gas_limit = int(gas_limit)
+        elif isinstance(gas_limit, str) and is_hex(gas_limit):
+            txn.gas_limit = int(gas_limit, 16)
+        elif gas_limit == "max":
+            txn.gas_limit = self.max_gas
+        elif gas_limit in ("auto", None):
+            txn.gas_limit = self.estimate_gas_cost(txn)
+        else:
+            txn.gas_limit = gas_limit
+
+        assert txn.gas_limit not in ("auto", "max")
+        # else: Assume user specified the correct amount or txn will fail and waste gas
+
+        if txn.required_confirmations is None:
+            txn.required_confirmations = self.network.required_confirmations
+        elif not isinstance(txn.required_confirmations, int) or txn.required_confirmations < 0:
+            raise TransactionError("'required_confirmations' must be a positive integer.")
+
+        return txn
+
     def send_transaction(self, txn: TransactionAPI) -> ReceiptAPI:
         try:
             txn_hash = self.web3.eth.send_raw_transaction(txn.serialize_transaction())
@@ -1080,7 +1082,7 @@ class Web3Provider(ProviderAPI, ABC):
                 raise vm_err from err
 
         logger.info(f"Confirmed {receipt.txn_hash} (total fees paid = {receipt.total_fees_paid})")
-        self.chain_manager.account_history.append(receipt)
+        self.chain_manager.history.append(receipt)
         return receipt
 
     def _make_request(self, endpoint: str, parameters: List) -> Any:

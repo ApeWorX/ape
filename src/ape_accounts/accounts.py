@@ -112,25 +112,27 @@ class KeyfileAccount(AccountAPI):
             return None
 
         signed_msg = EthAccount.sign_message(msg, self.__key)
-        return MessageSignature(  # type: ignore
+        return MessageSignature(
             v=signed_msg.v,
             r=to_bytes(signed_msg.r),
             s=to_bytes(signed_msg.s),
         )
 
-    def sign_transaction(self, txn: TransactionAPI) -> Optional[TransactionSignature]:
+    def sign_transaction(self, txn: TransactionAPI, **kwargs) -> Optional[TransactionAPI]:
         user_approves = self.__autosign or click.confirm(f"{txn}\n\nSign: ")
         if not user_approves:
             return None
 
-        signed_txn = EthAccount.sign_transaction(
+        signature = EthAccount.sign_transaction(
             txn.dict(exclude_none=True, by_alias=True), self.__key
         )
-        return TransactionSignature(  # type: ignore
-            v=signed_txn.v,
-            r=to_bytes(signed_txn.r),
-            s=to_bytes(signed_txn.s),
+        txn.signature = TransactionSignature(
+            v=signature.v,
+            r=to_bytes(signature.r),
+            s=to_bytes(signature.s),
         )
+
+        return txn
 
     def set_autosign(self, enabled: bool, passphrase: Optional[str] = None):
         """

@@ -41,7 +41,7 @@ class TransactionAPI(BaseInterfaceModel):
     # If left as None, will get set to the network's default required confirmations.
     required_confirmations: Optional[int] = Field(None, exclude=True)
 
-    signature: Optional[TransactionSignature] = Field(exclude=True)
+    signature: Optional[TransactionSignature] = Field(None, exclude=True)
 
     class Config:
         allow_population_by_field_name = True
@@ -61,7 +61,7 @@ class TransactionAPI(BaseInterfaceModel):
         to submit the transaction.
         """
         if self.max_fee is None:
-            raise TransactionError(message="Max fee must not be null.")
+            raise TransactionError("Max fee must not be null.")
 
         return self.value + self.max_fee
 
@@ -278,9 +278,7 @@ class ReceiptAPI(BaseInterfaceModel):
                 sender_nonce = self.provider.get_nonce(self.sender)
                 iteration += 1
                 if iteration == iterations_timeout:
-                    raise TransactionError(
-                        message="Timeout waiting for sender's nonce to increase."
-                    )
+                    raise TransactionError("Timeout waiting for sender's nonce to increase.")
 
         if self.required_confirmations == 0:
             # The transaction might not yet be confirmed but
@@ -350,9 +348,7 @@ class ReceiptAPI(BaseInterfaceModel):
         return output
 
     @raises_not_implemented
-    def show_trace(  # type: ignore[empty-body]
-        self, verbose: bool = False, file: IO[str] = sys.stdout
-    ):
+    def show_trace(self, verbose: bool = False, file: IO[str] = sys.stdout):
         """
         Display the complete sequence of contracts and methods called during
         the transaction.
@@ -363,7 +359,7 @@ class ReceiptAPI(BaseInterfaceModel):
         """
 
     @raises_not_implemented
-    def show_gas_report(self, file: IO[str] = sys.stdout):  # type: ignore[empty-body]
+    def show_gas_report(self, file: IO[str] = sys.stdout):
         """
         Display a gas report for the calls made in this transaction.
         """

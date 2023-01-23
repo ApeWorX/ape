@@ -9,8 +9,7 @@ from ape.api.address import BaseAddress
 from ape.api.transactions import ReceiptAPI, TransactionAPI
 from ape.exceptions import AccountsError, AliasAlreadyInUseError, SignatureError, TransactionError
 from ape.logging import logger
-from ape.types import AddressType, MessageSignature, SignableMessage, TransactionSignature
-from ape.types.signatures import _Signature
+from ape.types import AddressType, MessageSignature, SignableMessage
 from ape.utils import BaseInterfaceModel, abstractmethod
 
 if TYPE_CHECKING:
@@ -64,18 +63,28 @@ class AccountAPI(BaseInterfaceModel, BaseAddress):
         """
 
     @abstractmethod
-    def sign_transaction(self, txn: TransactionAPI) -> Optional[TransactionSignature]:
+    def sign_transaction(self, txn: TransactionAPI, **signer_options) -> Optional[TransactionAPI]:
         """
         Sign a transaction.
 
         Args:
           txn (:class:`~ape.api.transactions.TransactionAPI`): The transaction to sign.
+          **signer_options: Additional kwargs given to the signer to modify the signing operation.
 
         Returns:
-          :class:`~ape.types.signatures.TransactionSignature` (optional): The signed transaction.
+          :class:`~ape.api.transactions.TransactionAPI` (optional): A signed transaction.
+            The `TransactionAPI` returned by this method may not correspond to `txn` given as input,
+            however returning a properly-formatted transaction here is meant to be executed.
+            Returns `None` if the account does not have a transaction it wishes to execute.
+
         """
 
-    def call(self, txn: TransactionAPI, send_everything: bool = False) -> ReceiptAPI:
+    def call(
+        self,
+        txn: TransactionAPI,
+        send_everything: bool = False,
+        **signer_options,
+    ) -> ReceiptAPI:
         """
         Make a transaction call.
 
@@ -89,6 +98,7 @@ class AccountAPI(BaseInterfaceModel, BaseAddress):
             txn (:class:`~ape.api.transactions.TransactionAPI`): An invoke-transaction.
             send_everything (bool): ``True`` will send the difference from balance and fee.
               Defaults to ``False``.
+            **signer_options: Additional kwargs given to the signer to modify the signing operation.
 
         Returns:
             :class:`~ape.api.transactions.ReceiptAPI`
@@ -99,19 +109,15 @@ class AccountAPI(BaseInterfaceModel, BaseAddress):
         gas_limit = txn.gas_limit
 
         if not isinstance(gas_limit, int):
-            raise TransactionError(message="Transaction not prepared.")
+            raise TransactionError("Transaction not prepared.")
 
         # The conditions below should never reached but are here for mypy's sake.
         # The `max_fee` was either set manaully or from `prepare_transaction()`.
         # The `gas_limit` was either set manually or from `prepare_transaction()`.
         if max_fee is None:
-            raise TransactionError(
-                message="`max_fee` failed to get set in transaction preparation."
-            )
+            raise TransactionError("`max_fee` failed to get set in transaction preparation.")
         elif gas_limit is None:
-            raise TransactionError(
-                message="`gas_limit` failed to get set in transaction preparation."
-            )
+            raise TransactionError("`gas_limit` failed to get set in transaction preparation.")
 
         total_fees = max_fee * gas_limit
 
@@ -126,11 +132,11 @@ class AccountAPI(BaseInterfaceModel, BaseAddress):
             else:
                 txn.value = amount_to_send
 
-        txn.signature = self.sign_transaction(txn)
-        if not txn.signature:
+        signed_txn = self.sign_transaction(txn, **signer_options)
+        if not signed_txn:
             raise SignatureError("The transaction was not signed.")
 
-        return self.provider.send_transaction(txn)
+        return self.provider.send_transaction(signed_txn)
 
     def transfer(
         self,
@@ -156,21 +162,19 @@ class AccountAPI(BaseInterfaceModel, BaseAddress):
             sender=self.address, receiver=receiver, **kwargs
         )
 
-        if value and "send_everything" in kwargs and kwargs["send_everything"]:
-            raise AccountsError("Cannot use 'send_everything=True' with 'VALUE'.")
-
         if data:
             txn.data = self.conversion_manager.convert(data, bytes)
 
-        if value:
-            txn.value = self.conversion_manager.convert(value, int)
-            return self.call(txn)
-
-        elif not kwargs.get("send_everything"):
+        if not value and not kwargs.get("send_everything"):
             raise AccountsError("Must provide 'VALUE' or use 'send_everything=True'")
 
-        else:
-            return self.call(txn, send_everything=True)
+        elif value and kwargs.get("send_everything"):
+            raise AccountsError("Cannot use 'send_everything=True' with 'VALUE'.")
+
+        elif value:
+            txn.value = self.conversion_manager.convert(value, int)
+
+        return self.call(txn, **kwargs)
 
     def deploy(
         self, contract: "ContractContainer", *args, publish: bool = False, **kwargs
@@ -193,7 +197,7 @@ class AccountAPI(BaseInterfaceModel, BaseAddress):
 
         txn = contract(*args, **kwargs)
         txn.sender = self.address
-        receipt = self.call(txn)
+        receipt = self.call(txn, **kwargs)
 
         address = receipt.contract_address
         if not address:
@@ -215,7 +219,7 @@ class AccountAPI(BaseInterfaceModel, BaseAddress):
     def check_signature(
         self,
         data: Union[SignableMessage, TransactionAPI],
-        signature: Optional[_Signature] = None,  # TransactionAPI doesn't need it
+        signature: Optional[MessageSignature] = None,  # TransactionAPI doesn't need it
     ) -> bool:
         """
         Verify a message or transaction was signed by this account.
@@ -223,8 +227,8 @@ class AccountAPI(BaseInterfaceModel, BaseAddress):
         Args:
             data (Union[:class:`~ape.types.signatures.SignableMessage`, :class:`~ape.api.transactions.TransactionAPI`]):  # noqa: E501
               The message or transaction to verify.
-            signature (Optional[``_Signature``]): The :class:`~ape.types.signatures.MessageSignature` or the
-              :class:`~ape.types.signatures.TransactionSignature`.
+            signature (Optional[:class:`~ape.types.signatures.MessageSignature`]):
+              The signature to check.
 
         Returns:
             bool: ``True`` if the data was signed by this account. ``False`` otherwise.
@@ -232,12 +236,15 @@ class AccountAPI(BaseInterfaceModel, BaseAddress):
         if isinstance(data, (SignableMessage, EIP712SignableMessage)):
             if signature:
                 return self.address == Account.recover_message(data, vrs=signature)
+
             else:
                 raise AccountsError(
                     "Parameter 'signature' required when verifying a 'SignableMessage'."
                 )
+
         elif isinstance(data, TransactionAPI):
             return self.address == Account.recover_transaction(data.serialize_transaction())
+
         else:
             raise AccountsError(f"Unsupported message type: {type(data)}.")
 
@@ -398,7 +405,7 @@ class AccountContainerAPI(BaseInterfaceModel):
             self.__getitem__(address)
             return True
 
-        except IndexError:
+        except (IndexError, AttributeError):
             return False
 
     def _verify_account_type(self, account):
@@ -420,6 +427,12 @@ class TestAccountContainerAPI(AccountContainerAPI):
     :class:`~ape.utils.GeneratedDevAccounts`) should implement this API instead of
     ``AccountContainerAPI`` directly. This is how they show up in the ``accounts`` test fixture.
     """
+
+    @abstractmethod
+    def generate_account(self) -> "TestAccountAPI":
+        """
+        Generate a new test account
+        """
 
 
 class TestAccountAPI(AccountAPI):
@@ -444,9 +457,10 @@ class ImpersonatedAccount(AccountAPI):
     def sign_message(self, msg: SignableMessage) -> Optional[MessageSignature]:
         raise NotImplementedError("This account cannot sign messages")
 
-    def sign_transaction(self, txn: TransactionAPI) -> Optional[TransactionSignature]:
-        return None
+    def sign_transaction(self, txn: TransactionAPI, **kwargs) -> Optional[TransactionAPI]:
+        # Returns input transaction unsigned (since it doesn't have access to the key)
+        return txn
 
-    def call(self, txn: TransactionAPI, send_everything: bool = False) -> ReceiptAPI:
+    def call(self, txn: TransactionAPI, send_everything: bool = False, **kwargs) -> ReceiptAPI:
         txn = self.prepare_transaction(txn)
         return self.provider.send_transaction(txn)

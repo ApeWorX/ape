@@ -1,4 +1,7 @@
-from typing import Dict, Iterator, List, Type
+import contextlib
+from typing import ContextManager, Dict, Generator, Iterator, List, Optional, Type, Union
+
+from eth_utils import is_hex
 
 from ape.api.accounts import (
     AccountAPI,
@@ -12,6 +15,19 @@ from ape.utils import ManagerAccessMixin, cached_property, singledispatchmethod
 
 from .base import BaseManager
 
+_DEFAULT_SENDERS: List[AccountAPI] = []
+
+
+@contextlib.contextmanager
+def _use_sender(
+    account: Union[AccountAPI, TestAccountAPI]
+) -> Generator[AccountAPI, TestAccountAPI, None]:
+    try:
+        _DEFAULT_SENDERS.append(account)
+        yield account
+    finally:
+        _DEFAULT_SENDERS.pop()
+
 
 class TestAccountManager(list, ManagerAccessMixin):
     __test__ = False
@@ -20,7 +36,7 @@ class TestAccountManager(list, ManagerAccessMixin):
         accounts_str = ", ".join([a.address for a in self.accounts])
         return f"[{accounts_str}]"
 
-    @property
+    @cached_property
     def containers(self) -> Dict[str, TestAccountContainerAPI]:
         containers = {}
         account_types = [
@@ -97,6 +113,16 @@ class TestAccountManager(list, ManagerAccessMixin):
     def __contains__(self, address: AddressType) -> bool:  # type: ignore
         return any(address in container for container in self.containers.values())
 
+    def generate_test_account(self, container_name: str = "test") -> TestAccountAPI:
+        return self.containers[container_name].generate_account()
+
+    def use_sender(self, account_id: Union[TestAccountAPI, AddressType, int]) -> ContextManager:
+        if not isinstance(account_id, TestAccountAPI):
+            account = self[account_id]
+        else:
+            account = account_id
+        return _use_sender(account)
+
 
 class AccountManager(BaseManager):
     """
@@ -113,6 +139,10 @@ class AccountManager(BaseManager):
 
         my_accounts = accounts.load("dev")
     """
+
+    @property
+    def default_sender(self) -> Optional[AccountAPI]:
+        return _DEFAULT_SENDERS[-1] if _DEFAULT_SENDERS else None
 
     @cached_property
     def containers(self) -> Dict[str, AccountContainerAPI]:
@@ -314,3 +344,16 @@ class AccountManager(BaseManager):
             any(address in container for container in self.containers.values())
             or address in self.test_accounts
         )
+
+    def use_sender(
+        self,
+        account_id: Union[AccountAPI, AddressType, str, int],
+    ) -> ContextManager:
+        if not isinstance(account_id, AccountAPI):
+            if isinstance(account_id, int) or is_hex(account_id):
+                account = self[account_id]
+            elif isinstance(account_id, str):  # alias
+                account = self.load(account_id)
+        else:
+            account = account_id
+        return _use_sender(account)

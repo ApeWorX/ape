@@ -92,7 +92,7 @@ class LocalProvider(TestProviderAPI, Web3Provider):
                 raise ape_err from err
             else:
                 message = gas_estimation_error_message(ape_err)
-                raise TransactionError(base_err=ape_err, message=message) from ape_err
+                raise TransactionError(message, base_err=ape_err) from ape_err
 
     @property
     def chain_id(self) -> int:
@@ -161,7 +161,7 @@ class LocalProvider(TestProviderAPI, Web3Provider):
                 vm_err.txn = txn
                 raise vm_err from err
 
-        self.chain_manager.account_history.append(receipt)
+        self.chain_manager.history.append(receipt)
         return receipt
 
     def snapshot(self) -> SnapshotID:

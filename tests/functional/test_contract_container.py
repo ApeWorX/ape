@@ -8,8 +8,9 @@ from ape_ethereum.ecosystem import ProxyType
 def test_deploy(
     sender, contract_container, networks_connected_to_tester, project, chain, clean_contracts_cache
 ):
-    contract = contract_container.deploy(sender=sender, something_else="IGNORED")
+    contract = contract_container.deploy(4, sender=sender, something_else="IGNORED")
     assert contract.txn_hash
+    assert contract.myNumber() == 4
 
     # Verify can reload same contract from cache
     contract_from_cache = Contract(contract.address)
@@ -20,27 +21,27 @@ def test_deploy(
 
 def test_deploy_and_publish_local_network(owner, contract_container):
     with pytest.raises(ProjectError, match="Can only publish deployments on a live network"):
-        contract_container.deploy(sender=owner, publish=True)
+        contract_container.deploy(0, sender=owner, publish=True)
 
 
 def test_deploy_and_publish_live_network_no_explorer(owner, contract_container, dummy_live_network):
     dummy_live_network.__dict__["explorer"] = None
     expected_message = "Unable to publish contract - no explorer plugin installed."
     with pytest.raises(NetworkError, match=expected_message):
-        contract_container.deploy(sender=owner, publish=True, required_confirmations=0)
+        contract_container.deploy(0, sender=owner, publish=True, required_confirmations=0)
 
 
 def test_deploy_and_publish(mocker, owner, contract_container, dummy_live_network):
     mock_explorer = mocker.MagicMock()
     dummy_live_network.__dict__["explorer"] = mock_explorer
-    contract = contract_container.deploy(sender=owner, publish=True, required_confirmations=0)
+    contract = contract_container.deploy(0, sender=owner, publish=True, required_confirmations=0)
     mock_explorer.publish_contract.assert_called_once_with(contract.address)
 
 
 def test_deploy_and_not_publish(mocker, owner, contract_container, dummy_live_network):
     mock_explorer = mocker.MagicMock()
     dummy_live_network.__dict__["explorer"] = mock_explorer
-    contract_container.deploy(sender=owner, publish=False, required_confirmations=0)
+    contract_container.deploy(0, sender=owner, publish=False, required_confirmations=0)
     assert not mock_explorer.call_count
 
 
@@ -78,3 +79,24 @@ def test_source_path_in_project(project_with_contract):
 
 def test_source_path_out_of_project(contract_container):
     assert not contract_container.source_path
+
+
+def test_encode_constructor_input(contract_container, calldata):
+    constructor = contract_container.constructor
+    actual = constructor.encode_input(222)
+    expected = calldata[4:]  # Strip off setNumber() method ID
+    assert actual == expected
+
+
+def test_decode_constructor_input(contract_container, calldata):
+    constructor = contract_container.constructor
+    constructor_calldata = calldata[4:]  # Strip off setNumber() method ID
+    actual = constructor.decode_input(constructor_calldata)
+    expected = "constructor(uint256)", {"num": 222}
+    assert actual == expected
+
+
+def test_decode_input(contract_container, calldata):
+    actual = contract_container.decode_input(calldata)
+    expected = "setNumber(uint256)", {"num": 222}
+    assert actual == expected

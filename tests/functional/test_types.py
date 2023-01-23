@@ -2,7 +2,7 @@ import pytest
 from eth_utils import to_hex
 from ethpm_types.abi import EventABI
 
-from ape.types import ContractLog, LogFilter
+from ape.types import ContractLog, LogFilter, TransactionSignature
 from ape.utils import ZERO_ADDRESS
 
 TXN_HASH = "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa222222222222222222222222"
@@ -103,3 +103,8 @@ def test_topic_filter_encoding():
         None,
         "0x0000000000000000000000008c44cc5c0f5cd2f7f17b9aca85d456df25a61ae8",
     ]
+
+
+def test_signature_repr():
+    signature = TransactionSignature(v=0, r=b"123", s=b"456")
+    assert repr(signature) == "<TransactionSignature v=0 r=0x313233 s=0x343536>"

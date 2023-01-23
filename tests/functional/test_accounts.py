@@ -8,6 +8,7 @@ from ape.exceptions import AccountsError, NetworkError, ProjectError, SignatureE
 from ape.types.signatures import recover_signer
 from ape.utils.testing import DEFAULT_NUMBER_OF_TEST_ACCOUNTS
 from ape_ethereum.ecosystem import ProxyType
+from ape_test.accounts import TestAccount
 
 MISSING_VALUE_TRANSFER_ERR_MSG = "Must provide 'VALUE' or use 'send_everything=True"
 
@@ -164,12 +165,12 @@ def test_transfer_using_type_0(sender, receiver):
 
 
 def test_deploy(owner, contract_container, chain, clean_contracts_cache):
-    contract = owner.deploy(contract_container)
+    contract = owner.deploy(contract_container, 0)
     assert contract.address
     assert contract.txn_hash
 
     # Deploy again to prove that we get the correct txn_hash below
-    owner.deploy(contract_container)
+    owner.deploy(contract_container, 0)
 
     # Verify can reload same contract from cache
     contract_from_cache = ape.Contract(contract.address)
@@ -180,27 +181,27 @@ def test_deploy(owner, contract_container, chain, clean_contracts_cache):
 
 def test_deploy_and_publish_local_network(owner, contract_container):
     with pytest.raises(ProjectError, match="Can only publish deployments on a live network"):
-        owner.deploy(contract_container, publish=True)
+        owner.deploy(contract_container, 0, publish=True)
 
 
 def test_deploy_and_publish_live_network_no_explorer(owner, contract_container, dummy_live_network):
     dummy_live_network.__dict__["explorer"] = None
     expected_message = "Unable to publish contract - no explorer plugin installed."
     with pytest.raises(NetworkError, match=expected_message):
-        owner.deploy(contract_container, publish=True, required_confirmations=0)
+        owner.deploy(contract_container, 0, publish=True, required_confirmations=0)
 
 
 def test_deploy_and_publish(mocker, owner, contract_container, dummy_live_network):
     mock_explorer = mocker.MagicMock()
     dummy_live_network.__dict__["explorer"] = mock_explorer
-    contract = owner.deploy(contract_container, publish=True, required_confirmations=0)
+    contract = owner.deploy(contract_container, 0, publish=True, required_confirmations=0)
     mock_explorer.publish_contract.assert_called_once_with(contract.address)
 
 
 def test_deploy_and_not_publish(mocker, owner, contract_container, dummy_live_network):
     mock_explorer = mocker.MagicMock()
     dummy_live_network.__dict__["explorer"] = mock_explorer
-    owner.deploy(contract_container, publish=True, required_confirmations=0)
+    owner.deploy(contract_container, 0, publish=True, required_confirmations=0)
     assert not mock_explorer.call_count
 
 
@@ -362,6 +363,19 @@ def test_test_accounts_repr(test_accounts):
 def test_account_comparison_to_non_account(core_account):
     # Before, would get a ConversionError.
     assert core_account != "foo"
+
+
+def test_create_account(test_accounts):
+    created_acc = test_accounts.generate_test_account()
+
+    assert isinstance(created_acc, TestAccount)
+    assert created_acc.index == len(test_accounts)
+
+    second_created_acc = test_accounts.generate_test_account()
+
+    assert created_acc.address != second_created_acc.address
+
+    assert second_created_acc.index == created_acc.index + 1
 
 
 def test_dir(core_account):
