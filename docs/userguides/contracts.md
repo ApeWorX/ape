@@ -27,7 +27,7 @@ You can alternatively use this syntax instead:
 from ape import accounts, project
 
 dev = accounts.load("dev")
-contract = accounts.dev.deploy(project.MyContract, sender=dev)
+contract = dev.deploy(project.MyContract)
 ```
 
 If your contract has constructor arguments then you will need to pass them to the contract when deploying or you will get an error showing your arguments don't match what is in the ABI:
