@@ -13,7 +13,7 @@ from ape.api.explorers import ExplorerAPI
 from ape.exceptions import TransactionError
 from ape.logging import logger
 from ape.types import AddressType, ContractLog, GasLimit, TransactionSignature
-from ape.utils import BaseInterfaceModel, abstractmethod, raises_not_implemented
+from ape.utils import BaseInterfaceModel, abstractmethod, cached_property, raises_not_implemented
 
 if TYPE_CHECKING:
     from ape.contracts import ContractEvent
@@ -229,6 +229,14 @@ class ReceiptAPI(BaseInterfaceModel):
             return 0
 
         return latest_block.number - self.block_number
+
+    @cached_property
+    def events(self) -> List[ContractLog]:
+        """
+        All the events that were emitted from this call.
+        """
+
+        return self.decode_logs()  # Decodes all logs by default.
 
     @abstractmethod
     def decode_logs(

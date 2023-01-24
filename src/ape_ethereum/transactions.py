@@ -158,10 +158,6 @@ class Receipt(ReceiptAPI):
 
         return self.provider.get_call_tree(self.txn_hash)
 
-    @cached_property
-    def events(self) -> List[ContractLog]:
-        return self.decode_logs()  # Decodes all logs by default.
-
     def raise_for_status(self):
         if self.gas_limit is not None and self.ran_out_of_gas:
             raise OutOfGasError()
