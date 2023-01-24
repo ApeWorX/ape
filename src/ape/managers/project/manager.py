@@ -295,7 +295,11 @@ class ProjectManager(BaseManager):
 
         if path.name in self._cached_projects:
             cached_project = self._cached_projects[path.name]
-            if version == cached_project.version:
+            if (
+                version == cached_project.version
+                and contracts_folder is not None
+                and contracts_folder == cached_project.contracts_folder
+            ):
                 return cached_project
 
         contracts_folder = contracts_folder or path / "contracts"

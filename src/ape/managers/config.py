@@ -272,6 +272,7 @@ class ConfigManager(BaseInterfaceModel):
         Returns:
             Generator
         """
+
         contracts_folder = contracts_folder or project_folder / "contracts"
         initial_project_folder = self.project_manager.path
         initial_contracts_folder = self.contracts_folder
@@ -294,7 +295,6 @@ class ConfigManager(BaseInterfaceModel):
             # Process and reload the project's configuration
             clean_config = self.project_manager.local_project.process_config_file()
             self.load(force_reload=True)
-
             yield self.project_manager
 
         finally:
