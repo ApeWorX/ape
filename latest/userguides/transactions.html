@@ -228,16 +228,21 @@ argument <code class="docutils literal notranslate"><span class="pre">type</span
 </section>
 <section id="transaction-logs">
 <h2>Transaction Logs<a class="headerlink" href="#transaction-logs" title="Permalink to this headline"></a></h2>
-<p>To get logs that occurred during a transaction, you can use the <a class="reference external" href="../methoddocs/contracts.html?highlight=contractevent#ape.contracts.base.ContractEvent.from_receipt">ContractEvent.from_receipt(receipt)</a> and access your data from the <a class="reference external" href="../methoddocs/types.html#ape.types.ContractLog">ContractLog</a> objects that it returns.</p>
-<p>The following is an example demonstrating how to access logs from an instance of a contract:</p>
+<p>In Ape, you can easily get all the events on a receipt.
+Use the <code class="docutils literal notranslate"><span class="pre">.events</span></code> property to access the (<a class="reference external" href="../methoddocs/types.html#ape.types.ContractLog">ContractLog</a>) objects.
+Each object represents an event emitted from the call.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">receipt</span> <span class="o">=</span> <span class="n">contract</span><span class="o">.</span><span class="n">fundMyContract</span><span class="p">(</span><span class="n">value</span><span class="o">=</span><span class="s2">&quot;1 gwei&quot;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="s2">&quot;0x0&quot;</span><span class="p">,</span> <span class="n">sender</span><span class="o">=</span><span class="n">sender</span><span class="p">)</span>
-<span class="k">for</span> <span class="n">log</span> <span class="ow">in</span> <span class="n">contract</span><span class="o">.</span><span class="n">MyFundEvent</span><span class="o">.</span><span class="n">from_receipt</span><span class="p">(</span><span class="n">receipt</span><span class="p">):</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">receipt</span><span class="o">.</span><span class="n">events</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>To only get specific log types, use the <code class="docutils literal notranslate"><span class="pre">decode_logs()</span></code> method and pass the event ABIs as arguments:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">for</span> <span class="n">log</span> <span class="ow">in</span> <span class="n">receipt</span><span class="o">.</span><span class="n">decode_logs</span><span class="p">(</span><span class="n">contract</span><span class="o">.</span><span class="n">FooEvent</span><span class="o">.</span><span class="n">abi</span><span class="p">,</span> <span class="n">contract</span><span class="o">.</span><span class="n">BarEvent</span><span class="o">.</span><span class="n">abi</span><span class="p">):</span>
     <span class="nb">print</span><span class="p">(</span><span class="n">log</span><span class="o">.</span><span class="n">amount</span><span class="p">)</span>  <span class="c1"># Assuming &#39;amount&#39; is a property on the event.</span>
 </pre></div>
 </div>
-<p>You can also access the logs from the receipt itself if you know the ABI:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">event_type</span> <span class="o">=</span> <span class="n">contract</span><span class="o">.</span><span class="n">MyEvent</span>
-<span class="k">for</span> <span class="n">log</span> <span class="ow">in</span> <span class="n">receipt</span><span class="o">.</span><span class="n">decode_logs</span><span class="p">(</span><span class="n">event_type</span><span class="o">.</span><span class="n">abi</span><span class="p">):</span>
+<p>You can also use the <a class="reference external" href="../methoddocs/contracts.html?highlight=contractevent#ape.contracts.base.ContractEvent.from_receipt">ContractEvent.from_receipt(receipt)</a> method:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">receipt</span> <span class="o">=</span> <span class="n">contract</span><span class="o">.</span><span class="n">fooMethod</span><span class="p">(</span><span class="n">value</span><span class="o">=</span><span class="s2">&quot;1 gwei&quot;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="s2">&quot;0x0&quot;</span><span class="p">,</span> <span class="n">sender</span><span class="o">=</span><span class="n">sender</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">log</span> <span class="ow">in</span> <span class="n">contract</span><span class="o">.</span><span class="n">FooEvent</span><span class="o">.</span><span class="n">from_receipt</span><span class="p">(</span><span class="n">receipt</span><span class="p">):</span>
     <span class="nb">print</span><span class="p">(</span><span class="n">log</span><span class="o">.</span><span class="n">amount</span><span class="p">)</span>  <span class="c1"># Assuming &#39;amount&#39; is a property on the event.</span>
 </pre></div>
 </div>
