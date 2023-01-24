@@ -337,6 +337,7 @@ class ContractTransactionHandler(ContractMethodHandler):
         contract_transaction = self._as_transaction(*function_arguments)
         if "sender" not in kwargs and self.account_manager.default_sender is not None:
             kwargs["sender"] = self.account_manager.default_sender
+
         return contract_transaction(*function_arguments, **kwargs)
 
     def _as_transaction(self, *args) -> ContractTransaction:

@@ -3,7 +3,14 @@ from decimal import Decimal
 from typing import Any, Dict, List, Tuple, Type, Union
 
 from dateutil.parser import parse  # type: ignore
-from eth_utils import is_checksum_address, is_hex, is_hex_address, to_checksum_address, to_hex
+from eth_utils import (
+    is_checksum_address,
+    is_hex,
+    is_hex_address,
+    to_checksum_address,
+    to_hex,
+    to_int,
+)
 from hexbytes import HexBytes
 
 from ape.api import ConverterAPI
@@ -36,6 +43,28 @@ class HexConverter(ConverterAPI):
         """
 
         return HexBytes(value)
+
+
+class HexIntConverter(ConverterAPI):
+    """
+    Convert hex values to integers.
+    """
+
+    def is_convertible(self, value: Any) -> bool:
+        return (
+            isinstance(value, int)
+            or (isinstance(value, str) and is_hex(value))
+            or isinstance(value, HexBytes)
+        )
+
+    def convert(self, value: Any) -> int:
+        if isinstance(value, str) and is_hex(value):
+            return to_int(HexBytes(value))
+
+        elif isinstance(value, HexBytes):
+            return to_int(value)
+
+        return value
 
 
 class AddressAPIConverter(ConverterAPI):
@@ -211,7 +240,7 @@ class ConversionManager(BaseManager):
                 IntAddressConverter(),
             ],
             bytes: [HexConverter()],
-            int: [TimestampConverter()],
+            int: [TimestampConverter(), HexIntConverter()],
             Decimal: [],
             list: [ListTupleConverter()],
             tuple: [ListTupleConverter()],
