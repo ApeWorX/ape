@@ -156,6 +156,14 @@ def eth_tester_provider():
 
 
 @pytest.fixture
+def mock_provider(mock_web3, eth_tester_provider):
+    web3 = eth_tester_provider.web3
+    eth_tester_provider._web3 = mock_web3
+    yield eth_tester_provider
+    eth_tester_provider._web3 = web3
+
+
+@pytest.fixture
 def networks_connected_to_tester(eth_tester_provider):
     return eth_tester_provider.network_manager
 

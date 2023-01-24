@@ -22,7 +22,6 @@ from tests.functional.data.python import TRACE_RESPONSE
 TRANSACTION_HASH = "0x053cba5c12172654d894f66d5670bab6215517a94189a9ffc09bc40a589ec04d"
 
 
-@geth_process_test
 @pytest.fixture
 def mock_geth(geth_provider, mock_web3):
     provider = Geth(
