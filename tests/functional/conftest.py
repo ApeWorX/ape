@@ -19,11 +19,12 @@ from ape.logging import LogLevel
 from ape.logging import logger as _logger
 from ape.types import AddressType, ContractLog
 
+PROJECT_PATH = Path(__file__).parent
+CONTRACTS_FOLDER = PROJECT_PATH / "data" / "contracts" / "ethereum" / "local"
+
 
 def _get_raw_contract(name: str) -> str:
-    here = Path(__file__).parent
-    contracts_dir = here / "data" / "contracts" / "ethereum" / "local"
-    return (contracts_dir / f"{name}.json").read_text()
+    return (CONTRACTS_FOLDER / f"{name}.json").read_text()
 
 
 ALIAS = "__FUNCTIONAL_TESTS_ALIAS__"
@@ -72,6 +73,11 @@ def mock_transaction(mocker):
 @pytest.fixture(scope="session")
 def test_accounts(accounts):
     return accounts.test_accounts
+
+
+@pytest.fixture
+def contracts_folder():
+    return CONTRACTS_FOLDER
 
 
 @pytest.fixture(scope="session")
