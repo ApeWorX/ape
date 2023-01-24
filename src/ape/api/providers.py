@@ -327,7 +327,7 @@ class ProviderAPI(BaseInterfaceModel):
 
     @abstractmethod
     def get_receipt(
-        self, txn_hash: str, required_confirmations: int = 0, timeout: Optional[int] = None
+        self, txn_hash: str, required_confirmations: int = 0, timeout: Optional[int] = None, **kwargs
     ) -> ReceiptAPI:
         """
         Get the information about a transaction from a transaction hash.
