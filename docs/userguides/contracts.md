@@ -30,15 +30,7 @@ dev = accounts.load("dev")
 contract = dev.deploy(project.MyContract)
 ```
 
-If your contract has constructor arguments then you will need to pass them to the contract when deploying or you will get an error showing your arguments don't match what is in the ABI:
-
-```bash
-ArgumentsLengthError: The number of the given arguments (0) do not match what is defined in the ABI (2).
-```
-
-In this case it is saying that you have fed 0 constructor arguments but the contract requires 2 constructor arguments to deploy.
-
-If that is the case you can pass the arguments to the contract when deploying like this:
+If your contract requires constructor arguments then you will need to pass them to the contract in the kwargs when deploying like this:
 
 ```python
 from ape import accounts, project
@@ -57,6 +49,14 @@ contract = accounts.dev.deploy(project.MyContract, "argument1", "argument2")
 ```
 
 With this technique, you can feed as many constructor arguments as your contract constructor requires.
+
+If you do not pass the correct amounts of constructor arguments when deploying, you will get an error showing your arguments don't match what is in the ABI:
+
+```bash
+ArgumentsLengthError: The number of the given arguments (0) do not match what is defined in the ABI (2).
+```
+
+In this case it is saying that you have fed 0 constructor arguments but the contract requires 2 constructor arguments to deploy.
 
 ## From Project Contract Address
 
