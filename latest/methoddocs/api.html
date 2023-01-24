@@ -854,7 +854,7 @@ in a particular ecosystem.</p>
 <span id="networks"></span><h2>Networks<a class="headerlink" href="#module-ape.api.networks" title="Permalink to this headline"></a></h2>
 <dl class="py class">
 <dt class="sig sig-object py" id="ape.api.networks.EcosystemAPI">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ape.api.networks.</span></span><span class="sig-name descname"><span class="pre">EcosystemAPI</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_folder</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">pathlib.Path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">request_header</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.api.networks.EcosystemAPI" title="Permalink to this definition"></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ape.api.networks.</span></span><span class="sig-name descname"><span class="pre">EcosystemAPI</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_folder</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">pathlib.Path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">request_header</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fee_token_symbol</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.api.networks.EcosystemAPI" title="Permalink to this definition"></a></dt>
 <dd><p>Bases: <a class="reference internal" href="utils.html#ape.utils.BaseInterfaceModel" title="ape.utils.basemodel.BaseInterfaceModel"><code class="xref py py-class docutils literal notranslate"><span class="pre">ape.utils.basemodel.BaseInterfaceModel</span></code></a></p>
 <p>A set of related networks, such as Ethereum.</p>
 <dl class="py method">
@@ -1142,6 +1142,29 @@ Update the transaction arguments with the overrides in <code class="docutils lit
 <dd class="field-odd"><p>class</p>
 </dd>
 </dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ape.api.networks.EcosystemAPI.enrich_calltree">
+<span class="sig-name descname"><span class="pre">enrich_calltree</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">call</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ape.types.trace.CallTreeNode</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ape.types.trace.CallTreeNode</span></span></span><a class="headerlink" href="#ape.api.networks.EcosystemAPI.enrich_calltree" title="Permalink to this definition"></a></dt>
+<dd><p>Enhance the data in the call tree using information about the ecosystem.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>call</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">CallTreeNode</span></code>) – The call tree node to enrich.</p></li>
+<li><p><strong>kwargs</strong> – Additional kwargs to help with enrichment.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">CallTreeNode</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ape.api.networks.EcosystemAPI.fee_token_symbol">
+<span class="sig-name descname"><span class="pre">fee_token_symbol</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#ape.api.networks.EcosystemAPI.fee_token_symbol" title="Permalink to this definition"></a></dt>
+<dd><p>The token symbol for the currency that pays for fees, such as ETH.</p>
 </dd></dl>
 
 <dl class="py method">
@@ -2619,9 +2642,7 @@ are able to be failing.</p>
 <dl class="py property">
 <dt class="sig sig-object py" id="ape.api.transactions.ReceiptAPI.method_called">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">method_called</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">ethpm_types.abi.MethodABI</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#ape.api.transactions.ReceiptAPI.method_called" title="Permalink to this definition"></a></dt>
-<dd><p>The method ABI of the method called to produce this receipt.
-Requires both that the user is using a provider that supports traces
-as well as for this to have been a contract invocation.</p>
+<dd><p>The method ABI of the method called to produce this receipt.</p>
 </dd></dl>
 
 <dl class="py method">
@@ -2661,7 +2682,7 @@ since this is not available from the receipt object.</p>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="ape.api.transactions.ReceiptAPI.trace">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">trace</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Iterator</span><span class="p"><span class="pre">[</span></span><span class="pre">evm_trace.geth.TraceFrame</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#ape.api.transactions.ReceiptAPI.trace" title="Permalink to this definition"></a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">trace</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Iterator</span><span class="p"><span class="pre">[</span></span><span class="pre">ape.types.trace.TraceFrame</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#ape.api.transactions.ReceiptAPI.trace" title="Permalink to this definition"></a></dt>
 <dd><p>The trace of the transaction, if available from your provider.</p>
 </dd></dl>
 

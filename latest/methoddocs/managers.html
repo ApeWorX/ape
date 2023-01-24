@@ -684,26 +684,6 @@ contract, if known. Useful for publishing. Defaults to <code class="docutils lit
 </dl>
 </dd></dl>
 
-<dl class="py method">
-<dt class="sig sig-object py" id="ape.managers.chain.ContractCache.lookup_method">
-<span class="sig-name descname"><span class="pre">lookup_method</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">contract</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">ChecksumAddress</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ethpm_types.contract_type.ContractType</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">selector</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">hexbytes.main.HexBytes</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ethpm_types.abi.MethodABI</span></span></span><a class="headerlink" href="#ape.managers.chain.ContractCache.lookup_method" title="Permalink to this definition"></a></dt>
-<dd><p>Find the method ABI from the given contract address and selector.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>contract</strong> (<code class="docutils literal notranslate"><span class="pre">AddressType</span></code>) – The address of the contract.</p></li>
-<li><p><strong>selector</strong> (<code class="docutils literal notranslate"><span class="pre">HexBytes</span></code>) – The method ID.</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>The ABI object of the method.</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">ethpm_types.abi.MethodABI</span></code></p>
-</dd>
-</dl>
-</dd></dl>
-
 </dd></dl>
 
 <dl class="py class">

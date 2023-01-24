@@ -154,42 +154,6 @@
 </dd></dl>
 
 <dl class="py class">
-<dt class="sig sig-object py" id="ape.utils.CallTraceParser">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ape.utils.</span></span><span class="sig-name descname"><span class="pre">CallTraceParser</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sender:</span> <span class="pre">typing.Optional[typing.Union[ReceiptAPI</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">AddressType]]</span> <span class="pre">=</span> <span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">transaction_hash:</span> <span class="pre">typing.Optional[str]</span> <span class="pre">=</span> <span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose:</span> <span class="pre">bool</span> <span class="pre">=</span> <span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">wrap_threshold:</span> <span class="pre">int</span> <span class="pre">=</span> <span class="pre">50</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">indent:</span> <span class="pre">int</span> <span class="pre">=</span> <span class="pre">2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">color_set:</span> <span class="pre">typing.Union[ape.utils.trace.TraceStyles</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typing.Type[ape.utils.trace.TraceStyles]]</span> <span class="pre">=</span> <span class="pre">&lt;class</span> <span class="pre">'ape.utils.trace.TraceStyles'&gt;</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.utils.CallTraceParser" title="Permalink to this definition"></a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">ape.utils.basemodel.ManagerAccessMixin</span></code></p>
-<p>A class for parsing a call trace, used in the
-<code class="xref py py-meth docutils literal notranslate"><span class="pre">show_trace()</span></code> method,
-which uses the response from
-<code class="xref py py-meth docutils literal notranslate"><span class="pre">get_call_trace()</span></code> and the
-<code class="docutils literal notranslate"><span class="pre">evm-trace</span></code> Python package.</p>
-<p>Usage example:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">parser</span> <span class="o">=</span> <span class="n">CallTraceParser</span><span class="p">(</span><span class="n">sender</span><span class="o">=</span><span class="n">sender</span><span class="p">,</span> <span class="n">transaction_hash</span><span class="o">=</span><span class="n">txn_hash</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="n">verbose</span><span class="p">)</span>
-<span class="n">call_tree</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">provider</span><span class="o">.</span><span class="n">get_call_tree</span><span class="p">(</span><span class="n">txn_hash</span><span class="p">)</span>
-<span class="n">root</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse_as_tree</span><span class="p">(</span><span class="n">call_tree</span><span class="p">)</span>
-</pre></div>
-</div>
-<dl class="py method">
-<dt class="sig sig-object py" id="ape.utils.CallTraceParser.parse_as_tree">
-<span class="sig-name descname"><span class="pre">parse_as_tree</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">call</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">evm_trace.base.CallTreeNode</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">rich.tree.Tree</span></span></span><a class="headerlink" href="#ape.utils.CallTraceParser.parse_as_tree" title="Permalink to this definition"></a></dt>
-<dd><p>Create <code class="docutils literal notranslate"><span class="pre">rich.Tree</span></code> containing the nodes in a call trace
-for display purposes.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>call</strong> (<code class="docutils literal notranslate"><span class="pre">CallTreeNode</span></code>) – A node object from the <code class="docutils literal notranslate"><span class="pre">evm-trace</span></code>
-library.</p>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>A rich tree from the <code class="docutils literal notranslate"><span class="pre">rich</span></code> library.</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">rich.Tree</span></code></p>
-</dd>
-</dl>
-</dd></dl>
-
-</dd></dl>
-
-<dl class="py class">
 <dt class="sig sig-object py" id="ape.utils.GeneratedDevAccount">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ape.utils.</span></span><span class="sig-name descname"><span class="pre">GeneratedDevAccount</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">address</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">private_key</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.utils.GeneratedDevAccount" title="Permalink to this definition"></a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code></p>
