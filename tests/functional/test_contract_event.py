@@ -37,12 +37,12 @@ def test_contract_logs_from_receipts(owner, contract_instance, assert_log_values
     receipt_2 = contract_instance.setNumber(3, sender=owner)
 
     def assert_receipt_logs(receipt: ReceiptAPI, num: int):
-        logs = [log for log in event_type.from_receipt(receipt)]
+        logs = event_type.from_receipt(receipt)
         assert len(logs) == 1
         assert_log_values(logs[0], num)
 
         # Also verify can we logs the other way
-        logs = [log for log in receipt.decode_logs(event_type)]
+        logs = receipt.decode_logs(event_type)
         assert len(logs) == 1
         assert_log_values(logs[0], num)
 

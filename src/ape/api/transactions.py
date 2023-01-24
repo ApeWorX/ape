@@ -236,7 +236,7 @@ class ReceiptAPI(BaseInterfaceModel):
         abi: Optional[
             Union[List[Union[EventABI, "ContractEvent"]], Union[EventABI, "ContractEvent"]]
         ] = None,
-    ) -> Iterator[ContractLog]:
+    ) -> List[ContractLog]:
         """
         Decode the logs on the receipt.
 
@@ -244,7 +244,7 @@ class ReceiptAPI(BaseInterfaceModel):
             abi (``EventABI``): The ABI of the event to decode into logs.
 
         Returns:
-            Iterator[:class:`~ape.types.ContractLog`]
+            List[:class:`~ape.types.ContractLog`]
         """
 
     def raise_for_status(self):
