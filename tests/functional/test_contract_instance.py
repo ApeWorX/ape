@@ -507,3 +507,7 @@ def test_decode_ambiguous_input(solidity_contract_instance, calldata_with_addres
     )
     with pytest.raises(ContractError, match=expected):
         method.decode_input(anonymous_calldata)
+
+
+def test_is_contract(contract_instance):
+    assert contract_instance.is_contract
