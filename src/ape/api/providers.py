@@ -327,7 +327,11 @@ class ProviderAPI(BaseInterfaceModel):
 
     @abstractmethod
     def get_receipt(
-        self, txn_hash: str, required_confirmations: int = 0, timeout: Optional[int] = None, **kwargs
+        self,
+        txn_hash: str,
+        required_confirmations: int = 0,
+        timeout: Optional[int] = None,
+        **kwargs,
     ) -> ReceiptAPI:
         """
         Get the information about a transaction from a transaction hash.
@@ -339,6 +343,7 @@ class ProviderAPI(BaseInterfaceModel):
             timeout (Optional[int]): The amount of time to wait for a receipt
               before timing out. Defaults to ``None``. When ``None``, the default
               value comes from the network config in ``ape-config.yaml``.
+            kwargs: Any other kwargs that other providers might allow when fetching a receipt.
 
         Returns:
             :class:`~api.providers.ReceiptAPI`:
