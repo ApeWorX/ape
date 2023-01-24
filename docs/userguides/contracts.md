@@ -50,7 +50,7 @@ contract = accounts.dev.deploy(project.MyContract, "argument1", "argument2")
 
 With this technique, you can feed as many constructor arguments as your contract constructor requires.
 
-If you do not pass the correct amounts of constructor arguments when deploying, you will get an error showing your arguments don't match what is in the ABI:
+If you do not pass the correct amount of constructor arguments when deploying, you will get an error showing your arguments don't match what is in the ABI:
 
 ```bash
 ArgumentsLengthError: The number of the given arguments (0) do not match what is defined in the ABI (2).
