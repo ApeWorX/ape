@@ -54,14 +54,14 @@ class HexIntConverter(ConverterAPI):
         return (
             isinstance(value, int)
             or (isinstance(value, str) and is_hex(value))
-            or isinstance(value, HexBytes)
+            or isinstance(value, bytes)
         )
 
     def convert(self, value: Any) -> int:
         if isinstance(value, str) and is_hex(value):
             return to_int(HexBytes(value))
 
-        elif isinstance(value, HexBytes):
+        elif isinstance(value, bytes):
             return to_int(value)
 
         return value

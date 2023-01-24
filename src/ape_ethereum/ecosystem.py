@@ -449,7 +449,7 @@ class Ethereum(EcosystemAPI):
             if kwargs["type"] is None:
                 version = TransactionType.DYNAMIC
             elif not isinstance(kwargs["type"], int):
-                version = self.conversion_manager.convert(kwargs["type"], int)
+                version = TransactionType(self.conversion_manager.convert(kwargs["type"], int))
             else:
                 version = TransactionType(kwargs["type"])
 
