@@ -4,8 +4,7 @@ from typing import Any, Dict, Iterator, List, Optional, Tuple, Type, Union
 
 from eth_abi import decode, encode
 from eth_abi.exceptions import InsufficientDataBytes
-from eth_typing import HexStr
-from eth_utils import add_0x_prefix, encode_hex, keccak, to_checksum_address
+from eth_utils import encode_hex, keccak, to_checksum_address
 from ethpm_types.abi import ABIType, ConstructorABI, EventABI, MethodABI
 from hexbytes import HexBytes
 from pydantic import Field, validator
@@ -265,9 +264,7 @@ class Ethereum(EcosystemAPI):
     def decode_receipt(self, data: dict) -> ReceiptAPI:
         status = data.get("status")
         if status:
-            if isinstance(status, str) and status.isnumeric():
-                status = int(status)
-
+            status = self.conversion_manager.convert(status, int)
             status = TransactionStatusEnum(status)
 
         txn_hash = data.get("hash") or data.get("txn_hash") or data.get("transaction_hash")
@@ -449,27 +446,20 @@ class Ethereum(EcosystemAPI):
         }
 
         if "type" in kwargs:
-            type_kwarg = kwargs["type"]
-            if type_kwarg is None:
-                type_kwarg = TransactionType.DYNAMIC.value
-            elif isinstance(type_kwarg, int):
-                type_kwarg = f"0{type_kwarg}"
-            elif isinstance(type_kwarg, bytes):
-                type_kwarg = type_kwarg.hex()
+            if kwargs["type"] is None:
+                version = TransactionType.DYNAMIC
+            elif not isinstance(kwargs["type"], int):
+                version = TransactionType(self.conversion_manager.convert(kwargs["type"], int))
+            else:
+                version = TransactionType(kwargs["type"])
 
-            suffix = type_kwarg.replace("0x", "")
-            if len(suffix) == 1:
-                type_kwarg = f"{type_kwarg.rstrip(suffix)}0{suffix}"
-
-            version_str = add_0x_prefix(HexStr(type_kwarg))
-            version = TransactionType(version_str)
         elif "gas_price" in kwargs:
             version = TransactionType.STATIC
         else:
             version = self.default_transaction_type
 
-        txn_class = transaction_types[version]
         kwargs["type"] = version.value
+        txn_class = transaction_types[version]
 
         if "required_confirmations" not in kwargs or kwargs["required_confirmations"] is None:
             # Attempt to use default required-confirmations from `ape-config.yaml`.
@@ -482,6 +472,9 @@ class Ethereum(EcosystemAPI):
 
         if isinstance(kwargs.get("chainId"), str):
             kwargs["chainId"] = int(kwargs["chainId"], 16)
+
+        elif "chainId" not in kwargs:
+            kwargs["chainId"] = self.provider.chain_id
 
         if "input" in kwargs:
             kwargs["data"] = kwargs.pop("input")

@@ -36,6 +36,14 @@ def test_contract_calls(owner, contract_instance):
     assert contract_instance.myNumber() == 2
 
 
+@pytest.mark.parametrize("type_param", (0, "0", HexBytes(0)))
+def test_static_fee_txn(owner, vyper_contract_instance, type_param):
+    receipt = vyper_contract_instance.setNumber(4, sender=owner, type=type_param)
+    assert vyper_contract_instance.myNumber() == 4
+    assert not receipt.failed
+    assert receipt.type == 0
+
+
 def test_invoke_transaction(owner, contract_instance):
     # Test mutable method call with invoke_transaction
     receipt = contract_instance.invoke_transaction("setNumber", 3, sender=owner)
@@ -91,6 +99,11 @@ def test_revert_no_message(owner, contract_instance):
 def test_revert_specify_gas(sender, contract_instance, gas):
     with pytest.raises(ContractLogicError, match="!authorized"):
         contract_instance.setNumber(5, sender=sender, gas=gas)
+
+
+def test_revert_static_fee_type(sender, contract_instance):
+    with pytest.raises(ContractLogicError, match="!authorized"):
+        contract_instance.setNumber(5, sender=sender, type=0)
 
 
 def test_call_using_block_identifier(

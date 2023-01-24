@@ -42,9 +42,9 @@ class TransactionType(Enum):
     `EIP-2718 <https://eips.ethereum.org/EIPS/eip-2718>`__.
     """
 
-    STATIC = "0x00"
-    ACCESS_LIST = "0x01"  # EIP-2930
-    DYNAMIC = "0x02"  # EIP-1559
+    STATIC = 0
+    ACCESS_LIST = 1  # EIP-2930
+    DYNAMIC = 2  # EIP-1559
 
 
 class AccessList(BaseModel):
@@ -80,7 +80,7 @@ class StaticFeeTransaction(BaseTransaction):
 
     gas_price: Optional[int] = Field(None, alias="gasPrice")
     max_priority_fee: Optional[int] = Field(None, exclude=True)
-    type: Union[str, int, bytes] = Field(TransactionType.STATIC.value, exclude=True)
+    type: int = Field(TransactionType.STATIC.value, exclude=True)
     max_fee: Optional[int] = Field(None, exclude=True)
 
     @root_validator(pre=True, allow_reuse=True)
@@ -98,7 +98,7 @@ class DynamicFeeTransaction(BaseTransaction):
 
     max_priority_fee: Optional[int] = Field(None, alias="maxPriorityFeePerGas")
     max_fee: Optional[int] = Field(None, alias="maxFeePerGas")
-    type: Union[int, str, bytes] = Field(TransactionType.DYNAMIC.value)
+    type: int = Field(TransactionType.DYNAMIC.value)
     access_list: List[AccessList] = Field(default_factory=list, alias="accessList")
 
     @validator("type", allow_reuse=True)
@@ -116,7 +116,7 @@ class AccessListTransaction(BaseTransaction):
     """
 
     gas_price: Optional[int] = Field(None, alias="gasPrice")
-    type: Union[int, str, bytes] = Field(TransactionType.ACCESS_LIST.value)
+    type: int = Field(TransactionType.ACCESS_LIST.value)
     access_list: List[AccessList] = Field(default_factory=list, alias="accessList")
 
     @validator("type", allow_reuse=True)

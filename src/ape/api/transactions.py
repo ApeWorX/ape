@@ -34,7 +34,7 @@ class TransactionAPI(BaseInterfaceModel):
     nonce: Optional[int] = None  # NOTE: `Optional` only to denote using default behavior
     value: int = 0
     data: bytes = b""
-    type: Union[int, bytes, str]
+    type: int
     max_fee: Optional[int] = None
     max_priority_fee: Optional[int] = None
 
