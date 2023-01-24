@@ -76,6 +76,11 @@ def test_accounts(accounts):
 
 
 @pytest.fixture
+def project_path():
+    return PROJECT_PATH
+
+
+@pytest.fixture
 def contracts_folder():
     return CONTRACTS_FOLDER
 
@@ -223,12 +228,9 @@ def ds_note_test_contract(eth_tester_provider, vyper_contract_type, owner):
 
 
 @pytest.fixture
-def project_with_contract(config):
-    project_source_dir = APE_PROJECT_FOLDER
-    project_dest_dir = config.PROJECT_FOLDER / project_source_dir.name
-    copy_tree(project_source_dir.as_posix(), project_dest_dir.as_posix())
-
-    with config.using_project(project_dest_dir) as project:
+def project_with_contract(temp_config):
+    with temp_config() as project:
+        copy_tree(str(APE_PROJECT_FOLDER), str(project.path))
         yield project
 
 

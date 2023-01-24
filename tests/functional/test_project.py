@@ -284,9 +284,10 @@ def test_track_deployment_from_unknown_contract_given_txn_hash(
     assert actual.runtime_bytecode == contract.contract_type.runtime_bytecode
 
 
-def test_compiler_data(project_manager):
+def test_compiler_data(config, project_path, contracts_folder):
     # See ape-solidity / ape-vyper for better tests
-    assert not project_manager.compiler_data
+    with config.using_project(project_path, contracts_folder=contracts_folder) as project:
+        assert not project.compiler_data
 
 
 def test_get_project_without_contracts_path(project_manager):
