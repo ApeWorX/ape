@@ -51,20 +51,10 @@ class HexIntConverter(ConverterAPI):
     """
 
     def is_convertible(self, value: Any) -> bool:
-        return (
-            isinstance(value, int)
-            or (isinstance(value, str) and is_hex(value))
-            or isinstance(value, bytes)
-        )
+        return (isinstance(value, str) and is_hex(value)) or isinstance(value, bytes)
 
     def convert(self, value: Any) -> int:
-        if isinstance(value, str) and is_hex(value):
-            return to_int(HexBytes(value))
-
-        elif isinstance(value, bytes):
-            return to_int(value)
-
-        return value
+        return to_int(HexBytes(value))
 
 
 class AddressAPIConverter(ConverterAPI):
