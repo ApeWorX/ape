@@ -1,6 +1,6 @@
 import sys
 from enum import Enum, IntEnum
-from typing import IO, Dict, Iterator, List, Optional, Union
+from typing import IO, Dict, List, Optional, Union
 
 from eth_abi import decode
 from eth_account import Account as EthAccount
@@ -207,13 +207,13 @@ class Receipt(ReceiptAPI):
         abi: Optional[
             Union[List[Union[EventABI, "ContractEvent"]], Union[EventABI, "ContractEvent"]]
         ] = None,
-    ) -> Iterator[ContractLog]:
+    ) -> List[ContractLog]:
         if abi is not None:
             if not isinstance(abi, (list, tuple)):
                 abi = [abi]
 
             event_abis: List[EventABI] = [a.abi if not isinstance(a, EventABI) else a for a in abi]
-            yield from self.provider.network.ecosystem.decode_logs(self.logs, *event_abis)
+            return list(self.provider.network.ecosystem.decode_logs(self.logs, *event_abis))
 
         else:
             # If ABI is not provided, decode all events
@@ -224,6 +224,8 @@ class Receipt(ReceiptAPI):
                 address: {encode_hex(keccak(text=abi.selector)): abi for abi in contract.events}
                 for address, contract in contract_types.items()
             }
+
+            decoded_logs: List[ContractLog] = []
             for log in self.logs:
                 contract_address = log["address"]
                 if contract_address not in selectors:
@@ -235,9 +237,13 @@ class Receipt(ReceiptAPI):
                     # Likely a library log
                     library_log = self._decode_ds_note(log)
                     if library_log:
-                        yield library_log
+                        decoded_logs.append(library_log)
                 else:
-                    yield from self.provider.network.ecosystem.decode_logs([log], event_abi)
+                    decoded_logs.extend(
+                        list(self.provider.network.ecosystem.decode_logs([log], event_abi))
+                    )
+
+            return decoded_logs
 
     def _decode_ds_note(self, log: Dict) -> Optional[ContractLog]:
         # The first topic encodes the function selector

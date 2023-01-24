@@ -108,21 +108,27 @@ When declaring `type="0x0"` and _not_ specifying a `gas_price`, the `gas_price` 
 
 ## Transaction Logs
 
-To get logs that occurred during a transaction, you can use the [ContractEvent.from_receipt(receipt)](../methoddocs/contracts.html?highlight=contractevent#ape.contracts.base.ContractEvent.from_receipt) and access your data from the [ContractLog](../methoddocs/types.html#ape.types.ContractLog) objects that it returns.
-
-The following is an example demonstrating how to access logs from an instance of a contract:
+In Ape, you can easily get all the events on a receipt.
+Use the `.events` property to access the ([ContractLog](../methoddocs/types.html#ape.types.ContractLog)) objects.
+Each object represents an event emitted from the call.
 
 ```python
 receipt = contract.fundMyContract(value="1 gwei", type="0x0", sender=sender)
-for log in contract.MyFundEvent.from_receipt(receipt):
+print(receipt.events)
+```
+
+To only get specific log types, use the `decode_logs()` method and pass the event ABIs as arguments:
+
+```python
+for log in receipt.decode_logs(contract.FooEvent.abi, contract.BarEvent.abi):
     print(log.amount)  # Assuming 'amount' is a property on the event.
 ```
 
-You can also access the logs from the receipt itself if you know the ABI:
+You can also use the [ContractEvent.from_receipt(receipt)](../methoddocs/contracts.html?highlight=contractevent#ape.contracts.base.ContractEvent.from_receipt) method:
 
 ```python
-event_type = contract.MyEvent
-for log in receipt.decode_logs(event_type.abi):
+receipt = contract.fooMethod(value="1 gwei", type="0x0", sender=sender)
+for log in contract.FooEvent.from_receipt(receipt):
     print(log.amount)  # Assuming 'amount' is a property on the event.
 ```
 
