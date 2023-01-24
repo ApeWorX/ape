@@ -19,11 +19,12 @@ from ape.logging import LogLevel
 from ape.logging import logger as _logger
 from ape.types import AddressType, ContractLog
 
+PROJECT_PATH = Path(__file__).parent
+CONTRACTS_FOLDER = PROJECT_PATH / "data" / "contracts" / "ethereum" / "local"
+
 
 def _get_raw_contract(name: str) -> str:
-    here = Path(__file__).parent
-    contracts_dir = here / "data" / "contracts" / "ethereum" / "local"
-    return (contracts_dir / f"{name}.json").read_text()
+    return (CONTRACTS_FOLDER / f"{name}.json").read_text()
 
 
 ALIAS = "__FUNCTIONAL_TESTS_ALIAS__"
@@ -72,6 +73,16 @@ def mock_transaction(mocker):
 @pytest.fixture(scope="session")
 def test_accounts(accounts):
     return accounts.test_accounts
+
+
+@pytest.fixture
+def project_path():
+    return PROJECT_PATH
+
+
+@pytest.fixture
+def contracts_folder():
+    return CONTRACTS_FOLDER
 
 
 @pytest.fixture(scope="session")
@@ -217,12 +228,9 @@ def ds_note_test_contract(eth_tester_provider, vyper_contract_type, owner):
 
 
 @pytest.fixture
-def project_with_contract(config):
-    project_source_dir = APE_PROJECT_FOLDER
-    project_dest_dir = config.PROJECT_FOLDER / project_source_dir.name
-    copy_tree(project_source_dir.as_posix(), project_dest_dir.as_posix())
-
-    with config.using_project(project_dest_dir) as project:
+def project_with_contract(temp_config):
+    with temp_config() as project:
+        copy_tree(str(APE_PROJECT_FOLDER), str(project.path))
         yield project
 
 
@@ -321,6 +329,7 @@ class PollDaemonThread(threading.Thread):
         self._handler = handler
         self._do_stop = stop_condition
         self._exception = None
+        self._max_iterations = 100
 
     def __enter__(self):
         self.start()
@@ -331,11 +340,12 @@ class PollDaemonThread(threading.Thread):
 
     def run(self):
         try:
-            self._run_until_stop()
+            self._run_until_stop(timeout_iterations=self._max_iterations)
         except Exception as err:
             self._exception = err
 
     def stop(self):
+        time.sleep(1)
         self.join()
 
         # Attempt to wait for stop condition
@@ -364,7 +374,6 @@ class PollDaemonThread(threading.Thread):
                 raise  # The timeout ChainError
 
             time.sleep(1)
-
             if timeout_iterations is None:
                 continue
 
