@@ -265,7 +265,7 @@ class Ethereum(EcosystemAPI):
         status = data.get("status")
         if status:
             status = self.conversion_manager.convert(status, int)
-            status = TransactionStatusEnum(status).value
+            status = TransactionStatusEnum(status)
 
         txn_hash = data.get("hash") or data.get("txn_hash") or data.get("transaction_hash")
 

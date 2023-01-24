@@ -1,5 +1,5 @@
 import sys
-from enum import Enum
+from enum import Enum, IntEnum
 from typing import IO, Dict, List, Optional, Union
 
 from eth_abi import decode
@@ -21,7 +21,7 @@ from ape.types import ContractLog
 from ape.utils import cached_property
 
 
-class TransactionStatusEnum(Enum):
+class TransactionStatusEnum(IntEnum):
     """
     An ``Enum`` class representing the status of a transaction.
     """
@@ -148,7 +148,7 @@ class Receipt(ReceiptAPI):
 
     @property
     def failed(self) -> bool:
-        return self.status != TransactionStatusEnum.NO_ERROR.value
+        return self.status != TransactionStatusEnum.NO_ERROR
 
     @cached_property
     def call_tree(self) -> Optional[CallTreeNode]:
