@@ -1,5 +1,7 @@
 from typing import Any, List
 
+from hexbytes import HexBytes
+
 from ape.exceptions import ConversionError
 from ape.types import AddressType, ContractCode
 from ape.utils import BaseInterface, abstractmethod
@@ -129,7 +131,7 @@ class BaseAddress(BaseInterface):
         ``True`` when there is code associated with the address.
         """
 
-        return len(self.code) > 0
+        return len(HexBytes(self.code)) > 0
 
 
 class Address(BaseAddress):

@@ -507,3 +507,20 @@ def test_decode_ambiguous_input(solidity_contract_instance, calldata_with_addres
     )
     with pytest.raises(ContractError, match=expected):
         method.decode_input(anonymous_calldata)
+
+
+def test_is_contract(contract_instance):
+    assert contract_instance.is_contract
+
+
+def test_is_contract_when_code_is_str(mock_provider, owner):
+    """
+    Tests the cases when an ecosystem uses str for ContractCode.
+    """
+    # Set up the provider to return str instead of HexBytes for code.
+    mock_provider._web3.eth.get_code.return_value = "0x123"
+    assert owner.is_contract
+
+    # When the return value is the string "0x", it should not code as having code.
+    mock_provider._web3.eth.get_code.return_value = "0x"
+    assert not owner.is_contract

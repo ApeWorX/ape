@@ -394,3 +394,8 @@ def test_dir(core_account):
         "transfer",
     ]
     assert sorted(actual) == sorted(expected)
+
+
+def test_is_not_contract(owner, keyfile_account):
+    assert not owner.is_contract
+    assert not keyfile_account.is_contract
