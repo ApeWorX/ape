@@ -61,8 +61,8 @@ In this case it is saying that you have fed 0 constructor arguments but the cont
 To show the arguments that your constructor requires you can use the .constructor method to see the constructor arguments that your contract requires:
 
 ```python
->>>project.MyContract.constructor
-constructor(string argument1, string argument2)
+In [0]: project.MyContract.constructor
+Out[0]: constructor(string argument1, string argument2)
 ```
 
 ## From Project Contract Address
