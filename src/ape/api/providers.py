@@ -511,7 +511,7 @@ class ProviderAPI(BaseInterfaceModel):
         """
         return txn
 
-    def get_virtual_machine_error(self, exception: Exception) -> VirtualMachineError:
+    def get_virtual_machine_error(self, exception: Exception, **kwargs) -> VirtualMachineError:
         """
         Get a virtual machine error from an error returned from your RPC.
         If from a contract revert / assert statement, you will be given a
@@ -529,27 +529,29 @@ class ProviderAPI(BaseInterfaceModel):
                went wrong in the call.
         """
 
+        txn = kwargs.get("txn")
+
         if isinstance(exception, Web3ContractLogicError):
             # This happens from `assert` or `require` statements.
             message = str(exception).split(":")[-1].strip()
             if message == "execution reverted":
                 # Reverted without an error message
-                raise ContractLogicError()
+                raise ContractLogicError(txn=txn)
 
-            return ContractLogicError(revert_message=message)
+            return ContractLogicError(revert_message=message, txn=txn)
 
         if not len(exception.args):
-            return VirtualMachineError(base_err=exception)
+            return VirtualMachineError(base_err=exception, txn=txn)
 
         err_data = exception.args[0] if (hasattr(exception, "args") and exception.args) else None
         if not isinstance(err_data, dict):
-            return VirtualMachineError(base_err=exception)
+            return VirtualMachineError(base_err=exception, txn=txn)
 
         err_msg = err_data.get("message")
         if not err_msg:
-            return VirtualMachineError(base_err=exception)
+            return VirtualMachineError(base_err=exception, txn=txn)
 
-        return VirtualMachineError(str(err_msg), code=err_data.get("code"))
+        return VirtualMachineError(str(err_msg), code=err_data.get("code"), txn=txn)
 
 
 class TestProviderAPI(ProviderAPI):
@@ -713,7 +715,7 @@ class Web3Provider(ProviderAPI, ABC):
             txn_params = cast(TxParams, txn_dict)
             return self.web3.eth.estimate_gas(txn_params, block_identifier=block_id)
         except ValueError as err:
-            tx_error = self.get_virtual_machine_error(err)
+            tx_error = self.get_virtual_machine_error(err, txn=txn)
 
             # If this is the cause of a would-be revert,
             # raise ContractLogicError so that we can confirm tx-reverts.
@@ -721,7 +723,7 @@ class Web3Provider(ProviderAPI, ABC):
                 raise tx_error from err
 
             message = gas_estimation_error_message(tx_error)
-            raise TransactionError(message, base_err=tx_error) from err
+            raise TransactionError(message, base_err=tx_error, txn=txn) from err
 
     @property
     def chain_id(self) -> int:
@@ -1071,7 +1073,7 @@ class Web3Provider(ProviderAPI, ABC):
         try:
             txn_hash = self.web3.eth.send_raw_transaction(txn.serialize_transaction())
         except ValueError as err:
-            vm_err = self.get_virtual_machine_error(err)
+            vm_err = self.get_virtual_machine_error(err, txn=txn)
 
             if "nonce too low" in str(vm_err):
                 # Add additional nonce information
@@ -1098,7 +1100,7 @@ class Web3Provider(ProviderAPI, ABC):
             try:
                 self.web3.eth.call(txn_params)
             except Exception as err:
-                vm_err = self.get_virtual_machine_error(err)
+                vm_err = self.get_virtual_machine_error(err, txn=txn)
                 vm_err.txn = txn
                 raise vm_err from err
 
