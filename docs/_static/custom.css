@@ -233,10 +233,6 @@ a {
 }
 
 }
-
-/*NEW AG ADDITIONS * EVEN NEWERE - TRYING TO MESS WITH THT SIDEBAR
-AND GET RID OF THAT DANG RANDOM PURPLE TEXT */
-
 .toctree-l3 {
   color:red;
 }
@@ -253,9 +249,6 @@ AND GET RID OF THAT DANG RANDOM PURPLE TEXT */
 .reference {
   color:rgb(93, 0, 255);
 }
-
-
-/*NEW ADDITIONS 2 */
 
 .wy-menu-vertical li.current a {
   background: #ff969600;
