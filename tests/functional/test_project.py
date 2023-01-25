@@ -210,7 +210,9 @@ def test_track_deployment(
     assert actual_from_file.contract_type == actual_from_class.contract_type == expected_name
     assert actual_from_file.transaction == actual_from_class.transaction == receipt.txn_hash
     assert actual_from_file.runtime_bytecode == actual_from_class.runtime_bytecode == expected_code
-    assert len(project_manager.tracked_deployments) == num_deployments_before + 1
+
+    # Use >= to handle xdist.
+    assert len(project_manager.tracked_deployments) >= num_deployments_before + 1
 
 
 def test_track_deployment_from_previously_deployed_contract(
@@ -242,7 +244,9 @@ def test_track_deployment_from_previously_deployed_contract(
     assert actual_from_file.contract_type == actual_from_class.contract_type == expected_name
     assert actual_from_file.transaction == actual_from_class.transaction == receipt.txn_hash
     assert actual_from_file.runtime_bytecode == actual_from_class.runtime_bytecode == expected_code
-    assert len(project_manager.tracked_deployments) == num_deployments_before + 1
+
+    # Use >= to handle xdist.
+    assert len(project_manager.tracked_deployments) >= num_deployments_before + 1
 
 
 def test_track_deployment_from_unknown_contract_missing_txn_hash(
