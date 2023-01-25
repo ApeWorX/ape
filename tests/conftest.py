@@ -36,45 +36,45 @@ def setenviron(monkeypatch):
 
 @pytest.fixture(scope="session")
 def config():
-    yield ape.config
+    return ape.config
 
 
 @pytest.fixture(scope="session")
 def data_folder(config):
-    yield config.DATA_FOLDER
+    return config.DATA_FOLDER
 
 
 @pytest.fixture(scope="session")
 def plugin_manager():
-    yield ape.networks.plugin_manager
+    return ape.networks.plugin_manager
 
 
 @pytest.fixture(scope="session")
 def accounts():
-    yield ape.accounts
+    return ape.accounts
 
 
 @pytest.fixture(scope="session")
 def compilers():
-    yield ape.compilers
+    return ape.compilers
 
 
 @pytest.fixture(scope="session")
 def networks():
-    yield ape.networks
+    return ape.networks
 
 
 @pytest.fixture(scope="session")
 def chain():
-    yield ape.chain
+    return ape.chain
 
 
 @pytest.fixture(scope="session")
 def project_folder(config):
-    yield config.PROJECT_FOLDER
+    return config.PROJECT_FOLDER
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture
 def project(config):
     config.PROJECT_FOLDER.mkdir(parents=True, exist_ok=True)
     with config.using_project(config.PROJECT_FOLDER) as project:

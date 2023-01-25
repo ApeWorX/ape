@@ -82,7 +82,7 @@ def pytest_collection_modifyitems(session, config, items):
 
 
 @pytest.fixture(autouse=True)
-def project_dir_map(project):
+def project_dir_map(project_folder):
     """
     Ensure only copying projects once to prevent `TooManyOpenFilesError`.
     """
@@ -90,14 +90,14 @@ def project_dir_map(project):
     class ProjectDirCache:
         project_map: Dict[str, Path] = {}
 
-        def __getitem__(self, name: str) -> Path:
+        def load(self, name: str) -> Path:
             if name in self.project_map:
                 # Already copied.
                 return self.project_map[name]
 
             project_source_dir = projects_directory / name
-            project_dest_dir = project.path / project_source_dir.name
-            copy_tree(project_source_dir.as_posix(), project_dest_dir.as_posix())
+            project_dest_dir = project_folder / project_source_dir.name
+            copy_tree(str(project_source_dir), str(project_dest_dir))
             self.project_map[name] = project_dest_dir
             return self.project_map[name]
 
@@ -106,7 +106,7 @@ def project_dir_map(project):
 
 @pytest.fixture(autouse=True, params=project_names)
 def project(request, config, project_dir_map):
-    project_dir = project_dir_map[request.param]
+    project_dir = project_dir_map.load(request.param)
     with config.using_project(project_dir) as project:
         yield project
 
