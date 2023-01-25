@@ -45,7 +45,7 @@ you can alternatively use this syntax instead:
 from ape import accounts, project
 
 dev = accounts.load("dev")
-contract = accounts.dev.deploy(project.MyContract, "argument1", "argument2")
+contract = dev.deploy(project.MyContract, "argument1", "argument2")
 ```
 
 With this technique, you can feed as many constructor arguments as your contract constructor requires.
