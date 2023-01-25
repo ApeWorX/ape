@@ -45,7 +45,7 @@ you can alternatively use this syntax instead:
 from ape import accounts, project
 
 dev = accounts.load("dev")
-contract = dev.deploy(project.MyContract, "argument1", "argument2")
+contract = accounts.dev.deploy(project.MyContract, "argument1", "argument2")
 ```
 
 With this technique, you can feed as many constructor arguments as your contract constructor requires.
@@ -57,6 +57,13 @@ ArgumentsLengthError: The number of the given arguments (0) do not match what is
 ```
 
 In this case it is saying that you have fed 0 constructor arguments but the contract requires 2 constructor arguments to deploy.
+
+To show the arguments that your constructor requires you can use the .constructor method to see the constructor arguments that your contract requires:
+
+```python
+>>>project.MyContract.constructor
+constructor(string argument1, string argument2)
+```
 
 ## From Project Contract Address
 
