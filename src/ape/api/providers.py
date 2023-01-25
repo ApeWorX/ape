@@ -514,12 +514,6 @@ class ProviderAPI(BaseInterfaceModel):
     def get_virtual_machine_error(self, exception: Exception, **kwargs) -> VirtualMachineError:
         """
         Get a virtual machine error from an error returned from your RPC.
-        If from a contract revert / assert statement, you will be given a
-        special :class:`~ape.exceptions.ContractLogicError` that can be
-        checked in ``ape.reverts()`` tests.
-
-        **NOTE**: The default implementation is based on ``geth`` output.
-        ``ProviderAPI`` implementations override when needed.
 
         Args:
             exception (Exception): The error returned from your RPC client.
@@ -531,27 +525,7 @@ class ProviderAPI(BaseInterfaceModel):
 
         txn = kwargs.get("txn")
 
-        if isinstance(exception, Web3ContractLogicError):
-            # This happens from `assert` or `require` statements.
-            message = str(exception).split(":")[-1].strip()
-            if message == "execution reverted":
-                # Reverted without an error message
-                raise ContractLogicError(txn=txn)
-
-            return ContractLogicError(revert_message=message, txn=txn)
-
-        if not len(exception.args):
-            return VirtualMachineError(base_err=exception, txn=txn)
-
-        err_data = exception.args[0] if (hasattr(exception, "args") and exception.args) else None
-        if not isinstance(err_data, dict):
-            return VirtualMachineError(base_err=exception, txn=txn)
-
-        err_msg = err_data.get("message")
-        if not err_msg:
-            return VirtualMachineError(base_err=exception, txn=txn)
-
-        return VirtualMachineError(str(err_msg), code=err_data.get("code"), txn=txn)
+        return VirtualMachineError(base_err=exception, txn=txn)
 
 
 class TestProviderAPI(ProviderAPI):
@@ -1150,6 +1124,48 @@ class Web3Provider(ProviderAPI, ABC):
             return result.get("result", {})
 
         return result
+
+    def get_virtual_machine_error(self, exception: Exception, **kwargs) -> VirtualMachineError:
+        """
+        Get a virtual machine error from an error returned from your RPC.
+        If from a contract revert / assert statement, you will be given a
+        special :class:`~ape.exceptions.ContractLogicError` that can be
+        checked in ``ape.reverts()`` tests.
+
+        **NOTE**: The default implementation is based on ``geth`` output.
+        ``ProviderAPI`` implementations override when needed.
+
+        Args:
+            exception (Exception): The error returned from your RPC client.
+
+        Returns:
+            :class:`~ape.exceptions.VirtualMachineError`: An error representing what
+               went wrong in the call.
+        """
+
+        txn = kwargs.get("txn")
+
+        if isinstance(exception, Web3ContractLogicError):
+            # This happens from `assert` or `require` statements.
+            message = str(exception).split(":")[-1].strip()
+            if message == "execution reverted":
+                # Reverted without an error message
+                raise ContractLogicError(txn=txn)
+
+            return ContractLogicError(revert_message=message, txn=txn)
+
+        if not len(exception.args):
+            return VirtualMachineError(base_err=exception, txn=txn)
+
+        err_data = exception.args[0] if (hasattr(exception, "args") and exception.args) else None
+        if not isinstance(err_data, dict):
+            return VirtualMachineError(base_err=exception, txn=txn)
+
+        err_msg = err_data.get("message")
+        if not err_msg:
+            return VirtualMachineError(base_err=exception, txn=txn)
+
+        return VirtualMachineError(str(err_msg), code=err_data.get("code"), txn=txn)
 
 
 class UpstreamProvider(ProviderAPI):
