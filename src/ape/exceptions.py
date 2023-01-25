@@ -144,12 +144,6 @@ class OutOfGasError(VirtualMachineError):
         super().__init__(message="The transaction ran out of gas.", code=code)
 
 
-class ContractDeployError(TransactionError):
-    """
-    Raised when a problem occurs when deploying a contract.
-    """
-
-
 class NetworkError(ApeException):
     """
     Raised when a problem occurs when using blockchain networks.
