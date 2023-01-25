@@ -18,7 +18,7 @@ LABEL maintainer="ApeWorX" \
       org.label-schema.url="https://docs.apeworx.io/ape/stable/" \
       org.label-schema.usage="https://docs.apeworx.io/ape/stable/userguides/quickstart.html#via-docker" \
       org.label-schema.vcs-url="https://github.com/ApeWorX/ape" \
-      org.label-schema.docker.cmd="docker run --volume $HOME/.ape:/root/.ape --volume $HOME/.vvm:/root/.vvm --volume $HOME/.solcx:/root/.solcx --volume $PWD:/root/project --workdir /root/project apeworx/ape compile"
+      org.label-schema.docker.cmd="docker run --volume $HOME/.ape:/home/harambe/.ape --volume $HOME/.vvm:/home/harambe/.vvm --volume $HOME/.solcx:/home/harambe/.solcx --volume $PWD:/home/harambe/project --workdir /home/harambe/project apeworx/ape compile"
 
 RUN useradd --create-home --shell /bin/bash harambe
 WORKDIR /home/harambe
