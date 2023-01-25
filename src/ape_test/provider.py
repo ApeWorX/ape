@@ -191,7 +191,7 @@ class LocalProvider(TestProviderAPI, Web3Provider):
                 new_message = (
                     f"Sender '{sender}' cannot afford txn gas {txn_gas} with account balance {bal}."
                 )
-                return VirtualMachineError(message=new_message)
+                return VirtualMachineError(new_message)
 
             else:
                 return VirtualMachineError(base_err=exception)

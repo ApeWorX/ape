@@ -549,7 +549,7 @@ class ProviderAPI(BaseInterfaceModel):
         if not err_msg:
             return VirtualMachineError(base_err=exception)
 
-        return VirtualMachineError(message=str(err_msg), code=err_data.get("code"))
+        return VirtualMachineError(str(err_msg), code=err_data.get("code"))
 
 
 class TestProviderAPI(ProviderAPI):
@@ -1076,9 +1076,7 @@ class Web3Provider(ProviderAPI, ABC):
             if "nonce too low" in str(vm_err):
                 # Add additional nonce information
                 new_err_msg = f"Nonce '{txn.nonce}' is too low"
-                raise VirtualMachineError(
-                    base_err=vm_err.base_err, message=new_err_msg, code=vm_err.code
-                )
+                raise VirtualMachineError(new_err_msg, base_err=vm_err.base_err, code=vm_err.code)
 
             vm_err.txn = txn
             raise vm_err from err
