@@ -235,15 +235,13 @@ def project_with_contract(temp_config):
 
 
 @pytest.fixture
-def project_with_source_files_contract(config):
+def project_with_source_files_contract(temp_config):
     bases_source_dir = BASE_SOURCES_DIRECTORY
     project_source_dir = APE_PROJECT_FOLDER
-    project_dest_dir = config.PROJECT_FOLDER / project_source_dir.name
-    copy_tree(project_source_dir.as_posix(), project_dest_dir.as_posix())
-    copy_tree(bases_source_dir.as_posix(), project_dest_dir.as_posix() + "/contracts/")
 
-    with config.using_project(project_dest_dir) as project:
-        yield project
+    with temp_config() as project:
+        copy_tree(str(project_source_dir), str(project.path))
+        copy_tree(str(bases_source_dir), f"{project.path}/contracts/")
 
 
 @pytest.fixture

@@ -67,13 +67,6 @@ def contract_type_1(vyper_contract_type):
 
 
 @pytest.fixture
-def contracts_folder(project_manager):
-    path = project_manager.contracts_folder
-    path.mkdir(exist_ok=True, parents=True)
-    return path
-
-
-@pytest.fixture
 def existing_source_path(vyper_contract_type, contract_type_0, contracts_folder):
     source_path = contracts_folder / "NewContract_0.json"
     source_path.touch()
