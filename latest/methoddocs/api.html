@@ -1967,13 +1967,8 @@ topic filters. Defaults to getting all events.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="ape.api.providers.ProviderAPI.get_virtual_machine_error">
-<span class="sig-name descname"><span class="pre">get_virtual_machine_error</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">exception</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Exception</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="exceptions.html#ape.exceptions.VirtualMachineError" title="ape.exceptions.VirtualMachineError"><span class="pre">ape.exceptions.VirtualMachineError</span></a></span></span><a class="headerlink" href="#ape.api.providers.ProviderAPI.get_virtual_machine_error" title="Permalink to this definition"></a></dt>
-<dd><p>Get a virtual machine error from an error returned from your RPC.
-If from a contract revert / assert statement, you will be given a
-special <a class="reference internal" href="exceptions.html#ape.exceptions.ContractLogicError" title="ape.exceptions.ContractLogicError"><code class="xref py py-class docutils literal notranslate"><span class="pre">ContractLogicError</span></code></a> that can be
-checked in <code class="docutils literal notranslate"><span class="pre">ape.reverts()</span></code> tests.</p>
-<p><strong>NOTE</strong>: The default implementation is based on <code class="docutils literal notranslate"><span class="pre">geth</span></code> output.
-<code class="docutils literal notranslate"><span class="pre">ProviderAPI</span></code> implementations override when needed.</p>
+<span class="sig-name descname"><span class="pre">get_virtual_machine_error</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">exception</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Exception</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="exceptions.html#ape.exceptions.VirtualMachineError" title="ape.exceptions.VirtualMachineError"><span class="pre">ape.exceptions.VirtualMachineError</span></a></span></span><a class="headerlink" href="#ape.api.providers.ProviderAPI.get_virtual_machine_error" title="Permalink to this definition"></a></dt>
+<dd><p>Get a virtual machine error from an error returned from your RPC.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><p><strong>exception</strong> (<em>Exception</em>) – The error returned from your RPC client.</p>
@@ -2462,6 +2457,32 @@ for checking previous contract storage values.</p></li>
 </dd>
 <dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p>Iterator[</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ape.api.providers.Web3Provider.get_virtual_machine_error">
+<span class="sig-name descname"><span class="pre">get_virtual_machine_error</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">exception</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Exception</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="exceptions.html#ape.exceptions.VirtualMachineError" title="ape.exceptions.VirtualMachineError"><span class="pre">ape.exceptions.VirtualMachineError</span></a></span></span><a class="headerlink" href="#ape.api.providers.Web3Provider.get_virtual_machine_error" title="Permalink to this definition"></a></dt>
+<dd><p>Get a virtual machine error from an error returned from your RPC.
+If from a contract revert / assert statement, you will be given a
+special <a class="reference internal" href="exceptions.html#ape.exceptions.ContractLogicError" title="ape.exceptions.ContractLogicError"><code class="xref py py-class docutils literal notranslate"><span class="pre">ContractLogicError</span></code></a> that can be
+checked in <code class="docutils literal notranslate"><span class="pre">ape.reverts()</span></code> tests.</p>
+<p><strong>NOTE</strong>: The default implementation is based on <code class="docutils literal notranslate"><span class="pre">geth</span></code> output.
+<code class="docutils literal notranslate"><span class="pre">ProviderAPI</span></code> implementations override when needed.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>exception</strong> (<em>Exception</em>) – The error returned from your RPC client.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><dl class="simple">
+<dt>An error representing what</dt><dd><p>went wrong in the call.</p>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference internal" href="exceptions.html#ape.exceptions.VirtualMachineError" title="ape.exceptions.VirtualMachineError"><code class="xref py py-class docutils literal notranslate"><span class="pre">VirtualMachineError</span></code></a></p>
 </dd>
 </dl>
 </dd></dl>
