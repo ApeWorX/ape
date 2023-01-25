@@ -1,6 +1,5 @@
 @import url('https://fonts.cdnfonts.com/css/barlow'); 
 
-
 html {
   font-weight: 400;
   font-family: 'Barlow', sans-serif;
@@ -62,8 +61,6 @@ h3 {
   color: #000000;
   
 }
-
-
 
 .wy-nav-content-wrap {
   margin-left: 300px;
@@ -217,13 +214,11 @@ footer {
 
 
 
-/*AG LINKS */
 a {
   color:rgb(93, 0, 255);
   cursor: pointer;
   
 }
-
 
 @media only screen and (min-device-width: 320px) and (max-device-width: 480px) {
 
@@ -252,18 +247,18 @@ a {
 
 .wy-menu-vertical li.current a {
   background: #ff969600;
-  }
+}
 
-  .wy-menu-vertical a {
-    line-height: 28px;
-    font-size:18px;
-    font-weight: 400;
-    font-family: 'Barlow', sans-serif;
-    padding: 0.4045em 1.618em;
-    display: block;
-    position: relative;
-    font-size: 100%;
-    color: #000000;
+.wy-menu-vertical a {
+  line-height: 28px;
+  font-size:18px;
+  font-weight: 400;
+  font-family: 'Barlow', sans-serif;
+  padding: 0.4045em 1.618em;
+  display: block;
+  position: relative;
+  font-size: 100%;
+  color: #000000;
 }
 
 .wy-menu-vertical a:hover {
@@ -271,7 +266,6 @@ a {
   font-size:18px;
   font-weight: 400;
   font-family: 'Barlow', sans-serif;
-  /*padding: 0.4045em 1.618em;*/
   display: block;
   position: relative;
   font-size: 100%;
@@ -287,7 +281,7 @@ a {
   position: relative;
   top:20!important;
   left:20!important;
-margin-left:-10px;  z-index: 240;
+  margin-left:-10px;  z-index: 240;
 }
 
 .wy-side-nav-search {
@@ -307,7 +301,6 @@ margin-left:-10px;  z-index: 240;
   border-color: #000000;
   border: width 1.5em;
 }
-
 
 .wy-menu-vertical li.current a{
   background: #ffffff;
