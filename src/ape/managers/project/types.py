@@ -121,11 +121,12 @@ class BaseProject(ProjectAPI):
         if not self.contracts_folder.is_dir():
             return files
 
-        for extension in self.compiler_manager.registered_compilers:
-            r_ext = extension.replace(".", "\\.")
-            files.extend(
-                get_all_files_in_directory(self.contracts_folder, pattern=rf"[\w|-]+{r_ext}")
-            )
+        compilers = self.compiler_manager.registered_compilers
+        for extension in compilers:
+            ext = extension.replace(".", "\\.")
+            pattern = rf"[\w|-]+{ext}"
+            ext_files = get_all_files_in_directory(self.contracts_folder, pattern=pattern)
+            files.extend(ext_files)
 
         return files
 
@@ -245,7 +246,7 @@ class BrownieProject(BaseProject):
 
         migrated_config_data: Dict[str, Any] = {}
         with open(self.brownie_config_path) as brownie_config_file:
-            brownie_config_data = yaml.safe_load(brownie_config_file)
+            brownie_config_data = yaml.safe_load(brownie_config_file) or {}
 
         # Migrate dependencies
         dependencies = []

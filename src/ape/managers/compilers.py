@@ -79,7 +79,6 @@ class CompilerManager(BaseManager):
         Returns:
             Dict[str, ``ContractType``]: A mapping of contract names to their type.
         """
-
         extensions = self._get_contract_extensions(contract_filepaths)
         contracts_folder = self.config_manager.contracts_folder
         contract_types_dict: Dict[str, ContractType] = {}

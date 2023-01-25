@@ -149,7 +149,7 @@ class LocalProvider(TestProviderAPI, Web3Provider):
         )
 
         if receipt.failed:
-            txn_dict = receipt.transaction.dict()
+            txn_dict = txn.dict()
             txn_dict["nonce"] += 1
             txn_params = cast(TxParams, txn_dict)
 

@@ -337,6 +337,7 @@ class ContractTransactionHandler(ContractMethodHandler):
         contract_transaction = self._as_transaction(*function_arguments)
         if "sender" not in kwargs and self.account_manager.default_sender is not None:
             kwargs["sender"] = self.account_manager.default_sender
+
         return contract_transaction(*function_arguments, **kwargs)
 
     def _as_transaction(self, *args) -> ContractTransaction:
@@ -551,7 +552,7 @@ class ContractEvent(ManagerAccessMixin):
         )
         yield from self.query_manager.query(contract_event_query)  # type: ignore
 
-    def from_receipt(self, receipt: ReceiptAPI) -> Iterator[ContractLog]:
+    def from_receipt(self, receipt: ReceiptAPI) -> List[ContractLog]:
         """
         Get all the events from the given receipt.
 
@@ -559,10 +560,12 @@ class ContractEvent(ManagerAccessMixin):
             receipt (:class:`~ape.api.transactions.ReceiptAPI`): The receipt containing the logs.
 
         Returns:
-            Iterator[:class:`~ape.contracts.base.ContractLog`]
+            List[:class:`~ape.contracts.base.ContractLog`]
         """
         ecosystem = self.provider.network.ecosystem
-        yield from ecosystem.decode_logs(receipt.logs, self.abi)
+
+        # NOTE: Safe to use a list because a receipt should never have too many logs.
+        return list(ecosystem.decode_logs(receipt.logs, self.abi))
 
     def poll_logs(
         self,

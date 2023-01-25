@@ -21,9 +21,9 @@ from hexbytes import HexBytes
 from pydantic import BaseModel, root_validator, validator
 from web3.types import FilterParams
 
+from ape.types.signatures import MessageSignature, SignableMessage, TransactionSignature
+from ape.types.trace import CallTreeNode, GasReport, TraceFrame
 from ape.utils.misc import to_int
-
-from .signatures import MessageSignature, SignableMessage, TransactionSignature
 
 BlockID = Union[int, HexStr, HexBytes, Literal["earliest", "latest", "pending"]]
 """
@@ -58,12 +58,6 @@ A value you can give to Ape for handling gas-limit calculations.
 ``"auto"`` refers to automatically figuring out the gas,
 ``"max"`` refers to using the maximum block gas limit,
 and otherwise you can provide a numeric value.
-"""
-
-
-GasReport = Dict[str, Dict[str, List[int]]]
-"""
-A gas report in Ape.
 """
 
 
@@ -275,15 +269,18 @@ __all__ = [
     "AddressType",
     "BlockID",
     "Bytecode",
+    "CallTreeNode",
     "Checksum",
     "Compiler",
     "ContractLog",
     "ContractType",
+    "GasReport",
     "MessageSignature",
     "PackageManifest",
     "PackageMeta",
     "SignableMessage",
     "SnapshotID",
     "Source",
+    "TraceFrame",
     "TransactionSignature",
 ]

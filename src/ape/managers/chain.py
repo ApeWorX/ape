@@ -4,13 +4,11 @@ from concurrent.futures import ThreadPoolExecutor
 from contextlib import contextmanager
 from functools import partial
 from pathlib import Path
-from typing import IO, Any, Collection, Dict, Iterator, List, Optional, Union, cast
+from typing import IO, Collection, Dict, Iterator, List, Optional, Union, cast
 
 import pandas as pd
 from ethpm_types import ContractType
-from ethpm_types.abi import MethodABI
 from evm_trace.gas import merge_reports
-from hexbytes import HexBytes
 from rich import get_console
 from rich.console import Console as RichConsole
 
@@ -23,20 +21,20 @@ from ape.exceptions import (
     APINotImplementedError,
     BlockNotFoundError,
     ChainError,
-    ContractError,
     ConversionError,
     UnknownSnapshotError,
 )
 from ape.logging import logger
 from ape.managers.base import BaseManager
-from ape.types import AddressType, BlockID, ContractFunctionPath, GasReport, SnapshotID
-from ape.utils import (
-    BaseInterfaceModel,
-    CallTraceParser,
-    TraceStyles,
-    parse_gas_table,
-    singledispatchmethod,
+from ape.types import (
+    AddressType,
+    BlockID,
+    CallTreeNode,
+    ContractFunctionPath,
+    GasReport,
+    SnapshotID,
 )
+from ape.utils import BaseInterfaceModel, TraceStyles, parse_gas_table, singledispatchmethod
 
 
 class BlockContainer(BaseManager):
@@ -317,6 +315,7 @@ class BlockContainer(BaseManager):
 
         while True:
             confirmable_block_number = self.height - required_confirmations
+            confirmable_block = None
             try:
                 confirmable_block = self._get_block(confirmable_block_number)
             except BlockNotFoundError:
@@ -326,6 +325,7 @@ class BlockContainer(BaseManager):
 
             if (
                 last_yielded_hash is not None
+                and confirmable_block is not None
                 and confirmable_block.hash == last_yielded_hash
                 and last_yielded_number is not None
                 and confirmable_block_number == last_yielded_number
@@ -340,6 +340,7 @@ class BlockContainer(BaseManager):
                 and confirmable_block_number < last_yielded_number
                 or (
                     confirmable_block_number == last_yielded_number
+                    and confirmable_block is not None
                     and confirmable_block.hash != last_yielded_hash
                 )
             ):
@@ -367,8 +368,12 @@ class BlockContainer(BaseManager):
 
             # Yield blocks
             block = None
-            for block in self.range(start, confirmable_block_number + 1):
-                yield block
+
+            # Reset 'stop' in case a re-org occurred.
+            stop: int = min(confirmable_block_number + 1, len(self))
+            if start < stop:
+                for block in self.range(start, stop):
+                    yield block
 
             if block:
                 last_yielded_hash = block.hash
@@ -658,17 +663,22 @@ class ContractCache(BaseManager):
               to cache.
         """
 
-        proxy_info = self.provider.network.ecosystem.get_proxy_info(contract_instance.address)
+        address = contract_instance.address
+        contract_type = contract_instance.contract_type
+
+        # Cache contract type in memory before proxy check,
+        # in case it is needed somewhere. It may get overriden.
+        self._local_contract_types[address] = contract_type
+
+        proxy_info = self.provider.network.ecosystem.get_proxy_info(address)
         if proxy_info:
-            self.cache_proxy_info(contract_instance.address, proxy_info)
-            contract_type = self.get(proxy_info.target)
+            self.cache_proxy_info(address, proxy_info)
+            contract_type = self.get(proxy_info.target) or contract_type
             if contract_type:
-                self._cache_contract_type(contract_instance.address, contract_type)
+                self._cache_contract_type(address, contract_type)
 
             return
 
-        address = contract_instance.address
-        contract_type = contract_instance.contract_type
         txn_hash = contract_instance.txn_hash
         self._cache_contract_type(address, contract_type)
         self._cache_deployment(address, contract_type, txn_hash)
@@ -984,32 +994,6 @@ class ContractCache(BaseManager):
 
         return instances
 
-    def lookup_method(
-        self, contract: Union[AddressType, ContractType], selector: HexBytes
-    ) -> MethodABI:
-        """
-        Find the method ABI from the given contract address and selector.
-
-        Args:
-            contract (``AddressType``): The address of the contract.
-            selector (``HexBytes``): The method ID.
-
-        Returns:
-            ``ethpm_types.abi.MethodABI``: The ABI object of the method.
-        """
-
-        if isinstance(contract, ContractType):
-            contract_type = contract
-        else:
-            contract_type = self[contract]
-
-        if selector in contract_type.mutable_methods:
-            return contract_type.mutable_methods[selector]
-        elif selector in contract_type.view_methods:
-            return contract_type.view_methods[selector]
-
-        raise ContractError(f"Selector '{selector.hex()}' not found in {contract_type.name}")
-
     def clear_local_caches(self):
         """
         Reset local caches to a blank state.
@@ -1086,15 +1070,14 @@ class ReportManager(BaseManager):
 
     def show_trace(
         self,
-        call_tree: Any,
+        call_tree: CallTreeNode,
         sender: Optional[AddressType] = None,
         transaction_hash: Optional[str] = None,
         revert_message: Optional[str] = None,
         file: Optional[IO[str]] = None,
         verbose: bool = False,
     ):
-        parser = CallTraceParser(sender=sender, transaction_hash=transaction_hash, verbose=verbose)
-        root = parser.parse_as_tree(call_tree)
+        root = call_tree.as_rich_tree(verbose=verbose)
         console = self._get_console(file)
 
         if transaction_hash:
@@ -1108,14 +1091,13 @@ class ReportManager(BaseManager):
 
     def show_gas(
         self,
-        call_tree: Any,
+        call_tree: CallTreeNode,
         sender: Optional[AddressType] = None,
         transaction_hash: Optional[str] = None,
         file: Optional[IO[str]] = None,
     ):
         console = self._get_console(file)
-        parser = CallTraceParser(sender=sender, transaction_hash=transaction_hash)
-        tables = parser.parse_as_gas_report(call_tree)
+        tables = call_tree.as_gas_tables()
         console.print(*tables)
 
     def show_session_gas(
@@ -1132,7 +1114,7 @@ class ReportManager(BaseManager):
 
     def append_gas(
         self,
-        call_tree: Any,
+        call_tree: CallTreeNode,
         contract_address: AddressType,
         sender: Optional[AddressType] = None,
         transaction_hash: Optional[str] = None,
@@ -1142,8 +1124,7 @@ class ReportManager(BaseManager):
             # Skip unknown contracts.
             return
 
-        parser = CallTraceParser(sender=sender, transaction_hash=transaction_hash)
-        gas_report = parser._get_rich_gas_report(call_tree, exclude=self.gas_exclusions)
+        gas_report = call_tree.get_gas_report(exclude=self.gas_exclusions)
         if gas_report and self.session_gas_report:
             self.session_gas_report = merge_reports(self.session_gas_report, gas_report)
         elif gas_report:

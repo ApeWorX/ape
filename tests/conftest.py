@@ -3,7 +3,7 @@ import tempfile
 from contextlib import contextmanager
 from pathlib import Path
 from tempfile import mkdtemp
-from typing import Dict
+from typing import Dict, Optional
 
 import pytest
 import yaml
@@ -156,6 +156,14 @@ def eth_tester_provider():
 
 
 @pytest.fixture
+def mock_provider(mock_web3, eth_tester_provider):
+    web3 = eth_tester_provider.web3
+    eth_tester_provider._web3 = mock_web3
+    yield eth_tester_provider
+    eth_tester_provider._web3 = web3
+
+
+@pytest.fixture
 def networks_connected_to_tester(eth_tester_provider):
     return eth_tester_provider.network_manager
 
@@ -212,7 +220,8 @@ def eth_tester_isolation(eth_tester_provider):
 @pytest.fixture(scope="session")
 def temp_config(config):
     @contextmanager
-    def func(data: Dict):
+    def func(data: Optional[Dict] = None):
+        data = data or {}
         with tempfile.TemporaryDirectory() as temp_dir_str:
             temp_dir = Path(temp_dir_str)
             config._cached_configs = {}
@@ -221,8 +230,8 @@ def temp_config(config):
             config_file.write_text(yaml.dump(data))
             config.load(force_reload=True)
 
-            with config.using_project(temp_dir):
-                yield
+            with config.using_project(temp_dir) as temp_project:
+                yield temp_project
 
             config_file.unlink()
             config._cached_configs = {}

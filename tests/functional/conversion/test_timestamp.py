@@ -25,9 +25,8 @@ def test_convert_string_timestamp(args):
     "args",
     (
         [
-            "0000",
-            "2003",
-            "9999999999",
+            "100.0",
+            "foobar",
             "2001-01-01 12:15:12 123",
         ]
     ),

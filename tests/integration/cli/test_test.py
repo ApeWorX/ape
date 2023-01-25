@@ -182,7 +182,7 @@ def test_gas_flag_set_in_config(geth_provider, setup_pytester, project, pytester
 
 @geth_process_test
 @skip_projects_except("geth")
-def test_gas_flag_exclude_method_using_cli_option(geth_provider, setup_pytester, project, pytester):
+def test_gas_flag_exclude_using_cli_option(geth_provider, setup_pytester, project, pytester):
     expected_test_passes = setup_pytester(project.path.name)
     # NOTE: Includes both a mutable and a view method.
     expected = filter_expected_methods("fooAndBar", "myNumber")

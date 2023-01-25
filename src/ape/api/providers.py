@@ -15,7 +15,8 @@ from typing import Any, Dict, Iterator, List, Optional, cast
 
 from eth_typing import HexStr
 from eth_utils import add_0x_prefix, is_hex, to_hex
-from evm_trace import CallTreeNode, TraceFrame
+from evm_trace import CallTreeNode as EvmCallTreeNode
+from evm_trace import TraceFrame as EvmTraceFrame
 from hexbytes import HexBytes
 from pydantic import Field, root_validator, validator
 from web3 import Web3
@@ -43,7 +44,16 @@ from ape.exceptions import (
     VirtualMachineError,
 )
 from ape.logging import LogLevel, logger
-from ape.types import AddressType, BlockID, ContractCode, ContractLog, LogFilter, SnapshotID
+from ape.types import (
+    AddressType,
+    BlockID,
+    CallTreeNode,
+    ContractCode,
+    ContractLog,
+    LogFilter,
+    SnapshotID,
+    TraceFrame,
+)
 from ape.utils import (
     EMPTY_BYTES32,
     BaseInterfaceModel,
@@ -470,7 +480,7 @@ class ProviderAPI(BaseInterfaceModel):
             txn_hash (str): The hash of a transaction to trace.
 
         Returns:
-            Iterator(TraceFrame): Transaction execution trace object.
+            Iterator(:class:`~ape.type.trace.TraceFrame`): Transaction execution trace.
         """
 
     @raises_not_implemented
@@ -482,7 +492,8 @@ class ProviderAPI(BaseInterfaceModel):
             txn_hash (str): The hash of a transaction to trace.
 
         Returns:
-            CallTreeNode: Transaction execution call-tree objects.
+            :class:`~ape.types.trace.CallTreeNode`: Transaction execution
+            call-tree objects.
         """
 
     def prepare_transaction(self, txn: TransactionAPI) -> TransactionAPI:
@@ -864,14 +875,26 @@ class Web3Provider(ProviderAPI, ABC):
         if not call_tree:
             return self._send_call(txn, **kwargs)
 
-        if track_gas:
-            receipt.track_gas()
-        if show_trace:
-            self.chain_manager._reports.show_trace(call_tree)
-        if show_gas:
-            self.chain_manager._reports.show_gas(call_tree)
+        # Grab raw retrurndata before enrichment
+        returndata = call_tree.outputs
 
-        return call_tree.returndata
+        if track_gas and show_gas and not show_trace:
+            # Optimization to enrich early and in_place=True.
+            call_tree.enrich()
+
+        if track_gas:
+            # in_place=False in case show_trace is True
+            receipt.track_gas()
+
+        if show_gas:
+            # in_place=False in case show_trace is True
+            self.chain_manager._reports.show_gas(call_tree.enrich(in_place=False))
+
+        if show_trace:
+            call_tree = call_tree.enrich(use_symbol_for_tokens=True)
+            self.chain_manager._reports.show_trace(call_tree)
+
+        return HexBytes(returndata)
 
     def _send_call(self, txn: TransactionAPI, **kwargs) -> bytes:
         arguments = self._prepare_call(txn, **kwargs)
@@ -1084,6 +1107,33 @@ class Web3Provider(ProviderAPI, ABC):
         logger.info(f"Confirmed {receipt.txn_hash} (total fees paid = {receipt.total_fees_paid})")
         self.chain_manager.history.append(receipt)
         return receipt
+
+    def _create_call_tree_node(
+        self, evm_call: EvmCallTreeNode, txn_hash: Optional[str] = None
+    ) -> CallTreeNode:
+        address = self.provider.network.ecosystem.decode_address(evm_call.address)
+        return CallTreeNode(
+            calls=[self._create_call_tree_node(x, txn_hash=txn_hash) for x in evm_call.calls],
+            call_type=evm_call.call_type.value,
+            contract_id=address,
+            failed=evm_call.failed,
+            gas_cost=evm_call.gas_cost,
+            inputs=evm_call.calldata[4:].hex(),
+            method_id=evm_call.calldata[:4].hex(),
+            outputs=evm_call.returndata.hex(),
+            raw=evm_call.dict(),
+            txn_hash=txn_hash,
+        )
+
+    @classmethod
+    def _create_trace_frame(cls, evm_frame: EvmTraceFrame) -> TraceFrame:
+        return TraceFrame(
+            pc=evm_frame.pc,
+            op=evm_frame.op,
+            gas=evm_frame.gas,
+            gas_cost=evm_frame.gas_cost,
+            depth=evm_frame.depth,
+        )
 
     def _make_request(self, endpoint: str, parameters: List) -> Any:
         coroutine = self.web3.provider.make_request(RPCEndpoint(endpoint), parameters)

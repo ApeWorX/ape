@@ -1,5 +1,4 @@
 import time
-from pathlib import Path
 from queue import Queue
 from typing import Optional
 
@@ -37,12 +36,12 @@ def test_contract_logs_from_receipts(owner, contract_instance, assert_log_values
     receipt_2 = contract_instance.setNumber(3, sender=owner)
 
     def assert_receipt_logs(receipt: ReceiptAPI, num: int):
-        logs = [log for log in event_type.from_receipt(receipt)]
+        logs = event_type.from_receipt(receipt)
         assert len(logs) == 1
         assert_log_values(logs[0], num)
 
         # Also verify can we logs the other way
-        logs = [log for log in receipt.decode_logs(event_type)]
+        logs = receipt.decode_logs(event_type)
         assert len(logs) == 1
         assert_log_values(logs[0], num)
 
@@ -244,10 +243,11 @@ def test_poll_logs_timeout(vyper_contract_instance, eth_tester_provider, owner, 
     assert "Timed out waiting for new block (time_waited=1" in str(err.value)
 
 
-def test_contract_two_events_with_same_name(owner, chain, networks_connected_to_tester):
-    base_path = Path(__file__).parent / "data" / "contracts" / "ethereum" / "local"
-    interface_path = base_path / "Interface.json"
-    impl_path = base_path / "InterfaceImplementation.json"
+def test_contract_two_events_with_same_name(
+    owner, chain, networks_connected_to_tester, contracts_folder
+):
+    interface_path = contracts_folder / "Interface.json"
+    impl_path = contracts_folder / "InterfaceImplementation.json"
     interface_contract_type = ContractType.parse_raw(interface_path.read_text())
     impl_contract_type = ContractType.parse_raw(impl_path.read_text())
     event_name = "FooEvent"

@@ -24,7 +24,7 @@ def test_show_gas_report(invoke_receipt):
 
 def test_decode_logs_specify_abi(invoke_receipt, vyper_contract_instance):
     abi = vyper_contract_instance.NumberChange.abi
-    logs = [log for log in invoke_receipt.decode_logs(abi=abi)]
+    logs = invoke_receipt.decode_logs(abi=abi)
     assert len(logs) == 1
     assert logs[0].newNum == 1
     assert logs[0].event_name == "NumberChange"
@@ -37,7 +37,7 @@ def test_decode_logs_specify_abi_as_event(
 ):
     spy = mocker.spy(eth_tester_provider.web3.eth, "get_logs")
     abi = vyper_contract_instance.NumberChange
-    logs = [log for log in invoke_receipt.decode_logs(abi=abi)]
+    logs = invoke_receipt.decode_logs(abi=abi)
     assert len(logs) == 1
     assert logs[0].newNum == 1
     assert logs[0].event_name == "NumberChange"
@@ -48,38 +48,34 @@ def test_decode_logs_specify_abi_as_event(
     assert spy.call_count == 0
 
 
-def test_decode_logs_with_ds_notes(ds_note_test_contract, owner):
+def test_events_with_ds_notes(ds_note_test_contract, owner):
     contract = ds_note_test_contract
     receipt = contract.test_0(sender=owner)
-    logs = [log for log in receipt.decode_logs()]
-    assert len(logs) == 1
-    assert logs[0].event_name == "foo"
-    assert logs[0].log_index == 0
-    assert logs[0].transaction_index == 0
+    assert len(receipt.events) == 1
+    assert receipt.events[0].event_name == "foo"
+    assert receipt.events[0].log_index == 0
+    assert receipt.events[0].transaction_index == 0
 
     receipt = contract.test_1(sender=owner)
-    logs = [log for log in receipt.decode_logs()]
-    assert len(logs) == 1
-    assert logs[0].event_name == "foo"
-    assert logs[0].event_arguments == {"a": 1}
-    assert logs[0].log_index == 0
-    assert logs[0].transaction_index == 0
+    assert len(receipt.events) == 1
+    assert receipt.events[0].event_name == "foo"
+    assert receipt.events[0].event_arguments == {"a": 1}
+    assert receipt.events[0].log_index == 0
+    assert receipt.events[0].transaction_index == 0
 
     receipt = contract.test_2(sender=owner)
-    logs = [log for log in receipt.decode_logs()]
-    assert len(logs) == 1
-    assert logs[0].event_name == "foo"
-    assert logs[0].event_arguments == {"a": 1, "b": 2}
-    assert logs[0].log_index == 0
-    assert logs[0].transaction_index == 0
+    assert len(receipt.events) == 1
+    assert receipt.events[0].event_name == "foo"
+    assert receipt.events[0].event_arguments == {"a": 1, "b": 2}
+    assert receipt.events[0].log_index == 0
+    assert receipt.events[0].transaction_index == 0
 
     receipt = contract.test_3(sender=owner)
-    logs = [log for log in receipt.decode_logs()]
-    assert len(logs) == 1
-    assert logs[0].event_name == "foo"
-    assert logs[0].event_arguments == {"a": 1, "b": 2, "c": 3}
-    assert logs[0].log_index == 0
-    assert logs[0].transaction_index == 0
+    assert len(receipt.events) == 1
+    assert receipt.events[0].event_name == "foo"
+    assert receipt.events[0].event_arguments == {"a": 1, "b": 2, "c": 3}
+    assert receipt.events[0].log_index == 0
+    assert receipt.events[0].transaction_index == 0
 
 
 def test_decode_logs(owner, contract_instance, assert_log_values):
@@ -91,7 +87,7 @@ def test_decode_logs(owner, contract_instance, assert_log_values):
     receipt_2 = contract_instance.setNumber(3, sender=owner)
 
     def assert_receipt_logs(receipt: ReceiptAPI, num: int):
-        logs = [log for log in receipt.decode_logs(event_type)]
+        logs = receipt.decode_logs(event_type)
         assert len(logs) == 1
         assert_log_values(logs[0], num)
 
@@ -100,11 +96,17 @@ def test_decode_logs(owner, contract_instance, assert_log_values):
     assert_receipt_logs(receipt_2, 3)
 
 
+def test_events(owner, contract_instance, assert_log_values):
+    receipt = contract_instance.setNumber(1, sender=owner)
+    assert len(receipt.events) == 1
+    assert_log_values(receipt.events[0], 1)
+
+
 def test_decode_logs_multiple_event_types(owner, contract_instance, assert_log_values):
     foo_happened = contract_instance.FooHappened
     bar_happened = contract_instance.BarHappened
     receipt = contract_instance.fooAndBar(sender=owner)
-    logs = [log for log in receipt.decode_logs([foo_happened, bar_happened])]
+    logs = receipt.decode_logs([foo_happened, bar_happened])
     assert len(logs) == 2
     assert logs[0].foo == 0
     assert logs[1].bar == 1
@@ -112,7 +114,7 @@ def test_decode_logs_multiple_event_types(owner, contract_instance, assert_log_v
 
 def test_decode_logs_unspecified_abi_gets_all_logs(owner, contract_instance):
     receipt = contract_instance.fooAndBar(sender=owner)
-    logs = [log for log in receipt.decode_logs()]
+    logs = receipt.decode_logs()  # Same as doing `receipt.events`
     assert len(logs) == 2
     assert logs[0].foo == 0
     assert logs[1].bar == 1
@@ -159,3 +161,7 @@ def test_receipt_raise_for_status_out_of_gas_error(mocker, ethereum):
     )
     with pytest.raises(OutOfGasError):
         receipt.raise_for_status()
+
+
+def test_receipt_chain_id(invoke_receipt, eth_tester_provider):
+    assert invoke_receipt.chain_id == eth_tester_provider.chain_id

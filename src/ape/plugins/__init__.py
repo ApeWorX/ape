@@ -128,7 +128,7 @@ class PluginManager:
         # because it does not work with editable installs.
         # See https://github.com/python/cpython/issues/99805.
         result = subprocess.check_output(["pip", "list", "--format", "freeze"])
-        packages = result.decode("utf8").split("\n")
+        packages = result.decode("utf8").splitlines()
         installed_plugin_module_names = {
             p.split("==")[0].replace("-", "_") for p in packages if p.startswith("ape-")
         }
