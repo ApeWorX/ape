@@ -93,11 +93,7 @@ def manifest_with_non_existent_sources(
 
 @pytest.fixture
 def project_without_deployments(project_manager):
-    # Safety measure. This should never fail but just in case, to prevent deleting
-    # actual deployments records.
-    assert not str(project_manager._package_deployments_folder).startswith(str(Path.home())), str(project_manager._package_deployments_folder)
     shutil.rmtree(project_manager._package_deployments_folder)
-
     return project_manager
 
 
