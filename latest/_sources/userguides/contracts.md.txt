@@ -21,6 +21,50 @@ dev = accounts.load("dev")
 contract = project.MyContract.deploy(sender=dev)
 ```
 
+You can alternatively use this syntax instead:
+
+```python
+from ape import accounts, project
+
+dev = accounts.load("dev")
+contract = dev.deploy(project.MyContract)
+```
+
+If your contract requires constructor arguments then you will need to pass them to the contract in the [kwargs](../methoddocs/transactions.html) when deploying like this:
+
+```python
+from ape import accounts, project
+
+dev = accounts.load("dev")
+contract = project.MyContract.deploy("argument1", "argument2", sender=dev)
+```
+
+you can alternatively use this syntax instead:
+
+```python
+from ape import accounts, project
+
+dev = accounts.load("dev")
+contract = accounts.dev.deploy(project.MyContract, "argument1", "argument2")
+```
+
+With this technique, you can feed as many constructor arguments as your contract constructor requires.
+
+If you do not pass the correct amount of constructor arguments when deploying, you will get an error showing your arguments don't match what is in the ABI:
+
+```bash
+ArgumentsLengthError: The number of the given arguments (0) do not match what is defined in the ABI (2).
+```
+
+In this case it is saying that you have fed 0 constructor arguments but the contract requires 2 constructor arguments to deploy.
+
+To show the arguments that your constructor requires you can use the .constructor method to see the constructor arguments that your contract requires:
+
+```python
+In [0]: project.MyContract.constructor
+Out[0]: constructor(string argument1, string argument2)
+```
+
 ## From Project Contract Address
 
 You can also use the [at() method](../methoddocs/contracts.html#ape.contracts.base.ContractContainer.at) from the same top-level project manager when you know the address of an already-deployed contract:

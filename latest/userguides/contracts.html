@@ -151,6 +151,38 @@ The names of your contracts are properties on the <code class="docutils literal 
 <span class="n">contract</span> <span class="o">=</span> <span class="n">project</span><span class="o">.</span><span class="n">MyContract</span><span class="o">.</span><span class="n">deploy</span><span class="p">(</span><span class="n">sender</span><span class="o">=</span><span class="n">dev</span><span class="p">)</span>
 </pre></div>
 </div>
+<p>You can alternatively use this syntax instead:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">ape</span> <span class="kn">import</span> <span class="n">accounts</span><span class="p">,</span> <span class="n">project</span>
+
+<span class="n">dev</span> <span class="o">=</span> <span class="n">accounts</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;dev&quot;</span><span class="p">)</span>
+<span class="n">contract</span> <span class="o">=</span> <span class="n">dev</span><span class="o">.</span><span class="n">deploy</span><span class="p">(</span><span class="n">project</span><span class="o">.</span><span class="n">MyContract</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>If your contract requires constructor arguments then you will need to pass them to the contract in the <a class="reference external" href="../methoddocs/transactions.html">kwargs</a> when deploying like this:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">ape</span> <span class="kn">import</span> <span class="n">accounts</span><span class="p">,</span> <span class="n">project</span>
+
+<span class="n">dev</span> <span class="o">=</span> <span class="n">accounts</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;dev&quot;</span><span class="p">)</span>
+<span class="n">contract</span> <span class="o">=</span> <span class="n">project</span><span class="o">.</span><span class="n">MyContract</span><span class="o">.</span><span class="n">deploy</span><span class="p">(</span><span class="s2">&quot;argument1&quot;</span><span class="p">,</span> <span class="s2">&quot;argument2&quot;</span><span class="p">,</span> <span class="n">sender</span><span class="o">=</span><span class="n">dev</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>you can alternatively use this syntax instead:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">ape</span> <span class="kn">import</span> <span class="n">accounts</span><span class="p">,</span> <span class="n">project</span>
+
+<span class="n">dev</span> <span class="o">=</span> <span class="n">accounts</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;dev&quot;</span><span class="p">)</span>
+<span class="n">contract</span> <span class="o">=</span> <span class="n">accounts</span><span class="o">.</span><span class="n">dev</span><span class="o">.</span><span class="n">deploy</span><span class="p">(</span><span class="n">project</span><span class="o">.</span><span class="n">MyContract</span><span class="p">,</span> <span class="s2">&quot;argument1&quot;</span><span class="p">,</span> <span class="s2">&quot;argument2&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>With this technique, you can feed as many constructor arguments as your contract constructor requires.</p>
+<p>If you do not pass the correct amount of constructor arguments when deploying, you will get an error showing your arguments don’t match what is in the ABI:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>ArgumentsLengthError:<span class="w"> </span>The<span class="w"> </span>number<span class="w"> </span>of<span class="w"> </span>the<span class="w"> </span>given<span class="w"> </span>arguments<span class="w"> </span><span class="o">(</span><span class="m">0</span><span class="o">)</span><span class="w"> </span><span class="k">do</span><span class="w"> </span>not<span class="w"> </span>match<span class="w"> </span>what<span class="w"> </span>is<span class="w"> </span>defined<span class="w"> </span><span class="k">in</span><span class="w"> </span>the<span class="w"> </span>ABI<span class="w"> </span><span class="o">(</span><span class="m">2</span><span class="o">)</span>.
+</pre></div>
+</div>
+<p>In this case it is saying that you have fed 0 constructor arguments but the contract requires 2 constructor arguments to deploy.</p>
+<p>To show the arguments that your constructor requires you can use the .constructor method to see the constructor arguments that your contract requires:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">In</span> <span class="p">[</span><span class="mi">0</span><span class="p">]:</span> <span class="n">project</span><span class="o">.</span><span class="n">MyContract</span><span class="o">.</span><span class="n">constructor</span>
+<span class="n">Out</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span> <span class="n">constructor</span><span class="p">(</span><span class="n">string</span> <span class="n">argument1</span><span class="p">,</span> <span class="n">string</span> <span class="n">argument2</span><span class="p">)</span>
+</pre></div>
+</div>
 </section>
 <section id="from-project-contract-address">
 <h2>From Project Contract Address<a class="headerlink" href="#from-project-contract-address" title="Permalink to this headline"></a></h2>
