@@ -4,7 +4,7 @@ from contextlib import contextmanager
 from distutils.dir_util import copy_tree
 from importlib import import_module
 from pathlib import Path
-from typing import List, Optional
+from typing import Dict, List, Optional
 
 import pytest
 
@@ -81,17 +81,27 @@ def pytest_collection_modifyitems(session, config, items):
     items[:] = modified_items
 
 
-@pytest.fixture(scope="session")
-def project_dir_map(config):
-    # Ensure only copying projects once to prevent `TooManyOpenFilesError`.
-    project_map = {}
-    for name in project_names:
-        project_source_dir = projects_directory / name
-        project_dest_dir = config.PROJECT_FOLDER / project_source_dir.name
-        copy_tree(project_source_dir.as_posix(), project_dest_dir.as_posix())
-        project_map[name] = project_dest_dir
+@pytest.fixture(autouse=True)
+def project_dir_map(project):
+    """
+    Ensure only copying projects once to prevent `TooManyOpenFilesError`.
+    """
 
-    return project_map
+    class ProjectDirCache:
+        project_map: Dict[str, Path] = {}
+
+        def __getitem__(self, name: str) -> Path:
+            if name in self.project_map:
+                # Already copied.
+                return self.project_map[name]
+
+            project_source_dir = projects_directory / name
+            project_dest_dir = project.path / project_source_dir.name
+            copy_tree(project_source_dir.as_posix(), project_dest_dir.as_posix())
+            self.project_map[name] = project_dest_dir
+            return self.project_map[name]
+
+    return ProjectDirCache()
 
 
 @pytest.fixture(autouse=True, params=project_names)

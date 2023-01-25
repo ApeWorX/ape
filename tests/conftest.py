@@ -77,7 +77,8 @@ def project_folder(config):
 @pytest.fixture(scope="session")
 def project(config):
     config.PROJECT_FOLDER.mkdir(parents=True, exist_ok=True)
-    yield ape.Project(config.PROJECT_FOLDER)
+    with config.using_project(config.PROJECT_FOLDER) as project:
+        return project
 
 
 @pytest.fixture(scope="session")
