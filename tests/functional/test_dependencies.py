@@ -31,10 +31,10 @@ def already_downloaded_dependencies(temp_config, config, oz_dependencies_config)
         yield
 
 
-def test_two_dependencies_with_same_name(already_downloaded_dependencies, project_manager):
+def test_two_dependencies_with_same_name(already_downloaded_dependencies, project):
     name = "OpenZeppelin"
-    oz_310 = project_manager.dependencies[name]["3.1.0"]
-    oz_442 = project_manager.dependencies[name]["4.4.2"]
+    oz_310 = project.dependencies[name]["3.1.0"]
+    oz_442 = project.dependencies[name]["4.4.2"]
 
     assert oz_310.version == "3.1.0"
     assert oz_310.name == name
@@ -42,16 +42,16 @@ def test_two_dependencies_with_same_name(already_downloaded_dependencies, projec
     assert oz_442.name == name
 
 
-def test_dependency_with_longer_contracts_folder(dependency_config, config, project_manager):
-    dependency = project_manager.dependencies["testdependency"]["local"]
+def test_dependency_with_longer_contracts_folder(dependency_config, config, project):
+    dependency = project.dependencies["testdependency"]["local"]
     expected = "source/v0.1"
     actual = dependency.contracts_folder
     assert actual == expected
 
 
-def test_access_dependency_contracts(already_downloaded_dependencies, project_manager):
+def test_access_dependency_contracts(already_downloaded_dependencies, project):
     name = "OpenZeppelin"
-    oz_442 = project_manager.dependencies[name]["4.4.2"]
+    oz_442 = project.dependencies[name]["4.4.2"]
     contract = oz_442.AccessControl
     assert contract.contract_type.name == "AccessControl"
 

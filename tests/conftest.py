@@ -83,13 +83,8 @@ def project(config, project_folder):
 
 
 @pytest.fixture(scope="session")
-def project_manager():
-    return ape.project
-
-
-@pytest.fixture(scope="session")
-def dependency_manager(project_manager):
-    return project_manager.dependency_manager
+def dependency_manager(project):
+    return project.dependency_manager
 
 
 @pytest.fixture(scope="session")
