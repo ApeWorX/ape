@@ -10,13 +10,15 @@ from eth_utils import (
     encode_hex,
     humanize_hash,
     is_0x_prefixed,
+    is_hex,
     is_hex_address,
     keccak,
     to_checksum_address,
+    to_int,
 )
 from ethpm_types.abi import ABIType, ConstructorABI, EventABI, MethodABI
 from hexbytes import HexBytes
-from pydantic import Field
+from pydantic import Field, validator
 
 from ape.api import BlockAPI, EcosystemAPI, PluginConfig, ReceiptAPI, TransactionAPI
 from ape.api.networks import LOCAL_NETWORK_NAME, ProxyInfoAPI
@@ -100,6 +102,25 @@ class NetworkConfig(PluginConfig):
 
     class Config:
         smart_union = True
+
+    @validator("gas_limit", pre=True)
+    def validate_gas_limit(cls, value):
+        if value in ("auto", "max"):
+            return value
+
+        elif isinstance(value, int):
+            return value
+
+        elif isinstance(value, str) and value.isnumeric():
+            return int(value)
+
+        elif is_hex(value) and is_0x_prefixed(value):
+            return to_int(HexBytes(value))
+
+        elif is_hex(value):
+            raise ValueError("Gas limit hex str must include '0x' prefix.")
+
+        raise ValueError(f"Invalid gas limit '{value}'")
 
 
 def _create_local_config(default_provider: Optional[str] = None, **kwargs) -> NetworkConfig:
