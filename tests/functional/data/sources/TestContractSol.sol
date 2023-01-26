@@ -119,6 +119,12 @@ contract TestContractSol {
         return (2, NestedStruct2(2, getStruct()));
     }
 
+    function getEmptyComplexTupleOfDynArray() public pure returns(uint256[] memory, MyStruct[] memory) {
+        uint256[] memory _integers;
+        MyStruct[] memory _structs;
+        return (_integers, _structs);
+    }
+
     function getStructWithArray() public view returns(WithArray memory) {
         MyStruct[2] memory arr = [getStruct(), getStruct()];
         return WithArray(1, arr, 2);

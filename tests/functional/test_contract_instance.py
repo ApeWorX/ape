@@ -1,4 +1,5 @@
 import re
+from typing import List, Tuple
 
 import pytest
 from eth_utils import is_checksum_address, to_hex
@@ -192,6 +193,12 @@ def test_nested_structs_in_tuples(contract_instance, sender, chain):
     assert struct_2.foo == 2
     assert struct_2.t.a == sender
     assert is_checksum_address(struct_2.t.a)
+
+
+def test_get_empty_complex_tuple_of_dyn_array(contract_instance, sender):
+    actual = contract_instance.getEmptyComplexTupleOfDynArray()
+    expected: Tuple[List, List] = ([], [])
+    assert actual == expected
 
 
 def test_vyper_structs_with_array(vyper_contract_instance, sender):

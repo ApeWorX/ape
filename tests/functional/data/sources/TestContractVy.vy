@@ -113,10 +113,23 @@ def getStructWithArray() -> WithArray:
         }
     )
 
+@view
+@external
+def getEmptyComplexTupleOfDynArray() -> (DynArray[uint256, 10], DynArray[MyStruct, 10]):
+    _integers: DynArray[uint256, 10] = []
+    _my_structs: DynArray[MyStruct, 10] = []
+
+    return _integers, _my_structs
+
 @pure
 @external
 def getEmptyArray() -> DynArray[uint256, 1]:
     return []
+
+@pure
+@external
+def getEmptyStruct() -> MyStruct:
+    return empty(MyStruct)
 
 @pure
 @external
