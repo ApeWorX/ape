@@ -14,7 +14,7 @@ from subprocess import DEVNULL, PIPE, Popen
 from typing import Any, Dict, Iterator, List, Optional, cast
 
 from eth_typing import HexStr
-from eth_utils import add_0x_prefix, is_hex, to_hex
+from eth_utils import add_0x_prefix, to_hex
 from evm_trace import CallTreeNode as EvmCallTreeNode
 from evm_trace import TraceFrame as EvmTraceFrame
 from hexbytes import HexBytes
@@ -1026,20 +1026,8 @@ class Web3Provider(ProviderAPI, ABC):
                 txn.max_fee = self.base_fee + txn.max_priority_fee
             # else: Assume user specified the correct amount or txn will fail and waste gas
 
-        gas_limit = txn.gas_limit or self.network.gas_limit
-        if isinstance(gas_limit, str) and gas_limit.isnumeric():
-            txn.gas_limit = int(gas_limit)
-        elif isinstance(gas_limit, str) and is_hex(gas_limit):
-            txn.gas_limit = int(gas_limit, 16)
-        elif gas_limit == "max":
-            txn.gas_limit = self.max_gas
-        elif gas_limit in ("auto", None):
+        if txn.gas_limit is None:
             txn.gas_limit = self.estimate_gas_cost(txn)
-        else:
-            txn.gas_limit = gas_limit
-
-        assert txn.gas_limit not in ("auto", "max")
-        # else: Assume user specified the correct amount or txn will fail and waste gas
 
         if txn.required_confirmations is None:
             txn.required_confirmations = self.network.required_confirmations
