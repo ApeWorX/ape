@@ -99,6 +99,33 @@ def getNestedStructWithTuple1() -> (NestedStruct1, uint256):
 def getNestedStructWithTuple2() -> (uint256, NestedStruct2):
     return (2, NestedStruct2({foo: 2, t: MyStruct({a: msg.sender, b: block.prevhash})}))
 
+@pure
+@external
+def getEmptyDynArrayOfStructs() -> DynArray[MyStruct, 10]:
+    _my_structs: DynArray[MyStruct, 10] = []
+    return _my_structs
+
+@pure
+@external
+def getEmptyTupleOfDynArrayStructs() -> (DynArray[MyStruct, 10], DynArray[MyStruct, 10]):
+    _my_structs_0: DynArray[MyStruct, 10] = []
+    _my_structs_1: DynArray[MyStruct, 10] = []
+    return (_my_structs_0, _my_structs_1)
+
+@view
+@external
+def getEmptyTupleOfArrayOfStructsAndDynArrayOfStructs() -> (MyStruct[2], DynArray[MyStruct, 2]):
+    _my_structs_0: MyStruct[2] = empty(MyStruct[2])
+    _my_structs_1: DynArray[MyStruct, 2] = []
+    return (_my_structs_0, _my_structs_1)
+
+@pure
+@external
+def getEmptyTupleOfIntAndDynArray() -> (DynArray[uint256, 10], DynArray[MyStruct, 10]):
+    _integers: DynArray[uint256, 10] = []
+    _my_structs: DynArray[MyStruct, 10] = []
+    return _integers, _my_structs
+
 @view
 @external
 def getStructWithArray() -> WithArray:
@@ -112,14 +139,6 @@ def getStructWithArray() -> WithArray:
             bar: 2
         }
     )
-
-@view
-@external
-def getEmptyComplexTupleOfDynArray() -> (DynArray[uint256, 10], DynArray[MyStruct, 10]):
-    _integers: DynArray[uint256, 10] = []
-    _my_structs: DynArray[MyStruct, 10] = []
-
-    return _integers, _my_structs
 
 @pure
 @external

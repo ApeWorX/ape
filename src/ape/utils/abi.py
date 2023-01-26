@@ -222,9 +222,6 @@ def create_struct(
         return struct_values[index]
 
     def is_equal(struct, other) -> bool:
-        if not isinstance(other, tuple):
-            return super().__eq__(other)  # type: ignore
-
         _len = len(other)
         return _len == len(struct) and all([struct[i] == other[i] for i in range(_len)])
 
