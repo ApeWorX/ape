@@ -134,7 +134,6 @@ def _create_local_config(default_provider: Optional[str] = None, **kwargs) -> Ne
 
 
 def _create_config(required_confirmations: int = 2, **kwargs) -> NetworkConfig:
-    # Put in own method to isolate `type: ignore` comments
     return NetworkConfig(required_confirmations=required_confirmations, **kwargs)
 
 
