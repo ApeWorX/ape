@@ -434,6 +434,11 @@ def test_transact_specify_max_gas(vyper_contract_instance, owner):
     assert not receipt.failed
 
 
+def test_transaction_specific_gas(vyper_contract_instance, owner):
+    receipt = vyper_contract_instance.setNumber(222, sender=owner, gas=400000)
+    assert not receipt.failed
+
+
 def test_dir(vyper_contract_instance):
     actual = dir(vyper_contract_instance)
     expected = [
