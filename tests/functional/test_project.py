@@ -17,8 +17,8 @@ WITH_DEPS_PROJECT = (
 
 
 @pytest.fixture
-def ape_project(project_manager):
-    return project_manager.local_project
+def ape_project(project):
+    return project.local_project
 
 
 @pytest.fixture
