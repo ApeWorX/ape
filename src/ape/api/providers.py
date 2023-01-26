@@ -326,23 +326,12 @@ class ProviderAPI(BaseInterfaceModel):
         """
 
     @abstractmethod
-    def get_receipt(
-        self,
-        txn_hash: str,
-        required_confirmations: int = 0,
-        timeout: Optional[int] = None,
-        **kwargs,
-    ) -> ReceiptAPI:
+    def get_receipt(self, txn_hash: str, **kwargs) -> ReceiptAPI:
         """
         Get the information about a transaction from a transaction hash.
 
         Args:
             txn_hash (str): The hash of the transaction to retrieve.
-            required_confirmations (int): The amount of block confirmations
-              to wait before returning the receipt. Defaults to ``0``.
-            timeout (Optional[int]): The amount of time to wait for a receipt
-              before timing out. Defaults to ``None``. When ``None``, the default
-              value comes from the network config in ``ape-config.yaml``.
             kwargs: Any other kwargs that other providers might allow when fetching a receipt.
 
         Returns:
@@ -920,7 +909,11 @@ class Web3Provider(ProviderAPI, ABC):
         return arguments
 
     def get_receipt(
-        self, txn_hash: str, required_confirmations: int = 0, timeout: Optional[int] = None
+        self,
+        txn_hash: str,
+        required_confirmations: int = 0,
+        timeout: Optional[int] = None,
+        **kwargs,
     ) -> ReceiptAPI:
         """
         Get the information about a transaction from a transaction hash.
