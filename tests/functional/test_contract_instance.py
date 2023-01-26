@@ -195,6 +195,12 @@ def test_nested_structs_in_tuples(contract_instance, sender, chain):
     assert is_checksum_address(struct_2.t.a)
 
 
+def test_get_empty_dyn_array_of_structs(contract_instance):
+    actual = contract_instance.getEmptyDynArrayOfStructs()
+    expected = None
+    assert actual == expected
+
+
 def test_get_empty_tuple_of_dyn_array_structs(contract_instance):
     actual = contract_instance.getEmptyTupleOfDynArrayStructs()
     expected: Tuple[List, List] = ([], [])
