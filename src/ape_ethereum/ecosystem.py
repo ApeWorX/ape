@@ -10,9 +10,11 @@ from eth_utils import (
     encode_hex,
     humanize_hash,
     is_0x_prefixed,
+    is_hex,
     is_hex_address,
     keccak,
     to_checksum_address,
+    to_int,
 )
 from ethpm_types.abi import ABIType, ConstructorABI, EventABI, MethodABI
 from hexbytes import HexBytes
@@ -102,22 +104,23 @@ class NetworkConfig(PluginConfig):
         smart_union = True
 
     @validator("gas_limit", pre=True, allow_reuse=True)
-    def validate_gas_limit(cls, value: GasLimit) -> GasLimit:
-        if isinstance(value, str):
-            if value.lower() in ("auto", "max"):
-                return value.lower()
+    def validate_gas_limit(cls, value):
+        if value in ("auto", "max"):
+            return value
 
-            # Value could be an integer string
-            if value.isdigit():
-                return int(value)
-            # Enforce "0x" prefix on base 16 integer strings
-            elif value.lower().startswith("0x"):
-                return int(value, 16)
-            else:
-                raise ValueError("Invalid gas_limit, must be 'auto', 'max', or a number")
+        elif isinstance(value, int):
+            return value
 
-        # Value is an integer literal
-        return value
+        elif isinstance(value, str) and value.isnumeric():
+            return int(value)
+
+        elif is_hex(value) and is_0x_prefixed(value):
+            return to_int(HexBytes(value))
+
+        elif is_hex(value):
+            raise ValueError("Gas limit hex str must include '0x' prefix.")
+
+        raise ValueError(f"Invalid gas limit '{value}'")
 
 
 def _create_local_config(default_provider: Optional[str] = None, **kwargs) -> NetworkConfig:
@@ -541,6 +544,7 @@ class Ethereum(EcosystemAPI):
         if "max_fee_per_gas" in kwargs:
             kwargs["max_fee"] = kwargs.pop("max_fee_per_gas")
 
+        kwargs["gas"] = kwargs.pop("gas_limit", kwargs.get("gas"))
         return txn_class(**kwargs)
 
     def decode_logs(self, logs: List[Dict], *events: EventABI) -> Iterator["ContractLog"]:

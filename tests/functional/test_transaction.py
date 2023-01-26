@@ -22,8 +22,8 @@ def test_create_dynamic_fee_transaction(ethereum, type_kwarg):
     assert txn.type == TransactionType.DYNAMIC.value
 
 
-def test_txn_hash(owner, eth_tester_provider):
-    txn = StaticFeeTransaction()
+def test_txn_hash(owner, eth_tester_provider, ethereum):
+    txn = ethereum.create_transaction()
     txn = owner.prepare_transaction(txn)
     txn = owner.sign_transaction(txn)
     assert txn
