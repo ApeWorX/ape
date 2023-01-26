@@ -93,7 +93,9 @@ def manifest_with_non_existent_sources(
 
 @pytest.fixture
 def project_without_deployments(project):
-    shutil.rmtree(project._package_deployments_folder)
+    if project._package_deployments_folder.is_dir():
+        shutil.rmtree(project._package_deployments_folder)
+
     return project
 
 

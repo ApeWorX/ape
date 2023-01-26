@@ -79,7 +79,7 @@ def project_folder():
 def project(config, project_folder):
     project_folder.mkdir(parents=True, exist_ok=True)
     with config.using_project(project_folder) as project:
-        return project
+        yield project
 
 
 @pytest.fixture(scope="session")
