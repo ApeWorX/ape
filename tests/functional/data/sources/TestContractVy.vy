@@ -66,15 +66,6 @@ def setNumber(num: uint256):
     log NumberChange(block.prevhash, self.prevNumber, "Dynamic", num, "Dynamic")
 
 @external
-def setNumber(num: uint256, _address: address):
-    assert msg.sender == self.owner, "!authorized"
-    assert num != 5
-    self.prevNumber = self.myNumber
-    self.myNumber = num
-    self.theAddress = _address
-    log NumberChange(block.prevhash, self.prevNumber, "Dynamic", num, "Dynamic")
-
-@external
 def setAddress(_address: address):
     self.theAddress = _address
     log AddressChange(_address)
@@ -210,7 +201,7 @@ def getNestedArrayMixedDynamic() -> DynArray[DynArray[uint256, 1024][3], 1024][5
 @view
 @external
 def getNestedAddressArray() -> DynArray[address[3], 1024]:
-    return [[msg.sender, msg.sender, msg.sender], [ZERO_ADDRESS, ZERO_ADDRESS, ZERO_ADDRESS]]
+    return [[msg.sender, msg.sender, msg.sender], [empty(address), empty(address), empty(address)]]
 
 @view
 @external
