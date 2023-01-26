@@ -326,12 +326,13 @@ class ProviderAPI(BaseInterfaceModel):
         """
 
     @abstractmethod
-    def get_receipt(self, txn_hash: str) -> ReceiptAPI:
+    def get_receipt(self, txn_hash: str, **kwargs) -> ReceiptAPI:
         """
         Get the information about a transaction from a transaction hash.
 
         Args:
             txn_hash (str): The hash of the transaction to retrieve.
+            kwargs: Any other kwargs that other providers might allow when fetching a receipt.
 
         Returns:
             :class:`~api.providers.ReceiptAPI`:
@@ -908,7 +909,11 @@ class Web3Provider(ProviderAPI, ABC):
         return arguments
 
     def get_receipt(
-        self, txn_hash: str, required_confirmations: int = 0, timeout: Optional[int] = None
+        self,
+        txn_hash: str,
+        required_confirmations: int = 0,
+        timeout: Optional[int] = None,
+        **kwargs,
     ) -> ReceiptAPI:
         """
         Get the information about a transaction from a transaction hash.
