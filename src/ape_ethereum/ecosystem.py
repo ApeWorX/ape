@@ -16,7 +16,7 @@ from eth_utils import (
 )
 from ethpm_types.abi import ABIType, ConstructorABI, EventABI, MethodABI
 from hexbytes import HexBytes
-from pydantic import Field, validator
+from pydantic import Field
 
 from ape.api import BlockAPI, EcosystemAPI, PluginConfig, ReceiptAPI, TransactionAPI
 from ape.api.networks import LOCAL_NETWORK_NAME, ProxyInfoAPI
@@ -100,24 +100,6 @@ class NetworkConfig(PluginConfig):
 
     class Config:
         smart_union = True
-
-    @validator("gas_limit", pre=True, allow_reuse=True)
-    def validate_gas_limit(cls, value: GasLimit) -> GasLimit:
-        if isinstance(value, str):
-            if value.lower() in ("auto", "max"):
-                return value.lower()
-
-            # Value could be an integer string
-            if value.isdigit():
-                return int(value)
-            # Enforce "0x" prefix on base 16 integer strings
-            elif value.lower().startswith("0x"):
-                return int(value, 16)
-            else:
-                raise ValueError("Invalid gas_limit, must be 'auto', 'max', or a number")
-
-        # Value is an integer literal
-        return value
 
 
 def _create_local_config(default_provider: Optional[str] = None, **kwargs) -> NetworkConfig:
