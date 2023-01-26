@@ -116,8 +116,14 @@ class StructParser:
                         }
                         item_type = ABIType.parse_obj(item_type_data)
                         parsed_item = self.parse([item_type], [value])
+
                         # If it's an empty dynamic array of structs, replace `None` with empty list
-                        if output_type.type.endswith("[]") and parsed_item is None:
+                        output_raw_type = output_type.type
+                        if (
+                            isinstance(output_raw_type, str)
+                            and output_raw_type.endswith("[]")
+                            and parsed_item is None
+                        ):
                             parsed_item = []
 
                     else:
