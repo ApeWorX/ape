@@ -159,8 +159,10 @@ def test_receipt_raise_for_status_out_of_gas_error(mocker, ethereum):
         block_number=0,
         transaction=txn,
     )
-    with pytest.raises(OutOfGasError):
+    with pytest.raises(OutOfGasError) as err:
         receipt.raise_for_status()
+
+    assert err.value.txn == receipt.transaction
 
 
 def test_receipt_chain_id(invoke_receipt, eth_tester_provider):
