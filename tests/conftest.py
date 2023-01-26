@@ -76,9 +76,9 @@ def project_folder():
 
 
 @pytest.fixture
-def project(config):
-    config.PROJECT_FOLDER.mkdir(parents=True, exist_ok=True)
-    with config.using_project(config.PROJECT_FOLDER) as project:
+def project(config, project_folder):
+    project_folder.mkdir(parents=True, exist_ok=True)
+    with config.using_project(project_folder) as project:
         return project
 
 
