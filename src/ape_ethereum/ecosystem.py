@@ -103,7 +103,7 @@ class NetworkConfig(PluginConfig):
     class Config:
         smart_union = True
 
-    @validator("gas_limit", pre=True)
+    @validator("gas_limit", pre=True, allow_reuse=True)
     def validate_gas_limit(cls, value):
         if value in ("auto", "max"):
             return value
