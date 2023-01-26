@@ -197,7 +197,7 @@ def test_nested_structs_in_tuples(contract_instance, sender, chain):
 
 def test_get_empty_dyn_array_of_structs(contract_instance):
     actual = contract_instance.getEmptyDynArrayOfStructs()
-    expected = None
+    expected: List = []
     assert actual == expected
 
 
