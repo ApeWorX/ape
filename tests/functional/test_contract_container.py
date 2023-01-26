@@ -77,7 +77,7 @@ def test_source_path_in_project(project_with_contract):
     assert project_with_contract.get_contract("Contract").source_path == path
 
 
-def test_source_path_out_of_project(contract_container):
+def test_source_path_out_of_project(contract_container, project_with_contract):
     assert not contract_container.source_path
 
 

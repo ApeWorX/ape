@@ -1,7 +1,10 @@
 import pytest
 
+from tests.integration.cli.utils import run_once
+
 
 # NOTE: test all the things without a direct test elsewhere
+@run_once
 @pytest.mark.parametrize(
     "args",
     (
