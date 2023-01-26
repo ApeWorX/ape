@@ -126,7 +126,8 @@ class StructParser:
         return return_values
 
     def _create_struct(self, out_abi: ABIType, out_value) -> Optional[Any]:
-        if not out_abi.components:
+        if not out_abi.components or not out_value[0]:
+            # Likely an empty tuple or not a struct.
             return None
 
         internal_type = out_abi.internalType
@@ -136,9 +137,6 @@ class StructParser:
             name = out_abi.name or self.default_name
 
         components = self._parse_components(out_abi.components, out_value[0])
-        if not components:
-            return None  # Empty struct
-
         result = create_struct(
             name,
             out_abi.components,

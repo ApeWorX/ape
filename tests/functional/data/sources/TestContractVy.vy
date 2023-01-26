@@ -128,11 +128,6 @@ def getEmptyArray() -> DynArray[uint256, 1]:
 
 @pure
 @external
-def getEmptyStruct() -> MyStruct:
-    return empty(MyStruct)
-
-@pure
-@external
 def getSingleItemArray() -> DynArray[uint256, 1]:
     return [1]
 
