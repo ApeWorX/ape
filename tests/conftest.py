@@ -82,7 +82,7 @@ def project(config, project_folder):
         yield project
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture
 def dependency_manager(project):
     return project.dependency_manager
 

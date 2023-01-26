@@ -253,7 +253,7 @@ def clean_contracts_cache(chain):
 
 
 @pytest.fixture
-def dependency_config(temp_config):
+def project_with_dependency_config(temp_config):
     dependencies_config = {
         "dependencies": [
             {
@@ -263,8 +263,8 @@ def dependency_config(temp_config):
             }
         ]
     }
-    with temp_config(dependencies_config):
-        yield
+    with temp_config(dependencies_config) as project:
+        yield project
 
 
 @pytest.fixture

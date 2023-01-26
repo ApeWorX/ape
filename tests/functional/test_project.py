@@ -106,14 +106,14 @@ def _make_new_contract(existing_contract: ContractType, name: str):
     return ContractType.parse_raw(source_text)
 
 
-def test_extract_manifest(dependency_config, project):
+def test_extract_manifest(project_with_dependency_config):
     # NOTE: Only setting dependency_config to ensure existence of project.
-    manifest = project.extract_manifest()
+    manifest = project_with_dependency_config.extract_manifest()
     assert type(manifest) == PackageManifest
     assert type(manifest.compilers) == list
-    assert manifest.meta == project.meta
-    assert manifest.compilers == project.compiler_data
-    assert manifest.deployments == project.tracked_deployments
+    assert manifest.meta == project_with_dependency_config.meta
+    assert manifest.compilers == project_with_dependency_config.compiler_data
+    assert manifest.deployments == project_with_dependency_config.tracked_deployments
 
 
 def test_create_manifest_when_file_changed_with_cached_references_that_no_longer_exist(
