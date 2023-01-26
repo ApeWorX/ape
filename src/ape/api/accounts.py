@@ -109,7 +109,7 @@ class AccountAPI(BaseInterfaceModel, BaseAddress):
         gas_limit = txn.gas_limit
 
         if not isinstance(gas_limit, int):
-            raise TransactionError("Transaction not prepared.")
+            raise TransactionError(f"Transaction not prepared {gas_limit}.")
 
         # The conditions below should never reached but are here for mypy's sake.
         # The `max_fee` was either set manaully or from `prepare_transaction()`.

@@ -434,9 +434,13 @@ def test_transact_specify_max_gas(vyper_contract_instance, owner):
     assert not receipt.failed
 
 
-def test_transaction_specific_gas(vyper_contract_instance, owner):
-    receipt = vyper_contract_instance.setNumber(222, sender=owner, gas=400000)
+@pytest.mark.parametrize("gas_kwarg", ("gas", "gas_limit"))
+def test_transaction_specific_gas(vyper_contract_instance, owner, gas_kwarg):
+    gas = 400000
+    kwargs = {"sender": owner, gas_kwarg: gas}
+    receipt = vyper_contract_instance.setNumber(222, **kwargs)
     assert not receipt.failed
+    assert receipt.gas_limit == gas
 
 
 def test_dir(vyper_contract_instance):
