@@ -46,7 +46,7 @@ class TransactionAPI(BaseInterfaceModel):
     class Config:
         allow_population_by_field_name = True
 
-    @validator("gas_limit", pre=True)
+    @validator("gas_limit", pre=True, allow_reuse=True)
     def validate_gas_limit(cls, value):
         if value is None:
             if not cls.network_manager.active_provider:
