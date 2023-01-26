@@ -15,7 +15,8 @@ from ape.managers.config import CONFIG_FILE_NAME
 
 # NOTE: Ensure that we don't use local paths for these
 ape.config.DATA_FOLDER = Path(mkdtemp()).resolve()
-ape.config.PROJECT_FOLDER = Path(mkdtemp()).resolve()
+PROJECT_FOLDER = Path(mkdtemp()).resolve()
+ape.config.PROJECT_FOLDER = PROJECT_FOLDER
 
 # Needed to test tracing support in core `ape test` command.
 pytest_plugins = ["pytester"]
@@ -70,8 +71,8 @@ def chain():
 
 
 @pytest.fixture(scope="session")
-def project_folder(config):
-    return config.PROJECT_FOLDER
+def project_folder():
+    return PROJECT_FOLDER
 
 
 @pytest.fixture
