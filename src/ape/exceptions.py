@@ -142,8 +142,8 @@ class OutOfGasError(VirtualMachineError):
     out of gas.
     """
 
-    def __init__(self, code: Optional[int] = None):
-        super().__init__("The transaction ran out of gas.", code=code)
+    def __init__(self, code: Optional[int] = None, txn: Optional["TransactionAPI"] = None):
+        super().__init__("The transaction ran out of gas.", code=code, txn=txn)
 
 
 class NetworkError(ApeException):
