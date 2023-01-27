@@ -171,7 +171,8 @@ class Receipt(ReceiptAPI):
 
     def raise_for_status(self):
         if self.gas_limit is not None and self.ran_out_of_gas:
-            raise OutOfGasError()
+            raise OutOfGasError(txn=self.transaction)
+
         elif self.status != TransactionStatusEnum.NO_ERROR:
             txn_hash = HexBytes(self.txn_hash).hex()
             raise TransactionError(f"Transaction '{txn_hash}' failed.")
