@@ -7,6 +7,7 @@ from ape.exceptions import (
     APINotImplementedError,
     ContractLogicError,
     ProviderError,
+    SignatureError,
     TransactionError,
 )
 
@@ -45,7 +46,16 @@ class RevertsContextManager:
             raise AssertionError("Compiler does not support source code mapping.")
 
         try:
-            trace = deque(txn.provider.get_transaction_trace(txn_hash=txn.txn_hash.hex()))
+            txn_hash = txn.txn_hash.hex()
+        except SignatureError as exc:
+            raise AssertionError(
+                "Cannot check dev message; "
+                "transaction failed before signing, "
+                "likely during gas estimation."
+            ) from exc
+
+        try:
+            trace = deque(txn.provider.get_transaction_trace(txn_hash=txn_hash))
         except APINotImplementedError as exc:
             raise AssertionError(
                 "Cannot check dev message; provider must support transaction tracing."

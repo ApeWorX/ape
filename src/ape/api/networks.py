@@ -21,7 +21,7 @@ from ape.exceptions import (
     SignatureError,
 )
 from ape.logging import logger
-from ape.types import AddressType, ContractLog, GasLimit, RawAddress
+from ape.types import AddressType, CallTreeNode, ContractLog, GasLimit, RawAddress
 from ape.utils import (
     DEFAULT_TRANSACTION_ACCEPTANCE_TIMEOUT,
     BaseInterfaceModel,
@@ -66,6 +66,9 @@ class EcosystemAPI(BaseInterfaceModel):
 
     request_header: dict
     """A shareable HTTP header for network requests."""
+
+    fee_token_symbol: str
+    """The token symbol for the currency that pays for fees, such as ETH."""
 
     _default_network: str = LOCAL_NETWORK_NAME
 
@@ -359,9 +362,7 @@ class EcosystemAPI(BaseInterfaceModel):
         """
 
     @abstractmethod
-    def decode_calldata(  # type: ignore[empty-body]
-        self, abi: Union[ConstructorABI, MethodABI], calldata: bytes
-    ) -> Dict:
+    def decode_calldata(self, abi: Union[ConstructorABI, MethodABI], calldata: bytes) -> Dict:
         """
         Decode method calldata.
 
@@ -376,9 +377,7 @@ class EcosystemAPI(BaseInterfaceModel):
         """
 
     @abstractmethod
-    def encode_calldata(  # type: ignore[empty-body]
-        self, abi: Union[ConstructorABI, MethodABI], *args: Any
-    ) -> HexBytes:
+    def encode_calldata(self, abi: Union[ConstructorABI, MethodABI], *args: Any) -> HexBytes:
         """
         Encode method calldata.
 
@@ -494,6 +493,19 @@ class EcosystemAPI(BaseInterfaceModel):
         """
 
         return HexBytes(keccak(text=abi.selector)[:4])
+
+    def enrich_calltree(self, call: CallTreeNode, **kwargs) -> CallTreeNode:
+        """
+        Enhance the data in the call tree using information about the ecosystem.
+
+        Args:
+            call (:class:`~ape.types.trace.CallTreeNode`): The call tree node to enrich.
+            kwargs: Additional kwargs to help with enrichment.
+
+        Returns:
+            :class:`~ape.types.trace.CallTreeNode`
+        """
+        return call
 
 
 class ProviderContextManager(ManagerAccessMixin):

@@ -19,7 +19,7 @@ def _pip_freeze_plugins() -> List[str]:
     output = subprocess.check_output([sys.executable, "-m", "pip", "freeze"])
     lines = [
         p
-        for p in output.decode().split("\n")
+        for p in output.decode().splitlines()
         if p.startswith("ape-") or (p.startswith("-e") and "ape-" in p)
     ]
 

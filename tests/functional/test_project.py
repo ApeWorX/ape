@@ -17,8 +17,8 @@ WITH_DEPS_PROJECT = (
 
 
 @pytest.fixture
-def ape_project(project_manager):
-    return project_manager.local_project
+def ape_project(project):
+    return project.local_project
 
 
 @pytest.fixture
@@ -27,8 +27,8 @@ def bip122_chain_id(eth_tester_provider):
 
 
 @pytest.fixture
-def base_deployments_path(ape_project, bip122_chain_id):
-    return ape_project._cache_folder / "deployments" / bip122_chain_id
+def base_deployments_path(project, bip122_chain_id):
+    return project._package_deployments_folder / bip122_chain_id
 
 
 @pytest.fixture
@@ -67,13 +67,6 @@ def contract_type_1(vyper_contract_type):
 
 
 @pytest.fixture
-def contracts_folder(project_manager):
-    path = project_manager.contracts_folder
-    path.mkdir(exist_ok=True, parents=True)
-    return path
-
-
-@pytest.fixture
 def existing_source_path(vyper_contract_type, contract_type_0, contracts_folder):
     source_path = contracts_folder / "NewContract_0.json"
     source_path.touch()
@@ -98,6 +91,14 @@ def manifest_with_non_existent_sources(
     return manifest
 
 
+@pytest.fixture
+def project_without_deployments(project):
+    if project._package_deployments_folder.is_dir():
+        shutil.rmtree(project._package_deployments_folder)
+
+    return project
+
+
 def _make_new_contract(existing_contract: ContractType, name: str):
     source_text = existing_contract.json()
     source_text = source_text.replace(f"{existing_contract.name}.vy", f"{name}.json")
@@ -105,14 +106,14 @@ def _make_new_contract(existing_contract: ContractType, name: str):
     return ContractType.parse_raw(source_text)
 
 
-def test_extract_manifest(dependency_config, project_manager):
+def test_extract_manifest(project_with_dependency_config):
     # NOTE: Only setting dependency_config to ensure existence of project.
-    manifest = project_manager.extract_manifest()
+    manifest = project_with_dependency_config.extract_manifest()
     assert type(manifest) == PackageManifest
     assert type(manifest.compilers) == list
-    assert manifest.meta == project_manager.meta
-    assert manifest.compilers == project_manager.compiler_data
-    assert manifest.deployments == project_manager.tracked_deployments
+    assert manifest.meta == project_with_dependency_config.meta
+    assert manifest.compilers == project_with_dependency_config.compiler_data
+    assert manifest.deployments == project_with_dependency_config.tracked_deployments
 
 
 def test_create_manifest_when_file_changed_with_cached_references_that_no_longer_exist(
@@ -137,7 +138,7 @@ def test_create_manifest_when_file_changed_with_cached_references_that_no_longer
     assert manifest
 
 
-def test_meta(temp_config, project_manager):
+def test_meta(temp_config, project):
     meta_config = {
         "meta": {
             "authors": ["Test Testerson"],
@@ -148,11 +149,11 @@ def test_meta(temp_config, project_manager):
         }
     }
     with temp_config(meta_config):
-        assert project_manager.meta.authors == ["Test Testerson"]
-        assert project_manager.meta.license == "MIT"
-        assert project_manager.meta.description == "test"
-        assert project_manager.meta.keywords == ["testing"]
-        assert "https://apeworx.io" in project_manager.meta.links["apeworx.io"]
+        assert project.meta.authors == ["Test Testerson"]
+        assert project.meta.license == "MIT"
+        assert project.meta.description == "test"
+        assert project.meta.keywords == ["testing"]
+        assert "https://apeworx.io" in project.meta.links["apeworx.io"]
 
 
 def test_brownie_project_configure(config, base_projects_directory):
@@ -183,7 +184,7 @@ def test_brownie_project_configure(config, base_projects_directory):
 
 def test_track_deployment(
     clean_deployments,
-    project_manager,
+    project_without_deployments,
     vyper_contract_instance,
     eth_tester_provider,
     deployment_path,
@@ -195,23 +196,31 @@ def test_track_deployment(
     receipt = contract.receipt
     name = contract.contract_type.name
     address = vyper_contract_instance.address
-    project_manager.track_deployment(vyper_contract_instance)
+
+    # Even though deployments should be 0, do this to in case x-dist affects it.
+    num_deployments_before = len(project_without_deployments.tracked_deployments)
+
+    project_without_deployments.track_deployment(vyper_contract_instance)
+
     expected_block_hash = eth_tester_provider.get_block(receipt.block_number).hash.hex()
     expected_uri = f"blockchain://{bip122_chain_id}/block/{expected_block_hash}"
     expected_name = contract.contract_type.name
     expected_code = contract.contract_type.runtime_bytecode
     actual_from_file = EthPMContractInstance.parse_raw(deployment_path.read_text())
-    actual_from_class = project_manager.tracked_deployments[expected_uri][name]
+    actual_from_class = project_without_deployments.tracked_deployments[expected_uri][name]
+
     assert actual_from_file.address == actual_from_class.address == address
     assert actual_from_file.contract_type == actual_from_class.contract_type == expected_name
     assert actual_from_file.transaction == actual_from_class.transaction == receipt.txn_hash
     assert actual_from_file.runtime_bytecode == actual_from_class.runtime_bytecode == expected_code
-    assert len(project_manager.tracked_deployments) == 1
+
+    # Use >= to handle xdist.
+    assert len(project_without_deployments.tracked_deployments) >= num_deployments_before + 1
 
 
 def test_track_deployment_from_previously_deployed_contract(
     clean_deployments,
-    project_manager,
+    project_without_deployments,
     vyper_contract_container,
     eth_tester_provider,
     dummy_live_network,
@@ -224,7 +233,10 @@ def test_track_deployment_from_previously_deployed_contract(
     contract = Contract(address, txn_hash=receipt.txn_hash)
     name = contract.contract_type.name
 
-    project_manager.track_deployment(contract)
+    # Even though deployments should be 0, do this to in case x-dist affects it.
+    num_deployments_before = len(project_without_deployments.tracked_deployments)
+
+    project_without_deployments.track_deployment(contract)
 
     path = base_deployments_path / f"{contract.contract_type.name}.json"
     expected_block_hash = eth_tester_provider.get_block(receipt.block_number).hash.hex()
@@ -232,12 +244,14 @@ def test_track_deployment_from_previously_deployed_contract(
     expected_name = contract.contract_type.name
     expected_code = contract.contract_type.runtime_bytecode
     actual_from_file = EthPMContractInstance.parse_raw(path.read_text())
-    actual_from_class = project_manager.tracked_deployments[expected_uri][name]
+    actual_from_class = project_without_deployments.tracked_deployments[expected_uri][name]
     assert actual_from_file.address == actual_from_class.address == address
     assert actual_from_file.contract_type == actual_from_class.contract_type == expected_name
     assert actual_from_file.transaction == actual_from_class.transaction == receipt.txn_hash
     assert actual_from_file.runtime_bytecode == actual_from_class.runtime_bytecode == expected_code
-    assert len(project_manager.tracked_deployments) == 1
+
+    # Use >= to handle xdist.
+    assert len(project_without_deployments.tracked_deployments) >= num_deployments_before + 1
 
 
 def test_track_deployment_from_unknown_contract_missing_txn_hash(
@@ -246,7 +260,7 @@ def test_track_deployment_from_unknown_contract_missing_txn_hash(
     owner,
     vyper_contract_container,
     chain,
-    project_manager,
+    project,
 ):
     snapshot = chain.snapshot()
     contract = owner.deploy(vyper_contract_container, 0, required_confirmations=0)
@@ -257,12 +271,12 @@ def test_track_deployment_from_unknown_contract_missing_txn_hash(
         ProjectError,
         match=f"Contract '{contract.contract_type.name}' transaction receipt is unknown.",
     ):
-        project_manager.track_deployment(contract)
+        project.track_deployment(contract)
 
 
 def test_track_deployment_from_unknown_contract_given_txn_hash(
     clean_deployments,
-    project_manager,
+    project,
     vyper_contract_instance,
     dummy_live_network,
     base_deployments_path,
@@ -270,7 +284,7 @@ def test_track_deployment_from_unknown_contract_given_txn_hash(
     address = vyper_contract_instance.address
     txn_hash = vyper_contract_instance.txn_hash
     contract = Contract(address, txn_hash=txn_hash)
-    project_manager.track_deployment(contract)
+    project.track_deployment(contract)
     path = base_deployments_path / f"{contract.contract_type.name}.json"
     actual = EthPMContractInstance.parse_raw(path.read_text())
     assert actual.address == address
@@ -279,28 +293,29 @@ def test_track_deployment_from_unknown_contract_given_txn_hash(
     assert actual.runtime_bytecode == contract.contract_type.runtime_bytecode
 
 
-def test_compiler_data(project_manager):
+def test_compiler_data(config, project_path, contracts_folder):
     # See ape-solidity / ape-vyper for better tests
-    assert not project_manager.compiler_data
+    with config.using_project(project_path, contracts_folder=contracts_folder) as project:
+        assert not project.compiler_data
 
 
-def test_get_project_without_contracts_path(project_manager):
+def test_get_project_without_contracts_path(project):
     project_path = WITH_DEPS_PROJECT / "default"
-    project = project_manager.get_project(project_path)
+    project = project.get_project(project_path)
     assert project.contracts_folder == project_path / "contracts"
 
 
-def test_get_project_with_contracts_path(project_manager):
+def test_get_project_with_contracts_path(project):
     project_path = WITH_DEPS_PROJECT / "renamed_contracts_folder"
-    project = project_manager.get_project(project_path, project_path / "sources")
+    project = project.get_project(project_path, project_path / "sources")
     assert project.contracts_folder == project_path / "sources"
 
 
-def test_get_project_figure_out_contracts_path(project_manager):
+def test_get_project_figure_out_contracts_path(project):
     """
     Tests logic where `contracts` is not the contracts folder but it still is able
     to figure it out.
     """
     project_path = WITH_DEPS_PROJECT / "renamed_contracts_folder"
-    project = project_manager.get_project(project_path)
+    project = project.get_project(project_path)
     assert project.contracts_folder == project_path / "sources"

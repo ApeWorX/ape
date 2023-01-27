@@ -18,7 +18,7 @@ def oz_dependencies_config():
 
 
 @pytest.fixture
-def already_downloaded_dependencies(temp_config, config, oz_dependencies_config):
+def project_with_downloaded_dependencies(temp_config, config, oz_dependencies_config):
     manifests_directory = Path(__file__).parent / "data" / "manifests"
     oz_manifests = manifests_directory / "OpenZeppelin"
     oz_manifests_dest = config.packages_folder / "OpenZeppelin"
@@ -27,14 +27,14 @@ def already_downloaded_dependencies(temp_config, config, oz_dependencies_config)
         shutil.rmtree(oz_manifests_dest)
 
     shutil.copytree(oz_manifests, oz_manifests_dest)
-    with temp_config(oz_dependencies_config):
-        yield
+    with temp_config(oz_dependencies_config) as project:
+        yield project
 
 
-def test_two_dependencies_with_same_name(already_downloaded_dependencies, project_manager):
+def test_two_dependencies_with_same_name(project_with_downloaded_dependencies):
     name = "OpenZeppelin"
-    oz_310 = project_manager.dependencies[name]["3.1.0"]
-    oz_442 = project_manager.dependencies[name]["4.4.2"]
+    oz_310 = project_with_downloaded_dependencies.dependencies[name]["3.1.0"]
+    oz_442 = project_with_downloaded_dependencies.dependencies[name]["4.4.2"]
 
     assert oz_310.version == "3.1.0"
     assert oz_310.name == name
@@ -42,16 +42,16 @@ def test_two_dependencies_with_same_name(already_downloaded_dependencies, projec
     assert oz_442.name == name
 
 
-def test_dependency_with_longer_contracts_folder(dependency_config, config, project_manager):
-    dependency = project_manager.dependencies["testdependency"]["local"]
+def test_dependency_with_longer_contracts_folder(project_with_dependency_config, config):
+    dependency = project_with_dependency_config.dependencies["testdependency"]["local"]
     expected = "source/v0.1"
     actual = dependency.contracts_folder
     assert actual == expected
 
 
-def test_access_dependency_contracts(already_downloaded_dependencies, project_manager):
+def test_access_dependency_contracts(project_with_downloaded_dependencies):
     name = "OpenZeppelin"
-    oz_442 = project_manager.dependencies[name]["4.4.2"]
+    oz_442 = project_with_downloaded_dependencies.dependencies[name]["4.4.2"]
     contract = oz_442.AccessControl
     assert contract.contract_type.name == "AccessControl"
 

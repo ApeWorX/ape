@@ -2,17 +2,17 @@ import sys
 import time
 from typing import IO, TYPE_CHECKING, Any, Iterator, List, Optional, Union
 
+from eth_utils import is_hex, to_int
 from ethpm_types import HexBytes
 from ethpm_types.abi import EventABI, MethodABI
-from evm_trace import TraceFrame
 from pydantic import validator
 from pydantic.fields import Field
 from tqdm import tqdm  # type: ignore
 
 from ape.api.explorers import ExplorerAPI
-from ape.exceptions import TransactionError
+from ape.exceptions import NetworkError, TransactionError
 from ape.logging import logger
-from ape.types import AddressType, ContractLog, GasLimit, TransactionSignature
+from ape.types import AddressType, ContractLog, TraceFrame, TransactionSignature
 from ape.utils import BaseInterfaceModel, abstractmethod, raises_not_implemented
 
 if TYPE_CHECKING:
@@ -30,11 +30,11 @@ class TransactionAPI(BaseInterfaceModel):
     chain_id: int = Field(0, alias="chainId")
     receiver: Optional[AddressType] = Field(None, alias="to")
     sender: Optional[AddressType] = Field(None, alias="from")
-    gas_limit: Optional[GasLimit] = Field(None, alias="gas")
+    gas_limit: Optional[int] = Field(None, alias="gas")
     nonce: Optional[int] = None  # NOTE: `Optional` only to denote using default behavior
     value: int = 0
     data: bytes = b""
-    type: Union[int, bytes, str]
+    type: int
     max_fee: Optional[int] = None
     max_priority_fee: Optional[int] = None
 
@@ -45,6 +45,31 @@ class TransactionAPI(BaseInterfaceModel):
 
     class Config:
         allow_population_by_field_name = True
+
+    @validator("gas_limit", pre=True, allow_reuse=True)
+    def validate_gas_limit(cls, value):
+        if value is None:
+            if not cls.network_manager.active_provider:
+                raise NetworkError("Must be connected to use default gas config.")
+
+            value = cls.network_manager.active_provider.network.gas_limit
+
+        if value == "auto":
+            return None  # Delegate to `ProviderAPI.estimate_gas_cost`
+
+        elif value == "max":
+            if not cls.network_manager.active_provider:
+                raise NetworkError("Must be connected to use 'max'.")
+
+            return cls.network_manager.active_provider.max_gas
+
+        elif isinstance(value, str) and is_hex(value):
+            return to_int(hexstr=value)
+
+        elif isinstance(value, str) and value.isnumeric():
+            return to_int(value)
+
+        return value
 
     @validator("data", pre=True)
     def validate_data(cls, value):
@@ -230,13 +255,21 @@ class ReceiptAPI(BaseInterfaceModel):
 
         return latest_block.number - self.block_number
 
+    @property
+    def events(self) -> List[ContractLog]:
+        """
+        All the events that were emitted from this call.
+        """
+
+        return self.decode_logs()  # Decodes all logs by default.
+
     @abstractmethod
     def decode_logs(
         self,
         abi: Optional[
             Union[List[Union[EventABI, "ContractEvent"]], Union[EventABI, "ContractEvent"]]
         ] = None,
-    ) -> Iterator[ContractLog]:
+    ) -> List[ContractLog]:
         """
         Decode the logs on the receipt.
 
@@ -244,7 +277,7 @@ class ReceiptAPI(BaseInterfaceModel):
             abi (``EventABI``): The ABI of the event to decode into logs.
 
         Returns:
-            Iterator[:class:`~ape.types.ContractLog`]
+            List[:class:`~ape.types.ContractLog`]
         """
 
     def raise_for_status(self):
@@ -316,15 +349,9 @@ class ReceiptAPI(BaseInterfaceModel):
     def method_called(self) -> Optional[MethodABI]:
         """
         The method ABI of the method called to produce this receipt.
-        Requires both that the user is using a provider that supports traces
-        as well as for this to have been a contract invocation.
         """
 
-        call_tree = self.call_tree
-        if not call_tree:
-            return None
-
-        return self.chain_manager.contracts.lookup_method(call_tree.address, call_tree.calldata)
+        return None
 
     @property
     def return_value(self) -> Any:
@@ -332,6 +359,7 @@ class ReceiptAPI(BaseInterfaceModel):
         Obtain the final return value of the call. Requires tracing to function,
         since this is not available from the receipt object.
         """
+
         call_tree = self.call_tree
         if not call_tree:
             return None
@@ -340,9 +368,19 @@ class ReceiptAPI(BaseInterfaceModel):
         if not method_abi:
             return None
 
-        output = self.provider.network.ecosystem.decode_returndata(method_abi, call_tree.returndata)
+        if isinstance(call_tree.outputs, str):
+            output = self.provider.network.ecosystem.decode_returndata(
+                method_abi, HexBytes(call_tree.outputs)
+            )
+        elif isinstance(call_tree.outputs, HexBytes):
+            output = self.provider.network.ecosystem.decode_returndata(
+                method_abi, call_tree.outputs
+            )
+        else:
+            # Already enriched.
+            output = call_tree.outputs
+
         if isinstance(output, tuple) and len(output) < 2:
-            # NOTE: Two special cases
             output = output[0] if len(output) == 1 else None
 
         return output
@@ -375,5 +413,8 @@ class ReceiptAPI(BaseInterfaceModel):
         receiver = self.receiver
         if call_tree and receiver is not None:
             self.chain_manager._reports.append_gas(
-                call_tree, receiver, sender=self.sender, transaction_hash=self.txn_hash
+                call_tree.enrich(in_line=False),
+                receiver,
+                sender=self.sender,
+                transaction_hash=self.txn_hash,
             )

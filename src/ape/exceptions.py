@@ -115,8 +115,10 @@ class ContractLogicError(VirtualMachineError):
     such as from an assert/require statement.
     """
 
-    def __init__(self, revert_message: Optional[str] = None):
-        super().__init__(message=revert_message)
+    def __init__(
+        self, revert_message: Optional[str] = None, txn: Optional["TransactionAPI"] = None
+    ):
+        super().__init__(message=revert_message, txn=txn)
 
     @property
     def revert_message(self):
@@ -140,14 +142,8 @@ class OutOfGasError(VirtualMachineError):
     out of gas.
     """
 
-    def __init__(self, code: Optional[int] = None):
-        super().__init__(message="The transaction ran out of gas.", code=code)
-
-
-class ContractDeployError(TransactionError):
-    """
-    Raised when a problem occurs when deploying a contract.
-    """
+    def __init__(self, code: Optional[int] = None, txn: Optional["TransactionAPI"] = None):
+        super().__init__("The transaction ran out of gas.", code=code, txn=txn)
 
 
 class NetworkError(ApeException):

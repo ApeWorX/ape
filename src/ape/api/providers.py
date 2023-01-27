@@ -14,8 +14,9 @@ from subprocess import DEVNULL, PIPE, Popen
 from typing import Any, Dict, Iterator, List, Optional, cast
 
 from eth_typing import HexStr
-from eth_utils import add_0x_prefix, is_hex, to_hex
-from evm_trace import CallTreeNode, TraceFrame
+from eth_utils import add_0x_prefix, to_hex
+from evm_trace import CallTreeNode as EvmCallTreeNode
+from evm_trace import TraceFrame as EvmTraceFrame
 from hexbytes import HexBytes
 from pydantic import Field, root_validator, validator
 from web3 import Web3
@@ -44,7 +45,16 @@ from ape.exceptions import (
     VirtualMachineError,
 )
 from ape.logging import LogLevel, logger
-from ape.types import AddressType, BlockID, ContractCode, ContractLog, LogFilter, SnapshotID
+from ape.types import (
+    AddressType,
+    BlockID,
+    CallTreeNode,
+    ContractCode,
+    ContractLog,
+    LogFilter,
+    SnapshotID,
+    TraceFrame,
+)
 from ape.utils import (
     EMPTY_BYTES32,
     BaseInterfaceModel,
@@ -317,12 +327,13 @@ class ProviderAPI(BaseInterfaceModel):
         """
 
     @abstractmethod
-    def get_receipt(self, txn_hash: str) -> ReceiptAPI:
+    def get_receipt(self, txn_hash: str, **kwargs) -> ReceiptAPI:
         """
         Get the information about a transaction from a transaction hash.
 
         Args:
             txn_hash (str): The hash of the transaction to retrieve.
+            kwargs: Any other kwargs that other providers might allow when fetching a receipt.
 
         Returns:
             :class:`~api.providers.ReceiptAPI`:
@@ -471,7 +482,7 @@ class ProviderAPI(BaseInterfaceModel):
             txn_hash (str): The hash of a transaction to trace.
 
         Returns:
-            Iterator(TraceFrame): Transaction execution trace object.
+            Iterator(:class:`~ape.type.trace.TraceFrame`): Transaction execution trace.
         """
 
     @raises_not_implemented
@@ -483,7 +494,8 @@ class ProviderAPI(BaseInterfaceModel):
             txn_hash (str): The hash of a transaction to trace.
 
         Returns:
-            CallTreeNode: Transaction execution call-tree objects.
+            :class:`~ape.types.trace.CallTreeNode`: Transaction execution
+            call-tree objects.
         """
 
     def prepare_transaction(self, txn: TransactionAPI) -> TransactionAPI:
@@ -501,15 +513,9 @@ class ProviderAPI(BaseInterfaceModel):
         """
         return txn
 
-    def get_virtual_machine_error(self, exception: Exception) -> VirtualMachineError:
+    def get_virtual_machine_error(self, exception: Exception, **kwargs) -> VirtualMachineError:
         """
         Get a virtual machine error from an error returned from your RPC.
-        If from a contract revert / assert statement, you will be given a
-        special :class:`~ape.exceptions.ContractLogicError` that can be
-        checked in ``ape.reverts()`` tests.
-
-        **NOTE**: The default implementation is based on ``geth`` output.
-        ``ProviderAPI`` implementations override when needed.
 
         Args:
             exception (Exception): The error returned from your RPC client.
@@ -519,27 +525,9 @@ class ProviderAPI(BaseInterfaceModel):
                went wrong in the call.
         """
 
-        if isinstance(exception, Web3ContractLogicError):
-            # This happens from `assert` or `require` statements.
-            message = str(exception).split(":")[-1].strip()
-            if message == "execution reverted":
-                # Reverted without an error message
-                raise ContractLogicError()
+        txn = kwargs.get("txn")
 
-            return ContractLogicError(revert_message=message)
-
-        if not len(exception.args):
-            return VirtualMachineError(base_err=exception)
-
-        err_data = exception.args[0] if (hasattr(exception, "args") and exception.args) else None
-        if not isinstance(err_data, dict):
-            return VirtualMachineError(base_err=exception)
-
-        err_msg = err_data.get("message")
-        if not err_msg:
-            return VirtualMachineError(base_err=exception)
-
-        return VirtualMachineError(message=str(err_msg), code=err_data.get("code"))
+        return VirtualMachineError(base_err=exception, txn=txn)
 
 
 class TestProviderAPI(ProviderAPI):
@@ -703,7 +691,7 @@ class Web3Provider(ProviderAPI, ABC):
             txn_params = cast(TxParams, txn_dict)
             return self.web3.eth.estimate_gas(txn_params, block_identifier=block_id)
         except ValueError as err:
-            tx_error = self.get_virtual_machine_error(err)
+            tx_error = self.get_virtual_machine_error(err, txn=txn)
 
             # If this is the cause of a would-be revert,
             # raise ContractLogicError so that we can confirm tx-reverts.
@@ -711,7 +699,7 @@ class Web3Provider(ProviderAPI, ABC):
                 raise tx_error from err
 
             message = gas_estimation_error_message(tx_error)
-            raise TransactionError(message, base_err=tx_error) from err
+            raise TransactionError(message, base_err=tx_error, txn=txn) from err
 
     @property
     def chain_id(self) -> int:
@@ -865,14 +853,26 @@ class Web3Provider(ProviderAPI, ABC):
         if not call_tree:
             return self._send_call(txn, **kwargs)
 
-        if track_gas:
-            receipt.track_gas()
-        if show_trace:
-            self.chain_manager._reports.show_trace(call_tree)
-        if show_gas:
-            self.chain_manager._reports.show_gas(call_tree)
+        # Grab raw retrurndata before enrichment
+        returndata = call_tree.outputs
 
-        return call_tree.returndata
+        if track_gas and show_gas and not show_trace:
+            # Optimization to enrich early and in_place=True.
+            call_tree.enrich()
+
+        if track_gas:
+            # in_place=False in case show_trace is True
+            receipt.track_gas()
+
+        if show_gas:
+            # in_place=False in case show_trace is True
+            self.chain_manager._reports.show_gas(call_tree.enrich(in_place=False))
+
+        if show_trace:
+            call_tree = call_tree.enrich(use_symbol_for_tokens=True)
+            self.chain_manager._reports.show_trace(call_tree)
+
+        return HexBytes(returndata)
 
     def _send_call(self, txn: TransactionAPI, **kwargs) -> bytes:
         arguments = self._prepare_call(txn, **kwargs)
@@ -910,7 +910,11 @@ class Web3Provider(ProviderAPI, ABC):
         return arguments
 
     def get_receipt(
-        self, txn_hash: str, required_confirmations: int = 0, timeout: Optional[int] = None
+        self,
+        txn_hash: str,
+        required_confirmations: int = 0,
+        timeout: Optional[int] = None,
+        **kwargs,
     ) -> ReceiptAPI:
         """
         Get the information about a transaction from a transaction hash.
@@ -1023,20 +1027,8 @@ class Web3Provider(ProviderAPI, ABC):
                 txn.max_fee = self.base_fee + txn.max_priority_fee
             # else: Assume user specified the correct amount or txn will fail and waste gas
 
-        gas_limit = txn.gas_limit or self.network.gas_limit
-        if isinstance(gas_limit, str) and gas_limit.isnumeric():
-            txn.gas_limit = int(gas_limit)
-        elif isinstance(gas_limit, str) and is_hex(gas_limit):
-            txn.gas_limit = int(gas_limit, 16)
-        elif gas_limit == "max":
-            txn.gas_limit = self.max_gas
-        elif gas_limit in ("auto", None):
+        if txn.gas_limit is None:
             txn.gas_limit = self.estimate_gas_cost(txn)
-        else:
-            txn.gas_limit = gas_limit
-
-        assert txn.gas_limit not in ("auto", "max")
-        # else: Assume user specified the correct amount or txn will fail and waste gas
 
         if txn.required_confirmations is None:
             txn.required_confirmations = self.network.required_confirmations
@@ -1055,14 +1047,12 @@ class Web3Provider(ProviderAPI, ABC):
             else:
                 txn_hash = self.web3.eth.send_raw_transaction(txn.serialize_transaction())
         except ValueError as err:
-            vm_err = self.get_virtual_machine_error(err)
+            vm_err = self.get_virtual_machine_error(err, txn=txn)
 
             if "nonce too low" in str(vm_err):
                 # Add additional nonce information
                 new_err_msg = f"Nonce '{txn.nonce}' is too low"
-                raise VirtualMachineError(
-                    base_err=vm_err.base_err, message=new_err_msg, code=vm_err.code
-                )
+                raise VirtualMachineError(new_err_msg, base_err=vm_err.base_err, code=vm_err.code)
 
             vm_err.txn = txn
             raise vm_err from err
@@ -1084,13 +1074,40 @@ class Web3Provider(ProviderAPI, ABC):
             try:
                 self.web3.eth.call(txn_params)
             except Exception as err:
-                vm_err = self.get_virtual_machine_error(err)
+                vm_err = self.get_virtual_machine_error(err, txn=txn)
                 vm_err.txn = txn
                 raise vm_err from err
 
         logger.info(f"Confirmed {receipt.txn_hash} (total fees paid = {receipt.total_fees_paid})")
         self.chain_manager.history.append(receipt)
         return receipt
+
+    def _create_call_tree_node(
+        self, evm_call: EvmCallTreeNode, txn_hash: Optional[str] = None
+    ) -> CallTreeNode:
+        address = self.provider.network.ecosystem.decode_address(evm_call.address)
+        return CallTreeNode(
+            calls=[self._create_call_tree_node(x, txn_hash=txn_hash) for x in evm_call.calls],
+            call_type=evm_call.call_type.value,
+            contract_id=address,
+            failed=evm_call.failed,
+            gas_cost=evm_call.gas_cost,
+            inputs=evm_call.calldata[4:].hex(),
+            method_id=evm_call.calldata[:4].hex(),
+            outputs=evm_call.returndata.hex(),
+            raw=evm_call.dict(),
+            txn_hash=txn_hash,
+        )
+
+    @classmethod
+    def _create_trace_frame(cls, evm_frame: EvmTraceFrame) -> TraceFrame:
+        return TraceFrame(
+            pc=evm_frame.pc,
+            op=evm_frame.op,
+            gas=evm_frame.gas,
+            gas_cost=evm_frame.gas_cost,
+            depth=evm_frame.depth,
+        )
 
     def _make_request(self, endpoint: str, parameters: List) -> Any:
         coroutine = self.web3.provider.make_request(RPCEndpoint(endpoint), parameters)
@@ -1107,6 +1124,48 @@ class Web3Provider(ProviderAPI, ABC):
             return result.get("result", {})
 
         return result
+
+    def get_virtual_machine_error(self, exception: Exception, **kwargs) -> VirtualMachineError:
+        """
+        Get a virtual machine error from an error returned from your RPC.
+        If from a contract revert / assert statement, you will be given a
+        special :class:`~ape.exceptions.ContractLogicError` that can be
+        checked in ``ape.reverts()`` tests.
+
+        **NOTE**: The default implementation is based on ``geth`` output.
+        ``ProviderAPI`` implementations override when needed.
+
+        Args:
+            exception (Exception): The error returned from your RPC client.
+
+        Returns:
+            :class:`~ape.exceptions.VirtualMachineError`: An error representing what
+               went wrong in the call.
+        """
+
+        txn = kwargs.get("txn")
+
+        if isinstance(exception, Web3ContractLogicError):
+            # This happens from `assert` or `require` statements.
+            message = str(exception).split(":")[-1].strip()
+            if message == "execution reverted":
+                # Reverted without an error message
+                raise ContractLogicError(txn=txn)
+
+            return ContractLogicError(revert_message=message, txn=txn)
+
+        if not len(exception.args):
+            return VirtualMachineError(base_err=exception, txn=txn)
+
+        err_data = exception.args[0] if (hasattr(exception, "args") and exception.args) else None
+        if not isinstance(err_data, dict):
+            return VirtualMachineError(base_err=exception, txn=txn)
+
+        err_msg = err_data.get("message")
+        if not err_msg:
+            return VirtualMachineError(base_err=exception, txn=txn)
+
+        return VirtualMachineError(str(err_msg), code=err_data.get("code"), txn=txn)
 
 
 class UpstreamProvider(ProviderAPI):

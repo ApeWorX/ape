@@ -36,6 +36,14 @@ def test_contract_calls(owner, contract_instance):
     assert contract_instance.myNumber() == 2
 
 
+@pytest.mark.parametrize("type_param", (0, "0", HexBytes(0)))
+def test_static_fee_txn(owner, vyper_contract_instance, type_param):
+    receipt = vyper_contract_instance.setNumber(4, sender=owner, type=type_param)
+    assert vyper_contract_instance.myNumber() == 4
+    assert not receipt.failed
+    assert receipt.type == 0
+
+
 def test_invoke_transaction(owner, contract_instance):
     # Test mutable method call with invoke_transaction
     receipt = contract_instance.invoke_transaction("setNumber", 3, sender=owner)
@@ -91,6 +99,11 @@ def test_revert_no_message(owner, contract_instance):
 def test_revert_specify_gas(sender, contract_instance, gas):
     with pytest.raises(ContractLogicError, match="!authorized"):
         contract_instance.setNumber(5, sender=sender, gas=gas)
+
+
+def test_revert_static_fee_type(sender, contract_instance):
+    with pytest.raises(ContractLogicError, match="!authorized"):
+        contract_instance.setNumber(5, sender=sender, type=0)
 
 
 def test_call_using_block_identifier(
@@ -421,6 +434,15 @@ def test_transact_specify_max_gas(vyper_contract_instance, owner):
     assert not receipt.failed
 
 
+@pytest.mark.parametrize("gas_kwarg", ("gas", "gas_limit"))
+def test_transaction_specific_gas(vyper_contract_instance, owner, gas_kwarg):
+    gas = 400000
+    kwargs = {"sender": owner, gas_kwarg: gas}
+    receipt = vyper_contract_instance.setNumber(222, **kwargs)
+    assert not receipt.failed
+    assert receipt.gas_limit == gas
+
+
 def test_dir(vyper_contract_instance):
     actual = dir(vyper_contract_instance)
     expected = [
@@ -507,3 +529,20 @@ def test_decode_ambiguous_input(solidity_contract_instance, calldata_with_addres
     )
     with pytest.raises(ContractError, match=expected):
         method.decode_input(anonymous_calldata)
+
+
+def test_is_contract(contract_instance):
+    assert contract_instance.is_contract
+
+
+def test_is_contract_when_code_is_str(mock_provider, owner):
+    """
+    Tests the cases when an ecosystem uses str for ContractCode.
+    """
+    # Set up the provider to return str instead of HexBytes for code.
+    mock_provider._web3.eth.get_code.return_value = "0x123"
+    assert owner.is_contract
+
+    # When the return value is the string "0x", it should not code as having code.
+    mock_provider._web3.eth.get_code.return_value = "0x"
+    assert not owner.is_contract

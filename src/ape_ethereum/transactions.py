@@ -1,6 +1,6 @@
 import sys
 from enum import Enum, IntEnum
-from typing import IO, Dict, Iterator, List, Optional, Union
+from typing import IO, Dict, List, Optional, Union
 
 from eth_abi import decode
 from eth_account import Account as EthAccount
@@ -8,16 +8,15 @@ from eth_account._utils.legacy_transactions import (
     encode_transaction,
     serializable_unsigned_transaction_from_dict,
 )
-from eth_utils import decode_hex, encode_hex, keccak, to_int
+from eth_utils import decode_hex, encode_hex, keccak, to_hex, to_int
 from ethpm_types import HexBytes
-from ethpm_types.abi import EventABI
-from evm_trace import CallTreeNode
+from ethpm_types.abi import EventABI, MethodABI
 from pydantic import BaseModel, Field, root_validator, validator
 
 from ape.api import ReceiptAPI, TransactionAPI
 from ape.contracts import ContractEvent
 from ape.exceptions import OutOfGasError, SignatureError, TransactionError
-from ape.types import ContractLog
+from ape.types import CallTreeNode, ContractLog
 from ape.utils import cached_property
 
 
@@ -42,9 +41,9 @@ class TransactionType(Enum):
     `EIP-2718 <https://eips.ethereum.org/EIPS/eip-2718>`__.
     """
 
-    STATIC = "0x00"
-    ACCESS_LIST = "0x01"  # EIP-2930
-    DYNAMIC = "0x02"  # EIP-1559
+    STATIC = 0
+    ACCESS_LIST = 1  # EIP-2930
+    DYNAMIC = 2  # EIP-1559
 
 
 class AccessList(BaseModel):
@@ -80,7 +79,7 @@ class StaticFeeTransaction(BaseTransaction):
 
     gas_price: Optional[int] = Field(None, alias="gasPrice")
     max_priority_fee: Optional[int] = Field(None, exclude=True)
-    type: Union[str, int, bytes] = Field(TransactionType.STATIC.value, exclude=True)
+    type: int = Field(TransactionType.STATIC.value, exclude=True)
     max_fee: Optional[int] = Field(None, exclude=True)
 
     @root_validator(pre=True, allow_reuse=True)
@@ -98,7 +97,7 @@ class DynamicFeeTransaction(BaseTransaction):
 
     max_priority_fee: Optional[int] = Field(None, alias="maxPriorityFeePerGas")
     max_fee: Optional[int] = Field(None, alias="maxFeePerGas")
-    type: Union[int, str, bytes] = Field(TransactionType.DYNAMIC.value)
+    type: int = Field(TransactionType.DYNAMIC.value)
     access_list: List[AccessList] = Field(default_factory=list, alias="accessList")
 
     @validator("type", allow_reuse=True)
@@ -116,7 +115,7 @@ class AccessListTransaction(BaseTransaction):
     """
 
     gas_price: Optional[int] = Field(None, alias="gasPrice")
-    type: Union[int, str, bytes] = Field(TransactionType.ACCESS_LIST.value)
+    type: int = Field(TransactionType.ACCESS_LIST.value)
     access_list: List[AccessList] = Field(default_factory=list, alias="accessList")
 
     @validator("type", allow_reuse=True)
@@ -158,9 +157,22 @@ class Receipt(ReceiptAPI):
 
         return self.provider.get_call_tree(self.txn_hash)
 
+    @cached_property
+    def method_called(self) -> Optional[MethodABI]:
+        contract_type = self.chain_manager.contracts.get(self.receiver)
+        if not contract_type:
+            return None
+
+        method_id = self.data[:4]
+        if method_id not in contract_type.methods:
+            return None
+
+        return contract_type.methods[method_id]
+
     def raise_for_status(self):
         if self.gas_limit is not None and self.ran_out_of_gas:
-            raise OutOfGasError()
+            raise OutOfGasError(txn=self.transaction)
+
         elif self.status != TransactionStatusEnum.NO_ERROR:
             txn_hash = HexBytes(self.txn_hash).hex()
             raise TransactionError(f"Transaction '{txn_hash}' failed.")
@@ -170,16 +182,18 @@ class Receipt(ReceiptAPI):
         if not call_tree:
             return
 
+        call_tree.enrich(use_symbol_for_tokens=True)
         revert_message = None
 
         if call_tree.failed:
             default_message = "reverted without message"
-            if not call_tree.returndata.hex().startswith(
+            returndata = HexBytes(call_tree.raw["returndata"])
+            if not to_hex(returndata).startswith(
                 "0x08c379a00000000000000000000000000000000000000000000000000000000000000020"
             ):
                 revert_message = default_message
             else:
-                decoded_result = decode(("string",), call_tree.returndata[4:])
+                decoded_result = decode(("string",), returndata[4:])
                 if len(decoded_result) == 1:
                     revert_message = f'reverted with message: "{decoded_result[0]}"'
                 else:
@@ -198,6 +212,20 @@ class Receipt(ReceiptAPI):
         if not call_tree:
             return
 
+        call_tree.enrich()
+
+        # Enrich transfers.
+        if (
+            call_tree.contract_id.startswith("Transferring ")
+            and self.receiver is not None
+            and self.receiver in self.account_manager
+        ):
+            receiver_id = self.account_manager[self.receiver].alias or self.receiver
+            call_tree.method_id = f"to:{receiver_id}"
+
+        elif call_tree.contract_id.startswith("Transferring "):
+            call_tree.method_id = f"to:{self.receiver}"
+
         self.chain_manager._reports.show_gas(
             call_tree, sender=self.sender, transaction_hash=self.txn_hash
         )
@@ -207,13 +235,13 @@ class Receipt(ReceiptAPI):
         abi: Optional[
             Union[List[Union[EventABI, "ContractEvent"]], Union[EventABI, "ContractEvent"]]
         ] = None,
-    ) -> Iterator[ContractLog]:
+    ) -> List[ContractLog]:
         if abi is not None:
             if not isinstance(abi, (list, tuple)):
                 abi = [abi]
 
             event_abis: List[EventABI] = [a.abi if not isinstance(a, EventABI) else a for a in abi]
-            yield from self.provider.network.ecosystem.decode_logs(self.logs, *event_abis)
+            return list(self.provider.network.ecosystem.decode_logs(self.logs, *event_abis))
 
         else:
             # If ABI is not provided, decode all events
@@ -224,6 +252,8 @@ class Receipt(ReceiptAPI):
                 address: {encode_hex(keccak(text=abi.selector)): abi for abi in contract.events}
                 for address, contract in contract_types.items()
             }
+
+            decoded_logs: List[ContractLog] = []
             for log in self.logs:
                 contract_address = log["address"]
                 if contract_address not in selectors:
@@ -235,9 +265,13 @@ class Receipt(ReceiptAPI):
                     # Likely a library log
                     library_log = self._decode_ds_note(log)
                     if library_log:
-                        yield library_log
+                        decoded_logs.append(library_log)
                 else:
-                    yield from self.provider.network.ecosystem.decode_logs([log], event_abi)
+                    decoded_logs.extend(
+                        list(self.provider.network.ecosystem.decode_logs([log], event_abi))
+                    )
+
+            return decoded_logs
 
     def _decode_ds_note(self, log: Dict) -> Optional[ContractLog]:
         # The first topic encodes the function selector

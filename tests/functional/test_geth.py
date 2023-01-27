@@ -22,7 +22,6 @@ from tests.functional.data.python import TRACE_RESPONSE
 TRANSACTION_HASH = "0x053cba5c12172654d894f66d5670bab6215517a94189a9ffc09bc40a589ec04d"
 
 
-@geth_process_test
 @pytest.fixture
 def mock_geth(geth_provider, mock_web3):
     provider = Geth(
@@ -94,7 +93,10 @@ def test_get_call_tree(geth_provider, geth_contract, accounts):
     contract = owner.deploy(geth_contract, 0)
     receipt = contract.setNumber(10, sender=owner)
     result = geth_provider.get_call_tree(receipt.txn_hash)
-    expected = rf"CALL: {contract.address}.<0x3fb5c1cb> \[\d+ gas\]"
+    expected = (
+        rf"{contract.address}.0x3fb5c1cb"
+        r"\(0x000000000000000000000000000000000000000000000000000000000000000a\) \[\d+ gas\]"
+    )
     actual = repr(result)
     assert re.match(expected, actual)
 
@@ -104,7 +106,7 @@ def test_get_call_tree_erigon(mock_web3, mock_geth, parity_trace_response):
     mock_web3.provider.make_request.return_value = parity_trace_response
     result = mock_geth.get_call_tree(TRANSACTION_HASH)
     actual = repr(result)
-    expected = r"CALL: 0xC17f2C69aE2E66FD87367E3260412EEfF637F70E.<0x96d373e5> \[\d+ gas\]"
+    expected = r"0xC17f2C69aE2E66FD87367E3260412EEfF637F70E.0x96d373e5\(\) \[\d+ gas\]"
     assert re.match(expected, actual)
 
 
