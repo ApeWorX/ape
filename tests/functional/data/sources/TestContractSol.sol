@@ -119,6 +119,29 @@ contract TestContractSol {
         return (2, NestedStruct2(2, getStruct()));
     }
 
+    function getEmptyDynArrayOfStructs() public pure returns(MyStruct[] memory) {
+        MyStruct[] memory _my_structs;
+        return _my_structs;
+    }
+
+    function getEmptyTupleOfDynArrayStructs() public pure returns(MyStruct[] memory, MyStruct[] memory) {
+        MyStruct[] memory _my_structs_0;
+        MyStruct[] memory _my_structs_1;
+        return (_my_structs_0, _my_structs_1);
+    }
+
+    function getEmptyTupleOfArrayOfStructsAndDynArrayOfStructs() public pure returns(MyStruct[2] memory, MyStruct[] memory) {
+        MyStruct[2] memory _my_structs_0;
+        MyStruct[] memory _my_structs_1;
+        return (_my_structs_0, _my_structs_1);
+    }
+
+    function getEmptyTupleOfIntAndDynArray() public pure returns(uint256[] memory, MyStruct[] memory) {
+        uint256[] memory _integers;
+        MyStruct[] memory _structs;
+        return (_integers, _structs);
+    }
+
     function getStructWithArray() public view returns(WithArray memory) {
         MyStruct[2] memory arr = [getStruct(), getStruct()];
         return WithArray(1, arr, 2);

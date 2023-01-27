@@ -1,4 +1,5 @@
 import re
+from typing import List, Tuple
 
 import pytest
 from eth_utils import is_checksum_address, to_hex
@@ -194,7 +195,35 @@ def test_nested_structs_in_tuples(contract_instance, sender, chain):
     assert is_checksum_address(struct_2.t.a)
 
 
-def test_vyper_structs_with_array(vyper_contract_instance, sender):
+def test_get_empty_dyn_array_of_structs(contract_instance):
+    actual = contract_instance.getEmptyDynArrayOfStructs()
+    expected: List = []
+    assert actual == expected
+
+
+def test_get_empty_tuple_of_dyn_array_structs(contract_instance):
+    actual = contract_instance.getEmptyTupleOfDynArrayStructs()
+    expected: Tuple[List, List] = ([], [])
+    assert actual == expected
+
+
+def test_get_empty_tuple_of_array_of_structs_and_dyn_array_of_structs(contract_instance):
+    actual = contract_instance.getEmptyTupleOfArrayOfStructsAndDynArrayOfStructs()
+    expected_fixed_array = (
+        ZERO_ADDRESS,
+        HexBytes("0x0000000000000000000000000000000000000000000000000000000000000000"),
+    )
+    assert actual[0] == [expected_fixed_array, expected_fixed_array]
+    assert actual[1] == []
+
+
+def test_get_empty_tuple_of_int_and_dyn_array(contract_instance):
+    actual = contract_instance.getEmptyTupleOfIntAndDynArray()
+    expected: Tuple[List, List] = ([], [])
+    assert actual == expected
+
+
+def test_vyper_structs_with_array(vyper_contract_instance):
     # NOTE: Vyper struct arrays <=0.3.3 don't include struct info
     actual = vyper_contract_instance.getStructWithArray()
     assert actual.foo == 1
@@ -211,7 +240,7 @@ def test_solidity_structs_with_array(solidity_contract_instance, sender):
     assert is_checksum_address(actual.arr[0].a)
 
 
-def test_arrays(contract_instance, sender):
+def test_arrays(contract_instance):
     assert contract_instance.getEmptyArray() == []
     assert contract_instance.getSingleItemArray() == [1]
     assert contract_instance.getFilledArray() == [1, 2, 3]

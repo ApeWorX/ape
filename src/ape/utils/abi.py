@@ -72,7 +72,6 @@ class StructParser:
         Returns:
             Any: The same input values only decoded into structs when applicable.
         """
-
         if is_struct(output_types):
             return_value = self._create_struct(output_types[0], values)
             return return_value
@@ -81,7 +80,7 @@ class StructParser:
             # Handle tuples. NOTE: unnamed output structs appear as tuples with named members
             return create_struct(self.default_name, output_types, values)
 
-        return_values = []
+        return_values: List = []
         has_array_return = _is_array_return(output_types)
         has_array_of_tuples_return = (
             has_array_return and len(output_types) == 1 and "tuple" in output_types[0].type
@@ -94,9 +93,15 @@ class StructParser:
             item_type_str = str(output_types[0].type).split("[")[0]
             data = {**output_types[0].dict(), "type": item_type_str, "internalType": item_type_str}
             output_type = ABIType.parse_obj(data)
-            for value in values[0]:
-                item = self.parse([output_type], [value])
-                return_values.append(item)
+
+            if not values[0]:
+                # Only returned an empty list.
+                return_values.append([])
+
+            else:
+                for value in values[0]:
+                    item = self.parse([output_type], [value])
+                    return_values.append(item)
 
         else:
             for output_type, value in zip(output_types, values):
@@ -111,6 +116,16 @@ class StructParser:
                         }
                         item_type = ABIType.parse_obj(item_type_data)
                         parsed_item = self.parse([item_type], [value])
+
+                        # If it's an empty dynamic array of structs, replace `None` with empty list
+                        output_raw_type = output_type.type
+                        if (
+                            isinstance(output_raw_type, str)
+                            and output_raw_type.endswith("[]")
+                            and parsed_item is None
+                        ):
+                            parsed_item = []
+
                     else:
                         # Handle tuple of arrays
                         parsed_item = [v for v in value]
@@ -122,7 +137,8 @@ class StructParser:
         return return_values
 
     def _create_struct(self, out_abi: ABIType, out_value) -> Optional[Any]:
-        if not out_abi.components:
+        if not out_abi.components or not out_value[0]:
+            # Likely an empty tuple or not a struct.
             return None
 
         internal_type = out_abi.internalType
@@ -217,9 +233,6 @@ def create_struct(
         return struct_values[index]
 
     def is_equal(struct, other) -> bool:
-        if not isinstance(other, tuple):
-            return super().__eq__(other)  # type: ignore
-
         _len = len(other)
         return _len == len(struct) and all([struct[i] == other[i] for i in range(_len)])
 
