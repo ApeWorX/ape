@@ -37,6 +37,31 @@ class BaseMulticall(ManagerAccessMixin):
         self._handler_method_abi = AGGREGATE_METHOD
         self.calls: List[Union[CallType, Call3Type, Call3ValueType]] = []
 
+    @classmethod
+    def deploy(cls):
+        """
+        Create the multicall module contract on-chain, so we can use it.
+        Must use a provider that supports ``debug_setCode``.
+
+        Usage example::
+
+            from ape_ethereum import multicall
+
+            @pytest.fixture(scope="session")
+            def use_multicall():
+                # NOTE: use this fixture any test where you want to use a multicall
+                multicall.BaseMulticall.deploy()
+        """
+        active_provider = cls.network_manager.active_provider
+        assert active_provider, "Must be connected to an active network to deploy"
+        from ape_ethereum import multicall
+
+        active_provider.set_code(
+            multicall.constants.MULTICALL3_ADDRESS,
+            multicall.constants.MULTICALL3_CODE,
+        )
+        return multicall
+
     @cached_property
     def contract(self) -> ContractInstance:
         contract = self.chain_manager.contracts.instance_at(
