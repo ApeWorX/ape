@@ -1,4 +1,4 @@
-from typing import Any, Iterator, List, Tuple, Type, Union
+from typing import Any, Iterator, List, Tuple, Union
 
 from ape.api import ReceiptAPI, TransactionAPI
 from ape.contracts.base import (
@@ -23,7 +23,7 @@ from .exceptions import InvalidOption, NotExecutedError, UnsupportedChainError, 
 
 
 class BaseMulticall(ManagerAccessMixin):
-    def __init__(self, handler_type: Type[ContractMethodHandler]) -> None:
+    def __init__(self) -> None:
         """
         Initialize a new Multicall session object. By default, there are no calls to make.
         """
@@ -74,7 +74,7 @@ class BaseMulticall(ManagerAccessMixin):
         return contract
 
     @property
-    def handler(self) -> ContractMethodHandler:
+    def handler(self) -> ContractTransactionHandler:
         if any(call["value"] > 0 for call in self.calls):
             return self.contract.aggregate3Value
 
@@ -134,10 +134,14 @@ class Call(BaseMulticall):
     """
 
     def __init__(self) -> None:
-        super().__init__(ContractCallHandler)
+        super().__init__()
 
         self.abis: List[MethodABI] = []
         self._result: Union[None, Tuple[int, List[HexBytes]], List[Tuple[bool, HexBytes]]] = None
+
+    @property
+    def handler(self) -> ContractCallHandler:  # type: ignore[override]
+        return super().handler.call  # NOTE: all Multicall3 methods are mutable calls by default
 
     def add(self, call: ContractMethodHandler, *args, **kwargs):
         if "value" in kwargs:
@@ -186,14 +190,7 @@ class Call(BaseMulticall):
             Iterator[Any]: the sequence of values produced by performing each call stored
               by this instance.
         """
-        # TODO: Remove this conversion when https://github.com/ApeWorX/ape/pull/1230 is merged
-        assert self.handler.abis[0].inputs[0].components
-        calls = [
-            tuple(call[m.name] for m in self.handler.abis[0].inputs[0].components if m.name)
-            for call in self.calls
-        ]
-
-        self._result = self.handler(calls, **call_kwargs)  # type: ignore[operator]
+        self._result = self.handler(self.calls, **call_kwargs)
         return self._decode_results()
 
     def as_transaction(self, **txn_kwargs) -> TransactionAPI:
@@ -203,14 +200,7 @@ class Call(BaseMulticall):
         Returns:
             :class:`~ape.api.transactions.TransactionAPI`
         """
-        # TODO: Remove this conversion when https://github.com/ApeWorX/ape/pull/1230 is merged
-        assert self.handler.abis[0].inputs[0].components
-        calls = [
-            tuple(call[m.name] for m in self.handler.abis[0].inputs[0].components if m.name)
-            for call in self.calls
-        ]
-
-        return self.handler.as_transaction(calls, **txn_kwargs)  # type: ignore[attr-defined]
+        return self.handler.as_transaction(self.calls, **txn_kwargs)
 
 
 class Transaction(BaseMulticall):
@@ -229,9 +219,6 @@ class Transaction(BaseMulticall):
         txn.add(contract.myMethod, *call_args)
         a, b, ..., z = txn(sender=my_signer)  # Sends the multical transaction
     """
-
-    def __init__(self) -> None:
-        super().__init__(ContractTransactionHandler)
 
     def _validate_calls(self, **txn_kwargs) -> None:
         required_value = sum(call["value"] for call in self.calls)
@@ -262,14 +249,7 @@ class Transaction(BaseMulticall):
             :class:`~ape.api.transactions.ReceiptAPI`
         """
         self._validate_calls(**txn_kwargs)
-        # TODO: Remove this conversion when https://github.com/ApeWorX/ape/pull/1230 is merged
-        assert self.handler.abis[0].inputs[0].components
-        calls = [
-            tuple(call[m.name] for m in self.handler.abis[0].inputs[0].components if m.name)
-            for call in self.calls
-        ]
-
-        return self.handler(calls, **txn_kwargs)  # type: ignore[operator]
+        return self.handler(self.calls, **txn_kwargs)
 
     def as_transaction(self, **txn_kwargs) -> TransactionAPI:
         """
@@ -279,14 +259,4 @@ class Transaction(BaseMulticall):
             :class:`~ape.api.transactions.TransactionAPI`
         """
         self._validate_calls(**txn_kwargs)
-        # TODO: Remove this conversion when https://github.com/ApeWorX/ape/pull/1230 is merged
-        assert self.handler.abis[0].inputs[0].components
-        calls = [
-            tuple(call[m.name] for m in self.handler.abis[0].inputs[0].components if m.name)
-            for call in self.calls
-        ]
-
-        return self.handler.serialize_transaction(  # type: ignore[attr-defined]
-            calls,
-            **txn_kwargs,
-        )
+        return self.handler.as_transaction(self.calls, **txn_kwargs)
