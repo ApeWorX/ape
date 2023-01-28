@@ -21,6 +21,7 @@ from hexbytes import HexBytes
 from pydantic import Field, validator
 
 from ape.api import BlockAPI, EcosystemAPI, PluginConfig, ReceiptAPI, TransactionAPI
+from ape.api.address import BaseAddress
 from ape.api.networks import LOCAL_NETWORK_NAME, ProxyInfoAPI
 from ape.contracts.base import ContractCall
 from ape.exceptions import ApeException, APINotImplementedError, ContractError, DecodingError
@@ -355,7 +356,21 @@ class Ethereum(EcosystemAPI):
                     arguments[idx] = tuple(arg)
 
         input_types = [i.canonical_type for i in abi.inputs]
-        encoded_calldata = encode(input_types, arguments)
+
+        def convert(ls):
+            new_ls = []
+            for argument in ls:
+                if isinstance(argument, BaseAddress):
+                    new_ls.append(argument)
+                elif isinstance(argument, (list, tuple)):
+                    new_ls.append(convert(argument))
+                else:
+                    new_ls.append(argument)
+
+            return new_ls
+
+        converted_args = convert(arguments)
+        encoded_calldata = encode(input_types, converted_args)
         return HexBytes(encoded_calldata)
 
     def decode_calldata(self, abi: Union[ConstructorABI, MethodABI], calldata: bytes) -> Dict:

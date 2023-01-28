@@ -35,7 +35,7 @@ class Struct(BaseModel):
 
 EXPECTED = HexBytes(
     "0000000000000000000000000000000000000000000000000000000000000001"
-    "3200000000000000000000000000000000000000000000000000000000000000"
+    "0200000000000000000000000000000000000000000000000000000000000000"
     "0000000000000000000000000000000000000000000000000000000000000001"
     "000000000000000000000000d9b7fdb3fc0a0aa3a507dcf0976bc23d49a9c7a3"
 )
@@ -64,5 +64,12 @@ def test_encode_structs_as_tuple_with_unconverted(sender):
 def test_encode_structs_as_dict_with_unconverted(sender):
     data = dict(DATA_BY_TYPE_KEY["dict"])  # type: ignore
     data["d"] = sender
+    actual = networks.ethereum.encode_calldata(ABI, data)
+    assert actual == EXPECTED
+
+
+def test_encode_structs_as_object_with_unconverted(sender):
+    data = dict(DATA_BY_TYPE_KEY["object"])  # type: ignore
+    data.d = sender
     actual = networks.ethereum.encode_calldata(ABI, data)
     assert actual == EXPECTED
