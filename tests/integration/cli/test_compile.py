@@ -264,4 +264,4 @@ def test_compile_only_dependency(ape_cli, runner, project, clean_cache, caplog):
 @skip_projects_except("with-contracts")
 def test_raw_compiler_output_bytecode(ape_cli, runner, project):
     assert project.RawVyperOutput.contract_type.runtime_bytecode.bytecode
-    assert project.RawVyperOutput.contract_type.deployment_bytecode.bytecode
+    assert project.RawSolidityOutput.contract_type.deployment_bytecode.bytecode
