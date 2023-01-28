@@ -186,6 +186,6 @@ AGGREGATE_METHOD["outputs"] = [
 
 
 MULTICALL3_CONTRACT_TYPE = {
-    "name": "Multicall3",
+    "contractName": "Multicall3",
     "abi": [AGGREGATE_METHOD, AGGREGATE3_METHOD, AGGREGATE3VALUE_METHOD],
 }
