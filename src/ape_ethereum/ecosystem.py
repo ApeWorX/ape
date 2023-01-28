@@ -338,9 +338,9 @@ class Ethereum(EcosystemAPI):
             return HexBytes("")
 
         # Convert dicts and other objects to struct inputs
-        args = list(args)  # type: ignore[assignment]
+        arguments: List = list(args)
         for idx, ipt in enumerate(abi.inputs):
-            arg = args[idx]
+            arg = arguments[idx]
             if (
                 ipt.type == "tuple"
                 and ipt.components
@@ -348,14 +348,14 @@ class Ethereum(EcosystemAPI):
                 and not isinstance(arg, tuple)
             ):
                 if isinstance(arg, dict):
-                    args[idx] = tuple([arg[m.name] for m in ipt.components])  # type: ignore[index]
+                    arguments[idx] = tuple([arg[m.name] for m in ipt.components])
 
                 else:
-                    arg = [getattr(arg, m.name) for m in ipt.components]  # type: ignore[arg-type]
-                    args[idx] = tuple(arg)  # type: ignore[index]
+                    arg = [getattr(arg, m.name) for m in ipt.components if m.name]
+                    arguments[idx] = tuple(arg)
 
         input_types = [i.canonical_type for i in abi.inputs]
-        encoded_calldata = encode(input_types, args)
+        encoded_calldata = encode(input_types, arguments)
         return HexBytes(encoded_calldata)
 
     def decode_calldata(self, abi: Union[ConstructorABI, MethodABI], calldata: bytes) -> Dict:
