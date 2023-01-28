@@ -259,3 +259,9 @@ def test_compile_only_dependency(ape_cli, runner, project, clean_cache, caplog):
     if caplog.records:
         log_record = caplog.records.pop()
         assert expected_log_message not in log_record.message, "Compiled twice!"
+
+
+@skip_projects_except("with-contracts")
+def test_raw_compiler_output_bytecode(ape_cli, runner, project):
+    assert project.RawVyperOutput.contract_type.runtime_bytecode.bytecode
+    assert project.RawVyperOutput.contract_type.deployment_bytecode.bytecode
