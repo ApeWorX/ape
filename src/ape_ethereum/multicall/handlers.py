@@ -9,14 +9,11 @@ from ape.contracts.base import (
     _select_method_abi,
 )
 from ape.exceptions import ChainError
-from ape.types import AddressType, ContractType, HexBytes
+from ape.types import ContractType, HexBytes
 from ape.utils import ManagerAccessMixin, cached_property
 from ape.utils.abi import MethodABI
 
 from .constants import (
-    AGGREGATE3_METHOD,
-    AGGREGATE3VALUE_METHOD,
-    AGGREGATE_METHOD,
     MULTICALL3_ADDRESS,
     MULTICALL3_CODE,
     MULTICALL3_CONTRACT_TYPE,
@@ -24,19 +21,13 @@ from .constants import (
 )
 from .exceptions import InvalidOption, NotExecutedError, UnsupportedChainError, ValueRequired
 
-CallType = Tuple[AddressType, HexBytes]
-Call3Type = Tuple[AddressType, bool, HexBytes]
-Call3ValueType = Tuple[AddressType, bool, int, HexBytes]
-
 
 class BaseMulticall(ManagerAccessMixin):
     def __init__(self, handler_type: Type[ContractMethodHandler]) -> None:
         """
         Initialize a new Multicall session object. By default, there are no calls to make.
         """
-        self._handler_type = handler_type
-        self._handler_method_abi = AGGREGATE_METHOD
-        self.calls: List[Union[CallType, Call3Type, Call3ValueType]] = []
+        self.calls: List[dict] = []
 
     @classmethod
     def deploy(cls):
@@ -84,13 +75,20 @@ class BaseMulticall(ManagerAccessMixin):
 
     @property
     def handler(self) -> ContractMethodHandler:
-        return self._handler_type(self.contract, [MethodABI.parse_obj(self._handler_method_abi)])
+        if any(call["value"] > 0 for call in self.calls):
+            return self.contract.aggregate3Value
+
+        elif any(call["allowFailure"] for call in self.calls):
+            return self.contract.aggregate3
+
+        else:
+            return self.contract.aggregate
 
     def add(
         self,
         call,
         *args,
-        requireSuccess=None,
+        allowFailure=None,
         value=None,
     ):
         """
@@ -106,46 +104,17 @@ class BaseMulticall(ManagerAccessMixin):
             value: int The amount of ether to forward with the call.
         """
 
-        # Update call type if relevant kwarg is used
-        if value is not None and self._handler_method_abi != AGGREGATE3VALUE_METHOD:
-            self._handler_method_abi = AGGREGATE3VALUE_METHOD
-
-            # Update all previous calls to use AGGREGATE3VALUE_METHOD
-            self.calls = [
-                (call[0], call[1], 0, call[2])  # type: ignore[misc]
-                if len(call) == 3
-                else (call[0], True, 0, call[1])
-                for call in self.calls
-            ]
-
-        elif requireSuccess is not None and self._handler_method_abi == AGGREGATE_METHOD:
-            self._handler_method_abi = AGGREGATE_METHOD
-
-            # Update all previous calls to use AGGREGATE3_METHOD
-            self.calls = [(call[0], True, call[1]) for call in self.calls]  # type: ignore[misc]
-
-        # Append call to the list
-        if self._handler_method_abi == AGGREGATE_METHOD:
-            self.calls.append((call.contract.address, call.encode_input(*args)))
-
-        elif self._handler_method_abi == AGGREGATE3_METHOD:
-            self.calls.append(
-                (
-                    call.contract.address,
-                    requireSuccess if requireSuccess is not None else True,
-                    call.encode_input(*args),
-                )
-            )
-
-        elif self._handler_method_abi == AGGREGATE3VALUE_METHOD:
-            self.calls.append(
-                (
-                    call.contract.address,
-                    requireSuccess if requireSuccess is not None else True,
-                    value or 0,
-                    call.encode_input(*args),
-                )
-            )
+        # Append call dict to the list
+        # NOTE: Depending upon `_handler_method_abi` at time when `__call__` is triggered,
+        #       some of these properties will be unused
+        self.calls.append(
+            {
+                "target": call.contract.address,
+                "allowFailure": allowFailure if allowFailure is not None else False,
+                "value": value or 0,
+                "callData": call.encode_input(*args),
+            }
+        )
 
 
 class Call(BaseMulticall):
@@ -217,7 +186,14 @@ class Call(BaseMulticall):
             Iterator[Any]: the sequence of values produced by performing each call stored
               by this instance.
         """
-        self._result = self.handler(self.calls, **call_kwargs)  # type: ignore[operator]
+        # TODO: Remove this conversion when https://github.com/ApeWorX/ape/pull/1230 is merged
+        assert self.handler.abis[0].inputs[0].components
+        calls = [
+            tuple(call[m.name] for m in self.handler.abis[0].inputs[0].components if m.name)
+            for call in self.calls
+        ]
+
+        self._result = self.handler(calls, **call_kwargs)  # type: ignore[operator]
         return self._decode_results()
 
     def as_transaction(self, **txn_kwargs) -> TransactionAPI:
@@ -227,7 +203,14 @@ class Call(BaseMulticall):
         Returns:
             :class:`~ape.api.transactions.TransactionAPI`
         """
-        return self.handler.as_transaction(self.calls, **txn_kwargs)  # type: ignore[attr-defined]
+        # TODO: Remove this conversion when https://github.com/ApeWorX/ape/pull/1230 is merged
+        assert self.handler.abis[0].inputs[0].components
+        calls = [
+            tuple(call[m.name] for m in self.handler.abis[0].inputs[0].components if m.name)
+            for call in self.calls
+        ]
+
+        return self.handler.as_transaction(calls, **txn_kwargs)  # type: ignore[attr-defined]
 
 
 class Transaction(BaseMulticall):
@@ -251,8 +234,8 @@ class Transaction(BaseMulticall):
         super().__init__(ContractTransactionHandler)
 
     def _validate_calls(self, **txn_kwargs) -> None:
-        if self._handler_method_abi == AGGREGATE3VALUE_METHOD:
-            required_value = sum(call[2] for call in self.calls)  # type: ignore[misc]
+        required_value = sum(call["value"] for call in self.calls)
+        if required_value > 0:
             if "value" not in txn_kwargs:
                 raise ValueRequired(required_value)
 
@@ -279,7 +262,14 @@ class Transaction(BaseMulticall):
             :class:`~ape.api.transactions.ReceiptAPI`
         """
         self._validate_calls(**txn_kwargs)
-        return self.handler(self.calls, **txn_kwargs)  # type: ignore[operator]
+        # TODO: Remove this conversion when https://github.com/ApeWorX/ape/pull/1230 is merged
+        assert self.handler.abis[0].inputs[0].components
+        calls = [
+            tuple(call[m.name] for m in self.handler.abis[0].inputs[0].components if m.name)
+            for call in self.calls
+        ]
+
+        return self.handler(calls, **txn_kwargs)  # type: ignore[operator]
 
     def as_transaction(self, **txn_kwargs) -> TransactionAPI:
         """
@@ -289,7 +279,14 @@ class Transaction(BaseMulticall):
             :class:`~ape.api.transactions.TransactionAPI`
         """
         self._validate_calls(**txn_kwargs)
+        # TODO: Remove this conversion when https://github.com/ApeWorX/ape/pull/1230 is merged
+        assert self.handler.abis[0].inputs[0].components
+        calls = [
+            tuple(call[m.name] for m in self.handler.abis[0].inputs[0].components if m.name)
+            for call in self.calls
+        ]
+
         return self.handler.serialize_transaction(  # type: ignore[attr-defined]
-            self.calls,
+            calls,
             **txn_kwargs,
         )
