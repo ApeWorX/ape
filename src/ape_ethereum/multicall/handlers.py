@@ -8,6 +8,7 @@ from ape.contracts.base import (
     ContractTransactionHandler,
     _select_method_abi,
 )
+from ape.exceptions import ChainError
 from ape.types import AddressType, ContractType, HexBytes
 from ape.utils import ManagerAccessMixin, cached_property
 from ape.utils.abi import MethodABI
@@ -64,10 +65,16 @@ class BaseMulticall(ManagerAccessMixin):
 
     @cached_property
     def contract(self) -> ContractInstance:
-        contract = self.chain_manager.contracts.instance_at(
-            MULTICALL3_ADDRESS,
-            contract_type=ContractType.parse_obj(MULTICALL3_CONTRACT_TYPE),
-        )
+        try:
+            # See if we can fetch it from an explorer first
+            contract = self.chain_manager.contracts.instance_at(MULTICALL3_ADDRESS)
+
+        except ChainError:
+            # else use our backend (with less methods)
+            contract = self.chain_manager.contracts.instance_at(
+                MULTICALL3_ADDRESS,
+                contract_type=ContractType.parse_obj(MULTICALL3_CONTRACT_TYPE),
+            )
 
         if self.provider.chain_id not in SUPPORTED_CHAINS and contract.code != MULTICALL3_CODE:
             # NOTE: 2nd condition allows for use in local test deployments and fork networks
