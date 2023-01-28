@@ -36,13 +36,10 @@ class InterfaceCompiler(CompilerAPI):
                 contract_type_data = {"abi": data, "contractName": path.stem, "sourceId": source_id}
 
             elif isinstance(data, dict) and (
-                ("contractName" in data or "abi" in data or "sourceId" in data)
-                and "deployedBytecode" not in data
-                and "runtimeBytecode" not in data
+                "contractName" in data or "abi" in data or "sourceId" in data
             ):
                 # Raw contract type JSON or raw compiler output.
                 contract_type_data = data
-
                 if "contractName" not in contract_type_data:
                     contract_type_data["contractName"] = path.stem
                 if "sourceId" not in contract_type_data:
