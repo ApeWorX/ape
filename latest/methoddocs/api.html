@@ -2305,7 +2305,7 @@ return the block maximum gas limit.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="ape.api.providers.Web3Provider.get_balance">
-<span class="sig-name descname"><span class="pre">get_balance</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">address</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">int</span></span></span><a class="headerlink" href="#ape.api.providers.Web3Provider.get_balance" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">get_balance</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">address</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ChecksumAddress</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">int</span></span></span><a class="headerlink" href="#ape.api.providers.Web3Provider.get_balance" title="Permalink to this definition"></a></dt>
 <dd><p>Get the balance of an account.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -2376,12 +2376,12 @@ topic filters. Defaults to getting all events.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="ape.api.providers.Web3Provider.get_nonce">
-<span class="sig-name descname"><span class="pre">get_nonce</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">address</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">int</span></span></span><a class="headerlink" href="#ape.api.providers.Web3Provider.get_nonce" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">get_nonce</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">address</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ChecksumAddress</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">int</span></span></span><a class="headerlink" href="#ape.api.providers.Web3Provider.get_nonce" title="Permalink to this definition"></a></dt>
 <dd><p>Get the number of times an account has transacted.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>address</strong> (<em>str</em>) – The address of the account.</p></li>
+<li><p><strong>address</strong> (<em>AddressType</em>) – The address of the account.</p></li>
 <li><p><strong>kwargs</strong> – <ul>
 <li><p><code class="docutils literal notranslate"><span class="pre">block_identifier</span></code> (<a class="reference internal" href="types.html#ape.types.BlockID" title="ape.types.BlockID"><code class="xref py py-class docutils literal notranslate"><span class="pre">BlockID</span></code></a>): The block ID
 for checking a previous account nonce.</p></li>
@@ -2424,12 +2424,12 @@ before timing out. Defaults <code class="docutils literal notranslate"><span cla
 
 <dl class="py method">
 <dt class="sig sig-object py" id="ape.api.providers.Web3Provider.get_storage_at">
-<span class="sig-name descname"><span class="pre">get_storage_at</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">address</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">slot</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bytes</span></span></span><a class="headerlink" href="#ape.api.providers.Web3Provider.get_storage_at" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">get_storage_at</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">address</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ChecksumAddress</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">slot</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bytes</span></span></span><a class="headerlink" href="#ape.api.providers.Web3Provider.get_storage_at" title="Permalink to this definition"></a></dt>
 <dd><p>Gets the raw value of a storage slot of a contract.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>address</strong> (<em>str</em>) – The address of the contract.</p></li>
+<li><p><strong>address</strong> (<em>AddressType</em>) – The address of the contract.</p></li>
 <li><p><strong>slot</strong> (<em>int</em>) – Storage slot to read the value of.</p></li>
 <li><p><strong>kwargs</strong> – <ul>
 <li><p><code class="docutils literal notranslate"><span class="pre">block_identifier</span></code> (<a class="reference internal" href="types.html#ape.types.BlockID" title="ape.types.BlockID"><code class="xref py py-class docutils literal notranslate"><span class="pre">BlockID</span></code></a>): The block ID
