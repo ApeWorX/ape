@@ -213,12 +213,12 @@ contract TestContractSol {
         return (addresses, data);
     }
 
-    function getNestedArrayFixedFixed() public view returns(uint256[2][3] memory) {
+    function getNestedArrayFixedFixed() public pure returns(uint256[2][3] memory) {
         uint[2][3] memory arr = [[uint(1),2], [uint(3), 4], [uint(5), 6]];
         return arr;
     }
 
-    function getNestedArrayDynamicFixed() public view returns(uint256[2][] memory) {
+    function getNestedArrayDynamicFixed() public pure returns(uint256[2][] memory) {
         uint[2][] memory arr = new uint[2][](3);
         arr[0] = [uint(1), 2];
         arr[1] = [uint(3), 4];
@@ -252,6 +252,10 @@ contract TestContractSol {
         uint256 a8,
         uint256 a9
     ) public view {
+
+    }
+
+    function setStruct(MyStruct memory _my_struct) public pure {
 
     }
 }
