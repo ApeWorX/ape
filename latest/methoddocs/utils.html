@@ -313,9 +313,28 @@ to indicate the item was retrieved and all work on it is complete.</p>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="ape.utils.StructParser">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ape.utils.</span></span><span class="sig-name descname"><span class="pre">StructParser</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">method_abi</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ethpm_types.abi.MethodABI</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.utils.StructParser" title="Permalink to this definition"></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ape.utils.</span></span><span class="sig-name descname"><span class="pre">StructParser</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">method_abi</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">ethpm_types.abi.ConstructorABI</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ethpm_types.abi.MethodABI</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.utils.StructParser" title="Permalink to this definition"></a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>A utility class responsible for parsing structs out of values.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="ape.utils.StructParser.decode_output">
+<span class="sig-name descname"><span class="pre">decode_output</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">values</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Tuple</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Any</span></span></span><a class="headerlink" href="#ape.utils.StructParser.decode_output" title="Permalink to this definition"></a></dt>
+<dd><p>Parse a list of output types and values into structs.
+Values are only altered when they are a struct.
+This method also handles structs within structs as well as arrays of structs.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>values</strong> (<em>Union</em><em>[</em><em>List</em><em>, </em><em>Tuple</em><em>]</em>) – A list of of output values.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>The same input values only decoded into structs when applicable.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>Any</p>
+</dd>
+</dl>
+</dd></dl>
+
 <dl class="py property">
 <dt class="sig sig-object py" id="ape.utils.StructParser.default_name">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">default_name</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#ape.utils.StructParser.default_name" title="Permalink to this definition"></a></dt>
@@ -325,17 +344,12 @@ This value is also used for named tuples where the tuple does not have a name
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ape.utils.StructParser.parse">
-<span class="sig-name descname"><span class="pre">parse</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">output_types</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">ethpm_types.abi.ABIType</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">values</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Tuple</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Any</span></span></span><a class="headerlink" href="#ape.utils.StructParser.parse" title="Permalink to this definition"></a></dt>
-<dd><p>Parse a list of output types and values into structs.
-Values are only altered when they are a struct.
-This method also handles structs within structs as well as arrays of structs.</p>
+<dt class="sig sig-object py" id="ape.utils.StructParser.encode_input">
+<span class="sig-name descname"><span class="pre">encode_input</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">values</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Tuple</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Any</span></span></span><a class="headerlink" href="#ape.utils.StructParser.encode_input" title="Permalink to this definition"></a></dt>
+<dd><p>Convert dicts and other objects to struct inputs.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>output_types</strong> (<em>List</em><em>[</em><em>ABIType</em><em>]</em>) – The list of output ABI types.</p></li>
-<li><p><strong>values</strong> (<em>Union</em><em>[</em><em>List</em><em>, </em><em>Tuple</em><em>]</em>) – A list of of output values.</p></li>
-</ul>
+<dd class="field-odd"><p><strong>values</strong> (<em>Union</em><em>[</em><em>List</em><em>, </em><em>Tuple</em><em>]</em>) – A list of of input values.</p>
 </dd>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><p>The same input values only decoded into structs when applicable.</p>
