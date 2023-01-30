@@ -26,6 +26,7 @@ from web3.exceptions import ContractLogicError as Web3ContractLogicError
 from web3.exceptions import TimeExhausted
 from web3.types import RPCEndpoint
 
+from ape.api.accounts import ImpersonatedAccount
 from ape.api.config import PluginConfig
 from ape.api.networks import LOCAL_NETWORK_NAME, NetworkAPI
 from ape.api.query import BlockTransactionQuery
@@ -202,7 +203,7 @@ class ProviderAPI(BaseInterfaceModel):
         """
 
     @raises_not_implemented
-    def get_storage_at(self, address: str, slot: int) -> bytes:  # type: ignore[empty-body]
+    def get_storage_at(self, address: AddressType, slot: int) -> bytes:  # type: ignore[empty-body]
         """
         Gets the raw value of a storage slot of a contract.
 
@@ -744,12 +745,12 @@ class Web3Provider(ProviderAPI, ABC):
 
         return self.network.ecosystem.decode_block(block_data)
 
-    def get_nonce(self, address: str, **kwargs) -> int:
+    def get_nonce(self, address: AddressType, **kwargs) -> int:
         """
         Get the number of times an account has transacted.
 
         Args:
-            address (str): The address of the account.
+            address (AddressType): The address of the account.
             kwargs:
                 * ``block_identifier`` (:class:`~ape.types.BlockID`): The block ID
                   for checking a previous account nonce.
@@ -761,18 +762,18 @@ class Web3Provider(ProviderAPI, ABC):
         block_id = kwargs.pop("block_identifier", None)
         return self.web3.eth.get_transaction_count(address, block_identifier=block_id)
 
-    def get_balance(self, address: str) -> int:
+    def get_balance(self, address: AddressType) -> int:
         return self.web3.eth.get_balance(address)
 
     def get_code(self, address: AddressType) -> ContractCode:
         return self.web3.eth.get_code(address)
 
-    def get_storage_at(self, address: str, slot: int, **kwargs) -> bytes:
+    def get_storage_at(self, address: AddressType, slot: int, **kwargs) -> bytes:
         """
         Gets the raw value of a storage slot of a contract.
 
         Args:
-            address (str): The address of the contract.
+            address (AddressType): The address of the contract.
             slot (int): Storage slot to read the value of.
             kwargs:
                 * ``block_identifier`` (:class:`~ape.types.BlockID`): The block ID
@@ -1038,7 +1039,13 @@ class Web3Provider(ProviderAPI, ABC):
 
     def send_transaction(self, txn: TransactionAPI) -> ReceiptAPI:
         try:
-            txn_hash = self.web3.eth.send_raw_transaction(txn.serialize_transaction())
+            account = self.account_manager[txn.sender]
+            if isinstance(account, ImpersonatedAccount):
+                txn_dict = txn.dict()
+                txn_params = cast(TxParams, txn_dict)
+                txn_hash = self.web3.eth.send_transaction(txn_params)
+            else:
+                txn_hash = self.web3.eth.send_raw_transaction(txn.serialize_transaction())
         except ValueError as err:
             vm_err = self.get_virtual_machine_error(err, txn=txn)
 

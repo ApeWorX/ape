@@ -9,7 +9,7 @@ from ethpm_types import ContractType
 from ethpm_types.abi import ConstructorABI, EventABI, MethodABI
 from hexbytes import HexBytes
 
-from ape.api import AccountAPI, ReceiptAPI, TransactionAPI
+from ape.api import AccountAPI, Address, ReceiptAPI, TransactionAPI
 from ape.api.address import BaseAddress
 from ape.api.query import ContractEventQuery, extract_fields
 from ape.exceptions import ArgumentsLengthError, ChainError, ContractError, TransactionNotFoundError
@@ -263,7 +263,7 @@ class ContractTransaction(ManagerAccessMixin):
         return self.abi.signature
 
     def serialize_transaction(self, *args, **kwargs) -> TransactionAPI:
-        if "sender" in kwargs and isinstance(kwargs["sender"], ContractInstance):
+        if "sender" in kwargs and isinstance(kwargs["sender"], (ContractInstance, Address)):
             # Automatically impersonate contracts (if API available) when sender
             kwargs["sender"] = self.account_manager.test_accounts[kwargs["sender"].address]
 
