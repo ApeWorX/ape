@@ -84,8 +84,6 @@ Install 3rd party plugins at your own risk.
 
 Additionally, plugins that come bundled with **`ape`** in the core installation cannot be removed and are part of the **`ape`** core software.
 
-- Learn more about smart-contract **projects** from this [projects guide](https://docs.apeworx.io/ape/stable/userguides/projects.html).
-
 - Learn more about **installing** plugins from following this [installing user guide](https://docs.apeworx.io/ape/stable/userguides/installing_plugins.html).
 
 - Learn more about **developing** your own plugins from this [developing user guide](docs/userguides/developing_plugins.md).
@@ -117,6 +115,12 @@ ape plugins list -a
 ape plugins install vyper
 ape plugins list -a
 ```
+
+## Projects
+
+When using Ape, you generally will work with a project.
+
+Learn more about smart-contract **projects** from this [projects guide](https://docs.apeworx.io/ape/stable/userguides/projects.html).
 
 ### Compiling
 
