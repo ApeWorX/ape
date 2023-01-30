@@ -225,6 +225,11 @@ def test_compile_individual_contract_excludes_other_contract(ape_cli, runner, pr
 
 @skip_projects_except("with-dependencies")
 def test_compile_non_ape_project_deletes_ape_config_file(ape_cli, runner, project):
+    ape_config = project.path / "default" / "ape-config.yaml"
+    if ape_config.is_file():
+        # Corrupted from a previous test.
+        ape_config.unlink()
+
     result = runner.invoke(ape_cli, ["compile", "Project", "--force"], catch_exceptions=False)
     assert result.exit_code == 0, result.output
     assert "ape-config.yaml" not in [f.name for f in (project.path / "default").iterdir()]
@@ -254,3 +259,9 @@ def test_compile_only_dependency(ape_cli, runner, project, clean_cache, caplog):
     if caplog.records:
         log_record = caplog.records.pop()
         assert expected_log_message not in log_record.message, "Compiled twice!"
+
+
+@skip_projects_except("with-contracts")
+def test_raw_compiler_output_bytecode(ape_cli, runner, project):
+    assert project.RawVyperOutput.contract_type.runtime_bytecode.bytecode
+    assert project.RawSolidityOutput.contract_type.deployment_bytecode.bytecode

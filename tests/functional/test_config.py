@@ -105,13 +105,12 @@ def test_network_gas_limit_invalid_numeric_string(config, temp_config):
     prefixed with '0x'
     """
     eth_config = _goerli_with_gas_limit("4D2")
-
-    with pytest.raises(ValueError, match="Invalid gas_limit, must be 'auto', 'max', or a number"):
+    with pytest.raises(ValueError, match="Gas limit hex str must include '0x' prefix."):
         with temp_config(eth_config):
             pass
 
 
-def test_dependencies(dependency_config, config):
+def test_dependencies(project_with_dependency_config, config):
     assert len(config.dependencies) == 1
     assert config.dependencies[0].name == "testdependency"
     assert config.dependencies[0].contracts_folder == "source/v0.1"

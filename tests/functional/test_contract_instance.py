@@ -1,16 +1,29 @@
 import re
+from typing import List, Tuple
 
 import pytest
 from eth_utils import is_checksum_address, to_hex
 from hexbytes import HexBytes
+from pydantic import BaseModel
 
 from ape import Contract
 from ape.contracts import ContractInstance
 from ape.exceptions import ChainError, ContractError, ContractLogicError
+from ape.types import AddressType
 from ape.utils import ZERO_ADDRESS
 from ape_ethereum.transactions import TransactionStatusEnum
 
 MATCH_TEST_CONTRACT = re.compile(r"<TestContract((Sol)|(Vy))")
+
+
+@pytest.fixture
+def data_object(owner):
+    class DataObject(BaseModel):
+        a: AddressType = owner.address
+        b: HexBytes = HexBytes(123)
+        c: str = "GETS IGNORED"
+
+    return DataObject()
 
 
 def test_init_at_unknown_address(networks_connected_to_tester, address):
@@ -194,7 +207,35 @@ def test_nested_structs_in_tuples(contract_instance, sender, chain):
     assert is_checksum_address(struct_2.t.a)
 
 
-def test_vyper_structs_with_array(vyper_contract_instance, sender):
+def test_get_empty_dyn_array_of_structs(contract_instance):
+    actual = contract_instance.getEmptyDynArrayOfStructs()
+    expected: List = []
+    assert actual == expected
+
+
+def test_get_empty_tuple_of_dyn_array_structs(contract_instance):
+    actual = contract_instance.getEmptyTupleOfDynArrayStructs()
+    expected: Tuple[List, List] = ([], [])
+    assert actual == expected
+
+
+def test_get_empty_tuple_of_array_of_structs_and_dyn_array_of_structs(contract_instance):
+    actual = contract_instance.getEmptyTupleOfArrayOfStructsAndDynArrayOfStructs()
+    expected_fixed_array = (
+        ZERO_ADDRESS,
+        HexBytes("0x0000000000000000000000000000000000000000000000000000000000000000"),
+    )
+    assert actual[0] == [expected_fixed_array, expected_fixed_array]
+    assert actual[1] == []
+
+
+def test_get_empty_tuple_of_int_and_dyn_array(contract_instance):
+    actual = contract_instance.getEmptyTupleOfIntAndDynArray()
+    expected: Tuple[List, List] = ([], [])
+    assert actual == expected
+
+
+def test_vyper_structs_with_array(vyper_contract_instance):
     # NOTE: Vyper struct arrays <=0.3.3 don't include struct info
     actual = vyper_contract_instance.getStructWithArray()
     assert actual.foo == 1
@@ -211,7 +252,7 @@ def test_solidity_structs_with_array(solidity_contract_instance, sender):
     assert is_checksum_address(actual.arr[0].a)
 
 
-def test_arrays(contract_instance, sender):
+def test_arrays(contract_instance):
     assert contract_instance.getEmptyArray() == []
     assert contract_instance.getSingleItemArray() == [1]
     assert contract_instance.getFilledArray() == [1, 2, 3]
@@ -434,6 +475,15 @@ def test_transact_specify_max_gas(vyper_contract_instance, owner):
     assert not receipt.failed
 
 
+@pytest.mark.parametrize("gas_kwarg", ("gas", "gas_limit"))
+def test_transaction_specific_gas(vyper_contract_instance, owner, gas_kwarg):
+    gas = 400000
+    kwargs = {"sender": owner, gas_kwarg: gas}
+    receipt = vyper_contract_instance.setNumber(222, **kwargs)
+    assert not receipt.failed
+    assert receipt.gas_limit == gas
+
+
 def test_dir(vyper_contract_instance):
     actual = dir(vyper_contract_instance)
     expected = [
@@ -537,3 +587,21 @@ def test_is_contract_when_code_is_str(mock_provider, owner):
     # When the return value is the string "0x", it should not code as having code.
     mock_provider._web3.eth.get_code.return_value = "0x"
     assert not owner.is_contract
+
+
+def test_obj_as_struct_input(contract_instance, owner, data_object):
+    assert contract_instance.setStruct(data_object) is None
+
+
+def test_dict_as_struct_input(contract_instance, owner):
+    data = {"a": owner, "b": HexBytes(123), "c": "GETS IGNORED"}
+    assert contract_instance.setStruct(data) is None
+
+
+def test_obj_list_as_struct_array_input(contract_instance, owner, data_object):
+    assert contract_instance.setStructArray([data_object, data_object]) is None
+
+
+def test_dict_list_as_struct_array_input(contract_instance, owner):
+    data = {"a": owner, "b": HexBytes(123), "c": "GETS IGNORED"}
+    assert contract_instance.setStructArray([data, data]) is None

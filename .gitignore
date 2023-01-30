@@ -114,13 +114,15 @@ venv.bak/
 .dmypy.json
 dmypy.json
 
-**/.DS_Store
-
 # setuptools-scm
 version.py
 
 # Ape stuff
 .build/
+
+**/.DS_Store
+*.swp
+*.swo
 
 # From testing
 tests/integration/cli/projects/with-dependencies/renamed_contracts_folder/ape-config.yaml

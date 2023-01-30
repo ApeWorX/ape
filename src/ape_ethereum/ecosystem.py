@@ -10,9 +10,11 @@ from eth_utils import (
     encode_hex,
     humanize_hash,
     is_0x_prefixed,
+    is_hex,
     is_hex_address,
     keccak,
     to_checksum_address,
+    to_int,
 )
 from ethpm_types.abi import ABIType, ConstructorABI, EventABI, MethodABI
 from hexbytes import HexBytes
@@ -87,6 +89,7 @@ class NetworkConfig(PluginConfig):
 
     block_time: int = 0
     transaction_acceptance_timeout: int = DEFAULT_TRANSACTION_ACCEPTANCE_TIMEOUT
+    default_transaction_type: TransactionType = TransactionType.DYNAMIC
 
     gas_limit: GasLimit = "auto"
     """
@@ -102,22 +105,23 @@ class NetworkConfig(PluginConfig):
         smart_union = True
 
     @validator("gas_limit", pre=True, allow_reuse=True)
-    def validate_gas_limit(cls, value: GasLimit) -> GasLimit:
-        if isinstance(value, str):
-            if value.lower() in ("auto", "max"):
-                return value.lower()
+    def validate_gas_limit(cls, value):
+        if value in ("auto", "max"):
+            return value
 
-            # Value could be an integer string
-            if value.isdigit():
-                return int(value)
-            # Enforce "0x" prefix on base 16 integer strings
-            elif value.lower().startswith("0x"):
-                return int(value, 16)
-            else:
-                raise ValueError("Invalid gas_limit, must be 'auto', 'max', or a number")
+        elif isinstance(value, int):
+            return value
 
-        # Value is an integer literal
-        return value
+        elif isinstance(value, str) and value.isnumeric():
+            return int(value)
+
+        elif is_hex(value) and is_0x_prefixed(value):
+            return to_int(HexBytes(value))
+
+        elif is_hex(value):
+            raise ValueError("Gas limit hex str must include '0x' prefix.")
+
+        raise ValueError(f"Invalid gas limit '{value}'")
 
 
 def _create_local_config(default_provider: Optional[str] = None, **kwargs) -> NetworkConfig:
@@ -131,7 +135,6 @@ def _create_local_config(default_provider: Optional[str] = None, **kwargs) -> Ne
 
 
 def _create_config(required_confirmations: int = 2, **kwargs) -> NetworkConfig:
-    # Put in own method to isolate `type: ignore` comments
     return NetworkConfig(required_confirmations=required_confirmations, **kwargs)
 
 
@@ -159,7 +162,6 @@ class Block(BlockAPI):
 class Ethereum(EcosystemAPI):
     name: str = "ethereum"
 
-    default_transaction_type = TransactionType.DYNAMIC
     """
     Default transaction type should be overidden id chain doesn't support EIP-1559
     """
@@ -169,6 +171,10 @@ class Ethereum(EcosystemAPI):
     @property
     def config(self) -> EthereumConfig:
         return self.config_manager.get_config("ethereum")  # type: ignore
+
+    @property
+    def default_transaction_type(self) -> TransactionType:
+        return self.config[self.default_network].default_transaction_type
 
     @classmethod
     def decode_address(cls, raw_address: RawAddress) -> AddressType:
@@ -335,8 +341,11 @@ class Ethereum(EcosystemAPI):
         if not abi.inputs:
             return HexBytes("")
 
+        parser = StructParser(abi)
+        arguments = parser.encode_input(args)
         input_types = [i.canonical_type for i in abi.inputs]
-        encoded_calldata = encode(input_types, args)
+        converted_args = self.conversion_manager.convert(arguments, tuple)
+        encoded_calldata = encode(input_types, converted_args)
         return HexBytes(encoded_calldata)
 
     def decode_calldata(self, abi: Union[ConstructorABI, MethodABI], calldata: bytes) -> Dict:
@@ -380,7 +389,7 @@ class Ethereum(EcosystemAPI):
         ]
 
         parser = StructParser(abi)
-        output_values = parser.parse(abi.outputs, output_values)
+        output_values = parser.decode_output(output_values)
 
         if issubclass(type(output_values), Struct):
             return (output_values,)
@@ -541,6 +550,7 @@ class Ethereum(EcosystemAPI):
         if "max_fee_per_gas" in kwargs:
             kwargs["max_fee"] = kwargs.pop("max_fee_per_gas")
 
+        kwargs["gas"] = kwargs.pop("gas_limit", kwargs.get("gas"))
         return txn_class(**kwargs)
 
     def decode_logs(self, logs: List[Dict], *events: EventABI) -> Iterator["ContractLog"]:

@@ -119,6 +119,29 @@ contract TestContractSol {
         return (2, NestedStruct2(2, getStruct()));
     }
 
+    function getEmptyDynArrayOfStructs() public pure returns(MyStruct[] memory) {
+        MyStruct[] memory _my_structs;
+        return _my_structs;
+    }
+
+    function getEmptyTupleOfDynArrayStructs() public pure returns(MyStruct[] memory, MyStruct[] memory) {
+        MyStruct[] memory _my_structs_0;
+        MyStruct[] memory _my_structs_1;
+        return (_my_structs_0, _my_structs_1);
+    }
+
+    function getEmptyTupleOfArrayOfStructsAndDynArrayOfStructs() public pure returns(MyStruct[2] memory, MyStruct[] memory) {
+        MyStruct[2] memory _my_structs_0;
+        MyStruct[] memory _my_structs_1;
+        return (_my_structs_0, _my_structs_1);
+    }
+
+    function getEmptyTupleOfIntAndDynArray() public pure returns(uint256[] memory, MyStruct[] memory) {
+        uint256[] memory _integers;
+        MyStruct[] memory _structs;
+        return (_integers, _structs);
+    }
+
     function getStructWithArray() public view returns(WithArray memory) {
         MyStruct[2] memory arr = [getStruct(), getStruct()];
         return WithArray(1, arr, 2);
@@ -190,12 +213,12 @@ contract TestContractSol {
         return (addresses, data);
     }
 
-    function getNestedArrayFixedFixed() public view returns(uint256[2][3] memory) {
+    function getNestedArrayFixedFixed() public pure returns(uint256[2][3] memory) {
         uint[2][3] memory arr = [[uint(1),2], [uint(3), 4], [uint(5), 6]];
         return arr;
     }
 
-    function getNestedArrayDynamicFixed() public view returns(uint256[2][] memory) {
+    function getNestedArrayDynamicFixed() public pure returns(uint256[2][] memory) {
         uint[2][] memory arr = new uint[2][](3);
         arr[0] = [uint(1), 2];
         arr[1] = [uint(3), 4];
@@ -229,6 +252,14 @@ contract TestContractSol {
         uint256 a8,
         uint256 a9
     ) public view {
+
+    }
+
+    function setStruct(MyStruct memory _my_struct) public pure {
+
+    }
+
+    function setStructArray(MyStruct[2] memory _my_struct_array) public pure {
 
     }
 }

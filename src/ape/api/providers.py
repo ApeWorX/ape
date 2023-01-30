@@ -14,7 +14,7 @@ from subprocess import DEVNULL, PIPE, Popen
 from typing import Any, Dict, Iterator, List, Optional, cast
 
 from eth_typing import HexStr
-from eth_utils import add_0x_prefix, is_hex, to_hex
+from eth_utils import add_0x_prefix, to_hex
 from evm_trace import CallTreeNode as EvmCallTreeNode
 from evm_trace import TraceFrame as EvmTraceFrame
 from hexbytes import HexBytes
@@ -26,6 +26,7 @@ from web3.exceptions import ContractLogicError as Web3ContractLogicError
 from web3.exceptions import TimeExhausted
 from web3.types import RPCEndpoint
 
+from ape.api.accounts import ImpersonatedAccount
 from ape.api.config import PluginConfig
 from ape.api.networks import LOCAL_NETWORK_NAME, NetworkAPI
 from ape.api.query import BlockTransactionQuery
@@ -202,7 +203,7 @@ class ProviderAPI(BaseInterfaceModel):
         """
 
     @raises_not_implemented
-    def get_storage_at(self, address: str, slot: int) -> bytes:  # type: ignore[empty-body]
+    def get_storage_at(self, address: AddressType, slot: int) -> bytes:  # type: ignore[empty-body]
         """
         Gets the raw value of a storage slot of a contract.
 
@@ -326,12 +327,13 @@ class ProviderAPI(BaseInterfaceModel):
         """
 
     @abstractmethod
-    def get_receipt(self, txn_hash: str) -> ReceiptAPI:
+    def get_receipt(self, txn_hash: str, **kwargs) -> ReceiptAPI:
         """
         Get the information about a transaction from a transaction hash.
 
         Args:
             txn_hash (str): The hash of the transaction to retrieve.
+            kwargs: Any other kwargs that other providers might allow when fetching a receipt.
 
         Returns:
             :class:`~api.providers.ReceiptAPI`:
@@ -743,12 +745,12 @@ class Web3Provider(ProviderAPI, ABC):
 
         return self.network.ecosystem.decode_block(block_data)
 
-    def get_nonce(self, address: str, **kwargs) -> int:
+    def get_nonce(self, address: AddressType, **kwargs) -> int:
         """
         Get the number of times an account has transacted.
 
         Args:
-            address (str): The address of the account.
+            address (AddressType): The address of the account.
             kwargs:
                 * ``block_identifier`` (:class:`~ape.types.BlockID`): The block ID
                   for checking a previous account nonce.
@@ -760,18 +762,18 @@ class Web3Provider(ProviderAPI, ABC):
         block_id = kwargs.pop("block_identifier", None)
         return self.web3.eth.get_transaction_count(address, block_identifier=block_id)
 
-    def get_balance(self, address: str) -> int:
+    def get_balance(self, address: AddressType) -> int:
         return self.web3.eth.get_balance(address)
 
     def get_code(self, address: AddressType) -> ContractCode:
         return self.web3.eth.get_code(address)
 
-    def get_storage_at(self, address: str, slot: int, **kwargs) -> bytes:
+    def get_storage_at(self, address: AddressType, slot: int, **kwargs) -> bytes:
         """
         Gets the raw value of a storage slot of a contract.
 
         Args:
-            address (str): The address of the contract.
+            address (AddressType): The address of the contract.
             slot (int): Storage slot to read the value of.
             kwargs:
                 * ``block_identifier`` (:class:`~ape.types.BlockID`): The block ID
@@ -908,7 +910,11 @@ class Web3Provider(ProviderAPI, ABC):
         return arguments
 
     def get_receipt(
-        self, txn_hash: str, required_confirmations: int = 0, timeout: Optional[int] = None
+        self,
+        txn_hash: str,
+        required_confirmations: int = 0,
+        timeout: Optional[int] = None,
+        **kwargs,
     ) -> ReceiptAPI:
         """
         Get the information about a transaction from a transaction hash.
@@ -1021,20 +1027,8 @@ class Web3Provider(ProviderAPI, ABC):
                 txn.max_fee = self.base_fee + txn.max_priority_fee
             # else: Assume user specified the correct amount or txn will fail and waste gas
 
-        gas_limit = txn.gas_limit or self.network.gas_limit
-        if isinstance(gas_limit, str) and gas_limit.isnumeric():
-            txn.gas_limit = int(gas_limit)
-        elif isinstance(gas_limit, str) and is_hex(gas_limit):
-            txn.gas_limit = int(gas_limit, 16)
-        elif gas_limit == "max":
-            txn.gas_limit = self.max_gas
-        elif gas_limit in ("auto", None):
+        if txn.gas_limit is None:
             txn.gas_limit = self.estimate_gas_cost(txn)
-        else:
-            txn.gas_limit = gas_limit
-
-        assert txn.gas_limit not in ("auto", "max")
-        # else: Assume user specified the correct amount or txn will fail and waste gas
 
         if txn.required_confirmations is None:
             txn.required_confirmations = self.network.required_confirmations
@@ -1045,7 +1039,13 @@ class Web3Provider(ProviderAPI, ABC):
 
     def send_transaction(self, txn: TransactionAPI) -> ReceiptAPI:
         try:
-            txn_hash = self.web3.eth.send_raw_transaction(txn.serialize_transaction())
+            account = self.account_manager[txn.sender]
+            if isinstance(account, ImpersonatedAccount):
+                txn_dict = txn.dict()
+                txn_params = cast(TxParams, txn_dict)
+                txn_hash = self.web3.eth.send_transaction(txn_params)
+            else:
+                txn_hash = self.web3.eth.send_raw_transaction(txn.serialize_transaction())
         except ValueError as err:
             vm_err = self.get_virtual_machine_error(err, txn=txn)
 

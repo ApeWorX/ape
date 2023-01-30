@@ -15,7 +15,8 @@ from ape.managers.config import CONFIG_FILE_NAME
 
 # NOTE: Ensure that we don't use local paths for these
 ape.config.DATA_FOLDER = Path(mkdtemp()).resolve()
-ape.config.PROJECT_FOLDER = Path(mkdtemp()).resolve()
+PROJECT_FOLDER = Path(mkdtemp()).resolve()
+ape.config.PROJECT_FOLDER = PROJECT_FOLDER
 
 # Needed to test tracing support in core `ape test` command.
 pytest_plugins = ["pytester"]
@@ -36,58 +37,54 @@ def setenviron(monkeypatch):
 
 @pytest.fixture(scope="session")
 def config():
-    yield ape.config
+    return ape.config
 
 
 @pytest.fixture(scope="session")
 def data_folder(config):
-    yield config.DATA_FOLDER
+    return config.DATA_FOLDER
 
 
 @pytest.fixture(scope="session")
 def plugin_manager():
-    yield ape.networks.plugin_manager
+    return ape.networks.plugin_manager
 
 
 @pytest.fixture(scope="session")
 def accounts():
-    yield ape.accounts
+    return ape.accounts
 
 
 @pytest.fixture(scope="session")
 def compilers():
-    yield ape.compilers
+    return ape.compilers
 
 
 @pytest.fixture(scope="session")
 def networks():
-    yield ape.networks
+    return ape.networks
 
 
 @pytest.fixture(scope="session")
 def chain():
-    yield ape.chain
+    return ape.chain
 
 
 @pytest.fixture(scope="session")
-def project_folder(config):
-    yield config.PROJECT_FOLDER
+def project_folder():
+    return PROJECT_FOLDER
 
 
-@pytest.fixture(scope="session")
-def project(config):
-    config.PROJECT_FOLDER.mkdir(parents=True, exist_ok=True)
-    yield ape.Project(config.PROJECT_FOLDER)
+@pytest.fixture
+def project(config, project_folder):
+    project_folder.mkdir(parents=True, exist_ok=True)
+    with config.using_project(project_folder) as project:
+        yield project
 
 
-@pytest.fixture(scope="session")
-def project_manager():
-    return ape.project
-
-
-@pytest.fixture(scope="session")
-def dependency_manager(project_manager):
-    return project_manager.dependency_manager
+@pytest.fixture
+def dependency_manager(project):
+    return project.dependency_manager
 
 
 @pytest.fixture(scope="session")
