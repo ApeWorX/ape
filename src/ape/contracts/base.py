@@ -22,11 +22,7 @@ def _convert_kwargs(kwargs, converter) -> Dict:
     fields = TransactionAPI.__fields__
     kwargs_to_convert = {k: v for k, v in kwargs.items() if k == "sender" or k in fields}
     converted_fields = {
-        k: converter(
-            v,
-            # TODO: Upstream, `TransactionAPI.sender` should be `AddressType` (not `str`)
-            AddressType if k == "sender" else fields[k].type_,
-        )
+        k: converter(v, AddressType if k == "sender" else fields[k].type_)
         for k, v in kwargs_to_convert.items()
     }
     return {**kwargs, **converted_fields}
