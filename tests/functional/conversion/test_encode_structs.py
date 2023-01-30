@@ -35,6 +35,14 @@ class Struct(BaseModel):
     d: AddressType
 
 
+class SimilarStruct(Struct):
+    a: int
+    b: bytes
+    c: bool
+    d: AddressType
+    e: str  # Gets ignored because not in ABI.
+
+
 EXPECTED = HexBytes(
     "0000000000000000000000000000000000000000000000000000000000000001"
     "0200000000000000000000000000000000000000000000000000000000000000"
@@ -77,4 +85,18 @@ def test_encode_structs_as_object_with_unconverted(sender):
     data = normal_data.copy()
     data.d = sender
     actual = networks.ethereum.encode_calldata(ABI, normal_data)
+    assert actual == EXPECTED
+
+
+def test_encode_struct_using_dict_with_more_fields(sender):
+    normal_data: Dict = DATA_BY_TYPE_KEY["dict"]  # type: ignore[assignment]
+    data = dict(normal_data)
+    data["extra"] = "foobar"  # Should be ignored since not in ABI.
+    actual = networks.ethereum.encode_calldata(ABI, normal_data)
+    assert actual == EXPECTED
+
+
+def test_encode_struct_using_object_with_more_fields(sender):
+    obj = SimilarStruct(a=1, b=HexBytes("0x02"), c=True, d=ADDRESS, e="foobar")
+    actual = networks.ethereum.encode_calldata(ABI, obj)
     assert actual == EXPECTED

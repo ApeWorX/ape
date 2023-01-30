@@ -132,7 +132,7 @@ class ListTupleConverter(ConverterAPI):
     """
 
     def is_convertible(self, value: Any) -> bool:
-        return isinstance(value, (list, tuple))
+        return isinstance(value, (list, tuple, dict))
 
     def convert(self, value: Union[List, Tuple]) -> Union[List, Tuple]:
         """
