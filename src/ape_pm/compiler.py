@@ -1,6 +1,6 @@
 import json
 from pathlib import Path
-from typing import List, Optional, Set
+from typing import Dict, List, Optional, Set
 
 from ethpm_types import ContractType
 
@@ -24,6 +24,7 @@ class InterfaceCompiler(CompilerAPI):
     ) -> List[ContractType]:
         filepaths.sort()  # Sort to assist in reproducing consistent results.
         contract_types: List[ContractType] = []
+        contract_type_data: Dict
         for path in filepaths:
             data = json.loads(path.read_text())
             source_path = (
@@ -32,13 +33,42 @@ class InterfaceCompiler(CompilerAPI):
             source_id = str(source_path)
             if isinstance(data, list):
                 # ABI JSON list
-                contract_type_data = {"contractName": path.stem, "abi": data, "sourceId": source_id}
+                contract_type_data = {"abi": data, "contractName": path.stem, "sourceId": source_id}
 
             elif isinstance(data, dict) and (
                 "contractName" in data or "abi" in data or "sourceId" in data
             ):
-                # Raw contract type JSON
+                # Raw contract type JSON or raw compiler output.
                 contract_type_data = data
+                if "contractName" not in contract_type_data:
+                    contract_type_data["contractName"] = path.stem
+                if "sourceId" not in contract_type_data:
+                    contract_type_data["sourceId"] = source_id
+
+                if (
+                    "deploymentBytecode" not in contract_type_data
+                    or "runtimeBytecode" not in contract_type_data
+                ):
+                    if "bin" in contract_type_data:
+                        # Handle raw Solidity output.
+                        deployment_bytecode = data["bin"]
+                        runtime_bytecode = data["bin"]
+
+                    elif (
+                        "bytecode" in contract_type_data or "bytecode_runtime" in contract_type_data
+                    ):
+                        # Handle raw Vyper output.
+                        deployment_bytecode = contract_type_data.pop("bytecode", None)
+                        runtime_bytecode = contract_type_data.pop("bytecode_runtime", None)
+
+                    else:
+                        deployment_bytecode = None
+                        runtime_bytecode = None
+
+                    if deployment_bytecode:
+                        contract_type_data["deploymentBytecode"] = {"bytecode": deployment_bytecode}
+                    if runtime_bytecode:
+                        contract_type_data["runtimeBytecode"] = {"bytecode": runtime_bytecode}
 
             else:
                 logger.warning(f"Unable to parse {ContractType.__name__} from '{source_id}'.")
