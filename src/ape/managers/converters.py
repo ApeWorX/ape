@@ -148,6 +148,13 @@ class ListTupleConverter(ConverterAPI):
         converted_value: List[Any] = []
 
         for v in value:
+            # Ignore already-primitive values and assume they are already converted
+            # (since we don't know the type they are supposed to be, only that
+            # they should be primitive).
+            if (isinstance(v, str) and is_hex(v)) or isinstance(v, (int, bytes)):
+                converted_value.append(v)
+                continue
+
             # Try all of them to see if one converts it over (only use first one)
             conversion_found = False
             # NOTE: Double loop required because we might not know the exact type of the inner
