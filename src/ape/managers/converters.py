@@ -150,8 +150,13 @@ class ListTupleConverter(ConverterAPI):
         for v in value:
             # Ignore already-primitive values and assume they are already converted
             # (since we don't know the type they are supposed to be, only that
-            # they should be primitive).
-            if (isinstance(v, str) and is_hex(v)) or isinstance(v, (int, bytes)):
+            # they should be primitive). Also, ignore dicts because they are handled
+            # at the ecosystem level.
+            if (
+                (isinstance(v, str) and is_hex(v))
+                or isinstance(v, (int, bytes))
+                or isinstance(v, dict)
+            ):
                 converted_value.append(v)
                 continue
 
@@ -206,7 +211,7 @@ class TimestampConverter(ConverterAPI):
         elif isinstance(value, timedelta):
             return int((datetime.now(timezone.utc) + value).timestamp())
         else:
-            raise ConversionError
+            raise ConversionError()
 
 
 class ConversionManager(BaseManager):

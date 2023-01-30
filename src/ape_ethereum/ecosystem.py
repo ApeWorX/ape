@@ -341,23 +341,8 @@ class Ethereum(EcosystemAPI):
         if not abi.inputs:
             return HexBytes("")
 
-        # Convert dicts and other objects to struct inputs
-        arguments: List = list(args)
-        for idx, ipt in enumerate(abi.inputs):
-            arg = arguments[idx]
-            if (
-                ipt.type == "tuple"
-                and ipt.components
-                and all(m.name for m in ipt.components)
-                and not isinstance(arg, tuple)
-            ):
-                if isinstance(arg, dict):
-                    arguments[idx] = tuple([arg[m.name] for m in ipt.components])
-
-                else:
-                    arg = [getattr(arg, m.name) for m in ipt.components if m.name]
-                    arguments[idx] = tuple(arg)
-
+        parser = StructParser(abi)
+        arguments = parser.encode_input(args)
         input_types = [i.canonical_type for i in abi.inputs]
         converted_args = self.conversion_manager.convert(arguments, tuple)
         encoded_calldata = encode(input_types, converted_args)
@@ -404,7 +389,7 @@ class Ethereum(EcosystemAPI):
         ]
 
         parser = StructParser(abi)
-        output_values = parser.parse(abi.outputs, output_values)
+        output_values = parser.decode_output(output_values)
 
         if issubclass(type(output_values), Struct):
             return (output_values,)

@@ -258,4 +258,8 @@ contract TestContractSol {
     function setStruct(MyStruct memory _my_struct) public pure {
 
     }
+
+    function setStructArray(MyStruct[2] memory _my_struct_array) public pure {
+
+    }
 }
