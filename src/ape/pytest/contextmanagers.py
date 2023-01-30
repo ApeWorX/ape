@@ -64,7 +64,7 @@ class RevertsContextManager:
             raise AssertionError("Cannot fetch transaction trace.") from exc
 
         pc = None
-        pcmap = contract.contract_type.pcmap.decode_output()
+        pcmap = contract.contract_type.pcmap.parse()
 
         # To find a suitable line for inspecting dev messages, we must start at the revert and work
         # our way backwards. If the last frame's PC is in the PC map, the offending line is very
