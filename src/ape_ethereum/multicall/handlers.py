@@ -30,7 +30,7 @@ class BaseMulticall(ManagerAccessMixin):
         self.calls: List[dict] = []
 
     @classmethod
-    def deploy(cls):
+    def inject(cls):
         """
         Create the multicall module contract on-chain, so we can use it.
         Must use a provider that supports ``debug_setCode``.
@@ -86,10 +86,10 @@ class BaseMulticall(ManagerAccessMixin):
 
     def add(
         self,
-        call,
+        call: ContractMethodHandler,
         *args,
-        allowFailure=None,
-        value=None,
+        allowFailure: bool = False,
+        value: int = 0,
     ):
         """
         Adds a call to the Multicall session object.
@@ -100,7 +100,7 @@ class BaseMulticall(ManagerAccessMixin):
         Args:
             call: :class:`ContractMethodHandler` The method to call.
             *args: The arguments to invoke the method with.
-            requireSuccess: bool Whether the call must be successful.
+            allowFailure: bool Whether the call is allowed to fail.
             value: int The amount of ether to forward with the call.
         """
 
@@ -110,8 +110,8 @@ class BaseMulticall(ManagerAccessMixin):
         self.calls.append(
             {
                 "target": call.contract.address,
-                "allowFailure": allowFailure if allowFailure is not None else False,
-                "value": value or 0,
+                "allowFailure": allowFailure,
+                "value": value,
                 "callData": call.encode_input(*args),
             }
         )
