@@ -38,6 +38,11 @@ contract.my_method()
 
 **WARN**: You may have to adjust the name and source ID of the contract type in the JSON to match the new file name in your project.
 
+3. **Raw Compiler Output**: If you have an artifact with binary compiled elsewhere, you can include it in your project.
+   This is useful if you want to use contracts from much larger projects as dependency for your test cases.
+
+**WARN**: You may have to adjust name and source ID similarly to raw contract-type output.
+
 ## Other Compiler Plugins
 
 If your project includes Solidity (`.sol`) or Vyper (`.vy`) files, you will have to install additional compilers.
