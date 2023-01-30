@@ -89,6 +89,7 @@ class NetworkConfig(PluginConfig):
 
     block_time: int = 0
     transaction_acceptance_timeout: int = DEFAULT_TRANSACTION_ACCEPTANCE_TIMEOUT
+    default_transaction_type: TransactionType = TransactionType.DYNAMIC
 
     gas_limit: GasLimit = "auto"
     """
@@ -161,7 +162,6 @@ class Block(BlockAPI):
 class Ethereum(EcosystemAPI):
     name: str = "ethereum"
 
-    default_transaction_type = TransactionType.DYNAMIC
     """
     Default transaction type should be overidden id chain doesn't support EIP-1559
     """
@@ -171,6 +171,10 @@ class Ethereum(EcosystemAPI):
     @property
     def config(self) -> EthereumConfig:
         return self.config_manager.get_config("ethereum")  # type: ignore
+
+    @property
+    def default_transaction_type(self) -> TransactionType:
+        return self.config[self.default_network].default_transaction_type
 
     @classmethod
     def decode_address(cls, raw_address: RawAddress) -> AddressType:
