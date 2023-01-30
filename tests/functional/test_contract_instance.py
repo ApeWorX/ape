@@ -4,14 +4,26 @@ from typing import List, Tuple
 import pytest
 from eth_utils import is_checksum_address, to_hex
 from hexbytes import HexBytes
+from pydantic import BaseModel
 
 from ape import Contract
 from ape.contracts import ContractInstance
 from ape.exceptions import ChainError, ContractError, ContractLogicError
+from ape.types import AddressType
 from ape.utils import ZERO_ADDRESS
 from ape_ethereum.transactions import TransactionStatusEnum
 
 MATCH_TEST_CONTRACT = re.compile(r"<TestContract((Sol)|(Vy))")
+
+
+@pytest.fixture
+def data_object(owner):
+    class DataObject(BaseModel):
+        a: AddressType = owner.address
+        b: HexBytes = HexBytes(123)
+        c: str = "GETS IGNORED"
+
+    return DataObject()
 
 
 def test_init_at_unknown_address(networks_connected_to_tester, address):
@@ -575,3 +587,21 @@ def test_is_contract_when_code_is_str(mock_provider, owner):
     # When the return value is the string "0x", it should not code as having code.
     mock_provider._web3.eth.get_code.return_value = "0x"
     assert not owner.is_contract
+
+
+def test_obj_as_struct_input(contract_instance, owner, data_object):
+    assert contract_instance.setStruct(data_object) is None
+
+
+def test_dict_as_struct_input(contract_instance, owner):
+    data = {"a": owner, "b": HexBytes(123), "c": "GETS IGNORED"}
+    assert contract_instance.setStruct(data) is None
+
+
+def test_obj_list_as_struct_array_input(contract_instance, owner, data_object):
+    assert contract_instance.setStructArray([data_object, data_object]) is None
+
+
+def test_dict_list_as_struct_array_input(contract_instance, owner):
+    data = {"a": owner, "b": HexBytes(123), "c": "GETS IGNORED"}
+    assert contract_instance.setStructArray([data, data]) is None

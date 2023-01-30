@@ -245,3 +245,15 @@ def functionWithUniqueAmountOfArguments(
     a9: uint256
 ):
     pass
+
+
+@pure
+@external
+def setStruct(_my_struct: MyStruct):
+    pass
+
+
+@pure
+@external
+def setStructArray(_my_struct_array: MyStruct[2]):
+    pass

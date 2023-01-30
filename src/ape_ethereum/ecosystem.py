@@ -341,8 +341,11 @@ class Ethereum(EcosystemAPI):
         if not abi.inputs:
             return HexBytes("")
 
+        parser = StructParser(abi)
+        arguments = parser.encode_input(args)
         input_types = [i.canonical_type for i in abi.inputs]
-        encoded_calldata = encode(input_types, args)
+        converted_args = self.conversion_manager.convert(arguments, tuple)
+        encoded_calldata = encode(input_types, converted_args)
         return HexBytes(encoded_calldata)
 
     def decode_calldata(self, abi: Union[ConstructorABI, MethodABI], calldata: bytes) -> Dict:
@@ -386,7 +389,7 @@ class Ethereum(EcosystemAPI):
         ]
 
         parser = StructParser(abi)
-        output_values = parser.parse(abi.outputs, output_values)
+        output_values = parser.decode_output(output_values)
 
         if issubclass(type(output_values), Struct):
             return (output_values,)
