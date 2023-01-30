@@ -5,7 +5,7 @@ from typing import Any, Dict, List, Optional, Tuple, Union
 from eth_abi import decode, grammar
 from eth_utils import decode_hex, to_checksum_address
 from ethpm_types import HexBytes
-from ethpm_types.abi import ABIType, EventABI, EventABIType, MethodABI
+from ethpm_types.abi import ABIType, ConstructorABI, EventABI, EventABIType, MethodABI
 
 ARRAY_PATTERN = re.compile(r"[(*\w,? )]*\[\d*]")
 
@@ -47,8 +47,8 @@ class StructParser:
     A utility class responsible for parsing structs out of values.
     """
 
-    def __init__(self, method_abi: MethodABI):
-        self.method_abi = method_abi
+    def __init__(self, method_abi: Union[ConstructorABI, MethodABI]):
+        self.abi = method_abi
 
     @property
     def default_name(self) -> str:
@@ -57,7 +57,8 @@ class StructParser:
         This value is also used for named tuples where the tuple does not have a name
         (but each item in the tuple does have a name).
         """
-        return f"{self.method_abi.name}_return"
+        name = self.abi.name if isinstance(self.abi, MethodABI) else "constructor"
+        return f"{name}_return"
 
     def encode_input(self, values: Union[List, Tuple]) -> Any:
         """
@@ -70,7 +71,7 @@ class StructParser:
             Any: The same input values only decoded into structs when applicable.
         """
 
-        return [self._encode_input(ipt, v) for ipt, v in zip(self.method_abi.inputs, values)]
+        return [self._encode_input(ipt, v) for ipt, v in zip(self.abi.inputs, values)]
 
     def _encode_input(self, input_type, value):
         if (
@@ -111,7 +112,11 @@ class StructParser:
             Any: The same input values only decoded into structs when applicable.
         """
 
-        return self._decode_output(self.method_abi.outputs, values)
+        return (
+            self._decode_output(self.abi.outputs, values)
+            if isinstance(self.abi, MethodABI)
+            else None
+        )
 
     def _decode_output(self, output_types: List[ABIType], values: Union[List, Tuple]):
         if is_struct(output_types):
