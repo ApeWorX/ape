@@ -47,7 +47,7 @@ extras_require = {
         "twine==3.8.0",  # Package upload tool
     ],
     "dev": [
-        "commitizen>=2.19,<2.20",  # Manage commits and publishing releases
+        "commitizen>=2.40,<2.41",  # Manage commits and publishing releases
         "pre-commit",  # Ensure that linters are run prior to committing
         "pytest-watch",  # `ptw` test watcher/runner
         "ipdb",  # Debugger (Must use `export PYTHONBREAKPOINT=ipdb.set_trace`)
