@@ -22,7 +22,7 @@ jobs:
         - name: Install Dependencies
           run: |
             python -m pip install --upgrade pip
-            pip install .[dev]
+            pip install "commitizen>=2.40,<2.41"
 
         - name: Check PR Title
           env:
