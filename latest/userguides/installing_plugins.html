@@ -1,13 +1,10 @@
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" >
 <head>
-  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Plugins &mdash; ape  documentation</title>
-  <link rel="stylesheet" href="/ape/latest/_static/css/theme.css" type="text/css" />
-  <link rel="stylesheet" href="/ape/latest/_static/pygments.css" type="text/css" />
-  <link rel="stylesheet" href="/ape/latest/_static/custom.css" type="text/css" />
       <link rel="stylesheet" href="/ape/latest/_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="/ape/latest/_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="/ape/latest/_static/custom.css" type="text/css" />
@@ -16,11 +13,12 @@
   <!--[if lt IE 9]>
     <script src="../_static/js/html5shiv.min.js"></script>
   <![endif]-->
-  <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+  
+        <script integrity="sha384-vtXRMe3mGCbOeY7l30aIg8H9p3GdeSe4IFlP6G8JMa7o7lXvnz3GFKzPxzJdPfGK" src="../_static/jquery.js"></script>
+        <script integrity="sha384-lSZeSIVKp9myfKbDQ3GkN/KHjUc+mzg17VKDN4Y2kUeBSJioB9QSM639vM9fuY//" src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
-        <script src="../_static/jquery.js"></script>
-        <script src="../_static/underscore.js"></script>
         <script src="../_static/doctools.js"></script>
+        <script src="../_static/sphinx_highlight.js"></script>
     <script src="../_static/js/theme.js"></script>
     <script src="../_static/custom.js"></script>
   <script>
@@ -37,8 +35,12 @@
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
         <div class="wy-side-nav-search" >
-            <a href="../index.html" class="icon icon-home"> ape
-            <img src="../_static/logo.gif" class="logo" alt="Logo"/>
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            ape
+              <img src="../_static/logo.gif" class="logo" alt="Logo"/>
           </a>
 
           <div class="version">
@@ -51,13 +53,12 @@
           </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
-    <input type="text" name="q" placeholder="Search docs" />
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
     <input type="hidden" name="check_keywords" value="yes" />
     <input type="hidden" name="area" value="default" />
   </form>
 </div>
-        </div>
-        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Main">
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <p class="caption" role="heading"><span class="caption-text">User Guides</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="quickstart.html">Overview</a></li>
@@ -109,8 +110,7 @@
       </div>
     </nav>
 
-    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
-      <nav class="wy-nav-top" aria-label="Top" >
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
           <a href="../index.html">ape</a>
       </nav>
@@ -119,7 +119,7 @@
         <div class="rst-content">
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
-      <li><a href="../index.html" class="icon icon-home"></a></li>
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
       <li class="breadcrumb-item active">Plugins</li>
       <li class="wy-breadcrumbs-aside">
             <a href="../_sources/userguides/installing_plugins.md.txt" rel="nofollow"> View page source</a>
@@ -131,7 +131,7 @@
            <div itemprop="articleBody">
              
   <section id="plugins">
-<h1>Plugins<a class="headerlink" href="#plugins" title="Permalink to this headline"></a></h1>
+<h1>Plugins<a class="headerlink" href="#plugins" title="Permalink to this heading"></a></h1>
 <p>Plugins are core to Ape’s architecture.
 Here are some plugin examples in Ape:</p>
 <ul class="simple">
@@ -141,7 +141,7 @@ Here are some plugin examples in Ape:</p>
 <li><p>CLI plugins: Extending the <code class="docutils literal notranslate"><span class="pre">click</span></code> CLI in Ape.</p></li>
 </ul>
 <section id="core-plugins">
-<h2>Core Plugins<a class="headerlink" href="#core-plugins" title="Permalink to this headline"></a></h2>
+<h2>Core Plugins<a class="headerlink" href="#core-plugins" title="Permalink to this heading"></a></h2>
 <p>Ape ships with core plugins to help Ape work out-of-the-box.
 To see the core plugins that come with Ape, run the following command:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>ape<span class="w"> </span>plugins<span class="w"> </span>list<span class="w"> </span>--all
@@ -152,7 +152,7 @@ However, when you include the <code class="docutils literal notranslate"><span c
 <strong>NOTE</strong>: The available plugins list is trusted and from the ApeWorX organization, however you can install third-party plugins from other sources as well.</p>
 </section>
 <section id="installing-plugins">
-<h2>Installing Plugins<a class="headerlink" href="#installing-plugins" title="Permalink to this headline"></a></h2>
+<h2>Installing Plugins<a class="headerlink" href="#installing-plugins" title="Permalink to this heading"></a></h2>
 <p>To add plugins to your project, edit your <code class="docutils literal notranslate"><span class="pre">ape-config.yaml</span></code> file:</p>
 <div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">plugins</span><span class="p">:</span>
 <span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">solidity</span>
@@ -174,7 +174,7 @@ Additionally, you may specify a <code class="docutils literal notranslate"><span
 </div>
 </section>
 <section id="plugin-types">
-<h2>Plugin Types<a class="headerlink" href="#plugin-types" title="Permalink to this headline"></a></h2>
+<h2>Plugin Types<a class="headerlink" href="#plugin-types" title="Permalink to this heading"></a></h2>
 <p>There are many types of plugins available, including compilers, providers, networks, and CLI-based plugins.
 To learn more about the different types of plugins, see the <a class="reference external" href="./developing_plugins.html">Developing a Plugin Guide</a>.</p>
 </section>

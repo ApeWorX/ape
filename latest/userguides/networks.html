@@ -1,13 +1,10 @@
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" >
 <head>
-  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Networks &mdash; ape  documentation</title>
-  <link rel="stylesheet" href="/ape/latest/_static/css/theme.css" type="text/css" />
-  <link rel="stylesheet" href="/ape/latest/_static/pygments.css" type="text/css" />
-  <link rel="stylesheet" href="/ape/latest/_static/custom.css" type="text/css" />
       <link rel="stylesheet" href="/ape/latest/_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="/ape/latest/_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="/ape/latest/_static/custom.css" type="text/css" />
@@ -16,11 +13,12 @@
   <!--[if lt IE 9]>
     <script src="../_static/js/html5shiv.min.js"></script>
   <![endif]-->
-  <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+  
+        <script integrity="sha384-vtXRMe3mGCbOeY7l30aIg8H9p3GdeSe4IFlP6G8JMa7o7lXvnz3GFKzPxzJdPfGK" src="../_static/jquery.js"></script>
+        <script integrity="sha384-lSZeSIVKp9myfKbDQ3GkN/KHjUc+mzg17VKDN4Y2kUeBSJioB9QSM639vM9fuY//" src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
-        <script src="../_static/jquery.js"></script>
-        <script src="../_static/underscore.js"></script>
         <script src="../_static/doctools.js"></script>
+        <script src="../_static/sphinx_highlight.js"></script>
     <script src="../_static/js/theme.js"></script>
     <script src="../_static/custom.js"></script>
   <script>
@@ -37,8 +35,12 @@
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
         <div class="wy-side-nav-search" >
-            <a href="../index.html" class="icon icon-home"> ape
-            <img src="../_static/logo.gif" class="logo" alt="Logo"/>
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            ape
+              <img src="../_static/logo.gif" class="logo" alt="Logo"/>
           </a>
 
           <div class="version">
@@ -51,13 +53,12 @@
           </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
-    <input type="text" name="q" placeholder="Search docs" />
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
     <input type="hidden" name="check_keywords" value="yes" />
     <input type="hidden" name="area" value="default" />
   </form>
 </div>
-        </div>
-        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Main">
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <p class="caption" role="heading"><span class="caption-text">User Guides</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="quickstart.html">Overview</a></li>
@@ -111,8 +112,7 @@
       </div>
     </nav>
 
-    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
-      <nav class="wy-nav-top" aria-label="Top" >
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
           <a href="../index.html">ape</a>
       </nav>
@@ -121,7 +121,7 @@
         <div class="rst-content">
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
-      <li><a href="../index.html" class="icon icon-home"></a></li>
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
       <li class="breadcrumb-item active">Networks</li>
       <li class="wy-breadcrumbs-aside">
             <a href="../_sources/userguides/networks.md.txt" rel="nofollow"> View page source</a>
@@ -133,10 +133,10 @@
            <div itemprop="articleBody">
              
   <section id="networks">
-<h1>Networks<a class="headerlink" href="#networks" title="Permalink to this headline"></a></h1>
+<h1>Networks<a class="headerlink" href="#networks" title="Permalink to this heading"></a></h1>
 <p>When interacting with the blockchain, you will have to select a network.</p>
 <section id="selecting-a-network">
-<h2>Selecting a Network<a class="headerlink" href="#selecting-a-network" title="Permalink to this headline"></a></h2>
+<h2>Selecting a Network<a class="headerlink" href="#selecting-a-network" title="Permalink to this heading"></a></h2>
 <p>Commonly, you will use the <code class="docutils literal notranslate"><span class="pre">--network</span></code> option to configure your network during Ape commands.
 The following is a list of common Ape commands that can use the <code class="docutils literal notranslate"><span class="pre">--network</span></code> option:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>ape<span class="w"> </span><span class="nb">test</span><span class="w"> </span>--network<span class="w"> </span>ethereum:local:foundry
@@ -153,7 +153,7 @@ For example, the default ecosystem is <code class="docutils literal notranslate"
 <p>as a short-cut for <code class="docutils literal notranslate"><span class="pre">ethereum:local:foundry</span></code>.</p>
 </section>
 <section id="configuring-networks">
-<h2>Configuring Networks<a class="headerlink" href="#configuring-networks" title="Permalink to this headline"></a></h2>
+<h2>Configuring Networks<a class="headerlink" href="#configuring-networks" title="Permalink to this heading"></a></h2>
 <p>Change network defaults using your project’s <code class="docutils literal notranslate"><span class="pre">ape-config.yaml</span></code> file.
 The following configuration changes the default ecosystem, network, and provider such that if you omitted the <code class="docutils literal notranslate"><span class="pre">--network</span></code> option on network-bound commands, it would use the value <code class="docutils literal notranslate"><span class="pre">&lt;ecosystem-name&gt;:&lt;network-name&gt;:&lt;provider-name&gt;</span></code>.</p>
 <div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">default_ecosystem</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">&lt;ecosystem-name&gt;</span>
@@ -180,7 +180,7 @@ The following configuration changes the default ecosystem, network, and provider
 <p>For the local network configuration, the default is <code class="docutils literal notranslate"><span class="pre">&quot;max&quot;</span></code>. Otherwise it is <code class="docutils literal notranslate"><span class="pre">&quot;auto&quot;</span></code>.</p>
 </section>
 <section id="local-network">
-<h2>Local Network<a class="headerlink" href="#local-network" title="Permalink to this headline"></a></h2>
+<h2>Local Network<a class="headerlink" href="#local-network" title="Permalink to this heading"></a></h2>
 <p>The default network in Ape is the local network (keyword <code class="docutils literal notranslate"><span class="pre">&quot;local&quot;</span></code>).
 It is meant for running tests and debugging contracts.
 Out-of-the-box, Ape ships with two development providers you can use for the <code class="docutils literal notranslate"><span class="pre">local</span></code> network:</p>
@@ -195,7 +195,7 @@ ape<span class="w"> </span><span class="nb">test</span><span class="w"> </span>-
 <p>To learn more about testing in ape, follow <a class="reference external" href="./testing.html">this guide</a>.</p>
 </section>
 <section id="live-networks">
-<h2>Live Networks<a class="headerlink" href="#live-networks" title="Permalink to this headline"></a></h2>
+<h2>Live Networks<a class="headerlink" href="#live-networks" title="Permalink to this heading"></a></h2>
 <p>Use the core plugin <code class="docutils literal notranslate"><span class="pre">ape-geth</span></code> to connect to local or remote nodes via URI.
 The geth plugin is abstract in that it represents any node, not just geth nodes.
 However, it will work best when connected to a geth node.
@@ -208,7 +208,7 @@ To configure network URIs in geth, you can use the <code class="docutils literal
 </div>
 </section>
 <section id="ad-hoc-network-connection">
-<h2>Ad-hoc Network Connection<a class="headerlink" href="#ad-hoc-network-connection" title="Permalink to this headline"></a></h2>
+<h2>Ad-hoc Network Connection<a class="headerlink" href="#ad-hoc-network-connection" title="Permalink to this heading"></a></h2>
 <p>If you would like to connect to a URI using the <code class="docutils literal notranslate"><span class="pre">geth</span></code> provider, you can specify a URI for the provider name in the <code class="docutils literal notranslate"><span class="pre">--network</span></code> option:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>ape<span class="w"> </span>run<span class="w"> </span>script<span class="w"> </span>--network<span class="w"> </span>etheruem:mainnet:https://foo.bar
 </pre></div>

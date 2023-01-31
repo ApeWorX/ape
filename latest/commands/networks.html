@@ -1,13 +1,10 @@
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" >
 <head>
-  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>networks &mdash; ape  documentation</title>
-  <link rel="stylesheet" href="/ape/latest/_static/css/theme.css" type="text/css" />
-  <link rel="stylesheet" href="/ape/latest/_static/pygments.css" type="text/css" />
-  <link rel="stylesheet" href="/ape/latest/_static/custom.css" type="text/css" />
       <link rel="stylesheet" href="/ape/latest/_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="/ape/latest/_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="/ape/latest/_static/custom.css" type="text/css" />
@@ -16,11 +13,12 @@
   <!--[if lt IE 9]>
     <script src="../_static/js/html5shiv.min.js"></script>
   <![endif]-->
-  <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+  
+        <script integrity="sha384-vtXRMe3mGCbOeY7l30aIg8H9p3GdeSe4IFlP6G8JMa7o7lXvnz3GFKzPxzJdPfGK" src="../_static/jquery.js"></script>
+        <script integrity="sha384-lSZeSIVKp9myfKbDQ3GkN/KHjUc+mzg17VKDN4Y2kUeBSJioB9QSM639vM9fuY//" src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
-        <script src="../_static/jquery.js"></script>
-        <script src="../_static/underscore.js"></script>
         <script src="../_static/doctools.js"></script>
+        <script src="../_static/sphinx_highlight.js"></script>
     <script src="../_static/js/theme.js"></script>
     <script src="../_static/custom.js"></script>
   <script>
@@ -37,8 +35,12 @@
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
         <div class="wy-side-nav-search" >
-            <a href="../index.html" class="icon icon-home"> ape
-            <img src="../_static/logo.gif" class="logo" alt="Logo"/>
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            ape
+              <img src="../_static/logo.gif" class="logo" alt="Logo"/>
           </a>
 
           <div class="version">
@@ -51,13 +53,12 @@
           </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
-    <input type="text" name="q" placeholder="Search docs" />
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
     <input type="hidden" name="check_keywords" value="yes" />
     <input type="hidden" name="area" value="default" />
   </form>
 </div>
-        </div>
-        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Main">
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <p class="caption" role="heading"><span class="caption-text">User Guides</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../userguides/quickstart.html">Overview</a></li>
@@ -107,8 +108,7 @@
       </div>
     </nav>
 
-    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
-      <nav class="wy-nav-top" aria-label="Top" >
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
           <a href="../index.html">ape</a>
       </nav>
@@ -117,7 +117,7 @@
         <div class="rst-content">
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
-      <li><a href="../index.html" class="icon icon-home"></a></li>
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
       <li class="breadcrumb-item active">networks</li>
       <li class="wy-breadcrumbs-aside">
             <a href="../_sources/commands/networks.rst.txt" rel="nofollow"> View page source</a>
@@ -129,15 +129,13 @@
            <div itemprop="articleBody">
              
   <section id="networks">
-<h1>networks<a class="headerlink" href="#networks" title="Permalink to this headline"></a></h1>
-<blockquote>
-<div><p>Command-line helper for managing networks.</p>
-</div></blockquote>
+<h1>networks<a class="headerlink" href="#networks" title="Permalink to this heading"></a></h1>
+<p>Command-line helper for managing networks.</p>
 <div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>networks<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span><span class="w"> </span>COMMAND<span class="w"> </span><span class="o">[</span>ARGS<span class="o">]</span>...
 </pre></div>
 </div>
 <section id="networks-list">
-<h2>list<a class="headerlink" href="#networks-list" title="Permalink to this headline"></a></h2>
+<h2>list<a class="headerlink" href="#networks-list" title="Permalink to this heading"></a></h2>
 <p>List registered networks</p>
 <div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>networks<span class="w"> </span>list<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span>
 </pre></div>
@@ -153,7 +151,7 @@
 <dt class="sig sig-object std" id="cmdoption-networks-list-format">
 <span class="sig-name descname"><span class="pre">--format</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;output_format&gt;</span></span><a class="headerlink" href="#cmdoption-networks-list-format" title="Permalink to this definition"></a></dt>
 <dd><dl class="field-list simple">
-<dt class="field-odd">Options</dt>
+<dt class="field-odd">Options<span class="colon">:</span></dt>
 <dd class="field-odd"><p>TREE | YAML</p>
 </dd>
 </dl>
@@ -164,7 +162,7 @@
 <span class="sig-name descname"><span class="pre">--ecosystem</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;ecosystem_filter&gt;</span></span><a class="headerlink" href="#cmdoption-networks-list-ecosystem" title="Permalink to this definition"></a></dt>
 <dd><p>Filter the results by ecosystem</p>
 <dl class="field-list simple">
-<dt class="field-odd">Options</dt>
+<dt class="field-odd">Options<span class="colon">:</span></dt>
 <dd class="field-odd"><p>ethereum</p>
 </dd>
 </dl>
@@ -175,8 +173,8 @@
 <span class="sig-name descname"><span class="pre">--network</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;network_filter&gt;</span></span><a class="headerlink" href="#cmdoption-networks-list-network" title="Permalink to this definition"></a></dt>
 <dd><p>Filter the results by network</p>
 <dl class="field-list simple">
-<dt class="field-odd">Options</dt>
-<dd class="field-odd"><p>goerli-fork | mainnet | local | goerli | mainnet-fork</p>
+<dt class="field-odd">Options<span class="colon">:</span></dt>
+<dd class="field-odd"><p>goerli-fork | mainnet | goerli | mainnet-fork | local</p>
 </dd>
 </dl>
 </dd></dl>
@@ -186,8 +184,8 @@
 <span class="sig-name descname"><span class="pre">--provider</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;provider_filter&gt;</span></span><a class="headerlink" href="#cmdoption-networks-list-provider" title="Permalink to this definition"></a></dt>
 <dd><p>Filter the results by provider</p>
 <dl class="field-list simple">
-<dt class="field-odd">Options</dt>
-<dd class="field-odd"><p>test | geth</p>
+<dt class="field-odd">Options<span class="colon">:</span></dt>
+<dd class="field-odd"><p>geth | test</p>
 </dd>
 </dl>
 </dd></dl>

@@ -1,13 +1,10 @@
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" >
 <head>
-  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Ape Console &mdash; ape  documentation</title>
-  <link rel="stylesheet" href="/ape/latest/_static/css/theme.css" type="text/css" />
-  <link rel="stylesheet" href="/ape/latest/_static/pygments.css" type="text/css" />
-  <link rel="stylesheet" href="/ape/latest/_static/custom.css" type="text/css" />
       <link rel="stylesheet" href="/ape/latest/_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="/ape/latest/_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="/ape/latest/_static/custom.css" type="text/css" />
@@ -16,11 +13,12 @@
   <!--[if lt IE 9]>
     <script src="../_static/js/html5shiv.min.js"></script>
   <![endif]-->
-  <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+  
+        <script integrity="sha384-vtXRMe3mGCbOeY7l30aIg8H9p3GdeSe4IFlP6G8JMa7o7lXvnz3GFKzPxzJdPfGK" src="../_static/jquery.js"></script>
+        <script integrity="sha384-lSZeSIVKp9myfKbDQ3GkN/KHjUc+mzg17VKDN4Y2kUeBSJioB9QSM639vM9fuY//" src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
-        <script src="../_static/jquery.js"></script>
-        <script src="../_static/underscore.js"></script>
         <script src="../_static/doctools.js"></script>
+        <script src="../_static/sphinx_highlight.js"></script>
     <script src="../_static/js/theme.js"></script>
     <script src="../_static/custom.js"></script>
   <script>
@@ -37,8 +35,12 @@
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
         <div class="wy-side-nav-search" >
-            <a href="../index.html" class="icon icon-home"> ape
-            <img src="../_static/logo.gif" class="logo" alt="Logo"/>
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            ape
+              <img src="../_static/logo.gif" class="logo" alt="Logo"/>
           </a>
 
           <div class="version">
@@ -51,13 +53,12 @@
           </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
-    <input type="text" name="q" placeholder="Search docs" />
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
     <input type="hidden" name="check_keywords" value="yes" />
     <input type="hidden" name="area" value="default" />
   </form>
 </div>
-        </div>
-        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Main">
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <p class="caption" role="heading"><span class="caption-text">User Guides</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="quickstart.html">Overview</a></li>
@@ -112,8 +113,7 @@
       </div>
     </nav>
 
-    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
-      <nav class="wy-nav-top" aria-label="Top" >
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
           <a href="../index.html">ape</a>
       </nav>
@@ -122,7 +122,7 @@
         <div class="rst-content">
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
-      <li><a href="../index.html" class="icon icon-home"></a></li>
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
       <li class="breadcrumb-item active">Ape Console</li>
       <li class="wy-breadcrumbs-aside">
             <a href="../_sources/userguides/console.md.txt" rel="nofollow"> View page source</a>
@@ -134,7 +134,7 @@
            <div itemprop="articleBody">
              
   <section id="ape-console">
-<h1>Ape Console<a class="headerlink" href="#ape-console" title="Permalink to this headline"></a></h1>
+<h1>Ape Console<a class="headerlink" href="#ape-console" title="Permalink to this heading"></a></h1>
 <p>Ape provides an <a class="reference external" href="https://ipython.readthedocs.io/">IPython</a> interactive console with useful pre-defined locals to interact with your project.</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>ape<span class="w"> </span>console<span class="w"> </span>--network<span class="w"> </span>ethereum:mainnet
 
@@ -143,12 +143,12 @@ Out<span class="o">[</span><span class="m">1</span><span class="o">]</span>:<spa
 </pre></div>
 </div>
 <section id="ape-namespace">
-<h2>Ape Namespace<a class="headerlink" href="#ape-namespace" title="Permalink to this headline"></a></h2>
+<h2>Ape Namespace<a class="headerlink" href="#ape-namespace" title="Permalink to this heading"></a></h2>
 <p>Your console comes with pre-initialized root ape objects in your namespace.</p>
-<table class="colwidths-auto docutils align-default">
+<table class="docutils align-default">
 <thead>
-<tr class="row-odd"><th class="text-center head"><p>Name</p></th>
-<th class="text-center head"><p>Class</p></th>
+<tr class="row-odd"><th class="head text-center"><p>Name</p></th>
+<th class="head text-center"><p>Class</p></th>
 </tr>
 </thead>
 <tbody>
@@ -189,7 +189,7 @@ Out<span class="o">[</span><span class="m">1</span><span class="o">]</span>:<spa
 Follow <a class="reference external" href="./networks.html">this guide</a> for more information on networks in Ape.</p>
 </section>
 <section id="namespace-extras">
-<h2>Namespace Extras<a class="headerlink" href="#namespace-extras" title="Permalink to this headline"></a></h2>
+<h2>Namespace Extras<a class="headerlink" href="#namespace-extras" title="Permalink to this heading"></a></h2>
 <p>You can also create scripts to be included in the console namespace by adding a file (<code class="docutils literal notranslate"><span class="pre">ape_console_extras.py</span></code>) to your root project directory.  All non-internal symbols from this file will be included in the console namespace.  Internal symbols are prefixed by an underscore (<code class="docutils literal notranslate"><span class="pre">_</span></code>).</p>
 <p>An example file might look something like this:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">eth_utils</span> <span class="kn">import</span> <span class="n">encode_hex</span><span class="p">,</span> <span class="n">decode_hex</span>
@@ -208,7 +208,7 @@ Follow <a class="reference external" href="./networks.html">this guide</a> for m
 </pre></div>
 </div>
 <section id="init-function">
-<h3>Init Function<a class="headerlink" href="#init-function" title="Permalink to this headline"></a></h3>
+<h3>Init Function<a class="headerlink" href="#init-function" title="Permalink to this heading"></a></h3>
 <p>If you include a function named <code class="docutils literal notranslate"><span class="pre">ape_init_extras</span></code>, it will be executed with the symbols from the existing namespace being provided as keyword arguments.  This allows you to alter the scripts namespace using locals already included in the Ape namespace.  If you return a <code class="docutils literal notranslate"><span class="pre">dict</span></code>, these values will be added to the console namespace.  For example, you could set up an initialized Web3.py object by using one from an existing Ape Provider.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">ape_init_extras</span><span class="p">(</span><span class="n">chain</span><span class="p">):</span>
     <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;web3&quot;</span><span class="p">:</span> <span class="n">chain</span><span class="o">.</span><span class="n">provider</span><span class="o">.</span><span class="n">_web3</span><span class="p">}</span>
@@ -221,7 +221,7 @@ Follow <a class="reference external" href="./networks.html">this guide</a> for m
 </div>
 </section>
 <section id="global-extras">
-<h3>Global Extras<a class="headerlink" href="#global-extras" title="Permalink to this headline"></a></h3>
+<h3>Global Extras<a class="headerlink" href="#global-extras" title="Permalink to this heading"></a></h3>
 <p>You can also add an <code class="docutils literal notranslate"><span class="pre">ape_console_extras.py</span></code> file to the global ape data directory (<code class="docutils literal notranslate"><span class="pre">$HOME/.ape/ape_console_extras.py</span></code>) and it will execute regardless of what project context you are in.  This may be useful for variables and utility functions you use across all of your projects.</p>
 </section>
 </section>

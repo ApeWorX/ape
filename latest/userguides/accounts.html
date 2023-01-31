@@ -1,13 +1,10 @@
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" >
 <head>
-  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Accounts &mdash; ape  documentation</title>
-  <link rel="stylesheet" href="/ape/latest/_static/css/theme.css" type="text/css" />
-  <link rel="stylesheet" href="/ape/latest/_static/pygments.css" type="text/css" />
-  <link rel="stylesheet" href="/ape/latest/_static/custom.css" type="text/css" />
       <link rel="stylesheet" href="/ape/latest/_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="/ape/latest/_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="/ape/latest/_static/custom.css" type="text/css" />
@@ -16,11 +13,12 @@
   <!--[if lt IE 9]>
     <script src="../_static/js/html5shiv.min.js"></script>
   <![endif]-->
-  <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+  
+        <script integrity="sha384-vtXRMe3mGCbOeY7l30aIg8H9p3GdeSe4IFlP6G8JMa7o7lXvnz3GFKzPxzJdPfGK" src="../_static/jquery.js"></script>
+        <script integrity="sha384-lSZeSIVKp9myfKbDQ3GkN/KHjUc+mzg17VKDN4Y2kUeBSJioB9QSM639vM9fuY//" src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
-        <script src="../_static/jquery.js"></script>
-        <script src="../_static/underscore.js"></script>
         <script src="../_static/doctools.js"></script>
+        <script src="../_static/sphinx_highlight.js"></script>
     <script src="../_static/js/theme.js"></script>
     <script src="../_static/custom.js"></script>
   <script>
@@ -37,8 +35,12 @@
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
         <div class="wy-side-nav-search" >
-            <a href="../index.html" class="icon icon-home"> ape
-            <img src="../_static/logo.gif" class="logo" alt="Logo"/>
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            ape
+              <img src="../_static/logo.gif" class="logo" alt="Logo"/>
           </a>
 
           <div class="version">
@@ -51,13 +53,12 @@
           </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
-    <input type="text" name="q" placeholder="Search docs" />
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
     <input type="hidden" name="check_keywords" value="yes" />
     <input type="hidden" name="area" value="default" />
   </form>
 </div>
-        </div>
-        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Main">
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <p class="caption" role="heading"><span class="caption-text">User Guides</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="quickstart.html">Overview</a></li>
@@ -116,8 +117,7 @@
       </div>
     </nav>
 
-    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
-      <nav class="wy-nav-top" aria-label="Top" >
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
           <a href="../index.html">ape</a>
       </nav>
@@ -126,7 +126,7 @@
         <div class="rst-content">
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
-      <li><a href="../index.html" class="icon icon-home"></a></li>
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
       <li class="breadcrumb-item active">Accounts</li>
       <li class="wy-breadcrumbs-aside">
             <a href="../_sources/userguides/accounts.md.txt" rel="nofollow"> View page source</a>
@@ -138,7 +138,7 @@
            <div itemprop="articleBody">
              
   <section id="accounts">
-<h1>Accounts<a class="headerlink" href="#accounts" title="Permalink to this headline"></a></h1>
+<h1>Accounts<a class="headerlink" href="#accounts" title="Permalink to this heading"></a></h1>
 <p>Accounts in Ape come from <a class="reference external" href="../methoddocs/api.html#ape.api.accounts.AccountAPI">AccountAPI</a> implementations (e.g. from plugins).
 There are typically two types of accounts:</p>
 <ol class="arabic simple">
@@ -149,7 +149,7 @@ There are typically two types of accounts:</p>
 Live network accounts are for interacting with live blockchains and should be secured.</p>
 <p>To learn more about Ethereum accounts, see <a class="reference external" href="https://ethereum.org/en/developers/docs/accounts/">the Ethereum documentation</a>.</p>
 <section id="test-accounts">
-<h2>Test Accounts<a class="headerlink" href="#test-accounts" title="Permalink to this headline"></a></h2>
+<h2>Test Accounts<a class="headerlink" href="#test-accounts" title="Permalink to this heading"></a></h2>
 <p>Ape ships with pytest fixtures to assist in writing your tests.
 Pre-funded test accounts are accessible via the <a class="reference external" href="./testing.html#accounts-fixture">accounts fixture</a>.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">test_my_contract_method</span><span class="p">(</span><span class="n">accounts</span><span class="p">):</span>
@@ -182,7 +182,7 @@ The accounts generated from this seed are solely for testing and debugging purpo
 </pre></div>
 </div>
 <section id="default-sender-support">
-<h3>Default Sender Support<a class="headerlink" href="#default-sender-support" title="Permalink to this headline"></a></h3>
+<h3>Default Sender Support<a class="headerlink" href="#default-sender-support" title="Permalink to this heading"></a></h3>
 <p>In order to eliminate the usage of sender in contract calls, you can use <code class="docutils literal notranslate"><span class="pre">use_sender</span></code> context manager.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">with</span> <span class="n">accounts</span><span class="o">.</span><span class="n">use_sender</span><span class="p">(</span><span class="mi">0</span><span class="p">):</span> <span class="c1"># Use first account from test mnemonic</span>
   <span class="n">contract</span><span class="o">.</span><span class="n">myFunction</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
@@ -197,7 +197,7 @@ The accounts generated from this seed are solely for testing and debugging purpo
 </section>
 </section>
 <section id="live-network-accounts">
-<h2>Live Network Accounts<a class="headerlink" href="#live-network-accounts" title="Permalink to this headline"></a></h2>
+<h2>Live Network Accounts<a class="headerlink" href="#live-network-accounts" title="Permalink to this heading"></a></h2>
 <p>When using live networks, you need to get your accounts into Ape.
 Ape ships with a keyfile accounts plugin to assist with this.
 All the available CLI commands for this accounts plugin can be found <a class="reference external" href="../commands/accounts.html">here</a>.</p>
@@ -260,7 +260,7 @@ All the available CLI commands for this accounts plugin can be found <a class="r
 </pre></div>
 </div>
 <section id="id1">
-<h3>Default Sender Support<a class="headerlink" href="#id1" title="Permalink to this headline"></a></h3>
+<h3>Default Sender Support<a class="headerlink" href="#id1" title="Permalink to this heading"></a></h3>
 <p>In order to reduce repetition of adding <code class="docutils literal notranslate"><span class="pre">sender</span></code> in your contract calls, you can use <code class="docutils literal notranslate"><span class="pre">use_sender</span></code> context manager.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">with</span> <span class="n">accounts</span><span class="o">.</span><span class="n">use_sender</span><span class="p">(</span><span class="mi">0</span><span class="p">):</span>
   <span class="n">contract</span><span class="o">.</span><span class="n">myFunction</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
@@ -278,7 +278,7 @@ All the available CLI commands for this accounts plugin can be found <a class="r
 </section>
 </section>
 <section id="automation">
-<h2>Automation<a class="headerlink" href="#automation" title="Permalink to this headline"></a></h2>
+<h2>Automation<a class="headerlink" href="#automation" title="Permalink to this heading"></a></h2>
 <p>If you use your keyfile accounts in automation, such as CI/CD, you may need to programmatically unlock them and enable autosign.
 <strong>WARNING</strong>: We don’t recommend using this approach but it is possible due to sometimes being needed.
 Ensure you are using a secure environment and are aware of what you are doing.</p>
@@ -295,7 +295,7 @@ Ensure you are using a secure environment and are aware of what you are doing.</
 </div>
 </section>
 <section id="hardware-wallets">
-<h2>Hardware Wallets<a class="headerlink" href="#hardware-wallets" title="Permalink to this headline"></a></h2>
+<h2>Hardware Wallets<a class="headerlink" href="#hardware-wallets" title="Permalink to this heading"></a></h2>
 <p>Because of the plugin system in Ape, we are able to support other types of accounts including hardware wallet accounts.
 Check out these plugins:</p>
 <ul class="simple">

@@ -1,13 +1,10 @@
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" >
 <head>
-  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>ape.types &mdash; ape  documentation</title>
-  <link rel="stylesheet" href="/ape/latest/_static/css/theme.css" type="text/css" />
-  <link rel="stylesheet" href="/ape/latest/_static/pygments.css" type="text/css" />
-  <link rel="stylesheet" href="/ape/latest/_static/custom.css" type="text/css" />
       <link rel="stylesheet" href="/ape/latest/_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="/ape/latest/_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="/ape/latest/_static/custom.css" type="text/css" />
@@ -16,11 +13,12 @@
   <!--[if lt IE 9]>
     <script src="../_static/js/html5shiv.min.js"></script>
   <![endif]-->
-  <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+  
+        <script integrity="sha384-vtXRMe3mGCbOeY7l30aIg8H9p3GdeSe4IFlP6G8JMa7o7lXvnz3GFKzPxzJdPfGK" src="../_static/jquery.js"></script>
+        <script integrity="sha384-lSZeSIVKp9myfKbDQ3GkN/KHjUc+mzg17VKDN4Y2kUeBSJioB9QSM639vM9fuY//" src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
-        <script src="../_static/jquery.js"></script>
-        <script src="../_static/underscore.js"></script>
         <script src="../_static/doctools.js"></script>
+        <script src="../_static/sphinx_highlight.js"></script>
     <script src="../_static/js/theme.js"></script>
     <script src="../_static/custom.js"></script>
   <script>
@@ -37,8 +35,12 @@
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
         <div class="wy-side-nav-search" >
-            <a href="../index.html" class="icon icon-home"> ape
-            <img src="../_static/logo.gif" class="logo" alt="Logo"/>
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            ape
+              <img src="../_static/logo.gif" class="logo" alt="Logo"/>
           </a>
 
           <div class="version">
@@ -51,13 +53,12 @@
           </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
-    <input type="text" name="q" placeholder="Search docs" />
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
     <input type="hidden" name="check_keywords" value="yes" />
     <input type="hidden" name="area" value="default" />
   </form>
 </div>
-        </div>
-        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Main">
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <p class="caption" role="heading"><span class="caption-text">User Guides</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../userguides/quickstart.html">Overview</a></li>
@@ -97,8 +98,32 @@
 <li class="toctree-l1"><a class="reference internal" href="managers.html">ape.managers</a></li>
 <li class="toctree-l1"><a class="reference internal" href="plugins.html">ape.plugins</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">ape.types</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#module-ape.types">Miscellaneous</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#module-ape.types.signatures">Signatures</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-ape.types">Miscellaneous</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#ape.types.BlockID"><code class="docutils literal notranslate"><span class="pre">BlockID</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#ape.types.ContractLog"><code class="docutils literal notranslate"><span class="pre">ContractLog</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#ape.types.ContractLog.block_hash"><code class="docutils literal notranslate"><span class="pre">ContractLog.block_hash</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ape.types.ContractLog.block_number"><code class="docutils literal notranslate"><span class="pre">ContractLog.block_number</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ape.types.ContractLog.contract_address"><code class="docutils literal notranslate"><span class="pre">ContractLog.contract_address</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ape.types.ContractLog.event_arguments"><code class="docutils literal notranslate"><span class="pre">ContractLog.event_arguments</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ape.types.ContractLog.event_name"><code class="docutils literal notranslate"><span class="pre">ContractLog.event_name</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ape.types.ContractLog.log_index"><code class="docutils literal notranslate"><span class="pre">ContractLog.log_index</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ape.types.ContractLog.transaction_hash"><code class="docutils literal notranslate"><span class="pre">ContractLog.transaction_hash</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ape.types.ContractLog.transaction_index"><code class="docutils literal notranslate"><span class="pre">ContractLog.transaction_index</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#module-ape.types.signatures">Signatures</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#ape.types.signatures.MessageSignature"><code class="docutils literal notranslate"><span class="pre">MessageSignature</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#ape.types.signatures.SignableMessage"><code class="docutils literal notranslate"><span class="pre">SignableMessage</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#ape.types.signatures.SignableMessage.body"><code class="docutils literal notranslate"><span class="pre">SignableMessage.body</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ape.types.signatures.SignableMessage.header"><code class="docutils literal notranslate"><span class="pre">SignableMessage.header</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ape.types.signatures.SignableMessage.version"><code class="docutils literal notranslate"><span class="pre">SignableMessage.version</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#ape.types.signatures.TransactionSignature"><code class="docutils literal notranslate"><span class="pre">TransactionSignature</span></code></a></li>
+</ul>
+</li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="utils.html">ape.utils</a></li>
@@ -108,8 +133,7 @@
       </div>
     </nav>
 
-    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
-      <nav class="wy-nav-top" aria-label="Top" >
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
           <a href="../index.html">ape</a>
       </nav>
@@ -118,7 +142,7 @@
         <div class="rst-content">
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
-      <li><a href="../index.html" class="icon icon-home"></a></li>
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
       <li class="breadcrumb-item active">ape.types</li>
       <li class="wy-breadcrumbs-aside">
             <a href="../_sources/methoddocs/types.md.txt" rel="nofollow"> View page source</a>
@@ -130,20 +154,20 @@
            <div itemprop="articleBody">
              
   <section id="ape-types">
-<h1>ape.types<a class="headerlink" href="#ape-types" title="Permalink to this headline"></a></h1>
+<h1>ape.types<a class="headerlink" href="#ape-types" title="Permalink to this heading"></a></h1>
 <section id="module-ape.types">
-<span id="miscellaneous"></span><h2>Miscellaneous<a class="headerlink" href="#module-ape.types" title="Permalink to this headline"></a></h2>
+<span id="miscellaneous"></span><h2>Miscellaneous<a class="headerlink" href="#module-ape.types" title="Permalink to this heading"></a></h2>
 <dl class="py data">
 <dt class="sig sig-object py" id="ape.types.BlockID">
 <span class="sig-prename descclassname"><span class="pre">ape.types.</span></span><span class="sig-name descname"><span class="pre">BlockID</span></span><a class="headerlink" href="#ape.types.BlockID" title="Permalink to this definition"></a></dt>
 <dd><p>An ID that can match a block, such as the literals <code class="docutils literal notranslate"><span class="pre">&quot;earliest&quot;</span></code>, <code class="docutils literal notranslate"><span class="pre">&quot;latest&quot;</span></code>, or <code class="docutils literal notranslate"><span class="pre">&quot;pending&quot;</span></code>
 as well as a block number or hash (HexBytes).</p>
-<p>alias of <code class="xref py py-obj docutils literal notranslate"><span class="pre">Union</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">HexStr</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">hexbytes.main.HexBytes</span></code>, <code class="xref py py-obj docutils literal notranslate"><span class="pre">Literal</span></code>[‘earliest’, ‘latest’, ‘pending’]]</p>
+<p>alias of <code class="xref py py-obj docutils literal notranslate"><span class="pre">Union</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">HexStr</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">HexBytes</span></code>, <code class="xref py py-obj docutils literal notranslate"><span class="pre">Literal</span></code>[‘earliest’, ‘latest’, ‘pending’]]</p>
 </dd></dl>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="ape.types.ContractLog">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ape.types.</span></span><span class="sig-name descname"><span class="pre">ContractLog</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">event_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">contract_address</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ChecksumAddress</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">event_arguments</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">transaction_hash</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">block_number</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">block_hash</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">log_index</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">transaction_index</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.types.ContractLog" title="Permalink to this definition"></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ape.types.</span></span><span class="sig-name descname"><span class="pre">ContractLog</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">event_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">contract_address</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ChecksumAddress</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">event_arguments</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">transaction_hash</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">block_number</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">block_hash</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">log_index</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">transaction_index</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.types.ContractLog" title="Permalink to this definition"></a></dt>
 <dd><p>An instance of a log from a contract.</p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="ape.types.ContractLog.block_hash">
@@ -189,7 +213,7 @@ as well as a block number or hash (HexBytes).</p>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="ape.types.ContractLog.transaction_index">
-<span class="sig-name descname"><span class="pre">transaction_index</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#ape.types.ContractLog.transaction_index" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">transaction_index</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#ape.types.ContractLog.transaction_index" title="Permalink to this definition"></a></dt>
 <dd><p>The index of the transaction’s position when the log was created.
 Is <cite>None</cite> when from the pending block.</p>
 </dd></dl>
@@ -198,11 +222,11 @@ Is <cite>None</cite> when from the pending block.</p>
 
 </section>
 <section id="module-ape.types.signatures">
-<span id="signatures"></span><h2>Signatures<a class="headerlink" href="#module-ape.types.signatures" title="Permalink to this headline"></a></h2>
+<span id="signatures"></span><h2>Signatures<a class="headerlink" href="#module-ape.types.signatures" title="Permalink to this heading"></a></h2>
 <dl class="py class">
 <dt class="sig sig-object py" id="ape.types.signatures.MessageSignature">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ape.types.signatures.</span></span><span class="sig-name descname"><span class="pre">MessageSignature</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">v</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">r</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bytes</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">s</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bytes</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.types.signatures.MessageSignature" title="Permalink to this definition"></a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">ape.types.signatures._Signature</span></code></p>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">_Signature</span></code></p>
 <p>A ECDSA signature (vrs) of a message.</p>
 </dd></dl>
 
@@ -247,7 +271,7 @@ one of the available encode_* methods in this module, like:</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="ape.types.signatures.TransactionSignature">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ape.types.signatures.</span></span><span class="sig-name descname"><span class="pre">TransactionSignature</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">v</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">r</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bytes</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">s</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bytes</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.types.signatures.TransactionSignature" title="Permalink to this definition"></a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">ape.types.signatures._Signature</span></code></p>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">_Signature</span></code></p>
 <p>A ECDSA signature (vrs) of a transaction.</p>
 </dd></dl>
 

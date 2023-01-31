@@ -1,13 +1,10 @@
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" >
 <head>
-  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Making Transactions &mdash; ape  documentation</title>
-  <link rel="stylesheet" href="/ape/latest/_static/css/theme.css" type="text/css" />
-  <link rel="stylesheet" href="/ape/latest/_static/pygments.css" type="text/css" />
-  <link rel="stylesheet" href="/ape/latest/_static/custom.css" type="text/css" />
       <link rel="stylesheet" href="/ape/latest/_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="/ape/latest/_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="/ape/latest/_static/custom.css" type="text/css" />
@@ -16,11 +13,12 @@
   <!--[if lt IE 9]>
     <script src="../_static/js/html5shiv.min.js"></script>
   <![endif]-->
-  <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+  
+        <script integrity="sha384-vtXRMe3mGCbOeY7l30aIg8H9p3GdeSe4IFlP6G8JMa7o7lXvnz3GFKzPxzJdPfGK" src="../_static/jquery.js"></script>
+        <script integrity="sha384-lSZeSIVKp9myfKbDQ3GkN/KHjUc+mzg17VKDN4Y2kUeBSJioB9QSM639vM9fuY//" src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
-        <script src="../_static/jquery.js"></script>
-        <script src="../_static/underscore.js"></script>
         <script src="../_static/doctools.js"></script>
+        <script src="../_static/sphinx_highlight.js"></script>
     <script src="../_static/js/theme.js"></script>
     <script src="../_static/custom.js"></script>
   <script>
@@ -37,8 +35,12 @@
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
         <div class="wy-side-nav-search" >
-            <a href="../index.html" class="icon icon-home"> ape
-            <img src="../_static/logo.gif" class="logo" alt="Logo"/>
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            ape
+              <img src="../_static/logo.gif" class="logo" alt="Logo"/>
           </a>
 
           <div class="version">
@@ -51,13 +53,12 @@
           </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
-    <input type="text" name="q" placeholder="Search docs" />
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
     <input type="hidden" name="check_keywords" value="yes" />
     <input type="hidden" name="area" value="default" />
   </form>
 </div>
-        </div>
-        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Main">
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <p class="caption" role="heading"><span class="caption-text">User Guides</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="quickstart.html">Overview</a></li>
@@ -117,8 +118,7 @@
       </div>
     </nav>
 
-    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
-      <nav class="wy-nav-top" aria-label="Top" >
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
           <a href="../index.html">ape</a>
       </nav>
@@ -127,7 +127,7 @@
         <div class="rst-content">
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
-      <li><a href="../index.html" class="icon icon-home"></a></li>
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
       <li class="breadcrumb-item active">Making Transactions</li>
       <li class="wy-breadcrumbs-aside">
             <a href="../_sources/userguides/transactions.md.txt" rel="nofollow"> View page source</a>
@@ -139,11 +139,11 @@
            <div itemprop="articleBody">
              
   <section id="making-transactions">
-<h1>Making Transactions<a class="headerlink" href="#making-transactions" title="Permalink to this headline"></a></h1>
+<h1>Making Transactions<a class="headerlink" href="#making-transactions" title="Permalink to this heading"></a></h1>
 <p>Regardless of how you are using <code class="docutils literal notranslate"><span class="pre">ape</span></code>, you will likely be making transactions.
 There are various types of transactions you can make with <code class="docutils literal notranslate"><span class="pre">ape</span></code>. A simple example is deploying a contract.</p>
 <section id="deployment">
-<h2>Deployment<a class="headerlink" href="#deployment" title="Permalink to this headline"></a></h2>
+<h2>Deployment<a class="headerlink" href="#deployment" title="Permalink to this heading"></a></h2>
 <p>Deploying a smart contract is a unique type of transaction where we don’t necessarily care about the receipt as much
 as we care about the contract instance. That is why the return value from
 <a class="reference external" href="../methoddocs/api.html?highlight=accountapi#ape.api.accounts.AccountAPI.deploy">the deploy method</a> is a
@@ -170,7 +170,7 @@ as we care about the contract instance. That is why the return value from
 </pre></div>
 </div>
 <section id="deployment-from-ape-console">
-<h3>Deployment from Ape Console<a class="headerlink" href="#deployment-from-ape-console" title="Permalink to this headline"></a></h3>
+<h3>Deployment from Ape Console<a class="headerlink" href="#deployment-from-ape-console" title="Permalink to this heading"></a></h3>
 <p>Deploying from <a class="reference external" href="./console.html">ape console</a> allows you to interact with a contract in real time. You can also use the <code class="docutils literal notranslate"><span class="pre">--network</span></code> flag to connect a live network.</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>ape<span class="w"> </span>console<span class="w"> </span>--network<span class="w"> </span>ethereum:goerli:alchemy
 </pre></div>
@@ -185,7 +185,7 @@ as we care about the contract instance. That is why the return value from
 </section>
 </section>
 <section id="dynamic-fee-transactions">
-<h2>Dynamic-Fee Transactions<a class="headerlink" href="#dynamic-fee-transactions" title="Permalink to this headline"></a></h2>
+<h2>Dynamic-Fee Transactions<a class="headerlink" href="#dynamic-fee-transactions" title="Permalink to this heading"></a></h2>
 <p>Before <a class="reference external" href="https://eips.ethereum.org/EIPS/eip-1559">EIP-1559</a>, all transactions used a <code class="docutils literal notranslate"><span class="pre">gas_price</span></code>.
 After the London fork of Ethereum, the <code class="docutils literal notranslate"><span class="pre">gas_price</span></code> got broken up into two values, <code class="docutils literal notranslate"><span class="pre">max_fee</span></code> and <code class="docutils literal notranslate"><span class="pre">max_priority_fee</span></code>.
 The <code class="docutils literal notranslate"><span class="pre">ape</span></code> framework supports both types of transactions. By default, transactions use the dynamic-fee model.
@@ -210,7 +210,7 @@ the value returned from the
 property.</p>
 </section>
 <section id="static-fee-transactions">
-<h2>Static-Fee Transactions<a class="headerlink" href="#static-fee-transactions" title="Permalink to this headline"></a></h2>
+<h2>Static-Fee Transactions<a class="headerlink" href="#static-fee-transactions" title="Permalink to this heading"></a></h2>
 <p>Static-fee transactions are the transactions that Ethereum used before the London-fork
 (before <a class="reference external" href="https://eips.ethereum.org/EIPS/eip-1559">EIP-1559</a>).
 <strong>However, some applications may still require using static-fee transactions.</strong></p>
@@ -227,7 +227,7 @@ argument <code class="docutils literal notranslate"><span class="pre">type</span
 <p>When declaring <code class="docutils literal notranslate"><span class="pre">type=&quot;0x0&quot;</span></code> and <em>not</em> specifying a <code class="docutils literal notranslate"><span class="pre">gas_price</span></code>, the <code class="docutils literal notranslate"><span class="pre">gas_price</span></code> gets set using the provider’s estimation.</p>
 </section>
 <section id="transaction-logs">
-<h2>Transaction Logs<a class="headerlink" href="#transaction-logs" title="Permalink to this headline"></a></h2>
+<h2>Transaction Logs<a class="headerlink" href="#transaction-logs" title="Permalink to this heading"></a></h2>
 <p>In Ape, you can easily get all the events on a receipt.
 Use the <code class="docutils literal notranslate"><span class="pre">.events</span></code> property to access the (<a class="reference external" href="../methoddocs/types.html#ape.types.ContractLog">ContractLog</a>) objects.
 Each object represents an event emitted from the call.</p>
@@ -254,7 +254,7 @@ Each object represents an event emitted from the call.</p>
 <p>Otherwise, you will get an <code class="docutils literal notranslate"><span class="pre">AttributeError</span></code>.</p>
 </section>
 <section id="transaction-acceptance-timeout">
-<h2>Transaction Acceptance Timeout<a class="headerlink" href="#transaction-acceptance-timeout" title="Permalink to this headline"></a></h2>
+<h2>Transaction Acceptance Timeout<a class="headerlink" href="#transaction-acceptance-timeout" title="Permalink to this heading"></a></h2>
 <p><strong>NOTE</strong> For longer running scripts, you may need to increase the transaction acceptance timeout.
 The default value is 2 minutes for live networks and 20 seconds for local networks.
 In your <code class="docutils literal notranslate"><span class="pre">ape-config.yaml</span></code> file, add the following:</p>
@@ -265,7 +265,7 @@ In your <code class="docutils literal notranslate"><span class="pre">ape-config.
 </div>
 </section>
 <section id="traces">
-<h2>Traces<a class="headerlink" href="#traces" title="Permalink to this headline"></a></h2>
+<h2>Traces<a class="headerlink" href="#traces" title="Permalink to this heading"></a></h2>
 <p>If you are using a provider that is able to fetch transaction traces, such as the <a class="reference external" href="https://github.com/ApeWorX/ape-hardhat">ape-hardhat</a> provider, you can call the <a class="reference external" href="../methoddocs/api.html?highlight=receiptapi#ape.api.transactions.ReceiptAPI.show_trace"><code class="docutils literal notranslate"><span class="pre">ReceiptAPI.show_trace()</span></code></a> method.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">ape</span> <span class="kn">import</span> <span class="n">accounts</span><span class="p">,</span> <span class="n">project</span>
 
@@ -349,7 +349,7 @@ Use the <code class="docutils literal notranslate"><span class="pre">show_trace=
 <p><strong>NOTE</strong>: This may not work on all providers, but it should work on common ones such as <code class="docutils literal notranslate"><span class="pre">ape-hardhat</span></code> or <code class="docutils literal notranslate"><span class="pre">ape-geth</span></code>.</p>
 </section>
 <section id="gas-reports">
-<h2>Gas Reports<a class="headerlink" href="#gas-reports" title="Permalink to this headline"></a></h2>
+<h2>Gas Reports<a class="headerlink" href="#gas-reports" title="Permalink to this heading"></a></h2>
 <p>To view the gas report of a transaction receipt, use the <a class="reference external" href="../methoddocs/api.html?highlight=receiptapi#ape.api.transactions.ReceiptAPI.show_gas_report"><code class="docutils literal notranslate"><span class="pre">ReceiptAPI.show_gas_report()</span></code></a> method:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">ape</span> <span class="kn">import</span> <span class="n">networks</span>
 
@@ -372,7 +372,7 @@ Use the <code class="docutils literal notranslate"><span class="pre">show_trace=
 </div>
 </section>
 <section id="estimate-gas-cost">
-<h2>Estimate Gas Cost<a class="headerlink" href="#estimate-gas-cost" title="Permalink to this headline"></a></h2>
+<h2>Estimate Gas Cost<a class="headerlink" href="#estimate-gas-cost" title="Permalink to this heading"></a></h2>
 <p>To estimate the gas cost on a transaction or call without sending it, use the <code class="docutils literal notranslate"><span class="pre">estimate_gas_cost()</span></code> method from the contract’s transaction / call handler:
 (Assume I have a contract instance named <code class="docutils literal notranslate"><span class="pre">contract_a</span></code> that has a method named <code class="docutils literal notranslate"><span class="pre">methodToCall</span></code>)</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">txn_cost</span> <span class="o">=</span> <span class="n">contract_a</span><span class="o">.</span><span class="n">myMutableMethod</span><span class="o">.</span><span class="n">estimate_gas_cost</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">sender</span><span class="o">=</span><span class="n">accounts</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;me&quot;</span><span class="p">))</span>

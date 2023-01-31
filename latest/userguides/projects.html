@@ -1,13 +1,10 @@
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" >
 <head>
-  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Developing Projects with Ape &mdash; ape  documentation</title>
-  <link rel="stylesheet" href="/ape/latest/_static/css/theme.css" type="text/css" />
-  <link rel="stylesheet" href="/ape/latest/_static/pygments.css" type="text/css" />
-  <link rel="stylesheet" href="/ape/latest/_static/custom.css" type="text/css" />
       <link rel="stylesheet" href="/ape/latest/_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="/ape/latest/_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="/ape/latest/_static/custom.css" type="text/css" />
@@ -16,11 +13,12 @@
   <!--[if lt IE 9]>
     <script src="../_static/js/html5shiv.min.js"></script>
   <![endif]-->
-  <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+  
+        <script integrity="sha384-vtXRMe3mGCbOeY7l30aIg8H9p3GdeSe4IFlP6G8JMa7o7lXvnz3GFKzPxzJdPfGK" src="../_static/jquery.js"></script>
+        <script integrity="sha384-lSZeSIVKp9myfKbDQ3GkN/KHjUc+mzg17VKDN4Y2kUeBSJioB9QSM639vM9fuY//" src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
-        <script src="../_static/jquery.js"></script>
-        <script src="../_static/underscore.js"></script>
         <script src="../_static/doctools.js"></script>
+        <script src="../_static/sphinx_highlight.js"></script>
     <script src="../_static/js/theme.js"></script>
     <script src="../_static/custom.js"></script>
   <script>
@@ -37,8 +35,12 @@
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
         <div class="wy-side-nav-search" >
-            <a href="../index.html" class="icon icon-home"> ape
-            <img src="../_static/logo.gif" class="logo" alt="Logo"/>
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            ape
+              <img src="../_static/logo.gif" class="logo" alt="Logo"/>
           </a>
 
           <div class="version">
@@ -51,13 +53,12 @@
           </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
-    <input type="text" name="q" placeholder="Search docs" />
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
     <input type="hidden" name="check_keywords" value="yes" />
     <input type="hidden" name="area" value="default" />
   </form>
 </div>
-        </div>
-        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Main">
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <p class="caption" role="heading"><span class="caption-text">User Guides</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="quickstart.html">Overview</a></li>
@@ -114,8 +115,7 @@
       </div>
     </nav>
 
-    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
-      <nav class="wy-nav-top" aria-label="Top" >
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
           <a href="../index.html">ape</a>
       </nav>
@@ -124,7 +124,7 @@
         <div class="rst-content">
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
-      <li><a href="../index.html" class="icon icon-home"></a></li>
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
       <li class="breadcrumb-item active">Developing Projects with Ape</li>
       <li class="wy-breadcrumbs-aside">
             <a href="../_sources/userguides/projects.md.txt" rel="nofollow"> View page source</a>
@@ -136,7 +136,7 @@
            <div itemprop="articleBody">
              
   <section id="developing-projects-with-ape">
-<h1>Developing Projects with Ape<a class="headerlink" href="#developing-projects-with-ape" title="Permalink to this headline"></a></h1>
+<h1>Developing Projects with Ape<a class="headerlink" href="#developing-projects-with-ape" title="Permalink to this heading"></a></h1>
 <p>Use <code class="docutils literal notranslate"><span class="pre">ape</span> <span class="pre">init</span></code> to create your project.
 A common project structure looks like this:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>project                             # The root project directory
@@ -152,13 +152,13 @@ A common project structure looks like this:</p>
 <p>Notice that you can configure you ape project using the <code class="docutils literal notranslate"><span class="pre">ape-config.yaml</span></code> file.
 See the <a class="reference external" href="./config.html">configuration guide</a> for a more detailed explanation of settings you can adjust.</p>
 <section id="adding-plugins">
-<h2>Adding Plugins<a class="headerlink" href="#adding-plugins" title="Permalink to this headline"></a></h2>
+<h2>Adding Plugins<a class="headerlink" href="#adding-plugins" title="Permalink to this heading"></a></h2>
 <p>Your project may require plugins.
 To install plugins, use the <code class="docutils literal notranslate"><span class="pre">ape</span> <span class="pre">plugins</span> <span class="pre">install</span> <span class="pre">.</span></code> command.
 Learn more about configuring your project’s required plugins by following <a class="reference external" href="./installing_plugins.html">this guide</a>.</p>
 </section>
 <section id="compiling-contracts">
-<h2>Compiling Contracts<a class="headerlink" href="#compiling-contracts" title="Permalink to this headline"></a></h2>
+<h2>Compiling Contracts<a class="headerlink" href="#compiling-contracts" title="Permalink to this heading"></a></h2>
 <p>The project manager object is a representation of your current project.
 Access it from the root <code class="docutils literal notranslate"><span class="pre">ape</span></code> namespace:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">ape</span> <span class="kn">import</span> <span class="n">project</span>
@@ -172,7 +172,7 @@ Use the following command to compile all contracts in the <code class="docutils 
 <p>For more information on compiling your project, see <a class="reference external" href="./compile.html">this guide</a>.</p>
 </section>
 <section id="deploying-contracts">
-<h2>Deploying Contracts<a class="headerlink" href="#deploying-contracts" title="Permalink to this headline"></a></h2>
+<h2>Deploying Contracts<a class="headerlink" href="#deploying-contracts" title="Permalink to this heading"></a></h2>
 <p>After compiling, the contract containers are accessible from the <code class="docutils literal notranslate"><span class="pre">project</span></code> manager.
 Deploy them in the <code class="docutils literal notranslate"><span class="pre">console</span></code> or in scripts; for example:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">ape</span> <span class="kn">import</span> <span class="n">accounts</span><span class="p">,</span> <span class="n">project</span>
@@ -189,7 +189,7 @@ Deploy them in the <code class="docutils literal notranslate"><span class="pre">
 </pre></div>
 </div>
 <section id="dependencies">
-<h3>Dependencies<a class="headerlink" href="#dependencies" title="Permalink to this headline"></a></h3>
+<h3>Dependencies<a class="headerlink" href="#dependencies" title="Permalink to this heading"></a></h3>
 <p>To set up dependencies in your <code class="docutils literal notranslate"><span class="pre">ape-config.yaml</span></code> file, follow <a class="reference external" href="https://docs.apeworx.io/ape/stable/userguides/config.html#dependencies">this guide</a>.
 If you are using dependencies from a remote source, they will download when you run <code class="docutils literal notranslate"><span class="pre">ape</span> <span class="pre">compile</span></code> or other commands that compile beforehand.
 Dependencies only need to download and compile once.</p>
@@ -205,12 +205,12 @@ Dependencies only need to download and compile once.</p>
 </section>
 </section>
 <section id="scripts">
-<h2>Scripts<a class="headerlink" href="#scripts" title="Permalink to this headline"></a></h2>
+<h2>Scripts<a class="headerlink" href="#scripts" title="Permalink to this heading"></a></h2>
 <p>The scripts folder contains project automation scripts, such as deploy scripts, as well as other executable jobs, such as scripts for running simulations.
 To learn more about scripting in Ape, see <a class="reference external" href="./scripts.html">the scripting guide</a>.</p>
 </section>
 <section id="testing">
-<h2>Testing<a class="headerlink" href="#testing" title="Permalink to this headline"></a></h2>
+<h2>Testing<a class="headerlink" href="#testing" title="Permalink to this heading"></a></h2>
 <p>Use tests to verify your project.
 You can test your project using the <code class="docutils literal notranslate"><span class="pre">ape</span> <span class="pre">test</span></code> command.
 The <code class="docutils literal notranslate"><span class="pre">ape</span> <span class="pre">test</span></code> command comes with the core-plugin <code class="docutils literal notranslate"><span class="pre">ape-test</span></code>.

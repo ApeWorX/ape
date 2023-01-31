@@ -1,13 +1,10 @@
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" >
 <head>
-  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Contracts &mdash; ape  documentation</title>
-  <link rel="stylesheet" href="/ape/latest/_static/css/theme.css" type="text/css" />
-  <link rel="stylesheet" href="/ape/latest/_static/pygments.css" type="text/css" />
-  <link rel="stylesheet" href="/ape/latest/_static/custom.css" type="text/css" />
       <link rel="stylesheet" href="/ape/latest/_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="/ape/latest/_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="/ape/latest/_static/custom.css" type="text/css" />
@@ -16,11 +13,12 @@
   <!--[if lt IE 9]>
     <script src="../_static/js/html5shiv.min.js"></script>
   <![endif]-->
-  <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+  
+        <script integrity="sha384-vtXRMe3mGCbOeY7l30aIg8H9p3GdeSe4IFlP6G8JMa7o7lXvnz3GFKzPxzJdPfGK" src="../_static/jquery.js"></script>
+        <script integrity="sha384-lSZeSIVKp9myfKbDQ3GkN/KHjUc+mzg17VKDN4Y2kUeBSJioB9QSM639vM9fuY//" src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
-        <script src="../_static/jquery.js"></script>
-        <script src="../_static/underscore.js"></script>
         <script src="../_static/doctools.js"></script>
+        <script src="../_static/sphinx_highlight.js"></script>
     <script src="../_static/js/theme.js"></script>
     <script src="../_static/custom.js"></script>
   <script>
@@ -37,8 +35,12 @@
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
         <div class="wy-side-nav-search" >
-            <a href="../index.html" class="icon icon-home"> ape
-            <img src="../_static/logo.gif" class="logo" alt="Logo"/>
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            ape
+              <img src="../_static/logo.gif" class="logo" alt="Logo"/>
           </a>
 
           <div class="version">
@@ -51,13 +53,12 @@
           </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
-    <input type="text" name="q" placeholder="Search docs" />
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
     <input type="hidden" name="check_keywords" value="yes" />
     <input type="hidden" name="area" value="default" />
   </form>
 </div>
-        </div>
-        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Main">
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <p class="caption" role="heading"><span class="caption-text">User Guides</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="quickstart.html">Overview</a></li>
@@ -112,8 +113,7 @@
       </div>
     </nav>
 
-    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
-      <nav class="wy-nav-top" aria-label="Top" >
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
           <a href="../index.html">ape</a>
       </nav>
@@ -122,7 +122,7 @@
         <div class="rst-content">
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
-      <li><a href="../index.html" class="icon icon-home"></a></li>
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
       <li class="breadcrumb-item active">Contracts</li>
       <li class="wy-breadcrumbs-aside">
             <a href="../_sources/userguides/contracts.md.txt" rel="nofollow"> View page source</a>
@@ -134,13 +134,13 @@
            <div itemprop="articleBody">
              
   <section id="contracts">
-<h1>Contracts<a class="headerlink" href="#contracts" title="Permalink to this headline"></a></h1>
+<h1>Contracts<a class="headerlink" href="#contracts" title="Permalink to this heading"></a></h1>
 <p>You can interact with contracts pythonically using ape!
 First, we need to obtain a contract instance.
 One way to do this is to deploy a contract.
 The other way is to initialize an already-deployed contract using its address.</p>
 <section id="from-deploy">
-<h2>From Deploy<a class="headerlink" href="#from-deploy" title="Permalink to this headline"></a></h2>
+<h2>From Deploy<a class="headerlink" href="#from-deploy" title="Permalink to this heading"></a></h2>
 <p>Deploy contracts from your project using the <code class="docutils literal notranslate"><span class="pre">project</span></code> root-level object.
 The names of your contracts are properties on the <code class="docutils literal notranslate"><span class="pre">project</span></code> object (e.g. <code class="docutils literal notranslate"><span class="pre">project.MyContract</span></code>) and their types are <a class="reference external" href="../methoddocs/contracts.html#ape.contracts.base.ContractContainer">ContractContainer</a>.</p>
 <p><strong>NOTE</strong>: To avoid naming collisions with other properties on the <code class="docutils literal notranslate"><span class="pre">project</span></code> object, you can also use the <a class="reference external" href="../methoddocs/managers.html#ape.managers.project.manager.ProjectManager.get_contract">get_contract()</a> method to retrieve contract containers.</p>
@@ -185,7 +185,7 @@ The names of your contracts are properties on the <code class="docutils literal 
 </div>
 </section>
 <section id="from-project-contract-address">
-<h2>From Project Contract Address<a class="headerlink" href="#from-project-contract-address" title="Permalink to this headline"></a></h2>
+<h2>From Project Contract Address<a class="headerlink" href="#from-project-contract-address" title="Permalink to this heading"></a></h2>
 <p>You can also use the <a class="reference external" href="../methoddocs/contracts.html#ape.contracts.base.ContractContainer.at">at() method</a> from the same top-level project manager when you know the address of an already-deployed contract:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">ape</span> <span class="kn">import</span> <span class="n">project</span>
 
@@ -194,7 +194,7 @@ The names of your contracts are properties on the <code class="docutils literal 
 </div>
 </section>
 <section id="from-any-address">
-<h2>From Any Address<a class="headerlink" href="#from-any-address" title="Permalink to this headline"></a></h2>
+<h2>From Any Address<a class="headerlink" href="#from-any-address" title="Permalink to this heading"></a></h2>
 <p>If you already know the address of a contract, you can create instances of it using the <code class="docutils literal notranslate"><span class="pre">Contract</span></code> top-level factory:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">ape</span> <span class="kn">import</span> <span class="n">Contract</span>
 
@@ -210,7 +210,7 @@ The names of your contracts are properties on the <code class="docutils literal 
 </div>
 </section>
 <section id="from-previous-deployment">
-<h2>From Previous Deployment<a class="headerlink" href="#from-previous-deployment" title="Permalink to this headline"></a></h2>
+<h2>From Previous Deployment<a class="headerlink" href="#from-previous-deployment" title="Permalink to this heading"></a></h2>
 <p>Ape keeps track of your deployments for you so you can always refer back to a version that you deployed previously.
 On live networks, this history of deployments is saved; on local networks, this history lasts for the duration of your script.</p>
 <p>Let’s say you previously deployed a smart contract called <code class="docutils literal notranslate"><span class="pre">MyContract</span></code> on the rinkeby test network.
@@ -234,7 +234,7 @@ You could then refer back to it like so:</p>
 <code class="docutils literal notranslate"><span class="pre">get_deployments</span></code> returns a list of deployments you made of that contract type.</p>
 </section>
 <section id="contract-interaction">
-<h2>Contract Interaction<a class="headerlink" href="#contract-interaction" title="Permalink to this headline"></a></h2>
+<h2>Contract Interaction<a class="headerlink" href="#contract-interaction" title="Permalink to this heading"></a></h2>
 <p>Then, after you have a contract instance, you can call methods on the contract.
 For example, let’s say you have a Vyper contract containing some functions:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nd">@pure</span>
@@ -258,7 +258,7 @@ For example, let’s say you have a Vyper contract containing some functions:</p
 </div>
 </section>
 <section id="decoding-and-encoding-inputs">
-<h2>Decoding and Encoding Inputs<a class="headerlink" href="#decoding-and-encoding-inputs" title="Permalink to this headline"></a></h2>
+<h2>Decoding and Encoding Inputs<a class="headerlink" href="#decoding-and-encoding-inputs" title="Permalink to this heading"></a></h2>
 <p>If you want to separately decode and encode inputs without sending a transaction or making a call, you can achieve this with Ape.
 If you know the method you want to use when decoding or encoding, you can call methods <code class="docutils literal notranslate"><span class="pre">encode_input()</span></code> or <code class="docutils literal notranslate"><span class="pre">decode_input()</span></code> on the method handler from a contract:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">ape</span> <span class="kn">import</span> <span class="n">Contract</span>

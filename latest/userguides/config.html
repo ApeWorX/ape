@@ -1,13 +1,10 @@
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" >
 <head>
-  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Configure Ape &mdash; ape  documentation</title>
-  <link rel="stylesheet" href="/ape/latest/_static/css/theme.css" type="text/css" />
-  <link rel="stylesheet" href="/ape/latest/_static/pygments.css" type="text/css" />
-  <link rel="stylesheet" href="/ape/latest/_static/custom.css" type="text/css" />
       <link rel="stylesheet" href="/ape/latest/_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="/ape/latest/_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="/ape/latest/_static/custom.css" type="text/css" />
@@ -16,11 +13,12 @@
   <!--[if lt IE 9]>
     <script src="../_static/js/html5shiv.min.js"></script>
   <![endif]-->
-  <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+  
+        <script integrity="sha384-vtXRMe3mGCbOeY7l30aIg8H9p3GdeSe4IFlP6G8JMa7o7lXvnz3GFKzPxzJdPfGK" src="../_static/jquery.js"></script>
+        <script integrity="sha384-lSZeSIVKp9myfKbDQ3GkN/KHjUc+mzg17VKDN4Y2kUeBSJioB9QSM639vM9fuY//" src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
-        <script src="../_static/jquery.js"></script>
-        <script src="../_static/underscore.js"></script>
         <script src="../_static/doctools.js"></script>
+        <script src="../_static/sphinx_highlight.js"></script>
     <script src="../_static/js/theme.js"></script>
     <script src="../_static/custom.js"></script>
   <script>
@@ -37,8 +35,12 @@
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
         <div class="wy-side-nav-search" >
-            <a href="../index.html" class="icon icon-home"> ape
-            <img src="../_static/logo.gif" class="logo" alt="Logo"/>
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            ape
+              <img src="../_static/logo.gif" class="logo" alt="Logo"/>
           </a>
 
           <div class="version">
@@ -51,13 +53,12 @@
           </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
-    <input type="text" name="q" placeholder="Search docs" />
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
     <input type="hidden" name="check_keywords" value="yes" />
     <input type="hidden" name="area" value="default" />
   </form>
 </div>
-        </div>
-        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Main">
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <p class="caption" role="heading"><span class="caption-text">User Guides</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="quickstart.html">Overview</a></li>
@@ -114,8 +115,7 @@
       </div>
     </nav>
 
-    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
-      <nav class="wy-nav-top" aria-label="Top" >
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
           <a href="../index.html">ape</a>
       </nav>
@@ -124,7 +124,7 @@
         <div class="rst-content">
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
-      <li><a href="../index.html" class="icon icon-home"></a></li>
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
       <li class="breadcrumb-item active">Configure Ape</li>
       <li class="wy-breadcrumbs-aside">
             <a href="../_sources/userguides/config.md.txt" rel="nofollow"> View page source</a>
@@ -136,11 +136,11 @@
            <div itemprop="articleBody">
              
   <section id="configure-ape">
-<h1>Configure Ape<a class="headerlink" href="#configure-ape" title="Permalink to this headline"></a></h1>
+<h1>Configure Ape<a class="headerlink" href="#configure-ape" title="Permalink to this heading"></a></h1>
 <p>An <code class="docutils literal notranslate"><span class="pre">ape-config.yaml</span></code> file allows you to configure ape. This guide serves as an index of the settings you can include
 in an <code class="docutils literal notranslate"><span class="pre">ape-config.yaml</span></code> file.</p>
 <section id="contracts-folder">
-<h2>Contracts Folder<a class="headerlink" href="#contracts-folder" title="Permalink to this headline"></a></h2>
+<h2>Contracts Folder<a class="headerlink" href="#contracts-folder" title="Permalink to this heading"></a></h2>
 <p>Specify a different path to your <code class="docutils literal notranslate"><span class="pre">contracts/</span></code> directory.
 This is useful when using a different naming convention, such as <code class="docutils literal notranslate"><span class="pre">src/</span></code> rather than <code class="docutils literal notranslate"><span class="pre">contracts/</span></code>.</p>
 <div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">contracts_folder</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">src</span>
@@ -153,7 +153,7 @@ This is useful for projects that compile contracts outside their directory.</p>
 </div>
 </section>
 <section id="default-ecosystem">
-<h2>Default Ecosystem<a class="headerlink" href="#default-ecosystem" title="Permalink to this headline"></a></h2>
+<h2>Default Ecosystem<a class="headerlink" href="#default-ecosystem" title="Permalink to this heading"></a></h2>
 <p>You can change the default ecosystem by including the following:</p>
 <div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">default_ecosystem</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">fantom</span>
 </pre></div>
@@ -161,7 +161,7 @@ This is useful for projects that compile contracts outside their directory.</p>
 <p>The default ecosystem is <code class="docutils literal notranslate"><span class="pre">ethereum</span></code>.</p>
 </section>
 <section id="dependencies">
-<h2>Dependencies<a class="headerlink" href="#dependencies" title="Permalink to this headline"></a></h2>
+<h2>Dependencies<a class="headerlink" href="#dependencies" title="Permalink to this heading"></a></h2>
 <p>Configure dependencies for your ape project.
 Ape downloads and caches dependencies in the <code class="docutils literal notranslate"><span class="pre">.ape/packages/&lt;name&gt;/&lt;version-id&gt;</span></code> directory where <code class="docutils literal notranslate"><span class="pre">&lt;name&gt;</span></code> refers to the name of the dependency and <code class="docutils literal notranslate"><span class="pre">&lt;version-id&gt;</span></code> refers to the version or branch of the package.</p>
 <p>For example:</p>
@@ -213,7 +213,7 @@ Ape downloads and caches dependencies in the <code class="docutils literal notra
 </ul>
 </section>
 <section id="deployments">
-<h2>Deployments<a class="headerlink" href="#deployments" title="Permalink to this headline"></a></h2>
+<h2>Deployments<a class="headerlink" href="#deployments" title="Permalink to this heading"></a></h2>
 <p>Share import deployments to public networks with your teammates:</p>
 <div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">deployments</span><span class="p">:</span>
 <span class="w">  </span><span class="nt">ethereum</span><span class="p">:</span>
@@ -227,7 +227,7 @@ Ape downloads and caches dependencies in the <code class="docutils literal notra
 </div>
 </section>
 <section id="geth">
-<h2>Geth<a class="headerlink" href="#geth" title="Permalink to this headline"></a></h2>
+<h2>Geth<a class="headerlink" href="#geth" title="Permalink to this heading"></a></h2>
 <p>When using the <code class="docutils literal notranslate"><span class="pre">geth</span></code> provider, you can customize its settings.
 For example, to change the URI for an Ethereum network, do:</p>
 <div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">geth</span><span class="p">:</span>
@@ -238,7 +238,7 @@ For example, to change the URI for an Ethereum network, do:</p>
 </div>
 </section>
 <section id="networks">
-<h2>Networks<a class="headerlink" href="#networks" title="Permalink to this headline"></a></h2>
+<h2>Networks<a class="headerlink" href="#networks" title="Permalink to this heading"></a></h2>
 <p>Set default network and network providers:</p>
 <div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">ethereum</span><span class="p">:</span>
 <span class="w">  </span><span class="nt">default_network</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">mainnet-fork</span>
@@ -262,7 +262,7 @@ For example, to change the URI for an Ethereum network, do:</p>
 <p>For the local network configuration, the default is <code class="docutils literal notranslate"><span class="pre">&quot;max&quot;</span></code>. Otherwise it is <code class="docutils literal notranslate"><span class="pre">&quot;auto&quot;</span></code>.</p>
 </section>
 <section id="plugins">
-<h2>Plugins<a class="headerlink" href="#plugins" title="Permalink to this headline"></a></h2>
+<h2>Plugins<a class="headerlink" href="#plugins" title="Permalink to this heading"></a></h2>
 <p>Set which plugins you want to always use:</p>
 <div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">plugins</span><span class="p">:</span>
 <span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">solidity</span>
@@ -276,7 +276,7 @@ For example, to change the URI for an Ethereum network, do:</p>
 </div>
 </section>
 <section id="testing">
-<h2>Testing<a class="headerlink" href="#testing" title="Permalink to this headline"></a></h2>
+<h2>Testing<a class="headerlink" href="#testing" title="Permalink to this heading"></a></h2>
 <p>Configure your test accounts:</p>
 <div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">test</span><span class="p">:</span>
 <span class="w">  </span><span class="nt">mnemonic</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">test test test test test test test test test test test junk</span>

@@ -4,9 +4,6 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Index &mdash; ape  documentation</title>
-  <link rel="stylesheet" href="/ape/latest/_static/css/theme.css" type="text/css" />
-  <link rel="stylesheet" href="/ape/latest/_static/pygments.css" type="text/css" />
-  <link rel="stylesheet" href="/ape/latest/_static/custom.css" type="text/css" />
       <link rel="stylesheet" href="/ape/latest/_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="/ape/latest/_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="/ape/latest/_static/custom.css" type="text/css" />
@@ -15,11 +12,12 @@
   <!--[if lt IE 9]>
     <script src="_static/js/html5shiv.min.js"></script>
   <![endif]-->
-  <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+  
+        <script integrity="sha384-vtXRMe3mGCbOeY7l30aIg8H9p3GdeSe4IFlP6G8JMa7o7lXvnz3GFKzPxzJdPfGK" src="_static/jquery.js"></script>
+        <script integrity="sha384-lSZeSIVKp9myfKbDQ3GkN/KHjUc+mzg17VKDN4Y2kUeBSJioB9QSM639vM9fuY//" src="_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
-        <script src="_static/jquery.js"></script>
-        <script src="_static/underscore.js"></script>
         <script src="_static/doctools.js"></script>
+        <script src="_static/sphinx_highlight.js"></script>
     <script src="_static/js/theme.js"></script>
     <script src="_static/custom.js"></script>
   <script>
@@ -34,8 +32,12 @@
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
         <div class="wy-side-nav-search" >
-            <a href="index.html" class="icon icon-home"> ape
-            <img src="_static/logo.gif" class="logo" alt="Logo"/>
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            ape
+              <img src="_static/logo.gif" class="logo" alt="Logo"/>
           </a>
 
           <div class="version">
@@ -48,13 +50,12 @@
           </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
-    <input type="text" name="q" placeholder="Search docs" />
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
     <input type="hidden" name="check_keywords" value="yes" />
     <input type="hidden" name="area" value="default" />
   </form>
 </div>
-        </div>
-        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Main">
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <p class="caption" role="heading"><span class="caption-text">User Guides</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="userguides/quickstart.html">Overview</a></li>
@@ -101,8 +102,7 @@
       </div>
     </nav>
 
-    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
-      <nav class="wy-nav-top" aria-label="Top" >
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
           <a href="index.html">ape</a>
       </nav>
@@ -111,7 +111,7 @@
         <div class="rst-content">
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
-      <li><a href="index.html" class="icon icon-home"></a></li>
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
       <li class="breadcrumb-item active">Index</li>
       <li class="wy-breadcrumbs-aside">
       </li>
@@ -1024,11 +1024,17 @@
       <li><a href="methoddocs/types.html#ape.types.ContractLog.block_number">block_number (ape.types.ContractLog attribute)</a>
 </li>
       <li><a href="methoddocs/api.html#ape.api.providers.ProviderAPI.block_page_size">block_page_size (ape.api.providers.ProviderAPI attribute)</a>
+
+      <ul>
+        <li><a href="methoddocs/api.html#ape.api.providers.TestProviderAPI.block_page_size">(ape.api.providers.TestProviderAPI attribute)</a>
 </li>
-      <li><a href="methoddocs/api.html#ape.api.networks.NetworkAPI.block_time">block_time (ape.api.networks.NetworkAPI property)</a>
+        <li><a href="methoddocs/api.html#ape.api.providers.UpstreamProvider.block_page_size">(ape.api.providers.UpstreamProvider attribute)</a>
 </li>
+      </ul></li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="methoddocs/api.html#ape.api.networks.NetworkAPI.block_time">block_time (ape.api.networks.NetworkAPI property)</a>
+</li>
       <li><a href="methoddocs/api.html#ape.api.providers.BlockAPI">BlockAPI (class in ape.api.providers)</a>
 </li>
       <li><a href="methoddocs/managers.html#ape.managers.chain.BlockContainer">BlockContainer (class in ape.managers.chain)</a>
@@ -1064,7 +1070,13 @@
       <li><a href="methoddocs/managers.html#ape.managers.chain.ContractCache.cache_proxy_info">cache_proxy_info() (ape.managers.chain.ContractCache method)</a>
 </li>
       <li><a href="methoddocs/api.html#ape.api.providers.ProviderAPI.cached_chain_id">cached_chain_id (ape.api.providers.ProviderAPI attribute)</a>
+
+      <ul>
+        <li><a href="methoddocs/api.html#ape.api.providers.TestProviderAPI.cached_chain_id">(ape.api.providers.TestProviderAPI attribute)</a>
 </li>
+        <li><a href="methoddocs/api.html#ape.api.providers.UpstreamProvider.cached_chain_id">(ape.api.providers.UpstreamProvider attribute)</a>
+</li>
+      </ul></li>
       <li><a href="methoddocs/api.html#ape.api.projects.DependencyAPI.cached_manifest">cached_manifest (ape.api.projects.DependencyAPI property)</a>
 
       <ul>
@@ -1153,7 +1165,13 @@
       <li><a href="methoddocs/ape.html#ape.compilers">compilers (in module ape)</a>
 </li>
       <li><a href="methoddocs/api.html#ape.api.providers.ProviderAPI.concurrency">concurrency (ape.api.providers.ProviderAPI attribute)</a>
+
+      <ul>
+        <li><a href="methoddocs/api.html#ape.api.providers.TestProviderAPI.concurrency">(ape.api.providers.TestProviderAPI attribute)</a>
 </li>
+        <li><a href="methoddocs/api.html#ape.api.providers.UpstreamProvider.concurrency">(ape.api.providers.UpstreamProvider attribute)</a>
+</li>
+      </ul></li>
       <li><a href="methoddocs/api.html#ape.api.networks.EcosystemAPI.config">config (ape.api.networks.EcosystemAPI property)</a>
 
       <ul>
@@ -1174,14 +1192,14 @@
 </li>
       <li><a href="methoddocs/managers.html#ape.managers.config.ConfigManager">ConfigManager (class in ape.managers.config)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="methoddocs/api.html#ape.api.providers.ProviderAPI.connect">connect() (ape.api.providers.ProviderAPI method)</a>
 
       <ul>
         <li><a href="methoddocs/api.html#ape.api.providers.SubprocessProvider.connect">(ape.api.providers.SubprocessProvider method)</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="methoddocs/api.html#ape.api.providers.UpstreamProvider.connection_str">connection_str (ape.api.providers.UpstreamProvider property)</a>
 </li>
       <li>
@@ -1235,6 +1253,12 @@
         <li><a href="methoddocs/managers.html#ape.managers.config.ConfigManager.contracts_folder">(ape.managers.config.ConfigManager attribute)</a>
 </li>
         <li><a href="methoddocs/managers.html#ape.managers.project.manager.ProjectManager.contracts_folder">(ape.managers.project.manager.ProjectManager property)</a>
+</li>
+        <li><a href="methoddocs/managers.html#ape.managers.project.types.ApeProject.contracts_folder">(ape.managers.project.types.ApeProject attribute)</a>
+</li>
+        <li><a href="methoddocs/managers.html#ape.managers.project.types.BaseProject.contracts_folder">(ape.managers.project.types.BaseProject attribute)</a>
+</li>
+        <li><a href="methoddocs/managers.html#ape.managers.project.types.BrownieProject.contracts_folder">(ape.managers.project.types.BrownieProject attribute)</a>
 </li>
       </ul></li>
       <li><a href="methoddocs/exceptions.html#ape.exceptions.ConversionError">ConversionError</a>
@@ -1304,6 +1328,10 @@
 </li>
         <li><a href="methoddocs/api.html#ape.api.providers.ProviderAPI.data_folder">(ape.api.providers.ProviderAPI attribute)</a>
 </li>
+        <li><a href="methoddocs/api.html#ape.api.providers.TestProviderAPI.data_folder">(ape.api.providers.TestProviderAPI attribute)</a>
+</li>
+        <li><a href="methoddocs/api.html#ape.api.providers.UpstreamProvider.data_folder">(ape.api.providers.UpstreamProvider attribute)</a>
+</li>
       </ul></li>
       <li><a href="methoddocs/managers.html#ape.managers.config.ConfigManager.DATA_FOLDER">DATA_FOLDER (ape.managers.config.ConfigManager attribute)</a>
 </li>
@@ -1335,10 +1363,10 @@
       </ul></li>
       <li><a href="methoddocs/utils.html#ape.utils.StructParser.default_name">default_name (ape.utils.StructParser property)</a>
 </li>
-      <li><a href="methoddocs/api.html#ape.api.networks.EcosystemAPI.default_network">default_network (ape.api.networks.EcosystemAPI property)</a>
-</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="methoddocs/api.html#ape.api.networks.EcosystemAPI.default_network">default_network (ape.api.networks.EcosystemAPI property)</a>
+</li>
       <li><a href="methoddocs/api.html#ape.api.networks.NetworkAPI.default_provider">default_provider (ape.api.networks.NetworkAPI property)</a>
 </li>
       <li><a href="methoddocs/managers.html#ape.managers.query.DefaultQueryProvider">DefaultQueryProvider (class in ape.managers.query)</a>
@@ -1915,17 +1943,45 @@
 </li>
         <li><a href="methoddocs/api.html#ape.api.providers.ProviderAPI.name">(ape.api.providers.ProviderAPI attribute)</a>
 </li>
+        <li><a href="methoddocs/api.html#ape.api.providers.TestProviderAPI.name">(ape.api.providers.TestProviderAPI attribute)</a>
+</li>
+        <li><a href="methoddocs/api.html#ape.api.providers.UpstreamProvider.name">(ape.api.providers.UpstreamProvider attribute)</a>
+</li>
+        <li><a href="methoddocs/cli.html#ape.cli.choices.AccountAliasPromptChoice.name">(ape.cli.choices.AccountAliasPromptChoice attribute)</a>
+</li>
+        <li><a href="methoddocs/cli.html#ape.cli.choices.Alias.name">(ape.cli.choices.Alias attribute)</a>
+</li>
+        <li><a href="methoddocs/cli.html#ape.cli.choices.PromptChoice.name">(ape.cli.choices.PromptChoice attribute)</a>
+</li>
+        <li><a href="methoddocs/cli.html#ape.cli.paramtype.AllFilePaths.name">(ape.cli.paramtype.AllFilePaths attribute)</a>
+</li>
+        <li><a href="methoddocs/cli.html#ape.cli.paramtype.Path.name">(ape.cli.paramtype.Path attribute)</a>
+</li>
         <li><a href="methoddocs/contracts.html#ape.contracts.base.ContractEvent.name">(ape.contracts.base.ContractEvent property)</a>
 </li>
         <li><a href="methoddocs/managers.html#ape.managers.config.ConfigManager.name">(ape.managers.config.ConfigManager attribute)</a>
 </li>
+        <li><a href="methoddocs/managers.html#ape.managers.project.types.ApeProject.name">(ape.managers.project.types.ApeProject attribute)</a>
+</li>
+        <li><a href="methoddocs/managers.html#ape.managers.project.types.BaseProject.name">(ape.managers.project.types.BaseProject attribute)</a>
+</li>
+        <li><a href="methoddocs/managers.html#ape.managers.project.types.BrownieProject.name">(ape.managers.project.types.BrownieProject attribute)</a>
+</li>
       </ul></li>
       <li><a href="methoddocs/api.html#ape.api.providers.ProviderAPI.network">network (ape.api.providers.ProviderAPI attribute)</a>
+
+      <ul>
+        <li><a href="methoddocs/api.html#ape.api.providers.TestProviderAPI.network">(ape.api.providers.TestProviderAPI attribute)</a>
 </li>
+        <li><a href="methoddocs/api.html#ape.api.providers.UpstreamProvider.network">(ape.api.providers.UpstreamProvider attribute)</a>
+</li>
+      </ul></li>
       <li><a href="methoddocs/managers.html#ape.managers.networks.NetworkManager.network_data">network_data (ape.managers.networks.NetworkManager property)</a>
 </li>
       <li><a href="methoddocs/api.html#ape.api.networks.NetworkAPI.network_id">network_id (ape.api.networks.NetworkAPI property)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="methoddocs/managers.html#ape.managers.networks.NetworkManager.network_names">network_names (ape.managers.networks.NetworkManager property)</a>
 </li>
       <li><a href="methoddocs/cli.html#ape.cli.options.network_option">network_option() (in module ape.cli.options)</a>
@@ -1938,8 +1994,6 @@
 </li>
       <li><a href="methoddocs/exceptions.html#ape.exceptions.NetworkError">NetworkError</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="methoddocs/managers.html#ape.managers.networks.NetworkManager">NetworkManager (class in ape.managers.networks)</a>
 </li>
       <li><a href="methoddocs/exceptions.html#ape.exceptions.NetworkMismatchError">NetworkMismatchError</a>
@@ -2011,6 +2065,12 @@
 
       <ul>
         <li><a href="methoddocs/managers.html#ape.managers.project.manager.ProjectManager.path">(ape.managers.project.manager.ProjectManager attribute)</a>
+</li>
+        <li><a href="methoddocs/managers.html#ape.managers.project.types.ApeProject.path">(ape.managers.project.types.ApeProject attribute)</a>
+</li>
+        <li><a href="methoddocs/managers.html#ape.managers.project.types.BaseProject.path">(ape.managers.project.types.BaseProject attribute)</a>
+</li>
+        <li><a href="methoddocs/managers.html#ape.managers.project.types.BrownieProject.path">(ape.managers.project.types.BrownieProject attribute)</a>
 </li>
       </ul></li>
       <li><a href="methoddocs/cli.html#ape.cli.paramtype.Path">Path (class in ape.cli.paramtype)</a>
@@ -2142,7 +2202,13 @@
       <li><a href="methoddocs/managers.html#ape.managers.networks.NetworkManager.provider_names">provider_names (ape.managers.networks.NetworkManager property)</a>
 </li>
       <li><a href="methoddocs/api.html#ape.api.providers.ProviderAPI.provider_settings">provider_settings (ape.api.providers.ProviderAPI attribute)</a>
+
+      <ul>
+        <li><a href="methoddocs/api.html#ape.api.providers.TestProviderAPI.provider_settings">(ape.api.providers.TestProviderAPI attribute)</a>
 </li>
+        <li><a href="methoddocs/api.html#ape.api.providers.UpstreamProvider.provider_settings">(ape.api.providers.UpstreamProvider attribute)</a>
+</li>
+      </ul></li>
       <li><a href="methoddocs/api.html#ape.api.providers.ProviderAPI">ProviderAPI (class in ape.api.providers)</a>
 </li>
       <li><a href="methoddocs/api.html#ape.api.networks.ProviderContextManager">ProviderContextManager (class in ape.api.networks)</a>
@@ -2238,6 +2304,10 @@
         <li><a href="methoddocs/api.html#ape.api.networks.NetworkAPI.request_header">(ape.api.networks.NetworkAPI attribute)</a>
 </li>
         <li><a href="methoddocs/api.html#ape.api.providers.ProviderAPI.request_header">(ape.api.providers.ProviderAPI attribute)</a>
+</li>
+        <li><a href="methoddocs/api.html#ape.api.providers.TestProviderAPI.request_header">(ape.api.providers.TestProviderAPI attribute)</a>
+</li>
+        <li><a href="methoddocs/api.html#ape.api.providers.UpstreamProvider.request_header">(ape.api.providers.UpstreamProvider attribute)</a>
 </li>
       </ul></li>
   </ul></td>
@@ -2504,6 +2574,12 @@
         <li><a href="methoddocs/api.html#ape.api.projects.ProjectAPI.version">(ape.api.projects.ProjectAPI attribute)</a>
 </li>
         <li><a href="methoddocs/managers.html#ape.managers.config.ConfigManager.version">(ape.managers.config.ConfigManager attribute)</a>
+</li>
+        <li><a href="methoddocs/managers.html#ape.managers.project.types.ApeProject.version">(ape.managers.project.types.ApeProject attribute)</a>
+</li>
+        <li><a href="methoddocs/managers.html#ape.managers.project.types.BaseProject.version">(ape.managers.project.types.BaseProject attribute)</a>
+</li>
+        <li><a href="methoddocs/managers.html#ape.managers.project.types.BrownieProject.version">(ape.managers.project.types.BrownieProject attribute)</a>
 </li>
         <li><a href="methoddocs/types.html#ape.types.signatures.SignableMessage.version">(ape.types.signatures.SignableMessage attribute)</a>
 </li>

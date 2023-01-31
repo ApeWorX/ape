@@ -1,13 +1,10 @@
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" >
 <head>
-  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Publishing &mdash; ape  documentation</title>
-  <link rel="stylesheet" href="/ape/latest/_static/css/theme.css" type="text/css" />
-  <link rel="stylesheet" href="/ape/latest/_static/pygments.css" type="text/css" />
-  <link rel="stylesheet" href="/ape/latest/_static/custom.css" type="text/css" />
       <link rel="stylesheet" href="/ape/latest/_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="/ape/latest/_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="/ape/latest/_static/custom.css" type="text/css" />
@@ -16,11 +13,12 @@
   <!--[if lt IE 9]>
     <script src="../_static/js/html5shiv.min.js"></script>
   <![endif]-->
-  <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+  
+        <script integrity="sha384-vtXRMe3mGCbOeY7l30aIg8H9p3GdeSe4IFlP6G8JMa7o7lXvnz3GFKzPxzJdPfGK" src="../_static/jquery.js"></script>
+        <script integrity="sha384-lSZeSIVKp9myfKbDQ3GkN/KHjUc+mzg17VKDN4Y2kUeBSJioB9QSM639vM9fuY//" src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
-        <script src="../_static/jquery.js"></script>
-        <script src="../_static/underscore.js"></script>
         <script src="../_static/doctools.js"></script>
+        <script src="../_static/sphinx_highlight.js"></script>
     <script src="../_static/js/theme.js"></script>
     <script src="../_static/custom.js"></script>
   <script>
@@ -37,8 +35,12 @@
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
         <div class="wy-side-nav-search" >
-            <a href="../index.html" class="icon icon-home"> ape
-            <img src="../_static/logo.gif" class="logo" alt="Logo"/>
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            ape
+              <img src="../_static/logo.gif" class="logo" alt="Logo"/>
           </a>
 
           <div class="version">
@@ -51,13 +53,12 @@
           </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
-    <input type="text" name="q" placeholder="Search docs" />
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
     <input type="hidden" name="check_keywords" value="yes" />
     <input type="hidden" name="area" value="default" />
   </form>
 </div>
-        </div>
-        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Main">
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <p class="caption" role="heading"><span class="caption-text">User Guides</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="quickstart.html">Overview</a></li>
@@ -109,8 +110,7 @@
       </div>
     </nav>
 
-    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
-      <nav class="wy-nav-top" aria-label="Top" >
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
           <a href="../index.html">ape</a>
       </nav>
@@ -119,7 +119,7 @@
         <div class="rst-content">
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
-      <li><a href="../index.html" class="icon icon-home"></a></li>
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
       <li class="breadcrumb-item active">Publishing</li>
       <li class="wy-breadcrumbs-aside">
             <a href="../_sources/userguides/publishing.md.txt" rel="nofollow"> View page source</a>
@@ -131,11 +131,11 @@
            <div itemprop="articleBody">
              
   <section id="publishing">
-<h1>Publishing<a class="headerlink" href="#publishing" title="Permalink to this headline"></a></h1>
+<h1>Publishing<a class="headerlink" href="#publishing" title="Permalink to this heading"></a></h1>
 <p>Publishing smart-contract packages using Ape is influenced from <a class="reference external" href="https://eips.ethereum.org/EIPS/eip-2678">EIP-2678</a> and uses the <a class="reference external" href="https://github.com/ApeWorX/ethpm-types">ethpm-types</a> Python package extensively (which is also managed by the ApeWorX organization).
 This guide exists to walk through the steps of publishing your project.</p>
 <section id="compilation">
-<h2>Compilation<a class="headerlink" href="#compilation" title="Permalink to this headline"></a></h2>
+<h2>Compilation<a class="headerlink" href="#compilation" title="Permalink to this heading"></a></h2>
 <p>First, your project must compile.</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>ape<span class="w"> </span>compile
 </pre></div>
@@ -144,7 +144,7 @@ This guide exists to walk through the steps of publishing your project.</p>
 Once your project has successfully compiled, you will have the start of your <code class="docutils literal notranslate"><span class="pre">PackageManifest</span></code> generated in your project’s <code class="docutils literal notranslate"><span class="pre">.build/</span></code> directory.</p>
 </section>
 <section id="tracking-deployments">
-<h2>Tracking Deployments<a class="headerlink" href="#tracking-deployments" title="Permalink to this headline"></a></h2>
+<h2>Tracking Deployments<a class="headerlink" href="#tracking-deployments" title="Permalink to this heading"></a></h2>
 <p>If your project contains deployments that you wish to include in its package manifest, use the <a class="reference external" href="../methoddocs/managers.html#ape.managers.project.manager.ProjectManager.track_deployment">track_deployment()</a> method.
 Example:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">ape</span> <span class="kn">import</span> <span class="n">accounts</span><span class="p">,</span> <span class="n">project</span>
@@ -166,7 +166,7 @@ Example:</p>
 <p>For more information on accessing contract instances, follow <a class="reference external" href="./contracts.html">this guide</a>.</p>
 </section>
 <section id="publishing-to-explorer">
-<h2>Publishing to Explorer<a class="headerlink" href="#publishing-to-explorer" title="Permalink to this headline"></a></h2>
+<h2>Publishing to Explorer<a class="headerlink" href="#publishing-to-explorer" title="Permalink to this heading"></a></h2>
 <p>If you want to publish your contracts to an explorer, you can use the <a class="reference external" href="../methoddocs/api.html#ape.explorers.ExplorerAPI.publish_contract">publish_contract</a> on the <code class="docutils literal notranslate"><span class="pre">ExplorerAPI</span></code>.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">ape</span> <span class="kn">import</span> <span class="n">networks</span>
 
