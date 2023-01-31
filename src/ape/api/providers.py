@@ -1043,7 +1043,8 @@ class Web3Provider(ProviderAPI, ABC):
     def send_transaction(self, txn: TransactionAPI) -> ReceiptAPI:
         try:
             account = self.account_manager[txn.sender]
-            if isinstance(account, ImpersonatedAccount):
+            # Created test accounts also become ImpersonatedAccount but they can sign
+            if isinstance(account, ImpersonatedAccount) and not txn.signature:
                 txn_dict = txn.dict()
                 txn_params = cast(TxParams, txn_dict)
                 txn_hash = self.web3.eth.send_transaction(txn_params)

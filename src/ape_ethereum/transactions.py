@@ -52,7 +52,7 @@ class AccessList(BaseModel):
 
 
 class BaseTransaction(TransactionAPI):
-    def serialize_transaction(self) -> bytes:
+    def serialize_transaction(self, ignore_sign_match: bool = False) -> bytes:
         if not self.signature:
             raise SignatureError("The transaction is not signed.")
 
@@ -61,14 +61,18 @@ class BaseTransaction(TransactionAPI):
         signature = (self.signature.v, to_int(self.signature.r), to_int(self.signature.s))
         signed_txn = encode_transaction(unsigned_txn, signature)
 
-        if self.sender and EthAccount.recover_transaction(signed_txn) != self.sender:
+        if (
+            self.sender
+            and EthAccount.recover_transaction(signed_txn) != self.sender
+            and not ignore_sign_match
+        ):
             raise SignatureError("Recovered signer doesn't match sender!")
 
         return signed_txn
 
     @property
     def txn_hash(self) -> HexBytes:
-        txn_bytes = self.serialize_transaction()
+        txn_bytes = self.serialize_transaction(ignore_sign_match=True)
         return HexBytes(keccak(txn_bytes))
 
 
