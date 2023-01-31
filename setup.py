@@ -35,7 +35,7 @@ extras_require = {
     ],
     "doc": [
         # Tools for parsing markdown files in the docs
-        "myst-parser @ git+https://github.com/executablebooks/MyST-Parser.git",
+        # "myst-parser",  # TODO: Uncomment/re-pin once Sphinx 6 support is released
         "sphinx-click>=4.4.0,<5.0",  # For documenting CLI
         "Sphinx>=6.1.3,<7.0",  # Documentation generator
         "sphinx_rtd_theme>=1.2.0rc3,<2",  # Readthedocs.org theme
@@ -47,7 +47,8 @@ extras_require = {
         "twine==3.8.0",  # Package upload tool
     ],
     "dev": [
-        "commitizen>=2.19,<2.20",  # Manage commits and publishing releases
+        # commitizen: Manage commits and publishing releases
+        (here / "cz-requirement.txt").read_text().strip(),
         "pre-commit",  # Ensure that linters are run prior to committing
         "pytest-watch",  # `ptw` test watcher/runner
         "ipdb",  # Debugger (Must use `export PYTHONBREAKPOINT=ipdb.set_trace`)
@@ -55,7 +56,7 @@ extras_require = {
     # NOTE: These are extras that someone can install to get up and running quickly w/ ape
     #       They should be kept up to date with what works and what doesn't out of the box
     #       Usage example: `pipx install eth-ape[recommended-plugins]`
-    "recommended-plugins": (here / "recommended-plugins.txt").read_text().split("\n"),
+    "recommended-plugins": (here / "recommended-plugins.txt").read_text().splitlines(),
 }
 
 # NOTE: `pip install -e .[dev]` to install package
