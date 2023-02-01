@@ -26,7 +26,6 @@ from web3.exceptions import ContractLogicError as Web3ContractLogicError
 from web3.exceptions import TimeExhausted
 from web3.types import RPCEndpoint
 
-from ape.api.accounts import ImpersonatedAccount
 from ape.api.config import PluginConfig
 from ape.api.networks import LOCAL_NETWORK_NAME, NetworkAPI
 from ape.api.query import BlockTransactionQuery
@@ -1041,30 +1040,22 @@ class Web3Provider(ProviderAPI, ABC):
         return txn
 
     def send_transaction(self, txn: TransactionAPI) -> ReceiptAPI:
-        if not txn.sender:
-            txn_hash = self.web3.eth.send_raw_transaction(txn.serialize_transaction())
 
-        else:
-            try:
-                account = self.account_manager[txn.sender]
-                if isinstance(account, ImpersonatedAccount):
-                    txn_dict = txn.dict()
-                    txn_params = cast(TxParams, txn_dict)
-                    txn_hash = self.web3.eth.send_transaction(txn_params)
-                else:
-                    txn_hash = self.web3.eth.send_raw_transaction(txn.serialize_transaction())
-            except ValueError as err:
-                vm_err = self.get_virtual_machine_error(err, txn=txn)
-
-                if "nonce too low" in str(vm_err):
-                    # Add additional nonce information
-                    new_err_msg = f"Nonce '{txn.nonce}' is too low"
-                    raise VirtualMachineError(
-                        new_err_msg, base_err=vm_err.base_err, code=vm_err.code
-                    )
-
-                vm_err.txn = txn
-                raise vm_err from err
+        try:
+            if txn.signature or not txn.sender:
+                txn_hash = self.web3.eth.send_raw_transaction(txn.serialize_transaction())
+            else:
+                if (
+                    txn.sender not in self.chain_manager.provider.web3.eth.accounts  # type: ignore # noqa
+                ):
+                    self.chain_manager.provider.unlock_account(txn.sender)
+                txn_dict = txn.dict()
+                txn_params = cast(TxParams, txn_dict)
+                txn_hash = self.web3.eth.send_transaction(txn_params)
+        except ValueError as err:
+            vm_err = self.get_virtual_machine_error(err, txn=txn)
+            vm_err.txn = txn
+            raise vm_err from err
 
         receipt = self.get_receipt(
             txn_hash.hex(),
@@ -1173,6 +1164,13 @@ class Web3Provider(ProviderAPI, ABC):
         err_msg = err_data.get("message")
         if not err_msg:
             return VirtualMachineError(base_err=exception, txn=txn)
+
+        if txn is not None and "nonce too low" in str(err_msg):
+            txn = cast(TransactionAPI, txn)
+            new_err_msg = f"Nonce '{txn.nonce}' is too low"
+            return VirtualMachineError(
+                new_err_msg, base_err=exception, code=err_data.get("code"), txn=txn
+            )
 
         return VirtualMachineError(str(err_msg), code=err_data.get("code"), txn=txn)
 

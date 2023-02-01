@@ -136,6 +136,9 @@ class AccountAPI(BaseInterfaceModel, BaseAddress):
         if not signed_txn:
             raise SignatureError("The transaction was not signed.")
 
+        if not txn.sender:
+            txn.sender = self.address
+
         return self.provider.send_transaction(signed_txn)
 
     def transfer(
@@ -463,4 +466,6 @@ class ImpersonatedAccount(AccountAPI):
 
     def call(self, txn: TransactionAPI, send_everything: bool = False, **kwargs) -> ReceiptAPI:
         txn = self.prepare_transaction(txn)
+        if not txn.sender:
+            txn.sender = self.raw_address
         return self.provider.send_transaction(txn)
