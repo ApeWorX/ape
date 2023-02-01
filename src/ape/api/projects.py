@@ -376,7 +376,10 @@ class DependencyAPI(BaseInterfaceModel):
         # for later usage via imports. For legacy reasons, many dependency-esque projects
         # are not meant to compile on their own.
 
-        with self.config_manager.using_project(project_path):
+        with self.config_manager.using_project(
+            project_path,
+            contracts_folder=(project_path / self.contracts_folder).expanduser().resolve(),
+        ):
             project = self._get_project(project_path)
             sources = self._get_sources(project)
             dependencies = self.project_manager._extract_manifest_dependencies()
