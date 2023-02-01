@@ -174,7 +174,8 @@ class Ethereum(EcosystemAPI):
 
     @property
     def default_transaction_type(self) -> TransactionType:
-        return self.config[self.default_network].default_transaction_type
+        network = self.default_network.replace("-", "_")
+        return self.config[network].default_transaction_type
 
     @classmethod
     def decode_address(cls, raw_address: RawAddress) -> AddressType:
