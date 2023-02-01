@@ -9,7 +9,6 @@ from ethpm_types.utils import AnyUrl
 from pydantic import FileUrl, HttpUrl, root_validator
 
 from ape.api import DependencyAPI
-from ape.api.projects import _load_manifest_from_file
 from ape.exceptions import ProjectError
 from ape.utils import ManagerAccessMixin, cached_property, github_client, load_config
 
@@ -164,9 +163,4 @@ class LocalDependency(DependencyAPI):
         return FileUrl(f"file://{path}", scheme="file")
 
     def extract_manifest(self) -> PackageManifest:
-        if self._target_manifest_cache_file.is_file():
-            manifest = _load_manifest_from_file(self._target_manifest_cache_file)
-            if manifest:
-                return manifest
-
         return self._extract_local_manifest(self.path)
