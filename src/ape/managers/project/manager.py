@@ -302,7 +302,11 @@ class ProjectManager(BaseManager):
             ):
                 return cached_project
 
-        contracts_folder = contracts_folder or path / "contracts"
+        contracts_folder = (
+            (path / contracts_folder).expanduser().resolve()
+            if contracts_folder
+            else path / "contracts"
+        )
         if not contracts_folder.is_dir():
             extensions = list(self.compiler_manager.registered_compilers.keys())
             path_patterns_to_ignore = self.config_manager.compiler.ignore_files
@@ -333,7 +337,7 @@ class ProjectManager(BaseManager):
 
                 return None
 
-            contracts_folder = find_contracts_folder(path) or contracts_folder
+            contracts_folder = contracts_folder or find_contracts_folder(path)
 
         def _try_create_project(proj_cls: Type[ProjectAPI]) -> Optional[ProjectAPI]:
             with self.config_manager.using_project(
