@@ -337,7 +337,7 @@ class ProjectManager(BaseManager):
 
                 return None
 
-            contracts_folder = contracts_folder or find_contracts_folder(path)
+            contracts_folder = find_contracts_folder(path) or contracts_folder
 
         def _try_create_project(proj_cls: Type[ProjectAPI]) -> Optional[ProjectAPI]:
             with self.config_manager.using_project(
