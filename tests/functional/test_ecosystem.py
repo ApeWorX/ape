@@ -186,7 +186,9 @@ def test_decode_receipt(eth_tester_provider, ethereum):
 
 
 def test_configure_default_txn_type(temp_config, ethereum):
-    config_dict = {"ethereum": {"local": {"default_transaction_type": 0}}}
+    config_dict = {"ethereum": {"mainnet_fork": {"default_transaction_type": 0}}}
     assert ethereum.default_transaction_type == TransactionType.DYNAMIC
+
     with temp_config(config_dict):
+        ethereum._default_network = "mainnet-fork"
         assert ethereum.default_transaction_type == TransactionType.STATIC
