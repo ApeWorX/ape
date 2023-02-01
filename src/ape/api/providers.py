@@ -1041,24 +1041,30 @@ class Web3Provider(ProviderAPI, ABC):
         return txn
 
     def send_transaction(self, txn: TransactionAPI) -> ReceiptAPI:
-        try:
-            account = self.account_manager[txn.sender]
-            if isinstance(account, ImpersonatedAccount):
-                txn_dict = txn.dict()
-                txn_params = cast(TxParams, txn_dict)
-                txn_hash = self.web3.eth.send_transaction(txn_params)
-            else:
-                txn_hash = self.web3.eth.send_raw_transaction(txn.serialize_transaction())
-        except ValueError as err:
-            vm_err = self.get_virtual_machine_error(err, txn=txn)
+        if not txn.sender:
+            txn_hash = self.web3.eth.send_raw_transaction(txn.serialize_transaction())
 
-            if "nonce too low" in str(vm_err):
-                # Add additional nonce information
-                new_err_msg = f"Nonce '{txn.nonce}' is too low"
-                raise VirtualMachineError(new_err_msg, base_err=vm_err.base_err, code=vm_err.code)
+        else:
+            try:
+                account = self.account_manager[txn.sender]
+                if isinstance(account, ImpersonatedAccount):
+                    txn_dict = txn.dict()
+                    txn_params = cast(TxParams, txn_dict)
+                    txn_hash = self.web3.eth.send_transaction(txn_params)
+                else:
+                    txn_hash = self.web3.eth.send_raw_transaction(txn.serialize_transaction())
+            except ValueError as err:
+                vm_err = self.get_virtual_machine_error(err, txn=txn)
 
-            vm_err.txn = txn
-            raise vm_err from err
+                if "nonce too low" in str(vm_err):
+                    # Add additional nonce information
+                    new_err_msg = f"Nonce '{txn.nonce}' is too low"
+                    raise VirtualMachineError(
+                        new_err_msg, base_err=vm_err.base_err, code=vm_err.code
+                    )
+
+                vm_err.txn = txn
+                raise vm_err from err
 
         receipt = self.get_receipt(
             txn_hash.hex(),

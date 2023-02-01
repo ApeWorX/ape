@@ -142,9 +142,8 @@ class BaseProject(ProjectAPI):
         if self.version:
             config_data["version"] = self.version
 
-        contracts_folder_config_item = (
-            str(self.contracts_folder).replace(str(self.path), "").strip("/")
-        )
+        contracts_folder = kwargs.get("contracts_folder") or self.contracts_folder
+        contracts_folder_config_item = str(contracts_folder).replace(str(self.path), "").strip("/")
         config_data["contracts_folder"] = contracts_folder_config_item
         self.config_file.parent.mkdir(parents=True, exist_ok=True)
         self.config_file.touch()

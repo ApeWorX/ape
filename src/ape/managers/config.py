@@ -273,27 +273,30 @@ class ConfigManager(BaseInterfaceModel):
             Generator
         """
 
-        contracts_folder = contracts_folder or project_folder / "contracts"
         initial_project_folder = self.project_manager.path
         initial_contracts_folder = self.contracts_folder
 
-        if (
-            initial_project_folder == project_folder
-            and initial_contracts_folder == contracts_folder
+        if initial_project_folder == project_folder and (
+            not contracts_folder or initial_contracts_folder == contracts_folder
         ):
             # Already in project.
             yield self.project_manager
             return
 
         self.PROJECT_FOLDER = project_folder
-        self.contracts_folder = contracts_folder
+        self.contracts_folder = (
+            contracts_folder if contracts_folder else project_folder / "contracts"
+        )
         self.project_manager.path = project_folder
         os.chdir(project_folder)
         clean_config = False
 
         try:
             # Process and reload the project's configuration
-            clean_config = self.project_manager.local_project.process_config_file()
+            project = self.project_manager.get_project(
+                project_folder, contracts_folder=contracts_folder
+            )
+            clean_config = project.process_config_file(contracts_folder=contracts_folder)
             self.load(force_reload=True)
             yield self.project_manager
 
