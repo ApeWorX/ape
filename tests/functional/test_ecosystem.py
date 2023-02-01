@@ -4,6 +4,7 @@ import pytest
 from eth_typing import HexAddress, HexStr
 from hexbytes import HexBytes
 
+from ape.api.networks import LOCAL_NETWORK_NAME
 from ape.types import AddressType
 from ape.utils import DEFAULT_LOCAL_TRANSACTION_ACCEPTANCE_TIMEOUT
 from ape_ethereum.ecosystem import Block
@@ -192,3 +193,4 @@ def test_configure_default_txn_type(temp_config, ethereum):
     with temp_config(config_dict):
         ethereum._default_network = "mainnet-fork"
         assert ethereum.default_transaction_type == TransactionType.STATIC
+        ethereum._default_network = LOCAL_NETWORK_NAME
