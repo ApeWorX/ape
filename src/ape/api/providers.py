@@ -973,6 +973,67 @@ class Web3Provider(ProviderAPI, ABC):
         for transaction in block.get("transactions", []):
             yield self.network.ecosystem.create_transaction(**transaction)
 
+    def get_transactions_by_account_nonce(
+        self,
+        account: AddressType,
+        start_nonce: int,
+        stop_nonce: int,
+    ) -> Iterator[ReceiptAPI]:
+        if start_nonce > stop_nonce:
+            raise ValueError("Starting nonce cannot be greater than stop nonce for search")
+
+        yield from self._find_txn_by_account_and_nonce(
+            account,
+            start_nonce,
+            stop_nonce,
+            0,  # first block
+            self.chain_manager.blocks.head.number or 0,  # last block (or 0 if genesis-only chain)
+        )
+
+    def _find_txn_by_account_and_nonce(
+        self,
+        account: AddressType,
+        start_nonce: int,
+        stop_nonce: int,
+        start_block: int,
+        stop_block: int,
+    ) -> Iterator[ReceiptAPI]:
+        # binary search between `start_block` and `stop_block` to yield txns from account,
+        # ordered from `start_nonce` to `stop_nonce`
+
+        if start_block == stop_block:
+            # Honed in on one block where there's a delta in nonce, so must be the right block
+            for txn in self.get_transactions_by_block(stop_block):
+                assert isinstance(txn.nonce, int)  # NOTE: just satisfying mypy here
+                if txn.sender == account and txn.nonce >= start_nonce:
+                    yield self.get_receipt(txn.txn_hash.hex())
+
+            # Nothing else to search for
+
+        else:
+            # Break up into smaller chunks
+            # NOTE: biased to `stop_block`
+            block_number = start_block + (stop_block - start_block) // 2 + 1
+            txn_count_prev_to_block = self.web3.eth.get_transaction_count(account, block_number - 1)
+
+            if start_nonce < txn_count_prev_to_block:
+                yield from self._find_txn_by_account_and_nonce(
+                    account,
+                    start_nonce,
+                    min(txn_count_prev_to_block - 1, stop_nonce),  # NOTE: In case >1 txn in block
+                    start_block,
+                    block_number - 1,
+                )
+
+            if txn_count_prev_to_block <= stop_nonce:
+                yield from self._find_txn_by_account_and_nonce(
+                    account,
+                    max(start_nonce, txn_count_prev_to_block),  # NOTE: In case >1 txn in block
+                    stop_nonce,
+                    block_number,
+                    stop_block,
+                )
+
     def block_ranges(self, start=0, stop=None, page=None):
         if stop is None:
             stop = self.chain_manager.blocks.height
