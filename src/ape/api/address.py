@@ -1,10 +1,13 @@
-from typing import Any, List
+from typing import TYPE_CHECKING, Any, List
 
 from hexbytes import HexBytes
 
 from ape.exceptions import ConversionError
 from ape.types import AddressType, ContractCode
-from ape.utils import BaseInterface, abstractmethod
+from ape.utils import BaseInterface, abstractmethod, cached_property
+
+if TYPE_CHECKING:
+    from ape.managers.chain import AccountHistory
 
 
 class BaseAddress(BaseInterface):
@@ -132,6 +135,13 @@ class BaseAddress(BaseInterface):
         """
 
         return len(HexBytes(self.code)) > 0
+
+    @cached_property
+    def history(self) -> "AccountHistory":
+        """
+        The list of transactions that this account has made on the current chain.
+        """
+        return self.chain_manager.history[self.address]
 
 
 class Address(BaseAddress):
