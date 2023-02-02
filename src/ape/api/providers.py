@@ -962,7 +962,7 @@ class Web3Provider(ProviderAPI, ABC):
         )
         return receipt.await_confirmations()
 
-    def get_transactions_by_block(self, block_id: BlockID) -> Iterator:
+    def get_transactions_by_block(self, block_id: BlockID) -> Iterator[TransactionAPI]:
         if isinstance(block_id, str):
             block_id = HexStr(block_id)
 
