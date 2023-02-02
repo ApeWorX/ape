@@ -15,7 +15,12 @@ from rich.console import Console as RichConsole
 from ape.api import BlockAPI, ReceiptAPI
 from ape.api.address import BaseAddress
 from ape.api.networks import LOCAL_NETWORK_NAME, NetworkAPI, ProxyInfoAPI
-from ape.api.query import BlockQuery, extract_fields, validate_and_expand_columns
+from ape.api.query import (
+    AccountTransactionQuery,
+    BlockQuery,
+    extract_fields,
+    validate_and_expand_columns,
+)
 from ape.contracts import ContractContainer, ContractInstance
 from ape.exceptions import (
     APINotImplementedError,
@@ -408,18 +413,17 @@ class AccountHistory(BaseInterfaceModel):
         """
         All outgoing transactions, from earliest to latest.
         """
-        explorer = self.provider.network.explorer
-        explorer_receipts = (
-            [r for r in explorer.get_account_transactions(self.address)] if explorer else []
+        yield from cast(
+            Iterator[ReceiptAPI],
+            self.query_manager.query(
+                AccountTransactionQuery(
+                    columns=list(ReceiptAPI.__fields__),
+                    account=self.address,
+                    start_nonce=0,
+                    stop_nonce=self.__len__(),
+                )
+            ),
         )
-        for receipt in explorer_receipts:
-            if receipt.sender != self.address:
-                # Likely ``self.address`` is a contract.
-                # Cache the receipts by their sender instead and skip them here.
-                self.chain_manager.history.append(receipt)
-                continue
-
-            yield receipt
 
     def __iter__(self) -> Iterator[ReceiptAPI]:  # type: ignore[override]
         yield from self.outgoing
