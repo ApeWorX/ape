@@ -351,6 +351,25 @@ class ProviderAPI(BaseInterfaceModel):
             Iterator[:class: `~ape.api.transactions.TransactionAPI`]
         """
 
+    @raises_not_implemented
+    def get_transactions_by_account_nonce(  # type: ignore[empty-body]
+        self,
+        account: AddressType,
+        start_nonce: int = 0,
+        stop_nonce: int = -1,
+    ) -> Iterator[ReceiptAPI]:
+        """
+        Get account history for the given account.
+
+        Args:
+            account (``AddressType``): The address of the account.
+            start_nonce (int): The nonce of the account to start the search with.
+            stop_nonce (int): The nonce of the account to stop the search with.
+
+        Returns:
+            Iterator[:class: `~ape.api.transactions.ReceiptAPI`]
+        """
+
     @abstractmethod
     def send_transaction(self, txn: TransactionAPI) -> ReceiptAPI:
         """
