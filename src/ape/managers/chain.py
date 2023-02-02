@@ -425,6 +425,62 @@ class AccountHistory(BaseInterfaceModel):
             ),
         )
 
+    def query(
+        self,
+        *columns: List[str],
+        start_nonce: int = 0,
+        stop_nonce: Optional[int] = None,
+        engine_to_use: Optional[str] = None,
+    ) -> pd.DataFrame:
+        """
+        A method for querying transactions made by an account and returning an Iterator.
+        If you do not provide a starting nonce, the first transaction is assumed.
+        If you do not provide a stopping block, the last transaction is assumed.
+        You can pass ``engine_to_use`` to short-circuit engine selection.
+
+        Raises:
+            :class:`~ape.exceptions.ChainError`: When ``stop_nonce`` is greater
+              than the account's current nonce.
+
+        Args:
+            columns (List[str]): columns in the DataFrame to return
+            start_nonce (int): The first transaction, by nonce, to include in the
+              query. Defaults to 0.
+            stop_nonce (Optional[int]): The last transaction, by nonce, to include
+              in the query. Defaults to the latest transaction.
+            engine_to_use (Optional[str]): query engine to use, bypasses query
+              engine selection algorithm.
+
+        Returns:
+            pd.DataFrame
+        """
+
+        if start_nonce < 0:
+            start_nonce = len(self) + start_nonce
+
+        if stop_nonce is None:
+            stop_nonce = len(self)
+
+        elif stop_nonce < 0:
+            stop_nonce = len(self) + stop_nonce
+
+        elif stop_nonce > len(self):
+            raise ChainError(
+                f"'stop={stop_nonce}' cannot be greater than account's current nonce ({len(self)})."
+            )
+
+        query = AccountTransactionQuery(
+            columns=columns,
+            account=self.address,
+            start_nonce=start_nonce,
+            stop_nonce=stop_nonce,
+        )
+
+        txns = self.query_manager.query(query, engine_to_use=engine_to_use)
+        columns = validate_and_expand_columns(columns, ReceiptAPI)  # type: ignore
+        txns = map(partial(extract_fields, columns=columns), txns)
+        return pd.DataFrame(columns=columns, data=txns)
+
     def __iter__(self) -> Iterator[ReceiptAPI]:  # type: ignore[override]
         yield from self.outgoing
 
