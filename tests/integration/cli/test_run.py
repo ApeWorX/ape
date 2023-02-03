@@ -50,7 +50,11 @@ def test_run_subdirectories(ape_cli, runner, project):
 
 @skip_projects_except("script")
 def test_run_when_script_errors(ape_cli, runner, project):
-    scripts = [s for s in project.scripts_folder.glob("*.py") if s.name.startswith("error")]
+    scripts = [
+        s
+        for s in project.scripts_folder.glob("*.py")
+        if s.name.startswith("error") and not s.name.endswith("forgot_click.py")
+    ]
     for script_file in scripts:
         result = runner.invoke(ape_cli, ["run", script_file.stem])
         assert result.exit_code != 0, result.output
@@ -84,3 +88,15 @@ def test_run_adhoc_network(ape_cli, runner, project):
     # Show that it attempts to connect
     assert result.exit_code == 1, result.output
     assert "No node found on 'http://127.0.0.1:9545" in result.output
+
+
+@skip_projects_except("script")
+def test_try_run_script_missing_cli_decorator(ape_cli, runner, project):
+    """
+    Shows that we cannot run a script defining a `cli()` method without
+    it being a click command. The script is not recognized, so you get
+    a usage error.
+    """
+
+    result = runner.invoke(ape_cli, ["run", "error_forgot_click"])
+    assert "Usage: cli run" in result.output
