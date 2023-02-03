@@ -30,6 +30,8 @@ RUN pip install --upgrade pip \
 # Fix RLP installation issue
     && pip uninstall rlp --yes \
     && pip install rlp==3.0.0 \
+# Add boto for aws compatibility
+    && pip install boto3 \
 # Validate installation
     && ape --version
 
