@@ -3,4 +3,5 @@ import click
 
 @click.command(short_help="Use a subcommand")
 def cli():
-    raise Exception("Expected exception")  # noqa: T001
+    local_variable = "test foo bar"
+    raise Exception(f"Expected exception - {local_variable}")  # noqa: T001

@@ -176,8 +176,8 @@ class ScriptCommand(click.MultiCommand):
         return result
 
     def _launch_console(self):
-        # TODO: Figure out how to pull out namespace for `extra_locals`
-        extra_locals = {**self._namespace.get(self._command_called, {})}
+        active_locals = {k: v for k, v in globals().items() if not k.startswith("__")}
+        extra_locals = {**self._namespace.get(self._command_called, {}), **active_locals}
         return console(project=self._project, extra_locals=extra_locals)
 
 
