@@ -1116,8 +1116,6 @@ class ReportManager(BaseManager):
         self,
         call_tree: CallTreeNode,
         contract_address: AddressType,
-        sender: Optional[AddressType] = None,
-        transaction_hash: Optional[str] = None,
     ):
         contract_type = self.chain_manager.contracts.get(contract_address)
         if not contract_type:
