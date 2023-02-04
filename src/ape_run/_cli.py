@@ -72,6 +72,10 @@ class ScriptCommand(click.MultiCommand):
 
             self._namespace[filepath.stem] = cli_ns
             cli_obj = cli_ns["cli"]
+            if not isinstance(cli_obj, Command):
+                logger.warning("Found `cli()` method but it is not a click command.")
+                return None
+
             cli_obj.name = filepath.stem if cli_obj.name in ("cli", "", None) else cli_obj.name
             return cli_obj
 
