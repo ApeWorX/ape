@@ -21,6 +21,7 @@ class ScriptCommand(click.MultiCommand):
 
         super().__init__(*args, **kwargs)
         self._namespace = {}
+        self._command_called = None
 
     def invoke(self, ctx: Context) -> Any:
         try:
