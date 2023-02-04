@@ -66,8 +66,15 @@ def test_run_when_script_errors(ape_cli, runner, project):
 @skip_projects_except("script")
 def test_run_interactive(ape_cli, runner, project):
     scripts = [s for s in project.scripts_folder.glob("*.py") if s.name.startswith("error")]
-    result = runner.invoke(ape_cli, ["run", "--interactive", scripts[0].stem], input="exit\n")
+
+    # Show that the variable namespace from the script is available in the console.
+    user_input = "local_variable\nexit\n"
+
+    result = runner.invoke(ape_cli, ["run", "--interactive", scripts[0].stem], input=user_input)
     assert result.exit_code == 0, result.output
+
+    # From script: local_variable = "test foo bar"
+    assert "test foo bar" in result.output
 
 
 @skip_projects_except("script")

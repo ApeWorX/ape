@@ -1,4 +1,6 @@
+import inspect
 import os
+import sys
 import traceback
 from pathlib import Path
 from runpy import run_module
@@ -21,6 +23,7 @@ class ScriptCommand(click.MultiCommand):
 
         super().__init__(*args, **kwargs)
         self._namespace = {}
+        self._command_called = None
 
     def invoke(self, ctx: Context) -> Any:
         try:
@@ -180,8 +183,30 @@ class ScriptCommand(click.MultiCommand):
         return result
 
     def _launch_console(self):
-        # TODO: Figure out how to pull out namespace for `extra_locals`
-        extra_locals = {**self._namespace.get(self._command_called, {})}
+        trace = inspect.trace()
+        trace_frames = [
+            x for x in trace if x.filename.startswith(str(self._project.scripts_folder))
+        ]
+        if not trace_frames:
+            # Error from Ape internals; avoid launching console.
+            sys.exit(1)
+
+        # Use most recently matching frame.
+        frame = trace_frames[-1].frame
+
+        try:
+            globals_dict = {k: v for k, v in frame.f_globals.items() if not k.startswith("__")}
+            extra_locals = {
+                **self._namespace.get(self._command_called, {}),
+                **globals_dict,
+                **frame.f_locals,
+            }
+
+        finally:
+            # Avoid keeping a reference to a frame to avoid reference cycles.
+            if frame:
+                del frame
+
         return console(project=self._project, extra_locals=extra_locals)
 
 
