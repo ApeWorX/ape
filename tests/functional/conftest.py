@@ -242,6 +242,7 @@ def project_with_source_files_contract(temp_config):
     with temp_config() as project:
         copy_tree(str(project_source_dir), str(project.path))
         copy_tree(str(bases_source_dir), f"{project.path}/contracts/")
+        yield project
 
 
 @pytest.fixture
@@ -474,3 +475,17 @@ def unique_calldata():
         "0000000000000000000000000000000000000000000000000000000000000008"
         "0000000000000000000000000000000000000000000000000000000000000009"
     )  # functionWithUniqueArguments(0, 1, 2, 3, 4, 5, 6, 7, 8, 9)
+
+
+@pytest.fixture
+def contract_for_trace(owner, geth_provider):
+    def get_contract_type(suffix: str) -> ContractType:
+        return ContractType.parse_file(CONTRACTS_FOLDER / f"contract_{suffix}.json")
+
+    contract_c = owner.deploy(ContractContainer(get_contract_type("c")))
+    contract_b = owner.deploy(ContractContainer(get_contract_type("b")), contract_c.address)
+    contract_a = owner.deploy(
+        ContractContainer(get_contract_type("a")), contract_b.address, contract_c.address
+    )
+
+    return contract_a
