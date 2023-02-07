@@ -196,6 +196,11 @@ class BaseProject(ProjectAPI):
             )
             # Cache the updated manifest so `self.cached_manifest` reads it next time
             self.manifest_cachefile.write_text(manifest.json())
+            if compiled_contract_types:
+                for name, contract_type in compiled_contract_types.items():
+                    (self.project_manager.local_project._cache_folder / f"{name}.json").write_text(
+                        contract_type.json()
+                    )
             return manifest
 
     def _compile(self, project_sources: _ProjectSources) -> Dict[str, ContractType]:
