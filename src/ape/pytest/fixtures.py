@@ -45,6 +45,14 @@ class PytestApeFixtures(ManagerAccessMixin):
         return self.account_manager.test_accounts
 
     @pytest.fixture(scope="session")
+    def compilers(self):
+        """
+        Access compiler classes directly.
+        """
+
+        return self.compiler_manager
+
+    @pytest.fixture(scope="session")
     def chain(self) -> ChainManager:
         """
         Manipulate the blockchain, such as mine or change the pending timestamp.

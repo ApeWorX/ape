@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Dict, List, Optional, Set
+from typing import Any, Dict, List, Optional, Set
 
 from ethpm_types import ContractType
 
@@ -29,6 +29,19 @@ class CompilerManager(BaseManager):
     def __repr__(self):
         num_compilers = len(self.registered_compilers)
         return f"<{self.__class__.__name__} len(registered_compilers)={num_compilers}>"
+
+    def __getattr__(self, name: str) -> Any:
+        try:
+            return self.__getattribute__(name)
+        except AttributeError:
+            # Check if a contract.
+            pass
+
+        compiler = self.get_compiler(name)
+        if not compiler:
+            raise AttributeError(f"No attribute or compiler named '{name}'.")
+
+        return compiler
 
     @property
     def registered_compilers(self) -> Dict[str, CompilerAPI]:
@@ -61,6 +74,13 @@ class CompilerManager(BaseManager):
 
         self._registered_compilers_cache[cache_key] = registered_compilers
         return registered_compilers
+
+    def get_compiler(self, name: str) -> Optional[CompilerAPI]:
+        for compiler in self.registered_compilers.values():
+            if compiler.name == name:
+                return compiler
+
+        return None
 
     def compile(self, contract_filepaths: List[Path]) -> Dict[str, ContractType]:
         """
