@@ -10,7 +10,29 @@ from ape.utils import GeneratedDevAccount, generate_dev_accounts
 
 
 class TestAccountContainer(TestAccountContainerAPI):
-    _num_generated = 0
+    _num_generated: int
+    _accounts: List["TestAccount"]
+    _mnemonic: str
+    _num_of_accounts: int
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.init()
+
+    def init(self):
+        self._num_generated = 0
+        self._accounts = []
+        self._mnemonic = self.config["mnemonic"]
+        self._num_of_accounts = self.config["number_of_accounts"]
+        for index, account in enumerate(self._dev_accounts):
+            self._accounts.append(
+                TestAccount(
+                    index=index, address_str=account.address, private_key=account.private_key
+                )
+            )
+
+    def __len__(self) -> int:
+        return self._num_of_accounts
 
     @property
     def config(self):
@@ -18,33 +40,31 @@ class TestAccountContainer(TestAccountContainerAPI):
 
     @property
     def _dev_accounts(self) -> List[GeneratedDevAccount]:
-        mnemonic = self.config["mnemonic"]
-        return generate_dev_accounts(mnemonic, number_of_accounts=self.config["number_of_accounts"])
+        return generate_dev_accounts(self._mnemonic, number_of_accounts=self._num_of_accounts)
 
     @property
     def aliases(self) -> Iterator[str]:
-        for index in range(len(self)):
+        for index in range(self._num_of_accounts):
             yield f"dev_{index}"
+
+    def _is_config_changed(self):
+        current_mnemonic = self.config["mnemonic"]
+        current_number = self.config["number_of_accounts"]
+        return self._mnemonic != current_mnemonic or self._num_of_accounts != current_number
 
     @property
     def accounts(self) -> Iterator["TestAccount"]:
-        for index in range(len(self)):
-            account = self._dev_accounts[index]
-            yield TestAccount(
-                index=index,
-                address_str=account.address,
-                private_key=account.private_key,
-            )
-
-    def __len__(self) -> int:
-        return len(self._dev_accounts)
+        # As TestAccountManager only uses accounts property this works!
+        config_changed = self._is_config_changed()
+        if config_changed:
+            self.init()
+        for account in self._accounts:
+            yield account
 
     def generate_account(self) -> "TestAccountAPI":
-        new_index = len(self) + self._num_generated
+        new_index = self._num_of_accounts + self._num_generated
         self._num_generated += 1
-        generated_account = generate_dev_accounts(
-            self.config["mnemonic"], 1, start_index=new_index
-        )[0]
+        generated_account = generate_dev_accounts(self._mnemonic, 1, start_index=new_index)[0]
         acc = TestAccount(
             index=new_index,
             address_str=generated_account.address,
