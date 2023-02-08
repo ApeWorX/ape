@@ -94,6 +94,7 @@ class ProjectAPI(BaseInterfaceModel):
         manifest = _load_manifest_from_file(self.manifest_cachefile)
         if manifest is not None:
             manifest.contract_types = self.contracts
+
         return manifest
 
     @property
@@ -102,10 +103,12 @@ class ProjectAPI(BaseInterfaceModel):
         for p in self._cache_folder.glob("*.json"):
             if p == self.manifest_cachefile:
                 continue
-            contract_name = p.name.replace(".json", "")
+
+            contract_name = p.stem
             contract_type = ContractType().parse_file(p)
             if contract_type.name is None:
                 contract_type.name = contract_name
+
             contracts[contract_type.name] = contract_type
         return contracts
 
