@@ -143,12 +143,14 @@ class QueryManager(ManagerAccessMixin):
         result = selected_engine.perform_query(query)
 
         # Update any caches
-        for engine in self.engines.values():
-            if not isinstance(engine, selected_engine.__class__):
-                result, cache_data = tee(result)
-                try:
-                    engine.update_cache(query, cache_data)
-                except QueryEngineError as err:
-                    logger.error(str(err))
+       for engine in self.engines.values():
+    if not isinstance(engine, selected_engine.__class__):
+        if not query.skip_caching:
+            result, cache_data = tee(result)
+            try:
+                engine.update_cache(query, cache_data)
+            except QueryEngineError as err:
+                logger.error(str(err))
 
-        return result
+         return result
+
