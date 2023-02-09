@@ -1,11 +1,13 @@
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Set
+from typing import Any, Dict, Iterator, List, Optional, Set
 
 from ethpm_types import ContractType
+from ethpm_types.abi import MethodABI
 
 from ape.api import CompilerAPI
-from ape.exceptions import CompilerError
+from ape.exceptions import APINotImplementedError, CompilerError
 from ape.logging import logger
+from ape.types import AddressType, LineTraceNode, PCMap, TraceFrame
 from ape.utils import get_relative_path
 
 from .base import BaseManager
@@ -210,6 +212,48 @@ class CompilerManager(BaseManager):
                 references_dict[filepath].append(key)
 
         return references_dict
+
+    def get_pc_map(self, contract_type: ContractType) -> PCMap:
+        if not isinstance(contract_type, ContractType) and hasattr(contract_type, "contract_type"):
+            # Hack that allows passing in contact containers or instances.
+            contract_type = contract_type.contract_type
+
+        source_id = contract_type.source_id
+        if not source_id:
+            return {}
+
+        ext = Path(source_id).suffix
+        if ext not in self.compiler_manager.registered_compilers:
+            raise CompilerError(f"Compiler for '{ext}' not found.")
+
+        compiler = self.compiler_manager.registered_compilers[ext]
+
+        try:
+            return compiler.get_pc_map(contract_type)
+        except APINotImplementedError:
+            return {}
+
+    def get_line_trace(
+        self, trace: Iterator[TraceFrame], contract_address: AddressType, method_abi: MethodABI
+    ) -> List[LineTraceNode]:
+        contract_type = self.chain_manager.contracts.get(contract_address)
+        if not contract_type:
+            return []
+
+        source_id = contract_type.source_id
+        if not source_id:
+            return []
+
+        ext = Path(source_id).suffix
+        if ext not in self.compiler_manager.registered_compilers:
+            raise CompilerError(f"Compiler for '{ext}' not found.")
+
+        compiler = self.compiler_manager.registered_compilers[ext]
+
+        try:
+            return compiler.get_line_trace(trace, contract_address, method_abi)
+        except APINotImplementedError:
+            return []
 
     def _get_contract_extensions(self, contract_filepaths: List[Path]) -> Set[str]:
         extensions = {path.suffix for path in contract_filepaths}

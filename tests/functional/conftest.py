@@ -183,14 +183,7 @@ def vyper_contract_instance(
 
 @pytest.fixture
 def reverts_contract_type() -> ContractType:
-    result = ContractType.parse_raw(RAW_REVERTS_CONTRACT_TYPE)
-    result.dev_messages = {
-        6: "dev: one",
-        7: "dev: error",
-        9: "dev: such modifiable, wow",
-        12: "dev: great job",
-    }
-    return result
+    return ContractType.parse_raw(RAW_REVERTS_CONTRACT_TYPE)
 
 
 @pytest.fixture
@@ -200,7 +193,7 @@ def reverts_contract_container(reverts_contract_type) -> ContractContainer:
 
 @pytest.fixture
 def reverts_contract_instance(
-    owner, reverts_contract_container, networks_connected_to_tester, geth_provider
+    owner, reverts_contract_container, geth_provider, project_with_source_files
 ) -> ContractInstance:
     _ = geth_provider  # Must use geth, as it supports traces
     return owner.deploy(reverts_contract_container, required_confirmations=0)
@@ -235,7 +228,7 @@ def project_with_contract(temp_config):
 
 
 @pytest.fixture
-def project_with_source_files_contract(temp_config):
+def project_with_source_files(temp_config):
     bases_source_dir = BASE_SOURCES_DIRECTORY
     project_source_dir = APE_PROJECT_FOLDER
 

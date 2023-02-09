@@ -22,7 +22,7 @@ from pydantic import BaseModel, root_validator, validator
 from web3.types import FilterParams
 
 from ape.types.signatures import MessageSignature, SignableMessage, TransactionSignature
-from ape.types.trace import CallTreeNode, GasReport, TraceFrame
+from ape.types.trace import CallTreeNode, GasReport, LineTraceNode, PCMap, TraceFrame
 from ape.utils.misc import to_int
 
 BlockID = Union[int, HexStr, HexBytes, Literal["earliest", "latest", "pending"]]
@@ -275,9 +275,11 @@ __all__ = [
     "ContractLog",
     "ContractType",
     "GasReport",
+    "LineTraceNode",
     "MessageSignature",
     "PackageManifest",
     "PackageMeta",
+    "PCMap",
     "SignableMessage",
     "SnapshotID",
     "Source",

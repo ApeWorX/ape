@@ -64,7 +64,7 @@ class RevertsContextManager:
             raise AssertionError("Cannot fetch transaction trace.") from exc
 
         pc = None
-        pcmap = contract.contract_type.pcmap.parse()
+        pcmap = contract.compiler_manager.get_pc_map(contract.contract_type)
 
         # To find a suitable line for inspecting dev messages, we must start at the revert and work
         # our way backwards. If the last frame's PC is in the PC map, the offending line is very
@@ -87,7 +87,7 @@ class RevertsContextManager:
         offending_source = pcmap[pc]
 
         # The compiler PC map had PC information, but not source information.
-        if offending_source is None or offending_source.line_start is None:
+        if not offending_source:
             raise AssertionError("Could not find line that caused revert.")
 
         assertion_error_message = (
@@ -99,11 +99,12 @@ class RevertsContextManager:
         assertion_error_prefix = f"Expected dev revert message '{assertion_error_message}'"
 
         dev_messages = contract.contract_type.dev_messages or {}
+        line_start = next(iter(offending_source.keys()))
 
-        if offending_source.line_start not in dev_messages:
+        if line_start not in dev_messages:
             raise AssertionError(f"{assertion_error_prefix} but there was none.")
 
-        contract_dev_message = dev_messages[offending_source.line_start]
+        contract_dev_message = dev_messages[line_start]
 
         message_matches = (
             (self.dev_message.match(contract_dev_message) is not None)

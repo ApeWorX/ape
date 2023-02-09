@@ -528,6 +528,8 @@ class ProjectManager(BaseManager):
         ext = key_contract_path.suffix or None
 
         def find_in_dir(dir_path: Path) -> Optional[Path]:
+            if not dir_path.is_dir():
+                return None
 
             for file_path in dir_path.iterdir():
                 if file_path.is_dir():

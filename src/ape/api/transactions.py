@@ -7,12 +7,13 @@ from ethpm_types import HexBytes
 from ethpm_types.abi import EventABI, MethodABI
 from pydantic import validator
 from pydantic.fields import Field
+from rich.console import Console
 from tqdm import tqdm  # type: ignore
 
 from ape.api.explorers import ExplorerAPI
 from ape.exceptions import NetworkError, TransactionError
 from ape.logging import logger
-from ape.types import AddressType, ContractLog, TraceFrame, TransactionSignature
+from ape.types import AddressType, ContractLog, LineTraceNode, TraceFrame, TransactionSignature
 from ape.utils import BaseInterfaceModel, abstractmethod, raises_not_implemented
 
 if TYPE_CHECKING:
@@ -413,3 +414,28 @@ class ReceiptAPI(BaseInterfaceModel):
         receiver = self.receiver
         if call_tree and receiver is not None:
             self.chain_manager._reports.append_gas(call_tree.enrich(in_line=False), receiver)
+
+    @property
+    def line_trace(self) -> List[LineTraceNode]:
+        """
+        A mapping of local contract source ID to a mapping of
+        line numbers (integers) to line content, including all whitespace.
+        Useful for debugging, showing contract trace info, or
+        gathering coverage-details.
+        """
+
+        return []
+
+    def show_line_trace(self):
+        line_trace = self.line_trace
+        if not line_trace:
+            return
+
+        console = Console()
+        for idx, item in enumerate(line_trace):
+            console.print(f"{item.source_id} {item.method_id}")
+            for line_no, content in item.lines.items():
+                console.print(f"{line_no}:{content}")
+
+            if idx < len(line_trace) - 1:
+                console.print()

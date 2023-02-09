@@ -6,7 +6,7 @@ from pydantic import Field
 from rich.table import Table
 from rich.tree import Tree
 
-from ape.utils.basemodel import BaseInterfaceModel
+from ape.utils.basemodel import BaseInterfaceModel, BaseModel
 from ape.utils.trace import parse_as_str, parse_gas_table, parse_rich_tree
 
 if TYPE_CHECKING:
@@ -16,6 +16,12 @@ if TYPE_CHECKING:
 GasReport = Dict[str, Dict[str, List[int]]]
 """
 A gas report in Ape.
+"""
+
+PCMap = Dict[int, Dict[int, str]]
+"""
+A mapping of program-counter value to a dictionary
+of line numbers mapped to line content.
 """
 
 
@@ -215,4 +221,27 @@ class TraceFrame(BaseInterfaceModel):
     depth: int
     """
     The number of external jumps away the initially called contract (starts at 0).
+    """
+
+    raw: Dict
+    """
+    The raw trace frame data.
+    """
+
+
+class LineTraceNode(BaseModel):
+    source_id: str
+    """
+    The local project's contract's relative path str as an ID.
+    """
+
+    method_id: str
+    """
+    The method containing the lines.
+    """
+
+    lines: Dict[int, str]
+    """
+    A mapping of line numbers to line content for all
+    lines ran in this node (in order).
     """

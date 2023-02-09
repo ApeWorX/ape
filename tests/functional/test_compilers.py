@@ -24,26 +24,24 @@ def test_missing_compilers_without_source_files(project):
 
 
 def test_missing_compilers_with_source_files(
-    project_with_source_files_contract, skip_if_vyper_or_solidity_installed
+    project_with_source_files, skip_if_vyper_or_solidity_installed
 ):
-    result = project_with_source_files_contract.extensions_with_missing_compilers()
+    result = project_with_source_files.extensions_with_missing_compilers()
     assert ".vy" in result
     assert ".sol" in result
 
 
 def test_missing_compilers_error_message(
-    project_with_source_files_contract, sender, skip_if_vyper_or_solidity_installed
+    project_with_source_files, sender, skip_if_vyper_or_solidity_installed
 ):
-    missing_exts = project_with_source_files_contract.extensions_with_missing_compilers()
+    missing_exts = project_with_source_files.extensions_with_missing_compilers()
     expected = (
         "ProjectManager has no attribute or contract named 'ContractA'. "
         "Could it be from one of the missing compilers for extensions: "
         f'{", ".join(sorted(missing_exts))}?'
     )
     with pytest.raises(AttributeError, match=expected):
-        project_with_source_files_contract.ContractA.deploy(
-            sender.address, sender.address, sender=sender
-        )
+        project_with_source_files.ContractA.deploy(sender.address, sender.address, sender=sender)
 
 
 def test_get_compiler(compilers):

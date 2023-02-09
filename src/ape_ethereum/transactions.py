@@ -16,7 +16,7 @@ from pydantic import BaseModel, Field, root_validator, validator
 from ape.api import ReceiptAPI, TransactionAPI
 from ape.contracts import ContractEvent
 from ape.exceptions import OutOfGasError, SignatureError, TransactionError
-from ape.types import CallTreeNode, ContractLog
+from ape.types import CallTreeNode, ContractLog, LineTraceNode
 from ape.utils import cached_property
 
 
@@ -169,6 +169,18 @@ class Receipt(ReceiptAPI):
 
         return contract_type.methods[method_id]
 
+    @property
+    def line_trace(self) -> List[LineTraceNode]:
+        contract = self.receiver
+        if not contract:
+            return []
+
+        method = self.method_called
+        if not method:
+            return []
+
+        return self.compiler_manager.get_line_trace(self.trace, contract, method)
+
     def raise_for_status(self):
         if self.gas_limit is not None and self.ran_out_of_gas:
             raise OutOfGasError(txn=self.transaction)
@@ -226,9 +238,7 @@ class Receipt(ReceiptAPI):
         elif call_tree.contract_id.startswith("Transferring "):
             call_tree.method_id = f"to:{self.receiver}"
 
-        self.chain_manager._reports.show_gas(
-            call_tree, sender=self.sender, transaction_hash=self.txn_hash
-        )
+        self.chain_manager._reports.show_gas(call_tree)
 
     def decode_logs(
         self,

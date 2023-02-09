@@ -112,7 +112,7 @@ class AccountAPI(BaseInterfaceModel, BaseAddress):
             raise TransactionError("Transaction not prepared.")
 
         # The conditions below should never reached but are here for mypy's sake.
-        # The `max_fee` was either set manaully or from `prepare_transaction()`.
+        # The `max_fee` was either set manually or from `prepare_transaction()`.
         # The `gas_limit` was either set manually or from `prepare_transaction()`.
         if max_fee is None:
             raise TransactionError("`max_fee` failed to get set in transaction preparation.")

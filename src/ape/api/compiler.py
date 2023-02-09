@@ -1,9 +1,11 @@
 from pathlib import Path
-from typing import Dict, List, Optional, Set
+from typing import Dict, Iterator, List, Optional, Set
 
 from ethpm_types import ContractType
+from ethpm_types.abi import MethodABI
 from semantic_version import Version  # type: ignore
 
+from ape.types import AddressType, LineTraceNode, PCMap, TraceFrame
 from ape.utils import BaseInterfaceModel, abstractmethod, raises_not_implemented
 
 
@@ -103,6 +105,19 @@ class CompilerAPI(BaseInterfaceModel):
         Returns:
             Dict[Version, Set[Path]]
         """
+
+    @raises_not_implemented
+    def get_line_trace(  # type: ignore[empty-body]
+        self,
+        trace: Iterator[TraceFrame],
+        contract_address: AddressType,
+        method_abi: MethodABI,
+    ) -> List[LineTraceNode]:
+        pass
+
+    @raises_not_implemented
+    def get_pc_map(self, contract_type: ContractType) -> PCMap:  # type: ignore[empty-body]
+        pass
 
     def __repr__(self) -> str:
         return f"<{self.__class__.__name__} {self.name}>"
