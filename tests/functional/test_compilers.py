@@ -44,3 +44,17 @@ def test_missing_compilers_error_message(
         project_with_source_files_contract.ContractA.deploy(
             sender.address, sender.address, sender=sender
         )
+
+
+def test_get_compiler(compilers):
+    compiler = compilers.get_compiler("ethpm")
+    assert compiler.name == "ethpm"
+    assert compilers.get_compiler("foobar") is None
+
+
+def test_getattr(compilers):
+    compiler = compilers.ethpm
+    assert compiler.name == "ethpm"
+
+    with pytest.raises(AttributeError, match=r"No attribute or compiler named 'foobar'\."):
+        _ = compilers.foobar
