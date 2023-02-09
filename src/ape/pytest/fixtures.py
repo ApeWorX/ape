@@ -47,7 +47,7 @@ class PytestApeFixtures(ManagerAccessMixin):
     @pytest.fixture(scope="session")
     def compilers(self):
         """
-        Access compiler classes directly.
+        Access compiler manager directly.
         """
 
         return self.compiler_manager
