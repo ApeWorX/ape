@@ -33,6 +33,7 @@ def pytest_addoption(parser):
     )
     parser.addoption(
         "--gas",
+        "-G",
         action="store_true",
         help="Show a transaction gas report at the end of the test session.",
     )
@@ -40,6 +41,12 @@ def pytest_addoption(parser):
         "--gas-exclude",
         action="store",
         help="A comma-separated list of contract:method-name glob-patterns to ignore.",
+    )
+    parser.addoption(
+        "--coverage",
+        "-C",
+        action="store_true",
+        help="Evaluate contract test coverage",
     )
 
     # NOTE: Other pytest plugins, such as hypothesis, should integrate with pytest separately

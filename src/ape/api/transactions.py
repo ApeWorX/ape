@@ -13,7 +13,14 @@ from tqdm import tqdm  # type: ignore
 from ape.api.explorers import ExplorerAPI
 from ape.exceptions import NetworkError, TransactionError
 from ape.logging import logger
-from ape.types import AddressType, ContractLog, LineTraceNode, TraceFrame, TransactionSignature
+from ape.types import (
+    AddressType,
+    CallTreeNode,
+    ContractLog,
+    LineTraceNode,
+    TraceFrame,
+    TransactionSignature,
+)
 from ape.utils import BaseInterfaceModel, abstractmethod, raises_not_implemented
 
 if TYPE_CHECKING:
@@ -201,7 +208,7 @@ class ReceiptAPI(BaseInterfaceModel):
         return value
 
     @property
-    def call_tree(self) -> Optional[Any]:
+    def call_tree(self) -> Optional[CallTreeNode]:
         return None
 
     @property
@@ -414,6 +421,25 @@ class ReceiptAPI(BaseInterfaceModel):
         receiver = self.receiver
         if call_tree and receiver is not None:
             self.chain_manager._reports.append_gas(call_tree.enrich(in_line=False), receiver)
+
+    def track_coverage(self):
+        """
+        Track this receipt's coverage information in the on-going session
+        coverage-report. Requires using a provider that support transaction traces.
+        This gets called when running tests with the ``--coverage`` flag.
+        """
+
+        contract_type = self.chain_manager.contracts.get(self.receiver)
+        if not contract_type:
+            return
+
+        source_id = contract_type.source_id
+        if not source_id:
+            return
+
+        line_trace = self.line_trace
+        if line_trace:
+            self.chain_manager._reports.append_coverage(line_trace)
 
     @property
     def line_trace(self) -> List[LineTraceNode]:

@@ -45,6 +45,10 @@ class ConfigWrapper(ManagerAccessMixin):
         return self.pytest_config.getoption("--gas") or self.ape_test_config.gas.show
 
     @cached_property
+    def track_coverage(self) -> bool:
+        return self.pytest_config.getoption("--coverage") or self.ape_test_config.coverage.show
+
+    @cached_property
     def gas_exclusions(self) -> List[ContractFunctionPath]:
         """
         The combination of both CLI values and config values.

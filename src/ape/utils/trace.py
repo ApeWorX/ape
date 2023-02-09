@@ -7,7 +7,7 @@ from rich.table import Table
 from rich.tree import Tree
 
 if TYPE_CHECKING:
-    from ape.types import CallTreeNode, GasReport
+    from ape.types import CallTreeNode, CoverageProfile, GasReport
 
 _WRAP_THRESHOLD = 50
 _INDENT = 2
@@ -163,6 +163,30 @@ def parse_gas_table(report: "GasReport") -> List[Table]:
             tables.append(table)
 
     return tables
+
+
+def parse_coverage_table(profile: "CoverageProfile", coverage: "CoverageProfile") -> Table:
+    table = Table(box=SIMPLE)
+    table.add_column("Source")
+    table.add_column("Line", justify="right")
+    table.add_column("Function", justify="right")
+    for source_id, cov_volume in profile.items():
+        lines_covered = len(coverage[source_id].lines) if source_id in coverage else 0
+        total_lines = len(cov_volume.lines)
+        funcs_covered = len(coverage[source_id].functions) if source_id in coverage else 0
+        total_funcs = len(cov_volume.functions)
+        line_cov = _parse_coverage_column(lines_covered, total_lines)
+        func_cov = _parse_coverage_column(funcs_covered, total_funcs)
+        # TODO: Handle branches
+
+        table.add_row(source_id, line_cov, func_cov)
+
+    return table
+
+
+def _parse_coverage_column(covered: int, total: int) -> str:
+    percent = round(covered / total, 2) if total != 0 else 100.0
+    return f"{percent}% {covered}/{total}"
 
 
 def _dict_to_str(dictionary: Dict, color: Optional[str] = None) -> str:

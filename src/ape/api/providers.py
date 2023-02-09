@@ -821,6 +821,7 @@ class Web3Provider(ProviderAPI, ABC):
             return self._send_call(txn, **kwargs)
 
         track_gas = self.chain_manager._reports.track_gas
+        track_coverage = self.chain_manager._reports.track_coverage
         show_trace = kwargs.pop("show_trace", False)
         show_gas = kwargs.pop("show_gas_report", False)
         needs_trace = track_gas or show_trace or show_gas
@@ -832,7 +833,12 @@ class Web3Provider(ProviderAPI, ABC):
         try:
             with self.chain_manager.isolate():
                 return self._send_call_as_txn(
-                    txn, track_gas=track_gas, show_trace=show_trace, show_gas=show_gas, **kwargs
+                    txn,
+                    track_gas=track_gas,
+                    track_coverage=track_coverage,
+                    show_trace=show_trace,
+                    show_gas=show_gas,
+                    **kwargs,
                 )
 
         except APINotImplementedError:
@@ -842,6 +848,7 @@ class Web3Provider(ProviderAPI, ABC):
         self,
         txn: TransactionAPI,
         track_gas: bool = False,
+        track_coverage: bool = False,
         show_trace: bool = False,
         show_gas: bool = False,
         **kwargs,
@@ -862,6 +869,9 @@ class Web3Provider(ProviderAPI, ABC):
         if track_gas:
             # in_place=False in case show_trace is True
             receipt.track_gas()
+
+        if track_coverage:
+            receipt.track_coverage()
 
         if show_gas:
             # in_place=False in case show_trace is True

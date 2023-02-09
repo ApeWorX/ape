@@ -158,23 +158,38 @@ class PytestApeRunner(ManagerAccessMixin):
         Add a section to terminal summary reporting.
         When ``--gas`` is active, outputs the gas profile report.
         """
-        if not self.config_wrapper.track_gas:
-            return
+        if self.config_wrapper.track_gas:
+            self._show_gas_report(terminalreporter)
+        if self.config_wrapper.track_coverage:
+            self._show_coverage_report(terminalreporter)
 
+    def _show_gas_report(self, terminalreporter):
         terminalreporter.section("Gas Profile")
 
         if not self.provider.supports_tracing:
-            terminalreporter.write_line(
-                f"{LogLevel.ERROR.name}: Provider '{self.provider.name}' does not support "
-                f"transaction tracing and is unable to display a gas profile.",
-                red=True,
-            )
+            self._err_no_tracing(terminalreporter, "gas profile")
             return
 
         if not self.chain_manager._reports.show_session_gas():
             terminalreporter.write_line(
                 f"{LogLevel.WARNING.name}: No gas usage data found.", yellow=True
             )
+
+    def _show_coverage_report(self, terminalreporter):
+        terminalreporter.section("Coverage Analysis")
+
+        if not self.provider.supports_tracing:
+            self._err_no_tracing(terminalreporter, "coverage report")
+            return
+
+        self.chain_manager._reports.show_session_coverage()
+
+    def _err_no_tracing(self, terminalreporter, display_item: str):
+        terminalreporter.write_line(
+            f"{LogLevel.ERROR.name}: Provider '{self.provider.name}' does not support "
+            f"transaction tracing and is unable to display a {display_item}.",
+            red=True,
+        )
 
     def pytest_unconfigure(self):
         if self._provider_is_connected and self.config_wrapper.disconnect_providers_after:
@@ -185,4 +200,4 @@ class PytestApeRunner(ManagerAccessMixin):
         #  which may run pytest many times in-process.
         self.receipt_capture.clear()
         self.chain_manager.contracts.clear_local_caches()
-        self.chain_manager._reports.session_gas_report = None
+        self.chain_manager._reports.clear()

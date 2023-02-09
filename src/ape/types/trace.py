@@ -1,5 +1,5 @@
 from fnmatch import fnmatch
-from typing import TYPE_CHECKING, Any, Dict, List, Optional
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Set
 
 from evm_trace.gas import merge_reports
 from pydantic import Field
@@ -15,7 +15,7 @@ if TYPE_CHECKING:
 
 GasReport = Dict[str, Dict[str, List[int]]]
 """
-A gas report in Ape.
+A gas report like ``MyContract -> my_method -> 633242``.
 """
 
 PCMap = Dict[int, Dict[int, str]]
@@ -23,6 +23,15 @@ PCMap = Dict[int, Dict[int, str]]
 A mapping of program-counter value to a dictionary
 of line numbers mapped to line content.
 """
+
+
+class CoverageItem(BaseModel):
+    lines: Set[int] = set()
+    functions: Set[str] = set()
+    # branches: Set[Branch] = set()
+
+
+CoverageProfile = Dict[str, CoverageItem]
 
 
 class CallTreeNode(BaseInterfaceModel):

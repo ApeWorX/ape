@@ -2,6 +2,7 @@ import json
 import time
 from concurrent.futures import ThreadPoolExecutor
 from contextlib import contextmanager
+from copy import deepcopy
 from functools import partial
 from pathlib import Path
 from typing import IO, Collection, Dict, Iterator, List, Optional, Union, cast
@@ -31,10 +32,19 @@ from ape.types import (
     BlockID,
     CallTreeNode,
     ContractFunctionPath,
+    CoverageItem,
+    CoverageProfile,
     GasReport,
+    LineTraceNode,
     SnapshotID,
 )
-from ape.utils import BaseInterfaceModel, TraceStyles, parse_gas_table, singledispatchmethod
+from ape.utils import (
+    BaseInterfaceModel,
+    TraceStyles,
+    parse_coverage_table,
+    parse_gas_table,
+    singledispatchmethod,
+)
 
 
 class BlockContainer(BaseManager):
@@ -1064,8 +1074,13 @@ class ReportManager(BaseManager):
     """
 
     track_gas: bool = False
+    track_coverage: bool = False
     gas_exclusions: List[ContractFunctionPath] = []
     session_gas_report: Optional[GasReport] = None
+
+    # Coverage tracking.
+    session_coverage_report: Optional[CoverageProfile] = None
+
     rich_console_map: Dict[str, RichConsole] = {}
 
     def show_trace(
@@ -1094,10 +1109,7 @@ class ReportManager(BaseManager):
         tables = call_tree.as_gas_tables()
         console.print(*tables)
 
-    def show_session_gas(
-        self,
-        file: Optional[IO[str]] = None,
-    ) -> bool:
+    def show_session_gas(self, file: Optional[IO[str]] = None) -> bool:
         if not self.session_gas_report:
             return False
 
@@ -1105,6 +1117,36 @@ class ReportManager(BaseManager):
         console = self._get_console(file)
         console.print(*tables)
         return True
+
+    def show_session_coverage(self, file: Optional[IO[str]] = None):
+        # Build full profile.
+        profile: CoverageProfile = {}
+        project = self.project_manager
+        contracts = [c for c in project.contracts.values()]
+        for contract in contracts:
+            if not contract.source_id:
+                continue
+
+            if contract.source_id not in profile:
+                profile[contract.source_id] = CoverageItem()
+
+            pc_map = self.compiler_manager.get_pc_map(contract)
+            for line_numbers in pc_map.values():
+                for line_no in line_numbers:
+                    profile[contract.source_id].lines.add(line_no)
+
+            for method in contract.methods:
+                if not method.name:
+                    continue
+
+                profile[contract.source_id].functions.add(method.name)
+
+            # TODO: Add branches
+
+        coverage = self.chain_manager._reports.session_coverage_report or {}
+        table = parse_coverage_table(profile, coverage)
+        console = self._get_console(file)
+        console.print(table)
 
     def append_gas(
         self,
@@ -1121,6 +1163,45 @@ class ReportManager(BaseManager):
             self.session_gas_report = merge_reports(self.session_gas_report, gas_report)
         elif gas_report:
             self.session_gas_report = gas_report
+
+    def append_coverage(self, line_trace: List[LineTraceNode]):
+        coverage: CoverageProfile = {}
+
+        for node in line_trace:
+            if node.source_id not in coverage:
+                coverage[node.source_id] = CoverageItem()
+
+            # Add function coverage.
+            coverage[node.source_id].functions.add(node.method_id)
+
+            # Add line coverage.
+            for line_no in node.lines:
+                coverage[node.source_id].lines.add(line_no)
+
+        # TODO: Add branch coverage
+
+        if not self.session_coverage_report:
+            self.session_coverage_report = deepcopy(coverage)
+            return
+
+        # Merge coverage.
+        for source_id, item in coverage.items():
+            if source_id not in self.session_coverage_report:
+                self.session_coverage_report[source_id] = CoverageItem()
+
+            existing_coverage = self.session_coverage_report[source_id]
+            for line_no in item.lines:
+                existing_coverage.lines.add(line_no)
+
+            for function in item.functions:
+                existing_coverage.functions.add(function)
+
+            # for branch in item.branches:
+            #    existing_coverage.branches.add(branch)
+
+    def clear(self):
+        self.session_gas_report = None
+        self.session_coverage_report = None
 
     def _get_console(self, file: Optional[IO[str]] = None) -> RichConsole:
         if not file:
