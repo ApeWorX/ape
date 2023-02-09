@@ -48,6 +48,59 @@ class NetworkManager(BaseManager):
         self._active_provider = new_value
 
     @property
+    def network(self) -> NetworkAPI:
+        """
+        The current network if connected to one.
+
+        Raises:
+            :class:`~ape.exceptions.ProviderNotConnectedError`: When there is
+            no active provider at runtime.
+
+        Returns:
+            :class:`~ape.api.networks.NetworkAPI`
+        """
+        return self.provider.network
+
+    @property
+    def ecosystem(self) -> EcosystemAPI:
+        """
+        The current ecosystem if connected to one.
+
+        Raises:
+            :class:`~ape.exceptions.ProviderNotConnectedError`: When there is
+            no active provider at runtime.
+
+        Returns:
+            :class:`~ape.api.providers.ProviderAPI`
+        """
+        return self.network.ecosystem
+
+    def fork(
+        self,
+        provider_name: Optional[str] = None,
+        provider_settings: Optional[Dict] = None,
+    ) -> ProviderContextManager:
+        """
+        Fork the currently connected network.
+
+        Args:
+            provider_name (str, optional): The name of the provider to get. Defaults to ``None``.
+              When ``None``, returns the default provider.
+            provider_settings (dict, optional): Settings to apply to the provider. Defaults to
+              ``None``.
+
+        Returns:
+            :class:`~ape.api.networks.ProviderContextManager`
+        """
+        forked_network = self.ecosystem.get_network(f"{self.network.name}-fork")
+        provider_settings = provider_settings or {}
+
+        if provider_name:
+            return forked_network.use_provider(provider_name, provider_settings)
+
+        return forked_network.use_default_provider(provider_settings)
+
+    @property
     def ecosystem_names(self) -> Set[str]:
         """
         The set of all ecosystem names in ``ape``.
