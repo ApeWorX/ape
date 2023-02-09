@@ -34,7 +34,6 @@ class CompilerManager(BaseManager):
         try:
             return self.__getattribute__(name)
         except AttributeError:
-            # Check if a contract.
             pass
 
         compiler = self.get_compiler(name)
