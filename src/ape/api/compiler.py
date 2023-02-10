@@ -5,7 +5,7 @@ from ethpm_types import ContractType
 from ethpm_types.abi import MethodABI
 from semantic_version import Version  # type: ignore
 
-from ape.types import AddressType, LineTraceNode, PCMap, TraceFrame
+from ape.types import AddressType, CoverageItem, LineTraceNode, PCMap, TraceFrame
 from ape.utils import BaseInterfaceModel, abstractmethod, raises_not_implemented
 
 
@@ -117,6 +117,12 @@ class CompilerAPI(BaseInterfaceModel):
 
     @raises_not_implemented
     def get_pc_map(self, contract_type: ContractType) -> PCMap:  # type: ignore[empty-body]
+        pass
+
+    @raises_not_implemented
+    def get_coverage_profile(  # type: ignore[empty-body]
+        self, contract: ContractType
+    ) -> CoverageItem:
         pass
 
     def __repr__(self) -> str:

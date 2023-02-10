@@ -7,7 +7,7 @@ from ethpm_types.abi import MethodABI
 from ape.api import CompilerAPI
 from ape.exceptions import APINotImplementedError, CompilerError
 from ape.logging import logger
-from ape.types import AddressType, LineTraceNode, PCMap, TraceFrame
+from ape.types import AddressType, CoverageProfile, LineTraceNode, PCMap, TraceFrame
 from ape.utils import get_relative_path
 
 from .base import BaseManager
@@ -232,6 +232,30 @@ class CompilerManager(BaseManager):
             return compiler.get_pc_map(contract_type)
         except APINotImplementedError:
             return {}
+
+    def get_coverage_profile(self, *contracts: ContractType) -> CoverageProfile:
+        """
+        Get the full coverage-profile for a contract for analysis.
+        """
+
+        profile: CoverageProfile = {}
+        ext_not_supported = set()
+
+        for contract in contracts:
+            if not contract.source_id or contract.source_id in profile:
+                continue
+
+            ext = Path(contract.source_id).suffix
+            if ext in ext_not_supported:
+                continue
+
+            compiler = self.registered_compilers[ext]
+            try:
+                profile[contract.source_id] = compiler.get_coverage_profile(contract)
+            except APINotImplementedError:
+                ext_not_supported.add(ext)
+
+        return profile
 
     def get_line_trace(
         self, trace: Iterator[TraceFrame], contract_address: AddressType, method_abi: MethodABI

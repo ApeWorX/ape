@@ -1119,30 +1119,9 @@ class ReportManager(BaseManager):
         return True
 
     def show_session_coverage(self, file: Optional[IO[str]] = None):
-        # Build full profile.
-        profile: CoverageProfile = {}
         project = self.project_manager
         contracts = [c for c in project.contracts.values()]
-        for contract in contracts:
-            if not contract.source_id:
-                continue
-
-            if contract.source_id not in profile:
-                profile[contract.source_id] = CoverageItem()
-
-            pc_map = self.compiler_manager.get_pc_map(contract)
-            for line_numbers in pc_map.values():
-                for line_no in line_numbers:
-                    profile[contract.source_id].lines.add(line_no)
-
-            for method in contract.methods:
-                if not method.name:
-                    continue
-
-                profile[contract.source_id].functions.add(method.name)
-
-            # TODO: Add branches
-
+        profile = self.compiler_manager.get_coverage_profile(*contracts)
         coverage = self.chain_manager._reports.session_coverage_report or {}
         table = parse_coverage_table(profile, coverage)
         console = self._get_console(file)
