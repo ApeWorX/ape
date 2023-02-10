@@ -185,7 +185,7 @@ def parse_coverage_table(profile: "CoverageProfile", coverage: "CoverageProfile"
 
 
 def _parse_coverage_column(covered: int, total: int) -> str:
-    percent = round(covered / total, 2) if total != 0 else 100.0
+    percent = round(covered / total * 100, 2) if total != 0 else 100.0
     return f"{percent}% {covered}/{total}"
 
 

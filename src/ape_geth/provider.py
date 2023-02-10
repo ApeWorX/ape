@@ -471,8 +471,8 @@ class GethDev(BaseGethProvider, TestProviderAPI):
             if contract_type:
                 method = contract_type.methods[txn.data[:4]]
                 line_trace = self.compiler_manager.get_line_trace(frames, receiver, method)
-                breakpoint()
-                self.chain_manager._reports.append_coverage(line_trace)
+                if line_trace:
+                    self.chain_manager._reports.append_coverage(line_trace)
 
         if show_gas:
             enriched_call_tree = call_tree.enrich(in_place=False)
