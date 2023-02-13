@@ -1,5 +1,6 @@
 import sys
 import time
+from pathlib import Path
 from typing import IO, TYPE_CHECKING, Any, Iterator, List, Optional, Union
 
 from eth_utils import is_hex, to_int
@@ -13,7 +14,14 @@ from tqdm import tqdm  # type: ignore
 from ape.api.explorers import ExplorerAPI
 from ape.exceptions import NetworkError, TransactionError
 from ape.logging import logger
-from ape.types import AddressType, ContractLog, LineTraceNode, TraceFrame, TransactionSignature
+from ape.types import (
+    AddressType,
+    CallTreeNode,
+    ContractLog,
+    LineTraceNode,
+    TraceFrame,
+    TransactionSignature,
+)
 from ape.utils import BaseInterfaceModel, abstractmethod, raises_not_implemented
 
 if TYPE_CHECKING:
@@ -201,7 +209,7 @@ class ReceiptAPI(BaseInterfaceModel):
         return value
 
     @property
-    def call_tree(self) -> Optional[Any]:
+    def call_tree(self) -> Optional[CallTreeNode]:
         return None
 
     @property
@@ -431,11 +439,42 @@ class ReceiptAPI(BaseInterfaceModel):
         if not line_trace:
             return
 
+        srcs = {}
+        not_srcs = []
         console = Console()
         for idx, item in enumerate(line_trace):
             console.print(f"{item.source_id} {item.method_id}")
-            for line_no, content in item.lines.items():
-                console.print(f"{line_no}:{content}")
+            line_nos = list(item.lines.keys())
+            if not line_nos:
+                continue
 
+            first_line_no = line_nos[0]
+            last_line_no = line_nos[-1]
+            for i in range(first_line_no, last_line_no + 1):
+                if i in item.lines:
+                    content = item.lines[i]
+                    console.print(f"{i}:{content}")
+                else:
+                    # Attempt to get real line.
+                    real_line = ""
+                    if item.source_id in not_srcs:
+                        continue
+
+                    elif item.source_id not in srcs:
+                        src = self.project_manager.lookup_path(Path(item.source_id))
+                        if not src:
+                            not_srcs.append(item.source_id)
+                            continue
+
+                        srcs[item.source_id] = src
+
+                    path = srcs[item.source_id]
+                    lines = path.read_text().splitlines()
+                    if i < len(lines):
+                        real_line = lines[i - 1]
+
+                    console.print(f"{i}:{real_line}")  # No "content"
+
+            # Print new-lines in between sections.
             if idx < len(line_trace) - 1:
                 console.print()
