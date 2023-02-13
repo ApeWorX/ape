@@ -43,6 +43,10 @@ class ProjectAPI(BaseInterfaceModel):
 
     config_file_name: str = "ape-config.yaml"
 
+    _cached_manifest: Optional[PackageManifest] = None
+
+    _contracts: Optional[Dict[str, ContractType]] = None
+
     def __repr__(self):
         return f"<{self.__class__.__name__} {self.path.name}>"
 
@@ -90,28 +94,29 @@ class ProjectAPI(BaseInterfaceModel):
         The ``PackageManifest`` at :py:attr:`~ape.api.projects.ProjectAPI.manifest_cachefile`
         if it exists and is valid.
         """
-
-        manifest = _load_manifest_from_file(self.manifest_cachefile)
-        if manifest is not None:
-            manifest.contract_types = self.contracts
-
-        return manifest
+        if self._cached_manifest is None:
+            manifest = _load_manifest_from_file(self.manifest_cachefile)
+            if manifest is not None:
+                manifest.contract_types = self.contracts
+            self._cached_manifest = manifest
+        return self._cached_manifest
 
     @property
     def contracts(self) -> Dict[str, ContractType]:
-        contracts = {}
-        for p in self._cache_folder.glob("*.json"):
-            if p == self.manifest_cachefile:
-                continue
+        if self._contracts is None:
+            contracts = {}
+            for p in self._cache_folder.glob("*.json"):
+                if p == self.manifest_cachefile:
+                    continue
 
-            contract_name = p.stem
-            contract_type = ContractType().parse_file(p)
-            if contract_type.name is None:
-                contract_type.name = contract_name
+                contract_name = p.stem
+                contract_type = ContractType().parse_file(p)
+                if contract_type.name is None:
+                    contract_type.name = contract_name
 
-            contracts[contract_type.name] = contract_type
-
-        return contracts
+                contracts[contract_type.name] = contract_type
+            self._contracts = contracts
+        return self._contracts
 
     @property
     def _cache_folder(self) -> Path:
@@ -199,6 +204,8 @@ class DependencyAPI(BaseInterfaceModel):
     A list of glob-patterns for excluding files in dependency projects.
     """
 
+    _cached_manifest: Optional[PackageManifest] = None
+
     def __repr__(self):
         return f"<{self.__class__.__name__} name='{self.name}'>"
 
@@ -255,7 +262,9 @@ class DependencyAPI(BaseInterfaceModel):
         The manifest from the ``.ape/packages/<dependency-name>/<version-id>``
         if it exists and is valid.
         """
-        return _load_manifest_from_file(self._target_manifest_cache_file)
+        if self._cached_manifest is None:
+            self._cached_manifest = _load_manifest_from_file(self._target_manifest_cache_file)
+        return self._cached_manifest
 
     def __getitem__(self, contract_name: str) -> "ContractContainer":
         try:
@@ -439,6 +448,7 @@ class DependencyAPI(BaseInterfaceModel):
         self._target_manifest_cache_file.unlink(missing_ok=True)
         self._target_manifest_cache_file.parent.mkdir(exist_ok=True, parents=True)
         self._target_manifest_cache_file.write_text(manifest.json())
+        self._cached_manifest = manifest
 
 
 def _load_manifest_from_file(file_path: Path) -> Optional[PackageManifest]:

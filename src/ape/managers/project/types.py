@@ -196,6 +196,7 @@ class BaseProject(ProjectAPI):
             )
             # Cache the updated manifest so `self.cached_manifest` reads it next time
             self.manifest_cachefile.write_text(manifest.json())
+            self._cached_manifest = manifest
             if compiled_contract_types:
                 for name, contract_type in compiled_contract_types.items():
                     (self.project_manager.local_project._cache_folder / f"{name}.json").write_text(

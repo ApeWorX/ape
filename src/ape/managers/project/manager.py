@@ -386,8 +386,9 @@ class ProjectManager(BaseManager):
         Returns:
             Dict[str, ``ContractType``]
         """
-
-        return self.load_contracts()
+        if self.local_project._cached_manifest is None:
+            return self.load_contracts()
+        return self.local_project._cached_manifest.contract_types or {}
 
     def __getattr__(self, attr_name: str) -> Union[ContractContainer, ContractNamespace]:
         """
