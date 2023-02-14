@@ -98,7 +98,7 @@ class ProjectManager(BaseManager):
             return files
 
         for extension in self.compiler_manager.registered_compilers:
-            files.extend(self.contracts_folder.rglob(f"*{extension}"))
+            files.extend((x for x in self.contracts_folder.rglob(f"*{extension}") if x.is_file()))
 
         return files
 
