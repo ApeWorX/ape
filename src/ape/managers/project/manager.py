@@ -4,7 +4,7 @@ from typing import Dict, Iterable, List, Optional, Type, Union
 
 from ethpm_types import Compiler
 from ethpm_types import ContractInstance as EthPMContractInstance
-from ethpm_types import ContractType, PackageManifest, PackageMeta
+from ethpm_types import ContractType, PackageManifest, PackageMeta, Source
 from ethpm_types.contract_type import BIP122_URI
 from ethpm_types.manifest import PackageName
 from ethpm_types.utils import AnyUrl
@@ -63,6 +63,10 @@ class ProjectManager(BaseManager):
         """
 
         return self._load_dependencies()
+
+    @property
+    def sources(self) -> Dict[str, Source]:
+        return ProjectAPI._create_source_dict(self.source_paths, self.contracts_folder)
 
     # NOTE: Using these paths should handle the case when the folder doesn't exist
     @property
