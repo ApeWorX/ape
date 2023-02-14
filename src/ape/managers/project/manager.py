@@ -66,6 +66,10 @@ class ProjectManager(BaseManager):
 
     @property
     def sources(self) -> Dict[str, Source]:
+        """
+        A mapping of source identifier to ``ethpm_types.Source`` object.
+        """
+
         return ProjectAPI._create_source_dict(self.source_paths, self.contracts_folder)
 
     # NOTE: Using these paths should handle the case when the folder doesn't exist
