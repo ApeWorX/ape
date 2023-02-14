@@ -14,6 +14,7 @@ class TestAccountContainer(TestAccountContainerAPI):
     _accounts: List["TestAccount"]
     _mnemonic: str
     _num_of_accounts: int
+    _hd_path: str
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -24,6 +25,7 @@ class TestAccountContainer(TestAccountContainerAPI):
         self._accounts = []
         self._mnemonic = self.config["mnemonic"]
         self._num_of_accounts = self.config["number_of_accounts"]
+        self._hd_path = self.config["hd_path"]
         for index, account in enumerate(self._dev_accounts):
             self._accounts.append(
                 TestAccount(
@@ -40,7 +42,11 @@ class TestAccountContainer(TestAccountContainerAPI):
 
     @property
     def _dev_accounts(self) -> List[GeneratedDevAccount]:
-        return generate_dev_accounts(self._mnemonic, number_of_accounts=self._num_of_accounts)
+        return generate_dev_accounts(
+            self._mnemonic,
+            number_of_accounts=self._num_of_accounts,
+            hd_path_format=self._hd_path,
+        )
 
     @property
     def aliases(self) -> Iterator[str]:
@@ -50,7 +56,12 @@ class TestAccountContainer(TestAccountContainerAPI):
     def _is_config_changed(self):
         current_mnemonic = self.config["mnemonic"]
         current_number = self.config["number_of_accounts"]
-        return self._mnemonic != current_mnemonic or self._num_of_accounts != current_number
+        current_hd_path = self.config["hd_path"]
+        return (
+            self._mnemonic != current_mnemonic
+            or self._num_of_accounts != current_number
+            or self._hd_path != current_hd_path
+        )
 
     @property
     def accounts(self) -> Iterator["TestAccount"]:
@@ -64,7 +75,9 @@ class TestAccountContainer(TestAccountContainerAPI):
     def generate_account(self) -> "TestAccountAPI":
         new_index = self._num_of_accounts + self._num_generated
         self._num_generated += 1
-        generated_account = generate_dev_accounts(self._mnemonic, 1, start_index=new_index)[0]
+        generated_account = generate_dev_accounts(
+            self._mnemonic, 1, hd_path_format=self._hd_path, start_index=new_index
+        )[0]
         acc = TestAccount(
             index=new_index,
             address_str=generated_account.address,

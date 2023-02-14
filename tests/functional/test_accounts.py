@@ -399,3 +399,31 @@ def test_dir(core_account):
 def test_is_not_contract(owner, keyfile_account):
     assert not owner.is_contract
     assert not keyfile_account.is_contract
+
+
+def test_using_different_hd_path(test_accounts, temp_config):
+    test_config = {
+        "test": {
+            "hd_path": "m/44'/60'/0'/0/{}",
+        }
+    }
+
+    old_first_account = test_accounts[0]
+    with temp_config(test_config):
+        new_first_account = test_accounts[0]
+
+        assert old_first_account.address != new_first_account.address
+
+
+def test_using_random_mnemonic(test_accounts, temp_config):
+    test_config = {
+        "test": {
+            "mnemonic": "test_mnemonic_for_ape",
+        }
+    }
+
+    old_first_account = test_accounts[0]
+    with temp_config(test_config):
+        new_first_account = test_accounts[0]
+
+        assert old_first_account.address != new_first_account.address
