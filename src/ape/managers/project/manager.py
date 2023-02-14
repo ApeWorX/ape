@@ -508,7 +508,7 @@ class ProjectManager(BaseManager):
 
         return extensions_found
 
-    def lookup_path(self, key_contract_path: Path) -> Optional[Path]:
+    def lookup_path(self, key_contract_path: Union[Path, str]) -> Optional[Path]:
         """
         Figure out the full path of the contract from the given ``key_contract_path``.
 
@@ -519,13 +519,14 @@ class ProjectManager(BaseManager):
         returns ``<absolute-project-path>/<contracts-folder>/HelloWorld.sol``.
 
         Args:
-            key_contract_path (pathlib.Path): A sub-path to a contract.
+            key_contract_path (pathlib.Path, str): A sub-path to a contract or a source ID.
 
         Returns:
             pathlib.Path: The path if it exists, else ``None``.
         """
 
-        ext = key_contract_path.suffix or None
+        path = Path(key_contract_path)
+        ext = path.suffix or None
 
         def find_in_dir(dir_path: Path) -> Optional[Path]:
 
@@ -539,7 +540,7 @@ class ProjectManager(BaseManager):
                 ext_okay = ext == file_path.suffix if ext is not None else True
 
                 # File found
-                if file_path.stem == key_contract_path.stem and ext_okay:
+                if file_path.stem == path.stem and ext_okay:
                     return file_path
 
             return None
