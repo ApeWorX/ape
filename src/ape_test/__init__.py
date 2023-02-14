@@ -5,7 +5,7 @@ from pydantic import PositiveInt
 from ape import plugins
 from ape.api import PluginConfig
 from ape.api.networks import LOCAL_NETWORK_NAME
-from ape.utils import DEFAULT_NUMBER_OF_TEST_ACCOUNTS, DEFAULT_TEST_MNEMONIC
+from ape.utils import DEFAULT_HD_PATH, DEFAULT_NUMBER_OF_TEST_ACCOUNTS, DEFAULT_TEST_MNEMONIC
 
 from .accounts import TestAccount, TestAccountContainer
 from .provider import LocalProvider
@@ -55,6 +55,11 @@ class Config(PluginConfig):
     disconnect_providers_after: bool = True
     """
     Set to ``False`` to keep providers connected at the end of the test run.
+    """
+
+    hd_path: str = DEFAULT_HD_PATH
+    """
+    The hd_path to use when generating the test accounts.
     """
 
 
