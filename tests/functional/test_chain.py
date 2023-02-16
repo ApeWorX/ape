@@ -54,7 +54,7 @@ def test_snapshot_and_restore(chain, sender, receiver, vyper_contract_instance, 
     assert chain.blocks[-1].number == start_block + restore_index
 
     # Verify we lost and kept the expected transaction hashes from the account history
-    owner_txns = [x.txn_hash for x in chain.history[owner].sessional]
+    owner_txns = [x.txn_hash for x in owner.history]
     assert receipt_to_keep.txn_hash in owner_txns
     assert receipt_to_lose.txn_hash not in owner_txns
 
@@ -132,8 +132,11 @@ def test_snapshot_and_restore_no_snapshots(chain):
 def test_history(sender, receiver, chain):
     length_at_start = len(chain.history[sender].sessional)
     receipt = sender.transfer(receiver, "1 wei")
-    transactions_from_cache = list(chain.history[sender].sessional)
+    transactions_from_cache = list(sender.history)
     assert len(transactions_from_cache) == length_at_start + 1
+    assert sender.history[-1] == receipt
+    assert sender.history[0:] == transactions_from_cache[0:]
+    assert sender.history[:-1] == transactions_from_cache[:-1]
 
     txn = transactions_from_cache[-1]
     assert txn.sender == receipt.sender == sender
