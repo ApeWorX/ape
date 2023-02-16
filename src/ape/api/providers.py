@@ -998,6 +998,14 @@ class Web3Provider(ProviderAPI, ABC):
         start_nonce: int,
         stop_nonce: int,
     ) -> Iterator[ReceiptAPI]:
+        if self.network.name != "local" and (stop_nonce - start_nonce) > 2:
+            # NOTE: RPC usage might be acceptable to find 1 or 2 transactions reasonably quickly
+            logger.warning(
+                "Performing this action is likely to be very slow and may "
+                f"use {20 * (stop_nonce - start_nonce)} or more RPC calls. "
+                "Consider installing an alternative data query provider plugin."
+            )
+
         if start_nonce > stop_nonce:
             raise ValueError("Starting nonce cannot be greater than stop nonce for search")
 
