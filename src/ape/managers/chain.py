@@ -491,6 +491,63 @@ class AccountHistory(BaseInterfaceModel):
 
         return self.provider.get_nonce(self.address)
 
+    @singledispatchmethod
+    def __getitem__(self, index):
+        raise IndexError(f"Can't handle type {type(index)}")
+
+    @__getitem__.register
+    def __getitem_int(self, index: int) -> ReceiptAPI:
+        if index < 0:
+            index += len(self)
+
+        return cast(
+            ReceiptAPI,
+            next(
+                self.query_manager.query(
+                    AccountTransactionQuery(
+                        columns=list(ReceiptAPI.__fields__),
+                        account=self.address,
+                        start_nonce=index,
+                        stop_nonce=index,
+                    )
+                )
+            ),
+        )
+
+    @__getitem__.register
+    def __getitem_slice(self, indices: slice) -> List[ReceiptAPI]:
+        start_nonce, stop_nonce, step = (
+            indices.start if indices.start else 0,
+            indices.stop if indices.stop else len(self),
+            indices.step if indices.step else 1,
+        )
+
+        if start_nonce < 0:
+            start_nonce += len(self)
+
+        if stop_nonce < 0:
+            stop_nonce += len(self)
+
+        elif stop_nonce > len(self):
+            raise ChainError(
+                f"'stop={stop_nonce}' cannot be greater than account's current nonce ({len(self)})."
+            )
+
+        return cast(
+            List[ReceiptAPI],
+            list(
+                self.query_manager.query(
+                    AccountTransactionQuery(
+                        columns=list(ReceiptAPI.__fields__),
+                        account=self.address,
+                        start_nonce=start_nonce,
+                        stop_nonce=stop_nonce,
+                        step=step,
+                    )
+                )
+            ),
+        )
+
     def append(self, receipt: ReceiptAPI):
         """
         Add a receipt to the sessional cache.
