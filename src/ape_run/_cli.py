@@ -54,7 +54,7 @@ class ScriptCommand(click.MultiCommand):
             suffix = ".".join(
                 (str(_filepath).replace(os.path.sep, ".").split("scripts.")[-1].split(".")[:-1])
             )
-            if "/" not in suffix:
+            if "." not in suffix:
                 return f"scripts.{suffix}"
             else:
                 return suffix
