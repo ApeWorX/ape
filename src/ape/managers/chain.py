@@ -413,17 +413,25 @@ class AccountHistory(BaseInterfaceModel):
         """
         All outgoing transactions, from earliest to latest.
         """
-        yield from cast(
-            Iterator[ReceiptAPI],
-            self.query_manager.query(
-                AccountTransactionQuery(
-                    columns=list(ReceiptAPI.__fields__),
-                    account=self.address,
-                    start_nonce=0,
-                    stop_nonce=self.__len__(),
-                )
-            ),
-        )
+
+        start_nonce = 0
+        stop_nonce = self.__len__()  # just to cache this value
+
+        # TODO: Add emphemeral network sessional history to `ape-cache` instead,
+        #       and remove this (replace with `yield from iter(self[:len(self)])`)
+        for receipt in self.sessional:
+            assert receipt.nonce >= start_nonce  # sanity check
+
+            if receipt.nonce > start_nonce:
+                # NOTE: There's a gap in our sessional history, so fetch from query engine
+                yield from iter(self[start_nonce : receipt.nonce])  # noqa: E203
+
+            yield receipt
+            start_nonce = receipt.nonce + 1  # start next loop on the next item
+
+        if start_nonce != stop_nonce:
+            # NOTE: there is no more sessional history, so just return query engine iterator
+            yield from iter(self[start_nonce : stop_nonce + 1])  # noqa: E203
 
     def query(
         self,
