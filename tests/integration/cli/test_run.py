@@ -48,6 +48,23 @@ def test_run_subdirectories(ape_cli, runner, project):
         assert "Super secret script output" in result.output
 
 
+@skip_projects_except("only-script-subdirs")
+def test_run_only_subdirs(ape_cli, runner, project):
+    result = runner.invoke(ape_cli, ["run"])
+    assert result.exit_code == 0, result.output
+    # By default, no commands are run
+    assert "Super secret script output" not in result.output
+    subdirectory_scripts = [
+        s
+        for s in (project.scripts_folder / "subdirectory").rglob("*.py")
+        if not s.name.startswith("error")
+    ]
+    for each in subdirectory_scripts:
+        result = runner.invoke(ape_cli, ["run", "subdirectory", each.stem])
+        assert result.exit_code == 0
+        assert "Super secret script output" in result.output
+
+
 @skip_projects_except("script")
 def test_run_when_script_errors(ape_cli, runner, project):
     scripts = [
