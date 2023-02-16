@@ -524,22 +524,25 @@ class AccountHistory(BaseInterfaceModel):
 
     @__getitem__.register
     def __getitem_slice(self, indices: slice) -> List[ReceiptAPI]:
-        start_nonce, stop_nonce, step = (
+        start, stop, step = (
             indices.start if indices.start else 0,
             indices.stop if indices.stop else len(self),
             indices.step if indices.step else 1,
         )
 
-        if start_nonce < 0:
-            start_nonce += len(self)
+        if start < 0:
+            start += len(self)
 
-        if stop_nonce < 0:
-            stop_nonce += len(self)
+        if stop < 0:
+            stop += len(self)
 
-        elif stop_nonce > len(self):
+        elif stop > len(self):
             raise ChainError(
-                f"'stop={stop_nonce}' cannot be greater than account's current nonce ({len(self)})."
+                f"'stop={stop}' cannot be greater than account's current nonce ({len(self)})."
             )
+
+        if stop <= start:
+            return []  # nothing to query
 
         return cast(
             List[ReceiptAPI],
@@ -548,8 +551,8 @@ class AccountHistory(BaseInterfaceModel):
                     AccountTransactionQuery(
                         columns=list(ReceiptAPI.__fields__),
                         account=self.address,
-                        start_nonce=start_nonce,
-                        stop_nonce=stop_nonce,
+                        start_nonce=start,
+                        stop_nonce=stop - 1,
                         step=step,
                     )
                 )
