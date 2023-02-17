@@ -46,7 +46,7 @@ class DefaultQueryProvider(QueryAPI):
     def estimate_account_transactions_query(self, query: AccountTransactionQuery) -> int:
         # NOTE: Extremely expensive query, involves binary search of all blocks in a chain
         #       Very loose estimate of 5s per transaction for this query.
-        return (query.stop_nonce - query.start_nonce) * 5000
+        return (1 + query.stop_nonce - query.start_nonce) * 5000
 
     @singledispatchmethod
     def perform_query(self, query: QueryType) -> Iterator:  # type: ignore
