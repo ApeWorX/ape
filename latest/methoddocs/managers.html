@@ -302,6 +302,7 @@
 <li class="toctree-l4"><a class="reference internal" href="#ape.managers.project.manager.ProjectManager.project_types"><code class="docutils literal notranslate"><span class="pre">ProjectManager.project_types</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.managers.project.manager.ProjectManager.scripts_folder"><code class="docutils literal notranslate"><span class="pre">ProjectManager.scripts_folder</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.managers.project.manager.ProjectManager.source_paths"><code class="docutils literal notranslate"><span class="pre">ProjectManager.source_paths</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ape.managers.project.manager.ProjectManager.sources"><code class="docutils literal notranslate"><span class="pre">ProjectManager.sources</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.managers.project.manager.ProjectManager.sources_missing"><code class="docutils literal notranslate"><span class="pre">ProjectManager.sources_missing</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.managers.project.manager.ProjectManager.tests_folder"><code class="docutils literal notranslate"><span class="pre">ProjectManager.tests_folder</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.managers.project.manager.ProjectManager.track_deployment"><code class="docutils literal notranslate"><span class="pre">ProjectManager.track_deployment()</span></code></a></li>
@@ -2268,7 +2269,7 @@ types for each compiled contract.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="ape.managers.project.manager.ProjectManager.lookup_path">
-<span class="sig-name descname"><span class="pre">lookup_path</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">key_contract_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Path</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Path</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></span><a class="headerlink" href="#ape.managers.project.manager.ProjectManager.lookup_path" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">lookup_path</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">key_contract_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Path</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Path</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></span><a class="headerlink" href="#ape.managers.project.manager.ProjectManager.lookup_path" title="Permalink to this definition"></a></dt>
 <dd><p>Figure out the full path of the contract from the given <code class="docutils literal notranslate"><span class="pre">key_contract_path</span></code>.</p>
 <p>For example, give it <code class="docutils literal notranslate"><span class="pre">HelloWorld</span></code> and it returns
 <code class="docutils literal notranslate"><span class="pre">&lt;absolute-project-path&gt;/&lt;contracts-folder&gt;/HelloWorld.sol</span></code>.</p>
@@ -2276,7 +2277,7 @@ types for each compiled contract.</p>
 returns <code class="docutils literal notranslate"><span class="pre">&lt;absolute-project-path&gt;/&lt;contracts-folder&gt;/HelloWorld.sol</span></code>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>key_contract_path</strong> (<em>pathlib.Path</em>) – A sub-path to a contract.</p>
+<dd class="field-odd"><p><strong>key_contract_path</strong> (<em>pathlib.Path</em><em>, </em><em>str</em>) – A sub-path to a contract or a source ID.</p>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>The path if it exists, else <code class="docutils literal notranslate"><span class="pre">None</span></code>.</p>
@@ -2332,6 +2333,12 @@ Excludes files with extensions that don’t have a registered compiler.</p>
 <dd class="field-even"><p>List[pathlib.Path]</p>
 </dd>
 </dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="ape.managers.project.manager.ProjectManager.sources">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">sources</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Source</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#ape.managers.project.manager.ProjectManager.sources" title="Permalink to this definition"></a></dt>
+<dd><p>A mapping of source identifier to <code class="docutils literal notranslate"><span class="pre">ethpm_types.Source</span></code> object.</p>
 </dd></dl>
 
 <dl class="py property">
