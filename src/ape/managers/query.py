@@ -1,3 +1,4 @@
+import time
 from itertools import tee
 from typing import Dict, Iterator, Optional
 
@@ -122,7 +123,7 @@ class QueryManager(ManagerAccessMixin):
             if engine_to_use not in self.engines:
                 raise QueryEngineError(f"Query engine `{engine_to_use}` not found.")
 
-            selected_engine = self.engines[engine_to_use]
+            sel_engine = self.engines[engine_to_use]
 
         else:
             # Get heuristics from all the query engines to perform this query
@@ -134,17 +135,24 @@ class QueryManager(ManagerAccessMixin):
             try:
                 # Find the "best" engine to perform the query
                 # NOTE: Sorted by fastest time heuristic
-                selected_engine, _ = min(valid_estimates, key=lambda qe: qe[1])  # type: ignore
+                sel_engine, est_time = min(valid_estimates, key=lambda qe: qe[1])  # type: ignore
 
             except ValueError as e:
                 raise QueryEngineError("No query engines are available.") from e
 
         # Go fetch the result from the engine
-        result = selected_engine.perform_query(query)
+        logger.debug(f"{sel_engine.__class__.__name__}: {query.__class__.__name__}({query})")
+        start_time = time.time_ns()
+        result = sel_engine.perform_query(query)
+        exec_time = (time.time_ns() - start_time) // 1000
+        logger.debug(
+            f"{sel_engine.__class__.__name__}: {query.__class__.__name__}"
+            f" executed in {exec_time} ms (expected: {est_time} ms)"
+        )
 
         # Update any caches
         for engine in self.engines.values():
-            if not isinstance(engine, selected_engine.__class__):
+            if not isinstance(engine, sel_engine.__class__):
                 result, cache_data = tee(result)
                 try:
                     engine.update_cache(query, cache_data)
