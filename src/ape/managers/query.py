@@ -23,7 +23,7 @@ class DefaultQueryProvider(QueryAPI):
     @estimate_query.register
     def estimate_block_query(self, query: BlockQuery) -> Optional[int]:
         # NOTE: Very loose estimate of 100ms per block
-        return (query.stop_block - query.start_block) * 100
+        return (1 + query.stop_block - query.start_block) * 100
 
     @estimate_query.register
     def estimate_block_transaction_query(self, query: BlockTransactionQuery) -> int:
@@ -33,7 +33,7 @@ class DefaultQueryProvider(QueryAPI):
     @estimate_query.register
     def estimate_contract_events_query(self, query: ContractEventQuery) -> int:
         # NOTE: Very loose estimate of 100ms per block for this query.
-        return (query.stop_block - query.start_block) * 100
+        return (1 + query.stop_block - query.start_block) * 100
 
     @singledispatchmethod
     def perform_query(self, query: QueryType) -> Iterator:  # type: ignore
