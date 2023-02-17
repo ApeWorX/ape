@@ -5,7 +5,7 @@ from pydantic import BaseModel, NonNegativeInt, PositiveInt, root_validator
 
 from ape.logging import logger
 from ape.types import AddressType
-from ape.utils import BaseInterfaceModel, abstractmethod, cached_property
+from ape.utils import BaseInterface, BaseInterfaceModel, abstractmethod, cached_property
 
 QueryType = Union[
     "BlockQuery",
@@ -137,7 +137,7 @@ class ContractMethodQuery(_BaseBlockQuery):
     method_args: Dict[str, Any]
 
 
-class QueryAPI(BaseInterfaceModel):
+class QueryAPI(BaseInterface):
     @abstractmethod
     def estimate_query(self, query: QueryType) -> Optional[int]:
         """
