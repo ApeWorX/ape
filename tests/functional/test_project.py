@@ -319,3 +319,17 @@ def test_get_project_figure_out_contracts_path(project):
     project_path = WITH_DEPS_PROJECT / "renamed_contracts_folder"
     project = project.get_project(project_path)
     assert project.contracts_folder == project_path / "sources"
+
+
+def test_lookup_path(project_with_source_files_contract):
+    project = project_with_source_files_contract
+    actual_from_str = project.lookup_path("ContractA.sol")
+    actual_from_path = project.lookup_path(Path("ContractA.sol"))
+    expected = project.contracts_folder / "ContractA.sol"
+    assert actual_from_str == actual_from_path == expected
+
+
+def test_sources(project_with_source_files_contract):
+    project = project_with_source_files_contract
+    assert "ApeContract0.json" in project.sources
+    assert project.sources["ApeContract0.json"].content

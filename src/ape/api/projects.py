@@ -110,6 +110,7 @@ class ProjectAPI(BaseInterfaceModel):
                 contract_type.name = contract_name
 
             contracts[contract_type.name] = contract_type
+
         return contracts
 
     @property

@@ -177,7 +177,7 @@ class CompilerManager(BaseManager):
 
         for ext, compiler in self.registered_compilers.items():
             try:
-                sources = [p for p in contract_filepaths if p.suffix == ext]
+                sources = [p for p in contract_filepaths if p.suffix == ext and p.is_file()]
                 imports = compiler.get_imports(contract_filepaths=sources, base_path=base_path)
             except NotImplementedError:
                 imports = None
