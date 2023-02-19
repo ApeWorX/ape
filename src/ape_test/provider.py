@@ -21,8 +21,9 @@ from ape.exceptions import (
 )
 from ape.types import SnapshotID
 from ape.utils import gas_estimation_error_message
+from ape.utils.laszyasd import LazyObject
 
-CHAIN_ID = API_ENDPOINTS["eth"]["chainId"]()
+CHAIN_ID = LazyObject(lambda: API_ENDPOINTS["eth"]["chainId"](), globals(), "CHAIN_ID")
 
 
 class LocalProvider(TestProviderAPI, Web3Provider):
