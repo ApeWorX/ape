@@ -4,6 +4,8 @@ from typing import Dict
 
 from setuptools import find_packages, setup
 
+import fastentrypoint  # noqa
+
 here = Path(__file__).parent.absolute()
 packages_data: Dict = {}
 with open(here / "src" / "ape" / "__modules__.py", encoding="utf8") as modules_file:
