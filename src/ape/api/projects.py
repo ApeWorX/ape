@@ -307,6 +307,12 @@ class DependencyAPI(BaseInterfaceModel):
         return None
 
     def compile(self) -> PackageManifest:
+        """
+        Compile the contract types in this dependency into
+        a package manifest. NOTE: By default, dependency's
+        compile lazily.
+        """
+
         manifest = self.extract_manifest()
         if manifest.contract_types:
             # Already compiled
