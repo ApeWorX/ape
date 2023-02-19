@@ -299,14 +299,20 @@ class DependencyAPI(BaseInterfaceModel):
         return container
 
     def get(self, contract_name: str) -> Optional["ContractContainer"]:
-        manifest = self._get_compiled_manifest()
+        manifest = self.compile()
         if hasattr(manifest, contract_name):
             contract_type = getattr(manifest, contract_name)
             return self.chain_manager.contracts.get_container(contract_type)
 
         return None
 
-    def _get_compiled_manifest(self) -> PackageManifest:
+    def compile(self) -> PackageManifest:
+        """
+        Compile the contract types in this dependency into
+        a package manifest. NOTE: By default, dependency's
+        compile lazily.
+        """
+
         manifest = self.extract_manifest()
         if manifest.contract_types:
             # Already compiled
