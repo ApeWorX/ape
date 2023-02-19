@@ -9,6 +9,9 @@ In [1]: chain.blocks.head.timestamp
 Out[1]: 1647323479
 ```
 
+WARNING: Contract changes are not reflected in the active console session.
+If you need to make changes to your contract, you must re-start your console session for the compiler to handle the changes.
+
 ## Ape Namespace
 
 Your console comes with pre-initialized root ape objects in your namespace.
