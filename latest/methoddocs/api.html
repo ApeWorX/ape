@@ -259,6 +259,7 @@
 <li class="toctree-l2"><a class="reference internal" href="#module-ape.api.projects">Projects</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#ape.api.projects.DependencyAPI"><code class="docutils literal notranslate"><span class="pre">DependencyAPI</span></code></a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.projects.DependencyAPI.cached_manifest"><code class="docutils literal notranslate"><span class="pre">DependencyAPI.cached_manifest</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ape.api.projects.DependencyAPI.compile"><code class="docutils literal notranslate"><span class="pre">DependencyAPI.compile()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.projects.DependencyAPI.contracts_folder"><code class="docutils literal notranslate"><span class="pre">DependencyAPI.contracts_folder</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.projects.DependencyAPI.exclude"><code class="docutils literal notranslate"><span class="pre">DependencyAPI.exclude</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.projects.DependencyAPI.extract_manifest"><code class="docutils literal notranslate"><span class="pre">DependencyAPI.extract_manifest()</span></code></a></li>
@@ -1926,6 +1927,14 @@ an instance of this context manager.</p>
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">cached_manifest</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">PackageManifest</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#ape.api.projects.DependencyAPI.cached_manifest" title="Permalink to this definition"></a></dt>
 <dd><p>The manifest from the <code class="docutils literal notranslate"><span class="pre">.ape/packages/&lt;dependency-name&gt;/&lt;version-id&gt;</span></code>
 if it exists and is valid.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ape.api.projects.DependencyAPI.compile">
+<span class="sig-name descname"><span class="pre">compile</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">PackageManifest</span></span></span><a class="headerlink" href="#ape.api.projects.DependencyAPI.compile" title="Permalink to this definition"></a></dt>
+<dd><p>Compile the contract types in this dependency into
+a package manifest. NOTE: By default, dependency’s
+compile lazily.</p>
 </dd></dl>
 
 <dl class="py attribute">
