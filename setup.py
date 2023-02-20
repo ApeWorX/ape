@@ -119,7 +119,7 @@ setup(
         "py-geth>=3.8.0,<4",
         "web3[tester]==6.0.0b7",
         # ** Dependencies maintained by ApeWorX **
-        "eip712>=0.1.4,<0.2",
+        "eip712>=0.2.0,<0.3.0",
         "ethpm-types>=0.3.16,<0.4",
         "evm-trace>=0.1.0a15",
     ],
