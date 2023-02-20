@@ -216,3 +216,8 @@ class TraceFrame(BaseInterfaceModel):
     """
     The number of external jumps away the initially called contract (starts at 0).
     """
+
+    raw: Dict = Field({}, exclude=True, repr=False)
+    """
+    The raw trace frame from the provider.
+    """
