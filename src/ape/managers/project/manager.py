@@ -414,6 +414,29 @@ class ProjectManager(BaseManager):
             :class:`~ape.contracts.ContractContainer`
         """
 
+        result = self._get_attr(attr_name)
+        if result:
+            return result
+
+        # Contract not found. Re-compile in the case that it was deleted from the cache,
+        # or the user is migrating to >= 0.6.3.
+        self.project_manager.load_contracts(use_cache=False)
+        result = self._get_attr(attr_name)
+        if result:
+            return result
+
+        # Still not found after re-compile. Contract really doesn't exist.q
+        message = f"{self.__class__.__name__} has no attribute or contract named '{attr_name}'."
+        missing_exts = self.extensions_with_missing_compilers([])
+        if missing_exts:
+            message = (
+                f"{message} Could it be from one of the missing compilers for extensions: "
+                + f'{", ".join(sorted(missing_exts))}?'
+            )
+
+        raise AttributeError(message)
+
+    def _get_attr(self, attr_name: str):
         # Fixes anomaly when accessing non-ContractType attributes.
         # Returns normal attribute if exists. Raises 'AttributeError' otherwise.
         try:
@@ -445,16 +468,7 @@ class ProjectManager(BaseManager):
             # __getattr__ has to raise `AttributeError`
             raise AttributeError(str(err)) from err
 
-        # Contract not found
-        message = f"ProjectManager has no attribute or contract named '{attr_name}'."
-        missing_exts = self.extensions_with_missing_compilers([])
-        if missing_exts:
-            message = (
-                f"{message} Could it be from one of the missing compilers for extensions: "
-                + f'{", ".join(sorted(missing_exts))}?'
-            )
-
-        raise AttributeError(message)
+        return None
 
     def get_contract(self, contract_name: str) -> ContractContainer:
         """
