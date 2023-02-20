@@ -1107,6 +1107,7 @@ class Web3Provider(ProviderAPI, ABC):
             gas=evm_frame.gas,
             gas_cost=evm_frame.gas_cost,
             depth=evm_frame.depth,
+            raw=evm_frame.dict(),
         )
 
     def _make_request(self, endpoint: str, parameters: List) -> Any:
