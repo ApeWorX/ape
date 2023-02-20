@@ -420,12 +420,12 @@ class ProjectManager(BaseManager):
 
         # Contract not found. Re-compile in the case that it was deleted from the cache,
         # or the user is migrating to >= 0.6.3.
-        self.project_manager.load_contracts(use_cache=False)
+        self.local_project.create_manifest(use_cache=False)
         result = self._get_attr(attr_name)
         if result:
             return result
 
-        # Still not found after re-compile. Contract really doesn't exist.q
+        # Still not found after re-compile. Contract really doesn't exist.
         message = f"{self.__class__.__name__} has no attribute or contract named '{attr_name}'."
         missing_exts = self.extensions_with_missing_compilers([])
         if missing_exts:
