@@ -388,7 +388,8 @@ class ProjectManager(BaseManager):
         """
         if self.local_project._cached_manifest is None:
             return self.load_contracts()
-        return self.local_project._cached_manifest.contract_types or {}
+
+        return self.local_project.contracts
 
     def __getattr__(self, attr_name: str) -> Union[ContractContainer, ContractNamespace]:
         """
@@ -420,21 +421,31 @@ class ProjectManager(BaseManager):
 
         # Contract not found. Re-compile in the case that it was deleted from the cache,
         # or the user is migrating to >= 0.6.3.
-        self.local_project.create_manifest(use_cache=False)
+        all_source_ids = list(self.project_manager.sources.keys())
+        compiled_source_ids = [x.source_id for x in self.contracts.values()]
+        missing_sources = [
+            self.contracts_folder / x for x in all_source_ids if x not in compiled_source_ids
+        ]
+        contract_types = self.compiler_manager.compile(missing_sources)
+        contract_type = contract_types.get(attr_name)
+        if not contract_type:
+            # Still not found after re-compile. Contract really doesn't exist.
+            return self._handle_attr_not_found(attr_name)
+
+        # Cache for next time.
+        path = self.local_project._cache_folder / f"{attr_name}.json"
+        path.write_text(contract_type.json())
+        if self.local_project._contracts:
+            self.local_project._contracts[attr_name] = contract_type
+        else:
+            self.local_project._contracts = {attr_name: contract_type}
+
         result = self._get_attr(attr_name)
-        if result:
-            return result
+        if not result:
+            # Shouldn't happen.
+            return self._handle_attr_not_found(attr_name)
 
-        # Still not found after re-compile. Contract really doesn't exist.
-        message = f"{self.__class__.__name__} has no attribute or contract named '{attr_name}'."
-        missing_exts = self.extensions_with_missing_compilers([])
-        if missing_exts:
-            message = (
-                f"{message} Could it be from one of the missing compilers for extensions: "
-                + f'{", ".join(sorted(missing_exts))}?'
-            )
-
-        raise AttributeError(message)
+        return result
 
     def _get_attr(self, attr_name: str):
         # Fixes anomaly when accessing non-ContractType attributes.
@@ -469,6 +480,17 @@ class ProjectManager(BaseManager):
             raise AttributeError(str(err)) from err
 
         return None
+
+    def _handle_attr_not_found(self, attr_name: str):
+        message = f"{self.__class__.__name__} has no attribute or contract named '{attr_name}'."
+        missing_exts = self.extensions_with_missing_compilers([])
+        if missing_exts:
+            message = (
+                f"{message} Could it be from one of the missing compilers for extensions: "
+                + f'{", ".join(sorted(missing_exts))}?'
+            )
+
+        raise AttributeError(message)
 
     def get_contract(self, contract_name: str) -> ContractContainer:
         """

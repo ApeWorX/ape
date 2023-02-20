@@ -95,11 +95,13 @@ class ProjectAPI(BaseInterfaceModel):
         if it exists and is valid.
         """
         if self._cached_manifest is None:
-            manifest = _load_manifest_from_file(self.manifest_cachefile)
-            if manifest is not None:
-                manifest.contract_types = self.contracts
-            self._cached_manifest = manifest
-        return self._cached_manifest
+            self._cached_manifest = _load_manifest_from_file(self.manifest_cachefile)
+            if self._cached_manifest is None:
+                return None
+
+        manifest = self._cached_manifest
+        manifest.contract_types = self.contracts
+        return manifest
 
     @property
     def contracts(self) -> Dict[str, ContractType]:
