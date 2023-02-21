@@ -1124,7 +1124,7 @@ class ReportManager(BaseManager):
 
         gas_report = call_tree.get_gas_report(exclude=self.gas_exclusions)
         session_report = self.session_gas_report or {}
-        self.session_gas_report = merge_reports(gas_report, session_report)
+        self.session_gas_report = merge_reports(session_report, gas_report)
 
     def _get_console(self, file: Optional[IO[str]] = None) -> RichConsole:
         if not file:
