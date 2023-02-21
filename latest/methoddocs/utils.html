@@ -756,18 +756,18 @@ and is able to be load.</p></li>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="ape.utils.run_until_complete">
-<span class="sig-prename descclassname"><span class="pre">ape.utils.</span></span><span class="sig-name descname"><span class="pre">run_until_complete</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">item</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Any</span></span></span><a class="headerlink" href="#ape.utils.run_until_complete" title="Permalink to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">ape.utils.</span></span><span class="sig-name descname"><span class="pre">run_until_complete</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">item</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Any</span></span></span><a class="headerlink" href="#ape.utils.run_until_complete" title="Permalink to this definition"></a></dt>
 <dd><p>Completes the given coroutine and returns its value.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>item</strong> (<em>Any</em>) – A return value from a potentially async method.</p>
+<dd class="field-odd"><p><strong>*item</strong> (<em>Any</em>) – A coroutine or any return value from an async method. If
+not given a coroutine, returns the given item. Provide multiple
+coroutines to run tasks in parallel.</p>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p><dl class="simple">
-<dt>The value that results in awaiting the coroutine.</dt><dd><p>Else, <code class="docutils literal notranslate"><span class="pre">item</span></code> if <code class="docutils literal notranslate"><span class="pre">item</span></code> is not a coroutine.</p>
-</dd>
-</dl>
-</p>
+<dd class="field-even"><p>The value that results in awaiting the coroutine.
+Else, <code class="docutils literal notranslate"><span class="pre">item</span></code> if <code class="docutils literal notranslate"><span class="pre">item</span></code> is not a coroutine. If given multiple coroutines,
+returns the result from <code class="docutils literal notranslate"><span class="pre">asyncio.gather</span></code>.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>(Any)</p>
