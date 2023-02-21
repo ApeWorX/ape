@@ -367,7 +367,7 @@ class ProviderAPI(BaseInterfaceModel):
             stop_nonce (int): The nonce of the account to stop the search with.
 
         Returns:
-            Iterator[:class: `~ape.api.transactions.ReceiptAPI`]
+            Iterator[:class:`~ape.api.transactions.ReceiptAPI`]
         """
 
     @abstractmethod
