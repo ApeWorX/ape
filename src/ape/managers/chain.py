@@ -525,9 +525,9 @@ class AccountHistory(BaseInterfaceModel):
     @__getitem__.register
     def __getitem_slice(self, indices: slice) -> List[ReceiptAPI]:
         start, stop, step = (
-            indices.start if indices.start else 0,
-            indices.stop if indices.stop else len(self),
-            indices.step if indices.step else 1,
+            indices.start or 0,
+            indices.stop or len(self),
+            indices.step or 1,
         )
 
         if start < 0:
