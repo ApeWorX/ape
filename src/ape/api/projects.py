@@ -103,6 +103,7 @@ class ProjectAPI(BaseInterfaceModel):
         if manifest.contract_types and not self.contracts:
             # Extract contract types from cached manifest.
             # This helps migrate to >= 0.6.3.
+            # TODO: Remove once Ape 0.7 is released.
             for contract_type in manifest.contract_types.values():
                 if not contract_type.name:
                     continue
