@@ -1,6 +1,7 @@
 import asyncio
 import json
 import sys
+from asyncio import gather
 from functools import cached_property, lru_cache, singledispatchmethod
 from pathlib import Path
 from typing import Any, Callable, Coroutine, Dict, List, Mapping, Optional
@@ -273,23 +274,35 @@ def to_int(value) -> int:
     raise ValueError(f"cannot convert {repr(value)} to int")
 
 
-def run_until_complete(item: Any) -> Any:
+def run_until_complete(*item: Any) -> Any:
     """
     Completes the given coroutine and returns its value.
 
     Args:
-        item (Any): A return value from a potentially async method.
+        *item (Any): A coroutine or any return value from an async method. If
+          not given a coroutine, returns the given item. Provide multiple
+          coroutines to run tasks in parallel.
 
     Returns:
         (Any): The value that results in awaiting the coroutine.
-          Else, ``item`` if ``item`` is not a coroutine.
+        Else, ``item`` if ``item`` is not a coroutine. If given multiple coroutines,
+        returns the result from ``asyncio.gather``.
     """
 
-    if not isinstance(item, Coroutine):
-        return item
+    items = list(item)
+    if not items:
+        return None
 
+    elif not isinstance(items[0], Coroutine):
+        # Method was marked `async` but didn't return a coroutine.
+        # This happens in some `web3.py` methods.
+        return items if len(items) > 1 else items[0]
+
+    # Run all coroutines async.
+    task = gather(*items, return_exceptions=True) if len(items) > 1 else items[0]
     loop = asyncio.get_event_loop()
-    return loop.run_until_complete(item)
+    result = loop.run_until_complete(task)
+    return result
 
 
 def allow_disconnected(fn: Callable):

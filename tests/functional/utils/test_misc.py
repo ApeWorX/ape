@@ -7,6 +7,7 @@ from ape.utils.misc import (
     extract_nested_value,
     get_package_version,
     raises_not_implemented,
+    run_until_complete,
 )
 
 
@@ -46,3 +47,28 @@ def test_get_package_version():
     version = get_package_version("ape")
     # Fails if invalid version
     assert Version(version)
+
+
+def test_run_until_complete_not_coroutine():
+    expected = 3
+    actual = run_until_complete(3)
+    assert actual == expected
+
+
+def test_run_until_complete_coroutine():
+    async def foo():
+        return 3
+
+    actual = run_until_complete(foo())
+    assert actual == 3
+
+
+def test_run_until_complete_multiple_coroutines():
+    async def foo():
+        return 3
+
+    async def bar():
+        return 4
+
+    actual = run_until_complete(foo(), bar())
+    assert actual == [3, 4]
