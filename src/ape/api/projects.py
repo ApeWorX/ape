@@ -100,7 +100,23 @@ class ProjectAPI(BaseInterfaceModel):
                 return None
 
         manifest = self._cached_manifest
-        manifest.contract_types = self.contracts
+        if manifest.contract_types and not self.contracts:
+            # Extract contract types from cached manifest.
+            # This helps migrate to >= 0.6.3.
+            for contract_type in manifest.contract_types.values():
+                if not contract_type.name:
+                    continue
+
+                path = self._cache_folder / f"{contract_type.name}.json"
+                path.write_text(contract_type.json())
+
+            # Rely on individual cache files.
+            self._contracts = manifest.contract_types
+            manifest.contract_types = {}
+
+        else:
+            manifest.contract_types = self.contracts
+
         return manifest
 
     @property
