@@ -265,3 +265,13 @@ def test_compile_only_dependency(ape_cli, runner, project, clean_cache, caplog):
 def test_raw_compiler_output_bytecode(ape_cli, runner, project):
     assert project.RawVyperOutput.contract_type.runtime_bytecode.bytecode
     assert project.RawSolidityOutput.contract_type.deployment_bytecode.bytecode
+
+
+@skip_projects_except("with-contracts")
+def test_compile_after_deleting_cache_file(ape_cli, runner, project):
+    assert project.RawVyperOutput
+    path = project.local_project._cache_folder / "RawVyperOutput.json"
+    path.unlink()
+
+    # Should still work (will have to figure it out its missing and put back).
+    assert project.RawVyperOutput

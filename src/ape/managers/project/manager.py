@@ -388,7 +388,8 @@ class ProjectManager(BaseManager):
         """
         if self.local_project._cached_manifest is None:
             return self.load_contracts()
-        return self.local_project._cached_manifest.contract_types or {}
+
+        return self.local_project.contracts
 
     def __getattr__(self, attr_name: str) -> Union[ContractContainer, ContractNamespace]:
         """
@@ -414,6 +415,45 @@ class ProjectManager(BaseManager):
             :class:`~ape.contracts.ContractContainer`
         """
 
+        result = self._get_attr(attr_name)
+        if result:
+            return result
+
+        # Contract not found. Seek and re-compile missing contract types from sources.
+        # This assists when build artifacts accidentally get deleted.
+        all_source_ids = list(self.project_manager.sources.keys())
+        compiled_source_ids = [x.source_id for x in self.contracts.values()]
+        missing_sources = [
+            self.contracts_folder / x for x in all_source_ids if x not in compiled_source_ids
+        ]
+        contract_types = self.compiler_manager.compile(missing_sources)
+
+        # Cache all contract types that were missing for next time.
+        for ct in contract_types.values():
+            if not ct.name:
+                continue
+
+            # We know if we get here that the path does not exist.
+            path = self.local_project._cache_folder / f"{ct.name}.json"
+            path.write_text(ct.json())
+            if self.local_project._contracts is None:
+                self.local_project._contracts = {ct.name: ct}
+            else:
+                self.local_project._contracts[ct.name] = ct
+
+        contract_type = contract_types.get(attr_name)
+        if not contract_type:
+            # Still not found. Contract likely doesn't exist.
+            return self._handle_attr_not_found(attr_name)
+
+        result = self._get_attr(attr_name)
+        if not result:
+            # Shouldn't happen.
+            return self._handle_attr_not_found(attr_name)
+
+        return result
+
+    def _get_attr(self, attr_name: str):
         # Fixes anomaly when accessing non-ContractType attributes.
         # Returns normal attribute if exists. Raises 'AttributeError' otherwise.
         try:
@@ -445,8 +485,10 @@ class ProjectManager(BaseManager):
             # __getattr__ has to raise `AttributeError`
             raise AttributeError(str(err)) from err
 
-        # Contract not found
-        message = f"ProjectManager has no attribute or contract named '{attr_name}'."
+        return None
+
+    def _handle_attr_not_found(self, attr_name: str):
+        message = f"{self.__class__.__name__} has no attribute or contract named '{attr_name}'."
         missing_exts = self.extensions_with_missing_compilers([])
         if missing_exts:
             message = (

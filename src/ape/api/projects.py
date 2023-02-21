@@ -95,11 +95,30 @@ class ProjectAPI(BaseInterfaceModel):
         if it exists and is valid.
         """
         if self._cached_manifest is None:
-            manifest = _load_manifest_from_file(self.manifest_cachefile)
-            if manifest is not None:
-                manifest.contract_types = self.contracts
-            self._cached_manifest = manifest
-        return self._cached_manifest
+            self._cached_manifest = _load_manifest_from_file(self.manifest_cachefile)
+            if self._cached_manifest is None:
+                return None
+
+        manifest = self._cached_manifest
+        if manifest.contract_types and not self.contracts:
+            # Extract contract types from cached manifest.
+            # This helps migrate to >= 0.6.3.
+            # TODO: Remove once Ape 0.7 is released.
+            for contract_type in manifest.contract_types.values():
+                if not contract_type.name:
+                    continue
+
+                path = self._cache_folder / f"{contract_type.name}.json"
+                path.write_text(contract_type.json())
+
+            # Rely on individual cache files.
+            self._contracts = manifest.contract_types
+            manifest.contract_types = {}
+
+        else:
+            manifest.contract_types = self.contracts
+
+        return manifest
 
     @property
     def contracts(self) -> Dict[str, ContractType]:
