@@ -510,19 +510,22 @@ class AccountHistory(BaseInterfaceModel):
         if index < 0:
             index += len(self)
 
-        return cast(
-            ReceiptAPI,
-            next(
-                self.query_manager.query(
-                    AccountTransactionQuery(
-                        columns=list(ReceiptAPI.__fields__),
-                        account=self.address,
-                        start_nonce=index,
-                        stop_nonce=index,
+        try:
+            return cast(
+                ReceiptAPI,
+                next(
+                    self.query_manager.query(
+                        AccountTransactionQuery(
+                            columns=list(ReceiptAPI.__fields__),
+                            account=self.address,
+                            start_nonce=index,
+                            stop_nonce=index,
+                        )
                     )
-                )
-            ),
-        )
+                ),
+            )
+        except StopIteration as e:
+            raise IndexError(f"index {index} out of range") from e
 
     @__getitem__.register
     def __getitem_slice(self, indices: slice) -> List[ReceiptAPI]:
