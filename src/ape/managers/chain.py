@@ -415,7 +415,7 @@ class AccountHistory(BaseInterfaceModel):
         """
 
         start_nonce = 0
-        stop_nonce = self.__len__()  # just to cache this value
+        stop_nonce = self.__len__() - 1  # just to cache this value
 
         # TODO: Add ephemeral network sessional history to `ape-cache` instead,
         #       and remove this (replace with `yield from iter(self[:len(self)])`)
@@ -424,7 +424,7 @@ class AccountHistory(BaseInterfaceModel):
 
             if receipt.nonce > start_nonce:
                 # NOTE: There's a gap in our sessional history, so fetch from query engine
-                yield from iter(self[start_nonce : receipt.nonce])  # noqa: E203
+                yield from iter(self[start_nonce : receipt.nonce + 1])  # noqa: E203
 
             yield receipt
             start_nonce = receipt.nonce + 1  # start next loop on the next item
