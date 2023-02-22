@@ -27,6 +27,7 @@ from ape.exceptions import (
     BlockNotFoundError,
     ChainError,
     ConversionError,
+    QueryEngineError,
     UnknownSnapshotError,
 )
 from ape.logging import logger
@@ -420,7 +421,8 @@ class AccountHistory(BaseInterfaceModel):
         # TODO: Add ephemeral network sessional history to `ape-cache` instead,
         #       and remove this (replace with `yield from iter(self[:len(self)])`)
         for receipt in self.sessional:
-            assert receipt.nonce >= start_nonce  # sanity check
+            if receipt.nonce < start_nonce:
+                raise QueryEngineError("Sessional history corrupted")
 
             if receipt.nonce > start_nonce:
                 # NOTE: There's a gap in our sessional history, so fetch from query engine
