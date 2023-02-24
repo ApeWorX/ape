@@ -67,8 +67,8 @@ class NetworkManager(BaseManager):
         The current ecosystem if connected to one.
 
         Raises:
-            :class:`~ape.exceptions.ProviderNotConnectedError`: When there is
-            no active provider at runtime.
+            :class:`~ape.exceptions.ProviderNotConnectedError`: When there is 
+              no active provider at runtime.
 
         Returns:
             :class:`~ape.api.providers.ProviderAPI`

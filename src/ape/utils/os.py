@@ -31,6 +31,7 @@ def get_relative_path(target: Path, anchor: Path) -> Path:
     """
     Compute the relative path of ``target`` relative to ``anchor``,
     which may or may not share a common ancestor.
+    
     **NOTE**: Both paths must be absolute.
 
     Args:
