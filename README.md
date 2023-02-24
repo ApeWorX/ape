@@ -46,7 +46,7 @@ There are three ways to install ape: `pipx`, `pip`, or `Docker`.
 
 ### via `docker`
 
-Ape can also run in a docker contianer.
+Ape can also run in a docker container.
 
 Please visit our [Dockerhub](https://hub.docker.com/repository/docker/apeworx/ape) for more details on using Ape with Docker.
 
@@ -62,7 +62,7 @@ apeworx/ape compile
 
 ## Playing with Ape
 
-After you installed Ape, you can run `ape --version` to make sure it works and it is the latest version.
+After you installed Ape, you can run `ape --version` to make sure it works and is the latest version.
 
 There are two ways to interact with Ape:
 
@@ -86,7 +86,7 @@ Additionally, plugins that come bundled with **`ape`** in the core installation 
 
 - Learn more about **installing** plugins from following this [installing user guide](https://docs.apeworx.io/ape/stable/userguides/installing_plugins.html).
 
-- Learn more about **developing** your own plugins from this [developing user guide](docs/userguides/developing_plugins.md).
+  - Learn more about **developing** your own plugins from this [developing user guide](https://docs.apeworx.io/ape/stable/userguides/developing_plugins.html).
 
 ### Accounts
 
