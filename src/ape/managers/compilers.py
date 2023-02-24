@@ -101,6 +101,7 @@ class CompilerManager(BaseManager):
         extensions = self._get_contract_extensions(contract_filepaths)
         contracts_folder = self.config_manager.contracts_folder
         contract_types_dict: Dict[str, ContractType] = {}
+        built_paths = [p for p in self.project_manager.local_project._cache_folder.glob("*.json")]
         for extension in extensions:
             path_patterns_to_ignore = self.config_manager.compiler.ignore_files
             ignore_path_lists = [contracts_folder.rglob(p) for p in path_patterns_to_ignore]
@@ -116,6 +117,7 @@ class CompilerManager(BaseManager):
                 for path in contract_filepaths
                 if path.is_file()
                 and path not in paths_to_ignore
+                and path not in built_paths
                 and path.suffix == extension
                 and ".cache" not in [p.name for p in path.parents]
             ]
