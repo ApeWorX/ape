@@ -281,3 +281,9 @@ def test_contract_decode_logs_no_abi(owner, contract_instance):
     assert events[0].event_name == "NumberChange"
     assert events[0].newNum == 1
     assert events[0].transaction_index == 0
+
+
+def test_contract_log_container(owner, contract_instance):
+    receipt = contract_instance.setNumber(1, sender=owner)
+    events = receipt.events.filter(contract_instance.NumberChange, newNum=1)
+    assert len(events) == 1
