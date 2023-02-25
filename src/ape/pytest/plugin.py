@@ -4,6 +4,7 @@ from pathlib import Path
 import pytest
 
 from ape import networks, project
+from ape.logging import LogLevel, logger
 from ape.pytest.config import ConfigWrapper
 from ape.pytest.fixtures import PytestApeFixtures, ReceiptCapture
 from ape.pytest.runners import PytestApeRunner
@@ -87,6 +88,13 @@ def pytest_load_initial_conftests(early_config):
         try:
             project.load_contracts()
         except Exception as err:
-            raise pytest.UsageError(f"Unable to load project. Reason: {err}")
+            logger.log_debug_stack_trace()
+            message = "Unable to load project. "
+            if logger.level > LogLevel.DEBUG:
+                message = f"{message}Use `-v DEBUG` to see more info.\n"
+
+            message = f"{message}Failure reason: ({type(err).__name__}) {err}"
+            raise pytest.UsageError(message)
+
         finally:
             capture_manager.resume()
