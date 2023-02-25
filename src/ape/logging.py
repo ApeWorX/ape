@@ -164,7 +164,7 @@ class CliLogger:
         """
         message = self._create_message_from_error(err, message)
         self._logger.warning(message)
-        self._log_debug_stack_trace()
+        self.log_debug_stack_trace()
 
     def error_from_exception(self, err: Exception, message: str):
         """
@@ -174,7 +174,7 @@ class CliLogger:
         """
         message = self._create_message_from_error(err, message)
         self._logger.error(message)
-        self._log_debug_stack_trace()
+        self.log_debug_stack_trace()
 
     def _create_message_from_error(self, err: Exception, message: str):
         err_output = f"{type(err).__name__}: {err}"
@@ -185,7 +185,7 @@ class CliLogger:
 
         return message
 
-    def _log_debug_stack_trace(self):
+    def log_debug_stack_trace(self):
         stack_trace = traceback.format_exc()
         self._logger.debug(stack_trace)
 
