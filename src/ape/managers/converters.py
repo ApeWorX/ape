@@ -278,7 +278,7 @@ class ConversionManager(BaseManager):
         else:
             return isinstance(value, type)
 
-    def convert(self, value: Any, type: Type) -> Any:
+    def convert(self, value: Any, type: Union[Type, Tuple[Type], List[Type]]) -> Any:
         """
         Convert the given value to the given type. This method accesses
         all :class:`~ape.api.convert.ConverterAPI` instances known to
@@ -296,7 +296,16 @@ class ConversionManager(BaseManager):
             any: The same given value but with the new given type.
         """
 
-        if type not in self._converters:
+        if isinstance(value, (list, tuple)) and isinstance(type, (list, tuple)):
+            # Was given multiple values and types, such as from encode_calldata.
+            return [self.convert(v, t) for v, t in zip(value, type)]
+
+        elif isinstance(type, (list, tuple)):
+            raise ConversionError(
+                f"Value '{value}' must be a list or tuple when given multiple types."
+            )
+
+        elif type not in self._converters:
             options = ", ".join([t.__name__ for t in self._converters])
             raise ConversionError(f"Type '{type}' must be one of [{options}].")
 

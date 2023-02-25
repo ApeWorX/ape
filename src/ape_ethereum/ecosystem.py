@@ -345,7 +345,11 @@ class Ethereum(EcosystemAPI):
         parser = StructParser(abi)
         arguments = parser.encode_input(args)
         input_types = [i.canonical_type for i in abi.inputs]
-        converted_args = self.conversion_manager.convert(arguments, tuple)
+
+        # TODO: Convert input_types to python_types. e.g. uint256 -> int, bytes4 -> HexBytes etc.
+        python_types: List[Type] = []
+
+        converted_args = self.conversion_manager.convert(arguments, python_types)
         encoded_calldata = encode(input_types, converted_args)
         return HexBytes(encoded_calldata)
 
