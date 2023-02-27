@@ -243,7 +243,7 @@ class EcosystemAPI(BaseInterfaceModel):
         Attach a new network to an ecosystem (e.g. L2 networks like Optimism).
 
         Raises:
-            :class:`ape.exceptions.NetworkError`: When the network already exists.
+            :class:`~ape.exceptions.NetworkError`: When the network already exists.
 
         Args:
             network_name (str): The name of the network to add.
@@ -864,7 +864,7 @@ class NetworkAPI(BaseInterfaceModel):
               Defaults to ``None``.
 
         Returns:
-            :class:`ape.api.networks.ProviderContextManager`
+            :class:`~ape.api.networks.ProviderContextManager`
         """
 
         settings = provider_settings or {}
@@ -968,7 +968,7 @@ class NetworkAPI(BaseInterfaceModel):
 
 def create_network_type(chain_id: int, network_id: int) -> Type[NetworkAPI]:
     """
-    Easily create a :class:`ape.api.networks.NetworkAPI` subclass.
+    Easily create a :class:`~ape.api.networks.NetworkAPI` subclass.
     """
 
     class network_def(NetworkAPI):
