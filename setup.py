@@ -24,7 +24,7 @@ extras_require = {
         "types-requests",  # Needed due to mypy typeshed
         "types-setuptools",  # Needed due to mypy typeshed
         "pandas-stubs==1.2.0.62",  # Needed due to mypy typeshed
-        "types-SQLAlchemy>=1.4.49",
+        "types-SQLAlchemy>=1.4.49",  # Needed due to mypy typeshed
         "flake8>=5.0.4,<6",  # Style linter
         "flake8-breakpoint>=1.1.0,<2",  # detect breakpoints left in code
         "flake8-print>=4.0.0,<5",  # detect print statements left in code
