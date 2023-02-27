@@ -139,7 +139,7 @@ class ProjectAPI(BaseInterfaceModel):
 
     @property
     def _cache_folder(self) -> Path:
-        folder = self.path / ".build"
+        folder = self.contracts_folder.parent / ".build"
         # NOTE: If we use the cache folder, we expect it to exist
         folder.mkdir(exist_ok=True, parents=True)
         return folder
