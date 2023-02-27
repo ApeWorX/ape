@@ -338,17 +338,45 @@ class Ethereum(EcosystemAPI):
 
         return Block.parse_obj(data)
 
+    def _python_type_for_abi_type(self, abi_type:ABIType) -> Type:
+        # NOTE: An array can be an array of tuples, so we start with an array check
+        if abi_type.type.endswith("]"):
+            # remove one layer of the potential onion of array  
+            new_type = "[".join(str(abi_type.type).split('[')[:-1])
+            # create a new type with the inner type of array
+            new_abi_type = ABIType(type = new_type, **abi_type.dict(exclude={"type"}))
+            # NOTE: type for static and dynamic array is a single item list containing the type of the array
+            return [self._python_type_for_abi_type(new_abi_type)]
+
+        if abi_type.components is not None:
+            return tuple(self._python_type_for_abi_type(c) for c in abi_type.components)
+
+        if abi_type.type == "address":
+            return AddressType
+        
+        elif abi_type.type == "bool":
+            return bool
+
+        elif abi_type.type == "string":
+            return str
+           
+        elif "bytes" in abi_type.type:
+            return bytes
+        
+        elif "int" in abi_type.type:
+            return int
+        
+        raise
+
     def encode_calldata(self, abi: Union[ConstructorABI, MethodABI], *args) -> HexBytes:
         if not abi.inputs:
             return HexBytes("")
-
         parser = StructParser(abi)
         arguments = parser.encode_input(args)
+
         input_types = [i.canonical_type for i in abi.inputs]
 
-        # TODO: Convert input_types to python_types. e.g. uint256 -> int, bytes4 -> HexBytes etc.
-        python_types: List[Type] = []
-
+        python_types: Tuple[Type] = tuple(self._python_type_for_abi_type(i) for i in abi.inputs)
         converted_args = self.conversion_manager.convert(arguments, python_types)
         encoded_calldata = encode(input_types, converted_args)
         return HexBytes(encoded_calldata)
