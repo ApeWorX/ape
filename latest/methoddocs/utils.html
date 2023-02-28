@@ -657,8 +657,8 @@ pattern to match.</p></li>
 <dt class="sig sig-object py" id="ape.utils.get_relative_path">
 <span class="sig-prename descclassname"><span class="pre">ape.utils.</span></span><span class="sig-name descname"><span class="pre">get_relative_path</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">target</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">anchor</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Path</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Path</span></span></span><a class="headerlink" href="#ape.utils.get_relative_path" title="Permalink to this definition"></a></dt>
 <dd><p>Compute the relative path of <code class="docutils literal notranslate"><span class="pre">target</span></code> relative to <code class="docutils literal notranslate"><span class="pre">anchor</span></code>,
-which may or may not share a common ancestor.
-<strong>NOTE</strong>: Both paths must be absolute.</p>
+which may or may not share a common ancestor.</p>
+<p><strong>NOTE</strong>: Both paths must be absolute.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
@@ -679,8 +679,8 @@ which may or may not share a common ancestor.
 <dt class="sig sig-object py" id="ape.utils.injected_before_use">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ape.utils.</span></span><span class="sig-name descname"><span class="pre">injected_before_use</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fget</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fset</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fdel</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">doc</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.utils.injected_before_use" title="Permalink to this definition"></a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">property</span></code></p>
-<p>Injected properties are injected class variables that must be set before use
-<strong>NOTE</strong>: do not appear in a Pydantic model’s set of properties.</p>
+<p>Injected properties are injected class variables that must be set before use.</p>
+<p><strong>NOTE</strong>: do not appear in a Pydantic model’s set of properties.</p>
 </dd></dl>
 
 <dl class="py function">

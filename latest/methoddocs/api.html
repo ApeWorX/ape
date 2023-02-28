@@ -1238,7 +1238,7 @@ in a particular ecosystem.</p>
 <dd><p>Attach a new network to an ecosystem (e.g. L2 networks like Optimism).</p>
 <dl class="field-list simple">
 <dt class="field-odd">Raises<span class="colon">:</span></dt>
-<dd class="field-odd"><p><a class="reference internal" href="exceptions.html#ape.exceptions.NetworkError" title="ape.exceptions.NetworkError"><strong>ape.exceptions.NetworkError</strong></a> – When the network already exists.</p>
+<dd class="field-odd"><p><a class="reference internal" href="exceptions.html#ape.exceptions.NetworkError" title="ape.exceptions.NetworkError"><strong>NetworkError</strong></a> – When the network already exists.</p>
 </dd>
 <dt class="field-even">Parameters<span class="colon">:</span></dt>
 <dd class="field-even"><p><strong>network_name</strong> (<em>str</em>) – The name of the network to add.</p>
@@ -1847,7 +1847,7 @@ Defaults to <code class="docutils literal notranslate"><span class="pre">None</s
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference internal" href="#ape.api.networks.ProviderContextManager" title="ape.api.networks.ProviderContextManager"><code class="xref py py-class docutils literal notranslate"><span class="pre">ape.api.networks.ProviderContextManager</span></code></a></p>
+<dd class="field-even"><p><a class="reference internal" href="#ape.api.networks.ProviderContextManager" title="ape.api.networks.ProviderContextManager"><code class="xref py py-class docutils literal notranslate"><span class="pre">ProviderContextManager</span></code></a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -1911,7 +1911,7 @@ an instance of this context manager.</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="ape.api.networks.create_network_type">
 <span class="sig-prename descclassname"><span class="pre">ape.api.networks.</span></span><span class="sig-name descname"><span class="pre">create_network_type</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">chain_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">network_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Type</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#ape.api.networks.NetworkAPI" title="ape.api.networks.NetworkAPI"><span class="pre">NetworkAPI</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#ape.api.networks.create_network_type" title="Permalink to this definition"></a></dt>
-<dd><p>Easily create a <a class="reference internal" href="#ape.api.networks.NetworkAPI" title="ape.api.networks.NetworkAPI"><code class="xref py py-class docutils literal notranslate"><span class="pre">ape.api.networks.NetworkAPI</span></code></a> subclass.</p>
+<dd><p>Easily create a <a class="reference internal" href="#ape.api.networks.NetworkAPI" title="ape.api.networks.NetworkAPI"><code class="xref py py-class docutils literal notranslate"><span class="pre">NetworkAPI</span></code></a> subclass.</p>
 </dd></dl>
 
 </section>
@@ -1933,8 +1933,8 @@ if it exists and is valid.</p>
 <dt class="sig sig-object py" id="ape.api.projects.DependencyAPI.compile">
 <span class="sig-name descname"><span class="pre">compile</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">PackageManifest</span></span></span><a class="headerlink" href="#ape.api.projects.DependencyAPI.compile" title="Permalink to this definition"></a></dt>
 <dd><p>Compile the contract types in this dependency into
-a package manifest. NOTE: By default, dependency’s
-compile lazily.</p>
+a package manifest.</p>
+<p><strong>NOTE</strong>: By default, dependency’s compile lazily.</p>
 </dd></dl>
 
 <dl class="py attribute">
@@ -1942,8 +1942,8 @@ compile lazily.</p>
 <span class="sig-name descname"><span class="pre">contracts_folder</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#ape.api.projects.DependencyAPI.contracts_folder" title="Permalink to this definition"></a></dt>
 <dd><p>The name of the dependency’s <code class="docutils literal notranslate"><span class="pre">contracts/</span></code> directory.
 This is where <code class="docutils literal notranslate"><span class="pre">ape</span></code> will look for source files when compiling
-the manifest for this dependency. <strong>NOTE</strong>: This must be the name
-of a directory in the project.</p>
+the manifest for this dependency.</p>
+<p><strong>NOTE</strong>: This must be the name of a directory in the project.</p>
 </dd></dl>
 
 <dl class="py attribute">

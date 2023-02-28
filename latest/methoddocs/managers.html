@@ -1848,10 +1848,8 @@ that ecosystem.</p>
 <dd><p>The current ecosystem if connected to one.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Raises<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><a class="reference internal" href="exceptions.html#ape.exceptions.ProviderNotConnectedError" title="ape.exceptions.ProviderNotConnectedError"><strong>ProviderNotConnectedError</strong></a> – When there is</p></li>
-<li><p><strong>no active provider at runtime.</strong> – </p></li>
-</ul>
+<dd class="field-odd"><p><a class="reference internal" href="exceptions.html#ape.exceptions.ProviderNotConnectedError" title="ape.exceptions.ProviderNotConnectedError"><strong>ProviderNotConnectedError</strong></a> – When there is
+    no active provider at runtime.</p>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p><a class="reference internal" href="api.html#ape.api.providers.ProviderAPI" title="ape.api.providers.ProviderAPI"><code class="xref py py-class docutils literal notranslate"><span class="pre">ProviderAPI</span></code></a></p>
@@ -1971,10 +1969,8 @@ Defaults to the default ecosystem, network, and provider combination.</p></li>
 <dd><p>The current network if connected to one.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Raises<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><a class="reference internal" href="exceptions.html#ape.exceptions.ProviderNotConnectedError" title="ape.exceptions.ProviderNotConnectedError"><strong>ProviderNotConnectedError</strong></a> – When there is</p></li>
-<li><p><strong>no active provider at runtime.</strong> – </p></li>
-</ul>
+<dd class="field-odd"><p><a class="reference internal" href="exceptions.html#ape.exceptions.ProviderNotConnectedError" title="ape.exceptions.ProviderNotConnectedError"><strong>ProviderNotConnectedError</strong></a> – When there is
+    no active provider at runtime.</p>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p><a class="reference internal" href="api.html#ape.api.networks.NetworkAPI" title="ape.api.networks.NetworkAPI"><code class="xref py py-class docutils literal notranslate"><span class="pre">NetworkAPI</span></code></a></p>
@@ -2404,12 +2400,8 @@ section of your <code class="docutils literal notranslate"><span class="pre">ape
 <dl class="py attribute">
 <dt class="sig sig-object py" id="ape.managers.project.dependency.GithubDependency.branch">
 <span class="sig-name descname"><span class="pre">branch</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#ape.managers.project.dependency.GithubDependency.branch" title="Permalink to this definition"></a></dt>
-<dd><p>Will be ignored if given a version.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>The branch to use. <strong>NOTE</strong></p>
-</dd>
-</dl>
+<dd><p>The branch to use.</p>
+<p><strong>NOTE</strong>: Will be ignored if given a version.</p>
 </dd></dl>
 
 <dl class="py method">
@@ -2749,12 +2741,12 @@ a specific engine. Defaults is set by performance-based selection logic.</p></li
 </dd>
 </dl>
 <dl class="simple">
-<dt>Raises: <a class="reference internal" href="exceptions.html#ape.exceptions.QueryEngineError" title="ape.exceptions.QueryEngineError"><code class="xref py py-class docutils literal notranslate"><span class="pre">QueryEngineError</span></code></a>: When given an</dt><dd><p>invalid or inaccessible <code class="docutils literal notranslate"><span class="pre">engine_to_use</span></code> value.</p>
+<dt>Raises: <a class="reference internal" href="exceptions.html#ape.exceptions.QueryEngineError" title="ape.exceptions.QueryEngineError"><code class="xref py py-class docutils literal notranslate"><span class="pre">QueryEngineError</span></code></a>: When given an invalid or</dt><dd><p>inaccessible <code class="docutils literal notranslate"><span class="pre">engine_to_use</span></code> value.</p>
 </dd>
 </dl>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>Iterator[BaseInterfaceModel]</p>
+<dd class="field-odd"><p>Iterator[<code class="docutils literal notranslate"><span class="pre">BaseInterfaceModel</span></code>]</p>
 </dd>
 </dl>
 </dd></dl>
