@@ -338,7 +338,7 @@ class Ethereum(EcosystemAPI):
 
         return Block.parse_obj(data)
 
-    def _python_type_for_abi_type(self, abi_type: ABIType) -> Any[Type[Any]]:
+    def _python_type_for_abi_type(self, abi_type: ABIType) -> Union[Type, Tuple, List]:
         # NOTE: An array can be an array of tuples, so we start with an array check
         if str(abi_type.type).endswith("]"):
             # remove one layer of the potential onion of array
@@ -372,14 +372,11 @@ class Ethereum(EcosystemAPI):
     def encode_calldata(self, abi: Union[ConstructorABI, MethodABI], *args) -> HexBytes:
         if not abi.inputs:
             return HexBytes("")
+
         parser = StructParser(abi)
         arguments = parser.encode_input(args)
-
         input_types = [i.canonical_type for i in abi.inputs]
-
-        python_types: Tuple[Type, ...] = tuple(
-            self._python_type_for_abi_type(i) for i in abi.inputs
-        )
+        python_types = tuple(self._python_type_for_abi_type(i) for i in abi.inputs)
         converted_args = self.conversion_manager.convert(arguments, python_types)
         encoded_calldata = encode(input_types, converted_args)
         return HexBytes(encoded_calldata)

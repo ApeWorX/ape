@@ -280,7 +280,7 @@ class ConversionManager(BaseManager):
         else:
             return isinstance(value, type)
 
-    def convert(self, value: Any, type: Union[Type, Tuple[Type, ...], List[Type]]) -> Any:
+    def convert(self, value: Any, type: Union[Type, Tuple, List]) -> Any:
         """
         Convert the given value to the given type. This method accesses
         all :class:`~ape.api.convert.ConverterAPI` instances known to
