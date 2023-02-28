@@ -86,7 +86,7 @@ Additionally, plugins that come bundled with **`ape`** in the core installation 
 
 - Learn more about **installing** plugins from following this [installing user guide](https://docs.apeworx.io/ape/stable/userguides/installing_plugins.html).
 
-  - Learn more about **developing** your own plugins from this [developing user guide](https://docs.apeworx.io/ape/stable/userguides/developing_plugins.html).
+- Learn more about **developing** your own plugins from this [developing user guide](https://docs.apeworx.io/ape/stable/userguides/developing_plugins.html).
 
 ### Accounts
 

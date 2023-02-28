@@ -54,7 +54,7 @@ class NetworkManager(BaseManager):
 
         Raises:
             :class:`~ape.exceptions.ProviderNotConnectedError`: When there is
-            no active provider at runtime.
+              no active provider at runtime.
 
         Returns:
             :class:`~ape.api.networks.NetworkAPI`
@@ -68,7 +68,7 @@ class NetworkManager(BaseManager):
 
         Raises:
             :class:`~ape.exceptions.ProviderNotConnectedError`: When there is
-            no active provider at runtime.
+              no active provider at runtime.
 
         Returns:
             :class:`~ape.api.providers.ProviderAPI`
