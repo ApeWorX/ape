@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Any, Dict, List, Literal, Optional, Union
+from typing import TYPE_CHECKING, Any, Dict, List, Literal, Optional, Union
 
 from eth_abi.abi import encode
 from eth_abi.packed import encode_packed
@@ -24,6 +24,9 @@ from web3.types import FilterParams
 from ape.types.signatures import MessageSignature, SignableMessage, TransactionSignature
 from ape.types.trace import CallTreeNode, GasReport, TraceFrame
 from ape.utils.misc import to_int
+
+if TYPE_CHECKING:
+    from ape.contracts import ContractEvent
 
 BlockID = Union[int, HexStr, HexBytes, Literal["earliest", "latest", "pending"]]
 """
@@ -264,6 +267,23 @@ class ContractLog(BaseModel):
         return self.event_arguments.get(item, default)
 
 
+class ContractLogContainer(list):
+    """
+    Container for ContractLogs which is adding capability of filtering logs
+    """
+
+    def filter(self, event: "ContractEvent", **kwargs) -> List[ContractLog]:
+        found_events = []
+        for log in self:
+            if log.event_name == event.name:
+                match = all(
+                    v == log.event_arguments.get(k) and v is not None for k, v in kwargs.items()
+                )
+                if match:
+                    found_events.append(log)
+        return found_events
+
+
 __all__ = [
     "ABI",
     "AddressType",
@@ -273,6 +293,7 @@ __all__ = [
     "Checksum",
     "Compiler",
     "ContractLog",
+    "ContractLogContainer",
     "ContractType",
     "GasReport",
     "MessageSignature",
