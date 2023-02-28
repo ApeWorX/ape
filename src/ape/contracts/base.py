@@ -1023,7 +1023,6 @@ class ContractContainer(ContractTypeWrapper):
 
         Args:
             address (str): The address to initialize a contract.
-            
               **NOTE**: Things will not work as expected if the contract is not actually
               deployed to this address or if the contract at the given address has
               a different ABI than :attr:`~ape.contracts.ContractContainer.contract_type`.

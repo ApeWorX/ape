@@ -30,7 +30,7 @@ dev = accounts.load("dev")
 contract = dev.deploy(project.MyContract)
 ```
 
-If your contract requires constructor arguments then you will need to pass them to the contract in the [kwargs](./transactions.html) when deploying like this:
+If your contract requires constructor arguments then you will need to pass them to the contract in the [args](./transactions.html) when deploying like this:
 
 ```python
 from ape import accounts, project

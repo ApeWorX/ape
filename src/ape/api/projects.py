@@ -214,8 +214,8 @@ class DependencyAPI(BaseInterfaceModel):
     """
     The name of the dependency's ``contracts/`` directory.
     This is where ``ape`` will look for source files when compiling
-    the manifest for this dependency. 
-    
+    the manifest for this dependency.
+
     **NOTE**: This must be the name of a directory in the project.
     """
 
@@ -329,8 +329,8 @@ class DependencyAPI(BaseInterfaceModel):
     def compile(self) -> PackageManifest:
         """
         Compile the contract types in this dependency into
-        a package manifest. 
-        
+        a package manifest.
+
         **NOTE**: By default, dependency's compile lazily.
         """
 

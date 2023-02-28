@@ -107,7 +107,7 @@ class CacheQueryProvider(QueryAPI):
     def database_connection(self):
         """
         Returns a connection for the currently active network.
-        
+
         **NOTE**: Creates a database if it doesn't exist.
 
         Raises:
