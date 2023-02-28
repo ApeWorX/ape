@@ -340,12 +340,13 @@ class Ethereum(EcosystemAPI):
 
     def _python_type_for_abi_type(self, abi_type: ABIType) -> Any[Type[Any]]:
         # NOTE: An array can be an array of tuples, so we start with an array check
-        if abi_type.type.endswith("]"):
+        if str(abi_type.type).endswith("]"):
             # remove one layer of the potential onion of array
             new_type = "[".join(str(abi_type.type).split("[")[:-1])
             # create a new type with the inner type of array
             new_abi_type = ABIType(type=new_type, **abi_type.dict(exclude={"type"}))
-            # NOTE: type for static and dynamic array is a single item list containing the type of the array
+            # NOTE: type for static and dynamic array is a single item list
+            # containing the type of the array
             return [self._python_type_for_abi_type(new_abi_type)]
 
         if abi_type.components is not None:
@@ -376,7 +377,9 @@ class Ethereum(EcosystemAPI):
 
         input_types = [i.canonical_type for i in abi.inputs]
 
-        python_types: Tuple[Type] = tuple(self._python_type_for_abi_type(i) for i in abi.inputs)
+        python_types: Tuple[Type, ...] = tuple(
+            self._python_type_for_abi_type(i) for i in abi.inputs
+        )
         converted_args = self.conversion_manager.convert(arguments, python_types)
         encoded_calldata = encode(input_types, converted_args)
         return HexBytes(encoded_calldata)

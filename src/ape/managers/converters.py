@@ -280,7 +280,7 @@ class ConversionManager(BaseManager):
         else:
             return isinstance(value, type)
 
-    def convert(self, value: Any, type: Union[Type, Tuple[Type], List[Type]]) -> Any:
+    def convert(self, value: Any, type: Union[Type, Tuple[Type, ...], List[Type]]) -> Any:
         """
         Convert the given value to the given type. This method accesses
         all :class:`~ape.api.convert.ConverterAPI` instances known to
@@ -304,8 +304,10 @@ class ConversionManager(BaseManager):
             return [self.convert(v, t) for v, t in zip(value, type)]
 
         elif isinstance(value, list) and isinstance(type, list) and len(type) == 1:
-            # We expected to convert an array type(dynamic or static), so convert each item in the list.
-            # NOTE: type for static and dynamic array is a single item list containing the type of the array.
+            # We expected to convert an array type(dynamic or static),
+            # so convert each item in the list.
+            # NOTE: type for static and dynamic array is a single item
+            #  list containing the type of the array.
             return [self.convert(v, type[0]) for v in value]
 
         elif isinstance(type, (list, tuple)):
