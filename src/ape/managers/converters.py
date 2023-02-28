@@ -27,7 +27,7 @@ class HexConverter(ConverterAPI):
     """
     A converter that converts ``str`` to ``HexBytes``.
     """
-    
+
     def is_convertible(self, value: Any) -> bool:
         return isinstance(value, str) and is_hex(value)
 
@@ -298,11 +298,11 @@ class ConversionManager(BaseManager):
             any: The same given value but with the new given type.
         """
 
-        if isinstance(value, (list, tuple)) and isinstance(type,tuple):
+        if isinstance(value, (list, tuple)) and isinstance(type, tuple):
             # We expected to convert a tuple type, so convert each item in the tuple.
-            # NOTE: We allow values to be a list, just incase it is a list
+            # NOTE: We allow values to be a list, just in case it is a list
             return [self.convert(v, t) for v, t in zip(value, type)]
-        
+
         elif isinstance(value, list) and isinstance(type, list) and len(type) == 1:
             # We expected to convert an array type(dynamic or static), so convert each item in the list.
             # NOTE: type for static and dynamic array is a single item list containing the type of the array.
