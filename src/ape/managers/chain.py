@@ -565,6 +565,9 @@ class ContractCache(BaseManager):
 
     @property
     def _is_live_network(self) -> bool:
+        if not self.network_manager.active_provider:
+            return False
+
         return self._network.name != LOCAL_NETWORK_NAME and not self._network.name.endswith("-fork")
 
     @property
