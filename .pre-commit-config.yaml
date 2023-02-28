@@ -24,7 +24,14 @@ repos:
     rev: v0.991
     hooks:
     -   id: mypy
-        additional_dependencies: [types-PyYAML, types-requests, types-pkg-resources, types-setuptools, pydantic]
+        additional_dependencies: [
+                types-PyYAML,
+                types-requests,
+                types-setuptools,
+                pydantic,
+                pandas-stubs,
+                types-SQLAlchemy
+        ]
 
 -   repo: https://github.com/executablebooks/mdformat
     rev: 0.7.14

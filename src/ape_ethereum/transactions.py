@@ -16,7 +16,7 @@ from pydantic import BaseModel, Field, root_validator, validator
 from ape.api import ReceiptAPI, TransactionAPI
 from ape.contracts import ContractEvent
 from ape.exceptions import OutOfGasError, SignatureError, TransactionError
-from ape.types import CallTreeNode, ContractLog
+from ape.types import CallTreeNode, ContractLog, ContractLogContainer
 from ape.utils import cached_property
 
 
@@ -235,13 +235,15 @@ class Receipt(ReceiptAPI):
         abi: Optional[
             Union[List[Union[EventABI, "ContractEvent"]], Union[EventABI, "ContractEvent"]]
         ] = None,
-    ) -> List[ContractLog]:
+    ) -> ContractLogContainer:
         if abi is not None:
             if not isinstance(abi, (list, tuple)):
                 abi = [abi]
 
             event_abis: List[EventABI] = [a.abi if not isinstance(a, EventABI) else a for a in abi]
-            return list(self.provider.network.ecosystem.decode_logs(self.logs, *event_abis))
+            return ContractLogContainer(
+                self.provider.network.ecosystem.decode_logs(self.logs, *event_abis)
+            )
 
         else:
             # If ABI is not provided, decode all events
@@ -253,7 +255,7 @@ class Receipt(ReceiptAPI):
                 for address, contract in contract_types.items()
             }
 
-            decoded_logs: List[ContractLog] = []
+            decoded_logs: ContractLogContainer = ContractLogContainer()
             for log in self.logs:
                 contract_address = log["address"]
                 if contract_address not in selectors:
@@ -268,7 +270,7 @@ class Receipt(ReceiptAPI):
                         decoded_logs.append(library_log)
                 else:
                     decoded_logs.extend(
-                        list(self.provider.network.ecosystem.decode_logs([log], event_abi))
+                        self.provider.network.ecosystem.decode_logs([log], event_abi)
                     )
 
             return decoded_logs
