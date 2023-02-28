@@ -4,9 +4,7 @@ ape-etherscan
 ape-foundry
 ape-hardhat
 ape-infura
-ape-ledger
 ape-solidity
 ape-template
 ape-tokens
-ape-trezor
 ape-vyper
