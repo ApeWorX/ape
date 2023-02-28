@@ -23,7 +23,13 @@ from pydantic import Field, validator
 from ape.api import BlockAPI, EcosystemAPI, PluginConfig, ReceiptAPI, TransactionAPI
 from ape.api.networks import LOCAL_NETWORK_NAME, ProxyInfoAPI
 from ape.contracts.base import ContractCall
-from ape.exceptions import ApeException, APINotImplementedError, ContractError, DecodingError
+from ape.exceptions import (
+    ApeException,
+    APINotImplementedError,
+    ContractError,
+    ConversionError,
+    DecodingError,
+)
 from ape.logging import logger
 from ape.types import (
     AddressType,
@@ -367,7 +373,7 @@ class Ethereum(EcosystemAPI):
         elif "int" in abi_type.type:
             return int
 
-        ValueError
+        raise ConversionError(f"Unable to convert '{abi_type}'.")
 
     def encode_calldata(self, abi: Union[ConstructorABI, MethodABI], *args) -> HexBytes:
         if not abi.inputs:
