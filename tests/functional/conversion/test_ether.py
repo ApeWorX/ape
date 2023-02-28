@@ -27,9 +27,9 @@ def test_ether_conversions(value, unit):
 def test_bad_type():
     with pytest.raises(ConversionError) as err:
         convert(value="something", type=float)
-
+    breakpoint()
     expected = (
-        "Type '<class 'float'>' must be one of [ChecksumAddress, bytes, int, Decimal, list, tuple]."
+        "Type '<class 'float'>' must be one of [ChecksumAddress, bytes, int, Decimal, list, tuple, bool, str]]."
     )
     assert str(err.value) == expected
 
