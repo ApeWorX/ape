@@ -589,6 +589,7 @@ class ContractEvent(ManagerAccessMixin):
     ) -> Iterator[ContractLog]:
         """
         Poll new blocks. Optionally set a start block to include historical blocks.
+
         **NOTE**: This is a daemon method; it does not terminate unless an exception occurrs.
 
         Usage example::
@@ -1022,6 +1023,7 @@ class ContractContainer(ContractTypeWrapper):
 
         Args:
             address (str): The address to initialize a contract.
+            
               **NOTE**: Things will not work as expected if the contract is not actually
               deployed to this address or if the contract at the given address has
               a different ABI than :attr:`~ape.contracts.ContractContainer.contract_type`.

@@ -63,7 +63,9 @@ class GithubDependency(DependencyAPI):
 
     branch: Optional[str] = None
     """
-    The branch to use. **NOTE**: Will be ignored if given a version.
+    The branch to use. 
+    
+    **NOTE**: Will be ignored if given a version.
     """
 
     @property

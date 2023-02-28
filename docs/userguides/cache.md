@@ -7,7 +7,7 @@ Use the cache plugin to store provider data in a sqlite database.\*\*
 ape cache init --network <ecosystem-name>:<network-name>
 ```
 
-If you want to set up your network connection for caching use [this guide](./network.html)
+If you want to set up your network connection for caching use [this guide](./networks.html)
 
 ```bash
 ape cache init --network ethereum:mainnet

@@ -268,7 +268,9 @@ class AccountManager(BaseManager):
         Get an account by index. For example, when you do the CLI command
         ``ape accounts list --all``, you will see a list of enumerated accounts
         by their indices. Use this method as a quicker, ad-hoc way to get an
-        account from that index. **NOTE**: It is generally preferred to use
+        account from that index. 
+        
+        **NOTE**: It is generally preferred to use
         :meth:`~ape.managers.accounts.AccountManager.load` or
         :meth:`~ape.managers.accounts.AccountManager.__getitem_str`.
 
@@ -290,7 +292,9 @@ class AccountManager(BaseManager):
         Get list of accounts by slice. For example, when you do the CLI command
         ``ape accounts list --all``, you will see a list of enumerated accounts
         by their indices. Use this method as a quicker, ad-hoc way to get an
-        accounts from a slice. **NOTE**: It is generally preferred to use
+        accounts from a slice. 
+        
+        **NOTE**: It is generally preferred to use
         :meth:`~ape.managers.accounts.AccountManager.load` or
         :meth:`~ape.managers.accounts.AccountManager.__getitem_str`.
 

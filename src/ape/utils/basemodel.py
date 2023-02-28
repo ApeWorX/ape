@@ -21,7 +21,8 @@ if TYPE_CHECKING:
 
 class injected_before_use(property):
     """
-    Injected properties are injected class variables that must be set before use
+    Injected properties are injected class variables that must be set before use.
+
     **NOTE**: do not appear in a Pydantic model's set of properties.
     """
 
@@ -98,7 +99,7 @@ class BaseInterfaceModel(BaseInterface, BaseModel):
 
     def __dir__(self) -> List[str]:
         """
-        NOTE: Should integrate options in IPython tab-completion.
+        **NOTE**: Should integrate options in IPython tab-completion.
         https://ipython.readthedocs.io/en/stable/config/integrating.html
         """
         # Filter out protected/private members
