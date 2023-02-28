@@ -593,6 +593,9 @@ class ContractCache(BaseManager):
 
     @property
     def _deployments(self) -> Dict:
+        if not self.network_manager.active_provider:
+            return {}
+
         deployments = self._full_deployments
         return deployments.get(self._ecosystem_name, {}).get(self._data_network_name, {})
 
