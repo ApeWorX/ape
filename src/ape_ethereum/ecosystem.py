@@ -367,7 +367,7 @@ class Ethereum(EcosystemAPI):
         elif "int" in abi_type.type:
             return int
 
-        raise
+        ValueError
 
     def encode_calldata(self, abi: Union[ConstructorABI, MethodABI], *args) -> HexBytes:
         if not abi.inputs:
