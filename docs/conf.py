@@ -29,6 +29,7 @@ extensions = [
     "sphinx.ext.autosummary",
     "sphinx.ext.napoleon",
     "sphinx_rtd_theme",
+    "sphinx_plausible",
 ]
 autosummary_generate = True
 
@@ -48,6 +49,8 @@ source_suffix = [".rst", ".md"]
 # The master toctree document.
 master_doc = "index"
 
+# Configure Pluasible
+plausible_domain = "docs.apeworx.io"
 
 # -- Options for HTML output -------------------------------------------------
 
