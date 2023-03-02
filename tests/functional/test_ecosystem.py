@@ -2,7 +2,8 @@ from typing import Any, Dict
 
 import pytest
 from eth_typing import HexAddress, HexStr
-from hexbytes import HexBytes
+from ethpm_types import HexBytes
+from ethpm_types.abi import ABIType, MethodABI
 
 from ape.api.networks import LOCAL_NETWORK_NAME
 from ape.types import AddressType
@@ -50,6 +51,38 @@ def test_encode_address(ethereum):
     address = AddressType(HexAddress(HexStr(raw_address)))
     actual = ethereum.encode_address(address)
     assert actual == raw_address
+
+
+def test_encode_calldata(ethereum):
+    abi = MethodABI(
+        type="function",
+        name="callMe",
+        inputs=[
+            ABIType(name="a", type="bytes4"),
+            ABIType(name="b", type="address"),
+            ABIType(name="c", type="uint256"),
+            ABIType(name="d", type="bytes4[]"),
+        ],
+    )
+    address = "0xd8da6bf26964af9d7eed9e03e53415d37aa96045"
+    byte_array = ["0x456", "0x678"]
+    values = ("0x123", address, HexBytes(55), byte_array)
+
+    actual = ethereum.encode_calldata(abi, *values)
+    expected = HexBytes(
+        # 0x123
+        "0123000000000000000000000000000000000000000000000000000000000000"
+        # address
+        "000000000000000000000000d8da6bf26964af9d7eed9e03e53415d37aa96045"
+        # HexBytes(55)
+        "0000000000000000000000000000000000000000000000000000000000000037"
+        # byte_array
+        "0000000000000000000000000000000000000000000000000000000000000080"
+        "0000000000000000000000000000000000000000000000000000000000000002"
+        "0456000000000000000000000000000000000000000000000000000000000000"
+        "0678000000000000000000000000000000000000000000000000000000000000"
+    )
+    assert actual == expected
 
 
 def test_block_handles_snake_case_parent_hash(eth_tester_provider, sender, receiver):

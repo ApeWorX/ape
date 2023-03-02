@@ -246,6 +246,8 @@ class ConversionManager(BaseManager):
             Decimal: [],
             list: [ListTupleConverter()],
             tuple: [ListTupleConverter()],
+            bool: [],
+            str: [],
         }
 
         for plugin_name, (conversion_type, converter_class) in self.plugin_manager.converters:
@@ -278,7 +280,7 @@ class ConversionManager(BaseManager):
         else:
             return isinstance(value, type)
 
-    def convert(self, value: Any, type: Type) -> Any:
+    def convert(self, value: Any, type: Union[Type, Tuple, List]) -> Any:
         """
         Convert the given value to the given type. This method accesses
         all :class:`~ape.api.convert.ConverterAPI` instances known to
@@ -296,7 +298,24 @@ class ConversionManager(BaseManager):
             any: The same given value but with the new given type.
         """
 
-        if type not in self._converters:
+        if isinstance(value, (list, tuple)) and isinstance(type, tuple):
+            # We expected to convert a tuple type, so convert each item in the tuple.
+            # NOTE: We allow values to be a list, just in case it is a list
+            return [self.convert(v, t) for v, t in zip(value, type)]
+
+        elif isinstance(value, list) and isinstance(type, list) and len(type) == 1:
+            # We expected to convert an array type(dynamic or static),
+            # so convert each item in the list.
+            # NOTE: type for static and dynamic array is a single item
+            #  list containing the type of the array.
+            return [self.convert(v, type[0]) for v in value]
+
+        elif isinstance(type, (list, tuple)):
+            raise ConversionError(
+                f"Value '{value}' must be a list or tuple when given multiple types."
+            )
+
+        elif type not in self._converters:
             options = ", ".join([t.__name__ for t in self._converters])
             raise ConversionError(f"Type '{type}' must be one of [{options}].")
 
