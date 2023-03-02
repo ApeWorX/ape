@@ -40,6 +40,7 @@ extras_require = {
         "Sphinx>=6.1.3,<7.0",  # Documentation generator
         "sphinx_rtd_theme>=1.2.0rc3,<2",  # Readthedocs.org theme
         "sphinxcontrib-napoleon>=0.7",  # Allow Google-style documentation
+        "sphinx-plausible>=0.1.2,<0.2.0",
     ],
     "release": [  # `release` GitHub Action job uses this
         "setuptools",  # Installation tool
