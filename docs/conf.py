@@ -99,7 +99,7 @@ def get_versions() -> List[str]:
     versions = [
         d.name
         for d in build_dir.iterdir()
-        if d.is_dir and pattern.match(d.stem) and "beta" not in d.name and "alpha" not in d.name
+        if d.is_dir() and pattern.match(d.stem) and "beta" not in d.name and "alpha" not in d.name
     ]
 
     return versions
