@@ -20,7 +20,7 @@ sys.path.insert(0, os.path.abspath(".."))
 # -- Project information -----------------------------------------------------
 
 project = "ape"
-copyright = "2021, ApeWorX LTD"
+copyright = "2023, ApeWorX LTD"
 author = "ApeWorX Team"
 extensions = [
     "myst_parser",
