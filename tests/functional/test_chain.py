@@ -386,6 +386,13 @@ def test_deployments_mapping_cache_location(chain):
     assert split_mapping_location[-2] == "ethereum"
 
 
+def test_deployments_when_offline(chain, networks_disconnected, vyper_contract_container):
+    """
+    Ensure you don't get `ProviderNotConnectedError` here.
+    """
+    assert chain.contracts.get_deployments(vyper_contract_container) == []
+
+
 def test_get_deployments_local(chain, owner, contract_0, contract_1):
     # Arrange
     chain.contracts._local_deployments_mapping = {}
