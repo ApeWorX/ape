@@ -20,7 +20,7 @@ sys.path.insert(0, os.path.abspath(".."))
 # -- Project information -----------------------------------------------------
 
 project = "ape"
-copyright = "2021, ApeWorX LTD"
+copyright = "2023, ApeWorX LTD"
 author = "ApeWorX Team"
 extensions = [
     "myst_parser",
@@ -29,6 +29,7 @@ extensions = [
     "sphinx.ext.autosummary",
     "sphinx.ext.napoleon",
     "sphinx_rtd_theme",
+    "sphinx_plausible",
 ]
 autosummary_generate = True
 
@@ -48,6 +49,8 @@ source_suffix = [".rst", ".md"]
 # The master toctree document.
 master_doc = "index"
 
+# Configure Pluasible
+plausible_domain = "docs.apeworx.io"
 
 # -- Options for HTML output -------------------------------------------------
 
@@ -96,7 +99,7 @@ def get_versions() -> List[str]:
     versions = [
         d.name
         for d in build_dir.iterdir()
-        if d.is_dir and pattern.match(d.stem) and "beta" not in d.name and "alpha" not in d.name
+        if d.is_dir() and pattern.match(d.stem) and "beta" not in d.name and "alpha" not in d.name
     ]
 
     return versions
