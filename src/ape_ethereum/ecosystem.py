@@ -63,6 +63,7 @@ NETWORKS = {
     # chain_id, network_id
     "mainnet": (1, 1),
     "goerli": (5, 5),
+    "sepolia": (11155111, 11155111),
 }
 
 

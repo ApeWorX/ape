@@ -160,6 +160,7 @@ class GethNetworkConfig(PluginConfig):
     # Make sure you are running the right networks when you try for these
     mainnet: dict = DEFAULT_SETTINGS.copy()
     goerli: dict = DEFAULT_SETTINGS.copy()
+    sepolia: dict = DEFAULT_SETTINGS.copy()
     # Make sure to run via `geth --dev` (or similar)
     local: dict = DEFAULT_SETTINGS.copy()
 
