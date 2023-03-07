@@ -61,7 +61,6 @@ def test_get_network_choices_filter_ecosystem(networks):
         "::geth",
         "::test",
         ":goerli",
-        ":sepolia",
         ":goerli:geth",
         ":sepolia",
         ":sepolia:geth",
