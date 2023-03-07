@@ -63,6 +63,7 @@ NETWORKS = {
     # chain_id, network_id
     "mainnet": (1, 1),
     "goerli": (5, 5),
+    "sepolia": (11155111, 11155111),
 }
 
 
@@ -149,6 +150,8 @@ class EthereumConfig(PluginConfig):
     mainnet_fork: NetworkConfig = _create_local_config()
     goerli: NetworkConfig = _create_config(block_time=15)
     goerli_fork: NetworkConfig = _create_local_config()
+    sepolia: NetworkConfig = _create_config(block_time=15)
+    sepolia_fork: NetworkConfig = _create_local_config()
     local: NetworkConfig = _create_local_config(default_provider="test")
     default_network: str = LOCAL_NETWORK_NAME
 

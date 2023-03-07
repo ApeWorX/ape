@@ -9,6 +9,8 @@ ethereum  (default)
 │   └── geth  (default)
 ├── goerli
 │   └── geth  (default)
+├── sepolia
+│   └── geth  (default)
 └── local  (default)
     ├── geth
     └── test  (default)
@@ -29,6 +31,12 @@ ecosystems:
     - name: geth
       isDefault: true
   - name: goerli-fork
+    providers: []
+  - name: sepolia
+    providers:
+    - name: geth
+      isDefault: true
+  - name: sepolia-fork
     providers: []
   - name: local
     isDefault: true
