@@ -31,13 +31,12 @@ LABEL maintainer="ApeWorX" \
 RUN useradd --create-home --shell /bin/bash harambe
 
 COPY --from=builder /wheels /wheels
-WORKDIR /home/harambe/project
-
 COPY ./recommended-plugins.txt ./recommended-plugins.txt
 
 RUN pip install --upgrade pip \
     pip install --no-cache-dir --find-links=/wheels -r ./recommended-plugins.txt \
     && ape --version
 
+WORKDIR /home/harambe/project
 USER harambe
 ENTRYPOINT ["ape"]
