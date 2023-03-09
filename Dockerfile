@@ -5,9 +5,17 @@
 ARG PYTHON_VERSION="3.9"
 ARG PLUGINS_FILE="./recommended-plugins.txt"
 
-FROM python:${PYTHON_VERSION}
+FROM python:${PYTHON_VERSION} as builder
 
-RUN apt-get update && apt-get upgrade --yes && apt-get install git
+WORKDIR /wheels
+
+COPY ./recommended-plugins.txt ./recommended-plugins.txt
+
+RUN pip install --upgrade pip \
+    && pip install wheel \
+    && pip wheel -r ./recommended-plugins.txt --wheel-dir=/wheels
+
+FROM python:${PYTHON_VERSION}-slim
 
 # See http://label-schema.org for metadata schema
 # TODO: Add `build-date` and `version`
@@ -21,16 +29,14 @@ LABEL maintainer="ApeWorX" \
       org.label-schema.docker.cmd="docker run --volume $HOME/.ape:/home/harambe/.ape --volume $HOME/.vvm:/home/harambe/.vvm --volume $HOME/.solcx:/home/harambe/.solcx --volume $PWD:/home/harambe/project --workdir /home/harambe/project apeworx/ape compile"
 
 RUN useradd --create-home --shell /bin/bash harambe
-WORKDIR /home/harambe
-COPY . .
+
+COPY --from=builder /wheels /wheels
+WORKDIR /home/harambe/project
+
+COPY ./recommended-plugins.txt ./recommended-plugins.txt
 
 RUN pip install --upgrade pip \
-    && pip install --no-cache-dir . \
-    && pip install -r recommended-plugins.txt \
-# Fix RLP installation issue
-    && pip uninstall rlp --yes \
-    && pip install rlp==3.0.0 \
-# Validate installation
+    pip install --no-cache-dir --find-links=/wheels -r ./recommended-plugins.txt \
     && ape --version
 
 USER harambe
