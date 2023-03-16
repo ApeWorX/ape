@@ -202,6 +202,11 @@ class BaseProject(ProjectAPI):
                     (self.project_manager.local_project._cache_folder / f"{name}.json").write_text(
                         contract_type.json()
                     )
+                    if self._contracts is None:
+                        self._contracts = {}
+
+                    self._contracts[name] = contract_type
+
             return manifest
 
     def _compile(self, project_sources: _ProjectSources) -> Dict[str, ContractType]:
