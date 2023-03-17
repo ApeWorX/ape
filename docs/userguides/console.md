@@ -90,13 +90,15 @@ You can also add an `ape_console_extras.py` file to the global ape data director
 
 ## Magic Commands
 
-The `ape-console` plugin ships with custom [magics](https://ipython.readthedocs.io/en/stable/interactive/magics.html#line-magics).
-
-**NOTE**: When starting an embedded console (from a `-I` in `ape run` or `ape test`), you will have to load the extension manually:
+The `ape-console` plugin ships with custom [magics](https://ipython.readthedocs.io/en/stable/interactive/magics.html#line-magics) that are available when running the `ape console` command or loading the `ape_console.plugin` IPython extension manually.
+When starting an embedded console (from `-I` in `ape run` or `ape test`), you will have to load the extension manually.
+To do this, run the following from _any_ `IPython` environment:
 
 ```shell
 In [1]: %load_ext ape_console.plugin
 ```
+
+Or add the `ape_console.plugin` extension to your `IPython` config.
 
 Otherwise, when launching `ape console`, the magics are automatically available.
 
