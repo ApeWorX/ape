@@ -92,7 +92,7 @@ You can also add an `ape_console_extras.py` file to the global ape data director
 
 The `ape-console` plugin ships with custom [magics](https://ipython.readthedocs.io/en/stable/interactive/magics.html#line-magics).
 
-**WARN**: When starting an embedded console (from a `-I` in `ape run` or `ape test`), you will have to load the extension manually:
+**NOTE**: When starting an embedded console (from a `-I` in `ape run` or `ape test`), you will have to load the extension manually:
 
 ```shell
 In [1]: %load_ext ape_console.plugin
