@@ -90,7 +90,7 @@ You can also add an `ape_console_extras.py` file to the global ape data director
 
 ## Magic Commands
 
-The `ape-console` plugin ships with some custom [magics](https://ipython.readthedocs.io/en/stable/interactive/magics.html#line-magics).
+The `ape-console` plugin ships with custom [magics](https://ipython.readthedocs.io/en/stable/interactive/magics.html#line-magics).
 
 ### %ape
 
@@ -98,8 +98,6 @@ The `%ape` magic invokes the CLI in your `ape-console` session:
 
 ```shell
 In [1]: %ape
-WARNING: Unable to load CLI endpoint for plugin 'ape_starknet'
-        ModuleNotFoundError: No module named 'starknet_py.hash'
 Usage: cli [OPTIONS] COMMAND [ARGS]...
 
 Options:
@@ -128,7 +126,7 @@ Run any CLI command this way without exiting your session.
 
 ### %bal
 
-Get a human-readable account balance on an account, address, or account alias.
+The `%bal` magic outputs a human-readable balance on an account, contract, address, or account alias.
 
 ```shell
 In [1]: account = accounts.load("metamask0")

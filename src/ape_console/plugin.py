@@ -13,7 +13,7 @@ class ApeConsoleMagics(Magics):
     @line_magic
     def ape(self, line: str = ""):
         """
-        Run Ape CLI commands with an ``ape console`` session.
+        Run Ape CLI commands within an ``ape console`` session.
 
         Usage example::
 
