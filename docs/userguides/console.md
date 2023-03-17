@@ -87,3 +87,58 @@ Out[1]: 1
 ### Global Extras
 
 You can also add an `ape_console_extras.py` file to the global ape data directory (`$HOME/.ape/ape_console_extras.py`) and it will execute regardless of what project context you are in.  This may be useful for variables and utility functions you use across all of your projects.
+
+## Magic Commands
+
+The `ape-console` plugin ships with some custom [magics](https://ipython.readthedocs.io/en/stable/interactive/magics.html#line-magics).
+
+### %ape
+
+The `%ape` magic invokes the CLI in your `ape-console` session:
+
+```shell
+In [1]: %ape
+WARNING: Unable to load CLI endpoint for plugin 'ape_starknet'
+        ModuleNotFoundError: No module named 'starknet_py.hash'
+Usage: cli [OPTIONS] COMMAND [ARGS]...
+
+Options:
+  -v, --verbosity LVL  One of ERROR, WARNING, SUCCESS, INFO, or DEBUG
+  --version            Show the version and exit.
+  --config             Show configuration options (using `ape-config.yaml`)
+  -h, --help           Show this message and exit.
+
+Commands:
+  accounts  Manage local accounts
+  cache     Query from caching database
+  compile   Compile select contract source files
+  console   Load the console
+  init      Initalize an ape project
+  ledger    Manage Ledger accounts
+  networks  Manage networks
+  plugins   Manage ape plugins
+  run       Run scripts from the `scripts/` folder
+  template  Create a project from a Cookiecutter project template (TEMPLATE).
+  test      Launches pytest and runs the tests for a project
+
+Out[1]: <Result okay>
+```
+
+Run any CLI command this way without exiting your session.
+
+### %bal
+
+Get a human-readable account balance on an account, address, or account alias.
+
+```shell
+In [1]: account = accounts.load("metamask0")
+
+In [2]: %bal account
+Out[2]: '0.00040634 ETH'
+
+In [3]: %bal metamask0
+Out[3]: '0.00040634 ETH'
+
+In [4]: %bal 0xE3747e6341E0d3430e6Ea9e2346cdDCc2F8a4b5b
+Out[4]: '0.00040634 ETH'
+```

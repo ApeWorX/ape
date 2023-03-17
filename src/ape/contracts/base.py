@@ -939,7 +939,6 @@ class ContractInstance(BaseAddress, ContractTypeWrapper):
             Any: The return value from the contract call, or a transaction receipt.
         """
 
-        handler: Union[ContractEvent, ContractCallHandler, ContractTransactionHandler]
         if attr_name in set(super(BaseAddress, self).__dir__()):
             return super(BaseAddress, self).__getattribute__(attr_name)
 

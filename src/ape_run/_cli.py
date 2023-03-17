@@ -210,7 +210,7 @@ class ScriptCommand(click.MultiCommand):
             if frame:
                 del frame
 
-        return console(project=self._project, extra_locals=extra_locals)
+        return console(project=self._project, extra_locals=extra_locals, embed=True)
 
 
 @click.command(
