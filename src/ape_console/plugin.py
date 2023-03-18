@@ -22,6 +22,11 @@ class ApeConsoleMagics(Magics):
 
         """
         runner = CliRunner()
+        if "console" in line.split(" "):
+            # Prevent running console within console because usually bad
+            # stuff happens when you try to do this.
+            raise ValueError("Unable to run `console` within a console.")
+
         result = runner.invoke(cli, line)
         click.echo(result.output)
         return result
