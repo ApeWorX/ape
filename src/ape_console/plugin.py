@@ -1,3 +1,5 @@
+import shlex
+
 import click
 from click.testing import CliRunner
 from eth_utils import is_hex
@@ -31,7 +33,7 @@ class ApeConsoleMagics(Magics):
 
         """
         runner = CliRunner()
-        if "console" in line.split(" "):
+        if "console" in [x.strip("\"' \t\n") for x in shlex.split(line)]:
             # Prevent running console within console because usually bad
             # stuff happens when you try to do this.
             raise ValueError("Unable to run `console` within a console.")
