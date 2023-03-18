@@ -7,10 +7,19 @@ from IPython.core.magic import Magics, line_magic, magics_class  # type: ignore
 import ape
 from ape._cli import cli
 from ape.types import AddressType
+from ape.utils import cached_property
 
 
 @magics_class
 class ApeConsoleMagics(Magics):
+    @cached_property
+    def ipython(self):
+        ipython = get_ipython()
+        if not ipython:
+            raise ValueError("Must be called from an IPython session.")
+
+        return ipython
+
     @line_magic
     def ape(self, line: str = ""):
         """
@@ -42,13 +51,12 @@ class ApeConsoleMagics(Magics):
             %bal account
         """
 
-        ipython = get_ipython()
         if not line:
             raise ValueError("Missing argument.")
 
         provider = ape.networks.provider
         ecosystem = provider.network.ecosystem
-        result = eval(line, ipython.user_global_ns, ipython.user_ns)
+        result = eval(line, self.ipython.user_global_ns, self.ipython.user_ns)
         if isinstance(result, str) and not is_hex(result):
             # Check if is an account alias.
             address = ape.accounts.load(result).address
