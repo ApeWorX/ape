@@ -129,13 +129,13 @@ def console(project=None, verbose=None, extra_locals=None, embed=False):
     if environ.get("APE_TESTING"):
         _config.HistoryManager.enabled = False
 
-    shared_kwargs = {
+    ipython_kwargs = {
         "colors": "Neutral",
         "banner1": banner,
         "user_ns": namespace,
         "config": _config,
     }
     if embed:
-        IPython.embed(**shared_kwargs)
+        IPython.embed(**ipython_kwargs)
     else:
-        IPython.start_ipython(**shared_kwargs, argv=["--ext", "ape_console.plugin"])
+        IPython.start_ipython(**ipython_kwargs, argv=["--ext", "ape_console.plugin"])
