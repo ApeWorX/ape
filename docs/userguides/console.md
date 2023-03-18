@@ -88,6 +88,17 @@ Out[1]: 1
 
 You can also add an `ape_console_extras.py` file to the global ape data directory (`$HOME/.ape/ape_console_extras.py`) and it will execute regardless of what project context you are in.  This may be useful for variables and utility functions you use across all of your projects.
 
+## Configure
+
+To automatically use other IPython extensions, add them to your `ape-config.yaml` file:
+
+```yaml
+console:
+  plugins:
+    # A plugin that lets you modify Python modules without having close/reopen your console.
+    - autoreload
+```
+
 ## Magic Commands
 
 The `ape-console` plugin ships with custom [magics](https://ipython.readthedocs.io/en/stable/interactive/magics.html#line-magics) that are available when running the `ape console` command or loading the `ape_console.plugin` IPython extension manually.

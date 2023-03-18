@@ -6,7 +6,7 @@ from importlib.machinery import SourceFileLoader
 from importlib.util import module_from_spec, spec_from_loader
 from os import environ, getcwd
 from types import ModuleType
-from typing import Any, Dict
+from typing import Any, Dict, cast
 
 import click
 import IPython  # type: ignore
@@ -17,6 +17,7 @@ from ape import project as default_project
 from ape.cli import NetworkBoundCommand, ape_cli_context, network_option
 from ape.utils.misc import _python_version
 from ape.version import version as ape_version
+from ape_console.config import ConsoleConfig
 
 CONSOLE_EXTRAS_FILENAME = "ape_console_extras.py"
 
@@ -138,4 +139,9 @@ def console(project=None, verbose=None, extra_locals=None, embed=False):
     if embed:
         IPython.embed(**ipython_kwargs)
     else:
-        IPython.start_ipython(**ipython_kwargs, argv=["--ext", "ape_console.plugin"])
+        console_config = cast(ConsoleConfig, ape.config.get_config("console"))
+        arguments = ["--ext", "ape_console.plugin"]
+        if console_config.plugins:
+            arguments.extend(["--InteractiveShellApp.extensions", *console_config.plugins])
+
+        IPython.start_ipython(**ipython_kwargs, argv=arguments)
