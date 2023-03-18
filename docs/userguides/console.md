@@ -122,11 +122,9 @@ Commands:
   compile   Compile select contract source files
   console   Load the console
   init      Initalize an ape project
-  ledger    Manage Ledger accounts
   networks  Manage networks
   plugins   Manage ape plugins
   run       Run scripts from the `scripts/` folder
-  template  Create a project from a Cookiecutter project template (TEMPLATE).
   test      Launches pytest and runs the tests for a project
 
 Out[1]: <Result okay>
