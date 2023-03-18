@@ -1,11 +1,12 @@
 import click
 from click.testing import CliRunner
-from eth_utils import to_hex
+from eth_utils import is_hex
 from IPython import get_ipython  # type: ignore
 from IPython.core.magic import Magics, line_magic, magics_class  # type: ignore
 
 import ape
 from ape._cli import cli
+from ape.types import AddressType
 
 
 @magics_class
@@ -43,18 +44,11 @@ class ApeConsoleMagics(Magics):
         provider = ape.networks.provider
         ecosystem = provider.network.ecosystem
         result = eval(line, ipython.user_global_ns, ipython.user_ns)
-        if hasattr(result, "address"):
-            address = result.address
-        elif isinstance(result, str) and result.startswith("0x"):
-            address = result
-        elif isinstance(result, str) and result.isnumeric() or isinstance(result, int):
-            # Happens when excluding quotes from hex str.
-            hex_result = to_hex(int(result))
-            address = ecosystem.decode_address(hex_result)
-        elif isinstance(result, str):
+        if isinstance(result, str) and not is_hex(result):
+            # Check if is an account alias.
             address = ape.accounts.load(result).address
         else:
-            raise ValueError(f"Unable to get account from '{result}'.")
+            address = ape.convert(result, AddressType)
 
         decimals = ecosystem.fee_token_decimals
         symbol = ecosystem.fee_token_symbol
