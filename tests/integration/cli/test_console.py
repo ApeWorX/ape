@@ -169,3 +169,31 @@ def test_console_import_local_path_in_extras_file(project, ape_cli, runner):
     )
     assert result.exit_code == 0, result.output
     assert no_console_error(result), result.output
+
+
+@skip_projects_except("only-dependencies")
+def test_console_ape_magic(ape_cli, runner):
+    result = runner.invoke(
+        ape_cli,
+        ["console"],
+        input="%ape --help\nexit\n",
+        catch_exceptions=False,
+    )
+    # Only asserts part of `--help` output is present.
+    expected_part = "-verbosity LVL  One of ERROR, WARNING, SUCCESS, INFO, or DEBUG"
+    assert expected_part in result.output
+
+
+@skip_projects_except("only-dependencies")
+def test_console_bal_magic(ape_cli, runner, keyfile_account):
+    cases = ["%bal acct", "%bal acct.alias", "%bal acct.address", "%bal int(acct.address, 16)"]
+    cmd_ls = [f"acct = accounts.load('{keyfile_account.alias}')", *cases, "exit"]
+    cmd_str = "\n".join(cmd_ls)
+    result = runner.invoke(
+        ape_cli,
+        ["console"],
+        input=f"{cmd_str}\n",
+        catch_exceptions=False,
+    )
+    assert " ETH" in result.output
+    assert result.output.count(" ETH") == len(cases)

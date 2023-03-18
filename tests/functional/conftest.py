@@ -1,10 +1,8 @@
-import json
 import threading
 import time
-from contextlib import contextmanager
 from distutils.dir_util import copy_tree
 from pathlib import Path
-from typing import Dict, Optional
+from typing import Optional
 
 import pytest
 from ethpm_types import ContractType
@@ -27,7 +25,6 @@ def _get_raw_contract(name: str) -> str:
     return (CONTRACTS_FOLDER / f"{name}.json").read_text()
 
 
-ALIAS = "__FUNCTIONAL_TESTS_ALIAS__"
 ALIAS_2 = "__FUNCTIONAL_TESTS_ALIAS_2__"
 RAW_SOLIDITY_CONTRACT_TYPE = _get_raw_contract("solidity_contract")
 RAW_VYPER_CONTRACT_TYPE = _get_raw_contract("vyper_contract")
@@ -70,11 +67,6 @@ def mock_transaction(mocker):
     return mocker.MagicMock(spec=TransactionAPI)
 
 
-@pytest.fixture(scope="session")
-def test_accounts(accounts):
-    return accounts.test_accounts
-
-
 @pytest.fixture
 def project_path():
     return PROJECT_PATH
@@ -83,11 +75,6 @@ def project_path():
 @pytest.fixture
 def contracts_folder():
     return CONTRACTS_FOLDER
-
-
-@pytest.fixture(scope="session")
-def sender(test_accounts):
-    return test_accounts[0]
 
 
 @pytest.fixture(scope="session")
@@ -105,46 +92,10 @@ def address():
     return TEST_ADDRESS
 
 
-@contextmanager
-def _temp_keyfile_account(base_path: Path, alias: str, keyparams, sender):
-    test_keyfile_path = base_path / f"{alias}.json"
-
-    if not test_keyfile_path.is_file():
-        account = _make_keyfile_account(base_path, alias, keyparams, sender)
-    else:
-        account = ape.accounts.load(ALIAS)
-
-    try:
-        yield account
-    finally:
-        if test_keyfile_path.is_file():
-            test_keyfile_path.unlink()
-
-
 @pytest.fixture
-def keyfile_account(sender, keyparams, temp_accounts_path):
-    with _temp_keyfile_account(temp_accounts_path, ALIAS, keyparams, sender) as account:
+def second_keyfile_account(sender, keyparams, temp_accounts_path, temp_keyfile_account_ctx):
+    with temp_keyfile_account_ctx(temp_accounts_path, ALIAS_2, keyparams, sender) as account:
         yield account
-
-
-@pytest.fixture
-def second_keyfile_account(sender, keyparams, temp_accounts_path):
-    with _temp_keyfile_account(temp_accounts_path, ALIAS_2, keyparams, sender) as account:
-        yield account
-
-
-def _make_keyfile_account(base_path: Path, alias: str, params: Dict, funder):
-    test_keyfile_path = base_path / f"{alias}.json"
-
-    if test_keyfile_path.is_file():
-        # Corrupted from a previous test
-        test_keyfile_path.unlink()
-
-    test_keyfile_path.write_text(json.dumps(params))
-
-    acct = ape.accounts.load(alias)
-    funder.transfer(acct, "25 ETH")  # Auto-fund this account
-    return acct
 
 
 @pytest.fixture
