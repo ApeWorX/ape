@@ -79,6 +79,12 @@
 <li class="toctree-l3"><a class="reference internal" href="#global-extras">Global Extras</a></li>
 </ul>
 </li>
+<li class="toctree-l2"><a class="reference internal" href="#configure">Configure</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#magic-commands">Magic Commands</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#ape">%ape</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#bal">%bal</a></li>
+</ul>
+</li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="contracts.html">Contracts</a></li>
@@ -226,6 +232,71 @@ Follow <a class="reference external" href="./networks.html">this guide</a> for m
 <section id="global-extras">
 <h3>Global Extras<a class="headerlink" href="#global-extras" title="Permalink to this heading"></a></h3>
 <p>You can also add an <code class="docutils literal notranslate"><span class="pre">ape_console_extras.py</span></code> file to the global ape data directory (<code class="docutils literal notranslate"><span class="pre">$HOME/.ape/ape_console_extras.py</span></code>) and it will execute regardless of what project context you are in.  This may be useful for variables and utility functions you use across all of your projects.</p>
+</section>
+</section>
+<section id="configure">
+<h2>Configure<a class="headerlink" href="#configure" title="Permalink to this heading"></a></h2>
+<p>To automatically use other IPython extensions, add them to your <code class="docutils literal notranslate"><span class="pre">ape-config.yaml</span></code> file:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">console</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">plugins</span><span class="p">:</span>
+<span class="w">    </span><span class="c1"># A plugin that lets you modify Python modules without having close/reopen your console.</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">autoreload</span>
+</pre></div>
+</div>
+</section>
+<section id="magic-commands">
+<h2>Magic Commands<a class="headerlink" href="#magic-commands" title="Permalink to this heading"></a></h2>
+<p>The <code class="docutils literal notranslate"><span class="pre">ape-console</span></code> plugin ships with custom <a class="reference external" href="https://ipython.readthedocs.io/en/stable/interactive/magics.html#line-magics">magics</a> that are available when running the <code class="docutils literal notranslate"><span class="pre">ape</span> <span class="pre">console</span></code> command or loading the <code class="docutils literal notranslate"><span class="pre">ape_console.plugin</span></code> IPython extension manually.
+When starting an embedded console (from <code class="docutils literal notranslate"><span class="pre">-I</span></code> in <code class="docutils literal notranslate"><span class="pre">ape</span> <span class="pre">run</span></code> or <code class="docutils literal notranslate"><span class="pre">ape</span> <span class="pre">test</span></code>), you will have to load the extension manually.
+To do this, run the following from <em>any</em> <code class="docutils literal notranslate"><span class="pre">IPython</span></code> environment:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>In<span class="w"> </span><span class="o">[</span><span class="m">1</span><span class="o">]</span>:<span class="w"> </span>%load_ext<span class="w"> </span>ape_console.plugin
+</pre></div>
+</div>
+<p>Or add the <code class="docutils literal notranslate"><span class="pre">ape_console.plugin</span></code> extension to your <code class="docutils literal notranslate"><span class="pre">IPython</span></code> config.</p>
+<p>Otherwise, when launching <code class="docutils literal notranslate"><span class="pre">ape</span> <span class="pre">console</span></code>, the magics are automatically available.</p>
+<section id="ape">
+<h3>%ape<a class="headerlink" href="#ape" title="Permalink to this heading"></a></h3>
+<p>The <code class="docutils literal notranslate"><span class="pre">%ape</span></code> magic invokes the CLI in your <code class="docutils literal notranslate"><span class="pre">ape-console</span></code> session:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>In<span class="w"> </span><span class="o">[</span><span class="m">1</span><span class="o">]</span>:<span class="w"> </span>%ape
+Usage:<span class="w"> </span>cli<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span><span class="w"> </span>COMMAND<span class="w"> </span><span class="o">[</span>ARGS<span class="o">]</span>...
+
+Options:
+<span class="w">  </span>-v,<span class="w"> </span>--verbosity<span class="w"> </span>LVL<span class="w">  </span>One<span class="w"> </span>of<span class="w"> </span>ERROR,<span class="w"> </span>WARNING,<span class="w"> </span>SUCCESS,<span class="w"> </span>INFO,<span class="w"> </span>or<span class="w"> </span>DEBUG
+<span class="w">  </span>--version<span class="w">            </span>Show<span class="w"> </span>the<span class="w"> </span>version<span class="w"> </span>and<span class="w"> </span>exit.
+<span class="w">  </span>--config<span class="w">             </span>Show<span class="w"> </span>configuration<span class="w"> </span>options<span class="w"> </span><span class="o">(</span>using<span class="w"> </span><span class="sb">`</span>ape-config.yaml<span class="sb">`</span><span class="o">)</span>
+<span class="w">  </span>-h,<span class="w"> </span>--help<span class="w">           </span>Show<span class="w"> </span>this<span class="w"> </span>message<span class="w"> </span>and<span class="w"> </span>exit.
+
+Commands:
+<span class="w">  </span>accounts<span class="w">  </span>Manage<span class="w"> </span><span class="nb">local</span><span class="w"> </span>accounts
+<span class="w">  </span>cache<span class="w">     </span>Query<span class="w"> </span>from<span class="w"> </span>caching<span class="w"> </span>database
+<span class="w">  </span>compile<span class="w">   </span>Compile<span class="w"> </span><span class="k">select</span><span class="w"> </span>contract<span class="w"> </span><span class="nb">source</span><span class="w"> </span>files
+<span class="w">  </span>console<span class="w">   </span>Load<span class="w"> </span>the<span class="w"> </span>console
+<span class="w">  </span>init<span class="w">      </span>Initalize<span class="w"> </span>an<span class="w"> </span>ape<span class="w"> </span>project
+<span class="w">  </span>networks<span class="w">  </span>Manage<span class="w"> </span>networks
+<span class="w">  </span>plugins<span class="w">   </span>Manage<span class="w"> </span>ape<span class="w"> </span>plugins
+<span class="w">  </span>run<span class="w">       </span>Run<span class="w"> </span>scripts<span class="w"> </span>from<span class="w"> </span>the<span class="w"> </span><span class="sb">`</span>scripts/<span class="sb">`</span><span class="w"> </span>folder
+<span class="w">  </span><span class="nb">test</span><span class="w">      </span>Launches<span class="w"> </span>pytest<span class="w"> </span>and<span class="w"> </span>runs<span class="w"> </span>the<span class="w"> </span>tests<span class="w"> </span><span class="k">for</span><span class="w"> </span>a<span class="w"> </span>project
+
+Out<span class="o">[</span><span class="m">1</span><span class="o">]</span>:<span class="w"> </span>&lt;Result<span class="w"> </span>okay&gt;
+</pre></div>
+</div>
+<p>Run any CLI command this way without exiting your session.</p>
+</section>
+<section id="bal">
+<h3>%bal<a class="headerlink" href="#bal" title="Permalink to this heading"></a></h3>
+<p>The <code class="docutils literal notranslate"><span class="pre">%bal</span></code> magic outputs a human-readable balance on an account, contract, address, or account alias.</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>In<span class="w"> </span><span class="o">[</span><span class="m">1</span><span class="o">]</span>:<span class="w"> </span><span class="nv">account</span><span class="w"> </span><span class="o">=</span><span class="w"> </span>accounts.load<span class="o">(</span><span class="s2">&quot;metamask0&quot;</span><span class="o">)</span>
+
+In<span class="w"> </span><span class="o">[</span><span class="m">2</span><span class="o">]</span>:<span class="w"> </span>%bal<span class="w"> </span>account
+Out<span class="o">[</span><span class="m">2</span><span class="o">]</span>:<span class="w"> </span><span class="s1">&#39;0.00040634 ETH&#39;</span>
+
+In<span class="w"> </span><span class="o">[</span><span class="m">3</span><span class="o">]</span>:<span class="w"> </span>%bal<span class="w"> </span>metamask0
+Out<span class="o">[</span><span class="m">3</span><span class="o">]</span>:<span class="w"> </span><span class="s1">&#39;0.00040634 ETH&#39;</span>
+
+In<span class="w"> </span><span class="o">[</span><span class="m">4</span><span class="o">]</span>:<span class="w"> </span>%bal<span class="w"> </span>0xE3747e6341E0d3430e6Ea9e2346cdDCc2F8a4b5b
+Out<span class="o">[</span><span class="m">4</span><span class="o">]</span>:<span class="w"> </span><span class="s1">&#39;0.00040634 ETH&#39;</span>
+</pre></div>
+</div>
 </section>
 </section>
 </section>
