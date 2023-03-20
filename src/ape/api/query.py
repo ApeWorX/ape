@@ -1,4 +1,4 @@
-from typing import Any, Dict, Iterator, List, Optional, Type, Union
+from typing import Any, Dict, Iterator, List, Optional, Type, Union, Set
 
 from ethpm_types.abi import EventABI, MethodABI
 from pydantic import BaseModel, NonNegativeInt, PositiveInt, root_validator
@@ -42,18 +42,21 @@ def validate_and_expand_columns(columns: List[str], Model: Type[BaseInterfaceMod
         )
 
         if len(deduped_columns - all_columns) > 0:
-            unrecognized = "', '".join(deduped_columns - all_columns)
-            all_cols = ", ".join(all_columns)
-            logger.warning(f"Unrecognized field(s) '{unrecognized}', must be one of '{all_cols}'.")
+            err_msg = _unrecognized_column(deduped_columns, all_columns)
+            logger.warning(err_msg)
 
         selected_fields = all_columns.intersection(deduped_columns)
         if len(selected_fields) > 0:
             return list(selected_fields)
 
-    unrecognized = "', '".join(deduped_columns - all_columns)
-    all_cols = ", ".join(all_columns)
-    err_msg = f"Unrecognized field(s) '{unrecognized}', must be one of '{all_cols}'."
+    err_msg = _unrecognized_column(deduped_columns, all_columns)
     raise ValueError(err_msg)
+
+
+def _unrecognized_column(columns: Set[str], all_columns: Set[str]) -> str:
+    unrecognized = "', '".join(sorted(columns - all_columns))
+    all_cols = ", ".join(sorted(all_columns))
+    return f"Unrecognized field(s) '{unrecognized}', must be one of '{all_cols}'."
 
 
 def extract_fields(item, columns):
