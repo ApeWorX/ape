@@ -1,4 +1,4 @@
-from typing import Any, Dict, Iterator, List, Optional, Type, Union, Set
+from typing import Any, Dict, Iterator, List, Optional, Set, Type, Union
 
 from ethpm_types.abi import EventABI, MethodABI
 from pydantic import BaseModel, NonNegativeInt, PositiveInt, root_validator
