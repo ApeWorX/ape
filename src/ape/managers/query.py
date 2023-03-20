@@ -1,3 +1,4 @@
+import difflib
 import time
 from itertools import tee
 from typing import Dict, Iterator, Optional
@@ -138,6 +139,9 @@ class QueryManager(ManagerAccessMixin):
 
         return engines
 
+    def _suggest_engines(self, engine_selection):
+        return difflib.get_close_matches(engine_selection, list(self.engines), cutoff=0.6)
+
     def query(
         self,
         query: QueryType,
@@ -158,7 +162,10 @@ class QueryManager(ManagerAccessMixin):
 
         if engine_to_use:
             if engine_to_use not in self.engines:
-                raise QueryEngineError(f"Query engine `{engine_to_use}` not found.")
+                raise QueryEngineError(
+                    f"Query engine `{engine_to_use}` not found. "
+                    f"Did you mean {' or '.join(self._suggest_engines(engine_to_use))}?"
+                )
 
             sel_engine = self.engines[engine_to_use]
 
