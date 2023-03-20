@@ -10,7 +10,7 @@
    userguides/installing_plugins
    userguides/projects
    userguides/compile
-   userguides/cache
+   userguides/data
    userguides/networks
    userguides/developing_plugins
    userguides/config
