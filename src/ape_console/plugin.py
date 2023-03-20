@@ -39,7 +39,9 @@ class ApeConsoleMagics(Magics):
             raise ValueError("Unable to run `console` within a console.")
 
         result = runner.invoke(cli, line)
-        click.echo(result.output)
+        if result.output:
+            click.echo(result.output)
+
         return result
 
     @line_magic
