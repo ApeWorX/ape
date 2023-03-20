@@ -51,7 +51,7 @@ def validate_and_expand_columns(columns: List[str], Model: Type[BaseInterfaceMod
             return list(selected_fields)
 
     unrecognized = "', '".join(deduped_columns - all_columns)
-    all_cols = ', '.join(all_columns)
+    all_cols = ", ".join(all_columns)
     err_msg = f"Unrecognized field(s) '{unrecognized}', must be one of '{all_cols}'."
     raise ValueError(err_msg)
 
