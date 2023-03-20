@@ -53,8 +53,8 @@ def validate_and_expand_columns(columns: List[str], Model: Type[BaseInterfaceMod
     raise ValueError(err_msg)
 
 
-def _unrecognized_columns(unknown: Set[str], all_columns: Set[str]) -> str:
-    unrecognized = "', '".join(sorted(unknown - all_columns))
+def _unrecognized_columns(selected_columns: Set[str], all_columns: Set[str]) -> str:
+    unrecognized = "', '".join(sorted(selected_columns - all_columns))
     all_cols = ", ".join(sorted(all_columns))
     return f"Unrecognized field(s) '{unrecognized}', must be one of '{all_cols}'."
 
