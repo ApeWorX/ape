@@ -22,6 +22,7 @@ from ape.types import AddressType, ContractLogContainer, TraceFrame, Transaction
 from ape.utils import BaseInterfaceModel, abstractmethod, cached_property, raises_not_implemented
 
 if TYPE_CHECKING:
+    from ape.api.providers import BlockAPI
     from ape.contracts import ContractEvent
 
 
@@ -277,6 +278,10 @@ class ReceiptAPI(BaseInterfaceModel):
             return 0
 
         return latest_block.number - self.block_number
+
+    @cached_property
+    def block(self) -> "BlockAPI":
+        return self.chain_manager.blocks[self.block_number]
 
     @cached_property
     def events(self) -> ContractLogContainer:
