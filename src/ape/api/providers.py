@@ -1001,7 +1001,7 @@ class Web3Provider(ProviderAPI, ABC):
         if start_nonce > stop_nonce:
             raise ValueError("Starting nonce cannot be greater than stop nonce for search")
 
-        if self.network.name != "local" and (stop_nonce - start_nonce) > 2:
+        if self.network.name != LOCAL_NETWORK_NAME and (stop_nonce - start_nonce) > 2:
             # NOTE: RPC usage might be acceptable to find 1 or 2 transactions reasonably quickly
             logger.warning(
                 "Performing this action is likely to be very slow and may "
