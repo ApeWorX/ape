@@ -75,14 +75,16 @@ def test_column_expansion():
 def test_column_validation(eth_tester_provider, caplog):
     with pytest.raises(ValueError) as exc_info:
         validate_and_expand_columns(["numbr"], Model)
-    assert exc_info.value.args[0] == "No valid fields in ['numbr']."
+
+    expected = "Unrecognized field(s) 'numbr', must be one of 'number, timestamp'."
+    assert exc_info.value.args[0] == expected
     caplog.clear()
 
     with caplog.at_level(logging.WARNING):
         validate_and_expand_columns(["numbr", "timestamp"], Model)
 
     assert len(caplog.records) == 1
-    assert "Unrecognized field(s) 'numbr'" in caplog.records[0].msg
+    assert expected in caplog.records[0].msg
     caplog.clear()
 
     with caplog.at_level(logging.WARNING):

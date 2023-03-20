@@ -43,13 +43,17 @@ def validate_and_expand_columns(columns: List[str], Model: Type[BaseInterfaceMod
 
         if len(deduped_columns - all_columns) > 0:
             unrecognized = "', '".join(deduped_columns - all_columns)
-            logger.warning(f"Unrecognized field(s) '{unrecognized}', must be one of {all_columns}")
+            all_cols = ", ".join(all_columns)
+            logger.warning(f"Unrecognized field(s) '{unrecognized}', must be one of '{all_cols}'.")
 
         selected_fields = all_columns.intersection(deduped_columns)
         if len(selected_fields) > 0:
             return list(selected_fields)
 
-    raise ValueError(f"No valid fields in {columns}.")
+    unrecognized = "', '".join(deduped_columns - all_columns)
+    all_cols = ', '.join(all_columns)
+    err_msg = f"Unrecognized field(s) '{unrecognized}', must be one of '{all_cols}'."
+    raise ValueError(err_msg)
 
 
 def extract_fields(item, columns):
