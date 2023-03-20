@@ -42,19 +42,19 @@ def validate_and_expand_columns(columns: List[str], Model: Type[BaseInterfaceMod
         )
 
         if len(deduped_columns - all_columns) > 0:
-            err_msg = _unrecognized_column(deduped_columns, all_columns)
+            err_msg = _unrecognized_columns(deduped_columns, all_columns)
             logger.warning(err_msg)
 
         selected_fields = all_columns.intersection(deduped_columns)
         if len(selected_fields) > 0:
             return list(selected_fields)
 
-    err_msg = _unrecognized_column(deduped_columns, all_columns)
+    err_msg = _unrecognized_columns(deduped_columns, all_columns)
     raise ValueError(err_msg)
 
 
-def _unrecognized_column(columns: Set[str], all_columns: Set[str]) -> str:
-    unrecognized = "', '".join(sorted(columns - all_columns))
+def _unrecognized_columns(unknown: Set[str], all_columns: Set[str]) -> str:
+    unrecognized = "', '".join(sorted(unknown - all_columns))
     all_cols = ", ".join(sorted(all_columns))
     return f"Unrecognized field(s) '{unrecognized}', must be one of '{all_cols}'."
 
