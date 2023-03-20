@@ -6,16 +6,18 @@ from importlib.machinery import SourceFileLoader
 from importlib.util import module_from_spec, spec_from_loader
 from os import environ, getcwd
 from types import ModuleType
-from typing import Any, Dict
+from typing import Any, Dict, cast
 
 import click
 import IPython  # type: ignore
+from IPython.terminal.ipapp import Config as IPythonConfig  # type: ignore
 
 from ape import config
 from ape import project as default_project
 from ape.cli import NetworkBoundCommand, ape_cli_context, network_option
 from ape.utils.misc import _python_version
 from ape.version import version as ape_version
+from ape_console.config import ConsoleConfig
 
 CONSOLE_EXTRAS_FILENAME = "ape_console_extras.py"
 
@@ -86,7 +88,7 @@ def load_console_extras(namespace: Dict[str, Any]) -> Dict[str, Any]:
     return namespace
 
 
-def console(project=None, verbose=None, extra_locals=None):
+def console(project=None, verbose=None, extra_locals=None, embed=False):
     import ape
 
     if not project:
@@ -124,11 +126,22 @@ def console(project=None, verbose=None, extra_locals=None):
     if console_extras:
         namespace.update(console_extras)
 
-    from traitlets.config.loader import Config
-
-    config = Config()
-
+    _config = IPythonConfig()
     if environ.get("APE_TESTING"):
-        config.HistoryManager.enabled = False
+        _config.HistoryManager.enabled = False
 
-    IPython.embed(colors="Neutral", banner1=banner, user_ns=namespace, config=config)
+    ipython_kwargs = {
+        "colors": "Neutral",
+        "banner1": banner,
+        "user_ns": namespace,
+        "config": _config,
+    }
+    if embed:
+        IPython.embed(**ipython_kwargs)
+    else:
+        console_config = cast(ConsoleConfig, ape.config.get_config("console"))
+        arguments = ["--ext", "ape_console.plugin"]
+        if console_config.plugins:
+            arguments.extend(["--InteractiveShellApp.extensions", *console_config.plugins])
+
+        IPython.start_ipython(**ipython_kwargs, argv=arguments)

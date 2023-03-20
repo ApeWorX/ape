@@ -70,6 +70,9 @@ class EcosystemAPI(BaseInterfaceModel):
     fee_token_symbol: str
     """The token symbol for the currency that pays for fees, such as ETH."""
 
+    fee_token_decimals: int = 18
+    """The number of the decimals the fee token has."""
+
     _default_network: str = LOCAL_NETWORK_NAME
 
     def __repr__(self) -> str:

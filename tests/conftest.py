@@ -1,3 +1,4 @@
+import json
 import shutil
 import tempfile
 from contextlib import contextmanager
@@ -22,6 +23,7 @@ ape.config.PROJECT_FOLDER = PROJECT_FOLDER
 pytest_plugins = ["pytester"]
 geth_process_test = pytest.mark.xdist_group(name="geth-tests")
 GETH_URI = "http://127.0.0.1:5550"
+ALIAS = "__FUNCTIONAL_TESTS_ALIAS__"
 
 
 @pytest.fixture(autouse=True)
@@ -73,6 +75,16 @@ def chain():
 @pytest.fixture(scope="session")
 def project_folder():
     return PROJECT_FOLDER
+
+
+@pytest.fixture(scope="session")
+def test_accounts(accounts):
+    return accounts.test_accounts
+
+
+@pytest.fixture(scope="session")
+def sender(test_accounts):
+    return test_accounts[0]
 
 
 @pytest.fixture
@@ -242,3 +254,43 @@ def empty_data_folder():
     ape.config.DATA_FOLDER = Path(mkdtemp()).resolve()
     yield
     ape.config.DATA_FOLDER = current_data_folder
+
+
+@pytest.fixture
+def keyfile_account(sender, keyparams, temp_accounts_path, temp_keyfile_account_ctx):
+    with temp_keyfile_account_ctx(temp_accounts_path, ALIAS, keyparams, sender) as account:
+        yield account
+
+
+@pytest.fixture
+def temp_keyfile_account_ctx():
+    @contextmanager
+    def _temp_keyfile_account(base_path: Path, alias: str, keyparams, sender):
+        test_keyfile_path = base_path / f"{alias}.json"
+
+        if not test_keyfile_path.is_file():
+            account = _make_keyfile_account(base_path, alias, keyparams, sender)
+        else:
+            account = ape.accounts.load(ALIAS)
+
+        try:
+            yield account
+        finally:
+            if test_keyfile_path.is_file():
+                test_keyfile_path.unlink()
+
+    return _temp_keyfile_account
+
+
+def _make_keyfile_account(base_path: Path, alias: str, params: Dict, funder):
+    test_keyfile_path = base_path / f"{alias}.json"
+
+    if test_keyfile_path.is_file():
+        # Corrupted from a previous test
+        test_keyfile_path.unlink()
+
+    test_keyfile_path.write_text(json.dumps(params))
+
+    acct = ape.accounts.load(alias)
+    funder.transfer(acct, "25 ETH")  # Auto-fund this account
+    return acct

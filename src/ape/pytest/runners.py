@@ -79,7 +79,7 @@ class PytestApeRunner(ManagerAccessMixin):
             click.echo("Starting interactive mode. Type `exit` fail and halt current test.")
 
             namespace = {"_callinfo": call, **globals_dict, **locals_dict}
-            console(extra_locals=namespace, project=self.project_manager)
+            console(extra_locals=namespace, project=self.project_manager, embed=True)
 
             # launch ipdb instead of console
             if capman:

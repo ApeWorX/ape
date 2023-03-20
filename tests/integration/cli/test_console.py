@@ -90,13 +90,19 @@ def test_console_extras(project, folder, ape_cli, runner):
     write_ape_console_extras(project, folder, EXTRAS_SCRIPT_1)
 
     result = runner.invoke(
-        ape_cli, ["console"], input="\n".join(["assert A == 1", "exit"]), catch_exceptions=False
+        ape_cli,
+        ["console"],
+        input="\n".join(["assert A == 1", "exit"]) + "\n",
+        catch_exceptions=False,
     )
     assert result.exit_code == 0, result.output
     assert no_console_error(result), result.output
 
     result = runner.invoke(
-        ape_cli, ["console"], input="\n".join(["assert a() == 1", "exit"]), catch_exceptions=False
+        ape_cli,
+        ["console"],
+        input="\n".join(["assert a() == 1", "exit"]) + "\n",
+        catch_exceptions=False,
     )
     assert result.exit_code == 0, result.output
     assert no_console_error(result), result.output
@@ -139,7 +145,8 @@ def test_console_init_extras_return(project, folder, ape_cli, runner):
                 "assert B == 2, 'unexpected B'",
                 "exit",
             ]
-        ),
+        )
+        + "\n",
         catch_exceptions=False,
     )
     assert result.exit_code == 0, result.output
@@ -151,7 +158,8 @@ def test_console_import_local_path(project, ape_cli, runner):
     result = runner.invoke(
         ape_cli,
         ["console"],
-        input="\n".join(["from dependency_in_project_only.importme import import_me", "exit"]),
+        input="\n".join(["from dependency_in_project_only.importme import import_me", "exit"])
+        + "\n",
     )
     assert result.exit_code == 0, result.output
     assert no_console_error(result), result.output
@@ -165,6 +173,33 @@ def test_console_import_local_path_in_extras_file(project, ape_cli, runner):
         ape_cli,
         ["console"],
         input="exit\n",
+        catch_exceptions=False,
+    )
+    assert result.exit_code == 0, result.output
+    assert no_console_error(result), result.output
+
+
+@skip_projects_except("only-dependencies")
+def test_console_ape_magic(ape_cli, runner):
+    result = runner.invoke(
+        ape_cli,
+        ["console"],
+        input="%ape --help\nexit\n",
+        catch_exceptions=False,
+    )
+    assert result.exit_code == 0, result.output
+    assert no_console_error(result), result.output
+
+
+@skip_projects_except("only-dependencies")
+def test_console_bal_magic(ape_cli, runner, keyfile_account):
+    cases = ("%bal acct", "%bal acct.alias", "%bal acct.address", "%bal int(acct.address, 16)")
+    cmd_ls = [f"acct = accounts.load('{keyfile_account.alias}')", *cases, "exit"]
+    cmd_str = "\n".join(cmd_ls)
+    result = runner.invoke(
+        ape_cli,
+        ["console"],
+        input=f"{cmd_str}\n",
         catch_exceptions=False,
     )
     assert result.exit_code == 0, result.output
