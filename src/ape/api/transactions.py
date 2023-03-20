@@ -1,5 +1,6 @@
 import sys
 import time
+from datetime import datetime
 from typing import IO, TYPE_CHECKING, Any, Iterator, List, Optional, Union
 
 from eth_utils import is_hex, to_int
@@ -282,6 +283,14 @@ class ReceiptAPI(BaseInterfaceModel):
     @cached_property
     def block(self) -> "BlockAPI":
         return self.chain_manager.blocks[self.block_number]
+
+    @property
+    def timestamp(self) -> int:
+        return self.block.timestamp
+
+    @property
+    def datetime(self) -> datetime:
+        return self.block.datetime
 
     @cached_property
     def events(self) -> ContractLogContainer:
