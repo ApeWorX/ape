@@ -416,7 +416,7 @@ class AccountHistory(BaseInterfaceModel):
         """
 
         start_nonce = 0
-        stop_nonce = self.__len__() - 1  # just to cache this value
+        stop_nonce = len(self) - 1  # just to cache this value
 
         # TODO: Add ephemeral network sessional history to `ape-cache` instead,
         #       and remove this (replace with `yield from iter(self[:len(self)])`)

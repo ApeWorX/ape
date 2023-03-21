@@ -38,11 +38,11 @@ def _all_columns(Model: Type[BaseInterfaceModel]) -> Set[str]:
     # NOTE: Iterate down the series of subclasses of `Model` (e.g. Block and BlockAPI)
     #       and get all of the public property methods of each class (which are valid columns)
     columns |= {
-        field
+        field_name
         for cls in Model.__mro__
-        if issubclass(cls, BaseInterfaceModel) and cls != BaseInterfaceModel
-        for field in vars(cls)
-        if not field.startswith("_") and isinstance(vars(cls)[field], (property, cached_property))
+        if issubclass(cls, BaseInterfaceModel) and cls is not BaseInterfaceModel
+        for field_name, field in vars(cls).items()
+        if not field_name.startswith("_") and isinstance(field, (property, cached_property))
     }
 
     # TODO: Remove once `ReceiptAPI` fields cleaned up for better processing
