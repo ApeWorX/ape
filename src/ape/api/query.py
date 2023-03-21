@@ -56,22 +56,26 @@ def validate_and_expand_columns(columns: List[str], Model: Type[BaseInterfaceMod
     if len(columns) == 1 and columns[0] == "*":
         # NOTE: By default, only pull explicit fields
         #       (because they are cheap to pull, but properties might not be)
-        return sorted(list(_basic_columns(Model)))
+        return sorted(_basic_columns(Model))
 
     else:
+        # NOTE: Validate if selected columns in the total set of fields + properties
         all_columns = _all_columns(Model)
         deduped_columns = set(columns)
         if len(deduped_columns) != len(columns):
             logger.warning(f"Duplicate fields in {columns}")
 
+        # NOTE: Some unrecognized fields, but can still provide the rest of the data
         if len(deduped_columns - all_columns) > 0:
             err_msg = _unrecognized_columns(deduped_columns, all_columns)
             logger.warning(err_msg)
 
+        # NOTE: Only select recognized fields and return them (in sorted order)
         selected_fields = all_columns.intersection(deduped_columns)
         if len(selected_fields) > 0:
-            return list(selected_fields)
+            return sorted(selected_fields)
 
+    # NOTE: No recognized fields available to query, so raise ValueError
     err_msg = _unrecognized_columns(deduped_columns, all_columns)
     raise ValueError(err_msg)
 
