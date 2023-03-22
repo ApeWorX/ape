@@ -15,13 +15,19 @@ from rich.console import Console as RichConsole
 from ape.api import BlockAPI, ReceiptAPI
 from ape.api.address import BaseAddress
 from ape.api.networks import LOCAL_NETWORK_NAME, NetworkAPI, ProxyInfoAPI
-from ape.api.query import BlockQuery, extract_fields, validate_and_expand_columns
+from ape.api.query import (
+    AccountTransactionQuery,
+    BlockQuery,
+    extract_fields,
+    validate_and_expand_columns,
+)
 from ape.contracts import ContractContainer, ContractInstance
 from ape.exceptions import (
     APINotImplementedError,
     BlockNotFoundError,
     ChainError,
     ConversionError,
+    QueryEngineError,
     UnknownSnapshotError,
 )
 from ape.logging import logger
@@ -408,18 +414,82 @@ class AccountHistory(BaseInterfaceModel):
         """
         All outgoing transactions, from earliest to latest.
         """
-        explorer = self.provider.network.explorer
-        explorer_receipts = (
-            [r for r in explorer.get_account_transactions(self.address)] if explorer else []
-        )
-        for receipt in explorer_receipts:
-            if receipt.sender != self.address:
-                # Likely ``self.address`` is a contract.
-                # Cache the receipts by their sender instead and skip them here.
-                self.chain_manager.history.append(receipt)
-                continue
+
+        start_nonce = 0
+        stop_nonce = len(self) - 1  # just to cache this value
+
+        # TODO: Add ephemeral network sessional history to `ape-cache` instead,
+        #       and remove this (replace with `yield from iter(self[:len(self)])`)
+        for receipt in self.sessional:
+            if receipt.nonce < start_nonce:
+                raise QueryEngineError("Sessional history corrupted")
+
+            if receipt.nonce > start_nonce:
+                # NOTE: There's a gap in our sessional history, so fetch from query engine
+                yield from iter(self[start_nonce : receipt.nonce + 1])  # noqa: E203
 
             yield receipt
+            start_nonce = receipt.nonce + 1  # start next loop on the next item
+
+        if start_nonce != stop_nonce:
+            # NOTE: there is no more sessional history, so just return query engine iterator
+            yield from iter(self[start_nonce : stop_nonce + 1])  # noqa: E203
+
+    def query(
+        self,
+        *columns: List[str],
+        start_nonce: int = 0,
+        stop_nonce: Optional[int] = None,
+        engine_to_use: Optional[str] = None,
+    ) -> pd.DataFrame:
+        """
+        A method for querying transactions made by an account and returning an Iterator.
+        If you do not provide a starting nonce, the first transaction is assumed.
+        If you do not provide a stopping block, the last transaction is assumed.
+        You can pass ``engine_to_use`` to short-circuit engine selection.
+
+        Raises:
+            :class:`~ape.exceptions.ChainError`: When ``stop_nonce`` is greater
+              than the account's current nonce.
+
+        Args:
+            columns (List[str]): columns in the DataFrame to return
+            start_nonce (int): The first transaction, by nonce, to include in the
+              query. Defaults to 0.
+            stop_nonce (Optional[int]): The last transaction, by nonce, to include
+              in the query. Defaults to the latest transaction.
+            engine_to_use (Optional[str]): query engine to use, bypasses query
+              engine selection algorithm.
+
+        Returns:
+            pd.DataFrame
+        """
+
+        if start_nonce < 0:
+            start_nonce = len(self) + start_nonce
+
+        if stop_nonce is None:
+            stop_nonce = len(self)
+
+        elif stop_nonce < 0:
+            stop_nonce = len(self) + stop_nonce
+
+        elif stop_nonce > len(self):
+            raise ChainError(
+                f"'stop={stop_nonce}' cannot be greater than account's current nonce ({len(self)})."
+            )
+
+        query = AccountTransactionQuery(
+            columns=columns,
+            account=self.address,
+            start_nonce=start_nonce,
+            stop_nonce=stop_nonce,
+        )
+
+        txns = self.query_manager.query(query, engine_to_use=engine_to_use)
+        columns = validate_and_expand_columns(columns, ReceiptAPI)  # type: ignore
+        txns = map(partial(extract_fields, columns=columns), txns)
+        return pd.DataFrame(columns=columns, data=txns)
 
     def __iter__(self) -> Iterator[ReceiptAPI]:  # type: ignore[override]
         yield from self.outgoing
@@ -430,6 +500,69 @@ class AccountHistory(BaseInterfaceModel):
         """
 
         return self.provider.get_nonce(self.address)
+
+    @singledispatchmethod
+    def __getitem__(self, index):
+        raise IndexError(f"Can't handle type {type(index)}")
+
+    @__getitem__.register
+    def __getitem_int(self, index: int) -> ReceiptAPI:
+        if index < 0:
+            index += len(self)
+
+        try:
+            return cast(
+                ReceiptAPI,
+                next(
+                    self.query_manager.query(
+                        AccountTransactionQuery(
+                            columns=list(ReceiptAPI.__fields__),
+                            account=self.address,
+                            start_nonce=index,
+                            stop_nonce=index,
+                        )
+                    )
+                ),
+            )
+        except StopIteration as e:
+            raise IndexError(f"index {index} out of range") from e
+
+    @__getitem__.register
+    def __getitem_slice(self, indices: slice) -> List[ReceiptAPI]:
+        start, stop, step = (
+            indices.start or 0,
+            indices.stop or len(self),
+            indices.step or 1,
+        )
+
+        if start < 0:
+            start += len(self)
+
+        if stop < 0:
+            stop += len(self)
+
+        elif stop > len(self):
+            raise ChainError(
+                f"'stop={stop}' cannot be greater than account's current nonce ({len(self)})."
+            )
+
+        if stop <= start:
+            return []  # nothing to query
+
+        return cast(
+            List[ReceiptAPI],
+            list(
+                self.query_manager.query(
+                    AccountTransactionQuery(
+                        columns=list(ReceiptAPI.__fields__),
+                        account=self.address,
+                        start_nonce=start,
+                        stop_nonce=stop - 1,
+                        step=step,
+                    )
+                )
+            ),
+        )
 
     def append(self, receipt: ReceiptAPI):
         """

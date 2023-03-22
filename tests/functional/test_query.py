@@ -23,16 +23,16 @@ def test_basic_query(chain, eth_tester_provider):
         >= blocks_df1.iloc[0]["timestamp"]
     )
     assert list(blocks_df0.columns) == [
-        "num_transactions",
+        "base_fee",
+        "difficulty",
+        "gas_limit",
+        "gas_used",
         "hash",
+        "num_transactions",
         "number",
         "parent_hash",
         "size",
         "timestamp",
-        "gas_limit",
-        "gas_used",
-        "base_fee",
-        "difficulty",
         "total_difficulty",
     ]
 

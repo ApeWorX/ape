@@ -1,9 +1,16 @@
+import difflib
 import time
 from itertools import tee
 from typing import Dict, Iterator, Optional
 
-from ape.api import QueryAPI, QueryType, TransactionAPI
-from ape.api.query import BaseInterfaceModel, BlockQuery, BlockTransactionQuery, ContractEventQuery
+from ape.api import QueryAPI, QueryType, ReceiptAPI, TransactionAPI
+from ape.api.query import (
+    AccountTransactionQuery,
+    BaseInterfaceModel,
+    BlockQuery,
+    BlockTransactionQuery,
+    ContractEventQuery,
+)
 from ape.contracts.base import ContractLog, LogFilter
 from ape.exceptions import QueryEngineError
 from ape.logging import logger
@@ -35,6 +42,12 @@ class DefaultQueryProvider(QueryAPI):
     def estimate_contract_events_query(self, query: ContractEventQuery) -> int:
         # NOTE: Very loose estimate of 100ms per block for this query.
         return (1 + query.stop_block - query.start_block) * 100
+
+    @estimate_query.register
+    def estimate_account_transactions_query(self, query: AccountTransactionQuery) -> int:
+        # NOTE: Extremely expensive query, involves binary search of all blocks in a chain
+        #       Very loose estimate of 5s per transaction for this query.
+        return (1 + query.stop_nonce - query.start_nonce) * 5000
 
     @singledispatchmethod
     def perform_query(self, query: QueryType) -> Iterator:  # type: ignore
@@ -70,6 +83,31 @@ class DefaultQueryProvider(QueryAPI):
         )
         return self.provider.get_contract_logs(log_filter)
 
+    @perform_query.register
+    def perform_account_transactions_query(
+        self, query: AccountTransactionQuery
+    ) -> Iterator[ReceiptAPI]:
+        # TODO: Relegate everything data-related in ExplorerAPI to QueryAPI instead
+        if explorer := self.provider.network.explorer:
+            for receipt in explorer.get_account_transactions(query.account):
+                # NOTE: Required for `elif` leg to function
+                # NOTE: For whatever reason, Etherscan doesn't capitalize their addresses
+                if receipt.sender.lower() != query.account.lower():
+                    # Likely ``query.account`` is a contract.
+                    # Cache the receipts by their sender instead and skip them here.
+                    self.chain_manager.history.append(receipt)
+
+                elif (
+                    receipt.transaction.nonce
+                    and query.start_nonce <= receipt.transaction.nonce <= query.stop_nonce
+                ):
+                    yield receipt
+
+        else:
+            yield from self.provider.get_transactions_by_account_nonce(
+                query.account, query.start_nonce, query.stop_nonce
+            )
+
 
 class QueryManager(ManagerAccessMixin):
     """
@@ -101,6 +139,9 @@ class QueryManager(ManagerAccessMixin):
 
         return engines
 
+    def _suggest_engines(self, engine_selection):
+        return difflib.get_close_matches(engine_selection, list(self.engines), cutoff=0.6)
+
     def query(
         self,
         query: QueryType,
@@ -121,7 +162,10 @@ class QueryManager(ManagerAccessMixin):
 
         if engine_to_use:
             if engine_to_use not in self.engines:
-                raise QueryEngineError(f"Query engine `{engine_to_use}` not found.")
+                raise QueryEngineError(
+                    f"Query engine `{engine_to_use}` not found. "
+                    f"Did you mean {' or '.join(self._suggest_engines(engine_to_use))}?"
+                )
 
             sel_engine = self.engines[engine_to_use]
 
