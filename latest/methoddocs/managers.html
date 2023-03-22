@@ -67,7 +67,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../userguides/installing_plugins.html">Plugins</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../userguides/projects.html">Developing Projects with Ape</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../userguides/compile.html">Compile</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../userguides/cache.html">Cache</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../userguides/data.html">Querying Data</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../userguides/networks.html">Networks</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../userguides/developing_plugins.html">Developing Plugins</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../userguides/config.html">Configure Ape</a></li>
@@ -139,6 +139,7 @@
 <li class="toctree-l4"><a class="reference internal" href="#ape.managers.chain.AccountHistory.address"><code class="docutils literal notranslate"><span class="pre">AccountHistory.address</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.managers.chain.AccountHistory.append"><code class="docutils literal notranslate"><span class="pre">AccountHistory.append()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.managers.chain.AccountHistory.outgoing"><code class="docutils literal notranslate"><span class="pre">AccountHistory.outgoing</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ape.managers.chain.AccountHistory.query"><code class="docutils literal notranslate"><span class="pre">AccountHistory.query()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.managers.chain.AccountHistory.revert_to_block"><code class="docutils literal notranslate"><span class="pre">AccountHistory.revert_to_block()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.managers.chain.AccountHistory.sessional"><code class="docutils literal notranslate"><span class="pre">AccountHistory.sessional</span></code></a></li>
 </ul>
@@ -732,6 +733,35 @@ to compiler API classes.</p>
 <dt class="sig sig-object py" id="ape.managers.chain.AccountHistory.outgoing">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">outgoing</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Iterator</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="api.html#ape.api.transactions.ReceiptAPI" title="ape.api.transactions.ReceiptAPI"><span class="pre">ReceiptAPI</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#ape.managers.chain.AccountHistory.outgoing" title="Permalink to this definition"></a></dt>
 <dd><p>All outgoing transactions, from earliest to latest.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ape.managers.chain.AccountHistory.query">
+<span class="sig-name descname"><span class="pre">query</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">columns</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start_nonce</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stop_nonce</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">engine_to_use</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">DataFrame</span></span></span><a class="headerlink" href="#ape.managers.chain.AccountHistory.query" title="Permalink to this definition"></a></dt>
+<dd><p>A method for querying transactions made by an account and returning an Iterator.
+If you do not provide a starting nonce, the first transaction is assumed.
+If you do not provide a stopping block, the last transaction is assumed.
+You can pass <code class="docutils literal notranslate"><span class="pre">engine_to_use</span></code> to short-circuit engine selection.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="exceptions.html#ape.exceptions.ChainError" title="ape.exceptions.ChainError"><strong>ChainError</strong></a> – When <code class="docutils literal notranslate"><span class="pre">stop_nonce</span></code> is greater
+    than the account’s current nonce.</p>
+</dd>
+<dt class="field-even">Parameters<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>columns</strong> (<em>List</em><em>[</em><em>str</em><em>]</em>) – columns in the DataFrame to return</p></li>
+<li><p><strong>start_nonce</strong> (<em>int</em>) – The first transaction, by nonce, to include in the
+query. Defaults to 0.</p></li>
+<li><p><strong>stop_nonce</strong> (<em>Optional</em><em>[</em><em>int</em><em>]</em>) – The last transaction, by nonce, to include
+in the query. Defaults to the latest transaction.</p></li>
+<li><p><strong>engine_to_use</strong> (<em>Optional</em><em>[</em><em>str</em><em>]</em>) – query engine to use, bypasses query
+engine selection algorithm.</p></li>
+</ul>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>pd.DataFrame</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
@@ -2667,6 +2697,8 @@ Allows for the query of blockchain data using connected provider.</p>
 <span class="sig-name descname"><span class="pre">estimate_query</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">query</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="api.html#ape.api.query.BlockTransactionQuery" title="ape.api.query.BlockTransactionQuery"><span class="pre">BlockTransactionQuery</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">int</span></span></span></dt>
 <dt class="sig sig-object py">
 <span class="sig-name descname"><span class="pre">estimate_query</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">query</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="api.html#ape.api.query.ContractEventQuery" title="ape.api.query.ContractEventQuery"><span class="pre">ContractEventQuery</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">int</span></span></span></dt>
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">estimate_query</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">query</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="api.html#ape.api.query.AccountTransactionQuery" title="ape.api.query.AccountTransactionQuery"><span class="pre">AccountTransactionQuery</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">int</span></span></span></dt>
 <dd><p>Estimation of time needed to complete the query. The estimation is returned
 as an int representing milliseconds. A value of None indicates that the
 query engine is not available for use or is unable to complete the query.</p>
@@ -2692,6 +2724,8 @@ query engine is not available for use or is unable to complete the query.</p>
 <span class="sig-name descname"><span class="pre">perform_query</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">query</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="api.html#ape.api.query.BlockTransactionQuery" title="ape.api.query.BlockTransactionQuery"><span class="pre">BlockTransactionQuery</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Iterator</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="api.html#ape.api.transactions.TransactionAPI" title="ape.api.transactions.TransactionAPI"><span class="pre">TransactionAPI</span></a><span class="p"><span class="pre">]</span></span></span></span></dt>
 <dt class="sig sig-object py">
 <span class="sig-name descname"><span class="pre">perform_query</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">query</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="api.html#ape.api.query.ContractEventQuery" title="ape.api.query.ContractEventQuery"><span class="pre">ContractEventQuery</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Iterator</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="types.html#ape.types.ContractLog" title="ape.types.ContractLog"><span class="pre">ContractLog</span></a><span class="p"><span class="pre">]</span></span></span></span></dt>
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">perform_query</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">query</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="api.html#ape.api.query.AccountTransactionQuery" title="ape.api.query.AccountTransactionQuery"><span class="pre">AccountTransactionQuery</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Iterator</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="api.html#ape.api.transactions.ReceiptAPI" title="ape.api.transactions.ReceiptAPI"><span class="pre">ReceiptAPI</span></a><span class="p"><span class="pre">]</span></span></span></span></dt>
 <dd><p>Executes the query using best performing <code class="docutils literal notranslate"><span class="pre">estimate_query</span></code> query engine.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>

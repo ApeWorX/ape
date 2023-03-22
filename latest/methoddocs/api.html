@@ -67,7 +67,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../userguides/installing_plugins.html">Plugins</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../userguides/projects.html">Developing Projects with Ape</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../userguides/compile.html">Compile</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../userguides/cache.html">Cache</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../userguides/data.html">Querying Data</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../userguides/networks.html">Networks</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../userguides/developing_plugins.html">Developing Plugins</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../userguides/config.html">Configure Ape</a></li>
@@ -148,6 +148,7 @@
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.address.BaseAddress.balance"><code class="docutils literal notranslate"><span class="pre">BaseAddress.balance</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.address.BaseAddress.code"><code class="docutils literal notranslate"><span class="pre">BaseAddress.code</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.address.BaseAddress.codesize"><code class="docutils literal notranslate"><span class="pre">BaseAddress.codesize</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ape.api.address.BaseAddress.history"><code class="docutils literal notranslate"><span class="pre">BaseAddress.history</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.address.BaseAddress.is_contract"><code class="docutils literal notranslate"><span class="pre">BaseAddress.is_contract</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.address.BaseAddress.nonce"><code class="docutils literal notranslate"><span class="pre">BaseAddress.nonce</span></code></a></li>
 </ul>
@@ -963,6 +964,12 @@ or to refer to an EOA the user doesn’t personally control.</p>
 <dt class="sig sig-object py" id="ape.api.address.BaseAddress.codesize">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">codesize</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="headerlink" href="#ape.api.address.BaseAddress.codesize" title="Permalink to this definition"></a></dt>
 <dd><p>The number of bytes in the smart contract.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="ape.api.address.BaseAddress.history">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">history</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="managers.html#ape.managers.chain.AccountHistory" title="ape.managers.chain.AccountHistory"><span class="pre">AccountHistory</span></a></em><a class="headerlink" href="#ape.api.address.BaseAddress.history" title="Permalink to this definition"></a></dt>
+<dd><p>The list of transactions that this account has made on the current chain.</p>
 </dd></dl>
 
 <dl class="py property">
@@ -2895,7 +2902,7 @@ for checking previous contract storage values.</p></li>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="ape.api.providers.Web3Provider.get_transactions_by_block">
-<span class="sig-name descname"><span class="pre">get_transactions_by_block</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">block_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">HexStr</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">HexBytes</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Literal</span><span class="p"><span class="pre">[</span></span><span class="s"><span class="pre">'earliest'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'latest'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'pending'</span></span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Iterator</span></span></span><a class="headerlink" href="#ape.api.providers.Web3Provider.get_transactions_by_block" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">get_transactions_by_block</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">block_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">HexStr</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">HexBytes</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Literal</span><span class="p"><span class="pre">[</span></span><span class="s"><span class="pre">'earliest'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'latest'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'pending'</span></span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Iterator</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#ape.api.transactions.TransactionAPI" title="ape.api.transactions.TransactionAPI"><span class="pre">TransactionAPI</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#ape.api.providers.Web3Provider.get_transactions_by_block" title="Permalink to this definition"></a></dt>
 <dd><p>Get the information about a set of transactions from a block.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>

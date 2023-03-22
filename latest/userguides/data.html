@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Querying Data &mdash; ape  documentation</title>
+      <link rel="stylesheet" href="/ape/latest/_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="/ape/latest/_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="/ape/latest/_static/custom.css" type="text/css" />
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+    <link rel="canonical" href="/ape/userguides/data.html" />
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/doctools.js"></script>
+        <script src="../_static/sphinx_highlight.js"></script>
+        <script data-domain="docs.apeworx.io" defer="defer" src="https://plausible.io/js/script.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <script src="../_static/custom.js"></script>
+  <script>
+      var PROJECT = "ape";
+  </script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Networks" href="networks.html" />
+    <link rel="prev" title="Compile" href="compile.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            ape
+              <img src="../_static/logo.gif" class="logo" alt="Logo"/>
+          </a>
+
+          <div class="version">
+            <label for="version-picker" id="version-picker-label">Version:</label>
+            <select id="version-picker">
+              <option value="">Select version...</option>
+              <option value="latest">latest</option>
+              <option value="stable">stable</option>
+            </select>
+          </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">User Guides</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="quickstart.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="accounts.html">Accounts</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installing_plugins.html">Plugins</a></li>
+<li class="toctree-l1"><a class="reference internal" href="projects.html">Developing Projects with Ape</a></li>
+<li class="toctree-l1"><a class="reference internal" href="compile.html">Compile</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Querying Data</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#getting-block-data">Getting Block Data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#getting-account-transaction-data">Getting Account Transaction Data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#getting-contract-event-data">Getting Contract Event Data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#using-the-cache">Using the Cache</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="networks.html">Networks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="developing_plugins.html">Developing Plugins</a></li>
+<li class="toctree-l1"><a class="reference internal" href="config.html">Configure Ape</a></li>
+<li class="toctree-l1"><a class="reference internal" href="transactions.html">Making Transactions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="console.html">Ape Console</a></li>
+<li class="toctree-l1"><a class="reference internal" href="contracts.html">Contracts</a></li>
+<li class="toctree-l1"><a class="reference internal" href="testing.html">Testing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="scripts.html">Scripting</a></li>
+<li class="toctree-l1"><a class="reference internal" href="publishing.html">Publishing</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">CLI Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../commands/accounts.html">accounts</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../commands/compile.html">compile</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../commands/console.html">console</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../commands/init.html">init</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../commands/networks.html">networks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../commands/plugins.html">plugins</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../commands/run.html">run</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../commands/test.html">test</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Python Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../methoddocs/ape.html">ape</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../methoddocs/api.html">ape.api</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../methoddocs/cli.html">ape.cli</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../methoddocs/contracts.html">ape.contracts</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../methoddocs/exceptions.html">ape.exceptions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../methoddocs/managers.html">ape.managers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../methoddocs/plugins.html">ape.plugins</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../methoddocs/types.html">ape.types</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../methoddocs/utils.html">ape.utils</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">ape</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Querying Data</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/userguides/data.md.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="querying-data">
+<h1>Querying Data<a class="headerlink" href="#querying-data" title="Permalink to this heading"></a></h1>
+<p>Ape has advanced features for querying large amounts of on-chain data.
+Ape provides this support through a number of standardized methods for working with data,
+routed through our query management system, which incorporates data from many sources in
+your set of installed plugins.</p>
+<section id="getting-block-data">
+<h2>Getting Block Data<a class="headerlink" href="#getting-block-data" title="Permalink to this heading"></a></h2>
+<p>Use <code class="docutils literal notranslate"><span class="pre">ape</span> <span class="pre">console</span></code>:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>ape<span class="w"> </span>console<span class="w"> </span>--network<span class="w"> </span>ethereum:mainnet:infura
+</pre></div>
+</div>
+<p>Run a few queries:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">In</span> <span class="p">[</span><span class="mi">1</span><span class="p">]:</span> <span class="n">df</span> <span class="o">=</span> <span class="n">chain</span><span class="o">.</span><span class="n">blocks</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s2">&quot;*&quot;</span><span class="p">,</span> <span class="n">stop_block</span><span class="o">=</span><span class="mi">20</span><span class="p">)</span>
+<span class="n">In</span> <span class="p">[</span><span class="mi">2</span><span class="p">]:</span> <span class="n">chain</span><span class="o">.</span><span class="n">blocks</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">transactions</span>  <span class="c1"># List of transactions in block</span>
+</pre></div>
+</div>
+</section>
+<section id="getting-account-transaction-data">
+<h2>Getting Account Transaction Data<a class="headerlink" href="#getting-account-transaction-data" title="Permalink to this heading"></a></h2>
+<p>Each account within ape will also fetch and store transactional data that you can query.
+To work with an account’s transaction data, you can do stuff like this:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">In</span> <span class="p">[</span><span class="mi">1</span><span class="p">]:</span> <span class="n">chain</span><span class="o">.</span><span class="n">history</span><span class="p">[</span><span class="s2">&quot;example.eth&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s2">&quot;value&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>  <span class="c1"># All value sent by this address</span>
+<span class="n">In</span> <span class="p">[</span><span class="mi">2</span><span class="p">]:</span> <span class="n">acct</span> <span class="o">=</span> <span class="n">accounts</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;my-acct&quot;</span><span class="p">);</span> <span class="n">acct</span><span class="o">.</span><span class="n">history</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>  <span class="c1"># Last txn `acct` made</span>
+<span class="n">In</span> <span class="p">[</span><span class="mi">3</span><span class="p">]:</span> <span class="n">acct</span><span class="o">.</span><span class="n">history</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s2">&quot;total_fees_paid&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>  <span class="c1"># Sum of ether paid for fees by `acct`</span>
+</pre></div>
+</div>
+</section>
+<section id="getting-contract-event-data">
+<h2>Getting Contract Event Data<a class="headerlink" href="#getting-contract-event-data" title="Permalink to this heading"></a></h2>
+<p>On a deployed contract, you can query event history.</p>
+<p>For example, we have a contract with a <code class="docutils literal notranslate"><span class="pre">FooHappened</span></code> event that you want to query from.
+This is how you would query the args from an event:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">In</span> <span class="p">[</span><span class="mi">1</span><span class="p">]:</span> <span class="n">df</span> <span class="o">=</span> <span class="n">contract_instance</span><span class="o">.</span><span class="n">FooHappened</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s2">&quot;*&quot;</span><span class="p">,</span> <span class="n">start_block</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>where <code class="docutils literal notranslate"><span class="pre">contract_instance</span></code> is the return value of <code class="docutils literal notranslate"><span class="pre">owner.deploy(MyContract)</span></code></p>
+<p>See <a class="reference external" href="../userguides/contracts.html">this guide</a> for more information how to deploy or load contracts.</p>
+</section>
+<section id="using-the-cache">
+<h2>Using the Cache<a class="headerlink" href="#using-the-cache" title="Permalink to this heading"></a></h2>
+<p><strong>Note</strong>: This is in Beta release.
+This functionality is in constant development and many features are in planning stages.
+Use the cache plugin to store provider data in a sqlite database.</p>
+<p>To use the cache, first you must initialize it for each network you plan on caching data for:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>ape<span class="w"> </span>cache<span class="w"> </span>init<span class="w"> </span>--network<span class="w"> </span>&lt;ecosystem-name&gt;:&lt;network-name&gt;
+</pre></div>
+</div>
+<p><strong>Note</strong>: Caching only works for permanently available networks. It will not work with local development networks.</p>
+<p>For example, to initialize the cache database for the Ethereum mainnet network, you would do the following:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>ape<span class="w"> </span>cache<span class="w"> </span>init<span class="w"> </span>--network<span class="w"> </span>ethereum:mainnet
+</pre></div>
+</div>
+<p>This creates a SQLite database file in ape’s data folder inside your home directory.</p>
+<p>You can query the cache database directly, for debugging purposes.
+The cache database has the following tables:</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Table Name</p></th>
+<th class="head"><p>Dataclass base</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">blocks</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">BlockAPI</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">transactions</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">ReceiptAPI</span></code></p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">contract_events</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">ContractLog</span></code></p></td>
+</tr>
+</tbody>
+</table>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="compile.html" class="btn btn-neutral float-left" title="Compile" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="networks.html" class="btn btn-neutral float-right" title="Networks" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, ApeWorX LTD.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
