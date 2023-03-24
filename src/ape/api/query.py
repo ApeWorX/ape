@@ -1,8 +1,10 @@
+from functools import lru_cache
 from typing import Any, Dict, Iterator, List, Optional, Set, Type, Union
 
 from ethpm_types.abi import EventABI, MethodABI
 from pydantic import BaseModel, NonNegativeInt, PositiveInt, root_validator
 
+from ape.api.transactions import ReceiptAPI, TransactionAPI
 from ape.logging import logger
 from ape.types import AddressType
 from ape.utils import BaseInterface, BaseInterfaceModel, abstractmethod, cached_property
@@ -16,39 +18,64 @@ QueryType = Union[
 ]
 
 
+# TODO: Replace with `functools.cache` when Py3.8 dropped
+@lru_cache(maxsize=None)
+def _basic_columns(Model: Type[BaseInterfaceModel]) -> Set[str]:
+    columns = set(Model.__fields__)
+
+    # TODO: Remove once `ReceiptAPI` fields cleaned up for better processing
+    if Model == ReceiptAPI:
+        columns.remove("transaction")
+        columns |= _basic_columns(TransactionAPI)
+
+    return columns
+
+
+# TODO: Replace with `functools.cache` when Py3.8 dropped
+@lru_cache(maxsize=None)
+def _all_columns(Model: Type[BaseInterfaceModel]) -> Set[str]:
+    columns = _basic_columns(Model)
+    # NOTE: Iterate down the series of subclasses of `Model` (e.g. Block and BlockAPI)
+    #       and get all of the public property methods of each class (which are valid columns)
+    columns |= {
+        field_name
+        for cls in Model.__mro__
+        if issubclass(cls, BaseInterfaceModel) and cls is not BaseInterfaceModel
+        for field_name, field in vars(cls).items()
+        if not field_name.startswith("_") and isinstance(field, (property, cached_property))
+    }
+
+    # TODO: Remove once `ReceiptAPI` fields cleaned up for better processing
+    if Model == ReceiptAPI:
+        columns |= _all_columns(TransactionAPI)
+
+    return columns
+
+
 def validate_and_expand_columns(columns: List[str], Model: Type[BaseInterfaceModel]) -> List[str]:
     if len(columns) == 1 and columns[0] == "*":
         # NOTE: By default, only pull explicit fields
         #       (because they are cheap to pull, but properties might not be)
-        return list(Model.__fields__)
+        return sorted(_basic_columns(Model))
 
     else:
+        # NOTE: Validate if selected columns in the total set of fields + properties
+        all_columns = _all_columns(Model)
         deduped_columns = set(columns)
         if len(deduped_columns) != len(columns):
             logger.warning(f"Duplicate fields in {columns}")
 
-        all_columns = set(Model.__fields__)
-        # NOTE: Iterate down the series of subclasses of `Model` (e.g. Block and BlockAPI)
-        #       and get all of the public property methods of each class (which are valid columns)
-        all_columns.update(
-            {
-                field
-                for cls in Model.__mro__
-                if issubclass(cls, BaseInterfaceModel) and cls != BaseInterfaceModel
-                for field in vars(cls)
-                if not field.startswith("_")
-                and isinstance(vars(cls)[field], (property, cached_property))
-            }
-        )
-
+        # NOTE: Some unrecognized fields, but can still provide the rest of the data
         if len(deduped_columns - all_columns) > 0:
             err_msg = _unrecognized_columns(deduped_columns, all_columns)
             logger.warning(err_msg)
 
+        # NOTE: Only select recognized fields and return them (in sorted order)
         selected_fields = all_columns.intersection(deduped_columns)
         if len(selected_fields) > 0:
-            return list(selected_fields)
+            return sorted(selected_fields)
 
+    # NOTE: No recognized fields available to query, so raise ValueError
     err_msg = _unrecognized_columns(deduped_columns, all_columns)
     raise ValueError(err_msg)
 
