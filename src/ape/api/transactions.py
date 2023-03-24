@@ -10,7 +10,13 @@ from pydantic.fields import Field
 from tqdm import tqdm  # type: ignore
 
 from ape.api.explorers import ExplorerAPI
-from ape.exceptions import NetworkError, TransactionError
+from ape.exceptions import (
+    NetworkError,
+    ProviderNotConnectedError,
+    SignatureError,
+    TransactionError,
+    TransactionNotFoundError,
+)
 from ape.logging import logger
 from ape.types import AddressType, ContractLogContainer, TraceFrame, TransactionSignature
 from ape.utils import BaseInterfaceModel, abstractmethod, cached_property, raises_not_implemented
@@ -96,6 +102,23 @@ class TransactionAPI(BaseInterfaceModel):
         """
         The calculated hash of the transaction.
         """
+
+    @property
+    def receipt(self) -> Optional["ReceiptAPI"]:
+        """
+        This transaction's associated published receipt,
+        if it exists.
+        """
+
+        try:
+            txn_hash = self.txn_hash.hex()
+        except SignatureError:
+            return None
+
+        try:
+            return self.provider.get_receipt(txn_hash, required_confirmations=0, timeout=0)
+        except (TransactionNotFoundError, ProviderNotConnectedError):
+            return None
 
     @abstractmethod
     def serialize_transaction(self) -> bytes:

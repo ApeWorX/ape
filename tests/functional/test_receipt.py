@@ -122,16 +122,13 @@ def test_decode_logs_unspecified_abi_gets_all_logs(owner, contract_instance):
 
 def test_get_failed_receipt(owner, vyper_contract_instance, eth_tester_provider):
     # Setting to '5' always fails.
-    transaction = vyper_contract_instance.setNumber.as_transaction(5, sender=owner, gas=100000)
 
-    # Publish failing txn
-    try:
-        owner.call(transaction)
-    except ContractLogicError:
-        pass
-
-    receipt = eth_tester_provider.get_receipt(transaction.txn_hash.hex())
-    assert receipt.failed
+    with pytest.raises(ContractLogicError) as err:
+        vyper_contract_instance.setNumber(5, sender=owner, gas=100000)
+        assert err.value.txn
+        receipt = err.value.txn.receipt
+        assert receipt
+        assert receipt.failed
 
 
 def test_receipt_raise_for_status_out_of_gas_error(mocker, ethereum):
