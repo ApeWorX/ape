@@ -79,6 +79,11 @@ jobs:
           with:
               python-version: ${{ matrix.python-version }}
 
+        - name: Setup Go
+        - uses: actions/setup-go@v4
+          with:
+            go-version: '^1.20.1'
+
         - name: Cache Geth
           id: cache-geth
           uses: actions/cache@v3
@@ -89,14 +94,7 @@ jobs:
         - name: Install Geth
           if: steps.cache-geth.outputs.cache-hit != 'true'
           run: |
-            mkdir -p $HOME/.local/bin
-
-            # Update Go
-            curl -O https://storage.googleapis.com/golang/go1.20.1.linux-amd64.tar.gz
-            tar xvf go1.20.1.linux-amd64.tar.gz
-            sudo chown -R root:root ./go
-
-            # Build Geth
+            mkdir -p $HOME/.local/bin/
             wget -O geth.tar.gz "https://github.com/ethereum/go-ethereum/archive/v$GETH_VERSION.tar.gz"
             tar -zxvf geth.tar.gz
             cd go-ethereum-$GETH_VERSION
