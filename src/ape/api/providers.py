@@ -1128,7 +1128,6 @@ class Web3Provider(ProviderAPI, ABC):
         return txn
 
     def send_transaction(self, txn: TransactionAPI) -> ReceiptAPI:
-
         try:
             if txn.signature or not txn.sender:
                 txn_hash = self.web3.eth.send_raw_transaction(txn.serialize_transaction())

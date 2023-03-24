@@ -25,7 +25,6 @@ CHAIN_ID = API_ENDPOINTS["eth"]["chainId"]()
 
 
 class LocalProvider(TestProviderAPI, Web3Provider):
-
     _evm_backend: Optional[PyEVMBackend] = None
     _CANNOT_AFFORD_GAS_PATTERN = re.compile(
         r"Sender b'[\\*|\w]*' cannot afford txn gas (\d+) with account balance (\d+)"

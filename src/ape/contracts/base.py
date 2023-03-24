@@ -122,7 +122,6 @@ class ContractCall(ManagerAccessMixin):
 
 
 class ContractMethodHandler(ManagerAccessMixin):
-
     contract: "ContractInstance"
     abis: List[MethodABI]
 
@@ -262,7 +261,6 @@ def _select_method_abi(abis: List[MethodABI], args: Union[Tuple, List]) -> Metho
 
 
 class ContractTransaction(ManagerAccessMixin):
-
     abi: MethodABI
     address: AddressType
 
@@ -721,7 +719,6 @@ class ContractInstance(BaseAddress, ContractTypeWrapper):
         """
 
         if not self._cached_receipt and self.txn_hash:
-
             try:
                 receipt = self.chain_manager.get_receipt(self.txn_hash)
             except TransactionNotFoundError:

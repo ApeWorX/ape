@@ -264,7 +264,7 @@ class Ethereum(EcosystemAPI):
             if name in ("Gnosis Safe", "Default Callback Handler") and target != ZERO_ADDRESS:
                 return ProxyInfo(type=ProxyType.GnosisSafe, target=target)
 
-        except (ApeException):
+        except ApeException:
             pass
 
         # delegate proxy, read `proxyType()` and `implementation()`
