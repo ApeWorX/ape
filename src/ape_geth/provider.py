@@ -373,22 +373,10 @@ class GethDev(BaseGethProvider, TestProviderAPI):
 
         super().disconnect()
 
-    @raises_not_implemented
-    def snapshot(self) -> SnapshotID:  # type: ignore[empty-body]
-        # TODO: Replace with impl below after
-        #  https://github.com/ethereum/go-ethereum/issues/26154 resolved
-        pass
-
-    def _snapshot(self) -> SnapshotID:
+    def snapshot(self) -> SnapshotID:
         return self.get_block("latest").number or 0
 
-    @raises_not_implemented
     def revert(self, snapshot_id: SnapshotID):
-        # TODO: Replace with impl below after
-        #  https://github.com/ethereum/go-ethereum/issues/26154 resolved
-        pass
-
-    def _revert(self, snapshot_id: SnapshotID):
         if isinstance(snapshot_id, int):
             block_number_int = snapshot_id
             block_number_hex_str = str(to_hex(snapshot_id))
