@@ -402,6 +402,7 @@
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="#ape.api.transactions.TransactionAPI"><code class="docutils literal notranslate"><span class="pre">TransactionAPI</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#ape.api.transactions.TransactionAPI.receipt"><code class="docutils literal notranslate"><span class="pre">TransactionAPI.receipt</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.transactions.TransactionAPI.serialize_transaction"><code class="docutils literal notranslate"><span class="pre">TransactionAPI.serialize_transaction()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.transactions.TransactionAPI.total_transfer_value"><code class="docutils literal notranslate"><span class="pre">TransactionAPI.total_transfer_value</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.transactions.TransactionAPI.txn_hash"><code class="docutils literal notranslate"><span class="pre">TransactionAPI.txn_hash</span></code></a></li>
@@ -3181,6 +3182,13 @@ This gets called when running tests with the <code class="docutils literal notra
 Ecosystem plugins implement one or more of transaction APIs
 depending on which schemas they permit,
 such as typed-transactions from <a class="reference external" href="https://eips.ethereum.org/EIPS/eip-1559">EIP-1559</a>.</p>
+<dl class="py property">
+<dt class="sig sig-object py" id="ape.api.transactions.TransactionAPI.receipt">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">receipt</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#ape.api.transactions.ReceiptAPI" title="ape.api.transactions.ReceiptAPI"><span class="pre">ReceiptAPI</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#ape.api.transactions.TransactionAPI.receipt" title="Permalink to this definition"></a></dt>
+<dd><p>This transaction’s associated published receipt,
+if it exists.</p>
+</dd></dl>
+
 <dl class="py method">
 <dt class="sig sig-object py" id="ape.api.transactions.TransactionAPI.serialize_transaction">
 <em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">serialize_transaction</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bytes</span></span></span><a class="headerlink" href="#ape.api.transactions.TransactionAPI.serialize_transaction" title="Permalink to this definition"></a></dt>
