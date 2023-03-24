@@ -18,7 +18,7 @@ extras_require = {
         "hypothesis-jsonschema==0.19.0",  # JSON Schema fuzzer extension
     ],
     "lint": [
-        "black>=22.12.0,<23",  # Auto-formatter and linter
+        "black>=23.1.0,<24",  # Auto-formatter and linter
         "mypy>=0.991",  # Static type analyzer
         "types-PyYAML",  # Needed due to mypy typeshed
         "types-requests",  # Needed due to mypy typeshed
@@ -38,7 +38,7 @@ extras_require = {
         # "myst-parser",  # TODO: Uncomment/re-pin once Sphinx 6 support is released
         "sphinx-click>=4.4.0,<5.0",  # For documenting CLI
         "Sphinx>=6.1.3,<7.0",  # Documentation generator
-        "sphinx_rtd_theme>=1.2.0rc3,<2",  # Readthedocs.org theme
+        "sphinx_rtd_theme>=1.2.0,<2",  # Readthedocs.org theme
         "sphinxcontrib-napoleon>=0.7",  # Allow Google-style documentation
         "sphinx-plausible>=0.1.2,<0.2.0",
     ],
@@ -97,7 +97,7 @@ setup(
         "ijson>=3.1.4,<4",
         "importlib-metadata",
         "ipython>=8.5.0,<9",
-        "packaging>=21,<22",
+        "packaging>=23.0,<24",
         "pandas>=1.3.0,<2",
         "pluggy>=0.12,<2",
         "pydantic>=1.9.2,<2",

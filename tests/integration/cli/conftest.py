@@ -63,7 +63,6 @@ def pytest_collection_modifyitems(session, config, items):
         # of the project's parametrization.
         project_name = item_name_parts[-1]
         for proj_name in project_skipper:
-
             # Example: 'test_foo[project-name-fuzz-0]' matches 'project-name'
             if project_name.startswith(proj_name):
                 project_name = proj_name

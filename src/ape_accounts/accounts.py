@@ -43,7 +43,6 @@ class AccountContainer(AccountContainerAPI):
 
 # NOTE: `AccountAPI` is an BaseInterfaceModel
 class KeyfileAccount(AccountAPI):
-
     keyfile_path: Path
     locked: bool = True
     __autosign: bool = False

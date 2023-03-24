@@ -158,7 +158,6 @@ class AccountManager(BaseManager):
         data_folder = self.config_manager.DATA_FOLDER
         data_folder.mkdir(exist_ok=True)
         for plugin_name, (container_type, account_type) in self.plugin_manager.account_types:
-
             # Ignore containers that contain test accounts.
             if issubclass(account_type, TestAccountAPI):
                 continue

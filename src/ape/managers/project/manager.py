@@ -580,7 +580,6 @@ class ProjectManager(BaseManager):
         ext = path.suffix or None
 
         def find_in_dir(dir_path: Path) -> Optional[Path]:
-
             for file_path in dir_path.iterdir():
                 if file_path.is_dir():
                     result = find_in_dir(file_path)
