@@ -7,7 +7,6 @@ from ape.exceptions import (
     APINotImplementedError,
     ContractLogicError,
     ProviderError,
-    SignatureError,
     TransactionError,
 )
 
