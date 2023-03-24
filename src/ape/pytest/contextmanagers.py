@@ -45,17 +45,12 @@ class RevertsContextManager:
         if contract.contract_type.pcmap is None:
             raise AssertionError("Compiler does not support source code mapping.")
 
-        try:
-            txn_hash = txn.txn_hash.hex()
-        except SignatureError as exc:
-            raise AssertionError(
-                "Cannot check dev message; "
-                "transaction failed before signing, "
-                "likely during gas estimation."
-            ) from exc
+        receipt = txn.receipt
+        if not receipt:
+            raise AssertionError("Cannot check dev message. Transaction never published.")
 
         try:
-            trace = deque(txn.provider.get_transaction_trace(txn_hash=txn_hash))
+            trace = deque(receipt.trace)
         except APINotImplementedError as exc:
             raise AssertionError(
                 "Cannot check dev message; provider must support transaction tracing."
