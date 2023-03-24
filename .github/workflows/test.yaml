@@ -94,7 +94,7 @@ jobs:
         - name: Install Geth
           if: steps.cache-geth.outputs.cache-hit != 'true'
           run: |
-            mkdir -p $HOME/.local/bin/
+            mkdir -p $HOME/.local/bin
             wget -O geth.tar.gz "https://github.com/ethereum/go-ethereum/archive/v$GETH_VERSION.tar.gz"
             tar -zxvf geth.tar.gz
             cd go-ethereum-$GETH_VERSION
