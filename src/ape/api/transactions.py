@@ -103,6 +103,23 @@ class TransactionAPI(BaseInterfaceModel):
         The calculated hash of the transaction.
         """
 
+    @property
+    def receipt(self) -> Optional["ReceiptAPI"]:
+        """
+        This transaction's associated published receipt,
+        if it exists.
+        """
+
+        try:
+            txn_hash = self.txn_hash.hex()
+        except SignatureError:
+            return None
+
+        try:
+            return self.provider.get_receipt(txn_hash, required_confirmations=0, timeout=0)
+        except (TransactionNotFoundError, ProviderNotConnectedError):
+            return None
+
     @abstractmethod
     def serialize_transaction(self) -> bytes:
         """
@@ -124,22 +141,6 @@ class TransactionAPI(BaseInterfaceModel):
             data["data"] = "0x" + bytes(data["data"]).hex()
         params = "\n  ".join(f"{k}: {v}" for k, v in data.items())
         return f"{self.__class__.__name__}:\n  {params}"
-
-    def as_receipt(self) -> Optional["ReceiptAPI"]:
-        """
-        Return this transaction's associated published receipt,
-        if it exists.
-        """
-
-        try:
-            txn_hash = self.txn_hash.hex()
-        except SignatureError:
-            return None
-
-        try:
-            return self.provider.get_receipt(txn_hash)
-        except (TransactionNotFoundError, ProviderNotConnectedError):
-            return None
 
 
 class ConfirmationsProgressBar:
