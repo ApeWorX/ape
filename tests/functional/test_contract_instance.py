@@ -114,6 +114,12 @@ def test_revert_specify_gas(sender, contract_instance, gas):
         contract_instance.setNumber(5, sender=sender, gas=gas)
 
 
+def test_revert_no_message_specify_gas(owner, contract_instance):
+    expected = "Transaction failed."  # Default message
+    with pytest.raises(ContractLogicError, match=expected):
+        contract_instance.setNumber(5, sender=owner, gas=200000)
+
+
 def test_revert_static_fee_type(sender, contract_instance):
     with pytest.raises(ContractLogicError, match="!authorized"):
         contract_instance.setNumber(5, sender=sender, type=0)
