@@ -117,7 +117,7 @@ setup(
         "eth-typing>=3.1,<4",
         "eth-utils>=2.0.0,<3",
         "hexbytes>=0.2.3,<1",
-        "py-geth>=3.8.0,<4",
+        "py-geth>=3.11.0,<4",
         "web3[tester]==6.0.0b7",
         # ** Dependencies maintained by ApeWorX **
         "eip712>=0.2.0,<0.3",

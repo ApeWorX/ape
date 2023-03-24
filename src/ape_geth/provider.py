@@ -67,6 +67,8 @@ class GethDevProcess(LoggingMixin, BaseGethProcess):
         self.data_dir = base_directory / "dev"
         self._hostname = hostname
         self._port = port
+        self.data_dir.mkdir(exist_ok=True, parents=True)
+
         geth_kwargs = construct_test_chain_kwargs(
             data_dir=self.data_dir,
             rpc_addr=hostname,
@@ -83,6 +85,7 @@ class GethDevProcess(LoggingMixin, BaseGethProcess):
         self._clean()
 
         sealer = ensure_account_exists(**geth_kwargs).decode().replace("0x", "")
+        geth_kwargs["miner_etherbase"] = sealer
         accounts = generate_dev_accounts(mnemonic, number_of_accounts=number_of_accounts)
         genesis_data: Dict = {
             "overwrite": True,
