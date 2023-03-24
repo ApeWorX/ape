@@ -10,7 +10,13 @@ from pydantic.fields import Field
 from tqdm import tqdm  # type: ignore
 
 from ape.api.explorers import ExplorerAPI
-from ape.exceptions import NetworkError, TransactionError
+from ape.exceptions import (
+    NetworkError,
+    ProviderNotConnectedError,
+    SignatureError,
+    TransactionError,
+    TransactionNotFoundError,
+)
 from ape.logging import logger
 from ape.types import AddressType, ContractLogContainer, TraceFrame, TransactionSignature
 from ape.utils import BaseInterfaceModel, abstractmethod, cached_property, raises_not_implemented
@@ -118,6 +124,22 @@ class TransactionAPI(BaseInterfaceModel):
             data["data"] = "0x" + bytes(data["data"]).hex()
         params = "\n  ".join(f"{k}: {v}" for k, v in data.items())
         return f"{self.__class__.__name__}:\n  {params}"
+
+    def as_receipt(self) -> Optional["ReceiptAPI"]:
+        """
+        Return this transaction's associated published receipt,
+        if it exists.
+        """
+
+        try:
+            txn_hash = self.txn_hash.hex()
+        except SignatureError:
+            return None
+
+        try:
+            return self.provider.get_receipt(txn_hash)
+        except (TransactionNotFoundError, ProviderNotConnectedError):
+            return None
 
 
 class ConfirmationsProgressBar:
