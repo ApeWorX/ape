@@ -67,6 +67,8 @@ class GethDevProcess(LoggingMixin, BaseGethProcess):
         self.data_dir = base_directory / "dev"
         self._hostname = hostname
         self._port = port
+        self.data_dir.mkdir(exist_ok=True, parents=True)
+
         geth_kwargs = construct_test_chain_kwargs(
             data_dir=self.data_dir,
             rpc_addr=hostname,
@@ -83,6 +85,7 @@ class GethDevProcess(LoggingMixin, BaseGethProcess):
         self._clean()
 
         sealer = ensure_account_exists(**geth_kwargs).decode().replace("0x", "")
+        geth_kwargs["miner_etherbase"] = sealer
         accounts = generate_dev_accounts(mnemonic, number_of_accounts=number_of_accounts)
         genesis_data: Dict = {
             "overwrite": True,
@@ -373,22 +376,10 @@ class GethDev(BaseGethProvider, TestProviderAPI):
 
         super().disconnect()
 
-    @raises_not_implemented
-    def snapshot(self) -> SnapshotID:  # type: ignore[empty-body]
-        # TODO: Replace with impl below after
-        #  https://github.com/ethereum/go-ethereum/issues/26154 resolved
-        pass
-
-    def _snapshot(self) -> SnapshotID:
+    def snapshot(self) -> SnapshotID:
         return self.get_block("latest").number or 0
 
-    @raises_not_implemented
     def revert(self, snapshot_id: SnapshotID):
-        # TODO: Replace with impl below after
-        #  https://github.com/ethereum/go-ethereum/issues/26154 resolved
-        pass
-
-    def _revert(self, snapshot_id: SnapshotID):
         if isinstance(snapshot_id, int):
             block_number_int = snapshot_id
             block_number_hex_str = str(to_hex(snapshot_id))

@@ -67,7 +67,7 @@ jobs:
 
         env:
           GITHUB_ACCESS_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GETH_VERSION: 1.10.26
+          GETH_VERSION: 1.11.5
 
         steps:
         - uses: actions/checkout@v3
@@ -78,6 +78,11 @@ jobs:
           uses: actions/setup-python@v4
           with:
               python-version: ${{ matrix.python-version }}
+
+        - name: Setup Go
+          uses: actions/setup-go@v4
+          with:
+            go-version: '^1.20.1'
 
         - name: Cache Geth
           id: cache-geth
