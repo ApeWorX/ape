@@ -28,12 +28,11 @@ CONSOLE_EXTRAS_FILENAME = "ape_console_extras.py"
     context_settings=dict(ignore_unknown_options=True),
 )
 @network_option()
-@click.option("--embed", hidden=True, is_flag=True)  # used for testing.
 @ape_cli_context()
-def cli(cli_ctx, network, embed):
+def cli(cli_ctx, network):
     """Opens a console for the local project."""
     verbose = cli_ctx.logger.level == logging.DEBUG
-    return console(verbose=verbose, embed=embed)
+    return console(verbose=verbose)
 
 
 def import_extras_file(file_path) -> ModuleType:
@@ -128,8 +127,12 @@ def console(project=None, verbose=None, extra_locals=None, embed=False):
         namespace.update(console_extras)
 
     ipy_config = IPythonConfig()
-    if environ.get("APE_TESTING"):
+    ape_testing = environ.get("APE_TESTING")
+    if ape_testing:
         ipy_config.HistoryManager.enabled = False
+
+        # Required for click.testing.CliRunner support.
+        embed = True
 
     ipython_kwargs = {"user_ns": namespace, "config": ipy_config}
     if embed:
