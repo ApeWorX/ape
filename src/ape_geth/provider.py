@@ -119,13 +119,10 @@ class GethDevProcess(LoggingMixin, BaseGethProcess):
             return path
 
         initialize_chain(genesis_data, **geth_kwargs)
-        std_out = make_logs_paths("stdout")
-        std_err = make_logs_paths("stderr")
-
         super().__init__(
             geth_kwargs,
-            stdout_logfile_path=std_out,
-            stderr_logfile_path=std_err,
+            stdout_logfile_path=make_logs_paths("stdout"),
+            stderr_logfile_path=make_logs_paths("stderr"),
         )
 
     @classmethod
@@ -154,9 +151,8 @@ class GethDevProcess(LoggingMixin, BaseGethProcess):
     def start(self):
         if self.is_running:
             raise ValueError("Already running")
-        self.is_running = True
 
-        logger.info("Launching geth: %s", " ".join(self.command))
+        self.is_running = True
         out_file = PIPE if logger.level <= LogLevel.DEBUG else DEVNULL
         self.proc = Popen(
             self.command,
