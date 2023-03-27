@@ -7,7 +7,7 @@ from hexbytes import HexBytes
 from pydantic import BaseModel
 
 from ape import Contract
-from ape.contracts import ContractInstance
+from ape.contracts import ContractContainer, ContractInstance
 from ape.exceptions import ChainError, ContractError, ContractLogicError
 from ape.types import AddressType
 from ape.utils import ZERO_ADDRESS
@@ -123,6 +123,15 @@ def test_revert_no_message_specify_gas(owner, contract_instance):
 def test_revert_static_fee_type(sender, contract_instance):
     with pytest.raises(ContractLogicError, match="!authorized"):
         contract_instance.setNumber(5, sender=sender, type=0)
+
+
+def test_revert_custom_exception(owner, get_contract_type, test_accounts):
+    ct = get_contract_type("has_error")
+    contract = owner.deploy(ContractContainer(ct))
+
+    # TODO: Improve once https://github.com/ethereum/eth-tester/issues/253 released
+    with pytest.raises(ContractLogicError, match=r"\\x82\\xb4\)\\x00"):
+        contract.withdraw(sender=test_accounts[7])
 
 
 def test_call_using_block_identifier(

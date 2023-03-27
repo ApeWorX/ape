@@ -21,18 +21,18 @@ PROJECT_PATH = Path(__file__).parent
 CONTRACTS_FOLDER = PROJECT_PATH / "data" / "contracts" / "ethereum" / "local"
 
 
-def _get_raw_contract(name: str) -> str:
-    return (CONTRACTS_FOLDER / f"{name}.json").read_text()
+@pytest.fixture
+def get_contract_type():
+    def fn(name: str) -> ContractType:
+        return ContractType.parse_file(CONTRACTS_FOLDER / f"{name}.json")
+
+    return fn
 
 
 ALIAS_2 = "__FUNCTIONAL_TESTS_ALIAS_2__"
-RAW_SOLIDITY_CONTRACT_TYPE = _get_raw_contract("solidity_contract")
-RAW_VYPER_CONTRACT_TYPE = _get_raw_contract("vyper_contract")
-RAW_REVERTS_CONTRACT_TYPE = _get_raw_contract("reverts_contract")
 TEST_ADDRESS = "0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045"
 BASE_PROJECTS_DIRECTORY = (Path(__file__).parent / "data" / "projects").absolute()
 PROJECT_WITH_LONG_CONTRACTS_FOLDER = BASE_PROJECTS_DIRECTORY / "LongContractsFolder"
-DS_NOTE_TEST_CONTRACT_TYPE = _get_raw_contract("ds_note_test")
 APE_PROJECT_FOLDER = BASE_PROJECTS_DIRECTORY / "ApeProject"
 BASE_SOURCES_DIRECTORY = (Path(__file__).parent / "data/sources").absolute()
 
@@ -99,8 +99,8 @@ def second_keyfile_account(sender, keyparams, temp_accounts_path, temp_keyfile_a
 
 
 @pytest.fixture
-def solidity_contract_type() -> ContractType:
-    return ContractType.parse_raw(RAW_SOLIDITY_CONTRACT_TYPE)
+def solidity_contract_type(get_contract_type) -> ContractType:
+    return get_contract_type("solidity_contract")
 
 
 @pytest.fixture
@@ -116,8 +116,8 @@ def solidity_contract_instance(
 
 
 @pytest.fixture
-def vyper_contract_type() -> ContractType:
-    return ContractType.parse_raw(RAW_VYPER_CONTRACT_TYPE)
+def vyper_contract_type(get_contract_type) -> ContractType:
+    return get_contract_type("vyper_contract")
 
 
 @pytest.fixture
@@ -133,8 +133,8 @@ def vyper_contract_instance(
 
 
 @pytest.fixture
-def reverts_contract_type() -> ContractType:
-    result = ContractType.parse_raw(RAW_REVERTS_CONTRACT_TYPE)
+def reverts_contract_type(get_contract_type) -> ContractType:
+    result = get_contract_type("reverts_contract")
     result.dev_messages = {
         6: "dev: one",
         7: "dev: error",
@@ -172,8 +172,8 @@ def contract_instance(
 
 
 @pytest.fixture
-def ds_note_test_contract(eth_tester_provider, vyper_contract_type, owner):
-    contract_type = ContractType.parse_raw(DS_NOTE_TEST_CONTRACT_TYPE)
+def ds_note_test_contract(eth_tester_provider, vyper_contract_type, owner, get_contract_type):
+    contract_type = get_contract_type("ds_note_test")
     contract_container = ContractContainer(contract_type=contract_type)
     return contract_container.deploy(sender=owner)
 
@@ -391,9 +391,8 @@ def dummy_live_network(chain):
 
 
 @pytest.fixture
-def proxy_contract_container():
-    contract_type = ContractType.parse_raw(_get_raw_contract("proxy"))
-    return ContractContainer(contract_type)
+def proxy_contract_container(get_contract_type):
+    return ContractContainer(get_contract_type("proxy"))
 
 
 @pytest.fixture
@@ -429,14 +428,14 @@ def unique_calldata():
 
 
 @pytest.fixture
-def contract_for_trace(owner, geth_provider):
-    def get_contract_type(suffix: str) -> ContractType:
-        return ContractType.parse_file(CONTRACTS_FOLDER / f"contract_{suffix}.json")
+def contract_for_trace(owner, geth_provider, get_contract_type):
+    def get_ct(suffix: str) -> ContractType:
+        return get_contract_type(f"contract_{suffix}")
 
-    contract_c = owner.deploy(ContractContainer(get_contract_type("c")))
-    contract_b = owner.deploy(ContractContainer(get_contract_type("b")), contract_c.address)
+    contract_c = owner.deploy(ContractContainer(get_ct("c")))
+    contract_b = owner.deploy(ContractContainer(get_ct("b")), contract_c.address)
     contract_a = owner.deploy(
-        ContractContainer(get_contract_type("a")), contract_b.address, contract_c.address
+        ContractContainer(get_ct("a")), contract_b.address, contract_c.address
     )
 
     return contract_a

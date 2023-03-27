@@ -205,9 +205,7 @@ def test_deploy_and_not_publish(mocker, owner, contract_container, dummy_live_ne
     assert not mock_explorer.call_count
 
 
-def test_deploy_proxy(
-    owner, project, vyper_contract_instance, proxy_contract_container, chain, eth_tester_provider
-):
+def test_deploy_proxy(owner, vyper_contract_instance, proxy_contract_container, chain):
     target = vyper_contract_instance.address
     proxy = owner.deploy(proxy_contract_container, target)
     assert proxy.address in chain.contracts._local_contract_types

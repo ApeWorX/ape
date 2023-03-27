@@ -198,7 +198,10 @@ class LocalProvider(TestProviderAPI, Web3Provider):
 
         elif isinstance(exception, TransactionFailed):
             err_message = str(exception).split("execution reverted: ")[-1] or None
-            err_message = None if err_message == "b''" else err_message
+
+            if err_message and err_message.startswith("b'") and err_message.endswith("'"):
+                err_message = err_message.lstrip("b'").rstrip("'")
+
             return ContractLogicError(revert_message=err_message, txn=txn)
 
         else:
