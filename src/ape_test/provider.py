@@ -1,10 +1,12 @@
 import re
+from ast import literal_eval
 from typing import Optional, cast
 
 from eth.exceptions import HeaderNotFound
 from eth_tester.backends import PyEVMBackend  # type: ignore
 from eth_tester.exceptions import TransactionFailed  # type: ignore
 from eth_utils.exceptions import ValidationError
+from ethpm_types import HexBytes
 from web3 import EthereumTesterProvider, Web3
 from web3.middleware import simple_cache_middleware
 from web3.providers.eth_tester.defaults import API_ENDPOINTS
@@ -200,7 +202,7 @@ class LocalProvider(TestProviderAPI, Web3Provider):
             err_message = str(exception).split("execution reverted: ")[-1] or None
 
             if err_message and err_message.startswith("b'") and err_message.endswith("'"):
-                err_message = err_message.lstrip("b'").rstrip("'")
+                err_message = HexBytes(literal_eval(err_message)).hex()
 
             return ContractLogicError(revert_message=err_message, txn=txn)
 

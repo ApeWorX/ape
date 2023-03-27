@@ -2,7 +2,7 @@ import re
 from typing import List, Tuple
 
 import pytest
-from eth_utils import is_checksum_address, to_hex
+from eth_utils import decode_hex, is_checksum_address, keccak, to_hex
 from hexbytes import HexBytes
 from pydantic import BaseModel
 
@@ -129,8 +129,8 @@ def test_revert_custom_exception(owner, get_contract_type, test_accounts):
     ct = get_contract_type("has_error")
     contract = owner.deploy(ContractContainer(ct))
 
-    # TODO: Improve once https://github.com/ethereum/eth-tester/issues/253 released
-    with pytest.raises(ContractLogicError, match=r"\\x82\\xb4\)\\x00"):
+    expected = HexBytes(decode_hex(keccak(text="Unauthorized()").hex()[:8])).hex()
+    with pytest.raises(ContractLogicError, match=expected):
         contract.withdraw(sender=test_accounts[7])
 
 
