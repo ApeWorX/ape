@@ -2,12 +2,12 @@ import re
 from typing import List, Tuple
 
 import pytest
-from eth_utils import is_checksum_address, to_hex
+from eth_utils import is_checksum_address, keccak, to_hex
 from hexbytes import HexBytes
 from pydantic import BaseModel
 
 from ape import Contract
-from ape.contracts import ContractInstance
+from ape.contracts import ContractContainer, ContractInstance
 from ape.exceptions import ChainError, ContractError, ContractLogicError
 from ape.types import AddressType
 from ape.utils import ZERO_ADDRESS
@@ -123,6 +123,15 @@ def test_revert_no_message_specify_gas(owner, contract_instance):
 def test_revert_static_fee_type(sender, contract_instance):
     with pytest.raises(ContractLogicError, match="!authorized"):
         contract_instance.setNumber(5, sender=sender, type=0)
+
+
+def test_revert_custom_exception(owner, get_contract_type, test_accounts):
+    ct = get_contract_type("has_error")
+    contract = owner.deploy(ContractContainer(ct))
+
+    expected = HexBytes(keccak(text="Unauthorized()"))[:4].hex()
+    with pytest.raises(ContractLogicError, match=expected):
+        contract.withdraw(sender=test_accounts[7])
 
 
 def test_call_using_block_identifier(
