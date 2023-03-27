@@ -2,7 +2,7 @@ import re
 from typing import List, Tuple
 
 import pytest
-from eth_utils import decode_hex, is_checksum_address, keccak, to_hex
+from eth_utils import is_checksum_address, keccak, to_hex
 from hexbytes import HexBytes
 from pydantic import BaseModel
 
