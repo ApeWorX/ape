@@ -74,11 +74,16 @@ def clean_console_rc_write(project):
 @skip_projects("geth")
 @pytest.mark.parametrize("item", __all__)
 def test_console(ape_cli, runner, item):
-    result = runner.invoke(ape_cli, ["console"], input=f"{item}\nexit\n", catch_exceptions=False)
+    result = runner.invoke(
+        ape_cli, ["console", "--embed"], input=f"{item}\nexit\n", catch_exceptions=False
+    )
     assert result.exit_code == 0, result.output
     assert no_console_error(result), result.output
     result = runner.invoke(
-        ape_cli, ["console", "-v", "debug"], input=f"{item}\nexit\n", catch_exceptions=False
+        ape_cli,
+        ["console", "-v", "debug", "--embed"],
+        input=f"{item}\nexit\n",
+        catch_exceptions=False,
     )
     assert result.exit_code == 0, result.output
     assert no_console_error(result), result.output
@@ -91,7 +96,7 @@ def test_console_extras(project, folder, ape_cli, runner):
 
     result = runner.invoke(
         ape_cli,
-        ["console"],
+        ["console", "--embed"],
         input="\n".join(["assert A == 1", "exit"]) + "\n",
         catch_exceptions=False,
     )
@@ -100,7 +105,7 @@ def test_console_extras(project, folder, ape_cli, runner):
 
     result = runner.invoke(
         ape_cli,
-        ["console"],
+        ["console", "--embed"],
         input="\n".join(["assert a() == 1", "exit"]) + "\n",
         catch_exceptions=False,
     )
@@ -113,7 +118,10 @@ def test_console_extras(project, folder, ape_cli, runner):
 def test_console_init_extras(project, folder, ape_cli, runner):
     write_ape_console_extras(project, folder, EXTRAS_SCRIPT_2)
     result = runner.invoke(
-        ape_cli, ["console"], input="print('a:', A)\nassert A == 2\nexit\n", catch_exceptions=False
+        ape_cli,
+        ["console", "--embed"],
+        input="print('a:', A)\nassert A == 2\nexit\n",
+        catch_exceptions=False,
     )
     assert result.exit_code == 0, result.output
     assert no_console_error(result), result.output
@@ -124,7 +132,7 @@ def test_console_init_extras(project, folder, ape_cli, runner):
 def test_console_init_extras_kwargs(project, folder, ape_cli, runner):
     write_ape_console_extras(project, folder, EXTRAS_SCRIPT_3)
 
-    result = runner.invoke(ape_cli, ["console"], input="exit\n", catch_exceptions=False)
+    result = runner.invoke(ape_cli, ["console", "--embed"], input="exit\n", catch_exceptions=False)
     assert result.exit_code == 0, result.output
     assert no_console_error(result), result.output
 
@@ -137,7 +145,7 @@ def test_console_init_extras_return(project, folder, ape_cli, runner):
     # Test asserts returned A exists and B is not overwritten
     result = runner.invoke(
         ape_cli,
-        ["console"],
+        ["console", "--embed"],
         input="\n".join(
             [
                 "assert A == 1, 'unexpected A'",
@@ -157,7 +165,7 @@ def test_console_init_extras_return(project, folder, ape_cli, runner):
 def test_console_import_local_path(project, ape_cli, runner):
     result = runner.invoke(
         ape_cli,
-        ["console"],
+        ["console", "--embed"],
         input="\n".join(["from dependency_in_project_only.importme import import_me", "exit"])
         + "\n",
     )
@@ -171,7 +179,7 @@ def test_console_import_local_path_in_extras_file(project, ape_cli, runner):
 
     result = runner.invoke(
         ape_cli,
-        ["console"],
+        ["console", "--embed"],
         input="exit\n",
         catch_exceptions=False,
     )
@@ -183,8 +191,8 @@ def test_console_import_local_path_in_extras_file(project, ape_cli, runner):
 def test_console_ape_magic(ape_cli, runner):
     result = runner.invoke(
         ape_cli,
-        ["console"],
-        input="%ape --help\nexit\n",
+        ["console", "--embed"],
+        input="%load_ext ape_console.plugin\n%ape--help\nexit\n",
         catch_exceptions=False,
     )
     assert result.exit_code == 0, result.output
@@ -193,12 +201,18 @@ def test_console_ape_magic(ape_cli, runner):
 
 @skip_projects_except("only-dependencies")
 def test_console_bal_magic(ape_cli, runner, keyfile_account):
-    cases = ("%bal acct", "%bal acct.alias", "%bal acct.address", "%bal int(acct.address, 16)")
+    cases = (
+        "%load_ext ape_console.plugin",
+        "%bal acct",
+        "%bal acct.alias",
+        "%bal acct.address",
+        "%bal int(acct.address, 16)",
+    )
     cmd_ls = [f"acct = accounts.load('{keyfile_account.alias}')", *cases, "exit"]
     cmd_str = "\n".join(cmd_ls)
     result = runner.invoke(
         ape_cli,
-        ["console"],
+        ["console", "--embed"],
         input=f"{cmd_str}\n",
         catch_exceptions=False,
     )
