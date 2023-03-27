@@ -202,8 +202,11 @@ class LocalProvider(TestProviderAPI, Web3Provider):
             err_message = str(exception).split("execution reverted: ")[-1] or None
 
             if err_message and err_message.startswith("b'") and err_message.endswith("'"):
+                # Convert stringified bytes str like `"b'\\x82\\xb4)\\x00'"` to `"0x82b42900"`.
+                # (Notice the `b'` is within the `"` on the first str).
                 err_message = HexBytes(literal_eval(err_message)).hex()
 
+            err_message = None if err_message == "0x" else err_message
             return ContractLogicError(revert_message=err_message, txn=txn)
 
         else:
