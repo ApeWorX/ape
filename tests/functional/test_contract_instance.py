@@ -129,7 +129,7 @@ def test_revert_custom_exception(owner, get_contract_type, test_accounts):
     ct = get_contract_type("has_error")
     contract = owner.deploy(ContractContainer(ct))
 
-    expected = HexBytes(decode_hex(keccak(text="Unauthorized()").hex()[:8])).hex()
+    expected = HexBytes(keccak(text="Unauthorized()"))[:4].hex()
     with pytest.raises(ContractLogicError, match=expected):
         contract.withdraw(sender=test_accounts[7])
 
