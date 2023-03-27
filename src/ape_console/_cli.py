@@ -126,22 +126,19 @@ def console(project=None, verbose=None, extra_locals=None, embed=False):
     if console_extras:
         namespace.update(console_extras)
 
-    _config = IPythonConfig()
+    ipy_config = IPythonConfig()
     if environ.get("APE_TESTING"):
-        _config.HistoryManager.enabled = False
+        ipy_config.HistoryManager.enabled = False
 
-    ipython_kwargs = {
-        "colors": "Neutral",
-        "banner1": banner,
-        "user_ns": namespace,
-        "config": _config,
-    }
+    ipython_kwargs = {"user_ns": namespace, "config": ipy_config}
     if embed:
-        IPython.embed(**ipython_kwargs)
+        IPython.embed(**ipython_kwargs, colors="Neutral", banner1=banner)
     else:
+        ipy_config.TerminalInteractiveShell.colors = "Neutral"
+        ipy_config.TerminalInteractiveShell.banner1 = banner
         console_config = cast(ConsoleConfig, ape.config.get_config("console"))
-        arguments = ["--ext", "ape_console.plugin"]
+        ipy_config.InteractiveShellApp.extensions.append("ape_console.plugin")
         if console_config.plugins:
-            arguments.extend(["--InteractiveShellApp.extensions", *console_config.plugins])
+            ipy_config.InteractiveShellApp.extensions.extend(console_config.plugins)
 
-        IPython.start_ipython(**ipython_kwargs, argv=arguments)
+        IPython.start_ipython(**ipython_kwargs, argv=())
