@@ -28,7 +28,7 @@ CONSOLE_EXTRAS_FILENAME = "ape_console_extras.py"
     context_settings=dict(ignore_unknown_options=True),
 )
 @network_option()
-@click.option("--embed", help="Use an embedded IPython", is_flag=True)
+@click.option("--embed", hidden=True, is_flag=True)
 @ape_cli_context()
 def cli(cli_ctx, network, embed):
     """Opens a console for the local project."""
