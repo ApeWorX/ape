@@ -1,6 +1,7 @@
 import shutil
 from abc import ABC
 from pathlib import Path
+from subprocess import DEVNULL, PIPE, Popen
 from typing import Any, Dict, Iterator, List, Optional, Union
 
 import ijson  # type: ignore
@@ -31,7 +32,7 @@ from yarl import URL
 
 from ape.api import PluginConfig, TestProviderAPI, TransactionAPI, UpstreamProvider, Web3Provider
 from ape.exceptions import APINotImplementedError, ProviderError
-from ape.logging import logger
+from ape.logging import LogLevel, logger
 from ape.types import CallTreeNode, SnapshotID, TraceFrame
 from ape.utils import (
     DEFAULT_NUMBER_OF_TEST_ACCOUNTS,
@@ -68,6 +69,7 @@ class GethDevProcess(LoggingMixin, BaseGethProcess):
         self._hostname = hostname
         self._port = port
         self.data_dir.mkdir(exist_ok=True, parents=True)
+        self.is_running = False
 
         geth_kwargs = construct_test_chain_kwargs(
             data_dir=self.data_dir,
@@ -118,7 +120,7 @@ class GethDevProcess(LoggingMixin, BaseGethProcess):
             return path
 
         initialize_chain(genesis_data, **geth_kwargs)
-
+        self.proc: Optional[Popen] = None
         super().__init__(
             geth_kwargs,
             stdout_logfile_path=make_logs_paths("stdout"),
@@ -147,6 +149,19 @@ class GethDevProcess(LoggingMixin, BaseGethProcess):
         logger.info(f"Starting geth with RPC address '{self._hostname}:{self._port}'.")
         self.start()
         self.wait_for_rpc(timeout=60)
+
+    def start(self):
+        if self.is_running:
+            return
+
+        self.is_running = True
+        out_file = PIPE if logger.level <= LogLevel.DEBUG else DEVNULL
+        self.proc = Popen(
+            self.command,
+            stdin=PIPE,
+            stdout=out_file,
+            stderr=out_file,
+        )
 
     def disconnect(self):
         if self.is_running:
