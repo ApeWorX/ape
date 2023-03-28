@@ -8,6 +8,13 @@ from pydantic.dataclasses import dataclass
 from ape.types import AddressType
 
 
+def _left_pad_bytes(val: bytes, num_bytes: int) -> bytes:
+    if len(val) < num_bytes:
+        return b"\x00" * (num_bytes - len(val)) + val
+
+    return val
+
+
 @dataclass(frozen=True)
 class _Signature:
     v: int
@@ -24,10 +31,10 @@ class _Signature:
         return f"<{self.__class__.__name__} v={self.v} r={to_hex(self.r)} s={to_hex(self.s)}>"
 
     def encode_vrs(self) -> bytes:
-        return to_bytes(self.v) + self.r + self.s
+        return to_bytes(self.v) + _left_pad_bytes(self.r, 32) + _left_pad_bytes(self.s, 32)
 
     def encode_rsv(self) -> bytes:
-        return self.r + self.s + to_bytes(self.v)
+        return _left_pad_bytes(self.r, 32) + _left_pad_bytes(self.s, 32) + to_bytes(self.v)
 
 
 class MessageSignature(_Signature):
