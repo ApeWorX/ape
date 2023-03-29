@@ -802,7 +802,9 @@ class Web3Provider(ProviderAPI, ABC):
 
         block_id = kwargs.pop("block_identifier", None)
         try:
-            return self.web3.eth.get_storage_at(address, slot, block_identifier=block_id)
+            return self.web3.eth.get_storage_at(
+                address, slot, block_identifier=block_id  # type: ignore
+            )
         except ValueError as err:
             if "RPC Endpoint has not been implemented" in str(err):
                 raise APINotImplementedError(str(err)) from err
