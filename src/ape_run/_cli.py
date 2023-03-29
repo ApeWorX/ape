@@ -33,10 +33,7 @@ class ScriptCommand(click.MultiCommand):
             if ctx.params["interactive"]:
                 # Print the exception trace and then launch the console
                 # Attempt to use source-traceback style printing.
-                if (
-                    not isinstance(err, TransactionError)
-                    or not handle_transaction_error(err)
-                ):
+                if not isinstance(err, TransactionError) or not handle_transaction_error(err):
                     err_info = traceback.format_exc()
                     click.echo(err_info)
 

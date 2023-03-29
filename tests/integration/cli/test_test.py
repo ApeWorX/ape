@@ -57,14 +57,22 @@ def setup_pytester(pytester):
         tests_path = BASE_PROJECTS_PATH / project_name / "tests"
 
         # Assume all tests should pass
-        number_of_tests = 0
+        num_passes = 0
+        num_failed = 0
         test_files = {}
         for file_path in tests_path.iterdir():
             if file_path.name.startswith("test_") and file_path.suffix == ".py":
                 content = file_path.read_text()
                 test_files[file_path.name] = content
-                number_of_tests += len(
-                    [x for x in content.split("\n") if x.startswith("def test_")]
+                num_passes += len(
+                    [
+                        x
+                        for x in content.split("\n")
+                        if x.startswith("def test_") and not x.startswith("def test_fail_")
+                    ]
+                )
+                num_failed += len(
+                    [x for x in content.split("\n") if x.startswith("def test_fail_")]
                 )
 
         pytester.makepyfile(**test_files)
@@ -75,13 +83,17 @@ def setup_pytester(pytester):
             pytester.makeconftest(conftest.read_text())
 
         # Returns expected number of passing tests.
-        return number_of_tests
+        return num_passes, num_failed
 
     return setup
 
 
-def run_gas_test(result, expected_number_passed: int, expected_report: str = EXPECTED_GAS_REPORT):
-    result.assert_outcomes(passed=expected_number_passed), "\n".join(result.outlines)
+def run_gas_test(
+    result, expected_passed: int, expected_failed: int, expected_report: str = EXPECTED_GAS_REPORT
+):
+    result.assert_outcomes(passed=expected_passed, failed=expected_failed), "\n".join(
+        result.outlines
+    )
 
     gas_header_line_index = None
     for index, line in enumerate(result.outlines):
@@ -111,11 +123,26 @@ def run_gas_test(result, expected_number_passed: int, expected_report: str = EXP
 
 
 @skip_projects_except("test", "with-contracts")
-def test_test(networks, setup_pytester, project, pytester, eth_tester_provider):
+def test_test(setup_pytester, project, pytester, eth_tester_provider):
     _ = eth_tester_provider  # Ensure using EthTester for this test.
-    expected_test_passes = setup_pytester(project.path.name)
+    passed, failed = setup_pytester(project.path.name)
     result = pytester.runpytest()
-    result.assert_outcomes(passed=expected_test_passes), "\n".join(result.outlines)
+    result.assert_outcomes(passed=passed, failed=failed), "\n".join(result.outlines)
+
+
+@skip_projects_except("with-contracts")
+def test_uncaught_txn_err(setup_pytester, project, pytester, eth_tester_provider):
+    _ = eth_tester_provider  # Ensure using EthTester for this test.
+    setup_pytester(project.path.name)
+    result = pytester.runpytest()
+    expected = """
+    contract_in_test.setNumber(5, sender=owner)
+E   ape.exceptions.ContractLogicError: Transaction failed.
+        contract_from_fixture = <ContractA 0x274b028b03A250cA03644E6c578D81f019eE1323>
+        contract_in_test = <ContractA 0xBcF7FFFD8B256Ec51a36782a52D0c34f6474D951>
+        owner      = <TestAccount 0x1e59ce931B4CFea3fe4B875411e280e173cB7A9C>
+    """.strip()
+    assert expected in str(result.stdout)
 
 
 @skip_projects_except("test", "with-contracts")
@@ -154,15 +181,15 @@ def test_gas_flag_when_not_supported(setup_pytester, project, pytester, eth_test
 @geth_process_test
 @skip_projects_except("geth")
 def test_gas_flag_in_tests(geth_provider, setup_pytester, project, pytester):
-    expected_test_passes = setup_pytester(project.path.name)
+    passes, failed = setup_pytester(project.path.name)
     result = pytester.runpytest("--gas")
-    run_gas_test(result, expected_test_passes)
+    run_gas_test(result, passes, failed)
 
 
 @geth_process_test
 @skip_projects_except("geth")
 def test_gas_flag_set_in_config(geth_provider, setup_pytester, project, pytester, switch_config):
-    expected_test_passes = setup_pytester(project.path.name)
+    passed, failed = setup_pytester(project.path.name)
     config_content = f"""
     geth:
       ethereum:
@@ -177,19 +204,19 @@ def test_gas_flag_set_in_config(geth_provider, setup_pytester, project, pytester
 
     with switch_config(project, config_content):
         result = pytester.runpytest()
-        run_gas_test(result, expected_test_passes)
+        run_gas_test(result, passed, failed)
 
 
 @geth_process_test
 @skip_projects_except("geth")
 def test_gas_flag_exclude_using_cli_option(geth_provider, setup_pytester, project, pytester):
-    expected_test_passes = setup_pytester(project.path.name)
+    passes, failed = setup_pytester(project.path.name)
     # NOTE: Includes both a mutable and a view method.
     expected = filter_expected_methods("fooAndBar", "myNumber")
     # Also ensure can filter out whole class
     expected = expected.replace(TOKEN_B_GAS_REPORT, "")
     result = pytester.runpytest("--gas", "--gas-exclude", "*:fooAndBar,*:myNumber,tokenB:*")
-    run_gas_test(result, expected_test_passes, expected_report=expected)
+    run_gas_test(result, passes, failed, expected_report=expected)
 
 
 @geth_process_test
@@ -197,7 +224,7 @@ def test_gas_flag_exclude_using_cli_option(geth_provider, setup_pytester, projec
 def test_gas_flag_exclusions_set_in_config(
     geth_provider, setup_pytester, project, pytester, switch_config
 ):
-    expected_test_passes = setup_pytester(project.path.name)
+    passes, failed = setup_pytester(project.path.name)
     # NOTE: Includes both a mutable and a view method.
     expected = filter_expected_methods("fooAndBar", "myNumber")
     # Also ensure can filter out whole class
@@ -218,12 +245,12 @@ def test_gas_flag_exclusions_set_in_config(
     """
     with switch_config(project, config_content):
         result = pytester.runpytest("--gas")
-        run_gas_test(result, expected_test_passes, expected_report=expected)
+        run_gas_test(result, passes, failed, expected_report=expected)
 
 
 @geth_process_test
 @skip_projects_except("geth")
 def test_gas_flag_excluding_contracts(geth_provider, setup_pytester, project, pytester):
-    expected_test_passes = setup_pytester(project.path.name)
+    passes, failed = setup_pytester(project.path.name)
     result = pytester.runpytest("--gas", "--gas-exclude", "TestContractVy,TokenA")
-    run_gas_test(result, expected_test_passes, expected_report=TOKEN_B_GAS_REPORT)
+    run_gas_test(result, passes, failed, expected_report=TOKEN_B_GAS_REPORT)
