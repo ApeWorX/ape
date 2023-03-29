@@ -216,3 +216,26 @@ def test_console_bal_magic(ape_cli, runner, keyfile_account):
     )
     assert result.exit_code == 0, result.output
     assert no_console_error(result), result.output
+
+
+@skip_projects_except("with-contracts")
+def test_uncaught_txn_err(ape_cli, runner, mocker):
+    # For some reason, not showing in result.output, so captured another way.
+    handler = mocker.patch("ape_console.plugin.handle_transaction_error")
+    cmd_ls = [
+        "%load_ext ape_console.plugin",
+        "account = accounts.test_accounts[0]",
+        "contract = account.deploy(project.ContractA)",
+        "receipt = contract.setNumber(5, sender=account)",
+        "print(receipt)",
+        "exit",
+    ]
+    cmd_str = "\n".join(cmd_ls)
+    runner.invoke(
+        ape_cli,
+        ["console"],
+        input=f"{cmd_str}\n",
+        catch_exceptions=False,
+    )
+    err = handler.call_args[0][0]
+    assert str(err) == "Transaction failed."
