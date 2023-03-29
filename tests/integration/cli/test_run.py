@@ -1,3 +1,5 @@
+import re
+
 from .utils import skip_projects_except
 
 BAD_COMMAND = "not-a-name"
@@ -126,3 +128,15 @@ def test_try_run_script_missing_cli_decorator(ape_cli, runner, project):
 
     result = runner.invoke(ape_cli, ["run", "error_forgot_click"])
     assert "Usage: cli run" in result.output
+
+
+@skip_projects_except("with-contracts")
+def test_uncaught_tx_err(ape_cli, runner, project):
+    result = runner.invoke(ape_cli, ["run", "txerr"], terminal_width=200)
+    pattern = (
+        r"\s+File\s+\"[/\w\-]*\s+[/\w\-.]*\", line 12, "
+        r"in main\s+contract.setNumber\(5, sender=account\)\n+ERROR: "
+        r"\(ContractLogicError\) Transaction failed\."
+    )
+    actual = re.findall(pattern, result.output)
+    assert len(actual) == 1
