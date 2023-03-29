@@ -10,6 +10,8 @@ contract TestContractSol {
     uint256[][3] dynArray;
     uint256[][3][][5] mixedArray;
 
+    uint256 constant MAX_FOO = 5;
+
     event NumberChange(
         bytes32 b,
         uint256 prevNum,
@@ -49,6 +51,15 @@ contract TestContractSol {
         uint256 foo;
         MyStruct[2] arr;
         uint256 bar;
+    }
+
+    struct IntStruct {
+        uint256 one;
+        uint256 two;
+        uint256 three;
+        uint256 four;
+        uint256 five;
+        uint256 six;
     }
 
     modifier onlyOwner() {
@@ -130,10 +141,15 @@ contract TestContractSol {
         return (_my_structs_0, _my_structs_1);
     }
 
-    function getEmptyTupleOfArrayOfStructsAndDynArrayOfStructs() public pure returns(MyStruct[2] memory, MyStruct[] memory) {
-        MyStruct[2] memory _my_structs_0;
+    function getEmptyTupleOfArrayOfStructsAndDynArrayOfStructs() public pure returns(MyStruct[3] memory, MyStruct[] memory) {
+        MyStruct[3] memory _my_structs_0;
         MyStruct[] memory _my_structs_1;
         return (_my_structs_0, _my_structs_1);
+    }
+
+    function getTupleOfIntAndStructArray() public pure returns(uint256, IntStruct[MAX_FOO] memory) {
+        IntStruct[MAX_FOO] memory result;
+        return (0, result);
     }
 
     function getEmptyTupleOfIntAndDynArray() public pure returns(uint256[] memory, MyStruct[] memory) {
@@ -174,8 +190,8 @@ contract TestContractSol {
         return data;
     }
 
-    function getStaticStructArray() public view returns(NestedStruct2[2] memory) {
-      NestedStruct2[2] memory data = [NestedStruct2(1, getStruct()), NestedStruct2(2, getStruct())];
+    function getStaticStructArray() public view returns(NestedStruct2[3] memory) {
+      NestedStruct2[3] memory data = [NestedStruct2(1, getStruct()), NestedStruct2(2, getStruct()), NestedStruct2(3, getStruct())];
       return data;
     }
 

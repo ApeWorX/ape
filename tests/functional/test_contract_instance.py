@@ -240,8 +240,15 @@ def test_get_empty_tuple_of_array_of_structs_and_dyn_array_of_structs(contract_i
         ZERO_ADDRESS,
         HexBytes("0x0000000000000000000000000000000000000000000000000000000000000000"),
     )
-    assert actual[0] == [expected_fixed_array, expected_fixed_array]
+    assert actual[0] == [expected_fixed_array, expected_fixed_array, expected_fixed_array]
     assert actual[1] == []
+
+
+def test_get_tuple_of_int_and_struct_array(contract_instance):
+    actual_int, actual_struct_array = contract_instance.getTupleOfIntAndStructArray()
+    assert actual_int == 0
+    assert len(actual_struct_array) == 5
+    assert len(actual_struct_array[0]) == 6
 
 
 def test_get_empty_tuple_of_int_and_dyn_array(contract_instance):
@@ -336,7 +343,7 @@ def test_solidity_static_struct_arrays(solidity_contract_instance, sender):
     # the same result.
     for _ in range(2):
         actual_dynamic = solidity_contract_instance.getStaticStructArray()
-        assert len(actual_dynamic) == 2
+        assert len(actual_dynamic) == 3
         assert actual_dynamic[0].foo == 1
         assert actual_dynamic[0].t.a == sender
         assert is_checksum_address(actual_dynamic[0].t.a)
