@@ -23,9 +23,10 @@ from ape.cli.options import (
     skip_confirmation_option,
 )
 from ape.cli.paramtype import AllFilePaths, Path
-from ape.cli.utils import Abort
+from ape.cli.utils import Abort, abort
 
 __all__ = [
+    "abort",
     "Abort",
     "account_option",
     "AccountAliasPromptChoice",

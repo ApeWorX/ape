@@ -8,6 +8,7 @@ from IPython.core.magic import Magics, line_magic, magics_class  # type: ignore
 
 import ape
 from ape._cli import cli
+from ape.exceptions import TransactionError, handle_transaction_error
 from ape.types import AddressType
 from ape.utils import cached_property
 
@@ -73,5 +74,10 @@ class ApeConsoleMagics(Magics):
         return f"{round(balance / 10 ** decimals, 8)} {symbol}"
 
 
+def custom_exception_handler(self, etype, value, tb, tb_offset=None):
+    handle_transaction_error(value)
+
+
 def load_ipython_extension(ipython):
     ipython.register_magics(ApeConsoleMagics)
+    ipython.set_custom_exc((TransactionError,), custom_exception_handler)

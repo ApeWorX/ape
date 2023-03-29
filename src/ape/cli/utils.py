@@ -1,10 +1,12 @@
+import traceback
 from inspect import getframeinfo, stack
 from pathlib import Path
 from typing import Optional
 
 import click
 
-from ape.logging import logger
+from ape.exceptions import ApeException
+from ape.logging import LogLevel, logger
 
 
 class Abort(click.ClickException):
@@ -29,3 +31,16 @@ class Abort(click.ClickException):
         """
 
         logger.error(self.format_message())
+
+
+def abort(err: ApeException, show_traceback: Optional[bool] = None) -> Abort:
+    show_traceback = (
+        logger.level == LogLevel.DEBUG.value if show_traceback is None else show_traceback
+    )
+    if show_traceback:
+        tb = traceback.format_exc()
+        err_message = tb or str(err)
+    else:
+        err_message = str(err)
+
+    return Abort(f"({type(err).__name__}) {err_message}")

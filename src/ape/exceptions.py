@@ -1,7 +1,11 @@
+import sys
 import time
+import traceback
 from typing import TYPE_CHECKING, Optional
 
+import click
 from eth_utils import humanize_hash
+from rich import print as rich_print
 
 if TYPE_CHECKING:
     from ape.api.networks import NetworkAPI
@@ -371,3 +375,38 @@ class RPCTimeoutError(SubprocessTimeoutError):
             kwargs["exception"] = exception
 
         super().__init__(provider, *args, **kwargs)
+
+
+def handle_transaction_error(err: TransactionError):
+    """
+    Handle a transaction error by showing relevant stack frames,
+    including custom contract frames added to the exception.
+    This method must be called within an ``except`` block or with
+    an exception on the exc-stack.
+    Args:
+        err (:class:`~ape.exceptions.TransactionError`): The transaction error
+          being handled.
+    Returns:
+        bool: ``True`` if outputted something.
+    """
+
+    if not err.txn:
+        # If err does not have custom traceback, ignore handling.
+        return False
+
+    tb = traceback.extract_tb(sys.exc_info()[2])
+    base = str(err.txn.project_manager.path)
+    relevant_tb = [f for f in tb if base in f.filename]
+    if not relevant_tb:
+        return False
+
+    from ape.cli.utils import abort
+    from ape.logging import logger
+
+    click.echo()
+    formatted_tb = traceback.format_list(relevant_tb)
+    rich_print("".join(formatted_tb))
+
+    # Prevent double logging traceback.
+    logger.error(abort(err, show_traceback=False))
+    return True
