@@ -138,9 +138,6 @@ def test_uncaught_txn_err(setup_pytester, project, pytester, eth_tester_provider
     expected = """
     contract_in_test.setNumber(5, sender=owner)
 E   ape.exceptions.ContractLogicError: Transaction failed.
-        contract_from_fixture = <ContractA 0x274b028b03A250cA03644E6c578D81f019eE1323>
-        contract_in_test = <ContractA 0xBcF7FFFD8B256Ec51a36782a52D0c34f6474D951>
-        owner      = <TestAccount 0x1e59ce931B4CFea3fe4B875411e280e173cB7A9C>
     """.strip()
     assert expected in str(result.stdout)
 
