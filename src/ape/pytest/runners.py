@@ -41,14 +41,14 @@ class PytestApeRunner(ManagerAccessMixin):
         """
 
         # Find the last traceback frame within the active project
-        tb_frames: PytestTraceback = call.excinfo.traceback[::-1]
+        tb_frames: PytestTraceback = call.excinfo.traceback
         base = self.project_manager.path.as_posix()
 
         if self.config_wrapper.pytest_config.getoption("showinternal"):
             relevant_tb = list(tb_frames)
         else:
             relevant_tb = PytestTraceback(
-                reversed([f for f in tb_frames if Path(f.path).as_posix().startswith(base)])
+                [f for f in tb_frames if Path(f.path).as_posix().startswith(base)]
             )
 
         call.excinfo.traceback = relevant_tb
