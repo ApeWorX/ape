@@ -112,13 +112,13 @@ setup(
         "traitlets>=5.3.0",
         "watchdog>=2.1.9,<3.0",
         # ** Dependencies maintained by Ethereum Foundation **
-        "eth-abi>=3.0.1,<4",
-        "eth-account>=0.7,<0.8",
+        "eth-abi>=4.0.0,<5",
+        "eth-account>=0.8,<0.9",
         "eth-typing>=3.1,<4",
         "eth-utils>=2.0.0,<3",
         "hexbytes>=0.2.3,<1",
         "py-geth>=3.12.0,<4",
-        "web3[tester]==6.0.0b7",
+        "web3[tester]>=6.0.0",
         # ** Dependencies maintained by ApeWorX **
         "eip712>=0.2.0,<0.3",
         "ethpm-types>=0.4.0,<0.5",

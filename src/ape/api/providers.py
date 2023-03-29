@@ -20,11 +20,10 @@ from evm_trace import TraceFrame as EvmTraceFrame
 from hexbytes import HexBytes
 from pydantic import Field, root_validator, validator
 from web3 import Web3
-from web3.eth import TxParams
 from web3.exceptions import BlockNotFound
 from web3.exceptions import ContractLogicError as Web3ContractLogicError
 from web3.exceptions import TimeExhausted
-from web3.types import RPCEndpoint
+from web3.types import RPCEndpoint, TxParams
 
 from ape.api.config import PluginConfig
 from ape.api.networks import LOCAL_NETWORK_NAME, NetworkAPI
@@ -627,7 +626,7 @@ class Web3Provider(ProviderAPI, ABC):
 
         # NOTE: Gets reset to `None` on `connect()` and `disconnect()`.
         if self._client_version is None:
-            self._client_version = self.web3.clientVersion
+            self._client_version = self.web3.client_version
 
         return self._client_version
 
