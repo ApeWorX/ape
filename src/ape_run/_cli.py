@@ -13,7 +13,7 @@ from ape.cli import NetworkBoundCommand, network_option
 from ape.exceptions import TransactionError, handle_transaction_error
 from ape.logging import logger
 from ape.managers.project import ProjectManager
-from ape.utils import cached_property, get_relative_path, use_temp_sys_path
+from ape.utils import get_relative_path, use_temp_sys_path
 from ape_console._cli import console
 
 
@@ -124,7 +124,7 @@ class ScriptCommand(click.MultiCommand):
 
             return call
 
-    @cached_property
+    @property
     def _project(self) -> ProjectManager:
         """
         A class representing the project that is active at runtime.
@@ -140,9 +140,9 @@ class ScriptCommand(click.MultiCommand):
 
         return project
 
-    @cached_property
+    @property
     def commands(self) -> Dict[str, Union[click.Command, click.Group]]:
-        if not self._project.scripts_folder.exists():
+        if not self._project.scripts_folder.is_dir():
             return {}
 
         return self._get_cli_commands(self._project.scripts_folder)
