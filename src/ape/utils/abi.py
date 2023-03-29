@@ -153,11 +153,9 @@ class StructParser:
         else:
             for output_type, value in zip(output_types, values):
                 if isinstance(value, (tuple, list)):
-                    # Either an array of structs or nested structs.
-
                     item_type_str = str(output_type.type).split("[")[0]
-
                     if item_type_str == "tuple":
+                        # Either an array of structs or nested structs.
                         item_type_data = {
                             **output_type.dict(),
                             "type": item_type_str,
