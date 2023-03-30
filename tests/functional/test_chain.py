@@ -246,6 +246,11 @@ def test_block_range_out_of_order(chain_that_mined_5):
     assert "stop_block: '0' cannot be less than start_block: '3'." in str(err.value)
 
 
+def test_block_timestamp(chain):
+    chain.mine()
+    assert chain.blocks.head.timestamp == chain.blocks.head.datetime.timestamp()
+
+
 def test_set_pending_timestamp(chain):
     start_timestamp = chain.pending_timestamp
     chain.pending_timestamp += 3600

@@ -1,5 +1,6 @@
 import atexit
 import ctypes
+import datetime
 import logging
 import platform
 import shutil
@@ -82,6 +83,10 @@ class BlockAPI(BaseInterfaceModel):
     )  # NOTE: genesis block has no parent hash
     size: int
     timestamp: int
+
+    @property
+    def datetime(self) -> datetime.datetime:
+        return datetime.datetime.fromtimestamp(self.timestamp, tz=datetime.timezone.utc)
 
     @root_validator(pre=True)
     def convert_parent_hash(cls, data):

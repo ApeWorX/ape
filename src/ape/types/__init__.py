@@ -23,9 +23,11 @@ from web3.types import FilterParams
 
 from ape.types.signatures import MessageSignature, SignableMessage, TransactionSignature
 from ape.types.trace import CallTreeNode, GasReport, TraceFrame
+from ape.utils import BaseInterfaceModel, cached_property
 from ape.utils.misc import to_int
 
 if TYPE_CHECKING:
+    from ape.api.providers import BlockAPI
     from ape.contracts import ContractEvent
 
 BlockID = Union[int, HexStr, HexBytes, Literal["earliest", "latest", "pending"]]
@@ -183,7 +185,7 @@ class LogFilter(BaseModel):
         )
 
 
-class ContractLog(BaseModel):
+class ContractLog(BaseInterfaceModel):
     """
     An instance of a log from a contract.
     """
@@ -227,6 +229,13 @@ class ContractLog(BaseModel):
         from ape import convert
 
         return convert(value, AddressType)
+
+    # NOTE: This class has an overrided `__getattr__` method, but `block` is a reserved keyword
+    #       in most smart contract languages, so it is safe to use. Purposely avoid adding
+    #       `.datetime` and `.timestamp` in case they are used as event arg names.
+    @cached_property
+    def block(self) -> "BlockAPI":
+        return self.chain_manager.blocks[self.block_number]
 
     @property
     def _event_args_str(self) -> str:

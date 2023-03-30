@@ -10,6 +10,12 @@ def invoke_receipt(vyper_contract_instance, owner):
     return vyper_contract_instance.setNumber(1, sender=owner)
 
 
+def test_receipt_properties(chain, invoke_receipt):
+    assert invoke_receipt.block_number == chain.blocks.head.number
+    assert invoke_receipt.timestamp == chain.blocks.head.timestamp
+    assert invoke_receipt.datetime == chain.blocks.head.datetime
+
+
 def test_show_trace(invoke_receipt):
     # See trace-supported provider plugin tests for better tests (e.g. ape-hardhat)
     with pytest.raises(APINotImplementedError):
