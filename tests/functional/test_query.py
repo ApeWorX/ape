@@ -96,6 +96,8 @@ def test_column_validation(eth_tester_provider, caplog):
 
 
 def test_specify_engine(chain, eth_tester_provider):
+    offset = chain.blocks.height + 1
     chain.mine(3)
     actual = chain.blocks.query("*", engine_to_use="__default__")
-    assert len(actual)
+    expected = offset + 3
+    assert len(actual) == expected
