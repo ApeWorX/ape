@@ -93,3 +93,11 @@ def test_column_validation(eth_tester_provider, caplog):
     assert len(caplog.records) == 1
     assert "Duplicate fields in ['number', 'timestamp', 'number']" in caplog.records[0].msg
     caplog.clear()
+
+
+def test_specify_engine(chain, eth_tester_provider):
+    offset = chain.blocks.height + 1
+    chain.mine(3)
+    actual = chain.blocks.query("*", engine_to_use="__default__")
+    expected = offset + 3
+    assert len(actual) == expected
