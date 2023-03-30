@@ -386,7 +386,7 @@ def handle_ape_exception(err: ApeException, extra_paths: Optional[List[Path]] = 
     an exception on the exc-stack.
 
     Args:
-        err (:class:`~ape.exceptions.TransactionError`): The transaction error
+        err (:class:`~ape.exceptions.ApeException`): The transaction error
           being handled.
         extra_paths (Optional[List[Path]]): Optionally include additional
           source-path prefixes to use when finding relevant frames.
