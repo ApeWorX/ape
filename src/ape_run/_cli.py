@@ -10,7 +10,7 @@ import click
 from click import Command, Context
 
 from ape.cli import NetworkBoundCommand, network_option
-from ape.exceptions import TransactionError, handle_ape_exception
+from ape.exceptions import ApeException, handle_ape_exception
 from ape.logging import logger
 from ape.managers.project import ProjectManager
 from ape.utils import get_relative_path, use_temp_sys_path
@@ -33,7 +33,7 @@ class ScriptCommand(click.MultiCommand):
             if ctx.params["interactive"]:
                 # Print the exception trace and then launch the console
                 # Attempt to use source-traceback style printing.
-                if not isinstance(err, TransactionError) or not handle_ape_exception(err):
+                if not isinstance(err, ApeException) or not handle_ape_exception(err):
                     err_info = traceback.format_exc()
                     click.echo(err_info)
 
