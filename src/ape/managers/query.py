@@ -87,26 +87,9 @@ class DefaultQueryProvider(QueryAPI):
     def perform_account_transactions_query(
         self, query: AccountTransactionQuery
     ) -> Iterator[ReceiptAPI]:
-        # TODO: Relegate everything data-related in ExplorerAPI to QueryAPI instead
-        if explorer := self.provider.network.explorer:
-            for receipt in explorer.get_account_transactions(query.account):
-                # NOTE: Required for `elif` leg to function
-                # NOTE: For whatever reason, Etherscan doesn't capitalize their addresses
-                if receipt.sender.lower() != query.account.lower():
-                    # Likely ``query.account`` is a contract.
-                    # Cache the receipts by their sender instead and skip them here.
-                    self.chain_manager.history.append(receipt)
-
-                elif (
-                    receipt.transaction.nonce
-                    and query.start_nonce <= receipt.transaction.nonce <= query.stop_nonce
-                ):
-                    yield receipt
-
-        else:
-            yield from self.provider.get_transactions_by_account_nonce(
-                query.account, query.start_nonce, query.stop_nonce
-            )
+        yield from self.provider.get_transactions_by_account_nonce(
+            query.account, query.start_nonce, query.stop_nonce
+        )
 
 
 class QueryManager(ManagerAccessMixin):
