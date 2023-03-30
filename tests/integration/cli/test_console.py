@@ -221,7 +221,7 @@ def test_console_bal_magic(ape_cli, runner, keyfile_account):
 @skip_projects_except("with-contracts")
 def test_uncaught_txn_err(ape_cli, runner, mocker):
     # For some reason, not showing in result.output, so captured another way.
-    handler = mocker.patch("ape_console.plugin.handle_transaction_error")
+    handler = mocker.patch("ape_console.plugin.handle_ape_exception")
     cmd_ls = [
         "%load_ext ape_console.plugin",
         "account = accounts.test_accounts[0]",
