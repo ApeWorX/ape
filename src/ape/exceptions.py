@@ -407,7 +407,7 @@ def handle_ape_exception(err: ApeException, base_paths: List[Path]) -> bool:
     rich_print("".join(formatted_tb))
 
     # Prevent double logging traceback.
-    logger.error(abort(err, show_traceback=False))
+    logger.error(Abort.from_ape_exception(err, show_traceback=False))
     return True
 
 
@@ -427,22 +427,22 @@ class Abort(click.ClickException):
 
         super().__init__(message)
 
+    @classmethod
+    def from_ape_exception(cls, exc: ApeException, show_traceback: Optional[bool] = None):
+        show_traceback = (
+            logger.level == LogLevel.DEBUG.value if show_traceback is None else show_traceback
+        )
+        if show_traceback:
+            tb = traceback.format_exc()
+            err_message = tb or str(exc)
+        else:
+            err_message = str(exc)
+
+        return Abort(f"({type(exc).__name__}) {err_message}")
+
     def show(self, file=None):
         """
         Override default ``show`` to print CLI errors in red text.
         """
 
         logger.error(self.format_message())
-
-
-def abort(err: ApeException, show_traceback: Optional[bool] = None) -> Abort:
-    show_traceback = (
-        logger.level == LogLevel.DEBUG.value if show_traceback is None else show_traceback
-    )
-    if show_traceback:
-        tb = traceback.format_exc()
-        err_message = tb or str(err)
-    else:
-        err_message = str(err)
-
-    return Abort(f"({type(err).__name__}) {err_message}")
