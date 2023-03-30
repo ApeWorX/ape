@@ -192,7 +192,8 @@ class ConfigManager(BaseInterfaceModel):
         )
 
         for plugin_name, config_class in self.plugin_manager.config_class:
-            user_override = user_config.pop(plugin_name, {})
+            # `or {}` to handle the case when the empty config is `None`.
+            user_override = user_config.pop(plugin_name) or {}
             if config_class != ConfigDict:
                 # NOTE: Will raise if improperly provided keys
                 config = config_class.from_overrides(user_override)  # type: ignore
