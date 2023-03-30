@@ -383,9 +383,11 @@ def handle_transaction_error(err: TransactionError):
     including custom contract frames added to the exception.
     This method must be called within an ``except`` block or with
     an exception on the exc-stack.
+
     Args:
         err (:class:`~ape.exceptions.TransactionError`): The transaction error
           being handled.
+
     Returns:
         bool: ``True`` if outputted something.
     """
