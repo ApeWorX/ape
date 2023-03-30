@@ -435,9 +435,7 @@ class Abort(click.ClickException):
         logger.error(self.format_message())
 
 
-def abort(err: ApeException, show_traceback: Optional[bool] = None) -> "Abort":
-    from ape.cli import Abort
-
+def abort(err: ApeException, show_traceback: Optional[bool] = None) -> Abort:
     show_traceback = (
         logger.level == LogLevel.DEBUG.value if show_traceback is None else show_traceback
     )
