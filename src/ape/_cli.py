@@ -1,6 +1,6 @@
 import difflib
 import re
-import traceback
+import sys
 from typing import Any, Dict
 
 import click
@@ -8,8 +8,8 @@ import importlib_metadata as metadata
 import yaml
 
 from ape.cli import Abort, ape_cli_context
-from ape.exceptions import ApeException
-from ape.logging import LogLevel, logger
+from ape.exceptions import ApeException, handle_ape_exception
+from ape.logging import logger
 from ape.plugins import clean_plugin_name
 
 _DIFFLIB_CUT_OFF = 0.6
@@ -37,13 +37,11 @@ class ApeCLI(click.MultiCommand):
         except click.UsageError as err:
             self._suggest_cmd(err)
         except ApeException as err:
-            if logger.level == LogLevel.DEBUG.value:
-                tb = traceback.format_exc()
-                err_message = tb or str(err)
+            if handle_ape_exception(err, [ctx.obj.project_manager.path]):
+                # All exc details already outputted.
+                sys.exit(1)
             else:
-                err_message = str(err)
-
-            raise Abort(f"({type(err).__name__}) {err_message}") from err
+                raise Abort.from_ape_exception(err) from err
 
     @staticmethod
     def _suggest_cmd(usage_error):
