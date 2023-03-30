@@ -77,7 +77,7 @@ class ApeConsoleMagics(Magics):
 
 
 def custom_exception_handler(self, etype, value, tb, tb_offset=None):
-    if not handle_ape_exception(value):
+    if not handle_ape_exception(value, [self.user_ns["project"].path]):
         logger.error(abort(value).format_message())
 
 

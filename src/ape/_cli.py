@@ -37,7 +37,7 @@ class ApeCLI(click.MultiCommand):
         except click.UsageError as err:
             self._suggest_cmd(err)
         except ApeException as err:
-            if handle_ape_exception(err):
+            if handle_ape_exception(err, [ctx.obj.project_manager.path]):
                 # All exc details already outputted.
                 sys.exit(1)
             else:

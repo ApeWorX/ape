@@ -33,7 +33,9 @@ class ScriptCommand(click.MultiCommand):
             if ctx.params["interactive"]:
                 # Print the exception trace and then launch the console
                 # Attempt to use source-traceback style printing.
-                if not isinstance(err, ApeException) or not handle_ape_exception(err):
+                if not isinstance(err, ApeException) or not handle_ape_exception(
+                    err, [ctx.obj.project_manager.path]
+                ):
                     err_info = traceback.format_exc()
                     click.echo(err_info)
 
