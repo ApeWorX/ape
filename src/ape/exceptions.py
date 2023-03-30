@@ -8,12 +8,13 @@ import click
 from eth_utils import humanize_hash
 from rich import print as rich_print
 
-from ape.logging import logger
+from ape.logging import LogLevel, logger
 
 if TYPE_CHECKING:
     from ape.api.networks import NetworkAPI
     from ape.api.providers import SubprocessProvider
     from ape.api.transactions import TransactionAPI
+    from ape.cli import Abort
     from ape.types import BlockID, SnapshotID
 
 
@@ -396,8 +397,6 @@ def handle_ape_exception(err: ApeException, base_paths: List[Path]) -> bool:
         bool: ``True`` if outputted something.
     """
 
-    from ape.cli.utils import abort
-
     tb = traceback.extract_tb(sys.exc_info()[2])
     relevant_tb = [f for f in tb if any(str(p) in f.filename for p in base_paths)]
     if not relevant_tb:
@@ -410,3 +409,18 @@ def handle_ape_exception(err: ApeException, base_paths: List[Path]) -> bool:
     # Prevent double logging traceback.
     logger.error(abort(err, show_traceback=False))
     return True
+
+
+def abort(err: ApeException, show_traceback: Optional[bool] = None) -> "Abort":
+    from ape.cli import Abort
+
+    show_traceback = (
+        logger.level == LogLevel.DEBUG.value if show_traceback is None else show_traceback
+    )
+    if show_traceback:
+        tb = traceback.format_exc()
+        err_message = tb or str(err)
+    else:
+        err_message = str(err)
+
+    return Abort(f"({type(err).__name__}) {err_message}")
