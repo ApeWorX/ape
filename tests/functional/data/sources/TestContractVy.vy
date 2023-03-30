@@ -1,4 +1,4 @@
-# @version 0.3.6
+# @version 0.3.7
 
 event NumberChange:
     b: bytes32
@@ -33,6 +33,14 @@ struct WithArray:
     arr: MyStruct[2]
     bar: uint256
 
+struct IntStruct:
+    one: uint256
+    two: uint256
+    three: uint256
+    four: uint256
+    five: uint256
+    six: uint256
+
 owner: public(address)
 myNumber: public(uint256)
 prevNumber: public(uint256)
@@ -40,6 +48,8 @@ theAddress: public(address)
 balances: public(HashMap[address, uint256])
 dynArray: public(DynArray[uint256, 1024][3])
 mixedArray: public(DynArray[DynArray[uint256, 1024][3], 1024][5])
+
+MAX_FOO : constant(uint256) = 5
 
 @external
 def __init__(num: uint256):
@@ -114,10 +124,16 @@ def getEmptyTupleOfDynArrayStructs() -> (DynArray[MyStruct, 10], DynArray[MyStru
 
 @view
 @external
-def getEmptyTupleOfArrayOfStructsAndDynArrayOfStructs() -> (MyStruct[2], DynArray[MyStruct, 2]):
-    _my_structs_0: MyStruct[2] = empty(MyStruct[2])
+def getEmptyTupleOfArrayOfStructsAndDynArrayOfStructs() -> (MyStruct[3], DynArray[MyStruct, 2]):
+    _my_structs_0: MyStruct[3] = empty(MyStruct[3])
     _my_structs_1: DynArray[MyStruct, 2] = []
     return (_my_structs_0, _my_structs_1)
+
+@view
+@external
+def getTupleOfIntAndStructArray() -> (uint256, IntStruct[MAX_FOO]):
+    result : IntStruct[MAX_FOO] = empty(IntStruct[MAX_FOO])
+    return 0, result
 
 @pure
 @external
@@ -159,7 +175,6 @@ def getFilledArray() -> DynArray[uint256, 3]:
 @external
 def getAddressArray() -> DynArray[address, 2]:
     return [msg.sender, msg.sender]
-
 
 @view
 @external
@@ -246,12 +261,10 @@ def functionWithUniqueAmountOfArguments(
 ):
     pass
 
-
 @pure
 @external
 def setStruct(_my_struct: MyStruct):
     pass
-
 
 @pure
 @external

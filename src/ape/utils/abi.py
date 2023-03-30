@@ -154,15 +154,20 @@ class StructParser:
             for output_type, value in zip(output_types, values):
                 if isinstance(value, (tuple, list)):
                     item_type_str = str(output_type.type).split("[")[0]
-
                     if item_type_str == "tuple":
+                        # Either an array of structs or nested structs.
                         item_type_data = {
                             **output_type.dict(),
                             "type": item_type_str,
                             "internalType": item_type_str,
                         }
                         item_type = ABIType.parse_obj(item_type_data)
-                        parsed_item = self._decode_output([item_type], [value])
+
+                        if is_struct(output_type):
+                            parsed_item = self._decode_output([item_type], [value])
+                        else:
+                            # Is array of structs.
+                            parsed_item = [self._decode_output([item_type], [v]) for v in value]
 
                         # If it's an empty dynamic array of structs, replace `None` with empty list
                         output_raw_type = output_type.type
