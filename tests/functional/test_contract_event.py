@@ -227,9 +227,9 @@ def test_poll_logs(chain, vyper_contract_instance, eth_tester_provider, owner, P
 
     actual = [logs.get() for _ in range(size)]
     assert all(a.newNum == e for a, e in zip(actual, (1, 33, 7)))
-    assert actual[0].block_number == start_block + 1
-    assert actual[1].block_number == actual[0].block_number + 1
-    assert actual[2].block_number == actual[1].block_number + 1
+    assert actual[0].block_number == actual[0].block.number == start_block + 1
+    assert actual[1].block_number == actual[1].block.number == actual[0].block_number + 1
+    assert actual[2].block_number == actual[2].block.number == actual[1].block_number + 1
 
 
 def test_poll_logs_timeout(vyper_contract_instance, eth_tester_provider, owner, PollDaemon):
