@@ -1,7 +1,15 @@
+import sys
 import time
-from typing import TYPE_CHECKING, Optional
+import traceback
+from inspect import getframeinfo, stack
+from pathlib import Path
+from typing import TYPE_CHECKING, List, Optional
 
+import click
 from eth_utils import humanize_hash
+from rich import print as rich_print
+
+from ape.logging import LogLevel, logger
 
 if TYPE_CHECKING:
     from ape.api.networks import NetworkAPI
@@ -371,3 +379,70 @@ class RPCTimeoutError(SubprocessTimeoutError):
             kwargs["exception"] = exception
 
         super().__init__(provider, *args, **kwargs)
+
+
+def handle_ape_exception(err: ApeException, base_paths: List[Path]) -> bool:
+    """
+    Handle a transaction error by showing relevant stack frames,
+    including custom contract frames added to the exception.
+    This method must be called within an ``except`` block or with
+    an exception on the exc-stack.
+
+    Args:
+        err (:class:`~ape.exceptions.ApeException`): The transaction error
+          being handled.
+        base_paths (List[Path]): Source base paths for allowed frames.
+
+    Returns:
+        bool: ``True`` if outputted something.
+    """
+
+    tb = traceback.extract_tb(sys.exc_info()[2])
+    relevant_tb = [f for f in tb if any(str(p) in f.filename for p in base_paths)]
+    if not relevant_tb:
+        return False
+
+    click.echo()
+    formatted_tb = traceback.format_list(relevant_tb)
+    rich_print("".join(formatted_tb))
+
+    # Prevent double logging traceback.
+    logger.error(Abort.from_ape_exception(err, show_traceback=False))
+    return True
+
+
+class Abort(click.ClickException):
+    """
+    A wrapper around a CLI exception. When you raise this error,
+    the error is nicely printed to the terminal. This is
+    useful for all user-facing errors.
+    """
+
+    def __init__(self, message: Optional[str] = None):
+        if not message:
+            caller = getframeinfo(stack()[1][0])
+            file_path = Path(caller.filename)
+            location = file_path.name if file_path.is_file() else caller.filename
+            message = f"Operation aborted in {location}::{caller.function} on line {caller.lineno}."
+
+        super().__init__(message)
+
+    @classmethod
+    def from_ape_exception(cls, exc: ApeException, show_traceback: Optional[bool] = None):
+        show_traceback = (
+            logger.level == LogLevel.DEBUG.value if show_traceback is None else show_traceback
+        )
+        if show_traceback:
+            tb = traceback.format_exc()
+            err_message = tb or str(exc)
+        else:
+            err_message = str(exc)
+
+        return Abort(f"({type(exc).__name__}) {err_message}")
+
+    def show(self, file=None):
+        """
+        Override default ``show`` to print CLI errors in red text.
+        """
+
+        logger.error(self.format_message())

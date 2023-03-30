@@ -8,6 +8,8 @@ from IPython.core.magic import Magics, line_magic, magics_class  # type: ignore
 
 import ape
 from ape._cli import cli
+from ape.exceptions import Abort, ApeException, handle_ape_exception
+from ape.logging import logger
 from ape.types import AddressType
 from ape.utils import cached_property
 
@@ -73,5 +75,11 @@ class ApeConsoleMagics(Magics):
         return f"{round(balance / 10 ** decimals, 8)} {symbol}"
 
 
+def custom_exception_handler(self, etype, value, tb, tb_offset=None):
+    if not handle_ape_exception(value, [self.user_ns["project"].path]):
+        logger.error(Abort.from_ape_exception(value).format_message())
+
+
 def load_ipython_extension(ipython):
     ipython.register_magics(ApeConsoleMagics)
+    ipython.set_custom_exc((ApeException,), custom_exception_handler)
