@@ -12,8 +12,8 @@ def invoke_receipt(vyper_contract_instance, owner):
 
 def test_receipt_properties(chain, invoke_receipt):
     assert invoke_receipt.block_number == chain.blocks.head.number
-    assert chain.blocks.head.timestamp == invoke_receipt.timestamp
-    assert chain.blocks.head.datetime == invoke_receipt.datetime
+    assert invoke_receipt.timestamp == chain.blocks.head.timestamp
+    assert invoke_receipt.datetime == chain.blocks.head.datetime
 
 
 def test_show_trace(invoke_receipt):
