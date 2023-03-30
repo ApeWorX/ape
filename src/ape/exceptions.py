@@ -8,6 +8,8 @@ import click
 from eth_utils import humanize_hash
 from rich import print as rich_print
 
+from ape.logging import logger
+
 if TYPE_CHECKING:
     from ape.api.networks import NetworkAPI
     from ape.api.providers import SubprocessProvider
@@ -395,7 +397,6 @@ def handle_ape_exception(err: ApeException, base_paths: List[Path]) -> bool:
     """
 
     from ape.cli.utils import abort
-    from ape.logging import logger
 
     tb = traceback.extract_tb(sys.exc_info()[2])
     relevant_tb = [f for f in tb if any(str(p) in f.filename for p in base_paths)]
