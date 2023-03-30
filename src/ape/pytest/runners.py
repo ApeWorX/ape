@@ -2,10 +2,12 @@ from pathlib import Path
 
 import click
 import pytest
+from _pytest._code.code import Traceback as PytestTraceback
+from rich import print as rich_print
 
 import ape
 from ape.api import ProviderContextManager
-from ape.logging import LogLevel, logger
+from ape.logging import LogLevel
 from ape.pytest.config import ConfigWrapper
 from ape.pytest.contextmanagers import RevertsContextManager
 from ape.pytest.fixtures import ReceiptCapture
@@ -38,24 +40,46 @@ class PytestApeRunner(ManagerAccessMixin):
         same console as the ``ape console`` command.
         """
 
+        # Find the last traceback frame within the active project
+        tb_frames: PytestTraceback = call.excinfo.traceback
+        base = self.project_manager.path.as_posix()
+
+        if self.config_wrapper.pytest_config.getoption("showinternal"):
+            relevant_tb = list(tb_frames)
+        else:
+            relevant_tb = PytestTraceback(
+                [
+                    f
+                    for f in tb_frames
+                    if Path(f.path).as_posix().startswith(base)
+                    or Path(f.path).name.startswith("test_")
+                ]
+            )
+
+        if relevant_tb:
+            call.excinfo.traceback = relevant_tb
+            report.longrepr = call.excinfo.getrepr(
+                funcargs=True,
+                abspath=Path.cwd(),
+                showlocals=True,
+                style="short",
+                tbfilter=False,
+                truncate_locals=False,
+                chain=False,
+            )
+
         if self.config_wrapper.interactive and report.failed:
+            traceback = call.excinfo.traceback[0]
+
+            # Suspend capsys to ignore our own output.
             capman = self.config_wrapper.get_pytest_plugin("capturemanager")
             if capman:
                 capman.suspend_global_capture(in_=True)
 
-            # find the last traceback frame within the active project
-            traceback = call.excinfo.traceback[-1]
-            for tb_frame in call.excinfo.traceback[::-1]:
-                try:
-                    Path(tb_frame.path).relative_to(self.project_manager.path)
-                    traceback = tb_frame
-                    click.echo()
-                    click.echo(f"Traceback:{traceback}")
-                    break
-                except ValueError as err:
-                    click.echo()
-                    logger.warn_from_exception(err, tb_frame)
-                    pass
+            # Show the exception info before launching the interactive session.
+            click.echo()
+            rich_print(str(report.longrepr))
+            click.echo()
 
             # get global namespace
             globals_dict = traceback.frame.f_globals
@@ -76,12 +100,11 @@ class PytestApeRunner(ManagerAccessMixin):
             locals_dict = traceback.locals
             locals_dict = {k: v for k, v in locals_dict.items() if not k.startswith("@")}
 
-            click.echo("Starting interactive mode. Type `exit` fail and halt current test.")
+            click.echo("Starting interactive mode. Type `exit` to halt current test.")
 
             namespace = {"_callinfo": call, **globals_dict, **locals_dict}
             console(extra_locals=namespace, project=self.project_manager, embed=True)
 
-            # launch ipdb instead of console
             if capman:
                 capman.resume_global_capture()
 

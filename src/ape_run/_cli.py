@@ -10,9 +10,10 @@ import click
 from click import Command, Context
 
 from ape.cli import NetworkBoundCommand, network_option
+from ape.exceptions import ApeException, handle_ape_exception
 from ape.logging import logger
 from ape.managers.project import ProjectManager
-from ape.utils import cached_property, get_relative_path, use_temp_sys_path
+from ape.utils import get_relative_path, use_temp_sys_path
 from ape_console._cli import console
 
 
@@ -28,11 +29,16 @@ class ScriptCommand(click.MultiCommand):
     def invoke(self, ctx: Context) -> Any:
         try:
             return super().invoke(ctx)
-        except Exception:
+        except Exception as err:
             if ctx.params["interactive"]:
                 # Print the exception trace and then launch the console
-                err_info = traceback.format_exc()
-                click.echo(err_info)
+                # Attempt to use source-traceback style printing.
+                if not isinstance(err, ApeException) or not handle_ape_exception(
+                    err, [ctx.obj.project_manager.path]
+                ):
+                    err_info = traceback.format_exc()
+                    click.echo(err_info)
+
                 self._launch_console()
             else:
                 # Don't handle error - raise exception as normal.
@@ -120,7 +126,7 @@ class ScriptCommand(click.MultiCommand):
 
             return call
 
-    @cached_property
+    @property
     def _project(self) -> ProjectManager:
         """
         A class representing the project that is active at runtime.
@@ -136,9 +142,9 @@ class ScriptCommand(click.MultiCommand):
 
         return project
 
-    @cached_property
+    @property
     def commands(self) -> Dict[str, Union[click.Command, click.Group]]:
-        if not self._project.scripts_folder.exists():
+        if not self._project.scripts_folder.is_dir():
             return {}
 
         return self._get_cli_commands(self._project.scripts_folder)
