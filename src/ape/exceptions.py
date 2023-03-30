@@ -1,6 +1,7 @@
 import sys
 import time
 import traceback
+from inspect import getframeinfo, stack
 from pathlib import Path
 from typing import TYPE_CHECKING, List, Optional
 
@@ -14,7 +15,6 @@ if TYPE_CHECKING:
     from ape.api.networks import NetworkAPI
     from ape.api.providers import SubprocessProvider
     from ape.api.transactions import TransactionAPI
-    from ape.cli import Abort
     from ape.types import BlockID, SnapshotID
 
 
@@ -409,6 +409,30 @@ def handle_ape_exception(err: ApeException, base_paths: List[Path]) -> bool:
     # Prevent double logging traceback.
     logger.error(abort(err, show_traceback=False))
     return True
+
+
+class Abort(click.ClickException):
+    """
+    A wrapper around a CLI exception. When you raise this error,
+    the error is nicely printed to the terminal. This is
+    useful for all user-facing errors.
+    """
+
+    def __init__(self, message: Optional[str] = None):
+        if not message:
+            caller = getframeinfo(stack()[1][0])
+            file_path = Path(caller.filename)
+            location = file_path.name if file_path.is_file() else caller.filename
+            message = f"Operation aborted in {location}::{caller.function} on line {caller.lineno}."
+
+        super().__init__(message)
+
+    def show(self, file=None):
+        """
+        Override default ``show`` to print CLI errors in red text.
+        """
+
+        logger.error(self.format_message())
 
 
 def abort(err: ApeException, show_traceback: Optional[bool] = None) -> "Abort":
