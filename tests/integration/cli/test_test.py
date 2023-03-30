@@ -178,9 +178,9 @@ def test_gas_flag_when_not_supported(setup_pytester, project, pytester, eth_test
 @geth_process_test
 @skip_projects_except("geth")
 def test_gas_flag_in_tests(geth_provider, setup_pytester, project, pytester):
-    passes, failed = setup_pytester(project.path.name)
+    passed, failed = setup_pytester(project.path.name)
     result = pytester.runpytest("--gas")
-    run_gas_test(result, passes, failed)
+    run_gas_test(result, passed, failed)
 
 
 @geth_process_test
@@ -207,13 +207,13 @@ def test_gas_flag_set_in_config(geth_provider, setup_pytester, project, pytester
 @geth_process_test
 @skip_projects_except("geth")
 def test_gas_flag_exclude_using_cli_option(geth_provider, setup_pytester, project, pytester):
-    passes, failed = setup_pytester(project.path.name)
+    passed, failed = setup_pytester(project.path.name)
     # NOTE: Includes both a mutable and a view method.
     expected = filter_expected_methods("fooAndBar", "myNumber")
     # Also ensure can filter out whole class
     expected = expected.replace(TOKEN_B_GAS_REPORT, "")
     result = pytester.runpytest("--gas", "--gas-exclude", "*:fooAndBar,*:myNumber,tokenB:*")
-    run_gas_test(result, passes, failed, expected_report=expected)
+    run_gas_test(result, passed, failed, expected_report=expected)
 
 
 @geth_process_test
@@ -221,7 +221,7 @@ def test_gas_flag_exclude_using_cli_option(geth_provider, setup_pytester, projec
 def test_gas_flag_exclusions_set_in_config(
     geth_provider, setup_pytester, project, pytester, switch_config
 ):
-    passes, failed = setup_pytester(project.path.name)
+    passed, failed = setup_pytester(project.path.name)
     # NOTE: Includes both a mutable and a view method.
     expected = filter_expected_methods("fooAndBar", "myNumber")
     # Also ensure can filter out whole class
@@ -242,12 +242,12 @@ def test_gas_flag_exclusions_set_in_config(
     """
     with switch_config(project, config_content):
         result = pytester.runpytest("--gas")
-        run_gas_test(result, passes, failed, expected_report=expected)
+        run_gas_test(result, passed, failed, expected_report=expected)
 
 
 @geth_process_test
 @skip_projects_except("geth")
 def test_gas_flag_excluding_contracts(geth_provider, setup_pytester, project, pytester):
-    passes, failed = setup_pytester(project.path.name)
+    passed, failed = setup_pytester(project.path.name)
     result = pytester.runpytest("--gas", "--gas-exclude", "TestContractVy,TokenA")
-    run_gas_test(result, passes, failed, expected_report=TOKEN_B_GAS_REPORT)
+    run_gas_test(result, passed, failed, expected_report=TOKEN_B_GAS_REPORT)
