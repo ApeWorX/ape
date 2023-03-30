@@ -8,7 +8,9 @@ from IPython.core.magic import Magics, line_magic, magics_class  # type: ignore
 
 import ape
 from ape._cli import cli
-from ape.exceptions import TransactionError, handle_transaction_error
+from ape.cli import abort
+from ape.exceptions import ApeException, handle_ape_exception
+from ape.logging import logger
 from ape.types import AddressType
 from ape.utils import cached_property
 
@@ -75,9 +77,10 @@ class ApeConsoleMagics(Magics):
 
 
 def custom_exception_handler(self, etype, value, tb, tb_offset=None):
-    handle_transaction_error(value)
+    if not handle_ape_exception(value):
+        logger.error(abort(value).format_message())
 
 
 def load_ipython_extension(ipython):
     ipython.register_magics(ApeConsoleMagics)
-    ipython.set_custom_exc((TransactionError,), custom_exception_handler)
+    ipython.set_custom_exc((ApeException,), custom_exception_handler)

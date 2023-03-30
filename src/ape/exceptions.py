@@ -1,7 +1,8 @@
 import sys
 import time
 import traceback
-from typing import TYPE_CHECKING, Optional
+from pathlib import Path
+from typing import TYPE_CHECKING, List, Optional
 
 import click
 from eth_utils import humanize_hash
@@ -377,7 +378,7 @@ class RPCTimeoutError(SubprocessTimeoutError):
         super().__init__(provider, *args, **kwargs)
 
 
-def handle_transaction_error(err: TransactionError):
+def handle_ape_exception(err: ApeException, extra_paths: Optional[List[Path]] = None):
     """
     Handle a transaction error by showing relevant stack frames,
     including custom contract frames added to the exception.
@@ -387,23 +388,22 @@ def handle_transaction_error(err: TransactionError):
     Args:
         err (:class:`~ape.exceptions.TransactionError`): The transaction error
           being handled.
+        extra_paths (Optional[List[Path]]): Optionally include additional
+          source-path prefixes to use when finding relevant frames.
 
     Returns:
         bool: ``True`` if outputted something.
     """
 
-    if not err.txn:
-        # If err does not have custom traceback, ignore handling.
-        return False
-
-    tb = traceback.extract_tb(sys.exc_info()[2])
-    base = str(err.txn.project_manager.path)
-    relevant_tb = [f for f in tb if base in f.filename]
-    if not relevant_tb:
-        return False
-
+    from ape import project
     from ape.cli.utils import abort
     from ape.logging import logger
+
+    tb = traceback.extract_tb(sys.exc_info()[2])
+    allowed_paths = [str(p) for p in [project.path, *(extra_paths or [])]]
+    relevant_tb = [f for f in tb if any(p in f.filename for p in allowed_paths)]
+    if not relevant_tb:
+        return False
 
     click.echo()
     formatted_tb = traceback.format_list(relevant_tb)

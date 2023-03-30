@@ -8,7 +8,7 @@ import importlib_metadata as metadata
 import yaml
 
 from ape.cli import Abort, abort, ape_cli_context
-from ape.exceptions import ApeException, TransactionError, handle_transaction_error
+from ape.exceptions import ApeException, handle_ape_exception
 from ape.logging import logger
 from ape.plugins import clean_plugin_name
 
@@ -36,16 +36,12 @@ class ApeCLI(click.MultiCommand):
             return super().invoke(ctx)
         except click.UsageError as err:
             self._suggest_cmd(err)
-        except TransactionError as err:
-            if handle_transaction_error(err):
+        except ApeException as err:
+            if handle_ape_exception(err):
                 # All exc details already outputted.
                 sys.exit(1)
-
             else:
                 raise abort(err) from err
-
-        except ApeException as err:
-            raise abort(err) from err
 
     @staticmethod
     def _suggest_cmd(usage_error):
