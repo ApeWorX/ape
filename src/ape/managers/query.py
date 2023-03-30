@@ -168,6 +168,7 @@ class QueryManager(ManagerAccessMixin):
                 )
 
             sel_engine = self.engines[engine_to_use]
+            est_time = sel_engine.estimate_query(query)
 
         else:
             # Get heuristics from all the query engines to perform this query
