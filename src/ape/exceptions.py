@@ -378,7 +378,7 @@ class RPCTimeoutError(SubprocessTimeoutError):
         super().__init__(provider, *args, **kwargs)
 
 
-def handle_ape_exception(err: ApeException, base_paths: List[Path]):
+def handle_ape_exception(err: ApeException, base_paths: List[Path]) -> bool:
     """
     Handle a transaction error by showing relevant stack frames,
     including custom contract frames added to the exception.
