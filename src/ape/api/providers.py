@@ -707,7 +707,7 @@ class Web3Provider(ProviderAPI, ABC):
             block_id = kwargs.pop("block_identifier", None)
             txn_params = cast(TxParams, txn_dict)
             return self.web3.eth.estimate_gas(txn_params, block_identifier=block_id)
-        except ValueError as err:
+        except (ValueError, Web3ContractLogicError) as err:
             tx_error = self.get_virtual_machine_error(err, txn=txn)
 
             # If this is the cause of a would-be revert,
@@ -1140,7 +1140,7 @@ class Web3Provider(ProviderAPI, ABC):
                 txn_dict = txn.dict()
                 txn_params = cast(TxParams, txn_dict)
                 txn_hash = self.web3.eth.send_transaction(txn_params)
-        except ValueError as err:
+        except (ValueError, Web3ContractLogicError) as err:
             vm_err = self.get_virtual_machine_error(err, txn=txn)
             vm_err.txn = txn
             raise vm_err from err
