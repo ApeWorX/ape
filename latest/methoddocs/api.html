@@ -185,7 +185,6 @@
 </li>
 <li class="toctree-l2"><a class="reference internal" href="#module-ape.api.explorers">Explorers</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#ape.api.explorers.ExplorerAPI"><code class="docutils literal notranslate"><span class="pre">ExplorerAPI</span></code></a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#ape.api.explorers.ExplorerAPI.get_account_transactions"><code class="docutils literal notranslate"><span class="pre">ExplorerAPI.get_account_transactions()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.explorers.ExplorerAPI.get_address_url"><code class="docutils literal notranslate"><span class="pre">ExplorerAPI.get_address_url()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.explorers.ExplorerAPI.get_contract_type"><code class="docutils literal notranslate"><span class="pre">ExplorerAPI.get_contract_type()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.explorers.ExplorerAPI.get_transaction_url"><code class="docutils literal notranslate"><span class="pre">ExplorerAPI.get_transaction_url()</span></code></a></li>
@@ -1119,20 +1118,6 @@ when the item fails to convert properly.</p>
 <dd><p>Bases: <a class="reference internal" href="utils.html#ape.utils.BaseInterfaceModel" title="ape.utils.basemodel.BaseInterfaceModel"><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseInterfaceModel</span></code></a></p>
 <p>An API class representing a blockchain explorer for a particular network
 in a particular ecosystem.</p>
-<dl class="py method">
-<dt class="sig sig-object py" id="ape.api.explorers.ExplorerAPI.get_account_transactions">
-<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_account_transactions</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">address</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ChecksumAddress</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Iterator</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#ape.api.transactions.ReceiptAPI" title="ape.api.transactions.ReceiptAPI"><span class="pre">ReceiptAPI</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#ape.api.explorers.ExplorerAPI.get_account_transactions" title="Permalink to this definition"></a></dt>
-<dd><p>Get a list of list of transactions performed by an address.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>address</strong> (<code class="docutils literal notranslate"><span class="pre">AddressType</span></code>) – The account address.</p>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>Iterator[<a class="reference internal" href="#ape.api.transactions.ReceiptAPI" title="ape.api.transactions.ReceiptAPI"><code class="xref py py-class docutils literal notranslate"><span class="pre">ReceiptAPI</span></code></a>]</p>
-</dd>
-</dl>
-</dd></dl>
-
 <dl class="py method">
 <dt class="sig sig-object py" id="ape.api.explorers.ExplorerAPI.get_address_url">
 <em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_address_url</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">address</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ChecksumAddress</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="headerlink" href="#ape.api.explorers.ExplorerAPI.get_address_url" title="Permalink to this definition"></a></dt>
