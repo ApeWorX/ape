@@ -95,6 +95,10 @@
 <li class="toctree-l1"><a class="reference internal" href="api.html">ape.api</a></li>
 <li class="toctree-l1"><a class="reference internal" href="cli.html">ape.cli</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">ape.contracts</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#ape.contracts.base.ContractTypeWrapper"><code class="docutils literal notranslate"><span class="pre">ContractTypeWrapper</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#ape.contracts.base.ContractTypeWrapper.decode_input"><code class="docutils literal notranslate"><span class="pre">ContractTypeWrapper.decode_input()</span></code></a></li>
+</ul>
+</li>
 <li class="toctree-l2"><a class="reference internal" href="#ape.contracts.base.ContractInstance"><code class="docutils literal notranslate"><span class="pre">ContractInstance</span></code></a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#ape.contracts.base.ContractInstance.__dir__"><code class="docutils literal notranslate"><span class="pre">ContractInstance.__dir__()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ape.contracts.base.ContractInstance.__getattr__"><code class="docutils literal notranslate"><span class="pre">ContractInstance.__getattr__()</span></code></a></li>
@@ -156,9 +160,37 @@
   <section id="ape-contracts">
 <h1>ape.contracts<a class="headerlink" href="#ape-contracts" title="Permalink to this heading"></a></h1>
 <dl class="py class">
+<dt class="sig sig-object py" id="ape.contracts.base.ContractTypeWrapper">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ape.contracts.base.</span></span><span class="sig-name descname"><span class="pre">ContractTypeWrapper</span></span><a class="headerlink" href="#ape.contracts.base.ContractTypeWrapper" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">ManagerAccessMixin</span></code></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="ape.contracts.base.ContractTypeWrapper.decode_input">
+<span class="sig-name descname"><span class="pre">decode_input</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">calldata</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bytes</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#ape.contracts.base.ContractTypeWrapper.decode_input" title="Permalink to this definition"></a></dt>
+<dd><p>Decode the given calldata using this contract.
+If the calldata has a method ID prefix, Ape will detect it and find
+the corresponding method, else it will error.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>calldata</strong> (<em>bytes</em>) – The calldata to decode.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A tuple containing the method selector
+along a mapping of input names to their decoded values.
+If an input does not have a number, it will have the stringified
+index as its key.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Tuple[str, Dict[str, Any]]</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
 <dt class="sig sig-object py" id="ape.contracts.base.ContractInstance">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ape.contracts.base.</span></span><span class="sig-name descname"><span class="pre">ContractInstance</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">address</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ChecksumAddress</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">contract_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ContractType</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">txn_hash</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.contracts.base.ContractInstance" title="Permalink to this definition"></a></dt>
-<dd><p>Bases: <a class="reference internal" href="api.html#ape.api.address.BaseAddress" title="ape.api.address.BaseAddress"><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseAddress</span></code></a>, <code class="xref py py-class docutils literal notranslate"><span class="pre">ContractTypeWrapper</span></code></p>
+<dd><p>Bases: <a class="reference internal" href="api.html#ape.api.address.BaseAddress" title="ape.api.address.BaseAddress"><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseAddress</span></code></a>, <a class="reference internal" href="#ape.contracts.base.ContractTypeWrapper" title="ape.contracts.base.ContractTypeWrapper"><code class="xref py py-class docutils literal notranslate"><span class="pre">ContractTypeWrapper</span></code></a></p>
 <p>An interactive instance of a smart contract.
 After you deploy a contract using the <a class="reference internal" href="api.html#ape.api.accounts.AccountAPI.deploy" title="ape.api.accounts.AccountAPI.deploy"><code class="xref py py-class docutils literal notranslate"><span class="pre">deploy</span></code></a> method,
 you get back a contract instance.</p>
@@ -295,7 +327,7 @@ if it is known and exists.</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="ape.contracts.base.ContractContainer">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ape.contracts.base.</span></span><span class="sig-name descname"><span class="pre">ContractContainer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">contract_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ContractType</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.contracts.base.ContractContainer" title="Permalink to this definition"></a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">ContractTypeWrapper</span></code></p>
+<dd><p>Bases: <a class="reference internal" href="#ape.contracts.base.ContractTypeWrapper" title="ape.contracts.base.ContractTypeWrapper"><code class="xref py py-class docutils literal notranslate"><span class="pre">ContractTypeWrapper</span></code></a></p>
 <p>A wrapper around the contract type that has access to the provider.
 When you import your contracts from the <code class="xref py py-class docutils literal notranslate"><span class="pre">ape.managers.project.ProjectManager</span></code>, you
 are using this class.</p>
