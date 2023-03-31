@@ -18,7 +18,7 @@ extras_require = {
         "hypothesis-jsonschema==0.19.0",  # JSON Schema fuzzer extension
     ],
     "lint": [
-        "black>=23.1.0,<24",  # Auto-formatter and linter
+        "black>=23.3.0,<24",  # Auto-formatter and linter
         "mypy>=0.991",  # Static type analyzer
         "types-PyYAML",  # Needed due to mypy typeshed
         "types-requests",  # Needed due to mypy typeshed
@@ -34,13 +34,12 @@ extras_require = {
         "mdformat-frontmatter>=0.4.1",  # Needed for frontmatters-style headers in issue templates
     ],
     "doc": [
-        # Tools for parsing markdown files in the docs
-        # "myst-parser",  # TODO: Uncomment/re-pin once Sphinx 6 support is released
-        "sphinx-click>=4.4.0,<5.0",  # For documenting CLI
-        "Sphinx>=6.1.3,<7.0",  # Documentation generator
+        "myst-parser>=1.0.0,<2",  # Parse markdown docs
+        "sphinx-click>=4.4.0,<5",  # For documenting CLI
+        "Sphinx>=6.1.3,<7",  # Documentation generator
         "sphinx_rtd_theme>=1.2.0,<2",  # Readthedocs.org theme
         "sphinxcontrib-napoleon>=0.7",  # Allow Google-style documentation
-        "sphinx-plausible>=0.1.2,<0.2.0",
+        "sphinx-plausible>=0.1.2,<0.2",
     ],
     "release": [  # `release` GitHub Action job uses this
         "setuptools",  # Installation tool
