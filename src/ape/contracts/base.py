@@ -913,6 +913,10 @@ class ContractInstance(BaseAddress, ContractTypeWrapper):
         values = [
             "contract_type",
             "txn_hash",
+            self.decode_input.__name__,
+            self.get_event_by_signature.__name__,
+            self.invoke_transaction.__name__,
+            self.call_view_method.__name__,
             ContractInstance.receipt.fget.__name__,  # type: ignore[attr-defined]
         ]
         return list(
