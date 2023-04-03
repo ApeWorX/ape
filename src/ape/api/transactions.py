@@ -81,7 +81,10 @@ class TransactionAPI(BaseInterfaceModel):
 
     @validator("max_fee", "max_priority_fee", pre=True, allow_reuse=True)
     def convert_fees(cls, value):
-        return cls.conversion_manager.convert(value, int)
+        if isinstance(value, str):
+            return cls.conversion_manager.convert(value, int)
+
+        return value
 
     @validator("data", pre=True)
     def validate_data(cls, value):
