@@ -3,8 +3,8 @@ from typing import Callable, Dict
 
 import pytest
 
-projects_directory = Path(__file__).parent / "projects"
-project_names = [p.stem for p in projects_directory.iterdir() if p.is_dir()]
+__projects_directory__ = Path(__file__).parent / "projects"
+__project_names__ = [p.stem for p in __projects_directory__.iterdir() if p.is_dir()]
 
 
 def assert_failure(result, expected_output):
@@ -39,7 +39,7 @@ class ProjectSkipper:
     """
 
     def __init__(self):
-        self.projects: Dict[str, Dict] = {n: {} for n in project_names}
+        self.projects: Dict[str, Dict] = {n: {} for n in __project_names__}
 
     def __iter__(self):
         return iter(self.projects)
