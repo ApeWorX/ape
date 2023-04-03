@@ -102,6 +102,7 @@ class RevertsContextManager(ManagerAccessMixin):
             # Check for a `dev` field in PCMap.
             if offending_source.dev is not None:
                 self._assert_matches(offending_source.dev, assertion_error_prefix)
+                return  # Test passed.
 
             else:
                 raise AssertionError(f"{assertion_error_prefix} but there was none.")

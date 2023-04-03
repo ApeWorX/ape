@@ -86,6 +86,16 @@ def test_dev_revert_pattern(owner, reverts_contract_instance, geth_provider):
 
 
 @geth_process_test
+def test_dev_revert_no_source(owner, vyper_contract_container, geth_provider):
+    """
+    Tests that we can assert on dev messages injected from the compiler.
+    """
+    contract = owner.deploy(vyper_contract_container, 0)
+    with reverts(dev_message="Cannot send ether to non-payable function"):
+        contract.setNumber(123, sender=owner, value=1)
+
+
+@geth_process_test
 def test_dev_revert_fails(owner, reverts_contract_instance, geth_provider):
     """
     Test that ``AssertionError`` is raised if the supplied dev message and the contract dev message
