@@ -26,8 +26,13 @@ def test_create_dynamic_fee_transaction(ethereum, type_kwarg):
     "fee_kwargs",
     (
         {"max_fee": "100 gwei"},
+        {"max_fee": int(100e9)},
         {"max_priority_fee": "1 gwei"},
+        {"max_priority_fee": int(1e9)},
         {"max_priority_fee": "1 gwei", "max_fee": "100 gwei"},
+        {"max_priority_fee": int(1e9), "max_fee": "100 gwei"},
+        {"max_priority_fee": "1 gwei", "max_fee": int(100e9)},
+        {"max_priority_fee": int(1e9), "max_fee": int(100e9)},
     ),
 )
 def test_create_dynamic_fee_kwargs(ethereum, fee_kwargs):
