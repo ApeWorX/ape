@@ -142,6 +142,18 @@ E   ape.exceptions.ContractLogicError: Transaction failed.
     assert expected in str(result.stdout)
 
 
+@skip_projects_except("with-contracts")
+def test_show_internal(setup_pytester, project, pytester, eth_tester_provider):
+    _ = eth_tester_provider  # Ensure using EthTester for this test.
+    setup_pytester(project.path.name)
+    result = pytester.runpytest("--showinternal")
+    expected = """
+    raise vm_err from err
+E   ape.exceptions.ContractLogicError: Transaction failed.
+    """.strip()
+    assert expected in str(result.stdout)
+
+
 @skip_projects_except("test", "with-contracts")
 def test_test_isolation_disabled(setup_pytester, project, pytester, eth_tester_provider):
     # check the disable isolation option actually disables built-in isolation

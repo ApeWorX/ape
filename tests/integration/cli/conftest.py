@@ -11,7 +11,7 @@ import pytest
 from ape.managers.config import CONFIG_FILE_NAME
 
 from .test_plugins import ListResult
-from .utils import NodeId, project_names, project_skipper, projects_directory
+from .utils import NodeId, __project_names__, __projects_directory__, project_skipper
 
 
 class IntegrationTestModule:
@@ -94,7 +94,7 @@ def project_dir_map(project_folder):
                 # Already copied.
                 return self.project_map[name]
 
-            project_source_dir = projects_directory / name
+            project_source_dir = __projects_directory__ / name
             project_dest_dir = project_folder / project_source_dir.name
             copy_tree(str(project_source_dir), str(project_dest_dir))
             self.project_map[name] = project_dest_dir
@@ -103,7 +103,7 @@ def project_dir_map(project_folder):
     return ProjectDirCache()
 
 
-@pytest.fixture(autouse=True, params=project_names)
+@pytest.fixture(autouse=True, params=__project_names__)
 def project(request, config, project_dir_map):
     project_dir = project_dir_map.load(request.param)
     with config.using_project(project_dir) as project:
