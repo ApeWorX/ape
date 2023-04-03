@@ -52,6 +52,7 @@ class PytestApeRunner(ManagerAccessMixin):
                 for f in tb_frames
                 if Path(f.path).as_posix().startswith(base) or Path(f.path).name.startswith("test_")
             ]
+
         if relevant_tb:
             call.excinfo.traceback = PytestTraceback(relevant_tb)
             report.longrepr = call.excinfo.getrepr(
