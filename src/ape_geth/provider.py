@@ -2,7 +2,7 @@ import shutil
 from abc import ABC
 from pathlib import Path
 from subprocess import DEVNULL, PIPE, Popen
-from typing import Any, Dict, Iterator, List, Optional, Union
+from typing import Any, Dict, Iterator, List, Optional, Tuple, Union
 
 import ijson  # type: ignore
 import requests
@@ -439,9 +439,7 @@ class GethDev(BaseGethProvider, TestProviderAPI):
         # The user is requesting information related to a call's trace,
         # such as gas usage data.
 
-        result = self._make_request("debug_traceCall", arguments)
-        trace_data = result.get("structLogs", [])
-        trace_frames = (EvmTraceFrame(**f) for f in trace_data)
+        result, trace_frames = self._trace_call(arguments)
         return_value = HexBytes(result["returnValue"])
         root_node_kwargs = {
             "gas_cost": result.get("gas", 0),
@@ -479,6 +477,26 @@ class GethDev(BaseGethProvider, TestProviderAPI):
             self.chain_manager._reports.show_trace(call_tree)
 
         return return_value
+
+    def _trace_call(self, arguments: List[Any]) -> Tuple[Dict, Iterator[EvmTraceFrame]]:
+        result = self._make_request("debug_traceCall", arguments)
+        trace_data = result.get("structLogs", [])
+        return result, (EvmTraceFrame(**f) for f in trace_data)
+
+    def _eth_call(self, arguments: List) -> bytes:
+        try:
+            result = self._make_request("eth_call", arguments)
+        except Exception as err:
+            trace = (self._create_trace_frame(x) for x in self._trace_call(arguments)[1])
+            contract_address = arguments[0]["to"]
+            raise self.get_virtual_machine_error(
+                err, trace=trace, contract_address=contract_address
+            ) from err
+
+        if "error" in result:
+            raise ProviderError(result["error"]["message"])
+
+        return HexBytes(result)
 
     def get_call_tree(self, txn_hash: str, **root_node_kwargs) -> CallTreeNode:
         return self._get_geth_call_tree(txn_hash, **root_node_kwargs)

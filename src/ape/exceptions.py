@@ -3,7 +3,7 @@ import time
 import traceback
 from inspect import getframeinfo, stack
 from pathlib import Path
-from typing import TYPE_CHECKING, List, Optional
+from typing import TYPE_CHECKING, Iterator, List, Optional
 
 import click
 from eth_utils import humanize_hash
@@ -15,7 +15,7 @@ if TYPE_CHECKING:
     from ape.api.networks import NetworkAPI
     from ape.api.providers import SubprocessProvider
     from ape.api.transactions import TransactionAPI
-    from ape.types import BlockID, SnapshotID
+    from ape.types import AddressType, BlockID, SnapshotID, TraceFrame
 
 
 class ApeException(Exception):
@@ -98,15 +98,16 @@ class TransactionError(ContractError):
         base_err: Optional[Exception] = None,
         code: Optional[int] = None,
         txn: Optional["TransactionAPI"] = None,
+        trace: Optional[Iterator["TraceFrame"]] = None,
+        contract_address: Optional["AddressType"] = None,
     ):
-        if not message:
-            message = str(base_err) if base_err else self.DEFAULT_MESSAGE
+        message = message or (str(base_err) if base_err else self.DEFAULT_MESSAGE)
         self.message = message
-
         self.base_err = base_err
         self.code = code
         self.txn = txn
-
+        self.trace = trace
+        self.contract_address = contract_address
         ex_message = f"({code}) {message}" if code else message
         super().__init__(ex_message)
 
@@ -124,9 +125,15 @@ class ContractLogicError(VirtualMachineError):
     """
 
     def __init__(
-        self, revert_message: Optional[str] = None, txn: Optional["TransactionAPI"] = None
+        self,
+        revert_message: Optional[str] = None,
+        txn: Optional["TransactionAPI"] = None,
+        trace: Optional[Iterator["TraceFrame"]] = None,
+        contract_address: Optional["AddressType"] = None,
     ):
-        super().__init__(message=revert_message, txn=txn)
+        super().__init__(
+            message=revert_message, txn=txn, trace=trace, contract_address=contract_address
+        )
 
     @property
     def revert_message(self):

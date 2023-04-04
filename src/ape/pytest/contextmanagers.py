@@ -2,16 +2,16 @@ import re
 from collections import deque
 from typing import Optional, Type, Union
 
-import ape
 from ape.exceptions import (
     APINotImplementedError,
     ContractLogicError,
     ProviderError,
     TransactionError,
 )
+from ape.utils.basemodel import ManagerAccessMixin
 
 
-class RevertsContextManager:
+class RevertsContextManager(ManagerAccessMixin):
     def __init__(
         self,
         expected_message: Optional[Union[str, re.Pattern]] = None,
@@ -30,32 +30,38 @@ class RevertsContextManager:
             be found, or the found dev message does not match the expected dev message.
         """
         txn = exception.txn
-
-        if txn is None or txn.receiver is None:
-            raise AssertionError("Could not fetch transaction information to check dev message.")
+        contract_address = exception.contract_address or getattr(txn, "receiver", None)
+        if not contract_address:
+            raise AssertionError("Could not fetch contract information to check dev message.")
 
         try:
-            contract = ape.Contract(txn.receiver)
+            contract = self.chain_manager.contracts.instance_at(contract_address)
         except ValueError as exc:
             raise AssertionError(
-                f"Could not fetch contract at {txn.receiver} to check dev message."
+                f"Could not fetch contract at {contract_address} to check dev message."
             ) from exc
 
         if contract.contract_type.pcmap is None:
             raise AssertionError("Compiler does not support source code mapping.")
 
-        receipt = txn.receipt
-        if not receipt:
-            raise AssertionError("Cannot check dev message. Transaction never published.")
+        if exception.trace is None and txn is not None:
+            try:
+                trace = deque(self.provider.get_transaction_trace(txn.txn_hash.hex()))
+            except APINotImplementedError as exc:
+                raise AssertionError(
+                    "Cannot check dev message; provider must support transaction tracing."
+                ) from exc
+            except ProviderError as exc:
+                raise AssertionError("Cannot fetch transaction trace.") from exc
 
-        try:
-            trace = deque(receipt.trace)
-        except APINotImplementedError as exc:
-            raise AssertionError(
-                "Cannot check dev message; provider must support transaction tracing."
-            ) from exc
-        except ProviderError as exc:
-            raise AssertionError("Cannot fetch transaction trace.") from exc
+        elif exception.trace is not None:
+            trace = deque(exception.trace)
+
+        else:
+            raise AssertionError("Cannot fetch transaction trace.")
+
+        if trace is None:
+            raise AssertionError("Cannot fetch transaction trace.")
 
         pc = None
         pcmap = contract.contract_type.pcmap.parse()
@@ -93,7 +99,6 @@ class RevertsContextManager:
         assertion_error_prefix = f"Expected dev revert message '{assertion_error_message}'"
 
         dev_messages = contract.contract_type.dev_messages or {}
-
         if offending_source.line_start not in dev_messages:
             raise AssertionError(f"{assertion_error_prefix} but there was none.")
 

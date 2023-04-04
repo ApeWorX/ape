@@ -134,14 +134,7 @@ def vyper_contract_instance(
 
 @pytest.fixture
 def reverts_contract_type(get_contract_type) -> ContractType:
-    result = get_contract_type("reverts_contract")
-    result.dev_messages = {
-        6: "dev: one",
-        7: "dev: error",
-        9: "dev: such modifiable, wow",
-        12: "dev: great job",
-    }
-    return result
+    return get_contract_type("reverts_contract")
 
 
 @pytest.fixture
