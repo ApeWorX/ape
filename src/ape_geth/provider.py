@@ -1,3 +1,4 @@
+import atexit
 import shutil
 from abc import ABC
 from pathlib import Path
@@ -150,6 +151,9 @@ class GethDevProcess(LoggingMixin, BaseGethProcess):
         self.start()
         self.wait_for_rpc(timeout=60)
 
+        # Register atexit handler to make sure disconnect is called for normal object lifecycle.
+        atexit.register(self.disconnect)
+
     def start(self):
         if self.is_running:
             return
@@ -165,6 +169,7 @@ class GethDevProcess(LoggingMixin, BaseGethProcess):
 
     def disconnect(self):
         if self.is_running:
+            logger.info("Stopping 'geth' process.")
             self.stop()
 
         self._clean()

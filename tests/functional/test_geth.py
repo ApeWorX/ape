@@ -68,8 +68,10 @@ def mock_geth(geth_provider, mock_web3):
         data_folder=Path("."),
         request_header="",
     )
+    original_web3 = provider._web3
     provider._web3 = mock_web3
-    return provider
+    yield provider
+    provider._web3 = original_web3
 
 
 @pytest.fixture
@@ -208,7 +210,7 @@ def test_connect_wrong_chain_id(mocker, ethereum, geth_provider):
         factory = mocker.patch("ape_geth.provider._create_web3")
         factory.return_value = geth_provider._web3
         expected_error_message = (
-            "Provider connected to chain ID '1337', "
+            f"Provider connected to chain ID '{geth_provider._web3.eth.chain_id}', "
             "which does not match network chain ID '5'. "
             "Are you connected to 'goerli'?"
         )
