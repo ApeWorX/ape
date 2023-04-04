@@ -47,17 +47,14 @@ class PytestApeRunner(ManagerAccessMixin):
         if self.config_wrapper.pytest_config.getoption("showinternal"):
             relevant_tb = list(tb_frames)
         else:
-            relevant_tb = PytestTraceback(
-                [
-                    f
-                    for f in tb_frames
-                    if Path(f.path).as_posix().startswith(base)
-                    or Path(f.path).name.startswith("test_")
-                ]
-            )
+            relevant_tb = [
+                f
+                for f in tb_frames
+                if Path(f.path).as_posix().startswith(base) or Path(f.path).name.startswith("test_")
+            ]
 
         if relevant_tb:
-            call.excinfo.traceback = relevant_tb
+            call.excinfo.traceback = PytestTraceback(relevant_tb)
             report.longrepr = call.excinfo.getrepr(
                 funcargs=True,
                 abspath=Path.cwd(),

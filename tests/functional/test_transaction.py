@@ -1,7 +1,7 @@
 import pytest
 from hexbytes import HexBytes
 
-from ape_ethereum.transactions import StaticFeeTransaction, TransactionType
+from ape_ethereum.transactions import DynamicFeeTransaction, StaticFeeTransaction, TransactionType
 
 
 @pytest.mark.parametrize("type_kwarg", (0, "0x0", b"\x00", "0", HexBytes("0x0"), HexBytes("0x00")))
@@ -20,6 +20,28 @@ def test_create_access_list_transaction(ethereum, type_kwarg):
 def test_create_dynamic_fee_transaction(ethereum, type_kwarg):
     txn = ethereum.create_transaction(type=type_kwarg)
     assert txn.type == TransactionType.DYNAMIC.value
+
+
+@pytest.mark.parametrize(
+    "fee_kwargs",
+    (
+        {"max_fee": "100 gwei"},
+        {"max_fee": int(100e9)},
+        {"max_priority_fee": "1 gwei"},
+        {"max_priority_fee": int(1e9)},
+        {"max_priority_fee": "1 gwei", "max_fee": "100 gwei"},
+        {"max_priority_fee": int(1e9), "max_fee": "100 gwei"},
+        {"max_priority_fee": "1 gwei", "max_fee": int(100e9)},
+        {"max_priority_fee": int(1e9), "max_fee": int(100e9)},
+    ),
+)
+def test_create_dynamic_fee_kwargs(ethereum, fee_kwargs):
+    txn = ethereum.create_transaction(**fee_kwargs)
+    assert isinstance(txn, DynamicFeeTransaction)
+    if "max_priority_fee" in fee_kwargs:
+        assert txn.max_priority_fee == int(1e9)
+    if "max_fee" in fee_kwargs:
+        assert txn.max_fee == int(100e9)
 
 
 def test_txn_hash(owner, eth_tester_provider, ethereum):
