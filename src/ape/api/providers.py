@@ -12,7 +12,7 @@ from logging import FileHandler, Formatter, Logger, getLogger
 from pathlib import Path
 from signal import SIGINT, SIGTERM, signal
 from subprocess import DEVNULL, PIPE, Popen
-from typing import Any, Dict, Iterator, List, Optional, cast
+from typing import Any, Dict, Iterator, List, Optional, Union, cast
 
 from eth_typing import HexStr
 from eth_utils import add_0x_prefix, to_hex
@@ -548,8 +548,11 @@ class ProviderAPI(BaseInterfaceModel):
         """
 
         txn = kwargs.get("txn")
-
-        return VirtualMachineError(base_err=exception, txn=txn)
+        trace = kwargs.get("trace")
+        contract_address = kwargs.get("contrat_address")
+        return VirtualMachineError(
+            base_err=exception, txn=txn, trace=trace, contract_address=contract_address
+        )
 
 
 class TestProviderAPI(ProviderAPI):
@@ -1238,35 +1241,72 @@ class Web3Provider(ProviderAPI, ABC):
         """
 
         txn = kwargs.get("txn")
+        trace = kwargs.get("trace")
+        contract_address = kwargs.get("contract_address")
 
         if isinstance(exception, Web3ContractLogicError):
             # This happens from `assert` or `require` statements.
-            message = str(exception).split(":")[-1].strip()
-            if message == "execution reverted":
-                # Reverted without an error message
-                raise ContractLogicError(txn=txn)
-
-            return ContractLogicError(revert_message=message, txn=txn)
+            return _handle_execution_reverted(
+                exception, txn=txn, trace=trace, contract_address=contract_address
+            )
 
         if not len(exception.args):
-            return VirtualMachineError(base_err=exception, txn=txn)
+            return VirtualMachineError(
+                base_err=exception, txn=txn, trace=trace, contract_address=contract_address
+            )
 
         err_data = exception.args[0] if (hasattr(exception, "args") and exception.args) else None
+        if isinstance(err_data, str) and "execution reverted" in err_data:
+            return _handle_execution_reverted(
+                exception, txn=txn, trace=trace, contract_address=contract_address
+            )
+
         if not isinstance(err_data, dict):
-            return VirtualMachineError(base_err=exception, txn=txn)
+            return VirtualMachineError(
+                base_err=exception, txn=txn, trace=trace, contract_address=contract_address
+            )
 
         err_msg = err_data.get("message")
         if not err_msg:
-            return VirtualMachineError(base_err=exception, txn=txn)
+            return VirtualMachineError(
+                base_err=exception, txn=txn, trace=trace, contract_address=contract_address
+            )
 
         if txn is not None and "nonce too low" in str(err_msg):
             txn = cast(TransactionAPI, txn)
             new_err_msg = f"Nonce '{txn.nonce}' is too low"
             return VirtualMachineError(
-                new_err_msg, base_err=exception, code=err_data.get("code"), txn=txn
+                new_err_msg,
+                base_err=exception,
+                code=err_data.get("code"),
+                txn=txn,
+                trace=trace,
+                contract_address=contract_address,
             )
 
-        return VirtualMachineError(str(err_msg), code=err_data.get("code"), txn=txn)
+        return VirtualMachineError(
+            str(err_msg),
+            code=err_data.get("code"),
+            txn=txn,
+            trace=trace,
+            contract_address=contract_address,
+        )
+
+
+def _handle_execution_reverted(
+    exception: Union[Exception, str],
+    txn: Optional[TransactionAPI] = None,
+    trace: Optional[Iterator[TraceFrame]] = None,
+    contract_address: Optional[AddressType] = None,
+) -> ContractLogicError:
+    message = str(exception).split(":")[-1].strip()
+    if message == "execution reverted":
+        # Reverted without an error message
+        return ContractLogicError(txn=txn, trace=trace, contract_address=contract_address)
+
+    return ContractLogicError(
+        revert_message=message, txn=txn, trace=trace, contract_address=contract_address
+    )
 
 
 class UpstreamProvider(ProviderAPI):

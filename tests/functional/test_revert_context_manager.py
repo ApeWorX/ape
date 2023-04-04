@@ -68,6 +68,10 @@ def test_dev_revert(owner, reverts_contract_instance, geth_provider):
     with reverts(dev_message="dev: error"):
         reverts_contract_instance.revertStrings(2, sender=owner)
 
+    # Show a method further down in the contract also works.
+    with reverts(dev_message="dev: error"):
+        reverts_contract_instance.revertStrings2(2, sender=owner)
+
 
 @geth_process_test
 def test_dev_revert_pattern(owner, reverts_contract_instance, geth_provider):
@@ -76,6 +80,9 @@ def test_dev_revert_pattern(owner, reverts_contract_instance, geth_provider):
     """
     with reverts(dev_message=re.compile(r"dev: err\w+")):
         reverts_contract_instance.revertStrings(2, sender=owner)
+
+    with reverts(dev_message=re.compile(r"dev: err\w+")):
+        reverts_contract_instance.revertStrings2(2, sender=owner)
 
 
 @geth_process_test
@@ -109,6 +116,15 @@ def test_dev_revert_pattern_fails(owner, reverts_contract_instance, geth_provide
     with pytest.raises(AssertionError):
         with reverts(dev_message=re.compile(r"dev: [^ero]+")):
             reverts_contract_instance.revertStrings(2, sender=owner)
+
+
+@geth_process_test
+def test_dev_revert_on_call(owner, reverts_contract_instance, geth_provider):
+    """
+    Shows that dev strings are detectable even on pure / view methods.
+    """
+    with reverts(dev_message="dev: one"):
+        reverts_contract_instance.revertStringsCall(1)
 
 
 @geth_process_test
