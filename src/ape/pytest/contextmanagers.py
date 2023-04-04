@@ -6,6 +6,7 @@ from ape.exceptions import (
     APINotImplementedError,
     ContractLogicError,
     ProviderError,
+    SignatureError,
     TransactionError,
 )
 from ape.utils.basemodel import ManagerAccessMixin
@@ -51,7 +52,7 @@ class RevertsContextManager(ManagerAccessMixin):
                 raise AssertionError(
                     "Cannot check dev message; provider must support transaction tracing."
                 ) from exc
-            except ProviderError as exc:
+            except (ProviderError, SignatureError) as exc:
                 raise AssertionError("Cannot fetch transaction trace.") from exc
 
         elif exception.trace is not None:
