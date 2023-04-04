@@ -27,7 +27,7 @@ from requests.exceptions import ConnectionError
 from web3 import HTTPProvider, Web3
 from web3.exceptions import ExtraDataLengthError
 from web3.gas_strategies.rpc import rpc_gas_price_strategy
-from web3.middleware import geth_poa_middleware, simple_cache_middleware
+from web3.middleware import geth_poa_middleware
 from web3.middleware.validation import MAX_EXTRADATA_LENGTH
 from yarl import URL
 
@@ -523,6 +523,4 @@ class Geth(BaseGethProvider, UpstreamProvider):
 def _create_web3(uri: str):
     # Separated into helper method for testing purposes.
     provider = HTTPProvider(uri, request_kwargs={"timeout": 30 * 60})
-    web3 = Web3(provider)
-    web3.middleware_onion.add(simple_cache_middleware)
-    return web3
+    return Web3(provider)

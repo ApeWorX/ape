@@ -8,7 +8,6 @@ from eth_tester.exceptions import TransactionFailed  # type: ignore
 from eth_utils.exceptions import ValidationError
 from ethpm_types import HexBytes
 from web3 import EthereumTesterProvider, Web3
-from web3.middleware import simple_cache_middleware
 from web3.providers.eth_tester.defaults import API_ENDPOINTS
 from web3.types import TxParams
 
@@ -49,7 +48,6 @@ class LocalProvider(TestProviderAPI, Web3Provider):
             num_accounts=self.config["number_of_accounts"],
         )
         self._web3 = Web3(EthereumTesterProvider(ethereum_tester=self._evm_backend))
-        self._web3.middleware_onion.add(simple_cache_middleware)
 
     def disconnect(self):
         self.cached_chain_id = None

@@ -720,7 +720,7 @@ class Web3Provider(ProviderAPI, ABC):
             message = gas_estimation_error_message(tx_error)
             raise TransactionError(message, base_err=tx_error, txn=txn) from err
 
-    @property
+    @cached_property
     def chain_id(self) -> int:
         default_chain_id = None
         if self.network.name not in (
