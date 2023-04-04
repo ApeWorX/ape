@@ -367,11 +367,10 @@ class ReceiptAPI(BaseInterfaceModel):
             return self
 
         # If we get here, that means the transaction has been recently submitted.
-        log_message = f"Submitted {self.txn_hash}"
-        if self._explorer:
-            explorer_url = self._explorer.get_transaction_url(self.txn_hash)
-            if explorer_url:
-                log_message = f"{log_message}\n{self._explorer.name} URL: {explorer_url}"
+        if explorer_url := self._explorer and self._explorer.get_transaction_url(self.txn_hash):
+            log_message = f"Submitted {explorer_url}"
+        else:
+            log_message = f"Submitted {self.txn_hash}"
 
         logger.info(log_message)
 
