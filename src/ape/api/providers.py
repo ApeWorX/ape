@@ -546,13 +546,7 @@ class ProviderAPI(BaseInterfaceModel):
             :class:`~ape.exceptions.VirtualMachineError`: An error representing what
                went wrong in the call.
         """
-
-        txn = kwargs.get("txn")
-        trace = kwargs.get("trace")
-        contract_address = kwargs.get("contrat_address")
-        return VirtualMachineError(
-            base_err=exception, txn=txn, trace=trace, contract_address=contract_address
-        )
+        return VirtualMachineError(base_err=exception, **kwargs)
 
 
 class TestProviderAPI(ProviderAPI):
@@ -1241,56 +1235,32 @@ class Web3Provider(ProviderAPI, ABC):
         """
 
         txn = kwargs.get("txn")
-        trace = kwargs.get("trace")
-        contract_address = kwargs.get("contract_address")
-
         if isinstance(exception, Web3ContractLogicError):
             # This happens from `assert` or `require` statements.
-            return _handle_execution_reverted(
-                exception, txn=txn, trace=trace, contract_address=contract_address
-            )
+            return _handle_execution_reverted(exception, **kwargs)
 
         if not len(exception.args):
-            return VirtualMachineError(
-                base_err=exception, txn=txn, trace=trace, contract_address=contract_address
-            )
+            return VirtualMachineError(base_err=exception, **kwargs)
 
         err_data = exception.args[0] if (hasattr(exception, "args") and exception.args) else None
         if isinstance(err_data, str) and "execution reverted" in err_data:
-            return _handle_execution_reverted(
-                exception, txn=txn, trace=trace, contract_address=contract_address
-            )
+            return _handle_execution_reverted(exception, **kwargs)
 
         if not isinstance(err_data, dict):
-            return VirtualMachineError(
-                base_err=exception, txn=txn, trace=trace, contract_address=contract_address
-            )
+            return VirtualMachineError(base_err=exception, **kwargs)
 
         err_msg = err_data.get("message")
         if not err_msg:
-            return VirtualMachineError(
-                base_err=exception, txn=txn, trace=trace, contract_address=contract_address
-            )
+            return VirtualMachineError(base_err=exception, **kwargs)
 
         if txn is not None and "nonce too low" in str(err_msg):
             txn = cast(TransactionAPI, txn)
             new_err_msg = f"Nonce '{txn.nonce}' is too low"
             return VirtualMachineError(
-                new_err_msg,
-                base_err=exception,
-                code=err_data.get("code"),
-                txn=txn,
-                trace=trace,
-                contract_address=contract_address,
+                new_err_msg, base_err=exception, code=err_data.get("code"), **kwargs
             )
 
-        return VirtualMachineError(
-            str(err_msg),
-            code=err_data.get("code"),
-            txn=txn,
-            trace=trace,
-            contract_address=contract_address,
-        )
+        return VirtualMachineError(str(err_msg), code=err_data.get("code"), **kwargs)
 
 
 def _handle_execution_reverted(
