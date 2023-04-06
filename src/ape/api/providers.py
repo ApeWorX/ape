@@ -661,7 +661,10 @@ class Web3Provider(ProviderAPI, ABC):
     @cached_property
     def supports_tracing(self) -> bool:
         try:
-            self.get_call_tree(None)
+            # NOTE: Txn hash is purposely not a real hash.
+            # If we get any exception besides not implemented error,
+            # then we support tracing on this provider.
+            self.get_call_tree("__CHECK_IF_SUPPORTS_TRACING__")
         except APINotImplementedError:
             return False
         except Exception:
