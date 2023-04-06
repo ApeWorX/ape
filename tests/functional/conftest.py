@@ -126,6 +126,11 @@ def vyper_contract_container(vyper_contract_type) -> ContractContainer:
 
 
 @pytest.fixture
+def vyper_math_dev_check(get_contract_type) -> ContractContainer:
+    return ContractContainer(contract_type=get_contract_type("vyper_math_dev_checks"))
+
+
+@pytest.fixture
 def vyper_contract_instance(
     owner, vyper_contract_container, networks_connected_to_tester
 ) -> ContractInstance:

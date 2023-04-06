@@ -96,6 +96,26 @@ def test_dev_revert_no_source(owner, vyper_contract_container, geth_provider):
 
 
 @geth_process_test
+def test_dev_revert_math_dev_checks(owner, vyper_math_dev_check, geth_provider):
+    """
+    Tests that we can assert on dev messages injected from the compiler.
+    """
+    contract = owner.deploy(vyper_math_dev_check)
+
+    with reverts(dev_message="Integer overflow"):
+        contract.num_add(1, sender=owner)
+
+    with reverts(dev_message="Integer underflow"):
+        contract.neg_num_add(-2, sender=owner)
+
+    with reverts(dev_message="Division by zero"):
+        contract.div_zero(0, sender=owner)
+
+    with reverts(dev_message="Modulo by zero"):
+        contract.mod_zero(0, sender=owner)
+
+
+@geth_process_test
 def test_dev_revert_fails(owner, reverts_contract_instance, geth_provider):
     """
     Test that ``AssertionError`` is raised if the supplied dev message and the contract dev message
