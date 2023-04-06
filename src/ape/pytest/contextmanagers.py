@@ -86,7 +86,6 @@ class RevertsContextManager(ManagerAccessMixin):
         if pc is None:
             raise AssertionError(missing_src_msg)
 
-        # The compiler PC map had PC information, but not source information.
         offending_source = pcmap[pc]
         if offending_source is None:
             raise AssertionError(missing_src_msg)
@@ -108,7 +107,7 @@ class RevertsContextManager(ManagerAccessMixin):
             else:
                 raise AssertionError(f"{assertion_error_prefix} but there was none.")
 
-        elif offending_source.line_start not in dev_messages:
+        if offending_source.line_start not in dev_messages:
             # Dev message is neither found from the compiler or from a dev-comment.
             raise AssertionError(missing_src_msg)
 
