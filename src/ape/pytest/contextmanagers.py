@@ -6,6 +6,7 @@ from ape.exceptions import (
     APINotImplementedError,
     ContractLogicError,
     ProviderError,
+    SignatureError,
     TransactionError,
 )
 from ape.utils.basemodel import ManagerAccessMixin
@@ -51,7 +52,7 @@ class RevertsContextManager(ManagerAccessMixin):
                 raise AssertionError(
                     "Cannot check dev message; provider must support transaction tracing."
                 ) from exc
-            except ProviderError as exc:
+            except (ProviderError, SignatureError) as exc:
                 raise AssertionError("Cannot fetch transaction trace.") from exc
 
         elif exception.trace is not None:
@@ -81,29 +82,43 @@ class RevertsContextManager(ManagerAccessMixin):
                     break
 
         # We were unable to find a suitable PC that matched the compiler's map.
+        missing_src_msg = "Could not find the source of the revert."
         if pc is None:
-            raise AssertionError("Could not find line that caused revert.")
+            raise AssertionError(missing_src_msg)
 
         offending_source = pcmap[pc]
-
-        # The compiler PC map had PC information, but not source information.
-        if offending_source is None or offending_source.line_start is None:
-            raise AssertionError("Could not find line that caused revert.")
+        if offending_source is None:
+            raise AssertionError(missing_src_msg)
 
         assertion_error_message = (
             self.dev_message.pattern
             if isinstance(self.dev_message, re.Pattern)
             else self.dev_message
         )
-
         assertion_error_prefix = f"Expected dev revert message '{assertion_error_message}'"
-
         dev_messages = contract.contract_type.dev_messages or {}
-        if offending_source.line_start not in dev_messages:
-            raise AssertionError(f"{assertion_error_prefix} but there was none.")
 
-        contract_dev_message = dev_messages[offending_source.line_start]
+        if offending_source.line_start is None:
+            # Check for a `dev` field in PCMap.
+            if offending_source.dev is not None:
+                self._assert_matches(offending_source.dev, assertion_error_prefix)
+                return  # Test passed.
 
+            else:
+                raise AssertionError(f"{assertion_error_prefix} but there was none.")
+
+        elif offending_source.line_start in dev_messages:
+            contract_dev_message = dev_messages[offending_source.line_start]
+            self._assert_matches(contract_dev_message, assertion_error_prefix)
+
+        elif offending_source.dev is not None:
+            self._assert_matches(offending_source.dev, assertion_error_prefix)
+
+        else:
+            # Dev message is neither found from the compiler or from a dev-comment.
+            raise AssertionError(missing_src_msg)
+
+    def _assert_matches(self, contract_dev_message: str, assertion_error_prefix: str):
         message_matches = (
             (self.dev_message.match(contract_dev_message) is not None)
             if isinstance(self.dev_message, re.Pattern)
