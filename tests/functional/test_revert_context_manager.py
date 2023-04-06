@@ -86,7 +86,7 @@ def test_dev_revert_pattern(owner, reverts_contract_instance, geth_provider):
 
 
 @geth_process_test
-def test_dev_revert_no_source(owner, vyper_contract_container, geth_provider):
+def test_dev_revert_nonpayable_check(owner, vyper_contract_container, geth_provider):
     """
     Tests that we can assert on dev messages injected from the compiler.
     """
