@@ -107,12 +107,16 @@ class RevertsContextManager(ManagerAccessMixin):
             else:
                 raise AssertionError(f"{assertion_error_prefix} but there was none.")
 
-        if offending_source.line_start not in dev_messages:
+        elif offending_source.line_start in dev_messages:
+            contract_dev_message = dev_messages[offending_source.line_start]
+            self._assert_matches(contract_dev_message, assertion_error_prefix)
+
+        elif offending_source.dev is not None:
+            self._assert_matches(offending_source.dev, assertion_error_prefix)
+
+        else:
             # Dev message is neither found from the compiler or from a dev-comment.
             raise AssertionError(missing_src_msg)
-
-        contract_dev_message = dev_messages[offending_source.line_start]
-        self._assert_matches(contract_dev_message, assertion_error_prefix)
 
     def _assert_matches(self, contract_dev_message: str, assertion_error_prefix: str):
         message_matches = (
