@@ -93,16 +93,16 @@ class InterfaceCompiler(CompilerAPI):
         if not address:
             return err
 
+        if not self.network_manager.active_provider:
+            # Connection required.
+            return err
+
         contract = self.chain_manager.contracts.get(address)
         if not contract or not contract.source_id:
             return err
 
         if selector not in contract.errors:
             # Not an ErrorABI selector.
-            return err
-
-        if not self.network_manager.active_provider:
-            # Connection required.
             return err
 
         abi = contract.errors[selector]
