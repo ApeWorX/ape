@@ -154,7 +154,7 @@ class ContractLogicError(VirtualMachineError):
         return self.message
 
     @cached_property
-    def dev_message(self) -> str:
+    def dev_message(self) -> Optional[str]:
         """
         The dev-string message of the exception.
 
