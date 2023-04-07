@@ -513,6 +513,18 @@ class EcosystemAPI(BaseInterfaceModel):
         return call
 
     def decode_error(self, abi: ErrorABI, data: HexBytes, **kwargs) -> ContractLogicError:
+        """
+        Decode a custom :class:`~ape.exceptions.ContractLogicError` class.
+
+        Args:
+            abi (``ErrorABI``): The ABI of the error.
+            data (``HexBytes``): The input data.
+            **kwargs: Additional exception arguments.
+
+        Returns:
+            :class:`~ape.exceptions.ContractLogicError`: Enriched or subclassed error.
+        """
+
         # TODO: Include ErrorABI in official `decode_calldata` API definition for 0.7
         input_data = self.decode_calldata(abi, data)  # type: ignore
         if input_data:
