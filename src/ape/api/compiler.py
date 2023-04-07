@@ -4,6 +4,7 @@ from typing import Dict, List, Optional, Set
 from ethpm_types import ContractType
 from semantic_version import Version  # type: ignore
 
+from ape.exceptions import ContractLogicError
 from ape.utils import BaseInterfaceModel, abstractmethod, raises_not_implemented
 
 
@@ -109,3 +110,18 @@ class CompilerAPI(BaseInterfaceModel):
 
     def __str__(self) -> str:
         return self.name
+
+    def enrich_error(self, err: ContractLogicError) -> ContractLogicError:
+        """
+        Enrich a contract logic error using compiler information, such
+        known PC locations for compiler runtime errors, such as math errors.
+
+        Args:
+            err (:class:`~ape.exceptions.ContractLogicError`): The exception
+              to enrich.
+
+        Returns:
+            :class:`~ape.exceptions.ContractLogicError`: The enriched exception.
+        """
+
+        return err

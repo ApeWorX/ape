@@ -4,7 +4,7 @@ from typing import Any, Dict, List, Optional, Set
 from ethpm_types import ContractType
 
 from ape.api import CompilerAPI
-from ape.exceptions import CompilerError
+from ape.exceptions import CompilerError, ContractLogicError
 from ape.logging import logger
 from ape.utils import get_relative_path
 
@@ -220,3 +220,5 @@ class CompilerManager(BaseManager):
             raise CompilerError(f"No compiler found for extensions [{unhandled_extensions_str}].")
 
         return {e for e in extensions if e}
+
+    def enrich_contract_logic_error(self, err: ContractLogicError) -> ContractLogicError:
