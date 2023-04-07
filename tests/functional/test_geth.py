@@ -329,7 +329,7 @@ def test_contract_logic_error_dev_message(vyper_math_dev_check, owner, geth_prov
     with pytest.raises(ContractLogicError, match=expected) as err:
         contract.num_add(1, sender=owner)
 
-    assert err.value.dev_message[0] == expected
+    assert err.value.dev_message == expected
 
 
 def assert_rich_output(rich_capture: List[str], expected: str):

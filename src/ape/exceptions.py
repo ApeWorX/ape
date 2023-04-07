@@ -141,7 +141,7 @@ class ContractLogicError(VirtualMachineError):
         if revert_message is None:
             try:
                 # Attempt to use dev message as main exception message.
-                revert_message, _ = self.dev_message
+                revert_message = self.dev_message
             except Exception:
                 pass
 
