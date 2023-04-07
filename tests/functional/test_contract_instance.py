@@ -2,7 +2,7 @@ import re
 from typing import List, Tuple
 
 import pytest
-from eth_utils import is_checksum_address, keccak, to_hex
+from eth_utils import is_checksum_address, to_hex
 from hexbytes import HexBytes
 from pydantic import BaseModel
 
@@ -127,11 +127,18 @@ def test_revert_static_fee_type(sender, contract_instance):
 
 def test_revert_custom_exception(owner, get_contract_type, test_accounts):
     ct = get_contract_type("has_error")
+    ct.source_id = "has_error.json"  # Use JSON compiler for error enrichment.
     contract = owner.deploy(ContractContainer(ct))
-
-    expected = HexBytes(keccak(text="Unauthorized()"))[:4].hex()
-    with pytest.raises(ContractLogicError, match=expected):
+    with pytest.raises(ContractLogicError) as err_info:
         contract.withdraw(sender=test_accounts[7])
+
+    custom_err = err_info.value
+    addr = test_accounts[7].address
+    expected_message = f"addr={addr}, counter=123"
+    assert custom_err.txn is not None
+    assert custom_err.message == expected_message
+    assert custom_err.revert_message == expected_message
+    assert custom_err.input_data == {"addr": addr, "counter": 123}  # type: ignore
 
 
 def test_call_using_block_identifier(

@@ -1240,14 +1240,14 @@ class Web3Provider(ProviderAPI, ABC):
         txn = kwargs.get("txn")
         if isinstance(exception, Web3ContractLogicError):
             # This happens from `assert` or `require` statements.
-            return _handle_execution_reverted(exception, **kwargs)
+            return self._handle_execution_reverted(exception, **kwargs)
 
         if not len(exception.args):
             return VirtualMachineError(base_err=exception, **kwargs)
 
         err_data = exception.args[0] if (hasattr(exception, "args") and exception.args) else None
         if isinstance(err_data, str) and "execution reverted" in err_data:
-            return _handle_execution_reverted(exception, **kwargs)
+            return self._handle_execution_reverted(exception, **kwargs)
 
         if not isinstance(err_data, dict):
             return VirtualMachineError(base_err=exception, **kwargs)
@@ -1265,20 +1265,21 @@ class Web3Provider(ProviderAPI, ABC):
 
         return VirtualMachineError(str(err_msg), code=err_data.get("code"), **kwargs)
 
-
-def _handle_execution_reverted(
-    exception: Union[Exception, str],
-    txn: Optional[TransactionAPI] = None,
-    trace: Optional[Iterator[TraceFrame]] = None,
-    contract_address: Optional[AddressType] = None,
-) -> ContractLogicError:
-    message = str(exception).split(":")[-1].strip()
-    params: Dict = {"trace": trace, "contract_address": contract_address}
-    return (
-        ContractLogicError(txn=txn, **params)
-        if message == "execution reverted"
-        else ContractLogicError(revert_message=message, txn=txn, **params)
-    )
+    def _handle_execution_reverted(
+        self,
+        exception: Union[Exception, str],
+        txn: Optional[TransactionAPI] = None,
+        trace: Optional[Iterator[TraceFrame]] = None,
+        contract_address: Optional[AddressType] = None,
+    ) -> ContractLogicError:
+        message = str(exception).split(":")[-1].strip()
+        params: Dict = {"trace": trace, "contract_address": contract_address}
+        result = (
+            ContractLogicError(txn=txn, **params)
+            if message == "execution reverted"
+            else ContractLogicError(revert_message=message, txn=txn, **params)
+        )
+        return self.compiler_manager.enrich_error(result)
 
 
 class UpstreamProvider(ProviderAPI):

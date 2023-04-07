@@ -4,7 +4,7 @@ from typing import Any, Dict, List, Optional, Set
 from ethpm_types import ContractType
 
 from ape.api import CompilerAPI
-from ape.exceptions import CompilerError
+from ape.exceptions import CompilerError, ContractLogicError
 from ape.logging import logger
 from ape.utils import get_relative_path
 
@@ -220,3 +220,34 @@ class CompilerManager(BaseManager):
             raise CompilerError(f"No compiler found for extensions [{unhandled_extensions_str}].")
 
         return {e for e in extensions if e}
+
+    def enrich_error(self, err: ContractLogicError) -> ContractLogicError:
+        """
+        Enrich a contract logic error using compiler information, such
+        known PC locations for compiler runtime errors, such as math errors.
+
+        Args:
+            err (:class:`~ape.exceptions.ContractLogicError`): The exception
+              to enrich.
+
+        Returns:
+            :class:`~ape.exceptions.ContractLogicError`: The enriched exception.
+        """
+
+        address = err.contract_address or getattr(err.txn, "receiver", None)
+        if not address:
+            # Contract address not found.
+            return err
+
+        contract = self.chain_manager.contracts.get(address)
+        if not contract or not contract.source_id:
+            # Contract or source not found.
+            return err
+
+        ext = Path(contract.source_id).suffix
+        if ext not in self.registered_compilers:
+            # Compiler not found.
+            return err
+
+        compiler = self.registered_compilers[ext]
+        return compiler.enrich_error(err)
