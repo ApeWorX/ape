@@ -1265,21 +1265,21 @@ class Web3Provider(ProviderAPI, ABC):
 
         return VirtualMachineError(str(err_msg), code=err_data.get("code"), **kwargs)
 
-
-def _handle_execution_reverted(
-    exception: Union[Exception, str],
-    txn: Optional[TransactionAPI] = None,
-    trace: Optional[Iterator[TraceFrame]] = None,
-    contract_address: Optional[AddressType] = None,
-) -> ContractLogicError:
-    message = str(exception).split(":")[-1].strip()
-    if message == "execution reverted":
-        # Reverted without an error message
-        return ContractLogicError(txn=txn, trace=trace, contract_address=contract_address)
-
-    return ContractLogicError(
-        revert_message=message, txn=txn, trace=trace, contract_address=contract_address
-    )
+    def _handle_execution_reverted(
+        self,
+        exception: Union[Exception, str],
+        txn: Optional[TransactionAPI] = None,
+        trace: Optional[Iterator[TraceFrame]] = None,
+        contract_address: Optional[AddressType] = None,
+    ) -> ContractLogicError:
+        message = str(exception).split(":")[-1].strip()
+        params: Dict = {"trace": trace, "contract_address": contract_address}
+        result = (
+            ContractLogicError(txn=txn, **params)
+            if message == "execution reverted"
+            else ContractLogicError(revert_message=message, txn=txn, **params)
+        )
+        return self.compiler_manager.enrich_contract_logic_error(result)
 
 
 class UpstreamProvider(ProviderAPI):
