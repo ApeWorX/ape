@@ -1240,14 +1240,14 @@ class Web3Provider(ProviderAPI, ABC):
         txn = kwargs.get("txn")
         if isinstance(exception, Web3ContractLogicError):
             # This happens from `assert` or `require` statements.
-            return _handle_execution_reverted(exception, **kwargs)
+            return self._handle_execution_reverted(exception, **kwargs)
 
         if not len(exception.args):
             return VirtualMachineError(base_err=exception, **kwargs)
 
         err_data = exception.args[0] if (hasattr(exception, "args") and exception.args) else None
         if isinstance(err_data, str) and "execution reverted" in err_data:
-            return _handle_execution_reverted(exception, **kwargs)
+            return self._handle_execution_reverted(exception, **kwargs)
 
         if not isinstance(err_data, dict):
             return VirtualMachineError(base_err=exception, **kwargs)
@@ -1279,7 +1279,7 @@ class Web3Provider(ProviderAPI, ABC):
             if message == "execution reverted"
             else ContractLogicError(revert_message=message, txn=txn, **params)
         )
-        return self.compiler_manager.enrich_contract_logic_error(result)
+        return self.compiler_manager.enrich_error(result)
 
 
 class UpstreamProvider(ProviderAPI):
