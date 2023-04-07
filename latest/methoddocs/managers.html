@@ -119,6 +119,7 @@
 <li class="toctree-l2"><a class="reference internal" href="#module-ape.managers.compilers">Compilers</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#ape.managers.compilers.CompilerManager"><code class="docutils literal notranslate"><span class="pre">CompilerManager</span></code></a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#ape.managers.compilers.CompilerManager.compile"><code class="docutils literal notranslate"><span class="pre">CompilerManager.compile()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ape.managers.compilers.CompilerManager.enrich_error"><code class="docutils literal notranslate"><span class="pre">CompilerManager.enrich_error()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.managers.compilers.CompilerManager.get_imports"><code class="docutils literal notranslate"><span class="pre">CompilerManager.get_imports()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.managers.compilers.CompilerManager.get_references"><code class="docutils literal notranslate"><span class="pre">CompilerManager.get_references()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.managers.compilers.CompilerManager.registered_compilers"><code class="docutils literal notranslate"><span class="pre">CompilerManager.registered_compilers</span></code></a></li>
@@ -592,6 +593,25 @@ as <code class="docutils literal notranslate"><span class="pre">pathlib.Path</sp
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p>Dict[str, <code class="docutils literal notranslate"><span class="pre">ContractType</span></code>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ape.managers.compilers.CompilerManager.enrich_error">
+<span class="sig-name descname"><span class="pre">enrich_error</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">err</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="exceptions.html#ape.exceptions.ContractLogicError" title="ape.exceptions.ContractLogicError"><span class="pre">ContractLogicError</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="exceptions.html#ape.exceptions.ContractLogicError" title="ape.exceptions.ContractLogicError"><span class="pre">ContractLogicError</span></a></span></span><a class="headerlink" href="#ape.managers.compilers.CompilerManager.enrich_error" title="Permalink to this definition"></a></dt>
+<dd><p>Enrich a contract logic error using compiler information, such
+known PC locations for compiler runtime errors, such as math errors.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>err</strong> (<a class="reference internal" href="exceptions.html#ape.exceptions.ContractLogicError" title="ape.exceptions.ContractLogicError"><code class="xref py py-class docutils literal notranslate"><span class="pre">ContractLogicError</span></code></a>) – The exception
+to enrich.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The enriched exception.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="exceptions.html#ape.exceptions.ContractLogicError" title="ape.exceptions.ContractLogicError"><code class="xref py py-class docutils literal notranslate"><span class="pre">ContractLogicError</span></code></a></p>
 </dd>
 </dl>
 </dd></dl>

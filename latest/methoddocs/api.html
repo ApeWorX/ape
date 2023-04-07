@@ -158,6 +158,7 @@
 <li class="toctree-l2"><a class="reference internal" href="#module-ape.api.compiler">Compiler</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#ape.api.compiler.CompilerAPI"><code class="docutils literal notranslate"><span class="pre">CompilerAPI</span></code></a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.compiler.CompilerAPI.compile"><code class="docutils literal notranslate"><span class="pre">CompilerAPI.compile()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ape.api.compiler.CompilerAPI.enrich_error"><code class="docutils literal notranslate"><span class="pre">CompilerAPI.enrich_error()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.compiler.CompilerAPI.get_versions"><code class="docutils literal notranslate"><span class="pre">CompilerAPI.get_versions()</span></code></a></li>
 </ul>
 </li>
@@ -205,6 +206,7 @@
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.networks.EcosystemAPI.decode_address"><code class="docutils literal notranslate"><span class="pre">EcosystemAPI.decode_address()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.networks.EcosystemAPI.decode_block"><code class="docutils literal notranslate"><span class="pre">EcosystemAPI.decode_block()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.networks.EcosystemAPI.decode_calldata"><code class="docutils literal notranslate"><span class="pre">EcosystemAPI.decode_calldata()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ape.api.networks.EcosystemAPI.decode_error"><code class="docutils literal notranslate"><span class="pre">EcosystemAPI.decode_error()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.networks.EcosystemAPI.decode_logs"><code class="docutils literal notranslate"><span class="pre">EcosystemAPI.decode_logs()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.networks.EcosystemAPI.decode_receipt"><code class="docutils literal notranslate"><span class="pre">EcosystemAPI.decode_receipt()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.networks.EcosystemAPI.decode_returndata"><code class="docutils literal notranslate"><span class="pre">EcosystemAPI.decode_returndata()</span></code></a></li>
@@ -1019,6 +1021,25 @@ via <code class="docutils literal notranslate"><span class="pre">ape</span> <spa
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="ape.api.compiler.CompilerAPI.enrich_error">
+<span class="sig-name descname"><span class="pre">enrich_error</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">err</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="exceptions.html#ape.exceptions.ContractLogicError" title="ape.exceptions.ContractLogicError"><span class="pre">ContractLogicError</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="exceptions.html#ape.exceptions.ContractLogicError" title="ape.exceptions.ContractLogicError"><span class="pre">ContractLogicError</span></a></span></span><a class="headerlink" href="#ape.api.compiler.CompilerAPI.enrich_error" title="Permalink to this definition"></a></dt>
+<dd><p>Enrich a contract logic error using compiler information, such
+known PC locations for compiler runtime errors, such as math errors.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>err</strong> (<a class="reference internal" href="exceptions.html#ape.exceptions.ContractLogicError" title="ape.exceptions.ContractLogicError"><code class="xref py py-class docutils literal notranslate"><span class="pre">ContractLogicError</span></code></a>) – The exception
+to enrich.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The enriched exception.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="exceptions.html#ape.exceptions.ContractLogicError" title="ape.exceptions.ContractLogicError"><code class="xref py py-class docutils literal notranslate"><span class="pre">ContractLogicError</span></code></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="ape.api.compiler.CompilerAPI.get_versions">
 <em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_versions</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">all_paths</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Path</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Set</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#ape.api.compiler.CompilerAPI.get_versions" title="Permalink to this definition"></a></dt>
 <dd><p>Retrieve the set of available compiler versions for this plugin to compile <code class="docutils literal notranslate"><span class="pre">all_paths</span></code>.</p>
@@ -1326,6 +1347,27 @@ index of the input as the key.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>Dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ape.api.networks.EcosystemAPI.decode_error">
+<span class="sig-name descname"><span class="pre">decode_error</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">abi</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ErrorABI</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">HexBytes</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="exceptions.html#ape.exceptions.ContractLogicError" title="ape.exceptions.ContractLogicError"><span class="pre">ContractLogicError</span></a></span></span><a class="headerlink" href="#ape.api.networks.EcosystemAPI.decode_error" title="Permalink to this definition"></a></dt>
+<dd><p>Decode a custom <a class="reference internal" href="exceptions.html#ape.exceptions.ContractLogicError" title="ape.exceptions.ContractLogicError"><code class="xref py py-class docutils literal notranslate"><span class="pre">ContractLogicError</span></code></a> class.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>abi</strong> (<code class="docutils literal notranslate"><span class="pre">ErrorABI</span></code>) – The ABI of the error.</p></li>
+<li><p><strong>data</strong> (<code class="docutils literal notranslate"><span class="pre">HexBytes</span></code>) – The input data.</p></li>
+<li><p><strong>**kwargs</strong> – Additional exception arguments.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Enriched or subclassed error.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="exceptions.html#ape.exceptions.ContractLogicError" title="ape.exceptions.ContractLogicError"><code class="xref py py-class docutils literal notranslate"><span class="pre">ContractLogicError</span></code></a></p>
 </dd>
 </dl>
 </dd></dl>
