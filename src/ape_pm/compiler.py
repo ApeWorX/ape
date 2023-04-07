@@ -107,4 +107,6 @@ class InterfaceCompiler(CompilerAPI):
 
         abi = contract.errors[selector]
         ecosystem = self.provider.network.ecosystem
-        return ecosystem.decode_error(abi, input_data)
+        return ecosystem.decode_error(
+            abi, input_data, txn=err.txn, trace=err.trace, contract_address=err.contract_address
+        )
