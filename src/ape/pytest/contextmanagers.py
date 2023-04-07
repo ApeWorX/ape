@@ -23,16 +23,14 @@ class RevertsContextManager(ManagerAccessMixin):
             AssertionError: When the trace or source can not be retrieved, the dev message cannot
             be found, or the found dev message does not match the expected dev message.
         """
-        assertion_error_message = (
-            self.dev_message.pattern
-            if isinstance(self.dev_message, re.Pattern)
-            else self.dev_message
-        )
-        assertion_error_prefix = f"Expected dev revert message '{assertion_error_message}'"
-        dev_message, fail_msg = exception.dev_message
+
+        try:
+            dev_message = exception.dev_message
+        except ValueError as err:
+            raise AssertionError(str(err)) from err
+
         if dev_message is None:
-            msg = f"{assertion_error_prefix}: {fail_msg}" if fail_msg else assertion_error_prefix
-            raise AssertionError(msg)
+            raise AssertionError("Could not find the source of the revert.")
 
         message_matches = (
             (self.dev_message.match(dev_message) is not None)
@@ -40,6 +38,12 @@ class RevertsContextManager(ManagerAccessMixin):
             else (dev_message == self.dev_message)
         )
         if not message_matches:
+            assertion_error_message = (
+                self.dev_message.pattern
+                if isinstance(self.dev_message, re.Pattern)
+                else self.dev_message
+            )
+            assertion_error_prefix = f"Expected dev revert message '{assertion_error_message}'"
             raise AssertionError(f"{assertion_error_prefix} but got '{dev_message}'.")
 
     def _check_expected_message(self, exception: ContractLogicError):
