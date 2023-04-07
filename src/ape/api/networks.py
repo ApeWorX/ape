@@ -514,7 +514,7 @@ class EcosystemAPI(BaseInterfaceModel):
 
     def decode_error(self, abi: ErrorABI, data: HexBytes, **kwargs) -> ContractLogicError:
         # TODO: Include ErrorABI in official `decode_calldata` API definition for 0.7
-        input_data = ecosystem.decode_calldata(abi, data)  # type: ignore
+        input_data = self.decode_calldata(abi, data)  # type: ignore
         if input_data:
             message = ", ".join(sorted([f"{k}={v}" for k, v in input_data.items()]))
         else:
