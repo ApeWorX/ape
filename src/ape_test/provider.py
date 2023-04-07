@@ -214,9 +214,10 @@ class LocalProvider(TestProviderAPI, Web3Provider):
                 err_message = HexBytes(literal_eval(err_message)).hex()
 
             err_message = None if err_message == "0x" else err_message
-            return ContractLogicError(
+            contract_err = ContractLogicError(
                 revert_message=err_message, txn=txn, trace=trace, contract_address=contract_address
             )
+            return self.compiler_manager.enrich_error(contract_err)
 
         else:
             return VirtualMachineError(

@@ -2,9 +2,11 @@ import json
 from pathlib import Path
 from typing import Dict, List, Optional, Set
 
-from ethpm_types import ContractType
+from eth_utils import is_0x_prefixed
+from ethpm_types import ContractType, HexBytes
 
 from ape.api import CompilerAPI
+from ape.exceptions import ContractLogicError
 from ape.logging import logger
 from ape.utils import get_relative_path
 
@@ -78,3 +80,33 @@ class InterfaceCompiler(CompilerAPI):
             contract_types.append(contract_type)
 
         return contract_types
+
+    def enrich_error(self, err: ContractLogicError) -> ContractLogicError:
+        if not is_0x_prefixed(err.revert_message):
+            return err
+
+        # Check for ErrorABI.
+        bytes_message = HexBytes(err.revert_message)
+        selector = bytes_message[:4]
+        input_data = bytes_message[4:]
+        address = err.contract_address or getattr(err.txn, "receiver", None)
+        if not address:
+            return err
+
+        if not self.network_manager.active_provider:
+            # Connection required.
+            return err
+
+        contract = self.chain_manager.contracts.get(address)
+        if not contract or not contract.source_id:
+            return err
+
+        if selector not in contract.errors:
+            # Not an ErrorABI selector.
+            return err
+
+        abi = contract.errors[selector]
+        ecosystem = self.provider.network.ecosystem
+        return ecosystem.decode_error(
+            abi, input_data, txn=err.txn, trace=err.trace, contract_address=err.contract_address
+        )
