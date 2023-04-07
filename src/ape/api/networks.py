@@ -9,16 +9,18 @@ from eth_account._utils.legacy_transactions import (
     serializable_unsigned_transaction_from_dict,
 )
 from eth_utils import keccak, to_int
-from ethpm_types.abi import ConstructorABI, EventABI, MethodABI
+from ethpm_types.abi import ConstructorABI, ErrorABI, EventABI, MethodABI
 from hexbytes import HexBytes
 from pydantic import BaseModel
 
 from ape.exceptions import (
+    ContractLogicError,
     NetworkError,
     NetworkMismatchError,
     NetworkNotFoundError,
     ProviderNotConnectedError,
     SignatureError,
+    TransactionError,
 )
 from ape.logging import logger
 from ape.types import AddressType, CallTreeNode, ContractLog, GasLimit, RawAddress
@@ -509,6 +511,23 @@ class EcosystemAPI(BaseInterfaceModel):
             :class:`~ape.types.trace.CallTreeNode`
         """
         return call
+
+    def decode_error(self, abi: ErrorABI, data: HexBytes, **kwargs) -> ContractLogicError:
+        # TODO: Include ErrorABI in official `decode_calldata` API definition for 0.7
+        input_data = ecosystem.decode_calldata(abi, data)  # type: ignore
+        if input_data:
+            message = ", ".join(sorted([f"{k}={v}" for k, v in input_data.items()]))
+        else:
+            # Name of the custom error is all custom info.
+            message = TransactionError.DEFAULT_MESSAGE
+
+        # Create a new type of error using the
+        properties: Dict = dict(kwargs)
+        if data:
+            # Include custom inputs for dict access.
+            properties["input_data"] = input_data
+
+        return type(abi.name, (ContractLogicError,), properties)(message)
 
 
 class ProviderContextManager(ManagerAccessMixin):

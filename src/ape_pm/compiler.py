@@ -6,7 +6,7 @@ from eth_utils import is_0x_prefixed
 from ethpm_types import ContractType, HexBytes
 
 from ape.api import CompilerAPI
-from ape.exceptions import ContractLogicError, TransactionError
+from ape.exceptions import ContractLogicError
 from ape.logging import logger
 from ape.utils import get_relative_path
 
@@ -88,7 +88,7 @@ class InterfaceCompiler(CompilerAPI):
         # Check for ErrorABI.
         bytes_message = HexBytes(err.revert_message)
         selector = bytes_message[:4]
-        rest = bytes_message[4:]
+        input_data = bytes_message[4:]
         address = err.contract_address or getattr(err.txn, "receiver", None)
         if not address:
             return err
@@ -105,37 +105,6 @@ class InterfaceCompiler(CompilerAPI):
             # Connection required.
             return err
 
-        custom_err = contract.errors[selector]
-        if not custom_err.name:
-            # Very unlikely scenario.
-            return err
-
-        data = {}
-        if rest:
-            ecosystem = self.provider.network.ecosystem
-
-            # TODO: Include ErrorABI in official decode_calldata API definition for 0.7
-            data = ecosystem.decode_calldata(custom_err, rest)  # type: ignore
-            if data:
-                message = ", ".join(sorted([f"{k}={v}" for k, v in data.items()]))
-            else:
-                # Name of the custom error is all custom info.
-                message = TransactionError.DEFAULT_MESSAGE
-
-        else:
-            # Data only included name of custom error.
-            message = TransactionError.DEFAULT_MESSAGE
-
-        # Create a new type of error using the
-        properties: Dict = {
-            "txn": err.txn,
-            "trace": err.trace,
-            "revert_message": message,
-            "message": message,
-            "contract_address": err.contract_address,
-        }
-        if data:
-            # Include custom inputs for dict access.
-            properties["input_data"] = data
-
-        return type(custom_err.name, (err.__class__,), properties)(message)
+        abi = contract.errors[selector]
+        ecoystem = self.provider.network.ecosystem
+        return ecoystem.decode_error(abi, input_data)
