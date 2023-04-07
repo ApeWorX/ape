@@ -91,7 +91,7 @@ def test_dev_revert_nonpayable_check(owner, vyper_contract_container, geth_provi
     Tests that we can assert on dev messages injected from the compiler.
     """
     contract = owner.deploy(vyper_contract_container, 0)
-    with reverts(dev_message="Cannot send ether to non-payable function"):
+    with reverts(dev_message="dev: Cannot send ether to non-payable function"):
         contract.setNumber(123, sender=owner, value=1)
 
 
@@ -102,16 +102,16 @@ def test_dev_revert_math_dev_checks(owner, vyper_math_dev_check, geth_provider):
     """
     contract = owner.deploy(vyper_math_dev_check)
 
-    with reverts(dev_message="Integer overflow"):
+    with reverts(dev_message="dev: Integer overflow"):
         contract.num_add(1, sender=owner)
 
-    with reverts(dev_message="Integer underflow"):
+    with reverts(dev_message="dev: Integer underflow"):
         contract.neg_num_add(-2, sender=owner)
 
-    with reverts(dev_message="Division by zero"):
+    with reverts(dev_message="dev: Division by zero"):
         contract.div_zero(0, sender=owner)
 
-    with reverts(dev_message="Modulo by zero"):
+    with reverts(dev_message="dev: Modulo by zero"):
         contract.mod_zero(0, sender=owner)
 
 

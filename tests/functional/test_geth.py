@@ -322,6 +322,16 @@ def test_local_transaction_traces(geth_receipt, captrace):
     run_test()
 
 
+@geth_process_test
+def test_contract_logic_error_dev_message(vyper_math_dev_check, owner, geth_provider):
+    contract = vyper_math_dev_check.deploy(sender=owner)
+    expected = "dev: Integer overflow"
+    with pytest.raises(ContractLogicError, match=expected) as err:
+        contract.num_add(1, sender=owner)
+
+    assert err.value.dev_message == expected
+
+
 def assert_rich_output(rich_capture: List[str], expected: str):
     expected_lines = [x.rstrip() for x in expected.splitlines() if x.rstrip()]
     actual_lines = [x.rstrip() for x in rich_capture if x.rstrip()]
