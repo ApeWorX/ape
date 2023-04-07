@@ -19,6 +19,7 @@ if TYPE_CHECKING:
     from ape.api.providers import SubprocessProvider
     from ape.api.transactions import TransactionAPI
     from ape.types import AddressType, BlockID, SnapshotID, TraceFrame
+    from ape.utils.basemodel import ManagerAccessMixin
 
 
 class ApeException(Exception):
@@ -154,7 +155,7 @@ class ContractLogicError(VirtualMachineError):
 
     @cached_property
     def dev_message(self) -> Tuple[Optional[str], Optional[str]]:
-        accessor = None
+        accessor: Optional["ManagerAccessMixin"] = None
         if self.txn:
             accessor = self.txn
         elif self.trace is not None:

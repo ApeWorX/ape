@@ -323,9 +323,7 @@ def test_local_transaction_traces(geth_receipt, captrace):
 
 
 @geth_process_test
-def test_contract_logic_error_dev_message(
-    vyper_math_dev_check, owner, geth_provider
-):
+def test_contract_logic_error_dev_message(vyper_math_dev_check, owner, geth_provider):
     contract = vyper_math_dev_check.deploy(sender=owner)
     expected = "Integer overflow"
     with pytest.raises(ContractLogicError, match=expected) as err:

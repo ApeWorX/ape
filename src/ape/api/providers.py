@@ -1273,7 +1273,7 @@ def _handle_execution_reverted(
     contract_address: Optional[AddressType] = None,
 ) -> ContractLogicError:
     message = str(exception).split(":")[-1].strip()
-    params = {"trace": trace, "contract_address": contract_address}
+    params: Dict = {"trace": trace, "contract_address": contract_address}
     return (
         ContractLogicError(txn=txn, **params)
         if message == "execution reverted"
