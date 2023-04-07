@@ -1,9 +1,12 @@
 import sys
 import time
 import traceback
+from collections import deque
+from functools import cached_property
 from inspect import getframeinfo, stack
+from itertools import tee
 from pathlib import Path
-from typing import TYPE_CHECKING, Iterator, List, Optional
+from typing import TYPE_CHECKING, Iterator, List, Optional, Tuple
 
 import click
 from eth_utils import humanize_hash
@@ -131,6 +134,16 @@ class ContractLogicError(VirtualMachineError):
         trace: Optional[Iterator["TraceFrame"]] = None,
         contract_address: Optional["AddressType"] = None,
     ):
+        self.txn = txn
+        self.trace = trace
+        self.contract_address = contract_address
+        if revert_message is None:
+            try:
+                # Attempt to use dev message as main exception message.
+                revert_message, _ = self.dev_message
+            except Exception:
+                pass
+
         super().__init__(
             message=revert_message, txn=txn, trace=trace, contract_address=contract_address
         )
@@ -138,6 +151,94 @@ class ContractLogicError(VirtualMachineError):
     @property
     def revert_message(self):
         return self.message
+
+    @cached_property
+    def dev_message(self) -> Tuple[Optional[str], Optional[str]]:
+        accessor = None
+        if self.txn:
+            accessor = self.txn
+        elif self.trace is not None:
+            self.trace, second_trace = tee(self.trace)
+            if second_trace:
+                accessor = next(second_trace, None)
+
+        if accessor is None:
+            return None, "Missing trace access."
+
+        contract_address = self.contract_address or getattr(self.txn, "receiver", None)
+        if not contract_address:
+            return None, "Could not fetch contract information to check dev message."
+
+        try:
+            contract = accessor.chain_manager.contracts.instance_at(contract_address)
+        except ValueError:
+            return None, f"Could not fetch contract at {contract_address} to check dev message."
+
+        if contract.contract_type.pcmap is None:
+            return None, "Compiler does not support source code mapping."
+
+        if self.trace is None and self.txn is not None:
+            try:
+                trace = deque(accessor.provider.get_transaction_trace(self.txn.txn_hash.hex()))
+
+            except APINotImplementedError:
+                return None, "Cannot check dev message; provider must support transaction tracing."
+
+            except (ProviderError, SignatureError):
+                return None, "Cannot fetch transaction trace."
+
+        elif self.trace is not None:
+            trace = deque(self.trace)
+
+        else:
+            return None, "Cannot fetch transaction trace."
+
+        if trace is None:
+            return None, "Cannot fetch transaction trace."
+
+        pc = None
+        pcmap = contract.contract_type.pcmap.parse()
+
+        # To find a suitable line for inspecting dev messages, we must start at the revert and work
+        # our way backwards. If the last frame's PC is in the PC map, the offending line is very
+        # likely a 'raise' statement.
+        if trace[-1].pc in pcmap:
+            pc = trace[-1].pc
+
+        # Otherwise we must traverse the trace backwards until we find our first suitable candidate.
+        else:
+            while len(trace) > 0:
+                frame = trace.pop()
+                if frame.pc in pcmap:
+                    pc = frame.pc
+                    break
+
+        # We were unable to find a suitable PC that matched the compiler's map.
+        missing_src_msg = "Could not find the source of the revert."
+        if pc is None:
+            return None, missing_src_msg
+
+        offending_source = pcmap[pc]
+        if offending_source is None:
+            return None, missing_src_msg
+
+        dev_messages = contract.contract_type.dev_messages or {}
+        if offending_source.line_start is None:
+            # Check for a `dev` field in PCMap.
+            if offending_source.dev is not None:
+                return offending_source.dev, None
+
+            else:
+                return None, "Not found."
+
+        elif offending_source.line_start in dev_messages:
+            return dev_messages[offending_source.line_start], None
+
+        elif offending_source.dev is not None:
+            return offending_source.dev, None
+
+        # Dev message is neither found from the compiler or from a dev-comment.
+        return None, missing_src_msg
 
     @classmethod
     def from_error(cls, err: Exception):

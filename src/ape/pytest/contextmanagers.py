@@ -1,14 +1,7 @@
 import re
-from collections import deque
 from typing import Optional, Type, Union
 
-from ape.exceptions import (
-    APINotImplementedError,
-    ContractLogicError,
-    ProviderError,
-    SignatureError,
-    TransactionError,
-)
+from ape.exceptions import ContractLogicError, TransactionError
 from ape.utils.basemodel import ManagerAccessMixin
 
 
@@ -30,103 +23,24 @@ class RevertsContextManager(ManagerAccessMixin):
             AssertionError: When the trace or source can not be retrieved, the dev message cannot
             be found, or the found dev message does not match the expected dev message.
         """
-        txn = exception.txn
-        contract_address = exception.contract_address or getattr(txn, "receiver", None)
-        if not contract_address:
-            raise AssertionError("Could not fetch contract information to check dev message.")
-
-        try:
-            contract = self.chain_manager.contracts.instance_at(contract_address)
-        except ValueError as exc:
-            raise AssertionError(
-                f"Could not fetch contract at {contract_address} to check dev message."
-            ) from exc
-
-        if contract.contract_type.pcmap is None:
-            raise AssertionError("Compiler does not support source code mapping.")
-
-        if exception.trace is None and txn is not None:
-            try:
-                trace = deque(self.provider.get_transaction_trace(txn.txn_hash.hex()))
-            except APINotImplementedError as exc:
-                raise AssertionError(
-                    "Cannot check dev message; provider must support transaction tracing."
-                ) from exc
-            except (ProviderError, SignatureError) as exc:
-                raise AssertionError("Cannot fetch transaction trace.") from exc
-
-        elif exception.trace is not None:
-            trace = deque(exception.trace)
-
-        else:
-            raise AssertionError("Cannot fetch transaction trace.")
-
-        if trace is None:
-            raise AssertionError("Cannot fetch transaction trace.")
-
-        pc = None
-        pcmap = contract.contract_type.pcmap.parse()
-
-        # To find a suitable line for inspecting dev messages, we must start at the revert and work
-        # our way backwards. If the last frame's PC is in the PC map, the offending line is very
-        # likely a 'raise' statement.
-        if trace[-1].pc in pcmap:
-            pc = trace[-1].pc
-
-        # Otherwise we must traverse the trace backwards until we find our first suitable candidate.
-        else:
-            while len(trace) > 0:
-                frame = trace.pop()
-                if frame.pc in pcmap:
-                    pc = frame.pc
-                    break
-
-        # We were unable to find a suitable PC that matched the compiler's map.
-        missing_src_msg = "Could not find the source of the revert."
-        if pc is None:
-            raise AssertionError(missing_src_msg)
-
-        offending_source = pcmap[pc]
-        if offending_source is None:
-            raise AssertionError(missing_src_msg)
-
         assertion_error_message = (
             self.dev_message.pattern
             if isinstance(self.dev_message, re.Pattern)
             else self.dev_message
         )
         assertion_error_prefix = f"Expected dev revert message '{assertion_error_message}'"
-        dev_messages = contract.contract_type.dev_messages or {}
+        dev_message, fail_msg = exception.dev_message
+        if dev_message is None:
+            msg = f"{assertion_error_prefix}: {fail_msg}" if fail_msg else assertion_error_prefix
+            raise AssertionError(msg)
 
-        if offending_source.line_start is None:
-            # Check for a `dev` field in PCMap.
-            if offending_source.dev is not None:
-                self._assert_matches(offending_source.dev, assertion_error_prefix)
-                return  # Test passed.
-
-            else:
-                raise AssertionError(f"{assertion_error_prefix} but there was none.")
-
-        elif offending_source.line_start in dev_messages:
-            contract_dev_message = dev_messages[offending_source.line_start]
-            self._assert_matches(contract_dev_message, assertion_error_prefix)
-
-        elif offending_source.dev is not None:
-            self._assert_matches(offending_source.dev, assertion_error_prefix)
-
-        else:
-            # Dev message is neither found from the compiler or from a dev-comment.
-            raise AssertionError(missing_src_msg)
-
-    def _assert_matches(self, contract_dev_message: str, assertion_error_prefix: str):
         message_matches = (
-            (self.dev_message.match(contract_dev_message) is not None)
+            (self.dev_message.match(dev_message) is not None)
             if isinstance(self.dev_message, re.Pattern)
-            else (contract_dev_message == self.dev_message)
+            else (dev_message == self.dev_message)
         )
-
         if not message_matches:
-            raise AssertionError(f"{assertion_error_prefix} but got '{contract_dev_message}'.")
+            raise AssertionError(f"{assertion_error_prefix} but got '{dev_message}'.")
 
     def _check_expected_message(self, exception: ContractLogicError):
         """
