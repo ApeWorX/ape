@@ -338,6 +338,52 @@ def foo():
     self._foo_internal()  # dev: incorrect location
 ```
 
+### Custom Errors
+
+As of Solidity 0.8.4, custom errors have been introduced to the ABI.
+To make assertions on custom errors, you can use the types defined on your contracts.
+
+For example, if I have a contract called `MyContract.sol`:
+
+```solidity
+// SPDX-License-Identifier: GPL-3.0
+pragma solidity ^0.8.4;
+
+error Unauthorized(address addr);
+
+contract MyContract {
+    address payable owner = payable(msg.sender);
+    function withdraw() public {
+        if (msg.sender != owner)
+            revert Unauthorized(msg.sender);
+        owner.transfer(address(this).balance);
+    }
+}
+```
+
+I can ensure unauthorized withdraws are disallowed by writing the following test:
+
+```python
+import ape
+import pytest
+
+@pytest.fixture
+def owner(accounts):
+    return accounts[0]
+
+@pytest.fixture
+def hacker(accounts):
+    return accounts[1]
+
+@pytest.fixture
+def contract(owner, project):
+    return owner.deploy(project.MyContract)
+
+def test_unauthorized_withdraw(contract, hacker):
+    with ape.reverts(contract.Unauthorized, addr=hacker.address):
+        contract.withdraw(sender=hacker)
+```
+
 ## Multi-chain Testing
 
 The Ape framework supports connecting to alternative providers in tests.

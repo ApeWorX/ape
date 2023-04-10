@@ -30,6 +30,45 @@ def test_revert_pattern(owner, reverts_contract_instance):
         reverts_contract_instance.revertStrings(0, sender=owner)
 
 
+def test_revert_error(error_contract, not_owner):
+    """
+    Test matching a revert custom Solidity error.
+    """
+    with reverts(error_contract.Unauthorized):
+        error_contract.withdraw(sender=not_owner)
+
+
+def test_revert_unexpected_error(error_contract, not_owner):
+    """
+    Test when given a different error type than what was raised.
+    """
+    expected = "Expected error 'OtherError' but was 'Unauthorized'"
+    with pytest.raises(AssertionError, match=expected):
+        with reverts(error_contract.OtherError):
+            error_contract.withdraw(sender=not_owner)
+
+
+def test_revert_error_inputs(error_contract, not_owner):
+    """
+    Test matching a revert custom Solidity error with inputs.
+    """
+    with reverts(error_contract.Unauthorized, addr=not_owner.address, counter=123):
+        error_contract.withdraw(sender=not_owner)
+
+
+def test_revert_error_unexpected_inputs(error_contract, owner, not_owner):
+    """
+    Test matching a revert custom Solidity error with unexpected inputs.
+    """
+    expected = (
+        rf"Expected input 'addr' to be '{owner.address}' but was '{not_owner.address}'\."
+        r"\nExpected input 'counter' to be '321' but was '123'\."
+    )
+    with pytest.raises(AssertionError, match=expected):
+        with reverts(error_contract.Unauthorized, addr=owner.address, counter=321):
+            error_contract.withdraw(sender=not_owner)
+
+
 def test_revert_fails(owner, reverts_contract_instance):
     """
     Test that ``AssertionError`` is raised if the supplied revert reason does not match the actual

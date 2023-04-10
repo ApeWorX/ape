@@ -6,13 +6,15 @@ from typing import Any, Dict, Iterator, List, Optional, Tuple, Union
 import click
 import pandas as pd
 from ethpm_types import ContractType
-from ethpm_types.abi import ConstructorABI, EventABI, MethodABI
+from ethpm_types.abi import ConstructorABI, ErrorABI, EventABI, MethodABI
 from hexbytes import HexBytes
 
 from ape.api import AccountAPI, Address, ReceiptAPI, TransactionAPI
 from ape.api.address import BaseAddress
 from ape.api.query import ContractEventQuery, extract_fields
-from ape.exceptions import ArgumentsLengthError, ChainError, ContractError, TransactionNotFoundError
+from ape.exceptions import ArgumentsLengthError, ChainError
+from ape.exceptions import ContractError as ApeContractError
+from ape.exceptions import TransactionNotFoundError
 from ape.logging import logger
 from ape.types import AddressType, ContractLog, LogFilter
 from ape.utils import ManagerAccessMixin, cached_property, singledispatchmethod
@@ -144,7 +146,7 @@ class ContractMethodHandler(ManagerAccessMixin):
 
     def decode_input(self, calldata: bytes) -> Tuple[str, Dict[str, Any]]:
         matching_abis = []
-        err = ContractError(
+        err = ApeContractError(
             f"Unable to find matching method ABI for calldata '{calldata.hex()}'. "
             "Try prepending a method ID to the beginning of the calldata."
         )
@@ -628,6 +630,28 @@ class ContractEvent(ManagerAccessMixin):
             yield from self.range(new_block.number, stop=new_block.number + 1)
 
 
+class ContractError(ManagerAccessMixin):
+    """
+    An error defined in a smart contract.
+    """
+
+    def __init__(self, contract: "ContractInstance", abi: ErrorABI) -> None:
+        super().__init__()
+        self.contract = contract
+        self.abi = abi
+
+    def __repr__(self):
+        return self.abi.signature
+
+    @property
+    def name(self) -> str:
+        """
+        The name of the contract error, as defined in the contract.
+        """
+
+        return self.abi.name
+
+
 class ContractTypeWrapper(ManagerAccessMixin):
     contract_type: ContractType
 
@@ -656,7 +680,7 @@ class ContractTypeWrapper(ManagerAccessMixin):
             method = None
 
         if not method:
-            raise ContractError(
+            raise ApeContractError(
                 f"Unable to find method ABI from calldata '{calldata.hex()}'. "
                 "Try prepending the method ID to the beginning of the calldata."
             )
@@ -698,7 +722,7 @@ class ContractInstance(BaseAddress, ContractTypeWrapper):
     def from_receipt(cls, receipt: ReceiptAPI, contract_type: ContractType) -> "ContractInstance":
         address = receipt.contract_address
         if not address:
-            raise ContractError(
+            raise ApeContractError(
                 "Receipt missing 'contract_address' field. "
                 "Was this from a deploy transaction (e.g. `project.MyContract.deploy()`)?"
             )
@@ -871,13 +895,37 @@ class ContractInstance(BaseAddress, ContractTypeWrapper):
 
         name_from_sig = signature.split("(")[0].strip()
         options = self._events_.get(name_from_sig, [])
-        err = ContractError(f"No event found with signature '{signature}'.")
+        err = ApeContractError(f"No event found with signature '{signature}'.")
         if not options:
             raise err
 
         for evt in options:
             if evt.abi.signature == signature:
                 return evt
+
+        raise err
+
+    def get_error_by_signature(self, signature: str) -> ContractError:
+        """
+        Get an error by its signature, similar to
+        :meth:`~ape.contracts.ContractInstance.get_event_by_signature`.
+
+        Args:
+            signature (str): The signature of the error.
+
+        Returns:
+            :class:`~ape.contracts.base.ContractError`
+        """
+
+        name_from_sig = signature.split("(")[0].strip()
+        options = self._errors_.get(name_from_sig, [])
+        err = ApeContractError(f"No error found with signature '{signature}'.")
+        if not options:
+            raise err
+
+        for contract_err in options:
+            if contract_err.abi.signature == signature:
+                return contract_err
 
         raise err
 
@@ -895,6 +943,25 @@ class ContractInstance(BaseAddress, ContractTypeWrapper):
             return {
                 abi_name: [ContractEvent(contract=self, abi=abi) for abi in abi_list]
                 for abi_name, abi_list in events.items()
+            }
+        except Exception as err:
+            # NOTE: Must raise AttributeError for __attr__ method or will seg fault
+            raise AttributeError(str(err)) from err
+
+    @cached_property
+    def _errors_(self) -> Dict[str, List[ContractError]]:
+        errors: Dict[str, List[ErrorABI]] = {}
+
+        for abi in self.contract_type.errors:
+            if abi.name in errors:
+                errors[abi.name].append(abi)
+            else:
+                errors[abi.name] = [abi]
+
+        try:
+            return {
+                abi_name: [ContractError(contract=self, abi=abi) for abi in abi_list]
+                for abi_name, abi_list in errors.items()
             }
         except Exception as err:
             # NOTE: Must raise AttributeError for __attr__ method or will seg fault
@@ -927,7 +994,7 @@ class ContractInstance(BaseAddress, ContractTypeWrapper):
 
     def __getattr__(self, attr_name: str) -> Any:
         """
-        Access a method, property, or event on the contract using ``.`` access.
+        Access a method, property, event, or error on the contract using ``.`` access.
 
         Usage example::
 
@@ -943,7 +1010,12 @@ class ContractInstance(BaseAddress, ContractTypeWrapper):
         if attr_name in set(super(BaseAddress, self).__dir__()):
             return super(BaseAddress, self).__getattribute__(attr_name)
 
-        if attr_name not in {*self._view_methods_, *self._mutable_methods_, *self._events_}:
+        if attr_name not in {
+            *self._view_methods_,
+            *self._mutable_methods_,
+            *self._events_,
+            *self._errors_,
+        }:
             # Didn't find anything that matches
             # NOTE: `__getattr__` *must* raise `AttributeError`
             name = self.contract_type.name or self.__class__.__name__
@@ -953,6 +1025,7 @@ class ContractInstance(BaseAddress, ContractTypeWrapper):
             int(attr_name in self._view_methods_)
             + int(attr_name in self._mutable_methods_)
             + int(attr_name in self._events_)
+            + int(attr_name in self._errors_)
             > 1
         ):
             # ABI should not contain a mix of events, mutable and view methods that match
@@ -966,14 +1039,24 @@ class ContractInstance(BaseAddress, ContractTypeWrapper):
             return self._mutable_methods_[attr_name]
 
         elif attr_name in self._events_:
-            handler_options = self._events_[attr_name]
-            if len(handler_options) > 1:
+            evt_options = self._events_[attr_name]
+            if len(evt_options) > 1:
                 raise AttributeError(
                     f"Multiple events named '{attr_name}' in '{self.contract_type.name}'.\n"
                     f"Use '{self.get_event_by_signature.__name__}' look-up."
                 )
 
-            return handler_options[0]
+            return evt_options[0]
+
+        elif attr_name in self._errors_:
+            err_options = self._errors_[attr_name]
+            if len(err_options) > 1:
+                raise AttributeError(
+                    f"Multiple errors named '{attr_name}' in '{self.contract_type.name}'.\n"
+                    f"Use '{self.get_error_by_signature.__name__}' look-up."
+                )
+
+            return err_options[0]
 
         else:
             raise AttributeError(f"No attribute '{attr_name}' found in contract '{self.address}'.")
@@ -1097,7 +1180,7 @@ class ContractContainer(ContractTypeWrapper):
 
         address = receipt.contract_address
         if not address:
-            raise ContractError(f"'{receipt.txn_hash}' did not create a contract.")
+            raise ApeContractError(f"'{receipt.txn_hash}' did not create a contract.")
 
         styled_address = click.style(receipt.contract_address, bold=True)
         contract_name = self.contract_type.name or "<Unnamed Contract>"
@@ -1112,8 +1195,8 @@ class ContractContainer(ContractTypeWrapper):
         return instance
 
 
-def _get_non_contract_error(address: str, network_name: str) -> ContractError:
-    raise ContractError(
+def _get_non_contract_error(address: str, network_name: str) -> ApeContractError:
+    raise ApeContractError(
         f"Unable to make contract call. "
         f"'{address}' is not a contract on network '{network_name}'."
     )

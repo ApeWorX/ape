@@ -7,7 +7,7 @@ from hexbytes import HexBytes
 from pydantic import BaseModel
 
 from ape import Contract
-from ape.contracts import ContractContainer, ContractInstance
+from ape.contracts import ContractInstance
 from ape.exceptions import ChainError, ContractError, ContractLogicError
 from ape.types import AddressType
 from ape.utils import ZERO_ADDRESS
@@ -125,15 +125,12 @@ def test_revert_static_fee_type(sender, contract_instance):
         contract_instance.setNumber(5, sender=sender, type=0)
 
 
-def test_revert_custom_exception(owner, get_contract_type, test_accounts):
-    ct = get_contract_type("has_error")
-    ct.source_id = "has_error.json"  # Use JSON compiler for error enrichment.
-    contract = owner.deploy(ContractContainer(ct))
+def test_revert_custom_exception(not_owner, error_contract):
     with pytest.raises(ContractLogicError) as err_info:
-        contract.withdraw(sender=test_accounts[7])
+        error_contract.withdraw(sender=not_owner)
 
     custom_err = err_info.value
-    addr = test_accounts[7].address
+    addr = not_owner.address
     expected_message = f"addr={addr}, counter=123"
     assert custom_err.txn is not None
     assert custom_err.message == expected_message
@@ -638,3 +635,18 @@ def test_obj_list_as_struct_array_input(contract_instance, owner, data_object):
 def test_dict_list_as_struct_array_input(contract_instance, owner):
     data = {"a": owner, "b": HexBytes(123), "c": "GETS IGNORED"}
     assert contract_instance.setStructArray([data, data]) is None
+
+
+def test_contract_error_attribute_access(error_contract):
+    assert isinstance(error_contract.Unauthorized, ContractError)
+
+
+def test_get_error_by_signature(error_contract):
+    """
+    Helps in cases where multiple errors have same name.
+    Only happens when importing or using types from interfaces.
+    """
+    signature = error_contract.Unauthorized.abi.signature
+    actual = error_contract.get_error_by_signature(signature)
+    expected = error_contract.Unauthorized
+    assert actual == expected
