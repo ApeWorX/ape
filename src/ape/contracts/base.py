@@ -12,9 +12,7 @@ from hexbytes import HexBytes
 from ape.api import AccountAPI, Address, ReceiptAPI, TransactionAPI
 from ape.api.address import BaseAddress
 from ape.api.query import ContractEventQuery, extract_fields
-from ape.exceptions import ArgumentsLengthError, ChainError
-from ape.exceptions import ContractError as ApeContractError
-from ape.exceptions import TransactionNotFoundError
+from ape.exceptions import ArgumentsLengthError, ChainError, ContractError, TransactionNotFoundError
 from ape.logging import logger
 from ape.types import AddressType, ContractLog, LogFilter
 from ape.utils import ManagerAccessMixin, cached_property, singledispatchmethod
@@ -146,7 +144,7 @@ class ContractMethodHandler(ManagerAccessMixin):
 
     def decode_input(self, calldata: bytes) -> Tuple[str, Dict[str, Any]]:
         matching_abis = []
-        err = ApeContractError(
+        err = ContractError(
             f"Unable to find matching method ABI for calldata '{calldata.hex()}'. "
             "Try prepending a method ID to the beginning of the calldata."
         )
@@ -630,7 +628,7 @@ class ContractEvent(ManagerAccessMixin):
             yield from self.range(new_block.number, stop=new_block.number + 1)
 
 
-class ContractError(ManagerAccessMixin):
+class CustomError:
     """
     An error defined in a smart contract.
     """
@@ -680,7 +678,7 @@ class ContractTypeWrapper(ManagerAccessMixin):
             method = None
 
         if not method:
-            raise ApeContractError(
+            raise ContractError(
                 f"Unable to find method ABI from calldata '{calldata.hex()}'. "
                 "Try prepending the method ID to the beginning of the calldata."
             )
@@ -722,7 +720,7 @@ class ContractInstance(BaseAddress, ContractTypeWrapper):
     def from_receipt(cls, receipt: ReceiptAPI, contract_type: ContractType) -> "ContractInstance":
         address = receipt.contract_address
         if not address:
-            raise ApeContractError(
+            raise ContractError(
                 "Receipt missing 'contract_address' field. "
                 "Was this from a deploy transaction (e.g. `project.MyContract.deploy()`)?"
             )
@@ -895,7 +893,7 @@ class ContractInstance(BaseAddress, ContractTypeWrapper):
 
         name_from_sig = signature.split("(")[0].strip()
         options = self._events_.get(name_from_sig, [])
-        err = ApeContractError(f"No event found with signature '{signature}'.")
+        err = ContractError(f"No event found with signature '{signature}'.")
         if not options:
             raise err
 
@@ -905,7 +903,7 @@ class ContractInstance(BaseAddress, ContractTypeWrapper):
 
         raise err
 
-    def get_error_by_signature(self, signature: str) -> ContractError:
+    def get_error_by_signature(self, signature: str) -> CustomError:
         """
         Get an error by its signature, similar to
         :meth:`~ape.contracts.ContractInstance.get_event_by_signature`.
@@ -919,7 +917,7 @@ class ContractInstance(BaseAddress, ContractTypeWrapper):
 
         name_from_sig = signature.split("(")[0].strip()
         options = self._errors_.get(name_from_sig, [])
-        err = ApeContractError(f"No error found with signature '{signature}'.")
+        err = ContractError(f"No error found with signature '{signature}'.")
         if not options:
             raise err
 
@@ -949,7 +947,7 @@ class ContractInstance(BaseAddress, ContractTypeWrapper):
             raise AttributeError(str(err)) from err
 
     @cached_property
-    def _errors_(self) -> Dict[str, List[ContractError]]:
+    def _errors_(self) -> Dict[str, List[CustomError]]:
         errors: Dict[str, List[ErrorABI]] = {}
 
         for abi in self.contract_type.errors:
@@ -960,7 +958,7 @@ class ContractInstance(BaseAddress, ContractTypeWrapper):
 
         try:
             return {
-                abi_name: [ContractError(contract=self, abi=abi) for abi in abi_list]
+                abi_name: [CustomError(contract=self, abi=abi) for abi in abi_list]
                 for abi_name, abi_list in errors.items()
             }
         except Exception as err:
@@ -1180,7 +1178,7 @@ class ContractContainer(ContractTypeWrapper):
 
         address = receipt.contract_address
         if not address:
-            raise ApeContractError(f"'{receipt.txn_hash}' did not create a contract.")
+            raise ContractError(f"'{receipt.txn_hash}' did not create a contract.")
 
         styled_address = click.style(receipt.contract_address, bold=True)
         contract_name = self.contract_type.name or "<Unnamed Contract>"
@@ -1195,8 +1193,8 @@ class ContractContainer(ContractTypeWrapper):
         return instance
 
 
-def _get_non_contract_error(address: str, network_name: str) -> ApeContractError:
-    raise ApeContractError(
+def _get_non_contract_error(address: str, network_name: str) -> ContractError:
+    raise ContractError(
         f"Unable to make contract call. "
         f"'{address}' is not a contract on network '{network_name}'."
     )

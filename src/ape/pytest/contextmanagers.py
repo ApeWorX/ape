@@ -2,7 +2,7 @@ import re
 from re import Pattern
 from typing import Optional, Type, Union
 
-from ape.contracts import ContractError
+from ape.contracts import CustomError
 from ape.exceptions import ContractLogicError, TransactionError
 from ape.utils.basemodel import ManagerAccessMixin
 
@@ -12,7 +12,7 @@ _RevertMessage = Union[str, re.Pattern]
 class RevertsContextManager(ManagerAccessMixin):
     def __init__(
         self,
-        expected_message: Optional[Union[_RevertMessage, ContractError]] = None,
+        expected_message: Optional[Union[_RevertMessage, CustomError]] = None,
         dev_message: Optional[_RevertMessage] = None,
         **error_inputs,
     ):
@@ -86,7 +86,7 @@ class RevertsContextManager(ManagerAccessMixin):
 
     def _check_custom_error(self, exception: ContractLogicError):
         # NOTE: Type ignore because by now, we know the type is correct.
-        expected: ContractError = self.expected_message  # type: ignore
+        expected: CustomError = self.expected_message  # type: ignore
 
         actual_name = exception.__class__.__name__
         expected_name = expected.name

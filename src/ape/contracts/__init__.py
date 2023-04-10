@@ -1,15 +1,15 @@
 from .base import (
     ContractContainer,
-    ContractError,
     ContractEvent,
     ContractInstance,
     ContractLog,
     ContractNamespace,
+    CustomError,
 )
 
 __all__ = [
     "ContractContainer",
-    "ContractError",
+    "CustomError",
     "ContractEvent",
     "ContractInstance",
     "ContractLog",
