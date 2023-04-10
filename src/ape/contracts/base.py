@@ -890,7 +890,7 @@ class ContractInstance(BaseAddress, ContractTypeWrapper):
             signature (str): The signature of the error.
 
         Returns:
-            :class:`~ape.contracts.base.ContractError`
+            :class:`~ape.types.CustomErrorType`
         """
 
         name_from_sig = signature.split("(")[0].strip()
