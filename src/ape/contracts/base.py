@@ -14,7 +14,7 @@ from ape.api.address import BaseAddress
 from ape.api.query import ContractEventQuery, extract_fields
 from ape.exceptions import ArgumentsLengthError, ChainError, ContractError, TransactionNotFoundError
 from ape.logging import logger
-from ape.types import AddressType, ContractLog, LogFilter
+from ape.types import AddressType, ContractLog, CustomErrorType, LogFilter
 from ape.utils import ManagerAccessMixin, cached_property, singledispatchmethod
 
 
@@ -628,27 +628,6 @@ class ContractEvent(ManagerAccessMixin):
             yield from self.range(new_block.number, stop=new_block.number + 1)
 
 
-class CustomError:
-    """
-    An error defined in a smart contract.
-    """
-
-    def __init__(self, abi: ErrorABI) -> None:
-        super().__init__()
-        self.abi = abi
-
-    def __repr__(self):
-        return self.abi.signature
-
-    @property
-    def name(self) -> str:
-        """
-        The name of the contract error, as defined in the contract.
-        """
-
-        return self.abi.name
-
-
 class ContractTypeWrapper(ManagerAccessMixin):
     contract_type: ContractType
 
@@ -902,7 +881,7 @@ class ContractInstance(BaseAddress, ContractTypeWrapper):
 
         raise err
 
-    def get_error_by_signature(self, signature: str) -> CustomError:
+    def get_error_by_signature(self, signature: str) -> CustomErrorType:
         """
         Get an error by its signature, similar to
         :meth:`~ape.contracts.ContractInstance.get_event_by_signature`.
@@ -946,7 +925,7 @@ class ContractInstance(BaseAddress, ContractTypeWrapper):
             raise AttributeError(str(err)) from err
 
     @cached_property
-    def _errors_(self) -> Dict[str, List[CustomError]]:
+    def _errors_(self) -> Dict[str, List[CustomErrorType]]:
         errors: Dict[str, List[ErrorABI]] = {}
 
         for abi in self.contract_type.errors:
@@ -957,7 +936,7 @@ class ContractInstance(BaseAddress, ContractTypeWrapper):
 
         try:
             return {
-                abi_name: [CustomError(abi=abi) for abi in abi_list]
+                abi_name: [CustomErrorType(abi=abi) for abi in abi_list]
                 for abi_name, abi_list in errors.items()
             }
         except Exception as err:

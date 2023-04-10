@@ -8,9 +8,8 @@ from pydantic import BaseModel
 
 from ape import Contract
 from ape.contracts import ContractInstance
-from ape.contracts import CustomError as ContractErrorCls
 from ape.exceptions import ChainError, ContractError, ContractLogicError
-from ape.types import AddressType
+from ape.types import AddressType, CustomErrorType
 from ape.utils import ZERO_ADDRESS
 from ape_ethereum.transactions import TransactionStatusEnum
 
@@ -136,7 +135,7 @@ def test_revert_custom_exception(not_owner, error_contract):
     assert custom_err.txn is not None
     assert custom_err.message == expected_message
     assert custom_err.revert_message == expected_message
-    assert custom_err.input_data == {"addr": addr, "counter": 123}  # type: ignore
+    assert custom_err.inputs == {"addr": addr, "counter": 123}  # type: ignore
 
 
 def test_call_using_block_identifier(
@@ -639,7 +638,7 @@ def test_dict_list_as_struct_array_input(contract_instance, owner):
 
 
 def test_custom_error_attribute_access(error_contract):
-    assert isinstance(error_contract.Unauthorized, ContractErrorCls)
+    assert isinstance(error_contract.Unauthorized, CustomErrorType)
 
 
 def test_get_error_by_signature(error_contract):

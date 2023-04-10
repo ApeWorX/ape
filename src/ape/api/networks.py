@@ -20,10 +20,9 @@ from ape.exceptions import (
     NetworkNotFoundError,
     ProviderNotConnectedError,
     SignatureError,
-    TransactionError,
 )
 from ape.logging import logger
-from ape.types import AddressType, CallTreeNode, ContractLog, GasLimit, RawAddress
+from ape.types import AddressType, CallTreeNode, ContractLog, CustomErrorType, GasLimit, RawAddress
 from ape.utils import (
     DEFAULT_TRANSACTION_ACCEPTANCE_TIMEOUT,
     BaseInterfaceModel,
@@ -526,20 +525,8 @@ class EcosystemAPI(BaseInterfaceModel):
         """
 
         # TODO: Include ErrorABI in official `decode_calldata` API definition for 0.7
-        input_data = self.decode_calldata(abi, data)  # type: ignore
-        if input_data:
-            message = ", ".join(sorted([f"{k}={v}" for k, v in input_data.items()]))
-        else:
-            # Name of the custom error is all custom info.
-            message = TransactionError.DEFAULT_MESSAGE
-
-        # Create a new type of error using the
-        properties: Dict = dict(kwargs)
-        if data:
-            # Include custom inputs for dict access.
-            properties["input_data"] = input_data
-
-        return type(abi.name, (ContractLogicError,), properties)(message)
+        inputs = self.decode_calldata(abi, data)  # type: ignore
+        return CustomErrorType(abi)(**inputs)
 
 
 class ProviderContextManager(ManagerAccessMixin):
