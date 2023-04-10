@@ -633,9 +633,8 @@ class CustomError:
     An error defined in a smart contract.
     """
 
-    def __init__(self, contract: "ContractInstance", abi: ErrorABI) -> None:
+    def __init__(self, abi: ErrorABI) -> None:
         super().__init__()
-        self.contract = contract
         self.abi = abi
 
     def __repr__(self):
@@ -958,7 +957,7 @@ class ContractInstance(BaseAddress, ContractTypeWrapper):
 
         try:
             return {
-                abi_name: [CustomError(contract=self, abi=abi) for abi in abi_list]
+                abi_name: [CustomError(abi=abi) for abi in abi_list]
                 for abi_name, abi_list in errors.items()
             }
         except Exception as err:
