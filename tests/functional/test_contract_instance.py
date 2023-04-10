@@ -7,6 +7,7 @@ from hexbytes import HexBytes
 from pydantic import BaseModel
 
 from ape import Contract
+from ape.contracts import ContractError as ContractErrorCls
 from ape.contracts import ContractInstance
 from ape.exceptions import ChainError, ContractError, ContractLogicError
 from ape.types import AddressType
@@ -638,7 +639,7 @@ def test_dict_list_as_struct_array_input(contract_instance, owner):
 
 
 def test_contract_error_attribute_access(error_contract):
-    assert isinstance(error_contract.Unauthorized, ContractError)
+    assert isinstance(error_contract.Unauthorized, ContractErrorCls)
 
 
 def test_get_error_by_signature(error_contract):
