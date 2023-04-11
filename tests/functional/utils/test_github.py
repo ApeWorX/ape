@@ -58,11 +58,13 @@ class TestGithubClient:
 
         cmd = git_patch.call_args[0][0]
         assert cmd[0].endswith("git")
-        assert cmd[1] == "clone"
-        assert cmd[2] == "https://github.com/dapphub/ds-test.git"
-        # cmd[3] is the temporary output path
-        assert cmd[4] == "--branch"
-        assert cmd[5] == "master"
+        assert cmd[1] == "-c"
+        assert cmd[2] == "advice.detachedHead=false"
+        assert cmd[3] == "clone"
+        assert cmd[4] == "https://github.com/dapphub/ds-test.git"
+        # cmd[5] is the temporary output path
+        assert cmd[6] == "--branch"
+        assert cmd[7] == "master"
 
     def test_get_release(self, github_client_with_mocks, mock_repo):
         github_client_with_mocks.get_release(REPO_PATH, "0.1.0")
