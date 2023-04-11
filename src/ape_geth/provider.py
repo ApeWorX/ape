@@ -59,7 +59,7 @@ class GethDevProcess(LoggingMixin, BaseGethProcess):
 
     def __init__(
         self,
-        base_directory: Path,
+        data_dir: Path,
         hostname: str = DEFAULT_HOSTNAME,
         port: int = DEFAULT_PORT,
         mnemonic: str = DEFAULT_TEST_MNEMONIC,
@@ -71,7 +71,7 @@ class GethDevProcess(LoggingMixin, BaseGethProcess):
         if not shutil.which("geth"):
             raise GethNotInstalledError()
 
-        self.data_dir = base_directory / "dev"
+        self.data_dir = data_dir
         self._hostname = hostname
         self._port = port
         self.data_dir.mkdir(exist_ok=True, parents=True)
@@ -122,7 +122,7 @@ class GethDevProcess(LoggingMixin, BaseGethProcess):
         }
 
         def make_logs_paths(stream_name: str):
-            path = base_directory / "geth-logs" / f"{stream_name}_{self._port}"
+            path = data_dir / "geth-logs" / f"{stream_name}_{self._port}"
             path.parent.mkdir(exist_ok=True, parents=True)
             return path
 
@@ -385,6 +385,11 @@ class GethDev(BaseGethProvider, TestProviderAPI):
     def chain_id(self) -> int:
         return GETH_DEV_CHAIN_ID
 
+    @property
+    def data_dir(self) -> Path:
+        # Overriden from BaseGeth class for placing debug logs in ape data folder.
+        return self.geth_config.data_dir or self.data_folder / "dev"
+
     def __repr__(self):
         if self._process is None:
             # Exclude chain ID when not connected
@@ -406,7 +411,8 @@ class GethDev(BaseGethProvider, TestProviderAPI):
         if self.geth_config.executable is not None:
             test_config["executable"] = self.geth_config.executable
 
-        process = GethDevProcess.from_uri(self.uri, self.data_folder, **test_config)
+        test_config["ipc_path"] = self.ipc_path
+        process = GethDevProcess.from_uri(self.uri, self.data_dir, **test_config)
         process.connect()
         if not self.web3.is_connected():
             process.disconnect()
