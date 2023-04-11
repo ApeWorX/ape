@@ -557,6 +557,8 @@ def _create_web3(uri: str, ipc_path: Optional[Path] = None):
         # NOTE: This mypy complaint seems incorrect.
         return IPCProvider(ipc_path=ipc_path)  # type: ignore[arg-type]
 
+    # NOTE: This tuple is ordered by try-attempt.
+    # Try ENV, then IPC, and then HTTP last.
     providers = (
         load_provider_from_environment,
         ipc_provider,
