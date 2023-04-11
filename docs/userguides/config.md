@@ -45,6 +45,17 @@ dependencies:
 
 will download the [Open Zeppelin](https://github.com/OpenZeppelin/openzeppelin-contracts) package with version `4.4.2`.
 
+**WARN**: The `version:` key only works when the version is published to GitHub; use the `branch:` key when the version is only available by tag.
+
+For example, to install a version based on a `git` tag, do the following:
+
+```yaml
+dependencies:
+  - name: Uniswap
+    github: Uniswap/v3-core
+    branch: v1.0.0
+```
+
 To ignore files from a dependency project, use the `exclude` setting to specify glob patterns:
 
 ```yaml
@@ -70,7 +81,7 @@ Now, in your solidity files, import `OpenZeppelin` sources via:
 import "@openzeppelin/token/ERC721/ERC721.sol";
 ```
 
-You can also set the branch and name of the dependency's contracts folder, e.g.:
+You can also set the name of the dependency's contracts folder, e.g.:
 
 ```yaml
 dependencies:
