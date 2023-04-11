@@ -45,7 +45,7 @@ dependencies:
 
 will download the [Open Zeppelin](https://github.com/OpenZeppelin/openzeppelin-contracts) package with version `4.4.2`.
 
-**WARN**: The `version:` key only works when the version is published to GitHub; use the `branch:` key when the version is only available by tag.
+**WARN**: The `version:` key only works when the version is published to GitHub; use the `ref:` key when the version is only available by tag.
 
 For example, to install a version based on a `git` tag, do the following:
 
@@ -53,10 +53,10 @@ For example, to install a version based on a `git` tag, do the following:
 dependencies:
   - name: Uniswap
     github: Uniswap/v3-core
-    branch: v1.0.0
+    ref: v1.0.0
 ```
 
-The `branch:` config installs the code from that branch or tag whereas the `version:` config uses the official GitHub release API.
+The `ref:` config installs the code from that branch or tag whereas the `version:` config uses the official GitHub release API.
 
 To ignore files from a dependency project, use the `exclude` setting to specify glob patterns:
 
@@ -89,7 +89,7 @@ You can also set the name of the dependency's contracts folder, e.g.:
 dependencies:
   - name: DappToolsERC20
     github: dapphub/erc20
-    branch: dappnix
+    ref: dappnix
     contracts_folder: src
 ```
 

@@ -10,6 +10,7 @@ from pydantic import FileUrl, HttpUrl, root_validator
 
 from ape.api import DependencyAPI
 from ape.exceptions import ProjectError
+from ape.logging import logger
 from ape.utils import ManagerAccessMixin, cached_property, github_client, load_config
 
 
@@ -61,19 +62,36 @@ class GithubDependency(DependencyAPI):
     such as ``dapphub/erc20``.
     """
 
+    # TODO: Remove at >= 0.7
     branch: Optional[str] = None
     """
-    The branch to use.
+    **DEPRECATED**: Use ``ref:``.
+    """
+
+    ref: Optional[str] = None
+    """
+    The branch or tag to use.
 
     **NOTE**: Will be ignored if given a version.
     """
 
-    @property
-    def version_id(self) -> str:
-        if self.branch:
+    @cached_property
+    def _reference(self) -> Optional[str]:
+        if self.ref:
+            return self.ref
+
+        elif self.branch:
+            logger.warning("'branch:' config is deprecated. Use 'ref:' instead.")
             return self.branch
 
-        if self.version and self.version != "latest":
+        return None
+
+    @cached_property
+    def version_id(self) -> str:
+        if self._reference:
+            return self._reference
+
+        elif self.version and self.version != "latest":
             return self.version
 
         latest_release = github_client.get_release(self.github, "latest")
@@ -101,8 +119,8 @@ class GithubDependency(DependencyAPI):
             temp_project_path = (Path(temp_dir) / self.name).resolve()
             temp_project_path.mkdir(exist_ok=True, parents=True)
 
-            if self.branch:
-                github_client.clone_repo(self.github, temp_project_path, branch=self.branch)
+            if self._reference:
+                github_client.clone_repo(self.github, temp_project_path, branch=self._reference)
 
             else:
                 github_client.download_package(
