@@ -27,7 +27,7 @@ class GitProcessWrapper:
         return git_cmd_path
 
     def clone(self, url: str, target_path: Optional[Path] = None, branch: Optional[str] = None):
-        command = [self.git, "clone", url]
+        command = [self.git, "-c", "advice.detachedHead=false", "clone", url]
 
         if target_path:
             command.append(str(target_path))
