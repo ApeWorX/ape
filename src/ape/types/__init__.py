@@ -16,12 +16,11 @@ from ethpm_types import (
     PackageMeta,
     Source,
 )
-from ethpm_types.abi import ErrorABI, EventABI
+from ethpm_types.abi import EventABI
 from hexbytes import HexBytes
 from pydantic import BaseModel, root_validator, validator
 from web3.types import FilterParams
 
-from ape.exceptions import ContractLogicError, TransactionError
 from ape.types.signatures import MessageSignature, SignableMessage, TransactionSignature
 from ape.types.trace import CallTreeNode, GasReport, TraceFrame
 from ape.utils import BaseInterfaceModel, cached_property
@@ -294,42 +293,6 @@ class ContractLogContainer(list):
         return found_events
 
 
-class CustomErrorType:
-    """
-    An error defined in a smart contract.
-    """
-
-    def __init__(self, abi: ErrorABI) -> None:
-        super().__init__()
-        self.abi = abi
-
-    def __repr__(self):
-        return self.abi.signature
-
-    @property
-    def name(self) -> str:
-        """
-        The name of the contract error, as defined in the contract.
-        """
-
-        return self.abi.name
-
-    def __call__(self, *args, **kwargs):
-        if kwargs:
-            message = ", ".join(sorted([f"{k}={v}" for k, v in kwargs.items()]))
-        else:
-            # Name of the custom error is all custom info.
-            message = TransactionError.DEFAULT_MESSAGE
-
-        # Create a new type of error using the
-        properties: Dict = dict(kwargs)
-        if kwargs:
-            # Include custom inputs for dict access.
-            properties["inputs"] = kwargs
-
-        return type(self.abi.name, (ContractLogicError,), properties)([message, *args])
-
-
 __all__ = [
     "ABI",
     "AddressType",
@@ -341,7 +304,6 @@ __all__ = [
     "ContractLog",
     "ContractLogContainer",
     "ContractType",
-    "CustomErrorType",
     "GasReport",
     "MessageSignature",
     "PackageManifest",

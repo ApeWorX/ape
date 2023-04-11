@@ -8,8 +8,8 @@ from pydantic import BaseModel
 
 from ape import Contract
 from ape.contracts import ContractInstance
-from ape.exceptions import ChainError, ContractError, ContractLogicError
-from ape.types import AddressType, CustomErrorType
+from ape.exceptions import ChainError, ContractError, ContractLogicError, CustomError
+from ape.types import AddressType
 from ape.utils import ZERO_ADDRESS
 from ape_ethereum.transactions import TransactionStatusEnum
 
@@ -42,6 +42,11 @@ def test_init_specify_contract_type(
     assert contract.contract_type == vyper_contract_type
     assert contract.setNumber(2, sender=owner)
     assert contract.myNumber() == 2
+
+
+def test_eq(vyper_contract_instance, chain):
+    other = chain.contracts.instance_at(vyper_contract_instance.address)
+    assert other == vyper_contract_instance
 
 
 def test_contract_calls(owner, contract_instance):
@@ -637,8 +642,15 @@ def test_dict_list_as_struct_array_input(contract_instance, owner):
     assert contract_instance.setStructArray([data, data]) is None
 
 
-def test_custom_error_attribute_access(error_contract):
-    assert isinstance(error_contract.Unauthorized, CustomErrorType)
+def test_custom_error(error_contract, not_owner):
+    contract = error_contract
+    unauthorized = contract.Unauthorized
+    assert issubclass(unauthorized, CustomError)
+
+    with pytest.raises(contract.Unauthorized) as err:
+        contract.withdraw(sender=not_owner)
+
+    assert err.value.inputs == {"addr": not_owner.address, "counter": 123}
 
 
 def test_get_error_by_signature(error_contract):

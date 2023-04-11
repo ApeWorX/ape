@@ -9,12 +9,11 @@ from eth_account._utils.legacy_transactions import (
     serializable_unsigned_transaction_from_dict,
 )
 from eth_utils import keccak, to_int
-from ethpm_types.abi import ConstructorABI, ErrorABI, EventABI, MethodABI
+from ethpm_types.abi import ConstructorABI, EventABI, MethodABI
 from hexbytes import HexBytes
 from pydantic import BaseModel
 
 from ape.exceptions import (
-    ContractLogicError,
     NetworkError,
     NetworkMismatchError,
     NetworkNotFoundError,
@@ -22,7 +21,7 @@ from ape.exceptions import (
     SignatureError,
 )
 from ape.logging import logger
-from ape.types import AddressType, CallTreeNode, ContractLog, CustomErrorType, GasLimit, RawAddress
+from ape.types import AddressType, CallTreeNode, ContractLog, GasLimit, RawAddress
 from ape.utils import (
     DEFAULT_TRANSACTION_ACCEPTANCE_TIMEOUT,
     BaseInterfaceModel,
@@ -510,23 +509,6 @@ class EcosystemAPI(BaseInterfaceModel):
             :class:`~ape.types.trace.CallTreeNode`
         """
         return call
-
-    def decode_error(self, abi: ErrorABI, data: HexBytes, **kwargs) -> ContractLogicError:
-        """
-        Decode a custom :class:`~ape.exceptions.ContractLogicError` class.
-
-        Args:
-            abi (``ErrorABI``): The ABI of the error.
-            data (``HexBytes``): The input data.
-            **kwargs: Additional exception arguments.
-
-        Returns:
-            :class:`~ape.exceptions.ContractLogicError`: Enriched or subclassed error.
-        """
-
-        # TODO: Include ErrorABI in official `decode_calldata` API definition for 0.7
-        inputs = self.decode_calldata(abi, data)  # type: ignore
-        return CustomErrorType(abi)(**inputs)
 
 
 class ProviderContextManager(ManagerAccessMixin):

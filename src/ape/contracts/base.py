@@ -1,7 +1,8 @@
+import types
 from functools import partial
 from itertools import islice
 from pathlib import Path
-from typing import Any, Dict, Iterator, List, Optional, Tuple, Union
+from typing import Any, Dict, Iterator, List, Optional, Tuple, Type, Union
 
 import click
 import pandas as pd
@@ -12,9 +13,15 @@ from hexbytes import HexBytes
 from ape.api import AccountAPI, Address, ReceiptAPI, TransactionAPI
 from ape.api.address import BaseAddress
 from ape.api.query import ContractEventQuery, extract_fields
-from ape.exceptions import ArgumentsLengthError, ChainError, ContractError, TransactionNotFoundError
+from ape.exceptions import (
+    ArgumentsLengthError,
+    ChainError,
+    ContractError,
+    CustomError,
+    TransactionNotFoundError,
+)
 from ape.logging import logger
-from ape.types import AddressType, ContractLog, CustomErrorType, LogFilter
+from ape.types import AddressType, ContractLog, LogFilter
 from ape.utils import ManagerAccessMixin, cached_property, singledispatchmethod
 
 
@@ -668,6 +675,13 @@ class ContractTypeWrapper(ManagerAccessMixin):
         return method.selector, input_dict
 
 
+def _create_custom_error_type(abi: ErrorABI) -> Type[CustomError]:
+    def exec_body(namespace):
+        namespace["abi"] = abi
+
+    return types.new_class(abi.name, (CustomError,), {}, exec_body)
+
+
 class ContractInstance(BaseAddress, ContractTypeWrapper):
     """
     An interactive instance of a smart contract.
@@ -881,7 +895,7 @@ class ContractInstance(BaseAddress, ContractTypeWrapper):
 
         raise err
 
-    def get_error_by_signature(self, signature: str) -> CustomErrorType:
+    def get_error_by_signature(self, signature: str) -> Type[CustomError]:
         """
         Get an error by its signature, similar to
         :meth:`~ape.contracts.ContractInstance.get_event_by_signature`.
@@ -890,7 +904,7 @@ class ContractInstance(BaseAddress, ContractTypeWrapper):
             signature (str): The signature of the error.
 
         Returns:
-            :class:`~ape.types.CustomErrorType`
+            :class:`~ape.exceptions.CustomError`
         """
 
         name_from_sig = signature.split("(")[0].strip()
@@ -925,20 +939,41 @@ class ContractInstance(BaseAddress, ContractTypeWrapper):
             raise AttributeError(str(err)) from err
 
     @cached_property
-    def _errors_(self) -> Dict[str, List[CustomErrorType]]:
-        errors: Dict[str, List[ErrorABI]] = {}
-
-        for abi in self.contract_type.errors:
-            if abi.name in errors:
-                errors[abi.name].append(abi)
-            else:
-                errors[abi.name] = [abi]
+    def _errors_(self) -> Dict[str, List[Type[CustomError]]]:
+        abis: Dict[str, List[ErrorABI]] = {}
 
         try:
-            return {
-                abi_name: [CustomErrorType(abi=abi) for abi in abi_list]
-                for abi_name, abi_list in errors.items()
-            }
+            for abi in self.contract_type.errors:
+                if abi.name in abis:
+                    abis[abi.name].append(abi)
+                else:
+                    abis[abi.name] = [abi]
+
+            # Check for prior error sub-class definitions for the same contract.
+            prior_errors = self.chain_manager.contracts._get_errors(self.address)
+
+            errors = {}
+            for abi_name, abi_list in abis.items():
+                errors_to_add = []
+                for abi in abi_list:
+                    error_type = None
+                    for existing_cls in prior_errors:
+                        if existing_cls.abi.signature == abi.signature:
+                            # Error class was previously initialized by contract at same address.
+                            error_type = existing_cls
+                            break
+
+                    if error_type is None:
+                        # Error class is being initialized for the first time.
+                        error_type = _create_custom_error_type(abi)
+                        self.chain_manager.contracts._cache_error(self.address, error_type)
+
+                    errors_to_add.append(error_type)
+
+                errors[abi_name] = errors_to_add
+
+            return errors
+
         except Exception as err:
             # NOTE: Must raise AttributeError for __attr__ method or will seg fault
             raise AttributeError(str(err)) from err

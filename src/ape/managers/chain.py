@@ -4,7 +4,7 @@ from concurrent.futures import ThreadPoolExecutor
 from contextlib import contextmanager
 from functools import partial
 from pathlib import Path
-from typing import IO, Collection, Dict, Iterator, List, Optional, Union, cast
+from typing import IO, Collection, Dict, Iterator, List, Optional, Set, Type, Union, cast
 
 import pandas as pd
 from ethpm_types import ContractType
@@ -27,6 +27,7 @@ from ape.exceptions import (
     BlockNotFoundError,
     ChainError,
     ConversionError,
+    CustomError,
     QueryEngineError,
     UnknownSnapshotError,
 )
@@ -688,6 +689,10 @@ class ContractCache(BaseManager):
     _local_proxies: Dict[AddressType, ProxyInfoAPI] = {}
     _local_deployments_mapping: Dict[str, Dict] = {}
 
+    # chain_id -> address -> custom_err
+    # Cached to prevent calling `new_class` multiple times with conflicts.
+    _custom_error_types: Dict[int, Dict[AddressType, Set[Type[CustomError]]]] = {}
+
     @property
     def _network(self) -> NetworkAPI:
         return self.provider.network
@@ -854,6 +859,38 @@ class ContractCache(BaseManager):
         """
 
         return self._local_proxies.get(address) or self._get_proxy_info_from_disk(address)
+
+    def _get_errors(
+        self, address: AddressType, chain_id: Optional[int] = None
+    ) -> Set[Type[CustomError]]:
+        if chain_id is None and self.network_manager.active_provider is not None:
+            chain_id = self.provider.chain_id
+        elif chain_id is None:
+            raise ValueError("Missing chain ID.")
+
+        if chain_id not in self._custom_error_types:
+            return set()
+
+        errors = self._custom_error_types[chain_id]
+        if address in errors:
+            return errors[address]
+
+        return set()
+
+    def _cache_error(
+        self, address: AddressType, error: Type[CustomError], chain_id: Optional[int] = None
+    ):
+        if chain_id is None and self.network_manager.active_provider is not None:
+            chain_id = self.provider.chain_id
+        elif chain_id is None:
+            raise ValueError("Missing chain ID.")
+
+        if chain_id not in self._custom_error_types:
+            self._custom_error_types[chain_id] = {address: set()}
+        elif address not in self._custom_error_types[chain_id]:
+            self._custom_error_types[chain_id][address] = set()
+
+        self._custom_error_types[chain_id][address].add(error)
 
     def _cache_contract_type(self, address: AddressType, contract_type: ContractType):
         self._local_contract_types[address] = contract_type
