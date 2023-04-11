@@ -154,7 +154,9 @@ class GethDevProcess(LoggingMixin, BaseGethProcess):
         )
 
     def connect(self):
-        logger.info(f"Starting geth with RPC address '{self._hostname}:{self._port}'.")
+        home = str(Path.home())
+        ipc_path = self.ipc_path.replace(home, "$HOME")
+        logger.info(f"Starting geth (HTTP='{self._hostname}:{self._port}', IPC={ipc_path}).")
         self.start()
         self.wait_for_rpc(timeout=60)
 
