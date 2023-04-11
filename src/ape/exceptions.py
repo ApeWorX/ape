@@ -6,10 +6,11 @@ from functools import cached_property
 from inspect import getframeinfo, stack
 from itertools import tee
 from pathlib import Path
-from typing import TYPE_CHECKING, Iterator, List, Optional
+from typing import TYPE_CHECKING, Any, Dict, Iterator, List, Optional
 
 import click
 from eth_utils import humanize_hash
+from ethpm_types.abi import ErrorABI
 from rich import print as rich_print
 
 from ape.logging import LogLevel, logger
@@ -561,3 +562,35 @@ class Abort(click.ClickException):
         """
 
         logger.error(self.format_message())
+
+
+class CustomError(ContractLogicError):
+    """
+    An error defined in a smart contract.
+    """
+
+    def __init__(
+        self,
+        abi: ErrorABI,
+        inputs: Dict[str, Any],
+        txn: Optional["TransactionAPI"] = None,
+        trace: Optional[Iterator["TraceFrame"]] = None,
+        contract_address: Optional["AddressType"] = None,
+    ):
+        self.abi = abi
+        self.inputs = inputs
+
+        if inputs:
+            message = ", ".join(sorted([f"{k}={v}" for k, v in inputs.items()]))
+        else:
+            # Name of the custom error is all custom info.
+            message = TransactionError.DEFAULT_MESSAGE
+
+        super().__init__(message, txn=txn, trace=trace, contract_address=contract_address)
+
+    @property
+    def name(self) -> str:
+        """
+        The name of the error.
+        """
+        return self.abi.name

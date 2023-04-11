@@ -7,8 +7,8 @@ from hexbytes import HexBytes
 from pydantic import BaseModel
 
 from ape import Contract
-from ape.contracts import ContractContainer, ContractInstance
-from ape.exceptions import ChainError, ContractError, ContractLogicError
+from ape.contracts import ContractInstance
+from ape.exceptions import ChainError, ContractError, ContractLogicError, CustomError
 from ape.types import AddressType
 from ape.utils import ZERO_ADDRESS
 from ape_ethereum.transactions import TransactionStatusEnum
@@ -42,6 +42,11 @@ def test_init_specify_contract_type(
     assert contract.contract_type == vyper_contract_type
     assert contract.setNumber(2, sender=owner)
     assert contract.myNumber() == 2
+
+
+def test_eq(vyper_contract_instance, chain):
+    other = chain.contracts.instance_at(vyper_contract_instance.address)
+    assert other == vyper_contract_instance
 
 
 def test_contract_calls(owner, contract_instance):
@@ -125,20 +130,17 @@ def test_revert_static_fee_type(sender, contract_instance):
         contract_instance.setNumber(5, sender=sender, type=0)
 
 
-def test_revert_custom_exception(owner, get_contract_type, test_accounts):
-    ct = get_contract_type("has_error")
-    ct.source_id = "has_error.json"  # Use JSON compiler for error enrichment.
-    contract = owner.deploy(ContractContainer(ct))
+def test_revert_custom_exception(not_owner, error_contract):
     with pytest.raises(ContractLogicError) as err_info:
-        contract.withdraw(sender=test_accounts[7])
+        error_contract.withdraw(sender=not_owner)
 
     custom_err = err_info.value
-    addr = test_accounts[7].address
+    addr = not_owner.address
     expected_message = f"addr={addr}, counter=123"
     assert custom_err.txn is not None
     assert custom_err.message == expected_message
     assert custom_err.revert_message == expected_message
-    assert custom_err.input_data == {"addr": addr, "counter": 123}  # type: ignore
+    assert custom_err.inputs == {"addr": addr, "counter": 123}  # type: ignore
 
 
 def test_call_using_block_identifier(
@@ -638,3 +640,25 @@ def test_obj_list_as_struct_array_input(contract_instance, owner, data_object):
 def test_dict_list_as_struct_array_input(contract_instance, owner):
     data = {"a": owner, "b": HexBytes(123), "c": "GETS IGNORED"}
     assert contract_instance.setStructArray([data, data]) is None
+
+
+def test_custom_error(error_contract, not_owner):
+    contract = error_contract
+    unauthorized = contract.Unauthorized
+    assert issubclass(unauthorized, CustomError)
+
+    with pytest.raises(contract.Unauthorized) as err:
+        contract.withdraw(sender=not_owner)
+
+    assert err.value.inputs == {"addr": not_owner.address, "counter": 123}
+
+
+def test_get_error_by_signature(error_contract):
+    """
+    Helps in cases where multiple errors have same name.
+    Only happens when importing or using types from interfaces.
+    """
+    signature = error_contract.Unauthorized.abi.signature
+    actual = error_contract.get_error_by_signature(signature)
+    expected = error_contract.Unauthorized
+    assert actual == expected
