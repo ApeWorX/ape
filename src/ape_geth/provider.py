@@ -286,11 +286,11 @@ class BaseGethProvider(Web3Provider, ABC):
                 if all((hasattr(err, "args"), err.args, isinstance(err.args[0], dict)))
                 else "Error getting chain id."
             )
+
         try:
             block = self.web3.eth.get_block("latest")
         except ExtraDataLengthError:
             is_likely_poa = True
-
         else:
             is_likely_poa = (
                 "proofOfAuthorityData" in block
