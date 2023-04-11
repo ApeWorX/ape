@@ -2,12 +2,12 @@ from ape import plugins
 from ape.api.networks import LOCAL_NETWORK_NAME
 
 from .provider import Geth as GethProvider
-from .provider import GethDev, GethNetworkConfig, NetworkConfig
+from .provider import GethConfig, GethDev, GethNetworkConfig
 
 
 @plugins.register(plugins.Config)
 def config_class():
-    return NetworkConfig
+    return GethConfig
 
 
 @plugins.register(plugins.ProviderPlugin)

@@ -3,7 +3,7 @@ import shutil
 from abc import ABC
 from pathlib import Path
 from subprocess import DEVNULL, PIPE, Popen
-from typing import Any, Dict, Iterator, List, Optional, Tuple, Union
+from typing import Any, Dict, Iterator, List, Optional, Tuple, Union, cast
 
 import ijson  # type: ignore
 import requests
@@ -62,6 +62,7 @@ class GethDevProcess(LoggingMixin, BaseGethProcess):
         number_of_accounts: int = DEFAULT_NUMBER_OF_TEST_ACCOUNTS,
         chain_id: int = GETH_DEV_CHAIN_ID,
         initial_balance: Union[str, int] = to_wei(10000, "ether"),
+        executable: Optional[str] = None,
     ):
         if not shutil.which("geth"):
             raise GethNotInstalledError()
@@ -74,6 +75,7 @@ class GethDevProcess(LoggingMixin, BaseGethProcess):
 
         geth_kwargs = construct_test_chain_kwargs(
             data_dir=self.data_dir,
+            geth_executable=executable,
             rpc_addr=hostname,
             rpc_port=port,
             network_id=chain_id,
@@ -144,6 +146,7 @@ class GethDevProcess(LoggingMixin, BaseGethProcess):
             port=port,
             mnemonic=mnemonic,
             number_of_accounts=number_of_accounts,
+            executable=kwargs.get("executable"),
         )
 
     def connect(self):
@@ -188,10 +191,12 @@ class GethNetworkConfig(PluginConfig):
     local: dict = DEFAULT_SETTINGS.copy()
 
 
-class NetworkConfig(PluginConfig):
+class GethConfig(PluginConfig):
     ethereum: GethNetworkConfig = GethNetworkConfig()
+    executable: Optional[str] = None
 
     class Config:
+        # For allowing all other EVM-based ecosystem plugins
         extra = Extra.allow
 
 
@@ -362,6 +367,10 @@ class GethDev(BaseGethProvider, TestProviderAPI):
     def chain_id(self) -> int:
         return GETH_DEV_CHAIN_ID
 
+    @property
+    def geth_config(self) -> GethConfig:
+        return cast(GethConfig, self.config_manager.get_config("geth"))
+
     def __repr__(self):
         if self._process is None:
             # Exclude chain ID when not connected
@@ -378,6 +387,11 @@ class GethDev(BaseGethProvider, TestProviderAPI):
 
     def _start_geth(self):
         test_config = self.config_manager.get_config("test").dict()
+
+        # Allow configuring a custom executable besides your $PATH geth.
+        if self.geth_config.executable is not None:
+            test_config["executable"] = self.geth_config.executable
+
         process = GethDevProcess.from_uri(self.uri, self.data_folder, **test_config)
         process.connect()
         if not self.web3.is_connected():
