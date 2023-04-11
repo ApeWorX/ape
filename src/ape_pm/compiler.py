@@ -109,4 +109,6 @@ class InterfaceCompiler(CompilerAPI):
         abi = contract.contract_type.errors[selector]
         inputs = ecosystem.decode_calldata(abi, input_data)
         error_class = contract.get_error_by_signature(abi.signature)
-        return error_class(abi, inputs)
+        return error_class(
+            abi, inputs, txn=err.txn, trace=err.trace, contract_address=err.contract_address
+        )
