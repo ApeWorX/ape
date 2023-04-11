@@ -56,6 +56,8 @@ dependencies:
     branch: v1.0.0
 ```
 
+The `branch:` config installs the code from that branch or tag whereas the `version:` config uses the official GitHub release API.
+
 To ignore files from a dependency project, use the `exclude` setting to specify glob patterns:
 
 ```yaml
