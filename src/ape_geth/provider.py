@@ -1,5 +1,7 @@
 import atexit
+import os
 import shutil
+import sys
 from abc import ABC
 from pathlib import Path
 from subprocess import DEVNULL, PIPE, Popen
@@ -29,6 +31,8 @@ from web3.exceptions import ExtraDataLengthError
 from web3.gas_strategies.rpc import rpc_gas_price_strategy
 from web3.middleware import geth_poa_middleware
 from web3.middleware.validation import MAX_EXTRADATA_LENGTH
+from web3.providers import AutoProvider, IPCProvider, WebsocketProvider
+from web3.providers.auto import load_provider_from_environment
 from yarl import URL
 
 from ape.api import PluginConfig, TestProviderAPI, TransactionAPI, UpstreamProvider, Web3Provider
@@ -194,6 +198,8 @@ class GethNetworkConfig(PluginConfig):
 class GethConfig(PluginConfig):
     ethereum: GethNetworkConfig = GethNetworkConfig()
     executable: Optional[str] = None
+    ipc_path: Optional[Path] = None
+    data_dir: Optional[Path] = None
 
     class Config:
         # For allowing all other EVM-based ecosystem plugins
@@ -235,12 +241,24 @@ class BaseGethProvider(Web3Provider, ABC):
         return network_config.get("uri", DEFAULT_SETTINGS["uri"])
 
     @property
+    def geth_config(self) -> GethConfig:
+        return cast(GethConfig, self.config_manager.get_config("geth"))
+
+    @property
     def _clean_uri(self) -> str:
         return str(URL(self.uri).with_user(None).with_password(None))
 
+    @property
+    def ipc_path(self) -> Path:
+        return self.geth_config.ipc_path or self.data_dir / "geth.ipc"
+
+    @property
+    def data_dir(self) -> Path:
+        return self.geth_config.data_dir or _get_default_data_dir()
+
     def _set_web3(self):
         self._client_version = None  # Clear cached version when connecting to another URI.
-        self._web3 = _create_web3(self.uri)
+        self._web3 = _create_web3(self.uri, ipc_path=self.ipc_path)
 
     def _complete_connect(self):
         if "geth" in self.client_version.lower():
@@ -268,11 +286,11 @@ class BaseGethProvider(Web3Provider, ABC):
                 if all((hasattr(err, "args"), err.args, isinstance(err.args[0], dict)))
                 else "Error getting chain id."
             )
-
         try:
             block = self.web3.eth.get_block("latest")
         except ExtraDataLengthError:
             is_likely_poa = True
+
         else:
             is_likely_poa = (
                 "proofOfAuthorityData" in block
@@ -366,10 +384,6 @@ class GethDev(BaseGethProvider, TestProviderAPI):
     @property
     def chain_id(self) -> int:
         return GETH_DEV_CHAIN_ID
-
-    @property
-    def geth_config(self) -> GethConfig:
-        return cast(GethConfig, self.config_manager.get_config("geth"))
 
     def __repr__(self):
         if self._process is None:
@@ -534,7 +548,38 @@ class Geth(BaseGethProvider, UpstreamProvider):
         self._complete_connect()
 
 
-def _create_web3(uri: str):
+def _create_web3(uri: str, ipc_path: Optional[Path] = None):
     # Separated into helper method for testing purposes.
-    provider = HTTPProvider(uri, request_kwargs={"timeout": 30 * 60})
+    def http_provider():
+        return HTTPProvider(uri, request_kwargs={"timeout": 30 * 60})
+
+    def ipc_provider():
+        # NOTE: This mypy complaint seems incorrect.
+        return IPCProvider(ipc_path=ipc_path)  # type: ignore[arg-type]
+
+    providers = (
+        load_provider_from_environment,
+        ipc_provider,
+        http_provider,  # Use our HTTP provider callable instead of the default.
+        WebsocketProvider,
+    )
+    provider = AutoProvider(potential_providers=providers)
     return Web3(provider)
+
+
+def _get_default_data_dir() -> Path:
+    # Modified from web3.py package to always return IPC even when not exists.
+    if sys.platform == "darwin":
+        return Path.home() / "Library" / "Ethereum"
+
+    elif sys.platform.startswith("linux") or sys.platform.startswith("freebsd"):
+        return Path.home() / "ethereum"
+
+    elif sys.platform == "win32":
+        return Path(os.path.join("\\\\", ".", "pipe"))
+
+    else:
+        raise ValueError(
+            f"Unsupported platform '{sys.platform}'.  Only darwin/linux/win32/"
+            "freebsd are supported.  You must specify the data_dir."
+        )
