@@ -87,6 +87,11 @@ def owner(test_accounts):
     return test_accounts[2]
 
 
+@pytest.fixture(scope="session")
+def not_owner(test_accounts):
+    return test_accounts[7]
+
+
 @pytest.fixture
 def address():
     return TEST_ADDRESS
@@ -437,3 +442,15 @@ def contract_for_trace(owner, geth_provider, get_contract_type):
     )
 
     return contract_a
+
+
+@pytest.fixture
+def error_contract_container(get_contract_type):
+    ct = get_contract_type("has_error")
+    ct.source_id = "has_error.json"  # Use JSON compiler for error enrichment.
+    return ContractContainer(ct)
+
+
+@pytest.fixture
+def error_contract(owner, error_contract_container):
+    return owner.deploy(error_contract_container)

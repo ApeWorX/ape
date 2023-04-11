@@ -1,18 +1,25 @@
+import types
 from functools import partial
 from itertools import islice
 from pathlib import Path
-from typing import Any, Dict, Iterator, List, Optional, Tuple, Union
+from typing import Any, Dict, Iterator, List, Optional, Tuple, Type, Union
 
 import click
 import pandas as pd
 from ethpm_types import ContractType
-from ethpm_types.abi import ConstructorABI, EventABI, MethodABI
+from ethpm_types.abi import ConstructorABI, ErrorABI, EventABI, MethodABI
 from hexbytes import HexBytes
 
 from ape.api import AccountAPI, Address, ReceiptAPI, TransactionAPI
 from ape.api.address import BaseAddress
 from ape.api.query import ContractEventQuery, extract_fields
-from ape.exceptions import ArgumentsLengthError, ChainError, ContractError, TransactionNotFoundError
+from ape.exceptions import (
+    ArgumentsLengthError,
+    ChainError,
+    ContractError,
+    CustomError,
+    TransactionNotFoundError,
+)
 from ape.logging import logger
 from ape.types import AddressType, ContractLog, LogFilter
 from ape.utils import ManagerAccessMixin, cached_property, singledispatchmethod
@@ -881,6 +888,30 @@ class ContractInstance(BaseAddress, ContractTypeWrapper):
 
         raise err
 
+    def get_error_by_signature(self, signature: str) -> Type[CustomError]:
+        """
+        Get an error by its signature, similar to
+        :meth:`~ape.contracts.ContractInstance.get_event_by_signature`.
+
+        Args:
+            signature (str): The signature of the error.
+
+        Returns:
+            :class:`~ape.exceptions.CustomError`
+        """
+
+        name_from_sig = signature.split("(")[0].strip()
+        options = self._errors_.get(name_from_sig, [])
+        err = ContractError(f"No error found with signature '{signature}'.")
+        if not options:
+            raise err
+
+        for contract_err in options:
+            if contract_err.abi.signature == signature:
+                return contract_err
+
+        raise err
+
     @cached_property
     def _events_(self) -> Dict[str, List[ContractEvent]]:
         events: Dict[str, List[EventABI]] = {}
@@ -899,6 +930,53 @@ class ContractInstance(BaseAddress, ContractTypeWrapper):
         except Exception as err:
             # NOTE: Must raise AttributeError for __attr__ method or will seg fault
             raise AttributeError(str(err)) from err
+
+    @cached_property
+    def _errors_(self) -> Dict[str, List[Type[CustomError]]]:
+        abis: Dict[str, List[ErrorABI]] = {}
+
+        try:
+            for abi in self.contract_type.errors:
+                if abi.name in abis:
+                    abis[abi.name].append(abi)
+                else:
+                    abis[abi.name] = [abi]
+
+            # Check for prior error sub-class definitions for the same contract.
+            prior_errors = self.chain_manager.contracts._get_errors(self.address)
+
+            errors = {}
+            for abi_name, abi_list in abis.items():
+                errors_to_add = []
+                for abi in abi_list:
+                    error_type = None
+                    for existing_cls in prior_errors:
+                        if existing_cls.abi.signature == abi.signature:
+                            # Error class was previously defined by contract at same address.
+                            error_type = existing_cls
+                            break
+
+                    if error_type is None:
+                        # Error class is being defined for the first time.
+                        error_type = self._create_custom_error_type(abi)
+                        self.chain_manager.contracts._cache_error(self.address, error_type)
+
+                    errors_to_add.append(error_type)
+
+                errors[abi_name] = errors_to_add
+
+            return errors
+
+        except Exception as err:
+            # NOTE: Must raise AttributeError for __attr__ method or will seg fault
+            raise AttributeError(str(err)) from err
+
+    def _create_custom_error_type(self, abi: ErrorABI) -> Type[CustomError]:
+        def exec_body(namespace):
+            namespace["abi"] = abi
+            namespace["contract"] = self
+
+        return types.new_class(abi.name, (CustomError,), {}, exec_body)
 
     def __dir__(self) -> List[str]:
         """
@@ -927,7 +1005,7 @@ class ContractInstance(BaseAddress, ContractTypeWrapper):
 
     def __getattr__(self, attr_name: str) -> Any:
         """
-        Access a method, property, or event on the contract using ``.`` access.
+        Access a method, property, event, or error on the contract using ``.`` access.
 
         Usage example::
 
@@ -943,7 +1021,12 @@ class ContractInstance(BaseAddress, ContractTypeWrapper):
         if attr_name in set(super(BaseAddress, self).__dir__()):
             return super(BaseAddress, self).__getattribute__(attr_name)
 
-        if attr_name not in {*self._view_methods_, *self._mutable_methods_, *self._events_}:
+        if attr_name not in {
+            *self._view_methods_,
+            *self._mutable_methods_,
+            *self._events_,
+            *self._errors_,
+        }:
             # Didn't find anything that matches
             # NOTE: `__getattr__` *must* raise `AttributeError`
             name = self.contract_type.name or self.__class__.__name__
@@ -953,6 +1036,7 @@ class ContractInstance(BaseAddress, ContractTypeWrapper):
             int(attr_name in self._view_methods_)
             + int(attr_name in self._mutable_methods_)
             + int(attr_name in self._events_)
+            + int(attr_name in self._errors_)
             > 1
         ):
             # ABI should not contain a mix of events, mutable and view methods that match
@@ -966,14 +1050,24 @@ class ContractInstance(BaseAddress, ContractTypeWrapper):
             return self._mutable_methods_[attr_name]
 
         elif attr_name in self._events_:
-            handler_options = self._events_[attr_name]
-            if len(handler_options) > 1:
+            evt_options = self._events_[attr_name]
+            if len(evt_options) > 1:
                 raise AttributeError(
                     f"Multiple events named '{attr_name}' in '{self.contract_type.name}'.\n"
                     f"Use '{self.get_event_by_signature.__name__}' look-up."
                 )
 
-            return handler_options[0]
+            return evt_options[0]
+
+        elif attr_name in self._errors_:
+            err_options = self._errors_[attr_name]
+            if len(err_options) > 1:
+                raise AttributeError(
+                    f"Multiple errors named '{attr_name}' in '{self.contract_type.name}'.\n"
+                    f"Use '{self.get_error_by_signature.__name__}' look-up."
+                )
+
+            return err_options[0]
 
         else:
             raise AttributeError(f"No attribute '{attr_name}' found in contract '{self.address}'.")
