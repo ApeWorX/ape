@@ -136,6 +136,7 @@
 <li class="toctree-l2"><a class="reference internal" href="#ape.exceptions.TransactionError"><code class="docutils literal notranslate"><span class="pre">TransactionError</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#ape.exceptions.TransactionNotFoundError"><code class="docutils literal notranslate"><span class="pre">TransactionNotFoundError</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#ape.exceptions.UnknownSnapshotError"><code class="docutils literal notranslate"><span class="pre">UnknownSnapshotError</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#ape.exceptions.UnknownVersionError"><code class="docutils literal notranslate"><span class="pre">UnknownVersionError</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#ape.exceptions.VirtualMachineError"><code class="docutils literal notranslate"><span class="pre">VirtualMachineError</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#ape.exceptions.handle_ape_exception"><code class="docutils literal notranslate"><span class="pre">handle_ape_exception()</span></code></a></li>
 </ul>
@@ -419,6 +420,13 @@ the given timeout seconds.</p>
 <em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ape.exceptions.</span></span><span class="sig-name descname"><span class="pre">UnknownSnapshotError</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">snapshot_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">SnapshotID</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.exceptions.UnknownSnapshotError" title="Permalink to this definition"></a></dt>
 <dd><p>Bases: <a class="reference internal" href="#ape.exceptions.ChainError" title="ape.exceptions.ChainError"><code class="xref py py-class docutils literal notranslate"><span class="pre">ChainError</span></code></a></p>
 <p>Raised when given an unknown snapshot ID.</p>
+</dd></dl>
+
+<dl class="py exception">
+<dt class="sig sig-object py" id="ape.exceptions.UnknownVersionError">
+<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ape.exceptions.</span></span><span class="sig-name descname"><span class="pre">UnknownVersionError</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">version</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.exceptions.UnknownVersionError" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ape.exceptions.ProjectError" title="ape.exceptions.ProjectError"><code class="xref py py-class docutils literal notranslate"><span class="pre">ProjectError</span></code></a></p>
+<p>Raised when trying to install an unknown version of a package.</p>
 </dd></dl>
 
 <dl class="py exception">

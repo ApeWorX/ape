@@ -173,6 +173,20 @@ Ape downloads and caches dependencies in the <code class="docutils literal notra
 </pre></div>
 </div>
 <p>will download the <a class="reference external" href="https://github.com/OpenZeppelin/openzeppelin-contracts">Open Zeppelin</a> package with version <code class="docutils literal notranslate"><span class="pre">4.4.2</span></code>.</p>
+<p><strong>WARN</strong>: The <code class="docutils literal notranslate"><span class="pre">version:</span></code> config first attempts to use an official GitHub release, but if the release is not found, it will check the release tags.
+If you know the version is not available as an official release, bypass the original check by using the <code class="docutils literal notranslate"><span class="pre">ref:</span></code> key.
+The <code class="docutils literal notranslate"><span class="pre">ref:</span></code> key is also used for installing branches.</p>
+<p>For example, to install a version available as a <code class="docutils literal notranslate"><span class="pre">git</span></code> tag, do the following:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">dependencies</span><span class="p">:</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Uniswap</span>
+<span class="w">    </span><span class="nt">github</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Uniswap/v3-core</span>
+<span class="w">    </span><span class="nt">ref</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">v1.0.0</span>
+</pre></div>
+</div>
+<p>The <code class="docutils literal notranslate"><span class="pre">ref:</span></code> config installs the code from that reference; the <code class="docutils literal notranslate"><span class="pre">version:</span></code> config uses the official GitHub release API, and then only if that fails will it check the <code class="docutils literal notranslate"><span class="pre">git</span></code> references.
+Often times, the <code class="docutils literal notranslate"><span class="pre">v</span></code> prefix is required when using tags.
+However, if cloning the tag fails, <code class="docutils literal notranslate"><span class="pre">ape</span></code> will retry with a <code class="docutils literal notranslate"><span class="pre">v</span></code> prefix.
+Bypass the original failing attempt by including a <code class="docutils literal notranslate"><span class="pre">v</span></code> in your dependency config.</p>
 <p>To ignore files from a dependency project, use the <code class="docutils literal notranslate"><span class="pre">exclude</span></code> setting to specify glob patterns:</p>
 <div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">dependencies</span><span class="p">:</span>
 <span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">dependency-project-name</span>
@@ -192,11 +206,11 @@ Ape downloads and caches dependencies in the <code class="docutils literal notra
 <div class="highlight-solidity notranslate"><div class="highlight"><pre><span></span><span class="kt">import</span><span class="w"> </span><span class="s2">&quot;@openzeppelin/token/ERC721/ERC721.sol&quot;</span><span class="p">;</span>
 </pre></div>
 </div>
-<p>You can also set the branch and name of the dependency’s contracts folder, e.g.:</p>
+<p>You can also set the name of the dependency’s contracts folder, e.g.:</p>
 <div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">dependencies</span><span class="p">:</span>
 <span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">DappToolsERC20</span>
 <span class="w">    </span><span class="nt">github</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">dapphub/erc20</span>
-<span class="w">    </span><span class="nt">branch</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">dappnix</span>
+<span class="w">    </span><span class="nt">ref</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">dappnix</span>
 <span class="w">    </span><span class="nt">contracts_folder</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">src</span>
 </pre></div>
 </div>
