@@ -96,6 +96,7 @@
 <li class="toctree-l4"><a class="reference internal" href="#non-reentrant-functions">Non-reentrant Functions</a></li>
 </ul>
 </li>
+<li class="toctree-l3"><a class="reference internal" href="#custom-errors">Custom Errors</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="#multi-chain-testing">Multi-chain Testing</a></li>
@@ -438,6 +439,48 @@ These can be helpful in optimizing for gas usage and keeping revert reason strin
 </pre></div>
 </div>
 </section>
+</section>
+<section id="custom-errors">
+<h3>Custom Errors<a class="headerlink" href="#custom-errors" title="Permalink to this heading"></a></h3>
+<p>As of Solidity 0.8.4, custom errors have been introduced to the ABI.
+To make assertions on custom errors, you can use the types defined on your contracts.</p>
+<p>For example, if I have a contract called <code class="docutils literal notranslate"><span class="pre">MyContract.sol</span></code>:</p>
+<div class="highlight-solidity notranslate"><div class="highlight"><pre><span></span><span class="c1">// SPDX-License-Identifier: GPL-3.0</span>
+<span class="k">pragma solidity</span><span class="w"> </span><span class="o">^</span><span class="k">0.8.4</span><span class="p">;</span>
+
+error<span class="w"> </span>Unauthorized<span class="p">(</span><span class="kt">address</span><span class="w"> </span><span class="nv">addr</span><span class="p">);</span>
+
+<span class="k">contract</span><span class="w"> </span><span class="ni">MyContract</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="kt">address</span><span class="w"> </span><span class="nv">payable</span><span class="w"> </span>owner<span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kt">payable</span><span class="p">(</span><span class="k">msg.sender</span><span class="p">);</span>
+<span class="w">    </span><span class="kt">function</span><span class="w"> </span><span class="nv">withdraw</span><span class="p">()</span><span class="w"> </span><span class="kt">public</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="kt">if</span><span class="w"> </span><span class="p">(</span><span class="k">msg.sender</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span>owner<span class="p">)</span>
+<span class="w">            </span>revert<span class="w"> </span>Unauthorized<span class="p">(</span><span class="k">msg.sender</span><span class="p">);</span>
+<span class="w">        </span>owner<span class="p">.</span>transfer<span class="p">(</span><span class="kt">address</span><span class="p">(</span><span class="kt">this</span><span class="p">).</span>balance<span class="p">);</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>I can ensure unauthorized withdraws are disallowed by writing the following test:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">ape</span>
+<span class="kn">import</span> <span class="nn">pytest</span>
+
+<span class="nd">@pytest</span><span class="o">.</span><span class="n">fixture</span>
+<span class="k">def</span> <span class="nf">owner</span><span class="p">(</span><span class="n">accounts</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">accounts</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+<span class="nd">@pytest</span><span class="o">.</span><span class="n">fixture</span>
+<span class="k">def</span> <span class="nf">hacker</span><span class="p">(</span><span class="n">accounts</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">accounts</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+
+<span class="nd">@pytest</span><span class="o">.</span><span class="n">fixture</span>
+<span class="k">def</span> <span class="nf">contract</span><span class="p">(</span><span class="n">owner</span><span class="p">,</span> <span class="n">project</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">owner</span><span class="o">.</span><span class="n">deploy</span><span class="p">(</span><span class="n">project</span><span class="o">.</span><span class="n">MyContract</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">test_unauthorized_withdraw</span><span class="p">(</span><span class="n">contract</span><span class="p">,</span> <span class="n">hacker</span><span class="p">):</span>
+    <span class="k">with</span> <span class="n">ape</span><span class="o">.</span><span class="n">reverts</span><span class="p">(</span><span class="n">contract</span><span class="o">.</span><span class="n">Unauthorized</span><span class="p">,</span> <span class="n">addr</span><span class="o">=</span><span class="n">hacker</span><span class="o">.</span><span class="n">address</span><span class="p">):</span>
+        <span class="n">contract</span><span class="o">.</span><span class="n">withdraw</span><span class="p">(</span><span class="n">sender</span><span class="o">=</span><span class="n">hacker</span><span class="p">)</span>
+</pre></div>
+</div>
 </section>
 </section>
 <section id="multi-chain-testing">

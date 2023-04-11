@@ -104,6 +104,7 @@
 <li class="toctree-l3"><a class="reference internal" href="#ape.contracts.base.ContractInstance.__getattr__"><code class="docutils literal notranslate"><span class="pre">ContractInstance.__getattr__()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ape.contracts.base.ContractInstance.address"><code class="docutils literal notranslate"><span class="pre">ContractInstance.address</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ape.contracts.base.ContractInstance.call_view_method"><code class="docutils literal notranslate"><span class="pre">ContractInstance.call_view_method()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#ape.contracts.base.ContractInstance.get_error_by_signature"><code class="docutils literal notranslate"><span class="pre">ContractInstance.get_error_by_signature()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ape.contracts.base.ContractInstance.get_event_by_signature"><code class="docutils literal notranslate"><span class="pre">ContractInstance.get_event_by_signature()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ape.contracts.base.ContractInstance.invoke_transaction"><code class="docutils literal notranslate"><span class="pre">ContractInstance.invoke_transaction()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ape.contracts.base.ContractInstance.receipt"><code class="docutils literal notranslate"><span class="pre">ContractInstance.receipt</span></code></a></li>
@@ -124,6 +125,7 @@
 <li class="toctree-l3"><a class="reference internal" href="#ape.contracts.base.ContractEvent.range"><code class="docutils literal notranslate"><span class="pre">ContractEvent.range()</span></code></a></li>
 </ul>
 </li>
+<li class="toctree-l2"><a class="reference internal" href="#ape.contracts.base.ContractError"><code class="docutils literal notranslate"><span class="pre">ContractError</span></code></a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="exceptions.html">ape.exceptions</a></li>
@@ -215,7 +217,7 @@ you get back a contract instance.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="ape.contracts.base.ContractInstance.__getattr__">
 <span class="sig-name descname"><span class="pre">__getattr__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">attr_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Any</span></span></span><a class="headerlink" href="#ape.contracts.base.ContractInstance.__getattr__" title="Permalink to this definition"></a></dt>
-<dd><p>Access a method, property, or event on the contract using <code class="docutils literal notranslate"><span class="pre">.</span></code> access.</p>
+<dd><p>Access a method, property, event, or error on the contract using <code class="docutils literal notranslate"><span class="pre">.</span></code> access.</p>
 <p>Usage example:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">result</span> <span class="o">=</span> <span class="n">contract</span><span class="o">.</span><span class="n">vote</span><span class="p">()</span>  <span class="c1"># Implies a method named &quot;vote&quot; exists on the contract.</span>
 </pre></div>
@@ -265,6 +267,21 @@ or <code class="docutils literal notranslate"><span class="pre">balance</span></
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>Any</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ape.contracts.base.ContractInstance.get_error_by_signature">
+<span class="sig-name descname"><span class="pre">get_error_by_signature</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">signature</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Type</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="exceptions.html#ape.exceptions.CustomError" title="ape.exceptions.CustomError"><span class="pre">CustomError</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#ape.contracts.base.ContractInstance.get_error_by_signature" title="Permalink to this definition"></a></dt>
+<dd><p>Get an error by its signature, similar to
+<code class="xref py py-meth docutils literal notranslate"><span class="pre">get_event_by_signature()</span></code>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>signature</strong> (<em>str</em>) – The signature of the error.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference internal" href="exceptions.html#ape.exceptions.CustomError" title="ape.exceptions.CustomError"><code class="xref py py-class docutils literal notranslate"><span class="pre">CustomError</span></code></a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -504,6 +521,13 @@ the contract instance where this event is defined.</p></li>
 </dl>
 </dd></dl>
 
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ape.contracts.base.ContractError">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ape.contracts.base.</span></span><span class="sig-name descname"><span class="pre">ContractError</span></span><a class="headerlink" href="#ape.contracts.base.ContractError" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="exceptions.html#ape.exceptions.ApeException" title="ape.exceptions.ApeException"><code class="xref py py-class docutils literal notranslate"><span class="pre">ApeException</span></code></a></p>
+<p>Raised when issues occur with contracts.</p>
 </dd></dl>
 
 </section>

@@ -31,3 +31,11 @@
     :special-members:
     :exclude-members: __repr__, __weakref__, __metaclass__, __call__, __init__
 ```
+
+```{eval-rst}
+.. autoclass:: ape.contracts.base.ContractError
+    :members:
+    :show-inheritance:
+    :special-members:
+    :exclude-members: __repr__, __weakref__, __metaclass__, __call__, __init__
+```
