@@ -959,12 +959,12 @@ class ContractInstance(BaseAddress, ContractTypeWrapper):
                     error_type = None
                     for existing_cls in prior_errors:
                         if existing_cls.abi.signature == abi.signature:
-                            # Error class was previously initialized by contract at same address.
+                            # Error class was previously defined by contract at same address.
                             error_type = existing_cls
                             break
 
                     if error_type is None:
-                        # Error class is being initialized for the first time.
+                        # Error class is being defined for the first time.
                         error_type = _create_custom_error_type(abi)
                         self.chain_manager.contracts._cache_error(self.address, error_type)
 
