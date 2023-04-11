@@ -299,6 +299,15 @@ class ProjectError(ApeException):
     """
 
 
+class UnknownVersionError(ProjectError):
+    """
+    Raised when trying to install an unknown version of a package.
+    """
+
+    def __init__(self, version: str, name: str):
+        super().__init__(f"Unknown version '{version}' for repo '{name}'.")
+
+
 class ConversionError(ApeException):
     """
     Raised when unable to convert a value.
