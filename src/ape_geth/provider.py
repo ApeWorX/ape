@@ -31,7 +31,7 @@ from web3.exceptions import ExtraDataLengthError
 from web3.gas_strategies.rpc import rpc_gas_price_strategy
 from web3.middleware import geth_poa_middleware
 from web3.middleware.validation import MAX_EXTRADATA_LENGTH
-from web3.providers import AutoProvider, IPCProvider, WebsocketProvider
+from web3.providers import AutoProvider, IPCProvider
 from web3.providers.auto import load_provider_from_environment
 from yarl import URL
 
@@ -560,8 +560,7 @@ def _create_web3(uri: str, ipc_path: Optional[Path] = None):
     providers = (
         load_provider_from_environment,
         ipc_provider,
-        http_provider,  # Use our HTTP provider callable instead of the default.
-        WebsocketProvider,
+        http_provider,
     )
     provider = AutoProvider(potential_providers=providers)
     return Web3(provider)
