@@ -45,11 +45,11 @@ dependencies:
 
 will download the [Open Zeppelin](https://github.com/OpenZeppelin/openzeppelin-contracts) package with version `4.4.2`.
 
-**WARN**: The `version:` first attempts to use official GitHub releases, but if the release is not found, it will then check for release tags.
+**WARN**: The `version:` config first attempts to use an official GitHub release, but if the release is not found, it will check the release tags.
 If you know the version is not available as an official release, bypass the original check by using the `ref:` key.
-The `ref:` key is also used for installing branches:
+The `ref:` key is also used for installing branches.
 
-For example, to install a version based on a `git` tag, do the following:
+For example, to install a version available as a `git` tag, do the following:
 
 ```yaml
 dependencies:
@@ -58,7 +58,7 @@ dependencies:
     ref: v1.0.0
 ```
 
-The `ref:` config installs the code from that reference; the `version:` config uses the official GitHub release API and then checks the `git` references.
+The `ref:` config installs the code from that reference; the `version:` config uses the official GitHub release API, and then only if that fails will it check the `git` references.
 Often times, the `v` prefix is required when using tags.
 However, if cloning the tag fails, `ape` will retry with a `v` prefix.
 Bypass the original failing attempt by including a `v` in your dependency config.
