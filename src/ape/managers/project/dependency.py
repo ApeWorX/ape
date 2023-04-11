@@ -138,7 +138,7 @@ class GithubDependency(DependencyAPI):
                             self.github, temp_project_path, branch=self.version
                         )
                     except Exception:
-                        # Raise the UnknownVersionError still on the stack.
+                        # Raise the UnknownVersionError.
                         raise err
 
             return self._extract_local_manifest(temp_project_path)
