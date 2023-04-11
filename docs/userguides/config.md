@@ -45,7 +45,9 @@ dependencies:
 
 will download the [Open Zeppelin](https://github.com/OpenZeppelin/openzeppelin-contracts) package with version `4.4.2`.
 
-**WARN**: The `version:` key only works when the version is published to GitHub; use the `ref:` key when the version is only available by tag.
+**WARN**: The `version:` first attempts to use official GitHub releases, but if the release is not found, it will then check for release tags.
+If you know the version is not available as an official release, bypass the original check by using the `ref:` key.
+The `ref:` key is also used for installing branches:
 
 For example, to install a version based on a `git` tag, do the following:
 
@@ -56,7 +58,10 @@ dependencies:
     ref: v1.0.0
 ```
 
-The `ref:` config installs the code from that branch or tag whereas the `version:` config uses the official GitHub release API.
+The `ref:` config installs the code from that reference; the `version:` config uses the official GitHub release API and then checks the `git` references.
+Often times, the `v` prefix is required when using tags.
+However, if cloning the tag fails, `ape` will retry with a `v` prefix.
+Bypass the original failing attempt by including a `v` in your dependency config.
 
 To ignore files from a dependency project, use the `exclude` setting to specify glob patterns:
 
