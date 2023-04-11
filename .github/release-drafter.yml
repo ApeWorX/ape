@@ -13,6 +13,8 @@ categories:
       - 'refactor'
       - 'chore'
       - 'docs'
+      - 'perf'
+      - 'test'
 
 change-template: '- $TITLE @$AUTHOR (#$NUMBER)'
 change-title-escapes: '\<*_&' # You can add # and @ to disable mentions, and add ` to disable code blocks.
