@@ -127,13 +127,19 @@ class GithubDependency(DependencyAPI):
                     github_client.download_package(
                         self.github, self.version or "latest", temp_project_path
                     )
-                except UnknownVersionError:
+                except UnknownVersionError as err:
                     logger.warning(
                         f"No official release found for version '{self.version}'. "
                         "Use `ref:` instead of `version:` for release tags. "
                         "Checking for matching tags..."
                     )
-                    github_client.clone_repo(self.github, temp_project_path, branch=self.version)
+                    try:
+                        github_client.clone_repo(
+                            self.github, temp_project_path, branch=self.version
+                        )
+                    except Exception:
+                        # Raise the UnknownVersionError still on the stack.
+                        raise err
 
             return self._extract_local_manifest(temp_project_path)
 
