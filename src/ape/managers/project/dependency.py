@@ -9,7 +9,7 @@ from ethpm_types.utils import AnyUrl
 from pydantic import FileUrl, HttpUrl, root_validator
 
 from ape.api import DependencyAPI
-from ape.exceptions import ProjectError
+from ape.exceptions import ProjectError, UnknownVersionError
 from ape.logging import logger
 from ape.utils import ManagerAccessMixin, cached_property, github_client, load_config
 
@@ -123,9 +123,17 @@ class GithubDependency(DependencyAPI):
                 github_client.clone_repo(self.github, temp_project_path, branch=self._reference)
 
             else:
-                github_client.download_package(
-                    self.github, self.version or "latest", temp_project_path
-                )
+                try:
+                    github_client.download_package(
+                        self.github, self.version or "latest", temp_project_path
+                    )
+                except UnknownVersionError:
+                    logger.warning(
+                        f"No official release found for version '{self.version}'. "
+                        "Use `ref:` instead of `version:` for release tags. "
+                        "Checking for matching tags..."
+                    )
+                    github_client.clone_repo(self.github, temp_project_path, branch=self.version)
 
             return self._extract_local_manifest(temp_project_path)
 

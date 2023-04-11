@@ -12,7 +12,7 @@ from github.GitRelease import GitRelease
 from github.Organization import Organization
 from github.Repository import Repository as GithubRepository
 
-from ape.exceptions import CompilerError, ProjectError
+from ape.exceptions import CompilerError, ProjectError, UnknownVersionError
 from ape.logging import logger
 from ape.utils.misc import USER_AGENT, cached_property, stream_response
 
@@ -38,7 +38,22 @@ class GitProcessWrapper:
         logger.debug(f"Running git command: '{' '.join(command)}'")
         result = subprocess.call(command)
         if result != 0:
-            raise ProjectError(f"`git clone` command failed for '{url}'.")
+            fail_msg = f"`git clone` command failed for '{url}'."
+
+            if branch and not branch.startswith("v"):
+                # Often times, `v` is required for tags.
+                try:
+                    self.clone(url, target_path, branch=f"v{branch}")
+                except Exception:
+                    raise ProjectError(fail_msg)
+
+                # Succeeded when prefixing `v`.
+                return
+
+            # Failed and we don't really know why.
+            # Shouldn't really happen.
+            # User will have to run command separately to debug.
+            raise ProjectError(fail_msg)
 
 
 class GithubClient:
@@ -110,7 +125,7 @@ class GithubClient:
 
             release = _try_get_release(version)
             if not release:
-                raise ProjectError(f"Unknown version '{original_version}' for repo '{repo.name}'.")
+                raise UnknownVersionError(original_version, repo.name)
 
         return release
 
