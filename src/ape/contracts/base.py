@@ -675,13 +675,6 @@ class ContractTypeWrapper(ManagerAccessMixin):
         return method.selector, input_dict
 
 
-def _create_custom_error_type(abi: ErrorABI) -> Type[CustomError]:
-    def exec_body(namespace):
-        namespace["abi"] = abi
-
-    return types.new_class(abi.name, (CustomError,), {}, exec_body)
-
-
 class ContractInstance(BaseAddress, ContractTypeWrapper):
     """
     An interactive instance of a smart contract.
@@ -965,7 +958,7 @@ class ContractInstance(BaseAddress, ContractTypeWrapper):
 
                     if error_type is None:
                         # Error class is being defined for the first time.
-                        error_type = _create_custom_error_type(abi)
+                        error_type = self._create_custom_error_type(abi)
                         self.chain_manager.contracts._cache_error(self.address, error_type)
 
                     errors_to_add.append(error_type)
@@ -977,6 +970,13 @@ class ContractInstance(BaseAddress, ContractTypeWrapper):
         except Exception as err:
             # NOTE: Must raise AttributeError for __attr__ method or will seg fault
             raise AttributeError(str(err)) from err
+
+    def _create_custom_error_type(self, abi: ErrorABI) -> Type[CustomError]:
+        def exec_body(namespace):
+            namespace["abi"] = abi
+            namespace["contract"] = self
+
+        return types.new_class(abi.name, (CustomError,), {}, exec_body)
 
     def __dir__(self) -> List[str]:
         """
