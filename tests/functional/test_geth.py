@@ -22,40 +22,61 @@ Call trace for
 '0x([A-Fa-f0-9]{64})'
 tx\.origin=0x[a-fA-F0-9]{40}
 ContractA\.methodWithoutArguments\(\) -> 0x00..5174 \[\d+ gas\]
-├── SYMBOL\.methodB1\(lolol="ice-cream", dynamo=36\)
+├── SYMBOL\.supercluster\(x=234444\) -> \[
+│       \[23523523235235, 11111111111, 234444\],
+│       \[
+│         345345347789999991,
+│         99999998888882,
+│         345457847457457458457457457
+│       \],
+│       \[234444, 92222229999998888882, 3454\],
+│       \[
+│         111145345347789999991,
+│         333399998888882,
+│         234545457847457457458457457457
+│       \]
+│     \] \[47236 gas\]
+├── SYMBOL\.methodB1\(lolol="ice-cream", dynamo=345457847457457458457457457\)
+│   \[166680 gas\]
 │   ├── ContractC\.getSomeList\(\) -> \[
 │   │     3425311345134513461345134534531452345,
 │   │     111344445534535353,
 │   │     993453434534534534534977788884443333
-│   │   \] \[1474 gas\]
-│   └── ContractC\.methodC1\(windows95="simpler", jamaica=36, cardinal=ContractA\)
-│       \[115249 gas\]
-├── SYMBOL\.callMe\(blue=tx.origin\) -> tx\.origin \[723 gas\]
-├── SYMBOL\.methodB2\(trombone=tx.origin\) \[131198 gas\]
-│   ├── ContractC\.paperwork\(ContractA\) -> \(os="simpler", country=36,
-│   │   wings=ContractA\) \[2423 gas\]
+│   │   \] \[731 gas\]
+│   └── ContractC\.methodC1\(
+│         windows95="simpler",
+│         jamaica=345457847457457458457457457,
+│         cardinal=ContractA
+│       \) \[114325 gas\]
+├── SYMBOL\.callMe\(blue=tx\.origin\) -> tx\.origin \[388 gas\]
+├── SYMBOL\.methodB2\(trombone=tx\.origin\) \[127652 gas\]
+│   ├── ContractC\.paperwork\(ContractA\) -> \(
+│   │     os="simpler",
+│   │     country=345457847457457458457457457,
+│   │     wings=ContractA
+│   │   \) \[1763 gas\]
 │   ├── ContractC\.methodC1\(windows95="simpler", jamaica=0, cardinal=ContractC\)
-│   │   \[73449 gas\]
-│   ├── ContractC\.methodC2\(\) \[25154 gas\]
-│   └── ContractC\.methodC2\(\) \[23154 gas\]
-├── ContractC\.addressToValue\(tx\.origin\) -> 0 \[2858 gas\]
-├── SYMBOL\.bandPractice\(tx\.origin\) -> 0 \[881 gas\]
-├── SYMBOL\.methodB1\(lolol="lemondrop", dynamo=0\) \[36717 gas\]
+│   │   \[72525 gas\]
+│   ├── ContractC\.methodC2\(\) \[24928 gas\]
+│   └── ContractC\.methodC2\(\) \[22928 gas\]
+├── ContractC\.addressToValue\(tx.origin\) -> 0 \[2522 gas\]
+├── SYMBOL\.bandPractice\(tx.origin\) -> 0 \[558 gas\]
+├── SYMBOL\.methodB1\(lolol="lemondrop", dynamo=0\) \[28680 gas\]
 │   ├── ContractC\.getSomeList\(\) -> \[
 │   │     3425311345134513461345134534531452345,
 │   │     111344445534535353,
 │   │     993453434534534534534977788884443333
-│   │   \] \[1474 gas\]
-│   └── ContractC.methodC1\(windows95="simpler", jamaica=0, cardinal=ContractA\)
-│       \[27806 gas\]
-└── SYMBOL\.methodB1\(lolol="snitches_get_stiches", dynamo=111\)
+│   │   \] \[731 gas\]
+│   └── ContractC\.methodC1\(windows95="simpler", jamaica=0, cardinal=ContractA\)
+│       \[24625 gas\]
+└── SYMBOL\.methodB1\(lolol="snitches_get_stiches", dynamo=111\) \[48580 gas\]
     ├── ContractC\.getSomeList\(\) -> \[
     │     3425311345134513461345134534531452345,
     │     111344445534535353,
     │     993453434534534534534977788884443333
-    │   \] \[1474 gas\]
+    │   \] \[731 gas\]
     └── ContractC\.methodC1\(windows95="simpler", jamaica=111, cardinal=ContractA\)
-        \[45606 gas\]
+        \[44525 gas\]
 """
 
 
