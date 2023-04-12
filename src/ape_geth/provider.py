@@ -256,7 +256,10 @@ class BaseGethProvider(Web3Provider, ABC):
 
     @property
     def data_dir(self) -> Path:
-        return self.geth_config.data_dir or _get_default_data_dir()
+        if self.geth_config.data_dir:
+            return self.geth_config.data_dir.expanduser()
+
+        return _get_default_data_dir()
 
     def _set_web3(self):
         self._client_version = None  # Clear cached version when connecting to another URI.
