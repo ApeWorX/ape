@@ -308,8 +308,8 @@ def test_filter_events_with_same_abi(
 
     result_b = receipt.events.filter(middle_contract.OneOfMany)
     assert len(result_b) == 1
-    assert result_b[0].addr == owner.address
+    assert result_b[0].addr == contract_with_call_depth.address
 
     result_c = receipt.events.filter(leaf_contract.OneOfMany)
     assert len(result_c) == 1
-    assert result_c[0].addr == owner.address
+    assert result_c[0].addr == contract_with_call_depth.address
