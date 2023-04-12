@@ -352,7 +352,13 @@ class BaseGethProvider(Web3Provider, ABC):
         return self._create_call_tree_node(evm_call, txn_hash=txn_hash)
 
     def _log_connection(self, client_name: str):
-        logger.info(f"Connecting to existing {client_name} node at '{self._clean_uri}'.")
+        msg = f"Connecting to existing {client_name} node at "
+        suffix = (
+            self.ipc_path.as_posix().replace(Path.home().as_posix(), "$HOME")
+            if self.ipc_path.exists()
+            else self._clean_uri
+        )
+        logger.info(f"{msg} {suffix}.")
 
     def _make_request(self, endpoint: str, parameters: List) -> Any:
         try:
