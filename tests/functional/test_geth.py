@@ -80,8 +80,8 @@ def parity_trace_response():
 
 
 @pytest.fixture
-def geth_receipt(contract_for_trace, owner, geth_provider):
-    return contract_for_trace.methodWithoutArguments(sender=owner)
+def geth_receipt(contract_with_call_depth, owner, geth_provider):
+    return contract_with_call_depth.methodWithoutArguments(sender=owner)
 
 
 @geth_process_test

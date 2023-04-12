@@ -15,8 +15,14 @@ contract ContractB {
     string public symbol = "SYMBOL";
     address[] visitors;
 
+    event OneOfMany(address indexed addr);
+
     constructor(ContractC addr) {
         contractC = addr;
+    }
+
+    function oneOfMany() public {
+        emit OneOfMany(msg.sender);
     }
 
     function setSharedString(string memory value) public {
@@ -38,7 +44,7 @@ contract ContractB {
 
     function methodB1(string memory lolol, uint dynamo) public {
         pumpkin[msg.sender] = lolol;
-        
+
         contractC.getSomeList();
         contractC.methodC1("simpler", dynamo, msg.sender);
         bandPractice[msg.sender] = bandPractice[msg.sender] + dynamo;
