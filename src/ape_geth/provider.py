@@ -586,7 +586,7 @@ def _create_web3(uri: str, ipc_path: Optional[Path] = None):
 
 
 def _get_default_data_dir() -> Path:
-    # Modified from web3.py package to always return IPC even when not exists.
+    # Modified from web3.py package to always return IPC even when none exist.
     if sys.platform == "darwin":
         return Path.home() / "Library" / "Ethereum"
 
