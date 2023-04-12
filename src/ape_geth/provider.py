@@ -1,5 +1,7 @@
 import atexit
+import os
 import shutil
+import sys
 from abc import ABC
 from pathlib import Path
 from subprocess import DEVNULL, PIPE, Popen
@@ -29,6 +31,8 @@ from web3.exceptions import ExtraDataLengthError
 from web3.gas_strategies.rpc import rpc_gas_price_strategy
 from web3.middleware import geth_poa_middleware
 from web3.middleware.validation import MAX_EXTRADATA_LENGTH
+from web3.providers import AutoProvider, IPCProvider
+from web3.providers.auto import load_provider_from_environment
 from yarl import URL
 
 from ape.api import PluginConfig, TestProviderAPI, TransactionAPI, UpstreamProvider, Web3Provider
@@ -55,7 +59,7 @@ class GethDevProcess(LoggingMixin, BaseGethProcess):
 
     def __init__(
         self,
-        base_directory: Path,
+        data_dir: Path,
         hostname: str = DEFAULT_HOSTNAME,
         port: int = DEFAULT_PORT,
         mnemonic: str = DEFAULT_TEST_MNEMONIC,
@@ -67,7 +71,7 @@ class GethDevProcess(LoggingMixin, BaseGethProcess):
         if not shutil.which("geth"):
             raise GethNotInstalledError()
 
-        self.data_dir = base_directory / "dev"
+        self.data_dir = data_dir
         self._hostname = hostname
         self._port = port
         self.data_dir.mkdir(exist_ok=True, parents=True)
@@ -118,7 +122,7 @@ class GethDevProcess(LoggingMixin, BaseGethProcess):
         }
 
         def make_logs_paths(stream_name: str):
-            path = base_directory / "geth-logs" / f"{stream_name}_{self._port}"
+            path = data_dir / "geth-logs" / f"{stream_name}_{self._port}"
             path.parent.mkdir(exist_ok=True, parents=True)
             return path
 
@@ -150,7 +154,9 @@ class GethDevProcess(LoggingMixin, BaseGethProcess):
         )
 
     def connect(self):
-        logger.info(f"Starting geth with RPC address '{self._hostname}:{self._port}'.")
+        home = str(Path.home())
+        ipc_path = self.ipc_path.replace(home, "$HOME")
+        logger.info(f"Starting geth (HTTP='{self._hostname}:{self._port}', IPC={ipc_path}).")
         self.start()
         self.wait_for_rpc(timeout=60)
 
@@ -194,6 +200,8 @@ class GethNetworkConfig(PluginConfig):
 class GethConfig(PluginConfig):
     ethereum: GethNetworkConfig = GethNetworkConfig()
     executable: Optional[str] = None
+    ipc_path: Optional[Path] = None
+    data_dir: Optional[Path] = None
 
     class Config:
         # For allowing all other EVM-based ecosystem plugins
@@ -235,12 +243,27 @@ class BaseGethProvider(Web3Provider, ABC):
         return network_config.get("uri", DEFAULT_SETTINGS["uri"])
 
     @property
+    def geth_config(self) -> GethConfig:
+        return cast(GethConfig, self.config_manager.get_config("geth"))
+
+    @property
     def _clean_uri(self) -> str:
         return str(URL(self.uri).with_user(None).with_password(None))
 
+    @property
+    def ipc_path(self) -> Path:
+        return self.geth_config.ipc_path or self.data_dir / "geth.ipc"
+
+    @property
+    def data_dir(self) -> Path:
+        if self.geth_config.data_dir:
+            return self.geth_config.data_dir.expanduser()
+
+        return _get_default_data_dir()
+
     def _set_web3(self):
         self._client_version = None  # Clear cached version when connecting to another URI.
-        self._web3 = _create_web3(self.uri)
+        self._web3 = _create_web3(self.uri, ipc_path=self.ipc_path)
 
     def _complete_connect(self):
         if "geth" in self.client_version.lower():
@@ -332,7 +355,13 @@ class BaseGethProvider(Web3Provider, ABC):
         return self._create_call_tree_node(evm_call, txn_hash=txn_hash)
 
     def _log_connection(self, client_name: str):
-        logger.info(f"Connecting to existing {client_name} node at '{self._clean_uri}'.")
+        msg = f"Connecting to existing {client_name} node at "
+        suffix = (
+            self.ipc_path.as_posix().replace(Path.home().as_posix(), "$HOME")
+            if self.ipc_path.exists()
+            else self._clean_uri
+        )
+        logger.info(f"{msg} {suffix}.")
 
     def _make_request(self, endpoint: str, parameters: List) -> Any:
         try:
@@ -368,8 +397,9 @@ class GethDev(BaseGethProvider, TestProviderAPI):
         return GETH_DEV_CHAIN_ID
 
     @property
-    def geth_config(self) -> GethConfig:
-        return cast(GethConfig, self.config_manager.get_config("geth"))
+    def data_dir(self) -> Path:
+        # Overriden from BaseGeth class for placing debug logs in ape data folder.
+        return self.geth_config.data_dir or self.data_folder / "dev"
 
     def __repr__(self):
         if self._process is None:
@@ -392,7 +422,8 @@ class GethDev(BaseGethProvider, TestProviderAPI):
         if self.geth_config.executable is not None:
             test_config["executable"] = self.geth_config.executable
 
-        process = GethDevProcess.from_uri(self.uri, self.data_folder, **test_config)
+        test_config["ipc_path"] = self.ipc_path
+        process = GethDevProcess.from_uri(self.uri, self.data_dir, **test_config)
         process.connect()
         if not self.web3.is_connected():
             process.disconnect()
@@ -534,7 +565,39 @@ class Geth(BaseGethProvider, UpstreamProvider):
         self._complete_connect()
 
 
-def _create_web3(uri: str):
+def _create_web3(uri: str, ipc_path: Optional[Path] = None):
     # Separated into helper method for testing purposes.
-    provider = HTTPProvider(uri, request_kwargs={"timeout": 30 * 60})
+    def http_provider():
+        return HTTPProvider(uri, request_kwargs={"timeout": 30 * 60})
+
+    def ipc_provider():
+        # NOTE: This mypy complaint seems incorrect.
+        return IPCProvider(ipc_path=ipc_path)  # type: ignore[arg-type]
+
+    # NOTE: This tuple is ordered by try-attempt.
+    # Try ENV, then IPC, and then HTTP last.
+    providers = (
+        load_provider_from_environment,
+        ipc_provider,
+        http_provider,
+    )
+    provider = AutoProvider(potential_providers=providers)
     return Web3(provider)
+
+
+def _get_default_data_dir() -> Path:
+    # Modified from web3.py package to always return IPC even when none exist.
+    if sys.platform == "darwin":
+        return Path.home() / "Library" / "Ethereum"
+
+    elif sys.platform.startswith("linux") or sys.platform.startswith("freebsd"):
+        return Path.home() / "ethereum"
+
+    elif sys.platform == "win32":
+        return Path(os.path.join("\\\\", ".", "pipe"))
+
+    else:
+        raise ValueError(
+            f"Unsupported platform '{sys.platform}'.  Only darwin/linux/win32/"
+            "freebsd are supported.  You must specify the data_dir."
+        )
