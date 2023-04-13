@@ -8,6 +8,7 @@ import sys
 import time
 from abc import ABC
 from concurrent.futures import ThreadPoolExecutor
+from itertools import tee
 from logging import FileHandler, Formatter, Logger, getLogger
 from pathlib import Path
 from signal import SIGINT, SIGTERM, signal
@@ -31,6 +32,7 @@ from ape.api.networks import LOCAL_NETWORK_NAME, NetworkAPI
 from ape.api.query import BlockTransactionQuery
 from ape.api.transactions import ReceiptAPI, TransactionAPI
 from ape.exceptions import (
+    ApeException,
     APINotImplementedError,
     BlockNotFoundError,
     ContractLogicError,
@@ -1274,9 +1276,31 @@ class Web3Provider(ProviderAPI, ABC):
     ) -> ContractLogicError:
         message = str(exception).split(":")[-1].strip()
         params: Dict = {"trace": trace, "contract_address": contract_address}
+        no_reason = message == "execution reverted"
+
+        if isinstance(exception, Web3ContractLogicError) and no_reason:
+            # Check for custom exception data and use that as the message instead.
+            # This allows compiler exception enrichment to function.
+            try:
+                if trace:
+                    trace, err_trace = tee(trace)
+                elif txn:
+                    err_trace = self.provider.get_transaction_trace(txn.txn_hash.hex())
+
+                data = list(err_trace)[-1].raw
+                memory = data.get("memory", [])
+                return_value = "".join([x[2:] for x in memory[4:]])
+                if return_value:
+                    message = f"0x{return_value}"
+                    no_reason = False
+
+            except (ApeException, NotImplementedError):
+                # Either provider does not support or isn't a custom exception.
+                pass
+
         result = (
             ContractLogicError(txn=txn, **params)
-            if message == "execution reverted"
+            if no_reason
             else ContractLogicError(revert_message=message, txn=txn, **params)
         )
         return self.compiler_manager.enrich_error(result)
