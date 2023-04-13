@@ -284,7 +284,7 @@ class ContractLogContainer(list):
     def filter(self, event: "ContractEvent", **kwargs) -> List[ContractLog]:
         found_events = []
         for log in self:
-            if log.event_name == event.name:
+            if log.event_name == event.name and log.contract_address == event.contract.address:
                 match = all(
                     v == log.event_arguments.get(k) and v is not None for k, v in kwargs.items()
                 )

@@ -431,17 +431,54 @@ def unique_calldata():
 
 
 @pytest.fixture
-def contract_for_trace(owner, geth_provider, get_contract_type):
-    def get_ct(suffix: str) -> ContractType:
-        return get_contract_type(f"contract_{suffix}")
+def leaf_contract_geth(geth_provider, owner, get_contract_type):
+    """
+    The last contract called by `contract_with_call_depth`.
+    """
+    ct = get_contract_type("contract_c")
+    return owner.deploy(ContractContainer(ct))
 
-    contract_c = owner.deploy(ContractContainer(get_ct("c")))
-    contract_b = owner.deploy(ContractContainer(get_ct("b")), contract_c.address)
-    contract_a = owner.deploy(
-        ContractContainer(get_ct("a")), contract_b.address, contract_c.address
-    )
 
-    return contract_a
+@pytest.fixture
+def leaf_contract(eth_tester_provider, owner, get_contract_type):
+    ct = get_contract_type("contract_c")
+    return owner.deploy(ContractContainer(ct))
+
+
+@pytest.fixture
+def middle_contract_geth(geth_provider, owner, leaf_contract_geth, get_contract_type):
+    """
+    The middle contract called by `contract_with_call_depth`.
+    """
+    ct = get_contract_type("contract_b")
+    return owner.deploy(ContractContainer(ct), leaf_contract_geth)
+
+
+@pytest.fixture
+def middle_contract(eth_tester_provider, owner, get_contract_type, leaf_contract):
+    ct = get_contract_type("contract_b")
+    return owner.deploy(ContractContainer(ct), leaf_contract)
+
+
+@pytest.fixture
+def contract_with_call_depth_geth(
+    owner, geth_provider, get_contract_type, leaf_contract_geth, middle_contract_geth
+):
+    """
+    This contract has methods that make calls to other local contracts
+    and is used for any testing that requires nested calls, such as
+    call trees or event-name clashes.
+    """
+    contract = ContractContainer(get_contract_type("contract_a"))
+    return owner.deploy(contract, middle_contract_geth, leaf_contract_geth)
+
+
+@pytest.fixture
+def contract_with_call_depth(
+    owner, eth_tester_provider, get_contract_type, leaf_contract, middle_contract
+):
+    contract = ContractContainer(get_contract_type("contract_a"))
+    return owner.deploy(contract, middle_contract, leaf_contract)
 
 
 @pytest.fixture

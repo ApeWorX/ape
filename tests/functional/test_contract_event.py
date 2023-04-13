@@ -287,3 +287,26 @@ def test_contract_log_container(owner, contract_instance):
     receipt = contract_instance.setNumber(1, sender=owner)
     events = receipt.events.filter(contract_instance.NumberChange, newNum=1)
     assert len(events) == 1
+
+
+def test_filter_events_with_same_abi(
+    owner, contract_with_call_depth, middle_contract, leaf_contract
+):
+    """
+    Test shows that if we have a contract method emit multiple events with the
+    same ABI, that each event only appears on the respective contract's
+    filtering. This test verifies we filter by contract address as well as ABI.
+    """
+
+    receipt = contract_with_call_depth.emitLogWithSameInterfaceFromMultipleContracts(sender=owner)
+    result_a = receipt.events.filter(contract_with_call_depth.OneOfMany)
+    assert len(result_a) == 1
+    assert result_a[0].addr == owner.address
+
+    result_b = receipt.events.filter(middle_contract.OneOfMany)
+    assert len(result_b) == 1
+    assert result_b[0].addr == contract_with_call_depth.address
+
+    result_c = receipt.events.filter(leaf_contract.OneOfMany)
+    assert len(result_c) == 1
+    assert result_c[0].addr == contract_with_call_depth.address

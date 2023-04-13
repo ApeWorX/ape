@@ -10,6 +10,8 @@ contract ContractA {
         uint256 indexed hook
     );
 
+    event OneOfMany(address indexed addr);
+
     ContractB public contractB;
     ContractC public contractC;
     mapping(address => uint256) public runTheJules;
@@ -72,6 +74,12 @@ contract ContractA {
 
     function goodbye() public {
         selfdestruct(owner);
+    }
+
+    function emitLogWithSameInterfaceFromMultipleContracts() public {
+        contractB.oneOfMany();
+        contractC.oneOfMany();
+        emit OneOfMany(msg.sender);
     }
 
     receive() external payable {}

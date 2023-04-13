@@ -91,6 +91,8 @@ class TestAccount(TestAccountAPI):
     address_str: str
     private_key: str
 
+    __test__ = False
+
     @property
     def alias(self) -> str:
         return f"dev_{self.index}"

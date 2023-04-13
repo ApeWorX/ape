@@ -11,7 +11,14 @@ contract ContractC {
     mapping(address => uint256) public addressToValue;
     address[] public addresses;
 
+    event OneOfMany(address indexed addr);
+
     mapping(address => Hero) public paperwork;
+
+    function oneOfMany() public {
+        emit OneOfMany(msg.sender);
+    }
+
 
     function methodC1(string memory windows95, uint256 jamaica, address cardinal) public payable {
         require(msg.value <= 0, "!money");
