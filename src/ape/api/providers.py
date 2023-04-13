@@ -1280,7 +1280,7 @@ class Web3Provider(ProviderAPI, ABC):
 
         if isinstance(exception, Web3ContractLogicError) and no_reason:
             # Check for custom exception data and use that as the message instead.
-            # This allows compiler exeption enrichment to function.
+            # This allows compiler exception enrichment to function.
             try:
                 if trace:
                     trace, err_trace = tee(trace)
