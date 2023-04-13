@@ -203,6 +203,7 @@ class Receipt(ReceiptAPI):
             transaction_hash=self.txn_hash,
             revert_message=revert_message,
             verbose=verbose,
+            file=file,
         )
 
     def show_gas_report(self, file: IO[str] = sys.stdout):
@@ -224,9 +225,7 @@ class Receipt(ReceiptAPI):
         elif call_tree.contract_id.startswith("Transferring "):
             call_tree.method_id = f"to:{self.receiver}"
 
-        self.chain_manager._reports.show_gas(
-            call_tree, sender=self.sender, transaction_hash=self.txn_hash
-        )
+        self.chain_manager._reports.show_gas(call_tree)
 
     def decode_logs(
         self,

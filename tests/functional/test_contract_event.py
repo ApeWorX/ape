@@ -10,7 +10,6 @@ from hexbytes import HexBytes
 from ape.api import ReceiptAPI
 from ape.exceptions import ChainError
 from ape.types import ContractLog
-from tests.conftest import geth_process_test
 
 
 @pytest.fixture
@@ -290,9 +289,8 @@ def test_contract_log_container(owner, contract_instance):
     assert len(events) == 1
 
 
-@geth_process_test
 def test_filter_events_with_same_abi(
-    owner, contract_with_call_depth, middle_contract, leaf_contract, geth_provider
+    owner, contract_with_call_depth, middle_contract, leaf_contract
 ):
     """
     Test shows that if we have a contract method emit multiple events with the
@@ -300,7 +298,6 @@ def test_filter_events_with_same_abi(
     filtering. This test verifies we filter by contract address as well as ABI.
     """
 
-    _ = geth_provider  # Only using geth provider because that is where contract deploys.
     receipt = contract_with_call_depth.emitLogWithSameInterfaceFromMultipleContracts(sender=owner)
     result_a = receipt.events.filter(contract_with_call_depth.OneOfMany)
     assert len(result_a) == 1

@@ -1265,13 +1265,7 @@ class ReportManager(BaseManager):
 
         console.print(root)
 
-    def show_gas(
-        self,
-        call_tree: CallTreeNode,
-        sender: Optional[AddressType] = None,
-        transaction_hash: Optional[str] = None,
-        file: Optional[IO[str]] = None,
-    ):
+    def show_gas(self, call_tree: CallTreeNode, file: Optional[IO[str]] = None):
         console = self._get_console(file)
         tables = call_tree.as_gas_tables()
         console.print(*tables)
@@ -1309,7 +1303,7 @@ class ReportManager(BaseManager):
         # Configure custom file console
         file_id = str(file)
         if file_id not in self.rich_console_map:
-            self.rich_console_map[file_id] = RichConsole(file=file)
+            self.rich_console_map[file_id] = RichConsole(file=file, width=100)
 
         return self.rich_console_map[file_id]
 

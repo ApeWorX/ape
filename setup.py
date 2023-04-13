@@ -12,7 +12,7 @@ with open(here / "src" / "ape" / "__modules__.py", encoding="utf8") as modules_f
 extras_require = {
     "test": [  # `test` GitHub Action jobs uses this
         "pytest-xdist",  # multi-process runner
-        "pytest-cov",  # Coverage analyzer plugin
+        "pytest-cov>=4.0.0,<5",  # Coverage analyzer plugin
         "pytest-mock",  # For creating mocks
         "hypothesis>=6.2.0,<7.0",  # Strategy-based fuzzer
         "hypothesis-jsonschema==0.19.0",  # JSON Schema fuzzer extension

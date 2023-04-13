@@ -1,4 +1,5 @@
 import re
+import tempfile
 from pathlib import Path
 from typing import List, cast
 
@@ -18,8 +19,7 @@ from tests.functional.data.python import TRACE_RESPONSE
 
 TRANSACTION_HASH = "0x053cba5c12172654d894f66d5670bab6215517a94189a9ffc09bc40a589ec04d"
 LOCAL_TRACE = r"""
-Call trace for
-'0x([A-Fa-f0-9]{64})'
+Call trace for '0x([A-Fa-f0-9]{64})'
 tx\.origin=0x[a-fA-F0-9]{40}
 ContractA\.methodWithoutArguments\(\) -> 0x00..5174 \[\d+ gas\]
 ├── SYMBOL\.supercluster\(x=234444\) -> \[
@@ -36,8 +36,7 @@ ContractA\.methodWithoutArguments\(\) -> 0x00..5174 \[\d+ gas\]
 │         234545457847457457458457457457
 │       \]
 │     \] \[47236 gas\]
-├── SYMBOL\.methodB1\(lolol="ice-cream", dynamo=345457847457457458457457457\)
-│   \[166680 gas\]
+├── SYMBOL\.methodB1\(lolol="ice-cream", dynamo=345457847457457458457457457\) \[166680 gas\]
 │   ├── ContractC\.getSomeList\(\) -> \[
 │   │     3425311345134513461345134534531452345,
 │   │     111344445534535353,
@@ -55,8 +54,7 @@ ContractA\.methodWithoutArguments\(\) -> 0x00..5174 \[\d+ gas\]
 │   │     country=345457847457457458457457457,
 │   │     wings=ContractA
 │   │   \) \[1763 gas\]
-│   ├── ContractC\.methodC1\(windows95="simpler", jamaica=0, cardinal=ContractC\)
-│   │   \[72525 gas\]
+│   ├── ContractC\.methodC1\(windows95="simpler", jamaica=0, cardinal=ContractC\) \[72525 gas\]
 │   ├── ContractC\.methodC2\(\) \[24928 gas\]
 │   └── ContractC\.methodC2\(\) \[22928 gas\]
 ├── ContractC\.addressToValue\(tx.origin\) -> 0 \[2522 gas\]
@@ -67,16 +65,14 @@ ContractA\.methodWithoutArguments\(\) -> 0x00..5174 \[\d+ gas\]
 │   │     111344445534535353,
 │   │     993453434534534534534977788884443333
 │   │   \] \[731 gas\]
-│   └── ContractC\.methodC1\(windows95="simpler", jamaica=0, cardinal=ContractA\)
-│       \[24625 gas\]
+│   └── ContractC\.methodC1\(windows95="simpler", jamaica=0, cardinal=ContractA\) \[24625 gas\]
 └── SYMBOL\.methodB1\(lolol="snitches_get_stiches", dynamo=111\) \[48580 gas\]
     ├── ContractC\.getSomeList\(\) -> \[
     │     3425311345134513461345134534531452345,
     │     111344445534535353,
     │     993453434534534534534977788884443333
     │   \] \[731 gas\]
-    └── ContractC\.methodC1\(windows95="simpler", jamaica=111, cardinal=ContractA\)
-        \[44525 gas\]
+    └── ContractC\.methodC1\(windows95="simpler", jamaica=111, cardinal=ContractA\) \[44525 gas\]
 """
 
 
@@ -101,8 +97,8 @@ def parity_trace_response():
 
 
 @pytest.fixture
-def geth_receipt(contract_with_call_depth, owner, geth_provider):
-    return contract_with_call_depth.methodWithoutArguments(sender=owner)
+def geth_receipt(contract_with_call_depth_geth, owner, geth_provider):
+    return contract_with_call_depth_geth.methodWithoutArguments(sender=owner)
 
 
 @geth_process_test
@@ -316,11 +312,11 @@ def test_snapshot_and_revert(geth_provider, accounts, vyper_contract_container):
 @pytest.fixture
 def captrace(capsys):
     class CapTrace:
-        def read_trace(self, expected_start: str):
-            lines = capsys.readouterr().out.splitlines()
+        def read_trace(self, expected_start: str, file=None):
+            lines = file.readlines() if file else capsys.readouterr().out.splitlines()
             start_index = 0
             for index, line in enumerate(lines):
-                if line.strip() == expected_start:
+                if line.strip().startswith(expected_start):
                     start_index = index
                     break
 
@@ -333,9 +329,15 @@ def test_local_transaction_traces(geth_receipt, captrace):
     # NOTE: Strange bug in Rich where we can't use sys.stdout for testing tree output.
     # And we have to write to a file, close it, and then re-open it to see output.
     def run_test():
-        geth_receipt.show_trace()
-        lines = captrace.read_trace("Call trace for")
-        assert_rich_output(lines, LOCAL_TRACE)
+        with tempfile.TemporaryDirectory() as temp_dir:
+            # Use a tempfile to avoid terminal inconsistencies affecting output.
+            file_path = Path(temp_dir) / "temp"
+            with open(file_path, "w") as file:
+                geth_receipt.show_trace(file=file)
+
+            with open(file_path, "r") as file:
+                lines = captrace.read_trace("Call trace for", file=file)
+                assert_rich_output(lines, LOCAL_TRACE)
 
     run_test()
 
@@ -371,7 +373,9 @@ def assert_rich_output(rich_capture: List[str], expected: str):
         try:
             assert re.match(expected, actual), fail_message
         except AssertionError:
+            # Check if is a line-length discrepancy.
             raise  # Let assertion errors raise as normal.
+
         except Exception as err:
             pytest.fail(f"{fail_message}\n{err}")
 
