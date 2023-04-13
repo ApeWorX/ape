@@ -382,3 +382,11 @@ def assert_rich_output(rich_capture: List[str], expected: str):
     if expected_len > actual_len:
         rest = "\n".join(expected_lines[actual_len:])
         pytest.fail(f"Missing expected lines: {rest}")
+
+
+def test_custom_error(error_contract_geth, not_owner):
+    contract = error_contract_geth
+    with pytest.raises(contract.Unauthorized) as err:
+        contract.withdraw(sender=not_owner)
+
+    assert err.value.inputs == {"addr": not_owner.address, "counter": 123}
