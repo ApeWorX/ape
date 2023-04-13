@@ -225,7 +225,7 @@ class Receipt(ReceiptAPI):
         elif call_tree.contract_id.startswith("Transferring "):
             call_tree.method_id = f"to:{self.receiver}"
 
-        self.chain_manager._reports.show_gas(call_tree)
+        self.chain_manager._reports.show_gas(call_tree, file=file)
 
     def decode_logs(
         self,
