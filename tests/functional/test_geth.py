@@ -373,9 +373,7 @@ def assert_rich_output(rich_capture: List[str], expected: str):
         try:
             assert re.match(expected, actual), fail_message
         except AssertionError:
-            # Check if is a line-length discrepancy.
             raise  # Let assertion errors raise as normal.
-
         except Exception as err:
             pytest.fail(f"{fail_message}\n{err}")
 
