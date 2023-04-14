@@ -1,3 +1,4 @@
+import os
 from contextlib import contextmanager
 from pathlib import Path
 from typing import Any, Dict, List, Optional
@@ -143,7 +144,9 @@ class BaseProject(ProjectAPI):
             config_data["version"] = self.version
 
         contracts_folder = kwargs.get("contracts_folder") or self.contracts_folder
-        contracts_folder_config_item = str(contracts_folder).replace(str(self.path), "").strip("/")
+        contracts_folder_config_item = (
+            str(contracts_folder).replace(str(self.path), "").strip(os.path.sep)
+        )
         config_data["contracts_folder"] = contracts_folder_config_item
         self.config_file.parent.mkdir(parents=True, exist_ok=True)
         self.config_file.touch()
