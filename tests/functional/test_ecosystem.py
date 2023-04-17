@@ -227,3 +227,14 @@ def test_configure_default_txn_type(temp_config, ethereum):
         ethereum._default_network = "mainnet-fork"
         assert ethereum.default_transaction_type == TransactionType.STATIC
         ethereum._default_network = LOCAL_NETWORK_NAME
+
+
+@pytest.mark.parametrize("network_name", (LOCAL_NETWORK_NAME, "mainnet-fork", "mainnet_fork"))
+def test_gas_limit_local_networks(ethereum, network_name):
+    network = ethereum.get_network(network_name)
+    assert network.gas_limit == "max"
+
+
+def test_gas_limit_live_networks(ethereum):
+    network = ethereum.get_network("goerli")
+    assert network.gas_limit == "auto"

@@ -417,10 +417,11 @@ class EcosystemAPI(BaseInterfaceModel):
               :class:`~ape.api.networks.NetworkAPI`
         """
 
-        if network_name in self.networks:
-            return self.networks[network_name]
-        else:
-            raise NetworkNotFoundError(network_name)
+        name = network_name.replace("_", "-")
+        if name in self.networks:
+            return self.networks[name]
+
+        raise NetworkNotFoundError(network_name)
 
     def get_network_data(self, network_name: str) -> Dict:
         """
@@ -674,7 +675,7 @@ class NetworkAPI(BaseInterfaceModel):
 
     @property
     def _network_config(self) -> Dict:
-        return self.config.get(self.name, {})
+        return self.config.get(self.name.replace("-", "_"), {})
 
     @cached_property
     def gas_limit(self) -> GasLimit:
