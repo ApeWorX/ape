@@ -250,9 +250,7 @@ class EcosystemAPI(BaseInterfaceModel):
 
         Args:
             network_name (str): The name of the network to add.
-
-        Returns:
-            :class:`~ape.api.networks.NetworkAPI`
+            network (:class:`~ape.api.networks.NetworkAPI`): The network to add.
         """
         if network_name in self.networks:
             raise NetworkError(f"Unable to overwrite existing network '{network_name}'.")
@@ -419,10 +417,11 @@ class EcosystemAPI(BaseInterfaceModel):
               :class:`~ape.api.networks.NetworkAPI`
         """
 
-        if network_name in self.networks:
-            return self.networks[network_name]
-        else:
-            raise NetworkNotFoundError(network_name)
+        name = network_name.replace("_", "-")
+        if name in self.networks:
+            return self.networks[name]
+
+        raise NetworkNotFoundError(network_name)
 
     def get_network_data(self, network_name: str) -> Dict:
         """
@@ -676,7 +675,7 @@ class NetworkAPI(BaseInterfaceModel):
 
     @property
     def _network_config(self) -> Dict:
-        return self.config.get(self.name, {})
+        return self.config.get(self.name.replace("-", "_"), {})
 
     @cached_property
     def gas_limit(self) -> GasLimit:
