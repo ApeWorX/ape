@@ -251,9 +251,6 @@ class EcosystemAPI(BaseInterfaceModel):
         Args:
             network_name (str): The name of the network to add.
             network (:class:`~ape.api.networks.NetworkAPI`): The network to add.
-
-        Returns:
-            :class:`~ape.api.networks.NetworkAPI`
         """
         if network_name in self.networks:
             raise NetworkError(f"Unable to overwrite existing network '{network_name}'.")
