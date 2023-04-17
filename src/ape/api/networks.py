@@ -250,6 +250,7 @@ class EcosystemAPI(BaseInterfaceModel):
 
         Args:
             network_name (str): The name of the network to add.
+            network (:class:`~ape.api.networks.NetworkAPI`): The network to add.
 
         Returns:
             :class:`~ape.api.networks.NetworkAPI`
