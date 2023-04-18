@@ -7,7 +7,7 @@ from eth_tester.backends import PyEVMBackend  # type: ignore
 from eth_tester.exceptions import TransactionFailed  # type: ignore
 from eth_utils.exceptions import ValidationError
 from ethpm_types import HexBytes
-from laszyasd import LazyObject
+from lazyasd import LazyObject  # type: ignore
 from web3 import EthereumTesterProvider, Web3
 from web3.providers.eth_tester.defaults import API_ENDPOINTS
 from web3.types import TxParams
