@@ -2,9 +2,8 @@
 from pathlib import Path
 from typing import Dict
 
+import fastentrypoints  # type: ignore # noqa: F401
 from setuptools import find_packages, setup
-
-import fastentrypoint  # noqa
 
 here = Path(__file__).parent.absolute()
 packages_data: Dict = {}

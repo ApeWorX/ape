@@ -1,5 +1,5 @@
 [build-system]
-requires = ["setuptools>=51.1.1", "wheel", "setuptools_scm[toml]>=5.0"]
+requires = ["setuptools>=51.1.1", "wheel", "setuptools_scm[toml]>=5.0", "fastentrypoints"]
 
 [tool.mypy]
 exclude = ["build/", "dist/", "docs/", "tests/integration/cli/projects/"]
