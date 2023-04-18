@@ -7,6 +7,7 @@ from eth_tester.backends import PyEVMBackend  # type: ignore
 from eth_tester.exceptions import TransactionFailed  # type: ignore
 from eth_utils.exceptions import ValidationError
 from ethpm_types import HexBytes
+from lazyasd import LazyObject  # type: ignore
 from web3 import EthereumTesterProvider, Web3
 from web3.providers.eth_tester.defaults import API_ENDPOINTS
 from web3.types import TxParams
@@ -22,7 +23,7 @@ from ape.exceptions import (
 from ape.types import SnapshotID
 from ape.utils import gas_estimation_error_message
 
-CHAIN_ID = API_ENDPOINTS["eth"]["chainId"]()
+CHAIN_ID = LazyObject(lambda: API_ENDPOINTS["eth"]["chainId"](), globals(), "CHAIN_ID")
 
 
 class LocalProvider(TestProviderAPI, Web3Provider):
@@ -100,7 +101,7 @@ class LocalProvider(TestProviderAPI, Web3Provider):
         elif hasattr(self.web3, "eth"):
             chain_id = self.web3.eth.chain_id
         else:
-            chain_id = CHAIN_ID
+            chain_id = CHAIN_ID  # type: ignore
 
         self.cached_chain_id = chain_id
         return chain_id
