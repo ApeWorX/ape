@@ -28,6 +28,7 @@ from ape.exceptions import (
     ChainError,
     ConversionError,
     CustomError,
+    ProviderNotConnectedError,
     QueryEngineError,
     UnknownSnapshotError,
 )
@@ -1092,6 +1093,9 @@ class ContractCache(BaseManager):
             :class:`~ape.contracts.base.ContractInstance`
         """
 
+        if self.network_manager.active_provider is None:
+            raise ProviderNotConnectedError()
+
         if self.conversion_manager.is_type(address, AddressType):
             contract_address = cast(AddressType, address)
         else:
@@ -1111,7 +1115,10 @@ class ContractCache(BaseManager):
                 raise  # Current exception
 
         if not contract_type:
-            raise ChainError(f"Failed to get contract type for address '{contract_address}'.")
+            msg = f"Failed to get contract type for address '{contract_address}'."
+            if self.provider.network.explorer is None:
+                msg += " Try installing an explorer plugin, such as Etherscan."
+            raise ChainError(msg)
         elif not isinstance(contract_type, ContractType):
             raise TypeError(
                 f"Expected type '{ContractType.__name__}' for argument 'contract_type'."
