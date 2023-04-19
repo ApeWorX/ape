@@ -6,6 +6,7 @@ from functools import partial
 from pathlib import Path
 from typing import IO, Collection, Dict, Iterator, List, Optional, Set, Type, Union, cast
 
+import click
 import pandas as pd
 from ethpm_types import ContractType
 from evm_trace.gas import merge_reports
@@ -41,7 +42,7 @@ from ape.types import (
     GasReport,
     SnapshotID,
 )
-from ape.utils import BaseInterfaceModel, Colors, TraceStyles, parse_gas_table, singledispatchmethod
+from ape.utils import BaseInterfaceModel, TraceStyles, parse_gas_table, singledispatchmethod
 
 
 class BlockContainer(BaseManager):
@@ -1116,7 +1117,7 @@ class ContractCache(BaseManager):
                 msg += (
                     f" Current provider '{self.provider.name}' has no associated "
                     "explorer plugin. Try installing an explorer plugin using "
-                    f"{Colors.GREEN}ape plugins install etherscan{Colors.END}, "
+                    f"{click.style(text='ape plugins install etherscan', fg='green')}, "
                     "or using a network with explorer support."
                 )
             else:
