@@ -184,10 +184,9 @@ class LogFilter(BaseModel):
             stop_block=stop_block,
         )
 
-
-class ContractLog(BaseInterfaceModel):
+class BaseContractLog(BaseModel):
     """
-    An instance of a log from a contract.
+    Base class representing information relevant to an event instance itself.
     """
 
     event_name: str
@@ -198,6 +197,34 @@ class ContractLog(BaseInterfaceModel):
 
     event_arguments: Dict[str, Any]
     """The arguments to the event, including both indexed and non-indexed data."""
+
+    @validator("contract_address", pre=True)
+    def validate_address(cls, value):
+        from ape import convert
+
+        return convert(value, AddressType)
+
+    def __eq__(self, other: Any) -> bool:
+        if not isinstance(other, BaseContractLog):
+            return NotImplemented
+
+        if self.contract_address != other.contract_address or self.event_name != other.event_name:
+            return False
+
+        for k, v in self.event_arguments.items():
+            other_v = other.event_arguments.get(k)
+            if v is None or other_v is None:
+                continue  # Skip wildcard comparisons
+            if v != other_v:
+                return False
+
+        return True
+
+
+class ContractLog(BaseContractLog):
+    """
+    An instance of a log from a contract.
+    """
 
     transaction_hash: Any
     """The hash of the transaction containing this log."""
@@ -275,6 +302,21 @@ class ContractLog(BaseInterfaceModel):
     def get(self, item: str, default: Optional[Any] = None) -> Any:
         return self.event_arguments.get(item, default)
 
+class MockContractLog(BaseContractLog):
+    def __eq__(self, other: Any) -> bool:
+        if not isinstance(other, BaseContractLog):
+            return NotImplemented
+
+        if self.contract_address != other.contract_address or self.event_name != other.event_name:
+            return False
+
+        shared_keys = set(self.event_arguments.keys()) & set(other.event_arguments.keys())
+
+        for k in shared_keys:
+            if self.event_arguments[k] != other.event_arguments[k]:
+                return False
+
+        return True
 
 class ContractLogContainer(list):
     """
@@ -291,6 +333,9 @@ class ContractLogContainer(list):
                 if match:
                     found_events.append(log)
         return found_events
+
+    def __contains__(self, __o: object) -> bool:
+        return any(log == __o for log in self)
 
 
 __all__ = [

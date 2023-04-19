@@ -21,7 +21,7 @@ from ape.exceptions import (
     TransactionNotFoundError,
 )
 from ape.logging import logger
-from ape.types import AddressType, ContractLog, LogFilter
+from ape.types import AddressType, MockContractLog, BaseContractLog, ContractLog, LogFilter
 from ape.utils import ManagerAccessMixin, cached_property, singledispatchmethod
 
 
@@ -462,6 +462,19 @@ class ContractEvent(ManagerAccessMixin):
     def __len__(self):
         logs = self.provider.get_contract_logs(self.log_filter)
         return sum(1 for _ in logs)
+
+
+    def __call__(self, *args: Any, **kwargs: Any) -> "BaseContractLog":
+        event_args = dict(zip([input.name for input in self.abi.inputs], args))
+        event_args.update(kwargs)
+
+        log_data = {
+            field: event_args.get(field, None) for field in ContractLog.__fields__.keys()
+        }
+        log_data["address"] = self.contract.address
+        log_data["abi"] = self.abi
+
+        return MockContractLog(**log_data)
 
     def query(
         self,
