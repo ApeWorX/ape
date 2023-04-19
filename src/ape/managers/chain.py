@@ -41,7 +41,7 @@ from ape.types import (
     GasReport,
     SnapshotID,
 )
-from ape.utils import BaseInterfaceModel, TraceStyles, parse_gas_table, singledispatchmethod
+from ape.utils import BaseInterfaceModel, Colors, TraceStyles, parse_gas_table, singledispatchmethod
 
 
 class BlockContainer(BaseManager):
@@ -1113,7 +1113,14 @@ class ContractCache(BaseManager):
         if not contract_type:
             msg = f"Failed to get contract type for address '{contract_address}'."
             if self.provider.network.explorer is None:
-                msg += " Try installing an explorer plugin, such as Etherscan."
+                msg += (
+                    f" Current provider '{self.provider.name}' has no associated "
+                    "explorer plugin. Try installing an explorer plugin using "
+                    f"{Colors.GREEN}ape plugins install etherscan{Colors.END}, "
+                    "or using a network with explorer support."
+                )
+            else:
+                msg += " Contract may need verification."
             raise ChainError(msg)
         elif not isinstance(contract_type, ContractType):
             raise TypeError(

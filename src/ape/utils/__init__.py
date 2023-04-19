@@ -52,6 +52,8 @@ from ape.utils.testing import (
 )
 from ape.utils.trace import TraceStyles, parse_gas_table
 
+from .ansi_colors import Colors
+
 __all__ = [
     "abstractmethod",
     "add_padding_to_strings",
@@ -59,6 +61,7 @@ __all__ = [
     "BaseInterface",
     "BaseInterfaceModel",
     "cached_property",
+    "Colors",
     "DEFAULT_LOCAL_TRANSACTION_ACCEPTANCE_TIMEOUT",
     "DEFAULT_NUMBER_OF_TEST_ACCOUNTS",
     "DEFAULT_TEST_MNEMONIC",
