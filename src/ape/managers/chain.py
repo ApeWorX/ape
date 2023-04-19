@@ -28,7 +28,6 @@ from ape.exceptions import (
     ChainError,
     ConversionError,
     CustomError,
-    ProviderNotConnectedError,
     QueryEngineError,
     UnknownSnapshotError,
 )
@@ -1092,9 +1091,6 @@ class ContractCache(BaseManager):
         Returns:
             :class:`~ape.contracts.base.ContractInstance`
         """
-
-        if self.network_manager.active_provider is None:
-            raise ProviderNotConnectedError()
 
         if self.conversion_manager.is_type(address, AddressType):
             contract_address = cast(AddressType, address)
