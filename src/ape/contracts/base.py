@@ -463,7 +463,7 @@ class ContractEvent(ManagerAccessMixin):
         logs = self.provider.get_contract_logs(self.log_filter)
         return sum(1 for _ in logs)
 
-    def __call__(self, *args: Any, **kwargs: Any) -> "MockContractLog":
+    def __call__(self, *args: Any, **kwargs: Any) -> MockContractLog:
         # Create a dictionary from the positional arguments
         event_args = dict(zip((input.name for input in self.abi.inputs), args))
 
