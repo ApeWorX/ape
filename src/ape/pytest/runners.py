@@ -161,6 +161,18 @@ class PytestApeRunner(ManagerAccessMixin):
         if warnings and not self.config_wrapper.disable_warnings:
             reporter.stats["warnings"] = warnings
 
+    @pytest.hookimpl(tryfirst=True, hookwrapper=True)
+    def pytest_runtest_call(self, item):
+        if network_marker := item.get_closest_marker("use_network"):
+            if len(getattr(network_marker, "args", []) or []) != 1:
+                raise ValueError("`use_network` marker requires single network choice argument.")
+
+            with self.network_manager.parse_network_choice(network_marker.args[0]):
+                yield
+
+        else:
+            yield
+
     @pytest.hookimpl(trylast=True, hookwrapper=True)
     def pytest_collection_finish(self, session):
         """

@@ -1,3 +1,6 @@
+import pytest
+
+
 def test_provider(project, networks):
     """
     Tests that the network gets set from ape-config.yaml.
@@ -66,3 +69,13 @@ def test_call_method_excluded_from_config(accounts, contract):
     account = accounts[-4]
     receipt = contract.setAddress(account.address, sender=account)
     assert not receipt.failed
+
+
+@pytest.mark.use_network("ethereum:local:test")
+def test_switch_back_to_eth_tester(chain):
+    """
+    Test to verify the `use_network` marker works.
+    This test is in the geth project because that is the only test project
+    that has multiple providers.
+    """
+    assert chain.provider.name == "test"
