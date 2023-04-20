@@ -75,6 +75,11 @@ def pytest_configure(config):
     fixtures = PytestApeFixtures(config_wrapper, receipt_capture)
     config.pluginmanager.register(fixtures, "ape-fixtures")
 
+    # Add custom markers
+    config.addinivalue_line(
+        "markers", "use_network(choice): Run this test using the given network choice."
+    )
+
 
 def pytest_load_initial_conftests(early_config):
     """
