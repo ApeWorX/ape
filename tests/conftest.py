@@ -76,6 +76,7 @@ def chain():
 def project_folder():
     return PROJECT_FOLDER
 
+
 @pytest.fixture(scope="session")
 def contract():
     return ape.Contract
