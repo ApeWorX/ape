@@ -165,7 +165,7 @@ class PytestApeRunner(ManagerAccessMixin):
     def pytest_runtest_call(self, item):
         marker = item.get_closest_marker("use_network")
         if marker:
-            if not marker.args or len(marker.args) > 1:
+            if len(getattr(marker, "args", []) or []) != 1:
                 raise ValueError("`use_network` marker requires single network choice argument.")
 
             with self.network_manager.parse_network_choice(marker.args[0]):
