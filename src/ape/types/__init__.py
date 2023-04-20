@@ -337,8 +337,8 @@ class ContractLogContainer(list):
                     found_events.append(log)
         return found_events
 
-    def __contains__(self, __o: object) -> bool:
-        return any(log == __o for log in self)
+    def __contains__(self, val: Any) -> bool:
+        return any(log == val for log in self)
 
 
 __all__ = [
