@@ -277,7 +277,6 @@ def test_contract_two_events_with_same_name(
 def test_contract_decode_logs_no_abi(owner, contract_instance):
     receipt = contract_instance.setNumber(1, sender=owner)
     events = list(receipt.decode_logs())  # no abi
-    print(contract_instance.NumberChange(1))
     assert len(events) == 1
     assert events[0].event_name == "NumberChange"
     assert events[0].newNum == 1
