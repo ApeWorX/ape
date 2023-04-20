@@ -15,6 +15,9 @@ source venv/bin/activate
 pip install -e .'[dev]'
 ```
 
+##### NOTE: You might run into issues where you have a local install and are trying to work with a plugin pinned to a specific version. 
+[The easy solution](https://github.com/ApeWorX/ape/issues/90) to this is simple fetch the tags via `git fetch upstream --tags` and reinstall via `pip install ..` You will then have the correct version.
+
 ## Pre-Commit Hooks
 
 We use [`pre-commit`](https://pre-commit.com/) hooks to simplify linting and ensure consistent formatting among contributors.
