@@ -90,6 +90,11 @@ def test_transfer(sender, receiver, eth_tester_provider):
     ), f"difference: {abs(sender.balance - expected_sender_balance)}"
 
 
+def test_transfer_with_negative_value(sender, receiver):
+    with pytest.raises(AccountsError, match="Value cannot be negative."):
+        sender.transfer(receiver, value=-1)
+
+
 def test_transfer_without_value(sender, receiver):
     with pytest.raises(AccountsError, match=MISSING_VALUE_TRANSFER_ERR_MSG):
         sender.transfer(receiver)
