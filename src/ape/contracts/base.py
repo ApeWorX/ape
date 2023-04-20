@@ -476,10 +476,9 @@ class ContractEvent(ManagerAccessMixin):
         event_args.update(kwargs)  # type: ignore[arg-type]
 
         # Check that event_args.keys() is a subset of the expected input names
-        expected_input_names = {input.name for input in self.abi.inputs}
-        if not set(event_args.keys()).issubset(expected_input_names):
+        if unknown_input_names := set(event_args.keys()) - {input.name for input in self.abi.inputs}:
             raise ValueError(
-                f"Invalid argument keys found, expected a subset of {expected_input_names}"
+                f"Invalid argument keys found, expected a subset of {unknown_input_names}"
             )
 
         return MockContractLog(
