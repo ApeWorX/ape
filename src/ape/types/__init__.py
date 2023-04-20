@@ -214,8 +214,6 @@ class BaseContractLog(BaseInterfaceModel):
 
         for k, v in self.event_arguments.items():
             other_v = other.event_arguments.get(k)
-            if v is None or other_v is None:
-                continue  # Skip wildcard comparisons
             if v != other_v:
                 return False
 
@@ -314,6 +312,21 @@ class MockContractLog(BaseContractLog):
     of event arguments between a MockContractLog and a ContractLog instance.
     """
     def __eq__(self, other: Any) -> bool:
+         """
+        Check for equality between this instance and another BaseContractLog instance.
+
+        If the other object is not an instance of BaseContractLog, this method returns
+        NotImplemented. This triggers the Python interpreter to call the __eq__ method
+        on the other object (i.e., y.__eq__(x)) if it is defined, allowing for a custom
+        comparison. This behavior is leveraged by the MockContractLog class to handle
+        custom comparison logic between ContractLog and MockContractLog instances.
+
+        Args:
+            other (Any): The object to compare with this instance.
+
+        Returns:
+            bool: True if the two instances are equal, False otherwise.
+        """
         if not isinstance(other, ContractLog):
             return NotImplemented
 
@@ -324,7 +337,7 @@ class MockContractLog(BaseContractLog):
         #       but we skip those the user doesn't care to check
         for name, value in self.event_arguments.items():
             # Make sure `value` is not `None` (user explicitly set it `None`)
-            # NOTE: `other.event_arguments[name]` will raise `ItemError` only if ABIs don't match
+            # NOTE: `other.event_arguments[name]` will raise `IndexError` only if ABIs don't match
             if value and value != other.event_arguments[name]:
                 return False
 
