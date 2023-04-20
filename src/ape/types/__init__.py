@@ -184,7 +184,8 @@ class LogFilter(BaseModel):
             stop_block=stop_block,
         )
 
-class BaseContractLog(BaseModel):
+
+class BaseContractLog(BaseInterfaceModel):
     """
     Base class representing information relevant to an event instance itself.
     """
@@ -301,6 +302,7 @@ class ContractLog(BaseContractLog):
 
     def get(self, item: str, default: Optional[Any] = None) -> Any:
         return self.event_arguments.get(item, default)
+
 
 class MockContractLog(BaseContractLog):
     def __eq__(self, other: Any) -> bool:
