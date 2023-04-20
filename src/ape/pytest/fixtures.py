@@ -5,11 +5,11 @@ from typing import Dict, Iterator, List, Optional
 import pytest
 
 from ape.api import ReceiptAPI, TestAccountAPI
+from ape.contracts import ContractInstance
 from ape.logging import logger
 from ape.managers.chain import ChainManager
 from ape.managers.networks import NetworkManager
 from ape.managers.project import ProjectManager
-from ape.contracts import ContractInstance
 from ape.pytest.config import ConfigWrapper
 from ape.types import SnapshotID
 from ape.utils import ManagerAccessMixin, allow_disconnected, cached_property
