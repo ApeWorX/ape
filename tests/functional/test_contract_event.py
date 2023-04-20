@@ -78,14 +78,14 @@ def test_contract_logs_index_access(contract_instance, owner, assert_log_values)
     contract_instance.setNumber(2, sender=owner)
     contract_instance.setNumber(3, sender=owner)
 
-    assert_log_values(event_type[0], 1)
-    assert_log_values(event_type[1], 2)
-    assert_log_values(event_type[2], 3)
+    assert event_type[0] == contract_instance.NumberChange(newNum=1, prevNum=0)
+    assert event_type[1] == contract_instance.NumberChange(newNum=2, prevNum=1)
+    assert event_type[2] == contract_instance.NumberChange(newNum=3, prevNum=2)
 
     # Verify negative index access
-    assert_log_values(event_type[-3], 1)
-    assert_log_values(event_type[-2], 2)
-    assert_log_values(event_type[-1], 3)
+    assert event_type[-3] == contract_instance.NumberChange(newNum=1, prevNum=0)
+    assert event_type[-2] == contract_instance.NumberChange(newNum=2, prevNum=1)
+    assert event_type[-1] == contract_instance.NumberChange(newNum=3, prevNum=2)
 
 
 def test_contract_logs_splicing(contract_instance, owner, assert_log_values):
@@ -149,8 +149,7 @@ def test_contract_logs_range_by_address(
             ],
         }
     )
-    assert len(logs) == 1
-    assert logs[0].newAddress == test_accounts[1]
+    assert logs == [contract_instance.AddressChange(newAddress=test_accounts[1])]
 
 
 def test_contracts_log_multiple_addresses(
@@ -171,8 +170,8 @@ def test_contracts_log_multiple_addresses(
         )
     ]
     assert len(logs) == 2, "Unexpected number of logs"
-    assert_log_values(logs[0], 1)
-    assert_log_values(logs[1], 1)
+    assert logs[0] == contract_instance.NumberChange(newNum=1, prevNum=0)
+    assert logs[1] == another_instance.NumberChange(newNum=1, prevNum=0)
 
 
 def test_contract_logs_range_start_and_stop(contract_instance, owner, chain):
@@ -278,10 +277,7 @@ def test_contract_decode_logs_no_abi(owner, contract_instance):
     receipt = contract_instance.setNumber(1, sender=owner)
     events = list(receipt.decode_logs())  # no abi
     assert len(events) == 1
-    assert events == [contract_instance.NumberChange()]
-    assert events[0].event_name == "NumberChange"
-    assert events[0].newNum == 1
-    assert events[0].transaction_index == 0
+    assert events == [contract_instance.NumberChange(newNum=1)]
 
 
 def test_contract_log_container(owner, contract_instance):
@@ -300,14 +296,17 @@ def test_filter_events_with_same_abi(
     """
 
     receipt = contract_with_call_depth.emitLogWithSameInterfaceFromMultipleContracts(sender=owner)
+
+    assert contract_with_call_depth.OneOfMany(addr=owner.address) in receipt.events
+    assert middle_contract.OneOfMany(addr=contract_with_call_depth.address) in receipt.events
+    assert leaf_contract.OneOfMany(addr=contract_with_call_depth.address) in receipt.events
+
+    # Ensure each contract's event appears only once
     result_a = receipt.events.filter(contract_with_call_depth.OneOfMany)
-    assert len(result_a) == 1
-    assert result_a[0].addr == owner.address
+    assert result_a == [contract_with_call_depth.OneOfMany(addr=owner.address)]
 
     result_b = receipt.events.filter(middle_contract.OneOfMany)
-    assert len(result_b) == 1
-    assert result_b[0].addr == contract_with_call_depth.address
+    assert result_b == [middle_contract.OneOfMany(addr=contract_with_call_depth.address)]
 
     result_c = receipt.events.filter(leaf_contract.OneOfMany)
-    assert len(result_c) == 1
-    assert result_c[0].addr == contract_with_call_depth.address
+    assert result_c == [leaf_contract.OneOfMany(addr=contract_with_call_depth.address)]
