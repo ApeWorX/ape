@@ -304,19 +304,22 @@ class ContractLog(BaseContractLog):
 
 class MockContractLog(BaseContractLog):
     def __eq__(self, other: Any) -> bool:
-        if not isinstance(other, BaseContractLog):
+        if not isinstance(other, ContractLog):
             return NotImplemented
 
         if self.contract_address != other.contract_address or self.event_name != other.event_name:
             return False
 
-        shared_keys = set(self.event_arguments.keys()) & set(other.event_arguments.keys())
-
-        for k in shared_keys:
-            if self.event_arguments[k] != other.event_arguments[k]:
+        # NOTE: `self.event_arguments` contains a subset of items from `other.event_arguments`,
+        #       but we skip those the user doesn't care to check
+        for name, value in self.event_arguments.items():
+            # Make sure `value` is not `None` (user explicitly set it `None`)
+            # NOTE: `other.event_arguments[name]` will raise `ItemError` only if ABIs don't match
+            if value and value != other.event_arguments[name]:
                 return False
 
         return True
+
 
 class ContractLogContainer(list):
     """

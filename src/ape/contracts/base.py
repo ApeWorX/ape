@@ -21,7 +21,7 @@ from ape.exceptions import (
     TransactionNotFoundError,
 )
 from ape.logging import logger
-from ape.types import AddressType, MockContractLog, BaseContractLog, ContractLog, LogFilter
+from ape.types import AddressType, MockContractLog, ContractLog, LogFilter
 from ape.utils import ManagerAccessMixin, cached_property, singledispatchmethod
 
 
@@ -463,18 +463,29 @@ class ContractEvent(ManagerAccessMixin):
         logs = self.provider.get_contract_logs(self.log_filter)
         return sum(1 for _ in logs)
 
-
-    def __call__(self, *args: Any, **kwargs: Any) -> "BaseContractLog":
+    def __call__(self, *args: Any, **kwargs: Any) -> "MockContractLog":
+        # Create a dictionary from the positional arguments
         event_args = dict(zip([input.name for input in self.abi.inputs], args))
+
+        # Check for overwrites by looking for the intersection of the two key sets
+        overlapping_keys = set(event_args.keys()) & set(kwargs.keys())
+        if overlapping_keys:
+            raise ValueError(f"Overlapping keys found in arguments: {overlapping_keys}")
+
+        # Update event_args with keyword arguments
         event_args.update(kwargs)
 
-        log_data = {
-            field: event_args.get(field, None) for field in ContractLog.__fields__.keys()
-        }
-        log_data["address"] = self.contract.address
-        log_data["abi"] = self.abi
+        # Check that event_args.keys() is a subset of the expected input names
+        expected_input_names = {input.name for input in self.abi.inputs}
+        if not set(event_args.keys()).issubset(expected_input_names):
+            raise ValueError(f"Invalid argument keys found, expected a subset of {expected_input_names}")
 
-        return MockContractLog(**log_data)
+        return MockContractLog(
+            abi=self.abi,
+            address=self.contract.address,
+            event_arguments=event_args,
+        )
+
 
     def query(
         self,
