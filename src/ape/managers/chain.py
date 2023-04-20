@@ -6,6 +6,7 @@ from functools import partial
 from pathlib import Path
 from typing import IO, Collection, Dict, Iterator, List, Optional, Set, Type, Union, cast
 
+import click
 import pandas as pd
 from ethpm_types import ContractType
 from evm_trace.gas import merge_reports
@@ -1111,7 +1112,17 @@ class ContractCache(BaseManager):
                 raise  # Current exception
 
         if not contract_type:
-            raise ChainError(f"Failed to get contract type for address '{contract_address}'.")
+            msg = f"Failed to get contract type for address '{contract_address}'."
+            if self.provider.network.explorer is None:
+                msg += (
+                    f" Current provider '{self.provider.name}' has no associated "
+                    "explorer plugin. Try installing an explorer plugin using "
+                    f"{click.style(text='ape plugins install etherscan', fg='green')}, "
+                    "or using a network with explorer support."
+                )
+            else:
+                msg += " Contract may need verification."
+            raise ChainError(msg)
         elif not isinstance(contract_type, ContractType):
             raise TypeError(
                 f"Expected type '{ContractType.__name__}' for argument 'contract_type'."
