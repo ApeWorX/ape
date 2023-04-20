@@ -9,6 +9,7 @@ from ape.logging import logger
 from ape.managers.chain import ChainManager
 from ape.managers.networks import NetworkManager
 from ape.managers.project import ProjectManager
+from ape.contracts import ContractInstance
 from ape.pytest.config import ConfigWrapper
 from ape.types import SnapshotID
 from ape.utils import ManagerAccessMixin, allow_disconnected, cached_property
@@ -75,6 +76,13 @@ class PytestApeFixtures(ManagerAccessMixin):
         """
 
         return self.project_manager
+
+    @pytest.fixture(scope="session")
+    def on_chain_contract(ContractInstance):
+        """
+        Access contract types and dependencies.
+        """
+        return ContractInstance.address()
 
     def _isolation(self) -> Iterator[None]:
         """
