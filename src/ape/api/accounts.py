@@ -176,6 +176,8 @@ class AccountAPI(BaseInterfaceModel, BaseAddress):
 
         elif value:
             txn.value = self.conversion_manager.convert(value, int)
+            if txn.value < 0:
+                raise AccountsError("Value cannot be negative.")
 
         return self.call(txn, **kwargs)
 
