@@ -312,7 +312,7 @@ class MockContractLog(BaseContractLog):
     of event arguments between a MockContractLog and a ContractLog instance.
     """
     def __eq__(self, other: Any) -> bool:
-         """
+        """
         Check for equality between this instance and another BaseContractLog instance.
 
         If the other object is not an instance of BaseContractLog, this method returns
