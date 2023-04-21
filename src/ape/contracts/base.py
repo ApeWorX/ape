@@ -480,10 +480,16 @@ class ContractEvent(ManagerAccessMixin):
                 f"Invalid argument keys found, expected a subset of {unknown_input_names}"
             )
 
+        # Convert the arguments using the conversion manager
+        converted_args = {}
+        for key, value in event_args.items():
+            input_abi = next(input for input in self.abi.inputs if input.name == key)
+            converted_args[key] = self.conversion_manager.convert(value, input_abi.type)
+
         return MockContractLog(
             abi=self.abi,
             contract_address=self.contract.address,
-            event_arguments=event_args,
+            event_arguments=converted_args,  # Use the converted arguments
             event_name=self.abi.name,
         )
 
