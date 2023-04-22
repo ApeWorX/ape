@@ -847,7 +847,7 @@ class Web3Provider(ProviderAPI, ABC):
         if skip_trace:
             return self._send_call(txn, **kwargs)
 
-        track_gas = self._test_runner is not None and self._test_runner.gas_tracker.track_gas
+        track_gas = self._test_runner is not None and self._test_runner.gas_tracker.enabled
         show_trace = kwargs.pop("show_trace", False)
         show_gas = kwargs.pop("show_gas_report", False)
         needs_trace = track_gas or show_trace or show_gas

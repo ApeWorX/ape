@@ -1273,6 +1273,16 @@ class ReportManager(BaseManager):
         console = self._get_console(file=file)
         console.print(*rich_items)
 
+    @property
+    def track_gas(self) -> bool:
+        # TODO: Delete in 0.7; call _test_runner directly if needed.
+        return self._test_runner is not None and self._test_runner.gas_tracker.enabled
+
+    def append_gas(self, *args, **kwargs):
+        # TODO: Delete in 0.7 and have all plugins call `_test_runner.gas_tracker.append_gas()`.
+        if self._test_runner:
+            self._test_runner.gas_tracker.append_gas(*args, **kwargs)
+
     def _get_console(self, file: Optional[IO[str]] = None) -> RichConsole:
         if not file:
             return get_console()

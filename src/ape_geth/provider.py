@@ -481,7 +481,7 @@ class GethDev(BaseGethProvider, TestProviderAPI):
 
         show_gas = kwargs.pop("show_gas_report", False)
         show_trace = kwargs.pop("show_trace", False)
-        track_gas = self._test_runner is not None and self._test_runner.gas_tracker.track_gas
+        track_gas = self._test_runner is not None and self._test_runner.gas_tracker.enabled
         needs_trace = show_gas or show_trace or track_gas
         if not needs_trace:
             return self._eth_call(arguments)
