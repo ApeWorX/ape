@@ -481,7 +481,7 @@ class GethDev(BaseGethProvider, TestProviderAPI):
 
         show_gas = kwargs.pop("show_gas_report", False)
         show_trace = kwargs.pop("show_trace", False)
-        track_gas = self.chain_manager._reports.track_gas
+        track_gas = self._test_runner is not None and self._test_runner.gas_tracker.track_gas
         needs_trace = show_gas or show_trace or track_gas
         if not needs_trace:
             return self._eth_call(arguments)
@@ -511,12 +511,12 @@ class GethDev(BaseGethProvider, TestProviderAPI):
             # Optimization to enrich early and in_place=True.
             call_tree.enrich()
 
-        if track_gas and call_tree and receiver is not None:
+        if track_gas and call_tree and receiver is not None and self._test_runner is not None:
             # Gas report being collected, likely for showing a report
             # at the end of a test run.
             # Use `in_place=False` in case also `show_trace=True`
             enriched_call_tree = call_tree.enrich(in_place=False)
-            self.chain_manager._reports.append_gas(enriched_call_tree, receiver)
+            self._test_runner.gas_tracker.append_gas(enriched_call_tree, receiver)
 
         if show_gas:
             enriched_call_tree = call_tree.enrich(in_place=False)

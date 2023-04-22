@@ -9,7 +9,6 @@ from typing import IO, Collection, Dict, Iterator, List, Optional, Set, Type, Un
 import click
 import pandas as pd
 from ethpm_types import ContractType
-from evm_trace.gas import merge_reports
 from rich import get_console
 from rich.console import Console as RichConsole
 
@@ -34,15 +33,8 @@ from ape.exceptions import (
 )
 from ape.logging import logger
 from ape.managers.base import BaseManager
-from ape.types import (
-    AddressType,
-    BlockID,
-    CallTreeNode,
-    ContractFunctionPath,
-    GasReport,
-    SnapshotID,
-)
-from ape.utils import BaseInterfaceModel, TraceStyles, parse_gas_table, singledispatchmethod
+from ape.types import AddressType, BlockID, CallTreeNode, SnapshotID
+from ape.utils import BaseInterfaceModel, TraceStyles, singledispatchmethod
 
 
 class BlockContainer(BaseManager):
@@ -1250,9 +1242,6 @@ class ReportManager(BaseManager):
     **NOTE**: This class is not part of the public API.
     """
 
-    track_gas: bool = False
-    gas_exclusions: List[ContractFunctionPath] = []
-    session_gas_report: Optional[GasReport] = None
     rich_console_map: Dict[str, RichConsole] = {}
 
     def show_trace(
@@ -1277,35 +1266,12 @@ class ReportManager(BaseManager):
         console.print(root)
 
     def show_gas(self, call_tree: CallTreeNode, file: Optional[IO[str]] = None):
-        console = self._get_console(file)
         tables = call_tree.as_gas_tables()
-        console.print(*tables)
+        self.echo(*tables)
 
-    def show_session_gas(
-        self,
-        file: Optional[IO[str]] = None,
-    ) -> bool:
-        if not self.session_gas_report:
-            return False
-
-        tables = parse_gas_table(self.session_gas_report)
-        console = self._get_console(file)
-        console.print(*tables)
-        return True
-
-    def append_gas(
-        self,
-        call_tree: CallTreeNode,
-        contract_address: AddressType,
-    ):
-        contract_type = self.chain_manager.contracts.get(contract_address)
-        if not contract_type:
-            # Skip unknown contracts.
-            return
-
-        gas_report = call_tree.get_gas_report(exclude=self.gas_exclusions)
-        session_report = self.session_gas_report or {}
-        self.session_gas_report = merge_reports(session_report, gas_report)
+    def echo(self, *rich_items, file: Optional[IO[str]] = None):
+        console = self._get_console(file=file)
+        console.print(*rich_items)
 
     def _get_console(self, file: Optional[IO[str]] = None) -> RichConsole:
         if not file:

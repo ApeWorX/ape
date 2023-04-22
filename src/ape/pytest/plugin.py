@@ -7,7 +7,9 @@ from ape import networks, project
 from ape.logging import LogLevel, logger
 from ape.pytest.config import ConfigWrapper
 from ape.pytest.fixtures import PytestApeFixtures, ReceiptCapture
+from ape.pytest.gas import GasTracker
 from ape.pytest.runners import PytestApeRunner
+from ape.utils import ManagerAccessMixin
 
 
 def pytest_addoption(parser):
@@ -63,13 +65,17 @@ def pytest_configure(config):
 
     config_wrapper = ConfigWrapper(config)
     receipt_capture = ReceiptCapture(config_wrapper)
+    gas_tracker = GasTracker(config_wrapper=config_wrapper)
 
     # Enable verbose output if stdout capture is disabled
     config.option.verbose = config.getoption("capture") == "no"
 
     # Register the custom Ape test runner
-    session = PytestApeRunner(config_wrapper, receipt_capture)
-    config.pluginmanager.register(session, "ape-test")
+    runner = PytestApeRunner(config_wrapper, receipt_capture, gas_tracker)
+    config.pluginmanager.register(runner, "ape-test")
+
+    # Inject runner for access to gas and coverage trackers.
+    ManagerAccessMixin._test_runner = runner
 
     # Include custom fixtures for project, accounts etc.
     fixtures = PytestApeFixtures(config_wrapper, receipt_capture)
