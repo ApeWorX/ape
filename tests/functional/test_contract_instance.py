@@ -662,3 +662,13 @@ def test_get_error_by_signature(error_contract):
     actual = error_contract.get_error_by_signature(signature)
     expected = error_contract.Unauthorized
     assert actual == expected
+
+
+def test_source_path(project_with_contract, owner):
+    contracts_folder = project_with_contract.contracts_folder
+    contract = project_with_contract.contracts["Contract"]
+    contract_instance = owner.deploy(project_with_contract.get_contract("Contract"))
+    expected = contracts_folder / contract.source_id
+
+    assert contract_instance.source_path.is_file()
+    assert contract_instance.source_path == expected
