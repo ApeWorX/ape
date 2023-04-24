@@ -11,6 +11,7 @@ from ape.logging import LogLevel
 from ape.pytest.config import ConfigWrapper
 from ape.pytest.contextmanagers import RevertsContextManager
 from ape.pytest.fixtures import ReceiptCapture
+from ape.pytest.gas import GasTracker
 from ape.utils import ManagerAccessMixin
 from ape_console._cli import console
 
@@ -20,14 +21,17 @@ class PytestApeRunner(ManagerAccessMixin):
         self,
         config_wrapper: ConfigWrapper,
         receipt_capture: ReceiptCapture,
+        gas_tracker: GasTracker,
     ):
         self.config_wrapper = config_wrapper
         self.receipt_capture = receipt_capture
         self._provider_is_connected = False
-        ape.reverts = RevertsContextManager  # type: ignore
 
         # Ensure the gas report starts off None for this runner.
-        self.chain_manager._reports.session_gas_report = None
+        gas_tracker.session_gas_report = None
+        self.gas_tracker = gas_tracker
+
+        ape.reverts = RevertsContextManager  # type: ignore
 
     @property
     def _provider_context(self) -> ProviderContextManager:
@@ -203,7 +207,7 @@ class PytestApeRunner(ManagerAccessMixin):
             )
             return
 
-        if not self.chain_manager._reports.show_session_gas():
+        if not self.gas_tracker.show_session_gas():
             terminalreporter.write_line(
                 f"{LogLevel.WARNING.name}: No gas usage data found.", yellow=True
             )
@@ -217,4 +221,4 @@ class PytestApeRunner(ManagerAccessMixin):
         #  which may run pytest many times in-process.
         self.receipt_capture.clear()
         self.chain_manager.contracts.clear_local_caches()
-        self.chain_manager._reports.session_gas_report = None
+        self.gas_tracker.session_gas_report = None
