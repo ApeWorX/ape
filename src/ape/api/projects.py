@@ -400,6 +400,8 @@ class DependencyAPI(BaseInterfaceModel):
                     version = uri_str.split("/")[-1]
                     dependency["github"] = uri_str.replace(f"/releases/tag/{version}", "")
                     dependency["github"] = dependency["github"].replace("https://github.com/", "")
+
+                    # NOTE: If version fails, the dependency system will automatically try `ref`.
                     dependency["version"] = version
 
                 elif uri_str.startswith("file://"):
