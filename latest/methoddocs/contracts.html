@@ -97,6 +97,7 @@
 <li class="toctree-l1 current"><a class="current reference internal" href="#">ape.contracts</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#ape.contracts.base.ContractTypeWrapper"><code class="docutils literal notranslate"><span class="pre">ContractTypeWrapper</span></code></a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#ape.contracts.base.ContractTypeWrapper.decode_input"><code class="docutils literal notranslate"><span class="pre">ContractTypeWrapper.decode_input()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#ape.contracts.base.ContractTypeWrapper.source_path"><code class="docutils literal notranslate"><span class="pre">ContractTypeWrapper.source_path</span></code></a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="#ape.contracts.base.ContractInstance"><code class="docutils literal notranslate"><span class="pre">ContractInstance</span></code></a><ul>
@@ -113,7 +114,6 @@
 <li class="toctree-l2"><a class="reference internal" href="#ape.contracts.base.ContractContainer"><code class="docutils literal notranslate"><span class="pre">ContractContainer</span></code></a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#ape.contracts.base.ContractContainer.at"><code class="docutils literal notranslate"><span class="pre">ContractContainer.at()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ape.contracts.base.ContractContainer.deployments"><code class="docutils literal notranslate"><span class="pre">ContractContainer.deployments</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="#ape.contracts.base.ContractContainer.source_path"><code class="docutils literal notranslate"><span class="pre">ContractContainer.source_path</span></code></a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="#ape.contracts.base.ContractEvent"><code class="docutils literal notranslate"><span class="pre">ContractEvent</span></code></a><ul>
@@ -185,6 +185,16 @@ index as its key.</p>
 <dd class="field-odd"><p>Tuple[str, Dict[str, Any]]</p>
 </dd>
 </dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="ape.contracts.base.ContractTypeWrapper.source_path">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">source_path</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Path</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#ape.contracts.base.ContractTypeWrapper.source_path" title="Permalink to this definition"></a></dt>
+<dd><p>Returns the path to the local contract if determined that this container
+belongs to the active project by cross checking source_id.</p>
+<p>WARN: The will return a path if the contract has the same
+source ID as one in the current project. That does not necessarily mean
+they are the same contract, however.</p>
 </dd></dl>
 
 </dd></dl>
@@ -390,16 +400,6 @@ available. Defaults to <code class="docutils literal notranslate"><span class="p
 <span class="n">my_contract</span> <span class="o">=</span> <span class="n">project</span><span class="o">.</span><span class="n">MyContract</span><span class="o">.</span><span class="n">deployments</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
 </pre></div>
 </div>
-</dd></dl>
-
-<dl class="py property">
-<dt class="sig sig-object py" id="ape.contracts.base.ContractContainer.source_path">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">source_path</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Path</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#ape.contracts.base.ContractContainer.source_path" title="Permalink to this definition"></a></dt>
-<dd><p>Returns the path to the local contract if determined that this container
-belongs to the active project by cross checking source_id.</p>
-<p>WARN: The will return a path if the contract has the same
-source ID as one in the current project. That does not necessarily mean
-they are the same contract, however.</p>
 </dd></dl>
 
 </dd></dl>
