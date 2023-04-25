@@ -1,10 +1,13 @@
 from pathlib import Path
-from typing import Dict, List, Optional, Set
+from typing import Dict, Iterator, List, Optional, Set, Tuple
 
-from ethpm_types import ContractType
+from ethpm_types import ContractType, HexBytes
+from evm_trace.geth import TraceFrame as EvmTraceFrame
+from evm_trace.geth import create_call_node_data
 from semantic_version import Version  # type: ignore
 
 from ape.exceptions import ContractLogicError
+from ape.types.trace import ContractSource, SourceTraceback, TraceFrame
 from ape.utils import BaseInterfaceModel, abstractmethod, raises_not_implemented
 
 
@@ -125,3 +128,35 @@ class CompilerAPI(BaseInterfaceModel):
         """
 
         return err
+
+    @raises_not_implemented
+    def trace_source(  # type: ignore[empty-body]
+        self, contract_type: ContractType, trace: Iterator[TraceFrame], calldata: HexBytes
+    ) -> SourceTraceback:
+        """
+        Get a source-traceback for the given contract type.
+        The source traceback object contains all the control paths taken in the transaction.
+        When available, source-code location information is accessible from the object.
+
+        Args:
+            contract_type (``ContractType``): A contract type that was created by this compiler.
+            trace (Iterator[:class:`~ape.types.trace.TraceFrame`]): The resulting frames from
+              executing a function defined in the given contract type.
+            calldata (``HexBytes``): Calldata passed to the top-level call.
+
+        Returns:
+            :class:`~ape.types.trace.SourceTraceback`
+        """
+
+    def _create_contract_from_call(
+        self, frame: TraceFrame
+    ) -> Tuple[Optional[ContractSource], HexBytes]:
+        evm_frame = EvmTraceFrame(**frame.raw)
+        data = create_call_node_data(evm_frame)
+        calldata = data["calldata"]
+        address = self.provider.network.ecosystem.decode_address(data["address"])
+        if address not in self.chain_manager.contracts:
+            return None, calldata
+
+        called_contract = self.chain_manager.contracts[address]
+        return self.project_manager._create_contract_source(called_contract), calldata

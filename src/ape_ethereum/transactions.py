@@ -9,14 +9,14 @@ from eth_account._utils.legacy_transactions import (
     serializable_unsigned_transaction_from_dict,
 )
 from eth_utils import decode_hex, encode_hex, keccak, to_hex, to_int
-from ethpm_types import HexBytes
+from ethpm_types import ContractType, HexBytes
 from ethpm_types.abi import EventABI, MethodABI
 from pydantic import BaseModel, Field, root_validator, validator
 
 from ape.api import ReceiptAPI, TransactionAPI
 from ape.contracts import ContractEvent
 from ape.exceptions import OutOfGasError, SignatureError, TransactionError
-from ape.types import CallTreeNode, ContractLog, ContractLogContainer
+from ape.types import CallTreeNode, ContractLog, ContractLogContainer, SourceTraceback
 from ape.utils import cached_property
 
 
@@ -149,23 +149,46 @@ class Receipt(ReceiptAPI):
 
     @cached_property
     def call_tree(self) -> Optional[CallTreeNode]:
+        if self.receiver:
+            return self.provider.get_call_tree(self.txn_hash)
+
+        # Not an function invoke
+        return None
+
+    @cached_property
+    def contract_type(self) -> Optional[ContractType]:
         if not self.receiver:
-            # Not an function invoke
             return None
 
-        return self.provider.get_call_tree(self.txn_hash)
+        return self.chain_manager.contracts.get(self.receiver)
 
     @cached_property
     def method_called(self) -> Optional[MethodABI]:
-        contract_type = self.chain_manager.contracts.get(self.receiver)
-        if not contract_type:
+        if not self.contract_type:
             return None
 
         method_id = self.data[:4]
-        if method_id not in contract_type.methods:
+        if method_id not in self.contract_type.methods:
             return None
 
-        return contract_type.methods[method_id]
+        return self.contract_type.methods[method_id]
+
+    @property
+    def source_traceback(self) -> SourceTraceback:
+        contract_type = self.contract_type
+        if not contract_type or not contract_type.source_id:
+            return SourceTraceback.parse_obj([])
+
+        ext = f".{contract_type.source_id.split('.')[-1]}"
+        if ext not in self.compiler_manager.registered_compilers:
+            return SourceTraceback.parse_obj([])
+
+        compiler = self.compiler_manager.registered_compilers[ext]
+
+        try:
+            return compiler.trace_source(contract_type, self.trace, HexBytes(self.data))
+        except NotImplementedError:
+            return SourceTraceback.parse_obj([])
 
     def raise_for_status(self):
         if self.gas_limit is not None and self.ran_out_of_gas:
@@ -226,6 +249,11 @@ class Receipt(ReceiptAPI):
             call_tree.method_id = f"to:{self.receiver}"
 
         self.chain_manager._reports.show_gas(call_tree, file=file)
+
+    def show_source_traceback(self, file: IO[str] = sys.stdout):
+        self.chain_manager._reports.show_source_traceback(
+            self.source_traceback, file=file, failing=self.failed
+        )
 
     def decode_logs(
         self,

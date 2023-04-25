@@ -16,6 +16,7 @@ from ape.exceptions import APINotImplementedError, ProjectError
 from ape.logging import logger
 from ape.managers.base import BaseManager
 from ape.managers.project.types import ApeProject, BrownieProject
+from ape.types.trace import ContractSource
 from ape.utils import get_relative_path
 
 
@@ -580,6 +581,9 @@ class ProjectManager(BaseManager):
         ext = path.suffix or None
 
         def find_in_dir(dir_path: Path) -> Optional[Path]:
+            if not dir_path.is_dir():
+                return None
+
             for file_path in dir_path.iterdir():
                 if file_path.is_dir():
                     result = find_in_dir(file_path)
@@ -725,6 +729,29 @@ class ProjectManager(BaseManager):
             destination.unlink()
 
         destination.write_text(artifact.json())
+
+    def _create_contract_source(self, contract_type: ContractType) -> Optional[ContractSource]:
+        source_id = contract_type.source_id
+        if not source_id:
+            return None
+
+        src = self._lookup_source(source_id)
+        if not src:
+            return None
+
+        source_path = self.lookup_path(source_id)
+        if not source_path:
+            return None
+
+        return ContractSource(contract_type=contract_type, source=src, source_path=source_path)
+
+    def _lookup_source(self, source_id: str) -> Optional[Source]:
+        source_path = self.lookup_path(source_id)
+        if source_path and source_path.is_file():
+            result = self.local_project._create_source_dict(source_path, self.contracts_folder)
+            return next(iter(result.values())) if result else None
+
+        return None
 
     def _get_contract(self, name: str) -> Optional[ContractContainer]:
         if name in self.contracts:

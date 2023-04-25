@@ -756,7 +756,7 @@ class ContractInstance(BaseAddress, ContractTypeWrapper):
         if not self._cached_receipt and self.txn_hash:
             try:
                 receipt = self.chain_manager.get_receipt(self.txn_hash)
-            except TransactionNotFoundError:
+            except (TransactionNotFoundError, ValueError):
                 return None
 
             self._cached_receipt = receipt

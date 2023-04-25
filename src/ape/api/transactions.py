@@ -19,7 +19,13 @@ from ape.exceptions import (
     TransactionNotFoundError,
 )
 from ape.logging import logger
-from ape.types import AddressType, ContractLogContainer, TraceFrame, TransactionSignature
+from ape.types import (
+    AddressType,
+    ContractLogContainer,
+    SourceTraceback,
+    TraceFrame,
+    TransactionSignature,
+)
 from ape.utils import BaseInterfaceModel, abstractmethod, cached_property, raises_not_implemented
 
 if TYPE_CHECKING:
@@ -428,6 +434,15 @@ class ReceiptAPI(BaseInterfaceModel):
 
         return output
 
+    @property
+    @raises_not_implemented
+    def source_traceback(self) -> SourceTraceback:  # type: ignore[empty-body]
+        """
+        A pythonic style traceback for both failing and non-failing receipts.
+        Requires a provider that implements
+        :meth:~ape.api.providers.ProviderAPI.get_transaction_trace`.
+        """
+
     @raises_not_implemented
     def show_trace(self, verbose: bool = False, file: IO[str] = sys.stdout):
         """
@@ -443,6 +458,14 @@ class ReceiptAPI(BaseInterfaceModel):
     def show_gas_report(self, file: IO[str] = sys.stdout):
         """
         Display a gas report for the calls made in this transaction.
+        """
+
+    @raises_not_implemented
+    def show_source_traceback(self):
+        """
+        Show a receipt traceback mapping to lines in the source code.
+        Only works when the contract type and source code are both available,
+        like in local projects.
         """
 
     def track_gas(self):

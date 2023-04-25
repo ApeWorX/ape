@@ -28,12 +28,13 @@ from ape.exceptions import (
     ChainError,
     ConversionError,
     CustomError,
+    ProviderNotConnectedError,
     QueryEngineError,
     UnknownSnapshotError,
 )
 from ape.logging import logger
 from ape.managers.base import BaseManager
-from ape.types import AddressType, BlockID, CallTreeNode, SnapshotID
+from ape.types import AddressType, BlockID, CallTreeNode, SnapshotID, SourceTraceback
 from ape.utils import BaseInterfaceModel, TraceStyles, singledispatchmethod
 
 
@@ -604,7 +605,7 @@ class TransactionHistory(BaseManager):
         to retrieve it.
 
         Args:
-            transaction_hash (str): The hash of the transaction.
+            account_or_hash (str): The hash of the transaction.
 
         Returns:
             :class:`~ape.api.transactions.ReceiptAPI`: The receipt.
@@ -615,15 +616,22 @@ class TransactionHistory(BaseManager):
             return self._get_account_history(address)
         except Exception:
             # Use Transaction hash
-            receipt = self._hash_to_receipt_map.get(account_or_hash)
-            if not receipt:
-                # TODO: Replace with query manager once supports receipts
-                #  instead of transactions.
-                # TODO: Add timeout = 0 once in API method to not wait for txns
-                receipt = self.provider.get_receipt(account_or_hash)
-                self.append(receipt)
+            try:
+                return self._get_receipt(account_or_hash)
+            except Exception:
+                pass
 
-            return receipt
+            # If we get here, we failed to get an account or receipt.
+            # Raise top-level exception.
+            raise
+
+    def _get_receipt(self, txn_hash: str) -> ReceiptAPI:
+        receipt = self._hash_to_receipt_map.get(txn_hash)
+        if not receipt:
+            receipt = self.provider.get_receipt(txn_hash, timeout=0)
+            self.append(receipt)
+
+        return receipt
 
     def append(self, txn_receipt: ReceiptAPI):
         """
@@ -1283,6 +1291,13 @@ class ReportManager(BaseManager):
         if self._test_runner:
             self._test_runner.gas_tracker.append_gas(*args, **kwargs)
 
+    def show_source_traceback(
+        self, traceback: SourceTraceback, file: Optional[IO[str]] = None, failing: bool = True
+    ):
+        console = self._get_console(file)
+        style = "red" if failing else None
+        console.print(str(traceback), style=style)
+
     def _get_console(self, file: Optional[IO[str]] = None) -> RichConsole:
         if not file:
             return get_console()
@@ -1329,11 +1344,16 @@ class ChainManager(BaseManager):
         """
         A mapping of transactions from the active session to the account responsible.
         """
-        if self.chain_id not in self._transaction_history_map:
-            history = TransactionHistory()
-            self._transaction_history_map[self.chain_id] = history
+        try:
+            chain_id = self.chain_id
+        except ProviderNotConnectedError:
+            return TransactionHistory()  # Empty list.
 
-        return self._transaction_history_map[self.chain_id]
+        if chain_id not in self._transaction_history_map:
+            history = TransactionHistory()
+            self._transaction_history_map[chain_id] = history
+
+        return self._transaction_history_map[chain_id]
 
     @property
     def chain_id(self) -> int:

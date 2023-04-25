@@ -5,6 +5,7 @@ from collections import deque
 from functools import cached_property
 from inspect import getframeinfo, stack
 from pathlib import Path
+from types import CodeType, TracebackType
 from typing import TYPE_CHECKING, Any, Dict, Iterator, List, Optional
 
 import click
@@ -19,7 +20,7 @@ if TYPE_CHECKING:
     from ape.api.networks import NetworkAPI
     from ape.api.providers import SubprocessProvider
     from ape.api.transactions import TransactionAPI
-    from ape.types import AddressType, BlockID, SnapshotID, TraceFrame
+    from ape.types import AddressType, BlockID, SnapshotID, SourceTraceback, TraceFrame
 
 
 class ApeException(Exception):
@@ -112,8 +113,23 @@ class TransactionError(ContractError):
         self.txn = txn
         self.trace = trace
         self.contract_address = contract_address
+        self.source_traceback: Optional["SourceTraceback"] = None
         ex_message = f"({code}) {message}" if code else message
+
+        # Finalizes expected revert message.
         super().__init__(ex_message)
+
+        if not txn:
+            return
+
+        ape_tb = _get_ape_traceback(self, txn)
+        if not ape_tb:
+            return
+
+        self.source_traceback = ape_tb
+        py_tb = _get_custom_python_traceback(self, txn, ape_tb)
+        if py_tb:
+            self.__traceback__ = py_tb
 
 
 class VirtualMachineError(TransactionError):
@@ -532,9 +548,10 @@ def handle_ape_exception(err: ApeException, base_paths: List[Path]) -> bool:
     an exception on the exc-stack.
 
     Args:
-        err (:class:`~ape.exceptions.ApeException`): The transaction error
+        err (:class:`~ape.exceptions.TransactionError`): The transaction error
           being handled.
-        base_paths (List[Path]): Source base paths for allowed frames.
+        base_paths (Optional[List[Path]]): Optionally include additional
+          source-path prefixes to use when finding relevant frames.
 
     Returns:
         bool: ``True`` if outputted something.
@@ -621,3 +638,81 @@ class CustomError(ContractLogicError):
         The name of the error.
         """
         return self.abi.name
+
+
+def _get_ape_traceback(err: TransactionError, txn: "TransactionAPI") -> Optional["SourceTraceback"]:
+    receipt = txn.receipt
+    if not receipt:
+        return None
+
+    try:
+        ape_traceback = receipt.source_traceback
+    except (ApeException, NotImplementedError):
+        return None
+
+    if ape_traceback is None or not len(ape_traceback):
+        return None
+
+    return ape_traceback
+
+
+def _get_custom_python_traceback(
+    err: TransactionError, txn: "TransactionAPI", ape_traceback: "SourceTraceback"
+) -> Optional[TracebackType]:
+    # Manipulate python traceback to show lines from contract.
+    # Help received from Jinja lib:
+    #  https://github.com/pallets/jinja/blob/main/src/jinja2/debug.py#L142
+
+    _, exc_value, tb = sys.exc_info()
+    depth = None
+    idx = len(ape_traceback) - 1
+    frames = []
+    project_path = txn.project_manager.path.as_posix()
+    while tb is not None:
+        if not tb.tb_frame.f_code.co_filename.startswith(project_path):
+            # Ignore frames outside the project.
+            # This allows both contract code an scripts to appear.
+            tb = tb.tb_next
+            continue
+
+        frames.append(tb)
+        tb = tb.tb_next
+
+    while (depth is None or depth > 1) and idx >= 0:
+        exec_item = ape_traceback[idx]
+        if depth is not None and exec_item.depth >= depth:
+            # Wait for decreasing depth.
+            continue
+
+        depth = exec_item.depth
+        lineno = exec_item.begin_lineno
+        if lineno is None:
+            continue
+
+        filename = exec_item.source_path.as_posix()
+
+        # Raise an exception at the correct line number.
+        py_code: CodeType = compile(
+            "\n" * (lineno - 1) + "raise __ape_exception__", filename, "exec"
+        )
+        py_code = py_code.replace(co_name=exec_item.closure.name)
+
+        # Execute the new code to get a new (fake) tb with contract source info.
+        try:
+            exec(py_code, {"__ape_exception__": err}, {})
+        except BaseException:
+            fake_tb = sys.exc_info()[2].tb_next  # type: ignore
+            if isinstance(fake_tb, TracebackType):
+                frames.append(fake_tb)
+
+        idx -= 1
+
+    if not frames:
+        return None
+
+    tb_next = None
+    for tb in frames:
+        tb.tb_next = tb_next
+        tb_next = tb
+
+    return frames[-1]
