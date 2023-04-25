@@ -1267,7 +1267,7 @@ class ReportManager(BaseManager):
 
     def show_gas(self, call_tree: CallTreeNode, file: Optional[IO[str]] = None):
         tables = call_tree.as_gas_tables()
-        self.echo(*tables)
+        self.echo(*tables, file=file)
 
     def echo(self, *rich_items, file: Optional[IO[str]] = None):
         console = self._get_console(file=file)
