@@ -114,6 +114,7 @@ class BaseProject(ProjectAPI):
         """
         All the source files in the project.
         Excludes files with extensions that don't have a registered compiler.
+
         Returns:
             List[pathlib.Path]: A list of a source file paths in the project.
         """
