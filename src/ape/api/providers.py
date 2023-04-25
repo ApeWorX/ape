@@ -766,7 +766,7 @@ class Web3Provider(ProviderAPI, ABC):
         except MethodUnavailable as err:
             # The user likely should be using a more-catered plugin.
             raise APINotImplementedError(
-                "eth_maxPriorityFeePerGas not supported in this RPC. " "Please specify manually."
+                "eth_maxPriorityFeePerGas not supported in this RPC. Please specify manually."
             ) from err
 
     def get_block(self, block_id: BlockID) -> BlockAPI:
