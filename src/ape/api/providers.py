@@ -4,11 +4,11 @@ import datetime
 import logging
 import platform
 import shutil
-from copy import copy
 import sys
 import time
 from abc import ABC
 from concurrent.futures import ThreadPoolExecutor
+from copy import copy
 from itertools import tee
 from logging import FileHandler, Formatter, Logger, getLogger
 from pathlib import Path
@@ -766,8 +766,7 @@ class Web3Provider(ProviderAPI, ABC):
         except MethodUnavailable as err:
             # The user likely should be using a more-catered plugin.
             raise APINotImplementedError(
-                "eth_maxPriorityFeePerGas not supported in this RPC. "
-                "Please specify manually."
+                "eth_maxPriorityFeePerGas not supported in this RPC. " "Please specify manually."
             ) from err
 
     def get_block(self, block_id: BlockID) -> BlockAPI:
