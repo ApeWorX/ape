@@ -176,19 +176,10 @@ class Receipt(ReceiptAPI):
     @property
     def source_traceback(self) -> SourceTraceback:
         contract_type = self.contract_type
-        if not contract_type or not contract_type.source_id:
+        if not contract_type:
             return SourceTraceback.parse_obj([])
 
-        ext = f".{contract_type.source_id.split('.')[-1]}"
-        if ext not in self.compiler_manager.registered_compilers:
-            return SourceTraceback.parse_obj([])
-
-        compiler = self.compiler_manager.registered_compilers[ext]
-
-        try:
-            return compiler.trace_source(contract_type, self.trace, HexBytes(self.data))
-        except NotImplementedError:
-            return SourceTraceback.parse_obj([])
+        return SourceTraceback.create(contract_type, self.trace, HexBytes(self.data))
 
     def raise_for_status(self):
         if self.gas_limit is not None and self.ran_out_of_gas:

@@ -1,6 +1,7 @@
 from fnmatch import fnmatch
+from itertools import tee
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple
+from typing import TYPE_CHECKING, Any, Dict, Iterator, List, Optional, Tuple
 
 from ethpm_types import ASTNode, BaseModel, ContractType, HexBytes, PCMap, Source
 from ethpm_types.ast import ASTClassification, SourceLocation
@@ -680,6 +681,30 @@ class SourceTraceback(BaseModel):
     """
 
     __root__: List[ControlFlow]
+
+    @classmethod
+    def create(cls, contract_type: ContractType, trace: Iterator[TraceFrame], data: HexBytes):
+        source_id = contract_type.source_id
+        if not source_id:
+            return cls.parse_obj([])
+
+        trace, second_trace = tee(trace)
+        if second_trace:
+            accessor = next(second_trace, None)
+            if not accessor:
+                return cls.parse_obj([])
+        else:
+            return cls.parse_obj([])
+
+        ext = f".{source_id.split('.')[-1]}"
+        if ext not in accessor.compiler_manager.registered_compilers:
+            return cls.parse_obj([])
+
+        compiler = accessor.compiler_manager.registered_compilers[ext]
+        try:
+            return compiler.trace_source(contract_type, trace, data)
+        except NotImplementedError:
+            return cls.parse_obj([])
 
     def __str__(self) -> str:
         return self.format()
