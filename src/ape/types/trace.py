@@ -294,7 +294,10 @@ class SourceFunction(Closure):
 
     @validator("ast", pre=True)
     def validate_ast(cls, value):
-        if value.classification is not ASTClassification.FUNCTION:
+        if (
+            value.classification is not ASTClassification.FUNCTION
+            or "function" not in str(value.ast_type).lower()
+        ):
             raise ValueError(
                 f"`ast` must be a function definition (classification={value.classification})."
             )
