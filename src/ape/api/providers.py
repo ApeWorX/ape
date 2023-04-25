@@ -8,6 +8,7 @@ import sys
 import time
 from abc import ABC
 from concurrent.futures import ThreadPoolExecutor
+from copy import copy
 from itertools import tee
 from logging import FileHandler, Formatter, Logger, getLogger
 from pathlib import Path
@@ -24,7 +25,7 @@ from pydantic import Field, root_validator, validator
 from web3 import Web3
 from web3.exceptions import BlockNotFound
 from web3.exceptions import ContractLogicError as Web3ContractLogicError
-from web3.exceptions import TimeExhausted
+from web3.exceptions import MethodUnavailable, TimeExhausted
 from web3.types import RPCEndpoint, TxParams
 
 from ape.api.config import PluginConfig
@@ -703,6 +704,10 @@ class Web3Provider(ProviderAPI, ABC):
 
         txn_dict = txn.dict()
 
+        # Force the use of hex values to support a wider range of nodes.
+        if isinstance(txn_dict.get("type"), int):
+            txn_dict["type"] = HexBytes(txn_dict["type"]).hex()
+
         # NOTE: "auto" means to enter this method, so remove it from dict
         if "gas" in txn_dict and txn_dict["gas"] == "auto":
             txn_dict.pop("gas")
@@ -756,7 +761,13 @@ class Web3Provider(ProviderAPI, ABC):
 
     @property
     def priority_fee(self) -> int:
-        return self.web3.eth.max_priority_fee
+        try:
+            return self.web3.eth.max_priority_fee
+        except MethodUnavailable as err:
+            # The user likely should be using a more-catered plugin.
+            raise APINotImplementedError(
+                "eth_maxPriorityFeePerGas not supported in this RPC. Please specify manually."
+            ) from err
 
     def get_block(self, block_id: BlockID) -> BlockAPI:
         if isinstance(block_id, str) and block_id.isnumeric():
@@ -905,6 +916,15 @@ class Web3Provider(ProviderAPI, ABC):
         return self._eth_call(arguments)
 
     def _eth_call(self, arguments: List) -> bytes:
+        # Force the usage of hex-type to support a wider-range of nodes.
+        txn_dict = copy(arguments[0])
+        if isinstance(txn_dict.get("type"), int):
+            txn_dict["type"] = HexBytes(txn_dict["type"]).hex()
+
+        # Remove unnecessary values to support a wider-range of nodes.
+        txn_dict.pop("chainId", None)
+
+        arguments[0] = txn_dict
         try:
             result = self._make_request("eth_call", arguments)
         except Exception as err:
