@@ -371,6 +371,15 @@ class SourceStatement(Statement):
     content: SourceContent
     """The source code content connected to the AST node."""
 
+    def __len__(self):
+        return len(self.content.as_list())
+
+    def __getitem__(self, idx: int) -> str:
+        return self.content.as_list()[idx]
+
+    def __iter__(self) -> Iterator[str]:
+        yield from self.content.as_list()
+
     @validator("content", pre=True)
     def validate_content(cls, value):
         if len(value) < 1:
@@ -496,6 +505,9 @@ class ControlFlow(BaseModel):
             return self.statements[idx]
         except IndexError as err:
             raise IndexError(f"Statement index '{idx}' out of range.") from err
+
+    def __len__(self) -> int:
+        return len(self.statements)
 
     @property
     def source_statements(self) -> List[SourceStatement]:
