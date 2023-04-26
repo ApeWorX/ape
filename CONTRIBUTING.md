@@ -17,7 +17,7 @@ pip install -e .'[dev]'
 
 **NOTE**: You might run into issues where you have a local install and are trying to work with a plugin pinned to a specific version.
 
-[The easiest solution](https://github.com/ApeWorX/ape/issues/90) to this is to fetch the tags via `git fetch upstream --tags` and reinstall via `pip install .`. 
+[The easiest solution](https://github.com/ApeWorX/ape/issues/90) to this is to fetch the tags via `git fetch upstream --tags` and reinstall via `pip install .`.
 You will then have the correct version.
 
 ## Pre-Commit Hooks
