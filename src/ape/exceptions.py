@@ -166,13 +166,12 @@ class ContractLogicError(VirtualMachineError):
 
         # Get last contract address called
         contract_address = None
-        last_frame = trace[-1]
         contract_address = self.contract_address or getattr(self.txn, "receiver", None)
         if not contract_address:
             raise ValueError("Could not fetch contract information to check dev message.")
 
         try:
-            contract_type = trace[-1].chain_manager.contracts.get(contract_address)
+            contract_type = trace[-1].chain_manager.contracts[contract_address]
         except ValueError as err:
             raise ValueError(
                 f"Could not fetch contract at {contract_address} to check dev message."
@@ -197,9 +196,10 @@ class ContractLogicError(VirtualMachineError):
                 if frame.depth > 1:
                     # Call was made, get the new PCMap.
                     contract_type = self._find_next_contract(trace)
-                    pcmap = contract_type.pcmap.parse()
-                    if not pcmap:
+                    if not contract_type.pcmap:
                         raise ValueError("Compiler does not support source code mapping.")
+
+                    pcmap = contract_type.pcmap.parse()
 
                 if frame.pc in pcmap:
                     pc = frame.pc
@@ -227,7 +227,7 @@ class ContractLogicError(VirtualMachineError):
         # Dev message is neither found from the compiler or from a dev-comment.
         return None
 
-    def _get_trace(self) -> deque["TraceFrame"]:
+    def _get_trace(self) -> deque:
         trace = None
         if self.trace is None and self.txn is not None:
             try:
@@ -248,7 +248,7 @@ class ContractLogicError(VirtualMachineError):
 
         return trace
 
-    def _find_next_contract(self, trace: deque["TraceFrame"]) -> ContractType:
+    def _find_next_contract(self, trace: deque) -> ContractType:
         msg = "Could not fetch contract at '{address}' to check dev message."
         idx = len(trace) - 1
         while idx >= 0:
