@@ -377,7 +377,7 @@ class SourceStatement(Statement):
     def __getitem__(self, idx: int) -> str:
         return self.content.as_list()[idx]
 
-    def __iter__(self) -> Iterator[str]:
+    def __iter__(self) -> Iterator[str]:  # type: ignore[override]
         yield from self.content.as_list()
 
     @validator("content", pre=True)
