@@ -12,6 +12,7 @@ from ape.exceptions import (
     NetworkMismatchError,
     TransactionNotFoundError,
 )
+from ape.utils import ZERO_ADDRESS
 from ape_ethereum.ecosystem import Block
 from ape_geth.provider import Geth
 from tests.conftest import GETH_URI, geth_process_test
@@ -74,6 +75,16 @@ ContractA\.methodWithoutArguments\(\) -> 0x00..5174 \[\d+ gas\]
     │   \] \[731 gas\]
     └── ContractC\.methodC1\(windows95="simpler", jamaica=111, cardinal=ContractA\) \[44525 gas\]
 """
+
+
+@pytest.fixture
+def geth_account(accounts):
+    return accounts.test_accounts[5]
+
+
+@pytest.fixture
+def geth_contract(geth_account, vyper_contract_container, geth_provider):
+    return geth_account.deploy(vyper_contract_container, 0)
 
 
 @pytest.fixture
@@ -281,16 +292,13 @@ def test_get_receipt(accounts, vyper_contract_container, geth_provider):
 
 
 @geth_process_test
-def test_snapshot_and_revert(geth_provider, accounts, vyper_contract_container):
-    owner = accounts.test_accounts[-6]
-    contract = owner.deploy(vyper_contract_container, 0)
-
+def test_snapshot_and_revert(geth_provider, geth_account, geth_contract):
     snapshot = geth_provider.snapshot()
-    start_nonce = owner.nonce
-    contract.setNumber(211112, sender=owner)  # Advance a block
+    start_nonce = geth_account.nonce
+    geth_contract.setNumber(211112, sender=geth_account)  # Advance a block
     actual_block_number = geth_provider.get_block("latest").number
     expected_block_number = snapshot + 1
-    actual_nonce = owner.nonce
+    actual_nonce = geth_account.nonce
     expected_nonce = start_nonce + 1
     assert actual_block_number == expected_block_number
     assert actual_nonce == expected_nonce
@@ -299,13 +307,13 @@ def test_snapshot_and_revert(geth_provider, accounts, vyper_contract_container):
 
     actual_block_number = geth_provider.get_block("latest").number
     expected_block_number = snapshot
-    actual_nonce = owner.nonce
+    actual_nonce = geth_account.nonce
     expected_nonce = start_nonce
     assert actual_block_number == expected_block_number
     assert actual_nonce == expected_nonce
 
     # Use account after revert
-    receipt = contract.setNumber(311113, sender=owner)  # Advance a block
+    receipt = geth_contract.setNumber(311113, sender=geth_account)  # Advance a block
     assert not receipt.failed
 
 
@@ -384,9 +392,35 @@ def assert_rich_output(rich_capture: List[str], expected: str):
         pytest.fail(f"Missing expected lines: {rest}")
 
 
+@geth_process_test
 def test_custom_error(error_contract_geth, not_owner):
     contract = error_contract_geth
     with pytest.raises(contract.Unauthorized) as err:
         contract.withdraw(sender=not_owner)
 
     assert err.value.inputs == {"addr": not_owner.address, "counter": 123}
+
+
+@geth_process_test
+def test_return_value_list(geth_account, geth_contract, geth_provider):
+    receipt = geth_contract.getFilledArray.transact(sender=geth_account)
+    assert receipt.return_value == [1, 2, 3]
+
+
+@geth_process_test
+def test_return_value_nested_address_array(geth_account, geth_contract, geth_provider):
+    receipt = geth_contract.getNestedAddressArray.transact(sender=geth_account)
+    expected = [
+        [geth_account.address, geth_account.address, geth_account.address],
+        [ZERO_ADDRESS, ZERO_ADDRESS, ZERO_ADDRESS],
+    ]
+    assert receipt.return_value == expected
+
+
+@geth_process_test
+def test_return_value_nested_struct_in_tuple(geth_account, geth_contract, geth_provider):
+    receipt = geth_contract.getNestedStructWithTuple1.transact(sender=geth_account)
+    actual = receipt.return_value
+    assert actual[0].t.a == geth_account.address
+    assert actual[0].foo == 1
+    assert actual[1] == 1
