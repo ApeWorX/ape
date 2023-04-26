@@ -188,10 +188,10 @@ class Ethereum(EcosystemAPI):
 
     @classmethod
     def decode_address(cls, raw_address: RawAddress) -> AddressType:
-        if isinstance(raw_address, int):
-            raw_address = HexBytes(raw_address)
-
-        return to_checksum_address(raw_address)
+        raw: Union[str, HexBytes] = (
+            HexBytes(raw_address) if isinstance(raw_address, int) else raw_address
+        )
+        return to_checksum_address(raw)
 
     @classmethod
     def encode_address(cls, address: AddressType) -> RawAddress:

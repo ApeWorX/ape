@@ -148,16 +148,32 @@ def reverts_contract_type(get_contract_type) -> ContractType:
 
 
 @pytest.fixture
+def sub_reverts_contract_type(get_contract_type) -> ContractType:
+    return get_contract_type("sub_reverts_contract")
+
+
+@pytest.fixture
 def reverts_contract_container(reverts_contract_type) -> ContractContainer:
     return ContractContainer(contract_type=reverts_contract_type)
 
 
 @pytest.fixture
+def sub_reverts_contract_container(sub_reverts_contract_type) -> ContractContainer:
+    return ContractContainer(contract_type=sub_reverts_contract_type)
+
+
+@pytest.fixture
 def reverts_contract_instance(
-    owner, reverts_contract_container, networks_connected_to_tester, geth_provider
+    owner, reverts_contract_container, sub_reverts_contract_instance, geth_provider
 ) -> ContractInstance:
-    _ = geth_provider  # Must use geth, as it supports traces
-    return owner.deploy(reverts_contract_container, required_confirmations=0)
+    return owner.deploy(
+        reverts_contract_container, sub_reverts_contract_instance, required_confirmations=0
+    )
+
+
+@pytest.fixture
+def sub_reverts_contract_instance(owner, sub_reverts_contract_container, geth_provider):
+    return owner.deploy(sub_reverts_contract_container, required_confirmations=0)
 
 
 @pytest.fixture(params=("solidity", "vyper"))

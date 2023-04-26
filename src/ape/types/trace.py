@@ -6,6 +6,7 @@ from pydantic import Field
 from rich.table import Table
 from rich.tree import Tree
 
+from ape.types.address import AddressType
 from ape.utils.basemodel import BaseInterfaceModel
 from ape.utils.trace import parse_as_str, parse_gas_table, parse_rich_tree
 
@@ -213,6 +214,11 @@ class TraceFrame(BaseInterfaceModel):
     depth: int
     """
     The number of external jumps away the initially called contract (starts at 0).
+    """
+
+    contract_address: Optional[AddressType] = None
+    """
+    The contract address, if this is a call trace frame.
     """
 
     raw: Dict = Field({}, exclude=True, repr=False)

@@ -125,6 +125,15 @@ def test_dev_revert_pattern(owner, reverts_contract_instance, geth_provider):
 
 
 @geth_process_test
+def test_dev_revert_from_sub_contract(owner, reverts_contract_instance, geth_provider):
+    """
+    Test to ensure we can assert on dev messages from inner-contracts.
+    """
+    with reverts(dev_message="dev: sub-zero"):
+        reverts_contract_instance.subRevertStrings(0, sender=owner)
+
+
+@geth_process_test
 def test_dev_revert_nonpayable_check(owner, vyper_contract_container, geth_provider):
     """
     Tests that we can assert on dev messages injected from the compiler.

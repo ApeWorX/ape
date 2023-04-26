@@ -1214,14 +1214,18 @@ class Web3Provider(ProviderAPI, ABC):
             txn_hash=txn_hash,
         )
 
-    @classmethod
-    def _create_trace_frame(cls, evm_frame: EvmTraceFrame) -> TraceFrame:
+    def _create_trace_frame(self, evm_frame: EvmTraceFrame) -> TraceFrame:
+        address_bytes = evm_frame.address
+        address = (
+            self.network.ecosystem.decode_address(address_bytes.hex()) if address_bytes else None
+        )
         return TraceFrame(
             pc=evm_frame.pc,
             op=evm_frame.op,
             gas=evm_frame.gas,
             gas_cost=evm_frame.gas_cost,
             depth=evm_frame.depth,
+            contract_address=address,
             raw=evm_frame.dict(),
         )
 
