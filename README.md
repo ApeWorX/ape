@@ -186,4 +186,4 @@ with networks.ethereum.mainnet.use_provider("infura"):
     ...  # Work with the infura provider here
 ```
 
-To learn more about networks in Ape, see [this guide](https://docs.apeworx.io/ape/stable/commands/networks.html).
+To learn more about networks in Ape, see [this guide](https://docs.apeworx.io/ape/stable/commands/networks.html)
