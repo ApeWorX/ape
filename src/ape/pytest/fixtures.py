@@ -5,7 +5,6 @@ from typing import Dict, Iterator, List, Optional
 import pytest
 
 from ape.api import ReceiptAPI, TestAccountAPI
-from ape.contracts import ContractInstance
 from ape.logging import logger
 from ape.managers.chain import ChainManager
 from ape.managers.networks import NetworkManager
@@ -78,11 +77,11 @@ class PytestApeFixtures(ManagerAccessMixin):
         return self.project_manager
 
     @pytest.fixture(scope="session")
-    def on_chain_contract(ContractInstance):
+    def on_chain_contract(self):
         """
         Access contract types and dependencies.
         """
-        return ContractInstance.address()
+        return self.chain_manager.instance_at
 
     def _isolation(self) -> Iterator[None]:
         """
