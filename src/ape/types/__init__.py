@@ -3,7 +3,6 @@ from typing import TYPE_CHECKING, Any, Dict, List, Literal, Optional, Union
 
 from eth_abi.abi import encode
 from eth_abi.packed import encode_packed
-from eth_typing import ChecksumAddress as AddressType
 from eth_typing import HexStr
 from eth_utils import encode_hex, keccak
 from ethpm_types import (
@@ -21,6 +20,7 @@ from hexbytes import HexBytes
 from pydantic import BaseModel, root_validator, validator
 from web3.types import FilterParams
 
+from ape.types.address import AddressType, RawAddress
 from ape.types.signatures import MessageSignature, SignableMessage, TransactionSignature
 from ape.types.trace import CallTreeNode, GasReport, TraceFrame
 from ape.utils import BaseInterfaceModel, cached_property
@@ -49,11 +49,6 @@ An ID representing a point in time on a blockchain, as used in the
 Providers will expect and handle snapshot IDs differently. There shouldn't be a need to change
 providers when using this feature, so there should not be confusion over this type in practical use
 cases.
-"""
-
-RawAddress = Union[str, int, HexBytes]
-"""
-A raw data-type representation of an address.
 """
 
 
@@ -308,6 +303,7 @@ __all__ = [
     "MessageSignature",
     "PackageManifest",
     "PackageMeta",
+    "RawAddress",
     "SignableMessage",
     "SnapshotID",
     "Source",
