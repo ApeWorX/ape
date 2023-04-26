@@ -78,11 +78,6 @@ def project_folder():
 
 
 @pytest.fixture(scope="session")
-def contract():
-    return ape.Contract
-
-
-@pytest.fixture(scope="session")
 def test_accounts(accounts):
     return accounts.test_accounts
 
