@@ -1217,11 +1217,9 @@ class Web3Provider(ProviderAPI, ABC):
     @classmethod
     def _create_trace_frame(cls, evm_frame: EvmTraceFrame) -> TraceFrame:
         address_bytes = evm_frame.address
-        if address_bytes:
-            address = cls.network.ecosystem.decode_address(address_bytes.hex())
-        else:
-            address = None
-
+        address = (
+            cls.network.ecosystem.decode_address(address_bytes.hex()) if address_bytes else None
+        )
         return TraceFrame(
             pc=evm_frame.pc,
             op=evm_frame.op,

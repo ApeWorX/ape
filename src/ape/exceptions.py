@@ -163,6 +163,9 @@ class ContractLogicError(VirtualMachineError):
         """
 
         trace = self._get_trace()
+        if len(trace) == 0:
+            raise ValueError("Missing trace.")
+
         contract_address = self.contract_address or getattr(self.txn, "receiver", None)
         if not contract_address:
             raise ValueError("Could not fetch contract information to check dev message.")
