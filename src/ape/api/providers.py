@@ -1216,12 +1216,24 @@ class Web3Provider(ProviderAPI, ABC):
 
     @classmethod
     def _create_trace_frame(cls, evm_frame: EvmTraceFrame) -> TraceFrame:
+        address_bytes = evm_frame.address
+        if address_bytes:
+            address_str = address_bytes.hex()
+            try:
+                address = cls.network.ecosystem.decode_address(address_str)
+            except Exception as err:
+                logger.warning(f"Address '{address_str}' is not checksummed (err={err}).")
+                address = cast(AddressType, address_str)
+        else:
+            address = None
+
         return TraceFrame(
             pc=evm_frame.pc,
             op=evm_frame.op,
             gas=evm_frame.gas,
             gas_cost=evm_frame.gas_cost,
             depth=evm_frame.depth,
+            contract_address=address,
             raw=evm_frame.dict(),
         )
 
