@@ -1219,11 +1219,7 @@ class Web3Provider(ProviderAPI, ABC):
         address_bytes = evm_frame.address
         if address_bytes:
             address_str = address_bytes.hex()
-            try:
-                address = cls.network.ecosystem.decode_address(address_str)
-            except Exception as err:
-                logger.warning(f"Address '{address_str}' is not checksummed (err={err}).")
-                address = cast(AddressType, address_str)
+            address = cls.network.ecosystem.decode_address(address_str)
         else:
             address = None
 
