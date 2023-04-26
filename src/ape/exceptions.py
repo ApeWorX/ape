@@ -4,12 +4,12 @@ import traceback
 from collections import deque
 from functools import cached_property
 from inspect import getframeinfo, stack
-from itertools import tee
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Dict, Iterator, List, Optional
 
 import click
 from eth_utils import humanize_hash
+from ethpm_types import ContractType
 from ethpm_types.abi import ErrorABI
 from rich import print as rich_print
 
@@ -20,7 +20,6 @@ if TYPE_CHECKING:
     from ape.api.providers import SubprocessProvider
     from ape.api.transactions import TransactionAPI
     from ape.types import AddressType, BlockID, SnapshotID, TraceFrame
-    from ape.utils.basemodel import ManagerAccessMixin
 
 
 class ApeException(Exception):
@@ -163,54 +162,26 @@ class ContractLogicError(VirtualMachineError):
             ``ValueError``: When unable to get dev message.
         """
 
-        accessor: Optional["ManagerAccessMixin"] = None
-        if self.txn:
-            accessor = self.txn
-        elif self.trace is not None:
-            self.trace, second_trace = tee(self.trace)
-            if second_trace:
-                accessor = next(second_trace, None)
-
-        if accessor is None:
-            raise ValueError("Missing trace access.")
+        trace = self._get_trace()
+        if len(trace) == 0:
+            raise ValueError("Missing trace.")
 
         contract_address = self.contract_address or getattr(self.txn, "receiver", None)
         if not contract_address:
             raise ValueError("Could not fetch contract information to check dev message.")
 
         try:
-            contract = accessor.chain_manager.contracts.instance_at(contract_address)
+            contract_type = trace[-1].chain_manager.contracts[contract_address]
         except ValueError as err:
             raise ValueError(
                 f"Could not fetch contract at {contract_address} to check dev message."
             ) from err
 
-        if contract.contract_type.pcmap is None:
+        if contract_type.pcmap is None:
             raise ValueError("Compiler does not support source code mapping.")
 
-        if self.trace is None and self.txn is not None:
-            try:
-                trace = deque(accessor.provider.get_transaction_trace(self.txn.txn_hash.hex()))
-
-            except APINotImplementedError as err:
-                raise ValueError(
-                    "Cannot check dev message; " "provider must support transaction tracing."
-                ) from err
-
-            except (ProviderError, SignatureError) as err:
-                raise ValueError("Cannot fetch transaction trace.") from err
-
-        elif self.trace is not None:
-            trace = deque(self.trace)
-
-        else:
-            raise ValueError("Cannot fetch transaction trace.")
-
-        if trace is None:
-            raise ValueError("Cannot fetch transaction trace.")
-
         pc = None
-        pcmap = contract.contract_type.pcmap.parse()
+        pcmap = contract_type.pcmap.parse()
 
         # To find a suitable line for inspecting dev messages, we must start at the revert and work
         # our way backwards. If the last frame's PC is in the PC map, the offending line is very
@@ -222,6 +193,14 @@ class ContractLogicError(VirtualMachineError):
         else:
             while len(trace) > 0:
                 frame = trace.pop()
+                if frame.depth > 1:
+                    # Call was made, get the new PCMap.
+                    contract_type = self._find_next_contract(trace)
+                    if not contract_type.pcmap:
+                        raise ValueError("Compiler does not support source code mapping.")
+
+                    pcmap = contract_type.pcmap.parse()
+
                 if frame.pc in pcmap:
                     pc = frame.pc
                     break
@@ -234,7 +213,7 @@ class ContractLogicError(VirtualMachineError):
         if offending_source is None:
             return None
 
-        dev_messages = contract.contract_type.dev_messages or {}
+        dev_messages = contract_type.dev_messages or {}
         if offending_source.line_start is None:
             # Check for a `dev` field in PCMap.
             return None if offending_source.dev is None else offending_source.dev
@@ -247,6 +226,43 @@ class ContractLogicError(VirtualMachineError):
 
         # Dev message is neither found from the compiler or from a dev-comment.
         return None
+
+    def _get_trace(self) -> deque:
+        trace = None
+        if self.trace is None and self.txn is not None:
+            try:
+                trace = deque(self.txn.provider.get_transaction_trace(self.txn.txn_hash.hex()))
+            except APINotImplementedError as err:
+                raise ValueError(
+                    "Cannot check dev message; provider must support transaction tracing."
+                ) from err
+
+            except (ProviderError, SignatureError) as err:
+                raise ValueError("Cannot fetch transaction trace.") from err
+
+        elif self.trace is not None:
+            trace = deque(self.trace)
+
+        if not trace:
+            raise ValueError("Cannot fetch transaction trace.")
+
+        return trace
+
+    def _find_next_contract(self, trace: deque) -> ContractType:
+        msg = "Could not fetch contract at '{address}' to check dev message."
+        idx = len(trace) - 1
+        while idx >= 0:
+            frame = trace[idx]
+            if frame.contract_address:
+                ct = frame.chain_manager.contracts.get(frame.contract_address)
+                if not ct:
+                    raise ValueError(msg.format(address=frame.contract_address))
+
+                return ct
+
+            idx -= 1
+
+        raise ValueError(msg.format(address=frame.contract_address))
 
     @classmethod
     def from_error(cls, err: Exception):
