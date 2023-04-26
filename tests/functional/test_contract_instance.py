@@ -54,6 +54,11 @@ def test_contract_calls(owner, contract_instance):
     assert contract_instance.myNumber() == 2
 
 
+def test_contract_fixture(contract_instance):
+    contract = Contract(contract_instance.address)
+    assert contract.address == "set_address_test"
+
+
 @pytest.mark.parametrize("type_param", (0, "0", HexBytes(0)))
 def test_static_fee_txn(owner, vyper_contract_instance, type_param):
     receipt = vyper_contract_instance.setNumber(4, sender=owner, type=type_param)
