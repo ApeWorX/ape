@@ -139,7 +139,7 @@ setup(
             "ape_init=ape_init._cli:cli",
         ],
     },
-    python_requires=">=3.8,<3.11",
+    python_requires=">=3.8,<3.12",
     extras_require=extras_require,
     py_modules=packages_data["__modules__"],
     license="Apache-2.0",
@@ -159,5 +159,6 @@ setup(
         "Programming Language :: Python :: 3.8",
         "Programming Language :: Python :: 3.9",
         "Programming Language :: Python :: 3.10",
+        "Programming Language :: Python :: 3.11",
     ],
 )
