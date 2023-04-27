@@ -6,11 +6,11 @@ import pytest
 
 from ape.api import ReceiptAPI, TestAccountAPI
 from ape.logging import logger
-from ape.managers.chain import ChainManager
+from ape.managers.chain import ChainManager, ContractInstance
 from ape.managers.networks import NetworkManager
 from ape.managers.project import ProjectManager
 from ape.pytest.config import ConfigWrapper
-from ape.types import SnapshotID
+from ape.types import AddressType, SnapshotID
 from ape.utils import ManagerAccessMixin, allow_disconnected, cached_property
 
 
@@ -77,11 +77,13 @@ class PytestApeFixtures(ManagerAccessMixin):
         return self.project_manager
 
     @pytest.fixture(scope="session")
-    def Contract(self):
+    def Contract(self, address: AddressType) -> ContractInstance:
         """
-        Instantiate a reference to an on-chain contract using its address (same as ``ape.Contract``).
+        Instantiate a reference to an on-chain contract using its
+        address (same as ``ape.Contract``).
         """
-        return self.chain_manager.instance_at
+
+        return self.chain_manager.contracts.instance_at(address)
 
     def _isolation(self) -> Iterator[None]:
         """

@@ -13,7 +13,7 @@ def test_chain(chain):
 
 
 def test_contract(Contract):
-    assert isinstance(Contract, ContractInstance)
+    assert isinstance(Contract("0x0000000000000000000000000000000000000000"), ContractInstance)
 
 
 def test_networks(networks):
