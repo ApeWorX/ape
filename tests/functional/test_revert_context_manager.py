@@ -134,6 +134,19 @@ def test_dev_revert_from_sub_contract(owner, reverts_contract_instance, geth_pro
 
 
 @geth_process_test
+def test_dev_revert_deep_in_method(owner, reverts_contract_instance, geth_provider):
+    """
+    Test to ensure we can assert on a dev message that is in the middle of a
+    complicated function implementation.
+    """
+    with reverts(dev_message="dev: foobarbaz"):
+        reverts_contract_instance.revertStrings(13, sender=owner)
+
+    with reverts(dev_message="dev: such modifiable, wow"):
+        reverts_contract_instance.revertStrings(4, sender=owner)
+
+
+@geth_process_test
 def test_dev_revert_nonpayable_check(owner, vyper_contract_container, geth_provider):
     """
     Tests that we can assert on dev messages injected from the compiler.
