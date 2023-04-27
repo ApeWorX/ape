@@ -1,5 +1,5 @@
 from ape.managers.accounts import TestAccountManager
-from ape.managers.chain import ChainManager
+from ape.managers.chain import ChainManager, ContractInstance
 from ape.managers.networks import NetworkManager
 from ape.managers.project import ProjectManager
 
@@ -12,8 +12,8 @@ def test_chain(chain):
     assert isinstance(chain, ChainManager)
 
 
-def test_contract(chain):
-    assert isinstance(contract, ChainManager)
+def test_contract(Contract):
+    assert isinstance(Contract, ContractInstance)
 
 
 def test_networks(networks):
