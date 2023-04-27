@@ -1,5 +1,9 @@
 # @version 0.3.7
 
+import interfaces.ISubRevertsVy as ISubRevertsVy
+
+sub_reverts: public(ISubRevertsVy)
+
 @external
 def revertStrings(a: uint256) -> bool:
     assert a != 0, "zero"
@@ -12,6 +16,10 @@ def revertStrings(a: uint256) -> bool:
     raise "awesome show"  # dev: great job
 
 @external
+def subRevertStrings(a: uint256) -> bool:
+    return self.sub_reverts.revertStrings(a)
+
+@external
 def revertStrings2(a: uint256) -> bool:
     assert a != 0, "zero"
     assert a != 1  # dev: one
@@ -21,10 +29,10 @@ def revertStrings2(a: uint256) -> bool:
     if a != 31337:
         return True
     raise "awesome show"  # dev: great job
-    raise "awesome show"  # dev: great job
 
 @pure
 @external
 def revertStringsCall(a: uint256) -> bool:
     assert a != 0
     assert a != 1, "TEST"  # dev: one
+    return True

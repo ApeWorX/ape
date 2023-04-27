@@ -454,5 +454,6 @@ class ReceiptAPI(BaseInterfaceModel):
 
         call_tree = self.call_tree
         receiver = self.receiver
-        if call_tree and receiver is not None:
-            self.chain_manager._reports.append_gas(call_tree.enrich(in_line=False), receiver)
+        if call_tree and receiver is not None and self._test_runner is not None:
+            tracker = self._test_runner.gas_tracker
+            tracker.append_gas(call_tree.enrich(in_line=False), receiver)

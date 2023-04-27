@@ -8,6 +8,7 @@ import sys
 import time
 from abc import ABC
 from concurrent.futures import ThreadPoolExecutor
+from copy import copy
 from itertools import tee
 from logging import FileHandler, Formatter, Logger, getLogger
 from pathlib import Path
@@ -24,7 +25,7 @@ from pydantic import Field, root_validator, validator
 from web3 import Web3
 from web3.exceptions import BlockNotFound
 from web3.exceptions import ContractLogicError as Web3ContractLogicError
-from web3.exceptions import TimeExhausted
+from web3.exceptions import MethodUnavailable, TimeExhausted
 from web3.types import RPCEndpoint, TxParams
 
 from ape.api.config import PluginConfig
@@ -703,6 +704,10 @@ class Web3Provider(ProviderAPI, ABC):
 
         txn_dict = txn.dict()
 
+        # Force the use of hex values to support a wider range of nodes.
+        if isinstance(txn_dict.get("type"), int):
+            txn_dict["type"] = HexBytes(txn_dict["type"]).hex()
+
         # NOTE: "auto" means to enter this method, so remove it from dict
         if "gas" in txn_dict and txn_dict["gas"] == "auto":
             txn_dict.pop("gas")
@@ -756,7 +761,13 @@ class Web3Provider(ProviderAPI, ABC):
 
     @property
     def priority_fee(self) -> int:
-        return self.web3.eth.max_priority_fee
+        try:
+            return self.web3.eth.max_priority_fee
+        except MethodUnavailable as err:
+            # The user likely should be using a more-catered plugin.
+            raise APINotImplementedError(
+                "eth_maxPriorityFeePerGas not supported in this RPC. Please specify manually."
+            ) from err
 
     def get_block(self, block_id: BlockID) -> BlockAPI:
         if isinstance(block_id, str) and block_id.isnumeric():
@@ -847,7 +858,7 @@ class Web3Provider(ProviderAPI, ABC):
         if skip_trace:
             return self._send_call(txn, **kwargs)
 
-        track_gas = self.chain_manager._reports.track_gas
+        track_gas = self._test_runner is not None and self._test_runner.gas_tracker.enabled
         show_trace = kwargs.pop("show_trace", False)
         show_gas = kwargs.pop("show_gas_report", False)
         needs_trace = track_gas or show_trace or show_gas
@@ -905,6 +916,15 @@ class Web3Provider(ProviderAPI, ABC):
         return self._eth_call(arguments)
 
     def _eth_call(self, arguments: List) -> bytes:
+        # Force the usage of hex-type to support a wider-range of nodes.
+        txn_dict = copy(arguments[0])
+        if isinstance(txn_dict.get("type"), int):
+            txn_dict["type"] = HexBytes(txn_dict["type"]).hex()
+
+        # Remove unnecessary values to support a wider-range of nodes.
+        txn_dict.pop("chainId", None)
+
+        arguments[0] = txn_dict
         try:
             result = self._make_request("eth_call", arguments)
         except Exception as err:
@@ -1194,14 +1214,18 @@ class Web3Provider(ProviderAPI, ABC):
             txn_hash=txn_hash,
         )
 
-    @classmethod
-    def _create_trace_frame(cls, evm_frame: EvmTraceFrame) -> TraceFrame:
+    def _create_trace_frame(self, evm_frame: EvmTraceFrame) -> TraceFrame:
+        address_bytes = evm_frame.address
+        address = (
+            self.network.ecosystem.decode_address(address_bytes.hex()) if address_bytes else None
+        )
         return TraceFrame(
             pc=evm_frame.pc,
             op=evm_frame.op,
             gas=evm_frame.gas,
             gas_cost=evm_frame.gas_cost,
             depth=evm_frame.depth,
+            contract_address=address,
             raw=evm_frame.dict(),
         )
 

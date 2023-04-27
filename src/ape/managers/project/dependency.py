@@ -100,10 +100,11 @@ class GithubDependency(DependencyAPI):
     @property
     def uri(self) -> AnyUrl:
         _uri = f"https://github.com/{self.github.strip('/')}"
-        if self.version and not self.version.startswith("v"):
-            _uri = f"{_uri}/releases/tag/v{self.version}"
-        elif self.version:
-            _uri = f"{_uri}/releases/tag/{self.version}"
+        if self.version:
+            version = f"v{self.version}" if not self.version.startswith("v") else self.version
+            _uri = f"{_uri}/releases/tag/{version}"
+        elif self._reference:
+            _uri = f"{_uri}/tree/{self._reference}"
 
         return HttpUrl(_uri, scheme="https")
 
