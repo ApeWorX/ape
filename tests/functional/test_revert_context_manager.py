@@ -145,6 +145,14 @@ def test_dev_revert_deep_in_method(owner, reverts_contract_instance, geth_provid
     with reverts(dev_message="dev: such modifiable, wow"):
         reverts_contract_instance.revertStrings(4, sender=owner)
 
+    with reverts(dev_message="dev: great job"):
+        reverts_contract_instance.revertStrings(31337, sender=owner)
+
+
+def test_dev_revert_in_loop(owner, reverts_contract_instance, geth_provider):
+    with reverts(dev_message="dev: loop test"):
+        reverts_contract_instance.revertStrings2(12, sender=owner)
+
 
 @geth_process_test
 def test_dev_revert_nonpayable_check(owner, vyper_contract_container, geth_provider):

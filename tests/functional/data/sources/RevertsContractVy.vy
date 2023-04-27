@@ -3,6 +3,7 @@
 import interfaces.ISubRevertsVy as ISubRevertsVy
 
 sub_reverts: public(ISubRevertsVy)
+MAX_NUM: constant(uint256) = 32
 
 @external
 def __init__(sub_reverts: ISubRevertsVy):
@@ -41,6 +42,10 @@ def revertStrings2(a: uint256) -> bool:
     assert a != 2, "two"  # dev: error
     assert a != 3  # error
     assert a != 4  # dev: such modifiable, wow
+
+    for i in range(MAX_NUM):
+        assert i != a  # dev: loop test
+
     if a != 31337:
         return True
     raise "awesome show"  # dev: great job
