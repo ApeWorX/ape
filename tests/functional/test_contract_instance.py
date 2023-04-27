@@ -9,6 +9,7 @@ from pydantic import BaseModel
 from ape import Contract
 from ape.contracts import ContractInstance
 from ape.exceptions import ChainError, ContractError, ContractLogicError, CustomError
+from ape.managers.chain import ContractInstance
 from ape.types import AddressType
 from ape.utils import ZERO_ADDRESS
 from ape_ethereum.transactions import TransactionStatusEnum
@@ -24,6 +25,11 @@ def data_object(owner):
         c: str = "GETS IGNORED"
 
     return DataObject()
+
+
+def test_use_contract(Contract, address):
+    my_contract = Contract("0x...")
+    assert my_contract == Contract(address)
 
 
 def test_init_at_unknown_address(networks_connected_to_tester, address):
