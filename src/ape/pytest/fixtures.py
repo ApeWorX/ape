@@ -77,9 +77,9 @@ class PytestApeFixtures(ManagerAccessMixin):
         return self.project_manager
 
     @pytest.fixture(scope="session")
-    def on_chain_contract(self):
+    def contract(self):
         """
-        Access contract types and dependencies.
+        Instantiate a reference to an on-chain contract using its address (same as ``ape.Contract``).
         """
         return self.chain_manager.instance_at
 
