@@ -12,6 +12,10 @@ def test_chain(chain):
     assert isinstance(chain, ChainManager)
 
 
+def test_contract(chain):
+    assert isinstance(contract, ChainManager)
+
+
 def test_networks(networks):
     assert isinstance(networks, NetworkManager)
 
