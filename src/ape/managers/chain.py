@@ -963,7 +963,10 @@ class ContractCache(BaseManager):
         return contract_types
 
     def get(
-        self, address: AddressType, default: Optional[ContractType] = None
+        self,
+        address: AddressType,
+        default: Optional[ContractType] = None,
+        cache: bool = True,
     ) -> Optional[ContractType]:
         """
         Get a contract type by address.
@@ -975,6 +978,8 @@ class ContractCache(BaseManager):
             address (AddressType): The address of the contract.
             default (Optional[ContractType]): A default contract when none is found.
               Defaults to ``None``.
+            cache (bool): Cache the result for live networks
+              Defaults to ``True``.
 
         Returns:
             Optional[ContractType]: The contract type if it was able to get one,
@@ -1007,22 +1012,27 @@ class ContractCache(BaseManager):
 
             if not proxy_info:
                 proxy_info = self.provider.network.ecosystem.get_proxy_info(address_key)
-                if proxy_info and self._is_live_network:
+                if proxy_info and self._is_live_network and cache:
                     self._cache_proxy_info_to_disk(address_key, proxy_info)
 
             if proxy_info:
                 self._local_proxies[address_key] = proxy_info
-                return self.get(proxy_info.target, default=default)
+                return self.get(
+                    proxy_info.target, default=default, cache=cache
+                )
 
             if not self.provider.get_code(address_key):
                 if default:
                     self._local_contract_types[address_key] = default
-                    self._cache_contract_to_disk(address_key, default)
+                    if cache:
+                        self._cache_contract_to_disk(address_key, default)
 
                 return default
 
             # Also gets cached to disk for faster lookup next time.
-            contract_type = self._get_contract_type_from_explorer(address_key)
+            contract_type = self._get_contract_type_from_explorer(
+                address_key, cache=cache
+            )
 
         # Cache locally for faster in-session look-up.
         if contract_type:
@@ -1031,14 +1041,16 @@ class ContractCache(BaseManager):
         if not contract_type:
             if default:
                 self._local_contract_types[address_key] = default
-                self._cache_contract_to_disk(address_key, default)
+                if cache:
+                    self._cache_contract_to_disk(address_key, default)
 
             return default
 
         if default and default != contract_type:
             # Replacing contract type
             self._local_contract_types[address_key] = default
-            self._cache_contract_to_disk(address_key, default)
+            if cache:
+                self._cache_contract_to_disk(address_key, default)
             return default
 
         return contract_type
@@ -1062,6 +1074,7 @@ class ContractCache(BaseManager):
         address: Union[str, AddressType],
         contract_type: Optional[ContractType] = None,
         txn_hash: Optional[str] = None,
+        cache: bool = True,
     ) -> ContractInstance:
         """
         Get a contract at the given address. If the contract type of the contract is known,
@@ -1080,6 +1093,8 @@ class ContractCache(BaseManager):
               in case it is not already known.
             txn_hash (Optional[str]): The hash of the transaction responsible for deploying the
               contract, if known. Useful for publishing. Defaults to ``None``.
+            cache (bool): Cache the result for live networks
+              Defaults to ``True``.
 
         Returns:
             :class:`~ape.contracts.base.ContractInstance`
@@ -1095,7 +1110,9 @@ class ContractCache(BaseManager):
 
         try:
             # Always attempt to get an existing contract type to update caches
-            contract_type = self.get(contract_address, default=contract_type)
+            contract_type = self.get(
+                contract_address, default=contract_type, cache=cache
+            )
         except Exception as err:
             if contract_type:
                 # If a default contract type was provided, don't error and use it.
@@ -1195,7 +1212,9 @@ class ContractCache(BaseManager):
 
         return ProxyInfoAPI.parse_file(address_file)
 
-    def _get_contract_type_from_explorer(self, address: AddressType) -> Optional[ContractType]:
+    def _get_contract_type_from_explorer(
+        self, address: AddressType, cache: bool = True
+    ) -> Optional[ContractType]:
         if not self._network.explorer:
             return None
 
