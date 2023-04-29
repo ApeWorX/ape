@@ -966,8 +966,9 @@ class ContractCache(BaseManager):
         self,
         address: AddressType,
         default: Optional[ContractType] = None,
-        cache: bool = True,
-        update_cache: bool = True,
+        cache_to_disk: bool = True,
+        fetch_from_explorer: bool = True,
+        force_disk_cache_update: bool = False,
     ) -> Optional[ContractType]:
         """
         Get a contract type by address.
@@ -979,26 +980,20 @@ class ContractCache(BaseManager):
             address (AddressType): The address of the contract.
             default (Optional[ContractType]): A default contract when none is found.
               Defaults to ``None``.
-            cache (bool): Cache the result for live networks
+            cache_to_disk (bool): Cache the fetched contract type to  (live networks only).
               Defaults to ``True``.
-            update_cache (bool): Update the cache with the new contract
+            fetch_from_explorer (bool): Fetch the contract type from the block explorer.
+              Defaults to ``True``.
+            force_disk_cache_update (bool): Force an update to the cache.
               Defaults to ``False``.
 
         Returns:
             Optional[ContractType]: The contract type if it was able to get one,
               otherwise the default parameter.
         """
-
         address_key: AddressType = self.conversion_manager.convert(address, AddressType)
-        contract_type = self._local_contract_types.get(address_key)
-        if contract_type:
-            if default and default != contract_type:
-                # Replacing contract type
-                self._local_contract_types[address_key] = default
-                return default
 
-            return contract_type
-
+        # Handle the local network case first
         if self._network.name == LOCAL_NETWORK_NAME:
             # Don't check disk-cache or explorer when using local
             if default:
@@ -1006,56 +1001,79 @@ class ContractCache(BaseManager):
 
             return default
 
-        contract_type = self._get_contract_type_from_disk(address_key)
+        # Attempt to get the contract type from memory
+        contract_type_from_memory = self._local_contract_types.get(address_key)
+
+        # Attempt to get the contract type from disk
+        contract_type_from_disk = self._get_contract_type_from_disk(address_key)
 
         # Handle the case where no contract is cached on disk
-        if not contract_type:
+        if contract_type_from_disk is None:
             # Contract could be a minimal proxy
             proxy_info = self._local_proxies.get(address_key) or self._get_proxy_info_from_disk(
                 address_key
             )
 
+            # Attempt to retrieve missing proxy info
             if not proxy_info:
                 proxy_info = self.provider.network.ecosystem.get_proxy_info(address_key)
-                if proxy_info and self._is_live_network and (cache or update_cache):
+                if proxy_info and self._is_live_network and cache_to_disk:
+                    # If found, cache to disk
                     self._cache_proxy_info_to_disk(address_key, proxy_info)
 
+            # If proxy info is already known, save the proxy info to memory and
+            # call this function again at the implementation contract address
             if proxy_info:
                 self._local_proxies[address_key] = proxy_info
-                return self.get(proxy_info.target, default=default, cache=cache)
+                return self.get(proxy_info.target, default=default, cache_to_disk=cache_to_disk)
 
             if not self.provider.get_code(address_key):
+                # If no code is stored at this address, store the provided default contract
+                # type in memory. This block is skipped if a contract type was not provided
+                # (`default==None`)
                 if default:
                     self._local_contract_types[address_key] = default
-                    if cache or update_cache:
+                    if cache_to_disk:
                         self._cache_contract_to_disk(address_key, default)
 
                 return default
 
-            contract_type = self._get_contract_type_from_explorer(address_key)
+        # Attempt to get the contract type from block explorer
+        # (unless overridden by `fetch_from_explorer=False`)
+        contract_type_from_explorer = (
+            self._get_contract_type_from_explorer(address_key) if fetch_from_explorer else None
+        )
 
-            # Cache to disk for faster lookup next time.
-            if contract_type and (cache or update_cache):
-                self._cache_contract_to_disk(address, contract_type)
+        # Identify the 'canonical' contract type before performing cache updates
+        contract_type = None
+        if default is not None:
+            # If a contract type was provided, use it
+            contract_type = default
+        elif contract_type_from_explorer is not None and contract_type_from_explorer != default:
+            # If a contract type was not provided, and one was found from the block explorer, use it
+            contract_type = contract_type_from_explorer
+        elif contract_type_from_disk is not None and contract_type_from_disk != default:
+            # If a contract type was not provided, and one was found from disk, use it
+            contract_type = contract_type_from_disk
+        elif contract_type_from_memory is not None and contract_type_from_memory != default:
+            contract_type = contract_type_from_memory
+        else:
+            raise ValueError(
+                "No contract type was provided, and no contract types were found in memory,"
+                "on disk, or on block explorer."
+            )
 
-        # Cache locally for faster in-session look-up.
+        # Update the memory and disk cache if a valid contract type was found
         if contract_type:
+            # Always update the cache in memory
             self._local_contract_types[address_key] = contract_type
 
-        if not contract_type:
-            if default:
-                self._local_contract_types[address_key] = default
-                if cache or update_cache:
-                    self._cache_contract_to_disk(address_key, default)
-
-            return default
-
-        if default and default != contract_type:
-            # Replacing contract type
-            self._local_contract_types[address_key] = default
-            if cache or update_cache:
-                self._cache_contract_to_disk(address_key, default)
-            return default
+            if force_disk_cache_update:
+                # Force an update to the disk cache
+                self._cache_contract_to_disk(address_key, contract_type)
+            elif cache_to_disk and contract_type_from_disk != contract_type:
+                # Update the disk cache if it does not match the contract type
+                self._cache_contract_to_disk(address_key, contract_type)
 
         return contract_type
 
@@ -1078,8 +1096,9 @@ class ContractCache(BaseManager):
         address: Union[str, AddressType],
         contract_type: Optional[ContractType] = None,
         txn_hash: Optional[str] = None,
-        cache: bool = True,
-        update_cache: bool = False,
+        cache_to_disk: bool = True,
+        fetch_from_explorer: bool = True,
+        force_disk_cache_update: bool = False,
     ) -> ContractInstance:
         """
         Get a contract at the given address. If the contract type of the contract is known,
@@ -1098,17 +1117,19 @@ class ContractCache(BaseManager):
               in case it is not already known.
             txn_hash (Optional[str]): The hash of the transaction responsible for deploying the
               contract, if known. Useful for publishing. Defaults to ``None``.
-            cache (bool): Cache the result for live networks
+            cache_to_disk (bool): Cache the fetched contract type to disk (live networks only).
               Defaults to ``True``.
-            update_cache (bool): Re-fetch ContractType from the block explorer and update the cache
+            fetch_from_explorer (bool): Fetch the contract type from the block explorer.
+              Defaults to ``True``.
+            force_disk_cache_update (bool): Update the cache with the provided contract type
               Defaults to ``False``.
 
         Returns:
             :class:`~ape.contracts.base.ContractInstance`
         """
 
-        if update_cache and not cache:
-            raise ValueError("update_cache=True cannot be set with cache=False")
+        if force_disk_cache_update and not cache_to_disk:
+            raise ValueError(f"{force_disk_cache_update=} cannot be set with {cache_to_disk=}")
 
         if self.conversion_manager.is_type(address, AddressType):
             contract_address = cast(AddressType, address)
@@ -1119,18 +1140,22 @@ class ContractCache(BaseManager):
                 raise ValueError(f"Unknown address value '{address}'.") from err
 
         try:
-            # Always attempt to get an existing contract type to update caches
             contract_type = self.get(
-                contract_address, default=contract_type, cache=cache, update_cache=update_cache
+                contract_address,
+                default=contract_type,
+                fetch_from_explorer=fetch_from_explorer,
+                cache_to_disk=cache_to_disk,
+                force_disk_cache_update=force_disk_cache_update,
             )
         except Exception as err:
+            print(err)
             if contract_type:
                 # If a default contract type was provided, don't error and use it.
                 logger.error(str(err))
             else:
                 raise  # Current exception
 
-        if not contract_type:
+        if contract_type is None:
             msg = f"Failed to get contract type for address '{contract_address}'."
             if self.provider.network.explorer is None:
                 msg += (
