@@ -1143,7 +1143,8 @@ class ContractCache(BaseManager):
             contract_type = self.get(
                 contract_address,
                 default=contract_type,
-                fetch_from_explorer=fetch_from_explorer,
+                # If a contract type was provided, disable block explorer fetching
+                fetch_from_explorer=fetch_from_explorer if contract_type is None else False,
                 cache_to_disk=cache_to_disk,
                 force_disk_cache_update=force_disk_cache_update,
             )
