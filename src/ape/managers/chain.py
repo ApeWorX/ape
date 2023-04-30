@@ -1149,7 +1149,6 @@ class ContractCache(BaseManager):
                 force_disk_cache_update=force_disk_cache_update,
             )
         except Exception as err:
-            print(err)
             if contract_type:
                 # If a default contract type was provided, don't error and use it.
                 logger.error(str(err))
