@@ -405,6 +405,14 @@ class ProviderAPI(BaseInterfaceModel):
         """
 
     @raises_not_implemented
+    def send_private_transaction(  # type: ignore[empty-body]
+        self, txn: TransactionAPI
+    ) -> ReceiptAPI:
+        """
+        Send a transaction through a private mempool (if supported by the Provider)
+        """
+
+    @raises_not_implemented
     def snapshot(self) -> SnapshotID:  # type: ignore[empty-body]
         """
         Defined to make the ``ProviderAPI`` interchangeable with a

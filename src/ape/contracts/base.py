@@ -57,7 +57,7 @@ class ContractConstructor(ManagerAccessMixin):
             self.deployment_bytecode, self.abi, *arguments, **kwargs
         )
 
-    def __call__(self, *args, **kwargs) -> ReceiptAPI:
+    def __call__(self, private: bool = False, *args, **kwargs) -> ReceiptAPI:
         txn = self.serialize_transaction(*args, **kwargs)
 
         if "sender" in kwargs and isinstance(kwargs["sender"], AccountAPI):
@@ -66,7 +66,10 @@ class ContractConstructor(ManagerAccessMixin):
         elif "sender" not in kwargs and self.account_manager.default_sender is not None:
             return self.account_manager.default_sender.call(txn, **kwargs)
 
-        return self.provider.send_transaction(txn)
+        if private:
+            return self.provider.send_private_transaction(txn)
+        else:
+            return self.provider.send_transaction(txn)
 
 
 class ContractCall(ManagerAccessMixin):
@@ -270,13 +273,16 @@ class ContractTransaction(ManagerAccessMixin):
             self.address, self.abi, *arguments, **kwargs
         )
 
-    def __call__(self, *args, **kwargs) -> ReceiptAPI:
+    def __call__(self, private: bool = False, *args, **kwargs) -> ReceiptAPI:
         txn = self.serialize_transaction(*args, **kwargs)
 
         if "sender" in kwargs and isinstance(kwargs["sender"], AccountAPI):
             return kwargs["sender"].call(txn, **kwargs)
 
-        return self.provider.send_transaction(txn)
+        if private:
+            return self.provider.send_private_transaction(txn)
+        else:
+            return self.provider.send_transaction(txn)
 
 
 class ContractTransactionHandler(ContractMethodHandler):
