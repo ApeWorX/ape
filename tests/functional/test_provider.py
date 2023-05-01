@@ -155,3 +155,23 @@ def test_provider_get_balance(project, networks, accounts):
 
     assert type(balance) == int
     assert balance == 1000000000000000000000000
+
+
+def test_set_timestamp(eth_tester_provider):
+    pending_at_start = eth_tester_provider.get_block("pending").timestamp
+    expected = pending_at_start + 100
+    eth_tester_provider.set_timestamp(expected)
+    eth_tester_provider.mine()
+    actual = eth_tester_provider.get_block("pending").timestamp
+    assert actual == expected + 1  # Mining adds another second.
+
+
+def test_set_timestamp_to_same_time(eth_tester_provider):
+    """
+    Eth tester normally fails when setting the timestamp to the same time.
+    However, in Ape, we treat it as a no-op and let it pass.
+    """
+    expected = eth_tester_provider.get_block("pending").timestamp
+    eth_tester_provider.set_timestamp(expected)
+    actual = eth_tester_provider.get_block("pending").timestamp
+    assert actual == expected
