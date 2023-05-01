@@ -1484,7 +1484,12 @@ class ChainManager(BaseManager):
                 return
 
             self.chain_manager.restore(snapshot)
-            self.pending_timestamp = pending
+
+            try:
+                self.pending_timestamp = pending
+            except APINotImplementedError:
+                # Provider does not support time travel.
+                pass
 
     def mine(
         self,
