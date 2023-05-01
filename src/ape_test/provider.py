@@ -176,6 +176,12 @@ class LocalProvider(TestProviderAPI, Web3Provider):
                     raise UnknownSnapshotError(snapshot_id)
 
     def set_timestamp(self, new_timestamp: int):
+        current = self.get_block("latest").timestamp
+        # -1 because eth-tester minuses 1 (see time_travel method)
+        if new_timestamp - 1 == current:
+            # Is the same, treat as a noop.
+            return
+
         self.evm_backend.time_travel(new_timestamp)
 
     def mine(self, num_blocks: int = 1):
