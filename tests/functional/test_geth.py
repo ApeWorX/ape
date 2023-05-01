@@ -443,7 +443,7 @@ def test_get_pending_block(geth_provider, geth_account, accounts):
     assert isinstance(actual, Block)
 
     # Restore state before transaction
-    geth_provider.restore(snap)
+    geth_provider.revert(snap)
     actual = geth_provider.get_block("latest")
     assert isinstance(actual, Block)
 
