@@ -192,7 +192,7 @@ class LocalProvider(TestProviderAPI, Web3Provider):
             if match := re.match(pattern, str(err)):
                 if groups := match.groups():
                     if groups[0].strip() == groups[1].strip():
-                        # Handle race condition where block header are the same.
+                        # Handle race condition when block headers are the same.
                         # Treat as noop, same as pre-check.
                         return
 
