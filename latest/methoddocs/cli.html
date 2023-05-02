@@ -105,7 +105,6 @@
 <li class="toctree-l4"><a class="reference internal" href="#ape.cli.choices.AccountAliasPromptChoice.choices"><code class="docutils literal notranslate"><span class="pre">AccountAliasPromptChoice.choices</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.cli.choices.AccountAliasPromptChoice.convert"><code class="docutils literal notranslate"><span class="pre">AccountAliasPromptChoice.convert()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.cli.choices.AccountAliasPromptChoice.get_user_selected_account"><code class="docutils literal notranslate"><span class="pre">AccountAliasPromptChoice.get_user_selected_account()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#ape.cli.choices.AccountAliasPromptChoice.name"><code class="docutils literal notranslate"><span class="pre">AccountAliasPromptChoice.name</span></code></a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="#ape.cli.choices.Alias"><code class="docutils literal notranslate"><span class="pre">Alias</span></code></a><ul>
@@ -125,7 +124,6 @@
 </li>
 <li class="toctree-l3"><a class="reference internal" href="#ape.cli.choices.PromptChoice"><code class="docutils literal notranslate"><span class="pre">PromptChoice</span></code></a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#ape.cli.choices.PromptChoice.convert"><code class="docutils literal notranslate"><span class="pre">PromptChoice.convert()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#ape.cli.choices.PromptChoice.name"><code class="docutils literal notranslate"><span class="pre">PromptChoice.name</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.cli.choices.PromptChoice.print_choices"><code class="docutils literal notranslate"><span class="pre">PromptChoice.print_choices()</span></code></a></li>
 </ul>
 </li>
@@ -158,13 +156,9 @@
 <li class="toctree-l2"><a class="reference internal" href="#module-ape.cli.paramtype">Parameter Types</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#ape.cli.paramtype.AllFilePaths"><code class="docutils literal notranslate"><span class="pre">AllFilePaths</span></code></a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#ape.cli.paramtype.AllFilePaths.convert"><code class="docutils literal notranslate"><span class="pre">AllFilePaths.convert()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#ape.cli.paramtype.AllFilePaths.name"><code class="docutils literal notranslate"><span class="pre">AllFilePaths.name</span></code></a></li>
 </ul>
 </li>
-<li class="toctree-l3"><a class="reference internal" href="#ape.cli.paramtype.Path"><code class="docutils literal notranslate"><span class="pre">Path</span></code></a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#ape.cli.paramtype.Path.name"><code class="docutils literal notranslate"><span class="pre">Path.name</span></code></a></li>
-</ul>
-</li>
+<li class="toctree-l3"><a class="reference internal" href="#ape.cli.paramtype.Path"><code class="docutils literal notranslate"><span class="pre">Path</span></code></a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="#module-ape.cli.utils">Utilities</a><ul>
@@ -300,12 +294,6 @@ be <code class="docutils literal notranslate"><span class="pre">None</span></cod
 </dl>
 </dd></dl>
 
-<dl class="py attribute">
-<dt class="sig sig-object py" id="ape.cli.choices.AccountAliasPromptChoice.name">
-<span class="sig-name descname"><span class="pre">name</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#ape.cli.choices.AccountAliasPromptChoice.name" title="Permalink to this definition"></a></dt>
-<dd><p>the descriptive name of this type</p>
-</dd></dl>
-
 </dd></dl>
 
 <dl class="py class">
@@ -427,12 +415,6 @@ be <code class="docutils literal notranslate"><span class="pre">None</span></cod
 </ul>
 </dd>
 </dl>
-</dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="ape.cli.choices.PromptChoice.name">
-<span class="sig-name descname"><span class="pre">name</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#ape.cli.choices.PromptChoice.name" title="Permalink to this definition"></a></dt>
-<dd><p>the descriptive name of this type</p>
 </dd></dl>
 
 <dl class="py method">
@@ -652,12 +634,6 @@ be <code class="docutils literal notranslate"><span class="pre">None</span></cod
 </dl>
 </dd></dl>
 
-<dl class="py attribute">
-<dt class="sig sig-object py" id="ape.cli.paramtype.AllFilePaths.name">
-<span class="sig-name descname"><span class="pre">name</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#ape.cli.paramtype.AllFilePaths.name" title="Permalink to this definition"></a></dt>
-<dd><p>the descriptive name of this type</p>
-</dd></dl>
-
 </dd></dl>
 
 <dl class="py class">
@@ -666,12 +642,6 @@ be <code class="docutils literal notranslate"><span class="pre">None</span></cod
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Path</span></code></p>
 <p>This class exists to encourage the consistent usage
 of <code class="docutils literal notranslate"><span class="pre">pathlib.Path</span></code> for path_type.</p>
-<dl class="py attribute">
-<dt class="sig sig-object py" id="ape.cli.paramtype.Path.name">
-<span class="sig-name descname"><span class="pre">name</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#ape.cli.paramtype.Path.name" title="Permalink to this definition"></a></dt>
-<dd><p>the descriptive name of this type</p>
-</dd></dl>
-
 </dd></dl>
 
 </section>

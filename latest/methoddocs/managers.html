@@ -332,32 +332,20 @@
 </li>
 <li class="toctree-l3"><a class="reference internal" href="#ape.managers.project.types.BaseProject"><code class="docutils literal notranslate"><span class="pre">BaseProject</span></code></a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#ape.managers.project.types.BaseProject.__hash__"><code class="docutils literal notranslate"><span class="pre">BaseProject.__hash__</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#ape.managers.project.types.BaseProject.contracts_folder"><code class="docutils literal notranslate"><span class="pre">BaseProject.contracts_folder</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.managers.project.types.BaseProject.create_manifest"><code class="docutils literal notranslate"><span class="pre">BaseProject.create_manifest()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.managers.project.types.BaseProject.is_valid"><code class="docutils literal notranslate"><span class="pre">BaseProject.is_valid</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#ape.managers.project.types.BaseProject.name"><code class="docutils literal notranslate"><span class="pre">BaseProject.name</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#ape.managers.project.types.BaseProject.path"><code class="docutils literal notranslate"><span class="pre">BaseProject.path</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.managers.project.types.BaseProject.process_config_file"><code class="docutils literal notranslate"><span class="pre">BaseProject.process_config_file()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.managers.project.types.BaseProject.source_paths"><code class="docutils literal notranslate"><span class="pre">BaseProject.source_paths</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#ape.managers.project.types.BaseProject.version"><code class="docutils literal notranslate"><span class="pre">BaseProject.version</span></code></a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="#ape.managers.project.types.ApeProject"><code class="docutils literal notranslate"><span class="pre">ApeProject</span></code></a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#ape.managers.project.types.ApeProject.__hash__"><code class="docutils literal notranslate"><span class="pre">ApeProject.__hash__</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#ape.managers.project.types.ApeProject.contracts_folder"><code class="docutils literal notranslate"><span class="pre">ApeProject.contracts_folder</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#ape.managers.project.types.ApeProject.name"><code class="docutils literal notranslate"><span class="pre">ApeProject.name</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#ape.managers.project.types.ApeProject.path"><code class="docutils literal notranslate"><span class="pre">ApeProject.path</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#ape.managers.project.types.ApeProject.version"><code class="docutils literal notranslate"><span class="pre">ApeProject.version</span></code></a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="#ape.managers.project.types.BrownieProject"><code class="docutils literal notranslate"><span class="pre">BrownieProject</span></code></a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#ape.managers.project.types.BrownieProject.__hash__"><code class="docutils literal notranslate"><span class="pre">BrownieProject.__hash__</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#ape.managers.project.types.BrownieProject.contracts_folder"><code class="docutils literal notranslate"><span class="pre">BrownieProject.contracts_folder</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.managers.project.types.BrownieProject.is_valid"><code class="docutils literal notranslate"><span class="pre">BrownieProject.is_valid</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#ape.managers.project.types.BrownieProject.name"><code class="docutils literal notranslate"><span class="pre">BrownieProject.name</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#ape.managers.project.types.BrownieProject.path"><code class="docutils literal notranslate"><span class="pre">BrownieProject.path</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.managers.project.types.BrownieProject.process_config_file"><code class="docutils literal notranslate"><span class="pre">BrownieProject.process_config_file()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#ape.managers.project.types.BrownieProject.version"><code class="docutils literal notranslate"><span class="pre">BrownieProject.version</span></code></a></li>
 </ul>
 </li>
 </ul>
@@ -2560,12 +2548,6 @@ Most often, this is either a version number or a branch name.</p>
 <span class="sig-name descname"><span class="pre">__hash__</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#ape.managers.project.types.BaseProject.__hash__" title="Permalink to this definition"></a></dt>
 <dd></dd></dl>
 
-<dl class="py attribute">
-<dt class="sig sig-object py" id="ape.managers.project.types.BaseProject.contracts_folder">
-<span class="sig-name descname"><span class="pre">contracts_folder</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Path</span></em><a class="headerlink" href="#ape.managers.project.types.BaseProject.contracts_folder" title="Permalink to this definition"></a></dt>
-<dd><p>The path to the contracts in the project.</p>
-</dd></dl>
-
 <dl class="py method">
 <dt class="sig sig-object py" id="ape.managers.project.types.BaseProject.create_manifest">
 <span class="sig-name descname"><span class="pre">create_manifest</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">file_paths</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Path</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_cache</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">PackageManifest</span></span></span><a class="headerlink" href="#ape.managers.project.types.BaseProject.create_manifest" title="Permalink to this definition"></a></dt>
@@ -2591,18 +2573,6 @@ from this project.</p></li>
 Useful for figuring out the best <code class="docutils literal notranslate"><span class="pre">ProjectAPI</span></code> to use when compiling a project.</p>
 </dd></dl>
 
-<dl class="py attribute">
-<dt class="sig sig-object py" id="ape.managers.project.types.BaseProject.name">
-<span class="sig-name descname"><span class="pre">name</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#ape.managers.project.types.BaseProject.name" title="Permalink to this definition"></a></dt>
-<dd><p>The name of this project when another project uses it as a dependency.</p>
-</dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="ape.managers.project.types.BaseProject.path">
-<span class="sig-name descname"><span class="pre">path</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Path</span></em><a class="headerlink" href="#ape.managers.project.types.BaseProject.path" title="Permalink to this definition"></a></dt>
-<dd><p>The project path.</p>
-</dd></dl>
-
 <dl class="py method">
 <dt class="sig sig-object py" id="ape.managers.project.types.BaseProject.process_config_file">
 <span class="sig-name descname"><span class="pre">process_config_file</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="headerlink" href="#ape.managers.project.types.BaseProject.process_config_file" title="Permalink to this definition"></a></dt>
@@ -2625,12 +2595,6 @@ Excludes files with extensions that don’t have a registered compiler.</p>
 </dl>
 </dd></dl>
 
-<dl class="py attribute">
-<dt class="sig sig-object py" id="ape.managers.project.types.BaseProject.version">
-<span class="sig-name descname"><span class="pre">version</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#ape.managers.project.types.BaseProject.version" title="Permalink to this definition"></a></dt>
-<dd><p>The version of the project whe another project uses it as a dependency.</p>
-</dd></dl>
-
 </dd></dl>
 
 <dl class="py class">
@@ -2644,30 +2608,6 @@ By default, the <cite>:class:`~ape.managers.project.ProjectManager</cite> uses a
 <span class="sig-name descname"><span class="pre">__hash__</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#ape.managers.project.types.ApeProject.__hash__" title="Permalink to this definition"></a></dt>
 <dd></dd></dl>
 
-<dl class="py attribute">
-<dt class="sig sig-object py" id="ape.managers.project.types.ApeProject.contracts_folder">
-<span class="sig-name descname"><span class="pre">contracts_folder</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Path</span></em><a class="headerlink" href="#ape.managers.project.types.ApeProject.contracts_folder" title="Permalink to this definition"></a></dt>
-<dd><p>The path to the contracts in the project.</p>
-</dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="ape.managers.project.types.ApeProject.name">
-<span class="sig-name descname"><span class="pre">name</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#ape.managers.project.types.ApeProject.name" title="Permalink to this definition"></a></dt>
-<dd><p>The name of this project when another project uses it as a dependency.</p>
-</dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="ape.managers.project.types.ApeProject.path">
-<span class="sig-name descname"><span class="pre">path</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Path</span></em><a class="headerlink" href="#ape.managers.project.types.ApeProject.path" title="Permalink to this definition"></a></dt>
-<dd><p>The project path.</p>
-</dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="ape.managers.project.types.ApeProject.version">
-<span class="sig-name descname"><span class="pre">version</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#ape.managers.project.types.ApeProject.version" title="Permalink to this definition"></a></dt>
-<dd><p>The version of the project whe another project uses it as a dependency.</p>
-</dd></dl>
-
 </dd></dl>
 
 <dl class="py class">
@@ -2678,12 +2618,6 @@ By default, the <cite>:class:`~ape.managers.project.ProjectManager</cite> uses a
 <span class="sig-name descname"><span class="pre">__hash__</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#ape.managers.project.types.BrownieProject.__hash__" title="Permalink to this definition"></a></dt>
 <dd></dd></dl>
 
-<dl class="py attribute">
-<dt class="sig sig-object py" id="ape.managers.project.types.BrownieProject.contracts_folder">
-<span class="sig-name descname"><span class="pre">contracts_folder</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Path</span></em><a class="headerlink" href="#ape.managers.project.types.BrownieProject.contracts_folder" title="Permalink to this definition"></a></dt>
-<dd><p>The path to the contracts in the project.</p>
-</dd></dl>
-
 <dl class="py property">
 <dt class="sig sig-object py" id="ape.managers.project.types.BrownieProject.is_valid">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">is_valid</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><a class="headerlink" href="#ape.managers.project.types.BrownieProject.is_valid" title="Permalink to this definition"></a></dt>
@@ -2691,29 +2625,11 @@ By default, the <cite>:class:`~ape.managers.project.ProjectManager</cite> uses a
 Useful for figuring out the best <code class="docutils literal notranslate"><span class="pre">ProjectAPI</span></code> to use when compiling a project.</p>
 </dd></dl>
 
-<dl class="py attribute">
-<dt class="sig sig-object py" id="ape.managers.project.types.BrownieProject.name">
-<span class="sig-name descname"><span class="pre">name</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#ape.managers.project.types.BrownieProject.name" title="Permalink to this definition"></a></dt>
-<dd><p>The name of this project when another project uses it as a dependency.</p>
-</dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="ape.managers.project.types.BrownieProject.path">
-<span class="sig-name descname"><span class="pre">path</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Path</span></em><a class="headerlink" href="#ape.managers.project.types.BrownieProject.path" title="Permalink to this definition"></a></dt>
-<dd><p>The project path.</p>
-</dd></dl>
-
 <dl class="py method">
 <dt class="sig sig-object py" id="ape.managers.project.types.BrownieProject.process_config_file">
 <span class="sig-name descname"><span class="pre">process_config_file</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="headerlink" href="#ape.managers.project.types.BrownieProject.process_config_file" title="Permalink to this definition"></a></dt>
 <dd><p>Process the project’s config file.
 Returns <code class="docutils literal notranslate"><span class="pre">True</span></code> if had to create a temporary <code class="docutils literal notranslate"><span class="pre">ape-config.yaml</span></code> file.</p>
-</dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="ape.managers.project.types.BrownieProject.version">
-<span class="sig-name descname"><span class="pre">version</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#ape.managers.project.types.BrownieProject.version" title="Permalink to this definition"></a></dt>
-<dd><p>The version of the project whe another project uses it as a dependency.</p>
 </dd></dl>
 
 </dd></dl>

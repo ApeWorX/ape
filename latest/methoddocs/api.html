@@ -333,30 +333,14 @@
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="#ape.api.providers.TestProviderAPI"><code class="docutils literal notranslate"><span class="pre">TestProviderAPI</span></code></a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#ape.api.providers.TestProviderAPI.block_page_size"><code class="docutils literal notranslate"><span class="pre">TestProviderAPI.block_page_size</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#ape.api.providers.TestProviderAPI.cached_chain_id"><code class="docutils literal notranslate"><span class="pre">TestProviderAPI.cached_chain_id</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#ape.api.providers.TestProviderAPI.concurrency"><code class="docutils literal notranslate"><span class="pre">TestProviderAPI.concurrency</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#ape.api.providers.TestProviderAPI.data_folder"><code class="docutils literal notranslate"><span class="pre">TestProviderAPI.data_folder</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.providers.TestProviderAPI.mine"><code class="docutils literal notranslate"><span class="pre">TestProviderAPI.mine()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#ape.api.providers.TestProviderAPI.name"><code class="docutils literal notranslate"><span class="pre">TestProviderAPI.name</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#ape.api.providers.TestProviderAPI.network"><code class="docutils literal notranslate"><span class="pre">TestProviderAPI.network</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#ape.api.providers.TestProviderAPI.provider_settings"><code class="docutils literal notranslate"><span class="pre">TestProviderAPI.provider_settings</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#ape.api.providers.TestProviderAPI.request_header"><code class="docutils literal notranslate"><span class="pre">TestProviderAPI.request_header</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.providers.TestProviderAPI.revert"><code class="docutils literal notranslate"><span class="pre">TestProviderAPI.revert()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.providers.TestProviderAPI.set_timestamp"><code class="docutils literal notranslate"><span class="pre">TestProviderAPI.set_timestamp()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.providers.TestProviderAPI.snapshot"><code class="docutils literal notranslate"><span class="pre">TestProviderAPI.snapshot()</span></code></a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="#ape.api.providers.UpstreamProvider"><code class="docutils literal notranslate"><span class="pre">UpstreamProvider</span></code></a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#ape.api.providers.UpstreamProvider.block_page_size"><code class="docutils literal notranslate"><span class="pre">UpstreamProvider.block_page_size</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#ape.api.providers.UpstreamProvider.cached_chain_id"><code class="docutils literal notranslate"><span class="pre">UpstreamProvider.cached_chain_id</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#ape.api.providers.UpstreamProvider.concurrency"><code class="docutils literal notranslate"><span class="pre">UpstreamProvider.concurrency</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.providers.UpstreamProvider.connection_str"><code class="docutils literal notranslate"><span class="pre">UpstreamProvider.connection_str</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#ape.api.providers.UpstreamProvider.data_folder"><code class="docutils literal notranslate"><span class="pre">UpstreamProvider.data_folder</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#ape.api.providers.UpstreamProvider.name"><code class="docutils literal notranslate"><span class="pre">UpstreamProvider.name</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#ape.api.providers.UpstreamProvider.network"><code class="docutils literal notranslate"><span class="pre">UpstreamProvider.network</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#ape.api.providers.UpstreamProvider.provider_settings"><code class="docutils literal notranslate"><span class="pre">UpstreamProvider.provider_settings</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#ape.api.providers.UpstreamProvider.request_header"><code class="docutils literal notranslate"><span class="pre">UpstreamProvider.request_header</span></code></a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="#ape.api.providers.Web3Provider"><code class="docutils literal notranslate"><span class="pre">Web3Provider</span></code></a><ul>
@@ -2527,31 +2511,6 @@ Subclasses override this method to do provider-specific disconnection tasks.</p>
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ape.api.providers.</span></span><span class="sig-name descname"><span class="pre">TestProviderAPI</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">network</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#ape.api.networks.NetworkAPI" title="ape.api.networks.NetworkAPI"><span class="pre">NetworkAPI</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">provider_settings</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_folder</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">request_header</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cached_chain_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">block_page_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">100</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">concurrency</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">4</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.api.providers.TestProviderAPI" title="Permalink to this definition"></a></dt>
 <dd><p>Bases: <a class="reference internal" href="#ape.api.providers.ProviderAPI" title="ape.api.providers.ProviderAPI"><code class="xref py py-class docutils literal notranslate"><span class="pre">ProviderAPI</span></code></a></p>
 <p>An API for providers that have development functionality, such as snapshotting.</p>
-<dl class="py attribute">
-<dt class="sig sig-object py" id="ape.api.providers.TestProviderAPI.block_page_size">
-<span class="sig-name descname"><span class="pre">block_page_size</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="headerlink" href="#ape.api.providers.TestProviderAPI.block_page_size" title="Permalink to this definition"></a></dt>
-<dd><p>The amount of blocks to fetch in a response, as a default.
-This is particularly useful for querying logs across a block range.</p>
-</dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="ape.api.providers.TestProviderAPI.cached_chain_id">
-<span class="sig-name descname"><span class="pre">cached_chain_id</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#ape.api.providers.TestProviderAPI.cached_chain_id" title="Permalink to this definition"></a></dt>
-<dd><p>Implementation providers may use this to cache and re-use chain ID.</p>
-</dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="ape.api.providers.TestProviderAPI.concurrency">
-<span class="sig-name descname"><span class="pre">concurrency</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="headerlink" href="#ape.api.providers.TestProviderAPI.concurrency" title="Permalink to this definition"></a></dt>
-<dd><p>How many parallel threads to use when fetching logs.</p>
-</dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="ape.api.providers.TestProviderAPI.data_folder">
-<span class="sig-name descname"><span class="pre">data_folder</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Path</span></em><a class="headerlink" href="#ape.api.providers.TestProviderAPI.data_folder" title="Permalink to this definition"></a></dt>
-<dd><p>The path to the  <code class="docutils literal notranslate"><span class="pre">.ape</span></code> directory.</p>
-</dd></dl>
-
 <dl class="py method">
 <dt class="sig sig-object py" id="ape.api.providers.TestProviderAPI.mine">
 <em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">mine</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">num_blocks</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.api.providers.TestProviderAPI.mine" title="Permalink to this definition"></a></dt>
@@ -2561,30 +2520,6 @@ This is particularly useful for querying logs across a block range.</p>
 <dd class="field-odd"><p><strong>num_blocks</strong> (<em>int</em>) – The number of blocks allotted to mine. Defaults to <code class="docutils literal notranslate"><span class="pre">1</span></code>.</p>
 </dd>
 </dl>
-</dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="ape.api.providers.TestProviderAPI.name">
-<span class="sig-name descname"><span class="pre">name</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#ape.api.providers.TestProviderAPI.name" title="Permalink to this definition"></a></dt>
-<dd><p>The name of the provider (should be the plugin name).</p>
-</dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="ape.api.providers.TestProviderAPI.network">
-<span class="sig-name descname"><span class="pre">network</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#ape.api.networks.NetworkAPI" title="ape.api.networks.NetworkAPI"><span class="pre">NetworkAPI</span></a></em><a class="headerlink" href="#ape.api.providers.TestProviderAPI.network" title="Permalink to this definition"></a></dt>
-<dd><p>A reference to the network this provider provides.</p>
-</dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="ape.api.providers.TestProviderAPI.provider_settings">
-<span class="sig-name descname"><span class="pre">provider_settings</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">dict</span></em><a class="headerlink" href="#ape.api.providers.TestProviderAPI.provider_settings" title="Permalink to this definition"></a></dt>
-<dd><p>The settings for the provider, as overrides to the configuration.</p>
-</dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="ape.api.providers.TestProviderAPI.request_header">
-<span class="sig-name descname"><span class="pre">request_header</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">dict</span></em><a class="headerlink" href="#ape.api.providers.TestProviderAPI.request_header" title="Permalink to this definition"></a></dt>
-<dd><p>A header to set on HTTP/RPC requests.</p>
 </dd></dl>
 
 <dl class="py method">
@@ -2639,60 +2574,11 @@ to go back to this point. This method is for local networks only.</p>
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ape.api.providers.</span></span><span class="sig-name descname"><span class="pre">UpstreamProvider</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">network</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#ape.api.networks.NetworkAPI" title="ape.api.networks.NetworkAPI"><span class="pre">NetworkAPI</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">provider_settings</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_folder</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">request_header</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cached_chain_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">block_page_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">100</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">concurrency</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">4</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.api.providers.UpstreamProvider" title="Permalink to this definition"></a></dt>
 <dd><p>Bases: <a class="reference internal" href="#ape.api.providers.ProviderAPI" title="ape.api.providers.ProviderAPI"><code class="xref py py-class docutils literal notranslate"><span class="pre">ProviderAPI</span></code></a></p>
 <p>A provider that can also be set as another provider’s upstream.</p>
-<dl class="py attribute">
-<dt class="sig sig-object py" id="ape.api.providers.UpstreamProvider.block_page_size">
-<span class="sig-name descname"><span class="pre">block_page_size</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="headerlink" href="#ape.api.providers.UpstreamProvider.block_page_size" title="Permalink to this definition"></a></dt>
-<dd><p>The amount of blocks to fetch in a response, as a default.
-This is particularly useful for querying logs across a block range.</p>
-</dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="ape.api.providers.UpstreamProvider.cached_chain_id">
-<span class="sig-name descname"><span class="pre">cached_chain_id</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#ape.api.providers.UpstreamProvider.cached_chain_id" title="Permalink to this definition"></a></dt>
-<dd><p>Implementation providers may use this to cache and re-use chain ID.</p>
-</dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="ape.api.providers.UpstreamProvider.concurrency">
-<span class="sig-name descname"><span class="pre">concurrency</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="headerlink" href="#ape.api.providers.UpstreamProvider.concurrency" title="Permalink to this definition"></a></dt>
-<dd><p>How many parallel threads to use when fetching logs.</p>
-</dd></dl>
-
 <dl class="py property">
 <dt class="sig sig-object py" id="ape.api.providers.UpstreamProvider.connection_str">
 <em class="property"><span class="pre">abstract</span><span class="w"> </span><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">connection_str</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#ape.api.providers.UpstreamProvider.connection_str" title="Permalink to this definition"></a></dt>
 <dd><p>The str used by downstream providers to connect to this one.
 For example, the URL for HTTP-based providers.</p>
-</dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="ape.api.providers.UpstreamProvider.data_folder">
-<span class="sig-name descname"><span class="pre">data_folder</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Path</span></em><a class="headerlink" href="#ape.api.providers.UpstreamProvider.data_folder" title="Permalink to this definition"></a></dt>
-<dd><p>The path to the  <code class="docutils literal notranslate"><span class="pre">.ape</span></code> directory.</p>
-</dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="ape.api.providers.UpstreamProvider.name">
-<span class="sig-name descname"><span class="pre">name</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#ape.api.providers.UpstreamProvider.name" title="Permalink to this definition"></a></dt>
-<dd><p>The name of the provider (should be the plugin name).</p>
-</dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="ape.api.providers.UpstreamProvider.network">
-<span class="sig-name descname"><span class="pre">network</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#ape.api.networks.NetworkAPI" title="ape.api.networks.NetworkAPI"><span class="pre">NetworkAPI</span></a></em><a class="headerlink" href="#ape.api.providers.UpstreamProvider.network" title="Permalink to this definition"></a></dt>
-<dd><p>A reference to the network this provider provides.</p>
-</dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="ape.api.providers.UpstreamProvider.provider_settings">
-<span class="sig-name descname"><span class="pre">provider_settings</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">dict</span></em><a class="headerlink" href="#ape.api.providers.UpstreamProvider.provider_settings" title="Permalink to this definition"></a></dt>
-<dd><p>The settings for the provider, as overrides to the configuration.</p>
-</dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="ape.api.providers.UpstreamProvider.request_header">
-<span class="sig-name descname"><span class="pre">request_header</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">dict</span></em><a class="headerlink" href="#ape.api.providers.UpstreamProvider.request_header" title="Permalink to this definition"></a></dt>
-<dd><p>A header to set on HTTP/RPC requests.</p>
 </dd></dl>
 
 </dd></dl>
