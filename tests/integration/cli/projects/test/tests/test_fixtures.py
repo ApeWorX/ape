@@ -1,3 +1,4 @@
+from ape.contracts import ContractInstance
 from ape.managers.accounts import TestAccountManager
 from ape.managers.chain import ChainManager
 from ape.managers.networks import NetworkManager
