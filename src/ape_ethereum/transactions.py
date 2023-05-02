@@ -3,7 +3,6 @@ from enum import Enum, IntEnum
 from typing import IO, Dict, List, Optional, Union
 
 from eth_abi import decode
-from eth_account import Account as EthAccount
 from eth_account._utils.legacy_transactions import (
     encode_transaction,
     serializable_unsigned_transaction_from_dict,
@@ -60,9 +59,6 @@ class BaseTransaction(TransactionAPI):
         unsigned_txn = serializable_unsigned_transaction_from_dict(txn_data)
         signature = (self.signature.v, to_int(self.signature.r), to_int(self.signature.s))
         signed_txn = encode_transaction(unsigned_txn, signature)
-
-        if self.sender and EthAccount.recover_transaction(signed_txn) != self.sender:
-            raise SignatureError("Recovered signer doesn't match sender!")
 
         return signed_txn
 
