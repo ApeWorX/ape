@@ -15,6 +15,7 @@ from web3.types import TxParams
 from ape.api import ReceiptAPI, TestProviderAPI, TransactionAPI, Web3Provider
 from ape.exceptions import (
     ContractLogicError,
+    ProviderError,
     ProviderNotConnectedError,
     TransactionError,
     UnknownSnapshotError,
@@ -181,7 +182,21 @@ class LocalProvider(TestProviderAPI, Web3Provider):
             # Is the same, treat as a noop.
             return
 
-        self.evm_backend.time_travel(new_timestamp)
+        try:
+            self.evm_backend.time_travel(new_timestamp)
+        except ValidationError as err:
+            pattern = re.compile(
+                r"timestamp must be strictly later than parent, "
+                r"but is 0 seconds before\.\n- child\s{2}: (\d*)\n- parent : (\d*)\.\s*"
+            )
+            if match := re.match(pattern, str(err)):
+                if groups := match.groups():
+                    if groups[0].strip() == groups[1].strip():
+                        # Handle race condition where block header are the same.
+                        # Treat as noop, same as pre-check.
+                        return
+
+            raise ProviderError(f"Failed to time travel: {err}") from err
 
     def mine(self, num_blocks: int = 1):
         self.evm_backend.mine_blocks(num_blocks)
