@@ -424,3 +424,40 @@ def test_return_value_nested_struct_in_tuple(geth_account, geth_contract, geth_p
     assert actual[0].t.a == geth_account.address
     assert actual[0].foo == 1
     assert actual[1] == 1
+
+
+@geth_process_test
+def test_get_pending_block(geth_provider, geth_account, accounts):
+    """
+    Pending timestamps can be weird.
+    This ensures we can check those are various strange states of geth.
+    """
+    actual = geth_provider.get_block("latest")
+    assert isinstance(actual, Block)
+
+    snap = geth_provider.snapshot()
+
+    # Transact to increase block
+    geth_account.transfer(accounts.test_accounts[0], "1 gwei")
+    actual = geth_provider.get_block("latest")
+    assert isinstance(actual, Block)
+
+    # Restore state before transaction
+    geth_provider.revert(snap)
+    actual = geth_provider.get_block("latest")
+    assert isinstance(actual, Block)
+
+
+@geth_process_test
+def test_isolate(chain, geth_contract, geth_account):
+    number_at_start = 444
+    geth_contract.setNumber(number_at_start, sender=geth_account)
+    start_head = chain.blocks.height
+
+    with chain.isolate():
+        geth_contract.setNumber(333, sender=geth_account)
+        assert geth_contract.myNumber() == 333
+        assert chain.blocks.height == start_head + 1
+
+    assert geth_contract.myNumber() == number_at_start
+    assert chain.blocks.height == start_head

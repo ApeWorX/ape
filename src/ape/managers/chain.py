@@ -1458,6 +1458,7 @@ class ChainManager(BaseManager):
             snapshot = self.snapshot()
         except APINotImplementedError:
             logger.warning("Provider does not support snapshotting.")
+        pending = self.pending_timestamp
 
         start_ecosystem_name = self.provider.network.ecosystem.name
         start_network_name = self.provider.network.name
@@ -1483,6 +1484,12 @@ class ChainManager(BaseManager):
                 return
 
             self.chain_manager.restore(snapshot)
+
+            try:
+                self.pending_timestamp = pending
+            except APINotImplementedError:
+                # Provider does not support time travel.
+                pass
 
     def mine(
         self,

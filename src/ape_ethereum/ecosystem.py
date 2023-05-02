@@ -167,6 +167,10 @@ class Block(BlockAPI):
     difficulty: int = 0
     total_difficulty: int = Field(0, alias="totalDifficulty")
 
+    @validator("total_difficulty", pre=True)
+    def validate_total_difficulty(cls, value):
+        return value or 0
+
 
 class Ethereum(EcosystemAPI):
     name: str = "ethereum"
