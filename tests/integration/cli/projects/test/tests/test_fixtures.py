@@ -13,10 +13,13 @@ def test_chain(chain):
     assert isinstance(chain, ChainManager)
 
 
-def test_contract(accounts):
-    test_acc = accounts[0].address
-    tx_add = test_acc.deploy(sender=test_acc)
-    assert isinstance(tx_add, ContractInstance)
+def test_deploy(owner, contract_container, chain, clean_contracts_cache):
+    contract = owner.deploy(contract_container, 0)
+
+def test_contract(accounts, contract_container):
+    contract = accounts.test_accounts[0].deploy(contract_container, sender=accounts.test_accounts[0])
+    assert isinstance(contract, ContractInstance)
+    assert contract.address
 
 
 def test_networks(networks):
