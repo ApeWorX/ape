@@ -191,15 +191,17 @@ class ContractLogicError(VirtualMachineError):
 
         # Otherwise we must traverse the trace backwards until we find our first suitable candidate.
         else:
+            last_depth = 1
             while len(trace) > 0:
                 frame = trace.pop()
-                if frame.depth > 1:
+                if frame.depth > last_depth:
                     # Call was made, get the new PCMap.
                     contract_type = self._find_next_contract(trace)
                     if not contract_type.pcmap:
                         raise ValueError("Compiler does not support source code mapping.")
 
                     pcmap = contract_type.pcmap.parse()
+                    last_depth += 1
 
                 if frame.pc in pcmap:
                     pc = frame.pc
