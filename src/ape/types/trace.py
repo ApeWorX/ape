@@ -954,7 +954,27 @@ class ContractSource(BaseModel):
             self._function_ast_cache[method_id.hex()] = ast
 
         if name is None:
+            # This method is not present in the ABI, maybe because it is internal.
+            # Combine the signature lines into a single string.
             name = "".join([x.strip() for x in signature_lines]).rstrip()
+
+            # Strip off any common function defininition prefixes, if found.
+            # def my_method -> my_method
+            common_prefixes = ("def ", "function ", "fn ", "func ")
+            for prefix in common_prefixes:
+                if not name.startswith(prefix):
+                    continue
+
+                name = name.split(prefix)[-1]
+
+            # If it looks like arguments are defined in parenthesis, remove those.
+            # my_method(123) -> my_method
+            if (
+                "(" in name
+                and ")" in name
+                and name.index("(") < len(name) - 1 - name[::-1].index(")")
+            ):
+                name = name.split("(")[0]
 
         content_dict = {offset + i: ln for i, ln in enumerate(content_lines)}
         content = SourceContent(__root__=content_dict)
