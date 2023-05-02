@@ -1,3 +1,4 @@
+from ape.contracts import ContractInstance
 from ape.managers.accounts import TestAccountManager
 from ape.managers.chain import ChainManager, ContractInstance
 from ape.managers.networks import NetworkManager
@@ -12,8 +13,10 @@ def test_chain(chain):
     assert isinstance(chain, ChainManager)
 
 
-def test_contract(Contract):
-    assert isinstance(Contract, ContractInstance)
+def test_contract(accounts):
+    test_acc = accounts[0].address
+    tx_add = test_acc.deploy(sender=test_acc)
+    assert isinstance(tx_add, ContractInstance)
 
 
 def test_networks(networks):

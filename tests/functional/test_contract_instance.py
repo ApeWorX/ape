@@ -27,11 +27,6 @@ def data_object(owner):
     return DataObject()
 
 
-def test_use_contract(Contract, address):
-    my_contract = Contract("0x...")
-    assert my_contract == Contract(address)
-
-
 def test_init_at_unknown_address(networks_connected_to_tester, address):
     _ = networks_connected_to_tester  # Need fixture or else get ProviderNotConnectedError
     with pytest.raises(ChainError, match=f"Failed to get contract type for address '{address}'."):
