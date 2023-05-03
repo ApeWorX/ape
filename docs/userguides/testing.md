@@ -169,6 +169,18 @@ def my_contract(project, owner):
 
 It has the same interface as the [ProjectManager](../methoddocs/managers.html#module-ape.managers.project.manager).
 
+### Contract fixture
+
+Use the `Contract` fixture to change the address in contracts.
+
+```python
+@pytest.fixture
+def my_contract(Contract):
+    return Contract(<address>)
+```
+
+It has the same interface as the [ChainManager](../methoddocs/managers.html#ape.managers.chain.ChainManager).
+
 ## Ape testing commands
 
 ```bash

@@ -79,9 +79,10 @@ class PytestApeFixtures(ManagerAccessMixin):
     @pytest.fixture(scope="session")
     def Contract(self):
         """
-        Instantiate a reference to an on-chain contract using its address (same as ``ape.Contract``).
+        Instantiate a reference to an on-chain contract
+        using its address (same as ``ape.Contract``).
         """
-        return self.chain_manager.instance_at
+        return self.chain_manager.contracts.instance_at
 
     def _isolation(self) -> Iterator[None]:
         """
