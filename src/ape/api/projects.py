@@ -357,7 +357,7 @@ class DependencyAPI(BaseInterfaceModel):
                 # Create content, including sub-directories.
                 source_path.parent.mkdir(parents=True, exist_ok=True)
                 source_path.touch()
-                source_path.write_text(content)
+                source_path.write_text(str(content))
 
             # Handle import remapping entries indicated in the manifest file
             target_config_file = project.path / project.config_file_name

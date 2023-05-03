@@ -5,7 +5,7 @@ from typing import Dict, Iterable, List, Optional, Type, Union
 from ethpm_types import Compiler
 from ethpm_types import ContractInstance as EthPMContractInstance
 from ethpm_types import ContractType, PackageManifest, PackageMeta, Source
-from ethpm_types.contract_type import BIP122_URI
+from ethpm_types.contract_type import BIP122_URI, ContractSource
 from ethpm_types.manifest import PackageName
 from ethpm_types.utils import AnyUrl
 
@@ -16,7 +16,6 @@ from ape.exceptions import APINotImplementedError, ProjectError
 from ape.logging import logger
 from ape.managers.base import BaseManager
 from ape.managers.project.types import ApeProject, BrownieProject
-from ape.types.trace import ContractSource
 from ape.utils import get_relative_path
 
 
@@ -731,19 +730,17 @@ class ProjectManager(BaseManager):
         destination.write_text(artifact.json())
 
     def _create_contract_source(self, contract_type: ContractType) -> Optional[ContractSource]:
-        source_id = contract_type.source_id
-        if not source_id:
+        if not contract_type.source_id:
             return None
 
-        src = self._lookup_source(source_id)
+        src = self._lookup_source(contract_type.source_id)
         if not src:
             return None
 
-        source_path = self.lookup_path(source_id)
-        if not source_path:
+        try:
+            return ContractSource.create(contract_type, src, self.contracts_folder)
+        except (ValueError, FileNotFoundError):
             return None
-
-        return ContractSource(contract_type=contract_type, source=src, source_path=source_path)
 
     def _lookup_source(self, source_id: str) -> Optional[Source]:
         source_path = self.lookup_path(source_id)

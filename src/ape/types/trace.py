@@ -1,12 +1,13 @@
 from fnmatch import fnmatch
 from itertools import tee
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Dict, Iterator, List, Optional, Tuple
+from typing import TYPE_CHECKING, Any, Dict, Iterator, List, Optional
 
-from ethpm_types import ASTNode, BaseModel, ContractType, HexBytes, PCMap, Source
-from ethpm_types.ast import ASTClassification, SourceLocation
+from ethpm_types import ASTNode, BaseModel, ContractType, HexBytes
+from ethpm_types.ast import SourceLocation
+from ethpm_types.source import Closure, Content, Function, SourceStatement, Statement
 from evm_trace.gas import merge_reports
-from pydantic import Field, validator
+from pydantic import Field
 from rich.table import Table
 from rich.tree import Tree
 
@@ -231,226 +232,6 @@ class TraceFrame(BaseInterfaceModel):
     """
 
 
-class SourceContent(BaseModel):
-    """
-    A wrapper around source code line numbers mapped to the content
-    string of those lines.
-    """
-
-    __root__: Dict[int, str]
-
-    @property
-    def begin_lineno(self) -> int:
-        return self.line_numbers[0] if self.line_numbers else -1
-
-    @property
-    def end_lineno(self) -> int:
-        return self.line_numbers[-1] if self.line_numbers else -1
-
-    @property
-    def line_numbers(self) -> List[int]:
-        """
-        All line number in order for this piece of content.
-        """
-        return sorted(list(self.__root__.keys()))
-
-    def items(self):
-        return self.__root__.items()
-
-    def as_list(self) -> List[str]:
-        return list(self.__root__.values())
-
-    def __getitem__(self, lineno: int) -> str:
-        return self.__root__[lineno]
-
-    def __iter__(self):
-        yield from self.__root__
-
-    def __len__(self) -> int:
-        return len(self.__root__)
-
-
-class Closure(BaseModel):
-    """
-    A wrapper around code ran, such as a function.
-    """
-
-    name: str
-    """The name of the definition."""
-
-
-class SourceFunction(Closure):
-    """
-    Data about a function in a contract with known source code.
-    """
-
-    ast: ASTNode
-    """The function definition AST node."""
-
-    offset: int
-    """The line number of the first AST after the signature."""
-
-    content: SourceContent
-    """The function's line content after the signature, mapped by line numbers."""
-
-    @validator("ast", pre=True)
-    def validate_ast(cls, value):
-        if (
-            value.classification is not ASTClassification.FUNCTION
-            and "function" not in str(value.ast_type).lower()
-        ):
-            raise ValueError(
-                f"`ast` must be a function definition (classification={value.classification})."
-            )
-
-        return value
-
-    def __str__(self) -> str:
-        return self.name
-
-    def __repr__(self) -> str:
-        preview = self.name[:18].rstrip()
-        return f"<SourceFunction {preview} ... >"
-
-    def get_content(self, location: SourceLocation) -> SourceContent:
-        """
-        Get the source content for the given location.
-
-        Args:
-            location (``SourceLocation``): The location of the content.
-
-        Returns:
-            :class:`~ape.types.trace.SourceContent`
-        """
-
-        start = max(location[0], self.offset)
-        stop = location[2] + 1
-        content = {n: self.content[n] for n in range(start, stop) if n in self.content}
-        return SourceContent(__root__=content)
-
-    def get_content_asts(self, location: SourceLocation) -> List[ASTNode]:
-        """
-        Get all AST nodes for the given location.
-
-        Args:
-            location (``SourceLocation``): The location of the content.
-
-        Returns:
-            ``List[ASTNode]``: AST nodes objects.
-        """
-
-        return [
-            a
-            for a in self.ast.get_nodes_at_line(location)
-            if a.lineno >= location[0] and a.classification is not ASTClassification.FUNCTION
-        ]
-
-
-class Statement(BaseModel):
-    """
-    A class representing an item in a control flow, either a source statement
-    or implicit compiler code.
-    """
-
-    type: str
-
-    def __repr__(self) -> str:
-        return f"<Statement type={self.type}>"
-
-
-class SourceStatement(Statement):
-    """
-    A class mapping an AST node to some source code content.
-    """
-
-    type: str = "source"
-
-    asts: List[ASTNode]
-    """The AST nodes from this statement."""
-
-    content: SourceContent
-    """The source code content connected to the AST node."""
-
-    def __len__(self):
-        return len(self.content.as_list())
-
-    def __getitem__(self, idx: int) -> str:
-        return self.content.as_list()[idx]
-
-    def __iter__(self) -> Iterator[str]:  # type: ignore[override]
-        yield from self.content.as_list()
-
-    @validator("content", pre=True)
-    def validate_content(cls, value):
-        if len(value) < 1:
-            raise ValueError("Must have at least 1 line of content.")
-
-        return value
-
-    @validator("asts", pre=True)
-    def validate_asts(cls, value):
-        if len(value) < 1:
-            raise ValueError("Must have at least 1 AST node.")
-
-        return value
-
-    @property
-    def begin_lineno(self) -> int:
-        """
-        The first line number.
-        """
-
-        return self.asts[0].lineno
-
-    @property
-    def ws_begin_lineno(self) -> int:
-        """
-        The first line number including backfilled whitespace lines
-        (for output debugging purposes).
-        """
-
-        # NOTE: Whitespace only include when above or besides a statement;
-        # not below.
-
-        # Whitespace lines should already be present in content.
-        return self.content.begin_lineno
-
-    @property
-    def end_lineno(self) -> int:
-        """
-        The last line number.
-        """
-
-        return self.asts[-1].end_lineno
-
-    @property
-    def location(self) -> SourceLocation:
-        return self.begin_lineno, -1, self.end_lineno, -1
-
-    def __str__(self) -> str:
-        # Include whitespace lines.
-        return self.to_str()
-
-    def __repr__(self) -> str:
-        # Excludes whitespace lines.
-        return self.to_str(begin_lineno=self.begin_lineno)
-
-    def to_str(self, begin_lineno: Optional[int] = None):
-        begin_lineno = self.ws_begin_lineno if begin_lineno is None else begin_lineno
-        content = ""
-        for lineno, line in self.content.items():
-            if lineno < begin_lineno:
-                continue
-
-            elif content:
-                # Indent first.
-                content = f"{content.rstrip()}\n"
-
-            content = f"{content}    {lineno} {line}"
-
-        return content
-
-
 class ControlFlow(BaseModel):
     """
     A collection of linear source nodes up until a jump.
@@ -466,7 +247,7 @@ class ControlFlow(BaseModel):
     The defining closure, such as a function or module, of the code sequence.
     """
 
-    source_path: Path
+    source_path: Optional[Path] = None
     """
     The path to the local contract file.
     Only exists when is from a local contract.
@@ -482,7 +263,8 @@ class ControlFlow(BaseModel):
         return f"{self.source_header}\n{self.format()}"
 
     def __repr__(self) -> str:
-        representation = f"<control path, {self.source_path.name} {self.closure.name}"
+        source_name = f" {self.source_path.name} " if self.source_path is not None else " "
+        representation = f"<control path,{source_name}{self.closure.name}"
 
         if len(self.statements) > 0:
             representation = f"{representation} num_statements={len(self.statements)}"
@@ -548,16 +330,21 @@ class ControlFlow(BaseModel):
         return list(range(self.begin_lineno, self.end_lineno + 1))
 
     @property
-    def content(self) -> SourceContent:
+    def content(self) -> Content:
         result: Dict[int, str] = {}
         for node in self.source_statements:
             result = {**result, **node.content.__root__}
 
-        return SourceContent(__root__=result)
+        return Content(__root__=result)
 
     @property
     def source_header(self) -> str:
-        return f"File {self.source_path}, in {self.closure.name}".rstrip()
+        result = ""
+        if self.source_path is not None:
+            result += f"File {self.source_path}, in "
+
+        result += f"{self.closure.name}"
+        return result.strip()
 
     @property
     def end_lineno(self) -> Optional[int]:
@@ -586,7 +373,7 @@ class ControlFlow(BaseModel):
             return
 
         function = self.closure
-        if not isinstance(function, SourceFunction):
+        if not isinstance(function, Function):
             # No source code supported for closure type.
             return
 
@@ -617,7 +404,7 @@ class ControlFlow(BaseModel):
         new_lines = {no: ln.rstrip() for no, ln in content.items() if no >= content_start}
         if new_lines:
             # Add the next statement in this sequence.
-            content = SourceContent(__root__=new_lines)
+            content = Content(__root__=new_lines)
             statement = SourceStatement(asts=asts, content=content)
             self.statements.append(statement)
 
@@ -663,7 +450,7 @@ class ControlFlow(BaseModel):
 
         last_stmt = self.source_statements[-1]
         function = self.closure
-        if not isinstance(function, SourceFunction):
+        if not isinstance(function, Function):
             return None
 
         rest_asts = [a for a in function.ast.children if a.lineno > last_stmt.end_lineno]
@@ -683,7 +470,7 @@ class ControlFlow(BaseModel):
             return None
 
         sorted_dict = {k: content_dict[k] for k in sorted(content_dict)}
-        content = SourceContent(__root__=sorted_dict)
+        content = Content(__root__=sorted_dict)
         return SourceStatement(asts=next_stmt_asts, content=content)
 
 
@@ -781,7 +568,7 @@ class SourceTraceback(BaseModel):
                         # Include whitespace.
                         for ws_no in range(control_flow.end_lineno + 1, next_stmt.begin_lineno):
                             function = control_flow.closure
-                            if not isinstance(function, SourceFunction):
+                            if not isinstance(function, Function):
                                 continue
 
                             ws = function.content[ws_no]
@@ -801,15 +588,13 @@ class SourceTraceback(BaseModel):
 
         return f"{header}{builder}"
 
-    def add_jump(
-        self, location: SourceLocation, function: SourceFunction, source_path: Path, depth: int
-    ):
+    def add_jump(self, location: SourceLocation, function: Function, source_path: Path, depth: int):
         """
         Add an execution sequence from a jump.
 
         Args:
             location (``SourceLocation``): The location to add.
-            function (:class:`~ape.types.trace.SourceFunction`): The function executing.
+            function (``Function``): The function executing.
             source_path (``Path``): The path of the source file.
             depth (int): The depth of the function call in the call tree.
         """
@@ -845,12 +630,24 @@ class SourceTraceback(BaseModel):
         )
         self.last.extend(location, ws_start=start)
 
+    def add_builtin_jump(self, name: str, _type: str, compiler_name: str):
+        closure = Closure(name=name)
+        depth = self.last.depth - 1 if self.last else 0
+        statement = Statement(type=_type)
+        flow = ControlFlow(
+            statements=[statement],
+            closure=closure,
+            source_path=Path("<internal>") / compiler_name,
+            depth=depth,
+        )
+        self.append(flow)
+
     def _add(
         self,
         asts: List[ASTNode],
-        content: SourceContent,
+        content: Content,
         source_path: Path,
-        function: SourceFunction,
+        function: Function,
         depth: int,
     ):
         statement = SourceStatement(asts=asts, content=content)
@@ -858,159 +655,3 @@ class SourceTraceback(BaseModel):
             statements=[statement], source_path=source_path, closure=function, depth=depth
         )
         self.append(exec_sequence)
-
-
-class ContractSource(BaseModel):
-    """
-    A contract type wrapper that enforces all the necessary
-    properties needed for doing source-code processing,
-    such as coverage or showing source code lines during an exception.
-    """
-
-    contract_type: ContractType
-    """The contract type with AST, PCMap, and other necessary properties."""
-
-    source: Source
-    """The source code wrapper."""
-
-    source_path: Path
-    """The path to the source."""
-
-    _function_ast_cache: Dict[str, ASTNode] = {}
-
-    @validator("contract_type", pre=True)
-    def _validate_contract_type(cls, contract_type):
-        if contract_type.source_id is None:
-            raise ValueError("ContractType missing source_id")
-        if contract_type.ast is None:
-            raise ValueError("ContractType missing ast")
-        if contract_type.pcmap is None:
-            raise ValueError("ContractType missing pcmap")
-
-        return contract_type
-
-    @property
-    def source_id(self) -> str:
-        """The contract type source ID."""
-
-        return self.contract_type.source_id  # type: ignore[return-value]
-
-    @property
-    def ast(self) -> ASTNode:
-        """The contract type AST node."""
-
-        return self.contract_type.ast  # type: ignore[return-value]
-
-    @property
-    def pcmap(self) -> PCMap:
-        """The contract type PCMap."""
-
-        return self.contract_type.pcmap  # type: ignore[return-value]
-
-    def __repr__(self) -> str:
-        return f"<{self.source_path.name}::{self.contract_type.name or 'unknown'}>"
-
-    def lookup_function(
-        self, location: SourceLocation, method_id: Optional[HexBytes] = None
-    ) -> Optional[SourceFunction]:
-        """
-        Lookup a function by location.
-
-        Args:
-            location (``SourceLocation``): The location to search.
-            method_id (Optional[HexBytes]): Optionally provide a method ID
-              to use to craft a nicer name. Defaults to using the combined
-              lines of the function signature content.
-
-        Returns:
-            Optional[:class:`~ape.types.trace.SourceFunction`]: The function, if one is
-            found.
-        """
-
-        ast = self.ast.get_defining_function(location)
-        if not ast:
-            return None
-
-        signature_lines, content_lines = self._parse_function(ast)
-        offset = ast.lineno + len(signature_lines)
-
-        # Check if method ID points to a calling method.
-        name = None
-        if method_id and method_id.hex() in self._function_ast_cache:
-            cached_fn = self._function_ast_cache[method_id.hex()]
-            if (
-                cached_fn.lineno == ast.lineno
-                and cached_fn.end_lineno == ast.end_lineno
-                and method_id in self.contract_type.methods
-            ):
-                # Is the same function. It's safe to use the method ABI name.
-                method = self.contract_type.methods[method_id]
-                name = method.name
-
-        elif method_id and method_id in self.contract_type.methods:
-            # Not in cache yet. Assume is calling.
-            method = self.contract_type.methods[method_id]
-            name = method.name
-            self._function_ast_cache[method_id.hex()] = ast
-
-        if name is None:
-            # This method is not present in the ABI, maybe because it is internal.
-            # Combine the signature lines into a single string.
-            name = "".join([x.strip() for x in signature_lines]).rstrip()
-
-            # Strip off any common function defininition prefixes, if found.
-            # def my_method -> my_method
-            common_prefixes = ("def ", "function ", "fn ", "func ")
-            for prefix in common_prefixes:
-                if not name.startswith(prefix):
-                    continue
-
-                name = name.split(prefix)[-1]
-
-            # If it looks like arguments are defined in parenthesis, remove those.
-            # my_method(123) -> my_method
-            if (
-                "(" in name
-                and ")" in name
-                and name.index("(") < len(name) - 1 - name[::-1].index(")")
-            ):
-                name = name.split("(")[0]
-
-        content_dict = {offset + i: ln for i, ln in enumerate(content_lines)}
-        content = SourceContent(__root__=content_dict)
-        SourceFunction.update_forward_refs()
-
-        return SourceFunction(
-            ast=ast,
-            name=name,
-            offset=offset,
-            content=content,
-        )
-
-    def _parse_function(self, function: ASTNode) -> Tuple[List[str], List[str]]:
-        """
-        Parse function AST into two groups. One being the list of
-        lines making up the signature and the other being the content
-        lines of the function.
-        """
-
-        start = function.lineno - 1
-        end = function.end_lineno
-        lines = self.source[start:end]
-
-        content_start = None
-        for child in function.children:
-            # Find smallest lineno after signature-related ASTs.
-            if (
-                child.lineno > function.lineno
-                and child.classification != ASTClassification.FUNCTION
-                and (content_start is None or child.lineno < content_start)
-            ):
-                content_start = child.lineno
-
-        if content_start is None:
-            # Shouldn't happen, but just in case, use only the first line.
-            content_start = function.lineno + 1
-
-        offset = content_start - function.lineno
-        return lines[:offset], lines[offset:]

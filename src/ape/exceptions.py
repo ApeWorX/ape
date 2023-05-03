@@ -1,4 +1,5 @@
 import sys
+import tempfile
 import time
 import traceback
 from collections import deque
@@ -689,7 +690,13 @@ def _get_custom_python_traceback(
         if lineno is None:
             continue
 
-        filename = exec_item.source_path.as_posix()
+        if exec_item.source_path is None:
+            # File is not local. Create a temporary file in its place.
+            # This is necessary for tracebacks to work in Python.
+            temp_file = tempfile.NamedTemporaryFile(prefix="unknown_contract_")
+            filename = temp_file.name
+        else:
+            filename = exec_item.source_path.as_posix()
 
         # Raise an exception at the correct line number.
         py_code: CodeType = compile(
