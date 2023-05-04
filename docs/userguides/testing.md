@@ -171,7 +171,7 @@ It has the same interface as the [ProjectManager](../methoddocs/managers.html#mo
 
 ### Contract fixture
 
-Use the `Contract` fixture to change the address in contracts.
+Use the `Contract` fixture to create contract instances:
 
 ```python
 @pytest.fixture
