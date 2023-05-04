@@ -470,4 +470,5 @@ class ImpersonatedAccount(AccountAPI):
         txn = self.prepare_transaction(txn)
         if not txn.sender:
             txn.sender = self.raw_address
+
         return self.provider.send_transaction(txn)

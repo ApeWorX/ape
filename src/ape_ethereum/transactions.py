@@ -61,7 +61,12 @@ class BaseTransaction(TransactionAPI):
         signature = (self.signature.v, to_int(self.signature.r), to_int(self.signature.s))
         signed_txn = encode_transaction(unsigned_txn, signature)
 
-        if self.sender and EthAccount.recover_transaction(signed_txn) != self.sender:
+        # If this is a real sender (not impersonated), verify its signature.
+        if (
+            self.sender
+            and self.sender not in self.account_manager.test_accounts._impersonated_accounts
+            and EthAccount.recover_transaction(signed_txn) != self.sender
+        ):
             raise SignatureError("Recovered signer doesn't match sender!")
 
         return signed_txn
