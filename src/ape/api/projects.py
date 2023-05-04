@@ -1,7 +1,7 @@
 import os.path
 import tempfile
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Dict, List, Optional
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
 
 import yaml
 from ethpm_types import Checksum, ContractType, PackageManifest, Source
@@ -171,17 +171,20 @@ class ProjectAPI(BaseInterfaceModel):
 
     @classmethod
     def _create_source_dict(
-        cls, contract_filepaths: List[Path], base_path: Path
+        cls, contract_filepaths: Union[Path, List[Path]], base_path: Path
     ) -> Dict[str, Source]:
+        filepaths = (
+            [contract_filepaths] if isinstance(contract_filepaths, Path) else contract_filepaths
+        )
         source_imports: Dict[str, List[str]] = cls.compiler_manager.get_imports(
-            contract_filepaths, base_path
+            filepaths, base_path
         )  # {source_id: [import_source_ids, ...], ...}
         source_references: Dict[str, List[str]] = cls.compiler_manager.get_references(
             imports_dict=source_imports
         )  # {source_id: [referring_source_ids, ...], ...}
 
         source_dict: Dict[str, Source] = {}
-        for source_path in contract_filepaths:
+        for source_path in filepaths:
             key = str(get_relative_path(source_path, base_path))
             source_dict[key] = Source(
                 checksum=Checksum(
@@ -354,7 +357,7 @@ class DependencyAPI(BaseInterfaceModel):
                 # Create content, including sub-directories.
                 source_path.parent.mkdir(parents=True, exist_ok=True)
                 source_path.touch()
-                source_path.write_text(content)
+                source_path.write_text(str(content))
 
             # Handle import remapping entries indicated in the manifest file
             target_config_file = project.path / project.config_file_name

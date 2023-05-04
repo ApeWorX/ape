@@ -135,12 +135,13 @@ def test_compile_when_contract_type_collision(ape_cli, runner, project, clean_ca
 
 @skip_projects_except("multiple-interfaces")
 def test_compile_when_source_contains_return_characters(ape_cli, runner, project, clean_cache):
-    # NOTE: This tests a bugfix where a source file contained return-characters
-    # and that triggered endless re-compiles because it technically contains extra
-    # bytes than the ones that show up in the text.
-
-    # Change the contents of a file to contain the '\r' character.
+    """
+    This tests a bugfix where a source file contained return-characters
+    and that triggered endless re-compiles because it technically contains extra
+    bytes than the ones that show up in the text.
+    """
     source_path = project.contracts_folder / "Interface.json"
+    # Change the contents of a file to contain the '\r' character.
     modified_source_text = f"{source_path.read_text()}\r"
     source_path.unlink()
     source_path.touch()

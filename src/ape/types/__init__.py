@@ -16,13 +16,14 @@ from ethpm_types import (
     Source,
 )
 from ethpm_types.abi import EventABI
+from ethpm_types.source import Closure
 from hexbytes import HexBytes
 from pydantic import BaseModel, root_validator, validator
 from web3.types import FilterParams
 
 from ape.types.address import AddressType, RawAddress
 from ape.types.signatures import MessageSignature, SignableMessage, TransactionSignature
-from ape.types.trace import CallTreeNode, GasReport, TraceFrame
+from ape.types.trace import CallTreeNode, ControlFlow, GasReport, SourceTraceback, TraceFrame
 from ape.utils import BaseInterfaceModel, cached_property
 from ape.utils.misc import to_int
 
@@ -295,6 +296,7 @@ __all__ = [
     "Bytecode",
     "CallTreeNode",
     "Checksum",
+    "Closure",
     "Compiler",
     "ContractLog",
     "ContractLogContainer",
@@ -307,6 +309,8 @@ __all__ = [
     "SignableMessage",
     "SnapshotID",
     "Source",
+    "SourceTraceback",
+    "ControlFlow",
     "TraceFrame",
     "TransactionSignature",
 ]
