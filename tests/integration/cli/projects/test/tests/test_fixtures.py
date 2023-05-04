@@ -13,7 +13,7 @@ def test_chain(chain):
 
 
 def test_contract(chain, Contract):
-    assert chain.contracts.instance_at == Contract
+    assert Contract == chain.contracts.instance_at
 
 
 def test_networks(networks):
