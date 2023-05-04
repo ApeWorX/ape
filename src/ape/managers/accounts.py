@@ -32,6 +32,8 @@ def _use_sender(
 class TestAccountManager(list, ManagerAccessMixin):
     __test__ = False
 
+    _impersonated_accounts: Dict[AddressType, ImpersonatedAccount] = {}
+
     def __repr__(self) -> str:
         accounts_str = ", ".join([a.address for a in self.accounts])
         return f"[{accounts_str}]"
@@ -108,7 +110,11 @@ class TestAccountManager(list, ManagerAccessMixin):
         if not can_impersonate:
             raise IndexError(err_message)
 
-        return ImpersonatedAccount(raw_address=account_id)
+        if account_id not in self._impersonated_accounts:
+            acct = ImpersonatedAccount(raw_address=account_id)
+            self._impersonated_accounts[account_id] = acct
+
+        return self._impersonated_accounts[account_id]
 
     def __contains__(self, address: AddressType) -> bool:  # type: ignore
         return any(address in container for container in self.containers.values())
