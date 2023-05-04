@@ -588,14 +588,20 @@ class SourceTraceback(BaseModel):
 
         return f"{header}{builder}"
 
-    def add_jump(self, location: SourceLocation, function: Function, source_path: Path, depth: int):
+    def add_jump(
+        self,
+        location: SourceLocation,
+        function: Function,
+        depth: int,
+        source_path: Optional[Path] = None,
+    ):
         """
         Add an execution sequence from a jump.
 
         Args:
             location (``SourceLocation``): The location to add.
             function (``Function``): The function executing.
-            source_path (``Path``): The path of the source file.
+            source_path (Optional[``Path``]): The path of the source file.
             depth (int): The depth of the function call in the call tree.
         """
 
@@ -607,7 +613,7 @@ class SourceTraceback(BaseModel):
 
         Statement.update_forward_refs()
         ControlFlow.update_forward_refs()
-        self._add(asts, content, source_path, function, depth)
+        self._add(asts, content, function, depth, source_path=source_path)
 
     def extend_last(self, location: SourceLocation):
         """
@@ -646,9 +652,9 @@ class SourceTraceback(BaseModel):
         self,
         asts: List[ASTNode],
         content: Content,
-        source_path: Path,
         function: Function,
         depth: int,
+        source_path: Optional[Path] = None,
     ):
         statement = SourceStatement(asts=asts, content=content)
         exec_sequence = ControlFlow(

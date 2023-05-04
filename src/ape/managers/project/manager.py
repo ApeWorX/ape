@@ -2,11 +2,11 @@ import shutil
 from pathlib import Path
 from typing import Dict, Iterable, List, Optional, Type, Union
 
-from ethpm_types import Compiler
 from ethpm_types import ContractInstance as EthPMContractInstance
 from ethpm_types import ContractType, PackageManifest, PackageMeta, Source
-from ethpm_types.contract_type import BIP122_URI, ContractSource
+from ethpm_types.contract_type import BIP122_URI
 from ethpm_types.manifest import PackageName
+from ethpm_types.source import Compiler, ContractSource
 from ethpm_types.utils import AnyUrl
 
 from ape.api import DependencyAPI, ProjectAPI

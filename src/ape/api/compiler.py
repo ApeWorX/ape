@@ -2,7 +2,7 @@ from pathlib import Path
 from typing import Dict, Iterator, List, Optional, Set, Tuple
 
 from ethpm_types import ContractType, HexBytes
-from ethpm_types.contract_type import ContractSource
+from ethpm_types.source import ContractSource
 from evm_trace.geth import TraceFrame as EvmTraceFrame
 from evm_trace.geth import create_call_node_data
 from semantic_version import Version  # type: ignore
