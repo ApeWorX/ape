@@ -82,6 +82,7 @@
 <li class="toctree-l3"><a class="reference internal" href="#chain-fixture">chain fixture</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#networks-fixture">networks fixture</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#project-fixture">project fixture</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#contract-fixture">Contract fixture</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="#ape-testing-commands">Ape testing commands</a></li>
@@ -298,6 +299,16 @@ Access each <a class="reference external" href="../methoddocs/api.html?highlight
 </pre></div>
 </div>
 <p>It has the same interface as the <a class="reference external" href="../methoddocs/managers.html#module-ape.managers.project.manager">ProjectManager</a>.</p>
+</section>
+<section id="contract-fixture">
+<h3>Contract fixture<a class="headerlink" href="#contract-fixture" title="Permalink to this heading"></a></h3>
+<p>Use the <code class="docutils literal notranslate"><span class="pre">Contract</span></code> fixture to create contract instances:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nd">@pytest</span><span class="o">.</span><span class="n">fixture</span>
+<span class="k">def</span> <span class="nf">my_contract</span><span class="p">(</span><span class="n">Contract</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">Contract</span><span class="p">(</span><span class="o">&lt;</span><span class="n">address</span><span class="o">&gt;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>It has the same interface as the <a class="reference external" href="../methoddocs/managers.html#ape.managers.chain.ChainManager">ChainManager</a>.</p>
 </section>
 </section>
 <section id="ape-testing-commands">
