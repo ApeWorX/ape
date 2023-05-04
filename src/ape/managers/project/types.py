@@ -77,12 +77,13 @@ class _ProjectSources:
 
         cached_source = self.cached_sources[source_id]
         cached_checksum = cached_source.calculate_checksum()
-
         source_file = self.contracts_folder / source_path
-        checksum = compute_checksum(
-            source_file.read_text("utf8").encode("utf8"),
-            algorithm=cached_checksum.algorithm,
-        )
+
+        # ethpm_types strips trailing white space and ensures
+        # a newline at the end so content so `splitlines()` works.
+        # We need to do the same here for to prevent the endless recompiling bug.
+        content = f"{source_file.read_text('utf8').rstrip()}\n"
+        checksum = compute_checksum(content.encode("utf8"), algorithm=cached_checksum.algorithm)
 
         # NOTE: Filter by checksum to only update what's needed
         return checksum != cached_checksum.hash  # Contents changed
