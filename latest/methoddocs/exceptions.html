@@ -446,9 +446,10 @@ an exception on the exc-stack.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>err</strong> (<a class="reference internal" href="#ape.exceptions.ApeException" title="ape.exceptions.ApeException"><code class="xref py py-class docutils literal notranslate"><span class="pre">ApeException</span></code></a>) – The transaction error
+<li><p><strong>err</strong> (<a class="reference internal" href="#ape.exceptions.TransactionError" title="ape.exceptions.TransactionError"><code class="xref py py-class docutils literal notranslate"><span class="pre">TransactionError</span></code></a>) – The transaction error
 being handled.</p></li>
-<li><p><strong>base_paths</strong> (<em>List</em><em>[</em><a class="reference internal" href="cli.html#ape.cli.paramtype.Path" title="ape.cli.paramtype.Path"><em>Path</em></a><em>]</em>) – Source base paths for allowed frames.</p></li>
+<li><p><strong>base_paths</strong> (<em>Optional</em><em>[</em><em>List</em><em>[</em><a class="reference internal" href="cli.html#ape.cli.paramtype.Path" title="ape.cli.paramtype.Path"><em>Path</em></a><em>]</em><em>]</em>) – Optionally include additional
+source-path prefixes to use when finding relevant frames.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
