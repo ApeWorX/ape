@@ -135,6 +135,18 @@ class TransactionAPI(BaseInterfaceModel):
         except (TransactionNotFoundError, ProviderNotConnectedError):
             return None
 
+    @property
+    def trace(self) -> Iterator[TraceFrame]:
+        """
+        The transaction trace. Only works if this transaction was published
+        and you are using a provider that support tracing.
+
+        Raises:
+            :class:`~ape.exceptions.APINotImplementedError`: When using a provider
+              that does not support tracing.
+        """
+        return self.provider.get_transaction_trace(self.txn_hash.hex())
+
     @abstractmethod
     def serialize_transaction(self) -> bytes:
         """

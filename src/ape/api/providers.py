@@ -37,6 +37,7 @@ from ape.exceptions import (
     APINotImplementedError,
     BlockNotFoundError,
     ContractLogicError,
+    OutOfGasError,
     ProviderError,
     ProviderNotConnectedError,
     RPCTimeoutError,
@@ -1288,6 +1289,9 @@ class Web3Provider(ProviderAPI, ABC):
             return VirtualMachineError(
                 new_err_msg, base_err=exception, code=err_data.get("code"), **kwargs
             )
+
+        elif "out of gas" in str(err_msg):
+            return OutOfGasError(code=err_data.get("code"), **kwargs)
 
         return VirtualMachineError(str(err_msg), code=err_data.get("code"), **kwargs)
 

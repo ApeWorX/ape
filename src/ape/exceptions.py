@@ -7,7 +7,7 @@ from functools import cached_property
 from inspect import getframeinfo, stack
 from pathlib import Path
 from types import CodeType, TracebackType
-from typing import TYPE_CHECKING, Any, Dict, Iterator, List, Optional
+from typing import TYPE_CHECKING, Any, Dict, Iterator, List, Optional, Union
 
 import click
 from eth_utils import humanize_hash
@@ -20,8 +20,11 @@ from ape.logging import LogLevel, logger
 if TYPE_CHECKING:
     from ape.api.networks import NetworkAPI
     from ape.api.providers import SubprocessProvider
-    from ape.api.transactions import TransactionAPI
+    from ape.api.transactions import ReceiptAPI, TransactionAPI
     from ape.types import AddressType, BlockID, SnapshotID, SourceTraceback, TraceFrame
+
+
+FailedTxn = Union["TransactionAPI", "ReceiptAPI"]
 
 
 class ApeException(Exception):
@@ -103,7 +106,7 @@ class TransactionError(ContractError):
         message: Optional[str] = None,
         base_err: Optional[Exception] = None,
         code: Optional[int] = None,
-        txn: Optional["TransactionAPI"] = None,
+        txn: Optional[FailedTxn] = None,
         trace: Optional[Iterator["TraceFrame"]] = None,
         contract_address: Optional["AddressType"] = None,
     ):
@@ -123,7 +126,7 @@ class TransactionError(ContractError):
         if not txn:
             return
 
-        ape_tb = _get_ape_traceback(self, txn)
+        ape_tb = _get_ape_traceback(txn)
         if not ape_tb:
             return
 
@@ -148,7 +151,7 @@ class ContractLogicError(VirtualMachineError):
     def __init__(
         self,
         revert_message: Optional[str] = None,
-        txn: Optional["TransactionAPI"] = None,
+        txn: Optional[FailedTxn] = None,
         trace: Optional[Iterator["TraceFrame"]] = None,
         contract_address: Optional["AddressType"] = None,
     ):
@@ -250,7 +253,7 @@ class ContractLogicError(VirtualMachineError):
         trace = None
         if self.trace is None and self.txn is not None:
             try:
-                trace = deque(self.txn.provider.get_transaction_trace(self.txn.txn_hash.hex()))
+                trace = deque(self.txn.trace)
             except APINotImplementedError as err:
                 raise ValueError(
                     "Cannot check dev message; provider must support transaction tracing."
@@ -301,7 +304,7 @@ class OutOfGasError(VirtualMachineError):
     out of gas.
     """
 
-    def __init__(self, code: Optional[int] = None, txn: Optional["TransactionAPI"] = None):
+    def __init__(self, code: Optional[int] = None, txn: Optional[FailedTxn] = None):
         super().__init__("The transaction ran out of gas.", code=code, txn=txn)
 
 
@@ -618,7 +621,7 @@ class CustomError(ContractLogicError):
         self,
         abi: ErrorABI,
         inputs: Dict[str, Any],
-        txn: Optional["TransactionAPI"] = None,
+        txn: Optional[FailedTxn] = None,
         trace: Optional[Iterator["TraceFrame"]] = None,
         contract_address: Optional["AddressType"] = None,
     ):
@@ -641,8 +644,9 @@ class CustomError(ContractLogicError):
         return self.abi.name
 
 
-def _get_ape_traceback(err: TransactionError, txn: "TransactionAPI") -> Optional["SourceTraceback"]:
-    receipt = txn.receipt
+def _get_ape_traceback(txn: FailedTxn) -> Optional["SourceTraceback"]:
+    is_receipt = "ReceiptAPI" in [t.__name__ for t in txn.__class__.__bases__]
+    receipt: ReceiptAPI = txn if is_receipt else txn.receipt
     if not receipt:
         return None
 
@@ -658,7 +662,7 @@ def _get_ape_traceback(err: TransactionError, txn: "TransactionAPI") -> Optional
 
 
 def _get_custom_python_traceback(
-    err: TransactionError, txn: "TransactionAPI", ape_traceback: "SourceTraceback"
+    err: TransactionError, txn: FailedTxn, ape_traceback: "SourceTraceback"
 ) -> Optional[TracebackType]:
     # Manipulate python traceback to show lines from contract.
     # Help received from Jinja lib:
