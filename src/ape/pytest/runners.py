@@ -48,7 +48,7 @@ class PytestApeRunner(ManagerAccessMixin):
         tb_frames: PytestTraceback = call.excinfo.traceback
         base = self.project_manager.path.as_posix()
 
-        if self.config_wrapper.pytest_config.getoption("showinternal"):
+        if self.config_wrapper.show_internal:
             relevant_tb = list(tb_frames)
         else:
             relevant_tb = [
@@ -59,13 +59,18 @@ class PytestApeRunner(ManagerAccessMixin):
 
         if relevant_tb:
             call.excinfo.traceback = PytestTraceback(relevant_tb)
+
+            # Only show locals if not digging into the framework's traceback.
+            # Else, it gets way too noisy.
+            show_locals = not self.config_wrapper.show_internal
+
             report.longrepr = call.excinfo.getrepr(
                 funcargs=True,
                 abspath=Path.cwd(),
-                showlocals=True,
+                showlocals=show_locals,
                 style="short",
                 tbfilter=False,
-                truncate_locals=False,
+                truncate_locals=True,
                 chain=False,
             )
 
