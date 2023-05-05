@@ -308,7 +308,7 @@ class MockContractLog(BaseContractLog):
     This class is designed to match a subset of event arguments in a ContractLog instance
     by only comparing those event arguments that the user explicitly provides.
 
-    Inherits from BaseContractLog, and overrides the equality method for custom comparison
+    Inherits from :class:`~ape.types.BaseContractLog`, and overrides the equality method for custom comparison
     of event arguments between a MockContractLog and a ContractLog instance.
     """
     def __eq__(self, other: Any) -> bool:
