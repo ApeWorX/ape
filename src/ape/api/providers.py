@@ -638,17 +638,17 @@ class Web3Provider(ProviderAPI, ABC):
 
     @property
     def base_fee(self) -> int:
-        block = self.get_block("latest")
-        if not hasattr(block, "base_fee"):
-            raise APINotImplementedError("No base fee found in block.")
+        fee_history = self.web3.eth.fee_history(1, self.get_block("latest").number)
+        if len(fee_history["baseFeePerGas"]) < 2:
+            raise APINotImplementedError("No base fee found for the next block.")
         else:
-            base_fee = getattr(block, "base_fee")
+            next_base_fee = fee_history["baseFeePerGas"][1]
 
-        if base_fee is None:
+        if next_base_fee is None:
             # Non-EIP-1559 chains or we time-travelled pre-London fork.
             raise APINotImplementedError("base_fee is not implemented by this provider.")
 
-        return base_fee
+        return next_base_fee
 
     @property
     def is_connected(self) -> bool:
