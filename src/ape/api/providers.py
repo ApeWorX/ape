@@ -16,7 +16,7 @@ from signal import SIGINT, SIGTERM, signal
 from subprocess import DEVNULL, PIPE, Popen
 from typing import Any, Dict, Iterator, List, Optional, Union, cast
 
-from eth_typing import HexStr
+from eth_typing import BlockNumber, HexStr
 from eth_utils import add_0x_prefix, to_hex
 from evm_trace import CallTreeNode as EvmCallTreeNode
 from evm_trace import TraceFrame as EvmTraceFrame
@@ -638,17 +638,26 @@ class Web3Provider(ProviderAPI, ABC):
 
     @property
     def base_fee(self) -> int:
-        fee_history = self.web3.eth.fee_history(1, self.get_block("latest").number)
+        latest_block_number = self.get_block("latest").number
+        if latest_block_number is None:
+            raise APINotImplementedError("Could not get block number of latest block.")
+        try:
+            fee_history = self.web3.eth.fee_history(1, BlockNumber(latest_block_number))
+        except ValueError as exc:
+            raise APINotImplementedError(
+                "fee_history is not implemented by this provider."
+            ) from exc
         if len(fee_history["baseFeePerGas"]) < 2:
-            raise APINotImplementedError("No base fee found for the next block.")
-        else:
-            next_base_fee = fee_history["baseFeePerGas"][1]
+            raise APINotImplementedError("No base fee found for the pending block.")
+        pending_base_fee = fee_history["baseFeePerGas"][1]
 
-        if next_base_fee is None:
+        if pending_base_fee is None:
             # Non-EIP-1559 chains or we time-travelled pre-London fork.
-            raise APINotImplementedError("base_fee is not implemented by this provider.")
+            raise APINotImplementedError(
+                "base_fee for pending block is not implemented by this provider."
+            )
 
-        return next_base_fee
+        return pending_base_fee
 
     @property
     def is_connected(self) -> bool:
