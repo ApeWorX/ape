@@ -389,6 +389,7 @@
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.transactions.TransactionAPI.receipt"><code class="docutils literal notranslate"><span class="pre">TransactionAPI.receipt</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.transactions.TransactionAPI.serialize_transaction"><code class="docutils literal notranslate"><span class="pre">TransactionAPI.serialize_transaction()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.transactions.TransactionAPI.total_transfer_value"><code class="docutils literal notranslate"><span class="pre">TransactionAPI.total_transfer_value</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ape.api.transactions.TransactionAPI.trace"><code class="docutils literal notranslate"><span class="pre">TransactionAPI.trace</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.transactions.TransactionAPI.txn_hash"><code class="docutils literal notranslate"><span class="pre">TransactionAPI.txn_hash</span></code></a></li>
 </ul>
 </li>
@@ -3092,6 +3093,19 @@ if it exists.</p>
 <dd><p>The total amount of WEI that a transaction could use.
 Useful for determining if an account balance can afford
 to submit the transaction.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="ape.api.transactions.TransactionAPI.trace">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">trace</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Iterator</span><span class="p"><span class="pre">[</span></span><span class="pre">TraceFrame</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#ape.api.transactions.TransactionAPI.trace" title="Permalink to this definition"></a></dt>
+<dd><p>The transaction trace. Only works if this transaction was published
+and you are using a provider that support tracing.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="exceptions.html#ape.exceptions.APINotImplementedError" title="ape.exceptions.APINotImplementedError"><strong>APINotImplementedError</strong></a> – When using a provider
+    that does not support tracing.</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py property">
