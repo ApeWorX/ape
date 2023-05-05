@@ -10,6 +10,7 @@ from ape.exceptions import (
     BlockNotFoundError,
     ContractLogicError,
     NetworkMismatchError,
+    OutOfGasError,
     TransactionNotFoundError,
 )
 from ape.utils import ZERO_ADDRESS
@@ -462,3 +463,16 @@ def test_isolate(chain, geth_contract, geth_account):
 
     assert geth_contract.myNumber() == number_at_start
     assert chain.blocks.height == start_head
+
+
+@geth_process_test
+def test_out_of_gas_error(geth_contract, geth_account, geth_provider):
+    """
+    Attempt to transact with not quite enough gas. We should get an error saying
+    we ran out of gas.
+    """
+    txn = geth_contract.setNumber.as_transaction(333, sender=geth_account)
+    gas = geth_provider.estimate_gas_cost(txn)
+    txn.gas_limit = gas - 1
+    with pytest.raises(OutOfGasError):
+        geth_account.call(txn)

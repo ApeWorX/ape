@@ -158,7 +158,7 @@ class LocalProvider(TestProviderAPI, Web3Provider):
             try:
                 self.web3.eth.call(txn_params)
             except (ValidationError, TransactionFailed) as err:
-                vm_err = self.get_virtual_machine_error(err, txn=txn)
+                vm_err = self.get_virtual_machine_error(err, txn=receipt)
                 raise vm_err from err
 
         self.chain_manager.history.append(receipt)
