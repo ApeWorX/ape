@@ -469,7 +469,7 @@ class ContractEvent(ManagerAccessMixin):
 
         # Check for overwrites by looking for the intersection of the two key sets
         if overlapping_keys := set(event_args.keys()) & set(kwargs.keys()):
-            raise ValueError(f"Overlapping keys found in arguments: {overlapping_keys}")
+            raise ValueError(f"Overlapping keys found in arguments: '{', '.join(overlapping_keys)}'.")
 
         # Update event_args with keyword arguments
         event_args.update(kwargs)  # type: ignore[arg-type]
