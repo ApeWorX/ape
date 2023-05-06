@@ -1056,6 +1056,7 @@ class ContractCache(BaseManager):
             # If a contract type was not provided, and one was found from disk, use it
             contract_type = contract_type_from_disk
         elif contract_type_from_memory is not None and contract_type_from_memory != default:
+            # If a contract type was not provided, and one was found in the memory cache, use it
             contract_type = contract_type_from_memory
         else:
             raise ValueError(
