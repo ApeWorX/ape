@@ -980,7 +980,7 @@ class ContractCache(BaseManager):
             address (AddressType): The address of the contract.
             default (Optional[ContractType]): A default contract when none is found.
               Defaults to ``None``.
-            cache_to_disk (bool): Cache the fetched contract type to  (live networks only).
+            cache_to_disk (bool): Cache the fetched contract type to disk (live networks only).
               Defaults to ``True``.
             fetch_from_explorer (bool): Fetch the contract type from the block explorer.
               Defaults to ``True``.
