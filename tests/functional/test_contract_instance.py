@@ -159,8 +159,16 @@ def test_repr(vyper_contract_instance):
         rf"<TestContract((Sol)|(Vy)) {vyper_contract_instance.address}>",
         repr(vyper_contract_instance),
     )
-    assert repr(vyper_contract_instance.setNumber) == "setNumber(uint256 num)"
-    assert repr(vyper_contract_instance.myNumber) == "myNumber() -> uint256"
+    assert (
+        repr(vyper_contract_instance.setNumber)
+        == "<TestContractVy 0xF7F78379391C5dF2Db5B66616d18fF92edB82022>.setNumber"
+    )
+    assert str(vyper_contract_instance.setNumber) == "setNumber(uint256 num)"
+    assert (
+        repr(vyper_contract_instance.myNumber)
+        == "<TestContractVy 0xF7F78379391C5dF2Db5B66616d18fF92edB82022>.myNumber"
+    )
+    assert str(vyper_contract_instance.myNumber) == "myNumber() -> uint256"
     assert (
         repr(vyper_contract_instance.NumberChange) == "NumberChange(bytes32 b, uint256 prevNum, "
         "string dynData, uint256 indexed newNum, string indexed dynIndexed)"
