@@ -10,8 +10,10 @@ from ape.exceptions import (
     BlockNotFoundError,
     ContractLogicError,
     NetworkMismatchError,
+    OutOfGasError,
     TransactionNotFoundError,
 )
+from ape.utils import ZERO_ADDRESS
 from ape_ethereum.ecosystem import Block
 from ape_geth.provider import Geth
 from tests.conftest import GETH_URI, geth_process_test
@@ -77,6 +79,16 @@ ContractA\.methodWithoutArguments\(\) -> 0x00..5174 \[\d+ gas\]
 
 
 @pytest.fixture
+def geth_account(accounts):
+    return accounts.test_accounts[5]
+
+
+@pytest.fixture
+def geth_contract(geth_account, vyper_contract_container, geth_provider):
+    return geth_account.deploy(vyper_contract_container, 0)
+
+
+@pytest.fixture
 def mock_geth(geth_provider, mock_web3):
     provider = Geth(
         name="geth",
@@ -101,6 +113,16 @@ def geth_receipt(contract_with_call_depth_geth, owner, geth_provider):
     return contract_with_call_depth_geth.methodWithoutArguments(sender=owner)
 
 
+@pytest.fixture
+def geth_vyper_contract(owner, vyper_contract_container, geth_provider):
+    return owner.deploy(vyper_contract_container, 0)
+
+
+@pytest.fixture
+def geth_vyper_receipt(geth_vyper_contract, owner):
+    return geth_vyper_contract.setNumber(44, sender=owner)
+
+
 @geth_process_test
 def test_uri(geth_provider):
     assert geth_provider.uri == GETH_URI
@@ -118,38 +140,31 @@ def test_uri_uses_value_from_config(geth_provider, temp_config):
         geth_provider.provider_settings = settings
 
 
-def test_tx_revert(accounts, sender, vyper_contract_container):
+def test_tx_revert(accounts, sender, geth_vyper_contract, owner):
     # 'sender' is not the owner so it will revert (with a message)
-    contract = accounts.test_accounts[-1].deploy(vyper_contract_container, 0)
     with pytest.raises(ContractLogicError, match="!authorized"):
-        contract.setNumber(5, sender=sender)
+        geth_vyper_contract.setNumber(5, sender=sender)
 
 
-def test_revert_no_message(accounts, vyper_contract_container):
+def test_revert_no_message(accounts, geth_vyper_contract, owner):
     # The Contract raises empty revert when setting number to 5.
     expected = "Transaction failed."  # Default message
-    owner = accounts.test_accounts[-2]
-    contract = owner.deploy(vyper_contract_container, 0)
     with pytest.raises(ContractLogicError, match=expected):
-        contract.setNumber(5, sender=owner)
+        geth_vyper_contract.setNumber(5, sender=owner)
 
 
 @geth_process_test
-def test_contract_interaction(geth_provider, vyper_contract_container, accounts):
-    owner = accounts.test_accounts[-2]
-    contract = owner.deploy(vyper_contract_container, 0)
-    contract.setNumber(102, sender=owner)
-    assert contract.myNumber() == 102
+def test_contract_interaction(owner, geth_vyper_contract):
+    geth_vyper_contract.setNumber(102, sender=owner)
+    assert geth_vyper_contract.myNumber() == 102
 
 
 @geth_process_test
-def test_get_call_tree(geth_provider, vyper_contract_container, accounts):
-    owner = accounts.test_accounts[-3]
-    contract = owner.deploy(vyper_contract_container, 0)
-    receipt = contract.setNumber(10, sender=owner)
+def test_get_call_tree(geth_vyper_contract, owner, geth_provider):
+    receipt = geth_vyper_contract.setNumber(10, sender=owner)
     result = geth_provider.get_call_tree(receipt.txn_hash)
     expected = (
-        rf"{contract.address}.0x3fb5c1cb"
+        rf"{geth_vyper_contract.address}.0x3fb5c1cb"
         r"\(0x000000000000000000000000000000000000000000000000000000000000000a\) \[\d+ gas\]"
     )
     actual = repr(result)
@@ -181,13 +196,11 @@ def test_repr_on_live_network_and_disconnected(networks):
 
 
 @geth_process_test
-def test_get_logs(geth_provider, accounts, vyper_contract_container):
-    owner = accounts.test_accounts[-4]
-    contract = owner.deploy(vyper_contract_container, 0)
-    contract.setNumber(101010, sender=owner)
-    actual = contract.NumberChange[-1]
+def test_get_logs(geth_vyper_contract, owner):
+    geth_vyper_contract.setNumber(101010, sender=owner)
+    actual = geth_vyper_contract.NumberChange[-1]
     assert actual.event_name == "NumberChange"
-    assert actual.contract_address == contract.address
+    assert actual.contract_address == geth_vyper_contract.address
     assert actual.event_arguments["newNum"] == 101010
 
 
@@ -281,16 +294,13 @@ def test_get_receipt(accounts, vyper_contract_container, geth_provider):
 
 
 @geth_process_test
-def test_snapshot_and_revert(geth_provider, accounts, vyper_contract_container):
-    owner = accounts.test_accounts[-6]
-    contract = owner.deploy(vyper_contract_container, 0)
-
+def test_snapshot_and_revert(geth_provider, geth_account, geth_contract):
     snapshot = geth_provider.snapshot()
-    start_nonce = owner.nonce
-    contract.setNumber(211112, sender=owner)  # Advance a block
+    start_nonce = geth_account.nonce
+    geth_contract.setNumber(211112, sender=geth_account)  # Advance a block
     actual_block_number = geth_provider.get_block("latest").number
     expected_block_number = snapshot + 1
-    actual_nonce = owner.nonce
+    actual_nonce = geth_account.nonce
     expected_nonce = start_nonce + 1
     assert actual_block_number == expected_block_number
     assert actual_nonce == expected_nonce
@@ -299,13 +309,13 @@ def test_snapshot_and_revert(geth_provider, accounts, vyper_contract_container):
 
     actual_block_number = geth_provider.get_block("latest").number
     expected_block_number = snapshot
-    actual_nonce = owner.nonce
+    actual_nonce = geth_account.nonce
     expected_nonce = start_nonce
     assert actual_block_number == expected_block_number
     assert actual_nonce == expected_nonce
 
     # Use account after revert
-    receipt = contract.setNumber(311113, sender=owner)  # Advance a block
+    receipt = geth_contract.setNumber(311113, sender=geth_account)  # Advance a block
     assert not receipt.failed
 
 
@@ -384,9 +394,85 @@ def assert_rich_output(rich_capture: List[str], expected: str):
         pytest.fail(f"Missing expected lines: {rest}")
 
 
+@geth_process_test
 def test_custom_error(error_contract_geth, not_owner):
     contract = error_contract_geth
     with pytest.raises(contract.Unauthorized) as err:
         contract.withdraw(sender=not_owner)
 
     assert err.value.inputs == {"addr": not_owner.address, "counter": 123}
+
+
+@geth_process_test
+def test_return_value_list(geth_account, geth_contract, geth_provider):
+    receipt = geth_contract.getFilledArray.transact(sender=geth_account)
+    assert receipt.return_value == [1, 2, 3]
+
+
+@geth_process_test
+def test_return_value_nested_address_array(geth_account, geth_contract, geth_provider):
+    receipt = geth_contract.getNestedAddressArray.transact(sender=geth_account)
+    expected = [
+        [geth_account.address, geth_account.address, geth_account.address],
+        [ZERO_ADDRESS, ZERO_ADDRESS, ZERO_ADDRESS],
+    ]
+    assert receipt.return_value == expected
+
+
+@geth_process_test
+def test_return_value_nested_struct_in_tuple(geth_account, geth_contract, geth_provider):
+    receipt = geth_contract.getNestedStructWithTuple1.transact(sender=geth_account)
+    actual = receipt.return_value
+    assert actual[0].t.a == geth_account.address
+    assert actual[0].foo == 1
+    assert actual[1] == 1
+
+
+@geth_process_test
+def test_get_pending_block(geth_provider, geth_account, accounts):
+    """
+    Pending timestamps can be weird.
+    This ensures we can check those are various strange states of geth.
+    """
+    actual = geth_provider.get_block("latest")
+    assert isinstance(actual, Block)
+
+    snap = geth_provider.snapshot()
+
+    # Transact to increase block
+    geth_account.transfer(accounts.test_accounts[0], "1 gwei")
+    actual = geth_provider.get_block("latest")
+    assert isinstance(actual, Block)
+
+    # Restore state before transaction
+    geth_provider.revert(snap)
+    actual = geth_provider.get_block("latest")
+    assert isinstance(actual, Block)
+
+
+@geth_process_test
+def test_isolate(chain, geth_contract, geth_account):
+    number_at_start = 444
+    geth_contract.setNumber(number_at_start, sender=geth_account)
+    start_head = chain.blocks.height
+
+    with chain.isolate():
+        geth_contract.setNumber(333, sender=geth_account)
+        assert geth_contract.myNumber() == 333
+        assert chain.blocks.height == start_head + 1
+
+    assert geth_contract.myNumber() == number_at_start
+    assert chain.blocks.height == start_head
+
+
+@geth_process_test
+def test_out_of_gas_error(geth_contract, geth_account, geth_provider):
+    """
+    Attempt to transact with not quite enough gas. We should get an error saying
+    we ran out of gas.
+    """
+    txn = geth_contract.setNumber.as_transaction(333, sender=geth_account)
+    gas = geth_provider.estimate_gas_cost(txn)
+    txn.gas_limit = gas - 1
+    with pytest.raises(OutOfGasError):
+        geth_account.call(txn)

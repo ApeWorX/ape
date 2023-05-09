@@ -72,9 +72,11 @@ def test_deploy_proxy(
 def test_source_path_in_project(project_with_contract):
     contracts_folder = project_with_contract.contracts_folder
     contract = project_with_contract.contracts["Contract"]
-    path = contracts_folder / contract.source_id
-    assert path.is_file()
-    assert project_with_contract.get_contract("Contract").source_path == path
+    contract_container = project_with_contract.get_contract("Contract")
+    expected = contracts_folder / contract.source_id
+
+    assert contract_container.source_path.is_file()
+    assert contract_container.source_path == expected
 
 
 def test_source_path_out_of_project(contract_container, project_with_contract):

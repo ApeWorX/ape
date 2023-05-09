@@ -19,7 +19,13 @@ from ape.exceptions import (
     TransactionNotFoundError,
 )
 from ape.logging import logger
-from ape.types import AddressType, ContractLogContainer, TraceFrame, TransactionSignature
+from ape.types import (
+    AddressType,
+    ContractLogContainer,
+    SourceTraceback,
+    TraceFrame,
+    TransactionSignature,
+)
 from ape.utils import BaseInterfaceModel, abstractmethod, cached_property, raises_not_implemented
 
 if TYPE_CHECKING:
@@ -128,6 +134,18 @@ class TransactionAPI(BaseInterfaceModel):
             return self.provider.get_receipt(txn_hash, required_confirmations=0, timeout=0)
         except (TransactionNotFoundError, ProviderNotConnectedError):
             return None
+
+    @property
+    def trace(self) -> Iterator[TraceFrame]:
+        """
+        The transaction trace. Only works if this transaction was published
+        and you are using a provider that support tracing.
+
+        Raises:
+            :class:`~ape.exceptions.APINotImplementedError`: When using a provider
+              that does not support tracing.
+        """
+        return self.provider.get_transaction_trace(self.txn_hash.hex())
 
     @abstractmethod
     def serialize_transaction(self) -> bytes:
@@ -428,6 +446,15 @@ class ReceiptAPI(BaseInterfaceModel):
 
         return output
 
+    @property
+    @raises_not_implemented
+    def source_traceback(self) -> SourceTraceback:  # type: ignore[empty-body]
+        """
+        A pythonic style traceback for both failing and non-failing receipts.
+        Requires a provider that implements
+        :meth:~ape.api.providers.ProviderAPI.get_transaction_trace`.
+        """
+
     @raises_not_implemented
     def show_trace(self, verbose: bool = False, file: IO[str] = sys.stdout):
         """
@@ -445,6 +472,14 @@ class ReceiptAPI(BaseInterfaceModel):
         Display a gas report for the calls made in this transaction.
         """
 
+    @raises_not_implemented
+    def show_source_traceback(self):
+        """
+        Show a receipt traceback mapping to lines in the source code.
+        Only works when the contract type and source code are both available,
+        like in local projects.
+        """
+
     def track_gas(self):
         """
         Track this receipt's gas in the on-going session gas-report.
@@ -454,5 +489,6 @@ class ReceiptAPI(BaseInterfaceModel):
 
         call_tree = self.call_tree
         receiver = self.receiver
-        if call_tree and receiver is not None:
-            self.chain_manager._reports.append_gas(call_tree.enrich(in_line=False), receiver)
+        if call_tree and receiver is not None and self._test_runner is not None:
+            tracker = self._test_runner.gas_tracker
+            tracker.append_gas(call_tree.enrich(in_line=False), receiver)

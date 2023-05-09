@@ -167,13 +167,14 @@ def test_test_isolation_disabled(setup_pytester, project, pytester, eth_tester_p
 def test_fixture_docs(setup_pytester, project, pytester, eth_tester_provider):
     _ = eth_tester_provider  # Ensure using EthTester for this test.
     result = pytester.runpytest("-q", "--fixtures")
+    actual = "\n".join(result.outlines)
 
     # 'accounts', 'networks', 'chain', and 'project' (etc.)
     fixtures = [prop for n, prop in vars(PytestApeFixtures).items() if not n.startswith("_")]
     for fixture in fixtures:
         # The doc str of the fixture shows in the CLI output
-        doc_str = fixture.__doc__.strip()
-        assert doc_str in "\n".join(result.outlines)
+        for doc_str in fixture.__doc__.splitlines():
+            assert doc_str.strip() in actual
 
 
 @skip_projects_except("test")

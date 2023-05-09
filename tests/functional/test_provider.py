@@ -2,6 +2,7 @@ from unittest import mock
 
 import pytest
 from eth_typing import HexStr
+from eth_utils import ValidationError
 
 from ape.exceptions import BlockNotFoundError, ProviderNotConnectedError, TransactionNotFoundError
 from ape.types import LogFilter
@@ -155,3 +156,43 @@ def test_provider_get_balance(project, networks, accounts):
 
     assert type(balance) == int
     assert balance == 1000000000000000000000000
+
+
+def test_set_timestamp(eth_tester_provider):
+    pending_at_start = eth_tester_provider.get_block("pending").timestamp
+    expected = pending_at_start + 100
+    eth_tester_provider.set_timestamp(expected)
+    eth_tester_provider.mine()
+    actual = eth_tester_provider.get_block("pending").timestamp
+    assert actual == expected + 1  # Mining adds another second.
+
+
+def test_set_timestamp_to_same_time(eth_tester_provider):
+    """
+    Eth tester normally fails when setting the timestamp to the same time.
+    However, in Ape, we treat it as a no-op and let it pass.
+    """
+    expected = eth_tester_provider.get_block("pending").timestamp
+    eth_tester_provider.set_timestamp(expected)
+    actual = eth_tester_provider.get_block("pending").timestamp
+    assert actual == expected
+
+
+def test_set_timestamp_handle_same_time_race_condition(mocker, eth_tester_provider):
+    """
+    Ensures that when we get an error saying the timestamps are the same,
+    we ignore it and treat it as a noop. This handles the race condition
+    when the block advances after ``set_timestamp`` has been called but before
+    the operation completes.
+    """
+
+    def side_effect(*args, **kwargs):
+        raise ValidationError(
+            "timestamp must be strictly later than parent, "
+            "but is 0 seconds before.\n"
+            "- child  : 0\n"
+            "- parent : 0."
+        )
+
+    mocker.patch.object(eth_tester_provider.evm_backend, "time_travel", side_effect=side_effect)
+    eth_tester_provider.set_timestamp(123)

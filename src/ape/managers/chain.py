@@ -9,7 +9,6 @@ from typing import IO, Collection, Dict, Iterator, List, Optional, Set, Type, Un
 import click
 import pandas as pd
 from ethpm_types import ContractType
-from evm_trace.gas import merge_reports
 from rich import get_console
 from rich.console import Console as RichConsole
 
@@ -29,20 +28,14 @@ from ape.exceptions import (
     ChainError,
     ConversionError,
     CustomError,
+    ProviderNotConnectedError,
     QueryEngineError,
     UnknownSnapshotError,
 )
 from ape.logging import logger
 from ape.managers.base import BaseManager
-from ape.types import (
-    AddressType,
-    BlockID,
-    CallTreeNode,
-    ContractFunctionPath,
-    GasReport,
-    SnapshotID,
-)
-from ape.utils import BaseInterfaceModel, TraceStyles, parse_gas_table, singledispatchmethod
+from ape.types import AddressType, BlockID, CallTreeNode, SnapshotID, SourceTraceback
+from ape.utils import BaseInterfaceModel, TraceStyles, singledispatchmethod
 
 
 class BlockContainer(BaseManager):
@@ -612,7 +605,7 @@ class TransactionHistory(BaseManager):
         to retrieve it.
 
         Args:
-            transaction_hash (str): The hash of the transaction.
+            account_or_hash (str): The hash of the transaction.
 
         Returns:
             :class:`~ape.api.transactions.ReceiptAPI`: The receipt.
@@ -623,15 +616,22 @@ class TransactionHistory(BaseManager):
             return self._get_account_history(address)
         except Exception:
             # Use Transaction hash
-            receipt = self._hash_to_receipt_map.get(account_or_hash)
-            if not receipt:
-                # TODO: Replace with query manager once supports receipts
-                #  instead of transactions.
-                # TODO: Add timeout = 0 once in API method to not wait for txns
-                receipt = self.provider.get_receipt(account_or_hash)
-                self.append(receipt)
+            try:
+                return self._get_receipt(account_or_hash)
+            except Exception:
+                pass
 
-            return receipt
+            # If we get here, we failed to get an account or receipt.
+            # Raise top-level exception.
+            raise
+
+    def _get_receipt(self, txn_hash: str) -> ReceiptAPI:
+        receipt = self._hash_to_receipt_map.get(txn_hash)
+        if not receipt:
+            receipt = self.provider.get_receipt(txn_hash, timeout=0)
+            self.append(receipt)
+
+        return receipt
 
     def append(self, txn_receipt: ReceiptAPI):
         """
@@ -1250,9 +1250,6 @@ class ReportManager(BaseManager):
     **NOTE**: This class is not part of the public API.
     """
 
-    track_gas: bool = False
-    gas_exclusions: List[ContractFunctionPath] = []
-    session_gas_report: Optional[GasReport] = None
     rich_console_map: Dict[str, RichConsole] = {}
 
     def show_trace(
@@ -1277,35 +1274,29 @@ class ReportManager(BaseManager):
         console.print(root)
 
     def show_gas(self, call_tree: CallTreeNode, file: Optional[IO[str]] = None):
-        console = self._get_console(file)
         tables = call_tree.as_gas_tables()
-        console.print(*tables)
+        self.echo(*tables, file=file)
 
-    def show_session_gas(
-        self,
-        file: Optional[IO[str]] = None,
-    ) -> bool:
-        if not self.session_gas_report:
-            return False
+    def echo(self, *rich_items, file: Optional[IO[str]] = None):
+        console = self._get_console(file=file)
+        console.print(*rich_items)
 
-        tables = parse_gas_table(self.session_gas_report)
-        console = self._get_console(file)
-        console.print(*tables)
-        return True
+    @property
+    def track_gas(self) -> bool:
+        # TODO: Delete in 0.7; call _test_runner directly if needed.
+        return self._test_runner is not None and self._test_runner.gas_tracker.enabled
 
-    def append_gas(
-        self,
-        call_tree: CallTreeNode,
-        contract_address: AddressType,
+    def append_gas(self, *args, **kwargs):
+        # TODO: Delete in 0.7 and have all plugins call `_test_runner.gas_tracker.append_gas()`.
+        if self._test_runner:
+            self._test_runner.gas_tracker.append_gas(*args, **kwargs)
+
+    def show_source_traceback(
+        self, traceback: SourceTraceback, file: Optional[IO[str]] = None, failing: bool = True
     ):
-        contract_type = self.chain_manager.contracts.get(contract_address)
-        if not contract_type:
-            # Skip unknown contracts.
-            return
-
-        gas_report = call_tree.get_gas_report(exclude=self.gas_exclusions)
-        session_report = self.session_gas_report or {}
-        self.session_gas_report = merge_reports(session_report, gas_report)
+        console = self._get_console(file)
+        style = "red" if failing else None
+        console.print(str(traceback), style=style)
 
     def _get_console(self, file: Optional[IO[str]] = None) -> RichConsole:
         if not file:
@@ -1353,11 +1344,16 @@ class ChainManager(BaseManager):
         """
         A mapping of transactions from the active session to the account responsible.
         """
-        if self.chain_id not in self._transaction_history_map:
-            history = TransactionHistory()
-            self._transaction_history_map[self.chain_id] = history
+        try:
+            chain_id = self.chain_id
+        except ProviderNotConnectedError:
+            return TransactionHistory()  # Empty list.
 
-        return self._transaction_history_map[self.chain_id]
+        if chain_id not in self._transaction_history_map:
+            history = TransactionHistory()
+            self._transaction_history_map[chain_id] = history
+
+        return self._transaction_history_map[chain_id]
 
     @property
     def chain_id(self) -> int:
@@ -1482,6 +1478,7 @@ class ChainManager(BaseManager):
             snapshot = self.snapshot()
         except APINotImplementedError:
             logger.warning("Provider does not support snapshotting.")
+        pending = self.pending_timestamp
 
         start_ecosystem_name = self.provider.network.ecosystem.name
         start_network_name = self.provider.network.name
@@ -1507,6 +1504,12 @@ class ChainManager(BaseManager):
                 return
 
             self.chain_manager.restore(snapshot)
+
+            try:
+                self.pending_timestamp = pending
+            except APINotImplementedError:
+                # Provider does not support time travel.
+                pass
 
     def mine(
         self,

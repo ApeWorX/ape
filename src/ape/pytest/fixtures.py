@@ -76,6 +76,14 @@ class PytestApeFixtures(ManagerAccessMixin):
 
         return self.project_manager
 
+    @pytest.fixture(scope="session")
+    def Contract(self):
+        """
+        Instantiate a reference to an on-chain contract
+        using its address (same as ``ape.Contract``).
+        """
+        return self.chain_manager.contracts.instance_at
+
     def _isolation(self) -> Iterator[None]:
         """
         Isolation logic used to implement isolation fixtures for each pytest scope.
@@ -129,8 +137,6 @@ class ReceiptCapture(ManagerAccessMixin):
 
     def __init__(self, config_wrapper: ConfigWrapper):
         self.config_wrapper = config_wrapper
-        self.chain_manager._reports.track_gas = self.config_wrapper.track_gas
-        self.chain_manager._reports.gas_exclusions = self.config_wrapper.gas_exclusions
 
     def __enter__(self):
         block_number = self._get_block_number()

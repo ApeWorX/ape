@@ -1,15 +1,17 @@
 import sys
+import tempfile
 import time
 import traceback
 from collections import deque
 from functools import cached_property
 from inspect import getframeinfo, stack
-from itertools import tee
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Dict, Iterator, List, Optional
+from types import CodeType, TracebackType
+from typing import TYPE_CHECKING, Any, Dict, Iterator, List, Optional, Union
 
 import click
 from eth_utils import humanize_hash
+from ethpm_types import ContractType
 from ethpm_types.abi import ErrorABI
 from rich import print as rich_print
 
@@ -18,9 +20,11 @@ from ape.logging import LogLevel, logger
 if TYPE_CHECKING:
     from ape.api.networks import NetworkAPI
     from ape.api.providers import SubprocessProvider
-    from ape.api.transactions import TransactionAPI
-    from ape.types import AddressType, BlockID, SnapshotID, TraceFrame
-    from ape.utils.basemodel import ManagerAccessMixin
+    from ape.api.transactions import ReceiptAPI, TransactionAPI
+    from ape.types import AddressType, BlockID, SnapshotID, SourceTraceback, TraceFrame
+
+
+FailedTxn = Union["TransactionAPI", "ReceiptAPI"]
 
 
 class ApeException(Exception):
@@ -102,7 +106,7 @@ class TransactionError(ContractError):
         message: Optional[str] = None,
         base_err: Optional[Exception] = None,
         code: Optional[int] = None,
-        txn: Optional["TransactionAPI"] = None,
+        txn: Optional[FailedTxn] = None,
         trace: Optional[Iterator["TraceFrame"]] = None,
         contract_address: Optional["AddressType"] = None,
     ):
@@ -113,8 +117,23 @@ class TransactionError(ContractError):
         self.txn = txn
         self.trace = trace
         self.contract_address = contract_address
+        self.source_traceback: Optional["SourceTraceback"] = None
         ex_message = f"({code}) {message}" if code else message
+
+        # Finalizes expected revert message.
         super().__init__(ex_message)
+
+        if not txn:
+            return
+
+        ape_tb = _get_ape_traceback(txn)
+        if not ape_tb:
+            return
+
+        self.source_traceback = ape_tb
+        py_tb = _get_custom_python_traceback(self, txn, ape_tb)
+        if py_tb:
+            self.__traceback__ = py_tb
 
 
 class VirtualMachineError(TransactionError):
@@ -132,7 +151,7 @@ class ContractLogicError(VirtualMachineError):
     def __init__(
         self,
         revert_message: Optional[str] = None,
-        txn: Optional["TransactionAPI"] = None,
+        txn: Optional[FailedTxn] = None,
         trace: Optional[Iterator["TraceFrame"]] = None,
         contract_address: Optional["AddressType"] = None,
     ):
@@ -163,54 +182,26 @@ class ContractLogicError(VirtualMachineError):
             ``ValueError``: When unable to get dev message.
         """
 
-        accessor: Optional["ManagerAccessMixin"] = None
-        if self.txn:
-            accessor = self.txn
-        elif self.trace is not None:
-            self.trace, second_trace = tee(self.trace)
-            if second_trace:
-                accessor = next(second_trace, None)
-
-        if accessor is None:
-            raise ValueError("Missing trace access.")
+        trace = self._get_trace()
+        if len(trace) == 0:
+            raise ValueError("Missing trace.")
 
         contract_address = self.contract_address or getattr(self.txn, "receiver", None)
         if not contract_address:
             raise ValueError("Could not fetch contract information to check dev message.")
 
         try:
-            contract = accessor.chain_manager.contracts.instance_at(contract_address)
+            contract_type = trace[-1].chain_manager.contracts[contract_address]
         except ValueError as err:
             raise ValueError(
                 f"Could not fetch contract at {contract_address} to check dev message."
             ) from err
 
-        if contract.contract_type.pcmap is None:
+        if contract_type.pcmap is None:
             raise ValueError("Compiler does not support source code mapping.")
 
-        if self.trace is None and self.txn is not None:
-            try:
-                trace = deque(accessor.provider.get_transaction_trace(self.txn.txn_hash.hex()))
-
-            except APINotImplementedError as err:
-                raise ValueError(
-                    "Cannot check dev message; " "provider must support transaction tracing."
-                ) from err
-
-            except (ProviderError, SignatureError) as err:
-                raise ValueError("Cannot fetch transaction trace.") from err
-
-        elif self.trace is not None:
-            trace = deque(self.trace)
-
-        else:
-            raise ValueError("Cannot fetch transaction trace.")
-
-        if trace is None:
-            raise ValueError("Cannot fetch transaction trace.")
-
         pc = None
-        pcmap = contract.contract_type.pcmap.parse()
+        pcmap = contract_type.pcmap.parse()
 
         # To find a suitable line for inspecting dev messages, we must start at the revert and work
         # our way backwards. If the last frame's PC is in the PC map, the offending line is very
@@ -220,8 +211,18 @@ class ContractLogicError(VirtualMachineError):
 
         # Otherwise we must traverse the trace backwards until we find our first suitable candidate.
         else:
+            last_depth = 1
             while len(trace) > 0:
                 frame = trace.pop()
+                if frame.depth > last_depth:
+                    # Call was made, get the new PCMap.
+                    contract_type = self._find_next_contract(trace)
+                    if not contract_type.pcmap:
+                        raise ValueError("Compiler does not support source code mapping.")
+
+                    pcmap = contract_type.pcmap.parse()
+                    last_depth += 1
+
                 if frame.pc in pcmap:
                     pc = frame.pc
                     break
@@ -234,7 +235,7 @@ class ContractLogicError(VirtualMachineError):
         if offending_source is None:
             return None
 
-        dev_messages = contract.contract_type.dev_messages or {}
+        dev_messages = contract_type.dev_messages or {}
         if offending_source.line_start is None:
             # Check for a `dev` field in PCMap.
             return None if offending_source.dev is None else offending_source.dev
@@ -247,6 +248,43 @@ class ContractLogicError(VirtualMachineError):
 
         # Dev message is neither found from the compiler or from a dev-comment.
         return None
+
+    def _get_trace(self) -> deque:
+        trace = None
+        if self.trace is None and self.txn is not None:
+            try:
+                trace = deque(self.txn.trace)
+            except APINotImplementedError as err:
+                raise ValueError(
+                    "Cannot check dev message; provider must support transaction tracing."
+                ) from err
+
+            except (ProviderError, SignatureError) as err:
+                raise ValueError("Cannot fetch transaction trace.") from err
+
+        elif self.trace is not None:
+            trace = deque(self.trace)
+
+        if not trace:
+            raise ValueError("Cannot fetch transaction trace.")
+
+        return trace
+
+    def _find_next_contract(self, trace: deque) -> ContractType:
+        msg = "Could not fetch contract at '{address}' to check dev message."
+        idx = len(trace) - 1
+        while idx >= 0:
+            frame = trace[idx]
+            if frame.contract_address:
+                ct = frame.chain_manager.contracts.get(frame.contract_address)
+                if not ct:
+                    raise ValueError(msg.format(address=frame.contract_address))
+
+                return ct
+
+            idx -= 1
+
+        raise ValueError(msg.format(address=frame.contract_address))
 
     @classmethod
     def from_error(cls, err: Exception):
@@ -266,7 +304,7 @@ class OutOfGasError(VirtualMachineError):
     out of gas.
     """
 
-    def __init__(self, code: Optional[int] = None, txn: Optional["TransactionAPI"] = None):
+    def __init__(self, code: Optional[int] = None, txn: Optional[FailedTxn] = None):
         super().__init__("The transaction ran out of gas.", code=code, txn=txn)
 
 
@@ -514,9 +552,10 @@ def handle_ape_exception(err: ApeException, base_paths: List[Path]) -> bool:
     an exception on the exc-stack.
 
     Args:
-        err (:class:`~ape.exceptions.ApeException`): The transaction error
+        err (:class:`~ape.exceptions.TransactionError`): The transaction error
           being handled.
-        base_paths (List[Path]): Source base paths for allowed frames.
+        base_paths (Optional[List[Path]]): Optionally include additional
+          source-path prefixes to use when finding relevant frames.
 
     Returns:
         bool: ``True`` if outputted something.
@@ -582,7 +621,7 @@ class CustomError(ContractLogicError):
         self,
         abi: ErrorABI,
         inputs: Dict[str, Any],
-        txn: Optional["TransactionAPI"] = None,
+        txn: Optional[FailedTxn] = None,
         trace: Optional[Iterator["TraceFrame"]] = None,
         contract_address: Optional["AddressType"] = None,
     ):
@@ -603,3 +642,88 @@ class CustomError(ContractLogicError):
         The name of the error.
         """
         return self.abi.name
+
+
+def _get_ape_traceback(txn: FailedTxn) -> Optional["SourceTraceback"]:
+    is_receipt = "ReceiptAPI" in [t.__name__ for t in txn.__class__.__bases__]
+    receipt: "ReceiptAPI" = txn if is_receipt else txn.receipt  # type: ignore
+    if not receipt:
+        return None
+
+    try:
+        ape_traceback = receipt.source_traceback
+    except (ApeException, NotImplementedError):
+        return None
+
+    if ape_traceback is None or not len(ape_traceback):
+        return None
+
+    return ape_traceback
+
+
+def _get_custom_python_traceback(
+    err: TransactionError, txn: FailedTxn, ape_traceback: "SourceTraceback"
+) -> Optional[TracebackType]:
+    # Manipulate python traceback to show lines from contract.
+    # Help received from Jinja lib:
+    #  https://github.com/pallets/jinja/blob/main/src/jinja2/debug.py#L142
+
+    _, exc_value, tb = sys.exc_info()
+    depth = None
+    idx = len(ape_traceback) - 1
+    frames = []
+    project_path = txn.project_manager.path.as_posix()
+    while tb is not None:
+        if not tb.tb_frame.f_code.co_filename.startswith(project_path):
+            # Ignore frames outside the project.
+            # This allows both contract code an scripts to appear.
+            tb = tb.tb_next
+            continue
+
+        frames.append(tb)
+        tb = tb.tb_next
+
+    while (depth is None or depth > 1) and idx >= 0:
+        exec_item = ape_traceback[idx]
+        if depth is not None and exec_item.depth >= depth:
+            # Wait for decreasing depth.
+            continue
+
+        depth = exec_item.depth
+        lineno = exec_item.begin_lineno
+        if lineno is None:
+            continue
+
+        if exec_item.source_path is None:
+            # File is not local. Create a temporary file in its place.
+            # This is necessary for tracebacks to work in Python.
+            temp_file = tempfile.NamedTemporaryFile(prefix="unknown_contract_")
+            filename = temp_file.name
+        else:
+            filename = exec_item.source_path.as_posix()
+
+        # Raise an exception at the correct line number.
+        py_code: CodeType = compile(
+            "\n" * (lineno - 1) + "raise __ape_exception__", filename, "exec"
+        )
+        py_code = py_code.replace(co_name=exec_item.closure.name)
+
+        # Execute the new code to get a new (fake) tb with contract source info.
+        try:
+            exec(py_code, {"__ape_exception__": err}, {})
+        except BaseException:
+            fake_tb = sys.exc_info()[2].tb_next  # type: ignore
+            if isinstance(fake_tb, TracebackType):
+                frames.append(fake_tb)
+
+        idx -= 1
+
+    if not frames:
+        return None
+
+    tb_next = None
+    for tb in frames:
+        tb.tb_next = tb_next
+        tb_next = tb
+
+    return frames[-1]

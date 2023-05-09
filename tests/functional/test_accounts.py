@@ -4,6 +4,7 @@ from eth_account.messages import encode_defunct
 
 import ape
 from ape import convert
+from ape.api import ImpersonatedAccount
 from ape.exceptions import AccountsError, NetworkError, ProjectError, SignatureError
 from ape.types.signatures import recover_signer
 from ape.utils.testing import DEFAULT_NUMBER_OF_TEST_ACCOUNTS
@@ -88,6 +89,11 @@ def test_transfer(sender, receiver, eth_tester_provider):
     assert (
         sender.balance == expected_sender_balance
     ), f"difference: {abs(sender.balance - expected_sender_balance)}"
+
+
+def test_transfer_with_negative_value(sender, receiver):
+    with pytest.raises(AccountsError, match="Value cannot be negative."):
+        sender.transfer(receiver, value=-1)
 
 
 def test_transfer_without_value(sender, receiver):
@@ -287,6 +293,25 @@ def test_impersonate_not_implemented(accounts):
     )
     with pytest.raises(IndexError, match=expected_err_msg):
         _ = accounts[test_address]
+
+
+def test_impersonated_account_ignores_signature_check_on_txn(accounts):
+    address = "0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045"
+    account = ImpersonatedAccount(raw_address=address)
+
+    # Impersonate hack, since no providers in core actually support it.
+    accounts.test_accounts._impersonated_accounts[address] = account
+    other_0 = accounts.test_accounts[8]
+    other_1 = accounts.test_accounts[9]
+    txn = other_0.transfer(other_1, "1 gwei").transaction
+
+    # Hack in fake sender.
+    txn.sender = address
+    actual = txn.serialize_transaction()
+
+    # Normally, you'd get a signature error here, but since the account is registered
+    # as impersonated, ape lets it slide because it knows it won't match.
+    assert isinstance(actual, bytes)
 
 
 def test_contract_as_sender_non_fork_network(contract_instance):

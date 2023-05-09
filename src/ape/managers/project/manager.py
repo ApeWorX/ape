@@ -2,11 +2,11 @@ import shutil
 from pathlib import Path
 from typing import Dict, Iterable, List, Optional, Type, Union
 
-from ethpm_types import Compiler
 from ethpm_types import ContractInstance as EthPMContractInstance
 from ethpm_types import ContractType, PackageManifest, PackageMeta, Source
 from ethpm_types.contract_type import BIP122_URI
 from ethpm_types.manifest import PackageName
+from ethpm_types.source import Compiler, ContractSource
 from ethpm_types.utils import AnyUrl
 
 from ape.api import DependencyAPI, ProjectAPI
@@ -580,6 +580,9 @@ class ProjectManager(BaseManager):
         ext = path.suffix or None
 
         def find_in_dir(dir_path: Path) -> Optional[Path]:
+            if not dir_path.is_dir():
+                return None
+
             for file_path in dir_path.iterdir():
                 if file_path.is_dir():
                     result = find_in_dir(file_path)
@@ -725,6 +728,27 @@ class ProjectManager(BaseManager):
             destination.unlink()
 
         destination.write_text(artifact.json())
+
+    def _create_contract_source(self, contract_type: ContractType) -> Optional[ContractSource]:
+        if not contract_type.source_id:
+            return None
+
+        src = self._lookup_source(contract_type.source_id)
+        if not src:
+            return None
+
+        try:
+            return ContractSource.create(contract_type, src, self.contracts_folder)
+        except (ValueError, FileNotFoundError):
+            return None
+
+    def _lookup_source(self, source_id: str) -> Optional[Source]:
+        source_path = self.lookup_path(source_id)
+        if source_path and source_path.is_file():
+            result = self.local_project._create_source_dict(source_path, self.contracts_folder)
+            return next(iter(result.values())) if result else None
+
+        return None
 
     def _get_contract(self, name: str) -> Optional[ContractContainer]:
         if name in self.contracts:

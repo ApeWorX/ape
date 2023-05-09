@@ -176,6 +176,8 @@ class AccountAPI(BaseInterfaceModel, BaseAddress):
 
         elif value:
             txn.value = self.conversion_manager.convert(value, int)
+            if txn.value < 0:
+                raise AccountsError("Value cannot be negative.")
 
         return self.call(txn, **kwargs)
 
@@ -468,4 +470,5 @@ class ImpersonatedAccount(AccountAPI):
         txn = self.prepare_transaction(txn)
         if not txn.sender:
             txn.sender = self.raw_address
+
         return self.provider.send_transaction(txn)

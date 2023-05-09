@@ -1,5 +1,5 @@
 from abc import ABC
-from typing import TYPE_CHECKING, ClassVar, Dict, List, cast
+from typing import TYPE_CHECKING, ClassVar, Dict, List, Optional, cast
 
 from pydantic import BaseModel
 
@@ -17,6 +17,7 @@ if TYPE_CHECKING:
     from ape.managers.project import DependencyManager, ProjectManager
     from ape.managers.query import QueryManager
     from ape.plugins import PluginManager
+    from ape.pytest.runners import PytestApeRunner
 
 
 class injected_before_use(property):
@@ -55,6 +56,8 @@ class ManagerAccessMixin:
     project_manager: ClassVar["ProjectManager"] = cast("ProjectManager", injected_before_use())
 
     query_manager: ClassVar["QueryManager"] = cast("QueryManager", injected_before_use())
+
+    _test_runner: ClassVar[Optional["PytestApeRunner"]] = None
 
     @property
     def provider(self) -> "ProviderAPI":

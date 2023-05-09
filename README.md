@@ -8,7 +8,7 @@ Ape is built by [ApeWorX LTD](https://www.apeworx.io/).
 
 Join our [ApeWorX Discord server](https://discord.gg/apeworx) to stay up to date on new releases, plugins and tutorials.
 
-If you want to just get started, jump down to the [Playing with Ape](#playing-with-ape)
+If you want to just get started, jump down to the [Playing with Ape](#playing-with-ape).
 
 ## Documentation
 
@@ -21,10 +21,10 @@ Read our [academic platform](https://academy.apeworx.io/) will help you master A
 In the latest release, Ape requires:
 
 - Linux or macOS
-- Python 3.8 or later
-- **Windows**: Install Windows Subsystem Linux [(WSL)](https://docs.microsoft.com/en-us/windows/wsl/install) with Python 3.8 or later
+- Python 3.8 up to 3.11
+- **Windows**: Install Windows Subsystem Linux [(WSL)](https://docs.microsoft.com/en-us/windows/wsl/install)
 
-Check your python version in a terminal with `python3 --version`
+Check your python version in a terminal with `python3 --version`.
 
 ## Installation
 
@@ -34,15 +34,15 @@ There are three ways to install ape: `pipx`, `pip`, or `Docker`.
 
 - We advise installing in a [virtualenv](https://pypi.org/project/virtualenv/) or [venv](https://docs.python.org/3/library/venv.html) to avoid interfering with *OS-level site packages*.
 
-- We advise installing **`ape`** with recommended plugins `pip install eth-ape'[recommended-plugins]'`
+- We advise installing **`ape`** with recommended plugins `pip install eth-ape'[recommended-plugins]'`.
 
-- We advise for **macOS** users to install virtual env via [homebrew](https://formulae.brew.sh/formula/virtualenv)
+- We advise for **macOS** users to install virtual env via [homebrew](https://formulae.brew.sh/formula/virtualenv).
 
 ### via `pipx` or `pip`
 
-1. Install `pipx` via their [installation instructions](https://pypa.github.io/pipx/) or `pip` via their [installation instructions](https://pip.pypa.io/en/stable/cli/pip_install/)
+1. Install `pipx` via their [installation instructions](https://pypa.github.io/pipx/) or `pip` via their [installation instructions](https://pip.pypa.io/en/stable/cli/pip_install/).
 
-2. Install **`ape`** via `pipx install eth-ape` or `pip install eth-ape`
+2. Install **`ape`** via `pipx install eth-ape` or `pip install eth-ape`.
 
 ### via `docker`
 

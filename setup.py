@@ -19,7 +19,7 @@ extras_require = {
     ],
     "lint": [
         "black>=23.3.0,<24",  # Auto-formatter and linter
-        "mypy>=0.991",  # Static type analyzer
+        "mypy>=0.991,<1",  # Static type analyzer
         "types-PyYAML",  # Needed due to mypy typeshed
         "types-requests",  # Needed due to mypy typeshed
         "types-setuptools",  # Needed due to mypy typeshed
@@ -121,8 +121,8 @@ setup(
         "web3[tester]>=6.0.0,<7",
         # ** Dependencies maintained by ApeWorX **
         "eip712>=0.2.1,<0.3",
-        "ethpm-types>=0.4.3,<0.5",
-        "evm-trace>=0.1.0a17",
+        "ethpm-types>=0.5.0,<0.6",
+        "evm-trace>=0.1.0a19",
     ],
     entry_points={
         "console_scripts": ["ape=ape._cli:cli"],
@@ -139,7 +139,7 @@ setup(
             "ape_init=ape_init._cli:cli",
         ],
     },
-    python_requires=">=3.8,<3.11",
+    python_requires=">=3.8,<4",
     extras_require=extras_require,
     py_modules=packages_data["__modules__"],
     license="Apache-2.0",
@@ -159,5 +159,6 @@ setup(
         "Programming Language :: Python :: 3.8",
         "Programming Language :: Python :: 3.9",
         "Programming Language :: Python :: 3.10",
+        "Programming Language :: Python :: 3.11",
     ],
 )

@@ -169,6 +169,18 @@ def my_contract(project, owner):
 
 It has the same interface as the [ProjectManager](../methoddocs/managers.html#module-ape.managers.project.manager).
 
+### Contract fixture
+
+Use the `Contract` fixture to create contract instances:
+
+```python
+@pytest.fixture
+def my_contract(Contract):
+    return Contract(<address>)
+```
+
+It has the same interface as the [ChainManager](../methoddocs/managers.html#ape.managers.chain.ChainManager).
+
 ## Ape testing commands
 
 ```bash
@@ -386,12 +398,29 @@ def test_unauthorized_withdraw(contract, hacker):
 
 ## Multi-chain Testing
 
-The Ape framework supports connecting to alternative providers in tests.
-The easiest way to achieve this is to use the `networks` provider context-manager.
+The Ape framework supports connecting to alternative networks / providers in tests.
+
+To run an entire test using a specific network / provider combination, use the `use_network` pytest marker:
+
+```python
+import pytest
+
+
+@pytest.mark.use_network("fantom:local:test")
+def test_my_fantom_test(chain):
+    assert chain.provider.network.ecosystem.name == "fantom"
+
+
+@pytest.mark.use_network("ethereum:local:test")
+def test_my_ethereum_test(chain):
+    assert chain.provider.network.ecosystem.name == "ethereum"
+```
+
+To switch networks mid-test, use the `networks` context-manager:
 
 ```python
 # Switch to Fantom mid test
-def test_my_fantom_test(networks):
+def test_my_multichain_test(networks):
     # The test starts in 1 ecosystem but switches to another
     assert networks.provider.network.ecosystem.name == "ethereum"
 
@@ -403,7 +432,8 @@ def test_my_fantom_test(networks):
        assert provider.network.ecosystem.name == "fantom"
 ```
 
-You can also set the network context in a context-manager pytest fixture:
+You can also set the network context in a pytest fixture.
+This is useful if certain fixtures must run in certain networks.
 
 ```python
 import pytest
