@@ -126,12 +126,29 @@ class AccountAliasPromptChoice(PromptChoice):
     def convert(
         self, value: Any, param: Optional[Parameter], ctx: Optional[Context]
     ) -> Optional[AccountAPI]:
+        if isinstance(value, str) and value.startswith("TEST::"):
+            try:
+                account_idx = int(value.replace("TEST::", ""))
+            except ValueError:
+                self.fail(f"Cannot reference test account by '{value}'.", param=param)
+
+            try:
+                return accounts.test_accounts[account_idx]
+            except IndexError:
+                self.fail(f"Index '{account_idx}' is not valid.", param=param)
+
         if value and value in accounts.aliases:
             return accounts.load(value)
 
         # Prompt the user if they didn't provide a value.
         alias = super().convert(value, param, ctx)
         return accounts.load(alias) if alias else None
+
+    def print_choices(self):
+        super().print_choices()
+        len_test_accounts = len(accounts.test_accounts) - 1
+        click.echo(f"Or 'TEST::account_idx', where `account_idx` is in [0..{len_test_accounts}]")
+        click.echo()
 
     @property
     def choices(self) -> List[str]:
