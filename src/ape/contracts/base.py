@@ -623,7 +623,7 @@ class ContractEvent(ManagerAccessMixin):
         )
         
         height = max(self.chain_manager.blocks.height - required_confirmations, 0)
-        if start_block and start_block < height:
+        if start_block and height > 0 and start_block < height:
             yield from self.range(start_block, height)
             start_block = height + 1
 
