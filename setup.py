@@ -104,7 +104,7 @@ setup(
         "PyGithub>=1.54,<2",
         "pytest>=6.0,<8.0",
         "python-dateutil>=2.8.2,<3",
-        "pyyaml>=6.0,<7",
+        "PyYAML>=5.0,<7",
         "requests>=2.28.1,<3",
         "rich>=12.5.1,<13",
         "SQLAlchemy>=1.4.35",
