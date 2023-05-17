@@ -622,8 +622,8 @@ class ContractEvent(ManagerAccessMixin):
             required_confirmations or self.provider.network.required_confirmations
         )
         
-        height = self.chain_manager.blocks.height - required_confirmations
-        if start_block is not None and start_block <= height:
+        height = max(self.chain_manager.blocks.height - required_confirmations, 0)
+        if start_block and start_block < height:
             yield from self.range(start_block, height)
             start_block = height + 1
 
