@@ -554,6 +554,10 @@ class SourceTraceback(BaseModel):
         segments = []
         for control_flow in reversed(self.__root__):
             if last_depth is None or control_flow.depth == last_depth - 1:
+                if control_flow.depth == 0 and len(segments) >= 1:
+                    # Ignore 0-layer segments if source code was hit
+                    continue
+
                 last_depth = control_flow.depth
                 segment = f"{indent}{control_flow.source_header}\n{control_flow.format()}"
 
