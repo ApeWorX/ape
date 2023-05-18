@@ -551,7 +551,7 @@ class SourceTraceback(BaseModel):
         header = "Traceback (most recent call last)"
         indent = "  "
         last_depth = None
-        segments = []
+        segments: List[str] = []
         for control_flow in reversed(self.__root__):
             if last_depth is None or control_flow.depth == last_depth - 1:
                 if control_flow.depth == 0 and len(segments) >= 1:
