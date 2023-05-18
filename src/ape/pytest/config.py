@@ -45,12 +45,12 @@ class ConfigWrapper(ManagerAccessMixin):
         return self.pytest_config.getoption("--gas") or self.ape_test_config.gas.show
 
     @cached_property
-    def show_internal(self) -> bool:
-        return self.pytest_config.getoption("showinternal")
-
-    @cached_property
     def track_coverage(self) -> bool:
         return self.pytest_config.getoption("--coverage")
+
+    @cached_property
+    def show_internal(self) -> bool:
+        return self.pytest_config.getoption("showinternal")
 
     @cached_property
     def gas_exclusions(self) -> List[ContractFunctionPath]:
