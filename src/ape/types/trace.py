@@ -25,6 +25,12 @@ A gas report in Ape.
 """
 
 
+CoverageReport = Dict[str, Dict[int, int]]
+"""
+A coverage report in Ape. Maps source ID to PC value to number of line hits.
+"""
+
+
 class CallTreeNode(BaseInterfaceModel):
     contract_id: str
     """

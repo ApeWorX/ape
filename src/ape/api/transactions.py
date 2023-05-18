@@ -506,3 +506,16 @@ class ReceiptAPI(BaseInterfaceModel):
         if call_tree and receiver is not None and self._test_runner is not None:
             tracker = self._test_runner.gas_tracker
             tracker.append_gas(call_tree.enrich(in_line=False), receiver)
+
+    def track_coverage(self):
+        """
+        Track this receipt's source code coverage in the on-going
+        session coverage report. Requires using a provider that supports
+        transaction traces. This gets called when running tests with the
+        ``--cov`` flag.
+        """
+
+        traceback = self.source_traceback
+        if traceback is not None and len(traceback) > 0 and self._test_runner is not None:
+            tracker = self._test_runner.coverage_tracker
+            tracker.cover(traceback)

@@ -49,6 +49,10 @@ class ConfigWrapper(ManagerAccessMixin):
         return self.pytest_config.getoption("showinternal")
 
     @cached_property
+    def track_coverage(self) -> bool:
+        return self.pytest_config.getoption("--coverage") is not None
+
+    @cached_property
     def gas_exclusions(self) -> List[ContractFunctionPath]:
         """
         The combination of both CLI values and config values.
@@ -71,4 +75,7 @@ class ConfigWrapper(ManagerAccessMixin):
         return exclusions
 
     def get_pytest_plugin(self, name: str) -> Any:
-        return self.pytest_config.pluginmanager.get_plugin(name)
+        if self.pytest_config.pluginmanager.has_plugin(name):
+            return self.pytest_config.pluginmanager.get_plugin(name)
+
+        return None

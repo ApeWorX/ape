@@ -3,6 +3,7 @@ import os
 import shutil
 import sys
 from abc import ABC
+from itertools import tee
 from pathlib import Path
 from subprocess import DEVNULL, PIPE, Popen
 from typing import Any, Dict, Iterator, List, Optional, Tuple, Union, cast
@@ -38,7 +39,7 @@ from yarl import URL
 from ape.api import PluginConfig, TestProviderAPI, TransactionAPI, UpstreamProvider, Web3Provider
 from ape.exceptions import APINotImplementedError, ProviderError
 from ape.logging import LogLevel, logger
-from ape.types import CallTreeNode, SnapshotID, TraceFrame
+from ape.types import CallTreeNode, SnapshotID, SourceTraceback, TraceFrame
 from ape.utils import (
     DEFAULT_NUMBER_OF_TEST_ACCOUNTS,
     DEFAULT_TEST_MNEMONIC,
@@ -481,8 +482,15 @@ class GethDev(BaseGethProvider, TestProviderAPI):
 
         show_gas = kwargs.pop("show_gas_report", False)
         show_trace = kwargs.pop("show_trace", False)
-        track_gas = self._test_runner is not None and self._test_runner.gas_tracker.enabled
-        needs_trace = show_gas or show_trace or track_gas
+
+        if self._test_runner is not None:
+            track_gas = self._test_runner.gas_tracker.enabled
+            track_coverage = self._test_runner.coverage_tracker.enabled
+        else:
+            track_gas = False
+            track_coverage = False
+
+        needs_trace = track_gas or track_coverage or show_gas or show_trace
         if not needs_trace:
             return self._eth_call(arguments)
 
@@ -490,6 +498,7 @@ class GethDev(BaseGethProvider, TestProviderAPI):
         # such as gas usage data.
 
         result, trace_frames = self._trace_call(arguments)
+        trace_frames, frames_copy = tee(trace_frames)
         return_value = HexBytes(result["returnValue"])
         root_node_kwargs = {
             "gas_cost": result.get("gas", 0),
@@ -517,6 +526,15 @@ class GethDev(BaseGethProvider, TestProviderAPI):
             # Use `in_place=False` in case also `show_trace=True`
             enriched_call_tree = call_tree.enrich(in_place=False)
             self._test_runner.gas_tracker.append_gas(enriched_call_tree, receiver)
+
+        if track_coverage and self._test_runner is not None and receiver:
+            contract_type = self.chain_manager.contracts.get(receiver)
+            if contract_type:
+                traceframes = (self._create_trace_frame(x) for x in frames_copy)
+                source_traceback = SourceTraceback.create(
+                    contract_type, traceframes, HexBytes(txn.data)
+                )
+                self._test_runner.coverage_tracker.cover(source_traceback)
 
         if show_gas:
             enriched_call_tree = call_tree.enrich(in_place=False)

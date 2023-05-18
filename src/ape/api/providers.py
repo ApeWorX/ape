@@ -918,10 +918,16 @@ class Web3Provider(ProviderAPI, ABC):
         if skip_trace:
             return self._send_call(txn, **kwargs)
 
-        track_gas = self._test_runner is not None and self._test_runner.gas_tracker.enabled
+        if self._test_runner is not None:
+            track_gas = self._test_runner.gas_tracker.enabled
+            track_coverage = self._test_runner.coverage_tracker.enabled
+        else:
+            track_gas = False
+            track_coverage = False
+
         show_trace = kwargs.pop("show_trace", False)
         show_gas = kwargs.pop("show_gas_report", False)
-        needs_trace = track_gas or show_trace or show_gas
+        needs_trace = track_gas or track_coverage or show_trace or show_gas
         if not needs_trace or not self.provider.supports_tracing or not txn.receiver:
             return self._send_call(txn, **kwargs)
 
@@ -930,7 +936,12 @@ class Web3Provider(ProviderAPI, ABC):
         try:
             with self.chain_manager.isolate():
                 return self._send_call_as_txn(
-                    txn, track_gas=track_gas, show_trace=show_trace, show_gas=show_gas, **kwargs
+                    txn,
+                    track_gas=track_gas,
+                    track_coverage=track_coverage,
+                    show_trace=show_trace,
+                    show_gas=show_gas,
+                    **kwargs,
                 )
 
         except APINotImplementedError:
@@ -940,6 +951,7 @@ class Web3Provider(ProviderAPI, ABC):
         self,
         txn: TransactionAPI,
         track_gas: bool = False,
+        track_coverage: bool = False,
         show_trace: bool = False,
         show_gas: bool = False,
         **kwargs,
@@ -953,13 +965,16 @@ class Web3Provider(ProviderAPI, ABC):
         # Grab raw retrurndata before enrichment
         returndata = call_tree.outputs
 
-        if track_gas and show_gas and not show_trace:
+        if (track_gas or track_coverage) and show_gas and not show_trace:
             # Optimization to enrich early and in_place=True.
             call_tree.enrich()
 
         if track_gas:
             # in_place=False in case show_trace is True
             receipt.track_gas()
+
+        if track_coverage:
+            receipt.track_coverage()
 
         if show_gas:
             # in_place=False in case show_trace is True

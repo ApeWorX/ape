@@ -272,3 +272,28 @@ class CompilerManager(BaseManager):
 
         compiler = self.registered_compilers[path.suffix]
         return compiler.flatten_contract(path)
+
+    def can_trace_source(self, filename: str) -> bool:
+        """
+        Check if Ape is able trace the source lines for the given file.
+        Checks that both the compiler is registered and that it supports
+        the :meth:`~ape.api.compilers.CompilerAPI.trace_source` API method.
+
+        Args:
+            filename (str): The file to check.
+
+        Returns:
+            bool
+        """
+        path = Path(filename)
+        if not path.is_file():
+            return False
+
+        extension = path.suffix
+        if extension in self.registered_compilers:
+            compiler = self.registered_compilers[extension]
+            if compiler.supports_source_tracing:
+                return True
+
+        # We are not able to get coverage for this file.
+        return False
