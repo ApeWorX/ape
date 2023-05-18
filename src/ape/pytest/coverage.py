@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Iterable, Dict, List
+from typing import Dict, Iterable, List
 
 from ethpm_types.source import ContractSource
 from ethpm_types.utils import SourceLocation
