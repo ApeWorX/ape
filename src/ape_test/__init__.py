@@ -36,6 +36,17 @@ class GasConfig(PluginConfig):
     """
 
 
+class CoverageConfig(PluginConfig):
+    """
+    Configuration related to contract coverage.
+    """
+
+    show: bool = False
+    """
+    Set to ``True`` to always show coverage.
+    """
+
+
 class Config(PluginConfig):
     mnemonic: str = DEFAULT_TEST_MNEMONIC
     """
@@ -50,6 +61,11 @@ class Config(PluginConfig):
     gas: GasConfig = GasConfig()
     """
     Configuration related to gas reporting.
+    """
+
+    coverage: CoverageConfig = CoverageConfig()
+    """
+    Configuration related to coverage reporting.
     """
 
     disconnect_providers_after: bool = True

@@ -205,7 +205,6 @@ class PytestApeRunner(ManagerAccessMixin):
         if self.config_wrapper.track_gas:
             self._show_gas_report(terminalreporter)
         if self.config_wrapper.track_coverage:
-            breakpoint()
             self._show_coverage_report(terminalreporter)
 
     def _show_gas_report(self, terminalreporter):
