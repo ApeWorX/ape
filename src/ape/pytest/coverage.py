@@ -1,7 +1,8 @@
 from pathlib import Path
-from typing import Iterable
+from typing import Iterable, Dict, List
 
 from ethpm_types.source import ContractSource
+from ethpm_types.utils import SourceLocation
 
 from ape.pytest.config import ConfigWrapper
 from ape.types import CoverageReport, SourceTraceback
@@ -22,11 +23,18 @@ class CoverageData:
                 continue
 
             # Init all relevant PC hits with 0.
-            pcs = src.pcmap.__root__.items()
+            pcs: List[Dict] = list(src.pcmap.__root__.values())
             source_id = str(get_relative_path(src.source_path.absolute(), base_path.absolute()))
-            self.session_coverage_report[source_id] = {
-                int(pc): 0 for pc, x in pcs if x.get("location") or x.get("dev")
-            }
+            statements = {}
+            for pc_item in pcs:
+                if not pc_item.get("location"):
+                    continue
+
+                loc: SourceLocation = pc_item["location"]
+                for no in range(loc[0], loc[2] + 1):
+                    statements[int(no)] = 0
+
+            self.session_coverage_report[source_id] = statements
 
     def hit_lines(self, src_path: Path, linenos: Iterable[int]):
         src_id = str(get_relative_path(src_path.absolute(), self.base_path))
