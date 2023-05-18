@@ -205,10 +205,15 @@ class PytestApeRunner(ManagerAccessMixin):
         if self.config_wrapper.track_gas:
             self._show_gas_report(terminalreporter)
         if self.config_wrapper.track_coverage:
+            breakpoint()
             self._show_coverage_report(terminalreporter)
 
     def _show_gas_report(self, terminalreporter):
         terminalreporter.section("Gas Profile")
+        if not self.network_manager.active_provider:
+            # Happens if never needed to connect (no tests)
+            return
+
         self._assert_tracing_support(terminalreporter)
         if not self.gas_tracker.show_session_gas():
             terminalreporter.write_line(
@@ -217,6 +222,10 @@ class PytestApeRunner(ManagerAccessMixin):
 
     def _show_coverage_report(self, terminalreporter):
         terminalreporter.section("Coverage Profile")
+        if not self.network_manager.active_provider:
+            # Happens if never needed to connect (no tests)
+            return
+
         self._assert_tracing_support(terminalreporter)
         if not self.coverage_tracker.show_session_coverage():
             terminalreporter.write_line(

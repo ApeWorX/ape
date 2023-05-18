@@ -50,7 +50,7 @@ class ConfigWrapper(ManagerAccessMixin):
 
     @cached_property
     def track_coverage(self) -> bool:
-        return self.pytest_config.getoption("--coverage") is not None
+        return self.pytest_config.getoption("--coverage") not in (None, False)
 
     @cached_property
     def gas_exclusions(self) -> List[ContractFunctionPath]:
