@@ -445,7 +445,7 @@ class ControlFlow(BaseModel):
         """
 
         # Check for more statements that _could_ execute.
-        if not self.statements:
+        if not self.source_statements:
             return None
 
         last_stmt = self.source_statements[-1]
@@ -551,9 +551,13 @@ class SourceTraceback(BaseModel):
         header = "Traceback (most recent call last)"
         indent = "  "
         last_depth = None
-        segments = []
+        segments: List[str] = []
         for control_flow in reversed(self.__root__):
             if last_depth is None or control_flow.depth == last_depth - 1:
+                if control_flow.depth == 0 and len(segments) >= 1:
+                    # Ignore 0-layer segments if source code was hit
+                    continue
+
                 last_depth = control_flow.depth
                 segment = f"{indent}{control_flow.source_header}\n{control_flow.format()}"
 
