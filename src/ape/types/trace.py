@@ -445,7 +445,7 @@ class ControlFlow(BaseModel):
         """
 
         # Check for more statements that _could_ execute.
-        if not self.statements:
+        if not self.source_statements:
             return None
 
         last_stmt = self.source_statements[-1]
