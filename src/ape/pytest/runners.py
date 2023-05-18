@@ -10,6 +10,7 @@ from ape.api import ProviderContextManager
 from ape.logging import LogLevel
 from ape.pytest.config import ConfigWrapper
 from ape.pytest.contextmanagers import RevertsContextManager
+from ape.pytest.coverage import CoverageTracker
 from ape.pytest.fixtures import ReceiptCapture
 from ape.pytest.gas import GasTracker
 from ape.utils import ManagerAccessMixin
@@ -22,6 +23,7 @@ class PytestApeRunner(ManagerAccessMixin):
         config_wrapper: ConfigWrapper,
         receipt_capture: ReceiptCapture,
         gas_tracker: GasTracker,
+        coverage_tracker: CoverageTracker,
     ):
         self.config_wrapper = config_wrapper
         self.receipt_capture = receipt_capture
@@ -30,6 +32,7 @@ class PytestApeRunner(ManagerAccessMixin):
         # Ensure the gas report starts off None for this runner.
         gas_tracker.session_gas_report = None
         self.gas_tracker = gas_tracker
+        self.coverage_tracker = coverage_tracker
 
         ape.reverts = RevertsContextManager  # type: ignore
 
@@ -199,23 +202,36 @@ class PytestApeRunner(ManagerAccessMixin):
         Add a section to terminal summary reporting.
         When ``--gas`` is active, outputs the gas profile report.
         """
-        if not self.config_wrapper.track_gas:
-            return
+        if self.config_wrapper.track_gas:
+            self._show_gas_report(terminalreporter)
+        if self.config_wrapper.track_coverage:
+            self._show_coverage_report(terminalreporter)
 
+    def _show_gas_report(self, terminalreporter):
         terminalreporter.section("Gas Profile")
-
-        if not self.provider.supports_tracing:
-            terminalreporter.write_line(
-                f"{LogLevel.ERROR.name}: Provider '{self.provider.name}' does not support "
-                f"transaction tracing and is unable to display a gas profile.",
-                red=True,
-            )
-            return
-
+        self._assert_tracing_support(terminalreporter)
         if not self.gas_tracker.show_session_gas():
             terminalreporter.write_line(
                 f"{LogLevel.WARNING.name}: No gas usage data found.", yellow=True
             )
+
+    def _show_coverage_report(self, terminalreporter):
+        terminalreporter.section("Coverage Profile")
+        self._assert_tracing_support(terminalreporter)
+        if not self.coverage_tracker.show_session_coverage():
+            terminalreporter.write_line(
+                f"{LogLevel.WARNING.name}: No coverage data found.", yellow=True
+            )
+
+    def _assert_tracing_support(self, terminalreporter):
+        if self.provider.supports_tracing:
+            return
+
+        terminalreporter.write_line(
+            f"{LogLevel.ERROR.name}: Provider '{self.provider.name}' does not support "
+            f"transaction tracing and is unable to display a gas profile.",
+            red=True,
+        )
 
     def pytest_unconfigure(self):
         if self._provider_is_connected and self.config_wrapper.disconnect_providers_after:
@@ -227,3 +243,4 @@ class PytestApeRunner(ManagerAccessMixin):
         self.receipt_capture.clear()
         self.chain_manager.contracts.clear_local_caches()
         self.gas_tracker.session_gas_report = None
+        self.coverage_tracker.data.session_coverage_report = {}

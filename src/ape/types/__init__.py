@@ -24,7 +24,14 @@ from web3.types import FilterParams
 from ape.exceptions import ApeAttributeError
 from ape.types.address import AddressType, RawAddress
 from ape.types.signatures import MessageSignature, SignableMessage, TransactionSignature
-from ape.types.trace import CallTreeNode, ControlFlow, GasReport, SourceTraceback, TraceFrame
+from ape.types.trace import (
+    CallTreeNode,
+    ControlFlow,
+    CoverageReport,
+    GasReport,
+    SourceTraceback,
+    TraceFrame,
+)
 from ape.utils import BaseInterfaceModel, cached_property
 from ape.utils.misc import to_int
 
@@ -376,6 +383,7 @@ __all__ = [
     "ContractLogContainer",
     "ContractType",
     "ControlFlow",
+    "CoverageReport",
     "GasReport",
     "MessageSignature",
     "PackageManifest",

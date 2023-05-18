@@ -29,12 +29,12 @@ class PytestApeFixtures(ManagerAccessMixin):
 
     @cached_property
     def _using_traces(self) -> bool:
+        has_reason = self.config_wrapper.track_gas or self.config_wrapper.track_coverage
         return (
             self.network_manager.provider is not None
             and self.provider.is_connected
             and self.provider.supports_tracing
-            # Has reason to use traces?
-            and self.config_wrapper.track_gas
+            and has_reason
         )
 
     @pytest.fixture(scope="session")
@@ -201,11 +201,11 @@ class ReceiptCapture(ManagerAccessMixin):
             return
 
         self.receipt_map[source_id][transaction_hash] = receipt
-        if not self.config_wrapper.track_gas:
-            # Only capture trace if has a reason to.
-            return
+        if self.config_wrapper.track_gas:
+            receipt.track_gas()
 
-        receipt.track_gas()
+        if self.config_wrapper.track_coverage:
+            receipt.track_coverage()
 
     def clear(self):
         self.receipt_map = {}
