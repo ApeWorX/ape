@@ -626,7 +626,7 @@ class ContractEvent(ManagerAccessMixin):
         required_confirmations = (
             required_confirmations or self.provider.network.required_confirmations
         )
-        
+
         # NOTE: We process historical blocks separately here to minimize rpc calls
         height = max(self.chain_manager.blocks.height - required_confirmations, 0)
         if start_block and height > 0 and start_block < height:
