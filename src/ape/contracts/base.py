@@ -138,6 +138,11 @@ class ContractMethodHandler(ManagerAccessMixin):
         self.abis = abis
 
     def __repr__(self) -> str:
+        # `<ContractName 0x1234...AbCd>.method_name`
+        return f"{self.contract.__repr__()}.{self.abis[-1].name}"
+
+    def __str__(self) -> str:
+        # `method_name(type1 arg1, ...) -> return_type`
         abis = sorted(self.abis, key=lambda abi: len(abi.inputs or []))
         return abis[-1].signature
 
