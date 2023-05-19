@@ -1,7 +1,7 @@
 from pathlib import Path
-from typing import Iterable
+from typing import Iterable, Set
 
-from ethpm_types.source import ContractSource
+from ethpm_types.source import ContractSource, SourceLocation
 
 from ape.logging import logger
 from ape.pytest.config import ConfigWrapper
@@ -16,6 +16,8 @@ class CoverageData:
         # source_id -> pc -> times hit
         self.session_coverage_report: CoverageReport = {}
 
+        locations: Set[SourceLocation] = set()
+
         # Build coverage profile.
         for src in sources:
             if not src.source_path:
@@ -27,9 +29,22 @@ class CoverageData:
             source_id = str(get_relative_path(src.source_path.absolute(), base_path.absolute()))
 
             for pc, item in src.pcmap.__root__.items():
-                if not item.get("location") and not item.get("dev"):
+                loc = item.get("location")
+                if (not loc and not item.get("dev")) or (loc and tuple(loc) in locations):
                     # Not a statement we can measure.
                     continue
+
+                elif loc:
+                    # If multiple statements have the exact same location,
+                    # only need to track once.
+                    # NOTE: Only weird because of mypy.
+                    loc_tuple = (
+                        int(loc[0] or -1),
+                        int(loc[1] or -1),
+                        int(loc[2] or -1),
+                        int(loc[3] or -1),
+                    )
+                    locations.add(loc_tuple)
 
                 pc_int = int(pc)
                 if pc_int >= 0:
