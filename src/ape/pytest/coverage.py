@@ -1,9 +1,9 @@
 from pathlib import Path
-from typing import Dict, Iterable, List
+from typing import Iterable
 
 from ethpm_types.source import ContractSource
-from ethpm_types.utils import SourceLocation
 
+from ape.logging import logger
 from ape.pytest.config import ConfigWrapper
 from ape.types import CoverageReport, SourceTraceback
 from ape.utils import ManagerAccessMixin, get_relative_path, parse_coverage_table
@@ -23,30 +23,35 @@ class CoverageData:
                 continue
 
             # Init all relevant PC hits with 0.
-            pcs: List[Dict] = list(src.pcmap.__root__.values())
-            source_id = str(get_relative_path(src.source_path.absolute(), base_path.absolute()))
             statements = {}
-            for pc_item in pcs:
-                if not pc_item.get("location"):
+            source_id = str(get_relative_path(src.source_path.absolute(), base_path.absolute()))
+
+            for pc, item in src.pcmap.__root__.items():
+                if not item.get("location") and not item.get("dev"):
+                    # Not a statement we can measure.
                     continue
 
-                loc: SourceLocation = pc_item["location"]
-                for no in range(loc[0], loc[2] + 1):
-                    statements[int(no)] = 0
+                pc_int = int(pc)
+                if pc_int >= 0:
+                    statements[pc_int] = 0
 
             self.session_coverage_report[source_id] = statements
 
-    def hit_lines(self, src_path: Path, linenos: Iterable[int]):
+    def cover(self, src_path: Path, pcs: Iterable[int]):
         src_id = str(get_relative_path(src_path.absolute(), self.base_path))
         if src_id not in self.session_coverage_report:
             # Not sure if this is possible, but just in case.
             self.session_coverage_report[src_id] = {}
 
-        for no in linenos:
-            if no in self.session_coverage_report[src_id]:
-                self.session_coverage_report[src_id][no] += 1
+        for pc in pcs:
+            if pc < 0:
+                continue
+            elif pc in self.session_coverage_report[src_id]:
+                self.session_coverage_report[src_id][pc] += 1
             else:
-                self.session_coverage_report[src_id][no] = 1
+                # Potentially a bug in Ape where we are incorrectly
+                # tracking statements.
+                logger.debug(f"Found PC not in profile '{pc}'.")
 
 
 class CoverageTracker(ManagerAccessMixin):
@@ -73,13 +78,7 @@ class CoverageTracker(ManagerAccessMixin):
             if not source_path:
                 continue
 
-            # Build statement hits.
-            for statement in control_flow.source_statements:
-                linenos = set()
-                for no in statement.content.line_numbers:
-                    linenos.add(no)
-
-                self.data.hit_lines(source_path, linenos)
+            self.data.cover(source_path, control_flow.pcs)
 
     def show_session_coverage(self) -> bool:
         if not self.data or not self.data.session_coverage_report:

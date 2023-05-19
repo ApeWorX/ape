@@ -19,6 +19,9 @@ if TYPE_CHECKING:
     from ape.types import ContractFunctionPath
 
 
+_PENDING_SOURCE = "<pending>"
+
+
 GasReport = Dict[str, Dict[str, List[int]]]
 """
 A gas report in Ape.
@@ -629,6 +632,7 @@ class SourceTraceback(BaseModel):
         Args:
             location (``SourceLocation``): The location to add.
             function (``Function``): The function executing.
+            source_path (Optional[``Path``]): The path of the source file.
             depth (int): The depth of the function call in the call tree.
             pcs (Optional[Set[int]]): The program counter values.
             source_path (Optional[``Path``]): The path of the source file.
@@ -697,4 +701,12 @@ class SourceTraceback(BaseModel):
         exec_sequence = ControlFlow(
             statements=[statement], source_path=source_path, closure=function, depth=depth
         )
+
+        # Set previously pending sources.
+        # This happens because the source was not known yet,
+        # (as it was likely coming from a compiler builtin handlers).
+        for flow in self:
+            if str(flow.source_path) == _PENDING_SOURCE:
+                flow.source_path = source_path
+
         self.append(exec_sequence)
