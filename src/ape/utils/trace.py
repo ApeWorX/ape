@@ -177,14 +177,12 @@ def parse_coverage_table(coverage: "CoverageReport") -> Table:
         stmts = len(data)  # The total number of stmts.
 
         misses = 0
-        hits = 0
         for hits in data.values():
             if hits == 0:
                 misses += 1
-            else:
-                hits += 1
 
-        cover = round(hits / stmts * 100)
+        hits = stmts - misses
+        cover = round(hits / stmts * 100, 2)
         table.add_row(source_id, str(stmts), str(misses), f"{cover}%")
 
     return table
