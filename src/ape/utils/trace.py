@@ -177,8 +177,8 @@ def parse_coverage_table(coverage: "CoverageReport") -> Table:
         stmts = len(data)  # The total number of stmts.
 
         misses = 0
-        for hits in data.values():
-            if hits == 0:
+        for cov_item in data:
+            if cov_item.hit_count == 0:
                 misses += 1
 
         hits = stmts - misses

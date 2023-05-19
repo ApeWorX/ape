@@ -1,11 +1,11 @@
 from pathlib import Path
-from typing import Iterable, Set
+from typing import Iterable, List
 
-from ethpm_types.source import ContractSource, SourceLocation
+from ethpm_types.source import ContractSource
 
-from ape.logging import logger
 from ape.pytest.config import ConfigWrapper
 from ape.types import CoverageReport, SourceTraceback
+from ape.types.trace import CoverageItem
 from ape.utils import ManagerAccessMixin, get_relative_path, parse_coverage_table
 
 
@@ -13,10 +13,8 @@ class CoverageData:
     def __init__(self, base_path: Path, sources: Iterable[ContractSource]):
         self.base_path = base_path
 
-        # source_id -> pc -> times hit
+        # source_id -> id -> times hit
         self.session_coverage_report: CoverageReport = {}
-
-        locations: Set[SourceLocation] = set()
 
         # Build coverage profile.
         for src in sources:
@@ -25,48 +23,62 @@ class CoverageData:
                 continue
 
             # Init all relevant PC hits with 0.
-            statements = {}
-            source_id = str(get_relative_path(src.source_path.absolute(), base_path.absolute()))
-
+            statements: List[CoverageItem] = []
             for pc, item in src.pcmap.__root__.items():
                 loc = item.get("location")
-                if (not loc and not item.get("dev")) or (loc and tuple(loc) in locations):
+                if not loc and not item.get("dev"):
                     # Not a statement we can measure.
                     continue
 
-                elif loc:
-                    # If multiple statements have the exact same location,
-                    # only need to track once.
-                    # NOTE: Only weird because of mypy.
+                pc_int = int(pc)
+                if pc_int < 0:
+                    continue
+
+                # Check if location already profiled.
+                done = False
+                for past_stmt in statements:
+                    if past_stmt.location != tuple(loc):
+                        continue
+
+                    # Already tracking this location.
+                    past_stmt.pcs.add(pc_int)
+                    done = True
+                    break
+
+                cov_item = None
+                if loc and not done:
+                    # Adding a source-statement for the first time.
                     loc_tuple = (
                         int(loc[0] or -1),
                         int(loc[1] or -1),
                         int(loc[2] or -1),
                         int(loc[3] or -1),
                     )
-                    locations.add(loc_tuple)
+                    cov_item = CoverageItem(location=loc_tuple, pcs={pc_int})
 
-                pc_int = int(pc)
-                if pc_int >= 0:
-                    statements[pc_int] = 0
+                elif not loc and not done:
+                    # Adding a virtual statement.
+                    cov_item = CoverageItem(pcs={pc_int})
 
+                if cov_item is not None:
+                    statements.append(cov_item)
+
+            source_id = str(get_relative_path(src.source_path.absolute(), base_path.absolute()))
             self.session_coverage_report[source_id] = statements
 
     def cover(self, src_path: Path, pcs: Iterable[int]):
         src_id = str(get_relative_path(src_path.absolute(), self.base_path))
         if src_id not in self.session_coverage_report:
-            # Not sure if this is possible, but just in case.
-            self.session_coverage_report[src_id] = {}
+            # The source is not tracked for coverage.
+            return
 
         for pc in pcs:
             if pc < 0:
                 continue
-            elif pc in self.session_coverage_report[src_id]:
-                self.session_coverage_report[src_id][pc] += 1
-            else:
-                # Potentially a bug in Ape where we are incorrectly
-                # tracking statements.
-                logger.debug(f"Found PC not in profile '{pc}'.")
+
+            for stmt in self.session_coverage_report[src_id]:
+                if pc in stmt.pcs:
+                    stmt.hit_count += 1
 
 
 class CoverageTracker(ManagerAccessMixin):

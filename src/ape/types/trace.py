@@ -28,9 +28,28 @@ A gas report in Ape.
 """
 
 
-CoverageReport = Dict[str, Dict[int, int]]
+class CoverageItem(BaseModel):
+    location: Optional[SourceLocation] = None
+    """
+    The location of the item. If multiple PCs share an exact location,
+    it is only tracked as one.
+    """
+
+    pcs: Set[int]
+    """
+    The PCs for this node.
+    """
+
+    hit_count: int = 0
+    """
+    The times this node was hit.
+    """
+
+
+CoverageReport = Dict[str, List[CoverageItem]]
 """
-A coverage report in Ape. Maps source ID to PC value to number of line hits.
+Each source identifier mapped to a list of statements
+covered along with its times hit.
 """
 
 
