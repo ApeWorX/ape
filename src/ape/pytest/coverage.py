@@ -30,6 +30,17 @@ class CoverageData:
                     # Not a statement we can measure.
                     continue
 
+                elif loc:
+                    loc_tuple = (
+                        int(loc[0] or -1),
+                        int(loc[1] or -1),
+                        int(loc[2] or -1),
+                        int(loc[3] or -1),
+                    )
+
+                else:
+                    loc_tuple = None
+
                 pc_int = int(pc)
                 if pc_int < 0:
                     continue
@@ -37,7 +48,7 @@ class CoverageData:
                 # Check if location already profiled.
                 done = False
                 for past_stmt in statements:
-                    if past_stmt.location != tuple(loc):
+                    if loc_tuple and past_stmt.location != loc_tuple:
                         continue
 
                     # Already tracking this location.
@@ -46,17 +57,11 @@ class CoverageData:
                     break
 
                 cov_item = None
-                if loc and not done:
+                if loc_tuple and not done:
                     # Adding a source-statement for the first time.
-                    loc_tuple = (
-                        int(loc[0] or -1),
-                        int(loc[1] or -1),
-                        int(loc[2] or -1),
-                        int(loc[3] or -1),
-                    )
                     cov_item = CoverageItem(location=loc_tuple, pcs={pc_int})
 
-                elif not loc and not done:
+                elif not loc_tuple and not done:
                     # Adding a virtual statement.
                     cov_item = CoverageItem(pcs={pc_int})
 
