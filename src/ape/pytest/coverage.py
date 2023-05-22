@@ -13,8 +13,8 @@ class CoverageData:
     def __init__(self, base_path: Path, sources: Iterable[ContractSource]):
         self.base_path = base_path
 
-        # source_id -> id -> times hit
-        self.session_coverage_report: CoverageReport = {}
+        # source_id -> pc(s) -> times hit
+        self.statements: CoverageReport = {}
 
         # Build coverage profile.
         for src in sources:
@@ -69,21 +69,28 @@ class CoverageData:
                     statements.append(cov_item)
 
             source_id = str(get_relative_path(src.source_path.absolute(), base_path.absolute()))
-            self.session_coverage_report[source_id] = statements
+            self.statements[source_id] = statements
 
     def cover(self, src_path: Path, pcs: Iterable[int]):
         src_id = str(get_relative_path(src_path.absolute(), self.base_path))
-        if src_id not in self.session_coverage_report:
+        if src_id not in self.statements:
             # The source is not tracked for coverage.
             return
 
+        handled_pcs = set()
         for pc in pcs:
             if pc < 0:
                 continue
 
-            for stmt in self.session_coverage_report[src_id]:
+            for stmt in self.statements[src_id]:
                 if pc in stmt.pcs:
                     stmt.hit_count += 1
+                    handled_pcs.add(pc)
+
+        unhandled_pcs = pcs - handled_pcs
+        if unhandled_pcs:
+            # Maybe a bug in ape.
+            logger.debug(f"Unhandled PCs: '{','.join(unhandled_pcs)}'")
 
 
 class CoverageTracker(ManagerAccessMixin):
@@ -113,9 +120,9 @@ class CoverageTracker(ManagerAccessMixin):
             self.data.cover(source_path, control_flow.pcs)
 
     def show_session_coverage(self) -> bool:
-        if not self.data or not self.data.session_coverage_report:
+        if not self.data or not self.data.statements:
             return False
 
-        table = parse_coverage_table(self.data.session_coverage_report)
+        table = parse_coverage_table(self.data.statements)
         self.chain_manager._reports.echo(table)
         return True
