@@ -266,3 +266,11 @@ def test_gas_flag_excluding_contracts(geth_provider, setup_pytester, project, py
     passed, failed = setup_pytester(project.path.name)
     result = pytester.runpytest("--gas", "--gas-exclude", "TestContractVy,TokenA")
     run_gas_test(result, passed, failed, expected_report=TOKEN_B_GAS_REPORT)
+
+
+@geth_process_test
+@skip_projects_except("geth")
+def test_coverage(geth_provider, setup_pytester, project, pytester):
+    passed, failed = setup_pytester(project.path.name)
+    result = pytester.runpytest("--coverage")
+    result.assert_outcomes(passed=passed, failed=failed)
