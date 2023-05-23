@@ -111,6 +111,7 @@ setup(
         "tqdm>=4.62.3,<5.0",
         "traitlets>=5.3.0",
         "watchdog>=2.1.9,<3.0",
+        "typing-extensions==4.5.0",  # TODO: remove once Pydantic >1.10.7 is out
         # ** Dependencies maintained by Ethereum Foundation **
         "eth-abi>=4.0.0,<5",
         "eth-account>=0.8,<0.9",
