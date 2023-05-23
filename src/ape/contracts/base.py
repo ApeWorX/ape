@@ -467,8 +467,11 @@ class ContractEvent(ManagerAccessMixin):
         # Create a dictionary from the positional arguments
         event_args = dict(zip((input.name for input in self.abi.inputs), args))
 
-        # Check for overwrites by looking for the intersection of the two key sets
-        if overlapping_keys := set(event_args.keys()) & set(kwargs.keys()):
+        overlapping_keys = set(k for k in event_args.keys() if k is not None) & set(
+            k for k in kwargs.keys() if k is not None
+        )
+
+        if overlapping_keys:
             raise ValueError(
                 f"Overlapping keys found in arguments: '{', '.join(overlapping_keys)}'."
             )
