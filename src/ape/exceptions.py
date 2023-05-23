@@ -127,13 +127,16 @@ class TransactionError(ContractError):
         if not source_traceback and txn:
             self.source_traceback = _get_ape_traceback(txn)
 
-        src_tb = self.source_traceback
-        if src_tb is not None and txn is not None:
-            # Create a custom Pythonic traceback using lines from the sources
-            # found from analyzing the trace of the transaction.
-            py_tb = _get_custom_python_traceback(self, txn, src_tb)
-            if py_tb:
-                self.__traceback__ = py_tb
+        if not self.source_traceback:
+            # No sources found for this transaction.
+            # Unable to create a custom traceback.
+            return
+
+        # Create a custom Pythonic traceback using lines from the sources
+        # found from analyzing the trace of the transaction.
+        py_tb = _get_custom_python_traceback(self, txn, self.source_traceback)
+        if py_tb:
+            self.__traceback__ = py_tb
 
 
 class VirtualMachineError(TransactionError):
