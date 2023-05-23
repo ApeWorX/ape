@@ -1,7 +1,7 @@
 from fnmatch import fnmatch
 from itertools import tee
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Dict, Iterator, List, Optional, Set
+from typing import TYPE_CHECKING, Any, Dict, Iterator, List, Optional, Set, Tuple, Union
 
 from ethpm_types import ASTNode, BaseModel, ContractType, HexBytes
 from ethpm_types.ast import SourceLocation
@@ -19,9 +19,6 @@ if TYPE_CHECKING:
     from ape.types import ContractFunctionPath
 
 
-_PENDING_SOURCE = "<pending>"
-
-
 GasReport = Dict[str, Dict[str, List[int]]]
 """
 A gas report in Ape.
@@ -29,7 +26,7 @@ A gas report in Ape.
 
 
 class CoverageItem(BaseModel):
-    location: Optional[SourceLocation] = None
+    location: Optional[Tuple[int, int]] = None
     """
     The location of the item. If multiple PCs share an exact location,
     it is only tracked as one.
@@ -720,12 +717,4 @@ class SourceTraceback(BaseModel):
         exec_sequence = ControlFlow(
             statements=[statement], source_path=source_path, closure=function, depth=depth
         )
-
-        # Set previously pending sources.
-        # This happens because the source was not known yet,
-        # (as it was likely coming from a compiler builtin handlers).
-        for flow in self:
-            if str(flow.source_path) == _PENDING_SOURCE:
-                flow.source_path = source_path
-
         self.append(exec_sequence)
