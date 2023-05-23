@@ -183,7 +183,7 @@ class LogFilter(BaseModel):
 
 class BaseContractLog(BaseInterfaceModel):
     """
-    Base class representing information relevant to an event instance itself.
+    Base class representing information relevant to an event instance.
     """
 
     event_name: str
