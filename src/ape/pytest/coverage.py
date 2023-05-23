@@ -26,30 +26,24 @@ class CoverageData:
             # Init all relevant PC hits with 0.
             statements: List[CoverageItem] = []
             for pc, item in src.pcmap.__root__.items():
+                pc_int = int(pc)
+                if pc_int < 0:
+                    continue
+
                 loc = item.get("location")
                 if not loc and not item.get("dev"):
                     # Not a statement we can measure.
                     continue
 
                 elif loc:
-                    loc_tuple = (
-                        int(loc[0] or -1),
-                        int(loc[1] or -1),
-                        int(loc[2] or -1),
-                        int(loc[3] or -1),
-                    )
-
+                    loc_tuple = (int(loc[0] or -1), int(loc[2] or -1))
                 else:
                     loc_tuple = None
-
-                pc_int = int(pc)
-                if pc_int < 0:
-                    continue
 
                 # Check if location already profiled.
                 done = False
                 for past_stmt in statements:
-                    if loc_tuple and past_stmt.location != loc_tuple:
+                    if loc_tuple and (past_stmt.location != loc_tuple):
                         continue
 
                     # Already tracking this location.
@@ -88,10 +82,10 @@ class CoverageData:
                     stmt.hit_count += 1
                     handled_pcs.add(pc)
 
-        unhandled_pcs = pcs - handled_pcs
+        unhandled_pcs = set(pcs) - handled_pcs
         if unhandled_pcs:
             # Maybe a bug in ape.
-            logger.debug(f"Unhandled PCs: '{','.join(unhandled_pcs)}'")
+            logger.debug(f"Unhandled PCs: '{','.join([f'{x}' for x in unhandled_pcs])}'")
 
 
 class CoverageTracker(ManagerAccessMixin):
@@ -114,11 +108,10 @@ class CoverageTracker(ManagerAccessMixin):
               sources covered for a particular transaction.
         """
         for control_flow in traceback:
-            source_path = control_flow.source_path
-            if not source_path:
+            if not control_flow.source_path or not control_flow.pcs:
                 continue
 
-            self.data.cover(source_path, control_flow.pcs)
+            self.data.cover(control_flow.source_path, control_flow.pcs)
 
     def show_session_coverage(self) -> bool:
         if not self.data or not self.data.statements:
