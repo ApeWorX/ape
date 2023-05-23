@@ -202,9 +202,6 @@ class BaseContractLog(BaseInterfaceModel):
         return convert(value, AddressType)
 
     def __eq__(self, other: Any) -> bool:
-        if not isinstance(other, BaseContractLog):
-            return NotImplemented
-
         if self.contract_address != other.contract_address or self.event_name != other.event_name:
             return False
 
@@ -291,6 +288,13 @@ class ContractLog(BaseContractLog):
     def __contains__(self, item: str) -> bool:
         return item in self.event_arguments
 
+    def __eq__(self, other: Any) -> bool:
+        if not isinstance(other, ContractLog):
+            return NotImplemented
+
+        # call __eq__ on parent class
+        return super().__eq__(other)
+
     def __getitem__(self, item: str) -> Any:
         return self.event_arguments[item]
 
@@ -323,8 +327,8 @@ class MockContractLog(BaseContractLog):
         Returns:
             bool: True if the two instances are equal, False otherwise.
         """
-        if not isinstance(other, ContractLog):
-            return NotImplemented
+        # if not isinstance(other, ContractLog):
+            # return NotImplemented
 
         if self.contract_address != other.contract_address or self.event_name != other.event_name:
             return False
