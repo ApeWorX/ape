@@ -123,7 +123,12 @@ setup(
         "eip712>=0.2.1,<0.3",
         "ethpm-types>=0.5.0,<0.6",
         "evm-trace>=0.1.0a20",
-        "typing-extensions==4.5.0"  # Have to pin because 4.6
+        # Have to ping typing-extensions because 4.6 is completely broken.
+        # However, this shouldn't even be a dependency as it is only needed
+        # for 3.7, yet for some reason it shows up in our dependency tree.
+        # TODO: Find what problematic dependency is forcing us to install
+        #  this constantly-broken python package that we don't need at all.
+        "typing-extensions==4.5.0",
     ],
     entry_points={
         "console_scripts": ["ape=ape._cli:cli"],
