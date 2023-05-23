@@ -5,7 +5,6 @@ from pathlib import Path
 from typing import Any, Dict, Iterator, List, Optional, Tuple, Type, Union
 
 import click
-from eth_typing import ChecksumAddress
 import pandas as pd
 from ethpm_types import ContractType
 from ethpm_types.abi import ConstructorABI, ErrorABI, EventABI, MethodABI
