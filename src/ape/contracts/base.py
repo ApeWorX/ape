@@ -469,13 +469,17 @@ class ContractEvent(ManagerAccessMixin):
 
         # Check for overwrites by looking for the intersection of the two key sets
         if overlapping_keys := set(event_args.keys()) & set(kwargs.keys()):
-            raise ValueError(f"Overlapping keys found in arguments: '{', '.join(overlapping_keys)}'.")
+            raise ValueError(
+                f"Overlapping keys found in arguments: '{', '.join(overlapping_keys)}'."
+            )
 
         # Update event_args with keyword arguments
         event_args.update(kwargs)  # type: ignore[arg-type]
 
         # Check that event_args.keys() is a subset of the expected input names
-        if unknown_input_names := set(event_args.keys()) - {input.name for input in self.abi.inputs}:
+        if unknown_input_names := set(event_args.keys()) - {
+            input.name for input in self.abi.inputs
+        }:
             raise ValueError(
                 f"Invalid argument keys found, expected a subset of {unknown_input_names}"
             )

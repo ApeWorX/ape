@@ -289,6 +289,22 @@ class ContractLog(BaseContractLog):
         return item in self.event_arguments
 
     def __eq__(self, other: Any) -> bool:
+        """
+        Check for equality between this instance and another ContractLog instance.
+
+        If the other object is not an instance of ContractLog, this method returns
+        NotImplemented. This triggers the Python interpreter to call the __eq__ method
+        on the other object (i.e., y.__eq__(x)) if it is defined, allowing for a custom
+        comparison. This behavior is leveraged by the MockContractLog class to handle
+        custom comparison logic between ContractLog and MockContractLog instances.
+
+        Args:
+            other (Any): The object to compare with this instance.
+
+        Returns:
+            bool: True if the two instances are equal, False otherwise.
+        """
+
         if not isinstance(other, ContractLog):
             return NotImplemented
 
@@ -311,25 +327,8 @@ class MockContractLog(BaseContractLog):
     Inherits from :class:`~ape.types.BaseContractLog`, and overrides the equality method for custom comparison
     of event arguments between a MockContractLog and a ContractLog instance.
     """
+
     def __eq__(self, other: Any) -> bool:
-        """
-        Check for equality between this instance and another BaseContractLog instance.
-
-        If the other object is not an instance of BaseContractLog, this method returns
-        NotImplemented. This triggers the Python interpreter to call the __eq__ method
-        on the other object (i.e., y.__eq__(x)) if it is defined, allowing for a custom
-        comparison. This behavior is leveraged by the MockContractLog class to handle
-        custom comparison logic between ContractLog and MockContractLog instances.
-
-        Args:
-            other (Any): The object to compare with this instance.
-
-        Returns:
-            bool: True if the two instances are equal, False otherwise.
-        """
-        # if not isinstance(other, ContractLog):
-            # return NotImplemented
-
         if self.contract_address != other.contract_address or self.event_name != other.event_name:
             return False
 
