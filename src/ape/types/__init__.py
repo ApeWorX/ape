@@ -197,9 +197,7 @@ class BaseContractLog(BaseInterfaceModel):
 
     @validator("contract_address", pre=True)
     def validate_address(cls, value):
-        from ape import convert
-
-        return convert(value, AddressType)
+        return cls.conversion_manager.convert(value, AddressType)
 
     def __eq__(self, other: Any) -> bool:
         if self.contract_address != other.contract_address or self.event_name != other.event_name:
