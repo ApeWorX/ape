@@ -5,6 +5,7 @@ from pathlib import Path
 from typing import Any, Dict, Iterator, List, Optional, Tuple, Type, Union
 
 import click
+from eth_typing import ChecksumAddress
 import pandas as pd
 from ethpm_types import ContractType
 from ethpm_types.abi import ConstructorABI, ErrorABI, EventABI, MethodABI
@@ -493,7 +494,7 @@ class ContractEvent(ManagerAccessMixin):
             if value is None:
                 continue
             input_abi = next(input for input in self.abi.inputs if input.name == key)
-            type = input_abi.canonical_type
+            type: Union[str, Type[AddressType], Type[int]] = input_abi.canonical_type
             if type == "address":
                 type = AddressType
             elif type == "uint256":
