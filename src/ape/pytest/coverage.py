@@ -3,6 +3,7 @@ from typing import Iterable, List
 
 from ethpm_types.source import ContractSource
 
+from ape.logging import logger
 from ape.pytest.config import ConfigWrapper
 from ape.types import CoverageReport, SourceTraceback
 from ape.types.trace import CoverageItem
