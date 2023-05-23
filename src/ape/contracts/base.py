@@ -483,8 +483,15 @@ class ContractEvent(ManagerAccessMixin):
         # Convert the arguments using the conversion manager
         converted_args = {}
         for key, value in event_args.items():
+            if value is None:
+                continue
             input_abi = next(input for input in self.abi.inputs if input.name == key)
-            converted_args[key] = self.conversion_manager.convert(value, input_abi.type)
+            type = input_abi.canonical_type
+            if type == "address":
+                type = AddressType
+            elif type == "uint256":
+                type = int
+            converted_args[key] = self.conversion_manager.convert(value, type)
 
         return MockContractLog(
             abi=self.abi,
