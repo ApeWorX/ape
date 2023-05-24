@@ -510,7 +510,7 @@ class EcosystemAPI(BaseInterfaceModel):
         return call
 
     @abstractmethod
-    def get_python_types(self, abi_type) -> List[Type]:
+    def get_python_types(self, abi_type) -> Union[Type, Tuple, List]:
         """
         Get the Python types for a given ABI type.
 
