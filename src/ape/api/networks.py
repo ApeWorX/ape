@@ -509,6 +509,18 @@ class EcosystemAPI(BaseInterfaceModel):
         """
         return call
 
+    @abstractmethod
+    def get_python_types(self, abi_type) -> List[Type]:
+        """
+        Get the Python types for a given ABI type.
+
+        Args:
+            abi_type (str): The ABI type to get the Python types for.
+
+        Returns:
+            List[Type]: The Python types for the given ABI type.
+        """
+
 
 class ProviderContextManager(ManagerAccessMixin):
     """

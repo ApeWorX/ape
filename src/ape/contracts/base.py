@@ -493,15 +493,11 @@ class ContractEvent(ManagerAccessMixin):
             if value is None:
                 continue
             input_abi = next(input for input in self.abi.inputs if input.name == key)
-            type: Union[str, Type[AddressType], Type[int]] = input_abi.canonical_type
-            if type == "address":
-                type = AddressType
-            elif type == "uint256":
-                type = int
+            ecosystem = self.provider.network.ecosystem
+            type = ecosystem.get_python_types(input_abi)
             converted_args[key] = self.conversion_manager.convert(value, type)
 
         return MockContractLog(
-            abi=self.abi,
             contract_address=self.contract.address,
             event_arguments=converted_args,  # Use the converted arguments
             event_name=self.abi.name,

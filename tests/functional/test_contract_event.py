@@ -78,13 +78,13 @@ def test_contract_logs_index_access(contract_instance, owner, assert_log_values)
     contract_instance.setNumber(2, sender=owner)
     contract_instance.setNumber(3, sender=owner)
 
-    assert event_type[0] == contract_instance.NumberChange(1, 0)
-    assert event_type[1] == contract_instance.NumberChange(2, prevNum=1)
+    assert event_type[0] == contract_instance.NumberChange(None, 0, None, 1)
+    assert event_type[1] == contract_instance.NumberChange(None, 1, newNum=2)
     assert event_type[2] == contract_instance.NumberChange(newNum=3, prevNum=2)
 
     # Verify negative index access
-    assert event_type[-3] == contract_instance.NumberChange(1, 0)
-    assert event_type[-2] == contract_instance.NumberChange(2, prevNum=1)
+    assert event_type[-3] == contract_instance.NumberChange(None, 0, None, 1)
+    assert event_type[-2] == contract_instance.NumberChange(None, 1, newNum=2)
     assert event_type[-1] == contract_instance.NumberChange(newNum=3, prevNum=2)
 
 
