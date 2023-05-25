@@ -499,7 +499,7 @@ class ContractEvent(ManagerAccessMixin):
                 continue
             input_abi = next(input for input in self.abi.inputs if input.name == key)
             ecosystem = self.provider.network.ecosystem
-            type = ecosystem.get_python_types(input_abi)
+            py_type = ecosystem.get_python_types(input_abi)
             converted_args[key] = self.conversion_manager.convert(value, type)
 
         return MockContractLog(
