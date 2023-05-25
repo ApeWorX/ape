@@ -780,6 +780,9 @@ class Ethereum(EcosystemAPI):
         call.outputs = values[0] if len(values) == 1 else values
         return call
 
+    def get_python_types(self, abi_type: ABIType) -> Union[Type, Tuple, List]:
+        return self._python_type_for_abi_type(abi_type)
+
 
 def parse_type(type: Dict[str, Any]) -> Union[str, Tuple, List]:
     if "tuple" not in type["type"]:
