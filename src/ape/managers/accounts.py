@@ -63,7 +63,7 @@ class TestAccountManager(list, ManagerAccessMixin):
     def __len__(self) -> int:
         return len(list(self.accounts))
 
-    def __iter__(self) -> Iterator[TestAccountAPI]:
+    def __iter__(self) -> Iterator[AccountAPI]:
         yield from self.accounts
 
     @singledispatchmethod

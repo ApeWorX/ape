@@ -3,7 +3,13 @@ import shutil
 import click
 import pytest
 
-from ape.cli import NetworkBoundCommand, account_option, get_user_selected_account, network_option
+from ape.cli import (
+    NetworkBoundCommand,
+    PromptChoice,
+    account_option,
+    get_user_selected_account,
+    network_option,
+)
 from ape.exceptions import AccountsError
 
 OUTPUT_FORMAT = "__TEST__{}__"
@@ -263,3 +269,27 @@ def test_account_option_can_use_test_account(runner, test_accounts):
     expected = get_expected_account_str(test_account)
     result = runner.invoke(cmd, ["--account", f"TEST::{index}"])
     assert expected in result.output
+
+
+@pytest.mark.parametrize("opt", (0, "foo"))
+def test_prompt_choice(runner, opt):
+    """
+    This demonstrates how to use ``PromptChoice``,
+    as it is a little confusing, requiring a callback.
+    """
+
+    def choice_callback(ctx, param, value):
+        return param.type.get_user_selected_choice()
+
+    @click.command()
+    @click.option(
+        "--choice",
+        type=PromptChoice(["foo", "bar"]),
+        callback=choice_callback,
+    )
+    def cmd(choice):
+        click.echo(f"__expected_{choice}")
+
+    result = runner.invoke(cmd, [], input=f"{opt}\n")
+    assert "Select one of the following:" in result.output
+    assert "__expected_foo" in result.output

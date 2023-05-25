@@ -51,6 +51,20 @@ class Alias(click.Choice):
 class PromptChoice(click.ParamType):
     """
     A choice option or argument from user selection.
+
+    Usage example::
+
+        def choice_callback(ctx, param, value):
+            return param.type.get_user_selected_choice()
+
+        @click.command()
+        @click.option(
+            "--choice",
+            type=PromptChoice(["foo", "bar"]),
+            callback=choice_callback,
+        )
+        def cmd(choice):
+            click.echo(f"__expected_{choice}")
     """
 
     def __init__(self, choices):
@@ -60,7 +74,6 @@ class PromptChoice(click.ParamType):
         """
         Echo the choices to the terminal.
         """
-
         choices = dict(enumerate(self.choices, 0))
         did_print = False
         for idx, choice in choices.items():
@@ -86,6 +99,19 @@ class PromptChoice(click.ParamType):
 
     def fail_from_invalid_choice(self, param):
         return self.fail("Invalid choice.", param=param)
+
+    def get_user_selected_choice(self) -> str:
+        choices = "\n".join(self.choices)
+        choice = click.prompt(f"Select one of the following:\n{choices}").strip()
+        if not choice.isnumeric():
+            return choice
+
+        # User input an index.
+        choice_idx = int(choice)
+        if 0 <= choice_idx < len(self.choices):
+            return self.choices[choice_idx]
+
+        raise IndexError(f"Choice index '{choice_idx}' out of range.")
 
 
 def get_user_selected_account(
