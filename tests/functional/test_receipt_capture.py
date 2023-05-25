@@ -1,6 +1,7 @@
-from ape.pytest.fixtures import ReceiptCapture
-from ape.pytest.config import ConfigWrapper
 import pytest
+
+from ape.pytest.config import ConfigWrapper
+from ape.pytest.fixtures import ReceiptCapture
 
 
 @pytest.fixture
