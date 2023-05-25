@@ -18,12 +18,13 @@ This guide is for showcasing utilities that ship with Ape to assist in your CLI 
 
 ## Ape Context Decorator
 
-The `@ape_cli_context` gives you access to all the root Ape objects (`accounts`, `networks` etc.), the ape logger and an `abort` method for stopping execution of your CLI gracefully.
+The `@ape_cli_context` gives you access to all the root Ape objects (`accounts`, `networks` etc.), the ape logger, and an `abort` method for stopping execution of your CLI gracefully.
 Here is an example using all of those features from the `cli_ctx`:
 
 ```python
 import click
 from ape.cli import ape_cli_context
+
 
 @click.command()
 @ape_cli_context()
@@ -37,7 +38,7 @@ def cmd(cli_ctx):
 
 The `@network_option()` allows you to select an ecosystem / network / provider combination.
 When using with the `NetworkBoundCommand` cls, you can cause your CLI to connect before any of your code executes.
-This is useful if your script or command requires a connection to a node provider in order for it to run.
+This is useful if your script or command requires a provider connection in order for it to run.
 
 ```python
 import click
@@ -65,12 +66,12 @@ Use the `@account_option()` for adding an option to your CLIs to select an accou
 This option does several things:
 
 1. If you only have a single account in Ape (from both test accounts _and_ other accounts), it will use that account as the default.
-   (this case is rare, as most people have at least test accounts by default).
+   (this case is rare, as most people have more than one test account by default).
 2. If you have more than one account, it will prompt you to select the account to use.
 3. You can pass in an account alias or index to the option flag to have it use that account.
 4. It allows you to specify test accounts by using a choice of `TEST::{index_of_test_account}`.
 
-So if you use this option, no matter what, your script will have an account to use by the time the script starts.
+Thus, if you use this option, no matter what, your script will have an account to use by the time the script starts.
 Here is an example:
 
 ```python
