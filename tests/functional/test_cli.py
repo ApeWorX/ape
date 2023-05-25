@@ -65,6 +65,10 @@ def no_accounts(accounts, empty_data_folder):
         del accounts.__dict__["containers"]
 
 
+def get_expected_account_str(acct):
+    return f"__expected_output__: {acct.address}"
+
+
 def test_get_user_selected_account_no_accounts_found(no_accounts):
     with pytest.raises(AccountsError, match="No accounts found."):
         assert not get_user_selected_account()
@@ -179,15 +183,58 @@ def test_network_option_not_needed_on_network_bound_command(runner):
 
 
 def test_account_option(runner, keyfile_account):
-    def get_expected(acct):
-        return f"__expected_output__: {acct.address}"
+    @click.command()
+    @account_option()
+    def cmd(account):
+        _expected = get_expected_account_str(account)
+        click.echo(_expected)
+
+    expected = get_expected_account_str(keyfile_account)
+    result = runner.invoke(cmd, ["--account", keyfile_account.alias])
+    assert expected in result.output
+
+
+def test_account_option_uses_single_account_as_default(runner, keyfile_account):
+    """
+    When there is only 1 keyfile account, that is the default
+    when no option is given.
+    """
+    @click.command()
+    @account_option()
+    def cmd(account):
+        _expected = get_expected_account_str(account)
+        click.echo(_expected)
+
+    expected = get_expected_account_str(keyfile_account)
+    result = runner.invoke(cmd, [])
+    assert expected in result.output
+
+
+def test_account_prompts_when_more_than_one_keyfile_account(runner, keyfile_account, second_keyfile_account):
+    @click.command()
+    @account_option()
+    def cmd(account):
+        _expected = get_expected_account_str(account)
+        click.echo(_expected)
+
+    expected = get_expected_account_str(keyfile_account)
+
+    # Requires user input.
+    result = runner.invoke(cmd, [], input="0\n")
+
+    assert expected in result.output
+
+
+def test_account_option_can_use_test_account(runner, test_accounts):
+    index = 7
+    test_account = test_accounts[index]
 
     @click.command()
     @account_option()
     def cmd(account):
-        _expected = get_expected(account)
+        _expected = get_expected_account_str(account)
         click.echo(_expected)
 
-    expected = get_expected(keyfile_account)
-    result = runner.invoke(cmd, [])
+    expected = get_expected_account_str(test_account)
+    result = runner.invoke(cmd, ["--account", f"TEST::{index}"])
     assert expected in result.output
