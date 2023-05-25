@@ -146,8 +146,7 @@ class AccountAliasPromptChoice(PromptChoice):
     def print_choices(self):
         super().print_choices()
         len_test_accounts = len(accounts.test_accounts) - 1
-        click.echo(f"Or 'TEST::account_idx', where `account_idx` is in [0..{len_test_accounts}]")
-        click.echo()
+        click.echo(f"Or 'TEST::account_idx', where `account_idx` is in [0..{len_test_accounts}]\n")
 
     @property
     def choices(self) -> List[str]:
