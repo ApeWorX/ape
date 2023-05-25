@@ -58,3 +58,7 @@ def test_getattr(compilers):
 
     with pytest.raises(AttributeError, match=r"No attribute or compiler named 'foobar'\."):
         _ = compilers.foobar
+
+
+def test_supports_tracing(compilers):
+    assert not compilers.ethpm.supports_source_tracing

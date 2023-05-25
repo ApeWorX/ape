@@ -333,3 +333,13 @@ def test_sources(project_with_source_files_contract):
     project = project_with_source_files_contract
     assert "ApeContract0.json" in project.sources
     assert project.sources["ApeContract0.json"].content
+
+
+def test_contracts_folder(project, config):
+    expected = project.path / "contracts"
+    assert project.contracts_folder == expected
+
+    # Show that even when None in the config, it won't be None here.
+    config.contracts_folder = None
+    assert config.contracts_folder is None
+    assert project.contracts_folder == expected

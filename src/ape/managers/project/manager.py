@@ -82,7 +82,17 @@ class ProjectManager(BaseManager):
             pathlib.Path
         """
 
-        return self.config_manager.contracts_folder
+        folder = self.config_manager.contracts_folder
+        if folder is None:
+            # This happens when using normal Python REPL
+            # and perhaps other times when loading a project before config.
+            self.config_manager.load()
+            folder = self.config_manager.contracts_folder
+            if folder is None:
+                # Was set explicitly to `None` in config.
+                return self.path / "contracts"
+
+        return folder
 
     @property
     def source_paths(self) -> List[Path]:

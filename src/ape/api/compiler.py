@@ -1,3 +1,4 @@
+from functools import cached_property
 from pathlib import Path
 from typing import Dict, Iterator, List, Optional, Set, Tuple
 
@@ -7,7 +8,7 @@ from evm_trace.geth import TraceFrame as EvmTraceFrame
 from evm_trace.geth import create_call_node_data
 from semantic_version import Version  # type: ignore
 
-from ape.exceptions import ContractLogicError
+from ape.exceptions import APINotImplementedError, ContractLogicError
 from ape.types.trace import SourceTraceback, TraceFrame
 from ape.utils import BaseInterfaceModel, abstractmethod, raises_not_implemented
 
@@ -114,6 +115,22 @@ class CompilerAPI(BaseInterfaceModel):
 
     def __str__(self) -> str:
         return self.name
+
+    @cached_property
+    def supports_source_tracing(self) -> bool:
+        """
+        Returns ``True`` if this compiler is able to provider a source
+        traceback for a given trace.
+        """
+        try:
+            self.trace_source(None, None, None)  # type: ignore
+        except APINotImplementedError:
+            return False
+        except Exception:
+            # Task failed successfully.
+            return True
+
+        return True
 
     def enrich_error(self, err: ContractLogicError) -> ContractLogicError:
         """

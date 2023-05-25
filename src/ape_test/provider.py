@@ -93,7 +93,9 @@ class LocalProvider(TestProviderAPI, Web3Provider):
                 raise ape_err from err
             else:
                 message = gas_estimation_error_message(ape_err)
-                raise TransactionError(message, base_err=ape_err, txn=txn) from ape_err
+                raise TransactionError(
+                    message, base_err=ape_err, txn=txn, source_traceback=ape_err.source_traceback
+                ) from ape_err
 
     @property
     def chain_id(self) -> int:
@@ -142,7 +144,6 @@ class LocalProvider(TestProviderAPI, Web3Provider):
             txn_hash = self.web3.eth.send_raw_transaction(txn.serialize_transaction())
         except (ValidationError, TransactionFailed) as err:
             vm_err = self.get_virtual_machine_error(err, txn=txn)
-            vm_err.txn = txn
             raise vm_err from err
 
         receipt = self.get_receipt(
@@ -202,28 +203,18 @@ class LocalProvider(TestProviderAPI, Web3Provider):
         self.evm_backend.mine_blocks(num_blocks)
 
     def get_virtual_machine_error(self, exception: Exception, **kwargs) -> VirtualMachineError:
-        txn = kwargs.get("txn")
-        trace = kwargs.get("trace")
-        contract_address = kwargs.get("contract_address")
         if isinstance(exception, ValidationError):
             match = self._CANNOT_AFFORD_GAS_PATTERN.match(str(exception))
             if match:
                 txn_gas, bal = match.groups()
-                sender = getattr(txn, "sender")
+                sender = getattr(kwargs["txn"], "sender")
                 new_message = (
                     f"Sender '{sender}' cannot afford txn gas {txn_gas} with account balance {bal}."
                 )
-                return VirtualMachineError(
-                    new_message, txn=txn, trace=trace, contract_address=contract_address
-                )
+                return VirtualMachineError(new_message, **kwargs)
 
             else:
-                return VirtualMachineError(
-                    base_err=exception,
-                    txn=txn,
-                    trace=trace,
-                    contract_address=contract_address,
-                )
+                return VirtualMachineError(base_err=exception, **kwargs)
 
         elif isinstance(exception, TransactionFailed):
             err_message = str(exception).split("execution reverted: ")[-1] or None
@@ -234,12 +225,8 @@ class LocalProvider(TestProviderAPI, Web3Provider):
                 err_message = HexBytes(literal_eval(err_message)).hex()
 
             err_message = None if err_message == "0x" else err_message
-            contract_err = ContractLogicError(
-                revert_message=err_message, txn=txn, trace=trace, contract_address=contract_address
-            )
+            contract_err = ContractLogicError(revert_message=err_message, **kwargs)
             return self.compiler_manager.enrich_error(contract_err)
 
         else:
-            return VirtualMachineError(
-                base_err=exception, txn=txn, trace=trace, contract_address=contract_address
-            )
+            return VirtualMachineError(base_err=exception, **kwargs)
