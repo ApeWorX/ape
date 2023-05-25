@@ -3,7 +3,13 @@ import shutil
 import click
 import pytest
 
-from ape.cli import NetworkBoundCommand, get_user_selected_account, network_option
+from ape.cli import (
+    NetworkBoundCommand,
+    PromptChoice,
+    account_option,
+    get_user_selected_account,
+    network_option,
+)
 from ape.exceptions import AccountsError
 
 OUTPUT_FORMAT = "__TEST__{}__"
@@ -15,12 +21,14 @@ def keyfile_swap_paths(config):
 
 
 @pytest.fixture
-def one_keyfile_account(keyfile_swap_paths, keyfile_account):
+def one_keyfile_account(keyfile_swap_paths, keyfile_account, temp_config):
     src_path, dest_path = keyfile_swap_paths
     existing_keyfiles = [x for x in src_path.iterdir() if x.is_file()]
+    test_data = {"test": {"number_of_accounts": 0}}
     if existing_keyfiles == [keyfile_account.keyfile_path]:
         # Already only has the 1 account
-        yield keyfile_account
+        with temp_config(test_data):
+            yield keyfile_account
 
     else:
         if dest_path.is_file():
@@ -33,7 +41,8 @@ def one_keyfile_account(keyfile_swap_paths, keyfile_account):
             shutil.copy(keyfile, dest_path / keyfile.name)
             keyfile.unlink()
 
-        yield keyfile_account
+        with temp_config(test_data):
+            yield keyfile_account
 
         for file in dest_path.iterdir():
             shutil.copy(file, src_path / file.name)
@@ -49,8 +58,7 @@ def network_cmd():
     return cmd
 
 
-@pytest.fixture
-def no_accounts(accounts, empty_data_folder):
+def _setup_temp_acct_number_change(accounts, num_accounts: int):
     if "containers" in accounts.__dict__:
         del accounts.__dict__["containers"]
 
@@ -59,10 +67,34 @@ def no_accounts(accounts, empty_data_folder):
         accounts_str = ", ".join(installed_account_types)
         pytest.fail(f"Unable to side-step install of account type(s): {accounts_str}")
 
-    yield
+    return {"test": {"number_of_accounts": num_accounts}}
 
+
+def _teardown_numb_acct_change(accounts):
     if "containers" in accounts.__dict__:
         del accounts.__dict__["containers"]
+
+
+@pytest.fixture
+def no_accounts(accounts, empty_data_folder, temp_config):
+    data = _setup_temp_acct_number_change(accounts, 0)
+    with temp_config(data):
+        yield
+
+    _teardown_numb_acct_change(accounts)
+
+
+@pytest.fixture
+def one_account(accounts, empty_data_folder, temp_config, test_accounts):
+    data = _setup_temp_acct_number_change(accounts, 1)
+    with temp_config(data):
+        yield test_accounts[0]
+
+    _teardown_numb_acct_change(accounts)
+
+
+def get_expected_account_str(acct):
+    return f"__expected_output__: {acct.address}"
 
 
 def test_get_user_selected_account_no_accounts_found(no_accounts):
@@ -70,12 +102,12 @@ def test_get_user_selected_account_no_accounts_found(no_accounts):
         assert not get_user_selected_account()
 
 
-def test_get_user_selected_account_one_account(runner, keyfile_account):
+def test_get_user_selected_account_one_account(runner, one_account):
     # No input needed when only one account
     with runner.isolation():
         account = get_user_selected_account()
 
-    assert account == keyfile_account
+    assert account == one_account
 
 
 def test_get_user_selected_account_multiple_accounts_requires_input(
@@ -176,3 +208,88 @@ def test_network_option_not_needed_on_network_bound_command(runner):
 
     result = runner.invoke(cmd, [])
     assert "Success" in result.output
+
+
+def test_account_option(runner, keyfile_account):
+    @click.command()
+    @account_option()
+    def cmd(account):
+        _expected = get_expected_account_str(account)
+        click.echo(_expected)
+
+    expected = get_expected_account_str(keyfile_account)
+    result = runner.invoke(cmd, ["--account", keyfile_account.alias])
+    assert expected in result.output
+
+
+def test_account_option_uses_single_account_as_default(runner, one_account):
+    """
+    When there is only 1 test account, that is the default
+    when no option is given.
+    """
+
+    @click.command()
+    @account_option()
+    def cmd(account):
+        _expected = get_expected_account_str(account)
+        click.echo(_expected)
+
+    expected = get_expected_account_str(one_account)
+    result = runner.invoke(cmd, [])
+    assert expected in result.output
+
+
+def test_account_prompts_when_more_than_one_keyfile_account(
+    runner, keyfile_account, second_keyfile_account
+):
+    @click.command()
+    @account_option()
+    def cmd(account):
+        _expected = get_expected_account_str(account)
+        click.echo(_expected)
+
+    expected = get_expected_account_str(keyfile_account)
+
+    # Requires user input.
+    result = runner.invoke(cmd, [], input="0\n")
+
+    assert expected in result.output
+
+
+def test_account_option_can_use_test_account(runner, test_accounts):
+    index = 7
+    test_account = test_accounts[index]
+
+    @click.command()
+    @account_option()
+    def cmd(account):
+        _expected = get_expected_account_str(account)
+        click.echo(_expected)
+
+    expected = get_expected_account_str(test_account)
+    result = runner.invoke(cmd, ["--account", f"TEST::{index}"])
+    assert expected in result.output
+
+
+@pytest.mark.parametrize("opt", (0, "foo"))
+def test_prompt_choice(runner, opt):
+    """
+    This demonstrates how to use ``PromptChoice``,
+    as it is a little confusing, requiring a callback.
+    """
+
+    def choice_callback(ctx, param, value):
+        return param.type.get_user_selected_choice()
+
+    @click.command()
+    @click.option(
+        "--choice",
+        type=PromptChoice(["foo", "bar"]),
+        callback=choice_callback,
+    )
+    def cmd(choice):
+        click.echo(f"__expected_{choice}")
+
+    result = runner.invoke(cmd, [], input=f"{opt}\n")
+    assert "Select one of the following:" in result.output
+    assert "__expected_foo" in result.output
