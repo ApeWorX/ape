@@ -483,7 +483,7 @@ class ReceiptAPI(BaseInterfaceModel):
     def track_gas(self):
         """
         Track this receipt's gas in the on-going session gas-report.
-        Requires using a provider that support transaction traces.
+        Requires using a provider that supports transaction traces.
         This gets called when running tests with the ``--gas`` flag.
         """
 

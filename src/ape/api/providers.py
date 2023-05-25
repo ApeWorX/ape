@@ -729,7 +729,9 @@ class Web3Provider(ProviderAPI, ABC):
                 raise tx_error from err
 
             message = gas_estimation_error_message(tx_error)
-            raise TransactionError(message, base_err=tx_error, txn=txn) from err
+            raise TransactionError(
+                message, base_err=tx_error, txn=txn, source_traceback=tx_error.source_traceback
+            ) from err
 
     @cached_property
     def chain_id(self) -> int:

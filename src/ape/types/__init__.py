@@ -301,6 +301,7 @@ __all__ = [
     "ContractLog",
     "ContractLogContainer",
     "ContractType",
+    "ControlFlow",
     "GasReport",
     "MessageSignature",
     "PackageManifest",
@@ -310,7 +311,6 @@ __all__ = [
     "SnapshotID",
     "Source",
     "SourceTraceback",
-    "ControlFlow",
     "TraceFrame",
     "TransactionSignature",
 ]
