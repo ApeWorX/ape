@@ -3,7 +3,7 @@ import shutil
 import click
 import pytest
 
-from ape.cli import NetworkBoundCommand, get_user_selected_account, network_option
+from ape.cli import NetworkBoundCommand, account_option, get_user_selected_account, network_option
 from ape.exceptions import AccountsError
 
 OUTPUT_FORMAT = "__TEST__{}__"
@@ -176,3 +176,18 @@ def test_network_option_not_needed_on_network_bound_command(runner):
 
     result = runner.invoke(cmd, [])
     assert "Success" in result.output
+
+
+def test_account_option(runner, keyfile_account):
+    def get_expected(acct):
+        return f"__expected_output__: {acct.address}"
+
+    @click.command()
+    @account_option()
+    def cmd(account):
+        _expected = get_expected(account)
+        click.echo(_expected)
+
+    expected = get_expected(keyfile_account)
+    result = runner.invoke(cmd, [])
+    assert expected in result.output

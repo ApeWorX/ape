@@ -131,10 +131,11 @@ class AccountAliasPromptChoice(PromptChoice):
             if not idx_str.isnumeric():
                 self.fail(f"Cannot reference test account by '{value}'.", param=param)
 
-            try:
+            account_idx = int(idx_str)
+            if 0 <= account_idx < len(accounts.test_accounts):
                 return accounts.test_accounts[int(idx_str)]
-            except IndexError:
-                self.fail(f"Index '{idx_str}' is not valid.", param=param)
+
+            self.fail(f"Index '{idx_str}' is not valid.", param=param)
 
         if value and value in accounts.aliases:
             return accounts.load(value)
