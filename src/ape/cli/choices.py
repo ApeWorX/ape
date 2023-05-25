@@ -51,6 +51,20 @@ class Alias(click.Choice):
 class PromptChoice(click.ParamType):
     """
     A choice option or argument from user selection.
+
+    Usage example::
+
+        def choice_callback(ctx, param, value):
+            return param.type.get_user_selected_choice()
+
+        @click.command()
+        @click.option(
+            "--choice",
+            type=PromptChoice(["foo", "bar"]),
+            callback=choice_callback,
+        )
+        def cmd(choice):
+            click.echo(f"__expected_{choice}")
     """
 
     def __init__(self, choices):
@@ -60,11 +74,14 @@ class PromptChoice(click.ParamType):
         """
         Echo the choices to the terminal.
         """
-
         choices = dict(enumerate(self.choices, 0))
-        for choice in choices:
-            click.echo(f"{choice}. {choices[choice]}")
-        click.echo()
+        did_print = False
+        for idx, choice in choices.items():
+            click.echo(f"{idx}. {choice}")
+            did_print = True
+
+        if did_print:
+            click.echo()
 
     def convert(
         self, value: Any, param: Optional[Parameter], ctx: Optional[Context]
@@ -82,6 +99,19 @@ class PromptChoice(click.ParamType):
 
     def fail_from_invalid_choice(self, param):
         return self.fail("Invalid choice.", param=param)
+
+    def get_user_selected_choice(self) -> str:
+        choices = "\n".join(self.choices)
+        choice = click.prompt(f"Select one of the following:\n{choices}").strip()
+        if not choice.isnumeric():
+            return choice
+
+        # User input an index.
+        choice_idx = int(choice)
+        if 0 <= choice_idx < len(self.choices):
+            return self.choices[choice_idx]
+
+        raise IndexError(f"Choice index '{choice_idx}' out of range.")
 
 
 def get_user_selected_account(
@@ -126,12 +156,42 @@ class AccountAliasPromptChoice(PromptChoice):
     def convert(
         self, value: Any, param: Optional[Parameter], ctx: Optional[Context]
     ) -> Optional[AccountAPI]:
+        if isinstance(value, str) and value.startswith("TEST::"):
+            idx_str = value.replace("TEST::", "")
+            if not idx_str.isnumeric():
+                self.fail(f"Cannot reference test account by '{value}'.", param=param)
+
+            account_idx = int(idx_str)
+            if 0 <= account_idx < len(accounts.test_accounts):
+                return accounts.test_accounts[int(idx_str)]
+
+            self.fail(f"Index '{idx_str}' is not valid.", param=param)
+
         if value and value in accounts.aliases:
             return accounts.load(value)
 
         # Prompt the user if they didn't provide a value.
         alias = super().convert(value, param, ctx)
         return accounts.load(alias) if alias else None
+
+    def print_choices(self):
+        choices = dict(enumerate(self.choices, 0))
+        did_print = False
+        for idx, choice in choices.items():
+            if not choice.startswith("TEST::"):
+                click.echo(f"{idx}. {choice}")
+                did_print = True
+
+        len_test_accounts = len(accounts.test_accounts) - 1
+        if len_test_accounts > 0:
+            msg = "'TEST::account_idx', where `account_idx` is in [0..{len_test_accounts}]\n"
+            if did_print:
+                msg = f"Or {msg}"
+
+            click.echo(msg)
+
+        elif did_print:
+            click.echo()
 
     @property
     def choices(self) -> List[str]:
@@ -142,11 +202,13 @@ class AccountAliasPromptChoice(PromptChoice):
             List[str]: A list of all the account aliases.
         """
 
-        return [
+        _accounts = [
             a.alias
             for a in _get_account_by_type(self._account_type)
             if a is not None and a.alias is not None
         ]
+        _accounts.extend([f"TEST::{i}" for i, _ in enumerate(accounts.test_accounts)])
+        return _accounts
 
     def get_user_selected_account(self) -> AccountAPI:
         """
@@ -158,6 +220,8 @@ class AccountAliasPromptChoice(PromptChoice):
 
         if not self.choices:
             raise AccountsError("No accounts found.")
+        elif len(self.choices) == 1 and self.choices[0].startswith("TEST::"):
+            return accounts.test_accounts[int(self.choices[0].replace("TEST::", ""))]
         elif len(self.choices) == 1:
             return accounts.load(self.choices[0])
 
