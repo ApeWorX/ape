@@ -15,12 +15,14 @@ def keyfile_swap_paths(config):
 
 
 @pytest.fixture
-def one_keyfile_account(keyfile_swap_paths, keyfile_account):
+def one_keyfile_account(keyfile_swap_paths, keyfile_account, temp_config):
     src_path, dest_path = keyfile_swap_paths
     existing_keyfiles = [x for x in src_path.iterdir() if x.is_file()]
+    test_data = {"test": {"number_of_accounts": 0}}
     if existing_keyfiles == [keyfile_account.keyfile_path]:
         # Already only has the 1 account
-        yield keyfile_account
+        with temp_config(test_data):
+            yield keyfile_account
 
     else:
         if dest_path.is_file():
@@ -33,7 +35,8 @@ def one_keyfile_account(keyfile_swap_paths, keyfile_account):
             shutil.copy(keyfile, dest_path / keyfile.name)
             keyfile.unlink()
 
-        yield keyfile_account
+        with temp_config(test_data):
+            yield keyfile_account
 
         for file in dest_path.iterdir():
             shutil.copy(file, src_path / file.name)
@@ -76,10 +79,10 @@ def no_accounts(accounts, empty_data_folder, temp_config):
 
 
 @pytest.fixture
-def one_account(accounts, empty_data_folder, temp_config):
+def one_account(accounts, empty_data_folder, temp_config, test_accounts):
     data = _setup_temp_acct_number_change(accounts, 1)
     with temp_config(data):
-        yield
+        yield test_accounts[0]
 
     _teardown_numb_acct_change(accounts)
 
@@ -93,12 +96,12 @@ def test_get_user_selected_account_no_accounts_found(no_accounts):
         assert not get_user_selected_account()
 
 
-def test_get_user_selected_account_one_account(runner, keyfile_account):
+def test_get_user_selected_account_one_account(runner, one_account):
     # No input needed when only one account
     with runner.isolation():
         account = get_user_selected_account()
 
-    assert account == keyfile_account
+    assert account == one_account
 
 
 def test_get_user_selected_account_multiple_accounts_requires_input(
@@ -213,7 +216,7 @@ def test_account_option(runner, keyfile_account):
     assert expected in result.output
 
 
-def test_account_option_uses_single_account_as_default(runner, one_account, test_accounts):
+def test_account_option_uses_single_account_as_default(runner, one_account):
     """
     When there is only 1 test account, that is the default
     when no option is given.
@@ -225,7 +228,7 @@ def test_account_option_uses_single_account_as_default(runner, one_account, test
         _expected = get_expected_account_str(account)
         click.echo(_expected)
 
-    expected = get_expected_account_str(test_accounts[0])
+    expected = get_expected_account_str(one_account)
     result = runner.invoke(cmd, [])
     assert expected in result.output
 
