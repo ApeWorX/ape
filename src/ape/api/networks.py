@@ -510,8 +510,8 @@ class EcosystemAPI(BaseInterfaceModel):
         return call
 
     @raises_not_implemented
-    def get_python_types( # type: ignore[empty-body]
-            self, abi_type: ABIType
+    def get_python_types(  # type: ignore[empty-body]
+        self, abi_type: ABIType
     ) -> Union[Type, Tuple, List]:
         """
         Get the Python types for a given ABI type.
