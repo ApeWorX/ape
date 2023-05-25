@@ -9,7 +9,7 @@ from eth_account._utils.legacy_transactions import (
     serializable_unsigned_transaction_from_dict,
 )
 from eth_utils import keccak, to_int
-from ethpm_types.abi import ConstructorABI, EventABI, MethodABI
+from ethpm_types.abi import ABIType, ConstructorABI, EventABI, MethodABI
 from hexbytes import HexBytes
 from pydantic import BaseModel
 
@@ -510,7 +510,7 @@ class EcosystemAPI(BaseInterfaceModel):
         return call
 
     @raises_not_implemented
-    def get_python_types(self, abi_type: EventABIType) -> Union[Type, Tuple, List]:
+    def get_python_types(self, abi_type: ABIType) -> Union[Type, Tuple, List]:
         """
         Get the Python types for a given ABI type.
 
