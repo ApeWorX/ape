@@ -489,7 +489,7 @@ class ContractEvent(ManagerAccessMixin):
             input.name for input in self.abi.inputs
         }:
             raise ValueError(
-                f"Invalid argument keys found, expected a subset of {', '.join(unknown_input_names)}"
+                f"Invalid argument keys found, expected subset of {', '.join(unknown_input_names)}"
             )
 
         # Convert the arguments using the conversion manager
@@ -500,7 +500,7 @@ class ContractEvent(ManagerAccessMixin):
             input_abi = next(input for input in self.abi.inputs if input.name == key)
             ecosystem = self.provider.network.ecosystem
             py_type = ecosystem.get_python_types(input_abi)
-            converted_args[key] = self.conversion_manager.convert(value, type)
+            converted_args[key] = self.conversion_manager.convert(value, py_type)
 
         return MockContractLog(
             contract_address=self.contract.address,
