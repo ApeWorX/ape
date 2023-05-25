@@ -661,15 +661,20 @@ class SourceTraceback(BaseModel):
         )
         self.last.extend(location, pcs=pcs, ws_start=start)
 
-    def add_builtin_jump(self, name: str, _type: str, compiler_name: str):
+    def add_builtin_jump(
+        self,
+        name: str,
+        _type: str,
+        compiler_name: str,
+        source_path: Optional[Path] = None,
+        pcs: Optional[Set[int]] = None,
+    ):
+        pcs = pcs or set()
         closure = Closure(name=name)
         depth = self.last.depth - 1 if self.last else 0
-        statement = Statement(type=_type)
+        statement = Statement(type=_type, pcs=pcs)
         flow = ControlFlow(
-            statements=[statement],
-            closure=closure,
-            source_path=Path("<internal>") / compiler_name,
-            depth=depth,
+            closure=closure, depth=depth, statements=[statement], source_path=source_path
         )
         self.append(flow)
 
