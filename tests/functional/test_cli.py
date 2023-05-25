@@ -199,6 +199,7 @@ def test_account_option_uses_single_account_as_default(runner, keyfile_account):
     When there is only 1 keyfile account, that is the default
     when no option is given.
     """
+
     @click.command()
     @account_option()
     def cmd(account):
@@ -210,7 +211,9 @@ def test_account_option_uses_single_account_as_default(runner, keyfile_account):
     assert expected in result.output
 
 
-def test_account_prompts_when_more_than_one_keyfile_account(runner, keyfile_account, second_keyfile_account):
+def test_account_prompts_when_more_than_one_keyfile_account(
+    runner, keyfile_account, second_keyfile_account
+):
     @click.command()
     @account_option()
     def cmd(account):
