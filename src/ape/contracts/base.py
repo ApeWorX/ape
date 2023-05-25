@@ -470,7 +470,7 @@ class ContractEvent(ManagerAccessMixin):
 
     def __call__(self, *args: Any, **kwargs: Any) -> MockContractLog:
         # Create a dictionary from the positional arguments
-        event_args = dict(zip((input.name for input in self.abi.inputs), args))
+        event_args: Dict[Any, Any] = dict(zip((input.name for input in self.abi.inputs), args))
 
         overlapping_keys = set(k for k in event_args.keys() if k is not None) & set(
             k for k in kwargs.keys() if k is not None
@@ -482,7 +482,7 @@ class ContractEvent(ManagerAccessMixin):
             )
 
         # Update event_args with keyword arguments
-        event_args.update(kwargs)  # type: ignore[arg-type]
+        event_args.update(kwargs)
 
         # Check that event_args.keys() is a subset of the expected input names
         if unknown_input_names := set(event_args.keys()) - {
