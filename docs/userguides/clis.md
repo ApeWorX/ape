@@ -63,7 +63,8 @@ def cmd(network):
 Use the `@account_option()` for adding an option to your CLIs to selecting accounts.
 This option does several things:
 
-1. If you only have a single non-development account in Ape, it will use that account as the default.
+1. If you only have a single account in Ape (from both test accounts _and_ other accounts), it will use that account as the default.
+   (this case is rare, as most people have at least test accounts by default).
 2. If you more than one, it will prompt you to select the account to use.
 3. You can pass in account alias or index to the option flag to have it use that account.
 4. It allows you to specify test accounts by using a choice of `TEST::{index_of_test_account}`.

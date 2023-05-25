@@ -63,6 +63,9 @@ class TestAccountManager(list, ManagerAccessMixin):
     def __len__(self) -> int:
         return len(list(self.accounts))
 
+    def __iter__(self) -> Iterator[TestAccountAPI]:
+        yield from self.accounts
+
     @singledispatchmethod
     def __getitem__(self, account_id):
         raise NotImplementedError(f"Cannot use {type(account_id)} as account ID.")

@@ -1,6 +1,6 @@
 from typing import List, Optional
 
-from pydantic import PositiveInt
+from pydantic import NonNegativeInt
 
 from ape import plugins
 from ape.api import PluginConfig
@@ -42,7 +42,7 @@ class Config(PluginConfig):
     The mnemonic to use when generating the test accounts.
     """
 
-    number_of_accounts: PositiveInt = DEFAULT_NUMBER_OF_TEST_ACCOUNTS
+    number_of_accounts: NonNegativeInt = DEFAULT_NUMBER_OF_TEST_ACCOUNTS
     """
     The number of test accounts to generate in the provider.
     """

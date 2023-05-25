@@ -62,9 +62,13 @@ class PromptChoice(click.ParamType):
         """
 
         choices = dict(enumerate(self.choices, 0))
-        for choice in choices:
-            click.echo(f"{choice}. {choices[choice]}")
-        click.echo()
+        did_print = False
+        for idx, choice in choices.items():
+            click.echo(f"{idx}. {choice}")
+            did_print = True
+
+        if did_print:
+            click.echo()
 
     def convert(
         self, value: Any, param: Optional[Parameter], ctx: Optional[Context]
@@ -145,9 +149,23 @@ class AccountAliasPromptChoice(PromptChoice):
         return accounts.load(alias) if alias else None
 
     def print_choices(self):
-        super().print_choices()
+        choices = dict(enumerate(self.choices, 0))
+        did_print = False
+        for idx, choice in choices.items():
+            if not choice.startswith("TEST::"):
+                click.echo(f"{idx}. {choice}")
+                did_print = True
+
         len_test_accounts = len(accounts.test_accounts) - 1
-        click.echo(f"Or 'TEST::account_idx', where `account_idx` is in [0..{len_test_accounts}]\n")
+        if len_test_accounts > 0:
+            msg = "'TEST::account_idx', where `account_idx` is in [0..{len_test_accounts}]\n"
+            if did_print:
+                msg = f"Or {msg}"
+
+            click.echo(msg)
+
+        elif did_print:
+            click.echo()
 
     @property
     def choices(self) -> List[str]:
@@ -158,11 +176,13 @@ class AccountAliasPromptChoice(PromptChoice):
             List[str]: A list of all the account aliases.
         """
 
-        return [
+        _accounts = [
             a.alias
             for a in _get_account_by_type(self._account_type)
             if a is not None and a.alias is not None
         ]
+        _accounts.extend([f"TEST::{i}" for i, _ in enumerate(accounts.test_accounts)])
+        return _accounts
 
     def get_user_selected_account(self) -> AccountAPI:
         """
@@ -174,6 +194,8 @@ class AccountAliasPromptChoice(PromptChoice):
 
         if not self.choices:
             raise AccountsError("No accounts found.")
+        elif len(self.choices) == 1 and self.choices[0].startswith("TEST::"):
+            return accounts.test_accounts[int(self.choices[0].replace("TEST::", ""))]
         elif len(self.choices) == 1:
             return accounts.load(self.choices[0])
 

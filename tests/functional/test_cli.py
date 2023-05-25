@@ -49,8 +49,7 @@ def network_cmd():
     return cmd
 
 
-@pytest.fixture
-def no_accounts(accounts, empty_data_folder):
+def _setup_temp_acct_number_change(accounts, num_accounts: int):
     if "containers" in accounts.__dict__:
         del accounts.__dict__["containers"]
 
@@ -59,10 +58,30 @@ def no_accounts(accounts, empty_data_folder):
         accounts_str = ", ".join(installed_account_types)
         pytest.fail(f"Unable to side-step install of account type(s): {accounts_str}")
 
-    yield
+    return {"test": {"number_of_accounts": num_accounts}}
 
+
+def _teardown_numb_acct_change(accounts):
     if "containers" in accounts.__dict__:
         del accounts.__dict__["containers"]
+
+
+@pytest.fixture
+def no_accounts(accounts, empty_data_folder, temp_config):
+    data = _setup_temp_acct_number_change(accounts, 0)
+    with temp_config(data):
+        yield
+
+    _teardown_numb_acct_change(accounts)
+
+
+@pytest.fixture
+def one_account(accounts, empty_data_folder, temp_config):
+    data = _setup_temp_acct_number_change(accounts, 1)
+    with temp_config(data):
+        yield
+
+    _teardown_numb_acct_change(accounts)
 
 
 def get_expected_account_str(acct):
@@ -194,9 +213,9 @@ def test_account_option(runner, keyfile_account):
     assert expected in result.output
 
 
-def test_account_option_uses_single_account_as_default(runner, keyfile_account):
+def test_account_option_uses_single_account_as_default(runner, one_account, test_accounts):
     """
-    When there is only 1 keyfile account, that is the default
+    When there is only 1 test account, that is the default
     when no option is given.
     """
 
@@ -206,7 +225,7 @@ def test_account_option_uses_single_account_as_default(runner, keyfile_account):
         _expected = get_expected_account_str(account)
         click.echo(_expected)
 
-    expected = get_expected_account_str(keyfile_account)
+    expected = get_expected_account_str(test_accounts[0])
     result = runner.invoke(cmd, [])
     assert expected in result.output
 
