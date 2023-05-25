@@ -160,6 +160,7 @@
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.compiler.CompilerAPI.compile"><code class="docutils literal notranslate"><span class="pre">CompilerAPI.compile()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.compiler.CompilerAPI.enrich_error"><code class="docutils literal notranslate"><span class="pre">CompilerAPI.enrich_error()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.compiler.CompilerAPI.get_versions"><code class="docutils literal notranslate"><span class="pre">CompilerAPI.get_versions()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ape.api.compiler.CompilerAPI.supports_source_tracing"><code class="docutils literal notranslate"><span class="pre">CompilerAPI.supports_source_tracing</span></code></a></li>
 </ul>
 </li>
 </ul>
@@ -1038,6 +1039,13 @@ to enrich.</p>
 <dd class="field-odd"><p>Set[str]</p>
 </dd>
 </dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="ape.api.compiler.CompilerAPI.supports_source_tracing">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">supports_source_tracing</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><a class="headerlink" href="#ape.api.compiler.CompilerAPI.supports_source_tracing" title="Permalink to this definition"></a></dt>
+<dd><p>Returns <code class="docutils literal notranslate"><span class="pre">True</span></code> if this compiler is able to provider a source
+traceback for a given trace.</p>
 </dd></dl>
 
 </dd></dl>
@@ -3060,7 +3068,7 @@ since this is not available from the receipt object.</p>
 <dt class="sig sig-object py" id="ape.api.transactions.ReceiptAPI.track_gas">
 <span class="sig-name descname"><span class="pre">track_gas</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ape.api.transactions.ReceiptAPI.track_gas" title="Permalink to this definition"></a></dt>
 <dd><p>Track this receipt’s gas in the on-going session gas-report.
-Requires using a provider that support transaction traces.
+Requires using a provider that supports transaction traces.
 This gets called when running tests with the <code class="docutils literal notranslate"><span class="pre">--gas</span></code> flag.</p>
 </dd></dl>
 
