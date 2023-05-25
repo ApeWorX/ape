@@ -10,6 +10,7 @@
    userguides/installing_plugins
    userguides/projects
    userguides/compile
+   userguides/clis
    userguides/data
    userguides/networks
    userguides/developing_plugins

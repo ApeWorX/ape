@@ -67,6 +67,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../userguides/installing_plugins.html">Plugins</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../userguides/projects.html">Developing Projects with Ape</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../userguides/compile.html">Compile</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../userguides/clis.html">CLIs</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../userguides/data.html">Querying Data</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../userguides/networks.html">Networks</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../userguides/developing_plugins.html">Developing Plugins</a></li>
@@ -111,6 +112,7 @@
 <li class="toctree-l3"><a class="reference internal" href="#ape.managers.accounts.TestAccountManager"><code class="docutils literal notranslate"><span class="pre">TestAccountManager</span></code></a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#ape.managers.accounts.TestAccountManager.__contains__"><code class="docutils literal notranslate"><span class="pre">TestAccountManager.__contains__()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.managers.accounts.TestAccountManager.__getitem__"><code class="docutils literal notranslate"><span class="pre">TestAccountManager.__getitem__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ape.managers.accounts.TestAccountManager.__iter__"><code class="docutils literal notranslate"><span class="pre">TestAccountManager.__iter__()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.managers.accounts.TestAccountManager.__len__"><code class="docutils literal notranslate"><span class="pre">TestAccountManager.__len__()</span></code></a></li>
 </ul>
 </li>
@@ -538,6 +540,12 @@ number-of-accounts using the <code class="docutils literal notranslate"><span cl
 <dt class="sig sig-object py">
 <span class="sig-name descname"><span class="pre">__getitem__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">account_str</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span></dt>
 <dd><p>x.__getitem__(y) &lt;==&gt; x[y]</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ape.managers.accounts.TestAccountManager.__iter__">
+<span class="sig-name descname"><span class="pre">__iter__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Iterator</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="api.html#ape.api.accounts.AccountAPI" title="ape.api.accounts.AccountAPI"><span class="pre">AccountAPI</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#ape.managers.accounts.TestAccountManager.__iter__" title="Permalink to this definition"></a></dt>
+<dd><p>Implement iter(self).</p>
 </dd></dl>
 
 <dl class="py method">

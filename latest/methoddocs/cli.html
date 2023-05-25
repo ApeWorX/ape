@@ -67,6 +67,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../userguides/installing_plugins.html">Plugins</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../userguides/projects.html">Developing Projects with Ape</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../userguides/compile.html">Compile</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../userguides/clis.html">CLIs</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../userguides/data.html">Querying Data</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../userguides/networks.html">Networks</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../userguides/developing_plugins.html">Developing Plugins</a></li>
@@ -105,6 +106,7 @@
 <li class="toctree-l4"><a class="reference internal" href="#ape.cli.choices.AccountAliasPromptChoice.choices"><code class="docutils literal notranslate"><span class="pre">AccountAliasPromptChoice.choices</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.cli.choices.AccountAliasPromptChoice.convert"><code class="docutils literal notranslate"><span class="pre">AccountAliasPromptChoice.convert()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.cli.choices.AccountAliasPromptChoice.get_user_selected_account"><code class="docutils literal notranslate"><span class="pre">AccountAliasPromptChoice.get_user_selected_account()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ape.cli.choices.AccountAliasPromptChoice.print_choices"><code class="docutils literal notranslate"><span class="pre">AccountAliasPromptChoice.print_choices()</span></code></a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="#ape.cli.choices.Alias"><code class="docutils literal notranslate"><span class="pre">Alias</span></code></a><ul>
@@ -294,6 +296,12 @@ be <code class="docutils literal notranslate"><span class="pre">None</span></cod
 </dl>
 </dd></dl>
 
+<dl class="py method">
+<dt class="sig sig-object py" id="ape.cli.choices.AccountAliasPromptChoice.print_choices">
+<span class="sig-name descname"><span class="pre">print_choices</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ape.cli.choices.AccountAliasPromptChoice.print_choices" title="Permalink to this definition"></a></dt>
+<dd><p>Echo the choices to the terminal.</p>
+</dd></dl>
+
 </dd></dl>
 
 <dl class="py class">
@@ -392,6 +400,20 @@ when creating a <a class="reference internal" href="#ape.cli.choices.output_form
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ape.cli.choices.</span></span><span class="sig-name descname"><span class="pre">PromptChoice</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">choices</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.cli.choices.PromptChoice" title="Permalink to this definition"></a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">ParamType</span></code></p>
 <p>A choice option or argument from user selection.</p>
+<p>Usage example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">choice_callback</span><span class="p">(</span><span class="n">ctx</span><span class="p">,</span> <span class="n">param</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">param</span><span class="o">.</span><span class="n">type</span><span class="o">.</span><span class="n">get_user_selected_choice</span><span class="p">()</span>
+
+<span class="nd">@click</span><span class="o">.</span><span class="n">command</span><span class="p">()</span>
+<span class="nd">@click</span><span class="o">.</span><span class="n">option</span><span class="p">(</span>
+    <span class="s2">&quot;--choice&quot;</span><span class="p">,</span>
+    <span class="nb">type</span><span class="o">=</span><span class="n">PromptChoice</span><span class="p">([</span><span class="s2">&quot;foo&quot;</span><span class="p">,</span> <span class="s2">&quot;bar&quot;</span><span class="p">]),</span>
+    <span class="n">callback</span><span class="o">=</span><span class="n">choice_callback</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="k">def</span> <span class="nf">cmd</span><span class="p">(</span><span class="n">choice</span><span class="p">):</span>
+    <span class="n">click</span><span class="o">.</span><span class="n">echo</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;__expected_</span><span class="si">{</span><span class="n">choice</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
 <dl class="py method">
 <dt class="sig sig-object py" id="ape.cli.choices.PromptChoice.convert">
 <span class="sig-name descname"><span class="pre">convert</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">param</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Parameter</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ctx</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Context</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Any</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></span><a class="headerlink" href="#ape.cli.choices.PromptChoice.convert" title="Permalink to this definition"></a></dt>
