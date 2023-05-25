@@ -5,6 +5,7 @@ from typing import Dict, Iterator, List, Optional
 import pytest
 
 from ape.api import ReceiptAPI, TestAccountAPI
+from ape.exceptions import ChainError
 from ape.logging import logger
 from ape.managers.chain import ChainManager
 from ape.managers.networks import NetworkManager
@@ -162,7 +163,11 @@ class ReceiptCapture(ManagerAccessMixin):
             self.capture(txn.txn_hash.hex())
 
     def capture(self, transaction_hash: str):
-        receipt = self.chain_manager.history[transaction_hash]
+        try:
+            receipt = self.chain_manager.history[transaction_hash]
+        except ChainError:
+            return
+
         if not receipt:
             return
 

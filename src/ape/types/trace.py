@@ -1,7 +1,7 @@
 from fnmatch import fnmatch
 from itertools import tee
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Dict, Iterator, List, Optional
+from typing import TYPE_CHECKING, Any, Dict, Iterator, List, Optional, Set
 
 from ethpm_types import ASTNode, BaseModel, ContractType, HexBytes
 from ethpm_types.ast import SourceLocation
@@ -354,7 +354,20 @@ class ControlFlow(BaseModel):
         stmts = self.source_statements
         return stmts[-1].end_lineno if stmts else None
 
-    def extend(self, location: SourceLocation, ws_start: Optional[int] = None):
+    @property
+    def pcs(self) -> Set[int]:
+        full_set: Set[int] = set()
+        for stmt in self.statements:
+            full_set |= stmt.pcs
+
+        return full_set
+
+    def extend(
+        self,
+        location: SourceLocation,
+        pcs: Optional[Set[int]] = None,
+        ws_start: Optional[int] = None,
+    ):
         """
         Extend this node's content with other content that follows it directly.
 
@@ -364,10 +377,12 @@ class ControlFlow(BaseModel):
         Args:
             location (SourceLocation): The location of the content, in the form
               (lineno, col_offset, end_lineno, end_coloffset).
+            pcs (Optional[Set[int]]): The PC values of the statements.
             ws_start (Optional[int]): Optionally provide a white-space starting point
               to back-fill.
         """
 
+        pcs = pcs or set()
         if ws_start is not None and ws_start > location[0]:
             # No new lines.
             return
@@ -405,12 +420,14 @@ class ControlFlow(BaseModel):
         if new_lines:
             # Add the next statement in this sequence.
             content = Content(__root__=new_lines)
-            statement = SourceStatement(asts=asts, content=content)
+            statement = SourceStatement(asts=asts, content=content, pcs=pcs)
             self.statements.append(statement)
 
         else:
             # Add ASTs to latest statement.
             self.source_statements[-1].asts.extend(asts)
+            for pc in pcs:
+                self.source_statements[-1].pcs.add(pc)
 
     def format(self, use_arrow: bool = True) -> str:
         """
@@ -514,7 +531,7 @@ class SourceTraceback(BaseModel):
     def __len__(self) -> int:
         return len(self.__root__)
 
-    def __iter__(self):
+    def __iter__(self) -> Iterator[ControlFlow]:  # type: ignore[override]
         yield from self.__root__
 
     def __getitem__(self, idx: int) -> ControlFlow:
@@ -597,6 +614,7 @@ class SourceTraceback(BaseModel):
         location: SourceLocation,
         function: Function,
         depth: int,
+        pcs: Optional[Set[int]] = None,
         source_path: Optional[Path] = None,
     ):
         """
@@ -605,8 +623,9 @@ class SourceTraceback(BaseModel):
         Args:
             location (``SourceLocation``): The location to add.
             function (``Function``): The function executing.
-            source_path (Optional[``Path``]): The path of the source file.
             depth (int): The depth of the function call in the call tree.
+            pcs (Optional[Set[int]]): The program counter values.
+            source_path (Optional[``Path``]): The path of the source file.
         """
 
         # Exclude signature ASTs.
@@ -615,16 +634,18 @@ class SourceTraceback(BaseModel):
         if not asts or not content:
             return
 
+        pcs = pcs or set()
         Statement.update_forward_refs()
         ControlFlow.update_forward_refs()
-        self._add(asts, content, function, depth, source_path=source_path)
+        self._add(asts, content, pcs, function, depth, source_path=source_path)
 
-    def extend_last(self, location: SourceLocation):
+    def extend_last(self, location: SourceLocation, pcs: Optional[Set[int]] = None):
         """
         Extend the last node with more content.
 
         Args:
             location (``SourceLocation``): The location of the new content.
+            pcs (Optional[Set[int]]): The PC values to add on.
         """
 
         if not self.last:
@@ -638,7 +659,7 @@ class SourceTraceback(BaseModel):
             if self.last is not None and self.last.end_lineno is None
             else self.last.end_lineno + 1
         )
-        self.last.extend(location, ws_start=start)
+        self.last.extend(location, pcs=pcs, ws_start=start)
 
     def add_builtin_jump(self, name: str, _type: str, compiler_name: str):
         closure = Closure(name=name)
@@ -656,11 +677,12 @@ class SourceTraceback(BaseModel):
         self,
         asts: List[ASTNode],
         content: Content,
+        pcs: Set[int],
         function: Function,
         depth: int,
         source_path: Optional[Path] = None,
     ):
-        statement = SourceStatement(asts=asts, content=content)
+        statement = SourceStatement(asts=asts, content=content, pcs=pcs)
         exec_sequence = ControlFlow(
             statements=[statement], source_path=source_path, closure=function, depth=depth
         )
