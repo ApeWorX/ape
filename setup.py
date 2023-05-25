@@ -100,7 +100,7 @@ setup(
         "packaging>=23.0,<24",
         "pandas>=1.3.0,<2",
         "pluggy>=0.12,<2",
-        "pydantic>=1.9.2,<2",
+        "pydantic>=1.10.8,<2",
         "PyGithub>=1.54,<2",
         "pytest>=6.0,<8.0",
         "python-dateutil>=2.8.2,<3",
@@ -111,7 +111,6 @@ setup(
         "tqdm>=4.62.3,<5.0",
         "traitlets>=5.3.0",
         "watchdog>=2.1.9,<3.0",
-        "typing-extensions==4.5.0",  # TODO: remove once Pydantic >1.10.7 is out
         # ** Dependencies maintained by Ethereum Foundation **
         "eth-abi>=4.0.0,<5",
         "eth-account>=0.8,<0.9",
