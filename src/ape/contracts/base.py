@@ -489,7 +489,7 @@ class ContractEvent(ManagerAccessMixin):
             input.name for input in self.abi.inputs
         }:
             raise ValueError(
-                f"Invalid argument keys found, expected a subset of {unknown_input_names}"
+                f"Invalid argument keys found, expected a subset of {', '.join(unknown_input_names)}"
             )
 
         # Convert the arguments using the conversion manager
