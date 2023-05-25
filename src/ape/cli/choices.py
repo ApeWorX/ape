@@ -127,15 +127,14 @@ class AccountAliasPromptChoice(PromptChoice):
         self, value: Any, param: Optional[Parameter], ctx: Optional[Context]
     ) -> Optional[AccountAPI]:
         if isinstance(value, str) and value.startswith("TEST::"):
-            try:
-                account_idx = int(value.replace("TEST::", ""))
-            except ValueError:
+            idx_str = value.replace("TEST::", "")
+            if not idx_str.isnumeric():
                 self.fail(f"Cannot reference test account by '{value}'.", param=param)
 
             try:
-                return accounts.test_accounts[account_idx]
+                return accounts.test_accounts[int(idx_str)]
             except IndexError:
-                self.fail(f"Index '{account_idx}' is not valid.", param=param)
+                self.fail(f"Index '{idx_str}' is not valid.", param=param)
 
         if value and value in accounts.aliases:
             return accounts.load(value)
