@@ -67,10 +67,9 @@ class KeyfileAccount(AccountAPI):
     def __key(self) -> HexBytes:
         if self.__cached_key is not None:
             if not self.locked:
-                click.echo(f"Using cached key for '{self.alias}'")
+                logger.warning("Using cached key for %s",self.alias)
                 return self.__cached_key
-            else:
-                self.__cached_key = None
+            self.__cached_key = None
 
         passphrase = self._prompt_for_passphrase(default="")
         key = self.__decrypt_keyfile(passphrase)
