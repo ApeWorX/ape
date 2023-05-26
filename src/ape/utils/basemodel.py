@@ -4,6 +4,7 @@ from typing import TYPE_CHECKING, ClassVar, Dict, List, Optional, cast
 from pydantic import BaseModel
 
 from ape.exceptions import ProviderNotConnectedError
+from ape.logging import logger
 from ape.utils.misc import cached_property, singledispatchmethod
 
 if TYPE_CHECKING:
@@ -28,7 +29,23 @@ class injected_before_use(property):
     """
 
     def __get__(self, *args):
-        raise ValueError("Value not set. Please inject this property before calling.")
+        arg_strs = []
+        for argument in args:
+            try:
+                arg_str = str(argument)
+            except Exception as err:
+                logger.debug(f"Failed calling __str__. Exception: {err}")
+                arg_strs.append("<?>")
+                continue
+
+            arg_strs.append(arg_str)
+
+        error_message = f"Value not set"
+        if arg_strs:
+            error_message = f"{error_message} (arguments={', '.join(arg_strs)})"
+
+        error_message = f"{error_message}. Please inject this property before calling."
+        raise ValueError(error_message)
 
 
 class ManagerAccessMixin:
