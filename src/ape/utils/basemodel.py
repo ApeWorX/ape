@@ -40,7 +40,7 @@ class injected_before_use(property):
 
             arg_strs.append(arg_str)
 
-        error_message = f"Value not set"
+        error_message = "Value not set"
         if arg_strs:
             error_message = f"{error_message} (arguments={', '.join(arg_strs)})"
 
