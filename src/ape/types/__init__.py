@@ -181,9 +181,9 @@ class LogFilter(BaseModel):
         )
 
 
-class ContractLog(BaseInterfaceModel):
+class BaseContractLog(BaseInterfaceModel):
     """
-    An instance of a log from a contract.
+    Base class representing information relevant to an event instance.
     """
 
     event_name: str
@@ -194,6 +194,27 @@ class ContractLog(BaseInterfaceModel):
 
     event_arguments: Dict[str, Any]
     """The arguments to the event, including both indexed and non-indexed data."""
+
+    @validator("contract_address", pre=True)
+    def validate_address(cls, value):
+        return cls.conversion_manager.convert(value, AddressType)
+
+    def __eq__(self, other: Any) -> bool:
+        if self.contract_address != other.contract_address or self.event_name != other.event_name:
+            return False
+
+        for k, v in self.event_arguments.items():
+            other_v = other.event_arguments.get(k)
+            if v != other_v:
+                return False
+
+        return True
+
+
+class ContractLog(BaseContractLog):
+    """
+    An instance of a log from a contract.
+    """
 
     transaction_hash: Any
     """The hash of the transaction containing this log."""
@@ -265,11 +286,60 @@ class ContractLog(BaseInterfaceModel):
     def __contains__(self, item: str) -> bool:
         return item in self.event_arguments
 
+    def __eq__(self, other: Any) -> bool:
+        """
+        Check for equality between this instance and another ContractLog instance.
+
+        If the other object is not an instance of ContractLog, this method returns
+        NotImplemented. This triggers the Python interpreter to call the __eq__ method
+        on the other object (i.e., y.__eq__(x)) if it is defined, allowing for a custom
+        comparison. This behavior is leveraged by the MockContractLog class to handle
+        custom comparison logic between ContractLog and MockContractLog instances.
+
+        Args:
+            other (Any): The object to compare with this instance.
+
+        Returns:
+            bool: True if the two instances are equal, False otherwise.
+        """
+
+        if not isinstance(other, ContractLog):
+            return NotImplemented
+
+        # call __eq__ on parent class
+        return super().__eq__(other)
+
     def __getitem__(self, item: str) -> Any:
         return self.event_arguments[item]
 
     def get(self, item: str, default: Optional[Any] = None) -> Any:
         return self.event_arguments.get(item, default)
+
+
+class MockContractLog(BaseContractLog):
+    """
+    A mock version of the ContractLog class used for testing purposes.
+    This class is designed to match a subset of event arguments in a ContractLog instance
+    by only comparing those event arguments that the user explicitly provides.
+
+    Inherits from :class:`~ape.types.BaseContractLog`, and overrides the
+    equality method for custom comparison
+    of event arguments between a MockContractLog and a ContractLog instance.
+    """
+
+    def __eq__(self, other: Any) -> bool:
+        if self.contract_address != other.contract_address or self.event_name != other.event_name:
+            return False
+
+        # NOTE: `self.event_arguments` contains a subset of items from `other.event_arguments`,
+        #       but we skip those the user doesn't care to check
+        for name, value in self.event_arguments.items():
+            # Make sure `value` is not `None` (user explicitly set it `None`)
+            # NOTE: `other.event_arguments[name]` will raise `IndexError` only if ABIs don't match
+            if value and value != other.event_arguments[name]:
+                return False
+
+        return True
 
 
 class ContractLogContainer(list):
@@ -288,6 +358,9 @@ class ContractLogContainer(list):
                     found_events.append(log)
         return found_events
 
+    def __contains__(self, val: Any) -> bool:
+        return any(log == val for log in self)
+
 
 __all__ = [
     "ABI",
@@ -301,6 +374,7 @@ __all__ = [
     "ContractLog",
     "ContractLogContainer",
     "ContractType",
+    "ControlFlow",
     "GasReport",
     "MessageSignature",
     "PackageManifest",
@@ -310,7 +384,6 @@ __all__ = [
     "SnapshotID",
     "Source",
     "SourceTraceback",
-    "ControlFlow",
     "TraceFrame",
     "TransactionSignature",
 ]

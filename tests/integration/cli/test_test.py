@@ -94,7 +94,6 @@ def run_gas_test(
     result.assert_outcomes(passed=expected_passed, failed=expected_failed), "\n".join(
         result.outlines
     )
-
     gas_header_line_index = None
     for index, line in enumerate(result.outlines):
         if "Gas Profile" in line:

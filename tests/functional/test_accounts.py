@@ -450,3 +450,8 @@ def test_using_random_mnemonic(test_accounts, temp_config):
         new_first_account = test_accounts[0]
 
         assert old_first_account.address != new_first_account.address
+
+
+def test_iter_test_accounts(test_accounts):
+    actual = list(iter(test_accounts))
+    assert len(actual) == len(test_accounts)

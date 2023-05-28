@@ -614,16 +614,16 @@ class TransactionHistory(BaseManager):
         try:
             address = self.provider.network.ecosystem.decode_address(account_or_hash)
             return self._get_account_history(address)
-        except Exception:
+        except Exception as err:
             # Use Transaction hash
             try:
                 return self._get_receipt(account_or_hash)
             except Exception:
                 pass
 
-            # If we get here, we failed to get an account or receipt.
-            # Raise top-level exception.
-            raise
+            raise ChainError(
+                f"'{account_or_hash}' is not a known address or transaction hash."
+            ) from err
 
     def _get_receipt(self, txn_hash: str) -> ReceiptAPI:
         receipt = self._hash_to_receipt_map.get(txn_hash)

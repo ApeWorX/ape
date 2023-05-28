@@ -21,7 +21,7 @@ from ape.exceptions import (
     TransactionNotFoundError,
 )
 from ape.logging import logger
-from ape.types import AddressType, ContractLog, LogFilter
+from ape.types import AddressType, ContractLog, LogFilter, MockContractLog
 from ape.utils import ManagerAccessMixin, cached_property, singledispatchmethod
 
 
@@ -468,6 +468,46 @@ class ContractEvent(ManagerAccessMixin):
         logs = self.provider.get_contract_logs(self.log_filter)
         return sum(1 for _ in logs)
 
+    def __call__(self, *args: Any, **kwargs: Any) -> MockContractLog:
+        # Create a dictionary from the positional arguments
+        event_args: Dict[Any, Any] = dict(zip((input.name for input in self.abi.inputs), args))
+
+        overlapping_keys = set(k for k in event_args.keys() if k is not None) & set(
+            k for k in kwargs.keys() if k is not None
+        )
+
+        if overlapping_keys:
+            raise ValueError(
+                f"Overlapping keys found in arguments: '{', '.join(overlapping_keys)}'."
+            )
+
+        # Update event_args with keyword arguments
+        event_args.update(kwargs)
+
+        # Check that event_args.keys() is a subset of the expected input names
+        if unknown_input_names := set(event_args.keys()) - {
+            input.name for input in self.abi.inputs
+        }:
+            raise ValueError(
+                f"Invalid argument keys found, expected subset of {', '.join(unknown_input_names)}"
+            )
+
+        # Convert the arguments using the conversion manager
+        converted_args = {}
+        for key, value in event_args.items():
+            if value is None:
+                continue
+            input_abi = next(input for input in self.abi.inputs if input.name == key)
+            ecosystem = self.provider.network.ecosystem
+            py_type = ecosystem.get_python_types(input_abi)
+            converted_args[key] = self.conversion_manager.convert(value, py_type)
+
+        return MockContractLog(
+            contract_address=self.contract.address,
+            event_arguments=converted_args,  # Use the converted arguments
+            event_name=self.abi.name,
+        )
+
     def query(
         self,
         *columns: List[str],
@@ -627,6 +667,13 @@ class ContractEvent(ManagerAccessMixin):
             required_confirmations or self.provider.network.required_confirmations
         )
 
+        # NOTE: We process historical blocks separately here to minimize rpc calls
+        height = max(self.chain_manager.blocks.height - required_confirmations, 0)
+        if start_block and height > 0 and start_block < height:
+            yield from self.range(start_block, height)
+            start_block = height + 1
+
+        # NOTE: Now we process the rest
         for new_block in self.chain_manager.blocks.poll_blocks(
             start_block=start_block,
             stop_block=stop_block,
@@ -761,7 +808,7 @@ class ContractInstance(BaseAddress, ContractTypeWrapper):
         if not self._cached_receipt and self.txn_hash:
             try:
                 receipt = self.chain_manager.get_receipt(self.txn_hash)
-            except (TransactionNotFoundError, ValueError):
+            except (TransactionNotFoundError, ValueError, ChainError):
                 return None
 
             self._cached_receipt = receipt

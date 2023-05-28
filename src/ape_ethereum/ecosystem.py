@@ -305,7 +305,12 @@ class Ethereum(EcosystemAPI):
             status = self.conversion_manager.convert(status, int)
             status = TransactionStatusEnum(status)
 
-        txn_hash = data.get("hash") or data.get("txn_hash") or data.get("transaction_hash")
+        txn_hash = None
+        hash_key_choices = ("hash", "txHash", "txnHash", "transactionHash", "transaction_hash")
+        for choice in hash_key_choices:
+            if choice in data:
+                txn_hash = data[choice]
+                break
 
         if txn_hash:
             txn_hash = txn_hash.hex() if isinstance(txn_hash, HexBytes) else txn_hash
@@ -774,6 +779,9 @@ class Ethereum(EcosystemAPI):
 
         call.outputs = values[0] if len(values) == 1 else values
         return call
+
+    def get_python_types(self, abi_type: ABIType) -> Union[Type, Tuple, List]:
+        return self._python_type_for_abi_type(abi_type)
 
 
 def parse_type(type: Dict[str, Any]) -> Union[str, Tuple, List]:

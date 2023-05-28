@@ -109,6 +109,7 @@ class TransactionError(ContractError):
         txn: Optional[FailedTxn] = None,
         trace: Optional[Iterator["TraceFrame"]] = None,
         contract_address: Optional["AddressType"] = None,
+        source_traceback: Optional["SourceTraceback"] = None,
     ):
         message = message or (str(base_err) if base_err else self.DEFAULT_MESSAGE)
         self.message = message
@@ -117,23 +118,22 @@ class TransactionError(ContractError):
         self.txn = txn
         self.trace = trace
         self.contract_address = contract_address
-        self.source_traceback: Optional["SourceTraceback"] = None
+        self.source_traceback: Optional["SourceTraceback"] = source_traceback
         ex_message = f"({code}) {message}" if code else message
 
         # Finalizes expected revert message.
         super().__init__(ex_message)
 
-        if not txn:
-            return
+        if not source_traceback and txn:
+            self.source_traceback = _get_ape_traceback(txn)
 
-        ape_tb = _get_ape_traceback(txn)
-        if not ape_tb:
-            return
-
-        self.source_traceback = ape_tb
-        py_tb = _get_custom_python_traceback(self, txn, ape_tb)
-        if py_tb:
-            self.__traceback__ = py_tb
+        src_tb = self.source_traceback
+        if src_tb is not None and txn is not None:
+            # Create a custom Pythonic traceback using lines from the sources
+            # found from analyzing the trace of the transaction.
+            py_tb = _get_custom_python_traceback(self, txn, src_tb)
+            if py_tb:
+                self.__traceback__ = py_tb
 
 
 class VirtualMachineError(TransactionError):
@@ -154,6 +154,7 @@ class ContractLogicError(VirtualMachineError):
         txn: Optional[FailedTxn] = None,
         trace: Optional[Iterator["TraceFrame"]] = None,
         contract_address: Optional["AddressType"] = None,
+        source_traceback: Optional["SourceTraceback"] = None,
     ):
         self.txn = txn
         self.trace = trace
@@ -166,7 +167,11 @@ class ContractLogicError(VirtualMachineError):
                 pass
 
         super().__init__(
-            message=revert_message, txn=txn, trace=trace, contract_address=contract_address
+            contract_address=contract_address,
+            message=revert_message,
+            source_traceback=source_traceback,
+            trace=trace,
+            txn=txn,
         )
 
     @property
@@ -624,6 +629,7 @@ class CustomError(ContractLogicError):
         txn: Optional[FailedTxn] = None,
         trace: Optional[Iterator["TraceFrame"]] = None,
         contract_address: Optional["AddressType"] = None,
+        source_traceback: Optional["SourceTraceback"] = None,
     ):
         self.abi = abi
         self.inputs = inputs
@@ -634,7 +640,13 @@ class CustomError(ContractLogicError):
             # Name of the custom error is all custom info.
             message = TransactionError.DEFAULT_MESSAGE
 
-        super().__init__(message, txn=txn, trace=trace, contract_address=contract_address)
+        super().__init__(
+            message,
+            contract_address=contract_address,
+            source_traceback=source_traceback,
+            trace=trace,
+            txn=txn,
+        )
 
     @property
     def name(self) -> str:
@@ -687,11 +699,13 @@ def _get_custom_python_traceback(
         exec_item = ape_traceback[idx]
         if depth is not None and exec_item.depth >= depth:
             # Wait for decreasing depth.
+            idx -= 1
             continue
 
         depth = exec_item.depth
         lineno = exec_item.begin_lineno
         if lineno is None:
+            idx -= 1
             continue
 
         if exec_item.source_path is None:
@@ -712,7 +726,8 @@ def _get_custom_python_traceback(
         try:
             exec(py_code, {"__ape_exception__": err}, {})
         except BaseException:
-            fake_tb = sys.exc_info()[2].tb_next  # type: ignore
+            real_tb = sys.exc_info()[2]
+            fake_tb = getattr(real_tb, "tb_next", None)
             if isinstance(fake_tb, TracebackType):
                 frames.append(fake_tb)
 
