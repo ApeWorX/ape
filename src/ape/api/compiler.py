@@ -169,7 +169,7 @@ class CompilerAPI(BaseInterfaceModel):
     def get_flattened_contract(self, path: Path, **kwargs) -> Content:
         """
         Get the content of a flattened contract via its source path.
-        Plugin implementations handle import resolution, SPX de-duplication,
+        Plugin implementations handle import resolution, SPDX de-duplication,
         and anything else needed. The default implementation of this API
         returns the content of the given contract without doing anything else.
 
