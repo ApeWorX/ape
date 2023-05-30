@@ -1293,7 +1293,7 @@ class Web3Provider(ProviderAPI, ABC):
             )
 
         elif "out of gas" in str(err_msg):
-            return OutOfGasError(code=err_data.get("code"), **kwargs)
+            return OutOfGasError(code=err_data.get("code"), base_err=exception, **kwargs)
 
         return VirtualMachineError(str(err_msg), code=err_data.get("code"), **kwargs)
 
