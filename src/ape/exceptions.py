@@ -311,7 +311,12 @@ class OutOfGasError(VirtualMachineError):
     out of gas.
     """
 
-    def __init__(self, code: Optional[int] = None, txn: Optional[FailedTxn] = None, base_err: Optional[Exception] = None):
+    def __init__(
+        self,
+        code: Optional[int] = None,
+        txn: Optional[FailedTxn] = None,
+        base_err: Optional[Exception] = None,
+    ):
         super().__init__("The transaction ran out of gas.", code=code, txn=txn, base_err=base_err)
 
 
