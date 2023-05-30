@@ -65,8 +65,9 @@ def test_supports_tracing(compilers):
     assert not compilers.ethpm.supports_source_tracing
 
 
-def test_get_flattened_contract(compilers, project_with_source_files_contract):
-    path = project_with_source_files_contract.contracts_folder / "TestContractVy.vy"
+def test_get_flattened_contract(compilers, project_with_contract):
+    source_id = project_with_contract.ApeContract0.contract_type.source_id
+    path = project_with_contract.contracts_folder / source_id
     content = compilers.get_flattened_contract(path)
     assert isinstance(content, Content)
-    assert content[1] == "# @version 0.3.7"
+    assert content[1] == "["
