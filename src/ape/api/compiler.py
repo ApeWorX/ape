@@ -9,6 +9,7 @@ from evm_trace.geth import create_call_node_data
 from semantic_version import Version  # type: ignore
 
 from ape.exceptions import APINotImplementedError, ContractLogicError
+from ape.logging import logger
 from ape.types.trace import SourceTraceback, TraceFrame
 from ape.utils import BaseInterfaceModel, abstractmethod, raises_not_implemented
 
@@ -181,6 +182,12 @@ class CompilerAPI(BaseInterfaceModel):
         Returns:
             ``ethpm_types.source.Content``: The flattened contract content.
         """
+
+        logger.warning(
+            f"{self.get_flattened_contract.__name__} is not implemented "
+            f"by compiler for '{path.suffix}'. "
+            f"Contract may not be properly flattened."
+        )
         return Content(__root__=path.read_text())
 
     def _create_contract_from_call(
