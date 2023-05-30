@@ -1,4 +1,5 @@
 import pytest
+from ethpm_types.source import Content
 
 
 @pytest.fixture
@@ -62,3 +63,10 @@ def test_getattr(compilers):
 
 def test_supports_tracing(compilers):
     assert not compilers.ethpm.supports_source_tracing
+
+
+def test_get_flattened_contract(compilers, project_with_source_files_contract):
+    path = project_with_source_files_contract.contracts_folder / "TestContractVy.vy"
+    content = compilers.get_flattened_contract(path)
+    assert isinstance(content, Content)
+    assert content[1] == "# @version 0.3.7"
