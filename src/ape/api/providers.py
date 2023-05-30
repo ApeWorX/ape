@@ -937,7 +937,8 @@ class Web3Provider(ProviderAPI, ABC):
         try:
             result = self._make_request("eth_call", arguments)
         except Exception as err:
-            raise self.get_virtual_machine_error(err) from err
+            receiver = txn_dict["to"]
+            raise self.get_virtual_machine_error(err, contract_address=receiver) from err
 
         if "error" in result:
             raise ProviderError(result["error"]["message"])
