@@ -1331,7 +1331,7 @@ class Web3Provider(ProviderAPI, ABC):
         result = (
             ContractLogicError(txn=txn, **params)
             if no_reason
-            else ContractLogicError(revert_message=message, txn=txn, **params)
+            else ContractLogicError(base_err=exception, revert_message=message, txn=txn, **params)
         )
         return self.compiler_manager.enrich_error(result)
 

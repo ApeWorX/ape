@@ -155,6 +155,7 @@ class ContractLogicError(VirtualMachineError):
         trace: Optional[Iterator["TraceFrame"]] = None,
         contract_address: Optional["AddressType"] = None,
         source_traceback: Optional["SourceTraceback"] = None,
+        base_err: Optional[Exception] = None,
     ):
         self.txn = txn
         self.trace = trace
@@ -167,6 +168,7 @@ class ContractLogicError(VirtualMachineError):
                 pass
 
         super().__init__(
+            base_err=base_err,
             contract_address=contract_address,
             message=revert_message,
             source_traceback=source_traceback,

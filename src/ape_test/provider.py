@@ -211,7 +211,7 @@ class LocalProvider(TestProviderAPI, Web3Provider):
                 new_message = (
                     f"Sender '{sender}' cannot afford txn gas {txn_gas} with account balance {bal}."
                 )
-                return VirtualMachineError(new_message, **kwargs)
+                return VirtualMachineError(new_message, base_err=exception, **kwargs)
 
             else:
                 return VirtualMachineError(base_err=exception, **kwargs)
@@ -224,8 +224,8 @@ class LocalProvider(TestProviderAPI, Web3Provider):
                 # (Notice the `b'` is within the `"` on the first str).
                 err_message = HexBytes(literal_eval(err_message)).hex()
 
-            err_message = None if err_message == "0x" else err_message
-            contract_err = ContractLogicError(revert_message=err_message, **kwargs)
+            err_message = TransactionError.DEFAULT_MESSAGE if err_message == "0x" else err_message
+            contract_err = ContractLogicError(base_err=exception, revert_message=err_message, **kwargs)
             return self.compiler_manager.enrich_error(contract_err)
 
         else:
