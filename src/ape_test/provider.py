@@ -225,7 +225,9 @@ class LocalProvider(TestProviderAPI, Web3Provider):
                 err_message = HexBytes(literal_eval(err_message)).hex()
 
             err_message = TransactionError.DEFAULT_MESSAGE if err_message == "0x" else err_message
-            contract_err = ContractLogicError(base_err=exception, revert_message=err_message, **kwargs)
+            contract_err = ContractLogicError(
+                base_err=exception, revert_message=err_message, **kwargs
+            )
             return self.compiler_manager.enrich_error(contract_err)
 
         else:

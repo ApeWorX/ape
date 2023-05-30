@@ -1,7 +1,7 @@
 from unittest import mock
 
 import pytest
-from eth_tester.exceptions import TransactionFailed
+from eth_tester.exceptions import TransactionFailed  # type: ignore
 from eth_typing import HexStr
 from eth_utils import ValidationError
 
