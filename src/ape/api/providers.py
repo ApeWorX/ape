@@ -916,7 +916,13 @@ class Web3Provider(ProviderAPI, ABC):
 
     def _send_call(self, txn: TransactionAPI, **kwargs) -> bytes:
         arguments = self._prepare_call(txn, **kwargs)
-        return self._eth_call(arguments)
+        try:
+            return self._eth_call(arguments)
+        except TransactionError as err:
+            if not err.txn:
+                err.txn = txn
+
+            raise  # The tx error
 
     def _eth_call(self, arguments: List) -> bytes:
         # Force the usage of hex-type to support a wider-range of nodes.
@@ -1172,7 +1178,6 @@ class Web3Provider(ProviderAPI, ABC):
                 txn_hash = self.web3.eth.send_transaction(txn_params)
         except (ValueError, Web3ContractLogicError) as err:
             vm_err = self.get_virtual_machine_error(err, txn=txn)
-            vm_err.txn = txn
             raise vm_err from err
 
         receipt = self.get_receipt(
