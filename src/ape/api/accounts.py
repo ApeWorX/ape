@@ -94,6 +94,8 @@ class AccountAPI(BaseInterfaceModel, BaseAddress):
               not have enough funds.
             :class:`~ape.exceptions.TransactionError`: When the required confirmations are negative.
             :class:`~ape.exceptions.SignatureError`: When the user does not sign the transaction.
+            :class:`~ape.exceptions.APINotImplementedError`: When setting ``private=True`` and using
+              a provider that does not support private transactions.
 
         Args:
             txn (:class:`~ape.api.transactions.TransactionAPI`): An invoke-transaction.
@@ -157,6 +159,10 @@ class AccountAPI(BaseInterfaceModel, BaseAddress):
     ) -> ReceiptAPI:
         """
         Send funds to an account.
+
+        Raises:
+            :class:`~ape.exceptions.APINotImplementedError`: When setting ``private=True``
+              and using a provider that does not support private transactions.
 
         Args:
             account (str): The account to send funds to.
