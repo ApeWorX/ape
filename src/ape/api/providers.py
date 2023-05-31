@@ -640,24 +640,38 @@ class Web3Provider(ProviderAPI, ABC):
     def base_fee(self) -> int:
         latest_block_number = self.get_block("latest").number
         if latest_block_number is None:
-            raise ProviderError("Latest block has no number.")
+            # This would be a very rare occurance, possibly no blocks yet.
+            logger.debug("Latest block has no number. Using base fee of '0'.")
+            return 0
+
         try:
             fee_history = self.web3.eth.fee_history(1, BlockNumber(latest_block_number))
         except ValueError as exc:
-            raise APINotImplementedError(
-                "fee_history is not implemented by this provider."
-            ) from exc
-        if len(fee_history["baseFeePerGas"]) < 2:
-            raise APINotImplementedError("No base fee found for the pending block.")
-        pending_base_fee = fee_history["baseFeePerGas"][1]
+            # Use the less-accurate approach (OK for testing).
+            logger.debug(
+                "Failed using `web3.eth.fee_history` for network "
+                f"'{self.network.ecosystem.name}:{self.network.name}:{self.name}'."
+            )
+            return self._get_legacy_base_fee()
 
+        if len(fee_history["baseFeePerGas"]) < 2:
+            logger.debug("Not enough fee_history. Defaulting less-accurate approach.")
+            return self._get_legacy_base_fee()
+
+        pending_base_fee = fee_history["baseFeePerGas"][1]
         if pending_base_fee is None:
             # Non-EIP-1559 chains or we time-travelled pre-London fork.
-            raise APINotImplementedError(
-                "base_fee for pending block is not implemented by this provider."
-            )
+            return self._get_legacy_base_fee()
 
         return pending_base_fee
+
+    def _get_legacy_base_fee(self):
+        block = self.get_block("latest")
+        base_fee = getattr(block, "base_fee", None)
+        if base_fee:
+            return base_fee
+
+        raise APINotImplementedError("No base fee found in block.")
 
     @property
     def is_connected(self) -> bool:
