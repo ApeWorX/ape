@@ -90,10 +90,14 @@ class KeyfileAccount(AccountAPI):
 
             if passphrase:
                 # Passphrase found in environment variable
-                logger.info(f"Using passphrase for account '{self.alias}' from environment variable")
+                logger.info(
+                    f"Using passphrase for account '{self.alias}' from environment variable"
+                )
             else:
                 # Passphrase not found, prompt for it
-                passphrase = self._prompt_for_passphrase(f"Enter passphrase to permanently unlock '{self.alias}'")
+                passphrase = self._prompt_for_passphrase(
+                    f"Enter passphrase to permanently unlock '{self.alias}'"
+                )
 
         # Rest of the code to unlock the account using the passphrase
         self.__cached_key = self.__decrypt_keyfile(passphrase)
@@ -171,7 +175,10 @@ class KeyfileAccount(AccountAPI):
             **kwargs,
         )
 
-    def __decrypt_keyfile(self, passphrase: str) -> HexBytes:
+    def __decrypt_keyfile(self, passphrase: Optional[str]) -> HexBytes:
+        # if no passphrase loaded throw an exception
+        if not passphrase:
+            raise InvalidPasswordError()
         try:
             return EthAccount.decrypt(self.keyfile, passphrase)
         except ValueError as err:
