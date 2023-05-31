@@ -273,16 +273,18 @@ class ContractTransaction(ManagerAccessMixin):
             self.address, self.abi, *arguments, **kwargs
         )
 
-    def __call__(self, private: bool = False, *args, **kwargs) -> ReceiptAPI:
+    def __call__(self, *args, **kwargs) -> ReceiptAPI:
         txn = self.serialize_transaction(*args, **kwargs)
+        private = kwargs.get("private", False)
 
         if "sender" in kwargs and isinstance(kwargs["sender"], AccountAPI):
             return kwargs["sender"].call(txn, **kwargs)
 
-        if private:
-            return self.provider.send_private_transaction(txn)
-        else:
-            return self.provider.send_transaction(txn)
+        return (
+            self.provider.send_private_transaction(txn)
+            if private
+            else self.provider.send_transaction(txn)
+        )
 
 
 class ContractTransactionHandler(ContractMethodHandler):
