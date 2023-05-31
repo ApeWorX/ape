@@ -940,7 +940,13 @@ class Web3Provider(ProviderAPI, ABC):
 
     def _send_call(self, txn: TransactionAPI, **kwargs) -> bytes:
         arguments = self._prepare_call(txn, **kwargs)
-        return self._eth_call(arguments)
+        try:
+            return self._eth_call(arguments)
+        except TransactionError as err:
+            if not err.txn:
+                err.txn = txn
+
+            raise  # The tx error
 
     def _eth_call(self, arguments: List) -> bytes:
         # Force the usage of hex-type to support a wider-range of nodes.
@@ -955,7 +961,8 @@ class Web3Provider(ProviderAPI, ABC):
         try:
             result = self._make_request("eth_call", arguments)
         except Exception as err:
-            raise self.get_virtual_machine_error(err) from err
+            receiver = txn_dict["to"]
+            raise self.get_virtual_machine_error(err, contract_address=receiver) from err
 
         if "error" in result:
             raise ProviderError(result["error"]["message"])
@@ -1196,7 +1203,6 @@ class Web3Provider(ProviderAPI, ABC):
                 txn_hash = self.web3.eth.send_transaction(txn_params)
         except (ValueError, Web3ContractLogicError) as err:
             vm_err = self.get_virtual_machine_error(err, txn=txn)
-            vm_err.txn = txn
             raise vm_err from err
 
         receipt = self.get_receipt(
@@ -1317,7 +1323,7 @@ class Web3Provider(ProviderAPI, ABC):
             )
 
         elif "out of gas" in str(err_msg):
-            return OutOfGasError(code=err_data.get("code"), **kwargs)
+            return OutOfGasError(code=err_data.get("code"), base_err=exception, **kwargs)
 
         return VirtualMachineError(str(err_msg), code=err_data.get("code"), **kwargs)
 
@@ -1355,7 +1361,12 @@ class Web3Provider(ProviderAPI, ABC):
         result = (
             ContractLogicError(txn=txn, **params)
             if no_reason
-            else ContractLogicError(revert_message=message, txn=txn, **params)
+            else ContractLogicError(
+                base_err=exception if isinstance(exception, Exception) else None,
+                revert_message=message,
+                txn=txn,
+                **params,
+            )
         )
         return self.compiler_manager.enrich_error(result)
 

@@ -3,7 +3,7 @@ import time
 from datetime import datetime
 from typing import IO, TYPE_CHECKING, Any, Iterator, List, Optional, Union
 
-from eth_utils import is_hex, to_int
+from eth_utils import is_0x_prefixed, is_hex, to_int
 from ethpm_types import HexBytes
 from ethpm_types.abi import EventABI, MethodABI
 from pydantic import validator
@@ -98,6 +98,16 @@ class TransactionAPI(BaseInterfaceModel):
             return HexBytes(value)
 
         return value
+
+    @validator("value", pre=True)
+    def validate_value(cls, value):
+        if isinstance(value, int):
+            return value
+
+        elif isinstance(value, str) and is_0x_prefixed(value):
+            return int(value, 16)
+
+        return int(value)
 
     @property
     def total_transfer_value(self) -> int:

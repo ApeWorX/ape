@@ -142,15 +142,19 @@ def test_uri_uses_value_from_config(geth_provider, temp_config):
 
 def test_tx_revert(accounts, sender, geth_vyper_contract, owner):
     # 'sender' is not the owner so it will revert (with a message)
-    with pytest.raises(ContractLogicError, match="!authorized"):
+    with pytest.raises(ContractLogicError, match="!authorized") as err:
         geth_vyper_contract.setNumber(5, sender=sender)
+
+    assert err.value.txn is not None
 
 
 def test_revert_no_message(accounts, geth_vyper_contract, owner):
     # The Contract raises empty revert when setting number to 5.
     expected = "Transaction failed."  # Default message
-    with pytest.raises(ContractLogicError, match=expected):
+    with pytest.raises(ContractLogicError, match=expected) as err:
         geth_vyper_contract.setNumber(5, sender=owner)
+
+    assert err.value.txn is not None
 
 
 @geth_process_test
@@ -362,6 +366,7 @@ def test_contract_logic_error_dev_message(vyper_math_dev_check, owner, geth_prov
     with pytest.raises(ContractLogicError, match=expected) as err:
         contract.num_add(1, sender=owner)
 
+    assert err.value.txn is not None
     assert err.value.dev_message == expected
 
 
@@ -400,6 +405,7 @@ def test_custom_error(error_contract_geth, not_owner):
     with pytest.raises(contract.Unauthorized) as err:
         contract.withdraw(sender=not_owner)
 
+    assert err.value.txn is not None
     assert err.value.inputs == {"addr": not_owner.address, "counter": 123}
 
 
@@ -474,5 +480,7 @@ def test_out_of_gas_error(geth_contract, geth_account, geth_provider):
     txn = geth_contract.setNumber.as_transaction(333, sender=geth_account)
     gas = geth_provider.estimate_gas_cost(txn)
     txn.gas_limit = gas - 1
-    with pytest.raises(OutOfGasError):
+    with pytest.raises(OutOfGasError) as err:
         geth_account.call(txn)
+
+    assert err.value.txn is not None

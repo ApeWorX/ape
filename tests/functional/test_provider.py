@@ -1,6 +1,7 @@
 from unittest import mock
 
 import pytest
+from eth_tester.exceptions import TransactionFailed  # type: ignore
 from eth_typing import HexStr
 from eth_utils import ValidationError
 
@@ -196,3 +197,9 @@ def test_set_timestamp_handle_same_time_race_condition(mocker, eth_tester_provid
 
     mocker.patch.object(eth_tester_provider.evm_backend, "time_travel", side_effect=side_effect)
     eth_tester_provider.set_timestamp(123)
+
+
+def test_get_virtual_machine_error_when_txn_failed_includes_base_error(eth_tester_provider):
+    txn_failed = TransactionFailed()
+    actual = eth_tester_provider.get_virtual_machine_error(txn_failed)
+    assert actual.base_err == txn_failed
