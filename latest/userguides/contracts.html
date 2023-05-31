@@ -175,6 +175,8 @@ The names of your contracts are properties on the <code class="docutils literal 
 </pre></div>
 </div>
 <p>With this technique, you can feed as many constructor arguments as your contract constructor requires.</p>
+<p><strong>NOTE</strong>: You can also publish the contract source code to an explorer upon deployment using the <code class="docutils literal notranslate"><span class="pre">publish=</span></code> kwarg on the deploy methods.
+More information on publishing contracts can be found in <a class="reference external" href="./publishing.html">this guide</a>.</p>
 <p>If you do not pass the correct amount of constructor arguments when deploying, you will get an error showing your arguments don’t match what is in the ABI:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>ArgumentsLengthError:<span class="w"> </span>The<span class="w"> </span>number<span class="w"> </span>of<span class="w"> </span>the<span class="w"> </span>given<span class="w"> </span>arguments<span class="w"> </span><span class="o">(</span><span class="m">0</span><span class="o">)</span><span class="w"> </span><span class="k">do</span><span class="w"> </span>not<span class="w"> </span>match<span class="w"> </span>what<span class="w"> </span>is<span class="w"> </span>defined<span class="w"> </span><span class="k">in</span><span class="w"> </span>the<span class="w"> </span>ABI<span class="w"> </span><span class="o">(</span><span class="m">2</span><span class="o">)</span>.
 </pre></div>
