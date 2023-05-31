@@ -2,6 +2,7 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional, Set
 
 from ethpm_types import ContractType
+from ethpm_types.source import Content
 
 from ape.api import CompilerAPI
 from ape.exceptions import CompilerError, ContractLogicError
@@ -251,3 +252,23 @@ class CompilerManager(BaseManager):
 
         compiler = self.registered_compilers[ext]
         return compiler.enrich_error(err)
+
+    def flatten_contract(self, path: Path) -> Content:
+        """
+        Get the flattened version of a contract via its source path.
+        Delegates to the matching :class:`~ape.api.compilers.CompilerAPI`.
+
+        Args:
+            path (``pathlib.Path``): The source path of the contract.
+
+        Returns:
+            ``ethpm_types.source.Content``: The flattened contract content.
+        """
+
+        if path.suffix not in self.registered_compilers:
+            raise CompilerError(
+                f"Unable to flatten contract. Missing compiler for '{path.suffix}'."
+            )
+
+        compiler = self.registered_compilers[path.suffix]
+        return compiler.flatten_contract(path)
