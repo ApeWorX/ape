@@ -39,7 +39,7 @@ def generate_dev_accounts(
         mnemonic (str): mnemonic phrase or seed words.
         number_of_accounts (int): Number of accounts. Defaults to ``10``.
         hd_path_format (str): Hard Wallets/HD Keys derivation path format.
-          Defaults to ``"m/44'/60'/0'/0/{}"``.
+          Defaults to ``"m/44'/60'/0'/{}"``.
 
     Returns:
         List[:class:`~ape.utils.GeneratedDevAccount`]: List of development accounts.
