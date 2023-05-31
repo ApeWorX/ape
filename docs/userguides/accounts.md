@@ -230,7 +230,6 @@ account.set_autosign(True)
 # Now, you will not be prompted to sign messages or transactions
 message = encode_defunct(text="Hello Apes!")
 signature = account.sign_message(message)
-
 ```
 
 ## Hardware Wallets
