@@ -636,6 +636,7 @@ class CustomError(ContractLogicError):
         txn: Optional[FailedTxn] = None,
         trace: Optional[Iterator["TraceFrame"]] = None,
         contract_address: Optional["AddressType"] = None,
+        base_err: Optional[Exception] = None,
         source_traceback: Optional["SourceTraceback"] = None,
     ):
         self.abi = abi
@@ -649,6 +650,7 @@ class CustomError(ContractLogicError):
 
         super().__init__(
             message,
+            base_err=base_err,
             contract_address=contract_address,
             source_traceback=source_traceback,
             trace=trace,
