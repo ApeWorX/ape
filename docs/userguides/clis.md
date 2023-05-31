@@ -9,10 +9,10 @@ There are CLIs found in a couple areas in the Ape framework:
 Both plugins and scripts utilize `click` for their CLIs.
 
 For plugins, CLIs are an option for extending the framework.
-You can read more about plugin development and CLIs in the [developing plugins guide](./developing_plugins.md).
+You can read more about plugin development and CLIs in the [developing plugins guide](./developing_plugins.html).
 
 Scripts utilize CLIs as an option for users to develop their scripts.
-You can read more about scripting and CLIs in the [scripting guide](./scripts.md).
+You can read more about scripting and CLIs in the [scripting guide](./scripts.html).
 
 This guide is for showcasing utilities that ship with Ape to assist in your CLI development endeavors.
 
