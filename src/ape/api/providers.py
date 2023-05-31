@@ -409,7 +409,14 @@ class ProviderAPI(BaseInterfaceModel):
         self, txn: TransactionAPI
     ) -> ReceiptAPI:
         """
-        Send a transaction through a private mempool (if supported by the Provider)
+        Send a transaction through a private mempool (if supported by the Provider).
+
+        Args:
+            txn (:class:`~ape.api.transactions.TransactionAPI`): The transaction
+              to privately publish.
+
+        Returns:
+            :class:`~ape.api.transactions.ReceiptAPI`
         """
 
     @raises_not_implemented
