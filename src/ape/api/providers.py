@@ -640,7 +640,7 @@ class Web3Provider(ProviderAPI, ABC):
     def base_fee(self) -> int:
         latest_block_number = self.get_block("latest").number
         if latest_block_number is None:
-            # This would be a very rare occurance, possibly no blocks yet.
+            # Possibly no blocks yet.
             logger.debug("Latest block has no number. Using base fee of '0'.")
             return 0
 
@@ -650,22 +650,23 @@ class Web3Provider(ProviderAPI, ABC):
             # Use the less-accurate approach (OK for testing).
             logger.debug(
                 "Failed using `web3.eth.fee_history` for network "
-                f"'{self.network.ecosystem.name}:{self.network.name}:{self.name}'."
+                f"'{self.network.ecosystem.name}:{self.network.name}:{self.name}'. "
+                f"Error: {exc}"
             )
-            return self._get_legacy_base_fee()
+            return self._get_last_base_fee()
 
         if len(fee_history["baseFeePerGas"]) < 2:
             logger.debug("Not enough fee_history. Defaulting less-accurate approach.")
-            return self._get_legacy_base_fee()
+            return self._get_last_base_fee()
 
         pending_base_fee = fee_history["baseFeePerGas"][1]
         if pending_base_fee is None:
             # Non-EIP-1559 chains or we time-travelled pre-London fork.
-            return self._get_legacy_base_fee()
+            return self._get_last_base_fee()
 
         return pending_base_fee
 
-    def _get_legacy_base_fee(self):
+    def _get_last_base_fee(self) -> int:
         block = self.get_block("latest")
         base_fee = getattr(block, "base_fee", None)
         if base_fee:
