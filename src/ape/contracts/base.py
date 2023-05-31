@@ -1237,6 +1237,7 @@ class ContractContainer(ContractTypeWrapper):
 
     def deploy(self, *args, publish: bool = False, **kwargs) -> ContractInstance:
         txn = self(*args, **kwargs)
+        private = kwargs.get("private", False)
 
         if "sender" in kwargs and isinstance(kwargs["sender"], AccountAPI):
             # Handle account-related preparation if needed, such as signing
@@ -1244,7 +1245,11 @@ class ContractContainer(ContractTypeWrapper):
 
         else:
             txn = self.provider.prepare_transaction(txn)
-            receipt = self.provider.send_transaction(txn)
+            receipt = (
+                self.provider.send_private_transaction(txn)
+                if private
+                else self.provider.send_transaction(txn)
+            )
 
         address = receipt.contract_address
         if not address:
