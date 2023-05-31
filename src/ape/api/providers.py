@@ -23,7 +23,7 @@ from evm_trace import TraceFrame as EvmTraceFrame
 from hexbytes import HexBytes
 from pydantic import Field, root_validator, validator
 from web3 import Web3
-from web3.exceptions import BlockNotFound
+from web3.exceptions import BlockNotFound, TransactionNotFound
 from web3.exceptions import ContractLogicError as Web3ContractLogicError
 from web3.exceptions import MethodUnavailable, TimeExhausted
 from web3.types import RPCEndpoint, TxParams
@@ -1032,7 +1032,18 @@ class Web3Provider(ProviderAPI, ABC):
         except TimeExhausted as err:
             raise TransactionNotFoundError(txn_hash) from err
 
-        txn = dict(self.web3.eth.get_transaction(HexStr(txn_hash)))
+        max_retries = 20
+        for attempt in range(max_retries):
+            try:
+                txn = dict(self.web3.eth.get_transaction(HexStr(txn_hash)))
+                break
+            except TransactionNotFound as e:
+                if attempt < max_retries - 1:  # if this wasn't the last attempt
+                    time.sleep(1)  # Wait for 5 seconds before retrying.
+                    continue  # Continue to the next iteration, effectively retrying the operation.
+                else:  # if it was the last attempt
+                    raise e  # Re-raise the last exception.
+
         receipt = self.network.ecosystem.decode_receipt(
             {
                 "provider": self,
