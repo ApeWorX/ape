@@ -427,7 +427,7 @@ class ProviderAPI(BaseInterfaceModel):
         :class:`ape.managers.chain.ChainManager`.
 
         Raises:
-            NotImplementedError: Unless overridden.
+            :class:`~ape.exceptions.APINotImplementedError`: Unless overriden.
         """
 
     @raises_not_implemented
@@ -438,7 +438,7 @@ class ProviderAPI(BaseInterfaceModel):
         :class:`ape.managers.chain.ChainManager`.
 
         Raises:
-            NotImplementedError: Unless overridden.
+            :class:`~ape.exceptions.APINotImplementedError`: Unless overriden.
         """
 
     @raises_not_implemented
@@ -449,7 +449,7 @@ class ProviderAPI(BaseInterfaceModel):
         :class:`ape.managers.chain.ChainManager`.
 
         Raises:
-            NotImplementedError: Unless overridden.
+            :class:`~ape.exceptions.APINotImplementedError`: Unless overriden.
         """
 
     @raises_not_implemented
@@ -460,7 +460,7 @@ class ProviderAPI(BaseInterfaceModel):
         :class:`ape.managers.chain.ChainManager`.
 
         Raises:
-            NotImplementedError: Unless overridden.
+            :class:`~ape.exceptions.APINotImplementedError`: Unless overriden.
         """
 
     @raises_not_implemented
