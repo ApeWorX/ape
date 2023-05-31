@@ -50,7 +50,8 @@ contract = accounts.dev.deploy(project.MyContract, "argument1", "argument2")
 
 With this technique, you can feed as many constructor arguments as your contract constructor requires.
 
-**NOTE**: You can also publish the contract source code to an explorer upon deployment using the `publish=` kwarg on the deploy methods. More information on publishing contracts can be found in [this guide](./publishing.html).
+**NOTE**: You can also publish the contract source code to an explorer upon deployment using the `publish=` kwarg on the deploy methods.
+More information on publishing contracts can be found in [this guide](./publishing.html).
 
 If you do not pass the correct amount of constructor arguments when deploying, you will get an error showing your arguments don't match what is in the ABI:
 
