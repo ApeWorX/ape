@@ -210,6 +210,29 @@ message = encode_defunct(text="Hello Apes!")
 signature = account.sign_message(message)
 ```
 
+## More Secure Way
+
+By saving your passphrase as `environment` variable. Set your passphrase like this
+
+```bash
+export APE_ACCOUNTS_test_PASSPHRASE="a"
+```
+
+Where `test` is the name of the account you want to use. Now you can use your account to make any transactions without giving your passphrase again and again
+
+```py
+from ape import accounts
+from eth_account.messages import encode_defunct
+
+account = accounts.load("<ALIAS>")
+account.set_autosign(True)
+
+# Now, you will not be prompted to sign messages or transactions
+message = encode_defunct(text="Hello Apes!")
+signature = account.sign_message(message)
+
+```
+
 ## Hardware Wallets
 
 Because of the plugin system in Ape, we are able to support other types of accounts including hardware wallet accounts.

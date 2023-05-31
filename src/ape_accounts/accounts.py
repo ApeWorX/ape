@@ -1,6 +1,7 @@
 import json
 from pathlib import Path
 from typing import Iterator, Optional
+from os import environ
 
 import click
 from eth_account import Account as EthAccount
@@ -82,9 +83,19 @@ class KeyfileAccount(AccountAPI):
         return key
 
     def unlock(self, passphrase: Optional[str] = None):
-        passphrase = passphrase or self._prompt_for_passphrase(
-            f"Enter passphrase to permanently unlock '{self.alias}'"
-        )
+        if not passphrase:
+            # Check if environment variable is available
+            env_variable = f"APE_ACCOUNTS_{self.alias}_PASSPHRASE"
+            passphrase = environ.get(env_variable, None)
+
+            if passphrase:
+                # Passphrase found in environment variable
+                logger.info(f"Using passphrase for account '{self.alias}' from environment variable")
+            else:
+                # Passphrase not found, prompt for it
+                passphrase = self._prompt_for_passphrase(f"Enter passphrase to permanently unlock '{self.alias}'")
+
+        # Rest of the code to unlock the account using the passphrase
         self.__cached_key = self.__decrypt_keyfile(passphrase)
         self.locked = False
 
