@@ -90,6 +90,10 @@ class GethDevProcess(LoggingMixin, BaseGethProcess):
             ws_api=None,
         )
 
+        # TODO: Remove after using any release greater than py-geth 3.12.0
+        if "miner_threads" in geth_kwargs:
+            del geth_kwargs["miner_threads"]
+
         # Ensure a clean data-dir.
         self._clean()
 
