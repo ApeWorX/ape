@@ -1039,7 +1039,7 @@ class Web3Provider(ProviderAPI, ABC):
                 break
             except TransactionNotFound as e:
                 if attempt < max_retries - 1:  # if this wasn't the last attempt
-                    time.sleep(1)  # Wait for 5 seconds before retrying.
+                    time.sleep(1)  # Wait for 1 second before retrying.
                     continue  # Continue to the next iteration, effectively retrying the operation.
                 else:  # if it was the last attempt
                     raise e  # Re-raise the last exception.
