@@ -640,7 +640,7 @@ class Web3Provider(ProviderAPI, ABC):
     def base_fee(self) -> int:
         latest_block_number = self.get_block("latest").number
         if latest_block_number is None:
-            raise APINotImplementedError("Could not get block number of latest block.")
+            raise ProviderError("Latest block has no number.")
         try:
             fee_history = self.web3.eth.fee_history(1, BlockNumber(latest_block_number))
         except ValueError as exc:
