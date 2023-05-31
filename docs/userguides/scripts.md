@@ -8,7 +8,7 @@ The `ape run` command will register and run Python files defined under the `scri
 Place scripts in your project's `scripts/` directory.
 Follow [this guide](./projects.html) to learn more about the Ape project structure.
 If your scripts take advantage of utilities from our [`ape.cli`](../methoddocs/cli.html#ape-cli) submodule, you can build a [Click](https://click.palletsprojects.com/) command line interface by defining a `click.Command` or `click.Group` object called `cli` in your file:
-Follow [this guide](./clis.md) to learn more about what you can do with the utilities found in `ape.cli`.
+Follow [this guide](./clis.html) to learn more about what you can do with the utilities found in `ape.cli`.
 
 ```python
 import click

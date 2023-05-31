@@ -100,7 +100,7 @@ If you try to define them together and use `ape` as a library as well, there is 
 
 For common `click` usages, use the `ape.cli` namespace.
 For example, use the [@existing_alias_argument() decorator](../methoddocs/cli.html#ape.cli.arguments.existing_alias_argument)) when you need a CLI argument for specifying an existing account alias:
-Follow [this guide](./clis.md) to learn more about what you can do with the utilities found in `ape.cli`.
+Follow [this guide](./clis.html) to learn more about what you can do with the utilities found in `ape.cli`.
 
 ```python
 import click
