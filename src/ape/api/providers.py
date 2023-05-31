@@ -422,6 +422,10 @@ class ProviderAPI(BaseInterfaceModel):
         if self.network.name == LOCAL_NETWORK_NAME or self.network.name.endswith("-fork"):
             # Send the transaction as normal so testers can verify private=True
             # and the txn still goes through.
+            logger.warning(
+                f"private=True is set but connected to network '{self.network.name}' ."
+                f"Using regular '{self.send_transaction.__name__}()' method (not private)."
+            )
             return self.send_transaction(txn)
 
         # What happens normally from `raises_not_implemented()` decorator.
