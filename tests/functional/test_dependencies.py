@@ -35,6 +35,18 @@ def project_with_downloaded_dependencies(temp_config, config, oz_dependencies_co
     with temp_config(oz_dependencies_config) as project:
         yield project
 
+@pytest.fixture
+def project_with_npm_dependency(temp_config, config):
+
+    def _create_npm_dependency(version:str) -> Dict:
+        return {
+            "name": "safe-singleton-factory",
+            "version": version,
+            "npm": "gnosis.pm/safe-singleton-factory",
+        }
+    
+    npm_depdency = _create_npm_dependency("1.0.3")
+    pass
 
 def test_two_dependencies_with_same_name(project_with_downloaded_dependencies):
     name = "OpenZeppelin"
@@ -90,3 +102,6 @@ def test_dependency_using_reference(ref, recwarn, dependency_manager):
     # Tests against bug where we tried creating version objects out of branch names,
     # thus causing warnings to show in `ape test` runs.
     assert DeprecationWarning not in [w.category for w in recwarn.list]
+
+def test_npm_dependency():
+    pass

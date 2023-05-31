@@ -1,8 +1,10 @@
 import json
 import os
 import tempfile
+import shutil
 from pathlib import Path
-from typing import Dict, Optional, Type
+from typing import Dict, Optional, Type, Tuple
+import subprocess
 
 from ethpm_types import PackageManifest
 from ethpm_types.utils import AnyUrl
@@ -25,6 +27,7 @@ class DependencyManager(ManagerAccessMixin):
         dependency_classes = {
             "github": GithubDependency,
             "local": LocalDependency,
+            "npm": NpmDependency,
         }
 
         for _, (config_key, dependency_class) in self.plugin_manager.dependencies:
@@ -199,3 +202,101 @@ class LocalDependency(DependencyAPI):
 
     def extract_manifest(self) -> PackageManifest:
         return self._extract_local_manifest(self.path)
+
+
+
+
+
+class NpmDependency(DependencyAPI):
+    """
+    A dependency frpm NPM. 
+
+    Config example::
+
+        dependencies:
+          - name: Dependency
+            npm: "@gnosis.pm/safe-singleton-factory"
+            version: 1.0.3
+    """
+
+    npm: str
+    """
+    The NPM repo ID e.g. the organization name followed by the repo name,
+    such as ``"@gnosis.pm/safe-singleton-factory"``
+    """
+
+    @cached_property
+    def version_id(self) -> str:
+        if self.version:
+            return self.version
+
+    @property
+    def check_npm(self) -> str:
+        _npm = shutil.which("npm")
+        if not _npm:
+            raise ProjectError(f"Could not locate `npm` executable.")
+        
+        return _npm
+    
+    @property
+    def uri(self) -> AnyUrl:
+        _uri = f"https://github.com/{self.github.strip('/')}"
+        if self.version:
+            version = f"v{self.version}" if not self.version.startswith("v") else self.version
+            _uri = f"{_uri}/releases/tag/{version}"
+        elif self._reference:
+            _uri = f"{_uri}/tree/{self._reference}"
+
+        return HttpUrl(_uri, scheme="https")
+    
+    def _install(*args) -> Tuple[bytes, bytes]:
+        popen = subprocess.Popen(
+            args,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+        )
+        return popen.communicate()
+    
+    def npm_install(self, temp_project_path):
+        npm = self.npm[1:-1]
+        check =  [
+            "npm",
+            "i",
+            "--prefix",
+            temp_project_path,
+            npm
+        ]
+
+        self._install(check)
+        breakpoint()
+
+        return check
+
+    def extract_manifest(self) -> PackageManifest:
+        if self.cached_manifest:
+            # Already downloaded
+            return self.cached_manifest
+        
+        with tempfile.TemporaryDirectory() as temp_dir:
+            temp_project_path = (Path(temp_dir) / self.name).resolve()
+            temp_project_path.mkdir(exist_ok=True, parents=True)
+
+            breakpoint()
+            # Check if node_module folder exists
+            node_module = os.path.exists('node_modules')
+            if node_module:
+                node_module_folder = os.path.dirname('node_modules')
+                return self._extract_local_manifest(node_module_folder)
+            
+            else:
+                try:
+                    # npm install
+                    self.npm_install(temp_project_path)
+
+                except UnknownVersionError as err:
+                    logger.warning("Could not install")
+                    raise err
+            return self._extract_local_manifest(temp_project_path)
+
+# check to see if there is node_modules folder with dependencies already in
+# if not then run npm install after 
