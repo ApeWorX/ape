@@ -101,8 +101,8 @@ class AccountAPI(BaseInterfaceModel, BaseAddress):
             txn (:class:`~ape.api.transactions.TransactionAPI`): An invoke-transaction.
             send_everything (bool): ``True`` will send the difference from balance and fee.
               Defaults to ``False``.
-            private (bool): ``True`` will use the `eth_sendPrivateTransaction` RPC method.
-              Provider needs to implement `send_private_transaction` method.
+            private (bool): ``True`` with use the
+              :meth:`~ape.api.providers.ProviderAPI.send_private_transaction` method.
             **signer_options: Additional kwargs given to the signer to modify the signing operation.
 
         Returns:
@@ -144,10 +144,11 @@ class AccountAPI(BaseInterfaceModel, BaseAddress):
         if not txn.sender:
             txn.sender = self.address
 
-        if private:
-            return self.provider.send_private_transaction(signed_txn)
-        else:
-            return self.provider.send_transaction(signed_txn)
+        return (
+            self.provider.send_private_transaction(signed_txn)
+            if private
+            else self.provider.send_transaction(signed_txn)
+        )
 
     def transfer(
         self,
