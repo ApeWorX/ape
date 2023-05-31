@@ -9,7 +9,6 @@ from evm_trace.geth import create_call_node_data
 from semantic_version import Version  # type: ignore
 
 from ape.exceptions import APINotImplementedError, ContractLogicError
-from ape.logging import logger
 from ape.types.trace import SourceTraceback, TraceFrame
 from ape.utils import BaseInterfaceModel, abstractmethod, raises_not_implemented
 
@@ -167,12 +166,12 @@ class CompilerAPI(BaseInterfaceModel):
             :class:`~ape.types.trace.SourceTraceback`
         """
 
-    def get_flattened_contract(self, path: Path, **kwargs) -> Content:
+    @raises_not_implemented
+    def flatten_contract(self, path: Path, **kwargs) -> Content:  # type: ignore[empty-body]
         """
         Get the content of a flattened contract via its source path.
         Plugin implementations handle import resolution, SPDX de-duplication,
-        and anything else needed. The default implementation of this API
-        returns the content of the given contract without doing anything else.
+        and anything else needed.
 
         Args:
             path (``pathlib.Path``): The source path of the contract.
@@ -182,13 +181,6 @@ class CompilerAPI(BaseInterfaceModel):
         Returns:
             ``ethpm_types.source.Content``: The flattened contract content.
         """
-
-        logger.warning(
-            f"{self.get_flattened_contract.__name__} is not implemented "
-            f"by compiler for '{path.suffix}'. "
-            f"Contract may not be properly flattened."
-        )
-        return Content(__root__=path.read_text())
 
     def _create_contract_from_call(
         self, frame: TraceFrame

@@ -253,7 +253,7 @@ class CompilerManager(BaseManager):
         compiler = self.registered_compilers[ext]
         return compiler.enrich_error(err)
 
-    def get_flattened_contract(self, path: Path) -> Content:
+    def flatten_contract(self, path: Path) -> Content:
         """
         Get the flattened version of a contract via its source path.
         Delegates to the matching :class:`~ape.api.compilers.CompilerAPI`.
@@ -265,5 +265,10 @@ class CompilerManager(BaseManager):
             ``ethpm_types.source.Content``: The flattened contract content.
         """
 
+        if path.suffix not in self.registered_compilers:
+            raise CompilerError(
+                f"Unable to flatten contract. Missing compiler for '{path.suffix}'."
+            )
+
         compiler = self.registered_compilers[path.suffix]
-        return compiler.get_flattened_contract(path)
+        return compiler.flatten_contract(path)

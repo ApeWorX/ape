@@ -1,5 +1,8 @@
+from pathlib import Path
+
 import pytest
-from ethpm_types.source import Content
+
+from ape.exceptions import APINotImplementedError, CompilerError
 
 
 @pytest.fixture
@@ -65,9 +68,16 @@ def test_supports_tracing(compilers):
     assert not compilers.ethpm.supports_source_tracing
 
 
-def test_get_flattened_contract(compilers, project_with_contract):
+def test_flatten_contract(compilers, project_with_contract):
+    """
+    Positive tests exist in compiler plugins that implement this behavior.b
+    """
     source_id = project_with_contract.ApeContract0.contract_type.source_id
     path = project_with_contract.contracts_folder / source_id
-    content = compilers.get_flattened_contract(path)
-    assert isinstance(content, Content)
-    assert content[1] == "["
+
+    with pytest.raises(APINotImplementedError):
+        compilers.flatten_contract(path)
+
+    expected = r"Unable to flatten contract\. Missing compiler for '.foo'."
+    with pytest.raises(CompilerError, match=expected):
+        compilers.flatten_contract(Path("contract.foo"))
