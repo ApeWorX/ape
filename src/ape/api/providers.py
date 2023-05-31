@@ -16,7 +16,7 @@ from signal import SIGINT, SIGTERM, signal
 from subprocess import DEVNULL, PIPE, Popen
 from typing import Any, Dict, Iterator, List, Optional, Union, cast
 
-from eth_typing import HexStr
+from eth_typing import BlockNumber, HexStr
 from eth_utils import add_0x_prefix, to_hex
 from evm_trace import CallTreeNode as EvmCallTreeNode
 from evm_trace import TraceFrame as EvmTraceFrame
@@ -638,17 +638,41 @@ class Web3Provider(ProviderAPI, ABC):
 
     @property
     def base_fee(self) -> int:
-        block = self.get_block("latest")
-        if not hasattr(block, "base_fee"):
-            raise APINotImplementedError("No base fee found in block.")
-        else:
-            base_fee = getattr(block, "base_fee")
+        latest_block_number = self.get_block("latest").number
+        if latest_block_number is None:
+            # Possibly no blocks yet.
+            logger.debug("Latest block has no number. Using base fee of '0'.")
+            return 0
 
-        if base_fee is None:
+        try:
+            fee_history = self.web3.eth.fee_history(1, BlockNumber(latest_block_number))
+        except ValueError as exc:
+            # Use the less-accurate approach (OK for testing).
+            logger.debug(
+                "Failed using `web3.eth.fee_history` for network "
+                f"'{self.network.ecosystem.name}:{self.network.name}:{self.name}'. "
+                f"Error: {exc}"
+            )
+            return self._get_last_base_fee()
+
+        if len(fee_history["baseFeePerGas"]) < 2:
+            logger.debug("Not enough fee_history. Defaulting less-accurate approach.")
+            return self._get_last_base_fee()
+
+        pending_base_fee = fee_history["baseFeePerGas"][1]
+        if pending_base_fee is None:
             # Non-EIP-1559 chains or we time-travelled pre-London fork.
-            raise APINotImplementedError("base_fee is not implemented by this provider.")
+            return self._get_last_base_fee()
 
-        return base_fee
+        return pending_base_fee
+
+    def _get_last_base_fee(self) -> int:
+        block = self.get_block("latest")
+        base_fee = getattr(block, "base_fee", None)
+        if base_fee:
+            return base_fee
+
+        raise APINotImplementedError("No base fee found in block.")
 
     @property
     def is_connected(self) -> bool:

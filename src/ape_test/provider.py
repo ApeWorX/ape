@@ -118,6 +118,14 @@ class LocalProvider(TestProviderAPI, Web3Provider):
         """Returns 0 because test chains do not care about priority fees."""
         return 0
 
+    @property
+    def base_fee(self) -> int:
+        """
+        EthTester does not implement RPC `eth_feeHistory`.
+        Returns the last base fee on chain.
+        """
+        return self._get_last_base_fee()
+
     def send_call(self, txn: TransactionAPI, **kwargs) -> bytes:
         data = txn.dict(exclude_none=True)
         block_id = kwargs.pop("block_identifier", None)
