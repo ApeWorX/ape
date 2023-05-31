@@ -168,7 +168,9 @@ class AccountAPI(BaseInterfaceModel, BaseAddress):
             account (str): The account to send funds to.
             value (str): The amount to send.
             data (str): Extra data to include in the transaction.
-            private (bool): ``True`` will use the `eth_sendPrivateTransaction` RPC method.
+            private (bool): ``True`` asks the provider to make the transaction
+              private. For example, EVM providers uses the RPC ``eth_sendPrivateTransaction``
+              to achieve this. Local providers may ignore this value.
 
         Returns:
             :class:`~ape.api.transactions.ReceiptAPI`
