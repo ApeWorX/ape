@@ -102,32 +102,42 @@ def test_call_use_block_identifier(contract_instance, owner, chain):
 
 def test_revert(sender, contract_instance):
     # 'sender' is not the owner so it will revert (with a message)
-    with pytest.raises(ContractLogicError, match="!authorized"):
+    with pytest.raises(ContractLogicError, match="!authorized") as err:
         contract_instance.setNumber(5, sender=sender)
+
+    assert err.value.txn is not None
 
 
 def test_revert_no_message(owner, contract_instance):
     # The Contract raises empty revert when setting number to 5.
     expected = "Transaction failed."  # Default message
-    with pytest.raises(ContractLogicError, match=expected):
+    with pytest.raises(ContractLogicError, match=expected) as err:
         contract_instance.setNumber(5, sender=owner)
+
+    assert err.value.txn is not None
 
 
 @pytest.mark.parametrize("gas", ("200000", 200000, "max", "auto", "0x235426"))
 def test_revert_specify_gas(sender, contract_instance, gas):
-    with pytest.raises(ContractLogicError, match="!authorized"):
+    with pytest.raises(ContractLogicError, match="!authorized") as err:
         contract_instance.setNumber(5, sender=sender, gas=gas)
+
+    assert err.value.txn is not None
 
 
 def test_revert_no_message_specify_gas(owner, contract_instance):
     expected = "Transaction failed."  # Default message
-    with pytest.raises(ContractLogicError, match=expected):
+    with pytest.raises(ContractLogicError, match=expected) as err:
         contract_instance.setNumber(5, sender=owner, gas=200000)
+
+    assert err.value.txn is not None
 
 
 def test_revert_static_fee_type(sender, contract_instance):
-    with pytest.raises(ContractLogicError, match="!authorized"):
+    with pytest.raises(ContractLogicError, match="!authorized") as err:
         contract_instance.setNumber(5, sender=sender, type=0)
+
+    assert err.value.txn is not None
 
 
 def test_revert_custom_exception(not_owner, error_contract):

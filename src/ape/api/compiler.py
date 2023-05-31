@@ -3,7 +3,7 @@ from pathlib import Path
 from typing import Dict, Iterator, List, Optional, Set, Tuple
 
 from ethpm_types import ContractType, HexBytes
-from ethpm_types.source import ContractSource
+from ethpm_types.source import Content, ContractSource
 from evm_trace.geth import TraceFrame as EvmTraceFrame
 from evm_trace.geth import create_call_node_data
 from semantic_version import Version  # type: ignore
@@ -164,6 +164,22 @@ class CompilerAPI(BaseInterfaceModel):
 
         Returns:
             :class:`~ape.types.trace.SourceTraceback`
+        """
+
+    @raises_not_implemented
+    def flatten_contract(self, path: Path, **kwargs) -> Content:  # type: ignore[empty-body]
+        """
+        Get the content of a flattened contract via its source path.
+        Plugin implementations handle import resolution, SPDX de-duplication,
+        and anything else needed.
+
+        Args:
+            path (``pathlib.Path``): The source path of the contract.
+            **kwargs: Additional compiler-specific settings. See specific
+              compiler plugins when applicable.
+
+        Returns:
+            ``ethpm_types.source.Content``: The flattened contract content.
         """
 
     def _create_contract_from_call(

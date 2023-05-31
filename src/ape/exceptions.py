@@ -155,6 +155,7 @@ class ContractLogicError(VirtualMachineError):
         trace: Optional[Iterator["TraceFrame"]] = None,
         contract_address: Optional["AddressType"] = None,
         source_traceback: Optional["SourceTraceback"] = None,
+        base_err: Optional[Exception] = None,
     ):
         self.txn = txn
         self.trace = trace
@@ -167,6 +168,7 @@ class ContractLogicError(VirtualMachineError):
                 pass
 
         super().__init__(
+            base_err=base_err,
             contract_address=contract_address,
             message=revert_message,
             source_traceback=source_traceback,
@@ -309,8 +311,13 @@ class OutOfGasError(VirtualMachineError):
     out of gas.
     """
 
-    def __init__(self, code: Optional[int] = None, txn: Optional[FailedTxn] = None):
-        super().__init__("The transaction ran out of gas.", code=code, txn=txn)
+    def __init__(
+        self,
+        code: Optional[int] = None,
+        txn: Optional[FailedTxn] = None,
+        base_err: Optional[Exception] = None,
+    ):
+        super().__init__("The transaction ran out of gas.", code=code, txn=txn, base_err=base_err)
 
 
 class NetworkError(ApeException):
@@ -629,6 +636,7 @@ class CustomError(ContractLogicError):
         txn: Optional[FailedTxn] = None,
         trace: Optional[Iterator["TraceFrame"]] = None,
         contract_address: Optional["AddressType"] = None,
+        base_err: Optional[Exception] = None,
         source_traceback: Optional["SourceTraceback"] = None,
     ):
         self.abi = abi
@@ -642,6 +650,7 @@ class CustomError(ContractLogicError):
 
         super().__init__(
             message,
+            base_err=base_err,
             contract_address=contract_address,
             source_traceback=source_traceback,
             trace=trace,
