@@ -179,7 +179,7 @@ To send a private transaction, do the following:
 receipt = contract.set_number(sender=dev, private=True)
 ```
 
-The `private=True` is available on all contract interaction.
+The `private=True` is available on all contract interactions.
 
 ## Decoding and Encoding Inputs
 
