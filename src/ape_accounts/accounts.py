@@ -1,7 +1,7 @@
 import json
+from os import environ
 from pathlib import Path
 from typing import Iterator, Optional
-from os import environ
 
 import click
 from eth_account import Account as EthAccount
@@ -97,7 +97,7 @@ class KeyfileAccount(AccountAPI):
                 passphrase = self._prompt_for_passphrase(
                     f"Enter passphrase to permanently unlock '{self.alias}'"
                 )
-
+        assert passphrase is not None, "Passphrase can't be 'None'"
         # Rest of the code to unlock the account using the passphrase
         self.__cached_key = self.__decrypt_keyfile(passphrase)
         self.locked = False
@@ -166,7 +166,7 @@ class KeyfileAccount(AccountAPI):
             self.locked = True
             self.__cached_key = None
 
-    def _prompt_for_passphrase(self, message: Optional[str] = None, **kwargs):
+    def _prompt_for_passphrase(self, message: Optional[str] = None, **kwargs) -> str:
         message = message or f"Enter passphrase to unlock '{self.alias}'"
         return click.prompt(
             message,
@@ -174,10 +174,7 @@ class KeyfileAccount(AccountAPI):
             **kwargs,
         )
 
-    def __decrypt_keyfile(self, passphrase: Optional[str]) -> HexBytes:
-        # if no passphrase loaded throw an exception
-        if not passphrase:
-            raise InvalidPasswordError()
+    def __decrypt_keyfile(self, passphrase: str) -> HexBytes:
         try:
             return EthAccount.decrypt(self.keyfile, passphrase)
         except ValueError as err:
