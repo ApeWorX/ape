@@ -1038,7 +1038,7 @@ class Web3Provider(ProviderAPI, ABC):
             try:
                 txn = dict(self.web3.eth.get_transaction(HexStr(txn_hash)))
                 break
-            except TransactionNotFound as e:
+            except TransactionNotFound:
                 if attempt < max_retries - 1:  # if this wasn't the last attempt
                     time.sleep(1)  # Wait for 1 second before retrying.
                     continue  # Continue to the next iteration, effectively retrying the operation.
