@@ -212,7 +212,8 @@ signature = account.sign_message(message)
 
 ## More Secure Way
 
-By saving your passphrase as `environment` variable. Set your passphrase like this
+Another, more secure approach is to use an environment variable.
+Set your passphrase in an environment variable by following this template:
 
 ```bash
 export APE_ACCOUNTS_test_PASSPHRASE="a"
