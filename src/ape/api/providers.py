@@ -1043,7 +1043,7 @@ class Web3Provider(ProviderAPI, ABC):
                     time.sleep(1)  # Wait for 1 second before retrying.
                     continue  # Continue to the next iteration, effectively retrying the operation.
                 else:  # if it was the last attempt
-                    raise e  # Re-raise the last exception.
+                    raise  # Re-raise the last exception.
 
         receipt = self.network.ecosystem.decode_receipt(
             {
