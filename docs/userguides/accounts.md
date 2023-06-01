@@ -216,7 +216,7 @@ Another, more secure approach is to use an environment variable.
 Set your passphrase in an environment variable by following this template:
 
 ```bash
-export APE_ACCOUNTS_test_PASSPHRASE="a"
+export APE_ACCOUNTS_<alias>_PASSPHRASE="a"
 ```
 
 Where `test` is the name of the account you want to use. Now you can use your account to make any transactions without giving your passphrase again and again
