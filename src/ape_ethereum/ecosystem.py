@@ -97,6 +97,7 @@ class NetworkConfig(PluginConfig):
     block_time: int = 0
     transaction_acceptance_timeout: int = DEFAULT_TRANSACTION_ACCEPTANCE_TIMEOUT
     default_transaction_type: TransactionType = TransactionType.DYNAMIC
+    max_receipt_retries = 20
 
     gas_limit: GasLimit = "auto"
     """

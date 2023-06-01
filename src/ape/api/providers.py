@@ -1032,7 +1032,8 @@ class Web3Provider(ProviderAPI, ABC):
         except TimeExhausted as err:
             raise TransactionNotFoundError(txn_hash) from err
 
-        max_retries = 20
+        network_config = self.network.config.get(self.network.name)
+        max_retries = network_config.get("max_receipt_retries")
         for attempt in range(max_retries):
             try:
                 txn = dict(self.web3.eth.get_transaction(HexStr(txn_hash)))
