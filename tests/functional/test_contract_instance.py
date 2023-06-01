@@ -690,3 +690,24 @@ def test_source_path(project_with_contract, owner):
 
     assert contract_instance.source_path.is_file()
     assert contract_instance.source_path == expected
+
+
+def test_call_fallback_defined(fallback_contract, owner):
+    """
+    Test that shows __call__ uses the contract's defined fallback method.
+    We know this is a successful test because otherwise you would get a
+    ContractLogicError.
+    """
+    receipt = fallback_contract(sender=owner)
+    assert not receipt.failed
+
+
+def test_call_fallback_not_defined(contract_instance, owner):
+    """
+    Test that shows __call__ attempts to use the Fallback method,
+    which is not defined and results in a ContractLogicError.
+    """
+
+    with pytest.raises(ContractLogicError):
+        # Fails because no fallback is defined in these contracts.
+        contract_instance(sender=owner)

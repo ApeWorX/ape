@@ -154,6 +154,20 @@ assert contract.get_static_list() == [1, 2, 3]
 receipt = contract.set_number(sender=dev)
 ```
 
+### Default, Fallback, and Direct Calls
+
+To directly call an address, such as invoking a contract's `fallback` or `receive` method, call a contract instance directly:
+
+```python
+from ape import Contract, accounts
+
+sender = accounts.load("dev")
+contract = Contract("0x123...")
+
+# Call the contract's fallback method.
+receipt = contract(sender=sender)
+```
+
 ## Decoding and Encoding Inputs
 
 If you want to separately decode and encode inputs without sending a transaction or making a call, you can achieve this with Ape.

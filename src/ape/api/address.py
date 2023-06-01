@@ -5,8 +5,10 @@ from hexbytes import HexBytes
 from ape.exceptions import ConversionError
 from ape.types import AddressType, ContractCode
 from ape.utils import BaseInterface, abstractmethod, cached_property
+from ape.utils.abi import _convert_kwargs
 
 if TYPE_CHECKING:
+    from ape.api.transactions import ReceiptAPI
     from ape.managers.chain import AccountHistory
 
 
@@ -78,6 +80,30 @@ class BaseAddress(BaseInterface):
             str: The stringified address.
         """
         return self.address
+
+    def __call__(self, **kwargs) -> "ReceiptAPI":
+        """
+        Call this address directly.
+
+        Args:
+            **kwargs: Transaction arguments, such as ``sender`` or ``data``.
+
+        Returns:
+            :class:`~ape.api.transactions.ReceiptAPI`
+        """
+
+        converted_kwargs = _convert_kwargs(kwargs, self.conversion_manager.convert)
+        txn = self.provider.network.ecosystem.create_transaction(
+            receiver=self.address, **converted_kwargs
+        )
+
+        if "sender" in kwargs and hasattr(kwargs["sender"], "call"):
+            sender = kwargs["sender"]
+            return sender.call(txn, **converted_kwargs)
+        elif "sender" not in kwargs and self.account_manager.default_sender is not None:
+            return self.account_manager.default_sender.call(txn, **converted_kwargs)
+
+        return self.provider.send_transaction(txn)
 
     @property
     def nonce(self) -> int:
