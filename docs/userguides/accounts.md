@@ -219,7 +219,8 @@ Set your passphrase in an environment variable by following this template:
 export APE_ACCOUNTS_<alias>_PASSPHRASE="a"
 ```
 
-Where `test` is the name of the account you want to use. Now you can use your account to make any transactions without giving your passphrase again and again
+Where `<alias>` is the name of the account you want to use.
+Now, you can use your account to make any transactions without subsequently providing your passphrase.
 
 ```py
 from ape import accounts
