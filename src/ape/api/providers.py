@@ -23,9 +23,9 @@ from evm_trace import TraceFrame as EvmTraceFrame
 from hexbytes import HexBytes
 from pydantic import Field, root_validator, validator
 from web3 import Web3
-from web3.exceptions import BlockNotFound, TransactionNotFound
+from web3.exceptions import BlockNotFound
 from web3.exceptions import ContractLogicError as Web3ContractLogicError
-from web3.exceptions import MethodUnavailable, TimeExhausted
+from web3.exceptions import MethodUnavailable, TimeExhausted, TransactionNotFound
 from web3.types import RPCEndpoint, TxParams
 
 from ape.api.config import PluginConfig
