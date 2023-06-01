@@ -67,7 +67,7 @@ class KeyfileAccount(AccountAPI):
     def __key(self) -> HexBytes:
         if self.__cached_key is not None:
             if not self.locked:
-                logger.warning("Using cached key for %s",self.alias)
+                logger.warning("Using cached key for %s", self.alias)
                 return self.__cached_key
             self.__cached_key = None
 
