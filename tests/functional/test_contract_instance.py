@@ -3,10 +3,12 @@ from typing import List, Tuple
 
 import pytest
 from eth_utils import is_checksum_address, to_hex
+from ethpm_types import ContractType
 from hexbytes import HexBytes
 from pydantic import BaseModel
 
 from ape import Contract
+from ape.api import TransactionAPI
 from ape.contracts import ContractInstance
 from ape.exceptions import ChainError, ContractError, ContractLogicError, CustomError
 from ape.types import AddressType
@@ -690,3 +692,93 @@ def test_source_path(project_with_contract, owner):
 
     assert contract_instance.source_path.is_file()
     assert contract_instance.source_path == expected
+
+
+def test_fallback(fallback_contract, owner):
+    """
+    Test that shows __call__ uses the contract's defined fallback method.
+    We know this is a successful test because otherwise you would get a
+    ContractLogicError.
+    """
+    receipt = fallback_contract(sender=owner, gas=40000, data="0x123")
+    assert not receipt.failed
+
+
+def test_value_to_non_payable_fallback_and_no_receive(
+    vyper_fallback_contract, owner, vyper_fallback_contract_type
+):
+    """
+    Test that shows when fallback is non-payable and there is no receive,
+    and you try to send a value, it fails.
+    """
+    # Hack to set fallback as non-payable.
+    contract_type_data = vyper_fallback_contract_type.dict()
+    for abi in contract_type_data["abi"]:
+        if abi.get("type") == "fallback":
+            abi["stateMutability"] = "non-payable"
+            break
+
+    new_contract_type = ContractType.parse_obj(contract_type_data)
+    contract = owner.chain_manager.contracts.instance_at(
+        vyper_fallback_contract.address, contract_type=new_contract_type
+    )
+    expected = (
+        r"Contract's fallback is non-payable and there is no receive ABI\. Unable to send value\."
+    )
+    with pytest.raises(ContractError, match=expected):
+        contract(sender=owner, value=1)
+
+    # Show can bypass by using `as_transaction()` and `owner.call()`.
+    txn = contract.as_transaction(sender=owner, value=1)
+    receipt = owner.call(txn)
+
+    # NOTE: This actually passed because the non-payble was hacked in (see top of test).
+    # The actual contract's default is payable, so the receipt actually succeeds.
+    # ** Nonetheless, this test is only proving you can bypass the checks **.
+    assert not receipt.failed
+
+
+def test_fallback_with_data_and_value_and_receive(solidity_fallback_contract, owner):
+    """
+    In the case when there is a fallback method and a receive method, if the user sends data,
+    it will hit the fallback method. But if they also send a value, it would fail if the fallback
+    is non-payable.
+    """
+    expected = "Sending both value= and data= but fallback is non-payable."
+    with pytest.raises(ContractError, match=expected):
+        solidity_fallback_contract(sender=owner, data="0x123", value=1)
+
+    # Show can bypass by using `as_transaction()` and `owner.call()`.
+    txn = solidity_fallback_contract.as_transaction(sender=owner, data="0x123", value=1)
+    with pytest.raises(ContractLogicError):
+        owner.call(txn)
+
+
+def test_fallback_not_defined(contract_instance, owner):
+    """
+    Test that shows __call__ attempts to use the Fallback method,
+    which is not defined and results in a ContractLogicError.
+    """
+
+    with pytest.raises(ContractLogicError):
+        # Fails because no fallback is defined in these contracts.
+        contract_instance(sender=owner)
+
+
+def test_fallback_as_transaction(fallback_contract, owner, eth_tester_provider):
+    txn = fallback_contract.as_transaction(sender=owner)
+    assert isinstance(txn, TransactionAPI)
+    assert txn.sender == owner
+
+    # Use case: estimating gas ahead of time.
+    estimate = eth_tester_provider.estimate_gas_cost(txn)
+    assert estimate > 0
+
+    # Show we can send this txn.
+    receipt = owner.call(txn)
+    assert not receipt.failed
+
+
+def test_fallback_estimate_gas_cost(fallback_contract, owner):
+    estimate = fallback_contract.estimate_gas_cost(sender=owner)
+    assert estimate > 0

@@ -126,8 +126,28 @@ def vyper_contract_type(get_contract_type) -> ContractType:
 
 
 @pytest.fixture
+def solidity_fallback_contract_type(get_contract_type) -> ContractType:
+    return get_contract_type("sol_fallback_and_receive")
+
+
+@pytest.fixture
+def vyper_fallback_contract_type(get_contract_type) -> ContractType:
+    return get_contract_type("vy_default")
+
+
+@pytest.fixture
 def vyper_contract_container(vyper_contract_type) -> ContractContainer:
     return ContractContainer(contract_type=vyper_contract_type)
+
+
+@pytest.fixture
+def solidity_fallback_container(solidity_fallback_contract_type) -> ContractContainer:
+    return ContractContainer(contract_type=solidity_fallback_contract_type)
+
+
+@pytest.fixture
+def vyper_fallback_container(vyper_fallback_contract_type) -> ContractContainer:
+    return ContractContainer(contract_type=vyper_fallback_contract_type)
 
 
 @pytest.fixture
@@ -140,6 +160,16 @@ def vyper_contract_instance(
     owner, vyper_contract_container, networks_connected_to_tester
 ) -> ContractInstance:
     return owner.deploy(vyper_contract_container, 0, required_confirmations=0)
+
+
+@pytest.fixture
+def solidity_fallback_contract(owner, solidity_fallback_container):
+    return owner.deploy(solidity_fallback_container)
+
+
+@pytest.fixture
+def vyper_fallback_contract(owner, vyper_fallback_container):
+    return owner.deploy(vyper_fallback_container)
 
 
 @pytest.fixture
@@ -188,6 +218,13 @@ def contract_instance(
     eth_tester_provider, request, solidity_contract_instance, vyper_contract_instance
 ):
     return solidity_contract_instance if request.param == "solidity" else vyper_contract_instance
+
+
+@pytest.fixture(params=("solidity", "vyper"))
+def fallback_contract(
+    eth_tester_provider, request, solidity_fallback_contract, vyper_fallback_contract
+):
+    return solidity_fallback_contract if request.param == "solidity" else vyper_fallback_contract
 
 
 @pytest.fixture
