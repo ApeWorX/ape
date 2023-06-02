@@ -43,7 +43,7 @@ class CoverageData:
                 # Check if location already profiled.
                 done = False
                 for past_stmt in statements:
-                    if loc_tuple and (past_stmt.location != loc_tuple):
+                    if not loc_tuple or (loc_tuple and (past_stmt.location != loc_tuple)):
                         continue
 
                     # Already tracking this location.
