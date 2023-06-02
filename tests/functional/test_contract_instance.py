@@ -698,7 +698,7 @@ def test_call_fallback_defined(fallback_contract, owner):
     We know this is a successful test because otherwise you would get a
     ContractLogicError.
     """
-    receipt = fallback_contract(sender=owner)
+    receipt = fallback_contract(sender=owner, gas=40000, data="0x123")
     assert not receipt.failed
 
 

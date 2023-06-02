@@ -165,7 +165,7 @@ sender = accounts.load("dev")
 contract = Contract("0x123...")
 
 # Call the contract's fallback method.
-receipt = contract(sender=sender)
+receipt = contract(sender=sender, gas=40000, data="0x123")
 ```
 
 ## Decoding and Encoding Inputs
