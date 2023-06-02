@@ -79,7 +79,10 @@
 <li class="toctree-l2"><a class="reference internal" href="#from-project-contract-address">From Project Contract Address</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#from-any-address">From Any Address</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#from-previous-deployment">From Previous Deployment</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#contract-interaction">Contract Interaction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#contract-interaction">Contract Interaction</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#default-fallback-and-direct-calls">Default, Fallback, and Direct Calls</a></li>
+</ul>
+</li>
 <li class="toctree-l2"><a class="reference internal" href="#decoding-and-encoding-inputs">Decoding and Encoding Inputs</a></li>
 </ul>
 </li>
@@ -260,6 +263,19 @@ For example, let’s say you have a Vyper contract containing some functions:</p
 <span class="n">receipt</span> <span class="o">=</span> <span class="n">contract</span><span class="o">.</span><span class="n">set_number</span><span class="p">(</span><span class="n">sender</span><span class="o">=</span><span class="n">dev</span><span class="p">)</span>
 </pre></div>
 </div>
+<section id="default-fallback-and-direct-calls">
+<h3>Default, Fallback, and Direct Calls<a class="headerlink" href="#default-fallback-and-direct-calls" title="Permalink to this heading"></a></h3>
+<p>To directly call an address, such as invoking a contract’s <code class="docutils literal notranslate"><span class="pre">fallback</span></code> or <code class="docutils literal notranslate"><span class="pre">receive</span></code> method, call a contract instance directly:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">ape</span> <span class="kn">import</span> <span class="n">Contract</span><span class="p">,</span> <span class="n">accounts</span>
+
+<span class="n">sender</span> <span class="o">=</span> <span class="n">accounts</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;dev&quot;</span><span class="p">)</span>
+<span class="n">contract</span> <span class="o">=</span> <span class="n">Contract</span><span class="p">(</span><span class="s2">&quot;0x123...&quot;</span><span class="p">)</span>
+
+<span class="c1"># Call the contract&#39;s fallback method.</span>
+<span class="n">receipt</span> <span class="o">=</span> <span class="n">contract</span><span class="p">(</span><span class="n">sender</span><span class="o">=</span><span class="n">sender</span><span class="p">,</span> <span class="n">gas</span><span class="o">=</span><span class="mi">40000</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="s2">&quot;0x123&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
 </section>
 <section id="decoding-and-encoding-inputs">
 <h2>Decoding and Encoding Inputs<a class="headerlink" href="#decoding-and-encoding-inputs" title="Permalink to this heading"></a></h2>

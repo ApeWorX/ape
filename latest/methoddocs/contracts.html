@@ -102,6 +102,7 @@
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="#ape.contracts.base.ContractInstance"><code class="docutils literal notranslate"><span class="pre">ContractInstance</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#ape.contracts.base.ContractInstance.__call__"><code class="docutils literal notranslate"><span class="pre">ContractInstance.__call__()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ape.contracts.base.ContractInstance.__dir__"><code class="docutils literal notranslate"><span class="pre">ContractInstance.__dir__()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ape.contracts.base.ContractInstance.__getattr__"><code class="docutils literal notranslate"><span class="pre">ContractInstance.__getattr__()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ape.contracts.base.ContractInstance.address"><code class="docutils literal notranslate"><span class="pre">ContractInstance.address</span></code></a></li>
@@ -214,6 +215,20 @@ you get back a contract instance.</p>
 <span class="n">contract</span> <span class="o">=</span> <span class="n">a</span><span class="o">.</span><span class="n">deploy</span><span class="p">(</span><span class="n">project</span><span class="o">.</span><span class="n">MyContract</span><span class="p">)</span>  <span class="c1"># The result of &#39;deploy()&#39; is a ContractInstance</span>
 </pre></div>
 </div>
+<dl class="py method">
+<dt class="sig sig-object py" id="ape.contracts.base.ContractInstance.__call__">
+<span class="sig-name descname"><span class="pre">__call__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="api.html#ape.api.transactions.ReceiptAPI" title="ape.api.transactions.ReceiptAPI"><span class="pre">ReceiptAPI</span></a></span></span><a class="headerlink" href="#ape.contracts.base.ContractInstance.__call__" title="Permalink to this definition"></a></dt>
+<dd><p>Call this address directly.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>**kwargs</strong> – Transaction arguments, such as <code class="docutils literal notranslate"><span class="pre">sender</span></code> or <code class="docutils literal notranslate"><span class="pre">data</span></code>.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference internal" href="api.html#ape.api.transactions.ReceiptAPI" title="ape.api.transactions.ReceiptAPI"><code class="xref py py-class docutils literal notranslate"><span class="pre">ReceiptAPI</span></code></a></p>
+</dd>
+</dl>
+</dd></dl>
+
 <dl class="py method">
 <dt class="sig sig-object py" id="ape.contracts.base.ContractInstance.__dir__">
 <span class="sig-name descname"><span class="pre">__dir__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#ape.contracts.base.ContractInstance.__dir__" title="Permalink to this definition"></a></dt>
