@@ -3,6 +3,7 @@ from typing import List, Tuple
 
 import pytest
 from eth_utils import is_checksum_address, to_hex
+from ethpm_types import ContractType
 from hexbytes import HexBytes
 from pydantic import BaseModel
 
@@ -692,7 +693,7 @@ def test_source_path(project_with_contract, owner):
     assert contract_instance.source_path == expected
 
 
-def test_call_fallback_defined(fallback_contract, owner):
+def test_fallback(fallback_contract, owner):
     """
     Test that shows __call__ uses the contract's defined fallback method.
     We know this is a successful test because otherwise you would get a
@@ -702,7 +703,44 @@ def test_call_fallback_defined(fallback_contract, owner):
     assert not receipt.failed
 
 
-def test_call_fallback_not_defined(contract_instance, owner):
+def test_value_to_non_payable_fallback_and_no_receive(
+    vyper_fallback_contract, owner, vyper_fallback_contract_type
+):
+    """
+    Test that shows when fallback is non-payable and there is no receive,
+    and you try to send a value, it fails.
+    """
+    # Hack to set fallback as non-payable.
+    contract_type_data = vyper_fallback_contract_type.dict()
+    for abi in contract_type_data["abi"]:
+        if abi.get("type") == "fallback":
+            abi["stateMutability"] = "non-payable"
+            break
+
+    new_contract_type = ContractType.parse_obj(contract_type_data)
+    contract = owner.chain_manager.contracts.instance_at(
+        vyper_fallback_contract.address, contract_type=new_contract_type
+    )
+
+    expected = (
+        r"Contract's fallback is non-payable and there is no receive ABI\. Unable to send value\."
+    )
+    with pytest.raises(ContractError, match=expected):
+        contract(sender=owner, value=1)
+
+
+def test_fallback_with_data_and_value_and_receive(solidity_fallback_contract, owner):
+    """
+    In the case when there is a fallback method and a receive method, if the user sends data,
+    it will hit the fallback method. But if they also send a value, it would fail if the fallback
+    is non-payable.
+    """
+    expected = "Sending both value= and data= but fallback is non-payable."
+    with pytest.raises(ContractError, match=expected):
+        solidity_fallback_contract(sender=owner, data="0x123", value=1)
+
+
+def test_fallback_not_defined(contract_instance, owner):
     """
     Test that shows __call__ attempts to use the Fallback method,
     which is not defined and results in a ContractLogicError.

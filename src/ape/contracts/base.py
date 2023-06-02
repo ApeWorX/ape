@@ -757,6 +757,27 @@ class ContractInstance(BaseAddress, ContractTypeWrapper):
         self.txn_hash = txn_hash
         self._cached_receipt: Optional[ReceiptAPI] = None
 
+    def __call__(self, *args, **kwargs) -> ReceiptAPI:
+        has_value = kwargs.get("value")
+        has_data = kwargs.get("data") or kwargs.get("input")
+        has_non_payable_fallback = (
+            self.contract_type.fallback and not self.contract_type.fallback.is_payable
+        )
+
+        if has_value and has_non_payable_fallback and self.contract_type.receive is None:
+            # User is sending a value when the contract doesn't accept it.
+            raise ContractError(
+                "Contract's fallback is non-payable and there is no receive ABI. "
+                "Unable to send value."
+            )
+
+        elif has_value and has_data and has_non_payable_fallback:
+            # User is sending both value and data. When sending data, the fallback
+            # is always triggered. Thus, since it is non-payable, it would fail.
+            raise ContractError("Sending both value= and data= but fallback is non-payable.")
+
+        return super().__call__(*args, **kwargs)
+
     @classmethod
     def from_receipt(cls, receipt: ReceiptAPI, contract_type: ContractType) -> "ContractInstance":
         address = receipt.contract_address
