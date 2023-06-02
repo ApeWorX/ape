@@ -8,6 +8,7 @@ from hexbytes import HexBytes
 from pydantic import BaseModel
 
 from ape import Contract
+from ape.api import TransactionAPI
 from ape.contracts import ContractInstance
 from ape.exceptions import ChainError, ContractError, ContractLogicError, CustomError
 from ape.types import AddressType
@@ -749,3 +750,22 @@ def test_fallback_not_defined(contract_instance, owner):
     with pytest.raises(ContractLogicError):
         # Fails because no fallback is defined in these contracts.
         contract_instance(sender=owner)
+
+
+def test_fallback_as_transaction(fallback_contract, owner, eth_tester_provider):
+    txn = fallback_contract.as_transaction(sender=owner)
+    assert isinstance(txn, TransactionAPI)
+    assert txn.sender == owner
+
+    # Use case: estimating gas ahead of time.
+    estimate = eth_tester_provider.estimate_gas_cost(txn)
+    assert estimate > 0
+
+    # Show we can send this txn.
+    receipt = owner.call(txn)
+    assert not receipt.failed
+
+
+def test_fallback_estimate_gas_cost(fallback_contract, owner):
+    estimate = fallback_contract.estimate_gas_cost(sender=owner)
+    assert estimate > 0

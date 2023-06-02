@@ -8,7 +8,7 @@ from ape.utils import BaseInterface, abstractmethod, cached_property
 from ape.utils.abi import _convert_kwargs
 
 if TYPE_CHECKING:
-    from ape.api.transactions import ReceiptAPI
+    from ape.api.transactions import ReceiptAPI, TransactionAPI
     from ape.managers.chain import AccountHistory
 
 
@@ -92,16 +92,12 @@ class BaseAddress(BaseInterface):
             :class:`~ape.api.transactions.ReceiptAPI`
         """
 
-        converted_kwargs = _convert_kwargs(kwargs, self.conversion_manager.convert)
-        txn = self.provider.network.ecosystem.create_transaction(
-            receiver=self.address, **converted_kwargs
-        )
-
+        txn = self.as_transaction(**kwargs)
         if "sender" in kwargs and hasattr(kwargs["sender"], "call"):
             sender = kwargs["sender"]
-            return sender.call(txn, **converted_kwargs)
+            return sender.call(txn, **kwargs)
         elif "sender" not in kwargs and self.account_manager.default_sender is not None:
-            return self.account_manager.default_sender.call(txn, **converted_kwargs)
+            return self.account_manager.default_sender.call(txn, **kwargs)
 
         return self.provider.send_transaction(txn)
 
@@ -168,6 +164,16 @@ class BaseAddress(BaseInterface):
         The list of transactions that this account has made on the current chain.
         """
         return self.chain_manager.history[self.address]
+
+    def as_transaction(self, **kwargs) -> "TransactionAPI":
+        converted_kwargs = _convert_kwargs(kwargs, self.conversion_manager.convert)
+        return self.provider.network.ecosystem.create_transaction(
+            receiver=self.address, **converted_kwargs
+        )
+
+    def estimate_gas_cost(self, **kwargs) -> int:
+        txn = self.as_transaction(**kwargs)
+        return self.provider.estimate_gas_cost(txn)
 
 
 class Address(BaseAddress):
