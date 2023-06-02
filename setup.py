@@ -121,7 +121,7 @@ setup(
         "web3[tester]>=6.4.0,<7",
         # ** Dependencies maintained by ApeWorX **
         "eip712>=0.2.1,<0.3",
-        "ethpm-types>=0.5.0,<0.6",
+        "ethpm-types>=0.5.2,<0.6",
         "evm-trace>=0.1.0a20",
     ],
     entry_points={

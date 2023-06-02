@@ -23,31 +23,7 @@ from ape.exceptions import (
 from ape.logging import logger
 from ape.types import AddressType, ContractLog, LogFilter, MockContractLog
 from ape.utils import ManagerAccessMixin, cached_property, singledispatchmethod
-
-
-def _convert_args(arguments, converter, abi) -> Tuple:
-    input_types = [i.canonical_type for i in abi.inputs]
-    pre_processed_args = []
-    for ipt, argument in zip(input_types, arguments):
-        # Handle primitive-addresses separately since they may not occur
-        # on the tuple-conversion if they are integers or bytes.
-        if str(ipt) == "address":
-            converted_value = converter(argument, AddressType)
-            pre_processed_args.append(converted_value)
-        else:
-            pre_processed_args.append(argument)
-
-    return converter(pre_processed_args, tuple)
-
-
-def _convert_kwargs(kwargs, converter) -> Dict:
-    fields = TransactionAPI.__fields__
-    kwargs_to_convert = {k: v for k, v in kwargs.items() if k == "sender" or k in fields}
-    converted_fields = {
-        k: converter(v, AddressType if k == "sender" else fields[k].type_)
-        for k, v in kwargs_to_convert.items()
-    }
-    return {**kwargs, **converted_fields}
+from ape.utils.abi import _convert_args, _convert_kwargs
 
 
 class ContractConstructor(ManagerAccessMixin):
@@ -780,6 +756,27 @@ class ContractInstance(BaseAddress, ContractTypeWrapper):
         self.contract_type = contract_type
         self.txn_hash = txn_hash
         self._cached_receipt: Optional[ReceiptAPI] = None
+
+    def __call__(self, *args, **kwargs) -> ReceiptAPI:
+        has_value = kwargs.get("value")
+        has_data = kwargs.get("data") or kwargs.get("input")
+        has_non_payable_fallback = (
+            self.contract_type.fallback and not self.contract_type.fallback.is_payable
+        )
+
+        if has_value and has_non_payable_fallback and self.contract_type.receive is None:
+            # User is sending a value when the contract doesn't accept it.
+            raise ContractError(
+                "Contract's fallback is non-payable and there is no receive ABI. "
+                "Unable to send value."
+            )
+
+        elif has_value and has_data and has_non_payable_fallback:
+            # User is sending both value and data. When sending data, the fallback
+            # is always triggered. Thus, since it is non-payable, it would fail.
+            raise ContractError("Sending both value= and data= but fallback is non-payable.")
+
+        return super().__call__(*args, **kwargs)
 
     @classmethod
     def from_receipt(cls, receipt: ReceiptAPI, contract_type: ContractType) -> "ContractInstance":
