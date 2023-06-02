@@ -210,7 +210,7 @@ message = encode_defunct(text="Hello Apes!")
 signature = account.sign_message(message)
 ```
 
-## More Secure Way
+## Keyfile Passphrase Environment Variable (more secure)
 
 Another, more secure approach is to use an environment variable.
 Set your passphrase in an environment variable by following this template:
