@@ -722,12 +722,20 @@ def test_value_to_non_payable_fallback_and_no_receive(
     contract = owner.chain_manager.contracts.instance_at(
         vyper_fallback_contract.address, contract_type=new_contract_type
     )
-
     expected = (
         r"Contract's fallback is non-payable and there is no receive ABI\. Unable to send value\."
     )
     with pytest.raises(ContractError, match=expected):
         contract(sender=owner, value=1)
+
+    # Show can bypass by using `as_transaction()` and `owner.call()`.
+    txn = contract.as_transaction(sender=owner, value=1)
+    receipt = owner.call(txn)
+
+    # NOTE: This actually passed because the non-payble was hacked in (see top of test).
+    # The actual contract's default is payable, so the receipt actually succeeds.
+    # ** Nonetheless, this test is only proving you can bypass the checks **.
+    assert not receipt.failed
 
 
 def test_fallback_with_data_and_value_and_receive(solidity_fallback_contract, owner):
@@ -739,6 +747,11 @@ def test_fallback_with_data_and_value_and_receive(solidity_fallback_contract, ow
     expected = "Sending both value= and data= but fallback is non-payable."
     with pytest.raises(ContractError, match=expected):
         solidity_fallback_contract(sender=owner, data="0x123", value=1)
+
+    # Show can bypass by using `as_transaction()` and `owner.call()`.
+    txn = solidity_fallback_contract.as_transaction(sender=owner, data="0x123", value=1)
+    with pytest.raises(ContractLogicError):
+        owner.call(txn)
 
 
 def test_fallback_not_defined(contract_instance, owner):
