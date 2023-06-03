@@ -1,3 +1,5 @@
+from os import environ
+
 import pytest
 from eip712.messages import EIP712Message
 from eth_account.messages import encode_defunct
@@ -15,6 +17,9 @@ MISSING_VALUE_TRANSFER_ERR_MSG = "Must provide 'VALUE' or use 'send_everything=T
 
 APE_TEST_PATH = "ape_test.accounts.TestAccount"
 APE_ACCOUNTS_PATH = "ape_accounts.accounts.KeyfileAccount"
+
+PASSPHRASE = "a"
+INVALID_PASSPHRASE = "incorrect passphrase"
 
 
 @pytest.fixture
@@ -362,6 +367,39 @@ def test_unlock_from_prompt_and_sign_transaction(runner, keyfile_account, receiv
     with runner.isolation(input="y\n"):
         receipt = keyfile_account.transfer(receiver, "1 gwei")
         assert receipt.receiver == receiver
+
+
+def test_unlock_with_passphrase_from_env_and_sign_message(runner, keyfile_account):
+    ENV_VARIABLE = f"APE_ACCOUNTS_{keyfile_account.alias}_PASSPHRASE"
+    # Set environment variable with passphrase
+    environ[ENV_VARIABLE] = PASSPHRASE
+
+    # Unlock using environment variable
+    keyfile_account.unlock()
+
+    # Account should be unlocked
+    assert not keyfile_account.locked
+
+    message = encode_defunct(text="Hello Apes!")
+
+    # y: yes, sign (note: unlocking makes the key available but is not the same as autosign).
+    with runner.isolation(input="y\n"):
+        signature = keyfile_account.sign_message(message)
+        assert keyfile_account.check_signature(message, signature)
+
+
+def test_unlock_with_wrong_passphrase_from_env(keyfile_account):
+    ENV_VARIABLE = f"APE_ACCOUNTS_{keyfile_account.alias}_PASSPHRASE"
+    # Set environment variable with passphrase
+    environ[ENV_VARIABLE] = INVALID_PASSPHRASE
+
+    # Use pytest.raises to assert that InvalidPasswordError is raised
+    with pytest.raises(AccountsError, match="Invalid password"):
+        # Unlock using environment variable
+        keyfile_account.unlock()
+
+    # Account should be unlocked
+    assert keyfile_account.locked
 
 
 def test_custom_num_of_test_accounts_config(test_accounts, temp_config):
