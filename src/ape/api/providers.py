@@ -25,7 +25,7 @@ from pydantic import Field, root_validator, validator
 from web3 import Web3
 from web3.exceptions import BlockNotFound
 from web3.exceptions import ContractLogicError as Web3ContractLogicError
-from web3.exceptions import MethodUnavailable, TimeExhausted
+from web3.exceptions import MethodUnavailable, TimeExhausted, TransactionNotFound
 from web3.types import RPCEndpoint, TxParams
 
 from ape.api.config import PluginConfig
@@ -69,6 +69,7 @@ from ape.utils import (
     run_until_complete,
     spawn,
 )
+from ape.utils.misc import DEFAULT_MAX_RETRIES_TX
 
 
 class BlockAPI(BaseInterfaceModel):
@@ -1032,7 +1033,19 @@ class Web3Provider(ProviderAPI, ABC):
         except TimeExhausted as err:
             raise TransactionNotFoundError(txn_hash) from err
 
-        txn = dict(self.web3.eth.get_transaction(HexStr(txn_hash)))
+        network_config = self.network.config.get(self.network.name)
+        max_retries = network_config.get("max_get_transaction_retries", DEFAULT_MAX_RETRIES_TX)
+        for attempt in range(max_retries):
+            try:
+                txn = dict(self.web3.eth.get_transaction(HexStr(txn_hash)))
+                break
+            except TransactionNotFound:
+                if attempt < max_retries - 1:  # if this wasn't the last attempt
+                    time.sleep(1)  # Wait for 1 second before retrying.
+                    continue  # Continue to the next iteration, effectively retrying the operation.
+                else:  # if it was the last attempt
+                    raise  # Re-raise the last exception.
+
         receipt = self.network.ecosystem.decode_receipt(
             {
                 "provider": self,
