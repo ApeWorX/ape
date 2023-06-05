@@ -105,23 +105,21 @@ class FunctionCoverage(BaseModel):
               if it exists.
         """
 
-        line_nos = (int(location[0] or -1), int(location[2] or -1)) if location else None
-        done = False
+        line_nos = (int(location[0] or 0), int(location[2] or 0)) if location else None
         for statement in self.statements:
             if not line_nos or (line_nos and (statement.location != line_nos)):
                 continue
 
             # Already tracking this location.
             statement.pcs.add(pc)
-            done = True
-            break
+            return
 
         coverage_statement = None
-        if line_nos and not done:
+        if line_nos:
             # Adding a source-statement for the first time.
             coverage_statement = CoverageStatement(location=line_nos, pcs={pc})
 
-        elif not line_nos and not done:
+        elif not line_nos:
             # Adding a virtual statement.
             coverage_statement = CoverageStatement(pcs={pc})
 
