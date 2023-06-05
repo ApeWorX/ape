@@ -14,14 +14,12 @@ def test_block_dict(block):
         "difficulty": 0,
         "gasLimit": 30029122,
         "gasUsed": 0,
-        "hash": HexBytes("0x7aab51a0a9198dd6d365b7bbbd4733966e73f447195dae6d80419dfc7979e9e5"),
+        "hash": block.hash.hex(),
         "num_transactions": 0,
         "number": 0,
-        "parentHash": HexBytes(
-            "0x0000000000000000000000000000000000000000000000000000000000000000"
-        ),
+        "parentHash": block.parent_hash.hex(),
         "size": 548,
-        "timestamp": 1685991392,
+        "timestamp": block.timestamp,
         "totalDifficulty": 0,
     }
     assert actual == expected
