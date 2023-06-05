@@ -231,6 +231,15 @@ class PytestApeRunner(ManagerAccessMixin):
                 f"{LogLevel.WARNING.name}: No coverage data found.", yellow=True
             )
 
+        else:
+            # Write coverage XML report to .build folder.
+            coverage_report = self.coverage_tracker.data.report
+            coverage_xml = coverage_report.xml
+            if coverage_xml:
+                coverage_path = self.project_manager.local_project._cache_folder / "coverage.xml"
+                coverage_path.unlink(missing_ok=True)
+                coverage_path.write_text(coverage_xml)
+
     def _assert_tracing_support(self, terminalreporter):
         if self.provider.supports_tracing:
             return

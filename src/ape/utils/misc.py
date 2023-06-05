@@ -2,6 +2,7 @@ import asyncio
 import json
 import sys
 from asyncio import gather
+from datetime import datetime
 from functools import cached_property, lru_cache, singledispatchmethod
 from pathlib import Path
 from typing import Any, Callable, Coroutine, Dict, List, Mapping, Optional
@@ -337,11 +338,16 @@ def allow_disconnected(fn: Callable):
     return inner
 
 
+def get_current_timestamp() -> float:
+    return datetime.utcnow().timestamp()
+
+
 __all__ = [
     "allow_disconnected",
     "cached_property",
     "extract_nested_value",
     "gas_estimation_error_message",
+    "get_current_timestamp",
     "get_package_version",
     "load_config",
     "raises_not_implemented",

@@ -180,8 +180,8 @@ def parse_coverage_table(coverage: "CoverageReport") -> Table:
                 src.source_id,
                 f"{src.lines_valid}",
                 f"{src.miss_count}",
-                f"{round(src.line_rate, 2)}%",
-                f"{round(src.function_rate, 2)}%",
+                f"{round(src.line_rate * 100, 2)}%",
+                f"{round(src.function_rate * 100, 2)}%",
             )
 
     return table
