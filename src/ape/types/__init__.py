@@ -28,7 +28,6 @@ from ape.types.coverage import (
     ContractSourceCoverage,
     CoverageProject,
     CoverageReport,
-    CoverageStatement,
 )
 from ape.types.signatures import MessageSignature, SignableMessage, TransactionSignature
 from ape.types.trace import CallTreeNode, ControlFlow, GasReport, SourceTraceback, TraceFrame

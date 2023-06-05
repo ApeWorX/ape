@@ -2,7 +2,8 @@ from datetime import datetime
 from typing import List, Optional, Set, Tuple
 
 from ethpm_types import BaseModel
-from pydantic import validator
+from ethpm_types.source import SourceLocation
+from pydantic import Field, validator
 
 
 class CoverageStatement(BaseModel):
@@ -87,6 +88,40 @@ class FunctionCoverage(BaseModel):
         attribs["line_rate"] = self.line_rate
 
         return attribs
+
+    def profile_statement(self, pc: int, location: Optional[SourceLocation] = None):
+        """
+        Initialize a statement in the coverage profile with a hit count starting at zero.
+        This statement is ready to accumlate hits as tests execute.
+
+        Args:
+            pc (int): The program counter of the statement.
+            location (Optional[ethpm_types.source.SourceStatement]): The location of the statement,
+              if it exists.
+        """
+
+        line_nos = (int(location[0] or -1), int(location[2] or -1)) if location else None
+        done = False
+        for statement in self.statements:
+            if not line_nos or (line_nos and (statement.location != line_nos)):
+                continue
+
+            # Already tracking this location.
+            statement.pcs.add(pc)
+            done = True
+            break
+
+        coverage_statement = None
+        if line_nos and not done:
+            # Adding a source-statement for the first time.
+            coverage_statement = CoverageStatement(location=line_nos, pcs={pc})
+
+        elif not line_nos and not done:
+            # Adding a virtual statement.
+            coverage_statement = CoverageStatement(pcs={pc})
+
+        if coverage_statement is not None:
+            self.statements.append(coverage_statement)
 
 
 class ContractCoverage(BaseModel):
@@ -192,7 +227,7 @@ class ContractCoverage(BaseModel):
 
     def get_function(self, name: str) -> Optional[FunctionCoverage]:
         for func in self.functions:
-            if func.name == function_name:
+            if func.name == name:
                 return func
 
         return None
@@ -214,7 +249,7 @@ class ContractSourceCoverage(BaseModel):
     """
 
     @property
-    def lines(self) -> List[CoverageStatement]:
+    def statements(self) -> List[CoverageStatement]:
         """
         All valid coverage lines from every function in every contract in this source.
         """
@@ -243,7 +278,7 @@ class ContractSourceCoverage(BaseModel):
         """
         The number of lines valid for coverage.
         """
-        return len(self.lines)
+        return len(self.statements)
 
     @property
     def miss_count(self) -> int:
@@ -317,7 +352,7 @@ class CoverageProject(BaseModel):
 
         statements = []
         for src in self.sources:
-            statements.extend(src.lines)
+            statements.extend(src.statements)
 
         return statements
 
@@ -381,7 +416,7 @@ class CoverageReport(BaseModel):
     Coverage report schema inspired from coverage.py.
     """
 
-    timestamp: int
+    timestamp: int = Field(0)  # 0 will trigger using UTC now
     """
     The timestamp the report was generated.
     """
@@ -459,3 +494,11 @@ class CoverageReport(BaseModel):
         attribs["line_rate"] = self.line_rate
 
         return attribs
+
+    def get_source_coverage(self, source_id: str) -> Optional[ContractSourceCoverage]:
+        for project in self.projects:
+            for src in project.sources:
+                if src.source_id == source_id:
+                    return src
+
+        return None
