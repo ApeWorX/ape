@@ -56,7 +56,7 @@ class CoverageData(ManagerAccessMixin):
                     if not isinstance(location_list, (list, tuple)):
                         raise TypeError(f"Unexpected location type '{type(location_list)}'.")
 
-                    # NOTE: Only doing -1 because mypy for some reason thinks it is optional.
+                    # NOTE: Only doing 0 because mypy for some reason thinks it is optional.
                     location = (
                         location_list[0] or 0,
                         location_list[1] or 0,
@@ -76,7 +76,14 @@ class CoverageData(ManagerAccessMixin):
 
                 if location:
                     function = src.lookup_function(location)
-                    function_name = function.name if function else "__unknown__"
+                    if not function or (
+                        location[0] < function.content.begin_lineno
+                        or location[2] > function.content.end_lineno
+                    ):
+                        # This is not a statement.
+                        continue
+
+                    function_name = function.name
                 else:
                     function_name = "__internal_or_builtin__"
 
