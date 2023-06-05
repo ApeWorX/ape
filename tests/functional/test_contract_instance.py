@@ -3,8 +3,7 @@ from typing import List, Tuple
 
 import pytest
 from eth_utils import is_checksum_address, to_hex
-from ethpm_types import ContractType
-from hexbytes import HexBytes
+from ethpm_types import ContractType, HexBytes
 from pydantic import BaseModel
 
 from ape import Contract

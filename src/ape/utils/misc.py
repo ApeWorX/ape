@@ -8,7 +8,7 @@ from typing import Any, Callable, Coroutine, Dict, List, Mapping, Optional
 
 import requests
 import yaml
-from hexbytes import HexBytes
+from ethpm_types import HexBytes
 from importlib_metadata import PackageNotFoundError, distributions, packages_distributions
 from importlib_metadata import version as version_metadata
 from tqdm.auto import tqdm  # type: ignore
@@ -18,7 +18,7 @@ from ape.logging import logger
 from ape.utils.os import expand_environment_variables
 
 EMPTY_BYTES32 = HexBytes("0x0000000000000000000000000000000000000000000000000000000000000000")
-ZERO_ADDRESS = "0x0000000000000000000000000000000000000000"
+ZERO_ADDRESS = "0x000000000000000000000000000000000000000"
 DEFAULT_TRANSACTION_ACCEPTANCE_TIMEOUT = 120
 DEFAULT_LOCAL_TRANSACTION_ACCEPTANCE_TIMEOUT = 20
 

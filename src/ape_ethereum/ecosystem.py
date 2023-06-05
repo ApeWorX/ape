@@ -16,8 +16,8 @@ from eth_utils import (
     to_checksum_address,
     to_int,
 )
+from ethpm_types import HexBytes
 from ethpm_types.abi import ABIType, ConstructorABI, EventABI, MethodABI
-from hexbytes import HexBytes
 from pydantic import Field, validator
 
 from ape.api import BlockAPI, EcosystemAPI, PluginConfig, ReceiptAPI, TransactionAPI
@@ -42,6 +42,7 @@ from ape.types import (
 from ape.utils import (
     DEFAULT_LOCAL_TRANSACTION_ACCEPTANCE_TIMEOUT,
     DEFAULT_TRANSACTION_ACCEPTANCE_TIMEOUT,
+    EMPTY_BYTES32,
     ZERO_ADDRESS,
     LogInputABICollection,
     Struct,
@@ -166,6 +167,12 @@ class Block(BlockAPI):
     base_fee: int = Field(0, alias="baseFeePerGas")
     difficulty: int = 0
     total_difficulty: int = Field(0, alias="totalDifficulty")
+
+    # Type re-declares.
+    hash: Optional[HexBytes] = None
+    parent_hash: HexBytes = Field(
+        EMPTY_BYTES32, alias="parentHash"
+    )  # NOTE: genesis block has no parent hash
 
     @validator("total_difficulty", pre=True)
     def validate_total_difficulty(cls, value):

@@ -1,8 +1,8 @@
 from typing import Dict, Tuple
 
 import pytest
+from ethpm_types import HexBytes
 from ethpm_types.abi import MethodABI
-from hexbytes import HexBytes
 from pydantic import BaseModel
 
 from ape import networks
