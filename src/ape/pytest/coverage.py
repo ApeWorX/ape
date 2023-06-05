@@ -88,7 +88,8 @@ class CoverageData(ManagerAccessMixin):
                     function_name = "__builtin__"
 
                 function_coverage = contract_coverage.include(function_name)
-                function_coverage.profile_statement(pc_int, location)
+                tag = str(item["dev"]) if item.get("dev") else None
+                function_coverage.profile_statement(pc_int, location=location, tag=tag)
 
         timestamp = int(round(get_current_timestamp()))
         report = CoverageReport(projects=[project_coverage], timestamp=timestamp)

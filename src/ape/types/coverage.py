@@ -39,6 +39,12 @@ class CoverageStatement(BaseModel):
     The times this node was hit.
     """
 
+    tag: Optional[str] = None
+    """
+    An additional tag to mark this statement with.
+    This is useful if the location field is empty.
+    """
+
 
 class FunctionCoverage(BaseModel):
     """
@@ -94,7 +100,9 @@ class FunctionCoverage(BaseModel):
 
         return attribs
 
-    def profile_statement(self, pc: int, location: Optional[SourceLocation] = None):
+    def profile_statement(
+        self, pc: int, location: Optional[SourceLocation] = None, tag: Optional[str] = None
+    ):
         """
         Initialize a statement in the coverage profile with a hit count starting at zero.
         This statement is ready to accumlate hits as tests execute.
@@ -112,16 +120,20 @@ class FunctionCoverage(BaseModel):
 
             # Already tracking this location.
             statement.pcs.add(pc)
+
+            if not statement.tag:
+                statement.tag = tag
+
             return
 
         coverage_statement = None
         if line_nos:
             # Adding a source-statement for the first time.
-            coverage_statement = CoverageStatement(location=line_nos, pcs={pc})
+            coverage_statement = CoverageStatement(location=line_nos, pcs={pc}, tag=tag)
 
         elif not line_nos:
             # Adding a virtual statement.
-            coverage_statement = CoverageStatement(pcs={pc})
+            coverage_statement = CoverageStatement(pcs={pc}, tag=tag)
 
         if coverage_statement is not None:
             self.statements.append(coverage_statement)
@@ -541,6 +553,10 @@ class CoverageReport(BaseModel):
                             xpcs = ",".join([str(pc) for pc in statement.pcs])
                             xstatement.setAttribute("pcs", xpcs)
                             xstatement.setAttribute("hits", f"{statement.hit_count}")
+
+                            if statement.tag:
+                                xstatement.setAttribute("tag", statement.tag)
+
                             xstatements.appendChild(xstatement)
 
                         xfunction.appendChild(xstatements)
