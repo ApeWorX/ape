@@ -569,7 +569,7 @@ class CoverageReport(BaseModel):
             xprojects.appendChild(xproject)
         xcoverage.appendChild(xprojects)
 
-        return xml_out.toprettyxml()
+        return xml_out.toprettyxml(indent="  ")
 
     def dict(self, *args, **kwargs) -> dict:
         attribs = super().dict(*args, **kwargs)
