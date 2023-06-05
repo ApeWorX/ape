@@ -251,4 +251,4 @@ class PytestApeRunner(ManagerAccessMixin):
         self.receipt_capture.clear()
         self.chain_manager.contracts.clear_local_caches()
         self.gas_tracker.session_gas_report = None
-        self.coverage_tracker.data.statements = {}
+        self.coverage_tracker.data.reset()
