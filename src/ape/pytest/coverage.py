@@ -85,7 +85,7 @@ class CoverageData(ManagerAccessMixin):
 
                     function_name = function.name
                 else:
-                    function_name = "__internal_or_builtin__"
+                    function_name = "__builtin__"
 
                 function_coverage = contract_coverage.include(function_name)
                 function_coverage.profile_statement(pc_int, location)
