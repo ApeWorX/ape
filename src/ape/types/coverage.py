@@ -547,8 +547,13 @@ class CoverageReport(BaseModel):
                             xstatement = xml_out.createElement("statement")
 
                             if statement.location:
-                                xrange = f"{statement.location[0]}-{statement.location[1]}"
-                                xstatement.setAttribute("linenos", xrange)
+                                lineno = statement.location[0]
+                                end_lineno = statement.location[1]
+                                if lineno == end_lineno:
+                                    xstatement.setAttribute("line", f"{lineno}")
+                                else:
+                                    xrange = f"{lineno}-{end_lineno}"
+                                    xstatement.setAttribute("lines", xrange)
 
                             xpcs = ",".join([str(pc) for pc in statement.pcs])
                             xstatement.setAttribute("pcs", xpcs)
@@ -558,7 +563,6 @@ class CoverageReport(BaseModel):
                                 xstatement.setAttribute("tag", statement.tag)
 
                             xstatements.appendChild(xstatement)
-
                         xfunction.appendChild(xstatements)
                         xfunctions.appendChild(xfunction)
                     xcontract.appendChild(xfunctions)
