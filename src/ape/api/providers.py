@@ -69,6 +69,7 @@ from ape.utils import (
     run_until_complete,
     spawn,
 )
+from ape.utils.misc import DEFAULT_MAX_RETRIES_TX
 
 
 class BlockAPI(BaseInterfaceModel):
@@ -1033,7 +1034,7 @@ class Web3Provider(ProviderAPI, ABC):
             raise TransactionNotFoundError(txn_hash) from err
 
         network_config = self.network.config.get(self.network.name)
-        max_retries = network_config.get("max_receipt_retries")
+        max_retries = network_config.get("max_get_transaction_retries", DEFAULT_MAX_RETRIES_TX)
         for attempt in range(max_retries):
             try:
                 txn = dict(self.web3.eth.get_transaction(HexStr(txn_hash)))
