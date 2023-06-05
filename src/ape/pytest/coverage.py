@@ -7,7 +7,12 @@ from ape.logging import logger
 from ape.pytest.config import ConfigWrapper
 from ape.types import CoverageReport, SourceTraceback
 from ape.types.coverage import CoverageProject
-from ape.utils import ManagerAccessMixin, get_relative_path, parse_coverage_table
+from ape.utils import (
+    ManagerAccessMixin,
+    get_current_timestamp,
+    get_relative_path,
+    parse_coverage_table,
+)
 
 
 class CoverageData(ManagerAccessMixin):
@@ -53,10 +58,10 @@ class CoverageData(ManagerAccessMixin):
 
                     # NOTE: Only doing -1 because mypy for some reason thinks it is optional.
                     location = (
-                        location_list[0] or -1,
-                        location_list[1] or -1,
-                        location_list[2] or -1,
-                        location_list[3] or -1,
+                        location_list[0] or 0,
+                        location_list[1] or 0,
+                        location_list[2] or 0,
+                        location_list[3] or 0,
                     )
                 else:
                     location = None
@@ -71,14 +76,15 @@ class CoverageData(ManagerAccessMixin):
 
                 if location:
                     function = src.lookup_function(location)
-                    function_name = function.name if function else "<unknown>"
+                    function_name = function.name if function else "__unknown__"
                 else:
-                    function_name = "<internal>"
+                    function_name = "__internal_or_builtin__"
 
                 function_coverage = contract_coverage.include(function_name)
                 function_coverage.profile_statement(pc_int, location)
 
-        report = CoverageReport(projects=[project_coverage])
+        timestamp = int(round(get_current_timestamp()))
+        report = CoverageReport(projects=[project_coverage], timestamp=timestamp)
         self._report = report
         return report
 

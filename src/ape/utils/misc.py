@@ -3,6 +3,8 @@ import json
 import sys
 from asyncio import gather
 from functools import cached_property, lru_cache, singledispatchmethod, wraps
+from datetime import datetime
+from functools import cached_property, lru_cache, singledispatchmethod
 from pathlib import Path
 from typing import Any, Callable, Coroutine, Dict, List, Mapping, Optional
 
@@ -337,6 +339,7 @@ def allow_disconnected(fn: Callable):
     return inner
 
 
+<<<<<<< HEAD
 def nonreentrant(key_fn):
     def inner(f):
         locks = set()
@@ -357,11 +360,16 @@ def nonreentrant(key_fn):
     return inner
 
 
+def get_current_timestamp_ms() -> float:
+    return datetime.utcnow().timestamp()
+
+
 __all__ = [
     "allow_disconnected",
     "cached_property",
     "extract_nested_value",
     "gas_estimation_error_message",
+    "get_current_timestamp",
     "get_package_version",
     "load_config",
     "nonreentrant",
