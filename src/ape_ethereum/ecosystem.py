@@ -49,6 +49,7 @@ from ape.utils import (
     is_array,
     returns_array,
 )
+from ape.utils.misc import DEFAULT_MAX_RETRIES_TX
 from ape_ethereum.transactions import (
     AccessListTransaction,
     BaseTransaction,
@@ -97,6 +98,7 @@ class NetworkConfig(PluginConfig):
     block_time: int = 0
     transaction_acceptance_timeout: int = DEFAULT_TRANSACTION_ACCEPTANCE_TIMEOUT
     default_transaction_type: TransactionType = TransactionType.DYNAMIC
+    max_receipt_retries = DEFAULT_MAX_RETRIES_TX
 
     gas_limit: GasLimit = "auto"
     """
