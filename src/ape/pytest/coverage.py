@@ -6,25 +6,21 @@ from ethpm_types.source import ContractSource
 from ape.logging import logger
 from ape.pytest.config import ConfigWrapper
 from ape.types import CoverageReport, SourceTraceback
-from ape.types.trace import CoverageItem
+from ape.types.coverage import CoverageStatement, CoverageProject
 from ape.utils import ManagerAccessMixin, get_relative_path, parse_coverage_table
 
 
-class CoverageData:
+class CoverageData(ManagerAccessMixin):
     def __init__(self, base_path: Path, sources: Iterable[ContractSource]):
         self.base_path = base_path
 
         # source_id -> pc(s) -> times hit
-        self.statements: CoverageReport = {}
+        self.project_coverage = CoverageProject(name=self.config_manager.name or "__local__")
 
-        # Build coverage profile.
         for src in sources:
-            if not src.source_path:
-                # TODO: Handle source-less files (remote coverage)
-                continue
+            source_coverage = self.project_coverage.include(source_id)
+            contract_coverage = source_coverage.include(src.contract_type.name)
 
-            # Init all relevant PC hits with 0.
-            statements: List[CoverageItem] = []
             for pc, item in src.pcmap.__root__.items():
                 pc_int = int(pc)
                 if pc_int < 0:
@@ -40,9 +36,12 @@ class CoverageData:
                 else:
                     loc_tuple = None
 
+                function = src.lookup_function(loc)
+                func_cov = contract_coverage.include(function.name)
+
                 # Check if location already profiled.
                 done = False
-                for past_stmt in statements:
+                for past_stmt in func_cov.statements:
                     if not loc_tuple or (loc_tuple and (past_stmt.location != loc_tuple)):
                         continue
 
@@ -63,8 +62,21 @@ class CoverageData:
                 if cov_item is not None:
                     statements.append(cov_item)
 
-            source_id = str(get_relative_path(src.source_path.absolute(), base_path.absolute()))
-            self.statements[source_id] = statements
+        # Currently, coverage only supports one project at a time.
+        return CoverageReport(projects=[self.project_coverage])
+
+
+            #
+            # # OLD!!!
+            # if not src.source_path:
+            #     # TODO: Handle source-less files (remote coverage)
+            #     continue
+            #
+            # # Init all valid statements with a zero hit count.
+
+            #
+            # source_id = str(get_relative_path(src.source_path.absolute(), base_path.absolute()))
+            # self.statements[source_id] = statements
 
     def cover(self, src_path: Path, pcs: Iterable[int]):
         src_id = str(get_relative_path(src_path.absolute(), self.base_path))

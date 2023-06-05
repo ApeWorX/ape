@@ -197,18 +197,17 @@ def parse_coverage_table(coverage: "CoverageReport") -> Table:
     table.add_column("Stmts")
     table.add_column("Miss")
     table.add_column("Cover")
+    table.add_column("Funcs")
 
-    for source_id, data in coverage.items():
-        stmts = len(data)  # The total number of stmts.
-
-        misses = 0
-        for cov_item in data:
-            if cov_item.hit_count == 0:
-                misses += 1
-
-        hits = stmts - misses
-        cover = round(hits / stmts * 100, 2)
-        table.add_row(source_id, str(stmts), str(misses), f"{cover}%")
+    for project in coverage.projects:
+        for src in project.sources:
+            table.add_row(
+                src.source_id,
+                f"{src.lines_valid}",
+                f"{src.miss_count}",
+                f"{round(src.line_rate, 2)}%",
+                f"{round(src.function_rate, 2)}%",
+            )
 
     return table
 
