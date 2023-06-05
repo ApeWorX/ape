@@ -1,7 +1,7 @@
 from fnmatch import fnmatch
 from itertools import tee
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Dict, Iterator, List, Optional, Set, Tuple
+from typing import TYPE_CHECKING, Any, Dict, Iterator, List, Optional, Set
 
 from ethpm_types import ASTNode, BaseModel, ContractType, HexBytes
 from ethpm_types.ast import SourceLocation
@@ -22,31 +22,6 @@ if TYPE_CHECKING:
 GasReport = Dict[str, Dict[str, List[int]]]
 """
 A gas report in Ape.
-"""
-
-
-class CoverageItem(BaseModel):
-    location: Optional[Tuple[int, int]] = None
-    """
-    The location of the item. If multiple PCs share an exact location,
-    it is only tracked as one.
-    """
-
-    pcs: Set[int]
-    """
-    The PCs for this node.
-    """
-
-    hit_count: int = 0
-    """
-    The times this node was hit.
-    """
-
-
-CoverageReport = Dict[str, List[CoverageItem]]
-"""
-Each source identifier mapped to a list of statements
-covered along with its times hit.
 """
 
 
