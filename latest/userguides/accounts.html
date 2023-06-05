@@ -73,6 +73,7 @@
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="#automation">Automation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#keyfile-passphrase-environment-variable-more-secure">Keyfile Passphrase Environment Variable (more secure)</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#hardware-wallets">Hardware Wallets</a></li>
 </ul>
 </li>
@@ -289,6 +290,27 @@ Ensure you are using a secure environment and are aware of what you are doing.</
 
 <span class="n">account</span> <span class="o">=</span> <span class="n">accounts</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;&lt;ALIAS&gt;&quot;</span><span class="p">)</span>
 <span class="n">account</span><span class="o">.</span><span class="n">set_autosign</span><span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="n">passphrase</span><span class="o">=</span><span class="s2">&quot;&lt;PASSPHRASE&gt;&quot;</span><span class="p">)</span>
+
+<span class="c1"># Now, you will not be prompted to sign messages or transactions</span>
+<span class="n">message</span> <span class="o">=</span> <span class="n">encode_defunct</span><span class="p">(</span><span class="n">text</span><span class="o">=</span><span class="s2">&quot;Hello Apes!&quot;</span><span class="p">)</span>
+<span class="n">signature</span> <span class="o">=</span> <span class="n">account</span><span class="o">.</span><span class="n">sign_message</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="keyfile-passphrase-environment-variable-more-secure">
+<h2>Keyfile Passphrase Environment Variable (more secure)<a class="headerlink" href="#keyfile-passphrase-environment-variable-more-secure" title="Permalink to this heading"></a></h2>
+<p>Another, more secure approach is to use an environment variable.
+Set your passphrase in an environment variable by following this template:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">export</span><span class="w"> </span>APE_ACCOUNTS_&lt;alias&gt;_PASSPHRASE<span class="o">=</span><span class="s2">&quot;a&quot;</span>
+</pre></div>
+</div>
+<p>Where <code class="docutils literal notranslate"><span class="pre">&lt;alias&gt;</span></code> is the name of the account you want to use.
+Now, you can use your account to make any transactions without subsequently providing your passphrase.</p>
+<div class="highlight-py notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">ape</span> <span class="kn">import</span> <span class="n">accounts</span>
+<span class="kn">from</span> <span class="nn">eth_account.messages</span> <span class="kn">import</span> <span class="n">encode_defunct</span>
+
+<span class="n">account</span> <span class="o">=</span> <span class="n">accounts</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;&lt;ALIAS&gt;&quot;</span><span class="p">)</span>
+<span class="n">account</span><span class="o">.</span><span class="n">set_autosign</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
 
 <span class="c1"># Now, you will not be prompted to sign messages or transactions</span>
 <span class="n">message</span> <span class="o">=</span> <span class="n">encode_defunct</span><span class="p">(</span><span class="n">text</span><span class="o">=</span><span class="s2">&quot;Hello Apes!&quot;</span><span class="p">)</span>
