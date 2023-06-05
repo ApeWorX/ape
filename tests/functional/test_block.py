@@ -1,5 +1,4 @@
 import pytest
-from ethpm_types import HexBytes
 
 
 @pytest.fixture
