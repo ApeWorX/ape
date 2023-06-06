@@ -84,10 +84,12 @@ class CoverageData(ManagerAccessMixin):
                         continue
 
                     function_name = function.name
+                    function_full_name = function.full_name
                 else:
                     function_name = "__builtin__"
+                    function_full_name = function_name
 
-                function_coverage = contract_coverage.include(function_name)
+                function_coverage = contract_coverage.include(function_name, function_full_name)
                 tag = str(item["dev"]) if item.get("dev") else None
                 function_coverage.profile_statement(pc_int, location=location, tag=tag)
 
