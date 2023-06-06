@@ -104,20 +104,20 @@ class CoverageData(ManagerAccessMixin):
                         )
                         longest_abi = max(matching_abis, key=lambda x: len(x.inputs))
                         other_abis = [x for x in matching_abis if x != longest_abi]
-                        longest_abi_function = contract_coverage.get_function(longest_abi.signature)
+                        longest_abi_function = contract_coverage.get_function(longest_abi.selector)
                         if is_outside_content and longest_abi_function:
                             # Use the function with the same or less valid lines as the root.
                             # This way, we are at least sure to cover every auto-generated method
                             # at least once.
                             smallest_func = longest_abi_function
                             for other_abi in other_abis:
-                                func = contract_coverage.get_function(other_abi.signature)
+                                func = contract_coverage.get_function(other_abi.selector)
                                 if func and func.lines_valid <= smallest_func.lines_valid:
                                     smallest_func = func
 
                                 elif not func:
                                     # Use this function.
-                                    _include_from(other_abi.name, other_abi.signature)
+                                    _include_from(other_abi.name, other_abi.selector)
                                     smallest_func = None
 
                             if smallest_func:
@@ -125,14 +125,14 @@ class CoverageData(ManagerAccessMixin):
 
                         elif is_outside_content and other_abis:
                             # Use first other ABI
-                            _include_from(other_abis[0].name, other_abis[0].signature)
+                            _include_from(other_abis[0].name, other_abis[0].selector)
 
                         else:
                             # Not sure this happens.
-                            _include_from(longest_abi.name, longest_abi.signature)
+                            _include_from(longest_abi.name, longest_abi.selector)
 
                     elif len(matching_abis) == 1:
-                        _include_from(function.name, matching_abis[0].signature)
+                        _include_from(function.name, matching_abis[0].selector)
 
                     elif len(matching_abis) == 0:
                         # Is likely an internal method.
