@@ -1,8 +1,8 @@
-from typing import List, Optional, Set, Tuple
+from typing import Dict, List, Optional, Set, Tuple
 from xml.dom.minidom import getDOMImplementation
 
 from ethpm_types import BaseModel
-from ethpm_types.source import SourceLocation, ContractSource
+from ethpm_types.source import ContractSource, SourceLocation
 from pydantic import validator
 
 from ape.utils.misc import get_current_timestamp
@@ -600,7 +600,7 @@ class CoverageReport(BaseModel):
                     xfunctions = xml_out.createElement("functions")
 
                     # Use name unless the same function found twice, then use full name.
-                    fn_map = {}
+                    fn_map: Dict[str, FunctionCoverage] = {}
                     singles_used = []
                     for function in contract.functions:
                         singles_used.append(function.name)
