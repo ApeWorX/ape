@@ -1,3 +1,4 @@
+import itertools
 from typing import Dict, List, Optional, Set, Tuple
 from xml.dom.minidom import getDOMImplementation
 
@@ -160,16 +161,11 @@ class ContractCoverage(BaseModel):
     """
 
     @property
-    def lines(self) -> List[CoverageStatement]:
+    def statements(self) -> List[CoverageStatement]:
         """
         All valid coverage lines from every function in this contract.
         """
-
-        statements = []
-        for funcs in self.functions:
-            statements.extend(funcs.statements)
-
-        return statements
+        return list(itertools.chain.from_iterable(f.statements for f in self.functions))
 
     @property
     def lines_covered(self) -> int:
@@ -177,14 +173,14 @@ class ContractCoverage(BaseModel):
         All lines that have a hit count greater than zero.
         """
 
-        return sum(funcs.lines_covered for funcs in self.functions) 
+        return sum(funcs.lines_covered for funcs in self.functions)
 
     @property
     def lines_valid(self) -> int:
         """
         The number of lines valid for coverage.
         """
-        return len(self.lines)
+        return len(self.statements)
 
     @property
     def miss_count(self) -> int:
@@ -270,11 +266,7 @@ class ContractSourceCoverage(BaseModel):
         All valid coverage lines from every function in every contract in this source.
         """
 
-        statements = []
-        for contract in self.contracts:
-            statements.extend(contract.lines)
-
-        return statements
+        return list(itertools.chain.from_iterable(c.statements for c in self.contracts))
 
     @property
     def lines_covered(self) -> int:
@@ -282,12 +274,7 @@ class ContractSourceCoverage(BaseModel):
         All lines with a hit count greater than zero from every function
         in every contract in this source.
         """
-
-        count = 0
-        for contract in self.contracts:
-            count += contract.lines_covered
-
-        return count
+        return sum(c.lines_covered for c in self.contracts)
 
     @property
     def lines_valid(self) -> int:
@@ -372,17 +359,13 @@ class CoverageProject(BaseModel):
     """
 
     @property
-    def lines(self) -> List[CoverageStatement]:
+    def statements(self) -> List[CoverageStatement]:
         """
         All valid coverage lines from every function in every contract in every source
         in this project.
         """
 
-        statements = []
-        for src in self.sources:
-            statements.extend(src.statements)
-
-        return statements
+        return list(itertools.chain.from_iterable(s.statements for s in self.sources))
 
     @property
     def lines_covered(self) -> int:
@@ -390,19 +373,14 @@ class CoverageProject(BaseModel):
         The number of lines with a hit count greater than zero from every function
         in every contract in every source in this this project.
         """
-
-        count = 0
-        for src in self.sources:
-            count += src.lines_covered
-
-        return count
+        return sum(s.lines_covered for s in self.sources)
 
     @property
     def lines_valid(self) -> int:
         """
         The number of lines valid for coverage.
         """
-        return len(self.lines)
+        return len(self.statements)
 
     @property
     def miss_count(self) -> int:
@@ -487,17 +465,12 @@ class CoverageReport(BaseModel):
         return [s.source_id for p in self.projects for s in p.sources]
 
     @property
-    def lines(self) -> List[CoverageStatement]:
+    def statements(self) -> List[CoverageStatement]:
         """
         All valid coverage lines from every function in every contract in every source
         from every project in this report.
         """
-
-        statements = []
-        for project in self.projects:
-            statements.extend(project.lines)
-
-        return statements
+        return list(itertools.chain.from_iterable(p.statements for p in self.projects))
 
     @property
     def lines_covered(self) -> int:
@@ -505,19 +478,14 @@ class CoverageReport(BaseModel):
         All lines with a hit count greater than zero from every function
         in every contract in every source in this this project.
         """
-
-        count = 0
-        for project in self.projects:
-            count += project.lines_covered
-
-        return count
+        return sum(p.lines_covered for p in self.projects)
 
     @property
     def lines_valid(self) -> int:
         """
         The number of lines valid for coverage.
         """
-        return len(self.lines)
+        return len(self.statements)
 
     @property
     def miss_count(self) -> int:
