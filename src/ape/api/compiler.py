@@ -9,6 +9,7 @@ from evm_trace.geth import create_call_node_data
 from semantic_version import Version  # type: ignore
 
 from ape.exceptions import APINotImplementedError, ContractLogicError
+from ape.types.coverage import ContractSourceCoverage
 from ape.types.trace import SourceTraceback, TraceFrame
 from ape.utils import BaseInterfaceModel, abstractmethod, raises_not_implemented
 
@@ -194,3 +195,14 @@ class CompilerAPI(BaseInterfaceModel):
 
         called_contract = self.chain_manager.contracts[address]
         return self.project_manager._create_contract_source(called_contract), calldata
+
+    @raises_not_implemented
+    def init_coverage_profile(
+        self, source_coverage: ContractSourceCoverage, contract_source: ContractSource
+    ):  # type: ignore[empty-body]
+        """
+        Initialize an empty report for the given source ID.
+
+        Args:
+            source_path (Path): The source to generate an empty coverage profile for.
+        """

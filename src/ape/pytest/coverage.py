@@ -1,7 +1,7 @@
 from pathlib import Path
 from typing import Iterable, Optional
 
-from ethpm_types.source import ContractSource, SourceLocation
+from ethpm_types.source import ContractSource
 
 from ape.logging import logger
 from ape.pytest.config import ConfigWrapper
@@ -41,108 +41,13 @@ class CoverageData(ManagerAccessMixin):
         project_coverage = CoverageProject(name=self.config_manager.name or "__local__")
 
         for src in self.sources:
-            source_coverage = project_coverage.include(src.source_id)
-            contract_coverage = source_coverage.include(
-                src.contract_type.name or "__UnknownContract__"
-            )
-
-            for pc, item in src.pcmap.__root__.items():
-                pc_int = int(pc)
-                if pc_int < 0:
-                    continue
-
-                location: Optional[SourceLocation]
-                if item.get("location"):
-                    location_list = item["location"]
-                    if not isinstance(location_list, (list, tuple)):
-                        raise TypeError(f"Unexpected location type '{type(location_list)}'.")
-
-                    # NOTE: Only doing 0 because mypy for some reason thinks it is optional.
-                    location = (
-                        location_list[0] or 0,
-                        location_list[1] or 0,
-                        location_list[2] or 0,
-                        location_list[3] or 0,
-                    )
-                else:
-                    location = None
-
-                if location is not None and not isinstance(location, tuple):
-                    # Only really for mypy.
-                    raise TypeError(f"Received unexpected type for location '{location}'.")
-
-                if not location and not item.get("dev"):
-                    # Not a statement we can measure.
-                    continue
-
-                def _include_from(_name: str, _full_name: str):
-                    function_coverage = contract_coverage.include(_name, _full_name)
-                    tag = str(item["dev"]) if item.get("dev") else None
-                    function_coverage.profile_statement(pc_int, location=location, tag=tag)
-
-                if location:
-                    function = src.lookup_function(location)
-                    if not function:
-                        # Not sure if this happens.
-                        continue
-
-                    matching_abis = [
-                        a for a in src.contract_type.methods if a.name == function.name
-                    ]
-                    if len(matching_abis) > 1:
-                        # Is likely part of auto-generated methods.
-                        # Put one one of the ABIs that is not the longest.
-                        # If there is an ABI that is still has the same amount of statements
-                        # as the longest, use that ABI for this extra statement.
-                        # TODO: Find a more accurate way to do this, maybe using ape-vyper.
-
-                        # Check if this touches stuff outside the function content.
-                        # If it does, that may mean something if there are mutliple ABIs defined.
-                        is_part_of_signature = location[0] < function.offset
-                        if is_part_of_signature and location[0] != location[2]:
-                            # Currently, ignoring statements that outsie of content
-                            # and span more than one lines. These usually are not real
-                            # statements you can hit for some reason, at least in Vyper.
-                            continue
-
-                        longest_abi = max(matching_abis, key=lambda x: len(x.inputs))
-                        other_abis = [x for x in matching_abis if x != longest_abi]
-                        longest_abi_function = contract_coverage.get_function(longest_abi.selector)
-                        if is_part_of_signature and longest_abi_function:
-                            # Use the function with the same or less valid lines as the root.
-                            # This way, we are at least sure to cover every auto-generated method
-                            # at least once.
-                            smallest_func = longest_abi_function
-                            for other_abi in other_abis:
-                                func = contract_coverage.get_function(other_abi.selector)
-                                if func and func.lines_valid <= smallest_func.lines_valid:
-                                    smallest_func = func
-
-                                elif not func:
-                                    # Use this function.
-                                    _include_from(other_abi.name, other_abi.selector)
-                                    smallest_func = None
-
-                            if smallest_func:
-                                _include_from(smallest_func.name, smallest_func.full_name)
-
-                        elif is_part_of_signature and other_abis:
-                            # Use first other ABI
-                            _include_from(other_abis[0].name, other_abis[0].selector)
-
-                        else:
-                            # Not sure this happens.
-                            _include_from(longest_abi.name, longest_abi.selector)
-
-                    elif len(matching_abis) == 1:
-                        _include_from(function.name, matching_abis[0].selector)
-
-                    elif len(matching_abis) == 0:
-                        # Is likely an internal method.
-                        _include_from(function.name, function.full_name)
-
-                else:
-                    _include_from("__builtin__", "__builtin__")
+            source_cov = project_coverage.include(src)
+            ext = Path(src.source_id).suffix
+            compiler = self.compiler_manager.registered_compilers[ext]
+            try:
+                compiler.init_coverage_profile(source_cov, src)
+            except NotImplementedError:
+                continue
 
         timestamp = int(round(get_current_timestamp()))
         report = CoverageReport(projects=[project_coverage], timestamp=timestamp)
