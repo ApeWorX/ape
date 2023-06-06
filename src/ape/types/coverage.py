@@ -2,7 +2,7 @@ from typing import List, Optional, Set, Tuple
 from xml.dom.minidom import getDOMImplementation
 
 from ethpm_types import BaseModel
-from ethpm_types.source import SourceLocation
+from ethpm_types.source import SourceLocation, ContractSource
 from pydantic import validator
 
 from ape.utils.misc import get_current_timestamp
@@ -453,13 +453,12 @@ class CoverageProject(BaseModel):
 
         return attribs
 
-    def include(self, source_id: str) -> ContractSourceCoverage:
+    def include(self, contract_source: ContractSource) -> ContractSourceCoverage:
         for src in self.sources:
-            if src.source_id == source_id:
+            if src.source_id == contract_source.source_id:
                 return src
 
-        # Make sure is included.
-        source_cov = ContractSourceCoverage(source_id=source_id)
+        source_cov = ContractSourceCoverage(source_id=contract_source.source_id)
         self.sources.append(source_cov)
         return source_cov
 
@@ -605,8 +604,11 @@ class CoverageReport(BaseModel):
                     singles_used = []
                     for function in contract.functions:
                         singles_used.append(function.name)
-                        if function.name in fn_map and function.full_name != fn_map[function.name].full_name:
-                            # Another method with the same name but different full name already in map.
+                        if (
+                            function.name in fn_map
+                            and function.full_name != fn_map[function.name].full_name
+                        ):
+                            # Another method with the same name already in map.
                             # Use full name for both.
                             existing_fn = fn_map[function.name]
                             fn_map[existing_fn.full_name] = existing_fn
