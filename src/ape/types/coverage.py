@@ -315,14 +315,14 @@ class ContractSourceCoverage(BaseModel):
         """
         The total number of functions in this source.
         """
-        return sum([len(c.functions) for c in self.contracts])
+        return sum(len(c.functions) for c in self.contracts)
 
     @property
     def function_hits(self) -> int:
         """
         The number of functions with a hit counter greater than zero.
         """
-        return sum([c.function_hits for c in self.contracts])
+        return sum(c.function_hits for c in self.contracts)
 
     @property
     def function_rate(self) -> float:
@@ -423,14 +423,14 @@ class CoverageProject(BaseModel):
         """
         The total number of functions in this source.
         """
-        return sum([x.total_functions for x in self.sources])
+        return sum(x.total_functions for x in self.sources)
 
     @property
     def function_hits(self) -> int:
         """
         The number of functions with a hit counter greater than zero.
         """
-        return sum([x.function_hits for x in self.sources])
+        return sum(x.function_hits for x in self.sources)
 
     @property
     def function_rate(self) -> float:
@@ -538,14 +538,14 @@ class CoverageReport(BaseModel):
         """
         The total number of functions in this source.
         """
-        return sum([x.total_functions for x in self.projects])
+        return sum(x.total_functions for x in self.projects)
 
     @property
     def function_hits(self) -> int:
         """
         The number of functions with a hit counter greater than zero.
         """
-        return sum([x.function_hits for x in self.projects])
+        return sum(x.function_hits for x in self.projects)
 
     @property
     def function_rate(self) -> float:

@@ -39,7 +39,7 @@ def _list(cli_ctx, show_all_plugins):
         pair for pair in {n: ls for n, ls in account_map.items() if len(ls) > 0}.items()
     ]
 
-    if sum([len(c) for c in account_pairs]) == 0:
+    if sum(len(c) for c in account_pairs) == 0:
         cli_ctx.logger.warning("No accounts found.")
         return
 
