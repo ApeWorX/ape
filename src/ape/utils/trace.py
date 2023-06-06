@@ -188,7 +188,7 @@ def parse_coverage_table(coverage: "CoverageReport") -> Table:
 
 
 def _dict_to_str(dictionary: Dict, color: Optional[str] = None) -> str:
-    length = sum([len(str(v)) for v in [*dictionary.keys(), *dictionary.values()]])
+    length = sum(len(str(v)) for v in [*dictionary.keys(), *dictionary.values()])
     do_wrap = length > _WRAP_THRESHOLD
 
     index = 0
