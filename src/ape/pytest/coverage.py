@@ -98,14 +98,17 @@ class CoverageData(ManagerAccessMixin):
 
                         # Check if this touches stuff outside the function content.
                         # If it does, that may mean something if there are mutliple ABIs defined.
-                        is_outside_content = (
-                            location[0] < function.content.begin_lineno
-                            or location[2] > function.content.end_lineno
-                        )
+                        is_part_of_signature = location[0] < function.offset
+                        if is_part_of_signature and location[0] != location[2]:
+                            # Currently, ignoring statements that outsie of content
+                            # and span more than one lines. These usually are not real
+                            # statements you can hit for some reason, at least in Vyper.
+                            continue
+
                         longest_abi = max(matching_abis, key=lambda x: len(x.inputs))
                         other_abis = [x for x in matching_abis if x != longest_abi]
                         longest_abi_function = contract_coverage.get_function(longest_abi.selector)
-                        if is_outside_content and longest_abi_function:
+                        if is_part_of_signature and longest_abi_function:
                             # Use the function with the same or less valid lines as the root.
                             # This way, we are at least sure to cover every auto-generated method
                             # at least once.
@@ -123,7 +126,7 @@ class CoverageData(ManagerAccessMixin):
                             if smallest_func:
                                 _include_from(smallest_func.name, smallest_func.full_name)
 
-                        elif is_outside_content and other_abis:
+                        elif is_part_of_signature and other_abis:
                             # Use first other ABI
                             _include_from(other_abis[0].name, other_abis[0].selector)
 

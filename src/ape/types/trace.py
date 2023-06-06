@@ -629,7 +629,6 @@ class SourceTraceback(BaseModel):
             source_path (Optional[``Path``]): The path of the source file.
         """
 
-        # Exclude signature ASTs.
         asts = function.get_content_asts(location)
         content = function.get_content(location)
         if not asts or not content:

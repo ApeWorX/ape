@@ -605,15 +605,19 @@ class CoverageReport(BaseModel):
                     singles_used = []
                     for function in contract.functions:
                         singles_used.append(function.name)
-                        if function.name in fn_map:
+                        if function.name in fn_map and function.full_name != fn_map[function.name].full_name:
+                            # Another method with the same name but different full name already in map.
+                            # Use full name for both.
                             existing_fn = fn_map[function.name]
                             fn_map[existing_fn.full_name] = existing_fn
                             del fn_map[function.name]
                             fn_map[function.full_name] = function
                         elif function.name in singles_used:
-                            # If one method with this name uses full name, they all should.
+                            # Because this name has already been found once,
+                            # we can assume we are using full names for these.
                             fn_map[function.full_name] = function
                         else:
+                            # Is first time coming across this name.
                             fn_map[function.name] = function
 
                     for fn_name, function in fn_map.items():
