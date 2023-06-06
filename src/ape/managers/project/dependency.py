@@ -247,7 +247,8 @@ class NpmDependency(DependencyAPI):
 
         node_module = os.path.exists(f"node_modules/{self.npm}")
         if node_module:
-            node_module_folder = Path(f"node_modules/{self.npm}")
+            current_path = os.getcwd()
+            node_module_folder = Path(os.path.join(current_path, f"node_modules/{self.npm}"))
             node_package = f"{node_module_folder}/package.json"
             with open(node_package) as f:
                 data = json.load(f)
