@@ -667,11 +667,12 @@ class SourceTraceback(BaseModel):
         name: str,
         _type: str,
         compiler_name: str,
+        full_name: Optional[str] = None,
         source_path: Optional[Path] = None,
         pcs: Optional[Set[int]] = None,
     ):
         pcs = pcs or set()
-        closure = Closure(name=name)
+        closure = Closure(name=name, full_name=full_name or name)
         depth = self.last.depth - 1 if self.last else 0
         statement = Statement(type=_type, pcs=pcs)
         flow = ControlFlow(
