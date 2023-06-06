@@ -177,11 +177,7 @@ class ContractCoverage(BaseModel):
         All lines that have a hit count greater than zero.
         """
 
-        count = 0
-        for funcs in self.functions:
-            count += funcs.lines_covered
-
-        return count
+        return sum(funcs.lines_covered for funcs in self.functions) 
 
     @property
     def lines_valid(self) -> int:
