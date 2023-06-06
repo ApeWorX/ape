@@ -121,9 +121,9 @@ class FunctionCoverage(BaseModel):
 
         for statement in self.statements:
             if not location or (
-                location
-                and (statement.location[0] != location[0] and statement.location[2] != location[2])
+                location and statement.location and statement.location[0] != location[0]
             ):
+                # Starts on a different line.
                 continue
 
             # Already tracking this location.
