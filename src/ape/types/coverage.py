@@ -245,9 +245,9 @@ class ContractCoverage(BaseModel):
         self.functions.append(func_cov)
         return func_cov
 
-    def get_function(self, name: str) -> Optional[FunctionCoverage]:
+    def get_function(self, full_name: str) -> Optional[FunctionCoverage]:
         for func in self.functions:
-            if func.full_name == name:
+            if func.full_name == full_name:
                 return func
 
         return None
