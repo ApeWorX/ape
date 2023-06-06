@@ -1,5 +1,5 @@
 import itertools
-from typing import Dict, List, Optional, Set, Tuple
+from typing import Dict, List, Optional, Set
 from xml.dom.minidom import getDOMImplementation
 
 from ethpm_types import BaseModel
@@ -24,10 +24,10 @@ class CoverageStatement(BaseModel):
     actual location in the source code, depending on the type of check.
     """
 
-    location: Optional[Tuple[int, int]] = None
+    location: Optional[SourceLocation] = None
     """
-    The location of the item (line start to line end). If multiple PCs share an exact location,
-    it is only tracked as one.
+    The location of the item (line, column, endline, endcolumn).
+    If multiple PCs share an exact location, it is only tracked as one.
     """
 
     pcs: Set[int]
@@ -119,9 +119,11 @@ class FunctionCoverage(BaseModel):
               if it exists.
         """
 
-        line_nos = (int(location[0] or 0), int(location[2] or 0)) if location else None
         for statement in self.statements:
-            if not line_nos or (line_nos and (statement.location != line_nos)):
+            if not location or (
+                location
+                and (statement.location[0] != location[0] and statement.location[2] != location[2])
+            ):
                 continue
 
             # Already tracking this location.
@@ -133,11 +135,11 @@ class FunctionCoverage(BaseModel):
             return
 
         coverage_statement = None
-        if line_nos:
+        if location:
             # Adding a source-statement for the first time.
-            coverage_statement = CoverageStatement(location=line_nos, pcs={pc}, tag=tag)
+            coverage_statement = CoverageStatement(location=location, pcs={pc}, tag=tag)
 
-        elif not line_nos:
+        else:
             # Adding a virtual statement.
             coverage_statement = CoverageStatement(pcs={pc}, tag=tag)
 
@@ -597,7 +599,7 @@ class CoverageReport(BaseModel):
 
                             if statement.location:
                                 lineno = statement.location[0]
-                                end_lineno = statement.location[1]
+                                end_lineno = statement.location[2]
                                 if lineno == end_lineno:
                                     xstatement.setAttribute("line", f"{lineno}")
                                 else:
