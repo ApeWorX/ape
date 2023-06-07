@@ -482,7 +482,7 @@ class CoverageReport(BaseModel):
     def lines_covered(self) -> int:
         """
         All lines with a hit count greater than zero from every function
-        in every contract in every source in this this project.
+        in every contract in every source in every project in this report.
         """
         return sum(p.lines_covered for p in self.projects)
 
