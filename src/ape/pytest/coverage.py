@@ -123,7 +123,12 @@ class CoverageTracker(ManagerAccessMixin):
     def exclusions(self) -> List[ContractFunctionPath]:
         return self.config_wrapper.coverage_exclusions
 
-    def cover(self, traceback: SourceTraceback):
+    def cover(
+        self,
+        traceback: SourceTraceback,
+        contract: Optional[str] = None,
+        function: Optional[str] = None,
+    ):
         """
         Track the coverage from the given source traceback.
 
@@ -131,12 +136,50 @@ class CoverageTracker(ManagerAccessMixin):
             traceback (:class:`~ape.types.trace.SourceTraceback`):
               The class instance containing all the information regarding
               sources covered for a particular transaction.
+            contract (Optional[str]): Optionally provide the contract's name.
+              This is needed when incrementing function hits that don't have
+              any statements, such as auto-getters.
+            function (Optional[str]): Optionally include function's full name
+              to ensure its hit count is bumped, even when there are not statements
+              found. This is the only way to bump hit counts for auto-getters.
         """
-        for control_flow in traceback:
-            last_path: Optional[Path] = None
-            last_pcs: Set[int] = set()
-            last_call: Optional[str] = None
+        last_path: Optional[Path] = None
+        last_pcs: Set[int] = set()
+        last_call: Optional[str] = None
+        main_fn = None
 
+        if (contract and not function) or (function and not contract):
+            raise ValueError(
+                "Must provider both function and contract and if supplying one of them."
+            )
+
+        elif contract and function:
+            # For making sure
+            source_path = traceback[0].source_path
+            for project in self.data.report.projects:
+                for src in project.sources:
+                    path = self.project_manager.contracts_folder / src.source_id
+                    if path != source_path:
+                        continue
+
+                    # Source containing the auto-getter found.
+                    for con in src.contracts:
+                        if con.name != contract:
+                            continue
+
+                        # Contract containing the auto-getter found.
+                        for fn in con.functions:
+                            if fn.full_name != function:
+                                continue
+
+                            # Auto-getter found.
+                            main_fn = fn
+
+            if not main_fn:
+                raise ValueError(f"Failed to find function '{function}' in contract '{contract}'.")
+
+        count_at_start = main_fn.hit_count if main_fn else None
+        for control_flow in traceback:
             if not control_flow.source_path or not control_flow.pcs:
                 continue
 
@@ -146,6 +189,13 @@ class CoverageTracker(ManagerAccessMixin):
             last_path = control_flow.source_path
             last_pcs = new_pcs
             last_call = control_flow.closure.full_name
+
+        if count_at_start is not None and main_fn and main_fn.hit_count == count_at_start:
+            # If we get here, the control flow had no statements in it but yet
+            # we were given contract and function information. This happens
+            # for auto-getters where there are no source-map entries but the function
+            # is still called. Thus, we need to bump the hit count for the auto-getter.
+            main_fn.hit_count += 1
 
     def _cover(
         self,

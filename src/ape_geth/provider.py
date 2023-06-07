@@ -531,10 +531,16 @@ class GethDev(BaseGethProvider, TestProviderAPI):
             contract_type = self.chain_manager.contracts.get(receiver)
             if contract_type:
                 traceframes = (self._create_trace_frame(x) for x in frames_copy)
-                source_traceback = SourceTraceback.create(
-                    contract_type, traceframes, HexBytes(txn.data)
+                method_id = HexBytes(txn.data)
+                selector = (
+                    contract_type.methods[method_id].selector
+                    if method_id in contract_type.methods
+                    else None
                 )
-                self._test_runner.coverage_tracker.cover(source_traceback)
+                source_traceback = SourceTraceback.create(contract_type, traceframes, method_id)
+                self._test_runner.coverage_tracker.cover(
+                    source_traceback, function=selector, contract=contract_type.name
+                )
 
         if show_gas:
             enriched_call_tree = call_tree.enrich(in_place=False)
