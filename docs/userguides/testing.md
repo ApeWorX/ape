@@ -566,7 +566,7 @@ test:
       html: True  # Enable HTML report (.build/htmlcov)
 ```
 
-Must like gas reporting, you can also exclude contracts and methods from coverage using your `ape-config.yaml` file.
+Much like gas reporting, you can also exclude contracts and methods from tracking coverage using your `ape-config.yaml` file.
 The following demonstrates how to do this:
 
 ```yaml
