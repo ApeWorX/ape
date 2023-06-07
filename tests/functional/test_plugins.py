@@ -19,7 +19,7 @@ class TestPluginInstallRequest:
         # This allows parsing requirements files easier
         request = PluginInstallRequest(name="ape-foo-bar==0.5.0")
         assert request.name == "foo-bar"
-        assert request.version == "0.5.0"
+        assert request.version == "==0.5.0"
 
     @pytest.mark.parametrize("version", ("0.5.0", "v0.5.0", "0.5.0a123"))
     def test_version(self, version):

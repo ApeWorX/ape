@@ -113,7 +113,12 @@ class PluginInstallRequest(BaseInterfaceModel):
         # `pip install ape-plugin`
         # `pip install ape-plugin==version`.
         # `pip install "ape-plugin>=0.6,<0.7"`
-        return f"{self.package_name}{self.version}" if self.version else self.package_name
+
+        version = self.version
+        if version and ("=" not in version and "<" not in version and ">" not in version):
+            version = f"=={version}"
+
+        return f"{self.package_name}{version}" if version else self.package_name
 
     @property
     def can_install(self) -> bool:
