@@ -58,6 +58,12 @@ plugins:
     version: git+https://github.com/<owner-of-plugin>/ape-foobar.git@<branch/name>
 ```
 
+Or from the CLI like:
+
+```shell
+ape plugins install "foobar@git+https://github.com/<owner-of-plugin>/ape-foobar.git@<branch/name>"
+```
+
 ## Plugin Types
 
 There are many types of plugins available, including compilers, providers, networks, and CLI-based plugins.

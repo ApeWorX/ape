@@ -63,7 +63,7 @@ class PluginInstallRequest(BaseInterfaceModel):
         elif not version:
             # Only check name for version constraint if not in version.
             # NOTE: This happens when using the CLI to provider version constraints.
-            for constraint in ("==", "<=", ">="):
+            for constraint in ("==", "<=", ">=", "@git+"):
                 # Version constraint is part of name field.
                 if constraint not in name:
                     continue
@@ -252,6 +252,10 @@ class ModifyPluginResultHandler:
 
 
 def _split_name_and_version(value: str) -> Tuple[str, Optional[str]]:
+    if "@" in value:
+        parts = [x for x in value.split("@") if x]
+        return parts[0], "@".join(parts[1:])
+
     chars = [c for c in ("=", "<", ">") if c in value]
     if not chars:
         return value, None
