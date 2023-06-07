@@ -6,9 +6,8 @@ from typing import Any, Dict, Iterator, List, Optional, Tuple, Type, Union
 
 import click
 import pandas as pd
-from ethpm_types import ContractType
+from ethpm_types import ContractType, HexBytes
 from ethpm_types.abi import ConstructorABI, ErrorABI, EventABI, MethodABI
-from hexbytes import HexBytes
 
 from ape.api import AccountAPI, Address, ReceiptAPI, TransactionAPI
 from ape.api.address import BaseAddress

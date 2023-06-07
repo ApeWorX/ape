@@ -11,7 +11,7 @@ from eth_utils import (
     to_hex,
     to_int,
 )
-from hexbytes import HexBytes
+from ethpm_types import HexBytes
 
 from ape.api import ConverterAPI
 from ape.api.address import BaseAddress

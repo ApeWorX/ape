@@ -6,7 +6,7 @@ from typing import Iterator, Optional
 import click
 from eth_account import Account as EthAccount
 from eth_utils import to_bytes
-from hexbytes import HexBytes
+from ethpm_types import HexBytes
 
 from ape.api import AccountAPI, AccountContainerAPI, TransactionAPI
 from ape.exceptions import AccountsError
