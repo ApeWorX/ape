@@ -7,12 +7,13 @@ from rich import print as rich_print
 
 import ape
 from ape.api import ProviderContextManager
-from ape.logging import LogLevel
+from ape.logging import LogLevel, logger
 from ape.pytest.config import ConfigWrapper
 from ape.pytest.contextmanagers import RevertsContextManager
 from ape.pytest.coverage import CoverageTracker
 from ape.pytest.fixtures import ReceiptCapture
 from ape.pytest.gas import GasTracker
+from ape.types.coverage import CoverageReport
 from ape.utils import ManagerAccessMixin
 from ape_console._cli import console
 
@@ -39,6 +40,14 @@ class PytestApeRunner(ManagerAccessMixin):
     @property
     def _provider_context(self) -> ProviderContextManager:
         return self.network_manager.parse_network_choice(self.config_wrapper.network)
+
+    @property
+    def _report_out_folder(self) -> Path:
+        return self.project_manager.local_project._cache_folder
+
+    @property
+    def _coverage_report(self) -> CoverageReport:
+        return self.coverage_tracker.data.report
 
     def pytest_exception_interact(self, report, call):
         """
@@ -232,13 +241,47 @@ class PytestApeRunner(ManagerAccessMixin):
             )
 
         else:
-            # Write coverage XML report to .build folder.
-            coverage_report = self.coverage_tracker.data.report
-            coverage_xml = coverage_report.xml
-            if coverage_xml:
-                coverage_path = self.project_manager.local_project._cache_folder / "coverage.xml"
-                coverage_path.unlink(missing_ok=True)
-                coverage_path.write_text(coverage_xml)
+            self._write_xml_coverage_report()
+            self._write_html_coverage_report()
+
+    def _write_xml_coverage_report(self):
+        coverage_xml = self._coverage_report.xml
+        if not coverage_xml:
+            return
+
+        coverage_path = self._report_out_folder / "coverage.xml"
+        coverage_path.unlink(missing_ok=True)
+        coverage_path.write_text(coverage_xml)
+
+    def _write_html_coverage_report(self):
+        coverage_html = self._coverage_report.html
+        if not coverage_html:
+            return
+
+        html_path = self._report_out_folder / "htmlcov"
+        html_path.mkdir(exist_ok=True)
+
+        # Create new index.html.
+        index = html_path / "index.html"
+        index.unlink(missing_ok=True)
+        index.write_text(coverage_html)
+
+        favicon = html_path / "favicon.ico"
+        if not favicon.is_file():
+            # Use favicon that already ships with Ape's docs.
+            root = Path(__file__).parent
+            docs_folder = root / "docs"
+            while "ape" in root.as_posix() and not docs_folder.is_dir():
+                root = root.parent
+                docs_folder = root / "docs"
+
+            docs_favicon = docs_folder / "favicon.ico"
+            if docs_folder.is_dir() and docs_favicon.is_file():
+                favicon.write_bytes(docs_favicon.read_bytes())
+            else:
+                # Don't let this stop us from generating the report.
+                # Although, this shouldn't happen.
+                logger.debug("Failed finding favicon for coverage HTML.")
 
     def _assert_tracing_support(self, terminalreporter):
         if self.provider.supports_tracing:
