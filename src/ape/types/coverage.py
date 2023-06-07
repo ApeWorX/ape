@@ -532,6 +532,7 @@ class CoverageReport(BaseModel):
     def xml(self) -> str:
         impl = getDOMImplementation()
         if not impl:
+            # Only for mypy.
             raise ValueError("Failed to get XML DOM.")
 
         xml_out = impl.createDocument(None, "coverage", None)
