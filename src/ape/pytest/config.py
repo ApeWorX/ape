@@ -46,7 +46,7 @@ class ConfigWrapper(ManagerAccessMixin):
 
     @cached_property
     def track_coverage(self) -> bool:
-        return self.pytest_config.getoption("--coverage") or self.ape_test_config.coverage.show
+        return self.pytest_config.getoption("--coverage") or self.ape_test_config.coverage.track
 
     @cached_property
     def show_internal(self) -> bool:

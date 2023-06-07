@@ -36,14 +36,45 @@ class GasConfig(PluginConfig):
     """
 
 
+class CoverageReportsConfig(PluginConfig):
+    """
+    Enable reports.
+    """
+
+    terminal: bool = True
+    """
+    Set to ``False`` to hide the terminal coverage report.
+    """
+
+    xml: bool = False
+    """
+    Set to ``True`` to generate an XML coverage report in your .build folder.
+    """
+
+    html: bool = False
+    """
+    Set to ``True`` to generate HTML coverage reports.
+    """
+
+    @property
+    def has_any(self) -> bool:
+        return self.html or self.terminal or self.xml
+
+
 class CoverageConfig(PluginConfig):
     """
     Configuration related to contract coverage.
     """
 
-    show: bool = False
+    track: bool = False
     """
-    Set to ``True`` to always show coverage.
+    Setting this to ``True`` is the same as always running with
+    the ``--coverage`` flag.
+    """
+
+    reports = CoverageReportsConfig()
+    """
+    Enable reports.
     """
 
 
