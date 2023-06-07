@@ -34,6 +34,10 @@ def _pip_freeze_plugins() -> List[str]:
 
 
 class PluginInstallRequest(BaseInterfaceModel):
+    """
+    An encapsulation of a request to install a particular plugin.
+    """
+
     name: str
     """The name of the plugin, such as ``trezor``."""
 
@@ -46,12 +50,28 @@ class PluginInstallRequest(BaseInterfaceModel):
             raise ValueError("'name' required.")
 
         name = values["name"]
-        if "==" in name:
-            parts = name.split("==")
-            name = parts[0]
-            version = parts[1]
-        else:
-            version = values.get("version")
+        version = values.get("version")
+
+        if version and version.startswith("git+"):
+            if f"ape-{name}" not in version:
+                # Just some small validation so you can't put a repo
+                # that isn't this plugin here. NOTE: Forks should still work.
+                raise ValueError("Plugin mismatch with remote git version.")
+
+            version = version
+
+        elif not version:
+            # Only check name for version constraint if wasn't properly specified.
+            for constraint in ("==", "<=", ">="):
+                # Version constraint is part of name field.
+                if constraint not in name:
+                    continue
+
+                # Constraint found.
+                parts = name.split(constraint)
+                name = parts[0]
+                version = f"{constraint}{parts[1]}"
+                break
 
         return {"name": clean_plugin_name(name), "version": version}
 
@@ -86,7 +106,14 @@ class PluginInstallRequest(BaseInterfaceModel):
         such as ``ape-trezor==0.4.0``.
         """
 
-        return f"{self.package_name}=={self.version}" if self.version else self.package_name
+        if self.version and self.version.startswith("git+"):
+            # If the version is a remote, you do `pip install git+http://github...`
+            return self.version
+
+        # `pip install ape-plugin`
+        # `pip install ape-plugin==version`.
+        # `pip install "ape-plugin>=0.6,<0.7"`
+        return f"{self.package_name}{self.version}" if self.version else self.package_name
 
     @property
     def can_install(self) -> bool:
@@ -152,8 +179,8 @@ class PluginInstallRequest(BaseInterfaceModel):
         """
         A string like ``trezor==0.4.0``.
         """
-
-        return self.name if not self.version else f"{self.name}=={self.version}"
+        version_key = f"=={self.version}" if self.version and self.version[0].isnumeric() else ""
+        return f"{self.name}{version_key}"
 
 
 class ModifyPluginResultHandler:
@@ -169,7 +196,12 @@ class ModifyPluginResultHandler:
             self._log_errors_occurred("installing")
             return False
         else:
-            plugin_id = f"{self._plugin.name}=={self._plugin.pip_freeze_version}"
+            plugin_id = self._plugin.name
+            version = self._plugin.pip_freeze_version
+            if version:
+                # Sometimes, like in editable mode, the version is missing here.
+                plugin_id = f"{plugin_id}@{version}"
+
             self._logger.success(f"Plugin '{plugin_id}' has been installed.")
             return True
 
