@@ -1,12 +1,17 @@
 from pathlib import Path
-from typing import Iterable, List, Optional
+from typing import Iterable, List, Optional, Set
 
 from ethpm_types.source import ContractSource
 
 from ape.logging import logger
 from ape.pytest.config import ConfigWrapper
-from ape.types import ContractFunctionPath, CoverageReport, SourceTraceback
-from ape.types.coverage import CoverageProject
+from ape.types import (
+    ContractFunctionPath,
+    ControlFlow,
+    CoverageProject,
+    CoverageReport,
+    SourceTraceback,
+)
 from ape.utils import (
     ManagerAccessMixin,
     get_current_timestamp,
@@ -37,7 +42,6 @@ class CoverageData(ManagerAccessMixin):
         self,
     ) -> CoverageReport:
         # source_id -> pc(s) -> times hit
-        # TODO: Potentially may want another Compiler API for this.
         project_coverage = CoverageProject(name=self.config_manager.name or "__local__")
 
         for src in self.sources:
@@ -59,7 +63,7 @@ class CoverageData(ManagerAccessMixin):
         self._report = report
         return report
 
-    def cover(self, src_path: Path, pcs: Iterable[int]):
+    def cover(self, src_path: Path, pcs: Iterable[int], inc_fn_hits: bool = True):
         source_id = str(get_relative_path(src_path.absolute(), self.base_path))
 
         if source_id not in self.report.sources:
@@ -67,7 +71,6 @@ class CoverageData(ManagerAccessMixin):
             return
 
         handled_pcs = set()
-        statements_hit = []
         for pc in pcs:
             if pc < 0:
                 continue
@@ -76,23 +79,34 @@ class CoverageData(ManagerAccessMixin):
             if not source_coverage:
                 continue
 
-            for statement in source_coverage.statements:
-                if statement in statements_hit:
-                    # With 1 group of PCs, can only hit a statement once.
-                    # This is because likely multiple PCs together have the same
-                    # location and are really the same statement.
-                    # To increase the hit count by more than one, submit multiple txns.
-                    continue
+            for contract in source_coverage.contracts:
+                functions_incremented = []
+                for function in contract.functions:
+                    statements_hit = []
+                    for statement in function.statements:
+                        if statement in statements_hit:
+                            # With 1 group of PCs, can only hit a statement once.
+                            # This is because likely multiple PCs together have the same
+                            # location and are really the same statement.
+                            # To increase the hit count by more than one, submit multiple txns.
+                            continue
 
-                if pc in statement.pcs:
-                    statement.hit_count += 1
-                    handled_pcs.add(pc)
-                    statements_hit.append(statement)
+                        if pc in statement.pcs:
+                            statement.hit_count += 1
+                            handled_pcs.add(pc)
+                            statements_hit.append(statement)
+
+                            # Increment this function's hit count if we haven't already.
+                            if inc_fn_hits and function.full_name not in functions_incremented:
+                                function.hit_count += 1
+                                functions_incremented.append(function.full_name)
 
         unhandled_pcs = set(pcs) - handled_pcs
         if unhandled_pcs:
             # Maybe a bug in ape.
             logger.debug(f"Unhandled PCs: '{','.join([f'{x}' for x in unhandled_pcs])}'")
+
+        return handled_pcs, statements_hit
 
 
 class CoverageTracker(ManagerAccessMixin):
@@ -119,10 +133,44 @@ class CoverageTracker(ManagerAccessMixin):
               sources covered for a particular transaction.
         """
         for control_flow in traceback:
+            last_path: Optional[Path] = None
+            last_pcs: Set[int] = set()
+            last_call: Optional[str] = None
+
             if not control_flow.source_path or not control_flow.pcs:
                 continue
 
-            self.data.cover(control_flow.source_path, control_flow.pcs)
+            new_pcs = self._cover(
+                control_flow, last_path=last_path, last_pcs=last_pcs, last_call=last_call
+            )
+            last_path = control_flow.source_path
+            last_pcs = new_pcs
+            last_call = control_flow.closure.full_name
+
+    def _cover(
+        self,
+        control_flow: ControlFlow,
+        last_path: Optional[Path] = None,
+        last_pcs: Optional[Set[int]] = None,
+        last_call: Optional[str] = None,
+    ) -> Set[int]:
+        if control_flow.source_path is None:
+            return set()
+
+        last_pcs = last_pcs or set()
+        pcs = control_flow.pcs
+        if last_path is not None and control_flow.source_path == last_path:
+            # Remove possibly duplicate PCs. This shouldn't happen,
+            # but just in case the compiler made a mistake, we will
+            # still get accurate coverage.
+            new_pcs = pcs - last_pcs
+
+        else:
+            new_pcs = pcs
+
+        inc_fn = last_call is None or last_call != control_flow.closure.full_name
+        self.data.cover(control_flow.source_path, new_pcs, inc_fn_hits=inc_fn)
+        return new_pcs
 
     def show_session_coverage(self) -> bool:
         if not self.data or not self.data.report or not self.data.report.sources:
