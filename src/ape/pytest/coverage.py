@@ -67,6 +67,7 @@ class CoverageData(ManagerAccessMixin):
             return
 
         handled_pcs = set()
+        statements_hit = []
         for pc in pcs:
             if pc < 0:
                 continue
@@ -76,9 +77,17 @@ class CoverageData(ManagerAccessMixin):
                 continue
 
             for statement in source_coverage.statements:
+                if statement in statements_hit:
+                    # With 1 group of PCs, can only hit a statement once.
+                    # This is because likely multiple PCs together have the same
+                    # location and are really the same statement.
+                    # To increase the hit count by more than one, submit multiple txns.
+                    continue
+
                 if pc in statement.pcs:
                     statement.hit_count += 1
                     handled_pcs.add(pc)
+                    statements_hit.append(statement)
 
         unhandled_pcs = set(pcs) - handled_pcs
         if unhandled_pcs:
