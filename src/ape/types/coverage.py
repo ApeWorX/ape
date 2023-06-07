@@ -74,6 +74,13 @@ class FunctionCoverage(BaseModel):
     See :class:`~ape.types.coverage.CoverageStatement` for more details.
     """
 
+    hit_count: int = 0
+    """
+    The times this function was called.
+    **NOTE**: This is needed as a separate data point since not all methods may have
+    statements (such as auto-getters).
+    """
+
     @property
     def lines_covered(self) -> int:
         """
@@ -209,7 +216,7 @@ class ContractCoverage(BaseModel):
         """
         The number of functions with a hit counter greater than zero.
         """
-        return len([fn for fn in self.functions if fn.lines_covered > 0])
+        return len([fn for fn in self.functions if fn.hit_count > 0])
 
     @property
     def function_rate(self) -> float:
@@ -605,6 +612,7 @@ class CoverageReport(BaseModel):
                     for fn_name, function in fn_map.items():
                         xfunction = xml_out.createElement("function")
                         xfunction.setAttribute("name", fn_name)
+                        xfunction.setAttribute("hits", f"{function.hit_count}")
                         _add_xml_statement_stats(xfunction, function)
                         xstatements = xml_out.createElement("statements")
 
