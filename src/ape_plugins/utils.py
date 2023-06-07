@@ -25,10 +25,14 @@ def _pip_freeze_plugins() -> List[str]:
 
     new_lines = []
     for package in lines:
-        if "==" in package:
-            new_lines.append(package)
-        elif "-e" in package:
+        if "-e" in package:
             new_lines.append(package.split(".git")[0].split("/")[-1])
+        elif "@" in package:
+            new_lines.append(package.split("@")[0].strip())
+        elif "==" in package:
+            new_lines.append(package.split("==")[0].strip())
+        else:
+            new_lines.append(package)
 
     return new_lines
 
