@@ -1,4 +1,4 @@
-from typing import List, Optional
+from typing import List, NewType, Optional
 
 from pydantic import NonNegativeInt
 
@@ -14,6 +14,9 @@ from .provider import LocalProvider
 class GasExclusion(PluginConfig):
     contract_name: str = "*"  # If only given method, searches across all contracts.
     method_name: Optional[str] = None  # By default, match all methods in a contract
+
+
+CoverageExclusion = NewType("CoverageExclusion", GasExclusion)
 
 
 class GasConfig(PluginConfig):
@@ -75,6 +78,15 @@ class CoverageConfig(PluginConfig):
     reports = CoverageReportsConfig()
     """
     Enable reports.
+    """
+
+    exclude: List[CoverageExclusion] = []
+    """
+    Contract methods patterns to skip. Specify ``contract_name:`` and not
+    ``method_name:`` to skip all methods in the contract. Only specify
+    ``method_name:`` to skip all methods across all contracts. Specify
+    both to skip methods in a certain contracts. Entries use glob-rules;
+    use ``prefix_*`` to skip all items with a certain prefix.
     """
 
 
