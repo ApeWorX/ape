@@ -1,11 +1,11 @@
 from pathlib import Path
-from typing import Iterable, Optional
+from typing import Iterable, List, Optional
 
 from ethpm_types.source import ContractSource
 
 from ape.logging import logger
 from ape.pytest.config import ConfigWrapper
-from ape.types import CoverageReport, SourceTraceback
+from ape.types import ContractFunctionPath, CoverageReport, SourceTraceback
 from ape.types.coverage import CoverageProject
 from ape.utils import (
     ManagerAccessMixin,
@@ -90,6 +90,10 @@ class CoverageTracker(ManagerAccessMixin):
     @property
     def enabled(self) -> bool:
         return self.config_wrapper.track_coverage
+
+    @property
+    def exclusions(self) -> List[ContractFunctionPath]:
+        return self.config_wrapper.coverage_exclusions
 
     def cover(self, traceback: SourceTraceback):
         """
