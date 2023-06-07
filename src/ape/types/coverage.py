@@ -100,7 +100,7 @@ class FunctionCoverage(BaseModel):
         """
         The number of lines hit divided by number of lines.
         """
-        return self.lines_covered / self.lines_valid
+        return self.lines_covered / self.lines_valid if self.lines_valid > 0 else 0
 
     def dict(self, *args, **kwargs) -> dict:
         attribs = super().dict(*args, **kwargs)
@@ -303,7 +303,7 @@ class ContractSourceCoverage(BaseModel):
         """
         The number of lines hit divided by number of lines.
         """
-        return self.lines_covered / self.lines_valid
+        return self.lines_covered / self.lines_valid if self.lines_valid > 0 else 0
 
     @property
     def total_functions(self) -> int:
@@ -324,7 +324,7 @@ class ContractSourceCoverage(BaseModel):
         """
         The rate of functions hit versus total functions.
         """
-        return self.function_hits / self.total_functions
+        return self.function_hits / self.total_functions if self.total_functions > 0 else 0
 
     def dict(self, *args, **kwargs) -> dict:
         attribs = super().dict(*args, **kwargs)
@@ -402,7 +402,7 @@ class CoverageProject(BaseModel):
         """
         The number of lines hit divided by number of lines.
         """
-        return self.lines_covered / self.lines_valid
+        return self.lines_covered / self.lines_valid if self.lines_valid > 0 else 0
 
     @property
     def total_functions(self) -> int:
@@ -423,7 +423,7 @@ class CoverageProject(BaseModel):
         """
         The rate of functions hit versus total functions.
         """
-        return self.function_hits / self.total_functions
+        return self.function_hits / self.total_functions if self.total_functions > 0 else 0
 
     def dict(self, *args, **kwargs) -> dict:
         attribs = super().dict(*args, **kwargs)
@@ -507,7 +507,7 @@ class CoverageReport(BaseModel):
         """
         The number of lines hit divided by number of lines.
         """
-        return self.lines_covered / self.lines_valid
+        return self.lines_covered / self.lines_valid if self.lines_valid > 0 else 0
 
     @property
     def total_functions(self) -> int:
@@ -528,7 +528,7 @@ class CoverageReport(BaseModel):
         """
         The rate of functions hit versus total functions.
         """
-        return self.function_hits / self.total_functions
+        return self.function_hits / self.total_functions if self.total_functions > 0 else 0
 
     @property
     def xml(self) -> str:
