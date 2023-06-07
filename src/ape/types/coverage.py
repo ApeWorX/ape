@@ -18,13 +18,14 @@ _DTD_URL = "https://raw.githubusercontent.com/cobertura/web/master/htdocs/xml/co
 class CoverageStatement(BaseModel):
     """
     An item that can get hit during coverage. Examples of coverage items are
-    line segments, which are generally calculated from groupings of AST occupying
-    the same location, that can be tracked by their PC values. During a transaction's
-    trace, we find these values and we find the corresponding coverage item and
-    increment the hit count. Another example of a coverage item is a compiler-builtin
-    check, also marked by a PC value. If we encounter such PC in a trace, its hit
-    count is incremented. Builtin compiler checks may or may not correspond to an
-    actual location in the source code, depending on the type of check.
+    line segments, which are generally calculated from groupings of AST nodes
+    occupying the same location, that can be tracked by their PC values. During
+    a transaction's trace, we find these values and we find the corresponding
+    coverage item and increment the hit count. Another example of a coverage item
+    is a compiler-builtin check, also marked by a PC value. If we encounter such
+    PC in a trace, its hit count is incremented. Builtin compiler checks may or
+    may not correspond to an actual location in the source code, depending on the
+    type of check.
     """
 
     location: Optional[SourceLocation] = None
