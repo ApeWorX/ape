@@ -110,6 +110,15 @@ class CoverageTracker(ManagerAccessMixin):
         if not self.data or not self.data.report or not self.data.report.sources:
             return False
 
-        table = parse_coverage_table(self.data.report)
-        self.chain_manager._reports.echo(table)
+        # Reports are set in ape-config.yaml.
+        reports = self.config_wrapper.ape_test_config.coverage.reports
+        out_folder = self.project_manager.local_project._cache_folder
+        if reports.terminal:
+            table = parse_coverage_table(self.data.report)
+            self.chain_manager._reports.echo(table)
+        if reports.xml:
+            self.data.report.write_xml(out_folder)
+        if reports.html:
+            self.data.report.write_html(out_folder)
+
         return True

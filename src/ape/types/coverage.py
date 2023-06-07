@@ -1,6 +1,7 @@
 import itertools
 from datetime import datetime
 from html.parser import HTMLParser
+from pathlib import Path
 from typing import Any, Dict, List, Optional, Set
 from xml.dom.minidom import getDOMImplementation
 from xml.etree.ElementTree import Element, SubElement, tostring
@@ -9,6 +10,7 @@ from ethpm_types import BaseModel
 from ethpm_types.source import ContractSource, SourceLocation
 from pydantic import validator
 
+from ape.logging import logger
 from ape.utils.misc import get_current_timestamp
 from ape.version import version as ape_version
 
@@ -530,6 +532,13 @@ class CoverageReport(BaseModel):
 
     @property
     def xml(self) -> str:
+        """
+        The coverage XML report as a string.
+        """
+        xml_out = self._get_xml()
+        return xml_out.toprettyxml(indent="  ")
+
+    def _get_xml(self):
         impl = getDOMImplementation()
         if not impl:
             # Only for mypy.
@@ -628,11 +637,66 @@ class CoverageReport(BaseModel):
             xproject.appendChild(xsources)
             xprojects.appendChild(xproject)
         xcoverage.appendChild(xprojects)
+        return xml_out
 
-        return xml_out.toprettyxml(indent="  ")
+    def write_xml(self, path: Path):
+        xml = self.xml
+        if not xml:
+            return
+
+        if path.is_dir():
+            path = path / "coverage.xml"
+
+        path.unlink(missing_ok=True)
+        path.write_text(xml)
+
+    def write_html(self, path: Path):
+        html = self.html
+        if not html:
+            return
+
+        if path.is_dir():
+            # Use as base path if given.
+            html_path = path / "htmlcov"
+            html_path.mkdir(exist_ok=True)
+        elif not path.exists() and path.parent.is_dir():
+            # Write to path if given a new one.
+            html_path = path
+        else:
+            raise ValueError("Invalid path argument to `write_html()`.")
+
+        # Create new index.html.
+        index = html_path / "index.html"
+        index.unlink(missing_ok=True)
+        index.write_text(html)
+
+        favicon = html_path / "favicon.ico"
+        if not favicon.is_file():
+            # Use favicon that already ships with Ape's docs.
+            root = Path(__file__).parent
+            docs_folder = root / "docs"
+            while "ape" in root.as_posix() and not docs_folder.is_dir():
+                root = root.parent
+                docs_folder = root / "docs"
+
+            docs_favicon = docs_folder / "favicon.ico"
+            if docs_folder.is_dir() and docs_favicon.is_file():
+                favicon.write_bytes(docs_favicon.read_bytes())
+            else:
+                # Don't let this stop us from generating the report.
+                # Although, this shouldn't happen.
+                logger.debug("Failed finding favicon for coverage HTML.")
 
     @property
     def html(self) -> str:
+        """
+        The coverage HTML report as a string.
+        """
+        html = self._get_html()
+        html_str = tostring(html, encoding="utf8", method="html").decode()
+        return _HTMLPrettfier().prettify(html_str)
+
+    def _get_html(self) -> Any:
         html = Element("html")
         head = SubElement(html, "head")
         meta = SubElement(head, "meta")
@@ -647,8 +711,7 @@ class CoverageReport(BaseModel):
         SubElement(html, "body")
         self._html_header_sub_element(html)
         self._html_main_sub_element(html)
-        html_str = tostring(html, encoding="utf8", method="html").decode()
-        return _HTMLPrettfier().prettify(html_str)
+        return html
 
     def _html_header_sub_element(self, html: Any) -> Any:
         header = SubElement(html, "header")
