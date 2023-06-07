@@ -201,8 +201,12 @@ class CompilerAPI(BaseInterfaceModel):
         self, source_coverage: ContractSourceCoverage, contract_source: ContractSource
     ):  # type: ignore[empty-body]
         """
-        Initialize an empty report for the given source ID.
+        Initialize an empty report for the given source ID. Modifies the given source
+        coverage in-place.
 
         Args:
-            source_path (Path): The source to generate an empty coverage profile for.
+            source_coverage (:class:`~ape.types.coverage.SourceCoverage`): The source
+              to generate an empty coverage profile for.
+            contract_source (``ethpm_types.source.ContractSource``): The contract with
+              source content.
         """
