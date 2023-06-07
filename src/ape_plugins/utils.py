@@ -182,7 +182,7 @@ class PluginInstallRequest(BaseInterfaceModel):
         """
         A string like ``trezor==0.4.0``.
         """
-        if self.version.startswith("git+"):
+        if self.version and self.version.startswith("git+"):
             return self.version
 
         version_key = f"=={self.version}" if self.version and self.version[0].isnumeric() else ""

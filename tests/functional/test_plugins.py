@@ -35,3 +35,14 @@ class TestPluginInstallRequest:
         request = PluginInstallRequest(name="foo-bar", version="0.5.0")
         actual = request.install_str
         assert actual == "ape-foo-bar==0.5.0"
+
+    def test_install_str_with_complex_constraint(self):
+        request = PluginInstallRequest(name="foo", version=">=0.5.0,<0.6.0")
+        actual = request.install_str
+        assert actual == "ape-foo>=0.5.0,<0.6.0"
+
+    def test_install_str_when_using_git_remote(self):
+        url = "git+https://example.com/ape-foo/branch"
+        request = PluginInstallRequest(name="foo", version=url)
+        actual = request.install_str
+        assert actual == url

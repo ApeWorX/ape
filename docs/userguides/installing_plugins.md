@@ -33,7 +33,6 @@ plugins:
   - name: ens
   - name: etherscan
     version: ">=0.6.2,<0.7"
-
 ```
 
 The `name` field is required.
