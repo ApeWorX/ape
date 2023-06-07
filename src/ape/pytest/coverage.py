@@ -51,6 +51,11 @@ class CoverageData(ManagerAccessMixin):
 
         timestamp = int(round(get_current_timestamp()))
         report = CoverageReport(projects=[project_coverage], timestamp=timestamp)
+
+        # Remove emptys.
+        for project in report.projects:
+            project.sources = [x for x in project.sources if len(x.statements) > 0]
+
         self._report = report
         return report
 
