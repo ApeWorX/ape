@@ -546,4 +546,36 @@ ape test --coverage
 
 Afterwards, you should see a coverage report looking something like:
 
-# TODO: show a good one
+```shell
+============================================= Coverage Profile =============================================
+               Contract Coverage               
+                                               
+  Name          Stmts   Miss   Cover    Funcs  
+ ───────────────────────────────────────────── 
+  Contract.vy   7       1      85.71%   80.0% 
+```
+
+To generate other coverage reports such XML or HTML, configure it like so:
+
+```yaml
+test:
+  coverage:
+    reports:
+      terminal: False  # Disable the terminal table (True by default)
+      xml: True  # Enable XML report (.build/coverage.xml)
+      html: True  # Enable HTML report (.build/htmlcov)
+```
+
+Must like gas reporting, you can also exclude contracts and methods from coverage using your `ape-config.yaml` file.
+The following demonstrates how to do this:
+
+```yaml
+test:
+  coverage:
+    exclude:
+      - method_name: DEBUG_*         # Exclude all methods starting with `DEBUG_`.
+      - contract_name: MockToken     # Exclude all methods in contract named `MockToken`.
+      - contract_name: PoolContract  # Exclude methods starting with `reset_` in `PoolContract`.
+        method_name: reset_*
+```
+
