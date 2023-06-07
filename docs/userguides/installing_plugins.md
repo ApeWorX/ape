@@ -37,7 +37,7 @@ plugins:
 ```
 
 The `name` field is required.
-Additionally, you may specify a `version` with a constraint prefix.
+Additionally, you may specify a `version` with or without constraints.
 
 To install the plugins listed in your project, run the following command from the project's root directory:
 
