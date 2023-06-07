@@ -66,7 +66,7 @@ class PluginInstallRequest(BaseInterfaceModel):
 
         elif not version:
             # Only check name for version constraint if not in version.
-            # NOTE: This happens when using the CLI to provider version constraints.
+            # NOTE: This happens when using the CLI to provide version constraints.
             for constraint in ("==", "<=", ">=", "@git+"):
                 # Version constraint is part of name field.
                 if constraint not in name:
