@@ -1,6 +1,6 @@
 import subprocess
 import sys
-from typing import List, Optional
+from typing import List, Optional, Tuple
 
 from pydantic import root_validator
 
@@ -61,16 +61,15 @@ class PluginInstallRequest(BaseInterfaceModel):
             version = version
 
         elif not version:
-            # Only check name for version constraint if wasn't properly specified.
+            # Only check name for version constraint if not in version.
+            # NOTE: This happens when using the CLI to provider version constraints.
             for constraint in ("==", "<=", ">="):
                 # Version constraint is part of name field.
                 if constraint not in name:
                     continue
 
                 # Constraint found.
-                parts = name.split(constraint)
-                name = parts[0]
-                version = f"{constraint}{parts[1]}"
+                name, version = _split_name_and_version(name)
                 break
 
         return {"name": clean_plugin_name(name), "version": version}
@@ -147,8 +146,7 @@ class PluginInstallRequest(BaseInterfaceModel):
         """
         ``True`` if the plugin is installed in the current Python environment.
         """
-
-        ape_packages = [r.split("==")[0] for r in _pip_freeze_plugins()]
+        ape_packages = [_split_name_and_version(n)[0] for n in _pip_freeze_plugins()]
         return self.package_name in ape_packages
 
     @property
@@ -208,7 +206,7 @@ class ModifyPluginResultHandler:
             version = self._plugin.pip_freeze_version
             if version:
                 # Sometimes, like in editable mode, the version is missing here.
-                plugin_id = f"{plugin_id}@{version}"
+                plugin_id = f"{plugin_id}=={version}"
 
             self._logger.success(f"Plugin '{plugin_id}' has been installed.")
             return True
@@ -251,3 +249,12 @@ class ModifyPluginResultHandler:
 
     def _log_modify_failed(self, verb: str):
         self._logger.error(f"Failed to {verb} plugin '{self._plugin}.")
+
+
+def _split_name_and_version(value: str) -> Tuple[str, Optional[str]]:
+    chars = [c for c in ("=", "<", ">") if c in value]
+    if not chars:
+        return value, None
+
+    index = min(value.index(c) for c in chars)
+    return value[:index], value[index:]

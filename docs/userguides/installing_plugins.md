@@ -48,7 +48,7 @@ ape plugins install .
 To install plugins individually, run the following command:
 
 ```bash
-ape plugins install vyper solidity
+ape plugins install vyper "solidity>=0.6,<0.7"
 ```
 
 To install a plugin from a branch that is not yet released, you can use a `git+` prefixed value for the version:
