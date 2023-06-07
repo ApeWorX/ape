@@ -1521,7 +1521,7 @@ Update the transaction arguments with the overrides in <code class="docutils lit
 Defaults to using <code class="docutils literal notranslate"><span class="pre">keccak</span></code> but can be overridden in different ecosystems.</p>
 <p>Override example:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">ape.api</span> <span class="kn">import</span> <span class="n">EcosystemAPI</span>
-<span class="kn">from</span> <span class="nn">hexbytes</span> <span class="kn">import</span> <span class="n">HexBytes</span>
+<span class="kn">from</span> <span class="nn">ethpm_types</span> <span class="kn">import</span> <span class="n">HexBytes</span>
 
 <span class="k">class</span> <span class="nc">MyEcosystem</span><span class="p">(</span><span class="n">EcosystemAPI</span><span class="p">):</span>
     <span class="k">def</span> <span class="nf">get_method_selector</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">abi</span><span class="p">:</span> <span class="n">MethodABI</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">HexBytes</span><span class="p">:</span>
