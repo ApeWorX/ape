@@ -338,8 +338,14 @@ def allow_disconnected(fn: Callable):
     return inner
 
 
-def get_current_timestamp() -> float:
-    return datetime.utcnow().timestamp()
+def get_current_timestamp() -> int:
+    """
+    Get the current UNIX timestamp in milliseconds.
+    Returns:
+
+    """
+
+    return round(datetime.utcnow().timestamp() * 1000)
 
 
 __all__ = [
