@@ -622,7 +622,7 @@ class CoverageReport(BaseModel):
             for src in project.sources:
                 for contract in src.contracts:
                     xclass = xml_out.createElement("class")
-                    xclass.setAttribute("name", contract.name)
+                    xclass.setAttribute("name", src.source_id)
                     xclass.setAttribute("line-rate", f"{round(contract.line_rate, 4)}")
                     xclass.setAttribute("branch-rate", "0")  # TODO
                     xclass.setAttribute("complexity", "0")
