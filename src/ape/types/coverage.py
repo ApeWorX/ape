@@ -16,6 +16,42 @@ from ape.version import version as ape_version
 
 _APE_DOCS_URL = "https://docs.apeworx.io/ape/stable/index.html"
 _DTD_URL = "https://raw.githubusercontent.com/cobertura/web/master/htdocs/xml/coverage-04.dtd"
+_HTML_CSS = """
+@import url("https://fonts.cdnfonts.com/css/barlow");
+
+html {
+  font-weight: 400;
+  font-family: "Barlow", sans-serif;
+  min-height: 100%;
+  background: rgb(244, 244, 244);
+  font-size: 17px;
+}
+
+body {
+  font-weight: 400;
+  font-family: "Barlow", sans-serif;
+  min-height: 100%;
+  background: rgb(244, 244, 244);
+  font-size: 17px;
+}
+
+p {
+  font-weight: 400;
+  font-family: "Barlow", sans-serif;
+  font-size: 18px;
+}
+
+h1 {
+  font-size: 60px;
+  line-height: 54px;
+  font-weight: 600;
+  font-family: "Barlow", sans-serif;
+  text-transform: uppercase;
+  letter-spacing: -0.05em;
+  color: #000000;
+  padding: 0 !important;
+}
+""".lstrip()
 
 
 class CoverageStatement(BaseModel):
@@ -760,6 +796,10 @@ class CoverageReport(BaseModel):
                 # Although, this shouldn't happen.
                 logger.debug("Failed finding favicon for coverage HTML.")
 
+            css = html_path / "styles.css"
+            css.unlink(missing_ok=True)
+            css.write_text(_HTML_CSS)
+
     @property
     def html(self) -> str:
         """
@@ -781,6 +821,9 @@ class CoverageReport(BaseModel):
         favicon.set("rel", "icon")
         favicon.set("sizes", "32x32")
         favicon.set("href", "favicon.ico")
+        css = SubElement(head, "link")
+        css.set("rel", "stylesheet")
+        css.set("href", "styles.css")
         SubElement(html, "body")
         self._html_header_sub_element(html)
         self._html_main_sub_element(html)
@@ -790,10 +833,6 @@ class CoverageReport(BaseModel):
         header = SubElement(html, "header")
         div = SubElement(header, "div")
         h1 = SubElement(div, "h1")
-        line_rate = round(self.line_rate * 100, 2)
-        if str(line_rate).endswith("0"):
-            line_rate = int(line_rate)
-
         h1.text = "Coverage report"
 
         if len(self.projects) == 1:
@@ -825,8 +864,8 @@ class CoverageReport(BaseModel):
                 th.text = column
 
             tbody = SubElement(table, "tbody")
-            tbody_tr = SubElement(tbody, "tr")
             for src in project.sources:
+                tbody_tr = SubElement(tbody, "tr")
                 source_td = SubElement(tbody_tr, "td")
                 source_td.text = src.source_id
                 stmts_td = SubElement(tbody_tr, "td")
