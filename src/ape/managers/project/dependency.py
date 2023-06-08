@@ -1,6 +1,5 @@
 import json
 import os
-import shutil
 import tempfile
 from pathlib import Path
 from typing import Dict, Optional, Type
@@ -218,7 +217,7 @@ class NpmDependency(DependencyAPI):
     npm: str
     """
     The NPM repo ID e.g. the organization name followed by the repo name,
-    such as ``"@gnosis.pm/safe-singleton-factory"``
+    such as ``"@gnosis.pm/safe-singleton-factory"``.
     """
 
     @cached_property
@@ -226,14 +225,7 @@ class NpmDependency(DependencyAPI):
         if self.version:
             return self.version
         else:
-            raise UnknownVersionError("Missing version", self.name)
-
-    @property
-    def npm_bin(self) -> str:
-        _npm = shutil.which("npm")
-        if not _npm:
-            raise ProjectError("Could not locate `npm` executable.")
-        return _npm
+            raise ProjectError(f"Missing version for NPM dependenciy '{self.name}'.")
 
     @property
     def uri(self) -> AnyUrl:
@@ -245,20 +237,18 @@ class NpmDependency(DependencyAPI):
             # Already downloaded
             return self.cached_manifest
 
-        node_module = os.path.exists(f"node_modules/{self.npm}")
-        if node_module:
-            current_path = os.getcwd()
-            node_module_folder = Path(os.path.join(current_path, f"node_modules/{self.npm}"))
-            node_package = f"{node_module_folder}/package.json"
-            with open(node_package) as f:
-                data = json.load(f)
+        node_modules = os.path.exists(f"node_modules/{self.npm}")
+        if node_modules:
+            package_folder = Path.cwd() / "node_modules" / str(self.npm)
+            package_json = package_folder / "package.json"
+            data = json.loads(package_json.read_text())
             node_version = data.get("version")
             if node_version != self.version:
-                raise UnknownVersionError(
-                    "Version mismatch. Please reinstall the correct version.", self.name
+                raise ProjectError(
+                    f"Version mismatch in {self.name}. " "Please reinstall the correct version."
                 )
             else:
-                return self._extract_local_manifest(node_module_folder)
+                return self._extract_local_manifest(package_folder)
 
         else:
-            raise ProjectError("Please install npm package")
+            raise ProjectError("Please install NPM package.")
