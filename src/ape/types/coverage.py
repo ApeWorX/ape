@@ -108,6 +108,11 @@ class FunctionCoverage(BaseModel):
         """
         The number of lines hit divided by number of lines.
         """
+        if not self.statements:
+            # If there are no statements, rely on fn hit count only.
+            return 1.0 if self.hit_count > 0 else 0.0
+
+        # This function has hittable statements.
         return self.lines_covered / self.lines_valid if self.lines_valid > 0 else 0
 
     def dict(self, *args, **kwargs) -> dict:
@@ -125,12 +130,14 @@ class FunctionCoverage(BaseModel):
     ):
         """
         Initialize a statement in the coverage profile with a hit count starting at zero.
-        This statement is ready to accumlate hits as tests execute.
+        This statement is ready to accumulate hits as tests execute.
 
         Args:
             pc (int): The program counter of the statement.
             location (Optional[ethpm_types.source.SourceStatement]): The location of the statement,
               if it exists.
+            tag (Optional[str]): Optionally provide more information about the statements being hit.
+              This is useful for builtin statements that may be missing context otherwise.
         """
 
         for statement in self.statements:
@@ -143,12 +150,14 @@ class FunctionCoverage(BaseModel):
             # Already tracking this location.
             statement.pcs.add(pc)
 
+            # Statement found. Increment hit count and end early.
+            self.hit_count += 1
+
             if not statement.tag:
                 statement.tag = tag
 
             return
 
-        coverage_statement = None
         if location:
             # Adding a source-statement for the first time.
             coverage_statement = CoverageStatement(location=location, pcs={pc}, tag=tag)
@@ -159,6 +168,7 @@ class FunctionCoverage(BaseModel):
 
         if coverage_statement is not None:
             self.statements.append(coverage_statement)
+            self.hit_count += 1
 
 
 class ContractCoverage(BaseModel):

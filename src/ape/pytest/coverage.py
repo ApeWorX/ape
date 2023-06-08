@@ -1,6 +1,7 @@
 from pathlib import Path
 from typing import Iterable, List, Optional, Set
 
+import click
 from ethpm_types.source import ContractSource
 
 from ape.logging import logger
@@ -16,7 +17,7 @@ from ape.utils import (
     ManagerAccessMixin,
     get_current_timestamp_ms,
     get_relative_path,
-    parse_coverage_table,
+    parse_coverage_tables,
 )
 
 
@@ -25,7 +26,7 @@ class CoverageData(ManagerAccessMixin):
         self.base_path = base_path
         self.sources = list(sources)
         self._report: Optional[CoverageReport] = None
-        self._init_coverage_profile()  # Should set self._report to not None.
+        self._init_coverage_profile()  # Inits self._report.
 
     @property
     def report(self) -> CoverageReport:
@@ -237,8 +238,18 @@ class CoverageTracker(ManagerAccessMixin):
         reports = self.config_wrapper.ape_test_config.coverage.reports
         out_folder = self.project_manager.local_project._cache_folder
         if reports.terminal:
-            table = parse_coverage_table(self.data.report)
-            self.chain_manager._reports.echo(table)
+            verbose = (
+                reports.terminal.get("verbose", False)
+                if isinstance(reports.terminal, dict)
+                else False
+            )
+            tables = parse_coverage_tables(self.data.report, verbose=verbose)
+            for idx, table in enumerate(tables):
+                self.chain_manager._reports.echo(table)
+
+                if idx < len(tables) - 1:
+                    click.echo()
+
         if reports.xml:
             self.data.report.write_xml(out_folder)
         if reports.html:

@@ -52,7 +52,7 @@ from ape.utils.testing import (
     GeneratedDevAccount,
     generate_dev_accounts,
 )
-from ape.utils.trace import TraceStyles, parse_coverage_table, parse_gas_table
+from ape.utils.trace import TraceStyles, parse_coverage_tables, parse_gas_table
 
 __all__ = [
     "abstractmethod",
@@ -88,7 +88,7 @@ __all__ = [
     "LogInputABICollection",
     "ManagerAccessMixin",
     "nonreentrant",
-    "parse_coverage_table",
+    "parse_coverage_tables",
     "parse_gas_table",
     "raises_not_implemented",
     "returns_array",

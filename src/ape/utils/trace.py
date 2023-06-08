@@ -189,8 +189,12 @@ def parse_gas_table(report: "GasReport") -> List[Table]:
     return tables
 
 
-def parse_coverage_table(coverage: "CoverageReport") -> Table:
-    table: Table = Table(title="Contract Coverage", box=SIMPLE)
+def parse_coverage_tables(coverage: "CoverageReport", verbose: bool = False) -> List[Table]:
+    return _parse_verbose_coverage(coverage) if verbose else [_parse_coverage_table(coverage)]
+
+
+def _parse_coverage_table(coverage: "CoverageReport") -> Table:
+    table = Table(title="Contract Coverage", box=SIMPLE)
 
     # NOTE: Purposely uses same column names as coveragepy
     table.add_column("Name")
@@ -210,6 +214,33 @@ def parse_coverage_table(coverage: "CoverageReport") -> Table:
             )
 
     return table
+
+
+def _parse_verbose_coverage(coverage: "CoverageReport") -> List[Table]:
+    tables = []
+    for project in coverage.projects:
+        for src in project.sources:
+            for contract in src.contracts:
+                title = f"{contract.name} Coverage"
+                line_rate = round(contract.line_rate, 4) * 100
+                fn_rate = round(contract.function_rate, 4) * 100
+                caption = f"line={line_rate}%, func={fn_rate}%"
+                table = Table(title=title, box=SIMPLE, caption=caption)
+                table.add_column("Func")
+                table.add_column("Stmts")
+                table.add_column("Miss")
+                table.add_column("Cover")
+                for fn in contract.functions:
+                    table.add_row(
+                        fn.name,
+                        f"{fn.lines_valid}",
+                        f"{fn.miss_count}",
+                        f"{round(fn.line_rate * 100, 2)}%",
+                    )
+
+                tables.append(table)
+
+    return tables
 
 
 def _dict_to_str(dictionary: Dict, color: Optional[str] = None) -> str:

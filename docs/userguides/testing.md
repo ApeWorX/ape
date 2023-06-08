@@ -566,6 +566,16 @@ test:
       html: True  # Enable HTML report (.build/htmlcov)
 ```
 
+To see a much more verbose coverage report, set the `terminal` field to a dictionary that includes `"verbose": true`:
+
+```yaml
+test:
+  coverage:
+    terminal: {"verbose": true}  # Show verbose coverage information in the terminal.
+```
+
+This is useful when trying to find the missing areas to cover.
+
 Much like gas reporting, you can also exclude contracts and methods from tracking coverage using your `ape-config.yaml` file.
 The following demonstrates how to do this:
 
@@ -578,4 +588,3 @@ test:
       - contract_name: PoolContract  # Exclude methods starting with `reset_` in `PoolContract`.
         method_name: reset_*
 ```
-
