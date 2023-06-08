@@ -112,4 +112,5 @@ def test_npm_dependency():
         file.write_text(source_content)
         dependency = NpmDependency(name=package, npm=f"{name}/{package}", version=version)
         manifest = dependency.extract_manifest()
+        assert manifest.sources
         assert str(manifest.sources["contract.json"].content) == f"{source_content}\n"
