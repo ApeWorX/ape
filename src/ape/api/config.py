@@ -27,6 +27,9 @@ class PluginConfig(BaseSettings):
     @classmethod
     def from_overrides(cls, overrides: Dict) -> "PluginConfig":
         default_values = cls().dict()
+        if not isinstance(default_values, dict):
+            # Happens for unions with dicts where the default is a non-dict.
+            default_values = {}
 
         def update(root: Dict, value_map: Dict):
             for key, val in value_map.items():

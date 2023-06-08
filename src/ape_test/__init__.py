@@ -1,4 +1,4 @@
-from typing import List, NewType, Optional
+from typing import Dict, List, NewType, Optional, Union
 
 from pydantic import NonNegativeInt
 
@@ -39,29 +39,33 @@ class GasConfig(PluginConfig):
     """
 
 
+"""Dict is for extra report settings."""
+_ReportType = Union[bool, Dict]
+
+
 class CoverageReportsConfig(PluginConfig):
     """
     Enable reports.
     """
 
-    terminal: bool = True
+    terminal: _ReportType = True
     """
     Set to ``False`` to hide the terminal coverage report.
     """
 
-    xml: bool = False
+    xml: _ReportType = False
     """
     Set to ``True`` to generate an XML coverage report in your .build folder.
     """
 
-    html: bool = False
+    html: _ReportType = False
     """
     Set to ``True`` to generate HTML coverage reports.
     """
 
     @property
     def has_any(self) -> bool:
-        return self.html or self.terminal or self.xml
+        return any(x not in ({}, None, False) for x in (self.html, self.terminal, self.xml))
 
 
 class CoverageConfig(PluginConfig):

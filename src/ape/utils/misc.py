@@ -341,10 +341,7 @@ def allow_disconnected(fn: Callable):
 def get_current_timestamp() -> int:
     """
     Get the current UNIX timestamp in milliseconds.
-    Returns:
-
     """
-
     return round(datetime.utcnow().timestamp() * 1000)
 
 
