@@ -28,14 +28,15 @@ To add plugins to your project, edit your `ape-config.yaml` file:
 ```yaml
 plugins:
   - name: solidity
-    version: 0.4.0
+    version: 0.6.0
   - name: hardhat
   - name: ens
   - name: etherscan
+    version: ">=0.6.2,<0.7"
 ```
 
 The `name` field is required.
-Additionally, you may specify a `version`.
+Additionally, you may specify a `version` with or without constraints.
 
 To install the plugins listed in your project, run the following command from the project's root directory:
 
@@ -46,7 +47,21 @@ ape plugins install .
 To install plugins individually, run the following command:
 
 ```bash
-ape plugins install vyper solidity
+ape plugins install vyper "solidity>=0.6,<0.7"
+```
+
+To install a plugin from a branch that is not yet released, you can use a `git+` prefixed value for the version:
+
+```yaml
+plugins:
+  - name: foobar
+    version: git+https://github.com/<owner-of-plugin>/ape-foobar.git@<branch/name>
+```
+
+Or from the CLI like:
+
+```shell
+ape plugins install "foobar@git+https://github.com/<owner-of-plugin>/ape-foobar.git@<branch/name>"
 ```
 
 ## Plugin Types

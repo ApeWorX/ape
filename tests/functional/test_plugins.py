@@ -19,7 +19,7 @@ class TestPluginInstallRequest:
         # This allows parsing requirements files easier
         request = PluginInstallRequest(name="ape-foo-bar==0.5.0")
         assert request.name == "foo-bar"
-        assert request.version == "0.5.0"
+        assert request.version == "==0.5.0"
 
     @pytest.mark.parametrize("version", ("0.5.0", "v0.5.0", "0.5.0a123"))
     def test_version(self, version):
@@ -35,3 +35,25 @@ class TestPluginInstallRequest:
         request = PluginInstallRequest(name="foo-bar", version="0.5.0")
         actual = request.install_str
         assert actual == "ape-foo-bar==0.5.0"
+
+    def test_install_str_with_complex_constraint(self):
+        request = PluginInstallRequest(name="foo", version=">=0.5.0,<0.6.0")
+        actual = request.install_str
+        assert actual == "ape-foo>=0.5.0,<0.6.0"
+
+    def test_install_str_with_complex_constraint_in_name(self):
+        request = PluginInstallRequest(name="foo>=0.5.0,<0.6.0")
+        actual = request.install_str
+        assert actual == "ape-foo>=0.5.0,<0.6.0"
+
+    def test_install_str_when_using_git_remote(self):
+        url = "git+https://example.com/ape-foo/branch"
+        request = PluginInstallRequest(name="foo", version=url)
+        actual = request.install_str
+        assert actual == url
+
+    def test_install_str_remote_in_name(self):
+        url = "git+https://example.com/ape-foo/branch"
+        request = PluginInstallRequest(name=f"foo@{url}")
+        actual = request.install_str
+        assert actual == url

@@ -183,14 +183,14 @@ def install(cli_ctx, plugins, skip_confirmation, upgrade):
             cli_ctx.logger.warning(f"Plugin '{plugin_request.name}' is not an trusted plugin.")
 
         result_handler = ModifyPluginResultHandler(cli_ctx.logger, plugin_request)
-        args = [sys.executable, "-m", "pip", "install", "--quiet"]
+        pip_arguments = [sys.executable, "-m", "pip", "install", "--quiet"]
 
         if upgrade:
             cli_ctx.logger.info(f"Upgrading '{plugin_request.name}'...")
-            args.extend(("--upgrade", plugin_request.package_name))
+            pip_arguments.extend(("--upgrade", plugin_request.package_name))
 
             version_before = plugin_request.current_version
-            result = subprocess.call(args)
+            result = subprocess.call(pip_arguments)
 
             # Returns ``True`` when upgraded successfully
             failures_occurred = not result_handler.handle_upgrade_result(result, version_before)
@@ -201,12 +201,12 @@ def install(cli_ctx, plugins, skip_confirmation, upgrade):
             or click.confirm(f"Install unknown 3rd party plugin '{plugin_request.name}'?")
         ):
             cli_ctx.logger.info(f"Installing {plugin_request}...")
-            args.append(plugin_request.install_str)
+            pip_arguments.append(plugin_request.install_str)
 
             # NOTE: Be *extremely careful* with this command, as it modifies the user's
             #       installed packages, to potentially catastrophic results
             # NOTE: This is not abstracted into another function *on purpose*
-            result = subprocess.call(args)
+            result = subprocess.call(pip_arguments)
             failures_occurred = not result_handler.handle_install_result(result)
 
         else:
