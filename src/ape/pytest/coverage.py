@@ -47,6 +47,9 @@ class CoverageData(ManagerAccessMixin):
         for src in self.sources:
             source_cov = project_coverage.include(src)
             ext = Path(src.source_id).suffix
+            if ext not in self.compiler_manager.registered_compilers:
+                continue
+
             compiler = self.compiler_manager.registered_compilers[ext]
             try:
                 compiler.init_coverage_profile(source_cov, src)
