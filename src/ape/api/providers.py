@@ -806,6 +806,9 @@ class Web3Provider(ProviderAPI, ABC):
         except BlockNotFound as err:
             raise BlockNotFoundError(block_id) from err
 
+        if "baseFeePerGas" in block_data and block_data.get("baseFeePerGas") is None:
+            block_data["baseFeePerGas"] = 0
+
         return self.network.ecosystem.decode_block(block_data)
 
     def get_nonce(self, address: AddressType, **kwargs) -> int:
