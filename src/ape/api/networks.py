@@ -587,8 +587,10 @@ class ProviderContextManager(ManagerAccessMixin):
         if self.empty:
             return
 
-        # Clear last provider
+        # Clear last provider and disconnect
         exiting_provider_id = self.provider_stack.pop()
+        self.connected_providers.pop(exiting_provider_id).disconnect()
+        # If stack is empty, reset to initial state
         if not self.provider_stack:
             self.network_manager.active_provider = None
             return
