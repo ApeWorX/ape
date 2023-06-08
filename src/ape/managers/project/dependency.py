@@ -237,9 +237,8 @@ class NpmDependency(DependencyAPI):
             # Already downloaded
             return self.cached_manifest
 
-        node_modules = os.path.exists(f"node_modules/{self.npm}")
-        if node_modules:
-            package_folder = Path.cwd() / "node_modules" / str(self.npm)
+        package_folder = Path.cwd() / "node_modules" / str(self.npm)
+        if package_folder.is_dir():
             package_json = package_folder / "package.json"
             data = json.loads(package_json.read_text())
             node_version = data.get("version")
