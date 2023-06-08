@@ -1,8 +1,12 @@
+import os
 import shutil
+import tempfile
 from pathlib import Path
 from typing import Dict
 
 import pytest
+
+from ape.managers.project.dependency import NpmDependency
 
 
 @pytest.fixture
@@ -90,3 +94,22 @@ def test_dependency_using_reference(ref, recwarn, dependency_manager):
     # Tests against bug where we tried creating version objects out of branch names,
     # thus causing warnings to show in `ape test` runs.
     assert DeprecationWarning not in [w.category for w in recwarn.list]
+
+
+def test_npm_dependency():
+    name = "@gnosis.pm"
+    package = "safe-singleton-factory"
+    version = "1.0.0"
+    with tempfile.TemporaryDirectory() as temp_dir:
+        os.chdir(temp_dir)
+        package_folder = Path(temp_dir) / "node_modules" / name / package
+        contracts_folder = package_folder / "contracts"
+        contracts_folder.mkdir(parents=True)
+        package_json = package_folder / "package.json"
+        package_json.write_text(f'{{"version": "{version}"}}')
+        file = contracts_folder / "contract.json"
+        source_content = '{"abi": []}'
+        file.write_text(source_content)
+        dependency = NpmDependency(name=package, npm=f"{name}/{package}", version=version)
+        manifest = dependency.extract_manifest()
+        assert str(manifest.sources["contract.json"].content) == f"{source_content}\n"

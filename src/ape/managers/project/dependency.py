@@ -244,7 +244,7 @@ class NpmDependency(DependencyAPI):
             node_version = data.get("version")
             if node_version != self.version:
                 raise ProjectError(
-                    f"Version mismatch in {self.name}. " "Please reinstall the correct version."
+                    f"Version mismatch in {self.name}. Please reinstall the correct version."
                 )
             else:
                 return self._extract_local_manifest(package_folder)
