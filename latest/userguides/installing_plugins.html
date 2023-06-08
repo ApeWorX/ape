@@ -158,20 +158,31 @@ However, when you include the <code class="docutils literal notranslate"><span c
 <p>To add plugins to your project, edit your <code class="docutils literal notranslate"><span class="pre">ape-config.yaml</span></code> file:</p>
 <div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">plugins</span><span class="p">:</span>
 <span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">solidity</span>
-<span class="w">    </span><span class="nt">version</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0.4.0</span>
+<span class="w">    </span><span class="nt">version</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0.6.0</span>
 <span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">hardhat</span>
 <span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ens</span>
 <span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">etherscan</span>
+<span class="w">    </span><span class="nt">version</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;&gt;=0.6.2,&lt;0.7&quot;</span>
 </pre></div>
 </div>
 <p>The <code class="docutils literal notranslate"><span class="pre">name</span></code> field is required.
-Additionally, you may specify a <code class="docutils literal notranslate"><span class="pre">version</span></code>.</p>
+Additionally, you may specify a <code class="docutils literal notranslate"><span class="pre">version</span></code> with or without constraints.</p>
 <p>To install the plugins listed in your project, run the following command from the project’s root directory:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>ape<span class="w"> </span>plugins<span class="w"> </span>install<span class="w"> </span>.
 </pre></div>
 </div>
 <p>To install plugins individually, run the following command:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>ape<span class="w"> </span>plugins<span class="w"> </span>install<span class="w"> </span>vyper<span class="w"> </span>solidity
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>ape<span class="w"> </span>plugins<span class="w"> </span>install<span class="w"> </span>vyper<span class="w"> </span><span class="s2">&quot;solidity&gt;=0.6,&lt;0.7&quot;</span>
+</pre></div>
+</div>
+<p>To install a plugin from a branch that is not yet released, you can use a <code class="docutils literal notranslate"><span class="pre">git+</span></code> prefixed value for the version:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">plugins</span><span class="p">:</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">foobar</span>
+<span class="w">    </span><span class="nt">version</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">git+https://github.com/&lt;owner-of-plugin&gt;/ape-foobar.git@&lt;branch/name&gt;</span>
+</pre></div>
+</div>
+<p>Or from the CLI like:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>ape<span class="w"> </span>plugins<span class="w"> </span>install<span class="w"> </span><span class="s2">&quot;foobar@git+https://github.com/&lt;owner-of-plugin&gt;/ape-foobar.git@&lt;branch/name&gt;&quot;</span>
 </pre></div>
 </div>
 </section>
