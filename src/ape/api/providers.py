@@ -1329,9 +1329,16 @@ class Web3Provider(ProviderAPI, ABC):
 
     def _create_trace_frame(self, evm_frame: EvmTraceFrame) -> TraceFrame:
         address_bytes = evm_frame.address
-        address = (
-            self.network.ecosystem.decode_address(address_bytes.hex()) if address_bytes else None
-        )
+        try:
+            address = (
+                str(self.network.ecosystem.decode_address(address_bytes.hex()))
+                if address_bytes
+                else None
+            )
+        except ValueError:
+            # Might not be a real address.
+            address = address_bytes.hex() if address_bytes else None
+
         return TraceFrame(
             pc=evm_frame.pc,
             op=evm_frame.op,

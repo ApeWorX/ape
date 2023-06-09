@@ -189,8 +189,10 @@ class CompilerAPI(BaseInterfaceModel):
         evm_frame = EvmTraceFrame(**frame.raw)
         data = create_call_node_data(evm_frame)
         calldata = data.get("calldata", HexBytes(""))
+        addr = data["address"]
+
         try:
-            address = self.provider.network.ecosystem.decode_address(data["address"])
+            address = self.provider.network.ecosystem.decode_address(addr)
         except Exception:
             return None, calldata
 
