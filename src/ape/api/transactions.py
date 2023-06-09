@@ -512,7 +512,7 @@ class ReceiptAPI(BaseInterfaceModel):
         Track this receipt's source code coverage in the on-going
         session coverage report. Requires using a provider that supports
         transaction traces. This gets called when running tests with the
-        ``--cov`` flag.
+        ``--coverage`` flag.
         """
 
         traceback = self.source_traceback

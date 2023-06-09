@@ -1,4 +1,4 @@
-from typing import Any, List
+from typing import Any, List, Optional
 
 from _pytest.config import Config as PytestConfig
 
@@ -6,7 +6,7 @@ from ape.types import ContractFunctionPath
 from ape.utils import ManagerAccessMixin, cached_property
 
 
-def _get_exclusions_from_config(config) -> List[ContractFunctionPath]:
+def _get_config_exclusions(config) -> List[ContractFunctionPath]:
     return [
         ContractFunctionPath(contract_name=x.contract_name, method_name=x.method_name)
         for x in config.exclude
@@ -73,15 +73,15 @@ class ConfigWrapper(ManagerAccessMixin):
                 exclusion = ContractFunctionPath.from_str(item)
                 exclusions.append(exclusion)
 
-        paths = _get_exclusions_from_config(self.ape_test_config.coverage)
+        paths = _get_config_exclusions(self.ape_test_config.coverage)
         exclusions.extend(paths)
         return exclusions
 
     @cached_property
     def coverage_exclusions(self) -> List[ContractFunctionPath]:
-        return _get_exclusions_from_config(self.ape_test_config.coverage)
+        return _get_config_exclusions(self.ape_test_config.coverage)
 
-    def get_pytest_plugin(self, name: str) -> Any:
+    def get_pytest_plugin(self, name: str) -> Optional[Any]:
         if self.pytest_config.pluginmanager.has_plugin(name):
             return self.pytest_config.pluginmanager.get_plugin(name)
 
