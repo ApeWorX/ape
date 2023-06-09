@@ -338,7 +338,7 @@ def allow_disconnected(fn: Callable):
     return inner
 
 
-def get_current_timestamp() -> int:
+def get_current_timestamp_ms() -> int:
     """
     Get the current UNIX timestamp in milliseconds.
     """
@@ -350,7 +350,7 @@ __all__ = [
     "cached_property",
     "extract_nested_value",
     "gas_estimation_error_message",
-    "get_current_timestamp",
+    "get_current_timestamp_ms",
     "get_package_version",
     "load_config",
     "raises_not_implemented",

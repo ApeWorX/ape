@@ -15,7 +15,7 @@ from ape.types import (
 )
 from ape.utils import (
     ManagerAccessMixin,
-    get_current_timestamp,
+    get_current_timestamp_ms,
     get_relative_path,
     parse_coverage_tables,
 )
@@ -57,7 +57,7 @@ class CoverageData(ManagerAccessMixin):
             except NotImplementedError:
                 continue
 
-        timestamp = get_current_timestamp()
+        timestamp = get_current_timestamp_ms()
         report = CoverageReport(
             projects=[project_coverage],
             source_folders=[self.project_manager.contracts_folder],

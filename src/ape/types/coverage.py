@@ -11,7 +11,7 @@ from ethpm_types.source import ContractSource, SourceLocation
 from pydantic import NonNegativeInt, validator
 
 from ape.logging import logger
-from ape.utils.misc import get_current_timestamp
+from ape.utils.misc import get_current_timestamp_ms
 from ape.version import version as ape_version
 
 _APE_DOCS_URL = "https://docs.apeworx.io/ape/stable/index.html"
@@ -522,7 +522,7 @@ class CoverageReport(BaseModel):
     @validator("timestamp", pre=True)
     def validate_timestamp(cls, value):
         # Default to current UTC timestamp (ms).
-        return value or get_current_timestamp()
+        return value or get_current_timestamp_ms()
 
     @property
     def sources(self) -> List[str]:
