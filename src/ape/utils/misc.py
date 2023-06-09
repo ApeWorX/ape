@@ -360,13 +360,10 @@ def nonreentrant(key_fn):
 
 def get_current_timestamp_ms() -> int:
     """
-        Get the current UNIX timestamp in milliseconds.
-    <<<<<<< HEAD
+    Get the current UNIX timestamp in milliseconds.
 
-        Returns:
-            int
-    =======
-    >>>>>>> 27654c29 (feat: verbose and hit count fix)
+    Returns:
+        int
     """
     return round(datetime.utcnow().timestamp() * 1000)
 
