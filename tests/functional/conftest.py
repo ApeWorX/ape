@@ -5,8 +5,7 @@ from pathlib import Path
 from typing import Optional
 
 import pytest
-from ethpm_types import ContractType
-from hexbytes import HexBytes
+from ethpm_types import ContractType, HexBytes
 
 import ape
 from ape.api import EcosystemAPI, NetworkAPI, TransactionAPI

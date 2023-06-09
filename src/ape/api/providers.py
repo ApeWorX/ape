@@ -18,9 +18,9 @@ from typing import Any, Dict, Iterator, List, Optional, Union, cast
 
 from eth_typing import BlockNumber, HexStr
 from eth_utils import add_0x_prefix, to_hex
+from ethpm_types import HexBytes
 from evm_trace import CallTreeNode as EvmCallTreeNode
 from evm_trace import TraceFrame as EvmTraceFrame
-from hexbytes import HexBytes
 from pydantic import Field, root_validator, validator
 from web3 import Web3
 from web3.exceptions import BlockNotFound
@@ -103,7 +103,7 @@ class BlockAPI(BaseInterfaceModel):
     def validate_hexbytes(cls, value):
         # NOTE: pydantic treats these values as bytes and throws an error
         if value and not isinstance(value, HexBytes):
-            raise ValueError(f"Hash `{value}` is not a valid Hexbytes.")
+            return HexBytes(value)
 
         return value
 
@@ -805,6 +805,10 @@ class Web3Provider(ProviderAPI, ABC):
             block_data = dict(self.web3.eth.get_block(block_id))
         except BlockNotFound as err:
             raise BlockNotFoundError(block_id) from err
+
+        # Some nodes (like anvil) will not have a base fee if set to 0.
+        if "baseFeePerGas" in block_data and block_data.get("baseFeePerGas") is None:
+            block_data["baseFeePerGas"] = 0
 
         return self.network.ecosystem.decode_block(block_data)
 

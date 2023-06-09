@@ -1,7 +1,7 @@
 from abc import ABC
 from typing import TYPE_CHECKING, ClassVar, Dict, List, Optional, cast
 
-from pydantic import BaseModel
+from ethpm_types import BaseModel
 
 from ape.exceptions import ProviderNotConnectedError
 from ape.logging import logger

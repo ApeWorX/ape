@@ -9,8 +9,8 @@ from eth_account._utils.legacy_transactions import (
     serializable_unsigned_transaction_from_dict,
 )
 from eth_utils import keccak, to_int
+from ethpm_types import HexBytes
 from ethpm_types.abi import ABIType, ConstructorABI, EventABI, MethodABI
-from hexbytes import HexBytes
 from pydantic import BaseModel
 
 from ape.exceptions import (
@@ -480,7 +480,7 @@ class EcosystemAPI(BaseInterfaceModel):
         Override example::
 
             from ape.api import EcosystemAPI
-            from hexbytes import HexBytes
+            from ethpm_types import HexBytes
 
             class MyEcosystem(EcosystemAPI):
                 def get_method_selector(self, abi: MethodABI) -> HexBytes:

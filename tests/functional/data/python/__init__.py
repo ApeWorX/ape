@@ -1,4 +1,4 @@
-from hexbytes import HexBytes
+from ethpm_types import HexBytes
 
 from ape_ethereum.transactions import TransactionStatusEnum
 

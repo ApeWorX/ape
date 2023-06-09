@@ -259,6 +259,10 @@ class ReceiptAPI(BaseInterfaceModel):
 
         return value
 
+    @validator("txn_hash", pre=True)
+    def validate_txn_hash(cls, value):
+        return HexBytes(value).hex()
+
     @property
     def call_tree(self) -> Optional[Any]:
         return None

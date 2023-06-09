@@ -4,8 +4,7 @@ from queue import Queue
 from typing import List
 
 import pytest
-from ethpm_types import ContractType
-from hexbytes import HexBytes
+from ethpm_types import ContractType, HexBytes
 
 import ape
 from ape.contracts import ContractInstance

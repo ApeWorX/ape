@@ -11,13 +11,13 @@ from ethpm_types import (
     Checksum,
     Compiler,
     ContractType,
+    HexBytes,
     PackageManifest,
     PackageMeta,
     Source,
 )
 from ethpm_types.abi import EventABI
 from ethpm_types.source import Closure
-from hexbytes import HexBytes
 from pydantic import BaseModel, root_validator, validator
 from web3.types import FilterParams
 

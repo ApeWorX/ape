@@ -1,6 +1,6 @@
 import subprocess
 import sys
-from typing import List, Optional
+from typing import List, Optional, Tuple
 
 from pydantic import root_validator
 
@@ -25,15 +25,23 @@ def _pip_freeze_plugins() -> List[str]:
 
     new_lines = []
     for package in lines:
-        if "==" in package:
-            new_lines.append(package)
-        elif "-e" in package:
+        if "-e" in package:
             new_lines.append(package.split(".git")[0].split("/")[-1])
+        elif "@" in package:
+            new_lines.append(package.split("@")[0].strip())
+        elif "==" in package:
+            new_lines.append(package.split("==")[0].strip())
+        else:
+            new_lines.append(package)
 
     return new_lines
 
 
 class PluginInstallRequest(BaseInterfaceModel):
+    """
+    An encapsulation of a request to install a particular plugin.
+    """
+
     name: str
     """The name of the plugin, such as ``trezor``."""
 
@@ -46,12 +54,27 @@ class PluginInstallRequest(BaseInterfaceModel):
             raise ValueError("'name' required.")
 
         name = values["name"]
-        if "==" in name:
-            parts = name.split("==")
-            name = parts[0]
-            version = parts[1]
-        else:
-            version = values.get("version")
+        version = values.get("version")
+
+        if version and version.startswith("git+"):
+            if f"ape-{name}" not in version:
+                # Just some small validation so you can't put a repo
+                # that isn't this plugin here. NOTE: Forks should still work.
+                raise ValueError("Plugin mismatch with remote git version.")
+
+            version = version
+
+        elif not version:
+            # Only check name for version constraint if not in version.
+            # NOTE: This happens when using the CLI to provide version constraints.
+            for constraint in ("==", "<=", ">=", "@git+"):
+                # Version constraint is part of name field.
+                if constraint not in name:
+                    continue
+
+                # Constraint found.
+                name, version = _split_name_and_version(name)
+                break
 
         return {"name": clean_plugin_name(name), "version": version}
 
@@ -86,7 +109,19 @@ class PluginInstallRequest(BaseInterfaceModel):
         such as ``ape-trezor==0.4.0``.
         """
 
-        return f"{self.package_name}=={self.version}" if self.version else self.package_name
+        if self.version and self.version.startswith("git+"):
+            # If the version is a remote, you do `pip install git+http://github...`
+            return self.version
+
+        # `pip install ape-plugin`
+        # `pip install ape-plugin==version`.
+        # `pip install "ape-plugin>=0.6,<0.7"`
+
+        version = self.version
+        if version and ("=" not in version and "<" not in version and ">" not in version):
+            version = f"=={version}"
+
+        return f"{self.package_name}{version}" if version else self.package_name
 
     @property
     def can_install(self) -> bool:
@@ -115,8 +150,7 @@ class PluginInstallRequest(BaseInterfaceModel):
         """
         ``True`` if the plugin is installed in the current Python environment.
         """
-
-        ape_packages = [r.split("==")[0] for r in _pip_freeze_plugins()]
+        ape_packages = [_split_name_and_version(n)[0] for n in _pip_freeze_plugins()]
         return self.package_name in ape_packages
 
     @property
@@ -152,8 +186,11 @@ class PluginInstallRequest(BaseInterfaceModel):
         """
         A string like ``trezor==0.4.0``.
         """
+        if self.version and self.version.startswith("git+"):
+            return self.version
 
-        return self.name if not self.version else f"{self.name}=={self.version}"
+        version_key = f"=={self.version}" if self.version and self.version[0].isnumeric() else ""
+        return f"{self.name}{version_key}"
 
 
 class ModifyPluginResultHandler:
@@ -169,7 +206,12 @@ class ModifyPluginResultHandler:
             self._log_errors_occurred("installing")
             return False
         else:
-            plugin_id = f"{self._plugin.name}=={self._plugin.pip_freeze_version}"
+            plugin_id = self._plugin.name
+            version = self._plugin.pip_freeze_version
+            if version:
+                # Sometimes, like in editable mode, the version is missing here.
+                plugin_id = f"{plugin_id}=={version}"
+
             self._logger.success(f"Plugin '{plugin_id}' has been installed.")
             return True
 
@@ -211,3 +253,16 @@ class ModifyPluginResultHandler:
 
     def _log_modify_failed(self, verb: str):
         self._logger.error(f"Failed to {verb} plugin '{self._plugin}.")
+
+
+def _split_name_and_version(value: str) -> Tuple[str, Optional[str]]:
+    if "@" in value:
+        parts = [x for x in value.split("@") if x]
+        return parts[0], "@".join(parts[1:])
+
+    chars = [c for c in ("=", "<", ">") if c in value]
+    if not chars:
+        return value, None
+
+    index = min(value.index(c) for c in chars)
+    return value[:index], value[index:]

@@ -1,6 +1,6 @@
 from typing import TYPE_CHECKING, Any, List
 
-from hexbytes import HexBytes
+from ethpm_types import HexBytes
 
 from ape.exceptions import ConversionError
 from ape.types import AddressType, ContractCode

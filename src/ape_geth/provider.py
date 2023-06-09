@@ -11,6 +11,7 @@ import ijson  # type: ignore
 import requests
 from eth_typing import HexStr
 from eth_utils import add_0x_prefix, to_hex, to_wei
+from ethpm_types import HexBytes
 from evm_trace import CallType, ParityTraceList
 from evm_trace import TraceFrame as EvmTraceFrame
 from evm_trace import (
@@ -23,7 +24,6 @@ from geth.accounts import ensure_account_exists  # type: ignore
 from geth.chain import initialize_chain  # type: ignore
 from geth.process import BaseGethProcess  # type: ignore
 from geth.wrapper import construct_test_chain_kwargs  # type: ignore
-from hexbytes import HexBytes
 from pydantic import Extra
 from requests.exceptions import ConnectionError
 from web3 import HTTPProvider, Web3

@@ -8,7 +8,7 @@ from typing import Any, Callable, Coroutine, Dict, List, Mapping, Optional
 
 import requests
 import yaml
-from hexbytes import HexBytes
+from ethpm_types import HexBytes
 from importlib_metadata import PackageNotFoundError, distributions, packages_distributions
 from importlib_metadata import version as version_metadata
 from tqdm.auto import tqdm  # type: ignore
