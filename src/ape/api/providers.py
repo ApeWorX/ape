@@ -1306,12 +1306,18 @@ class Web3Provider(ProviderAPI, ABC):
     def _create_call_tree_node(
         self, evm_call: EvmCallTreeNode, txn_hash: Optional[str] = None
     ) -> CallTreeNode:
-        address = self.provider.network.ecosystem.decode_address(evm_call.address)
+        address = evm_call.address
+        try:
+            contract_id = str(self.provider.network.ecosystem.decode_address(address))
+        except ValueError:
+            # Use raw value since it is not a real address.
+            contract_id = address.hex()
+
         call_type = evm_call.call_type.value
         return CallTreeNode(
             calls=[self._create_call_tree_node(x, txn_hash=txn_hash) for x in evm_call.calls],
             call_type=call_type,
-            contract_id=address,
+            contract_id=contract_id,
             failed=evm_call.failed,
             gas_cost=evm_call.gas_cost,
             inputs=evm_call.calldata if "CREATE" in call_type else evm_call.calldata[4:].hex(),

@@ -236,7 +236,7 @@ class PytestApeRunner(ManagerAccessMixin):
             return
 
         self._assert_tracing_support(terminalreporter, "track coverage")
-        if not self.coverage_trackqer.show_session_coverage():
+        if not self.coverage_tracker.show_session_coverage():
             terminalreporter.write_line(
                 f"{LogLevel.WARNING.name}: No coverage data found.", yellow=True
             )
