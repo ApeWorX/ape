@@ -4,14 +4,13 @@ from typing import List
 import pytest
 
 from ape.types.coverage import (
-    CoverageStatement,
-    FunctionCoverage,
     ContractCoverage,
+    ContractSourceCoverage,
     CoverageProject,
     CoverageReport,
-    ContractSourceCoverage,
+    CoverageStatement,
+    FunctionCoverage,
 )
-
 
 STMT_0_HIT = 12
 STMT_1_HIT = 9
@@ -148,4 +147,3 @@ class TestCoverageReport:
 
     def test_line_rate(self, coverage_report):
         assert coverage_report.line_rate == 2 / 3
-
