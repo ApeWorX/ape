@@ -1331,13 +1331,13 @@ class Web3Provider(ProviderAPI, ABC):
         address_bytes = evm_frame.address
         try:
             address = (
-                str(self.network.ecosystem.decode_address(address_bytes.hex()))
+                self.network.ecosystem.decode_address(address_bytes.hex())
                 if address_bytes
                 else None
             )
         except ValueError:
             # Might not be a real address.
-            address = address_bytes.hex() if address_bytes else None
+            address = cast(AddressType, address_bytes.hex()) if address_bytes else None
 
         return TraceFrame(
             pc=evm_frame.pc,

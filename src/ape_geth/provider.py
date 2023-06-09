@@ -534,7 +534,7 @@ class GethDev(BaseGethProvider, TestProviderAPI):
         call_tree = self._create_call_tree_node(evm_call_tree)
 
         receiver = txn.receiver
-        if track_gas and show_gas and not show_trace:
+        if track_gas and show_gas and not show_trace and call_tree:
             # Optimization to enrich early and in_place=True.
             call_tree.enrich()
 
