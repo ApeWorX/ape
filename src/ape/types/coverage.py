@@ -119,7 +119,7 @@ class FunctionCoverage(BaseModel):
     """
 
     @property
-    def lines_covered(self) -> None:
+    def lines_covered(self) -> NonNegativeInt:
         """
         The number of lines with a hit counter greater than zero in this method.
         """
