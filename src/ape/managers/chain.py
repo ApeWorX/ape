@@ -994,7 +994,7 @@ class ContractCache(BaseManager):
         except Exception:
             # Not an address.
             return None
-        
+
         contract_type = self._local_contract_types.get(address_key)
         if contract_type:
             if default and default != contract_type:
