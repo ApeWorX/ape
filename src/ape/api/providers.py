@@ -1299,7 +1299,6 @@ class Web3Provider(ProviderAPI, ABC):
             # Use raw value since it is not a real address.
             contract_id = evm_call.address.hex()
 
-
         return CallTreeNode(
             calls=[self._create_call_tree_node(x, txn_hash=txn_hash) for x in evm_call.calls],
             call_type=evm_call.call_type.value,
@@ -1315,9 +1314,14 @@ class Web3Provider(ProviderAPI, ABC):
 
     def _create_trace_frame(self, evm_frame: EvmTraceFrame) -> TraceFrame:
         address_bytes = evm_frame.address
-        address = (
-            self.network.ecosystem.decode_address(address_bytes.hex()) if address_bytes else None
-        )
+        try:
+            address = (
+                self.network.ecosystem.decode_address(address_bytes.hex()) if address_bytes else None
+            )
+        except ValueError:
+            # Might not be a real address.
+            address = address_bytes.hex()
+
         return TraceFrame(
             pc=evm_frame.pc,
             op=evm_frame.op,

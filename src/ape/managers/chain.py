@@ -989,7 +989,12 @@ class ContractCache(BaseManager):
               otherwise the default parameter.
         """
 
-        address_key: AddressType = self.conversion_manager.convert(address, AddressType)
+        try:
+            address_key: AddressType = self.conversion_manager.convert(address, AddressType)
+        except Exception:
+            # Not an address.
+            return None
+        
         contract_type = self._local_contract_types.get(address_key)
         if contract_type:
             if default and default != contract_type:

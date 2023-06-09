@@ -188,8 +188,15 @@ class CompilerAPI(BaseInterfaceModel):
     ) -> Tuple[Optional[ContractSource], HexBytes]:
         evm_frame = EvmTraceFrame(**frame.raw)
         data = create_call_node_data(evm_frame)
+        addr = data["address"]
+
         calldata = data["calldata"]
-        address = self.provider.network.ecosystem.decode_address(data["address"])
+
+        try:
+            address = self.provider.network.ecosystem.decode_address(addr)
+        except ValueError:
+            address = addr.hex() if isinstance(addr, HexBytes) else addr
+
         if address not in self.chain_manager.contracts:
             return None, calldata
 
