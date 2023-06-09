@@ -8,7 +8,7 @@ from xml.etree.ElementTree import Element, SubElement, tostring
 
 from ethpm_types import BaseModel
 from ethpm_types.source import ContractSource, SourceLocation
-from pydantic import validator
+from pydantic import NonNegativeInt, validator
 
 from ape.logging import logger
 from ape.utils.misc import get_current_timestamp
@@ -78,7 +78,7 @@ class CoverageStatement(BaseModel):
     The PCs for this node.
     """
 
-    hit_count: int = 0
+    hit_count: NonNegativeInt = 0
     """
     The times this node was hit.
     """
@@ -111,7 +111,7 @@ class FunctionCoverage(BaseModel):
     See :class:`~ape.types.coverage.CoverageStatement` for more details.
     """
 
-    hit_count: int = 0
+    hit_count: NonNegativeInt = 0
     """
     The times this function was called.
     **NOTE**: This is needed as a separate data point since not all methods may have
@@ -119,21 +119,21 @@ class FunctionCoverage(BaseModel):
     """
 
     @property
-    def lines_covered(self) -> int:
+    def lines_covered(self) -> None:
         """
         The number of lines with a hit counter greater than zero in this method.
         """
         return len([x for x in self.statements if x.hit_count > 0])
 
     @property
-    def lines_valid(self) -> int:
+    def lines_valid(self) -> NonNegativeInt:
         """
         All lines valid for coverage in this method.
         """
         return len(self.statements)
 
     @property
-    def miss_count(self) -> int:
+    def miss_count(self) -> NonNegativeInt:
         """
         The number of lines missed.
         """
@@ -230,7 +230,7 @@ class ContractCoverage(BaseModel):
         return list(itertools.chain.from_iterable(f.statements for f in self.functions))
 
     @property
-    def lines_covered(self) -> int:
+    def lines_covered(self) -> NonNegativeInt:
         """
         All lines that have a hit count greater than zero.
         """
@@ -238,14 +238,14 @@ class ContractCoverage(BaseModel):
         return sum(funcs.lines_covered for funcs in self.functions)
 
     @property
-    def lines_valid(self) -> int:
+    def lines_valid(self) -> NonNegativeInt:
         """
         The number of lines valid for coverage.
         """
         return len(self.statements)
 
     @property
-    def miss_count(self) -> int:
+    def miss_count(self) -> NonNegativeInt:
         """
         The number of lines missed.
         """
@@ -259,7 +259,7 @@ class ContractCoverage(BaseModel):
         return self.lines_covered / self.lines_valid
 
     @property
-    def function_hits(self) -> int:
+    def function_hits(self) -> NonNegativeInt:
         """
         The number of functions with a hit counter greater than zero.
         """
@@ -331,7 +331,7 @@ class ContractSourceCoverage(BaseModel):
         return list(itertools.chain.from_iterable(c.statements for c in self.contracts))
 
     @property
-    def lines_covered(self) -> int:
+    def lines_covered(self) -> NonNegativeInt:
         """
         All lines with a hit count greater than zero from every function
         in every contract in this source.
@@ -339,14 +339,14 @@ class ContractSourceCoverage(BaseModel):
         return sum(c.lines_covered for c in self.contracts)
 
     @property
-    def lines_valid(self) -> int:
+    def lines_valid(self) -> NonNegativeInt:
         """
         The number of lines valid for coverage.
         """
         return len(self.statements)
 
     @property
-    def miss_count(self) -> int:
+    def miss_count(self) -> NonNegativeInt:
         """
         The number of lines missed.
         """
@@ -360,14 +360,14 @@ class ContractSourceCoverage(BaseModel):
         return self.lines_covered / self.lines_valid if self.lines_valid > 0 else 0
 
     @property
-    def total_functions(self) -> int:
+    def total_functions(self) -> NonNegativeInt:
         """
         The total number of functions in this source.
         """
         return sum(len(c.functions) for c in self.contracts)
 
     @property
-    def function_hits(self) -> int:
+    def function_hits(self) -> NonNegativeInt:
         """
         The number of functions with a hit counter greater than zero.
         """
@@ -430,7 +430,7 @@ class CoverageProject(BaseModel):
         return list(itertools.chain.from_iterable(s.statements for s in self.sources))
 
     @property
-    def lines_covered(self) -> int:
+    def lines_covered(self) -> NonNegativeInt:
         """
         The number of lines with a hit count greater than zero from every function
         in every contract in every source in this this project.
@@ -438,14 +438,14 @@ class CoverageProject(BaseModel):
         return sum(s.lines_covered for s in self.sources)
 
     @property
-    def lines_valid(self) -> int:
+    def lines_valid(self) -> NonNegativeInt:
         """
         The number of lines valid for coverage.
         """
         return len(self.statements)
 
     @property
-    def miss_count(self) -> int:
+    def miss_count(self) -> NonNegativeInt:
         """
         The number of lines missed.
         """
@@ -459,14 +459,14 @@ class CoverageProject(BaseModel):
         return self.lines_covered / self.lines_valid if self.lines_valid > 0 else 0
 
     @property
-    def total_functions(self) -> int:
+    def total_functions(self) -> NonNegativeInt:
         """
         The total number of functions in this source.
         """
         return sum(x.total_functions for x in self.sources)
 
     @property
-    def function_hits(self) -> int:
+    def function_hits(self) -> NonNegativeInt:
         """
         The number of functions with a hit counter greater than zero.
         """
@@ -540,7 +540,7 @@ class CoverageReport(BaseModel):
         return list(itertools.chain.from_iterable(p.statements for p in self.projects))
 
     @property
-    def lines_covered(self) -> int:
+    def lines_covered(self) -> NonNegativeInt:
         """
         All lines with a hit count greater than zero from every function
         in every contract in every source in every project in this report.
@@ -548,14 +548,14 @@ class CoverageReport(BaseModel):
         return sum(p.lines_covered for p in self.projects)
 
     @property
-    def lines_valid(self) -> int:
+    def lines_valid(self) -> NonNegativeInt:
         """
         The number of lines valid for coverage.
         """
         return len(self.statements)
 
     @property
-    def miss_count(self) -> int:
+    def miss_count(self) -> NonNegativeInt:
         """
         The number of lines missed.
         """
@@ -569,14 +569,14 @@ class CoverageReport(BaseModel):
         return self.lines_covered / self.lines_valid if self.lines_valid > 0 else 0
 
     @property
-    def total_functions(self) -> int:
+    def total_functions(self) -> NonNegativeInt:
         """
         The total number of functions in this source.
         """
         return sum(x.total_functions for x in self.projects)
 
     @property
-    def function_hits(self) -> int:
+    def function_hits(self) -> NonNegativeInt:
         """
         The number of functions with a hit counter greater than zero.
         """
