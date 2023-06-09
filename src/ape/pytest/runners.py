@@ -173,6 +173,9 @@ class PytestApeRunner(ManagerAccessMixin):
         for end users who are performing tests with ape.
         """
         reporter = self.config_wrapper.get_pytest_plugin("terminalreporter")
+        if not reporter:
+            return
+
         warnings = reporter.stats.pop("warnings", [])
         warnings = [i for i in warnings if "PytestAssertRewriteWarning" not in i.message]
         if warnings and not self.config_wrapper.disable_warnings:
@@ -218,7 +221,7 @@ class PytestApeRunner(ManagerAccessMixin):
             # Happens if never needed to connect (no tests)
             return
 
-        self._assert_tracing_support(terminalreporter)
+        self._assert_tracing_support(terminalreporter, "display a gas profile")
         if not self.gas_tracker.show_session_gas():
             terminalreporter.write_line(
                 f"{LogLevel.WARNING.name}: No gas usage data found.", yellow=True
@@ -232,19 +235,19 @@ class PytestApeRunner(ManagerAccessMixin):
             # Happens if never needed to connect (no tests)
             return
 
-        self._assert_tracing_support(terminalreporter)
-        if not self.coverage_tracker.show_session_coverage():
+        self._assert_tracing_support(terminalreporter, "track coverage")
+        if not self.coverage_trackqer.show_session_coverage():
             terminalreporter.write_line(
                 f"{LogLevel.WARNING.name}: No coverage data found.", yellow=True
             )
 
-    def _assert_tracing_support(self, terminalreporter):
+    def _assert_tracing_support(self, terminalreporter, unable_to: str):
         if self.provider.supports_tracing:
             return
 
         terminalreporter.write_line(
             f"{LogLevel.ERROR.name}: Provider '{self.provider.name}' does not support "
-            f"transaction tracing and is unable to display a gas profile.",
+            f"transaction tracing and is unable to {unable_to}.",
             red=True,
         )
 
