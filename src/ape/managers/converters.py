@@ -331,6 +331,9 @@ class ConversionManager(BaseManager):
 
         for converter in self._converters[type]:
             if converter.is_convertible(value):
-                return converter.convert(value)
+                try:
+                    return converter.convert(value)
+                except Exception as err:
+                    raise ConversionError(f"Failed to convert '{value}'.") from err
 
         raise ConversionError(f"No conversion registered to handle '{value}'.")
