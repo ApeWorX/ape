@@ -278,5 +278,5 @@ def test_coverage(geth_provider, setup_pytester, project, pytester):
     of the coverage work.
     """
     passed, failed = setup_pytester(project.path.name)
-    result = pytester.runpytest("--coverage")
+    result = pytester.runpytest("--coverage", "--showinternal")
     result.assert_outcomes(passed=passed, failed=failed)
