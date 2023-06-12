@@ -161,13 +161,15 @@ class CoverageTracker(ManagerAccessMixin):
                 "Must provider both function and contract and if supplying one of them."
             )
 
-        elif contract and function and len(traceback) > 0:
+        elif contract and function:
             # For making sure
-            source_path = traceback[0].source_path
+            source_path = traceback[0].source_path if len(traceback) > 0 else None
             for project in self.data.report.projects:
                 for src in project.sources:
+                    # NOTE: We will allow this check to skip if there is no source is the tb.
+                    #  this helps increment methods that are missing from the source map.
                     path = self.project_manager.contracts_folder / src.source_id
-                    if path != source_path:
+                    if source_path is not None and path != source_path:
                         continue
 
                     # Source containing the auto-getter found.
@@ -182,9 +184,6 @@ class CoverageTracker(ManagerAccessMixin):
 
                             # Auto-getter found.
                             main_fn = fn
-
-            if not main_fn:
-                raise ValueError(f"Failed to find function '{function}' in contract '{contract}'.")
 
         count_at_start = main_fn.hit_count if main_fn else None
         for control_flow in traceback:
