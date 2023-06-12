@@ -73,7 +73,7 @@ class ConfigWrapper(ManagerAccessMixin):
                 exclusion = ContractFunctionPath.from_str(item)
                 exclusions.append(exclusion)
 
-        paths = _get_config_exclusions(self.ape_test_config.coverage)
+        paths = _get_config_exclusions(self.ape_test_config.gas)
         exclusions.extend(paths)
         return exclusions
 
