@@ -161,7 +161,7 @@ class CoverageTracker(ManagerAccessMixin):
                 "Must provider both function and contract and if supplying one of them."
             )
 
-        elif contract and function:
+        elif contract and function and len(traceback) > 0:
             # For making sure
             source_path = traceback[0].source_path
             for project in self.data.report.projects:
