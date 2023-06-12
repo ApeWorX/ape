@@ -223,8 +223,8 @@ def _parse_verbose_coverage(coverage: "CoverageReport") -> List[Table]:
         for src in project.sources:
             for contract in src.contracts:
                 title = f"{contract.name} Coverage"
-                line_rate = round(contract.line_rate, 4) * 100
-                fn_rate = round(contract.function_rate, 4) * 100
+                line_rate = round(contract.line_rate * 100, 2)
+                fn_rate = round(contract.function_rate * 100, 2)
                 caption = f"line={line_rate}%, func={fn_rate}%"
                 table = Table(title=title, box=SIMPLE, caption=caption)
                 table.add_column("Func")
