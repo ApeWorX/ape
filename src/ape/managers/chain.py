@@ -1036,8 +1036,12 @@ class ContractCache(BaseManager):
 
         try:
             address_key: AddressType = self.conversion_manager.convert(address, AddressType)
-        except Exception:
-            # Not an address.
+        except ConversionError:
+            if not address.startswith("0x"):
+                # Still raise conversion errors for ENS and such.
+                raise
+
+            # In this case, it at least _looked_ like an address.
             return None
 
         contract_type = self._local_contract_types.get(address_key)
