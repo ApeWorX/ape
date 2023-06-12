@@ -91,6 +91,16 @@ class TestFunctionCoverage:
     def test_line_rate(self, function):
         assert function.line_rate == 2 / 3
 
+    def test_line_rate_when_no_statements(self):
+        """
+        An edge case: when a function has no statements, its line rate
+        it either 0% if it was not called or 100% if it called.
+        """
+        function = FunctionCoverage(name="bar", full_name="bar()")
+        assert function.hit_count == 0
+        function.hit_count += 1
+        assert function.line_rate == 1
+
 
 class TestContractCoverage:
     def test_function_rate(self, contract):
