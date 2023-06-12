@@ -13,6 +13,7 @@ from click.testing import CliRunner
 import ape
 from ape.exceptions import APINotImplementedError, UnknownSnapshotError
 from ape.managers.config import CONFIG_FILE_NAME
+from ape.types import AddressType
 
 # NOTE: Ensure that we don't use local paths for these
 ape.config.DATA_FOLDER = Path(mkdtemp()).resolve()
@@ -294,3 +295,35 @@ def _make_keyfile_account(base_path: Path, alias: str, params: Dict, funder):
     acct = ape.accounts.load(alias)
     funder.transfer(acct, "25 ETH")  # Auto-fund this account
     return acct
+
+
+def skip_if_plugin_installed(*plugin_names: str):
+    """
+    A simple decorator for skipping a test if a plugin is installed.
+    **NOTE**: For performance reasons, this method is not very good.
+    It only works for common ApeWorX supported plugins and is only
+    meant for assisting testing in Core (NOT a public utility).
+    """
+    names = [n.lower().replace("-", "_").replace("ape_", "") for n in plugin_names]
+    msg_f = "Cannot run this test when plugin '{}' installed."
+
+    def wrapper(fn):
+        for name in names:
+            # Compilers
+            if name in ("solidity", "vyper"):
+                compiler = ape.compilers.get_compiler(name)
+                if compiler:
+                    return pytest.mark.skip(msg_f.format(name))
+
+            # Converters
+            elif name in ("ens",):
+                address_converters = [
+                    type(n).__name__ for n in ape.chain.conversion_manager._converters[AddressType]
+                ]
+                if any(x.startswith(name.upper()) for x in address_converters):
+                    return pytest.mark.skip(msg_f.format(name))
+
+        # noop
+        return fn
+
+    return wrapper
