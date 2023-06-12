@@ -28,7 +28,7 @@ class PluginConfig(BaseSettings):
 
         def update(root: Dict, value_map: Dict):
             for key, val in value_map.items():
-                if key in root and isinstance(val, dict):
+                if isinstance(val, dict) and key in root and isinstance(root[key], dict):
                     root[key] = update(root[key], val)
                 else:
                     root[key] = val
