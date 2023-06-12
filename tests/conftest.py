@@ -9,11 +9,11 @@ from typing import Dict, Optional
 import pytest
 import yaml
 from click.testing import CliRunner
-from ape.types import AddressType
 
 import ape
 from ape.exceptions import APINotImplementedError, UnknownSnapshotError
 from ape.managers.config import CONFIG_FILE_NAME
+from ape.types import AddressType
 
 # NOTE: Ensure that we don't use local paths for these
 ape.config.DATA_FOLDER = Path(mkdtemp()).resolve()
@@ -317,7 +317,9 @@ def skip_if_plugin_installed(*plugin_names: str):
 
             # Converters
             elif name in ("ens",):
-                address_converters = [type(n).__name__ for n in ape.chain.conversion_manager._converters[AddressType]]
+                address_converters = [
+                    type(n).__name__ for n in ape.chain.conversion_manager._converters[AddressType]
+                ]
                 if any(x.startswith(name.upper()) for x in address_converters):
                     return pytest.mark.skip(msg_f.format(name))
 
