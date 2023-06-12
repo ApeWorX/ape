@@ -165,6 +165,7 @@ def parse_gas_table(report: "GasReport") -> List[Table]:
         table.add_column("Mean", justify="right")
         table.add_column("Median", justify="right")
         has_at_least_1_row = False
+
         for method_call, gases in sorted(method_calls.items()):
             if not gases:
                 continue
