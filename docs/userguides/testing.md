@@ -571,7 +571,8 @@ To see a much more verbose coverage report, set the `terminal` field to a dictio
 ```yaml
 test:
   coverage:
-    terminal: {"verbose": true}  # Show verbose coverage information in the terminal.
+    terminal:
+      verbose: true  # Show verbose coverage information in the terminal.
 ```
 
 This is useful when trying to find the missing areas to cover.
