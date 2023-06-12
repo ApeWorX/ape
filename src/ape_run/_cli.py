@@ -2,6 +2,7 @@ import inspect
 import os
 import sys
 import traceback
+from contextlib import contextmanager
 from pathlib import Path
 from runpy import run_module
 from typing import Any, Dict, Union
@@ -15,6 +16,47 @@ from ape.logging import logger
 from ape.managers.project import ProjectManager
 from ape.utils import get_relative_path, use_temp_sys_path
 from ape_console._cli import console
+
+
+@contextmanager
+def use_scripts_sys_path(path: Path):
+    # First, ensure there is not an existing scripts module.
+    scripts = sys.modules.get("scripts")
+    if scripts:
+        del sys.modules["scripts"]
+
+        # Sometimes, an installed module is somehow missing a __file__
+        # and mistaken by Python to be a system module. We can handle
+        # that by also checking some internal properties for the right path.
+        excl_paths = (
+            [Path(scripts.__file__).parent]
+            if scripts.__file__
+            else [
+                Path(p).parent
+                for p in getattr(getattr(scripts, "__path__", None), "_path", []) or []
+            ]
+        )
+
+    else:
+        excl_paths = None
+
+    with use_temp_sys_path(path, exclude=excl_paths):
+        yield
+
+    if scripts and sys.modules.get("scripts") != scripts:
+        sys.modules["scripts"] = scripts
+
+
+def get_module(script_path: Path) -> str:
+    mod_name = ".".join(
+        (str(script_path).replace(os.path.sep, ".").split("scripts.")[-1].split(".")[:-1])
+    )
+    return mod_name if "." in mod_name else f"scripts.{mod_name}"
+
+
+def run_script_module(script_path: Path):
+    mod_name = get_module(script_path)
+    return run_module(mod_name)
 
 
 class ScriptCommand(click.MultiCommand):
@@ -56,23 +98,14 @@ class ScriptCommand(click.MultiCommand):
             logger.error_from_exception(e, f"Exception while parsing script: {relative_filepath}")
             return None  # Prevents stalling scripts
 
-        def _module_str(_filepath: Path) -> str:
-            suffix = ".".join(
-                (str(_filepath).replace(os.path.sep, ".").split("scripts.")[-1].split(".")[:-1])
-            )
-            if "." not in suffix:
-                return f"scripts.{suffix}"
-            else:
-                return suffix
-
         # NOTE: Introspect code structure only for given patterns (do not execute it to find hooks)
         if "cli" in code.co_names:
             # If the module contains a click cli subcommand, process it and return the subcommand
             logger.debug(f"Found 'cli' command in script: {relative_filepath}")
 
-            with use_temp_sys_path(filepath.parent.parent):
+            with use_scripts_sys_path(filepath.parent.parent):
                 try:
-                    cli_ns = run_module(_module_str(filepath))
+                    cli_ns = run_script_module(filepath)
                 except Exception as e:
                     logger.error_from_exception(
                         e, f"Exception while parsing script: {relative_filepath}"
@@ -99,8 +132,8 @@ class ScriptCommand(click.MultiCommand):
             @network_option()
             def call(network):
                 _ = network  # Downstream might use this
-                with use_temp_sys_path(filepath.parent.parent):
-                    main_ns = run_module(_module_str(filepath))
+                with use_scripts_sys_path(filepath.parent.parent):
+                    main_ns = run_script_module(filepath)
 
                 main_ns["main"]()  # Execute the script
                 self._namespace[filepath.stem] = main_ns
@@ -118,8 +151,8 @@ class ScriptCommand(click.MultiCommand):
             @network_option()
             def call(network):
                 _ = network  # Downstream might use this
-                with use_temp_sys_path(filepath.parent.parent):
-                    empty_ns = run_module(_module_str(filepath))
+                with use_scripts_sys_path(filepath.parent.parent):
+                    empty_ns = run_script_module(filepath)
 
                 # Nothing to call, everything executes on loading
                 self._namespace[filepath.stem] = empty_ns
