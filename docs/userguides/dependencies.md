@@ -9,8 +9,7 @@ To use dependencies in your projects, you must configure them in your `ape-confi
 ## Types of Dependencies
 
 There are few dependency types that come with Ape.
-The following section highlights how to each of them and what their differences are.
-Guides listed after this section are applicable to any dependency type unless otherwise stated.
+The following section highlights how to use each of them and what their differences are.
 
 ### GitHub
 
@@ -48,7 +47,7 @@ Bypass the original failing attempt by including a `v` in your dependency config
 
 ### Local
 
-You already-downloaded projects as dependency by referencing them as local dependencies.
+You can use already-downloaded projects as dependencies by referencing them as local dependencies.
 
 ```yaml
 dependencies:
@@ -76,6 +75,7 @@ Then, add the following to your config so that Ape can find the dependency:
 dependencies:
   - name: MyDependency
     npm: @myorg/mydependency
+    version: v1.3.0
 ```
 
 ## Misc
