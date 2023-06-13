@@ -38,6 +38,6 @@ RUN pip install --upgrade pip \
     && ape --version
 
 WORKDIR /home/harambe/project
-RUN chown -hR harambe:harambe /home/harambe
+RUN chown --recursive harambe:harambe /home/harambe
 USER harambe
 ENTRYPOINT ["ape"]

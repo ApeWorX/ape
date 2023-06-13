@@ -117,11 +117,25 @@ class use_temp_sys_path:
     a user's sys paths without permanently modifying it.
     """
 
-    def __init__(self, path: Path):
+    def __init__(self, path: Path, exclude: Optional[List[Path]] = None):
         self.temp_path = str(path)
+        self.exclude = [str(p) for p in exclude or []]
 
     def __enter__(self):
-        sys.path.append(self.temp_path)
+        for path in self.exclude:
+            if path in sys.path:
+                sys.path.remove(path)
+            else:
+                # Preventing trying to re-add during exit.
+                self.exclude.remove(path)
+
+        if self.temp_path not in sys.path:
+            sys.path.append(self.temp_path)
 
     def __exit__(self, *exc):
-        sys.path.remove(self.temp_path)
+        if self.temp_path in sys.path:
+            sys.path.remove(self.temp_path)
+
+        for path in self.exclude:
+            if path not in sys.path:
+                sys.path.append(path)
