@@ -66,6 +66,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../userguides/accounts.html">Accounts</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../userguides/installing_plugins.html">Plugins</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../userguides/projects.html">Developing Projects with Ape</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../userguides/dependencies.html">Dependencies</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../userguides/compile.html">Compile</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../userguides/clis.html">CLIs</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../userguides/data.html">Querying Data</a></li>
@@ -331,6 +332,16 @@
 <li class="toctree-l4"><a class="reference internal" href="#ape.managers.project.dependency.LocalDependency.extract_manifest"><code class="docutils literal notranslate"><span class="pre">LocalDependency.extract_manifest()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.managers.project.dependency.LocalDependency.uri"><code class="docutils literal notranslate"><span class="pre">LocalDependency.uri</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.managers.project.dependency.LocalDependency.version_id"><code class="docutils literal notranslate"><span class="pre">LocalDependency.version_id</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#ape.managers.project.dependency.NpmDependency"><code class="docutils literal notranslate"><span class="pre">NpmDependency</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#ape.managers.project.dependency.NpmDependency.__hash__"><code class="docutils literal notranslate"><span class="pre">NpmDependency.__hash__</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ape.managers.project.dependency.NpmDependency.extract_manifest"><code class="docutils literal notranslate"><span class="pre">NpmDependency.extract_manifest()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ape.managers.project.dependency.NpmDependency.npm"><code class="docutils literal notranslate"><span class="pre">NpmDependency.npm</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ape.managers.project.dependency.NpmDependency.uri"><code class="docutils literal notranslate"><span class="pre">NpmDependency.uri</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ape.managers.project.dependency.NpmDependency.version_from_json"><code class="docutils literal notranslate"><span class="pre">NpmDependency.version_from_json</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ape.managers.project.dependency.NpmDependency.version_from_local_json"><code class="docutils literal notranslate"><span class="pre">NpmDependency.version_from_local_json</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ape.managers.project.dependency.NpmDependency.version_id"><code class="docutils literal notranslate"><span class="pre">NpmDependency.version_id</span></code></a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="#ape.managers.project.types.BaseProject"><code class="docutils literal notranslate"><span class="pre">BaseProject</span></code></a><ul>
@@ -2562,6 +2573,73 @@ based on the project’s structure.</p>
 <dl class="py property">
 <dt class="sig sig-object py" id="ape.managers.project.dependency.LocalDependency.version_id">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">version_id</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#ape.managers.project.dependency.LocalDependency.version_id" title="Permalink to this definition"></a></dt>
+<dd><p>The ID to use as the sub-directory in the download cache.
+Most often, this is either a version number or a branch name.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ape.managers.project.dependency.NpmDependency">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ape.managers.project.dependency.</span></span><span class="sig-name descname"><span class="pre">NpmDependency</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">version</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">contracts_folder</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'contracts'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">exclude</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">['package.json',</span> <span class="pre">'package-lock.json']</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">npm</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.managers.project.dependency.NpmDependency" title="Permalink to this definition"></a></dt>
+<dd><p>A dependency from the Node Package Manager (NPM).</p>
+<p>Config example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">dependencies</span><span class="p">:</span>
+  <span class="o">-</span> <span class="n">name</span><span class="p">:</span> <span class="n">safe</span><span class="o">-</span><span class="n">singleton</span><span class="o">-</span><span class="n">factory</span>
+    <span class="n">npm</span><span class="p">:</span> <span class="s2">&quot;@gnosis.pm/safe-singleton-factory&quot;</span>
+    <span class="n">version</span><span class="p">:</span> <span class="mf">1.0.14</span>
+</pre></div>
+</div>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ape.managers.project.dependency.NpmDependency.__hash__">
+<span class="sig-name descname"><span class="pre">__hash__</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#ape.managers.project.dependency.NpmDependency.__hash__" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ape.managers.project.dependency.NpmDependency.extract_manifest">
+<span class="sig-name descname"><span class="pre">extract_manifest</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">PackageManifest</span></span></span><a class="headerlink" href="#ape.managers.project.dependency.NpmDependency.extract_manifest" title="Permalink to this definition"></a></dt>
+<dd><p>Create a <code class="docutils literal notranslate"><span class="pre">PackageManifest</span></code> definition,
+presumably by downloading and compiling the dependency.</p>
+<p>Implementations may use <code class="docutils literal notranslate"><span class="pre">self.project_manager</span></code> to call method
+<code class="xref py py-meth docutils literal notranslate"><span class="pre">get_project()</span></code>
+to dynamically get the correct <a class="reference internal" href="api.html#ape.api.projects.ProjectAPI" title="ape.api.projects.ProjectAPI"><code class="xref py py-class docutils literal notranslate"><span class="pre">ProjectAPI</span></code></a>.
+based on the project’s structure.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">PackageManifest</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ape.managers.project.dependency.NpmDependency.npm">
+<span class="sig-name descname"><span class="pre">npm</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#ape.managers.project.dependency.NpmDependency.npm" title="Permalink to this definition"></a></dt>
+<dd><p>The NPM repo ID e.g. the organization name followed by the repo name,
+such as <code class="docutils literal notranslate"><span class="pre">&quot;&#64;gnosis.pm/safe-singleton-factory&quot;</span></code>.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="ape.managers.project.dependency.NpmDependency.uri">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">uri</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">AnyUrl</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">FileUrl</span></em><a class="headerlink" href="#ape.managers.project.dependency.NpmDependency.uri" title="Permalink to this definition"></a></dt>
+<dd><p>The URI to use when listing in a PackageManifest.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="ape.managers.project.dependency.NpmDependency.version_from_json">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">version_from_json</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#ape.managers.project.dependency.NpmDependency.version_from_json" title="Permalink to this definition"></a></dt>
+<dd><p>The version from package.json in the installed package.
+Requires having run <cite>npm install</cite>.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="ape.managers.project.dependency.NpmDependency.version_from_local_json">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">version_from_local_json</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#ape.managers.project.dependency.NpmDependency.version_from_local_json" title="Permalink to this definition"></a></dt>
+<dd><p>The version from your project’s package.json, if exists.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="ape.managers.project.dependency.NpmDependency.version_id">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">version_id</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#ape.managers.project.dependency.NpmDependency.version_id" title="Permalink to this definition"></a></dt>
 <dd><p>The ID to use as the sub-directory in the download cache.
 Most often, this is either a version number or a branch name.</p>
 </dd></dl>

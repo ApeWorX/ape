@@ -27,7 +27,7 @@
   </script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="Compile" href="compile.html" />
+    <link rel="next" title="Dependencies" href="dependencies.html" />
     <link rel="prev" title="Plugins" href="installing_plugins.html" /> 
 </head>
 
@@ -76,6 +76,7 @@
 <li class="toctree-l2"><a class="reference internal" href="#testing">Testing</a></li>
 </ul>
 </li>
+<li class="toctree-l1"><a class="reference internal" href="dependencies.html">Dependencies</a></li>
 <li class="toctree-l1"><a class="reference internal" href="compile.html">Compile</a></li>
 <li class="toctree-l1"><a class="reference internal" href="clis.html">CLIs</a></li>
 <li class="toctree-l1"><a class="reference internal" href="data.html">Querying Data</a></li>
@@ -192,18 +193,7 @@ Deploy them in the <code class="docutils literal notranslate"><span class="pre">
 </div>
 <section id="dependencies">
 <h3>Dependencies<a class="headerlink" href="#dependencies" title="Permalink to this heading"></a></h3>
-<p>To set up dependencies in your <code class="docutils literal notranslate"><span class="pre">ape-config.yaml</span></code> file, follow <a class="reference external" href="https://docs.apeworx.io/ape/stable/userguides/config.html#dependencies">this guide</a>.
-If you are using dependencies from a remote source, they will download when you run <code class="docutils literal notranslate"><span class="pre">ape</span> <span class="pre">compile</span></code> or other commands that compile beforehand.
-Dependencies only need to download and compile once.</p>
-<p>You can access dependency contracts off your root project manager:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">ape</span> <span class="kn">import</span> <span class="n">accounts</span><span class="p">,</span> <span class="n">project</span>
-
-<span class="n">dependency_contract</span> <span class="o">=</span> <span class="n">project</span><span class="o">.</span><span class="n">dependencies</span><span class="p">[</span><span class="s2">&quot;my_dependency&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">DependencyContractType</span>
-<span class="n">my_account</span> <span class="o">=</span> <span class="n">accounts</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;alias&quot;</span><span class="p">)</span>
-<span class="n">deployed_contract</span> <span class="o">=</span> <span class="n">my_account</span><span class="o">.</span><span class="n">deploy</span><span class="p">(</span><span class="n">dependency_contract</span><span class="p">,</span> <span class="s2">&quot;argument&quot;</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">deployed_contract</span><span class="o">.</span><span class="n">address</span><span class="p">)</span>
-</pre></div>
-</div>
+<p>To set up and use dependencies in your project, follow <a class="reference external" href="./dependencies.html">this guide</a>.</p>
 </section>
 </section>
 <section id="scripts">
@@ -226,7 +216,7 @@ Testing is a complex topic; learn more about testing using Ape framework <a clas
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
         <a href="installing_plugins.html" class="btn btn-neutral float-left" title="Plugins" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="compile.html" class="btn btn-neutral float-right" title="Compile" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="dependencies.html" class="btn btn-neutral float-right" title="Dependencies" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>

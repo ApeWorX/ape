@@ -32,9 +32,9 @@ The default ecosystem is `ethereum`.
 ## Dependencies
 
 Configure dependencies for your ape project.
-Ape downloads and caches dependencies in the `.ape/packages/<name>/<version-id>` directory where `<name>` refers to the name of the dependency and `<version-id>` refers to the version or branch of the package.
+To learn more about dependencies, see [this guide](./dependencies.html).
 
-For example:
+A simple example of configuring dependencies looks like this:
 
 ```yaml
 dependencies:
@@ -42,75 +42,6 @@ dependencies:
     github: OpenZeppelin/openzeppelin-contracts
     version: 4.4.2
 ```
-
-will download the [Open Zeppelin](https://github.com/OpenZeppelin/openzeppelin-contracts) package with version `4.4.2`.
-
-**WARN**: The `version:` config first attempts to use an official GitHub release, but if the release is not found, it will check the release tags.
-If you know the version is not available as an official release, bypass the original check by using the `ref:` key.
-The `ref:` key is also used for installing branches.
-
-For example, to install a version available as a `git` tag, do the following:
-
-```yaml
-dependencies:
-  - name: Uniswap
-    github: Uniswap/v3-core
-    ref: v1.0.0
-```
-
-The `ref:` config installs the code from that reference; the `version:` config uses the official GitHub release API, and then only if that fails will it check the `git` references.
-Often times, the `v` prefix is required when using tags.
-However, if cloning the tag fails, `ape` will retry with a `v` prefix.
-Bypass the original failing attempt by including a `v` in your dependency config.
-
-To ignore files from a dependency project, use the `exclude` setting to specify glob patterns:
-
-```yaml
-dependencies:
-  - name: dependency-project-name
-    github: org-name/dependency-project-name
-    exclude:
-      - package.json    # Ignore package.json files.
-      - mocks/**/*      # Ignore all files in the 'mocks' directory
-```
-
-To use dependencies in the `ape-solidity` plugin, configure `import_remappings`:
-
-```yaml
-solidity: 
-  import_remapping:
-    - "@openzeppelin=OpenZeppelin/4.4.2"
-```
-
-Now, in your solidity files, import `OpenZeppelin` sources via:
-
-```solidity
-import "@openzeppelin/token/ERC721/ERC721.sol";
-```
-
-You can also set the name of the dependency's contracts folder, e.g.:
-
-```yaml
-dependencies:
-  - name: DappToolsERC20
-    github: dapphub/erc20
-    ref: dappnix
-    contracts_folder: src
-```
-
-You can also use local dependencies:
-
-```yaml
-dependencies:
-  - name: MyDependency
-    local: local/path/to/MyDependency
-    contracts_folder: src/contracts
-```
-
-This is helpful when:
-
-- Working on multiple packages at once
-- When there is not a suitable `DependencyAPI` implementation available for downloading your dependency
 
 ## Deployments
 

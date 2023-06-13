@@ -63,6 +63,7 @@
 <li class="toctree-l1"><a class="reference internal" href="userguides/accounts.html">Accounts</a></li>
 <li class="toctree-l1"><a class="reference internal" href="userguides/installing_plugins.html">Plugins</a></li>
 <li class="toctree-l1"><a class="reference internal" href="userguides/projects.html">Developing Projects with Ape</a></li>
+<li class="toctree-l1"><a class="reference internal" href="userguides/dependencies.html">Dependencies</a></li>
 <li class="toctree-l1"><a class="reference internal" href="userguides/compile.html">Compile</a></li>
 <li class="toctree-l1"><a class="reference internal" href="userguides/clis.html">CLIs</a></li>
 <li class="toctree-l1"><a class="reference internal" href="userguides/data.html">Querying Data</a></li>
@@ -498,6 +499,8 @@
         <li><a href="methoddocs/managers.html#ape.managers.project.dependency.GithubDependency.__hash__">(ape.managers.project.dependency.GithubDependency attribute)</a>
 </li>
         <li><a href="methoddocs/managers.html#ape.managers.project.dependency.LocalDependency.__hash__">(ape.managers.project.dependency.LocalDependency attribute)</a>
+</li>
+        <li><a href="methoddocs/managers.html#ape.managers.project.dependency.NpmDependency.__hash__">(ape.managers.project.dependency.NpmDependency attribute)</a>
 </li>
         <li><a href="methoddocs/managers.html#ape.managers.project.types.ApeProject.__hash__">(ape.managers.project.types.ApeProject attribute)</a>
 </li>
@@ -1482,6 +1485,8 @@
 </li>
         <li><a href="methoddocs/managers.html#ape.managers.project.dependency.LocalDependency.extract_manifest">(ape.managers.project.dependency.LocalDependency method)</a>
 </li>
+        <li><a href="methoddocs/managers.html#ape.managers.project.dependency.NpmDependency.extract_manifest">(ape.managers.project.dependency.NpmDependency method)</a>
+</li>
         <li><a href="methoddocs/managers.html#ape.managers.project.manager.ProjectManager.extract_manifest">(ape.managers.project.manager.ProjectManager method)</a>
 </li>
       </ul></li>
@@ -1986,10 +1991,10 @@
 </li>
       <li><a href="methoddocs/cli.html#ape.cli.choices.NetworkChoice">NetworkChoice (class in ape.cli.choices)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="methoddocs/exceptions.html#ape.exceptions.NetworkError">NetworkError</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="methoddocs/managers.html#ape.managers.networks.NetworkManager">NetworkManager (class in ape.managers.networks)</a>
 </li>
       <li><a href="methoddocs/exceptions.html#ape.exceptions.NetworkMismatchError">NetworkMismatchError</a>
@@ -2028,6 +2033,10 @@
       <li><a href="methoddocs/cli.html#ape.cli.arguments.non_existing_alias_argument">non_existing_alias_argument() (in module ape.cli.arguments)</a>
 </li>
       <li><a href="methoddocs/api.html#ape.api.address.BaseAddress.nonce">nonce (ape.api.address.BaseAddress property)</a>
+</li>
+      <li><a href="methoddocs/managers.html#ape.managers.project.dependency.NpmDependency.npm">npm (ape.managers.project.dependency.NpmDependency attribute)</a>
+</li>
+      <li><a href="methoddocs/managers.html#ape.managers.project.dependency.NpmDependency">NpmDependency (class in ape.managers.project.dependency)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -2546,8 +2555,6 @@
       </ul></li>
       <li><a href="methoddocs/api.html#ape.api.providers.UpstreamProvider">UpstreamProvider (class in ape.api.providers)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="methoddocs/api.html#ape.api.projects.DependencyAPI.uri">uri (ape.api.projects.DependencyAPI property)</a>
 
       <ul>
@@ -2555,7 +2562,11 @@
 </li>
         <li><a href="methoddocs/managers.html#ape.managers.project.dependency.LocalDependency.uri">(ape.managers.project.dependency.LocalDependency property)</a>
 </li>
+        <li><a href="methoddocs/managers.html#ape.managers.project.dependency.NpmDependency.uri">(ape.managers.project.dependency.NpmDependency property)</a>
+</li>
       </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="methoddocs/api.html#ape.api.networks.NetworkAPI.use_default_provider">use_default_provider() (ape.api.networks.NetworkAPI method)</a>
 </li>
       <li><a href="methoddocs/api.html#ape.api.networks.NetworkAPI.use_provider">use_provider() (ape.api.networks.NetworkAPI method)</a>
@@ -2588,12 +2599,18 @@
       </ul></li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="methoddocs/managers.html#ape.managers.project.dependency.NpmDependency.version_from_json">version_from_json (ape.managers.project.dependency.NpmDependency property)</a>
+</li>
+      <li><a href="methoddocs/managers.html#ape.managers.project.dependency.NpmDependency.version_from_local_json">version_from_local_json (ape.managers.project.dependency.NpmDependency property)</a>
+</li>
       <li><a href="methoddocs/api.html#ape.api.projects.DependencyAPI.version_id">version_id (ape.api.projects.DependencyAPI property)</a>
 
       <ul>
         <li><a href="methoddocs/managers.html#ape.managers.project.dependency.GithubDependency.version_id">(ape.managers.project.dependency.GithubDependency property)</a>
 </li>
         <li><a href="methoddocs/managers.html#ape.managers.project.dependency.LocalDependency.version_id">(ape.managers.project.dependency.LocalDependency property)</a>
+</li>
+        <li><a href="methoddocs/managers.html#ape.managers.project.dependency.NpmDependency.version_id">(ape.managers.project.dependency.NpmDependency property)</a>
 </li>
       </ul></li>
       <li><a href="methoddocs/exceptions.html#ape.exceptions.VirtualMachineError">VirtualMachineError</a>

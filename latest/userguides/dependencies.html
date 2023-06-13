@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dependencies &mdash; ape  documentation</title>
+      <link rel="stylesheet" href="/ape/latest/_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="/ape/latest/_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="/ape/latest/_static/custom.css" type="text/css" />
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+    <link rel="canonical" href="/ape/userguides/dependencies.html" />
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/doctools.js"></script>
+        <script src="../_static/sphinx_highlight.js"></script>
+        <script data-domain="docs.apeworx.io" defer="defer" src="https://plausible.io/js/script.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <script src="../_static/custom.js"></script>
+  <script>
+      var PROJECT = "ape";
+  </script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Compile" href="compile.html" />
+    <link rel="prev" title="Developing Projects with Ape" href="projects.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            ape
+              <img src="../_static/logo.gif" class="logo" alt="Logo"/>
+          </a>
+
+          <div class="version">
+            <label for="version-picker" id="version-picker-label">Version:</label>
+            <select id="version-picker">
+              <option value="">Select version...</option>
+              <option value="latest">latest</option>
+              <option value="stable">stable</option>
+            </select>
+          </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">User Guides</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="quickstart.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="accounts.html">Accounts</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installing_plugins.html">Plugins</a></li>
+<li class="toctree-l1"><a class="reference internal" href="projects.html">Developing Projects with Ape</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Dependencies</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#types-of-dependencies">Types of Dependencies</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#github">GitHub</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#local">Local</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#npm">NPM</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#misc">Misc</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#custom-contracts-folder">Custom Contracts Folder</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#file-exclusions">File Exclusions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#solidity-remappings">Solidity Remappings</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#accessing-dependency-types">Accessing Dependency Types</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="compile.html">Compile</a></li>
+<li class="toctree-l1"><a class="reference internal" href="clis.html">CLIs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="data.html">Querying Data</a></li>
+<li class="toctree-l1"><a class="reference internal" href="networks.html">Networks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="developing_plugins.html">Developing Plugins</a></li>
+<li class="toctree-l1"><a class="reference internal" href="config.html">Configure Ape</a></li>
+<li class="toctree-l1"><a class="reference internal" href="transactions.html">Making Transactions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="console.html">Ape Console</a></li>
+<li class="toctree-l1"><a class="reference internal" href="contracts.html">Contracts</a></li>
+<li class="toctree-l1"><a class="reference internal" href="testing.html">Testing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="scripts.html">Scripting</a></li>
+<li class="toctree-l1"><a class="reference internal" href="publishing.html">Publishing</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">CLI Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../commands/accounts.html">accounts</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../commands/compile.html">compile</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../commands/console.html">console</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../commands/init.html">init</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../commands/networks.html">networks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../commands/plugins.html">plugins</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../commands/run.html">run</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../commands/test.html">test</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Python Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../methoddocs/ape.html">ape</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../methoddocs/api.html">ape.api</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../methoddocs/cli.html">ape.cli</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../methoddocs/contracts.html">ape.contracts</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../methoddocs/exceptions.html">ape.exceptions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../methoddocs/managers.html">ape.managers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../methoddocs/plugins.html">ape.plugins</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../methoddocs/types.html">ape.types</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../methoddocs/utils.html">ape.utils</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">ape</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Dependencies</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/userguides/dependencies.md.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="dependencies">
+<h1>Dependencies<a class="headerlink" href="#dependencies" title="Permalink to this heading"></a></h1>
+<p>Ape downloads and caches dependencies in the <code class="docutils literal notranslate"><span class="pre">.ape/packages/&lt;name&gt;/&lt;version-id&gt;</span></code> directory where <code class="docutils literal notranslate"><span class="pre">&lt;name&gt;</span></code> refers to the name of the dependency and <code class="docutils literal notranslate"><span class="pre">&lt;version-id&gt;</span></code> refers to the version or branch of the package.
+When first downloading dependencies, Ape only places the source contents in the <code class="docutils literal notranslate"><span class="pre">sources</span></code> field of the <code class="docutils literal notranslate"><span class="pre">PackageManifest</span></code> and leaves the <code class="docutils literal notranslate"><span class="pre">contract_types</span></code> field untouched.
+This is because dependencies may not compile by Ape’s standard out-of-the-box but their contract types can still be used in projects that do.</p>
+<p>To use dependencies in your projects, you must configure them in your <code class="docutils literal notranslate"><span class="pre">ape-config.yaml</span></code> file.</p>
+<section id="types-of-dependencies">
+<h2>Types of Dependencies<a class="headerlink" href="#types-of-dependencies" title="Permalink to this heading"></a></h2>
+<p>There are few dependency types that come with Ape.
+The following section highlights how to use each of them and what their differences are.</p>
+<section id="github">
+<h3>GitHub<a class="headerlink" href="#github" title="Permalink to this heading"></a></h3>
+<p>You can use dependencies from GitHub.
+For example, a common dependency for Solidity projects is <a class="reference external" href="https://github.com/OpenZeppelin/openzeppelin-contracts">Open Zeppelin</a>.
+To use Open Zeppelin version 4.4.2 in your Ape Solidity project, add the following to your <code class="docutils literal notranslate"><span class="pre">ape-config.yaml</span></code> file:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">dependencies</span><span class="p">:</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">OpenZeppelin</span>
+<span class="w">    </span><span class="nt">github</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">OpenZeppelin/openzeppelin-contracts</span>
+<span class="w">    </span><span class="nt">version</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">4.4.2</span>
+</pre></div>
+</div>
+<p>Then, follow the guide below about <code class="docutils literal notranslate"><span class="pre">remappings</span></code> to use the dependency.</p>
+<p><strong>An important WARNING about the <code class="docutils literal notranslate"><span class="pre">version:</span></code> key for GitHub dependencies:</strong>
+The <code class="docutils literal notranslate"><span class="pre">version:</span></code> config first attempts to use an official GitHub release, but if the release is not found, it will check the release tags.
+If you know the version is not available as an official release, bypass the original check by using the <code class="docutils literal notranslate"><span class="pre">ref:</span></code> key.
+The <code class="docutils literal notranslate"><span class="pre">ref:</span></code> key is also used for installing branches.</p>
+<p>For example, to install a version available as a <code class="docutils literal notranslate"><span class="pre">git</span></code> tag, do the following:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">dependencies</span><span class="p">:</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Uniswap</span>
+<span class="w">    </span><span class="nt">github</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Uniswap/v3-core</span>
+<span class="w">    </span><span class="nt">ref</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">v1.0.0</span>
+</pre></div>
+</div>
+<p>The <code class="docutils literal notranslate"><span class="pre">ref:</span></code> config installs the code from that reference; the <code class="docutils literal notranslate"><span class="pre">version:</span></code> config uses the official GitHub release API, and then only if that fails will it check the <code class="docutils literal notranslate"><span class="pre">git</span></code> references.
+Often times, the <code class="docutils literal notranslate"><span class="pre">v</span></code> prefix is required when using tags.
+However, if cloning the tag fails, <code class="docutils literal notranslate"><span class="pre">ape</span></code> will retry with a <code class="docutils literal notranslate"><span class="pre">v</span></code> prefix.
+Bypass the original failing attempt by including a <code class="docutils literal notranslate"><span class="pre">v</span></code> in your dependency config.</p>
+</section>
+<section id="local">
+<h3>Local<a class="headerlink" href="#local" title="Permalink to this heading"></a></h3>
+<p>You can use already-downloaded projects as dependencies by referencing them as local dependencies.</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">dependencies</span><span class="p">:</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">MyDependency</span>
+<span class="w">    </span><span class="nt">local</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">local/path/to/MyDependency</span>
+<span class="w">    </span><span class="nt">contracts_folder</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">src/contracts</span>
+</pre></div>
+</div>
+<p>This is helpful when:</p>
+<ul class="simple">
+<li><p>Working on multiple packages at once.</p></li>
+<li><p>When there is not a suitable <code class="docutils literal notranslate"><span class="pre">DependencyAPI</span></code> implementation available for downloading your dependency.</p></li>
+<li><p>Testing the framework.</p></li>
+</ul>
+</section>
+<section id="npm">
+<h3>NPM<a class="headerlink" href="#npm" title="Permalink to this heading"></a></h3>
+<p>You can use dependencies from NPM.
+This is generally not recommended.
+However, sometimes it is the only way to use a dependency.</p>
+<p>To use a dependency from NPM, you must have already run <code class="docutils literal notranslate"><span class="pre">npm</span> <span class="pre">install</span></code> and that package must be present in your local <code class="docutils literal notranslate"><span class="pre">node_modules</span></code> folder.
+Then, add the following to your config so that Ape can find the dependency:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span>dependencies:
+  - name: MyDependency
+    npm: @myorg/mydependency
+    version: v1.3.0
+</pre></div>
+</div>
+</section>
+</section>
+<section id="misc">
+<h2>Misc<a class="headerlink" href="#misc" title="Permalink to this heading"></a></h2>
+<p>The following guidelines are applicable to <strong>ALL</strong> dependency types.</p>
+<section id="custom-contracts-folder">
+<h3>Custom Contracts Folder<a class="headerlink" href="#custom-contracts-folder" title="Permalink to this heading"></a></h3>
+<p>You can set the name of the dependency’s contracts folder, e.g.:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">dependencies</span><span class="p">:</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">DappToolsERC20</span>
+<span class="w">    </span><span class="nt">github</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">dapphub/erc20</span>
+<span class="w">    </span><span class="nt">ref</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">dappnix</span>
+<span class="w">    </span><span class="nt">contracts_folder</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">src</span>
+</pre></div>
+</div>
+</section>
+<section id="file-exclusions">
+<h3>File Exclusions<a class="headerlink" href="#file-exclusions" title="Permalink to this heading"></a></h3>
+<p>To ignore files from a dependency project, use the <code class="docutils literal notranslate"><span class="pre">exclude</span></code> setting to specify glob patterns:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">dependencies</span><span class="p">:</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">dependency-project-name</span>
+<span class="w">    </span><span class="nt">github</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">org-name/dependency-project-name</span>
+<span class="w">    </span><span class="nt">exclude</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">package.json</span><span class="w">    </span><span class="c1"># Ignore package.json files.</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">mocks/**/*</span><span class="w">      </span><span class="c1"># Ignore all files in the &#39;mocks&#39; directory</span>
+</pre></div>
+</div>
+</section>
+<section id="solidity-remappings">
+<h3>Solidity Remappings<a class="headerlink" href="#solidity-remappings" title="Permalink to this heading"></a></h3>
+<p>A common use-case for dependencies involves the Solidity plugin.
+To use your dependencies in the <code class="docutils literal notranslate"><span class="pre">ape-solidity</span></code> plugin, configure <code class="docutils literal notranslate"><span class="pre">import_remappings</span></code> to refer to them:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">dependencies</span><span class="p">:</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">OpenZeppelin</span>
+<span class="w">    </span><span class="nt">github</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">OpenZeppelin/openzeppelin-contracts</span>
+<span class="w">    </span><span class="nt">version</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">4.4.2</span>
+
+<span class="nt">solidity</span><span class="p">:</span><span class="w"> </span>
+<span class="w">  </span><span class="nt">import_remapping</span><span class="p">:</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&quot;@openzeppelin=OpenZeppelin/4.4.2&quot;</span>
+</pre></div>
+</div>
+<p>Now, in your solidity files, import <code class="docutils literal notranslate"><span class="pre">OpenZeppelin</span></code> sources via:</p>
+<div class="highlight-solidity notranslate"><div class="highlight"><pre><span></span><span class="kt">import</span><span class="w"> </span><span class="s2">&quot;@openzeppelin/token/ERC721/ERC721.sol&quot;</span><span class="p">;</span>
+</pre></div>
+</div>
+</section>
+<section id="accessing-dependency-types">
+<h3>Accessing Dependency Types<a class="headerlink" href="#accessing-dependency-types" title="Permalink to this heading"></a></h3>
+<p>Sometimes, you may need to access types (such as contract types) from dependencies.
+You can achieve this using the project manager:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">ape</span> <span class="kn">import</span> <span class="n">accounts</span><span class="p">,</span> <span class="n">project</span>
+
+<span class="n">dependency_contract</span> <span class="o">=</span> <span class="n">project</span><span class="o">.</span><span class="n">dependencies</span><span class="p">[</span><span class="s2">&quot;my_dependency&quot;</span><span class="p">][</span><span class="s2">&quot;1.0.0&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">DependencyContractType</span>
+<span class="n">my_account</span> <span class="o">=</span> <span class="n">accounts</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;alias&quot;</span><span class="p">)</span>
+<span class="n">deployed_contract</span> <span class="o">=</span> <span class="n">my_account</span><span class="o">.</span><span class="n">deploy</span><span class="p">(</span><span class="n">dependency_contract</span><span class="p">,</span> <span class="s2">&quot;argument&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">deployed_contract</span><span class="o">.</span><span class="n">address</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="projects.html" class="btn btn-neutral float-left" title="Developing Projects with Ape" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="compile.html" class="btn btn-neutral float-right" title="Compile" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, ApeWorX LTD.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
