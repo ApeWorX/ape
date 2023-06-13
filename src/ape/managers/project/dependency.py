@@ -225,7 +225,17 @@ class NpmDependency(DependencyAPI):
         if self.version:
             return self.version
         else:
-            raise ProjectError(f"Missing version for NPM dependenciy '{self.name}'.")
+            raise ProjectError(f"Missing version for NPM dependency '{self.name}'.")
+
+    @property
+    def package_folder(self) -> Path:
+        return Path.cwd() / "node_modules" / str(self.npm)
+
+    @cached_property
+    def version_from_json(self) -> Optional[str]:
+        package_json = self.package_folder / "package.json"
+        data = json.loads(package_json.read_text())
+        return data.get("version")
 
     @property
     def uri(self) -> AnyUrl:
@@ -237,17 +247,14 @@ class NpmDependency(DependencyAPI):
             # Already downloaded
             return self.cached_manifest
 
-        package_folder = Path.cwd() / "node_modules" / str(self.npm)
-        if package_folder.is_dir():
-            package_json = package_folder / "package.json"
-            data = json.loads(package_json.read_text())
-            node_version = data.get("version")
-            if node_version != self.version:
+        if self.package_folder.is_dir():
+            if self.version and self.version != self.version_from_json:
                 raise ProjectError(
-                    f"Version mismatch in {self.name}. Please reinstall the correct version."
+                    f"Version mismatch for {self.npm}. Is {self.version} in ape config"
+                    f"but {self.version_from_json} in package.json."
                 )
-            else:
-                return self._extract_local_manifest(package_folder)
+
+            return self._extract_local_manifest(self.package_folder)
 
         else:
-            raise ProjectError("Please install NPM package.")
+            raise ProjectError(f"NPM package '{self.npm}' not installed.")
