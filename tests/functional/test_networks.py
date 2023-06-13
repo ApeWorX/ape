@@ -225,7 +225,7 @@ def test_ecosystems_when_default_provider_not_exists(temp_config, caplog, networ
     err = caplog.records[-1].message
     assert err == (
         f"Failed setting default provider: "
-        f"Provider '{bad_provider}' not found in network 'ethereum:ggoerli'."
+        f"Provider '{bad_provider}' not found in network 'ethereum:goerli'."
     )
 
 
