@@ -404,7 +404,7 @@ class ProviderAPI(BaseInterfaceModel):
             Iterator[:class:`~ape.types.ContractLog`]
         """
 
-    def send_private_transaction(self, txn: TransactionAPI) -> ReceiptAPI:
+    def send_private_transaction(self, txn: TransactionAPI, **kwargs) -> ReceiptAPI:
         """
         Send a transaction through a private mempool (if supported by the Provider).
 
@@ -415,6 +415,7 @@ class ProviderAPI(BaseInterfaceModel):
         Args:
             txn (:class:`~ape.api.transactions.TransactionAPI`): The transaction
               to privately publish.
+            **kwargs: Additional kwargs to be optionally handled by the provider.
 
         Returns:
             :class:`~ape.api.transactions.ReceiptAPI`
