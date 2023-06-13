@@ -170,7 +170,7 @@ receipt = contract(sender=sender, gas=40000, data="0x123")
 
 ### Private Transactions
 
-If you are using a provider that implements `send_private_transaction()`, you are able to use the `private=True` kwarg to privately publish your transaction.
+If you are using a provider that allows private mempool transactions, you are able to use the `private=True` kwarg to publish your transaction into a private mempool.
 For example, EVM providers likely will use the `eth_sendPrivateTransaction` RPC to achieve this.
 
 To send a private transaction, do the following:
