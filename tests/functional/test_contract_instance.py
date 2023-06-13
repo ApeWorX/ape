@@ -9,7 +9,13 @@ from pydantic import BaseModel
 from ape import Contract
 from ape.api import TransactionAPI
 from ape.contracts import ContractInstance
-from ape.exceptions import ChainError, ContractError, ContractLogicError, CustomError
+from ape.exceptions import (
+    APINotImplementedError,
+    ChainError,
+    ContractError,
+    ContractLogicError,
+    CustomError,
+)
 from ape.types import AddressType
 from ape.utils import ZERO_ADDRESS
 from ape_ethereum.transactions import TransactionStatusEnum
@@ -781,3 +787,13 @@ def test_fallback_as_transaction(fallback_contract, owner, eth_tester_provider):
 def test_fallback_estimate_gas_cost(fallback_contract, owner):
     estimate = fallback_contract.estimate_gas_cost(sender=owner)
     assert estimate > 0
+
+
+def test_private_transaction(vyper_contract_instance, owner):
+    receipt = vyper_contract_instance.setNumber(2, sender=owner, private=True)
+    assert not receipt.failed
+
+
+def test_private_transaction_live_network(vyper_contract_instance, owner, dummy_live_network):
+    with pytest.raises(APINotImplementedError):
+        vyper_contract_instance.setNumber(2, sender=owner, private=True)

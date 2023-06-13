@@ -57,7 +57,7 @@ class ContractConstructor(ManagerAccessMixin):
             self.deployment_bytecode, self.abi, *arguments, **kwargs
         )
 
-    def __call__(self, *args, **kwargs) -> ReceiptAPI:
+    def __call__(self, private: bool = False, *args, **kwargs) -> ReceiptAPI:
         txn = self.serialize_transaction(*args, **kwargs)
 
         if "sender" in kwargs and isinstance(kwargs["sender"], AccountAPI):
@@ -66,7 +66,11 @@ class ContractConstructor(ManagerAccessMixin):
         elif "sender" not in kwargs and self.account_manager.default_sender is not None:
             return self.account_manager.default_sender.call(txn, **kwargs)
 
-        return self.provider.send_transaction(txn)
+        return (
+            self.provider.send_private_transaction(txn)
+            if private
+            else self.provider.send_transaction(txn)
+        )
 
 
 class ContractCall(ManagerAccessMixin):
@@ -272,11 +276,16 @@ class ContractTransaction(ManagerAccessMixin):
 
     def __call__(self, *args, **kwargs) -> ReceiptAPI:
         txn = self.serialize_transaction(*args, **kwargs)
+        private = kwargs.get("private", False)
 
         if "sender" in kwargs and isinstance(kwargs["sender"], AccountAPI):
             return kwargs["sender"].call(txn, **kwargs)
 
-        return self.provider.send_transaction(txn)
+        return (
+            self.provider.send_private_transaction(txn)
+            if private
+            else self.provider.send_transaction(txn)
+        )
 
 
 class ContractTransactionHandler(ContractMethodHandler):
@@ -1228,6 +1237,7 @@ class ContractContainer(ContractTypeWrapper):
 
     def deploy(self, *args, publish: bool = False, **kwargs) -> ContractInstance:
         txn = self(*args, **kwargs)
+        private = kwargs.get("private", False)
 
         if "sender" in kwargs and isinstance(kwargs["sender"], AccountAPI):
             # Handle account-related preparation if needed, such as signing
@@ -1235,7 +1245,11 @@ class ContractContainer(ContractTypeWrapper):
 
         else:
             txn = self.provider.prepare_transaction(txn)
-            receipt = self.provider.send_transaction(txn)
+            receipt = (
+                self.provider.send_private_transaction(txn)
+                if private
+                else self.provider.send_transaction(txn)
+            )
 
         address = receipt.contract_address
         if not address:
