@@ -224,20 +224,25 @@ class NpmDependency(DependencyAPI):
     def version_id(self) -> str:
         version_from_config = self.version
         version_from_json = self.version_from_json
-        if version_from_config and version_from_json and version_from_config != version_from_json:
-            raise ProjectError(
-                f"Version mismatch for {self.npm}. Is {self.version} in ape config"
-                f"but {self.version_from_json} in package.json."
-            )
+        version_from_local_json = self.version_from_local_json
+        if version_from_config:
+            for other_version in (version_from_json, version_from_local_json):
+                if other_version and version_from_config != other_version:
+                    raise ProjectError(
+                        f"Version mismatch for {self.npm}. Is {self.version} in ape config "
+                        f"but {other_version} in package.json. "
+                        f"Try aligning versions and/or running `npm install`."
+                    )
 
         if version_from_config:
             return version_from_config
         elif version_from_json:
             return version_from_json
+        elif version_from_local_json:
+            return version_from_local_json
         else:
             raise ProjectError(
-                f"Missing version for NPM dependency '{self.name}'. "
-                "Have you run `npm install`?"
+                f"Missing version for NPM dependency '{self.name}'. " "Have you run `npm install`?"
             )
 
     @property
@@ -246,17 +251,18 @@ class NpmDependency(DependencyAPI):
 
     @cached_property
     def version_from_json(self) -> Optional[str]:
-        package_json = self.package_folder / "package.json"
-        if not package_json.is_file():
-            return None
+        """
+        The version from package.json in the installed package.
+        Requires having run `npm install`.
+        """
+        return _get_version_from_package_json(self.package_folder)
 
-        try:
-            data = json.loads(package_json.read_text())
-        except Exception as err:
-            logger.warning(f"Failed to parse package.json: {err}")
-            return None
-
-        return data.get("version")
+    @cached_property
+    def version_from_local_json(self) -> Optional[str]:
+        """
+        The version from your project's package.json, if exists.
+        """
+        return _get_version_from_package_json(self.project_manager.path)
 
     @property
     def uri(self) -> AnyUrl:
@@ -279,3 +285,17 @@ class NpmDependency(DependencyAPI):
 
         else:
             raise ProjectError(f"NPM package '{self.npm}' not installed.")
+
+
+def _get_version_from_package_json(base_path: Path) -> Optional[str]:
+    package_json = base_path / "package.json"
+    if not package_json.is_file():
+        return None
+
+    try:
+        data = json.loads(package_json.read_text())
+    except Exception as err:
+        logger.warning(f"Failed to parse package.json: {err}")
+        return None
+
+    return data.get("version")
