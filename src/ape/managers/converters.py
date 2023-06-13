@@ -4,6 +4,7 @@ from typing import Any, Dict, List, Tuple, Type, Union
 
 from dateutil.parser import parse  # type: ignore
 from eth_utils import (
+    is_0x_prefixed,
     is_checksum_address,
     is_hex,
     is_hex_address,
@@ -48,13 +49,18 @@ class HexConverter(ConverterAPI):
 class HexIntConverter(ConverterAPI):
     """
     Convert hex values to integers.
+
+    **NOTE** If value is a ``str``, it must begin with "0x".
     """
 
     def is_convertible(self, value: Any) -> bool:
         return (isinstance(value, str) and is_hex(value)) or isinstance(value, bytes)
 
     def convert(self, value: Any) -> int:
-        return to_int(HexBytes(value))
+        if isinstance(value, bytes) or (isinstance(value, str) and is_0x_prefixed(value)):
+            return to_int(HexBytes(value))
+        else:
+            return int(value)
 
 
 class AddressAPIConverter(ConverterAPI):
