@@ -1,6 +1,7 @@
 import pytest
 
 from ape import Contract
+from ape.contracts import ContractInstance
 from ape.exceptions import NetworkError, ProjectError
 from ape_ethereum.ecosystem import ProxyType
 
@@ -43,6 +44,14 @@ def test_deploy_and_not_publish(mocker, owner, contract_container, dummy_live_ne
     dummy_live_network.__dict__["explorer"] = mock_explorer
     contract_container.deploy(0, sender=owner, publish=False, required_confirmations=0)
     assert not mock_explorer.call_count
+
+
+def test_deploy_privately(owner, contract_container):
+    deploy_0 = owner.deploy(contract_container, 3, private=True)
+    assert isinstance(deploy_0, ContractInstance)
+
+    deploy_1 = contract_container.deploy(3, sender=owner, private=True)
+    assert isinstance(deploy_1, ContractInstance)
 
 
 def test_deployment_property(chain, owner, project_with_contract, eth_tester_provider):

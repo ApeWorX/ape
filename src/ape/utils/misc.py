@@ -254,11 +254,15 @@ def raises_not_implemented(fn):
     """
 
     def inner(*args, **kwargs):
-        raise APINotImplementedError(
-            f"Attempted to call method '{fn.__qualname__}', method not supported."
-        )
+        raise _create_raises_not_implemented_error(fn)
 
     return inner
+
+
+def _create_raises_not_implemented_error(fn):
+    return APINotImplementedError(
+        f"Attempted to call method '{fn.__qualname__}', method not supported."
+    )
 
 
 def to_int(value) -> int:
