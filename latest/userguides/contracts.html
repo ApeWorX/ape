@@ -81,6 +81,7 @@
 <li class="toctree-l2"><a class="reference internal" href="#from-previous-deployment">From Previous Deployment</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#contract-interaction">Contract Interaction</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#default-fallback-and-direct-calls">Default, Fallback, and Direct Calls</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#private-transactions">Private Transactions</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="#decoding-and-encoding-inputs">Decoding and Encoding Inputs</a></li>
@@ -275,6 +276,16 @@ For example, let’s say you have a Vyper contract containing some functions:</p
 <span class="n">receipt</span> <span class="o">=</span> <span class="n">contract</span><span class="p">(</span><span class="n">sender</span><span class="o">=</span><span class="n">sender</span><span class="p">,</span> <span class="n">gas</span><span class="o">=</span><span class="mi">40000</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="s2">&quot;0x123&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
+</section>
+<section id="private-transactions">
+<h3>Private Transactions<a class="headerlink" href="#private-transactions" title="Permalink to this heading"></a></h3>
+<p>If you are using a provider that allows private mempool transactions, you are able to use the <code class="docutils literal notranslate"><span class="pre">private=True</span></code> kwarg to publish your transaction into a private mempool.
+For example, EVM providers likely will use the <code class="docutils literal notranslate"><span class="pre">eth_sendPrivateTransaction</span></code> RPC to achieve this.</p>
+<p>To send a private transaction, do the following:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">receipt</span> <span class="o">=</span> <span class="n">contract</span><span class="o">.</span><span class="n">set_number</span><span class="p">(</span><span class="n">sender</span><span class="o">=</span><span class="n">dev</span><span class="p">,</span> <span class="n">private</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The <code class="docutils literal notranslate"><span class="pre">private=True</span></code> is available on all contract interactions.</p>
 </section>
 </section>
 <section id="decoding-and-encoding-inputs">
