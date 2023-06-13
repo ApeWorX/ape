@@ -222,10 +222,23 @@ class NpmDependency(DependencyAPI):
 
     @cached_property
     def version_id(self) -> str:
-        if self.version:
-            return self.version
+        version_from_config = self.version
+        version_from_json = self.version_from_json
+        if version_from_config and version_from_json and version_from_config != version_from_json:
+            raise ProjectError(
+                f"Version mismatch for {self.npm}. Is {self.version} in ape config"
+                f"but {self.version_from_json} in package.json."
+            )
+
+        if version_from_config:
+            return version_from_config
+        elif version_from_json:
+            return version_from_json
         else:
-            raise ProjectError(f"Missing version for NPM dependency '{self.name}'.")
+            raise ProjectError(
+                f"Missing version for NPM dependency '{self.name}'. "
+                "Have you run `npm install`?"
+            )
 
     @property
     def package_folder(self) -> Path:
@@ -234,7 +247,15 @@ class NpmDependency(DependencyAPI):
     @cached_property
     def version_from_json(self) -> Optional[str]:
         package_json = self.package_folder / "package.json"
-        data = json.loads(package_json.read_text())
+        if not package_json.is_file():
+            return None
+
+        try:
+            data = json.loads(package_json.read_text())
+        except Exception as err:
+            logger.warning(f"Failed to parse package.json: {err}")
+            return None
+
         return data.get("version")
 
     @property
