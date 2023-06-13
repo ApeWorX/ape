@@ -83,6 +83,7 @@ class AccountAPI(BaseInterfaceModel, BaseAddress):
         self,
         txn: TransactionAPI,
         send_everything: bool = False,
+        private: bool = False,
         **signer_options,
     ) -> ReceiptAPI:
         """
@@ -93,11 +94,15 @@ class AccountAPI(BaseInterfaceModel, BaseAddress):
               not have enough funds.
             :class:`~ape.exceptions.TransactionError`: When the required confirmations are negative.
             :class:`~ape.exceptions.SignatureError`: When the user does not sign the transaction.
+            :class:`~ape.exceptions.APINotImplementedError`: When setting ``private=True`` and using
+              a provider that does not support private transactions.
 
         Args:
             txn (:class:`~ape.api.transactions.TransactionAPI`): An invoke-transaction.
             send_everything (bool): ``True`` will send the difference from balance and fee.
               Defaults to ``False``.
+            private (bool): ``True`` with use the
+              :meth:`~ape.api.providers.ProviderAPI.send_private_transaction` method.
             **signer_options: Additional kwargs given to the signer to modify the signing operation.
 
         Returns:
@@ -139,22 +144,34 @@ class AccountAPI(BaseInterfaceModel, BaseAddress):
         if not txn.sender:
             txn.sender = self.address
 
-        return self.provider.send_transaction(signed_txn)
+        return (
+            self.provider.send_private_transaction(signed_txn)
+            if private
+            else self.provider.send_transaction(signed_txn)
+        )
 
     def transfer(
         self,
         account: Union[str, AddressType, BaseAddress],
         value: Union[str, int, None] = None,
         data: Union[bytes, str, None] = None,
+        private: bool = False,
         **kwargs,
     ) -> ReceiptAPI:
         """
         Send funds to an account.
 
+        Raises:
+            :class:`~ape.exceptions.APINotImplementedError`: When setting ``private=True``
+              and using a provider that does not support private transactions.
+
         Args:
             account (str): The account to send funds to.
             value (str): The amount to send.
             data (str): Extra data to include in the transaction.
+            private (bool): ``True`` asks the provider to make the transaction
+              private. For example, EVM providers uses the RPC ``eth_sendPrivateTransaction``
+              to achieve this. Local providers may ignore this value.
 
         Returns:
             :class:`~ape.api.transactions.ReceiptAPI`
@@ -179,7 +196,7 @@ class AccountAPI(BaseInterfaceModel, BaseAddress):
             if txn.value < 0:
                 raise AccountsError("Value cannot be negative.")
 
-        return self.call(txn, **kwargs)
+        return self.call(txn, private=private, **kwargs)
 
     def deploy(
         self, contract: "ContractContainer", *args, publish: bool = False, **kwargs
@@ -466,9 +483,15 @@ class ImpersonatedAccount(AccountAPI):
         # Returns input transaction unsigned (since it doesn't have access to the key)
         return txn
 
-    def call(self, txn: TransactionAPI, send_everything: bool = False, **kwargs) -> ReceiptAPI:
+    def call(
+        self, txn: TransactionAPI, send_everything: bool = False, private: bool = False, **kwargs
+    ) -> ReceiptAPI:
         txn = self.prepare_transaction(txn)
         if not txn.sender:
             txn.sender = self.raw_address
 
-        return self.provider.send_transaction(txn)
+        return (
+            self.provider.send_private_transaction(txn)
+            if private
+            else self.provider.send_transaction(txn)
+        )

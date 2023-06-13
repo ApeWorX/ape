@@ -168,6 +168,19 @@ contract = Contract("0x123...")
 receipt = contract(sender=sender, gas=40000, data="0x123")
 ```
 
+### Private Transactions
+
+If you are using a provider that allows private mempool transactions, you are able to use the `private=True` kwarg to publish your transaction into a private mempool.
+For example, EVM providers likely will use the `eth_sendPrivateTransaction` RPC to achieve this.
+
+To send a private transaction, do the following:
+
+```python
+receipt = contract.set_number(sender=dev, private=True)
+```
+
+The `private=True` is available on all contract interactions.
+
 ## Decoding and Encoding Inputs
 
 If you want to separately decode and encode inputs without sending a transaction or making a call, you can achieve this with Ape.

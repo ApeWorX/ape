@@ -56,7 +56,6 @@ docker run \
 --volume $HOME/.vvm:/home/harambe/.vvm \
 --volume $HOME/.solcx:/home/harambe/.solcx \
 --volume $PWD:/home/harambe/project \
---workdir /home/harambe/project \
 apeworx/ape compile
 ```
 
