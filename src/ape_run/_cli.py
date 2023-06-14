@@ -11,7 +11,7 @@ import click
 from click import Command, Context, Option
 
 from ape.cli import NetworkBoundCommand, network_option, verbosity_option
-from ape.cli.options import _create_verbosity_kwargs
+from ape.cli.options import _VERBOSITY_VALUES, _create_verbosity_kwargs
 from ape.exceptions import ApeException, handle_ape_exception
 from ape.logging import logger
 from ape.managers.project import ProjectManager
@@ -122,7 +122,7 @@ class ScriptCommand(click.MultiCommand):
             params = [x.name for x in cli_obj.params]
             if "verbosity" not in params:
                 option_kwargs = _create_verbosity_kwargs()
-                option = Option(["--verbosity", "-v"], **option_kwargs)
+                option = Option(_VERBOSITY_VALUES, **option_kwargs)
                 cli_obj.params.append(option)
 
             cli_obj.name = filepath.stem if cli_obj.name in ("cli", "", None) else cli_obj.name
