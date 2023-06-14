@@ -7,6 +7,7 @@ from typing import Dict, Iterable, Optional, Type
 from ethpm_types import PackageManifest
 from ethpm_types.utils import AnyUrl
 from pydantic import FileUrl, HttpUrl, root_validator
+from semantic_version import NpmSpec, Version  # type: ignore
 
 from ape.api import DependencyAPI
 from ape.exceptions import ProjectError, UnknownVersionError
@@ -227,7 +228,11 @@ class NpmDependency(DependencyAPI):
         version_from_local_json = self.version_from_local_json
         if version_from_config:
             for other_version in (version_from_json, version_from_local_json):
-                if other_version and version_from_config != other_version:
+                if not other_version:
+                    continue
+
+                semver = NpmSpec(other_version)
+                if other_version and not semver.match(Version(version_from_config)):
                     raise ProjectError(
                         f"Version mismatch for {self.npm}. Is {self.version} in ape config "
                         f"but {other_version} in package.json. "
@@ -277,7 +282,11 @@ class NpmDependency(DependencyAPI):
             return self.cached_manifest
 
         if self.package_folder.is_dir():
-            if self.version and self.version != self.version_from_json:
+            if (
+                self.version
+                and self.version_from_json
+                and self.version not in self.version_from_json
+            ):
                 raise ProjectError(
                     f"Version mismatch for {self.npm}. Is {self.version} in ape config"
                     f"but {self.version_from_json} in package.json."
@@ -309,14 +318,7 @@ def _get_version_from_package_json(
         data = data[key]
 
     if isinstance(data, str):
-        # For supporting dependency versions, which don't use "version" key.
-        version_str = ""
-        for char in data:
-            # Strip of NPM-isms.
-            if char.isnumeric() or char == ".":
-                version_str += char
-
-        return version_str
+        return data
 
     elif not isinstance(data, dict):
         return None
