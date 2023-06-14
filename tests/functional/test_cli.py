@@ -315,9 +315,9 @@ def test_verbosity_option(runner):
 
 def test_account_prompt_name():
     """
-    It is very important for this class to have the name field,
-    even though it is not used. That is because some click
-    internal expect this property to exist (without being documented).
+    It is very important for this class to have the `name` attribute,
+    even though it is not used. That is because some click internals
+    expect this property to exist, and we skip the super() constructor.
     """
     option = AccountAliasPromptChoice()
     assert option.name == "account"
