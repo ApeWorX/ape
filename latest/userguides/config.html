@@ -226,9 +226,10 @@ For example, to change the URI for an Ethereum network, do:</p>
 </section>
 <section id="plugins">
 <h2>Plugins<a class="headerlink" href="#plugins" title="Permalink to this heading"></a></h2>
-<p>Set which plugins you want to always use:</p>
+<p>Set which <code class="docutils literal notranslate"><span class="pre">ape</span></code> plugins you want to always use.</p>
+<p><strong>NOTE</strong>: The <code class="docutils literal notranslate"><span class="pre">ape-</span></code> prefix is not needed and shouldn’t be included here.</p>
 <div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">plugins</span><span class="p">:</span>
-<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">solidity</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">solidity</span><span class="w"> </span><span class="c1"># ape-solidity plugin</span>
 <span class="w">    </span><span class="nt">version</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0.1.0b2</span>
 <span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ens</span>
 </pre></div>

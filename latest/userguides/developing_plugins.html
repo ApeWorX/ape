@@ -144,7 +144,8 @@
              
   <section id="developing-plugins">
 <h1>Developing Plugins<a class="headerlink" href="#developing-plugins" title="Permalink to this heading"></a></h1>
-<p>Your plugin project can be any type of python project, so long as its package name starts with <code class="docutils literal notranslate"><span class="pre">ape_</span></code> (such as <code class="docutils literal notranslate"><span class="pre">ape_ethereum</span></code>).
+<p>Your plugin project can be any type of python project, so long as its package name starts with <code class="docutils literal notranslate"><span class="pre">ape-</span></code> (such as <code class="docutils literal notranslate"><span class="pre">ape-ethereum</span></code>).
+The module and plugin directory name must start with <code class="docutils literal notranslate"><span class="pre">ape_</span></code> (such as <code class="docutils literal notranslate"><span class="pre">ape_ethereum</span></code>).
 To create an <code class="docutils literal notranslate"><span class="pre">ape</span></code> plugin, implement one or more API classes from the <code class="docutils literal notranslate"><span class="pre">ape.api</span></code> namespace and/or add key
 <code class="docutils literal notranslate"><span class="pre">ape_cli_subcommands</span></code> to your entry-points list in your project’s <code class="docutils literal notranslate"><span class="pre">setup.py</span></code>, depending on what type of plugin you want to create.
 This guide is intended to assist in both of those use cases.</p>
