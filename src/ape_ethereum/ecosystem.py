@@ -696,12 +696,28 @@ class Ethereum(EcosystemAPI):
             return enriched_call
 
         enriched_call.contract_id = self._enrich_address(address, **kwargs)
-        method_id_bytes = HexBytes(enriched_call.method_id) if enriched_call.method_id else None
-        if method_id_bytes and method_id_bytes in contract_type.methods:
-            method_abi = contract_type.methods[method_id_bytes]
-            enriched_call.method_id = method_abi.name or enriched_call.method_id
+        method_abi: Optional[Union[MethodABI, ConstructorABI]] = None
+        if "CREATE" in (enriched_call.call_type or ""):
+            method_abi = contract_type.constructor
+            name = "__new__"
+
+        elif enriched_call.method_id is None:
+            name = enriched_call.method_id or "0x"
+
+        else:
+            method_id_bytes = HexBytes(enriched_call.method_id)
+            if method_id_bytes in contract_type.methods:
+                method_abi = contract_type.methods[method_id_bytes]
+                assert isinstance(method_abi, MethodABI)  # For mypy
+                name = method_abi.name or enriched_call.method_id
+            else:
+                name = enriched_call.method_id
+
+        enriched_call.method_id = name
+        if method_abi:
             enriched_call = self._enrich_calldata(enriched_call, method_abi, **kwargs)
-            enriched_call = self._enrich_returndata(enriched_call, method_abi, **kwargs)
+            if isinstance(method_abi, MethodABI):
+                enriched_call = self._enrich_returndata(enriched_call, method_abi, **kwargs)
 
         return enriched_call
 
@@ -739,7 +755,9 @@ class Ethereum(EcosystemAPI):
 
         return address
 
-    def _enrich_calldata(self, call: CallTreeNode, method_abi: MethodABI, **kwargs) -> CallTreeNode:
+    def _enrich_calldata(
+        self, call: CallTreeNode, method_abi: Union[MethodABI, ConstructorABI], **kwargs
+    ) -> CallTreeNode:
         calldata = call.inputs
         if isinstance(calldata, str):
             calldata_arg = HexBytes(calldata)
