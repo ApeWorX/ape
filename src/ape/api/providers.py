@@ -509,6 +509,19 @@ class ProviderAPI(BaseInterfaceModel):
         """
 
     @raises_not_implemented
+    def set_storage(  # type: ignore[empty-body]
+        self, address: AddressType, slot: int, value: HexBytes
+    ):
+        """
+        Sets the raw value of a storage slot of a contract.
+
+        Args:
+            address (str): The address of the contract.
+            slot (int): Storage slot to write the value to.
+            value: (bytes): The value to overwrite the raw storage slot with.
+        """
+
+    @raises_not_implemented
     def unlock_account(self, address: AddressType) -> bool:  # type: ignore[empty-body]
         """
         Ask the provider to allow an address to submit transactions without validating
