@@ -616,7 +616,7 @@ class Ethereum(EcosystemAPI):
 
         if "value" in kwargs and not isinstance(kwargs["value"], int):
             kwargs["value"] = self.conversion_manager.convert(kwargs["value"], int)
-            
+
         return txn_class(**kwargs)
 
     def decode_logs(self, logs: List[Dict], *events: EventABI) -> Iterator["ContractLog"]:
