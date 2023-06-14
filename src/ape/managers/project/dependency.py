@@ -2,11 +2,12 @@ import json
 import os
 import tempfile
 from pathlib import Path
-from typing import Dict, Optional, Type
+from typing import Dict, Iterable, Optional, Type
 
 from ethpm_types import PackageManifest
 from ethpm_types.utils import AnyUrl
 from pydantic import FileUrl, HttpUrl, root_validator
+from semantic_version import NpmSpec, Version  # type: ignore
 
 from ape.api import DependencyAPI
 from ape.exceptions import ProjectError, UnknownVersionError
@@ -227,7 +228,11 @@ class NpmDependency(DependencyAPI):
         version_from_local_json = self.version_from_local_json
         if version_from_config:
             for other_version in (version_from_json, version_from_local_json):
-                if other_version and version_from_config != other_version:
+                if not other_version:
+                    continue
+
+                semver = NpmSpec(other_version)
+                if other_version and not semver.match(Version(version_from_config)):
                     raise ProjectError(
                         f"Version mismatch for {self.npm}. Is {self.version} in ape config "
                         f"but {other_version} in package.json. "
@@ -262,7 +267,9 @@ class NpmDependency(DependencyAPI):
         """
         The version from your project's package.json, if exists.
         """
-        return _get_version_from_package_json(self.project_manager.path)
+        return _get_version_from_package_json(
+            self.project_manager.path, path=("dependencies", self.npm)
+        )
 
     @property
     def uri(self) -> AnyUrl:
@@ -275,7 +282,11 @@ class NpmDependency(DependencyAPI):
             return self.cached_manifest
 
         if self.package_folder.is_dir():
-            if self.version and self.version != self.version_from_json:
+            if (
+                self.version
+                and self.version_from_json
+                and self.version not in self.version_from_json
+            ):
                 raise ProjectError(
                     f"Version mismatch for {self.npm}. Is {self.version} in ape config"
                     f"but {self.version_from_json} in package.json."
@@ -287,7 +298,9 @@ class NpmDependency(DependencyAPI):
             raise ProjectError(f"NPM package '{self.npm}' not installed.")
 
 
-def _get_version_from_package_json(base_path: Path) -> Optional[str]:
+def _get_version_from_package_json(
+    base_path: Path, path: Optional[Iterable[str]] = None
+) -> Optional[str]:
     package_json = base_path / "package.json"
     if not package_json.is_file():
         return None
@@ -296,6 +309,18 @@ def _get_version_from_package_json(base_path: Path) -> Optional[str]:
         data = json.loads(package_json.read_text())
     except Exception as err:
         logger.warning(f"Failed to parse package.json: {err}")
+        return None
+
+    for key in path or []:
+        if key not in data:
+            return None
+
+        data = data[key]
+
+    if isinstance(data, str):
+        return data
+
+    elif not isinstance(data, dict):
         return None
 
     return data.get("version")
