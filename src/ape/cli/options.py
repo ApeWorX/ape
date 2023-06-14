@@ -45,16 +45,17 @@ class ApeCliContextObject(ManagerAccessMixin):
         raise Abort(msg)
 
 
-def verbosity_option(cli_logger):
+def verbosity_option(cli_logger=None):
     """A decorator that adds a `--verbosity, -v` option to the decorated
     command.
     """
 
+    _logger = cli_logger or logger
     level_names = [lvl.name for lvl in LogLevel]
     names_str = f"{', '.join(level_names[:-1])}, or {level_names[-1]}"
 
     def set_level(ctx, param, value):
-        cli_logger._load_from_sys_argv(default=value.upper())
+        _logger._load_from_sys_argv(default=value.upper())
 
     def decorator(f):
         return click.option(
