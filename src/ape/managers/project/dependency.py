@@ -2,7 +2,7 @@ import json
 import os
 import tempfile
 from pathlib import Path
-from typing import Dict, Optional, Type
+from typing import Dict, Iterable, Optional, Type
 
 from ethpm_types import PackageManifest
 from ethpm_types.utils import AnyUrl
@@ -262,7 +262,9 @@ class NpmDependency(DependencyAPI):
         """
         The version from your project's package.json, if exists.
         """
-        return _get_version_from_package_json(self.project_manager.path)
+        return _get_version_from_package_json(
+            self.project_manager.path, path=("dependencies", self.npm)
+        )
 
     @property
     def uri(self) -> AnyUrl:
@@ -287,7 +289,9 @@ class NpmDependency(DependencyAPI):
             raise ProjectError(f"NPM package '{self.npm}' not installed.")
 
 
-def _get_version_from_package_json(base_path: Path) -> Optional[str]:
+def _get_version_from_package_json(
+    base_path: Path, path: Optional[Iterable[str]] = None
+) -> Optional[str]:
     package_json = base_path / "package.json"
     if not package_json.is_file():
         return None
@@ -296,6 +300,25 @@ def _get_version_from_package_json(base_path: Path) -> Optional[str]:
         data = json.loads(package_json.read_text())
     except Exception as err:
         logger.warning(f"Failed to parse package.json: {err}")
+        return None
+
+    for key in path or []:
+        if key not in data:
+            return None
+
+        data = data[key]
+
+    if isinstance(data, str):
+        # For supporting dependency versions, which don't use "version" key.
+        version_str = ""
+        for char in data:
+            # Strip of NPM-isms.
+            if char.isnumeric() or char == ".":
+                version_str += char
+
+        return version_str
+
+    elif not isinstance(data, dict):
         return None
 
     return data.get("version")
