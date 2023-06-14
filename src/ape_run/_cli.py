@@ -8,9 +8,10 @@ from runpy import run_module
 from typing import Any, Dict, Union
 
 import click
-from click import Command, Context
+from click import Command, Context, Option
 
-from ape.cli import NetworkBoundCommand, network_option
+from ape.cli import NetworkBoundCommand, network_option, verbosity_option
+from ape.cli.options import _VERBOSITY_VALUES, _create_verbosity_kwargs
 from ape.exceptions import ApeException, handle_ape_exception
 from ape.logging import logger
 from ape.managers.project import ProjectManager
@@ -118,6 +119,12 @@ class ScriptCommand(click.MultiCommand):
                 logger.warning("Found `cli()` method but it is not a click command.")
                 return None
 
+            params = [getattr(x, "name", None) for x in cli_obj.params]
+            if "verbosity" not in params:
+                option_kwargs = _create_verbosity_kwargs()
+                option = Option(_VERBOSITY_VALUES, **option_kwargs)
+                cli_obj.params.append(option)
+
             cli_obj.name = filepath.stem if cli_obj.name in ("cli", "", None) else cli_obj.name
             return cli_obj
 
@@ -130,6 +137,7 @@ class ScriptCommand(click.MultiCommand):
                 name=relative_filepath.stem,
             )
             @network_option()
+            @verbosity_option()
             def call(network):
                 _ = network  # Downstream might use this
                 with use_scripts_sys_path(filepath.parent.parent):
