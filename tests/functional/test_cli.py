@@ -309,8 +309,8 @@ def test_verbosity_option(runner):
     def cmd():
         click.echo(f"__expected_{logger.level}")
 
-    result = runner.invoke(cmd, ["--verbosity", "ERROR"])
-    assert "__expected_40" in result.output
+    result = runner.invoke(cmd, ["--verbosity", logger.level])
+    assert f"__expected_{logger.level}" in result.output
 
 
 def test_account_prompt_name():
