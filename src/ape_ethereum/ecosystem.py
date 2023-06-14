@@ -553,6 +553,9 @@ class Ethereum(EcosystemAPI):
         """
         Returns a transaction using the given constructor kwargs.
 
+        **NOTE**: This generally should not be called by the user since this API method is used as a
+        hook for Ecosystems to customize how transactions are created.
+
         Returns:
             :class:`~ape.api.transactions.TransactionAPI`
         """
@@ -610,6 +613,10 @@ class Ethereum(EcosystemAPI):
             kwargs["max_fee"] = kwargs.pop("max_fee_per_gas")
 
         kwargs["gas"] = kwargs.pop("gas_limit", kwargs.get("gas"))
+
+        if "value" in kwargs and not isinstance(kwargs["value"], int):
+            kwargs["value"] = self.conversion_manager.convert(kwargs["value"], int)
+
         return txn_class(**kwargs)
 
     def decode_logs(self, logs: List[Dict], *events: EventABI) -> Iterator["ContractLog"]:
