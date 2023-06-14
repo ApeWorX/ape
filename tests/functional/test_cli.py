@@ -9,8 +9,10 @@ from ape.cli import (
     account_option,
     get_user_selected_account,
     network_option,
+    verbosity_option,
 )
 from ape.exceptions import AccountsError
+from ape.logging import logger
 
 OUTPUT_FORMAT = "__TEST__{}__"
 
@@ -293,3 +295,13 @@ def test_prompt_choice(runner, opt):
     result = runner.invoke(cmd, [], input=f"{opt}\n")
     assert "Select one of the following:" in result.output
     assert "__expected_foo" in result.output
+
+
+def test_verbosity_option(runner):
+    @click.command()
+    @verbosity_option()
+    def cmd():
+        click.echo(logger.level)
+
+    result = runner.invoke(cmd, ["--verbosity", "ERROR"])
+    assert "40" in result.output
