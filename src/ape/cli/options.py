@@ -1,4 +1,4 @@
-from typing import List, Optional, Union
+from typing import Dict, List, Optional, Union
 
 import click
 from ethpm_types import ContractType
@@ -12,8 +12,10 @@ from ape.cli.choices import (
 )
 from ape.cli.utils import Abort
 from ape.exceptions import ContractError
-from ape.logging import DEFAULT_LOG_LEVEL, LogLevel, logger
+from ape.logging import DEFAULT_LOG_LEVEL, CliLogger, LogLevel, logger
 from ape.managers.base import ManagerAccessMixin
+
+_VERBOSITY_VALUES = ("--verbosity", "-v")
 
 
 class ApeCliContextObject(ManagerAccessMixin):
@@ -45,30 +47,31 @@ class ApeCliContextObject(ManagerAccessMixin):
         raise Abort(msg)
 
 
-def verbosity_option(cli_logger):
+def verbosity_option(cli_logger: Optional[CliLogger] = None):
     """A decorator that adds a `--verbosity, -v` option to the decorated
     command.
     """
+    _logger = cli_logger or logger
+    kwarguments = _create_verbosity_kwargs(_logger=_logger)
+    return lambda f: click.option(*_VERBOSITY_VALUES, **kwarguments)(f)
 
-    level_names = [lvl.name for lvl in LogLevel]
-    names_str = f"{', '.join(level_names[:-1])}, or {level_names[-1]}"
+
+def _create_verbosity_kwargs(_logger: Optional[CliLogger] = None) -> Dict:
+    cli_logger = _logger or logger
 
     def set_level(ctx, param, value):
         cli_logger._load_from_sys_argv(default=value.upper())
 
-    def decorator(f):
-        return click.option(
-            "--verbosity",
-            "-v",
-            callback=set_level,
-            default=DEFAULT_LOG_LEVEL,
-            metavar="LVL",
-            expose_value=False,
-            help=f"One of {names_str}",
-            is_eager=True,
-        )(f)
-
-    return decorator
+    level_names = [lvl.name for lvl in LogLevel]
+    names_str = f"{', '.join(level_names[:-1])}, or {level_names[-1]}"
+    return {
+        "callback": set_level,
+        "default": DEFAULT_LOG_LEVEL,
+        "metavar": "LVL",
+        "expose_value": False,
+        "help": f"One of {names_str}",
+        "is_eager": True,
+    }
 
 
 def ape_cli_context():

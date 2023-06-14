@@ -4,13 +4,16 @@ import click
 import pytest
 
 from ape.cli import (
+    AccountAliasPromptChoice,
     NetworkBoundCommand,
     PromptChoice,
     account_option,
     get_user_selected_account,
     network_option,
+    verbosity_option,
 )
 from ape.exceptions import AccountsError
+from ape.logging import logger
 
 OUTPUT_FORMAT = "__TEST__{}__"
 
@@ -281,10 +284,15 @@ def test_prompt_choice(runner, opt):
     def choice_callback(ctx, param, value):
         return param.type.get_user_selected_choice()
 
+    choice = PromptChoice(["foo", "bar"])
+    assert hasattr(choice, "name")
+    choice = PromptChoice(["foo", "bar"], name="choice")
+    assert choice.name == "choice"
+
     @click.command()
     @click.option(
         "--choice",
-        type=PromptChoice(["foo", "bar"]),
+        type=choice,
         callback=choice_callback,
     )
     def cmd(choice):
@@ -293,3 +301,25 @@ def test_prompt_choice(runner, opt):
     result = runner.invoke(cmd, [], input=f"{opt}\n")
     assert "Select one of the following:" in result.output
     assert "__expected_foo" in result.output
+
+
+def test_verbosity_option(runner):
+    @click.command()
+    @verbosity_option()
+    def cmd():
+        click.echo(f"__expected_{logger.level}")
+
+    result = runner.invoke(cmd, ["--verbosity", logger.level])
+    assert f"__expected_{logger.level}" in result.output
+
+
+def test_account_prompt_name():
+    """
+    It is very important for this class to have the `name` attribute,
+    even though it is not used. That is because some click internals
+    expect this property to exist, and we skip the super() constructor.
+    """
+    option = AccountAliasPromptChoice()
+    assert option.name == "account"
+    option = AccountAliasPromptChoice(name="account_z")
+    assert option.name == "account_z"

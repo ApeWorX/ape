@@ -107,15 +107,16 @@ class CliLogger:
         self._web3_http_provider_logger = _get_logger("web3.providers.HTTPProvider")
         self._load_from_sys_argv()
 
-    def _load_from_sys_argv(self, default: Optional[str] = None):
+    def _load_from_sys_argv(self, default: Optional[Union[str, int]] = None):
         """
         Load from sys.argv to beat race condition with `click`.
         """
-        log_level = default or DEFAULT_LOG_LEVEL
+
+        log_level = _get_level(level=default)
         level_names = [lvl.name for lvl in LogLevel]
         for arg_i in range(len(sys.argv) - 1):
             if sys.argv[arg_i] == "-v" or sys.argv[arg_i] == "--verbosity":
-                level = sys.argv[arg_i + 1].upper()
+                level = _get_level(sys.argv[arg_i + 1].upper())
 
                 if level in level_names:
                     log_level = level
@@ -197,6 +198,15 @@ def _get_logger(name: str) -> logging.Logger:
     handler.setFormatter(ApeColorFormatter())
     cli_logger.handlers = [handler]
     return cli_logger
+
+
+def _get_level(level: Optional[Union[str, int]] = None) -> str:
+    if level is None:
+        return DEFAULT_LOG_LEVEL
+    elif isinstance(level, int) or level.isnumeric():
+        return LogLevel(int(level)).name
+
+    return level
 
 
 logger = CliLogger()
