@@ -100,7 +100,9 @@ For the local network configuration, the default is `"max"`. Otherwise it is `"a
 
 ## Plugins
 
-Set which `ape` plugins you want to always use. You should remove the `ape-` from the plugin name:
+Set which `ape` plugins you want to always use.
+
+**NOTE**: The `ape-` prefix is not needed and shouldn't be included here.
 
 ```yaml
 plugins:
