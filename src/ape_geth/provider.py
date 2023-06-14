@@ -229,6 +229,9 @@ class BaseGethProvider(Web3Provider, ABC):
 
     name: str = "geth"
 
+    """Is ``None`` until known."""
+    can_use_parity_traces: Optional[bool] = None
+
     @property
     def uri(self) -> str:
         if "uri" in self.provider_settings:
@@ -332,14 +335,28 @@ class BaseGethProvider(Web3Provider, ABC):
         )
 
     def get_call_tree(self, txn_hash: str) -> CallTreeNode:
-        if "erigon" in self.client_version.lower():
+        if self.can_use_parity_traces is True:
             return self._get_parity_call_tree(txn_hash)
+
+        elif self.can_use_parity_traces is False:
+            # We have previously determined parity style does not work.
+            return self._get_geth_call_tree(txn_hash)
+
+        elif "erigon" in self.client_version.lower():
+            tree = self._get_parity_call_tree(txn_hash)
+            self.can_use_parity_traces = True
+            return tree
 
         try:
             # Try the Parity traces first, in case node client supports it.
-            return self._get_parity_call_tree(txn_hash)
+            tree = self._get_parity_call_tree(txn_hash)
         except (ValueError, APINotImplementedError, ProviderError):
+            self.can_use_parity_traces = False
             return self._get_geth_call_tree(txn_hash)
+
+        # Parity style works.
+        self.can_use_parity_traces = True
+        return tree
 
     def _get_parity_call_tree(self, txn_hash: str) -> CallTreeNode:
         result = self._make_request("trace_transaction", [txn_hash])
@@ -435,6 +452,8 @@ class GethDev(BaseGethProvider, TestProviderAPI):
         self._process = process
 
     def disconnect(self):
+        self.can_use_parity_traces = None
+
         # Must disconnect process first.
         if self._process is not None:
             self._process.disconnect()
