@@ -710,14 +710,18 @@ class Ethereum(EcosystemAPI):
                 method_abi = contract_type.methods[method_id_bytes]
                 assert isinstance(method_abi, MethodABI)  # For mypy
                 name = method_abi.name or enriched_call.method_id
+                enriched_call = self._enrich_calldata(enriched_call, method_abi, **kwargs)
             else:
-                name = enriched_call.method_id
+                name = enriched_call.method_id or "0x"
 
         enriched_call.method_id = name
         if method_abi:
             enriched_call = self._enrich_calldata(enriched_call, method_abi, **kwargs)
             if isinstance(method_abi, MethodABI):
                 enriched_call = self._enrich_returndata(enriched_call, method_abi, **kwargs)
+            else:
+                # For constructors, don't include outputs, as it is likely a large amount of bytes.
+                enriched_call.outputs = None
 
         return enriched_call
 
