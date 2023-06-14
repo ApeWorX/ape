@@ -147,11 +147,15 @@ class AccountAliasPromptChoice(PromptChoice):
     """
 
     def __init__(
-        self, account_type: Optional[Type[AccountAPI]] = None, prompt_message: Optional[str] = None
+        self,
+        account_type: Optional[Type[AccountAPI]] = None,
+        prompt_message: Optional[str] = None,
+        name: str = "account",
     ):
         # NOTE: we purposely skip the constructor of `PromptChoice`
         self._account_type = account_type
         self._prompt_message = prompt_message or "Select an account"
+        self.name = name
 
     def convert(
         self, value: Any, param: Optional[Parameter], ctx: Optional[Context]
