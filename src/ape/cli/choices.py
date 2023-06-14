@@ -67,8 +67,11 @@ class PromptChoice(click.ParamType):
             click.echo(f"__expected_{choice}")
     """
 
-    def __init__(self, choices):
+    def __init__(self, choices, name: Optional[str] = None):
         self.choices = choices
+        # Since we purposely skip the super() constructor, we need to make
+        # sure the class still has a name.
+        self.name = name or "option"
 
     def print_choices(self):
         """
