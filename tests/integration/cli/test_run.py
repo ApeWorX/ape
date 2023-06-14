@@ -34,6 +34,12 @@ def test_run(ape_cli, runner, project):
 
 
 @skip_projects_except("script")
+def test_run_with_verbosity(ape_cli, runner, project):
+    result = runner.invoke(ape_cli, ["run", "click", "--verbosity", "DEBUG"])
+    assert result.exit_code == 0, result.output
+
+
+@skip_projects_except("script")
 def test_run_subdirectories(ape_cli, runner, project):
     result = runner.invoke(ape_cli, ["run"])
     assert result.exit_code == 0, result.output
