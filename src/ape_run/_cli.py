@@ -119,7 +119,7 @@ class ScriptCommand(click.MultiCommand):
                 logger.warning("Found `cli()` method but it is not a click command.")
                 return None
 
-            params = [x.name for x in cli_obj.params]
+            params = [getattr(x, "name", None) for x in cli_obj.params]
             if "verbosity" not in params:
                 option_kwargs = _create_verbosity_kwargs()
                 option = Option(_VERBOSITY_VALUES, **option_kwargs)
