@@ -157,7 +157,7 @@ class ReceiptCapture(ManagerAccessMixin):
 
     def capture_range(self, start_block: int, stop_block: int):
         blocks = self.chain_manager.blocks.range(start_block, stop_block + 1)
-        transactions = [t for b in blocks for t in b.transactions if t.receiver and t.sender]
+        transactions = [t for b in blocks for t in b.transactions if t.sender]
 
         for txn in transactions:
             self.capture(txn.txn_hash.hex())
@@ -171,9 +171,8 @@ class ReceiptCapture(ManagerAccessMixin):
         if not receipt:
             return
 
-        contract_address = receipt.receiver
+        contract_address = receipt.receiver or receipt.contract_address
         if not contract_address:
-            # TODO: Handle deploy receipts once trace supports it
             return
 
         contract_type = self.chain_manager.contracts.get(contract_address)

@@ -502,7 +502,7 @@ class ReceiptAPI(BaseInterfaceModel):
         """
 
         call_tree = self.call_tree
-        receiver = self.receiver
-        if call_tree and receiver is not None and self._test_runner is not None:
+        address = self.receiver or self.contract_address
+        if call_tree and address is not None and self._test_runner is not None:
             tracker = self._test_runner.gas_tracker
-            tracker.append_gas(call_tree.enrich(in_line=False), receiver)
+            tracker.append_gas(call_tree.enrich(in_line=False), address)
