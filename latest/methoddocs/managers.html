@@ -260,6 +260,11 @@
 <li class="toctree-l4"><a class="reference internal" href="#ape.managers.converters.ListTupleConverter.is_convertible"><code class="docutils literal notranslate"><span class="pre">ListTupleConverter.is_convertible()</span></code></a></li>
 </ul>
 </li>
+<li class="toctree-l3"><a class="reference internal" href="#ape.managers.converters.StringIntConverter"><code class="docutils literal notranslate"><span class="pre">StringIntConverter</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#ape.managers.converters.StringIntConverter.convert"><code class="docutils literal notranslate"><span class="pre">StringIntConverter.convert()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ape.managers.converters.StringIntConverter.is_convertible"><code class="docutils literal notranslate"><span class="pre">StringIntConverter.is_convertible()</span></code></a></li>
+</ul>
+</li>
 <li class="toctree-l3"><a class="reference internal" href="#ape.managers.converters.TimestampConverter"><code class="docutils literal notranslate"><span class="pre">TimestampConverter</span></code></a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#ape.managers.converters.TimestampConverter.convert"><code class="docutils literal notranslate"><span class="pre">TimestampConverter.convert()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.managers.converters.TimestampConverter.is_convertible"><code class="docutils literal notranslate"><span class="pre">TimestampConverter.is_convertible()</span></code></a></li>
@@ -1816,6 +1821,37 @@ when the item fails to convert properly.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="ape.managers.converters.ListTupleConverter.is_convertible">
 <span class="sig-name descname"><span class="pre">is_convertible</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="headerlink" href="#ape.managers.converters.ListTupleConverter.is_convertible" title="Permalink to this definition"></a></dt>
+<dd><p>Returns <code class="docutils literal notranslate"><span class="pre">True</span></code> if string value provided by <code class="docutils literal notranslate"><span class="pre">value</span></code> is convertible using
+<a class="reference internal" href="api.html#ape.api.convert.ConverterAPI.convert" title="ape.api.convert.ConverterAPI.convert"><code class="xref py py-meth docutils literal notranslate"><span class="pre">ape.api.convert.ConverterAPI.convert()</span></code></a>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>value</strong> (<em>str</em>) – The value to check.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">True</span></code> when the given value can be converted.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>bool</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ape.managers.converters.StringIntConverter">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ape.managers.converters.</span></span><span class="sig-name descname"><span class="pre">StringIntConverter</span></span><a class="headerlink" href="#ape.managers.converters.StringIntConverter" title="Permalink to this definition"></a></dt>
+<dd><dl class="py method">
+<dt class="sig sig-object py" id="ape.managers.converters.StringIntConverter.convert">
+<span class="sig-name descname"><span class="pre">convert</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">int</span></span></span><a class="headerlink" href="#ape.managers.converters.StringIntConverter.convert" title="Permalink to this definition"></a></dt>
+<dd><p>Convert the given value to the type specified as the generic for this class.
+Implementations of this API must throw a <a class="reference internal" href="exceptions.html#ape.exceptions.ConversionError" title="ape.exceptions.ConversionError"><code class="xref py py-class docutils literal notranslate"><span class="pre">ConversionError</span></code></a>
+when the item fails to convert properly.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ape.managers.converters.StringIntConverter.is_convertible">
+<span class="sig-name descname"><span class="pre">is_convertible</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="headerlink" href="#ape.managers.converters.StringIntConverter.is_convertible" title="Permalink to this definition"></a></dt>
 <dd><p>Returns <code class="docutils literal notranslate"><span class="pre">True</span></code> if string value provided by <code class="docutils literal notranslate"><span class="pre">value</span></code> is convertible using
 <a class="reference internal" href="api.html#ape.api.convert.ConverterAPI.convert" title="ape.api.convert.ConverterAPI.convert"><code class="xref py py-meth docutils literal notranslate"><span class="pre">ape.api.convert.ConverterAPI.convert()</span></code></a>.</p>
 <dl class="field-list simple">
