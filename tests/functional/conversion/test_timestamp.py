@@ -2,7 +2,6 @@ from datetime import datetime, timedelta, timezone
 
 import pytest
 
-from ape import convert
 from ape.exceptions import ConversionError
 
 
@@ -17,7 +16,7 @@ from ape.exceptions import ConversionError
         ]
     ),
 )
-def test_convert_string_timestamp(args):
+def test_convert_string_timestamp(args, convert):
     assert convert(args, int) == 1634300112
 
 
@@ -31,11 +30,11 @@ def test_convert_string_timestamp(args):
         ]
     ),
 )
-def test_convert_string_bad_timestamp(args):
+def test_convert_string_bad_timestamp(args, convert):
     with pytest.raises(ConversionError):
         convert(args, int)
 
 
-def test_convert_timedelta_timestamp():
+def test_convert_timedelta_timestamp(convert):
     delta = timedelta(days=2, hours=2, minutes=12)
     assert convert(delta, int) == int((datetime.now(timezone.utc) + delta).timestamp())

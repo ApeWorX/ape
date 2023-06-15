@@ -3,7 +3,6 @@ from eth_typing import ChecksumAddress
 from hypothesis import given
 from hypothesis import strategies as st
 
-from ape import convert
 from ape.exceptions import ConversionError
 from ape_ethereum._converters import ETHER_UNITS
 
@@ -18,13 +17,13 @@ from ape_ethereum._converters import ETHER_UNITS
     ),
     unit=st.sampled_from(list(ETHER_UNITS.keys())),
 )
-def test_ether_conversions(value, unit):
+def test_ether_conversions(value, unit, convert):
     actual = convert(value=f"{value} {unit}", type=int)
     expected = int(value * ETHER_UNITS[unit])
     assert actual == expected
 
 
-def test_bad_type():
+def test_bad_type(convert):
     with pytest.raises(ConversionError) as err:
         convert(value="something", type=float)
 
@@ -35,12 +34,12 @@ def test_bad_type():
     assert str(err.value) == expected
 
 
-def test_no_registered_converter():
+def test_no_registered_converter(convert):
     with pytest.raises(ConversionError) as err:
         convert(value="something", type=ChecksumAddress)
 
     assert str(err.value) == "No conversion registered to handle 'something'."
 
 
-def test_lists():
+def test_lists(convert):
     assert convert(["1 ether"], list) == [int(1e18)]
