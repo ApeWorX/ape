@@ -379,3 +379,25 @@ def _convert_kwargs(kwargs, converter) -> Dict:
         for k, v in kwargs_to_convert.items()
     }
     return {**kwargs, **converted_fields}
+
+
+def get_byte_length(abi_types: List[ABIType]) -> int:
+    """
+    Then number of 4-byte (32 bit) values the given list of ABI types
+    consumes in a byte-string.
+
+    Args:
+        abi_types (List[ABITypes]): The list of ABI types, such as from
+          a method ABI's inputs.
+
+    Returns:
+        int: The number of 32-bit values.
+    """
+    result = 0
+    for _type in abi_types:
+        if str(_type).endswith("[]"):
+            result += 64
+        elif str(_type).en
+
+    return 0
+

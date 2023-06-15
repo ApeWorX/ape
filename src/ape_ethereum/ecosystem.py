@@ -782,8 +782,13 @@ class Ethereum(EcosystemAPI):
 
         if call.call_type and "CREATE" in call.call_type:
             # Strip off bytecode
-            bytecode = HexBytes(contract_type.runtime_bytecode.bytecode)
-            calldata_arg = HexBytes(calldata_arg.split(bytecode)[-1][4:])
+            bytecode = contract_type.runtime_bytecode.to_bytes()
+            without_code = calldata_arg.split(bytecode)[-1]
+            # breakpoint()
+            # calldata_arg = HexBytes(without_code[2:].lstrip(HexBytes("0x6000f3fe80fd")))
+            # breakpoint()
+            start = len(without_code) - len(call.inputs)
+            calldata_arg = HexBytes(without_code[-start:])
             breakpoint()
 
         try:
