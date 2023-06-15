@@ -1,6 +1,8 @@
 import pytest
 
 from ape import chain
+from ape.exceptions import ConversionError
+from ape.managers.converters import HexConverter, HexIntConverter
 
 
 def test_hex_str():
@@ -14,5 +16,9 @@ def test_hex_str():
 
 def test_missing_prefix():
     hex_value = "A100"
-    with pytest.raises(ValueError):
+
+    assert not HexConverter().is_convertible(hex_value)
+    assert not HexIntConverter().is_convertible(hex_value)
+
+    with pytest.raises(ConversionError):
         chain.conversion_manager.convert(hex_value, int)

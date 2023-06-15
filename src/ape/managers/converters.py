@@ -30,7 +30,7 @@ class HexConverter(ConverterAPI):
     """
 
     def is_convertible(self, value: Any) -> bool:
-        return isinstance(value, str) and is_hex(value)
+        return isinstance(value, str) and is_hex(value) and is_0x_prefixed(value)
 
     def convert(self, value: str) -> bytes:
         """
@@ -59,10 +59,15 @@ class HexIntConverter(ConverterAPI):
         )
 
     def convert(self, value: Any) -> int:
-        if isinstance(value, bytes) or (isinstance(value, str) and is_0x_prefixed(value)):
-            return to_int(HexBytes(value))
-        else:
-            return int(value)
+        return to_int(HexBytes(value))
+
+
+class StringIntConverter(ConverterAPI):
+    def is_convertible(self, value: Any) -> bool:
+        return isinstance(value, str) and not is_0x_prefixed(value) and value.isnumeric()
+
+    def convert(self, value: str) -> int:
+        return int(value)
 
 
 class AddressAPIConverter(ConverterAPI):
@@ -250,7 +255,7 @@ class ConversionManager(BaseManager):
                 IntAddressConverter(),
             ],
             bytes: [HexConverter()],
-            int: [TimestampConverter(), HexIntConverter()],
+            int: [TimestampConverter(), HexIntConverter(), StringIntConverter()],
             Decimal: [],
             list: [ListTupleConverter()],
             tuple: [ListTupleConverter()],
