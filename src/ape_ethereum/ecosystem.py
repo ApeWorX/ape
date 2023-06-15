@@ -16,7 +16,7 @@ from eth_utils import (
     to_checksum_address,
     to_int,
 )
-from ethpm_types import HexBytes
+from ethpm_types import ContractType, HexBytes
 from ethpm_types.abi import ABIType, ConstructorABI, EventABI, MethodABI
 from pydantic import Field, validator
 
@@ -710,13 +710,17 @@ class Ethereum(EcosystemAPI):
                 method_abi = contract_type.methods[method_id_bytes]
                 assert isinstance(method_abi, MethodABI)  # For mypy
                 name = method_abi.name or enriched_call.method_id
-                enriched_call = self._enrich_calldata(enriched_call, method_abi, **kwargs)
+                enriched_call = self._enrich_calldata(
+                    enriched_call, method_abi, contract_type, **kwargs
+                )
             else:
                 name = enriched_call.method_id or "0x"
 
         enriched_call.method_id = name
         if method_abi:
-            enriched_call = self._enrich_calldata(enriched_call, method_abi, **kwargs)
+            enriched_call = self._enrich_calldata(
+                enriched_call, method_abi, contract_type, **kwargs
+            )
             if isinstance(method_abi, MethodABI):
                 enriched_call = self._enrich_returndata(enriched_call, method_abi, **kwargs)
             else:
@@ -760,7 +764,11 @@ class Ethereum(EcosystemAPI):
         return address
 
     def _enrich_calldata(
-        self, call: CallTreeNode, method_abi: Union[MethodABI, ConstructorABI], **kwargs
+        self,
+        call: CallTreeNode,
+        method_abi: Union[MethodABI, ConstructorABI],
+        contract_type: ContractType,
+        **kwargs,
     ) -> CallTreeNode:
         calldata = call.inputs
         if isinstance(calldata, str):
@@ -771,6 +779,12 @@ class Ethereum(EcosystemAPI):
             # Not sure if we can get here.
             # Mostly for mypy's sake.
             return call
+
+        if call.call_type and "CREATE" in call.call_type:
+            # Strip off bytecode
+            bytecode = HexBytes(contract_type.runtime_bytecode.bytecode)
+            calldata_arg = HexBytes(calldata_arg.split(bytecode)[-1][4:])
+            breakpoint()
 
         try:
             call.inputs = self.decode_calldata(method_abi, calldata_arg)
@@ -784,8 +798,10 @@ class Ethereum(EcosystemAPI):
     def _enrich_returndata(
         self, call: CallTreeNode, method_abi: MethodABI, **kwargs
     ) -> CallTreeNode:
-        default_return_value = "<?>"
+        if call.call_type and "CREATE" in call.call_type:
+            return call
 
+        default_return_value = "<?>"
         if isinstance(call.outputs, str) and is_0x_prefixed(call.outputs):
             return_value_bytes = HexBytes(call.outputs)
         elif isinstance(call.outputs, HexBytes):
