@@ -54,7 +54,9 @@ class HexIntConverter(ConverterAPI):
     """
 
     def is_convertible(self, value: Any) -> bool:
-        return (isinstance(value, str) and is_hex(value)) or isinstance(value, bytes)
+        return (isinstance(value, str) and is_hex(value) and is_0x_prefixed(value)) or isinstance(
+            value, bytes
+        )
 
     def convert(self, value: Any) -> int:
         if isinstance(value, bytes) or (isinstance(value, str) and is_0x_prefixed(value)):
@@ -330,7 +332,14 @@ class ConversionManager(BaseManager):
             return value
 
         for converter in self._converters[type]:
-            if converter.is_convertible(value):
+            if not converter.is_convertible(value):
+                continue
+
+            try:
                 return converter.convert(value)
+            except Exception as err:
+                raise ConversionError(
+                    f"Failed to convert '{value}' using '{converter.__class__.__name__}'."
+                ) from err
 
         raise ConversionError(f"No conversion registered to handle '{value}'.")
