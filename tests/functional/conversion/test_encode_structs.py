@@ -5,7 +5,6 @@ from ethpm_types import HexBytes
 from ethpm_types.abi import MethodABI
 from pydantic import BaseModel
 
-from ape import networks
 from ape.types import AddressType
 
 ABI = MethodABI.parse_obj(
@@ -58,25 +57,25 @@ DATA_BY_TYPE_KEY = {
 
 
 @pytest.mark.parametrize("data_type", list(DATA_BY_TYPE_KEY.keys()))
-def test_encode_structs(data_type):
+def test_encode_structs(data_type, ethereum):
     data = DATA_BY_TYPE_KEY[data_type]
-    encode_calldata = networks.ethereum.encode_calldata
+    encode_calldata = ethereum.encode_calldata
     assert encode_calldata(ABI, data) == EXPECTED
 
 
-def test_encode_structs_as_tuple_with_unconverted(sender):
+def test_encode_structs_as_tuple_with_unconverted(sender, ethereum):
     normal_data: Tuple = DATA_BY_TYPE_KEY["tuple"]  # type: ignore[assignment]
     data = list(normal_data)
     data[-1] = sender
-    actual = networks.ethereum.encode_calldata(ABI, normal_data)
+    actual = ethereum.encode_calldata(ABI, normal_data)
     assert actual == EXPECTED
 
 
-def test_encode_structs_as_dict_with_unconverted(sender):
+def test_encode_structs_as_dict_with_unconverted(sender, ethereum):
     normal_data: Dict = DATA_BY_TYPE_KEY["dict"]  # type: ignore[assignment]
     data = dict(normal_data)
     data["d"] = sender
-    actual = networks.ethereum.encode_calldata(ABI, normal_data)
+    actual = ethereum.encode_calldata(ABI, normal_data)
     assert actual == EXPECTED
 
 

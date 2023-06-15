@@ -30,7 +30,11 @@ class HexConverter(ConverterAPI):
     """
 
     def is_convertible(self, value: Any) -> bool:
-        return isinstance(value, str) and is_hex(value) and is_0x_prefixed(value)
+        return (
+            (isinstance(value, str) and is_hex(value) and is_0x_prefixed(value))
+            or isinstance(value, bytes)
+            or isinstance(value, int)
+        )
 
     def convert(self, value: str) -> bytes:
         """
