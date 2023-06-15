@@ -711,7 +711,7 @@ class Web3Provider(ProviderAPI, ABC):
     def _get_last_base_fee(self) -> int:
         block = self.get_block("latest")
         base_fee = getattr(block, "base_fee", None)
-        if base_fee:
+        if base_fee is not None:
             return base_fee
 
         raise APINotImplementedError("No base fee found in block.")

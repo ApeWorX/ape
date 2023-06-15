@@ -44,6 +44,11 @@ def config():
 
 
 @pytest.fixture(scope="session")
+def convert(chain):
+    return chain.conversion_manager.convert
+
+
+@pytest.fixture(scope="session")
 def data_folder(config):
     return config.DATA_FOLDER
 
