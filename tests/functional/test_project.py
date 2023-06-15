@@ -116,11 +116,40 @@ def test_extract_manifest(project_with_dependency_config):
     assert manifest.deployments == project_with_dependency_config.tracked_deployments
 
 
+def test_cached_manifest_when_sources_missing(
+    ape_project, manifest_with_non_existent_sources, existing_source_path, caplog
+):
+    """
+    Show that if a source is missing, it is OK. This happens when changing branches
+    after compiling and sources are only present on one of the branches.
+    """
+    cache_location = ape_project._cache_folder / "__local__.json"
+    if cache_location.is_file():
+        cache_location.unlink()
+
+    cache_location.touch()
+    name = "NOTEXISTS"
+    source_id = f"{name}.json"
+    contract_type = ContractType.parse_obj({"contractName": name, "abi": [], "sourceId": source_id})
+    path = ape_project._cache_folder / source_id
+    path.write_text(contract_type.json())
+    cache_location.write_text(manifest_with_non_existent_sources.json())
+
+    manifest = ape_project.cached_manifest
+
+    # Show the contract type does not get added and we don't get the corrupted manifest.
+    assert not any(ct.name == name for ct in manifest.contract_types.values())
+    assert not any("corrupted. Re-building" in msg for msg in caplog.messages)
+
+
 def test_create_manifest_when_file_changed_with_cached_references_that_no_longer_exist(
     ape_project, manifest_with_non_existent_sources, existing_source_path
 ):
-    # This test is for the condition when you have a cached manifest containing references
-    # from a source file however those references no longer exist and the source file has changes.
+    """
+    This test is for the condition when you have a cached manifest containing references
+    from a source file however those references no longer exist and the source file has changes.
+    """
+
     cache_location = ape_project._cache_folder / "__local__.json"
     if cache_location.is_file():
         cache_location.unlink()
