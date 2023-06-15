@@ -199,10 +199,10 @@ def _parse_coverage_table(coverage: "CoverageReport") -> Table:
 
     # NOTE: Purposely uses same column names as coveragepy
     table.add_column("Name")
-    table.add_column("Stmts")
-    table.add_column("Miss")
-    table.add_column("Cover")
-    table.add_column("Funcs")
+    table.add_column("Stmts", justify="right")
+    table.add_column("Miss", justify="right")
+    table.add_column("Cover", justify="right")
+    table.add_column("Funcs", justify="right")
 
     for project in coverage.projects:
         for src in project.sources:
@@ -227,10 +227,10 @@ def _parse_verbose_coverage(coverage: "CoverageReport") -> List[Table]:
                 fn_rate = round(contract.function_rate * 100, 2)
                 caption = f"line={line_rate}%, func={fn_rate}%"
                 table = Table(title=title, box=SIMPLE, caption=caption)
-                table.add_column("Func")
-                table.add_column("Stmts")
-                table.add_column("Miss")
-                table.add_column("Cover")
+                table.add_column("Func", justify="right")
+                table.add_column("Stmts", justify="right")
+                table.add_column("Miss", justify="right")
+                table.add_column("Cover", justify="right")
                 for fn in contract.functions:
                     table.add_row(
                         fn.name,
