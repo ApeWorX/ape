@@ -266,4 +266,3 @@ def test_gas_flag_excluding_contracts(geth_provider, setup_pytester, project, py
     passed, failed = setup_pytester(project.path.name)
     result = pytester.runpytest("--gas", "--gas-exclude", "TestContractVy,TokenA")
     run_gas_test(result, passed, failed, expected_report=TOKEN_B_GAS_REPORT)
-

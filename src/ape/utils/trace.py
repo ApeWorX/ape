@@ -62,8 +62,11 @@ def parse_as_str(call: "CallTreeNode", stylize: bool = False, verbose: bool = Fa
     contract = str(call.contract_id)
     method = (
         "__new__"
-        if "CREATE" in call.call_type and is_0x_prefixed(call.method_id)
-        else str(call.method_id)
+        if call.call_type
+        and "CREATE" in call.call_type
+        and call.method_id
+        and is_0x_prefixed(call.method_id)
+        else str(call.method_id or "")
     )
 
     if stylize:
@@ -81,13 +84,13 @@ def parse_as_str(call: "CallTreeNode", stylize: bool = False, verbose: bool = Fa
 
     signature = call_path
     arguments_str = _get_inputs_str(call.inputs, stylize=stylize)
-    if "CREATE" in call.call_type and is_0x_prefixed(arguments_str):
+    if call.call_type and "CREATE" in call.call_type and is_0x_prefixed(arguments_str):
         # Unenriched CREATE calldata is a massive hex.
         arguments_str = ""
 
     signature = f"{signature}{arguments_str}"
 
-    if "CREATE" not in call.call_type and call.outputs:
+    if call.call_type and "CREATE" not in call.call_type and call.outputs:
         if return_str := _get_outputs_str(call.outputs, stylize=stylize):
             signature = f"{signature} -> {return_str}"
 
