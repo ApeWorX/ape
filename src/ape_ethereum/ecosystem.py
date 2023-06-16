@@ -835,7 +835,18 @@ class Ethereum(EcosystemAPI):
                 else tuple([self._enrich_value(v, **kwargs) for v in return_values or ()])
             )
 
-        call.outputs = values[0] if len(values) == 1 else values
+        output_str = values[0] if len(values) == 1 else values
+        if isinstance(output_str, str) and (
+            output_str.isnumeric()
+            and not int(output_str)
+            or is_0x_prefixed(output_str)
+            and not int(output_str, 16)
+        ):
+            output_str = ""
+
+        if output_str:
+            call.outputs = output_str
+
         return call
 
     def get_python_types(self, abi_type: ABIType) -> Union[Type, Tuple, List]:
