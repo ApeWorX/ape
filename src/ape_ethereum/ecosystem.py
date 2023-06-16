@@ -717,10 +717,12 @@ class Ethereum(EcosystemAPI):
                 name = enriched_call.method_id or "0x"
 
         enriched_call.method_id = name
+
         if method_abi:
             enriched_call = self._enrich_calldata(
                 enriched_call, method_abi, contract_type, **kwargs
             )
+
             if isinstance(method_abi, MethodABI):
                 enriched_call = self._enrich_returndata(enriched_call, method_abi, **kwargs)
             else:
@@ -803,6 +805,7 @@ class Ethereum(EcosystemAPI):
         self, call: CallTreeNode, method_abi: MethodABI, **kwargs
     ) -> CallTreeNode:
         if call.call_type and "CREATE" in call.call_type:
+            call.outputs = ""
             return call
 
         default_return_value = "<?>"
@@ -835,18 +838,16 @@ class Ethereum(EcosystemAPI):
                 else tuple([self._enrich_value(v, **kwargs) for v in return_values or ()])
             )
 
-        output_str = values[0] if len(values) == 1 else values
-        if isinstance(output_str, str) and (
-            output_str.isnumeric()
-            and not int(output_str)
-            or is_0x_prefixed(output_str)
-            and not int(output_str, 16)
+        output_val = values[0] if len(values) == 1 else values
+        if (
+            isinstance(output_val, str)
+            and is_0x_prefixed(output_val)
+            and "." not in output_val
+            and not int(output_val, 16)
         ):
-            output_str = ""
+            output_val = ""
 
-        if output_str:
-            call.outputs = output_str
-
+        call.outputs = output_val
         return call
 
     def get_python_types(self, abi_type: ABIType) -> Union[Type, Tuple, List]:

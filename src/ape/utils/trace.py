@@ -90,7 +90,11 @@ def parse_as_str(call: "CallTreeNode", stylize: bool = False, verbose: bool = Fa
 
     signature = f"{signature}{arguments_str}"
 
-    if call.call_type and "CREATE" not in call.call_type and call.outputs:
+    if (
+        call.call_type
+        and "CREATE" not in call.call_type
+        and call.outputs not in ((), [], None, {}, "")
+    ):
         if return_str := _get_outputs_str(call.outputs, stylize=stylize):
             signature = f"{signature} -> {return_str}"
 
