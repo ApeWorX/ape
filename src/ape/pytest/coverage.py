@@ -223,10 +223,7 @@ class CoverageTracker(ManagerAccessMixin):
         last_pcs: Optional[Set[int]] = None,
         last_call: Optional[str] = None,
     ) -> Set[int]:
-        if not self.data:
-            return
-
-        if control_flow.source_path is None:
+        if not self.data or control_flow.source_path is None:
             return set()
 
         last_pcs = last_pcs or set()
