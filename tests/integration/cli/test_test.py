@@ -267,16 +267,3 @@ def test_gas_flag_excluding_contracts(geth_provider, setup_pytester, project, py
     result = pytester.runpytest("--gas", "--gas-exclude", "TestContractVy,TokenA")
     run_gas_test(result, passed, failed, expected_report=TOKEN_B_GAS_REPORT)
 
-
-@geth_process_test
-@skip_projects_except("geth")
-def test_coverage(geth_provider, setup_pytester, project, pytester):
-    """
-    Ensures the --coverage flag works.
-    For better coverage tests, see ape-vyper because the Vyper
-    plugin is what implements the `trace_source()` method which does the bulk
-    of the coverage work.
-    """
-    passed, failed = setup_pytester(project.path.name)
-    result = pytester.runpytest("--coverage", "--showinternal")
-    result.assert_outcomes(passed=passed, failed=failed)
