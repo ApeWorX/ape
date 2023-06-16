@@ -24,6 +24,10 @@ class ConfigWrapper(ManagerAccessMixin):
         self.pytest_config = pytest_config
 
     @cached_property
+    def supports_tracing(self) -> bool:
+        return self.provider.supports_tracing
+
+    @cached_property
     def interactive(self) -> bool:
         return self.pytest_config.getoption("interactive")
 

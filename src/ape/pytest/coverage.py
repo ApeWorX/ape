@@ -121,7 +121,11 @@ class CoverageTracker(ManagerAccessMixin):
     def __init__(self, config_wrapper: ConfigWrapper):
         self.config_wrapper = config_wrapper
         sources = self.project_manager._contract_sources
-        self.data = CoverageData(self.project_manager.contracts_folder, sources)
+
+        if self.config_wrapper.track_coverage:
+            self.data = CoverageData(self.project_manager.contracts_folder, sources)
+        else:
+            self.data = None
 
     @property
     def enabled(self) -> bool:
@@ -230,7 +234,7 @@ class CoverageTracker(ManagerAccessMixin):
         return new_pcs
 
     def show_session_coverage(self) -> bool:
-        if not self.data or not self.data.report or not self.data.report.sources:
+        if not self.provider.supports_tracing or not self.data or not self.data.report or not self.data.report.sources:
             return False
 
         # Reports are set in ape-config.yaml.

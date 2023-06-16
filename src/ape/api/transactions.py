@@ -515,6 +515,9 @@ class ReceiptAPI(BaseInterfaceModel):
         ``--coverage`` flag.
         """
 
+        if not self.network_manager.active_provider or not self.provider.supports_tracing:
+            return
+
         traceback = self.source_traceback
         if traceback is not None and len(traceback) > 0 and self._test_runner is not None:
             tracker = self._test_runner.coverage_tracker
