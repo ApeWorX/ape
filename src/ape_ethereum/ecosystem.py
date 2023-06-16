@@ -782,7 +782,11 @@ class Ethereum(EcosystemAPI):
 
         if call.call_type and "CREATE" in call.call_type:
             # Strip off bytecode
-            bytecode = contract_type.deployment_bytecode.to_bytes()
+            bytecode = (
+                contract_type.deployment_bytecode.to_bytes()
+                if contract_type.deployment_bytecode
+                else b""
+            )
             # TODO: Handle Solidity Metadata (delegate to Compilers again?)
             calldata_arg = HexBytes(calldata_arg.split(bytecode)[-1])
 

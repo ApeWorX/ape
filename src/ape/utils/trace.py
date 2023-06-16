@@ -2,6 +2,8 @@ import json
 from statistics import mean, median
 from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple, Union
 
+from eth_utils import is_0x_prefixed
+from ethpm_types import HexBytes
 from rich.box import SIMPLE
 from rich.table import Table
 from rich.tree import Tree
@@ -58,7 +60,12 @@ def _create_tree(call: "CallTreeNode", verbose: bool = False) -> Tree:
 
 def parse_as_str(call: "CallTreeNode", stylize: bool = False, verbose: bool = False) -> str:
     contract = str(call.contract_id)
-    method = str(call.method_id)
+    method = (
+        "__new__"
+        if "CREATE" in call.call_type and is_0x_prefixed(call.method_id)
+        else str(call.method_id)
+    )
+
     if stylize:
         contract = f"[{TraceStyles.CONTRACTS}]{contract}[/]"
         method = f"[{TraceStyles.METHODS}]{method}[/]"
@@ -74,11 +81,15 @@ def parse_as_str(call: "CallTreeNode", stylize: bool = False, verbose: bool = Fa
 
     signature = call_path
     arguments_str = _get_inputs_str(call.inputs, stylize=stylize)
+    if "CREATE" in call.call_type and is_0x_prefixed(arguments_str):
+        # Unenriched CREATE calldata is a massive hex.
+        arguments_str = ""
+
     signature = f"{signature}{arguments_str}"
 
-    return_str = _get_outputs_str(call.outputs, stylize=stylize)
-    if return_str:
-        signature = f"{signature} -> {return_str}"
+    if "CREATE" not in call.call_type and call.outputs:
+        if return_str := _get_outputs_str(call.outputs, stylize=stylize):
+            signature = f"{signature} -> {return_str}"
 
     if call.value:
         value = str(call.value)
@@ -109,6 +120,9 @@ def _get_inputs_str(inputs: Any, stylize: bool = False) -> str:
 
     elif isinstance(inputs, dict):
         return _dict_to_str(inputs, color=color)
+
+    elif isinstance(inputs, bytes):
+        return HexBytes(inputs).hex()
 
     return f"({inputs})"
 
