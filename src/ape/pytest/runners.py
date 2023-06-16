@@ -1,4 +1,5 @@
 from pathlib import Path
+from typing import Optional
 
 import click
 import pytest
@@ -42,8 +43,8 @@ class PytestApeRunner(ManagerAccessMixin):
         return self.network_manager.parse_network_choice(self.config_wrapper.network)
 
     @property
-    def _coverage_report(self) -> CoverageReport:
-        return self.coverage_tracker.data.report
+    def _coverage_report(self) -> Optional[CoverageReport]:
+        return self.coverage_tracker.data.report if self.coverage_tracker.data else None
 
     def pytest_exception_interact(self, report, call):
         """
@@ -238,7 +239,9 @@ class PytestApeRunner(ManagerAccessMixin):
         self._assert_tracing_support(terminalreporter, "track coverage")
         if not self.coverage_tracker.show_session_coverage():
             terminalreporter.write_line(
-                f"{LogLevel.WARNING.name}: No coverage data found.", yellow=True
+                f"{LogLevel.WARNING.name}: No coverage data found. "
+                f"Try re-compiling your contracts using the latest compiler plugins",
+                yellow=True,
             )
 
     def _assert_tracing_support(self, terminalreporter, unable_to: str):
@@ -261,4 +264,4 @@ class PytestApeRunner(ManagerAccessMixin):
         self.receipt_capture.clear()
         self.chain_manager.contracts.clear_local_caches()
         self.gas_tracker.session_gas_report = None
-        self.coverage_tracker.data.reset()
+        self.coverage_tracker.reset()

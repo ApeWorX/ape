@@ -122,10 +122,11 @@ class CoverageTracker(ManagerAccessMixin):
         self.config_wrapper = config_wrapper
         sources = self.project_manager._contract_sources
 
-        if self.config_wrapper.track_coverage:
-            self.data = CoverageData(self.project_manager.contracts_folder, sources)
-        else:
-            self.data = None
+        self.data: Optional[CoverageData] = (
+            CoverageData(self.project_manager.contracts_folder, sources)
+            if self.config_wrapper.track_coverage
+            else None
+        )
 
     @property
     def enabled(self) -> bool:
@@ -134,6 +135,10 @@ class CoverageTracker(ManagerAccessMixin):
     @property
     def exclusions(self) -> List[ContractFunctionPath]:
         return self.config_wrapper.coverage_exclusions
+
+    def reset(self):
+        if self.data:
+            self.data.reset()
 
     def cover(
         self,
@@ -155,6 +160,9 @@ class CoverageTracker(ManagerAccessMixin):
               to ensure its hit count is bumped, even when there are not statements
               found. This is the only way to bump hit counts for auto-getters.
         """
+        if not self.data:
+            return
+
         last_path: Optional[Path] = None
         last_pcs: Set[int] = set()
         last_call: Optional[str] = None
@@ -215,6 +223,9 @@ class CoverageTracker(ManagerAccessMixin):
         last_pcs: Optional[Set[int]] = None,
         last_call: Optional[str] = None,
     ) -> Set[int]:
+        if not self.data:
+            return
+
         if control_flow.source_path is None:
             return set()
 
@@ -234,7 +245,12 @@ class CoverageTracker(ManagerAccessMixin):
         return new_pcs
 
     def show_session_coverage(self) -> bool:
-        if not self.provider.supports_tracing or not self.data or not self.data.report or not self.data.report.sources:
+        if (
+            not self.provider.supports_tracing
+            or not self.data
+            or not self.data.report
+            or not self.data.report.sources
+        ):
             return False
 
         # Reports are set in ape-config.yaml.
