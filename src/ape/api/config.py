@@ -1,7 +1,9 @@
 from enum import Enum
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Optional, TypeVar
 
 from pydantic import BaseModel, BaseSettings
+
+T = TypeVar("T")
 
 
 class ConfigEnum(str, Enum):
@@ -28,7 +30,7 @@ class PluginConfig(BaseSettings):
 
         def update(root: Dict, value_map: Dict):
             for key, val in value_map.items():
-                if key in root and isinstance(val, dict):
+                if isinstance(val, dict) and key in root and isinstance(root[key], dict):
                     root[key] = update(root[key], val)
                 else:
                     root[key] = val
@@ -48,7 +50,7 @@ class PluginConfig(BaseSettings):
     def __contains__(self, key: str) -> bool:
         return key in self.__dict__
 
-    def get(self, key: str, default: Optional[Any] = None) -> Any:
+    def get(self, key: str, default: Optional[T] = None) -> T:
         return self.__dict__.get(key, default)
 
 

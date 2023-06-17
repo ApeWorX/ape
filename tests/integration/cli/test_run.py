@@ -1,3 +1,5 @@
+import sys
+
 from .utils import skip_projects_except
 
 BAD_COMMAND = "not-a-name"
@@ -20,15 +22,21 @@ def test_run(ape_cli, runner, project):
     scripts = [s for s in project.scripts_folder.glob("*.py") if not s.name.startswith("error")]
     for script_file in scripts:
         result = runner.invoke(ape_cli, ["run", script_file.stem])
-        assert result.exit_code == 0, result.output
-        runner.invoke(ape_cli, ["run", "--interactive"], input="exit\n")
-        assert result.exit_code == 0, result.output
+        assert (
+            result.exit_code == 0
+        ), f"Unexpected exit code for '{script_file.name}'\n{result.output}"
 
         if script_file.stem.startswith("_"):
             assert "Super secret script output" not in result.output
 
         else:
             assert "Super secret script output" in result.output
+
+
+@skip_projects_except("script")
+def test_run_with_verbosity(ape_cli, runner, project):
+    result = runner.invoke(ape_cli, ["run", "click", "--verbosity", "DEBUG"])
+    assert result.exit_code == 0, result.output
 
 
 @skip_projects_except("script")
@@ -61,7 +69,7 @@ def test_run_only_subdirs(ape_cli, runner, project):
     ]
     for each in subdirectory_scripts:
         result = runner.invoke(ape_cli, ["run", "subdirectory", each.stem])
-        assert result.exit_code == 0
+        assert result.exit_code == 0, f"Unexpected exit code for '{each.name}'"
         assert "Super secret script output" in result.output
 
 
@@ -74,9 +82,9 @@ def test_run_when_script_errors(ape_cli, runner, project):
     ]
     for script_file in scripts:
         result = runner.invoke(ape_cli, ["run", script_file.stem])
-        assert result.exit_code != 0, result.output
-        runner.invoke(ape_cli, ["run", "--interactive"], input="exit\n")
-        assert result.exit_code != 0, result.output
+        assert (
+            result.exit_code != 0
+        ), f"Unexpected exit code for '{script_file.name}'.\n{result.output}"
         assert str(result.exception) == "Expected exception"
 
 
@@ -134,3 +142,22 @@ def test_uncaught_tx_err(ape_cli, runner, project):
     assert '/scripts/txerr.py", line 12, in main' in result.output
     assert "contract.setNumber(5, sender=account)" in result.output
     assert "ERROR: (ContractLogicError) Transaction failed." in result.output
+
+
+@skip_projects_except("script")
+def test_scripts_module_already_installed(ape_cli, runner, project, mocker):
+    """
+    Make sure that if there is for some reason a python module names `scripts`
+    installed, it does not interfere with Ape's scripting mechanism.
+    """
+    mock_scripts = mocker.MagicMock()
+    mock_path = mocker.MagicMock()
+    mock_path._path = "path/to/scripts"
+    mock_scripts.__file__ = None
+    mock_scripts.__path__ = mock_path
+    sys.modules["scripts"] = mock_scripts
+
+    result = runner.invoke(ape_cli, ["run"])
+    assert result.exit_code == 0, result.output
+
+    del sys.modules["scripts"]

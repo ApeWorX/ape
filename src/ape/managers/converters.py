@@ -4,6 +4,7 @@ from typing import Any, Dict, List, Tuple, Type, Union
 
 from dateutil.parser import parse  # type: ignore
 from eth_utils import (
+    is_0x_prefixed,
     is_checksum_address,
     is_hex,
     is_hex_address,
@@ -29,7 +30,11 @@ class HexConverter(ConverterAPI):
     """
 
     def is_convertible(self, value: Any) -> bool:
-        return isinstance(value, str) and is_hex(value)
+        return (
+            (isinstance(value, str) and is_hex(value) and is_0x_prefixed(value))
+            or isinstance(value, bytes)
+            or isinstance(value, int)
+        )
 
     def convert(self, value: str) -> bytes:
         """
@@ -48,13 +53,25 @@ class HexConverter(ConverterAPI):
 class HexIntConverter(ConverterAPI):
     """
     Convert hex values to integers.
+
+    **NOTE** If value is a ``str``, it must begin with "0x".
     """
 
     def is_convertible(self, value: Any) -> bool:
-        return (isinstance(value, str) and is_hex(value)) or isinstance(value, bytes)
+        return (isinstance(value, str) and is_hex(value) and is_0x_prefixed(value)) or isinstance(
+            value, bytes
+        )
 
     def convert(self, value: Any) -> int:
         return to_int(HexBytes(value))
+
+
+class StringIntConverter(ConverterAPI):
+    def is_convertible(self, value: Any) -> bool:
+        return isinstance(value, str) and not is_0x_prefixed(value) and value.isnumeric()
+
+    def convert(self, value: str) -> int:
+        return int(value)
 
 
 class AddressAPIConverter(ConverterAPI):
@@ -242,7 +259,7 @@ class ConversionManager(BaseManager):
                 IntAddressConverter(),
             ],
             bytes: [HexConverter()],
-            int: [TimestampConverter(), HexIntConverter()],
+            int: [TimestampConverter(), HexIntConverter(), StringIntConverter()],
             Decimal: [],
             list: [ListTupleConverter()],
             tuple: [ListTupleConverter()],
@@ -324,7 +341,14 @@ class ConversionManager(BaseManager):
             return value
 
         for converter in self._converters[type]:
-            if converter.is_convertible(value):
+            if not converter.is_convertible(value):
+                continue
+
+            try:
                 return converter.convert(value)
+            except Exception as err:
+                raise ConversionError(
+                    f"Failed to convert '{value}' using '{converter.__class__.__name__}'."
+                ) from err
 
         raise ConversionError(f"No conversion registered to handle '{value}'.")

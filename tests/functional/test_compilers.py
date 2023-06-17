@@ -3,18 +3,7 @@ from pathlib import Path
 import pytest
 
 from ape.exceptions import APINotImplementedError, CompilerError
-
-
-@pytest.fixture
-def skip_if_vyper_or_solidity_installed(compilers):
-    registered_compilers = compilers.registered_compilers
-    skip_msg = "Cannot have {0} plugin installed to run test!"
-    if ".vy" in registered_compilers:
-        pytest.skip(skip_msg.format("Vyper"))
-    elif ".sol":
-        pytest.skip(skip_msg.format("Solidity"))
-
-    yield
+from tests.conftest import skip_if_plugin_installed
 
 
 def test_get_imports(project, compilers):
@@ -27,17 +16,15 @@ def test_missing_compilers_without_source_files(project):
     assert result == []
 
 
-def test_missing_compilers_with_source_files(
-    project_with_source_files_contract, skip_if_vyper_or_solidity_installed
-):
+@skip_if_plugin_installed("vyper", "solidity")
+def test_missing_compilers_with_source_files(project_with_source_files_contract):
     result = project_with_source_files_contract.extensions_with_missing_compilers()
     assert ".vy" in result
     assert ".sol" in result
 
 
-def test_missing_compilers_error_message(
-    project_with_source_files_contract, sender, skip_if_vyper_or_solidity_installed
-):
+@skip_if_plugin_installed("vyper", "solidity")
+def test_missing_compilers_error_message(project_with_source_files_contract, sender):
     missing_exts = project_with_source_files_contract.extensions_with_missing_compilers()
     expected = (
         "ProjectManager has no attribute or contract named 'ContractA'. "

@@ -116,7 +116,20 @@ class ProjectAPI(BaseInterfaceModel):
             manifest.contract_types = {}
 
         else:
-            manifest.contract_types = self.contracts
+            contracts: Dict[str, ContractType] = {}
+
+            # Exclude contracts with missing sources, else you'll get validation errors.
+            # This scenario happens if changing branches and you have some contracts on
+            # one branch and others on the next.
+            for name, contract in self.contracts.items():
+                source_id = contract.source_id
+                if not contract.source_id:
+                    continue
+
+                if source_id in (manifest.sources or {}):
+                    contracts[name] = contract
+
+            manifest.contract_types = contracts
 
         return manifest
 

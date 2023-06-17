@@ -10,6 +10,7 @@ import ape
 from ape.contracts import ContractInstance
 from ape.exceptions import APINotImplementedError, ChainError, ConversionError
 from ape_ethereum.transactions import Receipt, TransactionStatusEnum
+from tests.conftest import skip_if_plugin_installed
 
 
 @pytest.fixture
@@ -598,6 +599,7 @@ def test_contracts_get_all_include_non_contract_address(vyper_contract_instance,
     assert actual[vyper_contract_instance.address] == vyper_contract_instance.contract_type
 
 
+@skip_if_plugin_installed("ens")
 def test_contracts_get_multiple_attempts_to_convert(chain):
     with pytest.raises(ConversionError):
         chain.contracts.get_multiple(("test.eth",))

@@ -67,8 +67,11 @@ class PromptChoice(click.ParamType):
             click.echo(f"__expected_{choice}")
     """
 
-    def __init__(self, choices):
+    def __init__(self, choices, name: Optional[str] = None):
         self.choices = choices
+        # Since we purposely skip the super() constructor, we need to make
+        # sure the class still has a name.
+        self.name = name or "option"
 
     def print_choices(self):
         """
@@ -147,11 +150,15 @@ class AccountAliasPromptChoice(PromptChoice):
     """
 
     def __init__(
-        self, account_type: Optional[Type[AccountAPI]] = None, prompt_message: Optional[str] = None
+        self,
+        account_type: Optional[Type[AccountAPI]] = None,
+        prompt_message: Optional[str] = None,
+        name: str = "account",
     ):
         # NOTE: we purposely skip the constructor of `PromptChoice`
         self._account_type = account_type
         self._prompt_message = prompt_message or "Select an account"
+        self.name = name
 
     def convert(
         self, value: Any, param: Optional[Parameter], ctx: Optional[Context]

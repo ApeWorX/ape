@@ -5,7 +5,6 @@ from eip712.messages import EIP712Message
 from eth_account.messages import encode_defunct
 
 import ape
-from ape import convert
 from ape.api import ImpersonatedAccount
 from ape.exceptions import AccountsError, NetworkError, ProjectError, SignatureError
 from ape.types.signatures import recover_signer
@@ -78,7 +77,7 @@ def test_sign_message_with_prompts(runner, keyfile_account):
     assert start_nonce == end_nonce
 
 
-def test_transfer(sender, receiver, eth_tester_provider):
+def test_transfer(sender, receiver, eth_tester_provider, convert):
     initial_receiver_balance = receiver.balance
     initial_sender_balance = sender.balance
     value_str = "24 gwei"
@@ -168,7 +167,7 @@ def test_transfer_with_prompts(runner, receiver, keyfile_account):
             keyfile_account.transfer(receiver, "1 gwei")
 
 
-def test_transfer_using_type_0(sender, receiver):
+def test_transfer_using_type_0(sender, receiver, convert):
     initial_balance = receiver.balance
     sender.transfer(receiver, "1 gwei", type=0)
     expected = initial_balance + convert("1 gwei", int)

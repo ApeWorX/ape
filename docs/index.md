@@ -9,6 +9,7 @@
    userguides/accounts
    userguides/installing_plugins
    userguides/projects
+   userguides/dependencies
    userguides/compile
    userguides/clis
    userguides/data

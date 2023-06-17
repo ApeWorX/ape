@@ -69,7 +69,7 @@ from ape.utils import (
     run_until_complete,
     spawn,
 )
-from ape.utils.misc import DEFAULT_MAX_RETRIES_TX
+from ape.utils.misc import DEFAULT_MAX_RETRIES_TX, _create_raises_not_implemented_error
 
 
 class BlockAPI(BaseInterfaceModel):
@@ -404,6 +404,34 @@ class ProviderAPI(BaseInterfaceModel):
             Iterator[:class:`~ape.types.ContractLog`]
         """
 
+    def send_private_transaction(self, txn: TransactionAPI, **kwargs) -> ReceiptAPI:
+        """
+        Send a transaction through a private mempool (if supported by the Provider).
+
+        Raises:
+            :class:`~ape.exceptions.APINotImplementedError`: If using a non-local
+              network and not implemented by the provider.
+
+        Args:
+            txn (:class:`~ape.api.transactions.TransactionAPI`): The transaction
+              to privately publish.
+            **kwargs: Additional kwargs to be optionally handled by the provider.
+
+        Returns:
+            :class:`~ape.api.transactions.ReceiptAPI`
+        """
+        if self.network.name == LOCAL_NETWORK_NAME or self.network.name.endswith("-fork"):
+            # Send the transaction as normal so testers can verify private=True
+            # and the txn still goes through.
+            logger.warning(
+                f"private=True is set but connected to network '{self.network.name}' ."
+                f"Using regular '{self.send_transaction.__name__}()' method (not private)."
+            )
+            return self.send_transaction(txn)
+
+        # What happens normally from `raises_not_implemented()` decorator.
+        raise _create_raises_not_implemented_error(self.send_private_transaction)
+
     @raises_not_implemented
     def snapshot(self) -> SnapshotID:  # type: ignore[empty-body]
         """
@@ -412,7 +440,7 @@ class ProviderAPI(BaseInterfaceModel):
         :class:`ape.managers.chain.ChainManager`.
 
         Raises:
-            NotImplementedError: Unless overridden.
+            :class:`~ape.exceptions.APINotImplementedError`: Unless overriden.
         """
 
     @raises_not_implemented
@@ -423,7 +451,7 @@ class ProviderAPI(BaseInterfaceModel):
         :class:`ape.managers.chain.ChainManager`.
 
         Raises:
-            NotImplementedError: Unless overridden.
+            :class:`~ape.exceptions.APINotImplementedError`: Unless overriden.
         """
 
     @raises_not_implemented
@@ -434,7 +462,7 @@ class ProviderAPI(BaseInterfaceModel):
         :class:`ape.managers.chain.ChainManager`.
 
         Raises:
-            NotImplementedError: Unless overridden.
+            :class:`~ape.exceptions.APINotImplementedError`: Unless overriden.
         """
 
     @raises_not_implemented
@@ -445,7 +473,7 @@ class ProviderAPI(BaseInterfaceModel):
         :class:`ape.managers.chain.ChainManager`.
 
         Raises:
-            NotImplementedError: Unless overridden.
+            :class:`~ape.exceptions.APINotImplementedError`: Unless overriden.
         """
 
     @raises_not_implemented
@@ -478,6 +506,19 @@ class ProviderAPI(BaseInterfaceModel):
         Args:
             address (AddressType): An address on the network.
             code (:class:`~ape.types.ContractCode`): The new bytecode.
+        """
+
+    @raises_not_implemented
+    def set_storage(  # type: ignore[empty-body]
+        self, address: AddressType, slot: int, value: HexBytes
+    ):
+        """
+        Sets the raw value of a storage slot of a contract.
+
+        Args:
+            address (str): The address of the contract.
+            slot (int): Storage slot to write the value to.
+            value: (bytes): The value to overwrite the raw storage slot with.
         """
 
     @raises_not_implemented
@@ -670,7 +711,7 @@ class Web3Provider(ProviderAPI, ABC):
     def _get_last_base_fee(self) -> int:
         block = self.get_block("latest")
         base_fee = getattr(block, "base_fee", None)
-        if base_fee:
+        if base_fee is not None:
             return base_fee
 
         raise APINotImplementedError("No base fee found in block.")
@@ -1037,7 +1078,7 @@ class Web3Provider(ProviderAPI, ABC):
         except TimeExhausted as err:
             raise TransactionNotFoundError(txn_hash) from err
 
-        network_config = self.network.config.get(self.network.name)
+        network_config: Dict = self.network.config.dict().get(self.network.name, {})
         max_retries = network_config.get("max_get_transaction_retries", DEFAULT_MAX_RETRIES_TX)
         for attempt in range(max_retries):
             try:

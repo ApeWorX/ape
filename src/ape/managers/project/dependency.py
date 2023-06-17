@@ -2,11 +2,12 @@ import json
 import os
 import tempfile
 from pathlib import Path
-from typing import Dict, Optional, Type
+from typing import Dict, Iterable, Optional, Type
 
 from ethpm_types import PackageManifest
 from ethpm_types.utils import AnyUrl
 from pydantic import FileUrl, HttpUrl, root_validator
+from semantic_version import NpmSpec, Version  # type: ignore
 
 from ape.api import DependencyAPI
 from ape.exceptions import ProjectError, UnknownVersionError
@@ -25,6 +26,7 @@ class DependencyManager(ManagerAccessMixin):
         dependency_classes = {
             "github": GithubDependency,
             "local": LocalDependency,
+            "npm": NpmDependency,
         }
 
         for _, (config_key, dependency_class) in self.plugin_manager.dependencies:
@@ -199,3 +201,126 @@ class LocalDependency(DependencyAPI):
 
     def extract_manifest(self) -> PackageManifest:
         return self._extract_local_manifest(self.path)
+
+
+class NpmDependency(DependencyAPI):
+    """
+    A dependency from the Node Package Manager (NPM).
+
+    Config example::
+
+        dependencies:
+          - name: safe-singleton-factory
+            npm: "@gnosis.pm/safe-singleton-factory"
+            version: 1.0.14
+    """
+
+    npm: str
+    """
+    The NPM repo ID e.g. the organization name followed by the repo name,
+    such as ``"@gnosis.pm/safe-singleton-factory"``.
+    """
+
+    @cached_property
+    def version_id(self) -> str:
+        version_from_config = self.version
+        version_from_json = self.version_from_json
+        version_from_local_json = self.version_from_local_json
+        if version_from_config:
+            for other_version in (version_from_json, version_from_local_json):
+                if not other_version:
+                    continue
+
+                semver = NpmSpec(other_version)
+                if other_version and not semver.match(Version(version_from_config)):
+                    raise ProjectError(
+                        f"Version mismatch for {self.npm}. Is {self.version} in ape config "
+                        f"but {other_version} in package.json. "
+                        f"Try aligning versions and/or running `npm install`."
+                    )
+
+        if version_from_config:
+            return version_from_config
+        elif version_from_json:
+            return version_from_json
+        elif version_from_local_json:
+            return version_from_local_json
+        else:
+            raise ProjectError(
+                f"Missing version for NPM dependency '{self.name}'. " "Have you run `npm install`?"
+            )
+
+    @property
+    def package_folder(self) -> Path:
+        return Path.cwd() / "node_modules" / str(self.npm)
+
+    @cached_property
+    def version_from_json(self) -> Optional[str]:
+        """
+        The version from package.json in the installed package.
+        Requires having run `npm install`.
+        """
+        return _get_version_from_package_json(self.package_folder)
+
+    @cached_property
+    def version_from_local_json(self) -> Optional[str]:
+        """
+        The version from your project's package.json, if exists.
+        """
+        return _get_version_from_package_json(
+            self.project_manager.path, path=("dependencies", self.npm)
+        )
+
+    @property
+    def uri(self) -> AnyUrl:
+        _uri = f"https://www.npmjs.com/package/{self.npm}/v/{self.version}"
+        return HttpUrl(_uri, scheme="https")
+
+    def extract_manifest(self) -> PackageManifest:
+        if self.cached_manifest:
+            # Already downloaded
+            return self.cached_manifest
+
+        if self.package_folder.is_dir():
+            if (
+                self.version
+                and self.version_from_json
+                and self.version not in self.version_from_json
+            ):
+                raise ProjectError(
+                    f"Version mismatch for {self.npm}. Is {self.version} in ape config"
+                    f"but {self.version_from_json} in package.json."
+                )
+
+            return self._extract_local_manifest(self.package_folder)
+
+        else:
+            raise ProjectError(f"NPM package '{self.npm}' not installed.")
+
+
+def _get_version_from_package_json(
+    base_path: Path, path: Optional[Iterable[str]] = None
+) -> Optional[str]:
+    package_json = base_path / "package.json"
+    if not package_json.is_file():
+        return None
+
+    try:
+        data = json.loads(package_json.read_text())
+    except Exception as err:
+        logger.warning(f"Failed to parse package.json: {err}")
+        return None
+
+    for key in path or []:
+        if key not in data:
+            return None
+
+        data = data[key]
+
+    if isinstance(data, str):
+        return data
+
+    elif not isinstance(data, dict):
+        return None
+
+    return data.get("version")

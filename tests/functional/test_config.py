@@ -1,5 +1,5 @@
 import logging
-from typing import Dict
+from typing import Dict, Union
 
 import pytest
 
@@ -139,3 +139,14 @@ def test_plugin_config_updates_when_default_is_empty_dict():
     overrides = {"sub": {"baz": {"test": {"foo": 5}}}}
     actual = MyConfig.from_overrides(overrides)
     assert actual.sub == {"baz": {"test": SubConfig(foo=5, bar=1)}}
+
+
+@pytest.mark.parametrize("override_0,override_1", [(True, {"foo": 0}), ({"foo": 0}, True)])
+def test_plugin_config_with_union_dicts(override_0, override_1):
+    class SubConfig(PluginConfig):
+        bool_or_dict: Union[bool, Dict] = True
+        dict_or_bool: Union[Dict, bool] = {}
+
+    config = SubConfig.from_overrides({"bool_or_dict": override_0, "dict_or_bool": override_1})
+    assert config.bool_or_dict == override_0
+    assert config.dict_or_bool == override_1
