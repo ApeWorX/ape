@@ -6,7 +6,12 @@ from eth_typing import HexStr
 from eth_utils import ValidationError
 from web3.exceptions import ContractPanicError
 
-from ape.exceptions import BlockNotFoundError, ProviderNotConnectedError, TransactionNotFoundError, ContractLogicError
+from ape.exceptions import (
+    BlockNotFoundError,
+    ContractLogicError,
+    ProviderNotConnectedError,
+    TransactionNotFoundError,
+)
 from ape.types import LogFilter
 from ape_test.provider import CHAIN_ID
 
