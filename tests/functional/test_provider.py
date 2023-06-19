@@ -4,8 +4,9 @@ import pytest
 from eth_tester.exceptions import TransactionFailed  # type: ignore
 from eth_typing import HexStr
 from eth_utils import ValidationError
+from web3.exceptions import ContractPanicError
 
-from ape.exceptions import BlockNotFoundError, ProviderNotConnectedError, TransactionNotFoundError
+from ape.exceptions import BlockNotFoundError, ProviderNotConnectedError, TransactionNotFoundError, ContractLogicError
 from ape.types import LogFilter
 from ape_test.provider import CHAIN_ID
 
@@ -203,3 +204,14 @@ def test_get_virtual_machine_error_when_txn_failed_includes_base_error(eth_teste
     txn_failed = TransactionFailed()
     actual = eth_tester_provider.get_virtual_machine_error(txn_failed)
     assert actual.base_err == txn_failed
+
+
+def test_get_virtual_machine_error_panic(eth_tester_provider, mocker):
+    data = "0x4e487b710000000000000000000000000000000000000000000000000000000000000032"
+    message = "Panic error 0x32: Array index is out of bounds."
+    exception = ContractPanicError(data=data, message=message)
+    enrich_spy = mocker.spy(eth_tester_provider.compiler_manager, "enrich_error")
+    actual = eth_tester_provider.get_virtual_machine_error(exception)
+    assert enrich_spy.call_count == 1
+    enrich_spy.assert_called_once_with(actual)
+    assert isinstance(actual, ContractLogicError)
