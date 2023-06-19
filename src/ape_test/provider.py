@@ -5,10 +5,12 @@ from typing import Optional, cast
 from eth.exceptions import HeaderNotFound
 from eth_tester.backends import PyEVMBackend  # type: ignore
 from eth_tester.exceptions import TransactionFailed  # type: ignore
+from eth_utils import is_0x_prefixed
 from eth_utils.exceptions import ValidationError
 from ethpm_types import HexBytes
 from lazyasd import LazyObject  # type: ignore
 from web3 import EthereumTesterProvider, Web3
+from web3.exceptions import ContractPanicError
 from web3.providers.eth_tester.defaults import API_ENDPOINTS
 from web3.types import TxParams
 
@@ -144,7 +146,7 @@ class LocalProvider(TestProviderAPI, Web3Provider):
             return self.web3.eth.call(tx_params, **call_kwargs)
         except ValidationError as err:
             raise VirtualMachineError(base_err=err) from err
-        except TransactionFailed as err:
+        except (TransactionFailed, ContractPanicError) as err:
             raise self.get_virtual_machine_error(err, txn=txn) from err
 
     def send_transaction(self, txn: TransactionAPI) -> ReceiptAPI:
@@ -223,6 +225,18 @@ class LocalProvider(TestProviderAPI, Web3Provider):
 
             else:
                 return VirtualMachineError(base_err=exception, **kwargs)
+
+        elif isinstance(exception, ContractPanicError):
+            # If the ape-solidity plugin is installed, we are able to enrich the data.
+            message = exception.message
+            raw_data = exception.data if isinstance(exception.data, str) else "0x"
+            error = ContractLogicError(base_err=exception, revert_message=raw_data, **kwargs)
+            enriched_error = self.compiler_manager.enrich_error(error)
+            if is_0x_prefixed(enriched_error.message):
+                # Failed to enrich. Use nicer message from web3.py.
+                enriched_error.message = message or enriched_error.message
+
+            return enriched_error
 
         elif isinstance(exception, TransactionFailed):
             err_message = str(exception).split("execution reverted: ")[-1] or None
