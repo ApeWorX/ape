@@ -372,3 +372,15 @@ def test_contracts_folder(project, config):
     config.contracts_folder = None
     assert config.contracts_folder is None
     assert project.contracts_folder == expected
+
+
+def test_getattr_contract_not_exists(project):
+    expected = (
+        r"ProjectManager has no attribute or contract named 'ThisIsNotAContractThatExists'. "
+        r"Could it be from one of the missing compilers for extensions:.*"
+    )
+    project.contracts_folder.mkdir(exist_ok=True)
+    contract = project.contracts_folder / "ThisIsNotAContractThatExists.foo"
+    contract.touch()
+    with pytest.raises(AttributeError, match=expected):
+        _ = project.ThisIsNotAContractThatExists
