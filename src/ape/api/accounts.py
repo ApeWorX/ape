@@ -242,6 +242,9 @@ class AccountAPI(BaseInterfaceModel, BaseAddress):
         transaction = self.provider.network.ecosystem.encode_contract_blueprint(
             contract.contract_type, *args, **kwargs
         )
+
+        # TODO: Track blueprint
+
         return self.call(transaction)
 
     def check_signature(

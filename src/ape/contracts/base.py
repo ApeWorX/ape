@@ -1267,6 +1267,17 @@ class ContractContainer(ContractTypeWrapper):
 
         return instance
 
+    def declare(self, contract: "ContractContainer", *args, **kwargs) -> ReceiptAPI:
+        transaction = self.provider.network.ecosystem.encode_contract_blueprint(
+            contract.contract_type, *args, **kwargs
+        )
+        if "sender" in kwargs and isinstance(kwargs["sender"], AccountAPI):
+            return kwargs["sender"].call(transaction)
+
+        # TODO: Track blueprint
+
+        return self.provider.send_transaction(transaction)
+
 
 def _get_non_contract_error(address: str, network_name: str) -> ContractError:
     raise ContractError(
