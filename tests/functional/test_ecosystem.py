@@ -8,7 +8,7 @@ from ethpm_types.abi import ABIType, MethodABI
 from ape.api.networks import LOCAL_NETWORK_NAME
 from ape.types import AddressType
 from ape.utils import DEFAULT_LOCAL_TRANSACTION_ACCEPTANCE_TIMEOUT
-from ape_ethereum.ecosystem import Block
+from ape_ethereum.ecosystem import BLUEPRINT_HEADER, Block
 from ape_ethereum.transactions import TransactionType
 
 LOG = {
@@ -238,3 +238,17 @@ def test_gas_limit_local_networks(ethereum, network_name):
 def test_gas_limit_live_networks(ethereum):
     network = ethereum.get_network("goerli")
     assert network.gas_limit == "auto"
+
+
+def test_encode_blueprint_contract(ethereum, vyper_contract_type):
+    actual = ethereum.encode_contract_blueprint(vyper_contract_type)
+    ct_bytes = vyper_contract_type.deployment_bytecode.to_bytes()
+    # EIP-5202
+    expected = (
+        HexBytes("0x61")
+        + (len(BLUEPRINT_HEADER) + len(ct_bytes)).to_bytes(2, "big")
+        + HexBytes("0x3d81600a3d39f3")  # return stuff
+        + BLUEPRINT_HEADER
+        + ct_bytes
+    )
+    assert actual.data == expected

@@ -16,7 +16,7 @@ from eth_utils import (
     to_checksum_address,
     to_int,
 )
-from ethpm_types import HexBytes
+from ethpm_types import ContractType, HexBytes
 from ethpm_types.abi import ABIType, ConstructorABI, EventABI, MethodABI
 from pydantic import Field, validator
 
@@ -67,6 +67,7 @@ NETWORKS = {
     "goerli": (5, 5),
     "sepolia": (11155111, 11155111),
 }
+BLUEPRINT_HEADER = HexBytes("0xfe7100")
 
 
 class ProxyType(IntEnum):
@@ -209,6 +210,21 @@ class Ethereum(EcosystemAPI):
     @classmethod
     def encode_address(cls, address: AddressType) -> RawAddress:
         return str(address)
+
+    def encode_contract_blueprint(
+        self, contract_type: ContractType, *args, **kwargs
+    ) -> TransactionAPI:
+        # EIP-5202 implementation.
+        bytes_obj = contract_type.deployment_bytecode
+        contract_bytes = (bytes_obj.to_bytes() or b"") if bytes_obj else b""
+        blueprint_bytecode = BLUEPRINT_HEADER + contract_bytes
+        len_bytes = len(blueprint_bytecode).to_bytes(2, "big")
+        return_data_size = HexBytes("0x61")
+        return_instructions = HexBytes("0x3d81600a3d39f3")
+        deploy_bytecode = HexBytes(
+            return_data_size + len_bytes + return_instructions + blueprint_bytecode
+        )
+        return self.encode_deployment(deploy_bytecode, contract_type.constructor, *args, **kwargs)
 
     def get_proxy_info(self, address: AddressType) -> Optional[ProxyInfo]:
         contract_code = self.provider.get_code(address)
@@ -529,7 +545,7 @@ class Ethereum(EcosystemAPI):
         txn.data = deployment_bytecode
 
         # Encode args, if there are any
-        if abi:
+        if abi and args:
             txn.data += self.encode_calldata(abi, *args)
 
         return txn  # type: ignore

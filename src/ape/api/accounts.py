@@ -238,6 +238,12 @@ class AccountAPI(BaseInterfaceModel, BaseAddress):
 
         return instance
 
+    def declare(self, contract: "ContractContainer", *args, **kwargs) -> ReceiptAPI:
+        transaction = self.provider.network.ecosystem.encode_contract_blueprint(
+            contract.contract_type, *args, **kwargs
+        )
+        return self.call(transaction)
+
     def check_signature(
         self,
         data: Union[SignableMessage, TransactionAPI],

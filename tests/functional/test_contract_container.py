@@ -111,3 +111,8 @@ def test_decode_input(contract_container, calldata):
     actual = contract_container.decode_input(calldata)
     expected = "setNumber(uint256)", {"num": 222}
     assert actual == expected
+
+
+def test_declare(contract_container, sender):
+    receipt = sender.declare(contract_container)
+    assert not receipt.failed
