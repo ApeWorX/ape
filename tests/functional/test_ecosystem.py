@@ -246,9 +246,10 @@ def test_encode_blueprint_contract(ethereum, vyper_contract_type):
     # EIP-5202
     expected = (
         HexBytes("0x61")
-        + (len(BLUEPRINT_HEADER) + len(ct_bytes)).to_bytes(2, "big")
+        + (6971).to_bytes(2, "big")  # preface and length
         + HexBytes("0x3d81600a3d39f3")  # return stuff
         + BLUEPRINT_HEADER
+        + HexBytes(0)
         + ct_bytes
     )
-    assert actual.data == expected
+    assert actual.data == HexBytes(expected)
