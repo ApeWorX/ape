@@ -154,11 +154,7 @@ class Receipt(ReceiptAPI):
 
     @cached_property
     def call_tree(self) -> Optional[CallTreeNode]:
-        if self.receiver:
-            return self.provider.get_call_tree(self.txn_hash)
-
-        # Not an function invoke
-        return None
+        return self.provider.get_call_tree(self.txn_hash)
 
     @cached_property
     def contract_type(self) -> Optional[ContractType]:

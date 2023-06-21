@@ -175,6 +175,16 @@ def test_get_call_tree(geth_vyper_contract, owner, geth_provider):
     assert re.match(expected, actual)
 
 
+@geth_process_test
+def test_get_call_tree_deploy(geth_vyper_contract, geth_provider):
+    receipt = geth_vyper_contract.receipt
+    result = geth_provider.get_call_tree(receipt.txn_hash)
+    result.enrich()
+    expected = rf"{geth_vyper_contract.contract_type.name}\.__new__\(\s*num=\d+\s*\) \[\d+ gas\]"
+    actual = repr(result)
+    assert re.match(expected, actual)
+
+
 def test_get_call_tree_erigon(mock_web3, mock_geth, parity_trace_response):
     mock_web3.client_version = "erigon_MOCK"
     mock_web3.provider.make_request.return_value = parity_trace_response
