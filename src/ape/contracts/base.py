@@ -1267,6 +1267,23 @@ class ContractContainer(ContractTypeWrapper):
 
         return instance
 
+    def declare(self, *args, **kwargs) -> ReceiptAPI:
+        transaction = self.provider.network.ecosystem.encode_contract_blueprint(
+            self.contract_type, *args, **kwargs
+        )
+        if "sender" in kwargs and isinstance(kwargs["sender"], AccountAPI):
+            return kwargs["sender"].call(transaction)
+
+        receipt = self.provider.send_transaction(transaction)
+        if receipt.contract_address:
+            self.chain_manager.contracts.cache_blueprint(
+                receipt.contract_address, self.contract_type
+            )
+        else:
+            logger.debug("Failed to cache contract declaration: missing contract address.")
+
+        return receipt
+
 
 def _get_non_contract_error(address: str, network_name: str) -> ContractError:
     raise ContractError(

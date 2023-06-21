@@ -797,3 +797,20 @@ def test_private_transaction(vyper_contract_instance, owner):
 def test_private_transaction_live_network(vyper_contract_instance, owner, dummy_live_network):
     with pytest.raises(APINotImplementedError):
         vyper_contract_instance.setNumber(2, sender=owner, private=True)
+
+
+def test_contract_declared_from_blueprint(
+    vyper_blueprint, vyper_factory, vyper_contract_container, sender
+):
+    # Call the factory method that calls `create_from_blueprint()` and logs an events
+    # with the resulting address. The first arg is necessary calldata.
+    receipt = vyper_factory.create_contract(vyper_blueprint, 321, sender=sender)
+
+    # Create a contract instance at this new address using the contract type
+    # from the blueprint.
+    address = receipt.events[-1].target
+    instance = vyper_contract_container.at(address)
+
+    # Ensure we can invoke a method on that contract.
+    receipt = instance.setAddress(sender, sender=sender)
+    assert not receipt.failed
