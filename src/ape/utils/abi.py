@@ -353,7 +353,7 @@ class LogInputABICollection:
         return value
 
 
-def _convert_args(arguments, converter, abi) -> Tuple:
+def _convert_args(arguments, converter, abi: Union[MethodABI, ConstructorABI]) -> Tuple:
     input_types = [i.canonical_type for i in abi.inputs]
     pre_processed_args = []
     for ipt, argument in zip(input_types, arguments):

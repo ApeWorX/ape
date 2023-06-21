@@ -50,6 +50,7 @@ from ape.utils import (
     is_array,
     returns_array,
 )
+from ape.utils.abi import _convert_kwargs
 from ape.utils.misc import DEFAULT_MAX_RETRIES_TX
 from ape_ethereum.transactions import (
     AccessListTransaction,
@@ -67,6 +68,7 @@ NETWORKS = {
     "goerli": (5, 5),
     "sepolia": (11155111, 11155111),
 }
+BLUEPRINT_HEADER = HexBytes("0xfe71")
 
 
 class ProxyType(IntEnum):
@@ -209,6 +211,25 @@ class Ethereum(EcosystemAPI):
     @classmethod
     def encode_address(cls, address: AddressType) -> RawAddress:
         return str(address)
+
+    def encode_contract_blueprint(
+        self, contract_type: ContractType, *args, **kwargs
+    ) -> TransactionAPI:
+        # EIP-5202 implementation.
+        bytes_obj = contract_type.deployment_bytecode
+        contract_bytes = (bytes_obj.to_bytes() or b"") if bytes_obj else b""
+        header = kwargs.pop("header", BLUEPRINT_HEADER)
+        blueprint_bytecode = header + HexBytes(0) + contract_bytes
+        len_bytes = len(blueprint_bytecode).to_bytes(2, "big")
+        return_data_size = kwargs.pop("return_data_size", HexBytes("0x61"))
+        return_instructions = kwargs.pop("return_instructions", HexBytes("0x3d81600a3d39f3"))
+        deploy_bytecode = HexBytes(
+            return_data_size + len_bytes + return_instructions + blueprint_bytecode
+        )
+        converted_kwargs = _convert_kwargs(kwargs, self.conversion_manager.convert)
+        return self.encode_deployment(
+            deploy_bytecode, contract_type.constructor, **converted_kwargs
+        )
 
     def get_proxy_info(self, address: AddressType) -> Optional[ProxyInfo]:
         contract_code = self.provider.get_code(address)
@@ -529,7 +550,7 @@ class Ethereum(EcosystemAPI):
         txn.data = deployment_bytecode
 
         # Encode args, if there are any
-        if abi:
+        if abi and args:
             txn.data += self.encode_calldata(abi, *args)
 
         return txn  # type: ignore

@@ -550,3 +550,14 @@ def error_contract(owner, error_contract_container, eth_tester_provider):
 def error_contract_geth(owner, error_contract_container, geth_provider):
     _ = geth_provider  # Ensure uses geth
     return owner.deploy(error_contract_container)
+
+
+@pytest.fixture
+def vyper_factory(owner, get_contract_type):
+    return owner.deploy(ContractContainer(get_contract_type("vyper_factory")))
+
+
+@pytest.fixture
+def vyper_blueprint(owner, vyper_contract_container):
+    receipt = owner.declare(vyper_contract_container)
+    return receipt.contract_address
