@@ -50,7 +50,7 @@ from ape.utils import (
     is_array,
     returns_array,
 )
-from ape.utils.abi import _convert_args, _convert_kwargs
+from ape.utils.abi import _convert_kwargs
 from ape.utils.misc import DEFAULT_MAX_RETRIES_TX
 from ape_ethereum.transactions import (
     AccessListTransaction,
@@ -226,12 +226,9 @@ class Ethereum(EcosystemAPI):
         deploy_bytecode = HexBytes(
             return_data_size + len_bytes + return_instructions + blueprint_bytecode
         )
-        converterd_args = _convert_args(
-            args, self.conversion_manager.convert, contract_type.constructor
-        )
         converted_kwargs = _convert_kwargs(kwargs, self.conversion_manager.convert)
         return self.encode_deployment(
-            deploy_bytecode, contract_type.constructor, *converterd_args, **converted_kwargs
+            deploy_bytecode, contract_type.constructor, **converted_kwargs
         )
 
     def get_proxy_info(self, address: AddressType) -> Optional[ProxyInfo]:
