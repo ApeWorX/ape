@@ -114,5 +114,5 @@ def test_decode_input(contract_container, calldata):
 
 
 def test_declare(contract_container, sender):
-    receipt = sender.declare(contract_container)
+    receipt = contract_container.declare(sender=sender)
     assert not receipt.failed

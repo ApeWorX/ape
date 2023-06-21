@@ -492,3 +492,8 @@ def test_using_random_mnemonic(test_accounts, temp_config):
 def test_iter_test_accounts(test_accounts):
     actual = list(iter(test_accounts))
     assert len(actual) == len(test_accounts)
+
+
+def test_declare(contract_container, sender):
+    receipt = sender.declare(contract_container)
+    assert not receipt.failed
