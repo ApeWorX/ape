@@ -242,10 +242,15 @@ class AccountAPI(BaseInterfaceModel, BaseAddress):
         transaction = self.provider.network.ecosystem.encode_contract_blueprint(
             contract.contract_type, *args, **kwargs
         )
+        receipt = self.call(transaction)
+        if receipt.contract_address:
+            self.chain_manager.contracts.cache_blueprint(
+                receipt.contract_address, contract.contract_type
+            )
+        else:
+            logger.debug("Failed to cache contract declaration: missing contract address.")
 
-        # TODO: Track blueprint
-
-        return self.call(transaction)
+        return receipt
 
     def check_signature(
         self,
