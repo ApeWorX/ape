@@ -152,10 +152,12 @@
 <li class="toctree-l3"><a class="reference internal" href="#ape.managers.chain.ContractCache"><code class="docutils literal notranslate"><span class="pre">ContractCache</span></code></a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#ape.managers.chain.ContractCache.__delitem__"><code class="docutils literal notranslate"><span class="pre">ContractCache.__delitem__()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.managers.chain.ContractCache.__setitem__"><code class="docutils literal notranslate"><span class="pre">ContractCache.__setitem__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ape.managers.chain.ContractCache.cache_blueprint"><code class="docutils literal notranslate"><span class="pre">ContractCache.cache_blueprint()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.managers.chain.ContractCache.cache_deployment"><code class="docutils literal notranslate"><span class="pre">ContractCache.cache_deployment()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.managers.chain.ContractCache.cache_proxy_info"><code class="docutils literal notranslate"><span class="pre">ContractCache.cache_proxy_info()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.managers.chain.ContractCache.clear_local_caches"><code class="docutils literal notranslate"><span class="pre">ContractCache.clear_local_caches()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.managers.chain.ContractCache.get"><code class="docutils literal notranslate"><span class="pre">ContractCache.get()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ape.managers.chain.ContractCache.get_blueprint"><code class="docutils literal notranslate"><span class="pre">ContractCache.get_blueprint()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.managers.chain.ContractCache.get_container"><code class="docutils literal notranslate"><span class="pre">ContractCache.get_container()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.managers.chain.ContractCache.get_deployments"><code class="docutils literal notranslate"><span class="pre">ContractCache.get_deployments()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.managers.chain.ContractCache.get_multiple"><code class="docutils literal notranslate"><span class="pre">ContractCache.get_multiple()</span></code></a></li>
@@ -875,6 +877,22 @@ for faster look-up next time.</p>
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="ape.managers.chain.ContractCache.cache_blueprint">
+<span class="sig-name descname"><span class="pre">cache_blueprint</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">blueprint_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">contract_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ContractType</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.managers.chain.ContractCache.cache_blueprint" title="Permalink to this definition"></a></dt>
+<dd><p>Cache a contract blueprint.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>blueprint_id</strong> (<code class="docutils literal notranslate"><span class="pre">str</span></code>) – The ID of the blueprint. For example, in EIP-5202,
+it would be the address of the deployed blueprint. For Starknet, it would
+be the class identifier.</p></li>
+<li><p><strong>contract_type</strong> (<code class="docutils literal notranslate"><span class="pre">ContractType</span></code>) – The contract type associated with the blueprint.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="ape.managers.chain.ContractCache.cache_deployment">
 <span class="sig-name descname"><span class="pre">cache_deployment</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">contract_instance</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="contracts.html#ape.contracts.base.ContractInstance" title="ape.contracts.base.ContractInstance"><span class="pre">ContractInstance</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.managers.chain.ContractCache.cache_deployment" title="Permalink to this definition"></a></dt>
 <dd><p>Cache the given contract instance’s type and deployment information.</p>
@@ -932,6 +950,21 @@ Defaults to <code class="docutils literal notranslate"><span class="pre">None</s
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>Optional[ContractType]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ape.managers.chain.ContractCache.get_blueprint">
+<span class="sig-name descname"><span class="pre">get_blueprint</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">blueprint_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ContractType</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></span><a class="headerlink" href="#ape.managers.chain.ContractCache.get_blueprint" title="Permalink to this definition"></a></dt>
+<dd><p>Get a cached blueprint contract type.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>blueprint_id</strong> (<code class="docutils literal notranslate"><span class="pre">str</span></code>) – The unique identifier used when caching
+the blueprint.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">ContractType</span></code></p>
 </dd>
 </dl>
 </dd></dl>
