@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Iterable, List, Optional, Set
+from typing import Iterable, List, Optional, Set, Tuple
 
 import click
 from ethpm_types.abi import MethodABI
@@ -12,6 +12,7 @@ from ape.types import (
     ControlFlow,
     CoverageProject,
     CoverageReport,
+    CoverageStatement,
     SourceTraceback,
 )
 from ape.utils import (
@@ -72,12 +73,14 @@ class CoverageData(ManagerAccessMixin):
         self._report = report
         return report
 
-    def cover(self, src_path: Path, pcs: Iterable[int], inc_fn_hits: bool = True):
+    def cover(
+        self, src_path: Path, pcs: Iterable[int], inc_fn_hits: bool = True
+    ) -> Tuple[Set[int], List[CoverageStatement]]:
         source_id = str(get_relative_path(src_path.absolute(), self.base_path))
 
         if source_id not in self.report.sources:
             # The source is not tracked for coverage.
-            return
+            return set(), []
 
         handled_pcs = set()
         for pc in pcs:
@@ -206,9 +209,10 @@ class CoverageTracker(ManagerAccessMixin):
             new_pcs = self._cover(
                 control_flow, last_path=last_path, last_pcs=last_pcs, last_call=last_call
             )
-            last_path = control_flow.source_path
-            last_pcs = new_pcs
-            last_call = control_flow.closure.full_name
+            if new_pcs:
+                last_path = control_flow.source_path
+                last_pcs = new_pcs
+                last_call = control_flow.closure.full_name
 
         if count_at_start is not None and main_fn and main_fn.hit_count == count_at_start:
             # If we get here, the control flow had no statements in it but yet
@@ -239,8 +243,8 @@ class CoverageTracker(ManagerAccessMixin):
             new_pcs = pcs
 
         inc_fn = last_call is None or last_call != control_flow.closure.full_name
-        self.data.cover(control_flow.source_path, new_pcs, inc_fn_hits=inc_fn)
-        return new_pcs
+        pcs_covered, _ = self.data.cover(control_flow.source_path, new_pcs, inc_fn_hits=inc_fn)
+        return pcs_covered
 
     def hit_function(self, contract_source: ContractSource, method: MethodABI):
         """
