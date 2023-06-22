@@ -12,7 +12,6 @@ from ape.types import (
     ControlFlow,
     CoverageProject,
     CoverageReport,
-    CoverageStatement,
     SourceTraceback,
 )
 from ape.utils import (
@@ -75,7 +74,7 @@ class CoverageData(ManagerAccessMixin):
 
     def cover(
         self, src_path: Path, pcs: Iterable[int], inc_fn_hits: bool = True
-    ) -> Tuple[Set[int], List[CoverageStatement]]:
+    ) -> Tuple[Set[int], List[str]]:
         source_id = str(get_relative_path(src_path.absolute(), self.base_path))
 
         if source_id not in self.report.sources:
@@ -92,33 +91,35 @@ class CoverageData(ManagerAccessMixin):
                 continue
 
             for contract in source_coverage.contracts:
-                functions_incremented = []
+                functions_incremented: List[str] = []
                 for function in contract.functions:
                     statements_hit = []
                     for statement in function.statements:
-                        if statement in statements_hit:
+                        if statement in statements_hit or pc not in statement.pcs:
                             # With 1 group of PCs, can only hit a statement once.
                             # This is because likely multiple PCs together have the same
                             # location and are really the same statement.
                             # To increase the hit count by more than one, submit multiple txns.
                             continue
 
-                        if pc in statement.pcs:
-                            statement.hit_count += 1
-                            handled_pcs.add(pc)
-                            statements_hit.append(statement)
+                        statement.hit_count += 1
+                        handled_pcs.add(pc)
+                        statements_hit.append(statement)
 
-                            # Increment this function's hit count if we haven't already.
-                            if inc_fn_hits and function.full_name not in functions_incremented:
-                                function.hit_count += 1
-                                functions_incremented.append(function.full_name)
+                        # Increment this function's hit count if we haven't already.
+                        if inc_fn_hits and (
+                            not functions_incremented
+                            or function.full_name != functions_incremented[-1]
+                        ):
+                            function.hit_count += 1
+                            functions_incremented.append(function.full_name)
 
         unhandled_pcs = set(pcs) - handled_pcs
         if unhandled_pcs:
             # Maybe a bug in ape.
             logger.debug(f"Unhandled PCs: '{','.join([f'{x}' for x in unhandled_pcs])}'")
 
-        return handled_pcs, statements_hit
+        return handled_pcs, functions_incremented
 
 
 class CoverageTracker(ManagerAccessMixin):
@@ -206,13 +207,15 @@ class CoverageTracker(ManagerAccessMixin):
             if not control_flow.source_path or not control_flow.pcs:
                 continue
 
-            new_pcs = self._cover(
+            new_pcs, new_funcs = self._cover(
                 control_flow, last_path=last_path, last_pcs=last_pcs, last_call=last_call
             )
             if new_pcs:
                 last_path = control_flow.source_path
                 last_pcs = new_pcs
-                last_call = control_flow.closure.full_name
+
+            if new_funcs:
+                last_call = new_funcs[-1]
 
         if count_at_start is not None and main_fn and main_fn.hit_count == count_at_start:
             # If we get here, the control flow had no statements in it but yet
@@ -227,9 +230,9 @@ class CoverageTracker(ManagerAccessMixin):
         last_path: Optional[Path] = None,
         last_pcs: Optional[Set[int]] = None,
         last_call: Optional[str] = None,
-    ) -> Set[int]:
+    ) -> Tuple[Set[int], List[str]]:
         if not self.data or control_flow.source_path is None:
-            return set()
+            return set(), []
 
         last_pcs = last_pcs or set()
         pcs = control_flow.pcs
@@ -243,8 +246,7 @@ class CoverageTracker(ManagerAccessMixin):
             new_pcs = pcs
 
         inc_fn = last_call is None or last_call != control_flow.closure.full_name
-        pcs_covered, _ = self.data.cover(control_flow.source_path, new_pcs, inc_fn_hits=inc_fn)
-        return pcs_covered
+        return self.data.cover(control_flow.source_path, new_pcs, inc_fn_hits=inc_fn)
 
     def hit_function(self, contract_source: ContractSource, method: MethodABI):
         """
