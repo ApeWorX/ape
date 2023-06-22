@@ -2,6 +2,7 @@ from pathlib import Path
 from typing import Iterable, List, Optional, Set
 
 import click
+from ethpm_types.abi import MethodABI
 from ethpm_types.source import ContractSource
 
 from ape.logging import logger
@@ -240,6 +241,36 @@ class CoverageTracker(ManagerAccessMixin):
         inc_fn = last_call is None or last_call != control_flow.closure.full_name
         self.data.cover(control_flow.source_path, new_pcs, inc_fn_hits=inc_fn)
         return new_pcs
+
+    def hit_function(self, contract_source: ContractSource, method: MethodABI):
+        """
+        Another way to increment a function's hit count. Providers may not offer a
+        way to trace calls but this method is available to still increment function
+        hit counts.
+
+        Args:
+            contract_source (``ContractSource``): A contract with a known source file.
+            method (``MethodABI``): The method called.
+        """
+
+        if not self.data:
+            return
+
+        for project in self.data.report.projects:
+            for src in project.sources:
+                if src.source_id != contract_source.source_id:
+                    continue
+
+                for contract in src.contracts:
+                    if contract.name != contract_source.contract_type.name:
+                        continue
+
+                    for function in contract.functions:
+                        if function.full_name != method.selector:
+                            continue
+
+                        function.hit_count += 1
+                        return
 
     def show_session_coverage(self) -> bool:
         if (
