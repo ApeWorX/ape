@@ -186,9 +186,6 @@ class FunctionCoverage(BaseModel):
             # Already tracking this location.
             statement.pcs.add(pc)
 
-            # Statement found. Increment hit count and end early.
-            self.hit_count += 1
-
             if not statement.tag:
                 statement.tag = tag
 
@@ -204,7 +201,6 @@ class FunctionCoverage(BaseModel):
 
         if coverage_statement is not None:
             self.statements.append(coverage_statement)
-            self.hit_count += 1
 
 
 class ContractCoverage(BaseModel):
