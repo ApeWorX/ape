@@ -260,7 +260,16 @@ class CoverageTracker(ManagerAccessMixin):
                 else False
             )
             if isinstance(verbose, str):
-                verbose = verbose.lower() in ("true", 1, "t")
+                verbose = verbose.lower()
+                if verbose in ("true", "1", "t"):
+                    verbose = True
+                elif verbose in ("false", "0", "f"):
+                    verbose = False
+                else:
+                    raise ValueError(f"Invalid value for `verbose` config '{verbose}'.")
+
+            elif isinstance(verbose, int):
+                verbose = bool(verbose)
 
             tables = parse_coverage_tables(self.data.report, verbose=verbose)
             for idx, table in enumerate(tables):
