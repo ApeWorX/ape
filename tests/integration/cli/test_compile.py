@@ -35,10 +35,16 @@ def test_compile_missing_contracts_dir(ape_cli, runner, project):
 
 
 @skip_projects_except("bad-contracts")
-def test_skip_contracts(ape_cli, runner, project, switch_config):
+def test_skip_contracts_and_missing_compilers(ape_cli, runner, project, switch_config):
     result = runner.invoke(ape_cli, ["compile", "--force"])
     assert "INFO: Compiling 'subdir/tsconfig.json'." not in result.output
     assert "INFO: Compiling 'package.json'." not in result.output
+
+    # NOTE: `.md` should NOT appear in this list!
+    assert (
+        "WARNING: Missing compilers for the following file types: '.foo, .foobar, .test'. "
+        "Possibly, a compiler plugin is not installed or is installed but not loading correctly."
+    ) in result.output
 
     # Simulate configuring Ape to not ignore tsconfig.json for some reason.
     content = """
