@@ -208,7 +208,7 @@ def _parse_coverage_table(coverage: "CoverageReport") -> Table:
     table.add_column("Funcs", justify="right")
 
     for project in coverage.projects:
-        for src in project.sources:
+        for src in sorted(project.sources, key=lambda x: x.source_id):
             table.add_row(
                 src.source_id,
                 f"{src.lines_valid}",

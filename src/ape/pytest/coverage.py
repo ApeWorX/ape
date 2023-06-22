@@ -259,6 +259,9 @@ class CoverageTracker(ManagerAccessMixin):
                 if isinstance(reports.terminal, dict)
                 else False
             )
+            if isinstance(verbose, str):
+                verbose = verbose.lower() in ("true", 1, "t")
+
             tables = parse_coverage_tables(self.data.report, verbose=verbose)
             for idx, table in enumerate(tables):
                 self.chain_manager._reports.echo(table)
