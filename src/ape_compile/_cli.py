@@ -44,7 +44,7 @@ def cli(cli_ctx, file_paths: Set[Path], use_cache: bool, display_size: bool):
     ext_given = [p.suffix for p in file_paths if p]
 
     # Filter out common files that we know are not files you can compile anyway,
-    # like documentation files. NOTE: Nothing prevents a ComopilerAPI from using these
+    # like documentation files. NOTE: Nothing prevents a CompilerAPI from using these
     # extensions, we just don't warn about missing compilers here. The warning is really
     # meant to help guide users when the vyper, solidity, or cairo plugins are not installed.
     general_extensions = {".md", ".rst", ".txt", ".py", ".html", ".css", ".adoc"}
