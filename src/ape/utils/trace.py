@@ -230,17 +230,43 @@ def _parse_verbose_coverage(coverage: "CoverageReport") -> List[Table]:
                 fn_rate = round(contract.function_rate * 100, 2)
                 caption = f"line={line_rate}%, func={fn_rate}%"
                 table = Table(title=title, box=SIMPLE, caption=caption)
+                rows = []
                 table.add_column("Func", justify="right")
                 table.add_column("Stmts", justify="right")
                 table.add_column("Miss", justify="right")
                 table.add_column("Cover", justify="right")
                 for fn in contract.functions:
-                    table.add_row(
-                        fn.name,
-                        f"{fn.lines_valid}",
-                        f"{fn.miss_count}",
-                        f"{round(fn.line_rate * 100, 2)}%",
+                    rows.append(
+                        (
+                            fn.name,
+                            fn.full_name,
+                            f"{fn.lines_valid}",
+                            f"{fn.miss_count}",
+                            f"{round(fn.line_rate * 100, 2)}%",
+                        )
                     )
+
+                # Handle cases where normal names are duplicated.
+                # Use full names in this case.
+                rows_corrected = []
+                while rows:
+                    row = rows.pop()
+                    if row[0] in [r[0] for r in rows]:
+                        # Use full-name for all with same name.
+                        rows_corrected.append((row[1:]))
+                        for subrow in rows:
+                            if subrow[0] != row[0]:
+                                continue
+
+                            rows_corrected.append((subrow[1:]))
+                            rows.remove(subrow)
+
+                    else:
+                        # Use smaller name (no duplicates).
+                        rows_corrected.append((row[0], *row[2:]))
+
+                for tbl_row in sorted(rows_corrected):
+                    table.add_row(*tbl_row)
 
                 tables.append(table)
 
