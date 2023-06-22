@@ -170,7 +170,10 @@ def parse_gas_table(report: "GasReport") -> List[Table]:
             if not gases:
                 continue
 
-            if method_call == "__new__":
+            if method_call in ["0x", *[str(i) for i in range(10)], None, ""]:
+                continue
+
+            elif method_call == "__new__":
                 # Looks better in the gas report.
                 method_call = "__init__"
 

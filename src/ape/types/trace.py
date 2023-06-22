@@ -187,7 +187,7 @@ class CallTreeNode(BaseInterfaceModel):
                     return merge_reports(*(c.get_gas_report(exclude) for c in self.calls))
 
         reports = [c.get_gas_report(exclude) for c in self.calls]
-        if self.method_id:
+        if method_call not in ["0x", *[str(i) for i in range(10)], None, ""]:
             report = {
                 self.contract_id: {
                     self.method_id: [self.gas_cost] if self.gas_cost is not None else []
