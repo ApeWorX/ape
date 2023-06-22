@@ -42,13 +42,32 @@ def cli(cli_ctx, file_paths: Set[Path], use_cache: bool, display_size: bool):
         return
 
     ext_given = [p.suffix for p in file_paths if p]
-    ext_with_missing_compilers = cli_ctx.project_manager.extensions_with_missing_compilers(
-        ext_given
-    )
+
+    # Filter out common files that we know are not files you can compile anyway,
+    # like documentation files. NOTE: Nothing prevents a ComopilerAPI from using these
+    # extensions, we just don't warn about missing compilers here. The warning is really
+    # meant to help guide users when the vyper, solidity, or cairo plugins are not installed.
+    general_extensions = {".md", ".rst", ".txt", ".py", ".html", ".css", ".adoc"}
+
+    ext_with_missing_compilers = {
+        x
+        for x in cli_ctx.project_manager.extensions_with_missing_compilers(ext_given)
+        if x not in general_extensions
+    }
 
     if ext_with_missing_compilers:
-        extensions_str = ", ".join(ext_with_missing_compilers)
-        message = f"No compilers detected for the following extensions: {extensions_str}"
+        if len(ext_with_missing_compilers) > 1:
+            # NOTE: `sorted` to increase reproducability.
+            extensions_str = ", ".join(sorted(ext_with_missing_compilers))
+            message = f"Missing compilers for the following file types: '{extensions_str}'."
+        else:
+            message = f"Missing a compiler for {ext_with_missing_compilers.pop()} file types."
+
+        message = (
+            f"{message} "
+            f"Possibly, a compiler plugin is not installed "
+            f"or is installed but not loading correctly."
+        )
         cli_ctx.logger.warning(message)
 
     contract_types = cli_ctx.project_manager.load_contracts(
