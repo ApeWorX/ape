@@ -23,7 +23,7 @@ html {
   font-weight: 400;
   font-family: "Barlow", sans-serif;
   min-height: 100%;
-  background: rgb(244, 244, 244);
+  background: #8DCAEF;
   font-size: 17px;
 }
 
@@ -31,7 +31,6 @@ body {
   font-weight: 400;
   font-family: "Barlow", sans-serif;
   min-height: 100%;
-  background: rgb(244, 244, 244);
   font-size: 17px;
 }
 
@@ -39,6 +38,8 @@ p {
   font-weight: 400;
   font-family: "Barlow", sans-serif;
   font-size: 18px;
+  text-align: center;
+  padding-bottom: 10px;
 }
 
 h1 {
@@ -48,18 +49,26 @@ h1 {
   font-family: "Barlow", sans-serif;
   text-transform: uppercase;
   letter-spacing: -0.05em;
-  color: #000000;
+  color: #29B285;
   padding: 0 !important;
+  text-align: center;
 }
 
 table {
-  width: 100%;
-  border-collapse: collapse;
+  width: 80%;
+  margin: 0 auto;
+  padding-left: 10%;
+  padding-right: 10%;
 }
 
 th,
 td {
   padding: 8px;
+}
+
+th.column1,
+td.column1 {
+  text-align: left;
 }
 
 th.column2,
@@ -70,7 +79,7 @@ th.column4,
 td.column4,
 th.column5,
 td.column5 {
-    text-align: right;
+  text-align: right;
 }
 """.lstrip()
 
@@ -877,14 +886,13 @@ class CoverageReport(BaseModel):
             thread_tr = SubElement(thread, "tr")
 
             for idx, column in enumerate(columns):
-                _class = {} if idx == 0 else {"class": f"column{idx + 1}"}
-                th = SubElement(thread_tr, "th", {}, **_class)
+                th = SubElement(thread_tr, "th", {}, **{"class": f"column{idx + 1}"})
                 th.text = column
 
             tbody = SubElement(table, "tbody")
             for src in project.sources:
                 tbody_tr = SubElement(tbody, "tr")
-                source_td = SubElement(tbody_tr, "td")
+                source_td = SubElement(tbody_tr, "td", {}, **{"class": "column1"})
                 source_td.text = src.source_id
                 stmts_td = SubElement(tbody_tr, "td", {}, **{"class": "column2"})
                 stmts_td.text = f"{src.lines_valid}"
