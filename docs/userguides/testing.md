@@ -542,7 +542,7 @@ To get contract coverage, use the `--coverage` flag when running `ape test`:
 ape test --coverage
 ```
 
-**NOTE**: This requires using a provider that supports transaction tracing, such as `ape-hardhat` or `ape-foundry`.
+**NOTE**: Some types of coverage require using a provider that supports transaction tracing, such as `ape-hardhat` or `ape-foundry`.
 
 Afterwards, you should see a coverage report looking something like:
 
