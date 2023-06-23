@@ -648,8 +648,8 @@ class TestProviderAPI(ProviderAPI):
 
     def _increment_call_func_coverage_hit_count(self, txn: TransactionAPI):
         """
-        A helper method for increment a method call function hit count in a
-        non-orthodox way. This is because Hardhat does support call traces yet.
+        A helper method for incrementing a method call function hit count in a
+        non-orthodox way. This is because Hardhat does not support call traces yet.
         """
         if (
             not txn.receiver

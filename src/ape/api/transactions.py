@@ -497,7 +497,8 @@ class ReceiptAPI(BaseInterfaceModel):
     def track_gas(self):
         """
         Track this receipt's gas in the on-going session gas-report.
-        Requires using a provider that supports transaction traces.
+        Requires using a provider that supports transaction traces
+        to get full data. Else, is limited to receipt-level data.
         This gets called when running tests with the ``--gas`` flag.
         """
         address = self.receiver or self.contract_address
@@ -521,8 +522,9 @@ class ReceiptAPI(BaseInterfaceModel):
         """
         Track this receipt's source code coverage in the on-going
         session coverage report. Requires using a provider that supports
-        transaction traces. This gets called when running tests with the
-        ``--coverage`` flag.
+        transaction traces to track full coverage. Else, is limited
+        to receipt-level tracking. This gets called when running tests with
+        the ``--coverage`` flag.
         """
 
         if not self.network_manager.active_provider or not self._test_runner:

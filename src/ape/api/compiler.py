@@ -189,6 +189,10 @@ class CompilerAPI(BaseInterfaceModel):
         evm_frame = EvmTraceFrame(**frame.raw)
         data = create_call_node_data(evm_frame)
         calldata = data.get("calldata", HexBytes(""))
+
+        if "address" not in data:
+            return None, calldata
+
         addr = data["address"]
 
         try:

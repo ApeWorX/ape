@@ -175,16 +175,16 @@ class CoverageTracker(ManagerAccessMixin):
 
         if (contract and not function) or (function and not contract):
             raise ValueError(
-                "Must provider both function and contract and if supplying one of them."
+                "Must provide both function and contract if supplying one of them."
             )
 
         elif contract and function:
-            # For making sure
+            # Make sure it is the actual source.
             source_path = traceback[0].source_path if len(traceback) > 0 else None
             for project in self.data.report.projects:
                 for src in project.sources:
-                    # NOTE: We will allow this check to skip if there is no source is the tb.
-                    #  this helps increment methods that are missing from the source map.
+                    # NOTE: We will allow this check to skip if there is no source is the
+                    # traceback. This helps increment methods that are missing from the source map.
                     path = self.project_manager.contracts_folder / src.source_id
                     if source_path is not None and path != source_path:
                         continue
