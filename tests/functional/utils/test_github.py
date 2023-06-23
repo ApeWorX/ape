@@ -83,7 +83,7 @@ class TestGithubClient:
         # it will try again without the `v`.
         def side_effect(version):
             if version.startswith("v"):
-                raise UnknownObjectException("", {}, {})
+                raise UnknownObjectException(400, {}, {})
 
             return mock_release
 
@@ -98,7 +98,7 @@ class TestGithubClient:
         # it will try again with the `v`.
         def side_effect(version):
             if not version.startswith("v"):
-                raise UnknownObjectException("", {}, {})
+                raise UnknownObjectException(400, {}, {})
 
             return mock_release
 
