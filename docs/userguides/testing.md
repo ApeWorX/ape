@@ -576,7 +576,36 @@ test:
         verbose: true  # Show verbose coverage information in the terminal.
 ```
 
+Then, you will see table outputs like this:
+
+```shell
+===================================== Coverage Profile ========================================
+                MyContract Coverage
+
+                         Func   Stmts   Miss    Cover
+ ─────────────────────────────────────────────────────
+                  __builtin__       2      0   100.0%
+            _immutable_number       0      0   100.0%
+                      _number       0      0   100.0%
+                 foo_method()       1      0   100.0%
+          foo_method(uint256)       1      0   100.0%
+  foo_method(uint256,uint256)       3      0   100.0%
+                  view_method       1      0   100.0%
+
+           line=0.0%, func=0.0%
+```
+
 This is useful when trying to find the missing areas to cover.
+
+**NOTE**: You may notice methods with zero statements.
+One example of a method with zero statements may be from an auto-generated getter method for a public variable; certain versions of Vyper do not contain source mappings for these methods.
+However, Ape will still check to see if this method has been called in your tests.
+To get 100% coverage, you must call these methods in your tests.
+
+**NOTE**: Notice some methods use the full selector while others don't.
+Methods that use the selector mean that their short name is shared with other methods.
+This happens in Vyper from auto-generated kwarg-based methods.
+Thus, the full selector is used to distinguish the methods in the coverage (and gas) reports.
 
 Much like gas reporting, you can also exclude contracts and methods from tracking coverage using your `ape-config.yaml` file.
 The following demonstrates how to do this:
