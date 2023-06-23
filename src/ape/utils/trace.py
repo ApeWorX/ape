@@ -1,4 +1,5 @@
 import json
+from fnmatch import fnmatch
 from statistics import mean, median
 from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple, Union
 
@@ -9,7 +10,7 @@ from rich.table import Table
 from rich.tree import Tree
 
 if TYPE_CHECKING:
-    from ape.types import CallTreeNode, CoverageReport, GasReport
+    from ape.types import CallTreeNode, ContractFunctionPath, CoverageReport, GasReport
 
 _WRAP_THRESHOLD = 50
 _INDENT = 2
@@ -193,34 +194,47 @@ def parse_gas_table(report: "GasReport") -> List[Table]:
     return tables
 
 
-def parse_coverage_tables(coverage: "CoverageReport", verbose: bool = False) -> List[Table]:
-    return _parse_verbose_coverage(coverage) if verbose else [_parse_coverage_table(coverage)]
+def parse_coverage_tables(
+    coverage: "CoverageReport", verbose: bool = False, statement: bool = True
+) -> List[Table]:
+    return (
+        _parse_verbose_coverage(coverage, statement=statement)
+        if verbose
+        else [_parse_coverage_table(coverage, statement=statement)]
+    )
 
 
-def _parse_coverage_table(coverage: "CoverageReport") -> Table:
+def _parse_coverage_table(coverage: "CoverageReport", statement: bool = True) -> Table:
     table = Table(title="Contract Coverage", box=SIMPLE)
 
     # NOTE: Purposely uses same column names as coveragepy
     table.add_column("Name")
-    table.add_column("Stmts", justify="right")
-    table.add_column("Miss", justify="right")
-    table.add_column("Cover", justify="right")
+    if statement:
+        table.add_column("Stmts", justify="right")
+        table.add_column("Miss", justify="right")
+        table.add_column("Cover", justify="right")
+
     table.add_column("Funcs", justify="right")
 
     for project in coverage.projects:
         for src in sorted(project.sources, key=lambda x: x.source_id.lower()):
-            table.add_row(
-                src.source_id,
-                f"{src.lines_valid}",
-                f"{src.miss_count}",
-                f"{round(src.line_rate * 100, 2)}%",
-                f"{round(src.function_rate * 100, 2)}%",
+            row = (
+                (
+                    src.source_id,
+                    f"{src.lines_valid}",
+                    f"{src.miss_count}",
+                    f"{round(src.line_rate * 100, 2)}%",
+                    f"{round(src.function_rate * 100, 2)}%",
+                )
+                if statement
+                else (src.source_id, f"{round(src.function_rate * 100, 2)}%")
             )
+            table.add_row(*row)
 
     return table
 
 
-def _parse_verbose_coverage(coverage: "CoverageReport") -> List[Table]:
+def _parse_verbose_coverage(coverage: "CoverageReport", statement: bool = True) -> List[Table]:
     tables = []
     for project in coverage.projects:
         for src in project.sources:
@@ -230,13 +244,21 @@ def _parse_verbose_coverage(coverage: "CoverageReport") -> List[Table]:
                 fn_rate = round(contract.function_rate * 100, 2)
                 caption = f"line={line_rate}%, func={fn_rate}%"
                 table = Table(title=title, box=SIMPLE, caption=caption)
-                rows = []
+                rows: List[Tuple[str, ...]] = []
                 table.add_column("Func", justify="right")
-                table.add_column("Stmts", justify="right")
-                table.add_column("Miss", justify="right")
+
+                if statement:
+                    table.add_column("Stmts", justify="right")
+                    table.add_column("Miss", justify="right")
+
                 table.add_column("Cover", justify="right")
                 for fn in contract.functions:
-                    rows.append(
+                    if fn.name == "__builtin__" and not statement:
+                        # Ignore builtins when statement coverage is not being asked for.
+                        # It is impossible to really track.
+                        continue
+
+                    row = (
                         (
                             fn.name,
                             fn.full_name,
@@ -244,7 +266,10 @@ def _parse_verbose_coverage(coverage: "CoverageReport") -> List[Table]:
                             f"{fn.miss_count}",
                             f"{round(fn.line_rate * 100, 2)}%",
                         )
+                        if statement
+                        else (fn.name, fn.full_name, "✓" if fn.hit_count > 0 else "x")
                     )
+                    rows.append(row)
 
                 # Handle cases where normal names are duplicated.
                 # Use full names in this case.
@@ -359,3 +384,27 @@ def _list_to_multiline_str(value: Union[List, Tuple], depth: int = 0) -> str:
     new_val += spacing * depth
     new_val += "]"
     return new_val
+
+
+def _exclude_gas(
+    exclusions: List["ContractFunctionPath"], contract_id: str, method_id: str
+) -> bool:
+    for exclusion in exclusions:
+        if exclusion.method_name is None and fnmatch(contract_id, exclusion.contract_name):
+            # Skip this whole contract. Search contracts from sub-calls.
+            return True
+
+        for excl in exclusions:
+            if not excl.method_name:
+                # Full contract skips handled above.
+                continue
+
+            elif not fnmatch(contract_id, excl.contract_name):
+                # Method may match, but contract does not match, so continue.
+                continue
+
+            elif method_id and fnmatch(method_id, excl.method_name):
+                # Skip this report because of the method name exclusion criteria.
+                return True
+
+    return False

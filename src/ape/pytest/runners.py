@@ -222,7 +222,9 @@ class PytestApeRunner(ManagerAccessMixin):
             # Happens if never needed to connect (no tests)
             return
 
-        self._assert_tracing_support(terminalreporter, "display a gas profile")
+        self._log_tracing_support(
+            terminalreporter, "The gas profile is limited to receipt-level data."
+        )
         if not self.gas_tracker.show_session_gas():
             terminalreporter.write_line(
                 f"{LogLevel.WARNING.name}: No gas usage data found.", yellow=True
@@ -236,7 +238,9 @@ class PytestApeRunner(ManagerAccessMixin):
             # Happens if never needed to connect (no tests)
             return
 
-        self._assert_tracing_support(terminalreporter, "track coverage")
+        self._log_tracing_support(
+            terminalreporter, "Coverage is limited to receipt-level function coverage."
+        )
         if not self.coverage_tracker.show_session_coverage():
             terminalreporter.write_line(
                 f"{LogLevel.WARNING.name}: No coverage data found. "
@@ -244,15 +248,15 @@ class PytestApeRunner(ManagerAccessMixin):
                 yellow=True,
             )
 
-    def _assert_tracing_support(self, terminalreporter, unable_to: str):
+    def _log_tracing_support(self, terminalreporter, extra_warning: str):
         if self.provider.supports_tracing:
             return
 
-        terminalreporter.write_line(
+        message = (
             f"{LogLevel.ERROR.name}: Provider '{self.provider.name}' does not support "
-            f"transaction tracing and is unable to {unable_to}.",
-            red=True,
+            f"transaction tracing. {extra_warning}"
         )
+        terminalreporter.write_line(message, red=True)
 
     def pytest_unconfigure(self):
         if self._provider_is_connected and self.config_wrapper.disconnect_providers_after:

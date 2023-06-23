@@ -646,6 +646,35 @@ class TestProviderAPI(ProviderAPI):
             num_blocks (int): The number of blocks allotted to mine. Defaults to ``1``.
         """
 
+    def _increment_call_func_coverage_hit_count(self, txn: TransactionAPI):
+        """
+        A helper method for increment a method call function hit count in a
+        non-orthodox way. This is because Hardhat does support call traces yet.
+        """
+        if (
+            not txn.receiver
+            or not self._test_runner
+            or not self._test_runner.config_wrapper.track_coverage
+        ):
+            return
+
+        cov_data = self._test_runner.coverage_tracker.data
+        if not cov_data:
+            return
+
+        contract_type = self.chain_manager.contracts.get(txn.receiver)
+        if not contract_type:
+            return
+
+        contract_src = self.project_manager._create_contract_source(contract_type)
+        if not contract_src:
+            return
+
+        method_id = txn.data[:4]
+        if method_id in contract_type.view_methods:
+            method = contract_type.methods[method_id]
+            self._test_runner.coverage_tracker.hit_function(contract_src, method)
+
 
 class Web3Provider(ProviderAPI, ABC):
     """

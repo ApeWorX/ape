@@ -279,12 +279,7 @@ class CoverageTracker(ManagerAccessMixin):
                         return
 
     def show_session_coverage(self) -> bool:
-        if (
-            not self.provider.supports_tracing
-            or not self.data
-            or not self.data.report
-            or not self.data.report.sources
-        ):
+        if not self.data or not self.data.report or not self.data.report.sources:
             return False
 
         # Reports are set in ape-config.yaml.
@@ -308,7 +303,9 @@ class CoverageTracker(ManagerAccessMixin):
             elif isinstance(verbose, int):
                 verbose = bool(verbose)
 
-            tables = parse_coverage_tables(self.data.report, verbose=verbose)
+            tables = parse_coverage_tables(
+                self.data.report, verbose=verbose, statement=self.provider.supports_tracing
+            )
             for idx, table in enumerate(tables):
                 self.chain_manager._reports.echo(table)
 

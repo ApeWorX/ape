@@ -1,4 +1,3 @@
-from fnmatch import fnmatch
 from itertools import tee
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Dict, Iterator, List, Optional, Set
@@ -13,7 +12,7 @@ from rich.tree import Tree
 
 from ape.types.address import AddressType
 from ape.utils.basemodel import BaseInterfaceModel
-from ape.utils.trace import parse_as_str, parse_gas_table, parse_rich_tree
+from ape.utils.trace import _exclude_gas, parse_as_str, parse_gas_table, parse_rich_tree
 
 if TYPE_CHECKING:
     from ape.types import ContractFunctionPath
@@ -167,36 +166,25 @@ class CallTreeNode(BaseInterfaceModel):
         """
 
         exclusions = exclude or []
+        if (
+            not self.contract_id
+            or not self.method_id
+            or _exclude_gas(exclusions, self.contract_id, self.method_id)
+        ):
+            return merge_reports(*(c.get_gas_report(exclude) for c in self.calls))
 
-        for exclusion in exclusions:
-            if exclusion.method_name is None and fnmatch(self.contract_id, exclusion.contract_name):
-                # Skip this whole contract. Search contracts from sub-calls.
-                return merge_reports(*(c.get_gas_report(exclude) for c in self.calls))
-
-            for excl in exclusions:
-                if not excl.method_name:
-                    # Full contract skips handled above.
-                    continue
-
-                elif not fnmatch(self.contract_id, excl.contract_name):
-                    # Method may match, but contract does not match, so continue.
-                    continue
-
-                elif self.method_id and fnmatch(self.method_id, excl.method_name):
-                    # Skip this report because of the method name exclusion criteria.
-                    return merge_reports(*(c.get_gas_report(exclude) for c in self.calls))
-
-        reports = [c.get_gas_report(exclude) for c in self.calls]
-        if method_id := self.method_id:
-            if self.method_id not in ["0x", *[str(i) for i in range(10)]]:
-                report = {
+        elif self.method_id not in ["0x", *[str(i) for i in range(10)]]:
+            reports = [
+                *[c.get_gas_report(exclude) for c in self.calls],
+                {
                     self.contract_id: {
-                        method_id: [self.gas_cost] if self.gas_cost is not None else []
+                        self.method_id: [self.gas_cost] if self.gas_cost is not None else []
                     }
-                }
-                reports.append(report)
+                },
+            ]
+            return merge_reports(*reports)
 
-        return merge_reports(*reports)
+        return merge_reports(*(c.get_gas_report(exclude) for c in self.calls))
 
 
 class TraceFrame(BaseInterfaceModel):
