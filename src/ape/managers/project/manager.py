@@ -485,8 +485,7 @@ class ProjectManager(BaseManager):
 
         try:
             # NOTE: Will compile project (if needed)
-            contract = self._get_contract(attr_name)
-            if contract:
+            if contract := self._get_contract(attr_name):
                 return contract
 
             # Check if using namespacing.

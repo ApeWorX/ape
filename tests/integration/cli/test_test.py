@@ -179,14 +179,15 @@ def test_fixture_docs(setup_pytester, project, pytester, eth_tester_provider):
             assert doc_str.strip() in actual
 
 
-@skip_projects_except("test")
+@skip_projects_except("with-contracts")
 def test_gas_flag_when_not_supported(setup_pytester, project, pytester, eth_tester_provider):
     _ = eth_tester_provider  # Ensure using EthTester for this test.
     setup_pytester(project.path.name)
-    result = pytester.runpytest("--gas")
+    path = f"{project.path}/tests/test_contract.py::test_contract_interaction_in_tests"
+    result = pytester.runpytest(path, "--gas")
     assert (
-        "Provider 'test' does not support transaction "
-        "tracing and is unable to display a gas profile"
+        "Provider 'test' does not support transaction tracing. "
+        "The gas profile is limited to receipt-level data."
     ) in "\n".join(result.outlines)
 
 

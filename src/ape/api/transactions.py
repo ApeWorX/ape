@@ -500,7 +500,6 @@ class ReceiptAPI(BaseInterfaceModel):
         Requires using a provider that supports transaction traces.
         This gets called when running tests with the ``--gas`` flag.
         """
-
         address = self.receiver or self.contract_address
         if not address or not self._test_runner:
             return
@@ -515,10 +514,7 @@ class ReceiptAPI(BaseInterfaceModel):
             and (method := self.method_called)
         ):
             # Can only track top-level gas.
-            for contract in self.project_manager._contract_sources:
-                if contract.source_id != contract_type.source_id:
-                    continue
-
+            if contract := self.project_manager._create_contract_source(contract_type):
                 self._test_runner.gas_tracker.append_toplevel_gas(contract, method, self.gas_used)
 
     def track_coverage(self):
@@ -548,9 +544,5 @@ class ReceiptAPI(BaseInterfaceModel):
             if not contract_type or not contract_type.source_id:
                 return
 
-            for contract in self.project_manager._contract_sources:
-                if contract.source_id != contract_type.source_id:
-                    continue
-
+            if contract := self.project_manager._create_contract_source(contract_type):
                 tracker.hit_function(contract, method)
-                break
