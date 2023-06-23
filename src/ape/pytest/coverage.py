@@ -174,9 +174,7 @@ class CoverageTracker(ManagerAccessMixin):
         main_fn = None
 
         if (contract and not function) or (function and not contract):
-            raise ValueError(
-                "Must provide both function and contract if supplying one of them."
-            )
+            raise ValueError("Must provide both function and contract if supplying one of them.")
 
         elif contract and function:
             # Make sure it is the actual source.

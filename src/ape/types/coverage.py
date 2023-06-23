@@ -16,7 +16,7 @@ from ape.version import version as ape_version
 
 _APE_DOCS_URL = "https://docs.apeworx.io/ape/stable/index.html"
 _DTD_URL = "https://raw.githubusercontent.com/cobertura/web/master/htdocs/xml/coverage-04.dtd"
-_HTML_CSS = """
+_CSS = """
 @import url("https://fonts.cdnfonts.com/css/barlow");
 
 html {
@@ -50,6 +50,27 @@ h1 {
   letter-spacing: -0.05em;
   color: #000000;
   padding: 0 !important;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+th,
+td {
+  padding: 8px;
+}
+
+th.column2,
+td.column2,
+th.column3,
+td.column3,
+th.column4,
+td.column4,
+th.column5,
+td.column5 {
+    text-align: right;
 }
 """.lstrip()
 
@@ -794,7 +815,7 @@ class CoverageReport(BaseModel):
 
             css = html_path / "styles.css"
             css.unlink(missing_ok=True)
-            css.write_text(_HTML_CSS)
+            css.write_text(_CSS)
 
     @property
     def html(self) -> str:
@@ -855,8 +876,9 @@ class CoverageReport(BaseModel):
             thread = SubElement(table, "thread")
             thread_tr = SubElement(thread, "tr")
 
-            for column in columns:
-                th = SubElement(thread_tr, "th")
+            for idx, column in enumerate(columns):
+                _class = {} if idx == 0 else {"class": f"column{idx + 1}"}
+                th = SubElement(thread_tr, "th", {}, **_class)
                 th.text = column
 
             tbody = SubElement(table, "tbody")
@@ -864,13 +886,13 @@ class CoverageReport(BaseModel):
                 tbody_tr = SubElement(tbody, "tr")
                 source_td = SubElement(tbody_tr, "td")
                 source_td.text = src.source_id
-                stmts_td = SubElement(tbody_tr, "td")
+                stmts_td = SubElement(tbody_tr, "td", {}, **{"class": "column2"})
                 stmts_td.text = f"{src.lines_valid}"
-                missing_td = SubElement(tbody_tr, "td")
+                missing_td = SubElement(tbody_tr, "td", {}, **{"class": "column3"})
                 missing_td.text = f"{src.miss_count}"
-                stmt_cov_td = SubElement(tbody_tr, "td")
+                stmt_cov_td = SubElement(tbody_tr, "td", {}, **{"class": "column4"})
                 stmt_cov_td.text = f"{round(src.line_rate * 100, 2)}%"
-                fn_cov_td = SubElement(tbody_tr, "td")
+                fn_cov_td = SubElement(tbody_tr, "td", {}, **{"class": "column5"})
                 fn_cov_td.text = f"{round(src.function_rate * 100, 2)}%"
 
     def dict(self, *args, **kwargs) -> dict:
