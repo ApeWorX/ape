@@ -2,7 +2,7 @@ import json
 import time
 from concurrent.futures import ThreadPoolExecutor
 from contextlib import contextmanager
-from functools import partial
+from functools import partial, wraps
 from pathlib import Path
 from typing import IO, Collection, Dict, Iterator, List, Optional, Set, Type, Union, cast
 
@@ -675,6 +675,26 @@ class TransactionHistory(BaseManager):
         return self._account_history_cache[address_key]
 
 
+def nonreentrant(key_fn):
+    def inner(f):
+        locks = set()
+
+        @wraps(f)
+        def wrapper(*args, **kwargs):
+            key = key_fn(*args, **kwargs)
+            if key in locks:
+                raise RecursionError(f"nonreentrant {f.__qualname__}:{key}")
+            locks.add(key)
+            try:
+                return f(*args, **kwargs)
+            finally:
+                locks.discard(key)
+
+        return wrapper
+
+    return inner
+
+
 class ContractCache(BaseManager):
     """
     A collection of cached contracts. Contracts can be cached in two ways:
@@ -1014,6 +1034,7 @@ class ContractCache(BaseManager):
 
         return contract_types
 
+    @nonreentrant(lambda *args, **kwargs: args[1])
     def get(
         self, address: AddressType, default: Optional[ContractType] = None
     ) -> Optional[ContractType]:
