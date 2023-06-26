@@ -1014,7 +1014,7 @@ class ContractCache(BaseManager):
 
         return contract_types
 
-    @nonreentrant(lambda *args, **kwargs: args[1])
+    @nonreentrant(key_fn=lambda *args, **kwargs: args[1])
     def get(
         self, address: AddressType, default: Optional[ContractType] = None
     ) -> Optional[ContractType]:
