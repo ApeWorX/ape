@@ -240,6 +240,11 @@ class DependencyAPI(BaseInterfaceModel):
     A list of glob-patterns for excluding files in dependency projects.
     """
 
+    compiler_settings: Dict = {}
+    """
+    A mapping of extension to additional compiler settings to use when compiling.
+    """
+
     _cached_manifest: Optional[PackageManifest] = None
 
     def __repr__(self):
@@ -300,6 +305,7 @@ class DependencyAPI(BaseInterfaceModel):
         """
         if self._cached_manifest is None:
             self._cached_manifest = _load_manifest_from_file(self._target_manifest_cache_file)
+
         return self._cached_manifest
 
     def __getitem__(self, contract_name: str) -> "ContractContainer":
@@ -394,6 +400,14 @@ class DependencyAPI(BaseInterfaceModel):
 
                 if remapping_list:
                     compiler_data["import_remapping"] = remapping_list
+
+                if "evm_version" in settings:
+                    compiler_data["evm_version"] = settings["evm_version"]
+
+                for key, setting in self.compiler_settings.items():
+                    if key.strip().lower() == compiler.name.strip().lower():
+                        compiler_data = {**compiler_data, **setting}
+                        break
 
                 if compiler_data:
                     config_data[name] = compiler_data
