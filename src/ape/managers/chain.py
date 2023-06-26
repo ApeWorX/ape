@@ -2,7 +2,7 @@ import json
 import time
 from concurrent.futures import ThreadPoolExecutor
 from contextlib import contextmanager
-from functools import partial, wraps
+from functools import partial
 from pathlib import Path
 from typing import IO, Collection, Dict, Iterator, List, Optional, Set, Type, Union, cast
 
@@ -35,7 +35,7 @@ from ape.exceptions import (
 from ape.logging import logger
 from ape.managers.base import BaseManager
 from ape.types import AddressType, BlockID, CallTreeNode, SnapshotID, SourceTraceback
-from ape.utils import BaseInterfaceModel, TraceStyles, singledispatchmethod
+from ape.utils import BaseInterfaceModel, TraceStyles, nonreentrant, singledispatchmethod
 
 
 class BlockContainer(BaseManager):
@@ -673,26 +673,6 @@ class TransactionHistory(BaseManager):
             self._account_history_cache[address_key] = AccountHistory(address=address_key)
 
         return self._account_history_cache[address_key]
-
-
-def nonreentrant(key_fn):
-    def inner(f):
-        locks = set()
-
-        @wraps(f)
-        def wrapper(*args, **kwargs):
-            key = key_fn(*args, **kwargs)
-            if key in locks:
-                raise RecursionError(f"nonreentrant {f.__qualname__}:{key}")
-            locks.add(key)
-            try:
-                return f(*args, **kwargs)
-            finally:
-                locks.discard(key)
-
-        return wrapper
-
-    return inner
 
 
 class ContractCache(BaseManager):
