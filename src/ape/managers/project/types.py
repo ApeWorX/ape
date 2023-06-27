@@ -178,7 +178,7 @@ class BaseProject(ProjectAPI):
     ) -> PackageManifest:
         # Read the project config and migrate project-settings to Ape settings if needed.
         with self._as_ape_project():
-            self.project_manager._load_dependencies()
+            self.project_manager.load_dependencies()
             manifest = self._get_base_manifest(use_cache=use_cache)
             source_paths: List[Path] = list(
                 set(
@@ -220,7 +220,7 @@ class BaseProject(ProjectAPI):
             with self.config_manager.using_project(
                 self.path, contracts_folder=self.contracts_folder
             ):
-                self.project_manager._load_dependencies()
+                self.project_manager.load_dependencies()
                 return self.compiler_manager.compile(project_sources.sources_needing_compilation)
         else:
             # Already in project
