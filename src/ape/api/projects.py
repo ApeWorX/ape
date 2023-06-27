@@ -242,7 +242,7 @@ class DependencyAPI(BaseInterfaceModel):
 
     config_override: Dict = {}
     """
-    A mapping of extension to additional compiler settings to use when compiling.
+    Extra settings to include in the dependencies configuration.
     """
 
     _cached_manifest: Optional[PackageManifest] = None
