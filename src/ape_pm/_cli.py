@@ -1,6 +1,6 @@
 import json
 from pathlib import Path
-from typing import List, Tuple
+from typing import Tuple
 
 import click
 
@@ -66,9 +66,7 @@ def _list(cli_ctx, _all):
     for package in packages:
         name = click.style(package["name"], bold=True)
         version = package["version"]
-        compiled = (
-            click.style(package["compiled"], fg="green") if package.get("compiled") else ""
-        )
+        compiled = click.style(package["compiled"], fg="green") if package.get("compiled") else ""
         click.echo(f"  {name} {version}{' '  + compiled if compiled else ''}")
 
 
