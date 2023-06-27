@@ -2559,7 +2559,7 @@ section of your <code class="docutils literal notranslate"><span class="pre">ape
 
 <dl class="py method">
 <dt class="sig sig-object py" id="ape.managers.project.dependency.GithubDependency.extract_manifest">
-<span class="sig-name descname"><span class="pre">extract_manifest</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">PackageManifest</span></span></span><a class="headerlink" href="#ape.managers.project.dependency.GithubDependency.extract_manifest" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">extract_manifest</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">use_cache</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">PackageManifest</span></span></span><a class="headerlink" href="#ape.managers.project.dependency.GithubDependency.extract_manifest" title="Permalink to this definition"></a></dt>
 <dd><p>Create a <code class="docutils literal notranslate"><span class="pre">PackageManifest</span></code> definition,
 presumably by downloading and compiling the dependency.</p>
 <p>Implementations may use <code class="docutils literal notranslate"><span class="pre">self.project_manager</span></code> to call method
@@ -2567,8 +2567,12 @@ presumably by downloading and compiling the dependency.</p>
 to dynamically get the correct <a class="reference internal" href="api.html#ape.api.projects.ProjectAPI" title="ape.api.projects.ProjectAPI"><code class="xref py py-class docutils literal notranslate"><span class="pre">ProjectAPI</span></code></a>.
 based on the project’s structure.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">PackageManifest</span></code></p>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>use_cache</strong> (<em>bool</em>) – Defaults to <code class="docutils literal notranslate"><span class="pre">True</span></code>. Set to <code class="docutils literal notranslate"><span class="pre">False</span></code> to force
+a re-install.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">PackageManifest</span></code></p>
 </dd>
 </dl>
 </dd></dl>
@@ -2619,7 +2623,7 @@ Most often, this is either a version number or a branch name.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="ape.managers.project.dependency.LocalDependency.extract_manifest">
-<span class="sig-name descname"><span class="pre">extract_manifest</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">PackageManifest</span></span></span><a class="headerlink" href="#ape.managers.project.dependency.LocalDependency.extract_manifest" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">extract_manifest</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">use_cache</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">PackageManifest</span></span></span><a class="headerlink" href="#ape.managers.project.dependency.LocalDependency.extract_manifest" title="Permalink to this definition"></a></dt>
 <dd><p>Create a <code class="docutils literal notranslate"><span class="pre">PackageManifest</span></code> definition,
 presumably by downloading and compiling the dependency.</p>
 <p>Implementations may use <code class="docutils literal notranslate"><span class="pre">self.project_manager</span></code> to call method
@@ -2627,8 +2631,12 @@ presumably by downloading and compiling the dependency.</p>
 to dynamically get the correct <a class="reference internal" href="api.html#ape.api.projects.ProjectAPI" title="ape.api.projects.ProjectAPI"><code class="xref py py-class docutils literal notranslate"><span class="pre">ProjectAPI</span></code></a>.
 based on the project’s structure.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">PackageManifest</span></code></p>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>use_cache</strong> (<em>bool</em>) – Defaults to <code class="docutils literal notranslate"><span class="pre">True</span></code>. Set to <code class="docutils literal notranslate"><span class="pre">False</span></code> to force
+a re-install.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">PackageManifest</span></code></p>
 </dd>
 </dl>
 </dd></dl>
@@ -2666,7 +2674,7 @@ Most often, this is either a version number or a branch name.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="ape.managers.project.dependency.NpmDependency.extract_manifest">
-<span class="sig-name descname"><span class="pre">extract_manifest</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">PackageManifest</span></span></span><a class="headerlink" href="#ape.managers.project.dependency.NpmDependency.extract_manifest" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">extract_manifest</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">use_cache</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">PackageManifest</span></span></span><a class="headerlink" href="#ape.managers.project.dependency.NpmDependency.extract_manifest" title="Permalink to this definition"></a></dt>
 <dd><p>Create a <code class="docutils literal notranslate"><span class="pre">PackageManifest</span></code> definition,
 presumably by downloading and compiling the dependency.</p>
 <p>Implementations may use <code class="docutils literal notranslate"><span class="pre">self.project_manager</span></code> to call method
@@ -2674,8 +2682,12 @@ presumably by downloading and compiling the dependency.</p>
 to dynamically get the correct <a class="reference internal" href="api.html#ape.api.projects.ProjectAPI" title="ape.api.projects.ProjectAPI"><code class="xref py py-class docutils literal notranslate"><span class="pre">ProjectAPI</span></code></a>.
 based on the project’s structure.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">PackageManifest</span></code></p>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>use_cache</strong> (<em>bool</em>) – Defaults to <code class="docutils literal notranslate"><span class="pre">True</span></code>. Set to <code class="docutils literal notranslate"><span class="pre">False</span></code> to force
+a re-install.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">PackageManifest</span></code></p>
 </dd>
 </dl>
 </dd></dl>

@@ -73,6 +73,12 @@
 <li class="toctree-l3"><a class="reference internal" href="#npm">NPM</a></li>
 </ul>
 </li>
+<li class="toctree-l2"><a class="reference internal" href="#package-management-cli">Package Management CLI</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#list">list</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#install">install</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#compile">compile</a></li>
+</ul>
+</li>
 <li class="toctree-l2"><a class="reference internal" href="#misc">Misc</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#custom-contracts-folder">Custom Contracts Folder</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#file-exclusions">File Exclusions</a></li>
@@ -210,6 +216,63 @@ Then, add the following to your config so that Ape can find the dependency:</p>
     version: v1.3.0
 </pre></div>
 </div>
+</section>
+</section>
+<section id="package-management-cli">
+<h2>Package Management CLI<a class="headerlink" href="#package-management-cli" title="Permalink to this heading"></a></h2>
+<p>You can also install and / or compile dependencies using the <code class="docutils literal notranslate"><span class="pre">pm</span></code> CLI.</p>
+<section id="list">
+<h3>list<a class="headerlink" href="#list" title="Permalink to this heading"></a></h3>
+<p>To list information about the dependencies in your local project, run:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>ape<span class="w"> </span>pm<span class="w"> </span>list
+</pre></div>
+</div>
+<p>To list information about all installed dependencies across all projects, run:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>ape<span class="w"> </span>pm<span class="w"> </span>list<span class="w"> </span>--all
+</pre></div>
+</div>
+<p>You should see information like:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>Packages:
+<span class="w">  </span>OpenZeppelin<span class="w"> </span>v4.6.0,<span class="w"> </span>compiled!
+<span class="w">  </span>vault<span class="w"> </span>master
+<span class="w">  </span>vault<span class="w"> </span>v0.4.5
+<span class="w">  </span>gnosis<span class="w"> </span>v1.3.0
+</pre></div>
+</div>
+</section>
+<section id="install">
+<h3>install<a class="headerlink" href="#install" title="Permalink to this heading"></a></h3>
+<p>To install all dependencies in your project, run:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>ape<span class="w"> </span>pm<span class="w"> </span>install
+</pre></div>
+</div>
+<p>If the dependencies are already cached and you want to re-install them, use the <code class="docutils literal notranslate"><span class="pre">--force</span></code> flag:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>ape<span class="w"> </span>pm<span class="w"> </span>install<span class="w"> </span>--force
+</pre></div>
+</div>
+<p>To install a dependency that is not in your config, you can specify it directly along with <code class="docutils literal notranslate"><span class="pre">--name</span></code> and <code class="docutils literal notranslate"><span class="pre">--version</span></code>:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>ape<span class="w"> </span>pm<span class="w"> </span>install<span class="w"> </span>gh:OpenZeppelin/openzeppelin-contracts<span class="w"> </span>--name<span class="w"> </span>openzeppelin<span class="w"> </span>--version<span class="w"> </span><span class="s2">&quot;4.6.0&quot;</span>
+</pre></div>
+</div>
+<p><strong>NOTE</strong>: The <code class="docutils literal notranslate"><span class="pre">gh:</span></code> prefix is used because this dependency is from GitHub.
+For <code class="docutils literal notranslate"><span class="pre">npm</span></code> dependencies, you use an <code class="docutils literal notranslate"><span class="pre">npm:</span></code> prefix.
+For local dependencies, you give it a path to the local dependency.
+<code class="docutils literal notranslate"><span class="pre">--version</span></code> is not required when using a local dependency.</p>
+</section>
+<section id="compile">
+<h3>compile<a class="headerlink" href="#compile" title="Permalink to this heading"></a></h3>
+<p>Dependencies are not compiled when they are installed.
+Dependencies are only compiled if you need them to be.
+This is because often times a dependency will not compile in Ape on its own but its contract types can still be used in your project.
+However, when working with dependency contracts directly, they will need to be compiled.
+Ape compiles them as soon as you request the contracts from them, so it generally happens on the backend automatically.
+<strong>However</strong>, you may want to recompile the dependencies, like when using a new compiler version or settings.
+You can use the CLI to recompile.</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>ape<span class="w"> </span>pm<span class="w"> </span>compile<span class="w"> </span>OpenZeppelin<span class="w"> </span>--version<span class="w"> </span><span class="m">4</span>.6.0<span class="w"> </span>--force
+</pre></div>
+</div>
+<p><strong>NOTE</strong>: You only need to specify a version if you have more than one version of a dependency installed.
+Otherwise, you just give it the name.</p>
 </section>
 </section>
 <section id="misc">
