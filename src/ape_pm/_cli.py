@@ -74,7 +74,11 @@ def _list(_all):
             click.echo(f"  {part}")
 
     else:
-        click.echo("No packages installed for this project.")
+        message = "No packages installed"
+        if not _all:
+            message = f"{message} for this project"
+
+        click.echo(f"{message}.")
 
 
 def _dependency_callback(ctx, param, value):
