@@ -351,6 +351,10 @@ class DependencyAPI(BaseInterfaceModel):
         Compile the contract types in this dependency into
         a package manifest.
 
+        Args:
+            use_cache (bool): Defaults to ``True``. Set to ``False`` to force
+              a re-compile.
+
         **NOTE**: By default, dependency's compile lazily.
         """
 
