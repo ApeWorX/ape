@@ -1,24 +1,8 @@
 from ape import plugins
-from ape.api import ConfigEnum, PluginConfig
-
-
-class EvmVersion(ConfigEnum):
-    constantinople = "constantinople"
-    istanbul = "istanbul"
-    paris = "paris"
-    shanghai = "shanghai"
+from ape.api import PluginConfig
 
 
 class Config(PluginConfig):
-    evm_version: EvmVersion = EvmVersion.shanghai
-    """
-    A base EVM version for compiler plugins to look to
-    when their own is missing. **NOTE**: Typically, compiler
-    plugins define their own, and not every compiler is EVM compatible.
-    This is only used as a global setting for the compilers that
-    are EVM compatible.
-    """
-
     include_dependencies: bool = False
     """
     Set to ``True`` to compile dependencies during ``ape compile``.
@@ -29,9 +13,6 @@ class Config(PluginConfig):
     contract types always compiled during ``ape compile``, and these projects
     should configure ``include_dependencies`` to be ``True``.
     """
-
-    def validate_config(self):
-        self.evm_version = EvmVersion[self.evm_version]
 
 
 @plugins.register(plugins.Config)
