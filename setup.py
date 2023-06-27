@@ -137,6 +137,7 @@ setup(
             "ape_networks=ape_networks._cli:cli",
             "ape_test=ape_test._cli:cli",
             "ape_init=ape_init._cli:cli",
+            "ape_pm=ape_pm._cli:cli",
         ],
     },
     python_requires=">=3.8,<4",

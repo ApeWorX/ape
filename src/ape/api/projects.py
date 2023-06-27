@@ -283,7 +283,7 @@ class DependencyAPI(BaseInterfaceModel):
         return self._base_cache_path / f"{self.name}.json"
 
     @abstractmethod
-    def extract_manifest(self) -> PackageManifest:
+    def extract_manifest(self, use_cache: bool = True) -> PackageManifest:
         """
         Create a ``PackageManifest`` definition,
         presumably by downloading and compiling the dependency.
@@ -292,6 +292,10 @@ class DependencyAPI(BaseInterfaceModel):
         :meth:`~ape.managers.project.ProjectManager.get_project`
         to dynamically get the correct :class:`~ape.api.projects.ProjectAPI`.
         based on the project's structure.
+
+        Args:
+            use_cache (bool): Defaults to ``True``. Set to ``False`` to force
+              a re-install.
 
         Returns:
             ``PackageManifest``
@@ -348,16 +352,20 @@ class DependencyAPI(BaseInterfaceModel):
 
         return None
 
-    def compile(self) -> PackageManifest:
+    def compile(self, use_cache: bool = True) -> PackageManifest:
         """
         Compile the contract types in this dependency into
         a package manifest.
+
+        Args:
+            use_cache (bool): Defaults to ``True``. Set to ``False`` to force
+              a re-compile.
 
         **NOTE**: By default, dependency's compile lazily.
         """
 
         manifest = self.extract_manifest()
-        if manifest.contract_types:
+        if use_cache and manifest.contract_types:
             # Already compiled
             return manifest
 
@@ -451,10 +459,12 @@ class DependencyAPI(BaseInterfaceModel):
             self._write_manifest_to_cache(manifest)
             return manifest
 
-    def _extract_local_manifest(self, project_path: Path) -> PackageManifest:
+    def _extract_local_manifest(
+        self, project_path: Path, use_cache: bool = True
+    ) -> PackageManifest:
         cached_manifest = (
             _load_manifest_from_file(self._target_manifest_cache_file)
-            if self._target_manifest_cache_file.is_file()
+            if use_cache and self._target_manifest_cache_file.is_file()
             else None
         )
         if cached_manifest:

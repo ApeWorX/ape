@@ -62,7 +62,7 @@ class ProjectManager(BaseManager):
         in this project's ``ape-config.yaml`` file.
         """
 
-        return self._load_dependencies()
+        return self.load_dependencies()
 
     @property
     def sources(self) -> Dict[str, Source]:
@@ -652,9 +652,9 @@ class ProjectManager(BaseManager):
 
         return self.local_project.cached_manifest.contract_types or {}
 
-    def _load_dependencies(self) -> Dict[str, Dict[str, DependencyAPI]]:
+    def load_dependencies(self, use_cache: bool = True) -> Dict[str, Dict[str, DependencyAPI]]:
         project_id = str(self.path)
-        if project_id in self._cached_dependencies:
+        if use_cache and project_id in self._cached_dependencies:
             return self._cached_dependencies[project_id]
 
         for dependency_config in self.config_manager.dependencies:
@@ -663,7 +663,8 @@ class ProjectManager(BaseManager):
             project_dependencies = self._cached_dependencies.get(project_id, {})
 
             if (
-                dependency_name in project_dependencies
+                use_cache
+                and dependency_name in project_dependencies
                 and version_id in project_dependencies[dependency_name]
             ):
                 # Already cached
@@ -680,7 +681,7 @@ class ProjectManager(BaseManager):
             self._cached_dependencies[project_id] = project_dependencies
 
             # Only extract manifest if wasn't cached and must happen after caching.
-            dependency_config.extract_manifest()
+            dependency_config.extract_manifest(use_cache=use_cache)
 
         return self._cached_dependencies.get(project_id, {})
 
