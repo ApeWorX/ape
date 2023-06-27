@@ -3,12 +3,12 @@ import tempfile
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
 
-import yaml
 from ethpm_types import Checksum, ContractType, PackageManifest, Source
 from ethpm_types.manifest import PackageName
 from ethpm_types.utils import AnyUrl, compute_checksum
 from packaging.version import InvalidVersion, Version
 from pydantic import ValidationError
+from yaml import safe_dump
 
 from ape.logging import logger
 from ape.utils import (
@@ -444,8 +444,8 @@ class DependencyAPI(BaseInterfaceModel):
 
             if config_data:
                 target_config_file.unlink(missing_ok=True)
-                with open(target_config_file, "w+") as cf:
-                    yaml.safe_dump(config_data, cf)
+                with open(target_config_file, "w") as cf:
+                    safe_dump(config_data, cf)
 
             manifest = project.create_manifest()
             self._write_manifest_to_cache(manifest)
