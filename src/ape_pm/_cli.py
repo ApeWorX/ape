@@ -14,6 +14,14 @@ def cli():
     """
 
 
+def _echo_no_packages(project: bool):
+    message = "No packages installed"
+    if project:
+        message = f"{message} for this project"
+
+    click.echo(f"{message}.")
+
+
 @cli.command("list")
 @ape_cli_context()
 @click.option(
@@ -24,51 +32,44 @@ def _list(cli_ctx, _all):
     List installed packages
     """
 
-    output_parts: List[str] = []
-
+    packages = []
     if _all:
         location = cli_ctx.dependency_manager.DATA_FOLDER / "packages"
-        if location.is_dir():
-            dependencies = [x for x in location.iterdir()]
-            for dependency in dependencies:
-                output_str = click.style(dependency.name, bold=True)
-                for version_dir in dependency.iterdir():
-                    v_output_str = f"{output_str} {version_dir.name}"
+        if not location.is_dir():
+            _echo_no_packages(False)
+            return
 
-                    file = next(version_dir.iterdir(), None)
-                    if file:
-                        data = json.loads(file.read_text())
-                        compiled = bool(data.get("contractTypes"))
-                        if compiled:
-                            compiled_str = click.style("compiled!", fg="green")
-                            v_output_str = f"{v_output_str}, {compiled_str}"
-
-                        output_parts.append(v_output_str)
+        for dependency in location.iterdir():
+            base_item = {"name": dependency.name}
+            for version_dir in dependency.iterdir():
+                item = {"version": version_dir.name, **base_item}
+                file = next(version_dir.iterdir(), None)
+                item["compiled"] = (
+                    bool(json.loads(file.read_text()).get("contractTypes")) if file else False
+                )
+                packages.append(item)
 
     else:
         # Limit to local project.
         for name, versions in cli_ctx.project_manager.dependencies.items():
-            output_str = click.style(name, bold=True)
+            base_item = {"name": name}
             for version, dep in versions.items():
-                v_output_str = f"{output_str} {version}"
-                compiled = bool(dep.contract_types)
-                if compiled:
-                    compiled_str = click.style("compiled!", fg="green")
-                    v_output_str = f"{v_output_str}, {compiled_str}"
+                item = {**base_item, "version": version, "compiled": bool(dep.contract_types)}
+                packages.append(item)
 
-                output_parts.append(v_output_str)
+    if not packages:
+        _echo_no_packages(not _all)
+        return
 
-    if output_parts:
-        click.echo("Packages:")
-        for part in output_parts:
-            click.echo(f"  {part}")
-
-    else:
-        message = "No packages installed"
-        if not _all:
-            message = f"{message} for this project"
-
-        click.echo(f"{message}.")
+    # Output gathereed packages.
+    click.echo("Packages:")
+    for package in packages:
+        name = click.style(package["name"], bold=True)
+        version = package["version"]
+        compiled = (
+            click.style(package["compiled"], fg="green") if package.get("compiled") else ""
+        )
+        click.echo(f"  {name} {version}{' '  + compiled if compiled else ''}")
 
 
 def _package_callback(ctx, param, value):
