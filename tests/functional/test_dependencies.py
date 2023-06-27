@@ -132,6 +132,6 @@ def test_compile_with_extra_settings(dependency_manager, project):
     contracts_path.mkdir(parents=True)
     (contracts_path / "contract.json").write_text('{"abi": []}')
 
-    data = {"name": "FooBar", "local": path, "compiler_settings": settings}
+    data = {"name": "FooBar", "local": path, "config_override": settings}
     dependency = dependency_manager.decode_dependency(data)
-    assert dependency.compiler_settings == settings
+    assert dependency.config_override == settings

@@ -240,7 +240,7 @@ class DependencyAPI(BaseInterfaceModel):
     A list of glob-patterns for excluding files in dependency projects.
     """
 
-    compiler_settings: Dict = {}
+    config_override: Dict = {}
     """
     A mapping of extension to additional compiler settings to use when compiling.
     """
@@ -404,7 +404,7 @@ class DependencyAPI(BaseInterfaceModel):
                 if "evm_version" in settings:
                     compiler_data["evm_version"] = settings["evm_version"]
 
-                for key, setting in self.compiler_settings.items():
+                for key, setting in self.config_override.items():
                     if key.strip().lower() == compiler.name.strip().lower():
                         compiler_data = {**compiler_data, **setting}
                         break
