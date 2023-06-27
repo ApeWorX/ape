@@ -17,7 +17,7 @@ def cli():
 @cli.command("list")
 @ape_cli_context()
 @click.option(
-    "_all", "--all", is_flag=True, help="Include packages not referenced by local project"
+    "_all", "--all", is_flag=True, help="Include packages not referenced by the local project"
 )
 def _list(cli_ctx, _all):
     """
