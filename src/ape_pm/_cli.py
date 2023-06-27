@@ -98,7 +98,7 @@ def _package_callback(ctx, param, value):
         return {"local": path.as_posix()}
 
     elif ":" in value:
-        # Catch-call for unknown dependency types that may exist.
+        # Catch-all for unknown dependency types that may exist.
         parts = value.split(":")
         return {parts[0]: parts[1]}
 
