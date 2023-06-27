@@ -4,18 +4,7 @@ from typing import List, Tuple
 
 import click
 
-from ape import project
 from ape.cli import ape_cli_context
-
-
-def dependency_options():
-    def fn(f):
-        for dependency_type in project.dependency_manager.dependency_types:
-            f = click.option(f"--{dependency_type}")(f)
-
-        return f
-
-    return fn
 
 
 @click.group()
@@ -26,10 +15,11 @@ def cli():
 
 
 @cli.command("list")
+@ape_cli_context()
 @click.option(
     "_all", "--all", is_flag=True, help="Include packages not referenced by local project"
 )
-def _list(_all):
+def _list(cli_ctx, _all):
     """
     List installed packages
     """
@@ -37,7 +27,7 @@ def _list(_all):
     output_parts: List[str] = []
 
     if _all:
-        location = project.dependency_manager.DATA_FOLDER / "packages"
+        location = cli_ctx.dependency_manager.DATA_FOLDER / "packages"
         if location.is_dir():
             dependencies = [x for x in location.iterdir()]
             for dependency in dependencies:
@@ -57,7 +47,7 @@ def _list(_all):
 
     else:
         # Limit to local project.
-        for name, versions in project.dependencies.items():
+        for name, versions in cli_ctx.project_manager.dependencies.items():
             output_str = click.style(name, bold=True)
             for version, dep in versions.items():
                 v_output_str = f"{output_str} {version}"
@@ -81,60 +71,75 @@ def _list(_all):
         click.echo(f"{message}.")
 
 
-def _dependency_callback(ctx, param, value):
+def _package_callback(ctx, param, value):
+    if value is None:
+        # Install all packages from local project.
+        return None
+
+    elif value.startswith("gh:"):
+        # Is a GitHub style dependency
+        return {"github": value[3:]}
+
+    elif value.startswith("npm:"):
+        # Is an NPM style dependency
+        return {"npm:": value[4:]}
+
+    # Check if is a local package.
     try:
         path = Path(value).absolute()
     except Exception:
         path = None
 
-    if path is not None and path.is_dir():
-        return path
+    if path is not None and path.exists():
+        # Is a local package somewhere.
+        if path.is_file() and path.name == "ape-config.yaml":
+            path = path.parent
 
-    elif path is not None and path.is_file() and path.name == "ape-config.yaml":
-        # Allow if user put full path to config file.
-        return path.parent
+        return {"local": path.as_posix()}
 
-    elif "=" not in value:
-        raise click.BadArgumentUsage(
-            "'dependency' must be a path to an ape project or a value like 'name=version'."
-        )
+    elif ":" in value:
+        # Catch-call for unknown dependency types that may exist.
+        parts = value.split(":")
+        return {parts[0]: parts[1]}
 
-    # It is a specify dependency
-    parts = value.split("=")
-    name = parts[0].strip()
-    version = parts[1].strip()
-    return {"name": name, "version": version}
+    raise click.BadArgumentUsage(f"Unknown package '{value}'.")
 
 
 @cli.command()
 @ape_cli_context()
-@click.argument("dependency", callback=_dependency_callback)
+@click.argument("package", nargs=1, required=False, callback=_package_callback)
+@click.option("--name", help="The name of the dependency")
+@click.option("--version", help="The dependency's version")
 @click.option("--force", "-f", help="Force a re-install", is_flag=True)
-@dependency_options()
-def install(cli_ctx, dependency, force, **type_kwargs):
+def install(cli_ctx, package, name, version, force):
     """
     Download and cache packages
     """
 
-    if isinstance(dependency, Path):
-        # Is a path to a project (use config).
-        if dependency.absolute() == project.path.absolute():
-            project.load_dependencies(use_cache=not force)
-        else:
-            # Change projects.
-            with cli_ctx.config_manager.using_project(dependency) as _project:
-                _project.load_dependencies(use_cache=not force)
+    log_name = None
+    if not package:
+        # `ape pm install`: Load all dependencies from current package.
+        cli_ctx.project_manager.load_dependencies(use_cache=not force)
 
-        log_name = dependency.as_posix()
+    elif name:
+        # `ape pm install <package>`: Is a specific package.
+        data = {"name": name, **package}
+        if version is not None:
+            data["version"] = version
 
-    else:
-        # Is a specific dependency.
-        data = {**dependency, **{k: v for k, v in type_kwargs.items() if v is not None}}
         dependency_obj = cli_ctx.dependency_manager.decode_dependency(data)
         dependency_obj.extract_manifest(use_cache=not force)
         log_name = f"{dependency_obj.name}={dependency_obj.version}"
 
-    cli_ctx.logger.success(f"Package '{log_name}' installed.")
+    else:
+        # This is **not** the local project, but no --name was given.
+        # NOTE: `--version` is not required when using local dependencies.
+        cli_ctx.abort("Must provide --name")
+
+    if log_name:
+        cli_ctx.logger.success(f"Package '{log_name}' installed.")
+    else:
+        cli_ctx.logger.success("All project packages installed.")
 
 
 @cli.command()
@@ -147,10 +152,10 @@ def compile(cli_ctx, name, version, force):
     Compile a package
     """
 
-    if name not in project.dependencies:
+    if name not in cli_ctx.project_manager.dependencies:
         cli_ctx.abort(f"Dependency '{name}' unknown. Is it installed?")
 
-    versions = project.dependencies[name]
+    versions = cli_ctx.project_manager.dependencies[name]
     if not versions:
         # This shouldn't happen.
         cli_ctx.abort("No versions.")

@@ -82,6 +82,8 @@ dependencies:
 
 You can also install and / or compile dependencies using the `pm` CLI.
 
+### list
+
 To list information about the dependencies in your local project, run:
 
 ```shell
@@ -104,27 +106,32 @@ Packages:
   gnosis v1.3.0
 ```
 
+### install
+
 To install all dependencies in your project, run:
 
 ```shell
-ape pm install .
+ape pm install
 ```
 
 If the dependencies are already cached and you want to re-install them, use the `--force` flag:
 
 ```shell
-ape pm install . --force
+ape pm install --force
 ```
 
-To install a dependency that is not in your config, you can specify it directly:
+To install a dependency that is not in your config, you can specify it directly along with `--name` and `--version`:
 
 ```shell
-ape pm install OpenZeppelin=4.6.0 --github OpenZeppelin/openzeppelin-contracts
+ape pm install gh:OpenZeppelin/openzeppelin-contracts --name openzeppelin --version "4.6.0"
 ```
 
-**NOTE**: The flag `github` is used because this dependency is from GitHub.
-You can use whatever flag is the key for this dependency type the same as you do in your config file.
-The different types are listed towards the top of this document; they are `"github"`, `"local"`, `"npm"`.
+**NOTE**: The `gh:` prefix is used because this dependency is from GitHub.
+For `npm` dependencies, you use an `npm:` prefix.
+For local dependencies, you give it a path to the local dependency.
+`--version` is not required when using a local dependency.
+
+### compile
 
 Dependencies are not compiled when they are installed.
 Dependencies are only compiled if you need them to be.

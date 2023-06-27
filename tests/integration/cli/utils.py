@@ -127,3 +127,18 @@ run_once = skip_projects_except("test")
 For times when the CLI integration test is unlikely to be
 affected by project structure.
 """
+
+
+def github_xfail():
+    """
+    Expects failures because of GitHib rate limiting
+    """
+
+    def wrapper(f):
+        f = pytest.mark.xfail(
+            strict=False, reason="Github rate limiting issues or plugin install issues"
+        )(f)
+        f = run_once(f)
+        return f
+
+    return wrapper
