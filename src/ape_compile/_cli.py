@@ -7,6 +7,10 @@ from ethpm_types import ContractType
 from ape.cli import ape_cli_context, contract_file_paths_argument
 
 
+def _include_dependencies_callback(ctx, param, value):
+    return value or ctx.obj.config_manager.get_config("compile").include_dependencies
+
+
 @click.command(short_help="Compile select contract source files")
 @contract_file_paths_argument()
 @click.option(
@@ -26,8 +30,14 @@ from ape.cli import ape_cli_context, contract_file_paths_argument
     is_flag=True,
     help="Show deployment bytecode size for all contracts",
 )
+@click.option(
+    "--include-dependencies",
+    is_flag=True,
+    help="Also compile dependencies",
+    callback=_include_dependencies_callback,
+)
 @ape_cli_context()
-def cli(cli_ctx, file_paths: Set[Path], use_cache: bool, display_size: bool):
+def cli(cli_ctx, file_paths: Set[Path], use_cache: bool, display_size: bool, include_dependencies):
     """
     Compiles the manifest for this project and saves the results
     back to the manifest.
@@ -57,7 +67,7 @@ def cli(cli_ctx, file_paths: Set[Path], use_cache: bool, display_size: bool):
 
     if ext_with_missing_compilers:
         if len(ext_with_missing_compilers) > 1:
-            # NOTE: `sorted` to increase reproducability.
+            # NOTE: `sorted` to increase reproducibility.
             extensions_str = ", ".join(sorted(ext_with_missing_compilers))
             message = f"Missing compilers for the following file types: '{extensions_str}'."
         else:
@@ -73,6 +83,11 @@ def cli(cli_ctx, file_paths: Set[Path], use_cache: bool, display_size: bool):
     contract_types = cli_ctx.project_manager.load_contracts(
         file_paths=file_paths, use_cache=use_cache
     )
+
+    if include_dependencies:
+        for versions in cli_ctx.project_manager.dependencies.values():
+            for dependency in versions.values():
+                dependency.compile(use_cache=use_cache)
 
     if display_size:
         _display_byte_code_sizes(cli_ctx, contract_types)
