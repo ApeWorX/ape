@@ -82,6 +82,7 @@
 <li class="toctree-l2"><a class="reference internal" href="#misc">Misc</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#custom-contracts-folder">Custom Contracts Folder</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#file-exclusions">File Exclusions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#config-override">Config Override</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#solidity-remappings">Solidity Remappings</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#accessing-dependency-types">Accessing Dependency Types</a></li>
 </ul>
@@ -298,6 +299,18 @@ Otherwise, you just give it the name.</p>
 <span class="w">    </span><span class="nt">exclude</span><span class="p">:</span>
 <span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">package.json</span><span class="w">    </span><span class="c1"># Ignore package.json files.</span>
 <span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">mocks/**/*</span><span class="w">      </span><span class="c1"># Ignore all files in the &#39;mocks&#39; directory</span>
+</pre></div>
+</div>
+</section>
+<section id="config-override">
+<h3>Config Override<a class="headerlink" href="#config-override" title="Permalink to this heading"></a></h3>
+<p>To use any extra config item for a dependency, such as configurations for compilers needed during compiling, use the <code class="docutils literal notranslate"><span class="pre">config_override</span></code> setting:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">dependencies</span><span class="p">:</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">dependency</span>
+<span class="w">    </span><span class="nt">github</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">org-name/dependency-project-name</span>
+<span class="w">    </span><span class="nt">config_override</span><span class="p">:</span>
+<span class="w">       </span><span class="nt">solidity</span><span class="p">:</span>
+<span class="w">         </span><span class="nt">evm_version</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">paris</span>
 </pre></div>
 </div>
 </section>
