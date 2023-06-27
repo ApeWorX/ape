@@ -78,6 +78,76 @@ dependencies:
     version: v1.3.0
 ```
 
+## Package Management CLI
+
+You can also install and / or compile dependencies using the `pm` CLI.
+
+### list
+
+To list information about the dependencies in your local project, run:
+
+```shell
+ape pm list
+```
+
+To list information about all installed dependencies across all projects, run:
+
+```shell
+ape pm list --all
+```
+
+You should see information like:
+
+```shell
+Packages:
+  OpenZeppelin v4.6.0, compiled!
+  vault master
+  vault v0.4.5
+  gnosis v1.3.0
+```
+
+### install
+
+To install all dependencies in your project, run:
+
+```shell
+ape pm install
+```
+
+If the dependencies are already cached and you want to re-install them, use the `--force` flag:
+
+```shell
+ape pm install --force
+```
+
+To install a dependency that is not in your config, you can specify it directly along with `--name` and `--version`:
+
+```shell
+ape pm install gh:OpenZeppelin/openzeppelin-contracts --name openzeppelin --version "4.6.0"
+```
+
+**NOTE**: The `gh:` prefix is used because this dependency is from GitHub.
+For `npm` dependencies, you use an `npm:` prefix.
+For local dependencies, you give it a path to the local dependency.
+`--version` is not required when using a local dependency.
+
+### compile
+
+Dependencies are not compiled when they are installed.
+Dependencies are only compiled if you need them to be.
+This is because often times a dependency will not compile in Ape on its own but its contract types can still be used in your project.
+However, when working with dependency contracts directly, they will need to be compiled.
+Ape compiles them as soon as you request the contracts from them, so it generally happens on the backend automatically.
+**However**, you may want to recompile the dependencies, like when using a new compiler version or settings.
+You can use the CLI to recompile.
+
+```shell
+ape pm compile OpenZeppelin --version 4.6.0 --force
+```
+
+**NOTE**: You only need to specify a version if you have more than one version of a dependency installed.
+Otherwise, you just give it the name.
+
 ## Misc
 
 The following guidelines are applicable to **ALL** dependency types.
