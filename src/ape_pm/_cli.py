@@ -10,7 +10,7 @@ from ape.cli import ape_cli_context
 @click.group()
 def cli():
     """
-    Manage dependencies
+    Package management tools
     """
 
 
