@@ -136,7 +136,7 @@ def github_xfail():
 
     def wrapper(f):
         f = pytest.mark.xfail(
-            strict=False, reason="Github rate limiting issues or plugin install issues"
+            strict=False, reason="GitHub rate limiting issues or plugin install issues"
         )(f)
         f = run_once(f)
         return f
