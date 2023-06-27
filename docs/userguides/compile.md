@@ -65,3 +65,21 @@ compiler:
 ```
 
 **NOTE**: You must include the defaults in the list when overriding if you wish to retain them.
+
+## Dependencies
+
+In Ape, compile plugins typically let you have dependencies.
+See [this guide](./dependencies.html) to learn more about configuring dependencies in Ape.
+
+To always compile dependencies in Ape during the `ape compile` command, use the CLI flag `--include-dependencies`:
+
+```shell
+ape compile --include-dependencies
+```
+
+Alternatively, configure it to always happen:
+
+```yaml
+compile:
+  use_dependencies: true
+```

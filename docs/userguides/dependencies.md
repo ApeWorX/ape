@@ -212,7 +212,7 @@ Now, in your solidity files, import `OpenZeppelin` sources via:
 import "@openzeppelin/token/ERC721/ERC721.sol";
 ```
 
-### Accessing Dependency Types
+### Compiling Dependencies
 
 Sometimes, you may need to access types (such as contract types) from dependencies.
 You can achieve this using the project manager:
@@ -220,8 +220,22 @@ You can achieve this using the project manager:
 ```python
 from ape import accounts, project
 
+# NOTE: This will compile the dependency
 dependency_contract = project.dependencies["my_dependency"]["1.0.0"].DependencyContractType
 my_account = accounts.load("alias")
 deployed_contract = my_account.deploy(dependency_contract, "argument")
 print(deployed_contract.address)
+```
+
+If you would like to always compile dependencies during `ape compile` rather than only have them get compiled upon asking for contract types, you can use the config option `include_dependencies` from the `compile` config:
+
+```yaml
+compile:
+  include_dependencies: true
+```
+
+Alternatively, use the `--include-dependencies` CLI flag:
+
+```shell
+ape compile --include-dependencies
 ```
