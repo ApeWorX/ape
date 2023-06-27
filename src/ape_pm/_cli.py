@@ -108,10 +108,15 @@ def _package_callback(ctx, param, value):
 @cli.command()
 @ape_cli_context()
 @click.argument("package", nargs=1, required=False, callback=_package_callback)
-@click.option("--name", help="The name of the dependency")
-@click.option("--version", help="The dependency's version")
+@click.option("--name", help="The name of the dependency", metavar="NAME")
+@click.option("--version", help="The dependency's version", metavar="VERSION")
+@click.option(
+    "--ref",
+    help="A reference flag, used for GitHub branches or tags in place of version",
+    metavar="REF",
+)
 @click.option("--force", "-f", help="Force a re-install", is_flag=True)
-def install(cli_ctx, package, name, version, force):
+def install(cli_ctx, package, name, version, ref, force):
     """
     Download and cache packages
     """
@@ -126,6 +131,8 @@ def install(cli_ctx, package, name, version, force):
         data = {"name": name, **package}
         if version is not None:
             data["version"] = version
+        if ref is not None:
+            data["ref"] = ref
 
         dependency_obj = cli_ctx.dependency_manager.decode_dependency(data)
         dependency_obj.extract_manifest(use_cache=not force)
@@ -145,7 +152,7 @@ def install(cli_ctx, package, name, version, force):
 @cli.command()
 @ape_cli_context()
 @click.argument("name")
-@click.option("--version", help="The dependency version")
+@click.option("--version", help="The dependency version", metavar="VERSION")
 @click.option("--force", "-f", help="Force a re-compile", is_flag=True)
 def compile(cli_ctx, name, version, force):
     """

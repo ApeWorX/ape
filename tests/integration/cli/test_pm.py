@@ -46,7 +46,7 @@ def test_install_force(ape_cli, runner):
 
 
 @github_xfail()
-def test_install_dependency(ape_cli, runner):
+def test_install_github_dependency_with_version(ape_cli, runner):
     package = "OpenZeppelin=4.6.0"
     result = runner.invoke(
         ape_cli,
@@ -58,6 +58,25 @@ def test_install_dependency(ape_cli, runner):
             "OpenZeppelin",
             "--version",
             "4.6.0",
+        ],
+    )
+    assert result.exit_code == 0, result.output
+    assert f"Package '{package}' installed."
+
+
+@github_xfail()
+def test_install_github_dependency_with_ref(ape_cli, runner):
+    package = "OpenZeppelin=4.6.0"
+    result = runner.invoke(
+        ape_cli,
+        [
+            "pm",
+            "install",
+            "gh:OpenZeppelin/openzeppelin-contracts",
+            "--name",
+            "OpenZeppelin",
+            "--ref",
+            "master",
         ],
     )
     assert result.exit_code == 0, result.output
