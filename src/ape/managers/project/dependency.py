@@ -38,9 +38,7 @@ class DependencyManager(ManagerAccessMixin):
     def decode_dependency(self, config_dependency_data: Dict) -> DependencyAPI:
         for key, dependency_cls in self.dependency_types.items():
             if key in config_dependency_data:
-                return dependency_cls(
-                    **config_dependency_data,
-                )
+                return dependency_cls(**config_dependency_data)
 
         dep_id = config_dependency_data.get("name", json.dumps(config_dependency_data))
         raise ProjectError(f"No installed dependency API that supports '{dep_id}'.")

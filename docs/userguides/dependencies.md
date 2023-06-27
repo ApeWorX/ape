@@ -177,6 +177,19 @@ dependencies:
       - mocks/**/*      # Ignore all files in the 'mocks' directory
 ```
 
+### Config Override
+
+To use any extra config item for a dependency, such as configurations for compilers needed during compiling, use the `config_override` setting:
+
+```yaml
+dependencies:
+  - name: dependency
+    github: org-name/dependency-project-name
+    config_override:
+       solidity:
+         evm_version: paris
+```
+
 ### Solidity Remappings
 
 A common use-case for dependencies involves the Solidity plugin.

@@ -3,9 +3,9 @@ from contextlib import contextmanager
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
-import yaml
 from ethpm_types import ContractType, PackageManifest, Source
 from ethpm_types.utils import compute_checksum
+from yaml import safe_dump, safe_load
 
 from ape.api import ProjectAPI
 from ape.logging import logger
@@ -152,8 +152,9 @@ class BaseProject(ProjectAPI):
         config_data["contracts_folder"] = contracts_folder_config_item
         self.config_file.parent.mkdir(parents=True, exist_ok=True)
         self.config_file.touch()
-        with open(self.config_file, "w") as f:
-            yaml.safe_dump(config_data, f)
+
+        with open(self.config_file, "w") as file:
+            safe_dump(config_data, file)
 
         return True
 
@@ -261,7 +262,7 @@ class BrownieProject(BaseProject):
 
         migrated_config_data: Dict[str, Any] = {}
         with open(self.brownie_config_path) as brownie_config_file:
-            brownie_config_data = yaml.safe_load(brownie_config_file) or {}
+            brownie_config_data = safe_load(brownie_config_file) or {}
 
         # Migrate dependencies
         dependencies = []
