@@ -136,7 +136,7 @@ def install(cli_ctx, package, name, version, ref, force):
 
         dependency_obj = cli_ctx.dependency_manager.decode_dependency(data)
         dependency_obj.extract_manifest(use_cache=not force)
-        log_name = f"{dependency_obj.name}={dependency_obj.version}"
+        log_name = f"{dependency_obj.name}@{dependency_obj.version_id}"
 
     else:
         # This is **not** the local project, but no --name was given.
