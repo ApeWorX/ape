@@ -35,7 +35,7 @@ from ape.exceptions import (
 from ape.logging import logger
 from ape.managers.base import BaseManager
 from ape.types import AddressType, BlockID, CallTreeNode, SnapshotID, SourceTraceback
-from ape.utils import BaseInterfaceModel, TraceStyles, singledispatchmethod
+from ape.utils import BaseInterfaceModel, TraceStyles, nonreentrant, singledispatchmethod
 
 
 class BlockContainer(BaseManager):
@@ -1014,6 +1014,7 @@ class ContractCache(BaseManager):
 
         return contract_types
 
+    @nonreentrant(key_fn=lambda *args, **kwargs: args[1])
     def get(
         self, address: AddressType, default: Optional[ContractType] = None
     ) -> Optional[ContractType]:

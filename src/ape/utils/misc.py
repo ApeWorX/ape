@@ -2,7 +2,7 @@ import asyncio
 import json
 import sys
 from asyncio import gather
-from functools import cached_property, lru_cache, singledispatchmethod
+from functools import cached_property, lru_cache, singledispatchmethod, wraps
 from pathlib import Path
 from typing import Any, Callable, Coroutine, Dict, List, Mapping, Optional
 
@@ -337,6 +337,26 @@ def allow_disconnected(fn: Callable):
     return inner
 
 
+def nonreentrant(key_fn):
+    def inner(f):
+        locks = set()
+
+        @wraps(f)
+        def wrapper(*args, **kwargs):
+            key = key_fn(*args, **kwargs)
+            if key in locks:
+                raise RecursionError(f"nonreentrant {f.__qualname__}:{key}")
+            locks.add(key)
+            try:
+                return f(*args, **kwargs)
+            finally:
+                locks.discard(key)
+
+        return wrapper
+
+    return inner
+
+
 __all__ = [
     "allow_disconnected",
     "cached_property",
@@ -344,6 +364,7 @@ __all__ = [
     "gas_estimation_error_message",
     "get_package_version",
     "load_config",
+    "nonreentrant",
     "raises_not_implemented",
     "run_until_complete",
     "singledispatchmethod",

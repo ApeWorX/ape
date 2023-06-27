@@ -240,7 +240,10 @@ class CompilerManager(BaseManager):
             # Contract address not found.
             return err
 
-        contract = self.chain_manager.contracts.get(address)
+        try:
+            contract = self.chain_manager.contracts.get(address)
+        except RecursionError:
+            contract = None
         if not contract or not contract.source_id:
             # Contract or source not found.
             return err
