@@ -68,7 +68,7 @@ compiler:
 
 ## Dependencies
 
-In Ape, compile plugins typically let you have dependencies.
+In Ape, compiler plugins typically let you have dependencies.
 See [this guide](./dependencies.html) to learn more about configuring dependencies in Ape.
 
 To always compile dependencies in Ape during the `ape compile` command, use the CLI flag `--include-dependencies`:
