@@ -242,7 +242,7 @@ class DependencyAPI(BaseInterfaceModel):
 
     config_override: Dict = {}
     """
-    Extra settings to include in the dependencies configuration.
+    Extra settings to include in the dependency's configuration.
     """
 
     _cached_manifest: Optional[PackageManifest] = None
