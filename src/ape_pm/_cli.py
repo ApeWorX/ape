@@ -112,7 +112,7 @@ def _package_callback(ctx, param, value):
 @click.option("--version", help="The dependency's version", metavar="VERSION")
 @click.option(
     "--ref",
-    help="A reference flag, used for GitHub branches or tags in place of version",
+    help="A reference flag, used for GitHub branches or tags instead of version",
     metavar="REF",
 )
 @click.option("--force", "-f", help="Force a re-install", is_flag=True)
