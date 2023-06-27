@@ -138,7 +138,7 @@ Dependencies are only compiled if you need them to be.
 This is because often times a dependency will not compile in Ape on its own but its contract types can still be used in your project.
 However, when working with dependency contracts directly, they will need to be compiled.
 Ape compiles them as soon as you request the contracts from them, so it generally happens on the backend automatically.
-**However**, you may want to recompile the dependencies, like using a new compiler version or settings.
+**However**, you may want to recompile the dependencies, like when using a new compiler version or settings.
 You can use the CLI to recompile.
 
 ```shell
