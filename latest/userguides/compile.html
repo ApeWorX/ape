@@ -71,6 +71,7 @@
 <li class="toctree-l2"><a class="reference internal" href="#the-json-compiler">The JSON Compiler</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#other-compiler-plugins">Other Compiler Plugins</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#ignore-files">Ignore Files</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#dependencies">Dependencies</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="clis.html">CLIs</a></li>
@@ -89,6 +90,7 @@
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../commands/accounts.html">accounts</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../commands/compile.html">compile</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../commands/pm.html">pm</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../commands/console.html">console</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../commands/init.html">init</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../commands/networks.html">networks</a></li>
@@ -194,6 +196,20 @@ To override this list, edit your <code class="docutils literal notranslate"><spa
 </pre></div>
 </div>
 <p><strong>NOTE</strong>: You must include the defaults in the list when overriding if you wish to retain them.</p>
+</section>
+<section id="dependencies">
+<h2>Dependencies<a class="headerlink" href="#dependencies" title="Permalink to this heading"></a></h2>
+<p>In Ape, compiler plugins typically let you have dependencies.
+See <a class="reference external" href="./dependencies.html">this guide</a> to learn more about configuring dependencies in Ape.</p>
+<p>To always compile dependencies in Ape during the <code class="docutils literal notranslate"><span class="pre">ape</span> <span class="pre">compile</span></code> command, use the CLI flag <code class="docutils literal notranslate"><span class="pre">--include-dependencies</span></code>:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>ape<span class="w"> </span>compile<span class="w"> </span>--include-dependencies
+</pre></div>
+</div>
+<p>Alternatively, configure it to always happen:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">compile</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">use_dependencies</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+</pre></div>
+</div>
 </section>
 </section>
 

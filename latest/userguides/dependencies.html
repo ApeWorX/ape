@@ -84,7 +84,7 @@
 <li class="toctree-l3"><a class="reference internal" href="#file-exclusions">File Exclusions</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#config-override">Config Override</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#solidity-remappings">Solidity Remappings</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#accessing-dependency-types">Accessing Dependency Types</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#compiling-dependencies">Compiling Dependencies</a></li>
 </ul>
 </li>
 </ul>
@@ -106,6 +106,7 @@
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../commands/accounts.html">accounts</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../commands/compile.html">compile</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../commands/pm.html">pm</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../commands/console.html">console</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../commands/init.html">init</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../commands/networks.html">networks</a></li>
@@ -333,16 +334,26 @@ To use your dependencies in the <code class="docutils literal notranslate"><span
 </pre></div>
 </div>
 </section>
-<section id="accessing-dependency-types">
-<h3>Accessing Dependency Types<a class="headerlink" href="#accessing-dependency-types" title="Permalink to this heading"></a></h3>
+<section id="compiling-dependencies">
+<h3>Compiling Dependencies<a class="headerlink" href="#compiling-dependencies" title="Permalink to this heading"></a></h3>
 <p>Sometimes, you may need to access types (such as contract types) from dependencies.
 You can achieve this using the project manager:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">ape</span> <span class="kn">import</span> <span class="n">accounts</span><span class="p">,</span> <span class="n">project</span>
 
+<span class="c1"># NOTE: This will compile the dependency</span>
 <span class="n">dependency_contract</span> <span class="o">=</span> <span class="n">project</span><span class="o">.</span><span class="n">dependencies</span><span class="p">[</span><span class="s2">&quot;my_dependency&quot;</span><span class="p">][</span><span class="s2">&quot;1.0.0&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">DependencyContractType</span>
 <span class="n">my_account</span> <span class="o">=</span> <span class="n">accounts</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;alias&quot;</span><span class="p">)</span>
 <span class="n">deployed_contract</span> <span class="o">=</span> <span class="n">my_account</span><span class="o">.</span><span class="n">deploy</span><span class="p">(</span><span class="n">dependency_contract</span><span class="p">,</span> <span class="s2">&quot;argument&quot;</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="n">deployed_contract</span><span class="o">.</span><span class="n">address</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>If you would like to always compile dependencies during <code class="docutils literal notranslate"><span class="pre">ape</span> <span class="pre">compile</span></code> rather than only have them get compiled upon asking for contract types, you can use the config option <code class="docutils literal notranslate"><span class="pre">include_dependencies</span></code> from the <code class="docutils literal notranslate"><span class="pre">compile</span></code> config:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">compile</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">include_dependencies</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+</pre></div>
+</div>
+<p>Alternatively, use the <code class="docutils literal notranslate"><span class="pre">--include-dependencies</span></code> CLI flag:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>ape<span class="w"> </span>compile<span class="w"> </span>--include-dependencies
 </pre></div>
 </div>
 </section>

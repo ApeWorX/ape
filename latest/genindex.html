@@ -81,6 +81,7 @@
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="commands/accounts.html">accounts</a></li>
 <li class="toctree-l1"><a class="reference internal" href="commands/compile.html">compile</a></li>
+<li class="toctree-l1"><a class="reference internal" href="commands/pm.html">pm</a></li>
 <li class="toctree-l1"><a class="reference internal" href="commands/console.html">console</a></li>
 <li class="toctree-l1"><a class="reference internal" href="commands/init.html">init</a></li>
 <li class="toctree-l1"><a class="reference internal" href="commands/networks.html">networks</a></li>
@@ -166,6 +167,8 @@
 </li>
         <li><a href="commands/plugins.html#cmdoption-plugins-list-a">plugins-list command line option</a>
 </li>
+        <li><a href="commands/pm.html#cmdoption-pm-list-all">pm-list command line option</a>
+</li>
       </ul></li>
       <li>
     --ecosystem
@@ -179,6 +182,10 @@
 
       <ul>
         <li><a href="commands/compile.html#cmdoption-compile-f">compile command line option</a>
+</li>
+        <li><a href="commands/pm.html#cmdoption-pm-compile-f">pm-compile command line option</a>
+</li>
+        <li><a href="commands/pm.html#cmdoption-pm-install-f">pm-install command line option</a>
 </li>
       </ul></li>
       <li>
@@ -212,10 +219,24 @@
 </li>
       </ul></li>
       <li>
+    --include-dependencies
+
+      <ul>
+        <li><a href="commands/compile.html#cmdoption-compile-include-dependencies">compile command line option</a>
+</li>
+      </ul></li>
+      <li>
     --interactive
 
       <ul>
         <li><a href="commands/run.html#cmdoption-run-I">run command line option</a>
+</li>
+      </ul></li>
+      <li>
+    --name
+
+      <ul>
+        <li><a href="commands/pm.html#cmdoption-pm-install-name">pm-install command line option</a>
 </li>
       </ul></li>
       <li>
@@ -232,6 +253,13 @@
 
       <ul>
         <li><a href="commands/networks.html#cmdoption-networks-list-provider">networks-list command line option</a>
+</li>
+      </ul></li>
+      <li>
+    --ref
+
+      <ul>
+        <li><a href="commands/pm.html#cmdoption-pm-install-ref">pm-install command line option</a>
 </li>
       </ul></li>
       <li>
@@ -285,11 +313,26 @@
 </li>
         <li><a href="commands/plugins.html#cmdoption-plugins-uninstall-v">plugins-uninstall command line option</a>
 </li>
+        <li><a href="commands/pm.html#cmdoption-pm-compile-v">pm-compile command line option</a>
+</li>
+        <li><a href="commands/pm.html#cmdoption-pm-install-v">pm-install command line option</a>
+</li>
+        <li><a href="commands/pm.html#cmdoption-pm-list-v">pm-list command line option</a>
+</li>
         <li><a href="commands/test.html#cmdoption-test-v">test command line option</a>
 </li>
       </ul></li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li>
+    --version
+
+      <ul>
+        <li><a href="commands/pm.html#cmdoption-pm-compile-version">pm-compile command line option</a>
+</li>
+        <li><a href="commands/pm.html#cmdoption-pm-install-version">pm-install command line option</a>
+</li>
+      </ul></li>
       <li>
     --watch
 
@@ -339,6 +382,10 @@
 
       <ul>
         <li><a href="commands/compile.html#cmdoption-compile-f">compile command line option</a>
+</li>
+        <li><a href="commands/pm.html#cmdoption-pm-compile-f">pm-compile command line option</a>
+</li>
+        <li><a href="commands/pm.html#cmdoption-pm-install-f">pm-install command line option</a>
 </li>
       </ul></li>
       <li>
@@ -391,6 +438,12 @@
         <li><a href="commands/plugins.html#cmdoption-plugins-list-v">plugins-list command line option</a>
 </li>
         <li><a href="commands/plugins.html#cmdoption-plugins-uninstall-v">plugins-uninstall command line option</a>
+</li>
+        <li><a href="commands/pm.html#cmdoption-pm-compile-v">pm-compile command line option</a>
+</li>
+        <li><a href="commands/pm.html#cmdoption-pm-install-v">pm-install command line option</a>
+</li>
+        <li><a href="commands/pm.html#cmdoption-pm-list-v">pm-list command line option</a>
 </li>
         <li><a href="commands/test.html#cmdoption-test-v">test command line option</a>
 </li>
@@ -1125,6 +1178,8 @@
 
       <ul>
         <li><a href="commands/compile.html#cmdoption-compile-f">--force</a>
+</li>
+        <li><a href="commands/compile.html#cmdoption-compile-include-dependencies">--include-dependencies</a>
 </li>
         <li><a href="commands/compile.html#cmdoption-compile-s">--size</a>
 </li>
@@ -1961,6 +2016,13 @@
 <h2 id="N">N</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li>
+    NAME
+
+      <ul>
+        <li><a href="commands/pm.html#cmdoption-pm-compile-arg-NAME">pm-compile command line option</a>
+</li>
+      </ul></li>
       <li><a href="methoddocs/api.html#ape.api.networks.EcosystemAPI.name">name (ape.api.networks.EcosystemAPI attribute)</a>
 
       <ul>
@@ -2001,10 +2063,10 @@
 </li>
       <li><a href="methoddocs/cli.html#ape.cli.choices.NetworkChoice">NetworkChoice (class in ape.cli.choices)</a>
 </li>
-      <li><a href="methoddocs/exceptions.html#ape.exceptions.NetworkError">NetworkError</a>
-</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="methoddocs/exceptions.html#ape.exceptions.NetworkError">NetworkError</a>
+</li>
       <li><a href="methoddocs/managers.html#ape.managers.networks.NetworkManager">NetworkManager (class in ape.managers.networks)</a>
 </li>
       <li><a href="methoddocs/exceptions.html#ape.exceptions.NetworkMismatchError">NetworkMismatchError</a>
@@ -2074,6 +2136,13 @@
 <h2 id="P">P</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li>
+    PACKAGE
+
+      <ul>
+        <li><a href="commands/pm.html#cmdoption-pm-install-arg-PACKAGE">pm-install command line option</a>
+</li>
+      </ul></li>
       <li><a href="methoddocs/managers.html#ape.managers.networks.NetworkManager.parse_network_choice">parse_network_choice() (ape.managers.networks.NetworkManager method)</a>
 </li>
       <li><a href="methoddocs/api.html#ape.api.projects.ProjectAPI.path">path (ape.api.projects.ProjectAPI attribute)</a>
@@ -2154,6 +2223,57 @@
       </ul></li>
       <li><a href="methoddocs/plugins.html#ape.plugins.pluggy_patch.PluginType">PluginType (class in ape.plugins.pluggy_patch)</a>
 </li>
+      <li>
+    pm-compile command line option
+
+      <ul>
+        <li><a href="commands/pm.html#cmdoption-pm-compile-f">--force</a>
+</li>
+        <li><a href="commands/pm.html#cmdoption-pm-compile-v">--verbosity</a>
+</li>
+        <li><a href="commands/pm.html#cmdoption-pm-compile-version">--version</a>
+</li>
+        <li><a href="commands/pm.html#cmdoption-pm-compile-f">-f</a>
+</li>
+        <li><a href="commands/pm.html#cmdoption-pm-compile-v">-v</a>
+</li>
+        <li><a href="commands/pm.html#cmdoption-pm-compile-arg-NAME">NAME</a>
+</li>
+      </ul></li>
+      <li>
+    pm-install command line option
+
+      <ul>
+        <li><a href="commands/pm.html#cmdoption-pm-install-f">--force</a>
+</li>
+        <li><a href="commands/pm.html#cmdoption-pm-install-name">--name</a>
+</li>
+        <li><a href="commands/pm.html#cmdoption-pm-install-ref">--ref</a>
+</li>
+        <li><a href="commands/pm.html#cmdoption-pm-install-v">--verbosity</a>
+</li>
+        <li><a href="commands/pm.html#cmdoption-pm-install-version">--version</a>
+</li>
+        <li><a href="commands/pm.html#cmdoption-pm-install-f">-f</a>
+</li>
+        <li><a href="commands/pm.html#cmdoption-pm-install-v">-v</a>
+</li>
+        <li><a href="commands/pm.html#cmdoption-pm-install-arg-PACKAGE">PACKAGE</a>
+</li>
+      </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li>
+    pm-list command line option
+
+      <ul>
+        <li><a href="commands/pm.html#cmdoption-pm-list-all">--all</a>
+</li>
+        <li><a href="commands/pm.html#cmdoption-pm-list-v">--verbosity</a>
+</li>
+        <li><a href="commands/pm.html#cmdoption-pm-list-v">-v</a>
+</li>
+      </ul></li>
       <li><a href="methoddocs/managers.html#ape.managers.chain.BlockContainer.poll_blocks">poll_blocks() (ape.managers.chain.BlockContainer method)</a>
 </li>
       <li><a href="methoddocs/contracts.html#ape.contracts.base.ContractEvent.poll_logs">poll_logs() (ape.contracts.base.ContractEvent method)</a>
@@ -2166,8 +2286,6 @@
         <li><a href="methoddocs/api.html#ape.api.providers.Web3Provider.prepare_transaction">(ape.api.providers.Web3Provider method)</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="methoddocs/cli.html#ape.cli.choices.AccountAliasPromptChoice.print_choices">print_choices() (ape.cli.choices.AccountAliasPromptChoice method)</a>
 
       <ul>
