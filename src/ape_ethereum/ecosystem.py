@@ -1,6 +1,5 @@
 import re
 from copy import deepcopy
-from enum import IntEnum
 from typing import Any, Dict, Iterator, List, Optional, Tuple, Type, Union, cast
 
 from eth_abi import decode, encode
@@ -21,7 +20,7 @@ from ethpm_types.abi import ABIType, ConstructorABI, EventABI, MethodABI
 from pydantic import Field, validator
 
 from ape.api import BlockAPI, EcosystemAPI, PluginConfig, ReceiptAPI, TransactionAPI
-from ape.api.networks import LOCAL_NETWORK_NAME, ProxyInfoAPI
+from ape.api.networks import LOCAL_NETWORK_NAME
 from ape.contracts.base import ContractCall
 from ape.exceptions import (
     ApeException,
@@ -52,6 +51,7 @@ from ape.utils import (
 )
 from ape.utils.abi import _convert_kwargs
 from ape.utils.misc import DEFAULT_MAX_RETRIES_TX
+from ape_ethereum.proxies import ProxyInfo, ProxyType
 from ape_ethereum.transactions import (
     AccessListTransaction,
     BaseTransaction,
@@ -69,24 +69,6 @@ NETWORKS = {
     "sepolia": (11155111, 11155111),
 }
 BLUEPRINT_HEADER = HexBytes("0xfe71")
-
-
-class ProxyType(IntEnum):
-    Minimal = 0  # eip-1167 minimal proxy contract
-    Standard = 1  # eip-1967 standard proxy storage slots
-    Beacon = 2  # eip-1967 beacon proxy
-    UUPS = 3  # # eip-1822 universal upgradeable proxy standard
-    Vyper = 4  # vyper <0.2.9 create_forwarder_to
-    Clones = 5  # 0xsplits clones
-    GnosisSafe = 6
-    OpenZeppelin = 7  # openzeppelin upgradeability proxy
-    Delegate = 8  # eip-897 delegate proxy
-    ZeroAge = 9  # a more-minimal proxy
-    SoladyPush0 = 10  # solady push0 minimal proxy
-
-
-class ProxyInfo(ProxyInfoAPI):
-    type: ProxyType
 
 
 class NetworkConfig(PluginConfig):

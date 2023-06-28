@@ -114,11 +114,6 @@ def geth_receipt(contract_with_call_depth_geth, owner, geth_provider):
 
 
 @pytest.fixture
-def geth_vyper_contract(owner, vyper_contract_container, geth_provider):
-    return owner.deploy(vyper_contract_container, 0)
-
-
-@pytest.fixture
 def geth_vyper_receipt(geth_vyper_contract, owner):
     return geth_vyper_contract.setNumber(44, sender=owner)
 

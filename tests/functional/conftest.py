@@ -561,3 +561,8 @@ def vyper_factory(owner, get_contract_type):
 def vyper_blueprint(owner, vyper_contract_container):
     receipt = owner.declare(vyper_contract_container)
     return receipt.contract_address
+
+
+@pytest.fixture
+def geth_vyper_contract(owner, vyper_contract_container, geth_provider):
+    return owner.deploy(vyper_contract_container, 0)

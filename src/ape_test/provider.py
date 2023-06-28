@@ -23,8 +23,8 @@ from ape.exceptions import (
     UnknownSnapshotError,
     VirtualMachineError,
 )
-from ape.types import SnapshotID
-from ape.utils import gas_estimation_error_message
+from ape.types import AddressType, SnapshotID
+from ape.utils import gas_estimation_error_message, raises_not_implemented
 
 CHAIN_ID = LazyObject(lambda: API_ENDPOINTS["eth"]["chainId"](), globals(), "CHAIN_ID")
 
@@ -254,3 +254,10 @@ class LocalProvider(TestProviderAPI, Web3Provider):
 
         else:
             return VirtualMachineError(base_err=exception, **kwargs)
+
+    @raises_not_implemented
+    def get_storage_at(  # type: ignore[empty-body]
+        self, address: AddressType, slot: int, **kwargs
+    ) -> bytes:
+        # Short-circuit to not-implemented rather than letting RPC fail.
+        pass
