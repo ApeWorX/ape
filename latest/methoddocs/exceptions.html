@@ -106,6 +106,7 @@
 </li>
 <li class="toctree-l2"><a class="reference internal" href="#ape.exceptions.AccountsError"><code class="docutils literal notranslate"><span class="pre">AccountsError</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#ape.exceptions.AliasAlreadyInUseError"><code class="docutils literal notranslate"><span class="pre">AliasAlreadyInUseError</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#ape.exceptions.ApeAttributeError"><code class="docutils literal notranslate"><span class="pre">ApeAttributeError</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#ape.exceptions.ApeException"><code class="docutils literal notranslate"><span class="pre">ApeException</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#ape.exceptions.ArgumentsLengthError"><code class="docutils literal notranslate"><span class="pre">ArgumentsLengthError</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#ape.exceptions.BlockNotFoundError"><code class="docutils literal notranslate"><span class="pre">BlockNotFoundError</span></code></a></li>
@@ -211,6 +212,13 @@ useful for all user-facing errors.</p>
 <dd><p>Bases: <a class="reference internal" href="#ape.exceptions.AccountsError" title="ape.exceptions.AccountsError"><code class="xref py py-class docutils literal notranslate"><span class="pre">AccountsError</span></code></a></p>
 <p>Raised when attempting to add an account using an alias
 that already maps to another account.</p>
+</dd></dl>
+
+<dl class="py exception">
+<dt class="sig sig-object py" id="ape.exceptions.ApeAttributeError">
+<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ape.exceptions.</span></span><span class="sig-name descname"><span class="pre">ApeAttributeError</span></span><a class="headerlink" href="#ape.exceptions.ApeAttributeError" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ape.exceptions.ProjectError" title="ape.exceptions.ProjectError"><code class="xref py py-class docutils literal notranslate"><span class="pre">ProjectError</span></code></a>, <code class="xref py py-class docutils literal notranslate"><span class="pre">AttributeError</span></code></p>
+<p>Raised when trying to access items via <code class="docutils literal notranslate"><span class="pre">.</span></code> access.</p>
 </dd></dl>
 
 <dl class="py exception">
