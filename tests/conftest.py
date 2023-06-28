@@ -14,6 +14,7 @@ import ape
 from ape.exceptions import APINotImplementedError, UnknownSnapshotError
 from ape.managers.config import CONFIG_FILE_NAME
 from ape.types import AddressType
+from ape.utils import ZERO_ADDRESS
 
 # NOTE: Ensure that we don't use local paths for these
 ape.config.DATA_FOLDER = Path(mkdtemp()).resolve()
@@ -340,3 +341,8 @@ def skip_if_plugin_installed(*plugin_names: str):
         return fn
 
     return wrapper
+
+
+@pytest.fixture
+def zero_address():
+    return ZERO_ADDRESS

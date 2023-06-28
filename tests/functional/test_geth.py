@@ -13,7 +13,6 @@ from ape.exceptions import (
     OutOfGasError,
     TransactionNotFoundError,
 )
-from ape.utils import ZERO_ADDRESS
 from ape_ethereum.ecosystem import Block
 from ape_geth.provider import Geth
 from tests.conftest import GETH_URI, geth_process_test
@@ -421,11 +420,11 @@ def test_return_value_list(geth_account, geth_contract, geth_provider):
 
 
 @geth_process_test
-def test_return_value_nested_address_array(geth_account, geth_contract, geth_provider):
+def test_return_value_nested_address_array(geth_account, geth_contract, geth_provider, zero_address):
     receipt = geth_contract.getNestedAddressArray.transact(sender=geth_account)
     expected = [
         [geth_account.address, geth_account.address, geth_account.address],
-        [ZERO_ADDRESS, ZERO_ADDRESS, ZERO_ADDRESS],
+        [zero_address, zero_address, zero_address],
     ]
     assert receipt.return_value == expected
 
