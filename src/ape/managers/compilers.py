@@ -5,7 +5,7 @@ from ethpm_types import ContractType
 from ethpm_types.source import Content
 
 from ape.api import CompilerAPI
-from ape.exceptions import CompilerError, ContractLogicError
+from ape.exceptions import ApeAttributeError, CompilerError, ContractLogicError
 from ape.logging import logger
 from ape.utils import get_relative_path
 
@@ -39,7 +39,7 @@ class CompilerManager(BaseManager):
 
         compiler = self.get_compiler(name)
         if not compiler:
-            raise AttributeError(f"No attribute or compiler named '{name}'.")
+            raise ApeAttributeError(f"No attribute or compiler named '{name}'.")
 
         return compiler
 
