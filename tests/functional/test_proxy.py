@@ -30,6 +30,9 @@ def test_minimal_proxy(ethereum, minimal_proxy):
 
 @geth_process_test
 def test_standard_proxy(ethereum, standard_proxy, geth_provider, geth_vyper_contract):
+    """
+    NOTE: Geth is used here because EthTester does not implement getting storage slots.
+    """
     actual = ethereum.get_proxy_info(standard_proxy.address)
     assert actual is not None
     assert actual.type == ProxyType.Standard
