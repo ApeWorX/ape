@@ -370,6 +370,7 @@ class DependencyAPI(BaseInterfaceModel):
             return manifest
 
         sources = manifest.sources or {}  # NOTE: Already handled excluded files
+        compilers_touched = []
         with tempfile.TemporaryDirectory() as temp_dir:
             project = self._get_project(Path(temp_dir))
             contracts_folder = project.contracts_folder.absolute()
@@ -413,8 +414,9 @@ class DependencyAPI(BaseInterfaceModel):
                     compiler_data["evm_version"] = settings["evm_version"]
 
                 for key, setting in self.config_override.items():
-                    if key.strip().lower() == compiler.name.strip().lower():
+                    if key == compiler.name.strip().lower():
                         compiler_data = {**compiler_data, **setting}
+                        compilers_touched.append(key)
                         break
 
                 if compiler_data:
@@ -450,6 +452,14 @@ class DependencyAPI(BaseInterfaceModel):
             if dependencies_config:
                 config_data["dependencies"] = dependencies_config
 
+            # Merge compiler data
+            overrides = self.config_override
+            for name in compilers_touched:
+                if name in overrides and name in config_data:
+                    config_data[name] = {**config_data[name], **overrides[name]}
+                    del overrides[name]
+
+            config_data = {**config_data, **overrides}
             if config_data:
                 target_config_file.unlink(missing_ok=True)
                 with open(target_config_file, "w") as cf:
