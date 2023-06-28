@@ -412,11 +412,6 @@ class DependencyAPI(BaseInterfaceModel):
                 if "evm_version" in settings:
                     compiler_data["evm_version"] = settings["evm_version"]
 
-                for key, setting in self.config_override.items():
-                    if key.strip().lower() == compiler.name.strip().lower():
-                        compiler_data = {**compiler_data, **setting}
-                        break
-
                 if compiler_data:
                     config_data[name] = compiler_data
 
@@ -450,6 +445,7 @@ class DependencyAPI(BaseInterfaceModel):
             if dependencies_config:
                 config_data["dependencies"] = dependencies_config
 
+            config_data = {**config_data, **self.config_override}
             if config_data:
                 target_config_file.unlink(missing_ok=True)
                 with open(target_config_file, "w") as cf:
