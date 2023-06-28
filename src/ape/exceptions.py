@@ -349,6 +349,12 @@ class ProjectError(ApeException):
     """
 
 
+class ApeAttributeError(ProjectError, AttributeError):
+    """
+    Raised when trying to access items via ``.`` access.
+    """
+
+
 class UnknownVersionError(ProjectError):
     """
     Raised when trying to install an unknown version of a package.

@@ -10,6 +10,7 @@ from packaging.version import InvalidVersion, Version
 from pydantic import ValidationError
 from yaml import safe_dump
 
+from ape.exceptions import ApeAttributeError
 from ape.logging import logger
 from ape.utils import (
     BaseInterfaceModel,
@@ -332,13 +333,13 @@ class DependencyAPI(BaseInterfaceModel):
         try:
             container = self.get(contract_name)
         except Exception as err:
-            raise AttributeError(
+            raise ApeAttributeError(
                 f"Dependency project '{self.name}' has no contract "
                 f"or attribute '{contract_name}'.\n{err}"
             ) from err
 
         if not container:
-            raise AttributeError(
+            raise ApeAttributeError(
                 f"Dependency project '{self.name}' has no contract '{contract_name}'."
             )
 

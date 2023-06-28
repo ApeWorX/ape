@@ -12,7 +12,7 @@ from ethpm_types.utils import AnyUrl
 from ape.api import DependencyAPI, ProjectAPI
 from ape.api.networks import LOCAL_NETWORK_NAME
 from ape.contracts import ContractContainer, ContractInstance, ContractNamespace
-from ape.exceptions import APINotImplementedError, ProjectError
+from ape.exceptions import ApeAttributeError, APINotImplementedError, ProjectError
 from ape.logging import logger
 from ape.managers.base import BaseManager
 from ape.managers.project.types import ApeProject, BrownieProject
@@ -416,7 +416,8 @@ class ProjectManager(BaseManager):
             contract = project.MyContract
 
         Raises:
-            AttributeError: When the given name is not a contract in the project.
+            :class:`~ape.exceptions.ApeAttributeError`: When the given name is not
+              a contract in the project.
 
         Args:
             attr_name (str): The name of the contract in the project.
@@ -454,12 +455,12 @@ class ProjectManager(BaseManager):
         contract_type = contract_types.get(attr_name)
         if not contract_type:
             # Still not found. Contract likely doesn't exist.
-            return self._handle_attr_not_found(attr_name)
+            return self._handle_attr_or_contract_not_found(attr_name)
 
         result = self._get_attr(attr_name)
         if not result:
             # Shouldn't happen.
-            return self._handle_attr_not_found(attr_name)
+            return self._handle_attr_or_contract_not_found(attr_name)
 
         return result
 
@@ -493,20 +494,36 @@ class ProjectManager(BaseManager):
 
         except Exception as err:
             # __getattr__ has to raise `AttributeError`
-            raise AttributeError(str(err)) from err
+            raise ApeAttributeError(str(err)) from err
 
         return None
 
-    def _handle_attr_not_found(self, attr_name: str):
+    def _handle_attr_or_contract_not_found(self, attr_name: str):
         message = f"{self.__class__.__name__} has no attribute or contract named '{attr_name}'."
-        missing_exts = self.extensions_with_missing_compilers([])
-        if missing_exts:
-            message = (
-                f"{message} Could it be from one of the missing compilers for extensions: "
-                + f'{", ".join(sorted(missing_exts))}?'
-            )
 
-        raise AttributeError(message)
+        file_check_appended = False
+        for file in self.contracts_folder.glob("**/*"):
+            # Possibly, the user was trying to use a source ID instead of a contract name.
+            if file.stem != attr_name:
+                continue
+
+            message = (
+                f"{message} However, there is a source file named '{attr_name}', "
+                "Did you mean to reference a contract name from this source file?"
+            )
+            file_check_appended = True
+            break
+
+        if not file_check_appended:
+            # Possibly, the user does not have compiler plugins installed or working.
+            missing_exts = self.extensions_with_missing_compilers([])
+            if missing_exts:
+                message = (
+                    f"{message} Could it be from one of the missing compilers for extensions: "
+                    + f'{", ".join(sorted(missing_exts))}?'
+                )
+
+        raise ApeAttributeError(message)
 
     def get_contract(self, contract_name: str) -> ContractContainer:
         """
