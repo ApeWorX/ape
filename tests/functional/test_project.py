@@ -376,8 +376,11 @@ def test_contracts_folder(project, config):
 
 def test_getattr_contract_not_exists(project):
     expected = (
-        r"ProjectManager has no attribute or contract named 'ThisIsNotAContractThatExists'. "
-        r"Could it be from one of the missing compilers for extensions:.*"
+        r"ProjectManager has no attribute or contract named "
+        r"'ThisIsNotAContractThatExists'. However, there is a source "
+        r"file named 'ThisIsNotAContractThatExists', did you mean to "
+        r"reference a contract name from this source file\? "
+        r"Else, could it be from one of the missing compilers for extensions:.*\?"
     )
     project.contracts_folder.mkdir(exist_ok=True)
     contract = project.contracts_folder / "ThisIsNotAContractThatExists.foo"

@@ -509,19 +509,19 @@ class ProjectManager(BaseManager):
 
             message = (
                 f"{message} However, there is a source file named '{attr_name}', "
-                "Did you mean to reference a contract name from this source file?"
+                "did you mean to reference a contract name from this source file?"
             )
             file_check_appended = True
             break
 
-        if not file_check_appended:
-            # Possibly, the user does not have compiler plugins installed or working.
-            missing_exts = self.extensions_with_missing_compilers([])
-            if missing_exts:
-                message = (
-                    f"{message} Could it be from one of the missing compilers for extensions: "
-                    + f'{", ".join(sorted(missing_exts))}?'
-                )
+        # Possibly, the user does not have compiler plugins installed or working.
+        missing_exts = self.extensions_with_missing_compilers([])
+        if missing_exts:
+            start = "Else, could" if file_check_appended else "Could"
+            message = (
+                f"{message} {start} it be from one of the missing compilers for extensions: "
+                + f'{", ".join(sorted(missing_exts))}?'
+            )
 
         raise ApeAttributeError(message)
 
