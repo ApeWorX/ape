@@ -3,19 +3,19 @@
 Ape is able to detect proxy contracts so that it uses the target interface when interacting with a contract.
 The following proxies are supporting in `ape-ethereum`:
 
-| Proxy Type          | Short Description                |
-|---------------------|----------------------------------|
-| Minimal             | EIP-1167                         |
-| Standard            | EIP-1967                         |
-| Beacon              | EIP-1967                         |
-| UUPS                | EIP-1822                         |
-| Vyper               | vyper <0.2.9 create_forwarder_to |
-| Clones              | 0xsplits clones                  |
-| Safe                | Formerly Gnosis Safe             |
-| OpenZeppelin        | OZ Upgradable                    |
-| Delegate            | EIP-897                          |
-| ZeroAge             | A minimal proxy                  |
-| SoladyPush0         | Uses PUSH0                       |
+| Proxy Type   | Short Description                 |
+| ------------ | --------------------------------- |
+| Minimal      | EIP-1167                          |
+| Standard     | EIP-1967                          |
+| Beacon       | EIP-1967                          |
+| UUPS         | EIP-1822                          |
+| Vyper        | vyper \<0.2.9 create_forwarder_to |
+| Clones       | 0xsplits clones                   |
+| Safe         | Formerly Gnosis Safe              |
+| OpenZeppelin | OZ Upgradable                     |
+| Delegate     | EIP-897                           |
+| ZeroAge      | A minimal proxy                   |
+| SoladyPush0  | Uses PUSH0                        |
 
 Proxy detection occurs when attempting to retrieve contract types in Ape.
 Ape uses various sources to find contract types, such as explorer APIs.
