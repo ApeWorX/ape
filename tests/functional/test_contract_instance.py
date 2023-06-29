@@ -267,7 +267,9 @@ def test_get_empty_tuple_of_dyn_array_structs(contract_instance):
     assert actual == expected
 
 
-def test_get_empty_tuple_of_array_of_structs_and_dyn_array_of_structs(contract_instance, zero_address):
+def test_get_empty_tuple_of_array_of_structs_and_dyn_array_of_structs(
+    contract_instance, zero_address
+):
     actual = contract_instance.getEmptyTupleOfArrayOfStructsAndDynArrayOfStructs()
     expected_fixed_array = (
         zero_address,

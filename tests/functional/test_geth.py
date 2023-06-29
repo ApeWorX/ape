@@ -420,7 +420,9 @@ def test_return_value_list(geth_account, geth_contract, geth_provider):
 
 
 @geth_process_test
-def test_return_value_nested_address_array(geth_account, geth_contract, geth_provider, zero_address):
+def test_return_value_nested_address_array(
+    geth_account, geth_contract, geth_provider, zero_address
+):
     receipt = geth_contract.getNestedAddressArray.transact(sender=geth_account)
     expected = [
         [geth_account.address, geth_account.address, geth_account.address],

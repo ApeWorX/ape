@@ -21,11 +21,17 @@ def standard_proxy(owner, get_contract_type, geth_vyper_contract):
 
 
 @pytest.fixture
-def beacon_proxy(owner, get_contract_type, geth_vyper_contract, zero_address):
+def beacon(owner, get_contract_type, geth_provider, vyper_contract_instance):
     _type = get_contract_type("beacon")
     contract = ContractContainer(_type)
-    target = geth_vyper_contract.address
-    return owner.deploy(contract, target, HexBytes(""))
+    return owner.deploy(contract, vyper_contract_instance)
+
+
+@pytest.fixture
+def beacon_proxy(owner, get_contract_type, beacon, geth_provider):
+    _type = get_contract_type("beacon_proxy")
+    contract = ContractContainer(_type)
+    return owner.deploy(contract, beacon, HexBytes(""))
 
 
 def test_minimal_proxy(ethereum, minimal_proxy):
@@ -48,22 +54,11 @@ def test_standard_proxy(ethereum, standard_proxy, geth_provider, geth_vyper_cont
 
 
 @geth_process_test
-def test_standard_proxy(ethereum, standard_proxy, geth_provider, geth_vyper_contract):
-    """
-    NOTE: Geth is used here because EthTester does not implement getting storage slots.
-    """
-    actual = ethereum.get_proxy_info(standard_proxy.address)
-    assert actual is not None
-    assert actual.type == ProxyType.Standard
-    assert actual.target == geth_vyper_contract.address
-
-
-@geth_process_test
-def test_beacon_proxy(ethereum, beacon_proxy, geth_provider, geth_vyper_contract):
+def test_beacon_proxy(ethereum, beacon_proxy, geth_provider, vyper_contract_instance):
     """
     NOTE: Geth is used here because EthTester does not implement getting storage slots.
     """
     actual = ethereum.get_proxy_info(beacon_proxy.address)
     assert actual is not None
     assert actual.type == ProxyType.Beacon
-    assert actual.target == geth_vyper_contract.address
+    assert actual.target == vyper_contract_instance.address
