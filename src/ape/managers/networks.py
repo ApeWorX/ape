@@ -4,7 +4,7 @@ import yaml
 
 from ape.api import EcosystemAPI, ProviderAPI, ProviderContextManager
 from ape.api.networks import LOCAL_NETWORK_NAME, NetworkAPI
-from ape.exceptions import NetworkError
+from ape.exceptions import ApeAttributeError, NetworkError
 from ape.logging import logger
 
 from .base import BaseManager
@@ -259,7 +259,7 @@ class NetworkManager(BaseManager):
         """
 
         if attr_name not in self.ecosystems:
-            raise AttributeError(f"{self.__class__.__name__} has no attribute '{attr_name}'.")
+            raise ApeAttributeError(f"{self.__class__.__name__} has no attribute '{attr_name}'.")
 
         return self.ecosystems[attr_name]
 

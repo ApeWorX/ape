@@ -41,7 +41,7 @@ class TransactionAPI(BaseInterfaceModel):
     such as typed-transactions from `EIP-1559 <https://eips.ethereum.org/EIPS/eip-1559>`__.
     """
 
-    chain_id: int = Field(0, alias="chainId")
+    chain_id: Optional[int] = Field(0, alias="chainId")
     receiver: Optional[AddressType] = Field(None, alias="to")
     sender: Optional[AddressType] = Field(None, alias="from")
     gas_limit: Optional[int] = Field(None, alias="gas")
@@ -502,7 +502,7 @@ class ReceiptAPI(BaseInterfaceModel):
         """
 
         call_tree = self.call_tree
-        receiver = self.receiver
-        if call_tree and receiver is not None and self._test_runner is not None:
+        address = self.receiver or self.contract_address
+        if call_tree and address is not None and self._test_runner is not None:
             tracker = self._test_runner.gas_tracker
-            tracker.append_gas(call_tree.enrich(in_line=False), receiver)
+            tracker.append_gas(call_tree.enrich(in_line=False), address)

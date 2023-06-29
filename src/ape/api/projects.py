@@ -3,13 +3,14 @@ import tempfile
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
 
-import yaml
 from ethpm_types import Checksum, ContractType, PackageManifest, Source
 from ethpm_types.manifest import PackageName
 from ethpm_types.utils import AnyUrl, compute_checksum
 from packaging.version import InvalidVersion, Version
 from pydantic import ValidationError
+from yaml import safe_dump
 
+from ape.exceptions import ApeAttributeError
 from ape.logging import logger
 from ape.utils import (
     BaseInterfaceModel,
@@ -240,6 +241,11 @@ class DependencyAPI(BaseInterfaceModel):
     A list of glob-patterns for excluding files in dependency projects.
     """
 
+    config_override: Dict = {}
+    """
+    Extra settings to include in the dependency's configuration.
+    """
+
     _cached_manifest: Optional[PackageManifest] = None
 
     def __repr__(self):
@@ -278,7 +284,7 @@ class DependencyAPI(BaseInterfaceModel):
         return self._base_cache_path / f"{self.name}.json"
 
     @abstractmethod
-    def extract_manifest(self) -> PackageManifest:
+    def extract_manifest(self, use_cache: bool = True) -> PackageManifest:
         """
         Create a ``PackageManifest`` definition,
         presumably by downloading and compiling the dependency.
@@ -287,6 +293,10 @@ class DependencyAPI(BaseInterfaceModel):
         :meth:`~ape.managers.project.ProjectManager.get_project`
         to dynamically get the correct :class:`~ape.api.projects.ProjectAPI`.
         based on the project's structure.
+
+        Args:
+            use_cache (bool): Defaults to ``True``. Set to ``False`` to force
+              a re-install.
 
         Returns:
             ``PackageManifest``
@@ -300,6 +310,7 @@ class DependencyAPI(BaseInterfaceModel):
         """
         if self._cached_manifest is None:
             self._cached_manifest = _load_manifest_from_file(self._target_manifest_cache_file)
+
         return self._cached_manifest
 
     def __getitem__(self, contract_name: str) -> "ContractContainer":
@@ -322,13 +333,13 @@ class DependencyAPI(BaseInterfaceModel):
         try:
             container = self.get(contract_name)
         except Exception as err:
-            raise AttributeError(
+            raise ApeAttributeError(
                 f"Dependency project '{self.name}' has no contract "
                 f"or attribute '{contract_name}'.\n{err}"
             ) from err
 
         if not container:
-            raise AttributeError(
+            raise ApeAttributeError(
                 f"Dependency project '{self.name}' has no contract '{contract_name}'."
             )
 
@@ -342,20 +353,25 @@ class DependencyAPI(BaseInterfaceModel):
 
         return None
 
-    def compile(self) -> PackageManifest:
+    def compile(self, use_cache: bool = True) -> PackageManifest:
         """
         Compile the contract types in this dependency into
         a package manifest.
+
+        Args:
+            use_cache (bool): Defaults to ``True``. Set to ``False`` to force
+              a re-compile.
 
         **NOTE**: By default, dependency's compile lazily.
         """
 
         manifest = self.extract_manifest()
-        if manifest.contract_types:
+        if use_cache and manifest.contract_types:
             # Already compiled
             return manifest
 
         sources = manifest.sources or {}  # NOTE: Already handled excluded files
+        compilers_touched = []
         with tempfile.TemporaryDirectory() as temp_dir:
             project = self._get_project(Path(temp_dir))
             contracts_folder = project.contracts_folder.absolute()
@@ -395,6 +411,15 @@ class DependencyAPI(BaseInterfaceModel):
                 if remapping_list:
                     compiler_data["import_remapping"] = remapping_list
 
+                if "evm_version" in settings:
+                    compiler_data["evm_version"] = settings["evm_version"]
+
+                for key, setting in self.config_override.items():
+                    if key == compiler.name.strip().lower():
+                        compiler_data = {**compiler_data, **setting}
+                        compilers_touched.append(key)
+                        break
+
                 if compiler_data:
                     config_data[name] = compiler_data
 
@@ -428,19 +453,29 @@ class DependencyAPI(BaseInterfaceModel):
             if dependencies_config:
                 config_data["dependencies"] = dependencies_config
 
+            # Merge compiler data
+            overrides = self.config_override
+            for name in compilers_touched:
+                if name in overrides and name in config_data:
+                    config_data[name] = {**config_data[name], **overrides[name]}
+                    del overrides[name]
+
+            config_data = {**config_data, **overrides}
             if config_data:
                 target_config_file.unlink(missing_ok=True)
-                with open(target_config_file, "w+") as cf:
-                    yaml.safe_dump(config_data, cf)
+                with open(target_config_file, "w") as cf:
+                    safe_dump(config_data, cf)
 
             manifest = project.create_manifest()
             self._write_manifest_to_cache(manifest)
             return manifest
 
-    def _extract_local_manifest(self, project_path: Path) -> PackageManifest:
+    def _extract_local_manifest(
+        self, project_path: Path, use_cache: bool = True
+    ) -> PackageManifest:
         cached_manifest = (
             _load_manifest_from_file(self._target_manifest_cache_file)
-            if self._target_manifest_cache_file.is_file()
+            if use_cache and self._target_manifest_cache_file.is_file()
             else None
         )
         if cached_manifest:

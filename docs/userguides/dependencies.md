@@ -78,6 +78,88 @@ dependencies:
     version: v1.3.0
 ```
 
+## Package Management CLI
+
+You can also install and / or compile dependencies using the `pm` CLI.
+
+### list
+
+To list information about the dependencies in your local project, run:
+
+```shell
+ape pm list
+```
+
+To list information about all installed dependencies across all projects, run:
+
+```shell
+ape pm list --all
+```
+
+You should see information like:
+
+```shell
+Packages:
+  OpenZeppelin v4.6.0, compiled!
+  vault master
+  vault v0.4.5
+  gnosis v1.3.0
+```
+
+### install
+
+To install all dependencies in your project, run:
+
+```shell
+ape pm install
+```
+
+If the dependencies are already cached and you want to re-install them, use the `--force` flag:
+
+```shell
+ape pm install --force
+```
+
+To install a dependency that is not in your config, you can specify it directly along with `--name` and `--version`:
+
+```shell
+ape pm install gh:OpenZeppelin/openzeppelin-contracts --name openzeppelin --version "4.6.0"
+```
+
+**NOTE**: The `gh:` prefix is used because this dependency is from GitHub.
+For `npm` dependencies, you use an `npm:` prefix.
+For local dependencies, you give it a path to the local dependency.
+`--version` is not required when using a local dependency.
+
+### compile
+
+Dependencies are not compiled when they are installed.
+Dependencies are only compiled if you need them to be.
+This is because often times a dependency will not compile in Ape on its own but its contract types can still be used in your project.
+However, when working with dependency contracts directly, they will need to be compiled.
+Ape compiles them as soon as you request the contracts from them, so it generally happens on the backend automatically.
+**However**, you may want to recompile the dependencies, like when using a new compiler version or settings.
+You can use the CLI to recompile.
+
+```shell
+ape pm compile OpenZeppelin --version 4.6.0 --force
+```
+
+**NOTE**: You only need to specify a version if you have more than one version of a dependency installed.
+Otherwise, you just give it the name.
+
+To compile all dependencies in your local project, run the command with no arguments while in your project:
+
+```shell
+ape pm compile
+```
+
+Alternatively, you can compile dependencies along with your project's contracts by using the `--include-dependencies` flag in `ape-compile`:
+
+```shell
+ape compile --include-dependencies
+```
+
 ## Misc
 
 The following guidelines are applicable to **ALL** dependency types.
@@ -107,6 +189,19 @@ dependencies:
       - mocks/**/*      # Ignore all files in the 'mocks' directory
 ```
 
+### Config Override
+
+To use any extra config item for a dependency, such as configurations for compilers needed during compiling, use the `config_override` setting:
+
+```yaml
+dependencies:
+  - name: dependency
+    github: org-name/dependency-project-name
+    config_override:
+       solidity:
+         evm_version: paris
+```
+
 ### Solidity Remappings
 
 A common use-case for dependencies involves the Solidity plugin.
@@ -129,7 +224,7 @@ Now, in your solidity files, import `OpenZeppelin` sources via:
 import "@openzeppelin/token/ERC721/ERC721.sol";
 ```
 
-### Accessing Dependency Types
+### Compiling Dependencies
 
 Sometimes, you may need to access types (such as contract types) from dependencies.
 You can achieve this using the project manager:
@@ -137,8 +232,22 @@ You can achieve this using the project manager:
 ```python
 from ape import accounts, project
 
+# NOTE: This will compile the dependency
 dependency_contract = project.dependencies["my_dependency"]["1.0.0"].DependencyContractType
 my_account = accounts.load("alias")
 deployed_contract = my_account.deploy(dependency_contract, "argument")
 print(deployed_contract.address)
+```
+
+If you would like to always compile dependencies during `ape compile` rather than only have them get compiled upon asking for contract types, you can use the config option `include_dependencies` from the `compile` config:
+
+```yaml
+compile:
+  include_dependencies: true
+```
+
+Alternatively, use the `--include-dependencies` CLI flag:
+
+```shell
+ape compile --include-dependencies
 ```

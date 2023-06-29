@@ -28,17 +28,25 @@ skip_non_compilable_projects = skip_projects(
     "with-contracts",
 )
 def test_compile_missing_contracts_dir(ape_cli, runner, project):
-    result = runner.invoke(ape_cli, ["compile"])
-    assert result.exit_code == 0, result.output
-    assert "WARNING" in result.output, f"Detected contracts folder in '{project.path.name}'"
-    assert "Nothing to compile" in result.output
+    arg_lists = [["compile"], ["compile", "--include-dependencies"]]
+    for arg_list in arg_lists:
+        result = runner.invoke(ape_cli, arg_list)
+        assert result.exit_code == 0, result.output
+        assert "WARNING" in result.output, f"Detected contracts folder in '{project.path.name}'"
+        assert "Nothing to compile" in result.output
 
 
 @skip_projects_except("bad-contracts")
-def test_skip_contracts(ape_cli, runner, project, switch_config):
+def test_skip_contracts_and_missing_compilers(ape_cli, runner, project, switch_config):
     result = runner.invoke(ape_cli, ["compile", "--force"])
     assert "INFO: Compiling 'subdir/tsconfig.json'." not in result.output
     assert "INFO: Compiling 'package.json'." not in result.output
+
+    # NOTE: `.md` should NOT appear in this list!
+    assert (
+        "WARNING: Missing compilers for the following file types: '.foo, .foobar, .test'. "
+        "Possibly, a compiler plugin is not installed or is installed but not loading correctly."
+    ) in result.output
 
     # Simulate configuring Ape to not ignore tsconfig.json for some reason.
     content = """
@@ -260,6 +268,28 @@ def test_compile_only_dependency(ape_cli, runner, project, clean_cache, caplog):
     if caplog.records:
         log_record = caplog.records.pop()
         assert expected_log_message not in log_record.message, "Compiled twice!"
+
+    # Force a re-compile and trigger the dependency to compile via CLI
+    result = runner.invoke(
+        ape_cli, ["compile", "--force", "--include-dependencies"], catch_exceptions=False
+    )
+    assert result.exit_code == 0, result.output
+    assert expected_log_message in result.output
+
+    # Make sure the config option works
+    config_file = project.path / "ape-config.yaml"
+    text = config_file.read_text()
+    try:
+        text = text.replace("  include_dependencies: false", "  include_dependencies: true")
+        config_file.unlink()
+        config_file.write_text(text)
+        project.config_manager.load(force_reload=True)
+        result = runner.invoke(ape_cli, ["compile", "--force"], catch_exceptions=False)
+        assert result.exit_code == 0, result.output
+        assert expected_log_message in result.output
+    finally:
+        text.replace("  include_dependencies: true", "  include_dependencies: false")
+        project.config_manager.load(force_reload=True)
 
 
 @skip_projects_except("with-contracts")

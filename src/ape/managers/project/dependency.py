@@ -23,23 +23,22 @@ class DependencyManager(ManagerAccessMixin):
 
     @cached_property
     def dependency_types(self) -> Dict[str, Type[DependencyAPI]]:
-        dependency_classes = {
+        dependency_classes: Dict[str, Type[DependencyAPI]] = {
             "github": GithubDependency,
             "local": LocalDependency,
             "npm": NpmDependency,
         }
 
         for _, (config_key, dependency_class) in self.plugin_manager.dependencies:
+            assert issubclass(dependency_class, DependencyAPI)  # For mypy
             dependency_classes[config_key] = dependency_class
 
-        return dependency_classes  # type: ignore
+        return dependency_classes
 
     def decode_dependency(self, config_dependency_data: Dict) -> DependencyAPI:
         for key, dependency_cls in self.dependency_types.items():
             if key in config_dependency_data:
-                return dependency_cls(
-                    **config_dependency_data,
-                )
+                return dependency_cls(**config_dependency_data)
 
         dep_id = config_dependency_data.get("name", json.dumps(config_dependency_data))
         raise ProjectError(f"No installed dependency API that supports '{dep_id}'.")
@@ -113,8 +112,8 @@ class GithubDependency(DependencyAPI):
     def __repr__(self):
         return f"<{self.__class__.__name__} github={self.github}>"
 
-    def extract_manifest(self) -> PackageManifest:
-        if self.cached_manifest:
+    def extract_manifest(self, use_cache: bool = True) -> PackageManifest:
+        if use_cache and self.cached_manifest:
             # Already downloaded
             return self.cached_manifest
 
@@ -144,7 +143,7 @@ class GithubDependency(DependencyAPI):
                         # Raise the UnknownVersionError.
                         raise err
 
-            return self._extract_local_manifest(temp_project_path)
+            return self._extract_local_manifest(temp_project_path, use_cache=use_cache)
 
 
 class LocalDependency(DependencyAPI):
@@ -199,8 +198,8 @@ class LocalDependency(DependencyAPI):
         path = self._target_manifest_cache_file.resolve().absolute()
         return FileUrl(f"file://{path}", scheme="file")
 
-    def extract_manifest(self) -> PackageManifest:
-        return self._extract_local_manifest(self.path)
+    def extract_manifest(self, use_cache: bool = True) -> PackageManifest:
+        return self._extract_local_manifest(self.path, use_cache=use_cache)
 
 
 class NpmDependency(DependencyAPI):
@@ -276,8 +275,8 @@ class NpmDependency(DependencyAPI):
         _uri = f"https://www.npmjs.com/package/{self.npm}/v/{self.version}"
         return HttpUrl(_uri, scheme="https")
 
-    def extract_manifest(self) -> PackageManifest:
-        if self.cached_manifest:
+    def extract_manifest(self, use_cache: bool = True) -> PackageManifest:
+        if use_cache and self.cached_manifest:
             # Already downloaded
             return self.cached_manifest
 
@@ -292,7 +291,7 @@ class NpmDependency(DependencyAPI):
                     f"but {self.version_from_json} in package.json."
                 )
 
-            return self._extract_local_manifest(self.package_folder)
+            return self._extract_local_manifest(self.package_folder, use_cache=use_cache)
 
         else:
             raise ProjectError(f"NPM package '{self.npm}' not installed.")

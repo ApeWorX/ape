@@ -5,7 +5,7 @@ from ethpm_types import ContractType
 from ethpm_types.source import Content
 
 from ape.api import CompilerAPI
-from ape.exceptions import CompilerError, ContractLogicError
+from ape.exceptions import ApeAttributeError, CompilerError, ContractLogicError
 from ape.logging import logger
 from ape.utils import get_relative_path
 
@@ -39,7 +39,7 @@ class CompilerManager(BaseManager):
 
         compiler = self.get_compiler(name)
         if not compiler:
-            raise AttributeError(f"No attribute or compiler named '{name}'.")
+            raise ApeAttributeError(f"No attribute or compiler named '{name}'.")
 
         return compiler
 
@@ -240,7 +240,10 @@ class CompilerManager(BaseManager):
             # Contract address not found.
             return err
 
-        contract = self.chain_manager.contracts.get(address)
+        try:
+            contract = self.chain_manager.contracts.get(address)
+        except RecursionError:
+            contract = None
         if not contract or not contract.source_id:
             # Contract or source not found.
             return err

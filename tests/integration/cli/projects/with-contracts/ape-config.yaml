@@ -1,5 +1,9 @@
 name: withcontracts
 
+dependencies:
+  - name: __FooDep__
+    local: ./dep
+
 test:
   # `false` because running pytest within pytest.
   disconnect_providers_after: false

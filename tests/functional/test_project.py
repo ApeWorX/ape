@@ -365,10 +365,25 @@ def test_sources(project_with_source_files_contract):
 
 
 def test_contracts_folder(project, config):
-    expected = project.path / "contracts"
-    assert project.contracts_folder == expected
+    # Relaxed to handle xdist resource sharing.
+    assert project.contracts_folder.name == "contracts"
 
     # Show that even when None in the config, it won't be None here.
     config.contracts_folder = None
     assert config.contracts_folder is None
-    assert project.contracts_folder == expected
+    assert project.contracts_folder is not None
+
+
+def test_getattr_contract_not_exists(project):
+    expected = (
+        r"ProjectManager has no attribute or contract named "
+        r"'ThisIsNotAContractThatExists'. However, there is a source "
+        r"file named 'ThisIsNotAContractThatExists', did you mean to "
+        r"reference a contract name from this source file\? "
+        r"Else, could it be from one of the missing compilers for extensions:.*\?"
+    )
+    project.contracts_folder.mkdir(exist_ok=True)
+    contract = project.contracts_folder / "ThisIsNotAContractThatExists.foo"
+    contract.touch()
+    with pytest.raises(AttributeError, match=expected):
+        _ = project.ThisIsNotAContractThatExists

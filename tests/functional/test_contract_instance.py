@@ -17,7 +17,6 @@ from ape.exceptions import (
     CustomError,
 )
 from ape.types import AddressType
-from ape.utils import ZERO_ADDRESS
 from ape_ethereum.transactions import TransactionStatusEnum
 
 MATCH_TEST_CONTRACT = re.compile(r"<TestContract((Sol)|(Vy))")
@@ -268,10 +267,12 @@ def test_get_empty_tuple_of_dyn_array_structs(contract_instance):
     assert actual == expected
 
 
-def test_get_empty_tuple_of_array_of_structs_and_dyn_array_of_structs(contract_instance):
+def test_get_empty_tuple_of_array_of_structs_and_dyn_array_of_structs(
+    contract_instance, zero_address
+):
     actual = contract_instance.getEmptyTupleOfArrayOfStructsAndDynArrayOfStructs()
     expected_fixed_array = (
-        ZERO_ADDRESS,
+        zero_address,
         HexBytes("0x0000000000000000000000000000000000000000000000000000000000000000"),
     )
     assert actual[0] == [expected_fixed_array, expected_fixed_array, expected_fixed_array]
@@ -422,12 +423,12 @@ def test_get_unnamed_tuple(contract_instance):
     assert actual == (0, 0)
 
 
-def test_get_tuple_of_address_array(contract_instance):
+def test_get_tuple_of_address_array(contract_instance, zero_address):
     actual = contract_instance.getTupleOfAddressArray()
     assert len(actual) == 2
     assert len(actual[0]) == 20
     assert is_checksum_address(actual[0][0])
-    assert all(x == ZERO_ADDRESS for x in actual[0][1:])
+    assert all(x == zero_address for x in actual[0][1:])
     assert actual[1] == [0] * 20
 
 
@@ -457,13 +458,13 @@ def test_get_nested_array_mixed_dynamic(contract_instance, owner):
     assert actual[2] == actual[3] == actual[4] == []
 
 
-def test_get_nested_address_array(contract_instance, sender):
+def test_get_nested_address_array(contract_instance, sender, zero_address):
     actual = contract_instance.getNestedAddressArray()
     assert len(actual) == 2
     assert len(actual[0]) == 3
     assert len(actual[1]) == 3
     assert actual[0] == [sender, sender, sender]
-    assert actual[1] == [ZERO_ADDRESS, ZERO_ADDRESS, ZERO_ADDRESS]
+    assert actual[1] == [zero_address, zero_address, zero_address]
 
 
 def test_call_transaction(contract_instance, owner, chain):
@@ -797,3 +798,20 @@ def test_private_transaction(vyper_contract_instance, owner):
 def test_private_transaction_live_network(vyper_contract_instance, owner, dummy_live_network):
     with pytest.raises(APINotImplementedError):
         vyper_contract_instance.setNumber(2, sender=owner, private=True)
+
+
+def test_contract_declared_from_blueprint(
+    vyper_blueprint, vyper_factory, vyper_contract_container, sender
+):
+    # Call the factory method that calls `create_from_blueprint()` and logs an events
+    # with the resulting address. The first arg is necessary calldata.
+    receipt = vyper_factory.create_contract(vyper_blueprint, 321, sender=sender)
+
+    # Create a contract instance at this new address using the contract type
+    # from the blueprint.
+    address = receipt.events[-1].target
+    instance = vyper_contract_container.at(address)
+
+    # Ensure we can invoke a method on that contract.
+    receipt = instance.setAddress(sender, sender=sender)
+    assert not receipt.failed

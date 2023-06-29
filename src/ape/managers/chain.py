@@ -35,7 +35,7 @@ from ape.exceptions import (
 from ape.logging import logger
 from ape.managers.base import BaseManager
 from ape.types import AddressType, BlockID, CallTreeNode, SnapshotID, SourceTraceback
-from ape.utils import BaseInterfaceModel, TraceStyles, singledispatchmethod
+from ape.utils import BaseInterfaceModel, TraceStyles, nonreentrant, singledispatchmethod
 
 
 class BlockContainer(BaseManager):
@@ -688,6 +688,7 @@ class ContractCache(BaseManager):
 
     _local_contract_types: Dict[AddressType, ContractType] = {}
     _local_proxies: Dict[AddressType, ProxyInfoAPI] = {}
+    _local_blueprints: Dict[str, ContractType] = {}
     _local_deployments_mapping: Dict[str, Dict] = {}
 
     # chain_id -> address -> custom_err
@@ -714,8 +715,12 @@ class ContractCache(BaseManager):
         return self._network.name.replace("-fork", "")
 
     @property
+    def _network_cache(self) -> Path:
+        return self._network.ecosystem.data_folder / self._data_network_name
+
+    @property
     def _contract_types_cache(self) -> Path:
-        return self._network.ecosystem.data_folder / self._data_network_name / "contract_types"
+        return self._network_cache / "contract_types"
 
     @property
     def _deployments_mapping_cache(self) -> Path:
@@ -723,7 +728,11 @@ class ContractCache(BaseManager):
 
     @property
     def _proxy_info_cache(self) -> Path:
-        return self._network.ecosystem.data_folder / self._data_network_name / "proxy_info"
+        return self._network_cache / "proxy_info"
+
+    @property
+    def _blueprint_cache(self) -> Path:
+        return self._network_cache / "blueprints"
 
     @property
     def _full_deployments(self) -> Dict:
@@ -847,6 +856,25 @@ class ContractCache(BaseManager):
         if self._is_live_network:
             self._cache_proxy_info_to_disk(address, proxy_info)
 
+    def cache_blueprint(self, blueprint_id: str, contract_type: ContractType):
+        """
+        Cache a contract blueprint.
+
+        Args:
+            blueprint_id (``str``): The ID of the blueprint. For example, in EIP-5202,
+              it would be the address of the deployed blueprint. For Starknet, it would
+              be the class identifier.
+            contract_type (``ContractType``): The contract type associated with the blueprint.
+        """
+
+        if self.get_blueprint(blueprint_id) and self._is_live_network:
+            return
+
+        self._local_blueprints[blueprint_id] = contract_type
+
+        if self._is_live_network:
+            self._cache_blueprint_to_disk(blueprint_id, contract_type)
+
     def get_proxy_info(self, address: AddressType) -> Optional[ProxyInfoAPI]:
         """
         Get proxy information about a contract using its address,
@@ -860,6 +888,22 @@ class ContractCache(BaseManager):
         """
 
         return self._local_proxies.get(address) or self._get_proxy_info_from_disk(address)
+
+    def get_blueprint(self, blueprint_id: str) -> Optional[ContractType]:
+        """
+        Get a cached blueprint contract type.
+
+        Args:
+            blueprint_id (``str``): The unique identifier used when caching
+              the blueprint.
+
+        Returns:
+            ``ContractType``
+        """
+
+        return self._local_blueprints.get(blueprint_id) or self._get_blueprint_from_disk(
+            blueprint_id
+        )
 
     def _get_errors(
         self, address: AddressType, chain_id: Optional[int] = None
@@ -970,6 +1014,7 @@ class ContractCache(BaseManager):
 
         return contract_types
 
+    @nonreentrant(key_fn=lambda *args, **kwargs: args[1])
     def get(
         self, address: AddressType, default: Optional[ContractType] = None
     ) -> Optional[ContractType]:
@@ -1187,6 +1232,7 @@ class ContractCache(BaseManager):
         """
         self._local_contract_types = {}
         self._local_proxies = {}
+        self._local_blueprints = {}
         self._local_deployments_mapping = {}
 
     def _get_contract_type_from_disk(self, address: AddressType) -> Optional[ContractType]:
@@ -1202,6 +1248,13 @@ class ContractCache(BaseManager):
             return None
 
         return ProxyInfoAPI.parse_file(address_file)
+
+    def _get_blueprint_from_disk(self, blueprint_id: str) -> Optional[ContractType]:
+        contract_file = self._blueprint_cache / f"{blueprint_id}.json"
+        if not contract_file.is_file():
+            return None
+
+        return ContractType.parse_file(contract_file)
 
     def _get_contract_type_from_explorer(self, address: AddressType) -> Optional[ContractType]:
         if not self._network.explorer:
@@ -1228,6 +1281,11 @@ class ContractCache(BaseManager):
         self._proxy_info_cache.mkdir(exist_ok=True, parents=True)
         address_file = self._proxy_info_cache / f"{address}.json"
         address_file.write_text(proxy_info.json())
+
+    def _cache_blueprint_to_disk(self, blueprint_id: str, contract_type: ContractType):
+        self._blueprint_cache.mkdir(exist_ok=True, parents=True)
+        blueprint_file = self._blueprint_cache / f"{blueprint_id}.json"
+        blueprint_file.write_text(contract_type.json())
 
     def _load_deployments_cache(self) -> Dict:
         return (

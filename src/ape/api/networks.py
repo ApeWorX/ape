@@ -9,7 +9,7 @@ from eth_account._utils.legacy_transactions import (
     serializable_unsigned_transaction_from_dict,
 )
 from eth_utils import keccak, to_int
-from ethpm_types import HexBytes
+from ethpm_types import ContractType, HexBytes
 from ethpm_types.abi import ABIType, ConstructorABI, EventABI, MethodABI
 from pydantic import BaseModel
 
@@ -102,6 +102,26 @@ class EcosystemAPI(BaseInterfaceModel):
 
         Returns:
             Union[str, int]
+        """
+
+    @raises_not_implemented
+    def encode_contract_blueprint(  # type: ignore[empty-body]
+        self, contract_type: ContractType, *args, **kwargs
+    ) -> "TransactionAPI":
+        """
+        Encode a unique type of transaction that allows contracts to be created
+        from other contracts, such as
+        `EIP-5202 <https://eips.ethereum.org/EIPS/eip-5202>`__
+        or Starknet's ``Declare`` transaction type.
+
+        Args:
+            contract (``ContractType``): The type of contract to create a blueprint for.
+              This is the type of contract that will get created by factory contracts.
+            *args: Calldata, if applicable.
+            **kwargs: Transaction specifications, such as ``value``.
+
+        Returns:
+            :class:`~ape.ape.transactions.TransactionAPI`
         """
 
     def serialize_transaction(self, transaction: "TransactionAPI") -> bytes:

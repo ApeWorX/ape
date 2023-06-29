@@ -2,7 +2,7 @@ from typing import List, Tuple
 
 import pytest
 
-from tests.integration.cli.utils import run_once
+from tests.integration.cli.utils import github_xfail
 
 TEST_PLUGIN_NAME = "tokens"
 
@@ -85,21 +85,6 @@ def _clean(lines):
     return [x for x in [x.strip() for x in lines if x]]
 
 
-def plugins_xfail():
-    """
-    Expects failures because of GitHib rate limiting
-    """
-
-    def wrapper(f):
-        f = pytest.mark.xfail(
-            strict=False, reason="Github rate limiting issues or plugin install issues"
-        )(f)
-        f = run_once(f)
-        return f
-
-    return wrapper
-
-
 @pytest.fixture(scope="module")
 def installed_plugin(ape_plugins_runner):
     plugin_installed = TEST_PLUGIN_NAME in ape_plugins_runner.invoke_list().installed_plugins
@@ -118,7 +103,7 @@ def installed_plugin(ape_plugins_runner):
         ape_plugins_runner.invoke(["uninstall", TEST_PLUGIN_NAME])
 
 
-@plugins_xfail()
+@github_xfail()
 def test_list_excludes_core_plugins(ape_plugins_runner):
     result = ape_plugins_runner.invoke_list()
     message = "{} should not be in installed plugins".format
@@ -129,13 +114,13 @@ def test_list_excludes_core_plugins(ape_plugins_runner):
     assert "geth" not in result.installed_plugins, message("geth")
 
 
-@plugins_xfail()
+@github_xfail()
 def test_list_include_version(ape_plugins_runner, installed_plugin):
     result = ape_plugins_runner.invoke_list()
     assert result.installed_plugins.contains_version, "version is not in output"
 
 
-@plugins_xfail()
+@github_xfail()
 def test_list_does_not_repeat(ape_plugins_runner, installed_plugin):
     result = ape_plugins_runner.invoke_list(["--all"])
     assert "ethereum" in result.core_plugins
@@ -143,19 +128,19 @@ def test_list_does_not_repeat(ape_plugins_runner, installed_plugin):
     assert "ethereum" not in result.available_plugins
 
 
-@plugins_xfail()
+@github_xfail()
 def test_upgrade(ape_plugins_runner, installed_plugin):
     result = ape_plugins_runner.invoke(["install", TEST_PLUGIN_NAME, "--upgrade"])
     assert result.exit_code == 0
 
 
-@plugins_xfail()
+@github_xfail()
 def test_upgrade_failure(ape_plugins_runner):
     result = ape_plugins_runner.invoke(["install", "NOT_EXISTS", "--upgrade"])
     assert result.exit_code == 1
 
 
-@plugins_xfail()
+@github_xfail()
 def test_install_from_config_file(ape_cli, runner, temp_config, caplog):
     plugins_config = {"plugins": [{"name": TEST_PLUGIN_NAME}]}
     with temp_config(plugins_config):
@@ -165,7 +150,7 @@ def test_install_from_config_file(ape_cli, runner, temp_config, caplog):
     assert TEST_PLUGIN_NAME in caplog.records[-1].message
 
 
-@plugins_xfail()
+@github_xfail()
 def test_uninstall(ape_cli, runner, installed_plugin, caplog):
     result = runner.invoke(
         ape_cli, ["plugins", "uninstall", TEST_PLUGIN_NAME, "--yes"], catch_exceptions=False

@@ -21,6 +21,7 @@ from ethpm_types.source import Closure
 from pydantic import BaseModel, root_validator, validator
 from web3.types import FilterParams
 
+from ape.exceptions import ApeAttributeError
 from ape.types.address import AddressType, RawAddress
 from ape.types.signatures import MessageSignature, SignableMessage, TransactionSignature
 from ape.types.trace import CallTreeNode, ControlFlow, GasReport, SourceTraceback, TraceFrame
@@ -279,7 +280,7 @@ class ContractLog(BaseContractLog):
             pass
 
         if item not in self.event_arguments:
-            raise AttributeError(f"{self.__class__.__name__} has no attribute '{item}'.")
+            raise ApeAttributeError(f"{self.__class__.__name__} has no attribute '{item}'.")
 
         return self.event_arguments[item]
 
