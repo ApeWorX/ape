@@ -275,6 +275,14 @@ You can use the CLI to recompile.</p>
 </div>
 <p><strong>NOTE</strong>: You only need to specify a version if you have more than one version of a dependency installed.
 Otherwise, you just give it the name.</p>
+<p>To compile all dependencies in your local project, run the command with no arguments while in your project:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>ape<span class="w"> </span>pm<span class="w"> </span>compile
+</pre></div>
+</div>
+<p>Alternatively, you can compile dependencies along with your project’s contracts by using the <code class="docutils literal notranslate"><span class="pre">--include-dependencies</span></code> flag in <code class="docutils literal notranslate"><span class="pre">ape-compile</span></code>:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>ape<span class="w"> </span>compile<span class="w"> </span>--include-dependencies
+</pre></div>
+</div>
 </section>
 </section>
 <section id="misc">
