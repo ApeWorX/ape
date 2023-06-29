@@ -318,7 +318,12 @@ def skip_if_plugin_installed(*plugin_names: str):
             if name in ("solidity", "vyper"):
                 compiler = ape.compilers.get_compiler(name)
                 if compiler:
-                    return pytest.mark.skip(msg_f.format(name))
+
+                    def test_skip_from_compiler():
+                        pytest.mark.skip(msg_f.format(name))
+
+                    # NOTE: By returning a function, we avoid a collection warning.
+                    return test_skip_from_compiler
 
             # Converters
             elif name in ("ens",):
@@ -326,8 +331,11 @@ def skip_if_plugin_installed(*plugin_names: str):
                     type(n).__name__ for n in ape.chain.conversion_manager._converters[AddressType]
                 ]
                 if any(x.startswith(name.upper()) for x in address_converters):
-                    return pytest.mark.skip(msg_f.format(name))
 
+                    def test_skip_from_converter():
+                        pytest.mark.skip(msg_f.format(name))
+
+                    return test_skip_from_converter
         # noop
         return fn
 
