@@ -148,6 +148,18 @@ ape pm compile OpenZeppelin --version 4.6.0 --force
 **NOTE**: You only need to specify a version if you have more than one version of a dependency installed.
 Otherwise, you just give it the name.
 
+To compile all dependencies in your local project, run the command with no arguments while in your project:
+
+```shell
+ape pm compile
+```
+
+Alternatively, you can compile dependencies along with your project's contracts by using the `--include-dependencies` flag in `ape-compile`:
+
+```shell
+ape compile --include-dependencies
+```
+
 ## Misc
 
 The following guidelines are applicable to **ALL** dependency types.

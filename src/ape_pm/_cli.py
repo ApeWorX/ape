@@ -61,7 +61,7 @@ def _list(cli_ctx, _all):
         _echo_no_packages(not _all)
         return
 
-    # Output gathereed packages.
+    # Output gathered packages.
     click.echo("Packages:")
     for package in packages:
         name = click.style(package["name"], bold=True)
@@ -150,7 +150,7 @@ def install(cli_ctx, package, name, version, ref, force):
 
 @cli.command()
 @ape_cli_context()
-@click.argument("name")
+@click.argument("name", nargs=1, required=False)
 @click.option("--version", help="The dependency version", metavar="VERSION")
 @click.option("--force", "-f", help="Force a re-compile", is_flag=True)
 def compile(cli_ctx, name, version, force):
@@ -158,7 +158,24 @@ def compile(cli_ctx, name, version, force):
     Compile a package
     """
 
-    if name not in cli_ctx.project_manager.dependencies:
+    if not name:
+        # Compile all local project dependencies.
+        for dep_name, versions in cli_ctx.project_manager.dependencies.items():
+            for version, dependency in versions.items():
+                log_line = dep_name
+                if version != "local":
+                    log_line += f"@{version}"
+
+                try:
+                    dependency.compile(use_cache=not force)
+                except Exception as err:
+                    cli_ctx.logger.error(err)
+                else:
+                    cli_ctx.logger.success(f"Package '{log_line}' compiled.")
+
+        return
+
+    elif name not in cli_ctx.project_manager.dependencies:
         cli_ctx.abort(f"Dependency '{name}' unknown. Is it installed?")
 
     versions = cli_ctx.project_manager.dependencies[name]
@@ -194,10 +211,14 @@ def compile(cli_ctx, name, version, force):
         )
 
     dependency = versions[version_found]
-    dependency.compile(use_cache=not force)
 
-    log_line = name
-    if version_found and version_found != "local":
-        log_line = f"{log_line}={version_found}"
+    try:
+        dependency.compile(use_cache=not force)
+    except Exception as err:
+        cli_ctx.logger.error(err)
+    else:
+        log_line = name
+        if version_found and version_found != "local":
+            log_line = f"{log_line}@{version_found}"
 
-    cli_ctx.logger.success(f"Package '{log_line}' compiled.")
+        cli_ctx.logger.success(f"Package '{log_line}' compiled.")

@@ -87,7 +87,11 @@ def cli(cli_ctx, file_paths: Set[Path], use_cache: bool, display_size: bool, inc
     if include_dependencies:
         for versions in cli_ctx.project_manager.dependencies.values():
             for dependency in versions.values():
-                dependency.compile(use_cache=use_cache)
+                try:
+                    dependency.compile(use_cache=use_cache)
+                except Exception as err:
+                    # Log error and try to compile the remaining dependencies.
+                    cli_ctx.logger.error(err)
 
     if display_size:
         _display_byte_code_sizes(cli_ctx, contract_types)
