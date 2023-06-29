@@ -12,6 +12,9 @@ from ape.utils.testing import DEFAULT_NUMBER_OF_TEST_ACCOUNTS
 from ape_ethereum.ecosystem import ProxyType
 from ape_test.accounts import TestAccount
 
+# NOTE: Even though `__test__` is set to `False` on the class,
+# it must be set here as well for it to properly work for some reason.
+TestAccount.__test__ = False
 MISSING_VALUE_TRANSFER_ERR_MSG = "Must provide 'VALUE' or use 'send_everything=True"
 
 APE_TEST_PATH = "ape_test.accounts.TestAccount"

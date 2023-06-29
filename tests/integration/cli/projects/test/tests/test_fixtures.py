@@ -3,6 +3,10 @@ from ape.managers.chain import ChainManager
 from ape.managers.networks import NetworkManager
 from ape.managers.project import ProjectManager
 
+# Even though it is set on the class, it needs to be set _in the test_
+# for some reason.
+TestAccountManager.__test__ = False
+
 
 def test_accounts(accounts):
     assert isinstance(accounts, TestAccountManager)
