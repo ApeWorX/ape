@@ -254,10 +254,3 @@ class LocalProvider(TestProviderAPI, Web3Provider):
 
         else:
             return VirtualMachineError(base_err=exception, **kwargs)
-
-    @raises_not_implemented
-    def get_storage_at(  # type: ignore[empty-body]
-        self, address: AddressType, slot: int, **kwargs
-    ) -> bytes:
-        # Short-circuit to not-implemented rather than letting RPC fail.
-        pass
