@@ -94,7 +94,7 @@ def test_compile_package_not_exists(ape_cli, runner):
 def test_compile(ape_cli, runner, project):
     result = runner.invoke(ape_cli, ["pm", "compile"])
     assert result.exit_code == 0, result.output
-    assert f"Package '__FooDep__' compiled." in result.output
+    assert "Package '__FooDep__' compiled." in result.output
 
 
 @skip_projects_except("with-contracts")
