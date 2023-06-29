@@ -19,6 +19,7 @@
    userguides/transactions
    userguides/console
    userguides/contracts
+   userguides/proxy
    userguides/testing
    userguides/scripts
    userguides/publishing
