@@ -8,6 +8,17 @@ from ape.utils.basemodel import ManagerAccessMixin
 _RevertMessage = Union[str, re.Pattern]
 
 
+class RevertInfo:
+    """
+    Similar to ``pytest.ExceptionInfo``.
+    Returned by ``RevertsContextManager.__enter__()``.
+    """
+
+    # NOTE: Type ignore because it is only None internally
+    # and not when the user needs to access it.
+    value: ContractLogicError = None  # type: ignore
+
+
 class RevertsContextManager(ManagerAccessMixin):
     def __init__(
         self,
@@ -18,6 +29,7 @@ class RevertsContextManager(ManagerAccessMixin):
         self.expected_message = expected_message
         self.dev_message = dev_message
         self.error_inputs = error_inputs
+        self.revert_info = RevertInfo()
 
     def _check_dev_message(self, exception: ContractLogicError):
         """
@@ -112,8 +124,8 @@ class RevertsContextManager(ManagerAccessMixin):
         if incorrect_values:
             raise AssertionError("\n".join(incorrect_values))
 
-    def __enter__(self):
-        pass
+    def __enter__(self, *args, **kwargs):
+        return self.revert_info
 
     def __exit__(self, exc_type: Type, exc_value: Exception, traceback) -> bool:
         if exc_type is None:
@@ -134,6 +146,10 @@ class RevertsContextManager(ManagerAccessMixin):
         elif self.expected_message is not None and isinstance(exc_value, CustomError):
             # Is a custom error type.
             self._check_custom_error(exc_value)
+
+        # Set the exception on the returned info.
+        # This allows the user to make further assertions on the exception.
+        self.revert_info.value = exc_value
 
         # Returning True causes the expected exception not to get raised
         # and the test to pass

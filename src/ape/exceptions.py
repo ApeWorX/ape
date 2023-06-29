@@ -123,15 +123,25 @@ class TransactionError(ContractError):
 
         # Finalizes expected revert message.
         super().__init__(ex_message)
+        self._set_tb()
 
-        if not source_traceback and txn:
-            self.source_traceback = _get_ape_traceback(txn)
+    @property
+    def address(self) -> Optional["AddressType"]:
+        return (
+            self.contract_address
+            or getattr(self.txn, "receiver", None)
+            or getattr(self.txn, "contract_address", None)
+        )
+
+    def _set_tb(self):
+        if not self.source_traceback and self.txn:
+            self.source_traceback = _get_ape_traceback(self.txn)
 
         src_tb = self.source_traceback
-        if src_tb is not None and txn is not None:
+        if src_tb is not None and self.txn is not None:
             # Create a custom Pythonic traceback using lines from the sources
             # found from analyzing the trace of the transaction.
-            py_tb = _get_custom_python_traceback(self, txn, src_tb)
+            py_tb = _get_custom_python_traceback(self, self.txn, src_tb)
             if py_tb:
                 self.__traceback__ = py_tb
 
@@ -193,16 +203,16 @@ class ContractLogicError(VirtualMachineError):
         if len(trace) == 0:
             raise ValueError("Missing trace.")
 
-        contract_address = self.contract_address or getattr(self.txn, "receiver", None)
-        if not contract_address:
-            raise ValueError("Could not fetch contract information to check dev message.")
+        if address := self.address:
+            try:
+                contract_type = trace[-1].chain_manager.contracts[address]
+            except Exception as err:
+                raise ValueError(
+                    f"Could not fetch contract at {address} to check dev message."
+                ) from err
 
-        try:
-            contract_type = trace[-1].chain_manager.contracts[contract_address]
-        except ValueError as err:
-            raise ValueError(
-                f"Could not fetch contract at {contract_address} to check dev message."
-            ) from err
+        else:
+            raise ValueError("Could not fetch contract information to check dev message.")
 
         if contract_type.pcmap is None:
             raise ValueError("Compiler does not support source code mapping.")

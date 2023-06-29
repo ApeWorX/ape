@@ -2,7 +2,7 @@ import types
 from functools import partial
 from itertools import islice
 from pathlib import Path
-from typing import Any, Dict, Iterator, List, Optional, Tuple, Type, Union
+from typing import Any, Callable, Dict, Iterator, List, Optional, Tuple, Type, Union
 
 import click
 import pandas as pd
@@ -17,6 +17,7 @@ from ape.exceptions import (
     ArgumentsLengthError,
     ChainError,
     ContractError,
+    ContractLogicError,
     CustomError,
     TransactionNotFoundError,
 )
@@ -1244,14 +1245,16 @@ class ContractContainer(ContractTypeWrapper):
 
         if "sender" in kwargs and isinstance(kwargs["sender"], AccountAPI):
             # Handle account-related preparation if needed, such as signing
-            receipt = kwargs["sender"].call(txn, **kwargs)
+            receipt = self._cache_wrap(lambda: kwargs["sender"].call(txn, **kwargs))
 
         else:
             txn = self.provider.prepare_transaction(txn)
-            receipt = (
-                self.provider.send_private_transaction(txn)
-                if private
-                else self.provider.send_transaction(txn)
+            receipt = self._cache_wrap(
+                lambda: (
+                    self.provider.send_private_transaction(txn)
+                    if private
+                    else self.provider.send_transaction(txn)
+                )
             )
 
         address = receipt.contract_address
@@ -1269,6 +1272,31 @@ class ContractContainer(ContractTypeWrapper):
             self.provider.network.publish_contract(address)
 
         return instance
+
+    def _cache_wrap(self, function: Callable) -> ReceiptAPI:
+        """
+        A helper method to ensure a contract type is cached as early on
+        as possible to help enrich errors from ``deploy()`` transactions
+        as well produce nicer tracebacks for these errors. It also helps
+        make assertions about these revert conditions in your tests.
+        """
+        try:
+            return function()
+        except ContractLogicError as err:
+            if address := err.address:
+                self.chain_manager.contracts[address] = self.contract_type
+                err._set_tb()  # Re-try setting source traceback
+                new_err = None
+                try:
+                    # Try enrichment again now that the contract type is cached.
+                    new_err = self.compiler_manager.enrich_error(err)
+                except Exception:
+                    pass
+
+                if new_err:
+                    raise new_err from err
+
+            raise  # The error after caching.
 
     def declare(self, *args, **kwargs) -> ReceiptAPI:
         transaction = self.provider.network.ecosystem.encode_contract_blueprint(

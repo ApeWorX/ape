@@ -396,6 +396,24 @@ def test_unauthorized_withdraw(contract, hacker):
         contract.withdraw(sender=hacker)
 ```
 
+#### Custom Errors in Deploy
+
+For deploy transactions, it may be difficult to assert on custom errors because you don't yet have access to the contract instance.
+To handle these situations, you can use the address from the contract logic error to find the type:
+
+```python
+import ape
+
+def test_error_on_deploy(account):
+    with ape.reverts() as err:
+        ape.project.HasError.deploy(sender=account)
+    
+    # Grab the cached instance using the error's address
+    # and assert the custom error this way.
+    contract = ape.Contract(err.value.address)
+    assert isinstance(err.value, contract.MyError)
+```
+
 ## Multi-chain Testing
 
 The Ape framework supports connecting to alternative networks / providers in tests.
