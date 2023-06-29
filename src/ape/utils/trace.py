@@ -9,6 +9,8 @@ from rich.box import SIMPLE
 from rich.table import Table
 from rich.tree import Tree
 
+from ape.utils.misc import is_evm_precompile, is_zero_hex
+
 if TYPE_CHECKING:
     from ape.types import CallTreeNode, ContractFunctionPath, CoverageReport, GasReport
 
@@ -171,7 +173,7 @@ def parse_gas_table(report: "GasReport") -> List[Table]:
             if not gases:
                 continue
 
-            if method_call in ["0x", *[str(i) for i in range(10)], None, ""]:
+            if not method_call or is_zero_hex(method_call) or is_evm_precompile(method_call):
                 continue
 
             elif method_call == "__new__":

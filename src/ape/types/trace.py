@@ -12,6 +12,7 @@ from rich.tree import Tree
 
 from ape.types.address import AddressType
 from ape.utils.basemodel import BaseInterfaceModel
+from ape.utils.misc import is_evm_precompile, is_zero_hex
 from ape.utils.trace import _exclude_gas, parse_as_str, parse_gas_table, parse_rich_tree
 
 if TYPE_CHECKING:
@@ -173,7 +174,7 @@ class CallTreeNode(BaseInterfaceModel):
         ):
             return merge_reports(*(c.get_gas_report(exclude) for c in self.calls))
 
-        elif self.method_id not in ["0x", *[str(i) for i in range(10)]]:
+        elif not is_zero_hex(self.method_id) and not is_evm_precompile(self.method_id):
             reports = [
                 *[c.get_gas_report(exclude) for c in self.calls],
                 {
