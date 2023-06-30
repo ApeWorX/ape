@@ -7,7 +7,7 @@ from typing import Any, Callable, Dict, Iterator, List, Optional, Tuple, Type, U
 import click
 import pandas as pd
 from ethpm_types import ContractType, HexBytes
-from ethpm_types.abi import ConstructorABI, ErrorABI, EventABI, MethodABI
+from ethpm_types.abi import ABI, ConstructorABI, ErrorABI, EventABI, MethodABI
 
 from ape.api import AccountAPI, Address, ReceiptAPI, TransactionAPI
 from ape.api.address import BaseAddress
@@ -1180,6 +1180,43 @@ class ContractContainer(ContractTypeWrapper):
 
     def __repr__(self) -> str:
         return f"<{self.contract_type.name}>"
+
+    def __getattr__(self, name: str) -> ABI:
+        """
+        Access an ABI via its name using ``.`` access.
+        **WARN**: If multiple ABIs have the same name, you may need
+        to get the ABI a different way, such as using ``.contract_type``.
+
+        Args:
+            name (str): The name
+
+        Returns:
+
+        """
+
+        try:
+            # First, check if requesting a regular attribute on this class.
+            return self.__getattribute__(name)
+        except AttributeError:
+            pass
+
+        try:
+            if name in self.contract_type.methods:
+                return self.contract_type.methods[name]
+
+            elif name in self.contract_type.events:
+                return self.contract_type.events[name]
+
+            elif name in self.contract_type.errors:
+                return self.contract_type.errors[name]
+
+            # TODO: Add self.contract_type.structs
+
+        except Exception as err:
+            # __getattr__ must raise AttributeError
+            raise ApeAttributeError(str(err)) from err
+
+        raise ApeAttributeError(f"No ABI with name '{name}'.")
 
     @property
     def deployments(self):

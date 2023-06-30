@@ -2,6 +2,8 @@ import re
 from re import Pattern
 from typing import Optional, Type, Union
 
+from ethpm_types.abi import ErrorABI
+
 from ape.exceptions import ContractLogicError, CustomError, TransactionError
 from ape.utils.basemodel import ManagerAccessMixin
 
@@ -22,7 +24,7 @@ class RevertInfo:
 class RevertsContextManager(ManagerAccessMixin):
     def __init__(
         self,
-        expected_message: Optional[Union[_RevertMessage, Type[CustomError]]] = None,
+        expected_message: Optional[Union[_RevertMessage, Type[CustomError], ErrorABI]] = None,
         dev_message: Optional[_RevertMessage] = None,
         **error_inputs,
     ):
@@ -49,12 +51,11 @@ class RevertsContextManager(ManagerAccessMixin):
         if dev_message is None:
             raise AssertionError("Could not find the source of the revert.")
 
-        message_matches = (
+        if not (
             (self.dev_message.match(dev_message) is not None)
             if isinstance(self.dev_message, re.Pattern)
             else (dev_message == self.dev_message)
-        )
-        if not message_matches:
+        ):
             assertion_error_message = (
                 self.dev_message.pattern
                 if isinstance(self.dev_message, re.Pattern)
@@ -95,20 +96,25 @@ class RevertsContextManager(ManagerAccessMixin):
 
             raise AssertionError(f"{assertion_error_prefix} but got '{actual}'.")
 
-    def _check_custom_error(self, exception: CustomError):
-        # NOTE: Type ignore because by now, we know the type is correct.
-        expected_error_cls: Type[CustomError] = self.expected_message  # type: ignore
-        if not isinstance(exception, expected_error_cls):
+    def _check_custom_error(self, exception: Union[CustomError]):
+        expected_error_cls = self.expected_message
+        if not self.error_inputs or not isinstance(expected_error_cls, (CustomError, ErrorABI)):
+            return
+
+        elif isinstance(expected_error_cls, CustomError) and not isinstance(
+            exception, expected_error_cls
+        ):
+            # NOTE: This is the check that ensures the error class is coming from
+            # the expected contract instance (e.g. from the same address).
+            # If only comparing ABIs, this check is skipped.
             raise AssertionError(
                 f"Expected error '{expected_error_cls.__name__}' "
                 f"but was '{type(exception).__name__}'"
             )
 
-        if not self.error_inputs:
-            return
-
         # Making assertions on inputs to error.
         incorrect_values = []
+
         actual_error_inputs = exception.inputs
         for ipt_name, expected_ipt in self.error_inputs.items():
             if ipt_name not in actual_error_inputs:

@@ -38,6 +38,14 @@ def test_revert_error(error_contract, not_owner):
         error_contract.withdraw(sender=not_owner)
 
 
+def test_revert_abi(error_contract, not_owner):
+    """
+    Test matching a revert custom Solidity error using an ABI.
+    """
+    with reverts(error_contract.Unauthorized.abi):
+        error_contract.withdraw(sender=not_owner)
+
+
 def test_revert_unexpected_error(error_contract, not_owner):
     """
     Test when given a different error type than what was raised.

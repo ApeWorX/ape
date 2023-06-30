@@ -396,22 +396,45 @@ def test_unauthorized_withdraw(contract, hacker):
         contract.withdraw(sender=hacker)
 ```
 
-#### Custom Errors in Deploy
+You can also use the ABI of the error if you don't have access to an instance:
 
-For deploy transactions, it may be difficult to assert on custom errors because you don't yet have access to the contract instance.
-To handle these situations, you can use the address from the contract logic error to find the type:
+```python
+import ape
+
+def test_unauthorized(contract, hacker, project):
+    with ape.reverts(project.MyOtherContract.Unauthorized2, addr=hacker.address):
+        contract.withdraw(sender=hacker)
+```
+
+You may need to use the ABI approach for asserting on custom errors that occur during failing `deploy` transactions because you won't have access to the contract instance yet.
+Here is an example of what that may look like:
+
+```python
+import ape
+
+def test_error_on_deploy(account, project):
+    with ape.reverts(project.Token.MyCustomError):
+        ape.project.HasError.deploy(sender=account)
+```
+
+Alternatively, you can attempt to use the address from the revert error to find the error type.
+**NOTE**: The address will only exist for transactions that were published (e.g. not for failures during estimating gas), and this may only work on certain providers.
 
 ```python
 import ape
 
 def test_error_on_deploy(account):
-    with ape.reverts() as err:
+    # NOTE: We are using `as rev` here to capture the revert info
+    # so we can attempt to lookup the contract later.
+    with ape.reverts() as rev:
         ape.project.HasError.deploy(sender=account)
+    
+    assert rev.value.address is not None, "Receipt never found, contract never cached"
     
     # Grab the cached instance using the error's address
     # and assert the custom error this way.
-    contract = ape.Contract(err.value.address)
-    assert isinstance(err.value, contract.MyError)
+    contract = ape.Contract(rev.value.address)
+    assert isinstance(rev.value, contract.MyError)
 ```
 
 ## Multi-chain Testing
