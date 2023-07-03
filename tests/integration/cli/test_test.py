@@ -54,6 +54,12 @@ def filter_expected_methods(*methods_to_remove: str) -> str:
     return expected
 
 
+@pytest.fixture(autouse=True)
+def load_dependencies(project):
+    """Ensure these are loaded before setting up pytester."""
+    project.load_dependencies()
+
+
 @pytest.fixture
 def setup_pytester(pytester):
     def setup(project_name: str):
