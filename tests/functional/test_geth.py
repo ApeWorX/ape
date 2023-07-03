@@ -414,6 +414,18 @@ def test_custom_error(error_contract_geth, not_owner):
 
 
 @geth_process_test
+def test_custom_error_on_deploy(error_contract_container, owner, chain):
+    with pytest.raises(Exception) as err:
+        owner.deploy(error_contract_container, 0)
+
+    assert isinstance(err.value, ContractLogicError)
+    contract = chain.contracts.instance_at(err.value.address)
+
+    # Ensure it is the custom error.
+    assert isinstance(err.value, contract.OtherError)
+
+
+@geth_process_test
 def test_return_value_list(geth_account, geth_contract, geth_provider):
     receipt = geth_contract.getFilledArray.transact(sender=geth_account)
     assert receipt.return_value == [1, 2, 3]

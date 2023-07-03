@@ -2,7 +2,7 @@ import types
 from functools import partial
 from itertools import islice
 from pathlib import Path
-from typing import Any, Dict, Iterator, List, Optional, Tuple, Type, Union
+from typing import Any, Callable, Dict, Iterator, List, Optional, Tuple, Type, Union
 
 import click
 import pandas as pd
@@ -17,6 +17,7 @@ from ape.exceptions import (
     ArgumentsLengthError,
     ChainError,
     ContractError,
+    ContractLogicError,
     CustomError,
     TransactionNotFoundError,
 )
@@ -375,7 +376,7 @@ class ContractEvent(ManagerAccessMixin):
 
     def __init__(
         self,
-        contract: "ContractInstance",
+        contract: "ContractTypeWrapper",
         abi: EventABI,
         cached_logs: Optional[List[ContractLog]] = None,
     ) -> None:
@@ -403,10 +404,10 @@ class ContractEvent(ManagerAccessMixin):
         yield from self.range(self.chain_manager.blocks.height + 1)
 
     @property
-    def log_filter(self):
-        return LogFilter.from_event(
-            event=self.abi, addresses=[self.contract.address], start_block=0
-        )
+    def log_filter(self) -> LogFilter:
+        # NOTE: This shouldn't really be called when given contract containers.
+        addresses = [] if not hasattr(self.contract, "address") else [self.contract.address]
+        return LogFilter.from_event(event=self.abi, addresses=addresses, start_block=0)
 
     @singledispatchmethod
     def __getitem__(self, value) -> Union[ContractLog, List[ContractLog]]:
@@ -432,6 +433,7 @@ class ContractEvent(ManagerAccessMixin):
                 return next(islice(logs, index, index + 1))
             else:
                 return list(logs)[index]
+
         except (IndexError, StopIteration) as err:
             raise IndexError(f"No log at index '{index}' for event '{self.abi.name}'.") from err
 
@@ -487,11 +489,12 @@ class ContractEvent(ManagerAccessMixin):
             py_type = ecosystem.get_python_types(input_abi)
             converted_args[key] = self.conversion_manager.convert(value, py_type)
 
-        return MockContractLog(
-            contract_address=self.contract.address,
-            event_arguments=converted_args,  # Use the converted arguments
-            event_name=self.abi.name,
-        )
+        properties = {"event_arguments": converted_args, "event_name": self.abi.name}
+        if hasattr(self.contract, "address"):
+            # Only address if this is off an instance.
+            properties["contract_address"] = self.contract.address
+
+        return MockContractLog(**properties)
 
     def query(
         self,
@@ -537,14 +540,18 @@ class ContractEvent(ManagerAccessMixin):
         if columns[0] == "*":
             columns = list(ContractLog.__fields__)  # type: ignore
 
-        contract_event_query = ContractEventQuery(
-            columns=columns,
-            contract=self.contract.address,
-            event=self.abi,
-            start_block=start_block,
-            stop_block=stop_block,
-            step=step,
-        )
+        query = {
+            "columns": columns,
+            "event": self.abi,
+            "start_block": start_block,
+            "stop_block": stop_block,
+            "step": step,
+        }
+        if hasattr(self.contract, "address"):
+            # Only query for a specific contract when checking an instance.
+            query["contract"] = self.contract.address
+
+        contract_event_query = ContractEventQuery(**query)
         contract_events = self.query_manager.query(
             contract_event_query, engine_to_use=engine_to_use
         )
@@ -589,7 +596,10 @@ class ContractEvent(ManagerAccessMixin):
 
         stop_block = min(stop_block, self.chain_manager.blocks.height)
 
-        addresses = set([self.contract.address] + (extra_addresses or []))
+        addresses = set(
+            ([self.contract.address] if hasattr(self.contract, "address") else [])
+            + (extra_addresses or [])
+        )
         contract_event_query = ContractEventQuery(
             columns=list(ContractLog.__fields__.keys()),
             contract=addresses,
@@ -738,6 +748,13 @@ class ContractTypeWrapper(ManagerAccessMixin):
         rest_calldata = calldata[cutoff:]
         input_dict = ecosystem.decode_calldata(method, rest_calldata)
         return method.selector, input_dict
+
+    def _create_custom_error_type(self, abi: ErrorABI) -> Type[CustomError]:
+        def exec_body(namespace):
+            namespace["abi"] = abi
+            namespace["contract"] = self
+
+        return types.new_class(abi.name, (CustomError,), {}, exec_body)
 
 
 class ContractInstance(BaseAddress, ContractTypeWrapper):
@@ -1057,13 +1074,6 @@ class ContractInstance(BaseAddress, ContractTypeWrapper):
             # NOTE: Must raise AttributeError for __attr__ method or will seg fault
             raise ApeAttributeError(str(err)) from err
 
-    def _create_custom_error_type(self, abi: ErrorABI) -> Type[CustomError]:
-        def exec_body(namespace):
-            namespace["abi"] = abi
-            namespace["contract"] = self
-
-        return types.new_class(abi.name, (CustomError,), {}, exec_body)
-
     def __dir__(self) -> List[str]:
         """
         Display methods to IPython on ``c.[TAB]`` tab completion.
@@ -1180,6 +1190,38 @@ class ContractContainer(ContractTypeWrapper):
     def __repr__(self) -> str:
         return f"<{self.contract_type.name}>"
 
+    def __getattr__(self, name: str) -> Union[ContractEvent, Type[CustomError]]:
+        """
+        Access a contract error or event type via its ABI name using ``.`` access.
+
+        Args:
+            name (str): The name of the event or error.
+
+        Returns:
+            :class:`~ape.types.ContractEvent` or a subclass of :class:`~ape.exceptions.CustomError`.
+        """
+
+        try:
+            # First, check if requesting a regular attribute on this class.
+            return self.__getattribute__(name)
+        except AttributeError:
+            pass
+
+        try:
+            if name in self.contract_type.events:
+                abi = self.contract_type.events[name]
+                return ContractEvent(contract=self, abi=abi)
+
+            elif name in self.contract_type.errors:
+                abi = self.contract_type.errors[name]
+                return self._create_custom_error_type(abi)
+
+        except Exception as err:
+            # __getattr__ must raise AttributeError
+            raise ApeAttributeError(str(err)) from err
+
+        raise ApeAttributeError(f"No ABI with name '{name}'.")
+
     @property
     def deployments(self):
         """
@@ -1244,14 +1286,16 @@ class ContractContainer(ContractTypeWrapper):
 
         if "sender" in kwargs and isinstance(kwargs["sender"], AccountAPI):
             # Handle account-related preparation if needed, such as signing
-            receipt = kwargs["sender"].call(txn, **kwargs)
+            receipt = self._cache_wrap(lambda: kwargs["sender"].call(txn, **kwargs))
 
         else:
             txn = self.provider.prepare_transaction(txn)
-            receipt = (
-                self.provider.send_private_transaction(txn)
-                if private
-                else self.provider.send_transaction(txn)
+            receipt = self._cache_wrap(
+                lambda: (
+                    self.provider.send_private_transaction(txn)
+                    if private
+                    else self.provider.send_transaction(txn)
+                )
             )
 
         address = receipt.contract_address
@@ -1269,6 +1313,31 @@ class ContractContainer(ContractTypeWrapper):
             self.provider.network.publish_contract(address)
 
         return instance
+
+    def _cache_wrap(self, function: Callable) -> ReceiptAPI:
+        """
+        A helper method to ensure a contract type is cached as early on
+        as possible to help enrich errors from ``deploy()`` transactions
+        as well produce nicer tracebacks for these errors. It also helps
+        make assertions about these revert conditions in your tests.
+        """
+        try:
+            return function()
+        except ContractLogicError as err:
+            if address := err.address:
+                self.chain_manager.contracts[address] = self.contract_type
+                err._set_tb()  # Re-try setting source traceback
+                new_err = None
+                try:
+                    # Try enrichment again now that the contract type is cached.
+                    new_err = self.compiler_manager.enrich_error(err)
+                except Exception:
+                    pass
+
+                if new_err:
+                    raise new_err from err
+
+            raise  # The error after caching.
 
     def declare(self, *args, **kwargs) -> ReceiptAPI:
         transaction = self.provider.network.ecosystem.encode_contract_blueprint(

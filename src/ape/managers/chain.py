@@ -1183,6 +1183,21 @@ class ContractCache(BaseManager):
 
         return ContractInstance(contract_address, contract_type, txn_hash=txn_hash)
 
+    def instance_from_receipt(
+        self, receipt: ReceiptAPI, contract_type: ContractType
+    ) -> ContractInstance:
+        """
+        A convenience method for creating instances from receipts.
+
+        Args:
+            receipt (:class:`~ape.api.transactions.ReceiptAPI`): The receipt.
+
+        Returns:
+            :class:`~ape.contracts.base.ContractInstance`
+        """
+        # NOTE: Mostly just needed this method to avoid a local import.
+        return ContractInstance.from_receipt(receipt, contract_type)
+
     def get_deployments(self, contract_container: ContractContainer) -> List[ContractInstance]:
         """
         Retrieves previous deployments of a contract container or contract type.

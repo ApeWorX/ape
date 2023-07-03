@@ -114,8 +114,9 @@ class GithubClient:
             except UnknownObjectException:
                 return None
 
-        release = _try_get_release(version)
-        if not release:
+        if release := _try_get_release(version):
+            return release
+        else:
             original_version = str(version)
             # Try an alternative tag style
             if version.startswith("v"):
@@ -123,11 +124,10 @@ class GithubClient:
             else:
                 version = f"v{version}"
 
-            release = _try_get_release(version)
-            if not release:
-                raise UnknownVersionError(original_version, repo.name)
+            if release := _try_get_release(version):
+                return release
 
-        return release
+            raise UnknownVersionError(original_version, repo.name)
 
     def get_repo(self, repo_path: str) -> GithubRepository:
         """

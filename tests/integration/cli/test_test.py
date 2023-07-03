@@ -57,7 +57,8 @@ def filter_expected_methods(*methods_to_remove: str) -> str:
 @pytest.fixture
 def setup_pytester(pytester):
     def setup(project_name: str):
-        tests_path = BASE_PROJECTS_PATH / project_name / "tests"
+        project_path = BASE_PROJECTS_PATH / project_name
+        tests_path = project_path / "tests"
 
         # Assume all tests should pass
         num_passes = 0
@@ -79,6 +80,17 @@ def setup_pytester(pytester):
                 )
 
         pytester.makepyfile(**test_files)
+
+        # Make other files
+        def _make_all_files(base: Path):
+            for file in base.iterdir():
+                if file.is_dir() and not file.name == "tests":
+                    _make_all_files(file)
+                elif file.is_file():
+                    name = {file.as_posix(): file.read_text().splitlines()}
+                    pytester.makefile(file.suffix, **name)
+
+        _make_all_files(project_path)
 
         # Check for a conftest.py
         conftest = tests_path / "conftest.py"
@@ -128,6 +140,9 @@ def run_gas_test(
 def test_test(setup_pytester, project, pytester, eth_tester_provider):
     _ = eth_tester_provider  # Ensure using EthTester for this test.
     passed, failed = setup_pytester(project.path.name)
+    from ape.logging import logger
+
+    logger.set_level("DEBUG")
     result = pytester.runpytest()
     result.assert_outcomes(passed=passed, failed=failed), "\n".join(result.outlines)
 

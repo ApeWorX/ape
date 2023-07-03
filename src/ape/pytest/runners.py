@@ -5,11 +5,9 @@ import pytest
 from _pytest._code.code import Traceback as PytestTraceback
 from rich import print as rich_print
 
-import ape
 from ape.api import ProviderContextManager
 from ape.logging import LogLevel
 from ape.pytest.config import ConfigWrapper
-from ape.pytest.contextmanagers import RevertsContextManager
 from ape.pytest.fixtures import ReceiptCapture
 from ape.pytest.gas import GasTracker
 from ape.utils import ManagerAccessMixin
@@ -30,8 +28,6 @@ class PytestApeRunner(ManagerAccessMixin):
         # Ensure the gas report starts off None for this runner.
         gas_tracker.session_gas_report = None
         self.gas_tracker = gas_tracker
-
-        ape.reverts = RevertsContextManager  # type: ignore
 
     @property
     def _provider_context(self) -> ProviderContextManager:
