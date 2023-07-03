@@ -463,7 +463,7 @@ To make assertions on custom errors, you can use the types defined on your contr
 <div class="highlight-solidity notranslate"><div class="highlight"><pre><span></span><span class="c1">// SPDX-License-Identifier: GPL-3.0</span>
 <span class="k">pragma solidity</span><span class="w"> </span><span class="o">^</span><span class="k">0.8.4</span><span class="p">;</span>
 
-error<span class="w"> </span>Unauthorized<span class="p">(</span><span class="kt">address</span><span class="w"> </span><span class="nv">addr</span><span class="p">);</span>
+error<span class="w"> </span>Unauthorized<span class="p">(</span><span class="kt">address</span><span class="w"> </span><span class="nv">unauth_address</span><span class="p">);</span>
 
 <span class="k">contract</span><span class="w"> </span><span class="ni">MyContract</span><span class="w"> </span><span class="p">{</span>
 <span class="w">    </span><span class="kt">address</span><span class="w"> </span><span class="nv">payable</span><span class="w"> </span>owner<span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kt">payable</span><span class="p">(</span><span class="k">msg.sender</span><span class="p">);</span>
@@ -492,8 +492,43 @@ error<span class="w"> </span>Unauthorized<span class="p">(</span><span class="kt
     <span class="k">return</span> <span class="n">owner</span><span class="o">.</span><span class="n">deploy</span><span class="p">(</span><span class="n">project</span><span class="o">.</span><span class="n">MyContract</span><span class="p">)</span>
 
 <span class="k">def</span> <span class="nf">test_unauthorized_withdraw</span><span class="p">(</span><span class="n">contract</span><span class="p">,</span> <span class="n">hacker</span><span class="p">):</span>
-    <span class="k">with</span> <span class="n">ape</span><span class="o">.</span><span class="n">reverts</span><span class="p">(</span><span class="n">contract</span><span class="o">.</span><span class="n">Unauthorized</span><span class="p">,</span> <span class="n">addr</span><span class="o">=</span><span class="n">hacker</span><span class="o">.</span><span class="n">address</span><span class="p">):</span>
+    <span class="k">with</span> <span class="n">ape</span><span class="o">.</span><span class="n">reverts</span><span class="p">(</span><span class="n">contract</span><span class="o">.</span><span class="n">Unauthorized</span><span class="p">,</span> <span class="n">unauth_address</span><span class="o">=</span><span class="n">hacker</span><span class="o">.</span><span class="n">address</span><span class="p">):</span>
         <span class="n">contract</span><span class="o">.</span><span class="n">withdraw</span><span class="p">(</span><span class="n">sender</span><span class="o">=</span><span class="n">hacker</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>You can also use custom error types from the contract container (from <code class="docutils literal notranslate"><span class="pre">ape.project</span></code> or the <code class="docutils literal notranslate"><span class="pre">project</span></code> fixture):</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">ape</span>
+
+<span class="k">def</span> <span class="nf">test_unauthorized</span><span class="p">(</span><span class="n">contract</span><span class="p">,</span> <span class="n">hacker</span><span class="p">,</span> <span class="n">project</span><span class="p">):</span>
+    <span class="k">with</span> <span class="n">ape</span><span class="o">.</span><span class="n">reverts</span><span class="p">(</span><span class="n">project</span><span class="o">.</span><span class="n">MyContract</span><span class="o">.</span><span class="n">Unauthorized</span><span class="p">,</span> <span class="n">unauth_address</span><span class="o">=</span><span class="n">hacker</span><span class="o">.</span><span class="n">address</span><span class="p">):</span>
+        <span class="n">contract</span><span class="o">.</span><span class="n">withdraw</span><span class="p">(</span><span class="n">sender</span><span class="o">=</span><span class="n">hacker</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>You may need to use the container approach for asserting on custom errors that occur during failing <code class="docutils literal notranslate"><span class="pre">deploy</span></code> transactions because you won’t have access to the contract instance yet.
+Here is an example of what that may look like:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">ape</span>
+
+<span class="k">def</span> <span class="nf">test_error_on_deploy</span><span class="p">(</span><span class="n">account</span><span class="p">,</span> <span class="n">project</span><span class="p">):</span>
+    <span class="k">with</span> <span class="n">ape</span><span class="o">.</span><span class="n">reverts</span><span class="p">(</span><span class="n">project</span><span class="o">.</span><span class="n">Token</span><span class="o">.</span><span class="n">MyCustomError</span><span class="p">):</span>
+        <span class="n">ape</span><span class="o">.</span><span class="n">project</span><span class="o">.</span><span class="n">HasError</span><span class="o">.</span><span class="n">deploy</span><span class="p">(</span><span class="n">sender</span><span class="o">=</span><span class="n">account</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Alternatively, you can attempt to use the address from the revert error to find the error type.
+<strong>NOTE</strong>: The address will only exist for transactions that were published (e.g. not for failures during estimating gas), and this may only work on certain providers.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">ape</span>
+
+<span class="k">def</span> <span class="nf">test_error_on_deploy</span><span class="p">(</span><span class="n">account</span><span class="p">):</span>
+    <span class="c1"># NOTE: We are using `as rev` here to capture the revert info</span>
+    <span class="c1"># so we can attempt to lookup the contract later.</span>
+    <span class="k">with</span> <span class="n">ape</span><span class="o">.</span><span class="n">reverts</span><span class="p">()</span> <span class="k">as</span> <span class="n">rev</span><span class="p">:</span>
+        <span class="n">ape</span><span class="o">.</span><span class="n">project</span><span class="o">.</span><span class="n">HasError</span><span class="o">.</span><span class="n">deploy</span><span class="p">(</span><span class="n">sender</span><span class="o">=</span><span class="n">account</span><span class="p">)</span>
+    
+    <span class="k">assert</span> <span class="n">rev</span><span class="o">.</span><span class="n">value</span><span class="o">.</span><span class="n">address</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">,</span> <span class="s2">&quot;Receipt never found, contract never cached&quot;</span>
+    
+    <span class="c1"># Grab the cached instance using the error&#39;s address</span>
+    <span class="c1"># and assert the custom error this way.</span>
+    <span class="n">contract</span> <span class="o">=</span> <span class="n">ape</span><span class="o">.</span><span class="n">Contract</span><span class="p">(</span><span class="n">rev</span><span class="o">.</span><span class="n">value</span><span class="o">.</span><span class="n">address</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">rev</span><span class="o">.</span><span class="n">value</span><span class="p">,</span> <span class="n">contract</span><span class="o">.</span><span class="n">MyError</span><span class="p">)</span>
 </pre></div>
 </div>
 </section>

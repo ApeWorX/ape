@@ -361,7 +361,7 @@ For example, if I have a contract called `MyContract.sol`:
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity ^0.8.4;
 
-error Unauthorized(address addr);
+error Unauthorized(address unauth_address);
 
 contract MyContract {
     address payable owner = payable(msg.sender);
@@ -392,8 +392,49 @@ def contract(owner, project):
     return owner.deploy(project.MyContract)
 
 def test_unauthorized_withdraw(contract, hacker):
-    with ape.reverts(contract.Unauthorized, addr=hacker.address):
+    with ape.reverts(contract.Unauthorized, unauth_address=hacker.address):
         contract.withdraw(sender=hacker)
+```
+
+You can also use custom error types from the contract container (from `ape.project` or the `project` fixture):
+
+```python
+import ape
+
+def test_unauthorized(contract, hacker, project):
+    with ape.reverts(project.MyContract.Unauthorized, unauth_address=hacker.address):
+        contract.withdraw(sender=hacker)
+```
+
+You may need to use the container approach for asserting on custom errors that occur during failing `deploy` transactions because you won't have access to the contract instance yet.
+Here is an example of what that may look like:
+
+```python
+import ape
+
+def test_error_on_deploy(account, project):
+    with ape.reverts(project.Token.MyCustomError):
+        ape.project.HasError.deploy(sender=account)
+```
+
+Alternatively, you can attempt to use the address from the revert error to find the error type.
+**NOTE**: The address will only exist for transactions that were published (e.g. not for failures during estimating gas), and this may only work on certain providers.
+
+```python
+import ape
+
+def test_error_on_deploy(account):
+    # NOTE: We are using `as rev` here to capture the revert info
+    # so we can attempt to lookup the contract later.
+    with ape.reverts() as rev:
+        ape.project.HasError.deploy(sender=account)
+    
+    assert rev.value.address is not None, "Receipt never found, contract never cached"
+    
+    # Grab the cached instance using the error's address
+    # and assert the custom error this way.
+    contract = ape.Contract(rev.value.address)
+    assert isinstance(rev.value, contract.MyError)
 ```
 
 ## Multi-chain Testing

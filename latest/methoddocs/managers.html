@@ -165,6 +165,7 @@
 <li class="toctree-l4"><a class="reference internal" href="#ape.managers.chain.ContractCache.get_multiple"><code class="docutils literal notranslate"><span class="pre">ContractCache.get_multiple()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.managers.chain.ContractCache.get_proxy_info"><code class="docutils literal notranslate"><span class="pre">ContractCache.get_proxy_info()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.managers.chain.ContractCache.instance_at"><code class="docutils literal notranslate"><span class="pre">ContractCache.instance_at()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ape.managers.chain.ContractCache.instance_from_receipt"><code class="docutils literal notranslate"><span class="pre">ContractCache.instance_from_receipt()</span></code></a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="#ape.managers.chain.BlockContainer"><code class="docutils literal notranslate"><span class="pre">BlockContainer</span></code></a><ul>
@@ -1071,6 +1072,20 @@ contract, if known. Useful for publishing. Defaults to <code class="docutils lit
 </dd>
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
 <dd class="field-odd"><p><a class="reference internal" href="contracts.html#ape.contracts.base.ContractInstance" title="ape.contracts.base.ContractInstance"><code class="xref py py-class docutils literal notranslate"><span class="pre">ContractInstance</span></code></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ape.managers.chain.ContractCache.instance_from_receipt">
+<span class="sig-name descname"><span class="pre">instance_from_receipt</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">receipt</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="api.html#ape.api.transactions.ReceiptAPI" title="ape.api.transactions.ReceiptAPI"><span class="pre">ReceiptAPI</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">contract_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ContractType</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="contracts.html#ape.contracts.base.ContractInstance" title="ape.contracts.base.ContractInstance"><span class="pre">ContractInstance</span></a></span></span><a class="headerlink" href="#ape.managers.chain.ContractCache.instance_from_receipt" title="Permalink to this definition"></a></dt>
+<dd><p>A convenience method for creating instances from receipts.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>receipt</strong> (<a class="reference internal" href="api.html#ape.api.transactions.ReceiptAPI" title="ape.api.transactions.ReceiptAPI"><code class="xref py py-class docutils literal notranslate"><span class="pre">ReceiptAPI</span></code></a>) – The receipt.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference internal" href="contracts.html#ape.contracts.base.ContractInstance" title="ape.contracts.base.ContractInstance"><code class="xref py py-class docutils literal notranslate"><span class="pre">ContractInstance</span></code></a></p>
 </dd>
 </dl>
 </dd></dl>
