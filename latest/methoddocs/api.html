@@ -389,6 +389,7 @@
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.transactions.ReceiptAPI.return_value"><code class="docutils literal notranslate"><span class="pre">ReceiptAPI.return_value</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.transactions.ReceiptAPI.total_fees_paid"><code class="docutils literal notranslate"><span class="pre">ReceiptAPI.total_fees_paid</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.transactions.ReceiptAPI.trace"><code class="docutils literal notranslate"><span class="pre">ReceiptAPI.trace</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ape.api.transactions.ReceiptAPI.track_coverage"><code class="docutils literal notranslate"><span class="pre">ReceiptAPI.track_coverage()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.transactions.ReceiptAPI.track_gas"><code class="docutils literal notranslate"><span class="pre">ReceiptAPI.track_gas()</span></code></a></li>
 </ul>
 </li>
@@ -3124,10 +3125,21 @@ since this is not available from the receipt object.</p>
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="ape.api.transactions.ReceiptAPI.track_coverage">
+<span class="sig-name descname"><span class="pre">track_coverage</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ape.api.transactions.ReceiptAPI.track_coverage" title="Permalink to this definition"></a></dt>
+<dd><p>Track this receipt’s source code coverage in the on-going
+session coverage report. Requires using a provider that supports
+transaction traces to track full coverage. Else, is limited
+to receipt-level tracking. This gets called when running tests with
+the <code class="docutils literal notranslate"><span class="pre">--coverage</span></code> flag.</p>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="ape.api.transactions.ReceiptAPI.track_gas">
 <span class="sig-name descname"><span class="pre">track_gas</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ape.api.transactions.ReceiptAPI.track_gas" title="Permalink to this definition"></a></dt>
 <dd><p>Track this receipt’s gas in the on-going session gas-report.
-Requires using a provider that supports transaction traces.
+Requires using a provider that supports transaction traces
+to get full data. Else, is limited to receipt-level data.
 This gets called when running tests with the <code class="docutils literal notranslate"><span class="pre">--gas</span></code> flag.</p>
 </dd></dl>
 

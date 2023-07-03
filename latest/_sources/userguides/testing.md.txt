@@ -574,3 +574,89 @@ While in this mode, any time a `.py` file (i.e. your tests) or smart contract so
 or changed, then the `ape test` task will be re-triggered, based on a polling interval.
 
 To exit this mode, press Ctrl+D (on Linux or macOS) to stop the execution and undo it.
+
+## Contract Coverage
+
+To get contract coverage, use the `--coverage` flag when running `ape test`:
+
+```shell
+ape test --coverage
+```
+
+**NOTE**: Some types of coverage require using a provider that supports transaction tracing, such as `ape-hardhat` or `ape-foundry`.
+
+Afterwards, you should see a coverage report looking something like:
+
+```shell
+============================================= Coverage Profile =============================================
+               Contract Coverage               
+                                               
+  Name          Stmts   Miss   Cover    Funcs  
+ ───────────────────────────────────────────── 
+  Contract.vy   7       1      85.71%   80.0% 
+```
+
+To generate other coverage reports such XML or HTML, configure it like so:
+
+```yaml
+test:
+  coverage:
+    reports:
+      terminal: False  # Disable the terminal table (True by default)
+      xml: True  # Enable XML report (.build/coverage.xml)
+      html: True  # Enable HTML report (.build/htmlcov)
+```
+
+To see a much more verbose coverage report, set the `terminal` field to a dictionary that includes `"verbose": true`:
+
+```yaml
+test:
+  coverage:
+    reports:
+      terminal:
+        verbose: true  # Show verbose coverage information in the terminal.
+```
+
+Then, you will see table outputs like this:
+
+```shell
+===================================== Coverage Profile ========================================
+                MyContract Coverage
+
+                         Func   Stmts   Miss    Cover
+ ─────────────────────────────────────────────────────
+                  __builtin__       2      0   100.0%
+            _immutable_number       0      0   100.0%
+                      _number       0      0   100.0%
+                 foo_method()       1      0   100.0%
+          foo_method(uint256)       1      0   100.0%
+  foo_method(uint256,uint256)       3      0   100.0%
+                  view_method       1      0   100.0%
+
+           line=0.0%, func=0.0%
+```
+
+This is useful when trying to find the missing areas to cover.
+
+**NOTE**: You may notice methods with zero statements.
+One example of a method with zero statements may be from an auto-generated getter method for a public variable; certain versions of Vyper do not contain source mappings for these methods.
+However, Ape will still check to see if this method has been called in your tests.
+To get 100% coverage, you must call these methods in your tests.
+
+**NOTE**: Notice some methods use the full selector while others don't.
+Methods that use the selector mean that their short name is shared with other methods.
+This happens in Vyper from auto-generated kwarg-based methods.
+Thus, the full selector is used to distinguish the methods in the coverage (and gas) reports.
+
+Much like gas reporting, you can also exclude contracts and methods from tracking coverage using your `ape-config.yaml` file.
+The following demonstrates how to do this:
+
+```yaml
+test:
+  coverage:
+    exclude:
+      - method_name: DEBUG_*         # Exclude all methods starting with `DEBUG_`.
+      - contract_name: MockToken     # Exclude all methods in contract named `MockToken`.
+      - contract_name: PoolContract  # Exclude methods starting with `reset_` in `PoolContract`.
+        method_name: reset_*
+```

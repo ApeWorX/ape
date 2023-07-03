@@ -40,7 +40,7 @@ h1 {
   text-transform: uppercase;
   letter-spacing: -0.05em;
   color: #000000;
-  padding: 0px !important;
+  padding: 0 !important;
 }
 
 h2 {
@@ -48,7 +48,7 @@ h2 {
   line-height: 32px;
   font-family: "Barlow", sans-serif;
   letter-spacing: -0.02em;
-  padding: 0px;
+  padding: 0;
   color: #000000;
 }
 
@@ -230,7 +230,7 @@ a {
   font-family: "Barlow", sans-serif;
   font-weight: 600;
   font-size: 24px;
-  padding: 0px !important;
+  padding: 0 !important;
 }
 
 .reference {
@@ -243,7 +243,6 @@ a {
 
 .wy-menu-vertical a {
   line-height: 28px;
-  font-size: 18px;
   font-weight: 400;
   font-family: "Barlow", sans-serif;
   padding: 0.4045em 1.618em;
@@ -255,7 +254,6 @@ a {
 
 .wy-menu-vertical a:hover {
   line-height: 28px;
-  font-size: 18px;
   font-weight: 400;
   font-family: "Barlow", sans-serif;
   display: block;
@@ -271,8 +269,8 @@ a {
   width: 250px !important;
   height: auto;
   position: relative;
-  top: 20 !important;
-  left: 20 !important;
+  top: 20px !important;
+  left: 20px !important;
   margin-left: -10px;
   z-index: 240;
 }
@@ -291,8 +289,7 @@ a {
   width: 80%;
   border-radius: 25px;
   padding: 6px 12px;
-  border-color: #000000;
-  border: width 1.5em;
+  border: 1.5em #000000;
 }
 
 .wy-menu-vertical li.current a {
@@ -309,6 +306,6 @@ a {
   display: none;
 }
 
-.icon icon-home {
+.icon {
   display: none;
 }

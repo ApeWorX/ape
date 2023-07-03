@@ -123,6 +123,7 @@
 </li>
 <li class="toctree-l2"><a class="reference internal" href="#module-ape.managers.compilers">Compilers</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#ape.managers.compilers.CompilerManager"><code class="docutils literal notranslate"><span class="pre">CompilerManager</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#ape.managers.compilers.CompilerManager.can_trace_source"><code class="docutils literal notranslate"><span class="pre">CompilerManager.can_trace_source()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.managers.compilers.CompilerManager.compile"><code class="docutils literal notranslate"><span class="pre">CompilerManager.compile()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.managers.compilers.CompilerManager.enrich_error"><code class="docutils literal notranslate"><span class="pre">CompilerManager.enrich_error()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.managers.compilers.CompilerManager.flatten_contract"><code class="docutils literal notranslate"><span class="pre">CompilerManager.flatten_contract()</span></code></a></li>
@@ -592,6 +593,22 @@ which uses the <a class="reference internal" href="api.html#ape.api.compiler.Com
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">ape</span> <span class="kn">import</span> <span class="n">compilers</span>  <span class="c1"># &quot;compilers&quot; is the CompilerManager singleton</span>
 </pre></div>
 </div>
+<dl class="py method">
+<dt class="sig sig-object py" id="ape.managers.compilers.CompilerManager.can_trace_source">
+<span class="sig-name descname"><span class="pre">can_trace_source</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="headerlink" href="#ape.managers.compilers.CompilerManager.can_trace_source" title="Permalink to this definition"></a></dt>
+<dd><p>Check if Ape is able trace the source lines for the given file.
+Checks that both the compiler is registered and that it supports
+the <code class="xref py py-meth docutils literal notranslate"><span class="pre">trace_source()</span></code> API method.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>filename</strong> (<em>str</em>) – The file to check.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>bool</p>
+</dd>
+</dl>
+</dd></dl>
+
 <dl class="py method">
 <dt class="sig sig-object py" id="ape.managers.compilers.CompilerManager.compile">
 <span class="sig-name descname"><span class="pre">compile</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">contract_filepaths</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Path</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ContractType</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#ape.managers.compilers.CompilerManager.compile" title="Permalink to this definition"></a></dt>

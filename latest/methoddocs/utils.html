@@ -154,12 +154,15 @@
 <li class="toctree-l2"><a class="reference internal" href="#ape.utils.gas_estimation_error_message"><code class="docutils literal notranslate"><span class="pre">gas_estimation_error_message()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#ape.utils.generate_dev_accounts"><code class="docutils literal notranslate"><span class="pre">generate_dev_accounts()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#ape.utils.get_all_files_in_directory"><code class="docutils literal notranslate"><span class="pre">get_all_files_in_directory()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#ape.utils.get_current_timestamp_ms"><code class="docutils literal notranslate"><span class="pre">get_current_timestamp_ms()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#ape.utils.get_package_version"><code class="docutils literal notranslate"><span class="pre">get_package_version()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#ape.utils.get_relative_path"><code class="docutils literal notranslate"><span class="pre">get_relative_path()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#ape.utils.injected_before_use"><code class="docutils literal notranslate"><span class="pre">injected_before_use</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#ape.utils.is_array"><code class="docutils literal notranslate"><span class="pre">is_array()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#ape.utils.is_evm_precompile"><code class="docutils literal notranslate"><span class="pre">is_evm_precompile()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#ape.utils.is_named_tuple"><code class="docutils literal notranslate"><span class="pre">is_named_tuple()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#ape.utils.is_struct"><code class="docutils literal notranslate"><span class="pre">is_struct()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#ape.utils.is_zero_hex"><code class="docutils literal notranslate"><span class="pre">is_zero_hex()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#ape.utils.load_config"><code class="docutils literal notranslate"><span class="pre">load_config()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#ape.utils.raises_not_implemented"><code class="docutils literal notranslate"><span class="pre">raises_not_implemented()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#ape.utils.returns_array"><code class="docutils literal notranslate"><span class="pre">returns_array()</span></code></a></li>
@@ -643,6 +646,17 @@ pattern to match.</p></li>
 </dd></dl>
 
 <dl class="py function">
+<dt class="sig sig-object py" id="ape.utils.get_current_timestamp_ms">
+<span class="sig-prename descclassname"><span class="pre">ape.utils.</span></span><span class="sig-name descname"><span class="pre">get_current_timestamp_ms</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">int</span></span></span><a class="headerlink" href="#ape.utils.get_current_timestamp_ms" title="Permalink to this definition"></a></dt>
+<dd><p>Get the current UNIX timestamp in milliseconds.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
 <dt class="sig sig-object py" id="ape.utils.get_package_version">
 <span class="sig-prename descclassname"><span class="pre">ape.utils.</span></span><span class="sig-name descname"><span class="pre">get_package_version</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">obj</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="headerlink" href="#ape.utils.get_package_version" title="Permalink to this definition"></a></dt>
 <dd><p>Get the version of a single package.</p>
@@ -704,6 +718,21 @@ which may or may not share a common ancestor.</p>
 </dd></dl>
 
 <dl class="py function">
+<dt class="sig sig-object py" id="ape.utils.is_evm_precompile">
+<span class="sig-prename descclassname"><span class="pre">ape.utils.</span></span><span class="sig-name descname"><span class="pre">is_evm_precompile</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">address</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="headerlink" href="#ape.utils.is_evm_precompile" title="Permalink to this definition"></a></dt>
+<dd><p>Returns <code class="docutils literal notranslate"><span class="pre">True</span></code> if the given address string is a known
+Ethereum pre-compile address.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>address</strong> (<em>str</em>) – </p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>bool</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
 <dt class="sig sig-object py" id="ape.utils.is_named_tuple">
 <span class="sig-prename descclassname"><span class="pre">ape.utils.</span></span><span class="sig-name descname"><span class="pre">is_named_tuple</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">outputs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">ABIType</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_values</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Tuple</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="headerlink" href="#ape.utils.is_named_tuple" title="Permalink to this definition"></a></dt>
 <dd><p>Returns <code class="docutils literal notranslate"><span class="pre">True</span></code> if the given output is a tuple where every item is named.</p>
@@ -713,6 +742,21 @@ which may or may not share a common ancestor.</p>
 <dt class="sig sig-object py" id="ape.utils.is_struct">
 <span class="sig-prename descclassname"><span class="pre">ape.utils.</span></span><span class="sig-name descname"><span class="pre">is_struct</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">outputs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ABIType</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">ABIType</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="headerlink" href="#ape.utils.is_struct" title="Permalink to this definition"></a></dt>
 <dd><p>Returns <code class="docutils literal notranslate"><span class="pre">True</span></code> if the given output is a struct.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ape.utils.is_zero_hex">
+<span class="sig-prename descclassname"><span class="pre">ape.utils.</span></span><span class="sig-name descname"><span class="pre">is_zero_hex</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">address</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="headerlink" href="#ape.utils.is_zero_hex" title="Permalink to this definition"></a></dt>
+<dd><p>Returns <code class="docutils literal notranslate"><span class="pre">True</span></code> if the hex str is only zero.
+<strong>NOTE</strong>: Empty hexes like <code class="docutils literal notranslate"><span class="pre">&quot;0x&quot;</span></code> are considered zero.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>address</strong> (<em>str</em>) – The address to check.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>bool</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py function">

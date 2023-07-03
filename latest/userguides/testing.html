@@ -106,6 +106,7 @@
 <li class="toctree-l2"><a class="reference internal" href="#multi-chain-testing">Multi-chain Testing</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#gas-reporting">Gas Reporting</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#iterative-testing">Iterative Testing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#contract-coverage">Contract Coverage</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="scripts.html">Scripting</a></li>
@@ -650,6 +651,77 @@ While in this mode, any time a <code class="docutils literal notranslate"><span 
 (i.e. any files that get compiled using your installed compiler plugins) is added, removed,
 or changed, then the <code class="docutils literal notranslate"><span class="pre">ape</span> <span class="pre">test</span></code> task will be re-triggered, based on a polling interval.</p>
 <p>To exit this mode, press Ctrl+D (on Linux or macOS) to stop the execution and undo it.</p>
+</section>
+<section id="contract-coverage">
+<h2>Contract Coverage<a class="headerlink" href="#contract-coverage" title="Permalink to this heading"></a></h2>
+<p>To get contract coverage, use the <code class="docutils literal notranslate"><span class="pre">--coverage</span></code> flag when running <code class="docutils literal notranslate"><span class="pre">ape</span> <span class="pre">test</span></code>:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>ape<span class="w"> </span><span class="nb">test</span><span class="w"> </span>--coverage
+</pre></div>
+</div>
+<p><strong>NOTE</strong>: Some types of coverage require using a provider that supports transaction tracing, such as <code class="docutils literal notranslate"><span class="pre">ape-hardhat</span></code> or <code class="docutils literal notranslate"><span class="pre">ape-foundry</span></code>.</p>
+<p>Afterwards, you should see a coverage report looking something like:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span class="o">=============================================</span><span class="w"> </span>Coverage<span class="w"> </span><span class="nv">Profile</span><span class="w"> </span><span class="o">=============================================</span>
+<span class="w">               </span>Contract<span class="w"> </span>Coverage<span class="w">               </span>
+<span class="w">                                               </span>
+<span class="w">  </span>Name<span class="w">          </span>Stmts<span class="w">   </span>Miss<span class="w">   </span>Cover<span class="w">    </span>Funcs<span class="w">  </span>
+<span class="w"> </span>─────────────────────────────────────────────<span class="w"> </span>
+<span class="w">  </span>Contract.vy<span class="w">   </span><span class="m">7</span><span class="w">       </span><span class="m">1</span><span class="w">      </span><span class="m">85</span>.71%<span class="w">   </span><span class="m">80</span>.0%<span class="w"> </span>
+</pre></div>
+</div>
+<p>To generate other coverage reports such XML or HTML, configure it like so:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">test</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">coverage</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">reports</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">terminal</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">False</span><span class="w">  </span><span class="c1"># Disable the terminal table (True by default)</span>
+<span class="w">      </span><span class="nt">xml</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">True</span><span class="w">  </span><span class="c1"># Enable XML report (.build/coverage.xml)</span>
+<span class="w">      </span><span class="nt">html</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">True</span><span class="w">  </span><span class="c1"># Enable HTML report (.build/htmlcov)</span>
+</pre></div>
+</div>
+<p>To see a much more verbose coverage report, set the <code class="docutils literal notranslate"><span class="pre">terminal</span></code> field to a dictionary that includes <code class="docutils literal notranslate"><span class="pre">&quot;verbose&quot;:</span> <span class="pre">true</span></code>:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">test</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">coverage</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">reports</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">terminal</span><span class="p">:</span>
+<span class="w">        </span><span class="nt">verbose</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span><span class="w">  </span><span class="c1"># Show verbose coverage information in the terminal.</span>
+</pre></div>
+</div>
+<p>Then, you will see table outputs like this:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span class="o">=====================================</span><span class="w"> </span>Coverage<span class="w"> </span><span class="nv">Profile</span><span class="w"> </span><span class="o">========================================</span>
+<span class="w">                </span>MyContract<span class="w"> </span>Coverage
+
+<span class="w">                         </span>Func<span class="w">   </span>Stmts<span class="w">   </span>Miss<span class="w">    </span>Cover
+<span class="w"> </span>─────────────────────────────────────────────────────
+<span class="w">                  </span>__builtin__<span class="w">       </span><span class="m">2</span><span class="w">      </span><span class="m">0</span><span class="w">   </span><span class="m">100</span>.0%
+<span class="w">            </span>_immutable_number<span class="w">       </span><span class="m">0</span><span class="w">      </span><span class="m">0</span><span class="w">   </span><span class="m">100</span>.0%
+<span class="w">                      </span>_number<span class="w">       </span><span class="m">0</span><span class="w">      </span><span class="m">0</span><span class="w">   </span><span class="m">100</span>.0%
+<span class="w">                 </span>foo_method<span class="o">()</span><span class="w">       </span><span class="m">1</span><span class="w">      </span><span class="m">0</span><span class="w">   </span><span class="m">100</span>.0%
+<span class="w">          </span>foo_method<span class="o">(</span>uint256<span class="o">)</span><span class="w">       </span><span class="m">1</span><span class="w">      </span><span class="m">0</span><span class="w">   </span><span class="m">100</span>.0%
+<span class="w">  </span>foo_method<span class="o">(</span>uint256,uint256<span class="o">)</span><span class="w">       </span><span class="m">3</span><span class="w">      </span><span class="m">0</span><span class="w">   </span><span class="m">100</span>.0%
+<span class="w">                  </span>view_method<span class="w">       </span><span class="m">1</span><span class="w">      </span><span class="m">0</span><span class="w">   </span><span class="m">100</span>.0%
+
+<span class="w">           </span><span class="nv">line</span><span class="o">=</span><span class="m">0</span>.0%,<span class="w"> </span><span class="nv">func</span><span class="o">=</span><span class="m">0</span>.0%
+</pre></div>
+</div>
+<p>This is useful when trying to find the missing areas to cover.</p>
+<p><strong>NOTE</strong>: You may notice methods with zero statements.
+One example of a method with zero statements may be from an auto-generated getter method for a public variable; certain versions of Vyper do not contain source mappings for these methods.
+However, Ape will still check to see if this method has been called in your tests.
+To get 100% coverage, you must call these methods in your tests.</p>
+<p><strong>NOTE</strong>: Notice some methods use the full selector while others don’t.
+Methods that use the selector mean that their short name is shared with other methods.
+This happens in Vyper from auto-generated kwarg-based methods.
+Thus, the full selector is used to distinguish the methods in the coverage (and gas) reports.</p>
+<p>Much like gas reporting, you can also exclude contracts and methods from tracking coverage using your <code class="docutils literal notranslate"><span class="pre">ape-config.yaml</span></code> file.
+The following demonstrates how to do this:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">test</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">coverage</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">exclude</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">method_name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">DEBUG_*</span><span class="w">         </span><span class="c1"># Exclude all methods starting with `DEBUG_`.</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">contract_name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">MockToken</span><span class="w">     </span><span class="c1"># Exclude all methods in contract named `MockToken`.</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">contract_name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">PoolContract</span><span class="w">  </span><span class="c1"># Exclude methods starting with `reset_` in `PoolContract`.</span>
+<span class="w">        </span><span class="nt">method_name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">reset_*</span>
+</pre></div>
+</div>
 </section>
 </section>
 
