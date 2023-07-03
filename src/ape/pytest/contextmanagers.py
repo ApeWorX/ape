@@ -98,11 +98,17 @@ class RevertsContextManager(ManagerAccessMixin):
 
     def _check_custom_error(self, exception: Union[CustomError]):
         expected_error_cls = self.expected_message
-        if not self.error_inputs or not isinstance(expected_error_cls, (CustomError, ErrorABI)):
+
+        if not isinstance(expected_error_cls, ErrorABI) and not isinstance(
+            expected_error_cls, type
+        ):
+            # Not expecting a custom error type.
             return
 
-        elif isinstance(expected_error_cls, CustomError) and not isinstance(
-            exception, expected_error_cls
+        elif (
+            isinstance(expected_error_cls, type)
+            and issubclass(expected_error_cls, CustomError)
+            and not isinstance(exception, expected_error_cls)
         ):
             # NOTE: This is the check that ensures the error class is coming from
             # the expected contract instance (e.g. from the same address).
@@ -111,6 +117,9 @@ class RevertsContextManager(ManagerAccessMixin):
                 f"Expected error '{expected_error_cls.__name__}' "
                 f"but was '{type(exception).__name__}'"
             )
+
+        if not self.error_inputs:
+            return
 
         # Making assertions on inputs to error.
         incorrect_values = []
