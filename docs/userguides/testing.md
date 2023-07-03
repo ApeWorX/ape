@@ -396,17 +396,17 @@ def test_unauthorized_withdraw(contract, hacker):
         contract.withdraw(sender=hacker)
 ```
 
-You can also use the ABI of the error if you don't have access to an instance:
+You can also use custom error types from the contract container (from `ape.project` or the `project` fixture):
 
 ```python
 import ape
 
 def test_unauthorized(contract, hacker, project):
-    with ape.reverts(project.MyOtherContract.Unauthorized2, unauth_address=hacker.address):
+    with ape.reverts(project.MyContract.Unauthorized, unauth_address=hacker.address):
         contract.withdraw(sender=hacker)
 ```
 
-You may need to use the ABI approach for asserting on custom errors that occur during failing `deploy` transactions because you won't have access to the contract instance yet.
+You may need to use the container approach for asserting on custom errors that occur during failing `deploy` transactions because you won't have access to the contract instance yet.
 Here is an example of what that may look like:
 
 ```python

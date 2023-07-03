@@ -4,6 +4,7 @@ from typing import Optional, Type, Union
 
 from ethpm_types.abi import ErrorABI
 
+from ape.contracts import ContractInstance
 from ape.exceptions import ContractLogicError, CustomError, TransactionError
 from ape.utils.basemodel import ManagerAccessMixin
 
@@ -109,10 +110,11 @@ class RevertsContextManager(ManagerAccessMixin):
             isinstance(expected_error_cls, type)
             and issubclass(expected_error_cls, CustomError)
             and not isinstance(exception, expected_error_cls)
+            and isinstance(getattr(expected_error_cls, "contract", None), ContractInstance)
         ):
             # NOTE: This is the check that ensures the error class is coming from
             # the expected contract instance (e.g. from the same address).
-            # If only comparing ABIs, this check is skipped.
+            # If not address is being compared, this check is skipped.
             raise AssertionError(
                 f"Expected error '{expected_error_cls.__name__}' "
                 f"but was '{type(exception).__name__}'"
