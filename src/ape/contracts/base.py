@@ -489,10 +489,10 @@ class ContractEvent(ManagerAccessMixin):
             py_type = ecosystem.get_python_types(input_abi)
             converted_args[key] = self.conversion_manager.convert(value, py_type)
 
-        properties = {"event_arguments": converted_args}
+        properties = {"event_arguments": converted_args, "event_name": self.abi.name}
         if hasattr(self.contract, "address"):
             # Only address if this is off an instance.
-            properties["address"] = self.contract.address
+            properties["contract_address"] = self.contract.address
 
         return MockContractLog(**properties)
 
