@@ -696,8 +696,7 @@ class Ethereum(EcosystemAPI):
 
             return intermediary_node
 
-        contract_type = self.chain_manager.contracts.get(address)
-        if not contract_type:
+        if not (contract_type := self.chain_manager.contracts.get(address)):
             return enriched_call
 
         enriched_call.contract_id = self._enrich_address(address, **kwargs)

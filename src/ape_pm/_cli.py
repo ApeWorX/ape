@@ -178,8 +178,7 @@ def compile(cli_ctx, name, version, force):
     elif name not in cli_ctx.project_manager.dependencies:
         cli_ctx.abort(f"Dependency '{name}' unknown. Is it installed?")
 
-    versions = cli_ctx.project_manager.dependencies[name]
-    if not versions:
+    if not (versions := cli_ctx.project_manager.dependencies[name]):
         # This shouldn't happen.
         cli_ctx.abort("No versions.")
 

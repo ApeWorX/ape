@@ -37,11 +37,10 @@ class CompilerManager(BaseManager):
         except AttributeError:
             pass
 
-        compiler = self.get_compiler(name)
-        if not compiler:
-            raise ApeAttributeError(f"No attribute or compiler named '{name}'.")
+        if compiler := self.get_compiler(name):
+            return compiler
 
-        return compiler
+        raise ApeAttributeError(f"No attribute or compiler named '{name}'.")
 
     @property
     def registered_compilers(self) -> Dict[str, CompilerAPI]:
@@ -235,7 +234,7 @@ class CompilerManager(BaseManager):
             :class:`~ape.exceptions.ContractLogicError`: The enriched exception.
         """
 
-        address = err.contract_address or getattr(err.txn, "receiver", None)
+        address = err.address
         if not address:
             # Contract address not found.
             return err
@@ -244,6 +243,7 @@ class CompilerManager(BaseManager):
             contract = self.chain_manager.contracts.get(address)
         except RecursionError:
             contract = None
+
         if not contract or not contract.source_id:
             # Contract or source not found.
             return err

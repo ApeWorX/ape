@@ -5,6 +5,7 @@ signal.signal(signal.SIGINT, lambda s, f: _sys.exit(130))
 import sys as _sys
 
 from ape.managers.project import ProjectManager as Project
+from ape.pytest.contextmanagers import RevertsContextManager
 from ape.utils import ManagerAccessMixin as _ManagerAccessMixin
 
 # Wiring together the application
@@ -42,6 +43,12 @@ Contract = chain.contracts.instance_at
 convert = _ManagerAccessMixin.conversion_manager.convert
 """Conversion utility function. See :class:`ape.managers.converters.ConversionManager`."""
 
+reverts = RevertsContextManager
+"""
+Catch and expect contract logic reverts. Resembles ``pytest.raises()``.
+"""
+
+
 __all__ = [
     "accounts",
     "chain",
@@ -52,4 +59,5 @@ __all__ = [
     "networks",
     "project",
     "Project",  # So you can load other projects
+    "reverts",
 ]

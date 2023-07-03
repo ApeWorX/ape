@@ -1296,13 +1296,11 @@ class Web3Provider(ProviderAPI, ABC):
             if txn.signature or not txn.sender:
                 txn_hash = self.web3.eth.send_raw_transaction(txn.serialize_transaction())
             else:
-                if (
-                    txn.sender not in self.chain_manager.provider.web3.eth.accounts  # type: ignore # noqa
-                ):
+                if txn.sender not in self.web3.eth.accounts:
                     self.chain_manager.provider.unlock_account(txn.sender)
-                txn_dict = txn.dict()
-                txn_params = cast(TxParams, txn_dict)
-                txn_hash = self.web3.eth.send_transaction(txn_params)
+
+                txn_hash = self.web3.eth.send_transaction(cast(TxParams, txn.dict()))
+
         except (ValueError, Web3ContractLogicError) as err:
             vm_err = self.get_virtual_machine_error(err, txn=txn)
             raise vm_err from err

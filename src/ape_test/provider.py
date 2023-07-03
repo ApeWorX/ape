@@ -163,6 +163,9 @@ class LocalProvider(TestProviderAPI, Web3Provider):
             txn_hash.hex(), required_confirmations=txn.required_confirmations or 0
         )
 
+        # NOTE: Caching must happen before error enrichment.
+        self.chain_manager.history.append(receipt)
+
         if receipt.failed:
             txn_dict = txn.dict()
             txn_dict["nonce"] += 1
@@ -175,7 +178,6 @@ class LocalProvider(TestProviderAPI, Web3Provider):
                 vm_err = self.get_virtual_machine_error(err, txn=receipt)
                 raise vm_err from err
 
-        self.chain_manager.history.append(receipt)
         return receipt
 
     def snapshot(self) -> SnapshotID:
