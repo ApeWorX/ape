@@ -76,7 +76,7 @@ h2 {
 }
 
 .table-center {
-  width: 75%;
+  width: 60%;
   margin: 0 auto;
   padding-left: 10%;
   padding-right: 10%;
