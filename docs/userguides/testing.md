@@ -361,7 +361,7 @@ For example, if I have a contract called `MyContract.sol`:
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity ^0.8.4;
 
-error Unauthorized(address addr);
+error Unauthorized(address unauth_address);
 
 contract MyContract {
     address payable owner = payable(msg.sender);
@@ -392,7 +392,7 @@ def contract(owner, project):
     return owner.deploy(project.MyContract)
 
 def test_unauthorized_withdraw(contract, hacker):
-    with ape.reverts(contract.Unauthorized, addr=hacker.address):
+    with ape.reverts(contract.Unauthorized, unauth_address=hacker.address):
         contract.withdraw(sender=hacker)
 ```
 
@@ -402,7 +402,7 @@ You can also use the ABI of the error if you don't have access to an instance:
 import ape
 
 def test_unauthorized(contract, hacker, project):
-    with ape.reverts(project.MyOtherContract.Unauthorized2, addr=hacker.address):
+    with ape.reverts(project.MyOtherContract.Unauthorized2, unauth_address=hacker.address):
         contract.withdraw(sender=hacker)
 ```
 
