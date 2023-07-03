@@ -310,9 +310,10 @@ class CoverageTracker(ManagerAccessMixin):
                 if idx < len(tables) - 1:
                     click.echo()
 
-        if reports.xml:
+        if self.config_wrapper.xml_coverage:
             self.data.report.write_xml(out_folder)
-        if reports.html:
-            self.data.report.write_html(out_folder)
+        if value := self.config_wrapper.html_coverage:
+            verbose = value.get("verbose", False) if isinstance(value, dict) else False
+            self.data.report.write_html(out_folder, verbose=verbose)
 
         return True

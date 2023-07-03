@@ -1,4 +1,4 @@
-from typing import Any, List, Optional
+from typing import Any, Dict, List, Optional, Union
 
 from _pytest.config import Config as PytestConfig
 
@@ -58,6 +58,14 @@ class ConfigWrapper(ManagerAccessMixin):
     @cached_property
     def track_coverage(self) -> bool:
         return self.pytest_config.getoption("--coverage") or self.ape_test_config.coverage.track
+
+    @property
+    def xml_coverage(self) -> Union[bool, Dict]:
+        return self.ape_test_config.coverage.reports.xml
+
+    @property
+    def html_coverage(self) -> Union[bool, Dict]:
+        return self.ape_test_config.coverage.reports.html
 
     @cached_property
     def show_internal(self) -> bool:
