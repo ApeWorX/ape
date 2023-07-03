@@ -497,12 +497,54 @@ class ReceiptAPI(BaseInterfaceModel):
     def track_gas(self):
         """
         Track this receipt's gas in the on-going session gas-report.
-        Requires using a provider that supports transaction traces.
+        Requires using a provider that supports transaction traces
+        to get full data. Else, is limited to receipt-level data.
         This gets called when running tests with the ``--gas`` flag.
         """
-
-        call_tree = self.call_tree
         address = self.receiver or self.contract_address
-        if call_tree and address is not None and self._test_runner is not None:
+        if not address or not self._test_runner:
+            return
+
+        if self.provider.supports_tracing and (call_tree := self.call_tree):
             tracker = self._test_runner.gas_tracker
             tracker.append_gas(call_tree.enrich(in_line=False), address)
+
+        elif (
+            (contract_type := self.chain_manager.contracts.get(address))
+            and contract_type.source_id
+            and (method := self.method_called)
+        ):
+            # Can only track top-level gas.
+            if contract := self.project_manager._create_contract_source(contract_type):
+                self._test_runner.gas_tracker.append_toplevel_gas(contract, method, self.gas_used)
+
+    def track_coverage(self):
+        """
+        Track this receipt's source code coverage in the on-going
+        session coverage report. Requires using a provider that supports
+        transaction traces to track full coverage. Else, is limited
+        to receipt-level tracking. This gets called when running tests with
+        the ``--coverage`` flag.
+        """
+
+        if not self.network_manager.active_provider or not self._test_runner:
+            return
+
+        tracker = self._test_runner.coverage_tracker
+        if self.provider.supports_tracing:
+            traceback = self.source_traceback
+            if traceback is not None and len(traceback) > 0 and self._test_runner is not None:
+                tracker.cover(traceback)
+
+        elif (address := (self.receiver or self.contract_address)) and (
+            method := self.method_called
+        ):
+            # Unable to track detailed coverage like statement or branch
+            # The user will receive a warning at the end regarding this.
+            # At the very least, we can track function coverage.
+            contract_type = self.chain_manager.contracts.get(address)
+            if not contract_type or not contract_type.source_id:
+                return
+
+            if contract := self.project_manager._create_contract_source(contract_type):
+                tracker.hit_function(contract, method)

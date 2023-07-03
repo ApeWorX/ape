@@ -3,9 +3,12 @@ from packaging.version import Version
 
 from ape.exceptions import APINotImplementedError
 from ape.utils.misc import (
+    ZERO_ADDRESS,
     add_padding_to_strings,
     extract_nested_value,
     get_package_version,
+    is_evm_precompile,
+    is_zero_hex,
     raises_not_implemented,
     run_until_complete,
 )
@@ -72,3 +75,27 @@ def test_run_until_complete_multiple_coroutines():
 
     actual = run_until_complete(foo(), bar())
     assert actual == [3, 4]
+
+
+@pytest.mark.parametrize("addresses", [(f"0x{i}", f"0x{'0' * 39}{i}") for i in range(1, 10)])
+def test_is_evm_precompile(addresses):
+    for addr in addresses:
+        assert is_evm_precompile(addr)
+
+
+def test_is_not_evm_precompile(zero_address, owner):
+    assert not is_evm_precompile(zero_address)
+    assert not is_evm_precompile(owner.address)
+    assert not is_evm_precompile("MyContract")
+
+
+@pytest.mark.parametrize("addr", (ZERO_ADDRESS, "0x", "0x0"))
+def test_is_zero_address(addr):
+    assert is_zero_hex(addr)
+
+
+def test_is_not_zero_address(owner):
+    assert not is_zero_hex(owner.address)
+    assert not is_zero_hex(owner)
+    assert not is_zero_hex("MyContract")
+    assert not is_zero_hex("0x01")

@@ -143,11 +143,14 @@ class LocalProvider(TestProviderAPI, Web3Provider):
         tx_params = cast(TxParams, data)
 
         try:
-            return self.web3.eth.call(tx_params, **call_kwargs)
+            result = self.web3.eth.call(tx_params, **call_kwargs)
         except ValidationError as err:
             raise VirtualMachineError(base_err=err) from err
         except (TransactionFailed, ContractPanicError) as err:
             raise self.get_virtual_machine_error(err, txn=txn) from err
+
+        self._increment_call_func_coverage_hit_count(txn)
+        return result
 
     def send_transaction(self, txn: TransactionAPI) -> ReceiptAPI:
         try:

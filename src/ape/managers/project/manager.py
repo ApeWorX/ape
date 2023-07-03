@@ -286,6 +286,16 @@ class ProjectManager(BaseManager):
     def _package_deployments_folder(self) -> Path:
         return self.local_project._cache_folder / "deployments"
 
+    @property
+    def _contract_sources(self) -> List[ContractSource]:
+        sources = []
+        for contract in self.contracts.values():
+            contract_src = self._create_contract_source(contract)
+            if contract_src:
+                sources.append(contract_src)
+
+        return sources
+
     def get_project(
         self,
         path: Path,
@@ -475,8 +485,7 @@ class ProjectManager(BaseManager):
 
         try:
             # NOTE: Will compile project (if needed)
-            contract = self._get_contract(attr_name)
-            if contract:
+            if contract := self._get_contract(attr_name):
                 return contract
 
             # Check if using namespacing.

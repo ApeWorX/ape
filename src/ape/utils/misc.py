@@ -2,6 +2,7 @@ import asyncio
 import json
 import sys
 from asyncio import gather
+from datetime import datetime
 from functools import cached_property, lru_cache, singledispatchmethod, wraps
 from pathlib import Path
 from typing import Any, Callable, Coroutine, Dict, List, Mapping, Optional, cast
@@ -358,12 +359,66 @@ def nonreentrant(key_fn):
     return inner
 
 
+def get_current_timestamp_ms() -> int:
+    """
+    Get the current UNIX timestamp in milliseconds.
+
+    Returns:
+        int
+    """
+    return round(datetime.utcnow().timestamp() * 1000)
+
+
+def is_evm_precompile(address: str) -> bool:
+    """
+    Returns ``True`` if the given address string is a known
+    Ethereum pre-compile address.
+
+    Args:
+        address (str):
+
+    Returns:
+        bool
+    """
+    try:
+        address = address.replace("0x", "")
+        return 0 < sum(int(x) for x in address) < 10
+    except Exception:
+        return False
+
+
+def is_zero_hex(address: str) -> bool:
+    """
+    Returns ``True`` if the hex str is only zero.
+    **NOTE**: Empty hexes like ``"0x"`` are considered zero.
+
+    Args:
+        address (str): The address to check.
+
+    Returns:
+        bool
+    """
+
+    try:
+        if addr := address.replace("0x", ""):
+            return sum(int(x) for x in addr) == 0
+        else:
+            # "0x" counts as zero.
+            return True
+
+    except Exception:
+        return False
+
+
 __all__ = [
     "allow_disconnected",
     "cached_property",
     "extract_nested_value",
     "gas_estimation_error_message",
+    "get_current_timestamp_ms",
     "get_package_version",
+    "is_evm_precompile",
+    "is_zero_hex",
     "load_config",
     "nonreentrant",
     "raises_not_implemented",

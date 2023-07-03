@@ -646,6 +646,35 @@ class TestProviderAPI(ProviderAPI):
             num_blocks (int): The number of blocks allotted to mine. Defaults to ``1``.
         """
 
+    def _increment_call_func_coverage_hit_count(self, txn: TransactionAPI):
+        """
+        A helper method for incrementing a method call function hit count in a
+        non-orthodox way. This is because Hardhat does not support call traces yet.
+        """
+        if (
+            not txn.receiver
+            or not self._test_runner
+            or not self._test_runner.config_wrapper.track_coverage
+        ):
+            return
+
+        cov_data = self._test_runner.coverage_tracker.data
+        if not cov_data:
+            return
+
+        contract_type = self.chain_manager.contracts.get(txn.receiver)
+        if not contract_type:
+            return
+
+        contract_src = self.project_manager._create_contract_source(contract_type)
+        if not contract_src:
+            return
+
+        method_id = txn.data[:4]
+        if method_id in contract_type.view_methods:
+            method = contract_type.methods[method_id]
+            self._test_runner.coverage_tracker.hit_function(contract_src, method)
+
 
 class Web3Provider(ProviderAPI, ABC):
     """
@@ -931,10 +960,16 @@ class Web3Provider(ProviderAPI, ABC):
         if skip_trace:
             return self._send_call(txn, **kwargs)
 
-        track_gas = self._test_runner is not None and self._test_runner.gas_tracker.enabled
+        if self._test_runner is not None:
+            track_gas = self._test_runner.gas_tracker.enabled
+            track_coverage = self._test_runner.coverage_tracker.enabled
+        else:
+            track_gas = False
+            track_coverage = False
+
         show_trace = kwargs.pop("show_trace", False)
         show_gas = kwargs.pop("show_gas_report", False)
-        needs_trace = track_gas or show_trace or show_gas
+        needs_trace = track_gas or track_coverage or show_trace or show_gas
         if not needs_trace or not self.provider.supports_tracing or not txn.receiver:
             return self._send_call(txn, **kwargs)
 
@@ -943,7 +978,12 @@ class Web3Provider(ProviderAPI, ABC):
         try:
             with self.chain_manager.isolate():
                 return self._send_call_as_txn(
-                    txn, track_gas=track_gas, show_trace=show_trace, show_gas=show_gas, **kwargs
+                    txn,
+                    track_gas=track_gas,
+                    track_coverage=track_coverage,
+                    show_trace=show_trace,
+                    show_gas=show_gas,
+                    **kwargs,
                 )
 
         except APINotImplementedError:
@@ -953,6 +993,7 @@ class Web3Provider(ProviderAPI, ABC):
         self,
         txn: TransactionAPI,
         track_gas: bool = False,
+        track_coverage: bool = False,
         show_trace: bool = False,
         show_gas: bool = False,
         **kwargs,
@@ -966,13 +1007,16 @@ class Web3Provider(ProviderAPI, ABC):
         # Grab raw retrurndata before enrichment
         returndata = call_tree.outputs
 
-        if track_gas and show_gas and not show_trace:
+        if (track_gas or track_coverage) and show_gas and not show_trace:
             # Optimization to enrich early and in_place=True.
             call_tree.enrich()
 
         if track_gas:
             # in_place=False in case show_trace is True
             receipt.track_gas()
+
+        if track_coverage:
+            receipt.track_coverage()
 
         if show_gas:
             # in_place=False in case show_trace is True
@@ -1289,12 +1333,18 @@ class Web3Provider(ProviderAPI, ABC):
     def _create_call_tree_node(
         self, evm_call: EvmCallTreeNode, txn_hash: Optional[str] = None
     ) -> CallTreeNode:
-        address = self.provider.network.ecosystem.decode_address(evm_call.address)
+        address = evm_call.address
+        try:
+            contract_id = str(self.provider.network.ecosystem.decode_address(address))
+        except ValueError:
+            # Use raw value since it is not a real address.
+            contract_id = address.hex()
+
         call_type = evm_call.call_type.value
         return CallTreeNode(
             calls=[self._create_call_tree_node(x, txn_hash=txn_hash) for x in evm_call.calls],
             call_type=call_type,
-            contract_id=address,
+            contract_id=contract_id,
             failed=evm_call.failed,
             gas_cost=evm_call.gas_cost,
             inputs=evm_call.calldata if "CREATE" in call_type else evm_call.calldata[4:].hex(),
@@ -1306,9 +1356,16 @@ class Web3Provider(ProviderAPI, ABC):
 
     def _create_trace_frame(self, evm_frame: EvmTraceFrame) -> TraceFrame:
         address_bytes = evm_frame.address
-        address = (
-            self.network.ecosystem.decode_address(address_bytes.hex()) if address_bytes else None
-        )
+        try:
+            address = (
+                self.network.ecosystem.decode_address(address_bytes.hex())
+                if address_bytes
+                else None
+            )
+        except ValueError:
+            # Might not be a real address.
+            address = cast(AddressType, address_bytes.hex()) if address_bytes else None
+
         return TraceFrame(
             pc=evm_frame.pc,
             op=evm_frame.op,

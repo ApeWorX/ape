@@ -599,7 +599,7 @@ class Ethereum(EcosystemAPI):
         if isinstance(kwargs.get("chainId"), str):
             kwargs["chainId"] = int(kwargs["chainId"], 16)
 
-        elif "chainId" not in kwargs:
+        elif "chainId" not in kwargs and self.network_manager.active_provider is not None:
             kwargs["chainId"] = self.provider.chain_id
 
         if "input" in kwargs:
@@ -713,7 +713,12 @@ class Ethereum(EcosystemAPI):
             if method_id_bytes in contract_type.methods:
                 method_abi = contract_type.methods[method_id_bytes]
                 assert isinstance(method_abi, MethodABI)  # For mypy
-                name = method_abi.name or enriched_call.method_id
+
+                # Check if method name duplicated. If that is the case, use selector.
+                times = len([x for x in contract_type.methods if x.name == method_abi.name])
+                name = (
+                    method_abi.name if times == 1 else method_abi.selector
+                ) or enriched_call.method_id
                 enriched_call = self._enrich_calldata(
                     enriched_call, method_abi, contract_type, **kwargs
                 )
