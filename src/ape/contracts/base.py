@@ -549,7 +549,7 @@ class ContractEvent(ManagerAccessMixin):
         }
         if hasattr(self.contract, "address"):
             # Only query for a specific contract when checking an instance.
-            query["address"] = self.contract.address
+            query["contract"] = self.contract.address
 
         contract_event_query = ContractEventQuery(**query)
         contract_events = self.query_manager.query(
