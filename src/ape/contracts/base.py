@@ -1192,7 +1192,7 @@ class ContractContainer(ContractTypeWrapper):
 
     def __getattr__(self, name: str) -> Union[ContractEvent, Type[CustomError]]:
         """
-        Access a contract type via its ABI name using ``.`` access.
+        Access a contract error or event type via its ABI name using ``.`` access.
 
         Args:
             name (str): The name of the event or error.
