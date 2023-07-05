@@ -668,7 +668,7 @@ or changed, then the <code class="docutils literal notranslate"><span class="pre
 <span class="w">  </span>Contract.vy<span class="w">   </span><span class="m">7</span><span class="w">       </span><span class="m">1</span><span class="w">      </span><span class="m">85</span>.71%<span class="w">   </span><span class="m">80</span>.0%<span class="w"> </span>
 </pre></div>
 </div>
-<p>To generate other coverage reports such XML or HTML, configure it like so:</p>
+<p>To generate other coverage reports such as XML or HTML, configure it like so:</p>
 <div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">test</span><span class="p">:</span>
 <span class="w">  </span><span class="nt">coverage</span><span class="p">:</span>
 <span class="w">    </span><span class="nt">reports</span><span class="p">:</span>
@@ -702,7 +702,8 @@ or changed, then the <code class="docutils literal notranslate"><span class="pre
 <span class="w">           </span><span class="nv">line</span><span class="o">=</span><span class="m">0</span>.0%,<span class="w"> </span><span class="nv">func</span><span class="o">=</span><span class="m">0</span>.0%
 </pre></div>
 </div>
-<p>This is useful when trying to find the missing areas to cover.</p>
+<p>This is useful when trying to find the missing areas to cover.
+The HTML report also supports <code class="docutils literal notranslate"><span class="pre">verbose:</span> <span class="pre">true</span></code> and it will show similar tables.</p>
 <p><strong>NOTE</strong>: You may notice methods with zero statements.
 One example of a method with zero statements may be from an auto-generated getter method for a public variable; certain versions of Vyper do not contain source mappings for these methods.
 However, Ape will still check to see if this method has been called in your tests.
