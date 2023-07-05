@@ -6,6 +6,7 @@ from typing import Any, Dict, List, Optional, Set
 from xml.dom.minidom import getDOMImplementation
 from xml.etree.ElementTree import Element, SubElement, tostring
 
+import requests
 from ethpm_types import BaseModel
 from ethpm_types.source import ContractSource, SourceLocation
 from pydantic import NonNegativeInt, validator
@@ -846,9 +847,17 @@ class CoverageReport(BaseModel):
             if docs_folder.is_dir() and docs_favicon.is_file():
                 favicon.write_bytes(docs_favicon.read_bytes())
             else:
-                # Don't let this stop us from generating the report.
-                # Although, this shouldn't happen.
-                logger.debug("Failed finding favicon for coverage HTML.")
+                # Try downloading from the internet. This may happen if running
+                # ape in an isolated file system or a temporary directory.
+                try:
+                    url = "https://github.com/ApeWorX/ape/blob/main/docs/favicon.ico"
+                    response = requests.get(url)
+                    response.raise_for_status()  # Check for any errors during the request
+                    favicon.write_bytes(response.content)
+                except Exception as err:
+                    # Don't let this stop us from generating the report.
+                    # Although, this shouldn't happen.
+                    logger.debug(f"Failed finding favicon for coverage HTML. {err}")
 
             css = html_path / "styles.css"
             css.unlink(missing_ok=True)
