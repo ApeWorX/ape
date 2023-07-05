@@ -44,8 +44,10 @@ class InterfaceCompiler(CompilerAPI):
                 contract_type_data = data
                 if "contractName" not in contract_type_data:
                     contract_type_data["contractName"] = path.stem
-                if "sourceId" not in contract_type_data:
-                    contract_type_data["sourceId"] = source_id
+
+                # NOTE: Always set the source ID to the source of the JSON file
+                # to avoid manifest corruptions later on.
+                contract_type_data["sourceId"] = source_id
 
                 if (
                     "deploymentBytecode" not in contract_type_data
