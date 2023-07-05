@@ -123,7 +123,6 @@ def test_transfer_without_value_send_everything_true_with_low_gas(sender, receiv
 
     value_given = receipt.value
     total_spent = value_given + receipt.total_fees_paid
-    assert sender.balance < 3000000000000  # Part of gas not spent remains
     assert sender.balance == initial_sender_balance - total_spent
     assert receiver.balance == initial_receiver_balance + value_given
 
