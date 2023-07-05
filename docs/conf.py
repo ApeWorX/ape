@@ -17,6 +17,7 @@ from pathlib import Path
 from typing import List
 
 import requests
+from semantic_version import Version  # type: ignore
 
 sys.path.insert(0, os.path.abspath(".."))
 
@@ -103,7 +104,9 @@ def get_versions() -> List[str]:
     pattern = re.compile(r"v\d+.?\d?.?\d?$")
     data = response.json()
     tree = data.get("tree", [])
-    return list({x["path"] for x in tree if x["type"] == "tree" and pattern.match(x["path"])})
+    versions = list({x["path"] for x in tree if x["type"] == "tree" and pattern.match(x["path"])})
+    sorted_version_objs = sorted([Version(v.lstrip("v")) for v in versions])
+    return [f"v{x}" for x in sorted_version_objs]
 
 
 html_context = {
