@@ -101,7 +101,7 @@ def get_versions() -> List[str]:
     api_url = "https://api.github.com/repos/ApeWorx/ape/git/trees/gh-pages?recursive=1"
     response = requests.get(api_url)
     response.raise_for_status()
-    pattern = re.compile(r"v\d+.?\d?.?\d?$")
+    pattern = re.compile(r"v\d+.?\d+.?\d+$")
     data = response.json()
     tree = data.get("tree", [])
     versions = list({x["path"] for x in tree if x["type"] == "tree" and pattern.match(x["path"])})
