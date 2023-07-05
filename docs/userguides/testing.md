@@ -596,7 +596,7 @@ Afterwards, you should see a coverage report looking something like:
   Contract.vy   7       1      85.71%   80.0% 
 ```
 
-To generate other coverage reports such XML or HTML, configure it like so:
+To generate other coverage reports such as XML or HTML, configure it like so:
 
 ```yaml
 test:
