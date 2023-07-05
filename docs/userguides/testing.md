@@ -596,7 +596,7 @@ Afterwards, you should see a coverage report looking something like:
   Contract.vy   7       1      85.71%   80.0% 
 ```
 
-To generate other coverage reports such XML or HTML, configure it like so:
+To generate other coverage reports such as XML or HTML, configure it like so:
 
 ```yaml
 test:
@@ -637,6 +637,7 @@ Then, you will see table outputs like this:
 ```
 
 This is useful when trying to find the missing areas to cover.
+The HTML report also supports `verbose: true` and it will show similar tables.
 
 **NOTE**: You may notice methods with zero statements.
 One example of a method with zero statements may be from an auto-generated getter method for a public variable; certain versions of Vyper do not contain source mappings for these methods.
