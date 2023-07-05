@@ -848,7 +848,8 @@ class CoverageReport(BaseModel):
                 favicon.write_bytes(docs_favicon.read_bytes())
             else:
                 # Try downloading from the internet. This may happen if running
-                # ape in an isolated file system or a temporary directory.
+                # ape in an isolated file system or a temporary directory,
+                # such as CI/CD tests for Ape.
                 try:
                     url = "https://github.com/ApeWorX/ape/blob/main/docs/favicon.ico"
                     response = requests.get(url)
@@ -856,7 +857,6 @@ class CoverageReport(BaseModel):
                     favicon.write_bytes(response.content)
                 except Exception as err:
                     # Don't let this stop us from generating the report.
-                    # Although, this shouldn't happen.
                     logger.debug(f"Failed finding favicon for coverage HTML. {err}")
 
             css = html_path / "styles.css"
