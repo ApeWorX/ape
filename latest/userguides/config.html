@@ -192,8 +192,14 @@
              
   <section id="configure-ape">
 <h1>Configure Ape<a class="headerlink" href="#configure-ape" title="Permalink to this heading"></a></h1>
-<p>An <code class="docutils literal notranslate"><span class="pre">ape-config.yaml</span></code> file allows you to configure ape. This guide serves as an index of the settings you can include
-in an <code class="docutils literal notranslate"><span class="pre">ape-config.yaml</span></code> file.</p>
+<p>You can configure Ape using configuration files with the name <code class="docutils literal notranslate"><span class="pre">ape-config.yaml</span></code>.
+There are two locations you can place an <code class="docutils literal notranslate"><span class="pre">ape-config.yaml</span></code> file.</p>
+<ol class="arabic simple">
+<li><p>In the root of your project</p></li>
+<li><p>In your <code class="docutils literal notranslate"><span class="pre">$HOME/.ape</span></code> directory (global)</p></li>
+</ol>
+<p>Project settings take precedent, but global settings allow you to configure preferences across all projects, such as your default mainnet provider (e.g. Alchemy versus running your own node).</p>
+<p>This guide serves as an index of the settings you can include in any <code class="docutils literal notranslate"><span class="pre">ape-config.yaml</span></code> file.</p>
 <section id="contracts-folder">
 <h2>Contracts Folder<a class="headerlink" href="#contracts-folder" title="Permalink to this heading"></a></h2>
 <p>Specify a different path to your <code class="docutils literal notranslate"><span class="pre">contracts/</span></code> directory.
