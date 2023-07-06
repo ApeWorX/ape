@@ -1190,7 +1190,7 @@ class ContractContainer(ContractTypeWrapper):
     def __repr__(self) -> str:
         return f"<{self.contract_type.name}>"
 
-    def __getattr__(self, name: str) -> Union[ContractEvent, Type[CustomError]]:
+    def __getattr__(self, name: str) -> Any:
         """
         Access a contract error or event type via its ABI name using ``.`` access.
 
