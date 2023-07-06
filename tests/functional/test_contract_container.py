@@ -2,7 +2,7 @@ import pytest
 
 from ape import Contract
 from ape.contracts import ContractInstance
-from ape.exceptions import NetworkError, ProjectError
+from ape.exceptions import ArgumentsLengthError, NetworkError, ProjectError
 from ape_ethereum.ecosystem import ProxyType
 
 
@@ -18,6 +18,17 @@ def test_deploy(
     assert contract_from_cache.contract_type == contract.contract_type
     assert contract_from_cache.address == contract.address
     assert contract_from_cache.txn_hash == contract.txn_hash
+
+
+def test_deploy_wrong_number_of_arguments(
+    sender, contract_container, networks_connected_to_tester, project, chain, clean_contracts_cache
+):
+    expected = (
+        r"The number of the given arguments \(0\) do not match what is defined in the "
+        r"ABI:\n\n\t.*constructor\(uint256\).*"
+    )
+    with pytest.raises(ArgumentsLengthError, match=expected):
+        contract_container.deploy(sender=sender)
 
 
 def test_deploy_and_publish_local_network(owner, contract_container):
