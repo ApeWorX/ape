@@ -1198,7 +1198,8 @@ class ContractContainer(ContractTypeWrapper):
             name (str): The name of the event or error.
 
         Returns:
-            :class:`~ape.types.ContractEvent` or a subclass of :class:`~ape.exceptions.CustomError`.
+            :class:`~ape.types.ContractEvent` or a subclass of :class:`~ape.exceptions.CustomError`
+            or any real attribute of the class.
         """
 
         try:
