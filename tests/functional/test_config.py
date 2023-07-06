@@ -4,7 +4,7 @@ from typing import Dict, Union
 import pytest
 
 from ape.api import PluginConfig
-from ape.managers.config import DeploymentConfigCollection
+from ape.managers.config import CONFIG_FILE_NAME, DeploymentConfigCollection
 from ape.types import GasLimit
 from ape_ethereum.ecosystem import NetworkConfig
 from tests.functional.conftest import PROJECT_WITH_LONG_CONTRACTS_FOLDER
@@ -150,3 +150,17 @@ def test_plugin_config_with_union_dicts(override_0, override_1):
     config = SubConfig.from_overrides({"bool_or_dict": override_0, "dict_or_bool": override_1})
     assert config.bool_or_dict == override_0
     assert config.dict_or_bool == override_1
+
+
+def test_global_config(data_folder, config):
+    config_file = data_folder / CONFIG_FILE_NAME
+    config_file.unlink(missing_ok=True)
+    config_file.touch()
+    config_content = """
+test:
+  number_of_accounts: 11
+""".strip()
+    config_file.write_text(config_content)
+    config.load(force_reload=True)
+    assert config.get_config("test").number_of_accounts == 11
+    config_file.unlink(missing_ok=True)
