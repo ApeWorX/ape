@@ -12,7 +12,7 @@ from typing import TYPE_CHECKING, Any, Dict, Iterator, List, Optional, Union
 import click
 from eth_utils import humanize_hash
 from ethpm_types import ContractType
-from ethpm_types.abi import ErrorABI
+from ethpm_types.abi import ConstructorABI, ErrorABI, MethodABI
 from rich import print as rich_print
 
 from ape.logging import LogLevel, logger
@@ -73,14 +73,45 @@ class ArgumentsLengthError(ContractError):
     Raised when calling a contract method with the wrong number of arguments.
     """
 
-    def __init__(self, arguments_length: int, inputs_length: Optional[int] = None):
-        abi_suffix = f" ({inputs_length})" if inputs_length else ""
-        message = (
+    def __init__(
+        self,
+        arguments_length: int,
+        inputs: Union[MethodABI, ConstructorABI, int, List, None] = None,
+        **kwargs,
+    ):
+        # For backwards compat. # TODO: Remove in 0.7
+        if "inputs_length" in kwargs and not inputs:
+            inputs = kwargs["inputs_length"]
+
+        prefix = (
             f"The number of the given arguments ({arguments_length}) "
-            f"do not match what is defined in the "
-            f"ABI{abi_suffix}."
+            f"do not match what is defined in the ABI"
         )
-        super().__init__(message)
+        if inputs is None:
+            super().__init__(f"{prefix}.")
+            return
+
+        inputs_ls: List[Union[MethodABI, ConstructorABI, int]] = (
+            inputs if isinstance(inputs, list) else [inputs]
+        )
+        if not inputs_ls:
+            suffix = ""
+        elif any(not isinstance(x, int) for x in inputs_ls):
+            # Handle ABI arguments
+            parts = ""
+            for idx, ipt in enumerate(inputs_ls):
+                part = f"{ipt}" if isinstance(ipt, int) else ipt.selector
+                parts = f"{parts}\n\t{click.style(part, italic=True)}"
+
+            suffix = f":\n{parts}"
+
+        else:
+            # Was only given integers.
+            options = ", ".join([str(x) for x in inputs_ls])
+            one_of = "one of " if len(inputs_ls) > 1 else ""
+            suffix = f" ({one_of}{options})"
+
+        super().__init__(f"{prefix}{suffix}")
 
 
 class DecodingError(ContractError):

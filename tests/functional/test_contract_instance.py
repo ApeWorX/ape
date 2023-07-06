@@ -11,6 +11,7 @@ from ape.api import TransactionAPI
 from ape.contracts import ContractInstance
 from ape.exceptions import (
     APINotImplementedError,
+    ArgumentsLengthError,
     ChainError,
     ContractError,
     ContractLogicError,
@@ -55,9 +56,24 @@ def test_eq(vyper_contract_instance, chain):
     assert other == vyper_contract_instance
 
 
-def test_contract_calls(owner, contract_instance):
+def test_contract_transactions(owner, contract_instance):
     contract_instance.setNumber(2, sender=owner)
     assert contract_instance.myNumber() == 2
+
+
+def test_wrong_number_of_arguments(owner, contract_instance):
+    if "sol" in contract_instance.contract_type.source_id.lower():
+        second = r"\n\t.*setNumber\(uint256,address\).*"
+    else:
+        second = ""
+
+    expected = (
+        r"The number of the given arguments \(4\) do not match what is defined in the ABI:\n"
+        r"\n\t.*setNumber\(uint256\).*"
+        f"{second}"
+    )
+    with pytest.raises(ArgumentsLengthError, match=expected):
+        contract_instance.setNumber(2, 3, 5, 6, sender=owner)
 
 
 @pytest.mark.parametrize("type_param", (0, "0", HexBytes(0)))
