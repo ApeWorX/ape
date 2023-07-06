@@ -100,7 +100,13 @@ class ArgumentsLengthError(ContractError):
             # Handle ABI arguments
             parts = ""
             for idx, ipt in enumerate(inputs_ls):
-                part = f"{ipt}" if isinstance(ipt, int) else ipt.selector
+                if isinstance(ipt, int):
+                    part = f"{ipt}"
+                else:
+                    # Signature without outputs.
+                    input_args = ", ".join(i.signature for i in ipt.inputs)
+                    part = f"{getattr(ipt, 'name', '__init__')}({input_args})"
+
                 parts = f"{parts}\n\t{part}"
 
             suffix = f":\n{parts}"

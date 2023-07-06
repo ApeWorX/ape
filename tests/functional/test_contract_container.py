@@ -25,7 +25,7 @@ def test_deploy_wrong_number_of_arguments(
 ):
     expected = (
         r"The number of the given arguments \(0\) do not match what is defined in the "
-        r"ABI:\n\n\t.*constructor\(uint256\).*"
+        r"ABI:\n\n\t.*__init__\(uint256 num\).*"
     )
     with pytest.raises(ArgumentsLengthError, match=expected):
         contract_container.deploy(sender=sender)
