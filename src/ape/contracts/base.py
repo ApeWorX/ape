@@ -248,7 +248,7 @@ def _select_method_abi(abis: List[MethodABI], args: Union[Tuple, List]) -> Metho
             selected_abi = abi
 
     if not selected_abi:
-        raise ArgumentsLengthError(len(args))
+        raise ArgumentsLengthError(len(args), inputs=abis)
 
     return selected_abi
 
@@ -1276,7 +1276,7 @@ class ContractContainer(ContractTypeWrapper):
             else 0
         )
         if inputs_length != args_length:
-            raise ArgumentsLengthError(args_length, inputs_length=inputs_length)
+            raise ArgumentsLengthError(args_length, inputs=self.constructor.abi)
 
         return self.constructor.serialize_transaction(*args, **kwargs)
 
