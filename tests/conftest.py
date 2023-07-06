@@ -17,7 +17,8 @@ from ape.types import AddressType
 from ape.utils import ZERO_ADDRESS
 
 # NOTE: Ensure that we don't use local paths for these
-ape.config.DATA_FOLDER = Path(mkdtemp()).resolve()
+DATA_FOLDER = Path(mkdtemp()).resolve()
+ape.config.DATA_FOLDER = DATA_FOLDER
 PROJECT_FOLDER = Path(mkdtemp()).resolve()
 ape.config.PROJECT_FOLDER = PROJECT_FOLDER
 
@@ -51,7 +52,7 @@ def convert(chain):
 
 @pytest.fixture(scope="session")
 def data_folder(config):
-    return config.DATA_FOLDER
+    return DATA_FOLDER
 
 
 @pytest.fixture(scope="session")
