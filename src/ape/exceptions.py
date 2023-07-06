@@ -101,7 +101,7 @@ class ArgumentsLengthError(ContractError):
             parts = ""
             for idx, ipt in enumerate(inputs_ls):
                 part = f"{ipt}" if isinstance(ipt, int) else ipt.selector
-                parts = f"{parts}\n\t{click.style(part, italic=True)}"
+                parts = f"{parts}\n\t{part}"
 
             suffix = f":\n{parts}"
 
