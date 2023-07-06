@@ -63,13 +63,13 @@ def test_contract_transactions(owner, contract_instance):
 
 def test_wrong_number_of_arguments(owner, contract_instance):
     if "sol" in contract_instance.contract_type.source_id.lower():
-        second = r"\n\t.*setNumber\(uint256,address\).*"
+        second = r"\n\t.*setNumber\(uint256 num, address _address\).*"
     else:
         second = ""
 
     expected = (
         r"The number of the given arguments \(4\) do not match what is defined in the ABI:\n"
-        r"\n\t.*setNumber\(uint256\).*"
+        r"\n\t.*setNumber\(uint256 num\).*"
         f"{second}"
     )
     with pytest.raises(ArgumentsLengthError, match=expected):
