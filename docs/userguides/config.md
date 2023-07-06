@@ -1,7 +1,14 @@
 # Configure Ape
 
-An `ape-config.yaml` file allows you to configure ape. This guide serves as an index of the settings you can include
-in an `ape-config.yaml` file.
+You can configure Ape using configuration files with the name `ape-config.yaml`.
+There are two locations you can place an `ape-config.yaml` file.
+
+1. In the root of your project
+2. In your `$HOME/.ape` directory (global)
+
+Project settings take precedent, but global settings allow you to configure preferences across all projects, such as your default mainnet provider (e.g. Alchemy versus running your own node).
+
+This guide serves as an index of the settings you can include in any `ape-config.yaml` file.
 
 ## Contracts Folder
 

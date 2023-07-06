@@ -147,8 +147,14 @@ class ConfigManager(BaseInterfaceModel):
         # The configs are popped off the dict for checking if all configs were processed.
 
         configs = {}
+        global_config_file = self.DATA_FOLDER / CONFIG_FILE_NAME
+        global_config = load_config(global_config_file) if global_config_file.is_file() else {}
         config_file = self.PROJECT_FOLDER / CONFIG_FILE_NAME
-        user_config = load_config(config_file) if config_file.is_file() else {}
+        user_config = {
+            **global_config,
+            **(load_config(config_file) if config_file.is_file() else {}),
+        }
+
         self.name = configs["name"] = user_config.pop("name", "")
         self.version = configs["version"] = user_config.pop("version", "")
         meta_dict = user_config.pop("meta", {})
