@@ -150,6 +150,9 @@ class ConfigManager(BaseInterfaceModel):
         global_config_file = self.DATA_FOLDER / CONFIG_FILE_NAME
         global_config = load_config(global_config_file) if global_config_file.is_file() else {}
         config_file = self.PROJECT_FOLDER / CONFIG_FILE_NAME
+
+        # NOTE: It is critical that we read in global config values first
+        # so that project config values will override them as-needed.
         user_config = {
             **global_config,
             **(load_config(config_file) if config_file.is_file() else {}),
