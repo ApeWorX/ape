@@ -312,7 +312,17 @@ class BlockContainer(BaseManager):
         def _try_timeout():
             if time.time() - time_since_last > timeout:
                 time_waited = round(time.time() - time_since_last, 4)
-                raise ChainError(f"Timed out waiting for new block (time_waited={time_waited}).")
+                message = f"Timed out waiting for new block (time_waited={time_waited})."
+                if (
+                    self.provider.network.name == LOCAL_NETWORK_NAME
+                    or self.provider.network.name.endswith("-fork")
+                ):
+                    message += (
+                        " If using a local network, try configuring mining to mine on an interval "
+                        "or adjusting the block time."
+                    )
+
+                raise ChainError(message)
 
         while True:
             confirmable_block_number = self.height - required_confirmations
