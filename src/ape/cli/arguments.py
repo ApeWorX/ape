@@ -2,12 +2,14 @@ from itertools import chain
 from typing import Optional, Type
 
 import click
+from eth_utils import is_0x_prefixed
 
 from ape import accounts
 from ape.api import AccountAPI
 from ape.cli.choices import Alias
 from ape.cli.paramtype import AllFilePaths
 from ape.exceptions import AccountsError, AliasAlreadyInUseError
+from ape.utils import ZERO_ADDRESS
 
 _flatten = chain.from_iterable
 
@@ -17,8 +19,8 @@ def _alias_callback(ctx, param, value):
         # Alias cannot be used.
         raise AliasAlreadyInUseError(value)
 
-    elif not isinstance(value, str) or len(value) >= 64:
-        raise AccountsError("Alias must be a string less than 64 characters.")
+    elif not isinstance(value, str) or len(value) >= len(ZERO_ADDRESS) or is_0x_prefixed(value):
+        raise AccountsError("Alias must be a non-hex string less than 42 characters.")
 
     return value
 
