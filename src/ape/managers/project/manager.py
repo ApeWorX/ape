@@ -1,6 +1,6 @@
 import shutil
 from pathlib import Path
-from typing import Dict, Iterable, List, Optional, Type, Union
+from typing import Any, Dict, Iterable, List, Optional, Type, Union
 
 from ethpm_types import ContractInstance as EthPMContractInstance
 from ethpm_types import ContractType, PackageManifest, PackageMeta, Source
@@ -411,7 +411,7 @@ class ProjectManager(BaseManager):
 
         return self.local_project.contracts
 
-    def __getattr__(self, attr_name: str) -> Union[ContractContainer, ContractNamespace]:
+    def __getattr__(self, attr_name: str) -> Any:
         """
         Get a contract container from an existing contract type in
         the local project using ``.`` access.
@@ -433,7 +433,8 @@ class ProjectManager(BaseManager):
             attr_name (str): The name of the contract in the project.
 
         Returns:
-            :class:`~ape.contracts.ContractContainer`
+            :class:`~ape.contracts.ContractContainer`,
+            a :class:`~ape.contracts.ContractNamespace`, or any attribute.
         """
 
         result = self._get_attr(attr_name)
