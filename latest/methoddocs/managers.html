@@ -2318,7 +2318,7 @@ this class uninitialized.</p>
 </div>
 <dl class="py method">
 <dt class="sig sig-object py" id="ape.managers.project.manager.ProjectManager.__getattr__">
-<span class="sig-name descname"><span class="pre">__getattr__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">attr_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="contracts.html#ape.contracts.base.ContractContainer" title="ape.contracts.base.ContractContainer"><span class="pre">ContractContainer</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">ContractNamespace</span></span></span><a class="headerlink" href="#ape.managers.project.manager.ProjectManager.__getattr__" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">__getattr__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">attr_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Any</span></span></span><a class="headerlink" href="#ape.managers.project.manager.ProjectManager.__getattr__" title="Permalink to this definition"></a></dt>
 <dd><p>Get a contract container from an existing contract type in
 the local project using <code class="docutils literal notranslate"><span class="pre">.</span></code> access.</p>
 <p><strong>NOTE</strong>: To get a dependency contract, use
@@ -2338,7 +2338,8 @@ the local project using <code class="docutils literal notranslate"><span class="
 <dd class="field-even"><p><strong>attr_name</strong> (<em>str</em>) – The name of the contract in the project.</p>
 </dd>
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">ContractContainer</span></code></p>
+<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">ContractContainer</span></code>,
+a <code class="xref py py-class docutils literal notranslate"><span class="pre">ContractNamespace</span></code>, or any attribute.</p>
 </dd>
 </dl>
 </dd></dl>

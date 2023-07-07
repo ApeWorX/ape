@@ -436,14 +436,15 @@ are using this class.</p>
 </div>
 <dl class="py method">
 <dt class="sig sig-object py" id="ape.contracts.base.ContractContainer.__getattr__">
-<span class="sig-name descname"><span class="pre">__getattr__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#ape.contracts.base.ContractEvent" title="ape.contracts.base.ContractEvent"><span class="pre">ContractEvent</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Type</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="exceptions.html#ape.exceptions.CustomError" title="ape.exceptions.CustomError"><span class="pre">CustomError</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#ape.contracts.base.ContractContainer.__getattr__" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">__getattr__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Any</span></span></span><a class="headerlink" href="#ape.contracts.base.ContractContainer.__getattr__" title="Permalink to this definition"></a></dt>
 <dd><p>Access a contract error or event type via its ABI name using <code class="docutils literal notranslate"><span class="pre">.</span></code> access.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>name</strong> (<em>str</em>) – The name of the event or error.</p>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">ContractEvent</span></code> or a subclass of <a class="reference internal" href="exceptions.html#ape.exceptions.CustomError" title="ape.exceptions.CustomError"><code class="xref py py-class docutils literal notranslate"><span class="pre">CustomError</span></code></a>.</p>
+<dd class="field-even"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">ContractEvent</span></code> or a subclass of <a class="reference internal" href="exceptions.html#ape.exceptions.CustomError" title="ape.exceptions.CustomError"><code class="xref py py-class docutils literal notranslate"><span class="pre">CustomError</span></code></a>
+or any real attribute of the class.</p>
 </dd>
 </dl>
 </dd></dl>
