@@ -12,7 +12,7 @@ from ape.exceptions import AccountsError, AliasAlreadyInUseError
 _flatten = chain.from_iterable
 
 
-def _alias_callback(value):
+def _alias_callback(ctx, param, value):
     if value in accounts.aliases:
         # Alias cannot be used.
         raise AliasAlreadyInUseError(value)
@@ -40,7 +40,7 @@ def non_existing_alias_argument():
     A ``click.argument`` for an account alias that does not yet exist in ape.
     """
 
-    return click.argument("alias", callback=lambda ctx, param, value: _alias_callback(value))
+    return click.argument("alias", callback=_alias_callback)
 
 
 def _create_contracts_paths(ctx, param, value):
