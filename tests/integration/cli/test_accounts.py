@@ -68,6 +68,20 @@ def test_import_valid_private_key(ape_cli, runner, temp_account, temp_keyfile_pa
 
 
 @run_once
+def test_import_alias_too_long(ape_cli, runner):
+    # Attempt using private key as the alias.
+    key_alias = f"0x{PRIVATE_KEY}"
+    result = runner.invoke(
+        ape_cli,
+        ["accounts", "import", key_alias],
+        input="\n".join([f"0x{PRIVATE_KEY}", PASSWORD, PASSWORD]),
+    )
+    assert result.exit_code != 0, result.output
+    expected = "ERROR: (AccountsError) Alias must be a string less than 64 characters.\n"
+    assert result.output == expected
+
+
+@run_once
 def test_import_invalid_private_key(ape_cli, runner):
     # Add account from invalid private key
     result = runner.invoke(

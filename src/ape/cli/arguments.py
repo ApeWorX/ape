@@ -7,14 +7,19 @@ from ape import accounts
 from ape.api import AccountAPI
 from ape.cli.choices import Alias
 from ape.cli.paramtype import AllFilePaths
-from ape.exceptions import AliasAlreadyInUseError
+from ape.exceptions import AccountsError, AliasAlreadyInUseError
 
 _flatten = chain.from_iterable
 
 
-def _require_non_existing_alias(value):
+def _alias_callback(value):
     if value in accounts.aliases:
+        # Alias cannot be used.
         raise AliasAlreadyInUseError(value)
+
+    elif not isinstance(value, str) or len(value) >= 64:
+        raise AccountsError("Alias must be a string less than 64 characters.")
+
     return value
 
 
@@ -35,9 +40,7 @@ def non_existing_alias_argument():
     A ``click.argument`` for an account alias that does not yet exist in ape.
     """
 
-    return click.argument(
-        "alias", callback=lambda ctx, param, value: _require_non_existing_alias(value)
-    )
+    return click.argument("alias", callback=lambda ctx, param, value: _alias_callback(value))
 
 
 def _create_contracts_paths(ctx, param, value):
