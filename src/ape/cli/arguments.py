@@ -18,7 +18,9 @@ def _alias_callback(ctx, param, value):
         # Alias cannot be used.
         raise AliasAlreadyInUseError(value)
 
-    elif not isinstance(value, str) or (is_hex(value) and len(value) >= 42):
+    elif not isinstance(value, str):
+        raise AccountsError(f"Alias must be a str, not '{type(value)}'.")
+    elif is_hex(value) and len(value) >= 42:
         raise AccountsError("Longer aliases cannot be hex strings.")
 
     return value
