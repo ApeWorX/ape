@@ -68,7 +68,7 @@ def test_import_valid_private_key(ape_cli, runner, temp_account, temp_keyfile_pa
 
 
 @run_once
-def test_import_alias_too_long(ape_cli, runner):
+def test_import_alias_is_private_key(ape_cli, runner):
     # Attempt using private key as the alias.
     key_alias = f"0x{PRIVATE_KEY}"
     result = runner.invoke(
@@ -79,6 +79,22 @@ def test_import_alias_too_long(ape_cli, runner):
     assert result.exit_code != 0, result.output
     expected = "ERROR: (AccountsError) Longer aliases cannot be hex strings.\n"
     assert result.output == expected
+
+
+@run_once
+def test_import_alias_is_really_long(ape_cli, runner):
+    """
+    For entropy related use-cases regarding alias, we
+    must ensure long aliases are supported.
+    """
+
+    long_alias = "this is a long alias that i am going to use and you cant stop me"
+    result = runner.invoke(
+        ape_cli,
+        ["accounts", "import", long_alias],
+        input="\n".join([f"0x{PRIVATE_KEY}", PASSWORD, PASSWORD]),
+    )
+    assert result.exit_code == 0
 
 
 @run_once
