@@ -77,7 +77,7 @@ def test_import_alias_too_long(ape_cli, runner):
         input="\n".join([f"0x{PRIVATE_KEY}", PASSWORD, PASSWORD]),
     )
     assert result.exit_code != 0, result.output
-    expected = "ERROR: (AccountsError) Alias must be a non-hex string less than 42 characters.\n"
+    expected = "ERROR: (AccountsError) Longer aliases cannot be hex strings.\n"
     assert result.output == expected
 
 
