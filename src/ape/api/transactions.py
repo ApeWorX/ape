@@ -170,14 +170,23 @@ class TransactionAPI(BaseInterfaceModel):
     def __str__(self) -> str:
         data = self.dict()
         if len(data["data"]) > 9:
-            data["data"] = (
-                "0x"
-                + bytes(data["data"][:3], encoding="utf8").hex()
-                + "..."
-                + bytes(data["data"][-3:], encoding="utf8").hex()
-            )
+            # only want to specify encoding if data["data"] is a string
+            if isinstance(data["data"], str):
+                data["data"] = (
+                    "0x"
+                    + bytes(data["data"][:3], encoding="utf8").hex()
+                    + "..."
+                    + bytes(data["data"][-3:], encoding="utf8").hex()
+                )
+            else:
+                data["data"] = (
+                    "0x" + bytes(data["data"][:3]).hex() + "..." + bytes(data["data"][-3:]).hex()
+                )
         else:
-            data["data"] = "0x" + bytes(data["data"], encoding="utf8").hex()
+            if isinstance(data["data"], str):
+                data["data"] = "0x" + bytes(data["data"], encoding="utf8").hex()
+            else:
+                data["data"] = "0x" + bytes(data["data"]).hex()
         params = "\n  ".join(f"{k}: {v}" for k, v in data.items())
         return f"{self.__class__.__name__}:\n  {params}"
 
