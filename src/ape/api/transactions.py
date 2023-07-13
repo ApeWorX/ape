@@ -171,7 +171,10 @@ class TransactionAPI(BaseInterfaceModel):
         data = self.dict()
         if len(data["data"]) > 9:
             data["data"] = (
-                "0x" + bytes(data["data"][:3], encoding="utf8").hex() + "..." + bytes(data["data"][-3:], encoding="utf8").hex()
+                "0x"
+                + bytes(data["data"][:3], encoding="utf8").hex()
+                + "..."
+                + bytes(data["data"][-3:], encoding="utf8").hex()
             )
         else:
             data["data"] = "0x" + bytes(data["data"], encoding="utf8").hex()
