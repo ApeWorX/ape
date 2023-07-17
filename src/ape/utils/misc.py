@@ -9,6 +9,7 @@ from typing import Any, Callable, Coroutine, Dict, List, Mapping, Optional, cast
 
 import requests
 import yaml
+from eth_utils import is_0x_prefixed
 from ethpm_types import HexBytes
 from importlib_metadata import PackageNotFoundError, distributions, packages_distributions
 from importlib_metadata import version as version_metadata
@@ -271,10 +272,7 @@ def to_int(value) -> int:
     if isinstance(value, int):
         return value
     elif isinstance(value, str):
-        if value.startswith("0x"):
-            return int(value, 16)
-        else:
-            return int(value)
+        return int(value, 16) if is_0x_prefixed(value) else int(value)
     elif isinstance(value, bytes):
         return int.from_bytes(value, "big")
 

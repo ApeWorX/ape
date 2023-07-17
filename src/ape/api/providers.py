@@ -17,7 +17,7 @@ from subprocess import DEVNULL, PIPE, Popen
 from typing import Any, Dict, Iterator, List, Optional, Union, cast
 
 from eth_typing import BlockNumber, HexStr
-from eth_utils import add_0x_prefix, is_0x_prefixed, to_hex
+from eth_utils import add_0x_prefix, to_hex
 from ethpm_types import HexBytes
 from evm_trace import CallTreeNode as EvmCallTreeNode
 from evm_trace import TraceFrame as EvmTraceFrame
@@ -68,6 +68,7 @@ from ape.utils import (
     raises_not_implemented,
     run_until_complete,
     spawn,
+    to_int,
 )
 from ape.utils.misc import DEFAULT_MAX_RETRIES_TX, _create_raises_not_implemented_error
 
@@ -856,7 +857,7 @@ class Web3Provider(ProviderAPI, ABC):
     @property
     def gas_price(self) -> int:
         price = self.web3.eth.generate_gas_price() or 0
-        return int(price, 16) if isinstance(price, str) and is_0x_prefixed(price) else int(price)
+        return to_int(price)
 
     @property
     def priority_fee(self) -> int:
