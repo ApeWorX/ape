@@ -111,7 +111,7 @@ setup(
         "SQLAlchemy>=1.4.35",
         "tqdm>=4.62.3,<5.0",
         "traitlets>=5.3.0",
-        "watchdog>=2.1.9,<3.0",
+        "watchdog>=3.0,<4",
         # ** Dependencies maintained by Ethereum Foundation **
         "eth-abi>=4.0.0,<5",
         "eth-account>=0.8,<0.9",
