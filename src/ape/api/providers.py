@@ -855,7 +855,8 @@ class Web3Provider(ProviderAPI, ABC):
 
     @property
     def gas_price(self) -> int:
-        return self._web3.eth.generate_gas_price()  # type: ignore
+        price = self._web3.eth.generate_gas_price() or 0
+        return int(price, 16) if isinstance(price, str) and is_0x_prefixed(price) else int(price)
 
     @property
     def priority_fee(self) -> int:

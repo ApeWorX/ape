@@ -504,3 +504,9 @@ def test_out_of_gas_error(geth_contract, geth_account, geth_provider):
         geth_account.call(txn)
 
     assert err.value.txn is not None
+
+
+@geth_process_test
+def test_gas_price(geth_provider):
+    actual = geth_provider.gas_price
+    assert isinstance(actual, int)
