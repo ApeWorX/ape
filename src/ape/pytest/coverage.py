@@ -82,6 +82,7 @@ class CoverageData(ManagerAccessMixin):
             return set(), []
 
         handled_pcs = set()
+        functions_incremented: List[str] = []
         for pc in pcs:
             if pc < 0:
                 continue
@@ -91,7 +92,6 @@ class CoverageData(ManagerAccessMixin):
                 continue
 
             for contract in source_coverage.contracts:
-                functions_incremented: List[str] = []
                 for function in contract.functions:
                     statements_hit = []
                     for statement in function.statements:
