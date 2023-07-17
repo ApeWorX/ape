@@ -68,6 +68,7 @@ from ape.utils import (
     raises_not_implemented,
     run_until_complete,
     spawn,
+    to_int,
 )
 from ape.utils.misc import DEFAULT_MAX_RETRIES_TX, _create_raises_not_implemented_error
 
@@ -855,7 +856,8 @@ class Web3Provider(ProviderAPI, ABC):
 
     @property
     def gas_price(self) -> int:
-        return self._web3.eth.generate_gas_price()  # type: ignore
+        price = self.web3.eth.generate_gas_price() or 0
+        return to_int(price)
 
     @property
     def priority_fee(self) -> int:
