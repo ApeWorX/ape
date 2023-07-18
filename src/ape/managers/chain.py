@@ -1645,4 +1645,43 @@ class ChainManager(BaseManager):
         return self.provider.set_balance(account, amount)
 
     def get_receipt(self, transaction_hash: str) -> ReceiptAPI:
+        """
+        Get a transaction receipt from the chain.
+
+        Args:
+            transaction_hash (str): The hash of the transaction.
+
+        Returns:
+            :class:`~ape.apt.transactions.ReceiptAPI`
+        """
         return self.chain_manager.history[transaction_hash]
+
+    def get_contract_receipt(
+        self, start_block: int = 0, stop_block: Optional[int] = None
+    ) -> ReceiptAPI:
+        """
+        Get the receipt responsible for the initial creation of the contract.
+
+        Args:
+            start_block (int): Optionally provide a start block to lessen the
+              search.
+            stop_block (Optional[int]): Optionally provider a stop block to
+              lessen the search.
+
+        Returns:
+            :class:`~ape.apt.transactions.ReceiptAPI`
+        """
+        if stop_block is None:
+            stop_block = self.blocks.head.number
+
+        mid_block = (stop_block - start_block) // 2 + start_block
+        # NOTE: biased towards mid_block == start_block
+
+        if start_block == mid_block:
+            for tx in self.chain_manager.blocks[mid_block].transactions:
+                if tx.receipt.contract_address == self.address:
+                    return tx.receipt
+
+
+
+        raise  # cannot find receipt

@@ -822,23 +822,41 @@ class ContractInstance(BaseAddress, ContractTypeWrapper):
         return instance
 
     @property
-    def receipt(self) -> Optional[ReceiptAPI]:
+    def receipt(self) -> ReceiptAPI:
         """
         The receipt associated with deploying the contract instance,
         if it is known and exists.
         """
 
-        if not self._cached_receipt and self.txn_hash:
+        if self._cached_receipt:
+            return self._cached_receipt
+
+        receipt = None
+
+        if self.txn_hash:
+            # Hash is known. Use that to get the receipt.
             try:
                 receipt = self.chain_manager.get_receipt(self.txn_hash)
             except (TransactionNotFoundError, ValueError, ChainError):
-                return None
+                pass
+            else:
+                self._cached_receipt = receipt
+                return receipt
 
-            self._cached_receipt = receipt
-            return receipt
+        else:
+            # Brute force find the receipt.
+            if stop_block is None:
+                stop_block = self.chain_manager.blocks.head.number
 
-        elif self._cached_receipt:
-            return self._cached_receipt
+            mid_block = (stop_block - start_block) // 2 + start_block
+            # NOTE: biased towards mid_block == start_block
+
+            if start_block == mid_block:
+                for tx in self.chain_manager.blocks[mid_block].transactions:
+                    if tx.receipt.contract_address == self.address:
+                        return tx.receipt
+
+                raise  # cannot find receipt
 
         return None
 
