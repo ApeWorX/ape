@@ -1671,17 +1671,4 @@ class ChainManager(BaseManager):
         Returns:
             :class:`~ape.apt.transactions.ReceiptAPI`
         """
-        if stop_block is None:
-            stop_block = self.blocks.head.number
-
-        mid_block = (stop_block - start_block) // 2 + start_block
-        # NOTE: biased towards mid_block == start_block
-
-        if start_block == mid_block:
-            for tx in self.chain_manager.blocks[mid_block].transactions:
-                if tx.receipt.contract_address == self.address:
-                    return tx.receipt
-
-
-
-        raise  # cannot find receipt
+        feat / get - code - block - id
