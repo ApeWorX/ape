@@ -524,6 +524,16 @@ def test_receipt(contract_instance, owner):
     assert receipt.sender == owner
 
 
+def test_receipt_when_needs_brute_force(vyper_contract_instance, owner):
+    # Force it to use the brute-force approach.
+    vyper_contract_instance._cached_receipt = None
+    vyper_contract_instance.txn_hash = None
+
+    actual = vyper_contract_instance.receipt.contract_address
+    expected = vyper_contract_instance.address
+    assert actual == expected
+
+
 def test_from_receipt_when_receipt_not_deploy(contract_instance, owner):
     receipt = contract_instance.setNumber(555, sender=owner)
     expected_err = (

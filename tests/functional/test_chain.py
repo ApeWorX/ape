@@ -626,3 +626,13 @@ def test_cache_non_checksum_address(chain, vyper_contract_instance):
     lowered_address = vyper_contract_instance.address.lower()
     chain.contracts[lowered_address] = vyper_contract_instance.contract_type
     assert chain.contracts[vyper_contract_instance.address] == vyper_contract_instance.contract_type
+
+
+def test_get_contract_receipt(chain, vyper_contract_instance):
+    address = vyper_contract_instance.address
+    receipt = chain.get_contract_receipt(address)
+    assert receipt.contract_address == address
+
+    chain.mine()
+    receipt = chain.get_contract_receipt(address)
+    assert receipt.contract_address == address

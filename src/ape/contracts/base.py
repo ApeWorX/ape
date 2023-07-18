@@ -584,11 +584,17 @@ class ContractEvent(ManagerAccessMixin):
             Iterator[:class:`~ape.contracts.base.ContractLog`]
         """
 
+        if not hasattr(self.contract, "address"):
+            yield from []
+            return
+
         start_block = None
         stop_block = None
 
         if stop is None:
-            start_block = 0
+            start_block = self.chain_manager.get_contract_receipt(
+                self.contract.address
+            ).block_number
             stop_block = start_or_stop
         elif start_or_stop is not None and stop is not None:
             start_block = start_or_stop
@@ -596,10 +602,7 @@ class ContractEvent(ManagerAccessMixin):
 
         stop_block = min(stop_block, self.chain_manager.blocks.height)
 
-        addresses = set(
-            ([self.contract.address] if hasattr(self.contract, "address") else [])
-            + (extra_addresses or [])
-        )
+        addresses = set([self.contract.address] + (extra_addresses or []))
         contract_event_query = ContractEventQuery(
             columns=list(ContractLog.__fields__.keys()),
             contract=addresses,
@@ -831,8 +834,6 @@ class ContractInstance(BaseAddress, ContractTypeWrapper):
         if self._cached_receipt:
             return self._cached_receipt
 
-        receipt = None
-
         if self.txn_hash:
             # Hash is known. Use that to get the receipt.
             try:
@@ -843,22 +844,10 @@ class ContractInstance(BaseAddress, ContractTypeWrapper):
                 self._cached_receipt = receipt
                 return receipt
 
-        else:
-            # Brute force find the receipt.
-            if stop_block is None:
-                stop_block = self.chain_manager.blocks.head.number
-
-            mid_block = (stop_block - start_block) // 2 + start_block
-            # NOTE: biased towards mid_block == start_block
-
-            if start_block == mid_block:
-                for tx in self.chain_manager.blocks[mid_block].transactions:
-                    if tx.receipt.contract_address == self.address:
-                        return tx.receipt
-
-                raise  # cannot find receipt
-
-        return None
+        # Brute force find the receipt.
+        receipt = self.chain_manager.get_contract_receipt(self.address)
+        self._cached_receipt = receipt
+        return receipt
 
     def __repr__(self) -> str:
         contract_name = self.contract_type.name or "Unnamed contract"
