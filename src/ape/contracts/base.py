@@ -585,14 +585,13 @@ class ContractEvent(ManagerAccessMixin):
         """
 
         if not hasattr(self.contract, "address"):
-            yield from []
             return
 
         start_block = None
         stop_block = None
 
         if stop is None:
-            start_block = self.chain_manager.get_contract_receipt(
+            start_block = self.chain_manager.contracts.get_creation_receipt(
                 self.contract.address
             ).block_number
             stop_block = start_or_stop
@@ -845,7 +844,7 @@ class ContractInstance(BaseAddress, ContractTypeWrapper):
                 return receipt
 
         # Brute force find the receipt.
-        receipt = self.chain_manager.get_contract_receipt(self.address)
+        receipt = self.chain_manager.contracts.get_creation_receipt(self.address)
         self._cached_receipt = receipt
         return receipt
 

@@ -1333,6 +1333,43 @@ class ContractCache(BaseManager):
         with self._deployments_mapping_cache.open("w") as fp:
             json.dump(deployments_map, fp, sort_keys=True, indent=2, default=sorted)
 
+    def get_creation_receipt(
+        self, address: AddressType, start_block: int = 0, stop_block: Optional[int] = None
+    ) -> ReceiptAPI:
+        """
+        Get the receipt responsible for the initial creation of the contract.
+
+        Args:
+            address (``AddressType``): The address of the contract.
+            start_block (int): The block to start looking from.
+            stop_block (Optional[int]): The block to stop looking at.
+
+        Returns:
+            :class:`~ape.apt.transactions.ReceiptAPI`
+        """
+        if stop_block is None and (stop := self.chain_manager.blocks.head.number):
+            stop_block = stop
+        elif stop_block is None:
+            raise ChainError("Chain missing blocks.")
+
+        mid_block = (stop_block - start_block) // 2 + start_block
+        # NOTE: biased towards mid_block == start_block
+
+        if start_block == mid_block:
+            for tx in self.chain_manager.blocks[mid_block].transactions:
+                if (receipt := tx.receipt) and receipt.contract_address == address:
+                    return receipt
+
+            return self.get_creation_receipt(
+                address, start_block=mid_block + 1, stop_block=stop_block
+            )
+
+        elif self.provider.get_code(address, block_id=mid_block):
+            return self.get_creation_receipt(address, start_block=start_block, stop_block=mid_block)
+
+        else:
+            raise ChainError(f"Failed to find a contract-creation receipt for '{address}'.")
+
 
 class ReportManager(BaseManager):
     """
@@ -1655,40 +1692,3 @@ class ChainManager(BaseManager):
             :class:`~ape.apt.transactions.ReceiptAPI`
         """
         return self.chain_manager.history[transaction_hash]
-
-    def get_contract_receipt(
-        self, address: AddressType, start_block: int = 0, stop_block: Optional[int] = None
-    ) -> ReceiptAPI:
-        """
-        Get the receipt responsible for the initial creation of the contract.
-
-        Args:
-            address (``AddressType``): The address of the contract.
-            start_block (int): The block to start looking from.
-            stop_block (Optional[int]): The block to stop looking at.
-
-        Returns:
-            :class:`~ape.apt.transactions.ReceiptAPI`
-        """
-        if stop_block is None and (stop := self.blocks.head.number):
-            stop_block = stop
-        elif stop_block is None:
-            raise ChainError("Chain missing blocks.")
-
-        mid_block = (stop_block - start_block) // 2 + start_block
-        # NOTE: biased towards mid_block == start_block
-
-        if start_block == mid_block:
-            for tx in self.blocks[mid_block].transactions:
-                if (receipt := tx.receipt) and receipt.contract_address == address:
-                    return receipt
-
-            return self.get_contract_receipt(
-                address, start_block=mid_block + 1, stop_block=stop_block
-            )
-
-        elif self.provider.get_code(address, block_id=mid_block):
-            return self.get_contract_receipt(address, start_block=start_block, stop_block=mid_block)
-
-        else:
-            raise ChainError(f"Failed to find a contract-creation receipt for '{address}'.")
