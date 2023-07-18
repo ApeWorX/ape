@@ -2330,11 +2330,14 @@ Can be <code class="docutils literal notranslate"><span class="pre">&quot;latest
 
 <dl class="py method">
 <dt class="sig sig-object py" id="ape.api.providers.ProviderAPI.get_code">
-<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_code</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">address</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ChecksumAddress</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">bytes</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">HexBytes</span></span></span><a class="headerlink" href="#ape.api.providers.ProviderAPI.get_code" title="Permalink to this definition"></a></dt>
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_code</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">address</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ChecksumAddress</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">bytes</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">HexBytes</span></span></span><a class="headerlink" href="#ape.api.providers.ProviderAPI.get_code" title="Permalink to this definition"></a></dt>
 <dd><p>Get the bytes a contract.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>address</strong> (<code class="docutils literal notranslate"><span class="pre">AddressType</span></code>) – The address of the contract.</p>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>address</strong> (<code class="docutils literal notranslate"><span class="pre">AddressType</span></code>) – The address of the contract.</p></li>
+<li><p><strong>**kwargs</strong> – Additional, provider-specific kwargs.</p></li>
+</ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>The contract bytecode.</p>
@@ -2740,8 +2743,9 @@ See <a class="reference external" href="https://chainlist.org/">ChainList</a> fo
 <li><p><strong>txn</strong> (<a class="reference internal" href="#ape.api.transactions.TransactionAPI" title="ape.api.transactions.TransactionAPI"><code class="xref py py-class docutils literal notranslate"><span class="pre">TransactionAPI</span></code></a>) – The transaction to estimate the gas for.</p></li>
 <li><p><strong>kwargs</strong> – <ul>
 <li><p><code class="docutils literal notranslate"><span class="pre">block_identifier</span></code> (<a class="reference internal" href="types.html#ape.types.BlockID" title="ape.types.BlockID"><code class="xref py py-class docutils literal notranslate"><span class="pre">BlockID</span></code></a>): The block ID
-to use when estimating the transaction. Useful for
-checking a past estimation cost of a transaction.</p></li>
+to use when estimating the transaction. Useful for checking a
+past estimation cost of a transaction. Also, you can alias
+<code class="docutils literal notranslate"><span class="pre">block_id</span></code>.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">state_overrides</span></code> (Dict): Modify the state of the blockchain
 prior to estimation.</p></li>
 </ul>
@@ -2809,11 +2813,19 @@ Can be <code class="docutils literal notranslate"><span class="pre">&quot;latest
 
 <dl class="py method">
 <dt class="sig sig-object py" id="ape.api.providers.Web3Provider.get_code">
-<span class="sig-name descname"><span class="pre">get_code</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">address</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ChecksumAddress</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">bytes</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">HexBytes</span></span></span><a class="headerlink" href="#ape.api.providers.Web3Provider.get_code" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">get_code</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">address</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ChecksumAddress</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">bytes</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">HexBytes</span></span></span><a class="headerlink" href="#ape.api.providers.Web3Provider.get_code" title="Permalink to this definition"></a></dt>
 <dd><p>Get the bytes a contract.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>address</strong> (<code class="docutils literal notranslate"><span class="pre">AddressType</span></code>) – The address of the contract.</p>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>address</strong> (<code class="docutils literal notranslate"><span class="pre">AddressType</span></code>) – The address of the contract.</p></li>
+<li><p><strong>kwargs</strong> – <ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">block_identifier</span></code> (<a class="reference internal" href="types.html#ape.types.BlockID" title="ape.types.BlockID"><code class="xref py py-class docutils literal notranslate"><span class="pre">BlockID</span></code></a>): The block ID
+for checking a previous account nonce. Also, you can use
+alias <code class="docutils literal notranslate"><span class="pre">block_id</span></code>.</p></li>
+</ul>
+</p></li>
+</ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>The contract bytecode.</p>
@@ -2849,7 +2861,8 @@ topic filters. Defaults to getting all events.</p>
 <li><p><strong>address</strong> (<em>AddressType</em>) – The address of the account.</p></li>
 <li><p><strong>kwargs</strong> – <ul>
 <li><p><code class="docutils literal notranslate"><span class="pre">block_identifier</span></code> (<a class="reference internal" href="types.html#ape.types.BlockID" title="ape.types.BlockID"><code class="xref py py-class docutils literal notranslate"><span class="pre">BlockID</span></code></a>): The block ID
-for checking a previous account nonce.</p></li>
+for checking a previous account nonce. Also, you can use alias
+<code class="docutils literal notranslate"><span class="pre">block_id</span></code>.</p></li>
 </ul>
 </p></li>
 </ul>
@@ -2898,7 +2911,8 @@ before timing out. Defaults <code class="docutils literal notranslate"><span cla
 <li><p><strong>slot</strong> (<em>int</em>) – Storage slot to read the value of.</p></li>
 <li><p><strong>kwargs</strong> – <ul>
 <li><p><code class="docutils literal notranslate"><span class="pre">block_identifier</span></code> (<a class="reference internal" href="types.html#ape.types.BlockID" title="ape.types.BlockID"><code class="xref py py-class docutils literal notranslate"><span class="pre">BlockID</span></code></a>): The block ID
-for checking previous contract storage values.</p></li>
+for checking previous contract storage values. Also, you can use
+alias <code class="docutils literal notranslate"><span class="pre">block_id</span></code>.</p></li>
 </ul>
 </p></li>
 </ul>
@@ -3007,7 +3021,8 @@ transaction on the block chain.</p>
 <li><p><strong>txn</strong> – <a class="reference internal" href="#ape.api.transactions.TransactionAPI" title="ape.api.transactions.TransactionAPI"><code class="xref py py-class docutils literal notranslate"><span class="pre">TransactionAPI</span></code></a></p></li>
 <li><p><strong>kwargs</strong> – <ul>
 <li><p><code class="docutils literal notranslate"><span class="pre">block_identifier</span></code> (<a class="reference internal" href="types.html#ape.types.BlockID" title="ape.types.BlockID"><code class="xref py py-class docutils literal notranslate"><span class="pre">BlockID</span></code></a>): The block ID
-to use to send a call at a historical point of a contract.
+to use to send a call at a historical point of a contract. Also,
+you can us alias <code class="docutils literal notranslate"><span class="pre">block_id</span></code>.
 checking a past estimation cost of a transaction.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">state_overrides</span></code> (Dict): Modify the state of the blockchain
 prior to sending the call, for testing purposes.</p></li>
