@@ -237,3 +237,10 @@ def test_get_virtual_machine_error_panic(eth_tester_provider, mocker):
 def test_gas_price(eth_tester_provider):
     actual = eth_tester_provider.gas_price
     assert isinstance(actual, int)
+
+
+def test_get_code(eth_tester_provider, vyper_contract_instance):
+    address = vyper_contract_instance.address
+    assert eth_tester_provider.get_code(address) == eth_tester_provider.get_code(
+        address, block_id=1
+    )

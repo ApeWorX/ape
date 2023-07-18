@@ -786,8 +786,9 @@ class Web3Provider(ProviderAPI, ABC):
                 The transaction to estimate the gas for.
             kwargs:
                 * ``block_identifier`` (:class:`~ape.types.BlockID`): The block ID
-                  to use when estimating the transaction. Useful for
-                  checking a past estimation cost of a transaction.
+                  to use when estimating the transaction. Useful for checking a
+                  past estimation cost of a transaction. Also, you can alias
+                  ``block_id``.
                 * ``state_overrides`` (Dict): Modify the state of the blockchain
                   prior to estimation.
 
@@ -813,7 +814,7 @@ class Web3Provider(ProviderAPI, ABC):
             txn_dict.pop("maxPriorityFeePerGas", None)
 
         try:
-            block_id = kwargs.pop("block_identifier", None)
+            block_id = kwargs.pop("block_identifier", kwargs.pop("block_id", None))
             txn_params = cast(TxParams, txn_dict)
             return self.web3.eth.estimate_gas(txn_params, block_identifier=block_id)
         except (ValueError, Web3ContractLogicError) as err:
@@ -892,20 +893,36 @@ class Web3Provider(ProviderAPI, ABC):
             address (AddressType): The address of the account.
             kwargs:
                 * ``block_identifier`` (:class:`~ape.types.BlockID`): The block ID
-                  for checking a previous account nonce.
+                  for checking a previous account nonce. Also, you can use alias
+                  ``block_id``.
 
         Returns:
             int
         """
 
-        block_id = kwargs.pop("block_identifier", None)
+        block_id = kwargs.pop("block_identifier", kwargs.pop("block_id", None))
         return self.web3.eth.get_transaction_count(address, block_identifier=block_id)
 
     def get_balance(self, address: AddressType) -> int:
         return self.web3.eth.get_balance(address)
 
-    def get_code(self, address: AddressType) -> ContractCode:
-        return self.web3.eth.get_code(address)
+    def get_code(self, address: AddressType, **kwargs) -> ContractCode:
+        """
+        Get the bytes a contract.
+
+        Args:
+            address (``AddressType``): The address of the contract.
+            kwargs:
+                * ``block_identifier`` (:class:`~ape.types.BlockID`): The block ID
+                  for checking a previous account nonce. Also, you can use
+                  alias ``block_id``.
+
+        Returns:
+            :class:`~ape.types.ContractCode`: The contract bytecode.
+        """
+
+        block_id = kwargs.pop("block_identifier", kwargs.pop("block_id", None))
+        return self.web3.eth.get_code(address, block_identifier=block_id)
 
     def get_storage_at(self, address: AddressType, slot: int, **kwargs) -> bytes:
         """
@@ -916,13 +933,14 @@ class Web3Provider(ProviderAPI, ABC):
             slot (int): Storage slot to read the value of.
             kwargs:
                 * ``block_identifier`` (:class:`~ape.types.BlockID`): The block ID
-                  for checking previous contract storage values.
+                  for checking previous contract storage values. Also, you can use
+                  alias ``block_id``.
 
         Returns:
             bytes: The value of the storage slot.
         """
 
-        block_id = kwargs.pop("block_identifier", None)
+        block_id = kwargs.pop("block_identifier", kwargs.pop("block_id", None))
         try:
             return self.web3.eth.get_storage_at(
                 address, slot, block_identifier=block_id  # type: ignore
@@ -942,7 +960,8 @@ class Web3Provider(ProviderAPI, ABC):
             txn: :class:`~ape.api.transactions.TransactionAPI`
             kwargs:
                 * ``block_identifier`` (:class:`~ape.types.BlockID`): The block ID
-                  to use to send a call at a historical point of a contract.
+                  to use to send a call at a historical point of a contract. Also,
+                  you can us alias ``block_id``.
                   checking a past estimation cost of a transaction.
                 * ``state_overrides`` (Dict): Modify the state of the blockchain
                   prior to sending the call, for testing purposes.
@@ -1075,7 +1094,7 @@ class Web3Provider(ProviderAPI, ABC):
         txn_dict.pop("maxFeePerGas", None)
         txn_dict.pop("maxPriorityFeePerGas", None)
 
-        block_identifier = kwargs.pop("block_identifier", "latest")
+        block_identifier = kwargs.pop("block_identifier", kwargs.pop("block_id", "latest"))
         if isinstance(block_identifier, int):
             block_identifier = to_hex(block_identifier)
         arguments = [txn_dict, block_identifier]
