@@ -1360,12 +1360,20 @@ class ContractCache(BaseManager):
                 if (receipt := tx.receipt) and receipt.contract_address == address:
                     return receipt
 
-            return self.get_creation_receipt(
-                address, start_block=mid_block + 1, stop_block=stop_block
-            )
+            if mid_block + 1 <= stop_block:
+                return self.get_creation_receipt(
+                    address, start_block=mid_block + 1, stop_block=stop_block
+                )
+            else:
+                raise ChainError(f"Failed to find a contract-creation receipt for '{address}'.")
 
         elif self.provider.get_code(address, block_id=mid_block):
             return self.get_creation_receipt(address, start_block=start_block, stop_block=mid_block)
+
+        elif start_block + 1 <= mid_block:
+            return self.get_creation_receipt(
+                address, start_block=start_block + 1, stop_block=stop_block
+            )
 
         else:
             raise ChainError(f"Failed to find a contract-creation receipt for '{address}'.")
