@@ -213,6 +213,7 @@
 <li class="toctree-l4"><a class="reference internal" href="#ape.managers.chain.ContractCache.get"><code class="docutils literal notranslate"><span class="pre">ContractCache.get()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.managers.chain.ContractCache.get_blueprint"><code class="docutils literal notranslate"><span class="pre">ContractCache.get_blueprint()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.managers.chain.ContractCache.get_container"><code class="docutils literal notranslate"><span class="pre">ContractCache.get_container()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ape.managers.chain.ContractCache.get_creation_receipt"><code class="docutils literal notranslate"><span class="pre">ContractCache.get_creation_receipt()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.managers.chain.ContractCache.get_deployments"><code class="docutils literal notranslate"><span class="pre">ContractCache.get_deployments()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.managers.chain.ContractCache.get_multiple"><code class="docutils literal notranslate"><span class="pre">ContractCache.get_multiple()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.managers.chain.ContractCache.get_proxy_info"><code class="docutils literal notranslate"><span class="pre">ContractCache.get_proxy_info()</span></code></a></li>
@@ -236,6 +237,7 @@
 <li class="toctree-l4"><a class="reference internal" href="#ape.managers.chain.ChainManager.blocks"><code class="docutils literal notranslate"><span class="pre">ChainManager.blocks</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.managers.chain.ChainManager.chain_id"><code class="docutils literal notranslate"><span class="pre">ChainManager.chain_id</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.managers.chain.ChainManager.gas_price"><code class="docutils literal notranslate"><span class="pre">ChainManager.gas_price</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ape.managers.chain.ChainManager.get_receipt"><code class="docutils literal notranslate"><span class="pre">ChainManager.get_receipt()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.managers.chain.ChainManager.history"><code class="docutils literal notranslate"><span class="pre">ChainManager.history</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.managers.chain.ChainManager.isolate"><code class="docutils literal notranslate"><span class="pre">ChainManager.isolate()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.managers.chain.ChainManager.mine"><code class="docutils literal notranslate"><span class="pre">ChainManager.mine()</span></code></a></li>
@@ -1058,6 +1060,24 @@ the blueprint.</p>
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="ape.managers.chain.ContractCache.get_creation_receipt">
+<span class="sig-name descname"><span class="pre">get_creation_receipt</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">address</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ChecksumAddress</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start_block</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stop_block</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="api.html#ape.api.transactions.ReceiptAPI" title="ape.api.transactions.ReceiptAPI"><span class="pre">ReceiptAPI</span></a></span></span><a class="headerlink" href="#ape.managers.chain.ContractCache.get_creation_receipt" title="Permalink to this definition"></a></dt>
+<dd><p>Get the receipt responsible for the initial creation of the contract.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>address</strong> (<code class="docutils literal notranslate"><span class="pre">AddressType</span></code>) – The address of the contract.</p></li>
+<li><p><strong>start_block</strong> (<em>int</em>) – The block to start looking from.</p></li>
+<li><p><strong>stop_block</strong> (<em>Optional</em><em>[</em><em>int</em><em>]</em>) – The block to stop looking at.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">ReceiptAPI</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="ape.managers.chain.ContractCache.get_deployments">
 <span class="sig-name descname"><span class="pre">get_deployments</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">contract_container</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="contracts.html#ape.contracts.base.ContractContainer" title="ape.contracts.base.ContractContainer"><span class="pre">ContractContainer</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="contracts.html#ape.contracts.base.ContractInstance" title="ape.contracts.base.ContractInstance"><span class="pre">ContractInstance</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#ape.managers.chain.ContractCache.get_deployments" title="Permalink to this definition"></a></dt>
 <dd><p>Retrieves previous deployments of a contract container or contract type.
@@ -1368,6 +1388,20 @@ See <a class="reference external" href="https://chainlist.org/">ChainList</a> fo
 <dt class="sig sig-object py" id="ape.managers.chain.ChainManager.gas_price">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">gas_price</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="headerlink" href="#ape.managers.chain.ChainManager.gas_price" title="Permalink to this definition"></a></dt>
 <dd><p>The price for what it costs to transact.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ape.managers.chain.ChainManager.get_receipt">
+<span class="sig-name descname"><span class="pre">get_receipt</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">transaction_hash</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="api.html#ape.api.transactions.ReceiptAPI" title="ape.api.transactions.ReceiptAPI"><span class="pre">ReceiptAPI</span></a></span></span><a class="headerlink" href="#ape.managers.chain.ChainManager.get_receipt" title="Permalink to this definition"></a></dt>
+<dd><p>Get a transaction receipt from the chain.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>transaction_hash</strong> (<em>str</em>) – The hash of the transaction.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">ReceiptAPI</span></code></p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py property">
