@@ -591,9 +591,19 @@ class ContractEvent(ManagerAccessMixin):
         stop_block = None
 
         if stop is None:
-            start_block = self.chain_manager.contracts.get_creation_receipt(
-                self.contract.address
-            ).block_number
+            contract = None
+            try:
+                contract = self.chain_manager.contracts.instance_at(self.contract.address)
+            except Exception:
+                pass
+
+            if contract:
+                start_block = contract.receipt.block_number
+            else:
+                start_block = self.chain_manager.contracts.get_creation_receipt(
+                    self.contract.address
+                ).block_number
+
             stop_block = start_or_stop
         elif start_or_stop is not None and stop is not None:
             start_block = start_or_stop
