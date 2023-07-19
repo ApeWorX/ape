@@ -12,7 +12,7 @@ from ethpm_types.utils import AnyUrl
 from ape.api import DependencyAPI, ProjectAPI
 from ape.api.networks import LOCAL_NETWORK_NAME
 from ape.contracts import ContractContainer, ContractInstance, ContractNamespace
-from ape.exceptions import ApeAttributeError, APINotImplementedError, ProjectError
+from ape.exceptions import ApeAttributeError, APINotImplementedError, ChainError, ProjectError
 from ape.logging import logger
 from ape.managers.base import BaseManager
 from ape.managers.project.types import ApeProject, BrownieProject
@@ -730,9 +730,12 @@ class ProjectManager(BaseManager):
             raise ProjectError("Can only publish deployments on a live network.")
 
         contract_name = contract.contract_type.name
-        receipt = contract.receipt
-        if not receipt:
-            raise ProjectError(f"Contract '{contract_name}' transaction receipt is unknown.")
+        try:
+            receipt = contract.receipt
+        except ChainError as err:
+            raise ProjectError(
+                f"Contract '{contract_name}' transaction receipt is unknown."
+            ) from err
 
         block_number = receipt.block_number
         block_hash_bytes = self.provider.get_block(block_number).hash
