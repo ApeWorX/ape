@@ -1371,9 +1371,9 @@ class ContractCache(BaseManager):
         elif self.provider.get_code(address, block_id=mid_block):
             return self.get_creation_receipt(address, start_block=start_block, stop_block=mid_block)
 
-        elif start_block + 1 <= mid_block:
+        elif mid_block + 1 <= stop_block:
             return self.get_creation_receipt(
-                address, start_block=start_block + 1, stop_block=stop_block
+                address, start_block=mid_block + 1, stop_block=stop_block
             )
 
         else:

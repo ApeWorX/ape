@@ -18,7 +18,7 @@ extras_require = {
         "hypothesis-jsonschema==0.19.0",  # JSON Schema fuzzer extension
     ],
     "lint": [
-        "black>=23.3.0,<24",  # Auto-formatter and linter
+        "black>=23.7.0,<24",  # Auto-formatter and linter
         "mypy>=0.991,<2",  # Static type analyzer
         "types-PyYAML",  # Needed due to mypy typeshed
         "types-requests",  # Needed due to mypy typeshed
@@ -93,7 +93,7 @@ setup(
     },
     include_package_data=True,
     install_requires=[
-        "click>=8.1.3,<8.1.4",
+        "click>=8.1.6,<9",
         "ijson>=3.1.4,<4",
         "importlib-metadata",
         "ipython>=8.5.0,<9",
@@ -119,11 +119,11 @@ setup(
         "eth-utils>=2.0.0,<3",
         "hexbytes>=0.2.3,<1",
         "py-geth>=3.13.0,<4",
-        "web3[tester]>=6.5.0,<7",
+        "web3[tester]>=6.6.1,<7",
         # ** Dependencies maintained by ApeWorX **
         "eip712>=0.2.1,<0.3",
         "ethpm-types>=0.5.3,<0.6",
-        "evm-trace>=0.1.0a21",
+        "evm-trace==0.1.0a21",
     ],
     entry_points={
         "console_scripts": ["ape=ape._cli:cli"],
