@@ -6,7 +6,6 @@ from functools import partial
 from pathlib import Path
 from typing import IO, Collection, Dict, Iterator, List, Optional, Set, Type, Union, cast
 
-import click
 import pandas as pd
 from ethpm_types import ContractType
 from rich import get_console
@@ -26,6 +25,7 @@ from ape.exceptions import (
     APINotImplementedError,
     BlockNotFoundError,
     ChainError,
+    ContractNotFoundError,
     ConversionError,
     CustomError,
     ProviderNotConnectedError,
@@ -967,7 +967,12 @@ class ContractCache(BaseManager):
     def __getitem__(self, address: AddressType) -> ContractType:
         contract_type = self.get(address)
         if not contract_type:
-            raise IndexError(f"No contract type found at address '{address}'.")
+            # Create error message from custom exception cls.
+            err = ContractNotFoundError(
+                address, self.provider.network.explorer is not None, self.provider.name
+            )
+            # Must raise IndexError.
+            raise IndexError(str(err))
 
         return contract_type
 
@@ -1144,6 +1149,7 @@ class ContractCache(BaseManager):
         Raises:
             TypeError: When passing an invalid type for the `contract_type` arguments
               (expects `ContractType`).
+            :class:`~ape.exceptions.ContractNotFoundError`: When the contract type is not found.
 
         Args:
             address (Union[str, AddressType]): The address of the plugin. If you are using the ENS
@@ -1176,17 +1182,12 @@ class ContractCache(BaseManager):
                 raise  # Current exception
 
         if not contract_type:
-            msg = f"Failed to get contract type for address '{contract_address}'."
-            if self.provider.network.explorer is None:
-                msg += (
-                    f" Current provider '{self.provider.name}' has no associated "
-                    "explorer plugin. Try installing an explorer plugin using "
-                    f"{click.style(text='ape plugins install etherscan', fg='green')}, "
-                    "or using a network with explorer support."
-                )
-            else:
-                msg += " Contract may need verification."
-            raise ChainError(msg)
+            raise ContractNotFoundError(
+                contract_address,
+                self.provider.network.explorer is not None,
+                self.provider.name,
+            )
+
         elif not isinstance(contract_type, ContractType):
             raise TypeError(
                 f"Expected type '{ContractType.__name__}' for argument 'contract_type'."

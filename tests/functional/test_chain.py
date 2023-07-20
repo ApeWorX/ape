@@ -8,7 +8,12 @@ from ethpm_types import ContractType, HexBytes
 
 import ape
 from ape.contracts import ContractInstance
-from ape.exceptions import APINotImplementedError, ChainError, ConversionError
+from ape.exceptions import (
+    APINotImplementedError,
+    ChainError,
+    ContractNotFoundError,
+    ConversionError,
+)
 from ape_ethereum.transactions import Receipt, TransactionStatusEnum
 from tests.conftest import skip_if_plugin_installed
 
@@ -382,6 +387,30 @@ def test_instance_at_uses_given_contract_type_when_retrieval_fails(mocker, chain
     actual = chain.contracts.instance_at(new_address, contract_type=expected_contract_type)
     assert actual.contract_type == expected_contract_type
     assert caplog.records[-1].message == expected_fail_message
+
+
+def test_instance_at_contract_type_not_found(chain):
+    new_address = "0x4a986a6dCA6dbf99bC3d17F8D71aFb0d60e740f8"
+    expected = (
+        rf"Failed to get contract type for address '{new_address}'. "
+        r"Current provider 'test' has no associated explorer plugin. "
+        "Try installing an explorer plugin using .*ape plugins install etherscan.*, "
+        r"or using a network with explorer support\."
+    )
+    with pytest.raises(ContractNotFoundError, match=expected):
+        chain.contracts.instance_at(new_address)
+
+
+def test_contracts_getitem_contract_not_found(chain):
+    new_address = "0x4a986a6dCA6dbf99bC3d17F8D71aFb0d60e740f8"
+    expected = (
+        rf"Failed to get contract type for address '{new_address}'. "
+        r"Current provider 'test' has no associated explorer plugin. "
+        "Try installing an explorer plugin using .*ape plugins install etherscan.*, "
+        r"or using a network with explorer support\."
+    )
+    with pytest.raises(IndexError, match=expected):
+        _ = chain.contracts[new_address]
 
 
 def test_deployments_mapping_cache_location(chain):
