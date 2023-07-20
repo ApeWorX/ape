@@ -10,14 +10,16 @@ def test_revert_info_context(owner, reverts_contract_instance):
     """
     Shows that the info context is properly maintained.
     """
-    with reverts() as info_0:
+
+    with reverts() as rev_0:
         reverts_contract_instance.revertStrings(0, sender=owner)
-        with reverts() as info_1:
+        with reverts() as rev_1:
             reverts_contract_instance.revertStrings(0, sender=owner)
 
-        assert info_1.value != info_0.value
+        err_1 = rev_1.value
 
-    assert info_0.value is not None
+    err_0 = rev_0.value
+    assert err_0 != err_1
 
 
 def test_no_args(owner, reverts_contract_instance):
