@@ -480,6 +480,26 @@ class ChainError(ApeException):
     """
 
 
+class ContractNotFoundError(ChainError):
+    """
+    Raised when a contract is not found at an address.
+    """
+
+    def __init__(self, address: "AddressType", has_explorer: bool, provider_name: str):
+        msg = f"Failed to get contract type for address '{address}'."
+        msg += (
+            " Contract may need verification."
+            if has_explorer
+            else (
+                f" Current provider '{provider_name}' has no associated "
+                "explorer plugin. Try installing an explorer plugin using "
+                f"{click.style(text='ape plugins install etherscan', fg='green')}, "
+                "or using a network with explorer support."
+            )
+        )
+        super().__init__(msg)
+
+
 class UnknownSnapshotError(ChainError):
     """
     Raised when given an unknown snapshot ID.
