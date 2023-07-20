@@ -1,5 +1,7 @@
 import pytest
+from ethpm_types import HexBytes
 from packaging.version import Version
+from web3.types import Wei
 
 from ape.exceptions import APINotImplementedError
 from ape.utils.misc import (
@@ -11,6 +13,7 @@ from ape.utils.misc import (
     is_zero_hex,
     raises_not_implemented,
     run_until_complete,
+    to_int,
 )
 
 
@@ -99,3 +102,8 @@ def test_is_not_zero_address(owner):
     assert not is_zero_hex(owner)
     assert not is_zero_hex("MyContract")
     assert not is_zero_hex("0x01")
+
+
+@pytest.mark.parametrize("val", (5, "0x5", "0x05", "0x0005", HexBytes(5), Wei(5)))
+def test_to_int(val):
+    assert to_int(val) == 5

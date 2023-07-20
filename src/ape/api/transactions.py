@@ -131,8 +131,7 @@ class TransactionAPI(BaseInterfaceModel):
     @property
     def receipt(self) -> Optional["ReceiptAPI"]:
         """
-        This transaction's associated published receipt,
-        if it exists.
+        This transaction's associated published receipt, if it exists.
         """
 
         try:

@@ -584,11 +584,26 @@ class ContractEvent(ManagerAccessMixin):
             Iterator[:class:`~ape.contracts.base.ContractLog`]
         """
 
+        if not hasattr(self.contract, "address"):
+            return
+
         start_block = None
         stop_block = None
 
         if stop is None:
-            start_block = 0
+            contract = None
+            try:
+                contract = self.chain_manager.contracts.instance_at(self.contract.address)
+            except Exception:
+                pass
+
+            if contract:
+                start_block = contract.receipt.block_number
+            else:
+                start_block = self.chain_manager.contracts.get_creation_receipt(
+                    self.contract.address
+                ).block_number
+
             stop_block = start_or_stop
         elif start_or_stop is not None and stop is not None:
             start_block = start_or_stop
@@ -596,10 +611,7 @@ class ContractEvent(ManagerAccessMixin):
 
         stop_block = min(stop_block, self.chain_manager.blocks.height)
 
-        addresses = set(
-            ([self.contract.address] if hasattr(self.contract, "address") else [])
-            + (extra_addresses or [])
-        )
+        addresses = set([self.contract.address] + (extra_addresses or []))
         contract_event_query = ContractEventQuery(
             columns=list(ContractLog.__fields__.keys()),
             contract=addresses,
@@ -822,25 +834,29 @@ class ContractInstance(BaseAddress, ContractTypeWrapper):
         return instance
 
     @property
-    def receipt(self) -> Optional[ReceiptAPI]:
+    def receipt(self) -> ReceiptAPI:
         """
         The receipt associated with deploying the contract instance,
         if it is known and exists.
         """
 
-        if not self._cached_receipt and self.txn_hash:
+        if self._cached_receipt:
+            return self._cached_receipt
+
+        if self.txn_hash:
+            # Hash is known. Use that to get the receipt.
             try:
                 receipt = self.chain_manager.get_receipt(self.txn_hash)
             except (TransactionNotFoundError, ValueError, ChainError):
-                return None
+                pass
+            else:
+                self._cached_receipt = receipt
+                return receipt
 
-            self._cached_receipt = receipt
-            return receipt
-
-        elif self._cached_receipt:
-            return self._cached_receipt
-
-        return None
+        # Brute force find the receipt.
+        receipt = self.chain_manager.contracts.get_creation_receipt(self.address)
+        self._cached_receipt = receipt
+        return receipt
 
     def __repr__(self) -> str:
         contract_name = self.contract_type.name or "Unnamed contract"
