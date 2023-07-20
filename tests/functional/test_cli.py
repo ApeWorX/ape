@@ -8,6 +8,7 @@ from ape.cli import (
     NetworkBoundCommand,
     PromptChoice,
     account_option,
+    contract_file_paths_argument,
     get_user_selected_account,
     network_option,
     verbosity_option,
@@ -323,3 +324,13 @@ def test_account_prompt_name():
     assert option.name == "account"
     option = AccountAliasPromptChoice(name="account_z")
     assert option.name == "account_z"
+
+
+def test_contract_file_paths_argument(runner):
+    @click.command()
+    @contract_file_paths_argument()
+    def cmd(file_paths):
+        pass
+
+    result = runner.invoke(cmd, ["path0", "path1"])
+    assert "Contract 'path0' not found" in result.output
