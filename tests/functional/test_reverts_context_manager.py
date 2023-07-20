@@ -8,18 +8,15 @@ from tests.conftest import geth_process_test
 
 def test_revert_info_context(owner, reverts_contract_instance):
     """
-    Shows that the info context is properly maintained.
+    Shows no two revert info objects are the same instance.
     """
 
-    with reverts() as rev_0:
+    with reverts() as rev0:
         reverts_contract_instance.revertStrings(0, sender=owner)
-        with reverts() as rev_1:
-            reverts_contract_instance.revertStrings(0, sender=owner)
+    with reverts() as rev1:
+        reverts_contract_instance.revertStrings(0, sender=owner)
 
-        err_1 = rev_1.value
-
-    err_0 = rev_0.value
-    assert err_0 != err_1
+    assert rev0 != rev1
 
 
 def test_no_args(owner, reverts_contract_instance):
