@@ -4,7 +4,7 @@ from typing import Optional, Type
 import click
 from eth_utils import is_hex
 
-from ape import accounts
+from ape import accounts, project
 from ape.api import AccountAPI
 from ape.cli.choices import Alias
 from ape.cli.paramtype import AllFilePaths
@@ -55,8 +55,8 @@ def _create_contracts_paths(ctx, param, value):
     resolved_contract_paths = set()
     for contract_path in contract_paths:
         # Adds missing absolute path as well as extension.
-        resolved_contract_path = ctx.obj.project_manager.lookup_path(contract_path)
-
+        pm = project if ctx.obj is None else ctx.obj.project_manager
+        resolved_contract_path = pm.lookup_path(contract_path)
         if not resolved_contract_path:
             _raise_bad_arg(contract_path.name)
 
