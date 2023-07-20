@@ -182,10 +182,14 @@ def test_history_caches_sender_over_address_key(
     eth_tester_provider.network = network
 
     # Previously, this would error because the receipt was cached with the wrong sender
-    actual = [t for t in chain.history[contract.address].sessional]
+    try:
+        actual = [t for t in chain.history[contract.address].sessional]
 
-    # Actual is 0 because the receipt was cached under the sender.
-    assert len(actual) == 0
+        # Actual is 0 because the receipt was cached under the sender.
+        assert len(actual) == 0
+    finally:
+        if "explorer" in network.__dict__:
+            del network.__dict__["explorer"]
 
 
 def test_iterate_blocks(chain_that_mined_5):
@@ -390,7 +394,7 @@ def test_instance_at_uses_given_contract_type_when_retrieval_fails(mocker, chain
 
 
 def test_instance_at_contract_type_not_found(chain):
-    new_address = "0x4a986a6dCA6dbf99bC3d17F8D71aFb0d60e740f8"
+    new_address = "0x4a986a6dca6dbF99Bc3D17F8d71aFB0D60E740F9"
     expected = (
         rf"Failed to get contract type for address '{new_address}'. "
         r"Current provider 'test' has no associated explorer plugin. "
@@ -402,7 +406,7 @@ def test_instance_at_contract_type_not_found(chain):
 
 
 def test_contracts_getitem_contract_not_found(chain):
-    new_address = "0x4a986a6dCA6dbf99bC3d17F8D71aFb0d60e740f8"
+    new_address = "0x4a986a6dca6dbF99Bc3D17F8d71aFB0D60E740F9"
     expected = (
         rf"Failed to get contract type for address '{new_address}'. "
         r"Current provider 'test' has no associated explorer plugin. "
