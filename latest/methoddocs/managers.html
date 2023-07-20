@@ -1145,8 +1145,11 @@ contract type. You can also provide the contract type from which it will cache a
 next time.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Raises<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>TypeError</strong> – When passing an invalid type for the <cite>contract_type</cite> arguments
-    (expects <cite>ContractType</cite>).</p>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>TypeError</strong> – When passing an invalid type for the <cite>contract_type</cite> arguments
+    (expects <cite>ContractType</cite>).</p></li>
+<li><p><a class="reference internal" href="exceptions.html#ape.exceptions.ContractNotFoundError" title="ape.exceptions.ContractNotFoundError"><strong>ContractNotFoundError</strong></a> – When the contract type is not found.</p></li>
+</ul>
 </dd>
 <dt class="field-even">Parameters<span class="colon">:</span></dt>
 <dd class="field-even"><ul class="simple">
