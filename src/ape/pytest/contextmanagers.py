@@ -1,6 +1,6 @@
 import re
 from re import Pattern
-from typing import Optional, Type, Union, List
+from typing import Optional, Type, Union
 
 from ethpm_types.abi import ErrorABI
 
@@ -32,7 +32,7 @@ class RevertsContextManager(ManagerAccessMixin):
         self.expected_message = expected_message
         self.dev_message = dev_message
         self.error_inputs = error_inputs
-        self.revert_info: List[RevertInfo] = []
+        self.revert_info: Optional[RevertInfo] = None
 
     def _check_dev_message(self, exception: ContractLogicError):
         """
@@ -142,11 +142,11 @@ class RevertsContextManager(ManagerAccessMixin):
             raise AssertionError("\n".join(incorrect_values))
 
     def __enter__(self, *args, **kwargs):
-        self.revert_info.append(RevertInfo())
-        return self.revert_info[-1]
+        info = RevertInfo()
+        self.revert_info = info
+        return info
 
     def __exit__(self, exc_type: Type, exc_value: Exception, traceback) -> bool:
-        info = self.revert_info.pop()
         if exc_type is None:
             raise AssertionError("Transaction did not revert.")
 
@@ -168,7 +168,8 @@ class RevertsContextManager(ManagerAccessMixin):
 
         # Set the exception on the returned info.
         # This allows the user to make further assertions on the exception.
-        info.value = exc_value
+        if self.revert_info is not None:
+            self.revert_info.value = exc_value
 
         # Returning True causes the expected exception not to get raised
         # and the test to pass
