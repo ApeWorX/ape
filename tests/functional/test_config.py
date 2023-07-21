@@ -4,7 +4,7 @@ from typing import Dict, Union
 import pytest
 
 from ape.api import PluginConfig
-from ape.managers.config import CONFIG_FILE_NAME, DeploymentConfigCollection
+from ape.managers.config import CONFIG_FILE_NAME, DeploymentConfigCollection, merge_configs
 from ape.types import GasLimit
 from ape_ethereum.ecosystem import NetworkConfig
 from tests.functional.conftest import PROJECT_WITH_LONG_CONTRACTS_FOLDER
@@ -164,3 +164,17 @@ test:
     config.load(force_reload=True)
     assert config.get_config("test").number_of_accounts == 11
     config_file.unlink(missing_ok=True)
+
+
+def test_merge_configs():
+    global_config = {"ethereum": {"mainnet": {"default_provider": "geth"}}}
+    project_config = {"ethereum": {"local": {"default_provider": "geth"}}, "test": "foo"}
+    actual = merge_configs(global_config, project_config)
+    expected = {
+        "ethereum": {
+            "local": {"default_provider": "geth"},
+            "mainnet": {"default_provider": "geth"},
+        },
+        "test": "foo",
+    }
+    assert actual == expected
