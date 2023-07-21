@@ -323,7 +323,7 @@ class ConfigManager(BaseInterfaceModel):
 
 
 def merge_configs(base: Dict, secondary: Dict) -> Dict:
-    result = {}
+    result: Dict = {}
 
     # Short circuits
     if not base and not secondary:
