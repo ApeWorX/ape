@@ -4,7 +4,7 @@ from typing import Dict, Union
 import pytest
 
 from ape.api import PluginConfig
-from ape.managers.config import CONFIG_FILE_NAME, DeploymentConfigCollection
+from ape.managers.config import CONFIG_FILE_NAME, DeploymentConfigCollection, merge_configs
 from ape.types import GasLimit
 from ape_ethereum.ecosystem import NetworkConfig
 from tests.functional.conftest import PROJECT_WITH_LONG_CONTRACTS_FOLDER
@@ -164,3 +164,48 @@ test:
     config.load(force_reload=True)
     assert config.get_config("test").number_of_accounts == 11
     config_file.unlink(missing_ok=True)
+
+
+def test_merge_configs():
+    """
+    The test covers most cases in `merge_config()`. See comment below explaining
+    `expected`.
+    """
+    global_config = {
+        "ethereum": {
+            "mainnet": {"default_provider": "geth"},
+            "local": {"default_provider": "test", "required_confirmations": 5},
+        }
+    }
+    project_config = {
+        "ethereum": {
+            "local": {"default_provider": "geth"},
+            "sepolia": {"default_provider": "alchemy"},
+        },
+        "test": "foo",
+    }
+    actual = merge_configs(global_config, project_config)
+
+    # Expected case `key only in global`: "mainnet"
+    # Expected case `non-primitive override from project`: local -> default_provider, which
+    #  is `test` in global but `geth` in project; thus it is `geth` in expected.
+    # Expected case `merge sub-dictionaries`: `ethereum` is being merged.
+    # Expected case `add missing project keys`: `test` is added, so is `sepolia` (nested-example).
+    expected = {
+        "ethereum": {
+            "local": {"default_provider": "geth", "required_confirmations": 5},
+            "mainnet": {"default_provider": "geth"},
+            "sepolia": {"default_provider": "alchemy"},
+        },
+        "test": "foo",
+    }
+    assert actual == expected
+
+
+def test_merge_configs_short_circuits():
+    """
+    Cover all short-circuit cases.
+    """
+    ex = {"test": "foo"}
+    assert merge_configs({}, {}) == {}
+    assert merge_configs(ex, {}) == merge_configs({}, ex) == ex
