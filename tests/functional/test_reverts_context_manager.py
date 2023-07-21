@@ -6,6 +6,20 @@ from ape.pytest.contextmanagers import RevertsContextManager as reverts
 from tests.conftest import geth_process_test
 
 
+def test_revert_info_context(owner, reverts_contract_instance):
+    """
+    Shows no two revert info objects are the same instance.
+    """
+
+    rev = reverts()
+    with rev as rev0:
+        reverts_contract_instance.revertStrings(0, sender=owner)
+    with rev as rev1:
+        reverts_contract_instance.revertStrings(1, sender=owner)
+
+    assert rev0.value.revert_message != rev1.value.revert_message
+
+
 def test_no_args(owner, reverts_contract_instance):
     """
     Test catching transaction reverts without asserting on error messages.
