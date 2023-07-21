@@ -188,7 +188,7 @@ def test_merge_configs():
 
     # Expected case `key only in global`: "mainnet"
     # Expected case `non-primitive override from project`: local -> default_provider, which
-    #  is `test` in global but `geth` in project; this it is `geth` in expected.
+    #  is `test` in global but `geth` in project; thus it is `geth` in expected.
     # Expected case `merge sub-dictionaries`: `ethereum` is being merged.
     # Expected case `add missing project keys`: `test` is added, so is `sepolia` (nested-example).
     expected = {
