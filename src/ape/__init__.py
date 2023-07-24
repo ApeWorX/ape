@@ -1,52 +1,49 @@
-import signal
 import sys
 
-if "test" not in sys.argv and "pytest" not in sys.argv:
-    signal.signal(signal.SIGINT, lambda s, f: sys.exit(130))
+try:
+    from ape.managers.project import ProjectManager as Project
+    from ape.pytest.contextmanagers import RevertsContextManager
+    from ape.utils import ManagerAccessMixin as _ManagerAccessMixin
 
-from ape.managers.project import ProjectManager as Project
-from ape.pytest.contextmanagers import RevertsContextManager
-from ape.utils import ManagerAccessMixin as _ManagerAccessMixin
+    config = _ManagerAccessMixin.config_manager
+    """
+    The active configs for the current project. See :class:`ape.managers.config.ConfigManager`.
+    """
 
-# Wiring together the application
+    compilers = _ManagerAccessMixin.compiler_manager
+    """Manages compilers for the current project. See
+    :class:`ape.managers.compilers.CompilerManager`."""
 
-config = _ManagerAccessMixin.config_manager
-"""
-The active configs for the current project. See :class:`ape.managers.config.ConfigManager`.
-"""
+    networks = _ManagerAccessMixin.network_manager
+    """Manages the networks for the current project. See
+    :class:`ape.managers.networks.NetworkManager`."""
 
-# Main types we export for the user
-compilers = _ManagerAccessMixin.compiler_manager
-"""Manages compilers for the current project. See
-:class:`ape.managers.compilers.CompilerManager`."""
+    chain = _ManagerAccessMixin.chain_manager
+    """
+    The current connected blockchain; requires an active provider.
+    Useful for development purposes, such as controlling the state of the blockchain.
+    Also handy for querying data about the chain and managing local caches.
+    """
 
-networks = _ManagerAccessMixin.network_manager
-"""Manages the networks for the current project. See
-:class:`ape.managers.networks.NetworkManager`."""
+    accounts = _ManagerAccessMixin.account_manager
+    """Manages accounts for the current project. See :class:`ape.managers.accounts.AccountManager`."""
 
-chain = _ManagerAccessMixin.chain_manager
-"""
-The current connected blockchain; requires an active provider.
-Useful for development purposes, such as controlling the state of the blockchain.
-Also handy for querying data about the chain and managing local caches.
-"""
+    project = _ManagerAccessMixin.project_manager
+    """The currently active project. See :class:`ape.managers.project.ProjectManager`."""
 
-accounts = _ManagerAccessMixin.account_manager
-"""Manages accounts for the current project. See :class:`ape.managers.accounts.AccountManager`."""
+    Contract = chain.contracts.instance_at
+    """User-facing class for instantiating contracts."""
 
-project = _ManagerAccessMixin.project_manager
-"""The currently active project. See :class:`ape.managers.project.ProjectManager`."""
+    convert = _ManagerAccessMixin.conversion_manager.convert
+    """Conversion utility function. See :class:`ape.managers.converters.ConversionManager`."""
 
-Contract = chain.contracts.instance_at
-"""User-facing class for instantiating contracts."""
+    reverts = RevertsContextManager
+    """
+    Catch and expect contract logic reverts. Resembles ``pytest.raises()``.
+    """
 
-convert = _ManagerAccessMixin.conversion_manager.convert
-"""Conversion utility function. See :class:`ape.managers.converters.ConversionManager`."""
-
-reverts = RevertsContextManager
-"""
-Catch and expect contract logic reverts. Resembles ``pytest.raises()``.
-"""
+except KeyboardInterrupt:
+    sys.exit(130)
 
 
 __all__ = [
