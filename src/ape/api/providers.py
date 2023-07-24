@@ -1602,7 +1602,8 @@ class SubprocessProvider(ProviderAPI):
         signal(SIGTERM, _signal_handler)
 
     def disconnect(self):
-        """Stop the process if it exists.
+        """
+        Stop the process if it exists.
         Subclasses override this method to do provider-specific disconnection tasks.
         """
 
