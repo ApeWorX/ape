@@ -119,6 +119,11 @@ class PytestApeRunner(ManagerAccessMixin):
             if capman:
                 capman.resume_global_capture()
 
+        if type(call.excinfo.value) in (SystemExit, KeyboardInterrupt):
+            # This will show the rest of Ape Test output as if the
+            # tests had stopped here.
+            pytest.exit("`ape test` exited.")
+
     def pytest_runtest_setup(self, item):
         """
         By default insert isolation fixtures into each test cases list of fixtures
