@@ -122,7 +122,7 @@ class PytestApeRunner(ManagerAccessMixin):
         if type(call.excinfo.value) in (SystemExit, KeyboardInterrupt):
             # This will show the rest of Ape Test output as if the
             # tests had stopped here.
-            pytest.exit("`ape test` exitted.")
+            pytest.exit("`ape test` exited.")
 
     def pytest_runtest_setup(self, item):
         """
