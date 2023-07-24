@@ -3,7 +3,7 @@ from copy import deepcopy
 from typing import Any, Dict, Iterator, List, Optional, Tuple, Type, Union, cast
 
 from eth_abi import decode, encode
-from eth_abi.exceptions import InsufficientDataBytes
+from eth_abi.exceptions import InsufficientDataBytes, NonEmptyPaddingBytes
 from eth_typing import Hash32
 from eth_utils import (
     encode_hex,
@@ -439,8 +439,8 @@ class Ethereum(EcosystemAPI):
 
         try:
             vm_return_values = decode(output_types_str_ls, raw_data)
-        except InsufficientDataBytes as err:
-            raise DecodingError() from err
+        except (InsufficientDataBytes, NonEmptyPaddingBytes) as err:
+            raise DecodingError(str(err)) from err
 
         if not vm_return_values:
             return vm_return_values
@@ -836,7 +836,7 @@ class Ethereum(EcosystemAPI):
                     if not call.failed
                     else None
                 )
-            except (DecodingError, InsufficientDataBytes):
+            except DecodingError:
                 if return_value_bytes == HexBytes("0x"):
                     # Empty result, but it failed decoding because of its length.
                     return_values = ("",)
