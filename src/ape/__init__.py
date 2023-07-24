@@ -1,8 +1,8 @@
 import signal
+import sys
 
-signal.signal(signal.SIGINT, lambda s, f: _sys.exit(130))
-
-import sys as _sys
+if "test" not in sys.argv and "pytest" not in sys.argv:
+    signal.signal(signal.SIGINT, lambda s, f: sys.exit(130))
 
 from ape.managers.project import ProjectManager as Project
 from ape.pytest.contextmanagers import RevertsContextManager

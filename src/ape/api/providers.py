@@ -4,7 +4,6 @@ import datetime
 import logging
 import platform
 import shutil
-import sys
 import time
 from abc import ABC
 from concurrent.futures import ThreadPoolExecutor
@@ -12,7 +11,7 @@ from copy import copy
 from itertools import tee
 from logging import FileHandler, Formatter, Logger, getLogger
 from pathlib import Path
-from signal import SIGINT, SIGTERM, signal
+from signal import SIGINT, SIGTERM
 from subprocess import DEVNULL, PIPE, Popen
 from typing import Any, Dict, Iterator, List, Optional, Union, cast
 
@@ -22,6 +21,7 @@ from ethpm_types import HexBytes
 from evm_trace import CallTreeNode as EvmCallTreeNode
 from evm_trace import TraceFrame as EvmTraceFrame
 from pydantic import Field, root_validator, validator
+from requests.exceptions import ConnectionError
 from web3 import Web3
 from web3.exceptions import BlockNotFound
 from web3.exceptions import ContractLogicError as Web3ContractLogicError
@@ -879,6 +879,8 @@ class Web3Provider(ProviderAPI, ABC):
             block_data = dict(self.web3.eth.get_block(block_id))
         except BlockNotFound as err:
             raise BlockNotFoundError(block_id) from err
+        except ConnectionError as err:
+            raise ProviderNotConnectedError() from err
 
         # Some nodes (like anvil) will not have a base fee if set to 0.
         if "baseFeePerGas" in block_data and block_data.get("baseFeePerGas") is None:
@@ -1399,7 +1401,11 @@ class Web3Provider(ProviderAPI, ABC):
         )
 
     def _make_request(self, endpoint: str, parameters: List) -> Any:
-        coroutine = self.web3.provider.make_request(RPCEndpoint(endpoint), parameters)
+        try:
+            coroutine = self.web3.provider.make_request(RPCEndpoint(endpoint), parameters)
+        except ConnectionError as err:
+            raise ProviderNotConnectedError() from err
+
         result = run_until_complete(coroutine)
 
         if "error" in result:
@@ -1592,14 +1598,6 @@ class SubprocessProvider(ProviderAPI):
 
         # Register atexit handler to make sure disconnect is called for normal object lifecycle.
         atexit.register(self.disconnect)
-
-        # Register handlers to ensure atexit handlers are called when Python dies.
-        def _signal_handler(signum, frame):
-            atexit._run_exitfuncs()
-            sys.exit(143 if signum == SIGTERM else 130)
-
-        signal(SIGINT, _signal_handler)
-        signal(SIGTERM, _signal_handler)
 
     def disconnect(self):
         """Stop the process if it exists.
