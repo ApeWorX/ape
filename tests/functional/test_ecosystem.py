@@ -6,6 +6,7 @@ from ethpm_types import HexBytes
 from ethpm_types.abi import ABIType, MethodABI
 
 from ape.api.networks import LOCAL_NETWORK_NAME
+from ape.exceptions import DecodingError
 from ape.types import AddressType
 from ape.utils import DEFAULT_LOCAL_TRANSACTION_ACCEPTANCE_TIMEOUT
 from ape_ethereum.ecosystem import BLUEPRINT_HEADER, Block
@@ -253,3 +254,25 @@ def test_encode_blueprint_contract(ethereum, vyper_contract_type):
         + ct_bytes
     )
     assert actual.data == HexBytes(expected)
+
+
+def test_decode_return_data_non_empty_padding_bytes(ethereum):
+    raw_data = HexBytes(
+        "0x08c379a000000000000000000000000000000000000000000000000000000000000000200"
+        "000000000000000000000000000000000000000000000000000000000000012696e73756666"
+        "696369656e742066756e64730000000000000000000000000000"
+    )
+    abi = MethodABI.parse_obj(
+        {
+            "type": "function",
+            "name": "transfer",
+            "stateMutability": "nonpayable",
+            "inputs": [
+                {"name": "receiver", "type": "address"},
+                {"name": "amount", "type": "uint256"},
+            ],
+            "outputs": [{"name": "", "type": "bool"}],
+        }
+    )
+    with pytest.raises(DecodingError):
+        ethereum.decode_returndata(abi, raw_data)
