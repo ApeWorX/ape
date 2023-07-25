@@ -5,13 +5,13 @@ Every CLI command comes with the logger in Ape, even custom user scripts (unless
 
 The following log levels are available with Ape:
 
-| Log Level       | Numeric Value | Purpose                         | Color  |
-|-----------------|---------------|---------------------------------|--------|
-| DEBUG           | 10            | Debug stuff                     | Blue   |
-| INFO            | 20            | General information             | Blue   |
-| SUCCESS         | 21            | To mark a successful operation  | Green  |
-| WARNING         | 30            | Indicates a potential issue     | Yellow |
-| ERROR           | 40            | An error occurred               | Red    |
+| Log Level | Numeric Value | Purpose                        | Color  |
+| --------- | ------------- | ------------------------------ | ------ |
+| DEBUG     | 10            | Debug stuff                    | Blue   |
+| INFO      | 20            | General information            | Blue   |
+| SUCCESS   | 21            | To mark a successful operation | Green  |
+| WARNING   | 30            | Indicates a potential issue    | Yellow |
+| ERROR     | 40            | An error occurred              | Red    |
 
 **NOTE**: `SUCCESS` is a non-standard verbosity level custom to the framework.
 It is shown during `INFO` but not shown if set to `WARNING` or above.
