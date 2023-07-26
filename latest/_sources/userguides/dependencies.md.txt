@@ -74,7 +74,7 @@ Then, add the following to your config so that Ape can find the dependency:
 ```yaml
 dependencies:
   - name: MyDependency
-    npm: @myorg/mydependency
+    npm: "@myorg/mydependency"
     version: v1.3.0
 ```
 

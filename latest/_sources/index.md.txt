@@ -23,6 +23,7 @@
    userguides/testing
    userguides/scripts
    userguides/publishing
+   userguides/logging
 ```
 
 ```{eval-rst}

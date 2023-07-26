@@ -153,6 +153,7 @@
 <li class="toctree-l1"><a class="reference internal" href="testing.html">Testing</a></li>
 <li class="toctree-l1"><a class="reference internal" href="scripts.html">Scripting</a></li>
 <li class="toctree-l1"><a class="reference internal" href="publishing.html">Publishing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="logging.html">Logging</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">CLI Reference</span></p>
 <ul>
@@ -264,10 +265,10 @@ This is generally not recommended.
 However, sometimes it is the only way to use a dependency.</p>
 <p>To use a dependency from NPM, you must have already run <code class="docutils literal notranslate"><span class="pre">npm</span> <span class="pre">install</span></code> and that package must be present in your local <code class="docutils literal notranslate"><span class="pre">node_modules</span></code> folder.
 Then, add the following to your config so that Ape can find the dependency:</p>
-<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span>dependencies:
-  - name: MyDependency
-    npm: @myorg/mydependency
-    version: v1.3.0
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">dependencies</span><span class="p">:</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">MyDependency</span>
+<span class="w">    </span><span class="nt">npm</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;@myorg/mydependency&quot;</span>
+<span class="w">    </span><span class="nt">version</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">v1.3.0</span>
 </pre></div>
 </div>
 </section>
