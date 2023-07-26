@@ -2,7 +2,13 @@ import pytest
 
 from ape.api import ReceiptAPI
 from ape.exceptions import APINotImplementedError, ContractLogicError, OutOfGasError
+from ape.utils import ManagerAccessMixin
 from ape_ethereum.transactions import Receipt, TransactionStatusEnum
+
+
+@pytest.fixture
+def deploy_receipt(vyper_contract_instance):
+    return vyper_contract_instance.receipt
 
 
 @pytest.fixture
@@ -170,3 +176,19 @@ def test_receipt_raise_for_status_out_of_gas_error(mocker, ethereum):
 
 def test_receipt_chain_id(invoke_receipt, eth_tester_provider):
     assert invoke_receipt.chain_id == eth_tester_provider.chain_id
+
+
+def test_track_coverage(deploy_receipt, mocker):
+    """
+    Show that deploy receipts are not tracked.
+    """
+    mock_runner = mocker.MagicMock()
+    mock_tracker = mocker.MagicMock()
+    mock_runner.coverage_tracker = mock_tracker
+    original = ManagerAccessMixin._test_runner
+    ManagerAccessMixin._test_runner = mock_runner
+
+    deploy_receipt.track_coverage()
+
+    assert mock_runner.track_coverage.call_count == 0
+    ManagerAccessMixin._test_runner = original
