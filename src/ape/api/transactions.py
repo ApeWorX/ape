@@ -541,15 +541,17 @@ class ReceiptAPI(BaseInterfaceModel):
         if not self.network_manager.active_provider or not self._test_runner:
             return
 
+        if not (address := self.receiver):
+            # NOTE: Deploy txns are currently not tracked!
+            return
+
         tracker = self._test_runner.coverage_tracker
         if self.provider.supports_tracing:
             traceback = self.source_traceback
             if traceback is not None and len(traceback) > 0 and self._test_runner is not None:
                 tracker.cover(traceback)
 
-        elif (address := (self.receiver or self.contract_address)) and (
-            method := self.method_called
-        ):
+        elif method := self.method_called:
             # Unable to track detailed coverage like statement or branch
             # The user will receive a warning at the end regarding this.
             # At the very least, we can track function coverage.
