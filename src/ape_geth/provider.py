@@ -252,7 +252,10 @@ class BaseGethProvider(Web3Provider, ABC):
 
     @property
     def _clean_uri(self) -> str:
-        return str(URL(self.uri).with_user(None).with_password(None))
+        url = URL(self.uri).with_user(None).with_password(None)
+        # If there is a path, hide it but show that you are hiding it.
+        # Use string interpolation to prevent URL-character encoding.
+        return f"{url.with_path('')}/[hidden]" if url.path else f"{url}"
 
     @property
     def ipc_path(self) -> Path:
