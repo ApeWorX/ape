@@ -20,7 +20,7 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install .[release]
+        pip install -e .[release]
 
     - name: Build
       run: python setup.py sdist bdist_wheel
