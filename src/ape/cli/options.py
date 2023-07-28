@@ -1,4 +1,4 @@
-from typing import Dict, List, Optional, Union
+from typing import Dict, List, NoReturn, Optional, Union
 
 import click
 from ethpm_types import ContractType
@@ -30,7 +30,7 @@ class ApeCliContextObject(ManagerAccessMixin):
         self.config_manager.load()
 
     @staticmethod
-    def abort(msg: str, base_error: Optional[Exception] = None):
+    def abort(msg: str, base_error: Optional[Exception] = None) -> NoReturn:
         """
         End execution of the current command invocation.
 

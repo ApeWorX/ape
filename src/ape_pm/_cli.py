@@ -204,10 +204,7 @@ def compile(cli_ctx, name, version, force):
             break
 
     if not version_found:
-        # Return only needed for mypy
-        return cli_ctx.abort(
-            f"Version '{version}' for dependency '{name}' not found. Is it installed?"
-        )
+        cli_ctx.abort(f"Version '{version}' for dependency '{name}' not found. Is it installed?")
 
     dependency = versions[version_found]
 
