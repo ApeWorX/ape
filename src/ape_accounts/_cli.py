@@ -135,14 +135,13 @@ def _import(cli_ctx, alias, import_from_mnemonic, custom_hd_path):
             account = EthAccount.from_mnemonic(mnemonic=mnemonic, account_path=custom_hd_path)
         except Exception as error:
             cli_ctx.abort(f"Seed phrase can't be imported: {error}")
-            return
+
     else:
         key = click.prompt("Enter Private Key", hide_input=True)
         try:
             account = EthAccount.from_key(to_bytes(hexstr=key))
         except Exception as error:
             cli_ctx.abort(f"Key can't be imported: {error}")
-            return
 
     passphrase = click.prompt(
         "Create Passphrase to encrypt account",
