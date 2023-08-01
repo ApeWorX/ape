@@ -133,9 +133,9 @@ def test_filter_providers(ape_cli, runner, networks):
 
 @run_once
 def test_node_not_subprocess_provider(ape_cli, runner):
-    result = runner.invoke(ape_cli, ["networks", "run", "ethereum:local:test"])
+    result = runner.invoke(ape_cli, ["networks", "run", "--network", "ethereum:local:test"])
     assert result.exit_code != 0
     assert (
         result.output
-        == "ERROR: `ape-node` requires a provider that manages a process, not 'test'.\n"
+        == "ERROR: `ape networks run` requires a provider that manages a process, not 'test'.\n"
     )
