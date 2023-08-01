@@ -7,6 +7,11 @@ error OtherError(address foo);
 contract HasError {
     address payable owner = payable(msg.sender);
 
+    constructor(uint256 val) {
+        if (val == 0)
+            revert OtherError(msg.sender);
+    }
+
     function withdraw() public {
         if (msg.sender != owner)
             revert Unauthorized(msg.sender, 123);

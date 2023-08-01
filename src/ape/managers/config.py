@@ -147,8 +147,15 @@ class ConfigManager(BaseInterfaceModel):
         # The configs are popped off the dict for checking if all configs were processed.
 
         configs = {}
+        global_config_file = self.DATA_FOLDER / CONFIG_FILE_NAME
+        global_config = load_config(global_config_file) if global_config_file.is_file() else {}
         config_file = self.PROJECT_FOLDER / CONFIG_FILE_NAME
-        user_config = load_config(config_file) if config_file.is_file() else {}
+
+        # NOTE: It is critical that we read in global config values first
+        # so that project config values will override them as-needed.
+        project_config = load_config(config_file) if config_file.is_file() else {}
+        user_config = merge_configs(global_config, project_config)
+
         self.name = configs["name"] = user_config.pop("name", "")
         self.version = configs["version"] = user_config.pop("version", "")
         meta_dict = user_config.pop("meta", {})
@@ -313,3 +320,36 @@ class ConfigManager(BaseInterfaceModel):
             config_file = temp_project_path / CONFIG_FILE_NAME
             if clean_config and config_file.is_file():
                 config_file.unlink()
+
+
+def merge_configs(base: Dict, secondary: Dict) -> Dict:
+    result: Dict = {}
+
+    # Short circuits
+    if not base and not secondary:
+        return result
+    elif not base:
+        return secondary
+    elif not secondary:
+        return base
+
+    for key, value in base.items():
+        if key not in secondary:
+            result[key] = value
+
+        elif not isinstance(value, dict):
+            # Is a primitive value found in both configs.
+            # Must use the second one.
+            result[key] = secondary[key]
+
+        else:
+            # Merge the dictionaries.
+            sub = merge_configs(base[key], secondary[key])
+            result[key] = sub
+
+    # Add missed keys from secondary.
+    for key, value in secondary.items():
+        if key not in base:
+            result[key] = value
+
+    return result

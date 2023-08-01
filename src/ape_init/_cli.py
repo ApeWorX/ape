@@ -46,6 +46,7 @@ def cli(cli_ctx, github):
 .env
 .venv
 .pytest_cache
+.python-version
 __pycache__
 """
             git_ignore_path.touch()

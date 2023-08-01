@@ -6,6 +6,20 @@ from ape.pytest.contextmanagers import RevertsContextManager as reverts
 from tests.conftest import geth_process_test
 
 
+def test_revert_info_context(owner, reverts_contract_instance):
+    """
+    Shows no two revert info objects are the same instance.
+    """
+
+    rev = reverts()
+    with rev as rev0:
+        reverts_contract_instance.revertStrings(0, sender=owner)
+    with rev as rev1:
+        reverts_contract_instance.revertStrings(1, sender=owner)
+
+    assert rev0.value.revert_message != rev1.value.revert_message
+
+
 def test_no_args(owner, reverts_contract_instance):
     """
     Test catching transaction reverts without asserting on error messages.
@@ -35,6 +49,36 @@ def test_revert_error(error_contract, not_owner):
     Test matching a revert custom Solidity error.
     """
     with reverts(error_contract.Unauthorized):
+        error_contract.withdraw(sender=not_owner)
+
+
+def test_revert_abi(error_contract, not_owner):
+    """
+    Test matching a revert custom Solidity error using an ABI.
+    """
+    with reverts(error_contract.Unauthorized.abi):
+        error_contract.withdraw(sender=not_owner)
+
+
+def test_revert_error_from_container(error_contract_container, error_contract, not_owner):
+    """
+    Test matching a revert custom Solidity error using the container instead
+    of an instance, so the specific contract instance is not checked, only the
+    ABI is. This is required for proper deploy-txn checks.
+    """
+    with reverts(error_contract_container.Unauthorized):
+        error_contract.withdraw(sender=not_owner)
+
+
+def test_revert_error_from_container_with_expected_values(
+    error_contract_container, error_contract, not_owner
+):
+    """
+    Test matching a revert custom Solidity error using the container instead
+    of an instance, so the specific contract instance is not checked, only the
+    ABI is. This is required for proper deploy-txn checks.
+    """
+    with reverts(error_contract_container.Unauthorized, error_inputs={"addr": not_owner.address}):
         error_contract.withdraw(sender=not_owner)
 
 

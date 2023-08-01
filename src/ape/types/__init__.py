@@ -23,10 +23,17 @@ from web3.types import FilterParams
 
 from ape.exceptions import ApeAttributeError
 from ape.types.address import AddressType, RawAddress
+from ape.types.coverage import (
+    ContractCoverage,
+    ContractSourceCoverage,
+    CoverageProject,
+    CoverageReport,
+    CoverageStatement,
+)
 from ape.types.signatures import MessageSignature, SignableMessage, TransactionSignature
 from ape.types.trace import CallTreeNode, ControlFlow, GasReport, SourceTraceback, TraceFrame
 from ape.utils import BaseInterfaceModel, cached_property
-from ape.utils.misc import to_int
+from ape.utils.misc import ZERO_ADDRESS, to_int
 
 if TYPE_CHECKING:
     from ape.api.providers import BlockAPI
@@ -190,10 +197,10 @@ class BaseContractLog(BaseInterfaceModel):
     event_name: str
     """The name of the event."""
 
-    contract_address: AddressType
+    contract_address: AddressType = ZERO_ADDRESS
     """The contract responsible for emitting the log."""
 
-    event_arguments: Dict[str, Any]
+    event_arguments: Dict[str, Any] = {}
     """The arguments to the event, including both indexed and non-indexed data."""
 
     @validator("contract_address", pre=True)
@@ -329,7 +336,12 @@ class MockContractLog(BaseContractLog):
     """
 
     def __eq__(self, other: Any) -> bool:
-        if self.contract_address != other.contract_address or self.event_name != other.event_name:
+        if (
+            not hasattr(other, "contract_address")
+            or not hasattr(other, "event_name")
+            or self.contract_address != other.contract_address
+            or self.event_name != other.event_name
+        ):
             return False
 
         # NOTE: `self.event_arguments` contains a subset of items from `other.event_arguments`,
@@ -349,15 +361,13 @@ class ContractLogContainer(list):
     """
 
     def filter(self, event: "ContractEvent", **kwargs) -> List[ContractLog]:
-        found_events = []
-        for log in self:
-            if log.event_name == event.name and log.contract_address == event.contract.address:
-                match = all(
-                    v == log.event_arguments.get(k) and v is not None for k, v in kwargs.items()
-                )
-                if match:
-                    found_events.append(log)
-        return found_events
+        return [
+            x
+            for x in self
+            if x.event_name == event.name
+            and x.contract_address == event.contract
+            and all(v == x.event_arguments.get(k) and v is not None for k, v in kwargs.items())
+        ]
 
     def __contains__(self, val: Any) -> bool:
         return any(log == val for log in self)
@@ -372,10 +382,16 @@ __all__ = [
     "Checksum",
     "Closure",
     "Compiler",
+    "ContractCoverage",
+    "ContractSourceCoverage",
     "ContractLog",
     "ContractLogContainer",
     "ContractType",
     "ControlFlow",
+    "CoverageItem",
+    "CoverageProject",
+    "CoverageReport",
+    "CoverageStatement",
     "GasReport",
     "MessageSignature",
     "PackageManifest",

@@ -72,3 +72,13 @@ def test_transaction_dict_excludes_none_values():
     txn.value = None  # type: ignore
     actual = txn.dict()
     assert "value" not in actual
+
+
+def test_txn_str_when_data_is_bytes(ethereum):
+    """
+    Tests against a condition that would cause transactions to
+    fail with string-encoding errors.
+    """
+    txn = ethereum.create_transaction(data=HexBytes("0x123"))
+    actual = str(txn)
+    assert isinstance(actual, str)

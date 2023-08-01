@@ -158,10 +158,11 @@ class Receipt(ReceiptAPI):
 
     @cached_property
     def contract_type(self) -> Optional[ContractType]:
-        if not self.receiver:
+        address = self.receiver or self.contract_address
+        if not address:
             return None
 
-        return self.chain_manager.contracts.get(self.receiver)
+        return self.chain_manager.contracts.get(address)
 
     @cached_property
     def method_called(self) -> Optional[MethodABI]:

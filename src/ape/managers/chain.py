@@ -6,7 +6,6 @@ from functools import partial
 from pathlib import Path
 from typing import IO, Collection, Dict, Iterator, List, Optional, Set, Type, Union, cast
 
-import click
 import pandas as pd
 from ethpm_types import ContractType
 from rich import get_console
@@ -26,6 +25,7 @@ from ape.exceptions import (
     APINotImplementedError,
     BlockNotFoundError,
     ChainError,
+    ContractNotFoundError,
     ConversionError,
     CustomError,
     ProviderNotConnectedError,
@@ -312,7 +312,17 @@ class BlockContainer(BaseManager):
         def _try_timeout():
             if time.time() - time_since_last > timeout:
                 time_waited = round(time.time() - time_since_last, 4)
-                raise ChainError(f"Timed out waiting for new block (time_waited={time_waited}).")
+                message = f"Timed out waiting for new block (time_waited={time_waited})."
+                if (
+                    self.provider.network.name == LOCAL_NETWORK_NAME
+                    or self.provider.network.name.endswith("-fork")
+                ):
+                    message += (
+                        " If using a local network, try configuring mining to mine on an interval "
+                        "or adjusting the block time."
+                    )
+
+                raise ChainError(message)
 
         while True:
             confirmable_block_number = self.height - required_confirmations
@@ -957,7 +967,12 @@ class ContractCache(BaseManager):
     def __getitem__(self, address: AddressType) -> ContractType:
         contract_type = self.get(address)
         if not contract_type:
-            raise IndexError(f"No contract type found at address '{address}'.")
+            # Create error message from custom exception cls.
+            err = ContractNotFoundError(
+                address, self.provider.network.explorer is not None, self.provider.name
+            )
+            # Must raise IndexError.
+            raise IndexError(str(err))
 
         return contract_type
 
@@ -1034,7 +1049,16 @@ class ContractCache(BaseManager):
               otherwise the default parameter.
         """
 
-        address_key: AddressType = self.conversion_manager.convert(address, AddressType)
+        try:
+            address_key: AddressType = self.conversion_manager.convert(address, AddressType)
+        except ConversionError:
+            if not address.startswith("0x"):
+                # Still raise conversion errors for ENS and such.
+                raise
+
+            # In this case, it at least _looked_ like an address.
+            return None
+
         contract_type = self._local_contract_types.get(address_key)
         if contract_type:
             if default and default != contract_type:
@@ -1125,6 +1149,7 @@ class ContractCache(BaseManager):
         Raises:
             TypeError: When passing an invalid type for the `contract_type` arguments
               (expects `ContractType`).
+            :class:`~ape.exceptions.ContractNotFoundError`: When the contract type is not found.
 
         Args:
             address (Union[str, AddressType]): The address of the plugin. If you are using the ENS
@@ -1157,17 +1182,12 @@ class ContractCache(BaseManager):
                 raise  # Current exception
 
         if not contract_type:
-            msg = f"Failed to get contract type for address '{contract_address}'."
-            if self.provider.network.explorer is None:
-                msg += (
-                    f" Current provider '{self.provider.name}' has no associated "
-                    "explorer plugin. Try installing an explorer plugin using "
-                    f"{click.style(text='ape plugins install etherscan', fg='green')}, "
-                    "or using a network with explorer support."
-                )
-            else:
-                msg += " Contract may need verification."
-            raise ChainError(msg)
+            raise ContractNotFoundError(
+                contract_address,
+                self.provider.network.explorer is not None,
+                self.provider.name,
+            )
+
         elif not isinstance(contract_type, ContractType):
             raise TypeError(
                 f"Expected type '{ContractType.__name__}' for argument 'contract_type'."
@@ -1182,6 +1202,21 @@ class ContractCache(BaseManager):
                     break
 
         return ContractInstance(contract_address, contract_type, txn_hash=txn_hash)
+
+    def instance_from_receipt(
+        self, receipt: ReceiptAPI, contract_type: ContractType
+    ) -> ContractInstance:
+        """
+        A convenience method for creating instances from receipts.
+
+        Args:
+            receipt (:class:`~ape.api.transactions.ReceiptAPI`): The receipt.
+
+        Returns:
+            :class:`~ape.contracts.base.ContractInstance`
+        """
+        # NOTE: Mostly just needed this method to avoid a local import.
+        return ContractInstance.from_receipt(receipt, contract_type)
 
     def get_deployments(self, contract_container: ContractContainer) -> List[ContractInstance]:
         """
@@ -1298,6 +1333,51 @@ class ContractCache(BaseManager):
         self._deployments_mapping_cache.parent.mkdir(exist_ok=True, parents=True)
         with self._deployments_mapping_cache.open("w") as fp:
             json.dump(deployments_map, fp, sort_keys=True, indent=2, default=sorted)
+
+    def get_creation_receipt(
+        self, address: AddressType, start_block: int = 0, stop_block: Optional[int] = None
+    ) -> ReceiptAPI:
+        """
+        Get the receipt responsible for the initial creation of the contract.
+
+        Args:
+            address (``AddressType``): The address of the contract.
+            start_block (int): The block to start looking from.
+            stop_block (Optional[int]): The block to stop looking at.
+
+        Returns:
+            :class:`~ape.apt.transactions.ReceiptAPI`
+        """
+        if stop_block is None and (stop := self.chain_manager.blocks.head.number):
+            stop_block = stop
+        elif stop_block is None:
+            raise ChainError("Chain missing blocks.")
+
+        mid_block = (stop_block - start_block) // 2 + start_block
+        # NOTE: biased towards mid_block == start_block
+
+        if start_block == mid_block:
+            for tx in self.chain_manager.blocks[mid_block].transactions:
+                if (receipt := tx.receipt) and receipt.contract_address == address:
+                    return receipt
+
+            if mid_block + 1 <= stop_block:
+                return self.get_creation_receipt(
+                    address, start_block=mid_block + 1, stop_block=stop_block
+                )
+            else:
+                raise ChainError(f"Failed to find a contract-creation receipt for '{address}'.")
+
+        elif self.provider.get_code(address, block_id=mid_block):
+            return self.get_creation_receipt(address, start_block=start_block, stop_block=mid_block)
+
+        elif mid_block + 1 <= stop_block:
+            return self.get_creation_receipt(
+                address, start_block=mid_block + 1, stop_block=stop_block
+            )
+
+        else:
+            raise ChainError(f"Failed to find a contract-creation receipt for '{address}'.")
 
 
 class ReportManager(BaseManager):
@@ -1611,4 +1691,13 @@ class ChainManager(BaseManager):
         return self.provider.set_balance(account, amount)
 
     def get_receipt(self, transaction_hash: str) -> ReceiptAPI:
+        """
+        Get a transaction receipt from the chain.
+
+        Args:
+            transaction_hash (str): The hash of the transaction.
+
+        Returns:
+            :class:`~ape.apt.transactions.ReceiptAPI`
+        """
         return self.chain_manager.history[transaction_hash]

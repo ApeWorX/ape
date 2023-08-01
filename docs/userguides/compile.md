@@ -36,8 +36,6 @@ contract.my_method()
 2. **Pre-existing Contract Types**: If you have a contract type JSON that was compiled elsewhere, you can include it in your project.
    This is useful if you are unable or unwilling to install a compiler.
 
-**WARN**: You may have to adjust the name and source ID of the contract type in the JSON to match the new file name in your project.
-
 3. **Raw Compiler Output**: If you have an artifact with binary compiled elsewhere, you can include it in your project.
    This is useful if you want to use contracts from much larger projects as dependency for your test cases.
 

@@ -536,20 +536,19 @@ def contract_with_call_depth(
 @pytest.fixture
 def error_contract_container(get_contract_type):
     ct = get_contract_type("has_error")
-    ct.source_id = "has_error.json"  # Use JSON compiler for error enrichment.
     return ContractContainer(ct)
 
 
 @pytest.fixture
 def error_contract(owner, error_contract_container, eth_tester_provider):
     _ = eth_tester_provider  # Ensure uses eth tester
-    return owner.deploy(error_contract_container)
+    return owner.deploy(error_contract_container, 1)
 
 
 @pytest.fixture
 def error_contract_geth(owner, error_contract_container, geth_provider):
     _ = geth_provider  # Ensure uses geth
-    return owner.deploy(error_contract_container)
+    return owner.deploy(error_contract_container, 1)
 
 
 @pytest.fixture

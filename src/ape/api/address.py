@@ -57,7 +57,8 @@ class BaseAddress(BaseInterface):
         try:
             return convert(self, AddressType) == convert(other, AddressType)
         except ConversionError:
-            return False
+            # Check other __eq__
+            return NotImplemented
 
     def __dir__(self) -> List[str]:
         """

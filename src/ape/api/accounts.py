@@ -214,22 +214,17 @@ class AccountAPI(BaseInterfaceModel, BaseAddress):
         Returns:
             :class:`~ape.contracts.ContractInstance`: An instance of the deployed contract.
         """
-
-        from ape.contracts import ContractInstance
-
         txn = contract(*args, **kwargs)
         txn.sender = self.address
-        receipt = self.call(txn, **kwargs)
-
-        address = receipt.contract_address
-        if not address:
+        receipt = contract._cache_wrap(lambda: self.call(txn, **kwargs))
+        if not (address := receipt.contract_address):
             raise AccountsError(f"'{receipt.txn_hash}' did not create a contract.")
 
         contract_type = contract.contract_type
         styled_address = click.style(receipt.contract_address, bold=True)
         contract_name = contract_type.name or "<Unnamed Contract>"
         logger.success(f"Contract '{contract_name}' deployed to: {styled_address}")
-        instance = ContractInstance.from_receipt(receipt, contract_type)
+        instance = self.chain_manager.contracts.instance_from_receipt(receipt, contract_type)
         self.chain_manager.contracts.cache_deployment(instance)
 
         if publish:

@@ -260,8 +260,7 @@ def _split_name_and_version(value: str) -> Tuple[str, Optional[str]]:
         parts = [x for x in value.split("@") if x]
         return parts[0], "@".join(parts[1:])
 
-    chars = [c for c in ("=", "<", ">") if c in value]
-    if not chars:
+    if not (chars := [c for c in ("=", "<", ">") if c in value]):
         return value, None
 
     index = min(value.index(c) for c in chars)

@@ -1,6 +1,6 @@
 import shutil
 from pathlib import Path
-from typing import Dict, Iterable, List, Optional, Type, Union
+from typing import Any, Dict, Iterable, List, Optional, Type, Union
 
 from ethpm_types import ContractInstance as EthPMContractInstance
 from ethpm_types import ContractType, PackageManifest, PackageMeta, Source
@@ -12,7 +12,7 @@ from ethpm_types.utils import AnyUrl
 from ape.api import DependencyAPI, ProjectAPI
 from ape.api.networks import LOCAL_NETWORK_NAME
 from ape.contracts import ContractContainer, ContractInstance, ContractNamespace
-from ape.exceptions import ApeAttributeError, APINotImplementedError, ProjectError
+from ape.exceptions import ApeAttributeError, APINotImplementedError, ChainError, ProjectError
 from ape.logging import logger
 from ape.managers.base import BaseManager
 from ape.managers.project.types import ApeProject, BrownieProject
@@ -286,6 +286,16 @@ class ProjectManager(BaseManager):
     def _package_deployments_folder(self) -> Path:
         return self.local_project._cache_folder / "deployments"
 
+    @property
+    def _contract_sources(self) -> List[ContractSource]:
+        sources = []
+        for contract in self.contracts.values():
+            contract_src = self._create_contract_source(contract)
+            if contract_src:
+                sources.append(contract_src)
+
+        return sources
+
     def get_project(
         self,
         path: Path,
@@ -401,7 +411,7 @@ class ProjectManager(BaseManager):
 
         return self.local_project.contracts
 
-    def __getattr__(self, attr_name: str) -> Union[ContractContainer, ContractNamespace]:
+    def __getattr__(self, attr_name: str) -> Any:
         """
         Get a contract container from an existing contract type in
         the local project using ``.`` access.
@@ -423,7 +433,8 @@ class ProjectManager(BaseManager):
             attr_name (str): The name of the contract in the project.
 
         Returns:
-            :class:`~ape.contracts.ContractContainer`
+            :class:`~ape.contracts.ContractContainer`,
+            a :class:`~ape.contracts.ContractNamespace`, or any attribute.
         """
 
         result = self._get_attr(attr_name)
@@ -475,8 +486,7 @@ class ProjectManager(BaseManager):
 
         try:
             # NOTE: Will compile project (if needed)
-            contract = self._get_contract(attr_name)
-            if contract:
+            if contract := self._get_contract(attr_name):
                 return contract
 
             # Check if using namespacing.
@@ -545,7 +555,7 @@ class ProjectManager(BaseManager):
 
         contract = self._get_contract(contract_name)
         if not contract:
-            raise ValueError(f"No contract found with name '{contract_name}'.")
+            raise ProjectError(f"No contract found with name '{contract_name}'.")
 
         return contract
 
@@ -720,9 +730,12 @@ class ProjectManager(BaseManager):
             raise ProjectError("Can only publish deployments on a live network.")
 
         contract_name = contract.contract_type.name
-        receipt = contract.receipt
-        if not receipt:
-            raise ProjectError(f"Contract '{contract_name}' transaction receipt is unknown.")
+        try:
+            receipt = contract.receipt
+        except ChainError as err:
+            raise ProjectError(
+                f"Contract '{contract_name}' transaction receipt is unknown."
+            ) from err
 
         block_number = receipt.block_number
         block_hash_bytes = self.provider.get_block(block_number).hash

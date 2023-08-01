@@ -3,7 +3,7 @@ from copy import deepcopy
 from typing import Any, Dict, Iterator, List, Optional, Tuple, Type, Union, cast
 
 from eth_abi import decode, encode
-from eth_abi.exceptions import InsufficientDataBytes
+from eth_abi.exceptions import InsufficientDataBytes, NonEmptyPaddingBytes
 from eth_typing import Hash32
 from eth_utils import (
     encode_hex,
@@ -267,19 +267,19 @@ class Ethereum(EcosystemAPI):
 
             return ProxyInfo(type=type, target=target)
 
-        # gnosis safe stores implementation in slot 0, read `NAME()` to be sure
+        # gnosis safe >=1.1.0 provides `masterCopy()`, it is also stored in slot 0
         abi = MethodABI(
             type="function",
-            name="NAME",
+            name="masterCopy",
             stateMutability="view",
-            outputs=[ABIType(type="string")],
+            outputs=[ABIType(type="address")],
         )
         try:
-            name = ContractCall(abi, address)(skip_trace=True)
-            raw_target = self.provider.get_storage_at(address, 0)[-20:].hex()
-            target = self.conversion_manager.convert(raw_target, AddressType)
+            singleton = ContractCall(abi, address)(skip_trace=True)
+            slot_0 = self.provider.get_storage_at(address, 0)
+            target = self.conversion_manager.convert(slot_0[-20:], AddressType)
             # NOTE: `target` is set in initialized proxies
-            if name in ("Gnosis Safe", "Default Callback Handler") and target != ZERO_ADDRESS:
+            if target != ZERO_ADDRESS and target == singleton:
                 return ProxyInfo(type=ProxyType.GnosisSafe, target=target)
 
         except ApeException:
@@ -439,8 +439,8 @@ class Ethereum(EcosystemAPI):
 
         try:
             vm_return_values = decode(output_types_str_ls, raw_data)
-        except InsufficientDataBytes as err:
-            raise DecodingError() from err
+        except (InsufficientDataBytes, NonEmptyPaddingBytes) as err:
+            raise DecodingError(str(err)) from err
 
         if not vm_return_values:
             return vm_return_values
@@ -599,7 +599,7 @@ class Ethereum(EcosystemAPI):
         if isinstance(kwargs.get("chainId"), str):
             kwargs["chainId"] = int(kwargs["chainId"], 16)
 
-        elif "chainId" not in kwargs:
+        elif "chainId" not in kwargs and self.network_manager.active_provider is not None:
             kwargs["chainId"] = self.provider.chain_id
 
         if "input" in kwargs:
@@ -696,8 +696,7 @@ class Ethereum(EcosystemAPI):
 
             return intermediary_node
 
-        contract_type = self.chain_manager.contracts.get(address)
-        if not contract_type:
+        if not (contract_type := self.chain_manager.contracts.get(address)):
             return enriched_call
 
         enriched_call.contract_id = self._enrich_address(address, **kwargs)
@@ -714,7 +713,12 @@ class Ethereum(EcosystemAPI):
             if method_id_bytes in contract_type.methods:
                 method_abi = contract_type.methods[method_id_bytes]
                 assert isinstance(method_abi, MethodABI)  # For mypy
-                name = method_abi.name or enriched_call.method_id
+
+                # Check if method name duplicated. If that is the case, use selector.
+                times = len([x for x in contract_type.methods if x.name == method_abi.name])
+                name = (
+                    method_abi.name if times == 1 else method_abi.selector
+                ) or enriched_call.method_id
                 enriched_call = self._enrich_calldata(
                     enriched_call, method_abi, contract_type, **kwargs
                 )
@@ -832,7 +836,7 @@ class Ethereum(EcosystemAPI):
                     if not call.failed
                     else None
                 )
-            except (DecodingError, InsufficientDataBytes):
+            except DecodingError:
                 if return_value_bytes == HexBytes("0x"):
                     # Empty result, but it failed decoding because of its length.
                     return_values = ("",)

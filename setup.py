@@ -18,8 +18,8 @@ extras_require = {
         "hypothesis-jsonschema==0.19.0",  # JSON Schema fuzzer extension
     ],
     "lint": [
-        "black>=23.3.0,<24",  # Auto-formatter and linter
-        "mypy>=0.991,<1",  # Static type analyzer
+        "black>=23.7.0,<24",  # Auto-formatter and linter
+        "mypy>=0.991,<2",  # Static type analyzer
         "types-PyYAML",  # Needed due to mypy typeshed
         "types-requests",  # Needed due to mypy typeshed
         "types-setuptools",  # Needed due to mypy typeshed
@@ -32,6 +32,7 @@ extras_require = {
         "mdformat>=0.7.16",  # Auto-formatter for markdown
         "mdformat-gfm>=0.3.5",  # Needed for formatting GitHub-flavored markdown
         "mdformat-frontmatter>=0.4.1",  # Needed for frontmatters-style headers in issue templates
+        "mdformat-pyproject>=0.0.1",  # Allows configuring in pyproject.toml
     ],
     "doc": [
         "myst-parser>=1.0.0,<2",  # Parse markdown docs
@@ -92,7 +93,7 @@ setup(
     },
     include_package_data=True,
     install_requires=[
-        "click>=8.1.3,<9",
+        "click>=8.1.6,<9",
         "ijson>=3.1.4,<4",
         "importlib-metadata",
         "ipython>=8.5.0,<9",
@@ -110,7 +111,7 @@ setup(
         "SQLAlchemy>=1.4.35",
         "tqdm>=4.62.3,<5.0",
         "traitlets>=5.3.0",
-        "watchdog>=2.1.9,<3.0",
+        "watchdog>=3.0,<4",
         # ** Dependencies maintained by Ethereum Foundation **
         "eth-abi>=4.0.0,<5",
         "eth-account>=0.8,<0.9",
@@ -118,11 +119,11 @@ setup(
         "eth-utils>=2.0.0,<3",
         "hexbytes>=0.2.3,<1",
         "py-geth>=3.13.0,<4",
-        "web3[tester]>=6.5.0,<7",
+        "web3[tester]>=6.6.1,<7",
         # ** Dependencies maintained by ApeWorX **
         "eip712>=0.2.1,<0.3",
         "ethpm-types>=0.5.3,<0.6",
-        "evm-trace>=0.1.0a21",
+        "evm-trace>=0.1.0a22",
     ],
     entry_points={
         "console_scripts": ["ape=ape._cli:cli"],

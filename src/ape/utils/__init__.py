@@ -28,7 +28,10 @@ from ape.utils.misc import (
     cached_property,
     extract_nested_value,
     gas_estimation_error_message,
+    get_current_timestamp_ms,
     get_package_version,
+    is_evm_precompile,
+    is_zero_hex,
     load_config,
     nonreentrant,
     raises_not_implemented,
@@ -51,7 +54,7 @@ from ape.utils.testing import (
     GeneratedDevAccount,
     generate_dev_accounts,
 )
-from ape.utils.trace import TraceStyles, parse_gas_table
+from ape.utils.trace import TraceStyles, parse_coverage_tables, parse_gas_table
 
 __all__ = [
     "abstractmethod",
@@ -76,16 +79,20 @@ __all__ = [
     "GeneratedDevAccount",
     "generate_dev_accounts",
     "get_all_files_in_directory",
+    "get_current_timestamp_ms",
     "injected_before_use",
     "is_array",
     "is_dynamic_sized_type",
+    "is_evm_precompile",
     "is_named_tuple",
     "is_struct",
+    "is_zero_hex",
     "JoinableQueue",
     "load_config",
     "LogInputABICollection",
     "ManagerAccessMixin",
     "nonreentrant",
+    "parse_coverage_tables",
     "parse_gas_table",
     "raises_not_implemented",
     "returns_array",

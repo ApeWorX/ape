@@ -40,6 +40,18 @@ def test_get_block_transaction(vyper_contract_instance, owner, eth_tester_provid
     assert block.transactions[-1].txn_hash.hex() == receipt.txn_hash
 
 
+def test_estimate_gas(vyper_contract_instance, eth_tester_provider, owner):
+    txn = vyper_contract_instance.setNumber.as_transaction(900, sender=owner)
+    estimate = eth_tester_provider.estimate_gas_cost(txn)
+    assert estimate > 0
+
+
+def test_estimate_gas_of_static_fee_txn(vyper_contract_instance, eth_tester_provider, owner):
+    txn = vyper_contract_instance.setNumber.as_transaction(900, sender=owner, type=0)
+    estimate = eth_tester_provider.estimate_gas_cost(txn)
+    assert estimate > 0
+
+
 def test_estimate_gas_with_max_value_from_block(mocker, eth_tester_provider):
     mock_txn = mocker.patch("ape.api.networks.NetworkAPI.gas_limit", new_callable=mock.PropertyMock)
     mock_txn.return_value = "max"
@@ -220,3 +232,15 @@ def test_get_virtual_machine_error_panic(eth_tester_provider, mocker):
     assert enrich_spy.call_count == 1
     enrich_spy.assert_called_once_with(actual)
     assert isinstance(actual, ContractLogicError)
+
+
+def test_gas_price(eth_tester_provider):
+    actual = eth_tester_provider.gas_price
+    assert isinstance(actual, int)
+
+
+def test_get_code(eth_tester_provider, vyper_contract_instance):
+    address = vyper_contract_instance.address
+    assert eth_tester_provider.get_code(address) == eth_tester_provider.get_code(
+        address, block_id=1
+    )

@@ -10,10 +10,11 @@ FROM python:${PYTHON_VERSION} as builder
 WORKDIR /wheels
 
 COPY ./recommended-plugins.txt ./recommended-plugins.txt
+COPY . .
 
 RUN pip install --upgrade pip \
     && pip install wheel \
-    && pip wheel -r ./recommended-plugins.txt --wheel-dir=/wheels
+    && pip wheel .[recommended-plugins] --wheel-dir=/wheels
 
 FROM python:${PYTHON_VERSION}-slim
 

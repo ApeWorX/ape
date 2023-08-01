@@ -1,9 +1,16 @@
-from typing import Any, List
+from typing import Any, Dict, List, Optional, Union
 
 from _pytest.config import Config as PytestConfig
 
 from ape.types import ContractFunctionPath
 from ape.utils import ManagerAccessMixin, cached_property
+
+
+def _get_config_exclusions(config) -> List[ContractFunctionPath]:
+    return [
+        ContractFunctionPath(contract_name=x.contract_name, method_name=x.method_name)
+        for x in config.exclude
+    ]
 
 
 class ConfigWrapper(ManagerAccessMixin):
@@ -15,6 +22,10 @@ class ConfigWrapper(ManagerAccessMixin):
 
     def __init__(self, pytest_config: PytestConfig):
         self.pytest_config = pytest_config
+
+    @cached_property
+    def supports_tracing(self) -> bool:
+        return self.provider.supports_tracing
 
     @cached_property
     def interactive(self) -> bool:
@@ -45,6 +56,18 @@ class ConfigWrapper(ManagerAccessMixin):
         return self.pytest_config.getoption("--gas") or self.ape_test_config.gas.show
 
     @cached_property
+    def track_coverage(self) -> bool:
+        return self.pytest_config.getoption("--coverage") or self.ape_test_config.coverage.track
+
+    @property
+    def xml_coverage(self) -> Union[bool, Dict]:
+        return self.ape_test_config.coverage.reports.xml
+
+    @property
+    def html_coverage(self) -> Union[bool, Dict]:
+        return self.ape_test_config.coverage.reports.html
+
+    @cached_property
     def show_internal(self) -> bool:
         return self.pytest_config.getoption("showinternal")
 
@@ -62,13 +85,16 @@ class ConfigWrapper(ManagerAccessMixin):
                 exclusion = ContractFunctionPath.from_str(item)
                 exclusions.append(exclusion)
 
-        config_value = self.ape_test_config.gas.exclude
-        paths = [
-            ContractFunctionPath(contract_name=x.contract_name, method_name=x.method_name)
-            for x in config_value
-        ]
+        paths = _get_config_exclusions(self.ape_test_config.gas)
         exclusions.extend(paths)
         return exclusions
 
-    def get_pytest_plugin(self, name: str) -> Any:
-        return self.pytest_config.pluginmanager.get_plugin(name)
+    @cached_property
+    def coverage_exclusions(self) -> List[ContractFunctionPath]:
+        return _get_config_exclusions(self.ape_test_config.coverage)
+
+    def get_pytest_plugin(self, name: str) -> Optional[Any]:
+        if self.pytest_config.pluginmanager.has_plugin(name):
+            return self.pytest_config.pluginmanager.get_plugin(name)
+
+        return None
