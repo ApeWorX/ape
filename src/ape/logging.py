@@ -19,6 +19,7 @@ class LogLevel(IntEnum):
 logging.addLevelName(LogLevel.SUCCESS.value, LogLevel.SUCCESS.name)
 logging.SUCCESS = LogLevel.SUCCESS.value  # type: ignore
 DEFAULT_LOG_LEVEL = LogLevel.INFO.name
+DEFAULT_LOG_FORMAT = "%(levelname)s: %(message)s"
 
 
 def success(self, message, *args, **kws):
@@ -61,8 +62,9 @@ def _isatty(stream: IO) -> bool:
 
 
 class ApeColorFormatter(logging.Formatter):
-    def __init__(self):
-        super().__init__(fmt="%(levelname)s: %(message)s")
+    def __init__(self, fmt: Optional[str] = None):
+        fmt = fmt or DEFAULT_LOG_FORMAT
+        super().__init__(fmt=fmt)
 
     def format(self, record):
         if _isatty(sys.stdout) and _isatty(sys.stderr):
@@ -95,17 +97,38 @@ class ClickHandler(logging.Handler):
 class CliLogger:
     _mentioned_verbosity_option = False
 
-    def __init__(self):
-        _logger = _get_logger("ape")
+    def __init__(
+        self,
+        _logger: logging.Logger,
+        web3_request_logger: Optional[logging.Logger] = None,
+        web3_http_logger: Optional[logging.Logger] = None,
+    ):
         self.error = _logger.error
         self.warning = _logger.warning
         self.success = getattr(_logger, "success", _logger.info)
         self.info = _logger.info
         self.debug = _logger.debug
         self._logger = _logger
-        self._web3_request_manager_logger = _get_logger("web3.RequestManager")
-        self._web3_http_provider_logger = _get_logger("web3.providers.HTTPProvider")
+        self._web3_request_manager_logger = web3_request_logger
+        self._web3_http_provider_logger = web3_http_logger
         self._load_from_sys_argv()
+
+    @classmethod
+    def create(cls, fmt: Optional[str] = None, third_party: bool = True) -> "CliLogger":
+        kwargs = {}
+        if third_party:
+            kwargs["web3_request_logger"] = _get_logger("web3.RequestManager", fmt=fmt)
+            kwargs["web3_http_logger"] = _get_logger("web3.providers.HTTPProvider", fmt=fmt)
+
+        _logger = _get_logger("ape", fmt=fmt)
+        return cls(_logger, **kwargs)
+
+    def format(self, new_format: str):
+        _format_logger(self._logger, new_format)
+        if req_log := self._web3_request_manager_logger:
+            _format_logger(req_log, new_format)
+        if prov_log := self._web3_http_provider_logger:
+            _format_logger(prov_log, new_format)
 
     def _load_from_sys_argv(self, default: Optional[Union[str, int]] = None):
         """
@@ -126,9 +149,7 @@ class CliLogger:
                     self._logger.error(f"Must be one of '{names_str}', not '{level}'.")
                     sys.exit(2)
 
-        self._logger.setLevel(log_level)
-        self._web3_request_manager_logger.setLevel(log_level)
-        self._web3_http_provider_logger.setLevel(log_level)
+        self.set_level(log_level)
 
     @property
     def level(self) -> int:
@@ -145,9 +166,13 @@ class CliLogger:
         if level == self._logger.level:
             return
 
-        self._logger.setLevel(level)
-        self._web3_request_manager_logger.setLevel(level)
-        self._web3_http_provider_logger.setLevel(level)
+        for log in (
+            self._logger,
+            self._web3_http_provider_logger,
+            self._web3_request_manager_logger,
+        ):
+            if obj := log:
+                obj.setLevel(level)
 
     def log_error(self, err: Exception):
         """
@@ -190,14 +215,29 @@ class CliLogger:
         stack_trace = traceback.format_exc()
         self._logger.debug(stack_trace)
 
+    def _clear_web3_loggers(self):
+        self._web3_request_manager_logger = None
+        self._web3_http_provider_logger = None
 
-def _get_logger(name: str) -> logging.Logger:
-    """Get a logger with the given ``name`` and configure it for usage with Click."""
-    cli_logger = logging.getLogger(name)
+
+def _format_logger(_logger: logging.Logger, fmt: str):
     handler = ClickHandler(echo_kwargs=CLICK_ECHO_KWARGS)
-    handler.setFormatter(ApeColorFormatter())
-    cli_logger.handlers = [handler]
-    return cli_logger
+    formatter = ApeColorFormatter(fmt=fmt)
+    handler.setFormatter(formatter)
+
+    # Remove existing handler(s)
+    for existing_handler in _logger.handlers[:]:
+        if isinstance(existing_handler, ClickHandler):
+            _logger.removeHandler(existing_handler)
+
+    _logger.addHandler(handler)
+
+
+def _get_logger(name: str, fmt: Optional[str] = None) -> logging.Logger:
+    """Get a logger with the given ``name`` and configure it for usage with Click."""
+    obj = logging.getLogger(name)
+    _format_logger(obj, fmt=fmt or DEFAULT_LOG_FORMAT)
+    return obj
 
 
 def _get_level(level: Optional[Union[str, int]] = None) -> str:
@@ -209,7 +249,7 @@ def _get_level(level: Optional[Union[str, int]] = None) -> str:
     return level
 
 
-logger = CliLogger()
+logger = CliLogger.create()
 
 
 __all__ = ["DEFAULT_LOG_LEVEL", "logger", "LogLevel"]

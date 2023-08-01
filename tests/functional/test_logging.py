@@ -84,3 +84,14 @@ def test_success_level_higher(simple_runner):
     result = simple_runner.invoke(group_for_testing, ["cmd", "-v", "WARNING"])
     assert "SUCCESS" not in result.output
     assert "this is a test" not in result.output
+
+
+def test_format(simple_runner):
+    @group_for_testing.command()
+    @ape_cli_context()
+    def cmd(cli_ctx):
+        cli_ctx.logger.format("%(message)s")
+        cli_ctx.logger.success("this is a test")
+
+    result = simple_runner.invoke(group_for_testing, ["cmd", "-v", "SUCCESS"])
+    assert "SUCCESS" not in result.output

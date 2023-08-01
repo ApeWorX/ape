@@ -78,12 +78,16 @@ def _list(cli_ctx, output_format, ecosystem_filter, network_filter, provider_fil
 
 
 @cli.command()
-@ape_cli_context(default_log_level=LogLevel.DEBUG.name)
+@ape_cli_context()
 @network_option(default="ethereum:local:geth")
 def run(cli_ctx, network):
     """
     Start a node process
     """
+
+    # Ignore web3 logs
+    cli_ctx.logger._clear_web3_loggers()
+
     network_ctx = cli_ctx.network_manager.parse_network_choice(network)
     provider = network_ctx._provider
     if not isinstance(provider, SubprocessProvider):
@@ -93,6 +97,16 @@ def run(cli_ctx, network):
     elif provider.is_connected:
         cli_ctx.abort("Process already running.")
 
+    # Start showing process logs.
+    cli_ctx.logger.set_level(LogLevel.DEBUG)
+
+    # Ignore web3 logs
+    cli_ctx._web3_request_manager_logger = None
+    cli_ctx._web3_http_provider_logger = None
+
+    # Change format to exclude log level (since it is always just DEBUG)
+    cli_ctx.logger.format("%(message)s")
+
     provider.connect()
     if not (process := provider.process):
         provider.disconnect()
@@ -101,4 +115,8 @@ def run(cli_ctx, network):
     try:
         process.wait()
     finally:
-        provider.disconnect()
+        try:
+            provider.disconnect()
+        except Exception:
+            # Prevent not being able to CTRL-C.
+            cli_ctx.abort("Terminated")
