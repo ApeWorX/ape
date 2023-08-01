@@ -90,8 +90,11 @@ def test_format(simple_runner):
     @group_for_testing.command()
     @ape_cli_context()
     def cmd(cli_ctx):
-        cli_ctx.logger.format("%(message)s")
-        cli_ctx.logger.success("this is a test")
+        cli_ctx.logger.format(fmt="%(message)s")
+        try:
+            cli_ctx.logger.success("this is a test")
+        finally:
+            cli_ctx.logger.format()
 
     result = simple_runner.invoke(group_for_testing, ["cmd", "-v", "SUCCESS"])
     assert "SUCCESS" not in result.output

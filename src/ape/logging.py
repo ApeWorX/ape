@@ -100,6 +100,7 @@ class CliLogger:
     def __init__(
         self,
         _logger: logging.Logger,
+        fmt: str,
         web3_request_logger: Optional[logging.Logger] = None,
         web3_http_logger: Optional[logging.Logger] = None,
     ):
@@ -112,6 +113,7 @@ class CliLogger:
         self._web3_request_manager_logger = web3_request_logger
         self._web3_http_provider_logger = web3_http_logger
         self._load_from_sys_argv()
+        self.fmt = fmt
 
     @classmethod
     def create(cls, fmt: Optional[str] = None, third_party: bool = True) -> "CliLogger":
@@ -121,14 +123,16 @@ class CliLogger:
             kwargs["web3_http_logger"] = _get_logger("web3.providers.HTTPProvider", fmt=fmt)
 
         _logger = _get_logger("ape", fmt=fmt)
-        return cls(_logger, **kwargs)
+        return cls(_logger, fmt, **kwargs)
 
-    def format(self, new_format: str):
-        _format_logger(self._logger, new_format)
+    def format(self, fmt: Optional[str] = None):
+        self.fmt = fmt or DEFAULT_LOG_FORMAT
+        fmt = fmt or DEFAULT_LOG_FORMAT
+        _format_logger(self._logger, fmt)
         if req_log := self._web3_request_manager_logger:
-            _format_logger(req_log, new_format)
+            _format_logger(req_log, fmt)
         if prov_log := self._web3_http_provider_logger:
-            _format_logger(prov_log, new_format)
+            _format_logger(prov_log, fmt)
 
     def _load_from_sys_argv(self, default: Optional[Union[str, int]] = None):
         """

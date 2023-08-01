@@ -98,11 +98,20 @@ def run(cli_ctx, network):
         cli_ctx.abort("Process already running.")
 
     # Start showing process logs.
+    original_level = cli_ctx.logger.level
+    original_format = cli_ctx.logger.fmt
     cli_ctx.logger.set_level(LogLevel.DEBUG)
 
     # Change format to exclude log level (since it is always just DEBUG)
-    cli_ctx.logger.format("%(message)s")
+    cli_ctx.logger.format(fmt="%(message)s")
+    try:
+        _run(cli_ctx, provider)
+    finally:
+        cli_ctx.logger.set_level(original_level)
+        cli_ctx.logger.format(fmt=original_format)
 
+
+def _run(cli_ctx, provider: SubprocessProvider):
     provider.connect()
     if not (process := provider.process):
         provider.disconnect()
