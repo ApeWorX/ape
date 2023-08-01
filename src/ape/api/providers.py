@@ -1623,9 +1623,8 @@ class SubprocessProvider(ProviderAPI):
             self.stderr_queue = JoinableQueue()
             self.stdout_queue = JoinableQueue()
             out_file = PIPE if logger.level <= LogLevel.DEBUG else DEVNULL
-            self.process = Popen(
-                self.build_command(), preexec_fn=pre_exec_fn, stdout=out_file, stderr=out_file
-            )
+            cmd = self.build_command()
+            self.process = Popen(cmd, preexec_fn=pre_exec_fn, stdout=out_file, stderr=out_file)
             spawn(self.produce_stdout_queue)
             spawn(self.produce_stderr_queue)
             spawn(self.consume_stdout_queue)

@@ -449,7 +449,7 @@ def test_get_deployments_local(chain, owner, contract_0, contract_1):
 
     # Assert
     for contract_list in (contracts_list_0, contracts_list_1):
-        assert type(contract_list[0]) == ContractInstance
+        assert type(contract_list[0]) is ContractInstance
 
     index_0 = len(contracts_list_0) - len(starting_contracts_list_0) - 1
     index_1 = len(contracts_list_1) - len(starting_contracts_list_1) - 1
