@@ -113,15 +113,16 @@ def run(cli_ctx, network):
 
 def _run(cli_ctx, provider: SubprocessProvider):
     provider.connect()
-    if not (process := provider.process):
+    if process := provider.process:
+        try:
+            process.wait()
+        finally:
+            try:
+                provider.disconnect()
+            except Exception:
+                # Prevent not being able to CTRL-C.
+                cli_ctx.abort("Terminated")
+
+    else:
         provider.disconnect()
         cli_ctx.abort("Process already running.")
-
-    try:
-        process.wait()
-    finally:
-        try:
-            provider.disconnect()
-        except Exception:
-            # Prevent not being able to CTRL-C.
-            cli_ctx.abort("Terminated")

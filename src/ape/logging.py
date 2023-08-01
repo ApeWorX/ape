@@ -117,6 +117,7 @@ class CliLogger:
 
     @classmethod
     def create(cls, fmt: Optional[str] = None, third_party: bool = True) -> "CliLogger":
+        fmt = fmt or DEFAULT_LOG_FORMAT
         kwargs = {}
         if third_party:
             kwargs["web3_request_logger"] = _get_logger("web3.RequestManager", fmt=fmt)
