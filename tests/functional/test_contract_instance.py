@@ -217,7 +217,7 @@ def test_structs(contract_instance, sender, chain):
 
     # Expected: b == block.prevhash.
     assert actual.b == actual["b"] == actual[1] == actual_prev_block == chain.blocks[-2].hash
-    assert type(actual.b) == HexBytes
+    assert type(actual.b) is HexBytes
 
 
 def test_nested_structs(contract_instance, sender, chain):
@@ -244,7 +244,7 @@ def test_nested_structs(contract_instance, sender, chain):
         == actual_prev_block_1
         == chain.blocks[-2].hash
     )
-    assert type(actual_1.t.b) == HexBytes
+    assert type(actual_1.t.b) is HexBytes
     assert (
         actual_2.t.b
         == actual_2.t["b"]
@@ -252,7 +252,7 @@ def test_nested_structs(contract_instance, sender, chain):
         == actual_prev_block_2
         == chain.blocks[-2].hash
     )
-    assert type(actual_2.t.b) == HexBytes
+    assert type(actual_2.t.b) is HexBytes
 
 
 def test_nested_structs_in_tuples(contract_instance, sender, chain):

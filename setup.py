@@ -25,7 +25,7 @@ extras_require = {
         "types-setuptools",  # Needed due to mypy typeshed
         "pandas-stubs==1.2.0.62",  # Needed due to mypy typeshed
         "types-SQLAlchemy>=1.4.49",  # Needed due to mypy typeshed
-        "flake8>=6.0.0,<7",  # Style linter
+        "flake8>=6.1.0,<7",  # Style linter
         "flake8-breakpoint>=1.1.0,<2",  # detect breakpoints left in code
         "flake8-print>=4.0.1,<5",  # detect print statements left in code
         "isort>=5.10.1,<6",  # Import sorting linter

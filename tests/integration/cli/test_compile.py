@@ -222,7 +222,7 @@ def test_compile_with_dependency(ape_cli, runner, project, contract_path):
         "renamed-contracts-folder-specified-in-config",
     ):
         assert name in list(project.dependencies.keys())
-        assert type(project.dependencies[name]["local"]["name"]) == ContractContainer
+        assert type(project.dependencies[name]["local"]["name"]) is ContractContainer
 
 
 @skip_projects_except("with-dependencies")

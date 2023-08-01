@@ -173,7 +173,7 @@ def test_provider_get_balance(project, networks, accounts):
     """
     balance = networks.provider.get_balance(accounts.test_accounts[0].address)
 
-    assert type(balance) == int
+    assert type(balance) is int
     assert balance == 1000000000000000000000000
 
 
