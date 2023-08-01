@@ -100,10 +100,6 @@ def run(cli_ctx, network):
     # Start showing process logs.
     cli_ctx.logger.set_level(LogLevel.DEBUG)
 
-    # Ignore web3 logs
-    cli_ctx._web3_request_manager_logger = None
-    cli_ctx._web3_http_provider_logger = None
-
     # Change format to exclude log level (since it is always just DEBUG)
     cli_ctx.logger.format("%(message)s")
 
