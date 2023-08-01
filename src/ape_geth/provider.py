@@ -36,7 +36,14 @@ from web3.providers import AutoProvider, IPCProvider
 from web3.providers.auto import load_provider_from_environment
 from yarl import URL
 
-from ape.api import PluginConfig, TestProviderAPI, TransactionAPI, UpstreamProvider, Web3Provider
+from ape.api import (
+    PluginConfig,
+    SubprocessProvider,
+    TestProviderAPI,
+    TransactionAPI,
+    UpstreamProvider,
+    Web3Provider,
+)
 from ape.exceptions import APINotImplementedError, ProviderError
 from ape.logging import LogLevel, logger
 from ape.types import CallTreeNode, SnapshotID, SourceTraceback, TraceFrame
@@ -135,6 +142,11 @@ class GethDevProcess(LoggingMixin, BaseGethProcess):
             stderr_logfile_path=make_logs_paths("stderr"),
         )
 
+        if logger.level <= LogLevel.DEBUG:
+            # Show process output.
+            self.register_stdout_callback(lambda x: logger.debug)
+            self.register_stderr_callback(lambda x: logger.debug)
+
     @classmethod
     def from_uri(cls, uri: str, data_folder: Path, **kwargs):
         parsed_uri = URL(uri)
@@ -187,6 +199,12 @@ class GethDevProcess(LoggingMixin, BaseGethProcess):
     def _clean(self):
         if self.data_dir.is_dir():
             shutil.rmtree(self.data_dir)
+
+    def wait(self, *args, **kwargs):
+        if self.proc is None:
+            return
+
+        self.proc.wait(*args, **kwargs)
 
 
 class GethNetworkConfig(PluginConfig):
@@ -409,10 +427,14 @@ class BaseGethProvider(Web3Provider, ABC):
             del results[:]
 
 
-class GethDev(BaseGethProvider, TestProviderAPI):
+class GethDev(BaseGethProvider, TestProviderAPI, SubprocessProvider):
     _process: Optional[GethDevProcess] = None
     name: str = "geth"
     _can_use_parity_traces = False
+
+    @property
+    def process_name(self) -> str:
+        return self.name
 
     @property
     def chain_id(self) -> int:
@@ -420,8 +442,8 @@ class GethDev(BaseGethProvider, TestProviderAPI):
 
     @property
     def data_dir(self) -> Path:
-        # Overriden from BaseGeth class for placing debug logs in ape data folder.
-        return self.geth_config.data_dir or self.data_folder / "dev"
+        # Overridden from BaseGeth class for placing debug logs in ape data folder.
+        return self.geth_config.data_dir or self.data_folder / self.name
 
     def __repr__(self):
         if self._process is None:
@@ -455,11 +477,18 @@ class GethDev(BaseGethProvider, TestProviderAPI):
 
         self._process = process
 
+        # For subprocess-provider
+        if self._process is not None and (process := self._process.proc):
+            self.process = process
+
     def disconnect(self):
         # Must disconnect process first.
         if self._process is not None:
             self._process.disconnect()
             self._process = None
+
+        # Also unset the subprocess-provider reference.
+        self.process = None
 
         super().disconnect()
 
@@ -595,6 +624,9 @@ class GethDev(BaseGethProvider, TestProviderAPI):
 
     def get_call_tree(self, txn_hash: str, **root_node_kwargs) -> CallTreeNode:
         return self._get_geth_call_tree(txn_hash, **root_node_kwargs)
+
+    def build_command(self) -> List[str]:
+        return self._process.command if self._process else []
 
 
 class Geth(BaseGethProvider, UpstreamProvider):

@@ -5,9 +5,11 @@ from rich import print as echo_rich_text
 from rich.tree import Tree
 
 from ape import networks
-from ape.cli import ape_cli_context
+from ape.api import SubprocessProvider
+from ape.cli import ape_cli_context, network_option
 from ape.cli.choices import OutputFormat
 from ape.cli.options import output_format_option
+from ape.logging import LogLevel
 
 
 def _filter_option(name: str, options):
@@ -73,3 +75,31 @@ def _list(cli_ctx, output_format, ecosystem_filter, network_filter, provider_fil
 
     elif output_format == OutputFormat.YAML:
         click.echo(cli_ctx.network_manager.networks_yaml.strip())
+
+
+@cli.command()
+@ape_cli_context(default_log_level=LogLevel.DEBUG.name)
+@network_option(default="ethereum:local:geth")
+def run(cli_ctx, network):
+    """
+    Start a node process
+    """
+    network_ctx = cli_ctx.network_manager.parse_network_choice(network)
+    provider = network_ctx._provider
+    if not isinstance(provider, SubprocessProvider):
+        cli_ctx.abort(
+            f"`ape-node` requires a provider that manages a process, not '{provider.name}'."
+        )
+    elif provider.is_connected:
+        cli_ctx.abort("Process already running.")
+
+    provider.connect()
+    if not (process := provider.process):
+        provider.disconnect()
+        cli_ctx.abort("Process already running.")
+
+    try:
+        cli_ctx.logger.success("`ape-node` started.")
+        process.wait()
+    finally:
+        provider.disconnect()
