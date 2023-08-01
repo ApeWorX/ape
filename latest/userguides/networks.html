@@ -50,6 +50,7 @@
               <option value="">Select version...</option>
               <option value="latest">latest</option>
               <option value="stable">stable</option>
+                <option value="v0.6.15">v0.6.15</option>
                 <option value="v0.6.14">v0.6.14</option>
                 <option value="v0.6.13">v0.6.13</option>
                 <option value="v0.6.12">v0.6.12</option>
@@ -128,6 +129,7 @@
 <li class="toctree-l2"><a class="reference internal" href="#local-network">Local Network</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#live-networks">Live Networks</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#ad-hoc-network-connection">Ad-hoc Network Connection</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#running-a-network-process">Running a Network Process</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="developing_plugins.html">Developing Plugins</a></li>
@@ -285,6 +287,18 @@ Some reasons for this include:</p>
 <li><p>Revert messages and exception-handling differences.</p></li>
 <li><p>You are limited to using <code class="docutils literal notranslate"><span class="pre">web3.py</span></code> and EVM-based chains.</p></li>
 </ol>
+</section>
+<section id="running-a-network-process">
+<h2>Running a Network Process<a class="headerlink" href="#running-a-network-process" title="Permalink to this heading"></a></h2>
+<p>To run a network with a process, use the <code class="docutils literal notranslate"><span class="pre">ape</span> <span class="pre">networks</span> <span class="pre">run</span></code> command:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>ape<span class="w"> </span>networks<span class="w"> </span>run
+</pre></div>
+</div>
+<p>By default, <code class="docutils literal notranslate"><span class="pre">ape</span> <span class="pre">networks</span> <span class="pre">run</span></code> runs a development Geth process.
+To use a different network, such as <code class="docutils literal notranslate"><span class="pre">hardhat</span></code> or Anvil nodes, use the <code class="docutils literal notranslate"><span class="pre">--network</span></code> flag:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>ape<span class="w"> </span>networks<span class="w"> </span>run<span class="w"> </span>--network<span class="w"> </span>ethereum:local:foundry
+</pre></div>
+</div>
 </section>
 </section>
 

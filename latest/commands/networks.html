@@ -50,6 +50,7 @@
               <option value="">Select version...</option>
               <option value="latest">latest</option>
               <option value="stable">stable</option>
+                <option value="v0.6.15">v0.6.15</option>
                 <option value="v0.6.14">v0.6.14</option>
                 <option value="v0.6.13">v0.6.13</option>
                 <option value="v0.6.12">v0.6.12</option>
@@ -143,6 +144,7 @@
 <li class="toctree-l1"><a class="reference internal" href="init.html">init</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">networks</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#networks-list">list</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#networks-run">run</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="plugins.html">plugins</a></li>
@@ -232,7 +234,7 @@
 <dd><p>Filter the results by network</p>
 <dl class="field-list simple">
 <dt class="field-odd">Options<span class="colon">:</span></dt>
-<dd class="field-odd"><p>sepolia | goerli-fork | local | mainnet-fork | goerli | mainnet | sepolia-fork</p>
+<dd class="field-odd"><p>mainnet-fork | mainnet | goerli | local | sepolia-fork | goerli-fork | sepolia</p>
 </dd>
 </dl>
 </dd></dl>
@@ -243,7 +245,35 @@
 <dd><p>Filter the results by provider</p>
 <dl class="field-list simple">
 <dt class="field-odd">Options<span class="colon">:</span></dt>
-<dd class="field-odd"><p>geth | test</p>
+<dd class="field-odd"><p>test | geth</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="networks-run">
+<h2>run<a class="headerlink" href="#networks-run" title="Permalink to this heading"></a></h2>
+<p>Start a node process</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>networks<span class="w"> </span>run<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span>
+</pre></div>
+</div>
+<p class="rubric">Options</p>
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-networks-run-v">
+<span id="cmdoption-networks-run-verbosity"></span><span class="sig-name descname"><span class="pre">-v</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--verbosity</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;LVL&gt;</span></span><a class="headerlink" href="#cmdoption-networks-run-v" title="Permalink to this definition"></a></dt>
+<dd><p>One of ERROR, WARNING, SUCCESS, INFO, or DEBUG</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-networks-run-network">
+<span class="sig-name descname"><span class="pre">--network</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;network&gt;</span></span><a class="headerlink" href="#cmdoption-networks-run-network" title="Permalink to this definition"></a></dt>
+<dd><p>Override the default network and provider. (see <cite>ape networks list</cite> for options)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Default<span class="colon">:</span></dt>
+<dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">ethereum:local:geth</span></code></p>
+</dd>
+<dt class="field-even">Options<span class="colon">:</span></dt>
+<dd class="field-even"><p>:mainnet:geth | ethereum:mainnet:geth | :mainnet | ethereum:mainnet | :goerli:geth | ethereum:goerli:geth | :goerli | ethereum:goerli | :sepolia:geth | ethereum:sepolia:geth | :sepolia | ethereum:sepolia | ::geth | ethereum:local:geth | ::test | ethereum:local:test | :local | ethereum:local | ethereum</p>
 </dd>
 </dl>
 </dd></dl>

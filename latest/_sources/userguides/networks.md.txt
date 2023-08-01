@@ -108,3 +108,18 @@ Some reasons for this include:
 3. Response differences in uncommon blocks, such as the `"pending"` block or the genesis block.
 4. Revert messages and exception-handling differences.
 5. You are limited to using `web3.py` and EVM-based chains.
+
+## Running a Network Process
+
+To run a network with a process, use the `ape networks run` command:
+
+```shell
+ape networks run
+```
+
+By default, `ape networks run` runs a development Geth process.
+To use a different network, such as `hardhat` or Anvil nodes, use the `--network` flag:
+
+```shell
+ape networks run --network ethereum:local:foundry
+```
