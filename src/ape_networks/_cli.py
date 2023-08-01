@@ -99,7 +99,6 @@ def run(cli_ctx, network):
         cli_ctx.abort("Process already running.")
 
     try:
-        cli_ctx.logger.success("`ape-node` started.")
         process.wait()
     finally:
         provider.disconnect()
