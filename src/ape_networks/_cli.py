@@ -88,7 +88,7 @@ def run(cli_ctx, network):
     provider = network_ctx._provider
     if not isinstance(provider, SubprocessProvider):
         cli_ctx.abort(
-            f"`ape-node` requires a provider that manages a process, not '{provider.name}'."
+            f"`ape networks run` requires a provider that manages a process, not '{provider.name}'."
         )
     elif provider.is_connected:
         cli_ctx.abort("Process already running.")
