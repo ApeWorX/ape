@@ -438,11 +438,10 @@ class GethDev(BaseGethProvider, TestProviderAPI, SubprocessProvider):
         return self.geth_config.data_dir or self.data_folder / self.name
 
     def __repr__(self):
-        if self._process is None:
-            # Exclude chain ID when not connected
+        try:
+            return f"<geth chain_id={self.chain_id}>"
+        except Exception:
             return "<geth>"
-
-        return super().__repr__()
 
     def connect(self):
         self._set_web3()

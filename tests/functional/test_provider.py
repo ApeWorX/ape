@@ -6,12 +6,7 @@ from eth_typing import HexStr
 from eth_utils import ValidationError
 from web3.exceptions import ContractPanicError
 
-from ape.exceptions import (
-    BlockNotFoundError,
-    ContractLogicError,
-    ProviderNotConnectedError,
-    TransactionNotFoundError,
-)
+from ape.exceptions import BlockNotFoundError, ContractLogicError, TransactionNotFoundError
 from ape.types import LogFilter
 from ape.utils import DEFAULT_TEST_CHAIN_ID
 
@@ -77,13 +72,15 @@ def test_chain_id_is_cached(eth_tester_provider):
     eth_tester_provider._web3 = web3  # Undo
 
 
-def test_chain_id_when_none_raises(eth_tester_provider):
+def test_chain_id_when_disconnected(eth_tester_provider):
     eth_tester_provider.disconnect()
+    try:
+        actual = eth_tester_provider.chain_id
+        expected = DEFAULT_TEST_CHAIN_ID
+        assert actual == expected
 
-    with pytest.raises(ProviderNotConnectedError, match="Not connected to a network provider."):
-        _ = eth_tester_provider.chain_id
-
-    eth_tester_provider.connect()  # Undo
+    finally:
+        eth_tester_provider.connect()
 
 
 def test_get_receipt_not_exists_with_timeout(eth_tester_provider):
