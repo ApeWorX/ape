@@ -19,7 +19,7 @@ extras_require = {
     ],
     "lint": [
         "black>=23.7.0,<24",  # Auto-formatter and linter
-        "mypy>=0.991,<2",  # Static type analyzer
+        "mypy>=1.4.1,<2",  # Static type analyzer
         "types-PyYAML",  # Needed due to mypy typeshed
         "types-requests",  # Needed due to mypy typeshed
         "types-setuptools",  # Needed due to mypy typeshed
@@ -113,13 +113,13 @@ setup(
         "traitlets>=5.3.0",
         "watchdog>=3.0,<4",
         # ** Dependencies maintained by Ethereum Foundation **
-        "eth-abi>=4.0.0,<5",
+        "eth-abi>=4.1.0,<5",
         "eth-account>=0.8,<0.9",
-        "eth-typing>=3.1,<4",
-        "eth-utils>=2.0.0,<3",
+        "eth-typing>=3.4,<4",
+        "eth-utils>=2.2.0,<3",
         "hexbytes>=0.2.3,<1",
         "py-geth>=3.13.0,<4",
-        "web3[tester]>=6.6.1,<7",
+        "web3[tester]>=6.7.0,<7",
         # ** Dependencies maintained by ApeWorX **
         "eip712>=0.2.1,<0.3",
         "ethpm-types>=0.5.3,<0.6",
