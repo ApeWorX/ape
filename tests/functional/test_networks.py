@@ -20,10 +20,10 @@ def get_provider_with_unused_chain_id(networks_connected_to_tester):
     networks = networks_connected_to_tester
 
     def fn():
-        new_provider = networks.provider.copy()
-        new_provider.cached_chain_id = chain_id_factory()
-        context = networks.parse_network_choice("ethereum:local:test")
-        context._provider = new_provider
+        chain_id = chain_id_factory()
+        settings = {"chain_id": chain_id}
+        choice = "ethereum:local:test"
+        context = networks.parse_network_choice(choice, provider_settings=settings)
         return context
 
     return fn
@@ -179,6 +179,8 @@ def test_parse_network_choice_new_chain_id(get_provider_with_unused_chain_id, ge
     context = get_provider_with_unused_chain_id()
     with context:
         count = len(context.connected_providers)
+
+        assert context._provider.chain_id != DEFAULT_TEST_CHAIN_ID
 
         # Creates new provider since it has a new chain ID
         assert count == start_count + 1

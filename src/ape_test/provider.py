@@ -1,6 +1,5 @@
 import re
 from ast import literal_eval
-from functools import cached_property
 from typing import Optional, cast
 
 from eth.exceptions import HeaderNotFound
@@ -46,15 +45,19 @@ class LocalProvider(TestProviderAPI, Web3Provider):
         return self._evm_backend
 
     def connect(self):
+        chain_id = self.provider_settings.get("chain_id", self.config.provider.chain_id)
         if self._web3 is not None:
-            return
+            connected_chain_id = self.chain_id
+            if connected_chain_id == chain_id:
+                # Is already connected and settings have not changed.
+                return
 
         self._evm_backend = PyEVMBackend.from_mnemonic(
             mnemonic=self.config["mnemonic"],
             num_accounts=self.config["number_of_accounts"],
         )
         endpoints = {**API_ENDPOINTS}
-        endpoints["eth"]["chainId"] = static_return(self.config.provider.chain_id)
+        endpoints["eth"]["chainId"] = static_return(chain_id)
         tester = EthereumTesterProvider(ethereum_tester=self._evm_backend, api_endpoints=endpoints)
         self._web3 = Web3(tester)
 
@@ -104,9 +107,18 @@ class LocalProvider(TestProviderAPI, Web3Provider):
                     message, base_err=ape_err, txn=txn, source_traceback=ape_err.source_traceback
                 ) from ape_err
 
-    @cached_property
+    @property
     def chain_id(self) -> int:
-        return self._make_request("eth_chainId", [])
+        try:
+            if self.cached_chain_id:
+                return self.cached_chain_id
+
+            result = self._make_request("eth_chainId", [])
+            self.cached_chain_id = result
+            return result
+
+        except ProviderNotConnectedError:
+            return self.provider_settings.get("chain_id", self.config.provider.chain_id)
 
     @property
     def gas_price(self) -> int:
