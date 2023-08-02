@@ -154,7 +154,7 @@ class GethDevProcess(BaseGethProcess):
             mnemonic=mnemonic,
             number_of_accounts=number_of_accounts,
             executable=kwargs.get("executable"),
-            auto_disconnect=kwargs.get("disconnect_providers_after", True),
+            auto_disconnect=kwargs.get("auto_disconnect", True),
         )
 
     def connect(self, timeout: int = 60):
@@ -458,6 +458,9 @@ class GethDev(BaseGethProvider, TestProviderAPI, SubprocessProvider):
             test_config["executable"] = self.geth_config.executable
 
         test_config["ipc_path"] = self.ipc_path
+        test_config["auto_disconnect"] = self._test_runner is None or test_config.get(
+            "disconnect_providers_after", True
+        )
         process = GethDevProcess.from_uri(self.uri, self.data_dir, **test_config)
         process.connect(timeout=timeout)
         if not self.web3.is_connected():
