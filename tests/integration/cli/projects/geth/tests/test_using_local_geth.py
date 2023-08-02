@@ -17,8 +17,10 @@ def test_extra_account(chain):
     """
     config = chain.config_manager
     local_config = config.get_config("geth").ethereum.local
-    value = local_config["extra_funded_accounts"][0]
-    addr = to_checksum_address(HexBytes(value).hex())
+    accts = local_config.get("extra_funded_accounts", [])
+    assert accts
+
+    addr = to_checksum_address(HexBytes(accts[0]).hex())
     actual = chain.provider.get_balance(addr)
     assert actual > 0
 
