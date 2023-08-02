@@ -8,6 +8,7 @@ from pathlib import Path
 from typing import Dict, Optional, Set
 
 from github import Github, UnknownObjectException
+from github.Auth import Token as GithubToken
 from github.GitRelease import GitRelease
 from github.Organization import Organization
 from github.Repository import Repository as GithubRepository
@@ -67,7 +68,8 @@ class GithubClient:
 
     def __init__(self):
         token = os.environ[self.TOKEN_KEY] if self.TOKEN_KEY in os.environ else None
-        self._client = Github(login_or_token=token, user_agent=USER_AGENT)
+        auth = GithubToken(token)
+        self._client = Github(auth=auth, user_agent=USER_AGENT)
 
     @cached_property
     def ape_org(self) -> Organization:
