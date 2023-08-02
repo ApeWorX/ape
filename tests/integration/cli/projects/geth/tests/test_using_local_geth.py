@@ -1,4 +1,6 @@
 import pytest
+from eth_utils import to_checksum_address
+from ethpm_types import HexBytes
 
 
 def test_provider(project, networks):
@@ -7,6 +9,18 @@ def test_provider(project, networks):
     """
     assert networks.provider.name == "geth"
     assert networks.provider.is_connected
+
+
+def test_extra_account(chain):
+    """
+    Show we can fund accounts from the config option.
+    """
+    config = chain.config_manager
+    local_config = config.get_config("geth").ethereum.local
+    value = local_config["extra_funded_accounts"][0]
+    addr = to_checksum_address(HexBytes(value).hex())
+    actual = chain.provider.get_balance(addr)
+    assert actual > 0
 
 
 def test_contract_interaction(owner, contract):

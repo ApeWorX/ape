@@ -11,6 +11,8 @@ geth:
       uri: http://localhost:5000
     local:
       uri: http://127.0.0.1:5550  # NOTE: Has to be same as tests/conftest.py::GETH_URI
+      extra_funded_accounts:
+        - 0x999999cf1046e68e36E1aA2E0E07105eDDD1f08E
 
 test:
   # `false` because running pytest within pytest.
