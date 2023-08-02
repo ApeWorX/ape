@@ -49,6 +49,7 @@ from ape.logging import LogLevel, logger
 from ape.types import CallTreeNode, SnapshotID, SourceTraceback, TraceFrame
 from ape.utils import (
     DEFAULT_NUMBER_OF_TEST_ACCOUNTS,
+    DEFAULT_TEST_CHAIN_ID,
     DEFAULT_TEST_MNEMONIC,
     generate_dev_accounts,
     raises_not_implemented,
@@ -57,7 +58,6 @@ from ape.utils import (
 DEFAULT_PORT = 8545
 DEFAULT_HOSTNAME = "localhost"
 DEFAULT_SETTINGS = {"uri": f"http://{DEFAULT_HOSTNAME}:{DEFAULT_PORT}"}
-GETH_DEV_CHAIN_ID = 1337
 
 
 class GethDevProcess(LoggingMixin, BaseGethProcess):
@@ -72,7 +72,7 @@ class GethDevProcess(LoggingMixin, BaseGethProcess):
         port: int = DEFAULT_PORT,
         mnemonic: str = DEFAULT_TEST_MNEMONIC,
         number_of_accounts: int = DEFAULT_NUMBER_OF_TEST_ACCOUNTS,
-        chain_id: int = GETH_DEV_CHAIN_ID,
+        chain_id: int = DEFAULT_TEST_CHAIN_ID,
         initial_balance: Union[str, int] = to_wei(10000, "ether"),
         executable: Optional[str] = None,
     ):
@@ -438,7 +438,7 @@ class GethDev(BaseGethProvider, TestProviderAPI, SubprocessProvider):
 
     @property
     def chain_id(self) -> int:
-        return GETH_DEV_CHAIN_ID
+        return DEFAULT_TEST_CHAIN_ID
 
     @property
     def data_dir(self) -> Path:

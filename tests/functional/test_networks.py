@@ -1,7 +1,7 @@
 import pytest
 
 from ape.exceptions import NetworkError
-from ape_test.provider import CHAIN_ID
+from ape.utils import DEFAULT_TEST_CHAIN_ID
 
 
 class NewChainID:
@@ -119,12 +119,12 @@ def test_get_provider_when_not_found(networks):
 
 def test_repr_connected_to_local(networks_connected_to_tester):
     actual = repr(networks_connected_to_tester)
-    expected = f"<NetworkManager active_provider=<test chain_id={CHAIN_ID}>>"
+    expected = f"<NetworkManager active_provider=<test chain_id={DEFAULT_TEST_CHAIN_ID}>>"
     assert actual == expected
 
     # Check individual network
     actual = repr(networks_connected_to_tester.provider.network)
-    expected = f"<ethereum:local chain_id={CHAIN_ID}>"
+    expected = f"<ethereum:local chain_id={DEFAULT_TEST_CHAIN_ID}>"
     assert actual == expected
 
 

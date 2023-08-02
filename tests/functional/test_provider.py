@@ -13,7 +13,7 @@ from ape.exceptions import (
     TransactionNotFoundError,
 )
 from ape.types import LogFilter
-from ape_test.provider import CHAIN_ID
+from ape.utils import DEFAULT_TEST_CHAIN_ID
 
 
 @pytest.mark.parametrize("block_id", (0, "0", "0x0", HexStr("0x0")))
@@ -63,7 +63,7 @@ def test_estimate_gas_with_max_value_from_block(mocker, eth_tester_provider):
 
 def test_chain_id(eth_tester_provider):
     chain_id = eth_tester_provider.chain_id
-    assert chain_id == CHAIN_ID
+    assert chain_id == DEFAULT_TEST_CHAIN_ID
 
 
 def test_chain_id_is_cached(eth_tester_provider):
@@ -73,7 +73,7 @@ def test_chain_id_is_cached(eth_tester_provider):
     web3 = eth_tester_provider._web3
     eth_tester_provider._web3 = None
     chain_id = eth_tester_provider.chain_id
-    assert chain_id == CHAIN_ID
+    assert chain_id == DEFAULT_TEST_CHAIN_ID
     eth_tester_provider._web3 = web3  # Undo
 
 

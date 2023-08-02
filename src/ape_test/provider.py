@@ -1,5 +1,6 @@
 import re
 from ast import literal_eval
+from functools import cached_property
 from typing import Optional, cast
 
 from eth.exceptions import HeaderNotFound
@@ -8,13 +9,12 @@ from eth_tester.exceptions import TransactionFailed  # type: ignore
 from eth_utils import is_0x_prefixed
 from eth_utils.exceptions import ValidationError
 from ethpm_types import HexBytes
-from lazyasd import LazyObject  # type: ignore
 from web3 import EthereumTesterProvider, Web3
 from web3.exceptions import ContractPanicError
-from web3.providers.eth_tester.defaults import API_ENDPOINTS
+from web3.providers.eth_tester.defaults import API_ENDPOINTS, static_return
 from web3.types import TxParams
 
-from ape.api import ReceiptAPI, TestProviderAPI, TransactionAPI, Web3Provider
+from ape.api import PluginConfig, ReceiptAPI, TestProviderAPI, TransactionAPI, Web3Provider
 from ape.exceptions import (
     ContractLogicError,
     ProviderError,
@@ -24,9 +24,11 @@ from ape.exceptions import (
     VirtualMachineError,
 )
 from ape.types import SnapshotID
-from ape.utils import gas_estimation_error_message
+from ape.utils import DEFAULT_TEST_CHAIN_ID, gas_estimation_error_message
 
-CHAIN_ID = LazyObject(lambda: API_ENDPOINTS["eth"]["chainId"](), globals(), "CHAIN_ID")
+
+class EthTesterProviderConfig(PluginConfig):
+    chain_id: int = DEFAULT_TEST_CHAIN_ID
 
 
 class LocalProvider(TestProviderAPI, Web3Provider):
@@ -51,7 +53,10 @@ class LocalProvider(TestProviderAPI, Web3Provider):
             mnemonic=self.config["mnemonic"],
             num_accounts=self.config["number_of_accounts"],
         )
-        self._web3 = Web3(EthereumTesterProvider(ethereum_tester=self._evm_backend))
+        endpoints = {**API_ENDPOINTS}
+        endpoints["eth"]["chainId"] = static_return(self.config.provider.chain_id)
+        tester = EthereumTesterProvider(ethereum_tester=self._evm_backend, api_endpoints=endpoints)
+        self._web3 = Web3(tester)
 
     def disconnect(self):
         self.cached_chain_id = None
@@ -99,17 +104,9 @@ class LocalProvider(TestProviderAPI, Web3Provider):
                     message, base_err=ape_err, txn=txn, source_traceback=ape_err.source_traceback
                 ) from ape_err
 
-    @property
+    @cached_property
     def chain_id(self) -> int:
-        if self.cached_chain_id is not None:
-            return self.cached_chain_id
-        elif hasattr(self.web3, "eth"):
-            chain_id = self.web3.eth.chain_id
-        else:
-            chain_id = CHAIN_ID  # type: ignore
-
-        self.cached_chain_id = chain_id
-        return chain_id
+        return self._make_request("eth_chainId", [])
 
     @property
     def gas_price(self) -> int:
