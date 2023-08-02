@@ -68,7 +68,7 @@ class GithubClient:
 
     def __init__(self):
         token = os.environ[self.TOKEN_KEY] if self.TOKEN_KEY in os.environ else None
-        auth = GithubToken(token)
+        auth = GithubToken(token) if token else None
         self._client = Github(auth=auth, user_agent=USER_AGENT)
 
     @cached_property
