@@ -8,13 +8,12 @@ from eth_tester.exceptions import TransactionFailed  # type: ignore
 from eth_utils import is_0x_prefixed
 from eth_utils.exceptions import ValidationError
 from ethpm_types import HexBytes
-from lazyasd import LazyObject  # type: ignore
 from web3 import EthereumTesterProvider, Web3
 from web3.exceptions import ContractPanicError
-from web3.providers.eth_tester.defaults import API_ENDPOINTS
+from web3.providers.eth_tester.defaults import API_ENDPOINTS, static_return
 from web3.types import TxParams
 
-from ape.api import ReceiptAPI, TestProviderAPI, TransactionAPI, Web3Provider
+from ape.api import PluginConfig, ReceiptAPI, TestProviderAPI, TransactionAPI, Web3Provider
 from ape.exceptions import (
     ContractLogicError,
     ProviderError,
@@ -24,9 +23,11 @@ from ape.exceptions import (
     VirtualMachineError,
 )
 from ape.types import SnapshotID
-from ape.utils import gas_estimation_error_message
+from ape.utils import DEFAULT_TEST_CHAIN_ID, gas_estimation_error_message
 
-CHAIN_ID = LazyObject(lambda: API_ENDPOINTS["eth"]["chainId"](), globals(), "CHAIN_ID")
+
+class EthTesterProviderConfig(PluginConfig):
+    chain_id: int = DEFAULT_TEST_CHAIN_ID
 
 
 class LocalProvider(TestProviderAPI, Web3Provider):
@@ -44,14 +45,21 @@ class LocalProvider(TestProviderAPI, Web3Provider):
         return self._evm_backend
 
     def connect(self):
+        chain_id = self.provider_settings.get("chain_id", self.config.provider.chain_id)
         if self._web3 is not None:
-            return
+            connected_chain_id = self.chain_id
+            if connected_chain_id == chain_id:
+                # Is already connected and settings have not changed.
+                return
 
         self._evm_backend = PyEVMBackend.from_mnemonic(
             mnemonic=self.config["mnemonic"],
             num_accounts=self.config["number_of_accounts"],
         )
-        self._web3 = Web3(EthereumTesterProvider(ethereum_tester=self._evm_backend))
+        endpoints = {**API_ENDPOINTS}
+        endpoints["eth"]["chainId"] = static_return(chain_id)
+        tester = EthereumTesterProvider(ethereum_tester=self._evm_backend, api_endpoints=endpoints)
+        self._web3 = Web3(tester)
 
     def disconnect(self):
         self.cached_chain_id = None
@@ -101,15 +109,16 @@ class LocalProvider(TestProviderAPI, Web3Provider):
 
     @property
     def chain_id(self) -> int:
-        if self.cached_chain_id is not None:
-            return self.cached_chain_id
-        elif hasattr(self.web3, "eth"):
-            chain_id = self.web3.eth.chain_id
-        else:
-            chain_id = CHAIN_ID  # type: ignore
+        try:
+            if self.cached_chain_id:
+                return self.cached_chain_id
 
-        self.cached_chain_id = chain_id
-        return chain_id
+            result = self._make_request("eth_chainId", [])
+            self.cached_chain_id = result
+            return result
+
+        except ProviderNotConnectedError:
+            return self.provider_settings.get("chain_id", self.config.provider.chain_id)
 
     @property
     def gas_price(self) -> int:

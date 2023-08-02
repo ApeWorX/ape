@@ -134,6 +134,7 @@ def test_uri_uses_value_from_config(geth_provider, temp_config):
         geth_provider.provider_settings = settings
 
 
+@geth_process_test
 def test_tx_revert(accounts, sender, geth_vyper_contract, owner):
     # 'sender' is not the owner so it will revert (with a message)
     with pytest.raises(ContractLogicError, match="!authorized") as err:
@@ -142,6 +143,7 @@ def test_tx_revert(accounts, sender, geth_vyper_contract, owner):
     assert err.value.txn is not None
 
 
+@geth_process_test
 def test_revert_no_message(accounts, geth_vyper_contract, owner):
     # The Contract raises empty revert when setting number to 5.
     expected = "Transaction failed."  # Default message
@@ -179,6 +181,7 @@ def test_get_call_tree_deploy(geth_vyper_contract, geth_provider):
     assert re.match(expected, actual)
 
 
+@geth_process_test
 def test_get_call_tree_erigon(mock_web3, mock_geth, parity_trace_response):
     mock_web3.client_version = "erigon_MOCK"
     mock_web3.provider.make_request.return_value = parity_trace_response
@@ -193,11 +196,13 @@ def test_repr_connected(geth_provider):
     assert repr(geth_provider) == "<geth chain_id=1337>"
 
 
+@geth_process_test
 def test_repr_on_local_network_and_disconnected(networks):
     geth = networks.get_provider_from_choice("ethereum:local:geth")
-    assert repr(geth) == "<geth>"
+    assert repr(geth) == "<geth chain_id=1337>"
 
 
+@geth_process_test
 def test_repr_on_live_network_and_disconnected(networks):
     geth = networks.get_provider_from_choice("ethereum:goerli:geth")
     assert repr(geth) == "<geth chain_id=5>"
@@ -217,6 +222,7 @@ def test_chain_id_when_connected(geth_provider):
     assert geth_provider.chain_id == 1337
 
 
+@geth_process_test
 def test_chain_id_live_network_not_connected(networks):
     geth = networks.get_provider_from_choice("ethereum:goerli:geth")
     assert geth.chain_id == 5
@@ -343,6 +349,7 @@ def captrace(capsys):
     return CapTrace()
 
 
+@geth_process_test
 def test_local_transaction_traces(geth_receipt, captrace):
     # NOTE: Strange bug in Rich where we can't use sys.stdout for testing tree output.
     # And we have to write to a file, close it, and then re-open it to see output.

@@ -23,7 +23,6 @@ from evm_trace import CallTreeNode as EvmCallTreeNode
 from evm_trace import TraceFrame as EvmTraceFrame
 from pydantic import Field, root_validator, validator
 from web3 import Web3
-from web3.exceptions import BlockNotFound
 from web3.exceptions import ContractLogicError as Web3ContractLogicError
 from web3.exceptions import MethodUnavailable, TimeExhausted, TransactionNotFound
 from web3.types import RPCEndpoint, TxParams
@@ -877,7 +876,7 @@ class Web3Provider(ProviderAPI, ABC):
 
         try:
             block_data = dict(self.web3.eth.get_block(block_id))
-        except BlockNotFound as err:
+        except Exception as err:
             raise BlockNotFoundError(block_id) from err
 
         # Some nodes (like anvil) will not have a base fee if set to 0.
@@ -1590,8 +1589,14 @@ class SubprocessProvider(ProviderAPI):
         if self.is_connected:
             raise ProviderError("Cannot connect twice. Call disconnect before connecting again.")
 
-        # Register atexit handler to make sure disconnect is called for normal object lifecycle.
-        atexit.register(self.disconnect)
+        # Always disconnect after,
+        # unless running tests with `disconnect_providers_after: false`.
+        disconnect_after = (
+            self._test_runner is None
+            or self.config_manager.get_config("test").disconnect_provider_after
+        )
+        if disconnect_after:
+            atexit.register(self.disconnect)
 
         # Register handlers to ensure atexit handlers are called when Python dies.
         def _signal_handler(signum, frame):

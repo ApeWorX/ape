@@ -1,7 +1,7 @@
 import pytest
 
 from ape.exceptions import NetworkError
-from ape_test.provider import CHAIN_ID
+from ape.utils import DEFAULT_TEST_CHAIN_ID
 
 
 class NewChainID:
@@ -20,10 +20,10 @@ def get_provider_with_unused_chain_id(networks_connected_to_tester):
     networks = networks_connected_to_tester
 
     def fn():
-        new_provider = networks.provider.copy()
-        new_provider.cached_chain_id = chain_id_factory()
-        context = networks.parse_network_choice("ethereum:local:test")
-        context._provider = new_provider
+        chain_id = chain_id_factory()
+        settings = {"chain_id": chain_id}
+        choice = "ethereum:local:test"
+        context = networks.parse_network_choice(choice, provider_settings=settings)
         return context
 
     return fn
@@ -119,12 +119,12 @@ def test_get_provider_when_not_found(networks):
 
 def test_repr_connected_to_local(networks_connected_to_tester):
     actual = repr(networks_connected_to_tester)
-    expected = f"<NetworkManager active_provider=<test chain_id={CHAIN_ID}>>"
+    expected = f"<NetworkManager active_provider=<test chain_id={DEFAULT_TEST_CHAIN_ID}>>"
     assert actual == expected
 
     # Check individual network
     actual = repr(networks_connected_to_tester.provider.network)
-    expected = f"<ethereum:local chain_id={CHAIN_ID}>"
+    expected = f"<ethereum:local chain_id={DEFAULT_TEST_CHAIN_ID}>"
     assert actual == expected
 
 
@@ -179,6 +179,8 @@ def test_parse_network_choice_new_chain_id(get_provider_with_unused_chain_id, ge
     context = get_provider_with_unused_chain_id()
     with context:
         count = len(context.connected_providers)
+
+        assert context._provider.chain_id != DEFAULT_TEST_CHAIN_ID
 
         # Creates new provider since it has a new chain ID
         assert count == start_count + 1
