@@ -93,7 +93,7 @@ def setup_pytester(pytester):
                 if file.is_dir() and not file.name == "tests":
                     _make_all_files(file)
                 elif file.is_file():
-                    name = {file.as_posix(): file.read_text().splitlines()}
+                    name = {file.name: file.read_text().splitlines()}
                     pytester.makefile(file.suffix, **name)
 
         _make_all_files(project_path)

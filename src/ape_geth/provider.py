@@ -76,11 +76,8 @@ class GethDevProcess(BaseGethProcess):
         chain_id: int = DEFAULT_TEST_CHAIN_ID,
         initial_balance: Union[str, int] = to_wei(10000, "ether"),
         executable: Optional[str] = None,
-<<<<<<< HEAD
         auto_disconnect: bool = True,
-=======
         extra_funded_accounts: Optional[List[str]] = None,
->>>>>>> d4323e58 (feat: extra accts)
     ):
         executable = executable or "geth"
         if not shutil.which(executable):
@@ -218,11 +215,7 @@ class GethNetworkConfig(PluginConfig):
     goerli: dict = DEFAULT_SETTINGS.copy()
     sepolia: dict = DEFAULT_SETTINGS.copy()
     # Make sure to run via `geth --dev` (or similar)
-<<<<<<< HEAD
     local: dict = {**DEFAULT_SETTINGS.copy(), "chain_id": DEFAULT_TEST_CHAIN_ID}
-=======
-    local: dict = {**DEFAULT_SETTINGS.copy()}
->>>>>>> d4323e58 (feat: extra accts)
 
 
 class GethConfig(PluginConfig):
@@ -475,14 +468,11 @@ class GethDev(BaseGethProvider, TestProviderAPI, SubprocessProvider):
             test_config["executable"] = self.geth_config.executable
 
         test_config["ipc_path"] = self.ipc_path
-<<<<<<< HEAD
         test_config["auto_disconnect"] = self._test_runner is None or test_config.get(
             "disconnect_providers_after", True
         )
-=======
         extra_accounts = self.geth_config.ethereum.local["extra_funded_accounts"]
         test_config["extra_funded_accounts"] = extra_accounts
->>>>>>> d4323e58 (feat: extra accts)
         process = GethDevProcess.from_uri(self.uri, self.data_dir, **test_config)
         process.connect(timeout=timeout)
         if not self.web3.is_connected():
