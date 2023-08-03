@@ -969,7 +969,7 @@ class ContractCache(BaseManager):
         if not contract_type:
             # Create error message from custom exception cls.
             err = ContractNotFoundError(
-                address, self.provider.network.explorer is not None, self.provider.name
+                address, self.provider.network.explorer is not None, self.provider.network_choice
             )
             # Must raise IndexError.
             raise IndexError(str(err))
@@ -1185,7 +1185,7 @@ class ContractCache(BaseManager):
             raise ContractNotFoundError(
                 contract_address,
                 self.provider.network.explorer is not None,
-                self.provider.name,
+                self.provider.network_choice,
             )
 
         elif not isinstance(contract_type, ContractType):

@@ -638,11 +638,7 @@ class ProviderContextManager(ManagerAccessMixin):
         if not provider.is_connected:
             return None
 
-        return (
-            f"{provider.network.ecosystem.name}:"
-            f"{provider.network.name}:{provider.name}-"
-            f"{provider.chain_id}"
-        )
+        return f"{provider.network_choice}:-{provider.chain_id}"
 
 
 class NetworkAPI(BaseInterfaceModel):
@@ -694,8 +690,7 @@ class NetworkAPI(BaseInterfaceModel):
             # Only happens on local networks
             chain_id = None
 
-        network_key = f"{self.ecosystem.name}:{self.name}"
-        content = f"{network_key} chain_id={self.chain_id}" if chain_id is not None else network_key
+        content = f"{self.choice} chain_id={self.chain_id}" if chain_id is not None else self.choice
         return f"<{content}>"
 
     @property
@@ -925,6 +920,10 @@ class NetworkAPI(BaseInterfaceModel):
 
         return None
 
+    @property
+    def choice(self) -> str:
+        return f"{self.ecosystem.name}:{self.name}"
+
     def set_default_provider(self, provider_name: str):
         """
         Change the default provider.
@@ -939,10 +938,7 @@ class NetworkAPI(BaseInterfaceModel):
         if provider_name in self.providers:
             self._default_provider = provider_name
         else:
-            raise NetworkError(
-                f"Provider '{provider_name}' not found in network "
-                f"'{self.ecosystem.name}:{self.name}'."
-            )
+            raise NetworkError(f"Provider '{provider_name}' not found in network '{self.choice}'.")
 
     def use_default_provider(
         self, provider_settings: Optional[Dict] = None
