@@ -471,8 +471,13 @@ class GethDev(BaseGethProvider, TestProviderAPI, SubprocessProvider):
         test_config["auto_disconnect"] = self._test_runner is None or test_config.get(
             "disconnect_providers_after", True
         )
+
+        # Include extra accounts to allocated funds to at genesis.
         extra_accounts = self.geth_config.ethereum.local.get("extra_funded_accounts", [])
+        extra_accounts.extend(self.provider_settings.get("extra_funded_accounts", []))
+        extra_accounts = list(set([HexBytes(a).hex().lower() for a in extra_accounts]))
         test_config["extra_funded_accounts"] = extra_accounts
+
         process = GethDevProcess.from_uri(self.uri, self.data_dir, **test_config)
         process.connect(timeout=timeout)
         if not self.web3.is_connected():

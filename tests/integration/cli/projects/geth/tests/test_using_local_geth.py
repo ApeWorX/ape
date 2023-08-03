@@ -15,12 +15,7 @@ def test_extra_account(chain):
     """
     Show we can fund accounts from the config option.
     """
-    config = chain.config_manager
-    local_config = config.get_config("geth").ethereum.local
-    accts = local_config.get("extra_funded_accounts", [])
-    assert accts
-
-    addr = to_checksum_address(HexBytes(accts[0]).hex())
+    addr = "0x63c7f11162dBFC374DC6f5C0B3Aa26C618846a85"
     actual = chain.provider.get_balance(addr)
     assert actual > 0
 
