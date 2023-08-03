@@ -211,6 +211,13 @@ class ProviderAPI(BaseInterfaceModel):
             :class:`~ape.types.ContractCode`: The contract bytecode.
         """
 
+    @property
+    def network_choice(self) -> str:
+        """
+        The connected network choice string.
+        """
+        return f"{self.network.choice}:{self.name}"
+
     @raises_not_implemented
     def get_storage_at(self, address: AddressType, slot: int) -> bytes:  # type: ignore[empty-body]
         """
@@ -722,8 +729,7 @@ class Web3Provider(ProviderAPI, ABC):
             # Use the less-accurate approach (OK for testing).
             logger.debug(
                 "Failed using `web3.eth.fee_history` for network "
-                f"'{self.network.ecosystem.name}:{self.network.name}:{self.name}'. "
-                f"Error: {exc}"
+                f"'{self.network_choice}'. Error: {exc}"
             )
             return self._get_last_base_fee()
 
