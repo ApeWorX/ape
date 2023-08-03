@@ -496,8 +496,7 @@ class ImpersonatedAccount(AccountAPI):
         self, txn: TransactionAPI, send_everything: bool = False, private: bool = False, **kwargs
     ) -> ReceiptAPI:
         txn = self.prepare_transaction(txn)
-        if not txn.sender:
-            txn.sender = self.raw_address
+        txn.sender = txn.sender or self.raw_address
 
         return (
             self.provider.send_private_transaction(txn)

@@ -506,12 +506,19 @@ def test_declare(contract_container, sender):
     "tx_type,params", [(0, ["gas_price"]), (2, ["max_fee", "max_priority_fee"])]
 )
 def test_prepare_transaction(sender, ethereum, tx_type, params):
-    # Create a test tx and estimate gas.
-    tx0 = ethereum.create_transaction(type=tx_type, gas="auto")
-    tx1 = ethereum.create_transaction(type=tx_type, gas=AutoGasLimit(multiplier=1.1))
+    def clear_network_property_cached():
+        for field in ("gas_limit", "auto_gas_multiplier"):
+            if field in tx.provider.network.__dict__:
+                del tx.provider.network.__dict__[field]
 
-    tx0_gas = None
-    for tx in (tx0, tx1):
+    tx = ethereum.create_transaction(type=tx_type, gas_limit="auto")
+    auto_gas = AutoGasLimit(multiplier=1.0)
+    original_limit = tx.provider.network.config.local.gas_limit
+
+    try:
+        tx.provider.network.config.local.gas_limit = auto_gas
+        clear_network_property_cached()
+
         # Show tx doesn't have these by default.
         assert tx.nonce is None
         for param in params:
@@ -528,12 +535,22 @@ def test_prepare_transaction(sender, ethereum, tx_type, params):
         assert tx.nonce is not None
         assert tx.gas_limit is not None  # Gas was estimated (using eth_estimateGas).
 
-        if tx0_gas is None:
-            # Set tx0 gas for tx1 check.
-            tx0_gas = tx.gas_limit
-        else:
-            # Check that that multiplier causes higher gas limit
-            assert tx.gas_limit > tx0_gas
+        # Show multipliers work. First, reset network to use one (hack).
+        gas_smaller = tx.gas_limit
+
+        clear_network_property_cached()
+        auto_gas.multiplier = 1.1
+        tx.provider.network.config.local.gas_limit = auto_gas
+
+        tx2 = ethereum.create_transaction(type=tx_type, gas_limit="auto")
+        tx2 = sender.prepare_transaction(tx2)
+        gas_bigger = tx2.gas_limit
+
+        assert gas_smaller < gas_bigger
 
         for param in params:
             assert getattr(tx, param) is not None
+
+    finally:
+        tx.provider.network.config.local.gas_limit = original_limit
+        clear_network_property_cached()

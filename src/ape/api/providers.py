@@ -815,7 +815,7 @@ class Web3Provider(ProviderAPI, ABC):
 
         # NOTE: "auto" means to enter this method, so remove it from dict
         if "gas" in txn_dict and (
-            txn_dict["gas"] == "auto" or isinstance(txn_dict["auto"], AutoGasLimit)
+            txn_dict["gas"] == "auto" or isinstance(txn_dict["gas"], AutoGasLimit)
         ):
             txn_dict.pop("gas")
             # Also pop these, they are overridden by "auto"
