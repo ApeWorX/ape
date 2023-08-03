@@ -1,6 +1,4 @@
 import pytest
-from eth_utils import to_checksum_address
-from ethpm_types import HexBytes
 
 
 def test_provider(project, networks):
