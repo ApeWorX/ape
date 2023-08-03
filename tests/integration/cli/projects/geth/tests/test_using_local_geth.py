@@ -9,6 +9,15 @@ def test_provider(project, networks):
     assert networks.provider.is_connected
 
 
+def test_extra_account(chain):
+    """
+    Show we can fund accounts from the config option.
+    """
+    addr = "0x63c7f11162dBFC374DC6f5C0B3Aa26C618846a85"
+    actual = chain.provider.get_balance(addr)
+    assert actual > 0
+
+
 def test_contract_interaction(owner, contract):
     """
     Traditional ape-test style test.
