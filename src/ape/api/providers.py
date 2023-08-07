@@ -820,9 +820,10 @@ class Web3Provider(ProviderAPI, ABC):
             txn_dict.pop("maxPriorityFeePerGas", None)
 
         try:
-            block_id = kwargs.pop("block_identifier", kwargs.pop("block_id", None))
+            block_id = kwargs.pop("block_identifier", kwargs.pop("block_id", "latest"))
+            tx_kwargs = {"block_identifier": block_id} if block_id else {}
             txn_params = cast(TxParams, txn_dict)
-            return self.web3.eth.estimate_gas(txn_params, block_identifier=block_id)
+            return self.web3.eth.estimate_gas(txn_params, **tx_kwargs)
         except (ValueError, Web3ContractLogicError) as err:
             tx_error = self.get_virtual_machine_error(err, txn=txn)
 
@@ -1100,10 +1101,12 @@ class Web3Provider(ProviderAPI, ABC):
         txn_dict.pop("maxFeePerGas", None)
         txn_dict.pop("maxPriorityFeePerGas", None)
 
-        block_identifier = kwargs.pop("block_identifier", kwargs.pop("block_id", None))
+        block_identifier = kwargs.pop("block_identifier", kwargs.pop("block_id", "latest"))
         if isinstance(block_identifier, int):
             block_identifier = to_hex(block_identifier)
+
         arguments = [txn_dict, block_identifier]
+
         if "state_override" in kwargs:
             arguments.append(kwargs["state_override"])
 
