@@ -112,9 +112,17 @@ def test_call_use_block_identifier(contract_instance, owner, chain):
     actual = contract_instance.myNumber(block_identifier=block_id)
     assert actual == expected
 
+    # Ensure alias "block_id" works
+    actual = contract_instance.myNumber(block_id=block_id)
+    assert actual == expected
+
     # Ensure works with hex
     block_id = to_hex(block_id)
     actual = contract_instance.myNumber(block_identifier=block_id)
+    assert actual == expected
+
+    # Ensure alias "block_id" works.
+    actual = contract_instance.myNumber(block_id=block_id)
     assert actual == expected
 
     # Ensure works keywords like "latest"
@@ -182,8 +190,9 @@ def test_call_using_block_identifier(
     contract.setNumber(1, sender=owner)
     height = chain.blocks.height
     contract.setNumber(33, sender=owner)
-    actual = contract.myNumber(block_identifier=height)
-    assert actual == 1
+    actual_0 = contract.myNumber(block_identifier=height)
+    actual_1 = contract.myNumber(block_id=height)
+    assert actual_0 == actual_1 == 1
 
 
 def test_repr(vyper_contract_instance):

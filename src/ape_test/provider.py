@@ -77,7 +77,7 @@ class LocalProvider(TestProviderAPI, Web3Provider):
             block = self.web3.eth.get_block("latest")
             return block["gasLimit"]
 
-        block_id = kwargs.pop("block_identifier", None)
+        block_id = kwargs.pop("block_identifier", kwargs.pop("block_id", None))
         estimate_gas = self.web3.eth.estimate_gas
         txn_dict = txn.dict()
         if txn_dict.get("gas") == "auto":
@@ -139,7 +139,7 @@ class LocalProvider(TestProviderAPI, Web3Provider):
 
     def send_call(self, txn: TransactionAPI, **kwargs) -> bytes:
         data = txn.dict(exclude_none=True)
-        block_id = kwargs.pop("block_identifier", None)
+        block_id = kwargs.pop("block_identifier", kwargs.pop("block_id", None))
         state = kwargs.pop("state_override", None)
         call_kwargs = {"block_identifier": block_id, "state_override": state}
 
