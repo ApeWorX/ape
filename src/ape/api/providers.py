@@ -49,6 +49,7 @@ from ape.exceptions import (
 from ape.logging import LogLevel, logger
 from ape.types import (
     AddressType,
+    AutoGasLimit,
     BlockID,
     CallTreeNode,
     ContractCode,
@@ -813,9 +814,11 @@ class Web3Provider(ProviderAPI, ABC):
             txn_dict["type"] = HexBytes(txn_dict["type"]).hex()
 
         # NOTE: "auto" means to enter this method, so remove it from dict
-        if "gas" in txn_dict and txn_dict["gas"] == "auto":
+        if "gas" in txn_dict and (
+            txn_dict["gas"] == "auto" or isinstance(txn_dict["gas"], AutoGasLimit)
+        ):
             txn_dict.pop("gas")
-            # Also pop these, they are overriden by "auto"
+            # Also pop these, they are overridden by "auto"
             txn_dict.pop("maxFeePerGas", None)
             txn_dict.pop("maxPriorityFeePerGas", None)
 
@@ -1309,7 +1312,13 @@ class Web3Provider(ProviderAPI, ABC):
             # else: Assume user specified the correct amount or txn will fail and waste gas
 
         if txn.gas_limit is None:
-            txn.gas_limit = self.estimate_gas_cost(txn)
+            multiplier = self.network.auto_gas_multiplier
+            if multiplier != 1.0:
+                gas = min(int(self.estimate_gas_cost(txn) * multiplier), self.max_gas)
+            else:
+                gas = self.estimate_gas_cost(txn)
+
+            txn.gas_limit = gas
 
         if txn.required_confirmations is None:
             txn.required_confirmations = self.network.required_confirmations

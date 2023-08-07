@@ -7,6 +7,7 @@ from eth_account.messages import encode_defunct
 import ape
 from ape.api import ImpersonatedAccount
 from ape.exceptions import AccountsError, NetworkError, ProjectError, SignatureError
+from ape.types import AutoGasLimit
 from ape.types.signatures import recover_signer
 from ape.utils.testing import DEFAULT_NUMBER_OF_TEST_ACCOUNTS
 from ape_ethereum.ecosystem import ProxyType
@@ -499,3 +500,57 @@ def test_iter_test_accounts(test_accounts):
 def test_declare(contract_container, sender):
     receipt = sender.declare(contract_container)
     assert not receipt.failed
+
+
+@pytest.mark.parametrize(
+    "tx_type,params", [(0, ["gas_price"]), (2, ["max_fee", "max_priority_fee"])]
+)
+def test_prepare_transaction(sender, ethereum, tx_type, params):
+    def clear_network_property_cached():
+        for field in ("gas_limit", "auto_gas_multiplier"):
+            if field in tx.provider.network.__dict__:
+                del tx.provider.network.__dict__[field]
+
+    tx = ethereum.create_transaction(type=tx_type, gas_limit="auto")
+    auto_gas = AutoGasLimit(multiplier=1.0)
+    original_limit = tx.provider.network.config.local.gas_limit
+
+    try:
+        tx.provider.network.config.local.gas_limit = auto_gas
+        clear_network_property_cached()
+
+        # Show tx doesn't have these by default.
+        assert tx.nonce is None
+        for param in params:
+            # Custom fields depending on type.
+            assert getattr(tx, param) is None
+
+        # Gas should NOT yet be estimated, as that happens closer to sending.
+        assert tx.gas_limit is None
+
+        # Sets fields.
+        tx = sender.prepare_transaction(tx)
+
+        # We expect these fields to have been set.
+        assert tx.nonce is not None
+        assert tx.gas_limit is not None  # Gas was estimated (using eth_estimateGas).
+
+        # Show multipliers work. First, reset network to use one (hack).
+        gas_smaller = tx.gas_limit
+
+        clear_network_property_cached()
+        auto_gas.multiplier = 1.1
+        tx.provider.network.config.local.gas_limit = auto_gas
+
+        tx2 = ethereum.create_transaction(type=tx_type, gas_limit="auto")
+        tx2 = sender.prepare_transaction(tx2)
+        gas_bigger = tx2.gas_limit
+
+        assert gas_smaller < gas_bigger
+
+        for param in params:
+            assert getattr(tx, param) is not None
+
+    finally:
+        tx.provider.network.config.local.gas_limit = original_limit
+        clear_network_property_cached()
