@@ -49,6 +49,7 @@ from ape.exceptions import (
 from ape.logging import LogLevel, logger
 from ape.types import (
     AddressType,
+    AutoGasLimit,
     BlockID,
     CallTreeNode,
     ContractCode,
@@ -813,9 +814,11 @@ class Web3Provider(ProviderAPI, ABC):
             txn_dict["type"] = HexBytes(txn_dict["type"]).hex()
 
         # NOTE: "auto" means to enter this method, so remove it from dict
-        if "gas" in txn_dict and txn_dict["gas"] == "auto":
+        if "gas" in txn_dict and (
+            txn_dict["gas"] == "auto" or isinstance(txn_dict["gas"], AutoGasLimit)
+        ):
             txn_dict.pop("gas")
-            # Also pop these, they are overriden by "auto"
+            # Also pop these, they are overridden by "auto"
             txn_dict.pop("maxFeePerGas", None)
             txn_dict.pop("maxPriorityFeePerGas", None)
 
@@ -1103,6 +1106,7 @@ class Web3Provider(ProviderAPI, ABC):
         block_identifier = kwargs.pop("block_identifier", kwargs.pop("block_id", "latest"))
         if isinstance(block_identifier, int):
             block_identifier = to_hex(block_identifier)
+
         arguments = [txn_dict, block_identifier]
         if "state_override" in kwargs:
             arguments.append(kwargs["state_override"])
@@ -1151,6 +1155,7 @@ class Web3Provider(ProviderAPI, ABC):
 
         network_config: Dict = self.network.config.dict().get(self.network.name, {})
         max_retries = network_config.get("max_get_transaction_retries", DEFAULT_MAX_RETRIES_TX)
+        txn = {}
         for attempt in range(max_retries):
             try:
                 txn = dict(self.web3.eth.get_transaction(HexStr(txn_hash)))
@@ -1309,7 +1314,13 @@ class Web3Provider(ProviderAPI, ABC):
             # else: Assume user specified the correct amount or txn will fail and waste gas
 
         if txn.gas_limit is None:
-            txn.gas_limit = self.estimate_gas_cost(txn)
+            multiplier = self.network.auto_gas_multiplier
+            if multiplier != 1.0:
+                gas = min(int(self.estimate_gas_cost(txn) * multiplier), self.max_gas)
+            else:
+                gas = self.estimate_gas_cost(txn)
+
+            txn.gas_limit = gas
 
         if txn.required_confirmations is None:
             txn.required_confirmations = self.network.required_confirmations
@@ -1482,13 +1493,14 @@ class Web3Provider(ProviderAPI, ABC):
         if isinstance(exception, Web3ContractLogicError) and no_reason:
             # Check for custom exception data and use that as the message instead.
             # This allows compiler exception enrichment to function.
+            err_trace = None
             try:
                 if trace:
                     trace, err_trace = tee(trace)
                 elif txn:
                     err_trace = self.provider.get_transaction_trace(txn.txn_hash.hex())
 
-                data = list(err_trace)[-1].raw
+                data = list(err_trace)[-1].raw if err_trace else {}
                 memory = data.get("memory", [])
                 return_value = "".join([x[2:] for x in memory[4:]])
                 if return_value:

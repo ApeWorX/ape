@@ -21,7 +21,7 @@ from ape.exceptions import (
     SignatureError,
 )
 from ape.logging import logger
-from ape.types import AddressType, CallTreeNode, ContractLog, GasLimit, RawAddress
+from ape.types import AddressType, AutoGasLimit, CallTreeNode, ContractLog, GasLimit, RawAddress
 from ape.utils import (
     DEFAULT_TRANSACTION_ACCEPTANCE_TIMEOUT,
     BaseInterfaceModel,
@@ -709,6 +709,13 @@ class NetworkAPI(BaseInterfaceModel):
     @cached_property
     def gas_limit(self) -> GasLimit:
         return self._network_config.get("gas_limit", "auto")
+
+    @cached_property
+    def auto_gas_multiplier(self) -> float:
+        """
+        The value to multiply estimated gas by for tx-insurance.
+        """
+        return self.gas_limit.multiplier if isinstance(self.gas_limit, AutoGasLimit) else 1.0
 
     @property
     def chain_id(self) -> int:

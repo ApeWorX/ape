@@ -21,6 +21,7 @@ from ape.exceptions import (
 from ape.logging import logger
 from ape.types import (
     AddressType,
+    AutoGasLimit,
     ContractLogContainer,
     SourceTraceback,
     TraceFrame,
@@ -68,7 +69,7 @@ class TransactionAPI(BaseInterfaceModel):
 
             value = cls.network_manager.active_provider.network.gas_limit
 
-        if value == "auto":
+        if value == "auto" or isinstance(value, AutoGasLimit):
             return None  # Delegate to `ProviderAPI.estimate_gas_cost`
 
         elif value == "max":
