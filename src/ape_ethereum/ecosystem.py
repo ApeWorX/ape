@@ -32,6 +32,7 @@ from ape.exceptions import (
 from ape.logging import logger
 from ape.types import (
     AddressType,
+    AutoGasLimit,
     CallTreeNode,
     ContractLog,
     GasLimit,
@@ -101,7 +102,10 @@ class NetworkConfig(PluginConfig):
 
     @validator("gas_limit", pre=True, allow_reuse=True)
     def validate_gas_limit(cls, value):
-        if value in ("auto", "max"):
+        if isinstance(value, dict) and "auto" in value:
+            return AutoGasLimit.parse_obj(value["auto"])
+
+        elif value in ("auto", "max") or isinstance(value, AutoGasLimit):
             return value
 
         elif isinstance(value, int):
@@ -110,7 +114,7 @@ class NetworkConfig(PluginConfig):
         elif isinstance(value, str) and value.isnumeric():
             return int(value)
 
-        elif is_hex(value) and is_0x_prefixed(value):
+        elif isinstance(value, str) and is_hex(value) and is_0x_prefixed(value):
             return to_int(HexBytes(value))
 
         elif is_hex(value):
