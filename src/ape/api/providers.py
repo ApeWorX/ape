@@ -1106,6 +1106,7 @@ class Web3Provider(ProviderAPI, ABC):
         block_identifier = kwargs.pop("block_identifier", kwargs.pop("block_id", "latest"))
         if isinstance(block_identifier, int):
             block_identifier = to_hex(block_identifier)
+
         arguments = [txn_dict, block_identifier]
         if "state_override" in kwargs:
             arguments.append(kwargs["state_override"])
@@ -1154,6 +1155,7 @@ class Web3Provider(ProviderAPI, ABC):
 
         network_config: Dict = self.network.config.dict().get(self.network.name, {})
         max_retries = network_config.get("max_get_transaction_retries", DEFAULT_MAX_RETRIES_TX)
+        txn = {}
         for attempt in range(max_retries):
             try:
                 txn = dict(self.web3.eth.get_transaction(HexStr(txn_hash)))
@@ -1491,13 +1493,14 @@ class Web3Provider(ProviderAPI, ABC):
         if isinstance(exception, Web3ContractLogicError) and no_reason:
             # Check for custom exception data and use that as the message instead.
             # This allows compiler exception enrichment to function.
+            err_trace = None
             try:
                 if trace:
                     trace, err_trace = tee(trace)
                 elif txn:
                     err_trace = self.provider.get_transaction_trace(txn.txn_hash.hex())
 
-                data = list(err_trace)[-1].raw
+                data = list(err_trace)[-1].raw if err_trace else {}
                 memory = data.get("memory", [])
                 return_value = "".join([x[2:] for x in memory[4:]])
                 if return_value:
