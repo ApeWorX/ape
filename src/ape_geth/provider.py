@@ -77,6 +77,7 @@ class GethDevProcess(BaseGethProcess):
         initial_balance: Union[str, int] = to_wei(10000, "ether"),
         executable: Optional[str] = None,
         auto_disconnect: bool = True,
+        extra_funded_accounts: Optional[List[str]] = None,
     ):
         executable = executable or "geth"
         if not shutil.which(executable):
@@ -108,6 +109,10 @@ class GethDevProcess(BaseGethProcess):
         sealer = ensure_account_exists(**geth_kwargs).decode().replace("0x", "")
         geth_kwargs["miner_etherbase"] = sealer
         accounts = generate_dev_accounts(mnemonic, number_of_accounts=number_of_accounts)
+        addresses = [a.address for a in accounts]
+        addresses.extend(extra_funded_accounts or [])
+        bal_dict = {"balance": str(initial_balance)}
+        alloc = {a: bal_dict for a in addresses}
         genesis_data: Dict = {
             "overwrite": True,
             "coinbase": "0x0000000000000000000000000000000000000000",
@@ -130,7 +135,7 @@ class GethDevProcess(BaseGethProcess):
                 "parisBlock": 0,
                 "clique": {"period": 0, "epoch": 30000},
             },
-            "alloc": {a.address: {"balance": str(initial_balance)} for a in accounts},
+            "alloc": alloc,
         }
 
         initialize_chain(genesis_data, **geth_kwargs)
@@ -147,6 +152,10 @@ class GethDevProcess(BaseGethProcess):
         port = parsed_uri.port if parsed_uri.port is not None else DEFAULT_PORT
         mnemonic = kwargs.get("mnemonic", DEFAULT_TEST_MNEMONIC)
         number_of_accounts = kwargs.get("number_of_accounts", DEFAULT_NUMBER_OF_TEST_ACCOUNTS)
+        extra_accounts = [
+            HexBytes(a).hex().lower() for a in kwargs.get("extra_funded_accounts", [])
+        ]
+
         return cls(
             data_folder,
             hostname=parsed_uri.host,
@@ -155,6 +164,7 @@ class GethDevProcess(BaseGethProcess):
             number_of_accounts=number_of_accounts,
             executable=kwargs.get("executable"),
             auto_disconnect=kwargs.get("auto_disconnect", True),
+            extra_funded_accounts=extra_accounts,
         )
 
     def connect(self, timeout: int = 60):
@@ -461,6 +471,13 @@ class GethDev(BaseGethProvider, TestProviderAPI, SubprocessProvider):
         test_config["auto_disconnect"] = self._test_runner is None or test_config.get(
             "disconnect_providers_after", True
         )
+
+        # Include extra accounts to allocated funds to at genesis.
+        extra_accounts = self.geth_config.ethereum.local.get("extra_funded_accounts", [])
+        extra_accounts.extend(self.provider_settings.get("extra_funded_accounts", []))
+        extra_accounts = list(set([HexBytes(a).hex().lower() for a in extra_accounts]))
+        test_config["extra_funded_accounts"] = extra_accounts
+
         process = GethDevProcess.from_uri(self.uri, self.data_dir, **test_config)
         process.connect(timeout=timeout)
         if not self.web3.is_connected():
