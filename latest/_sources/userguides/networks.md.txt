@@ -123,3 +123,15 @@ To use a different network, such as `hardhat` or Anvil nodes, use the `--network
 ```shell
 ape networks run --network ethereum:local:foundry
 ```
+
+## Provider Interaction
+
+Once you are connected to a network, you now have access to a `.provider`.
+The provider class is what higher level Manager classes in Ape use to interface with the blockchain.
+You can call methods directly from the provider, like this:
+
+```python
+from ape import chain
+
+block = chain.provider.get_block("latest")
+```
