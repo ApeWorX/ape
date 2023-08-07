@@ -283,8 +283,17 @@ For example, to change the URI for an Ethereum network, do:</p>
 <li><p><code class="docutils literal notranslate"><span class="pre">&quot;auto&quot;</span></code> - gas limit is estimated for each transaction</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">&quot;max&quot;</span></code> - the maximum block gas limit is used</p></li>
 <li><p>A number or numeric string, base 10 or 16 (e.g. <code class="docutils literal notranslate"><span class="pre">1234</span></code>, <code class="docutils literal notranslate"><span class="pre">&quot;1234&quot;</span></code>, <code class="docutils literal notranslate"><span class="pre">0x1234</span></code>, <code class="docutils literal notranslate"><span class="pre">&quot;0x1234&quot;</span></code>)</p></li>
+<li><p>An object with key <code class="docutils literal notranslate"><span class="pre">&quot;auto&quot;</span></code> for specifying an estimate-multiplier for transaction insurance</p></li>
 </ul>
-<p>For the local network configuration, the default is <code class="docutils literal notranslate"><span class="pre">&quot;max&quot;</span></code>. Otherwise it is <code class="docutils literal notranslate"><span class="pre">&quot;auto&quot;</span></code>.</p>
+<p>To use the auto-multiplier, make your config like this:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">ethereum</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">mainnet</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">gas_limit</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">auto</span><span class="p">:</span>
+<span class="w">        </span><span class="nt">multiplier</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1.2</span><span class="w">  </span><span class="c1"># Multiply 1.2 times the result of eth_estimateGas</span>
+</pre></div>
+</div>
+<p>For the local network configuration, the default is <code class="docutils literal notranslate"><span class="pre">&quot;max&quot;</span></code>. Otherwise, it is <code class="docutils literal notranslate"><span class="pre">&quot;auto&quot;</span></code>.</p>
 </section>
 <section id="plugins">
 <h2>Plugins<a class="headerlink" href="#plugins" title="Permalink to this heading"></a></h2>
