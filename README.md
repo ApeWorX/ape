@@ -33,6 +33,7 @@ There are three ways to install ape: `pipx`, `pip`, or `Docker`.
 ### Considerations for Installing:
 
 - If using `pip`, we advise using the most up-to-date version of `pip` to increase the chance of a successful installation.
+
   - See issue https://github.com/ApeWorX/ape/issues/1558.
   - To upgrade `pip` from the command line, run: `pip install --upgrade pip`.
 
