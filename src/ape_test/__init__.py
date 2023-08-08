@@ -8,7 +8,7 @@ from ape.api.networks import LOCAL_NETWORK_NAME
 from ape.utils import DEFAULT_HD_PATH, DEFAULT_NUMBER_OF_TEST_ACCOUNTS, DEFAULT_TEST_MNEMONIC
 
 from .accounts import TestAccount, TestAccountContainer
-from .provider import LocalProvider
+from .provider import EthTesterProviderConfig, LocalProvider
 
 
 class GasExclusion(PluginConfig):
@@ -123,6 +123,11 @@ class Config(PluginConfig):
     hd_path: str = DEFAULT_HD_PATH
     """
     The hd_path to use when generating the test accounts.
+    """
+
+    provider: EthTesterProviderConfig = EthTesterProviderConfig()
+    """
+    Settings for the provider.
     """
 
 

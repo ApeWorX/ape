@@ -188,8 +188,9 @@ def networks_connected_to_tester(eth_tester_provider):
 @pytest.fixture
 def geth_provider(networks):
     if not networks.active_provider or networks.provider.name != "geth":
+        test_acct_100 = "0x63c7f11162dBFC374DC6f5C0B3Aa26C618846a85"
         with networks.ethereum.local.use_provider(
-            "geth", provider_settings={"uri": GETH_URI}
+            "geth", provider_settings={"uri": GETH_URI, "extra_funded_accounts": [test_acct_100]}
         ) as provider:
             yield provider
     else:

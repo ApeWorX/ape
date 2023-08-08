@@ -1,5 +1,6 @@
 import re
 from pathlib import Path
+from typing import Optional
 
 import pytest
 
@@ -88,13 +89,14 @@ def setup_pytester(pytester):
         pytester.makepyfile(**test_files)
 
         # Make other files
-        def _make_all_files(base: Path):
+        def _make_all_files(base: Path, prefix: Optional[Path] = None):
             for file in base.iterdir():
                 if file.is_dir() and not file.name == "tests":
-                    _make_all_files(file)
+                    _make_all_files(file, prefix=Path(file.name))
                 elif file.is_file():
-                    name = {file.as_posix(): file.read_text().splitlines()}
-                    pytester.makefile(file.suffix, **name)
+                    name = (prefix / file.name).as_posix() if prefix else file.name
+                    src = {name: file.read_text().splitlines()}
+                    pytester.makefile(file.suffix, **src)
 
         _make_all_files(project_path)
 

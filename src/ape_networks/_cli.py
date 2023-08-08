@@ -5,9 +5,11 @@ from rich import print as echo_rich_text
 from rich.tree import Tree
 
 from ape import networks
-from ape.cli import ape_cli_context
+from ape.api import SubprocessProvider
+from ape.cli import ape_cli_context, network_option
 from ape.cli.choices import OutputFormat
 from ape.cli.options import output_format_option
+from ape.logging import LogLevel
 
 
 def _filter_option(name: str, options):
@@ -73,3 +75,54 @@ def _list(cli_ctx, output_format, ecosystem_filter, network_filter, provider_fil
 
     elif output_format == OutputFormat.YAML:
         click.echo(cli_ctx.network_manager.networks_yaml.strip())
+
+
+@cli.command()
+@ape_cli_context()
+@network_option(default="ethereum:local:geth")
+def run(cli_ctx, network):
+    """
+    Start a node process
+    """
+
+    # Ignore web3 logs
+    cli_ctx.logger._clear_web3_loggers()
+
+    network_ctx = cli_ctx.network_manager.parse_network_choice(network)
+    provider = network_ctx._provider
+    if not isinstance(provider, SubprocessProvider):
+        cli_ctx.abort(
+            f"`ape networks run` requires a provider that manages a process, not '{provider.name}'."
+        )
+    elif provider.is_connected:
+        cli_ctx.abort("Process already running.")
+
+    # Start showing process logs.
+    original_level = cli_ctx.logger.level
+    original_format = cli_ctx.logger.fmt
+    cli_ctx.logger.set_level(LogLevel.DEBUG)
+
+    # Change format to exclude log level (since it is always just DEBUG)
+    cli_ctx.logger.format(fmt="%(message)s")
+    try:
+        _run(cli_ctx, provider)
+    finally:
+        cli_ctx.logger.set_level(original_level)
+        cli_ctx.logger.format(fmt=original_format)
+
+
+def _run(cli_ctx, provider: SubprocessProvider):
+    provider.connect()
+    if process := provider.process:
+        try:
+            process.wait()
+        finally:
+            try:
+                provider.disconnect()
+            except Exception:
+                # Prevent not being able to CTRL-C.
+                cli_ctx.abort("Terminated")
+
+    else:
+        provider.disconnect()
+        cli_ctx.abort("Process already running.")

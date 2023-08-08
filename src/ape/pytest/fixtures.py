@@ -5,7 +5,7 @@ from typing import Dict, Iterator, List, Optional
 import pytest
 
 from ape.api import ReceiptAPI, TestAccountAPI
-from ape.exceptions import ChainError
+from ape.exceptions import BlockNotFoundError, ChainError
 from ape.logging import logger
 from ape.managers.chain import ChainManager
 from ape.managers.networks import NetworkManager
@@ -88,15 +88,23 @@ class PytestApeFixtures(ManagerAccessMixin):
         When tracing support is available, will also assist in capturing receipts.
         """
 
-        snapshot_id = self._snapshot()
+        try:
+            snapshot_id = self._snapshot()
+        except BlockNotFoundError:
+            snapshot_id = None
 
         if self._track_transactions:
-            with self.receipt_capture:
+            try:
+                with self.receipt_capture:
+                    yield
+
+            except BlockNotFoundError:
                 yield
+
         else:
             yield
 
-        if snapshot_id:
+        if snapshot_id is not None:
             self._restore(snapshot_id)
 
     # isolation fixtures

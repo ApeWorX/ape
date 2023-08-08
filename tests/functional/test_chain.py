@@ -397,7 +397,7 @@ def test_instance_at_contract_type_not_found(chain):
     new_address = "0x4a986a6dca6dbF99Bc3D17F8d71aFB0D60E740F9"
     expected = (
         rf"Failed to get contract type for address '{new_address}'. "
-        r"Current provider 'test' has no associated explorer plugin. "
+        r"Current provider 'ethereum:local:test' has no associated explorer plugin. "
         "Try installing an explorer plugin using .*ape plugins install etherscan.*, "
         r"or using a network with explorer support\."
     )
@@ -409,7 +409,7 @@ def test_contracts_getitem_contract_not_found(chain):
     new_address = "0x4a986a6dca6dbF99Bc3D17F8d71aFB0D60E740F9"
     expected = (
         rf"Failed to get contract type for address '{new_address}'. "
-        r"Current provider 'test' has no associated explorer plugin. "
+        r"Current provider 'ethereum:local:test' has no associated explorer plugin. "
         "Try installing an explorer plugin using .*ape plugins install etherscan.*, "
         r"or using a network with explorer support\."
     )
@@ -449,7 +449,7 @@ def test_get_deployments_local(chain, owner, contract_0, contract_1):
 
     # Assert
     for contract_list in (contracts_list_0, contracts_list_1):
-        assert type(contract_list[0]) == ContractInstance
+        assert type(contract_list[0]) is ContractInstance
 
     index_0 = len(contracts_list_0) - len(starting_contracts_list_0) - 1
     index_1 = len(contracts_list_1) - len(starting_contracts_list_1) - 1

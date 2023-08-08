@@ -109,8 +109,8 @@ def _make_new_contract(existing_contract: ContractType, name: str):
 def test_extract_manifest(project_with_dependency_config):
     # NOTE: Only setting dependency_config to ensure existence of project.
     manifest = project_with_dependency_config.extract_manifest()
-    assert type(manifest) == PackageManifest
-    assert type(manifest.compilers) == list
+    assert type(manifest) is PackageManifest
+    assert type(manifest.compilers) is list
     assert manifest.meta == project_with_dependency_config.meta
     assert manifest.compilers == project_with_dependency_config.compiler_data
     assert manifest.deployments == project_with_dependency_config.tracked_deployments

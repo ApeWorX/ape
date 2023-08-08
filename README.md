@@ -32,6 +32,11 @@ There are three ways to install ape: `pipx`, `pip`, or `Docker`.
 
 ### Considerations for Installing:
 
+- If using `pip`, we advise using the most up-to-date version of `pip` to increase the chance of a successful installation.
+
+  - See issue https://github.com/ApeWorX/ape/issues/1558.
+  - To upgrade `pip` from the command line, run: `pip install --upgrade pip`.
+
 - We advise installing in a [virtualenv](https://pypi.org/project/virtualenv/) or [venv](https://docs.python.org/3/library/venv.html) to avoid interfering with *OS-level site packages*.
 
 - We advise installing **`ape`** with recommended plugins `pip install eth-ape'[recommended-plugins]'`.

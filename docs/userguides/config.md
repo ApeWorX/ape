@@ -102,8 +102,19 @@ You may use one of:
 - `"auto"` - gas limit is estimated for each transaction
 - `"max"` - the maximum block gas limit is used
 - A number or numeric string, base 10 or 16 (e.g. `1234`, `"1234"`, `0x1234`, `"0x1234"`)
+- An object with key `"auto"` for specifying an estimate-multiplier for transaction insurance
 
-For the local network configuration, the default is `"max"`. Otherwise it is `"auto"`.
+To use the auto-multiplier, make your config like this:
+
+```yaml
+ethereum:
+  mainnet:
+    gas_limit:
+      auto:
+        multiplier: 1.2  # Multiply 1.2 times the result of eth_estimateGas
+```
+
+For the local network configuration, the default is `"max"`. Otherwise, it is `"auto"`.
 
 ## Plugins
 

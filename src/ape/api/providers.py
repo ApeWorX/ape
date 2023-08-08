@@ -23,7 +23,6 @@ from evm_trace import CallTreeNode as EvmCallTreeNode
 from evm_trace import TraceFrame as EvmTraceFrame
 from pydantic import Field, root_validator, validator
 from web3 import Web3
-from web3.exceptions import BlockNotFound
 from web3.exceptions import ContractLogicError as Web3ContractLogicError
 from web3.exceptions import MethodUnavailable, TimeExhausted, TransactionNotFound
 from web3.types import RPCEndpoint, TxParams
@@ -50,6 +49,7 @@ from ape.exceptions import (
 from ape.logging import LogLevel, logger
 from ape.types import (
     AddressType,
+    AutoGasLimit,
     BlockID,
     CallTreeNode,
     ContractCode,
@@ -211,6 +211,13 @@ class ProviderAPI(BaseInterfaceModel):
         Returns:
             :class:`~ape.types.ContractCode`: The contract bytecode.
         """
+
+    @property
+    def network_choice(self) -> str:
+        """
+        The connected network choice string.
+        """
+        return f"{self.network.choice}:{self.name}"
 
     @raises_not_implemented
     def get_storage_at(self, address: AddressType, slot: int) -> bytes:  # type: ignore[empty-body]
@@ -723,8 +730,7 @@ class Web3Provider(ProviderAPI, ABC):
             # Use the less-accurate approach (OK for testing).
             logger.debug(
                 "Failed using `web3.eth.fee_history` for network "
-                f"'{self.network.ecosystem.name}:{self.network.name}:{self.name}'. "
-                f"Error: {exc}"
+                f"'{self.network_choice}'. Error: {exc}"
             )
             return self._get_last_base_fee()
 
@@ -808,9 +814,11 @@ class Web3Provider(ProviderAPI, ABC):
             txn_dict["type"] = HexBytes(txn_dict["type"]).hex()
 
         # NOTE: "auto" means to enter this method, so remove it from dict
-        if "gas" in txn_dict and txn_dict["gas"] == "auto":
+        if "gas" in txn_dict and (
+            txn_dict["gas"] == "auto" or isinstance(txn_dict["gas"], AutoGasLimit)
+        ):
             txn_dict.pop("gas")
-            # Also pop these, they are overriden by "auto"
+            # Also pop these, they are overridden by "auto"
             txn_dict.pop("maxFeePerGas", None)
             txn_dict.pop("maxPriorityFeePerGas", None)
 
@@ -877,7 +885,7 @@ class Web3Provider(ProviderAPI, ABC):
 
         try:
             block_data = dict(self.web3.eth.get_block(block_id))
-        except BlockNotFound as err:
+        except Exception as err:
             raise BlockNotFoundError(block_id) from err
 
         # Some nodes (like anvil) will not have a base fee if set to 0.
@@ -1098,6 +1106,7 @@ class Web3Provider(ProviderAPI, ABC):
         block_identifier = kwargs.pop("block_identifier", kwargs.pop("block_id", "latest"))
         if isinstance(block_identifier, int):
             block_identifier = to_hex(block_identifier)
+
         arguments = [txn_dict, block_identifier]
         if "state_override" in kwargs:
             arguments.append(kwargs["state_override"])
@@ -1146,6 +1155,7 @@ class Web3Provider(ProviderAPI, ABC):
 
         network_config: Dict = self.network.config.dict().get(self.network.name, {})
         max_retries = network_config.get("max_get_transaction_retries", DEFAULT_MAX_RETRIES_TX)
+        txn = {}
         for attempt in range(max_retries):
             try:
                 txn = dict(self.web3.eth.get_transaction(HexStr(txn_hash)))
@@ -1304,7 +1314,13 @@ class Web3Provider(ProviderAPI, ABC):
             # else: Assume user specified the correct amount or txn will fail and waste gas
 
         if txn.gas_limit is None:
-            txn.gas_limit = self.estimate_gas_cost(txn)
+            multiplier = self.network.auto_gas_multiplier
+            if multiplier != 1.0:
+                gas = min(int(self.estimate_gas_cost(txn) * multiplier), self.max_gas)
+            else:
+                gas = self.estimate_gas_cost(txn)
+
+            txn.gas_limit = gas
 
         if txn.required_confirmations is None:
             txn.required_confirmations = self.network.required_confirmations
@@ -1477,13 +1493,14 @@ class Web3Provider(ProviderAPI, ABC):
         if isinstance(exception, Web3ContractLogicError) and no_reason:
             # Check for custom exception data and use that as the message instead.
             # This allows compiler exception enrichment to function.
+            err_trace = None
             try:
                 if trace:
                     trace, err_trace = tee(trace)
                 elif txn:
                     err_trace = self.provider.get_transaction_trace(txn.txn_hash.hex())
 
-                data = list(err_trace)[-1].raw
+                data = list(err_trace)[-1].raw if err_trace else {}
                 memory = data.get("memory", [])
                 return_value = "".join([x[2:] for x in memory[4:]])
                 if return_value:
@@ -1590,8 +1607,14 @@ class SubprocessProvider(ProviderAPI):
         if self.is_connected:
             raise ProviderError("Cannot connect twice. Call disconnect before connecting again.")
 
-        # Register atexit handler to make sure disconnect is called for normal object lifecycle.
-        atexit.register(self.disconnect)
+        # Always disconnect after,
+        # unless running tests with `disconnect_providers_after: false`.
+        disconnect_after = (
+            self._test_runner is None
+            or self.config_manager.get_config("test").disconnect_provider_after
+        )
+        if disconnect_after:
+            atexit.register(self.disconnect)
 
         # Register handlers to ensure atexit handlers are called when Python dies.
         def _signal_handler(signum, frame):
@@ -1623,9 +1646,8 @@ class SubprocessProvider(ProviderAPI):
             self.stderr_queue = JoinableQueue()
             self.stdout_queue = JoinableQueue()
             out_file = PIPE if logger.level <= LogLevel.DEBUG else DEVNULL
-            self.process = Popen(
-                self.build_command(), preexec_fn=pre_exec_fn, stdout=out_file, stderr=out_file
-            )
+            cmd = self.build_command()
+            self.process = Popen(cmd, preexec_fn=pre_exec_fn, stdout=out_file, stderr=out_file)
             spawn(self.produce_stdout_queue)
             spawn(self.produce_stderr_queue)
             spawn(self.consume_stdout_queue)

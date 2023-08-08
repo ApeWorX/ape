@@ -21,7 +21,7 @@ from ape.exceptions import (
     SignatureError,
 )
 from ape.logging import logger
-from ape.types import AddressType, CallTreeNode, ContractLog, GasLimit, RawAddress
+from ape.types import AddressType, AutoGasLimit, CallTreeNode, ContractLog, GasLimit, RawAddress
 from ape.utils import (
     DEFAULT_TRANSACTION_ACCEPTANCE_TIMEOUT,
     BaseInterfaceModel,
@@ -638,11 +638,7 @@ class ProviderContextManager(ManagerAccessMixin):
         if not provider.is_connected:
             return None
 
-        return (
-            f"{provider.network.ecosystem.name}:"
-            f"{provider.network.name}:{provider.name}-"
-            f"{provider.chain_id}"
-        )
+        return f"{provider.network_choice}:-{provider.chain_id}"
 
 
 class NetworkAPI(BaseInterfaceModel):
@@ -694,8 +690,7 @@ class NetworkAPI(BaseInterfaceModel):
             # Only happens on local networks
             chain_id = None
 
-        network_key = f"{self.ecosystem.name}:{self.name}"
-        content = f"{network_key} chain_id={self.chain_id}" if chain_id is not None else network_key
+        content = f"{self.choice} chain_id={self.chain_id}" if chain_id is not None else self.choice
         return f"<{content}>"
 
     @property
@@ -714,6 +709,13 @@ class NetworkAPI(BaseInterfaceModel):
     @cached_property
     def gas_limit(self) -> GasLimit:
         return self._network_config.get("gas_limit", "auto")
+
+    @cached_property
+    def auto_gas_multiplier(self) -> float:
+        """
+        The value to multiply estimated gas by for tx-insurance.
+        """
+        return self.gas_limit.multiplier if isinstance(self.gas_limit, AutoGasLimit) else 1.0
 
     @property
     def chain_id(self) -> int:
@@ -925,6 +927,10 @@ class NetworkAPI(BaseInterfaceModel):
 
         return None
 
+    @property
+    def choice(self) -> str:
+        return f"{self.ecosystem.name}:{self.name}"
+
     def set_default_provider(self, provider_name: str):
         """
         Change the default provider.
@@ -939,10 +945,7 @@ class NetworkAPI(BaseInterfaceModel):
         if provider_name in self.providers:
             self._default_provider = provider_name
         else:
-            raise NetworkError(
-                f"Provider '{provider_name}' not found in network "
-                f"'{self.ecosystem.name}:{self.name}'."
-            )
+            raise NetworkError(f"Provider '{provider_name}' not found in network '{self.choice}'.")
 
     def use_default_provider(
         self, provider_settings: Optional[Dict] = None

@@ -20,7 +20,7 @@ PROJECT_PATH = Path(__file__).parent
 CONTRACTS_FOLDER = PROJECT_PATH / "data" / "contracts" / "ethereum" / "local"
 
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def get_contract_type():
     def fn(name: str) -> ContractType:
         return ContractType.parse_file(CONTRACTS_FOLDER / f"{name}.json")
@@ -66,12 +66,12 @@ def mock_transaction(mocker):
     return mocker.MagicMock(spec=TransactionAPI)
 
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def project_path():
     return PROJECT_PATH
 
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def contracts_folder():
     return CONTRACTS_FOLDER
 
@@ -91,7 +91,7 @@ def not_owner(test_accounts):
     return test_accounts[7]
 
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def address():
     return TEST_ADDRESS
 
@@ -102,12 +102,12 @@ def second_keyfile_account(sender, keyparams, temp_accounts_path, temp_keyfile_a
         yield account
 
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def solidity_contract_type(get_contract_type) -> ContractType:
     return get_contract_type("solidity_contract")
 
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def solidity_contract_container(solidity_contract_type) -> ContractContainer:
     return ContractContainer(contract_type=solidity_contract_type)
 
@@ -119,37 +119,37 @@ def solidity_contract_instance(
     return owner.deploy(solidity_contract_container, 0)
 
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def vyper_contract_type(get_contract_type) -> ContractType:
     return get_contract_type("vyper_contract")
 
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def solidity_fallback_contract_type(get_contract_type) -> ContractType:
     return get_contract_type("sol_fallback_and_receive")
 
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def vyper_fallback_contract_type(get_contract_type) -> ContractType:
     return get_contract_type("vy_default")
 
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def vyper_contract_container(vyper_contract_type) -> ContractContainer:
     return ContractContainer(contract_type=vyper_contract_type)
 
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def solidity_fallback_container(solidity_fallback_contract_type) -> ContractContainer:
     return ContractContainer(contract_type=solidity_fallback_contract_type)
 
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def vyper_fallback_container(vyper_fallback_contract_type) -> ContractContainer:
     return ContractContainer(contract_type=vyper_fallback_contract_type)
 
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def vyper_math_dev_check(get_contract_type) -> ContractContainer:
     return ContractContainer(contract_type=get_contract_type("vyper_math_dev_checks"))
 
@@ -171,22 +171,22 @@ def vyper_fallback_contract(owner, vyper_fallback_container):
     return owner.deploy(vyper_fallback_container)
 
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def reverts_contract_type(get_contract_type) -> ContractType:
     return get_contract_type("reverts_contract")
 
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def sub_reverts_contract_type(get_contract_type) -> ContractType:
     return get_contract_type("sub_reverts_contract")
 
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def reverts_contract_container(reverts_contract_type) -> ContractContainer:
     return ContractContainer(contract_type=reverts_contract_type)
 
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def sub_reverts_contract_container(sub_reverts_contract_type) -> ContractContainer:
     return ContractContainer(contract_type=sub_reverts_contract_type)
 
@@ -274,12 +274,12 @@ def project_with_dependency_config(temp_config):
         yield project
 
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def base_projects_directory():
     return BASE_PROJECTS_DIRECTORY
 
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def mainnet_contract(chain):
     def contract_getter(address):
         path = (
@@ -297,7 +297,7 @@ def mainnet_contract(chain):
     return contract_getter
 
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def ds_note():
     return {
         "address": "0x35D1b3F3D7966A1DFe207aa4514C12a259A0492B",
@@ -425,7 +425,7 @@ def remove_disk_writes_deployments(chain):
         chain.contracts._deployments_mapping_cache.unlink()
 
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def logger():
     return _logger
 
@@ -445,19 +445,19 @@ def dummy_live_network(chain):
     chain.provider.network.name = LOCAL_NETWORK_NAME
 
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def proxy_contract_container(get_contract_type):
     return ContractContainer(get_contract_type("proxy"))
 
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def calldata():
     return HexBytes(
         "0x3fb5c1cb00000000000000000000000000000000000000000000000000000000000000de"
     )  # setNumber(222)
 
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def calldata_with_address():
     return HexBytes(
         "0x9e6b154b00000000000000000000000000000000000000000000000000000000000000de"
@@ -465,7 +465,7 @@ def calldata_with_address():
     )  # setNumber(222, 0xf7f78379391c5df2db5b66616d18ff92edb82022)
 
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def unique_calldata():
     return HexBytes(
         "0xacab48d8"
@@ -533,7 +533,7 @@ def contract_with_call_depth(
     return owner.deploy(contract, middle_contract, leaf_contract)
 
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def error_contract_container(get_contract_type):
     ct = get_contract_type("has_error")
     return ContractContainer(ct)
