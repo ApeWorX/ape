@@ -103,7 +103,7 @@ class DynamicFeeTransaction(BaseTransaction):
     max_priority_fee: Optional[int] = Field(None, alias="maxPriorityFeePerGas")
     max_fee: Optional[int] = Field(None, alias="maxFeePerGas")
     type: int = Field(TransactionType.DYNAMIC.value)
-    access_list: List[AccessList] = Field(default_factory=list, alias="accessList")
+    access_list: Optional[List[AccessList]] = Field(default_factory=list, alias="accessList")
 
     @validator("type", allow_reuse=True)
     def check_type(cls, value):
@@ -120,7 +120,7 @@ class AccessListTransaction(BaseTransaction):
 
     gas_price: Optional[int] = Field(None, alias="gasPrice")
     type: int = Field(TransactionType.ACCESS_LIST.value)
-    access_list: List[AccessList] = Field(default_factory=list, alias="accessList")
+    access_list: Optional[List[AccessList]] = Field(default_factory=list, alias="accessList")
 
     @validator("type", allow_reuse=True)
     def check_type(cls, value):
