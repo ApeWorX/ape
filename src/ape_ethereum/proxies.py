@@ -27,6 +27,7 @@ class ProxyType(IntEnum):
     ClonesWithImmutableArgs = 11  # https://github.com/wighawag/clones-with-immutable-args/blob/master/src/ClonesWithImmutableArgs.sol  # noqa: E501
     Create2ClonesWithImmutableArgs = 12  # https://github.com/emo-eth/create2-clones-with-immutable-args/blob/main/src/Create2ClonesWithImmutableArgs.sol  # noqa: E501
 
+
 class ProxyInfo(ProxyInfoAPI):
     type: ProxyType
 
