@@ -1304,7 +1304,7 @@ class ContractContainer(ContractTypeWrapper):
 
         if has_value:
             has_non_payable_constructor = self.contract_type.constructor.is_payable
-            #print(has_non_payable_constructor)
+            # print(has_non_payable_constructor)
             if not has_non_payable_constructor:
                 raise ContractError("Sending funds to a non-payable constructor!!")
 
