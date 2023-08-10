@@ -146,7 +146,7 @@ class BlockContainer(BaseManager):
         if start_block < 0:
             start_block = len(self) + start_block
 
-        if stop_block is None:
+        elif stop_block is None:
             stop_block = self.height
 
         elif stop_block < 0:
@@ -219,10 +219,12 @@ class BlockContainer(BaseManager):
 
         # Note: the range `stop_block` is a non-inclusive stop, while the
         #       `.query` method uses an inclusive stop, so we must adjust downwards.
+        stop_block = stop - 1
+
         query = BlockQuery(
             columns=list(self.head.__fields__),  # TODO: fetch the block fields from EcosystemAPI
             start_block=start,
-            stop_block=stop - 1,
+            stop_block=stop_block,
             step=step,
         )
 
@@ -291,7 +293,12 @@ class BlockContainer(BaseManager):
 
         if start_block is not None:
             # Front-load historical blocks.
-            for block in self.range(start_block, self.height - required_confirmations + 1):
+            end_block = self.height - required_confirmations + 1
+            while start_block <= end_block:
+                # Wait for start block to be in range.
+                time.sleep(block_time)
+
+            for block in self.range(start_block, end_block):
                 yield block
 
         if block:
