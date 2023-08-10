@@ -886,7 +886,7 @@ class Web3Provider(ProviderAPI, ABC):
         try:
             block_data = dict(self.web3.eth.get_block(block_id))
         except Exception as err:
-            raise BlockNotFoundError(block_id) from err
+            raise BlockNotFoundError(block_id, reason=str(err)) from err
 
         # Some nodes (like anvil) will not have a base fee if set to 0.
         if "baseFeePerGas" in block_data and block_data.get("baseFeePerGas") is None:
