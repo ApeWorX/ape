@@ -24,6 +24,7 @@ class ProxyType(IntEnum):
     Delegate = 8  # eip-897 delegate proxy
     ZeroAge = 9  # a more-minimal proxy
     SoladyPush0 = 10  # solady push0 minimal proxy
+    ClonesWithImmutableArgs = 11  # https://github.com/wighawag/clones-with-immutable-args/blob/master/src/ClonesWithImmutableArgs.sol
 
 
 class ProxyInfo(ProxyInfoAPI):
