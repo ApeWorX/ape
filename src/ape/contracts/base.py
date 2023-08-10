@@ -1300,6 +1300,13 @@ class ContractContainer(ContractTypeWrapper):
     def deploy(self, *args, publish: bool = False, **kwargs) -> ContractInstance:
         txn = self(*args, **kwargs)
         private = kwargs.get("private", False)
+        has_value = kwargs.get("value")
+
+        if has_value:
+            has_non_payable_constructor = self.contract_type.constructor.is_payable
+            #print(has_non_payable_constructor)
+            if not has_non_payable_constructor:
+                raise ContractError("Sending funds to a non-payable constructor!!")
 
         if "sender" in kwargs and isinstance(kwargs["sender"], AccountAPI):
             # Handle account-related preparation if needed, such as signing
