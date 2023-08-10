@@ -233,6 +233,7 @@ class Ethereum(EcosystemAPI):
             ProxyType.Clones: r"36603057343d52307f830d2d700a97af574b186c80d40429385d24241565b08a7c559ba283a964d9b160203da23d3df35b3d3d3d3d363d3d37363d73(.{40})5af43d3d93803e605b57fd5bf3",  # noqa: E501
             ProxyType.ZeroAge: r"3d3d3d3d363d3d37363d73(.{40})5af43d3d93803e602a57fd5bf3",
             ProxyType.SoladyPush0: r"5f5f365f5f37365f73(.{40})5af43d5f5f3e6029573d5ffd5b3d5ff3",
+            ProxyType.ClonesWithImmutableArgs: r"3d3d3d3d363d3d3761007f603736393661007f013d73(.{40})5af43d3d93803e603557fd5bf3.*",  # noqa: E501
         }
         for type, pattern in patterns.items():
             match = re.match(pattern, code)
