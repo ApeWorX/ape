@@ -297,6 +297,7 @@ class BlockContainer(BaseManager):
             while start_block <= end_block:
                 # Wait for start block to be in range.
                 time.sleep(block_time)
+                end_block = self.height - required_confirmations + 1
 
             for block in self.range(start_block, end_block):
                 yield block
