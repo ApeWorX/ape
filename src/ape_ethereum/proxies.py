@@ -49,6 +49,9 @@ class ProxyType(IntEnum):
     SoladyPush0 = 11  # solady push0 minimal proxy
     SoladyCWIA = 12  # clones with immutable args with a receive method
 
+    # https://github.com/sudoswap/lssvm2/blob/main/src/lib/LSSVMPairCloner.sol
+    SudoswapCWIA = 13  # a variant used in sudoswap
+
 
 class ProxyInfo(ProxyInfoAPI):
     type: ProxyType
