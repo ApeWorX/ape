@@ -20,6 +20,7 @@ from ape.exceptions import (
     ContractLogicError,
     CustomError,
     TransactionNotFoundError,
+    SendingFundsToNonPayableConstructor
 )
 from ape.logging import logger
 from ape.types import AddressType, ContractLog, LogFilter, MockContractLog
@@ -1301,8 +1302,9 @@ class ContractContainer(ContractTypeWrapper):
         txn = self(*args, **kwargs)
         private = kwargs.get("private", False)
 
-        if kwargs.get("value") and not self.contract_type.constructor.is_payable
-            raise ContractError("Sending funds to a non-payable constructor.")
+        # trying send funds to a contract with non-payable constructor it will fail
+        if kwargs.get("value") and not self.contract_type.constructor.is_payable:
+            raise SendingFundsToNonPayableConstructor("Sending funds to a non-payable constructor.")
 
         if "sender" in kwargs and isinstance(kwargs["sender"], AccountAPI):
             # Handle account-related preparation if needed, such as signing

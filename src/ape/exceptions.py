@@ -824,3 +824,9 @@ def _get_custom_python_traceback(
         tb_next = tb
 
     return frames[-1]
+
+
+class SendingFundsToNonPayableConstructor(ApeException):
+    """
+    Raisee when sending funds to a non-payable constructor
+    """
