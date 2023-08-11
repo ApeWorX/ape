@@ -856,5 +856,5 @@ def test_contract_declared_from_blueprint(
 def test_sending_funds_to_non_payable_constructor(solidity_contract_container, owner):
     with pytest.raises(
         SendingFundsToNonPayableConstructor, match="Sending funds to a non-payable constructor."
-    ) as err:
+    ):
         owner.deploy(solidity_contract_container, value="1 ether")
