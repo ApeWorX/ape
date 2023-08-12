@@ -25,6 +25,8 @@ class ProxyType(IntEnum):
 
     # https://github.com/vyperlang/vyper/blob/v0.2.8/vyper/functions/functions.py#L1428
     Vyper = 4  # vyper <0.2.9 create_forwarder_to
+    # https://github.com/vyperlang/vyper/blob/v0.1.0-beta.4/vyper/functions/functions.py#L633
+    VyperBeta = 14  # vyper 0.1-beta
 
     # https://github.com/0xSplits/splits-contracts/blob/main/contracts/libraries/Clones.sol
     Clones = 5  # 0xsplits clones
