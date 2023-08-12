@@ -886,7 +886,7 @@ class Web3Provider(ProviderAPI, ABC):
         try:
             block_data = dict(self.web3.eth.get_block(block_id))
         except Exception as err:
-            raise BlockNotFoundError(block_id) from err
+            raise BlockNotFoundError(block_id, reason=str(err)) from err
 
         # Some nodes (like anvil) will not have a base fee if set to 0.
         if "baseFeePerGas" in block_data and block_data.get("baseFeePerGas") is None:
@@ -1611,7 +1611,7 @@ class SubprocessProvider(ProviderAPI):
         # unless running tests with `disconnect_providers_after: false`.
         disconnect_after = (
             self._test_runner is None
-            or self.config_manager.get_config("test").disconnect_provider_after
+            or self.config_manager.get_config("test").disconnect_providers_after
         )
         if disconnect_after:
             atexit.register(self.disconnect)
