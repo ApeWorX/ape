@@ -1611,7 +1611,7 @@ class SubprocessProvider(ProviderAPI):
         # unless running tests with `disconnect_providers_after: false`.
         disconnect_after = (
             self._test_runner is None
-            or self.config_manager.get_config("test").disconnect_provider_after
+            or self.config_manager.get_config("test").disconnect_providers_after
         )
         if disconnect_after:
             atexit.register(self.disconnect)
