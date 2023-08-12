@@ -16,7 +16,7 @@ from ape.exceptions import (
     ContractError,
     ContractLogicError,
     CustomError,
-    SendingFundsToNonPayableConstructor,
+    SendingFundsToNonPayableConstructorError,
 )
 from ape.types import AddressType
 from ape_ethereum.transactions import TransactionStatusEnum
@@ -857,7 +857,7 @@ def test_sending_funds_to_non_payable_constructor_by_contractContainerDeploy(
     solidity_contract_container, owner
 ):
     with pytest.raises(
-        SendingFundsToNonPayableConstructor, match="Sending funds to a non-payable constructor."
+        SendingFundsToNonPayableConstructorError, match="Sending funds to a non-payable constructor."
     ):
         solidity_contract_container.deploy(1, sender=owner, value="1 ether")
 
@@ -866,6 +866,6 @@ def test_sending_funds_to_non_payable_constructor_by_accountDeploy(
     solidity_contract_container, owner
 ):
     with pytest.raises(
-        SendingFundsToNonPayableConstructor, match="Sending funds to a non-payable constructor."
+        SendingFundsToNonPayableConstructorError, match="Sending funds to a non-payable constructor."
     ):
         owner.deploy(solidity_contract_container, 1, value="1 ether")

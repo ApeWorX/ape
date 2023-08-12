@@ -826,7 +826,7 @@ def _get_custom_python_traceback(
     return frames[-1]
 
 
-class SendingFundsToNonPayableConstructor(ApeException):
+class SendingFundsToNonPayableConstructorError(ApeException):
     """
     Raises when sending funds to a non-payable constructor
     """
