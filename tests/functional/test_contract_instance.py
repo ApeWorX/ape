@@ -853,8 +853,19 @@ def test_contract_declared_from_blueprint(
     assert not receipt.failed
 
 
-def test_sending_funds_to_non_payable_constructor(solidity_contract_container, owner):
+def test_sending_funds_to_non_payable_constructor_by_contractContainerDeploy(
+    solidity_contract_container, owner
+):
     with pytest.raises(
         SendingFundsToNonPayableConstructor, match="Sending funds to a non-payable constructor."
     ):
-        owner.deploy(solidity_contract_container, value="1 ether")
+        solidity_contract_container.deploy(1, sender=owner, value="1 ether")
+
+
+def test_sending_funds_to_non_payable_constructor_by_accountDeploy(
+    solidity_contract_container, owner
+):
+    with pytest.raises(
+        SendingFundsToNonPayableConstructor, match="Sending funds to a non-payable constructor."
+    ):
+        owner.deploy(solidity_contract_container, 1, value="1 ether")

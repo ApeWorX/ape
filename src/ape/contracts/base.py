@@ -19,8 +19,8 @@ from ape.exceptions import (
     ContractError,
     ContractLogicError,
     CustomError,
-    SendingFundsToNonPayableConstructor,
     TransactionNotFoundError,
+    SendingFundsToNonPayableConstructor,
 )
 from ape.logging import logger
 from ape.types import AddressType, ContractLog, LogFilter, MockContractLog
