@@ -131,7 +131,7 @@ class DecodingError(ContractError):
         super().__init__(message)
 
 
-class MethodNonPayableError(ApeException):
+class MethodNonPayableError(ContractError):
     """
     Raises when sending funds to a non-payable constructor
     """
