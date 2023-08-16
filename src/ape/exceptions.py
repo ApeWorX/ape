@@ -133,7 +133,7 @@ class DecodingError(ContractError):
 
 class MethodNonPayableError(ContractError):
     """
-    Raises when sending funds to a non-payable constructor
+    Raises when sending funds to a non-payable method
     """
 
 
