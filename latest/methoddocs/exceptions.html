@@ -181,6 +181,7 @@
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="#ape.exceptions.DecodingError"><code class="docutils literal notranslate"><span class="pre">DecodingError</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#ape.exceptions.MethodNonPayableError"><code class="docutils literal notranslate"><span class="pre">MethodNonPayableError</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#ape.exceptions.NetworkError"><code class="docutils literal notranslate"><span class="pre">NetworkError</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#ape.exceptions.NetworkMismatchError"><code class="docutils literal notranslate"><span class="pre">NetworkMismatchError</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#ape.exceptions.NetworkNotFoundError"><code class="docutils literal notranslate"><span class="pre">NetworkNotFoundError</span></code></a></li>
@@ -387,6 +388,13 @@ provider-specific use-cases for raising this error.</p>
 <dd><p>Bases: <a class="reference internal" href="#ape.exceptions.ContractError" title="ape.exceptions.ContractError"><code class="xref py py-class docutils literal notranslate"><span class="pre">ContractError</span></code></a></p>
 <p>Raised when issues occur while decoding data from
 a contract call, transaction, or event.</p>
+</dd></dl>
+
+<dl class="py exception">
+<dt class="sig sig-object py" id="ape.exceptions.MethodNonPayableError">
+<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ape.exceptions.</span></span><span class="sig-name descname"><span class="pre">MethodNonPayableError</span></span><a class="headerlink" href="#ape.exceptions.MethodNonPayableError" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ape.exceptions.ContractError" title="ape.exceptions.ContractError"><code class="xref py py-class docutils literal notranslate"><span class="pre">ContractError</span></code></a></p>
+<p>Raises when sending funds to a non-payable method</p>
 </dd></dl>
 
 <dl class="py exception">
