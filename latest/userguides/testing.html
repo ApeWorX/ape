@@ -299,6 +299,13 @@ Access each <a class="reference external" href="../methoddocs/api.html?highlight
 <span class="w">  </span><span class="nt">number_of_accounts</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">5</span>
 </pre></div>
 </div>
+<p>If you are running tests against <code class="docutils literal notranslate"><span class="pre">anvil</span></code>, your generated test accounts may not correspond to the <code class="docutils literal notranslate"><span class="pre">anvil</span></code>’s default generated accounts despite using the same mnemonic. In such a case, you are able to specify a custom derivation path in <code class="docutils literal notranslate"><span class="pre">ape-config.yaml</span></code>:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">test</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">mnemonic</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">test test test test test test test test test test test junk</span>
+<span class="w">  </span><span class="nt">number_of_accounts</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">5</span>
+<span class="w">  </span><span class="nt">hd_path</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;m/44&#39;/60&#39;/0&#39;/0/{}&quot;</span>
+</pre></div>
+</div>
 <p>If you are using a fork-provider, such as <a class="reference external" href="https://github.com/ApeWorX/ape-hardhat">Hardhat</a>, you can use impersonated accounts by accessing random addresses off the fixture:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nd">@pytest</span><span class="o">.</span><span class="n">fixture</span>
 <span class="k">def</span> <span class="nf">vitalik</span><span class="p">(</span><span class="n">accounts</span><span class="p">):</span>

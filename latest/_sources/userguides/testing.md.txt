@@ -98,6 +98,15 @@ test:
   number_of_accounts: 5
 ```
 
+If you are running tests against `anvil`, your generated test accounts may not correspond to the `anvil`'s default generated accounts despite using the same mnemonic. In such a case, you are able to specify a custom derivation path in `ape-config.yaml`:
+
+```yaml
+test:
+  mnemonic: test test test test test test test test test test test junk
+  number_of_accounts: 5
+  hd_path: "m/44'/60'/0'/0/{}"
+```
+
 If you are using a fork-provider, such as [Hardhat](https://github.com/ApeWorX/ape-hardhat), you can use impersonated accounts by accessing random addresses off the fixture:
 
 ```python
