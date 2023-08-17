@@ -44,8 +44,9 @@ class ProxyType(IntEnum):
     ZeroAge = auto()  # a more-minimal proxy
 
     # https://github.com/wighawag/clones-with-immutable-args/blob/master/src/ClonesWithImmutableArgs.sol
-    # https://github.com/emo-eth/create2-clones-with-immutable-args/blob/main/src/Create2ClonesWithImmutableArgs.sol
     CWIA = auto()  # clones with immutable args
+    # https://github.com/wighawag/clones-with-immutable-args/blob/bb93749/src/ClonesWithCallData.sol
+    OldCWIA = auto()
 
     # https://github.com/Vectorized/solady/blob/main/src/utils/LibClone.sol
     SoladyPush0 = auto()  # solady push0 minimal proxy

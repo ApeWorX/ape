@@ -131,6 +131,12 @@ class DecodingError(ContractError):
         super().__init__(message)
 
 
+class MethodNonPayableError(ContractError):
+    """
+    Raises when sending funds to a non-payable method
+    """
+
+
 class TransactionError(ContractError):
     """
     Raised when issues occur related to transactions.

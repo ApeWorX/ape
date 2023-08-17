@@ -234,6 +234,7 @@ class Ethereum(EcosystemAPI):
             ProxyType.Vyper: r"^366000600037611000600036600073(.{40})5af4602c57600080fd5b6110006000f3",  # noqa: E501
             ProxyType.VyperBeta: r"^366000600037611000600036600073(.{40})5af41558576110006000f3",
             ProxyType.CWIA: r"^3d3d3d3d363d3d3761.{4}603736393661.{4}013d73(.{40})5af43d3d93803e603557fd5bf3.*",  # noqa: E501
+            ProxyType.OldCWIA: r"^363d3d3761.{4}603836393d3d3d3661.{4}013d73(.{40})5af43d82803e903d91603657fd5bf3.*",  # noqa: E501
             ProxyType.SudoswapCWIA: r"^3d3d3d3d363d3d37605160353639366051013d73(.{40})5af43d3d93803e603357fd5bf3.*",  # noqa: E501
             ProxyType.SoladyCWIA: r"36602c57343d527f9e4ac34f21c619cefc926c8bd93b54bf5a39c7ab2127a895af1cc0691d7e3dff593da1005b363d3d373d3d3d3d61.{4}806062363936013d73(.{40})5af43d3d93803e606057fd5bf3.*",  # noqa: E501
             ProxyType.SoladyPush0: r"^5f5f365f5f37365f73(.{40})5af43d5f5f3e6029573d5ffd5b3d5ff3",

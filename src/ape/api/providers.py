@@ -388,6 +388,27 @@ class ProviderAPI(BaseInterfaceModel):
             Iterator[:class:`~ape.api.transactions.ReceiptAPI`]
         """
 
+    @raises_not_implemented
+    def get_contract_creation_receipts(  # type: ignore[empty-body]
+        self,
+        address: AddressType,
+        start_block: int = 0,
+        stop_block: int = -1,
+        contract_code: Optional[HexBytes] = None,
+    ) -> Iterator[ReceiptAPI]:
+        """
+        Get all receipts where a contract address was created or re-created.
+
+        Args:
+            address (``AddressType``): The address of the account.
+            start_block (int): The block number to start the search with.
+            stop_block (int): The block number to stop the search with.
+            contract_code (Optional[bytes]): The code of the contract at the stop block.
+
+        Returns:
+            Iterator[:class:`~ape.api.transactions.ReceiptAPI`]
+        """
+
     @abstractmethod
     def send_transaction(self, txn: TransactionAPI) -> ReceiptAPI:
         """
@@ -1266,6 +1287,53 @@ class Web3Provider(ProviderAPI, ABC):
         for start_block in range(start, stop + 1, page):
             stop_block = min(stop, start_block + page - 1)
             yield start_block, stop_block
+
+    def get_contract_creation_receipts(  # type: ignore[empty-body]
+        self,
+        address: AddressType,
+        start_block: int = 0,
+        stop_block: Optional[int] = None,
+        contract_code: Optional[HexBytes] = None,
+    ) -> Iterator[ReceiptAPI]:
+        if stop_block is None:
+            stop_block = self.chain_manager.blocks.height
+
+        if contract_code is None:
+            contract_code = HexBytes(self.get_code(address))
+
+        mid_block = (stop_block - start_block) // 2 + start_block
+        # NOTE: biased towards mid_block == start_block
+
+        if start_block == mid_block:
+            for tx in self.chain_manager.blocks[mid_block].transactions:
+                if (receipt := tx.receipt) and receipt.contract_address == address:
+                    yield receipt
+
+            if mid_block + 1 <= stop_block:
+                yield from self.get_contract_creation_receipts(
+                    address,
+                    start_block=mid_block + 1,
+                    stop_block=stop_block,
+                    contract_code=contract_code,
+                )
+
+        # TODO: Handle when code is nonzero but doesn't match
+        # TODO: Handle when code is empty after it's not (re-init)
+        elif HexBytes(self.get_code(address, block_id=mid_block)) == contract_code:
+            yield from self.get_contract_creation_receipts(
+                address,
+                start_block=start_block,
+                stop_block=mid_block,
+                contract_code=contract_code,
+            )
+
+        elif mid_block + 1 <= stop_block:
+            yield from self.get_contract_creation_receipts(
+                address,
+                start_block=mid_block + 1,
+                stop_block=stop_block,
+                contract_code=contract_code,
+            )
 
     def get_contract_logs(self, log_filter: LogFilter) -> Iterator[ContractLog]:
         height = self.chain_manager.blocks.height
