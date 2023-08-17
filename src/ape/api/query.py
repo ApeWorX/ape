@@ -13,6 +13,7 @@ QueryType = Union[
     "BlockQuery",
     "BlockTransactionQuery",
     "AccountTransactionQuery",
+    "ContractCreationQuery",
     "ContractEventQuery",
     "ContractMethodQuery",
 ]
@@ -147,6 +148,10 @@ class AccountTransactionQuery(_BaseQuery):
             )
 
         return values
+
+
+class ContractCreationQuery(_BaseBlockQuery):
+    contract: AddressType
 
 
 class ContractEventQuery(_BaseBlockQuery):
