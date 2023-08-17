@@ -7,7 +7,13 @@ from eth_account import Account
 
 from ape.api.address import BaseAddress
 from ape.api.transactions import ReceiptAPI, TransactionAPI
-from ape.exceptions import AccountsError, AliasAlreadyInUseError, SignatureError, TransactionError
+from ape.exceptions import (
+    AccountsError,
+    AliasAlreadyInUseError,
+    MethodNonPayableError,
+    SignatureError,
+    TransactionError,
+)
 from ape.logging import logger
 from ape.types import AddressType, MessageSignature, SignableMessage
 from ape.utils import BaseInterfaceModel, abstractmethod
@@ -215,6 +221,9 @@ class AccountAPI(BaseInterfaceModel, BaseAddress):
             :class:`~ape.contracts.ContractInstance`: An instance of the deployed contract.
         """
         txn = contract(*args, **kwargs)
+        if kwargs.get("value") and not contract.contract_type.constructor.is_payable:
+            raise MethodNonPayableError("Sending funds to a non-payable constructor.")
+
         txn.sender = self.address
         receipt = contract._cache_wrap(lambda: self.call(txn, **kwargs))
         if not (address := receipt.contract_address):

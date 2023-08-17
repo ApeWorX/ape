@@ -16,6 +16,7 @@ from ape.exceptions import (
     ContractError,
     ContractLogicError,
     CustomError,
+    MethodNonPayableError,
 )
 from ape.types import AddressType
 from ape_ethereum.transactions import TransactionStatusEnum
@@ -850,3 +851,23 @@ def test_contract_declared_from_blueprint(
     # Ensure we can invoke a method on that contract.
     receipt = instance.setAddress(sender, sender=sender)
     assert not receipt.failed
+
+
+def test_sending_funds_to_non_payable_constructor_by_contractContainerDeploy(
+    solidity_contract_container, owner
+):
+    with pytest.raises(
+        MethodNonPayableError,
+        match="Sending funds to a non-payable constructor.",
+    ):
+        solidity_contract_container.deploy(1, sender=owner, value="1 ether")
+
+
+def test_sending_funds_to_non_payable_constructor_by_accountDeploy(
+    solidity_contract_container, owner
+):
+    with pytest.raises(
+        MethodNonPayableError,
+        match="Sending funds to a non-payable constructor.",
+    ):
+        owner.deploy(solidity_contract_container, 1, value="1 ether")
