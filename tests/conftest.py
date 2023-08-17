@@ -14,9 +14,11 @@ import ape
 from ape.exceptions import APINotImplementedError, UnknownSnapshotError
 from ape.managers.config import CONFIG_FILE_NAME
 from ape.types import AddressType
+from ape.utils import ZERO_ADDRESS
 
 # NOTE: Ensure that we don't use local paths for these
-ape.config.DATA_FOLDER = Path(mkdtemp()).resolve()
+DATA_FOLDER = Path(mkdtemp()).resolve()
+ape.config.DATA_FOLDER = DATA_FOLDER
 PROJECT_FOLDER = Path(mkdtemp()).resolve()
 ape.config.PROJECT_FOLDER = PROJECT_FOLDER
 
@@ -50,7 +52,7 @@ def convert(chain):
 
 @pytest.fixture(scope="session")
 def data_folder(config):
-    return config.DATA_FOLDER
+    return DATA_FOLDER
 
 
 @pytest.fixture(scope="session")
@@ -186,8 +188,9 @@ def networks_connected_to_tester(eth_tester_provider):
 @pytest.fixture
 def geth_provider(networks):
     if not networks.active_provider or networks.provider.name != "geth":
+        test_acct_100 = "0x63c7f11162dBFC374DC6f5C0B3Aa26C618846a85"
         with networks.ethereum.local.use_provider(
-            "geth", provider_settings={"uri": GETH_URI}
+            "geth", provider_settings={"uri": GETH_URI, "extra_funded_accounts": [test_acct_100]}
         ) as provider:
             yield provider
     else:
@@ -318,7 +321,12 @@ def skip_if_plugin_installed(*plugin_names: str):
             if name in ("solidity", "vyper"):
                 compiler = ape.compilers.get_compiler(name)
                 if compiler:
-                    return pytest.mark.skip(msg_f.format(name))
+
+                    def test_skip_from_compiler():
+                        pytest.mark.skip(msg_f.format(name))
+
+                    # NOTE: By returning a function, we avoid a collection warning.
+                    return test_skip_from_compiler
 
             # Converters
             elif name in ("ens",):
@@ -326,9 +334,17 @@ def skip_if_plugin_installed(*plugin_names: str):
                     type(n).__name__ for n in ape.chain.conversion_manager._converters[AddressType]
                 ]
                 if any(x.startswith(name.upper()) for x in address_converters):
-                    return pytest.mark.skip(msg_f.format(name))
 
+                    def test_skip_from_converter():
+                        pytest.mark.skip(msg_f.format(name))
+
+                    return test_skip_from_converter
         # noop
         return fn
 
     return wrapper
+
+
+@pytest.fixture
+def zero_address():
+    return ZERO_ADDRESS

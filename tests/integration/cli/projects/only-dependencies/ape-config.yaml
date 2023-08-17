@@ -2,3 +2,8 @@ dependencies:
   - name: dependency-in-project-only
     local: ./dependency_in_project_only
     contracts_folder: sources
+
+compile:
+  # NOTE: this should say `include_dependencies: false` below.
+  # (it gets replaced with `true` in a test temporarily)
+  include_dependencies: false

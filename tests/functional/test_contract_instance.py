@@ -11,13 +11,14 @@ from ape.api import TransactionAPI
 from ape.contracts import ContractInstance
 from ape.exceptions import (
     APINotImplementedError,
+    ArgumentsLengthError,
     ChainError,
     ContractError,
     ContractLogicError,
     CustomError,
+    MethodNonPayableError,
 )
 from ape.types import AddressType
-from ape.utils import ZERO_ADDRESS
 from ape_ethereum.transactions import TransactionStatusEnum
 
 MATCH_TEST_CONTRACT = re.compile(r"<TestContract((Sol)|(Vy))")
@@ -56,9 +57,24 @@ def test_eq(vyper_contract_instance, chain):
     assert other == vyper_contract_instance
 
 
-def test_contract_calls(owner, contract_instance):
+def test_contract_transactions(owner, contract_instance):
     contract_instance.setNumber(2, sender=owner)
     assert contract_instance.myNumber() == 2
+
+
+def test_wrong_number_of_arguments(owner, contract_instance):
+    if "sol" in contract_instance.contract_type.source_id.lower():
+        second = r"\n\t.*setNumber\(uint256 num, address _address\).*"
+    else:
+        second = ""
+
+    expected = (
+        r"The number of the given arguments \(4\) do not match what is defined in the ABI:\n"
+        r"\n\t.*setNumber\(uint256 num\).*"
+        f"{second}"
+    )
+    with pytest.raises(ArgumentsLengthError, match=expected):
+        contract_instance.setNumber(2, 3, 5, 6, sender=owner)
 
 
 @pytest.mark.parametrize("type_param", (0, "0", HexBytes(0)))
@@ -97,9 +113,17 @@ def test_call_use_block_identifier(contract_instance, owner, chain):
     actual = contract_instance.myNumber(block_identifier=block_id)
     assert actual == expected
 
+    # Ensure alias "block_id" works
+    actual = contract_instance.myNumber(block_id=block_id)
+    assert actual == expected
+
     # Ensure works with hex
     block_id = to_hex(block_id)
     actual = contract_instance.myNumber(block_identifier=block_id)
+    assert actual == expected
+
+    # Ensure alias "block_id" works.
+    actual = contract_instance.myNumber(block_id=block_id)
     assert actual == expected
 
     # Ensure works keywords like "latest"
@@ -167,8 +191,9 @@ def test_call_using_block_identifier(
     contract.setNumber(1, sender=owner)
     height = chain.blocks.height
     contract.setNumber(33, sender=owner)
-    actual = contract.myNumber(block_identifier=height)
-    assert actual == 1
+    actual_0 = contract.myNumber(block_identifier=height)
+    actual_1 = contract.myNumber(block_id=height)
+    assert actual_0 == actual_1 == 1
 
 
 def test_repr(vyper_contract_instance):
@@ -202,7 +227,7 @@ def test_structs(contract_instance, sender, chain):
 
     # Expected: b == block.prevhash.
     assert actual.b == actual["b"] == actual[1] == actual_prev_block == chain.blocks[-2].hash
-    assert type(actual.b) == HexBytes
+    assert type(actual.b) is HexBytes
 
 
 def test_nested_structs(contract_instance, sender, chain):
@@ -229,7 +254,7 @@ def test_nested_structs(contract_instance, sender, chain):
         == actual_prev_block_1
         == chain.blocks[-2].hash
     )
-    assert type(actual_1.t.b) == HexBytes
+    assert type(actual_1.t.b) is HexBytes
     assert (
         actual_2.t.b
         == actual_2.t["b"]
@@ -237,7 +262,7 @@ def test_nested_structs(contract_instance, sender, chain):
         == actual_prev_block_2
         == chain.blocks[-2].hash
     )
-    assert type(actual_2.t.b) == HexBytes
+    assert type(actual_2.t.b) is HexBytes
 
 
 def test_nested_structs_in_tuples(contract_instance, sender, chain):
@@ -268,10 +293,12 @@ def test_get_empty_tuple_of_dyn_array_structs(contract_instance):
     assert actual == expected
 
 
-def test_get_empty_tuple_of_array_of_structs_and_dyn_array_of_structs(contract_instance):
+def test_get_empty_tuple_of_array_of_structs_and_dyn_array_of_structs(
+    contract_instance, zero_address
+):
     actual = contract_instance.getEmptyTupleOfArrayOfStructsAndDynArrayOfStructs()
     expected_fixed_array = (
-        ZERO_ADDRESS,
+        zero_address,
         HexBytes("0x0000000000000000000000000000000000000000000000000000000000000000"),
     )
     assert actual[0] == [expected_fixed_array, expected_fixed_array, expected_fixed_array]
@@ -422,12 +449,12 @@ def test_get_unnamed_tuple(contract_instance):
     assert actual == (0, 0)
 
 
-def test_get_tuple_of_address_array(contract_instance):
+def test_get_tuple_of_address_array(contract_instance, zero_address):
     actual = contract_instance.getTupleOfAddressArray()
     assert len(actual) == 2
     assert len(actual[0]) == 20
     assert is_checksum_address(actual[0][0])
-    assert all(x == ZERO_ADDRESS for x in actual[0][1:])
+    assert all(x == zero_address for x in actual[0][1:])
     assert actual[1] == [0] * 20
 
 
@@ -457,13 +484,13 @@ def test_get_nested_array_mixed_dynamic(contract_instance, owner):
     assert actual[2] == actual[3] == actual[4] == []
 
 
-def test_get_nested_address_array(contract_instance, sender):
+def test_get_nested_address_array(contract_instance, sender, zero_address):
     actual = contract_instance.getNestedAddressArray()
     assert len(actual) == 2
     assert len(actual[0]) == 3
     assert len(actual[1]) == 3
     assert actual[0] == [sender, sender, sender]
-    assert actual[1] == [ZERO_ADDRESS, ZERO_ADDRESS, ZERO_ADDRESS]
+    assert actual[1] == [zero_address, zero_address, zero_address]
 
 
 def test_call_transaction(contract_instance, owner, chain):
@@ -505,6 +532,16 @@ def test_receipt(contract_instance, owner):
     assert receipt.txn_hash == contract_instance.txn_hash
     assert receipt.contract_address == contract_instance.address
     assert receipt.sender == owner
+
+
+def test_receipt_when_needs_brute_force(vyper_contract_instance, owner):
+    # Force it to use the brute-force approach.
+    vyper_contract_instance._cached_receipt = None
+    vyper_contract_instance.txn_hash = None
+
+    actual = vyper_contract_instance.receipt.contract_address
+    expected = vyper_contract_instance.address
+    assert actual == expected
 
 
 def test_from_receipt_when_receipt_not_deploy(contract_instance, owner):
@@ -797,3 +834,40 @@ def test_private_transaction(vyper_contract_instance, owner):
 def test_private_transaction_live_network(vyper_contract_instance, owner, dummy_live_network):
     with pytest.raises(APINotImplementedError):
         vyper_contract_instance.setNumber(2, sender=owner, private=True)
+
+
+def test_contract_declared_from_blueprint(
+    vyper_blueprint, vyper_factory, vyper_contract_container, sender
+):
+    # Call the factory method that calls `create_from_blueprint()` and logs an events
+    # with the resulting address. The first arg is necessary calldata.
+    receipt = vyper_factory.create_contract(vyper_blueprint, 321, sender=sender)
+
+    # Create a contract instance at this new address using the contract type
+    # from the blueprint.
+    address = receipt.events[-1].target
+    instance = vyper_contract_container.at(address)
+
+    # Ensure we can invoke a method on that contract.
+    receipt = instance.setAddress(sender, sender=sender)
+    assert not receipt.failed
+
+
+def test_sending_funds_to_non_payable_constructor_by_contractContainerDeploy(
+    solidity_contract_container, owner
+):
+    with pytest.raises(
+        MethodNonPayableError,
+        match="Sending funds to a non-payable constructor.",
+    ):
+        solidity_contract_container.deploy(1, sender=owner, value="1 ether")
+
+
+def test_sending_funds_to_non_payable_constructor_by_accountDeploy(
+    solidity_contract_container, owner
+):
+    with pytest.raises(
+        MethodNonPayableError,
+        match="Sending funds to a non-payable constructor.",
+    ):
+        owner.deploy(solidity_contract_container, 1, value="1 ether")

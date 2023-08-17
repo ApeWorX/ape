@@ -5,7 +5,7 @@ from typing import Dict, Iterator, List, Optional
 import pytest
 
 from ape.api import ReceiptAPI, TestAccountAPI
-from ape.exceptions import ChainError
+from ape.exceptions import BlockNotFoundError, ChainError
 from ape.logging import logger
 from ape.managers.chain import ChainManager
 from ape.managers.networks import NetworkManager
@@ -28,13 +28,10 @@ class PytestApeFixtures(ManagerAccessMixin):
         self.receipt_capture = receipt_capture
 
     @cached_property
-    def _using_traces(self) -> bool:
+    def _track_transactions(self) -> bool:
+        has_reason = self.config_wrapper.track_gas or self.config_wrapper.track_coverage
         return (
-            self.network_manager.provider is not None
-            and self.provider.is_connected
-            and self.provider.supports_tracing
-            # Has reason to use traces?
-            and self.config_wrapper.track_gas
+            self.network_manager.provider is not None and self.provider.is_connected and has_reason
         )
 
     @pytest.fixture(scope="session")
@@ -91,15 +88,23 @@ class PytestApeFixtures(ManagerAccessMixin):
         When tracing support is available, will also assist in capturing receipts.
         """
 
-        snapshot_id = self._snapshot()
+        try:
+            snapshot_id = self._snapshot()
+        except BlockNotFoundError:
+            snapshot_id = None
 
-        if self._using_traces:
-            with self.receipt_capture:
+        if self._track_transactions:
+            try:
+                with self.receipt_capture:
+                    yield
+
+            except BlockNotFoundError:
                 yield
+
         else:
             yield
 
-        if snapshot_id:
+        if snapshot_id is not None:
             self._restore(snapshot_id)
 
     # isolation fixtures
@@ -157,10 +162,18 @@ class ReceiptCapture(ManagerAccessMixin):
 
     def capture_range(self, start_block: int, stop_block: int):
         blocks = self.chain_manager.blocks.range(start_block, stop_block + 1)
-        transactions = [t for b in blocks for t in b.transactions if t.receiver and t.sender]
+        transactions = [t for b in blocks for t in b.transactions]
 
         for txn in transactions:
-            self.capture(txn.txn_hash.hex())
+            try:
+                txn_hash = txn.txn_hash.hex()
+            except Exception:
+                # Might have been from an impersonated account.
+                # Those txns need to be added separatly, same as tracing calls.
+                # Likely, it was already accounted before this point.
+                continue
+
+            self.capture(txn_hash)
 
     def capture(self, transaction_hash: str):
         try:
@@ -171,9 +184,8 @@ class ReceiptCapture(ManagerAccessMixin):
         if not receipt:
             return
 
-        contract_address = receipt.receiver
+        contract_address = receipt.receiver or receipt.contract_address
         if not contract_address:
-            # TODO: Handle deploy receipts once trace supports it
             return
 
         contract_type = self.chain_manager.contracts.get(contract_address)
@@ -194,11 +206,11 @@ class ReceiptCapture(ManagerAccessMixin):
             return
 
         self.receipt_map[source_id][transaction_hash] = receipt
-        if not self.config_wrapper.track_gas:
-            # Only capture trace if has a reason to.
-            return
+        if self.config_wrapper.track_gas:
+            receipt.track_gas()
 
-        receipt.track_gas()
+        if self.config_wrapper.track_coverage:
+            receipt.track_coverage()
 
     def clear(self):
         self.receipt_map = {}

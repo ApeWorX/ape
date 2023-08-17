@@ -1,17 +1,18 @@
 from pathlib import Path
+from typing import Optional
 
 import click
 import pytest
 from _pytest._code.code import Traceback as PytestTraceback
 from rich import print as rich_print
 
-import ape
 from ape.api import ProviderContextManager
 from ape.logging import LogLevel
 from ape.pytest.config import ConfigWrapper
-from ape.pytest.contextmanagers import RevertsContextManager
+from ape.pytest.coverage import CoverageTracker
 from ape.pytest.fixtures import ReceiptCapture
 from ape.pytest.gas import GasTracker
+from ape.types.coverage import CoverageReport
 from ape.utils import ManagerAccessMixin
 from ape_console._cli import console
 
@@ -22,6 +23,7 @@ class PytestApeRunner(ManagerAccessMixin):
         config_wrapper: ConfigWrapper,
         receipt_capture: ReceiptCapture,
         gas_tracker: GasTracker,
+        coverage_tracker: CoverageTracker,
     ):
         self.config_wrapper = config_wrapper
         self.receipt_capture = receipt_capture
@@ -30,12 +32,15 @@ class PytestApeRunner(ManagerAccessMixin):
         # Ensure the gas report starts off None for this runner.
         gas_tracker.session_gas_report = None
         self.gas_tracker = gas_tracker
-
-        ape.reverts = RevertsContextManager  # type: ignore
+        self.coverage_tracker = coverage_tracker
 
     @property
     def _provider_context(self) -> ProviderContextManager:
         return self.network_manager.parse_network_choice(self.config_wrapper.network)
+
+    @property
+    def _coverage_report(self) -> Optional[CoverageReport]:
+        return self.coverage_tracker.data.report if self.coverage_tracker.data else None
 
     def pytest_exception_interact(self, report, call):
         """
@@ -114,6 +119,11 @@ class PytestApeRunner(ManagerAccessMixin):
             if capman:
                 capman.resume_global_capture()
 
+        if type(call.excinfo.value) in (SystemExit, KeyboardInterrupt):
+            # This will show the rest of Ape Test output as if the
+            # tests had stopped here.
+            pytest.exit("`ape test` exited.")
+
     def pytest_runtest_setup(self, item):
         """
         By default insert isolation fixtures into each test cases list of fixtures
@@ -123,6 +133,7 @@ class PytestApeRunner(ManagerAccessMixin):
         """
         if (
             self.config_wrapper.isolation is False
+            or isinstance(item, pytest.DoctestItem)  # doctests don't have fixturenames
             or "_function_isolation" in item.fixturenames  # prevent double injection
         ):
             # isolation is disabled via cmdline option
@@ -165,6 +176,9 @@ class PytestApeRunner(ManagerAccessMixin):
         for end users who are performing tests with ape.
         """
         reporter = self.config_wrapper.get_pytest_plugin("terminalreporter")
+        if not reporter:
+            return
+
         warnings = reporter.stats.pop("warnings", [])
         warnings = [i for i in warnings if "PytestAssertRewriteWarning" not in i.message]
         if warnings and not self.config_wrapper.disable_warnings:
@@ -199,23 +213,52 @@ class PytestApeRunner(ManagerAccessMixin):
         Add a section to terminal summary reporting.
         When ``--gas`` is active, outputs the gas profile report.
         """
-        if not self.config_wrapper.track_gas:
-            return
+        if self.config_wrapper.track_gas:
+            self._show_gas_report(terminalreporter)
+        if self.config_wrapper.track_coverage:
+            self._show_coverage_report(terminalreporter)
 
+    def _show_gas_report(self, terminalreporter):
         terminalreporter.section("Gas Profile")
-
-        if not self.provider.supports_tracing:
-            terminalreporter.write_line(
-                f"{LogLevel.ERROR.name}: Provider '{self.provider.name}' does not support "
-                f"transaction tracing and is unable to display a gas profile.",
-                red=True,
-            )
+        if not self.network_manager.active_provider:
+            # Happens if never needed to connect (no tests)
             return
 
+        self._log_tracing_support(
+            terminalreporter, "The gas profile is limited to receipt-level data."
+        )
         if not self.gas_tracker.show_session_gas():
             terminalreporter.write_line(
                 f"{LogLevel.WARNING.name}: No gas usage data found.", yellow=True
             )
+
+    def _show_coverage_report(self, terminalreporter):
+        if self.config_wrapper.ape_test_config.coverage.reports.terminal:
+            terminalreporter.section("Coverage Profile")
+
+        if not self.network_manager.active_provider:
+            # Happens if never needed to connect (no tests)
+            return
+
+        self._log_tracing_support(
+            terminalreporter, "Coverage is limited to receipt-level function coverage."
+        )
+        if not self.coverage_tracker.show_session_coverage():
+            terminalreporter.write_line(
+                f"{LogLevel.WARNING.name}: No coverage data found. "
+                f"Try re-compiling your contracts using the latest compiler plugins",
+                yellow=True,
+            )
+
+    def _log_tracing_support(self, terminalreporter, extra_warning: str):
+        if self.provider.supports_tracing:
+            return
+
+        message = (
+            f"{LogLevel.ERROR.name}: Provider '{self.provider.name}' does not support "
+            f"transaction tracing. {extra_warning}"
+        )
+        terminalreporter.write_line(message, red=True)
 
     def pytest_unconfigure(self):
         if self._provider_is_connected and self.config_wrapper.disconnect_providers_after:
@@ -227,3 +270,4 @@ class PytestApeRunner(ManagerAccessMixin):
         self.receipt_capture.clear()
         self.chain_manager.contracts.clear_local_caches()
         self.gas_tracker.session_gas_report = None
+        self.coverage_tracker.reset()

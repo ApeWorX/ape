@@ -5,14 +5,15 @@ from typing import Optional, cast
 from eth.exceptions import HeaderNotFound
 from eth_tester.backends import PyEVMBackend  # type: ignore
 from eth_tester.exceptions import TransactionFailed  # type: ignore
+from eth_utils import is_0x_prefixed
 from eth_utils.exceptions import ValidationError
 from ethpm_types import HexBytes
-from lazyasd import LazyObject  # type: ignore
 from web3 import EthereumTesterProvider, Web3
-from web3.providers.eth_tester.defaults import API_ENDPOINTS
+from web3.exceptions import ContractPanicError
+from web3.providers.eth_tester.defaults import API_ENDPOINTS, static_return
 from web3.types import TxParams
 
-from ape.api import ReceiptAPI, TestProviderAPI, TransactionAPI, Web3Provider
+from ape.api import PluginConfig, ReceiptAPI, TestProviderAPI, TransactionAPI, Web3Provider
 from ape.exceptions import (
     ContractLogicError,
     ProviderError,
@@ -22,9 +23,11 @@ from ape.exceptions import (
     VirtualMachineError,
 )
 from ape.types import SnapshotID
-from ape.utils import gas_estimation_error_message
+from ape.utils import DEFAULT_TEST_CHAIN_ID, gas_estimation_error_message
 
-CHAIN_ID = LazyObject(lambda: API_ENDPOINTS["eth"]["chainId"](), globals(), "CHAIN_ID")
+
+class EthTesterProviderConfig(PluginConfig):
+    chain_id: int = DEFAULT_TEST_CHAIN_ID
 
 
 class LocalProvider(TestProviderAPI, Web3Provider):
@@ -42,14 +45,21 @@ class LocalProvider(TestProviderAPI, Web3Provider):
         return self._evm_backend
 
     def connect(self):
+        chain_id = self.provider_settings.get("chain_id", self.config.provider.chain_id)
         if self._web3 is not None:
-            return
+            connected_chain_id = self.chain_id
+            if connected_chain_id == chain_id:
+                # Is already connected and settings have not changed.
+                return
 
         self._evm_backend = PyEVMBackend.from_mnemonic(
             mnemonic=self.config["mnemonic"],
             num_accounts=self.config["number_of_accounts"],
         )
-        self._web3 = Web3(EthereumTesterProvider(ethereum_tester=self._evm_backend))
+        endpoints = {**API_ENDPOINTS}
+        endpoints["eth"]["chainId"] = static_return(chain_id)
+        tester = EthereumTesterProvider(ethereum_tester=self._evm_backend, api_endpoints=endpoints)
+        self._web3 = Web3(tester)
 
     def disconnect(self):
         self.cached_chain_id = None
@@ -67,7 +77,7 @@ class LocalProvider(TestProviderAPI, Web3Provider):
             block = self.web3.eth.get_block("latest")
             return block["gasLimit"]
 
-        block_id = kwargs.pop("block_identifier", None)
+        block_id = kwargs.pop("block_identifier", kwargs.pop("block_id", None))
         estimate_gas = self.web3.eth.estimate_gas
         txn_dict = txn.dict()
         if txn_dict.get("gas") == "auto":
@@ -99,15 +109,16 @@ class LocalProvider(TestProviderAPI, Web3Provider):
 
     @property
     def chain_id(self) -> int:
-        if self.cached_chain_id is not None:
-            return self.cached_chain_id
-        elif hasattr(self.web3, "eth"):
-            chain_id = self.web3.eth.chain_id
-        else:
-            chain_id = CHAIN_ID  # type: ignore
+        try:
+            if self.cached_chain_id:
+                return self.cached_chain_id
 
-        self.cached_chain_id = chain_id
-        return chain_id
+            result = self._make_request("eth_chainId", [])
+            self.cached_chain_id = result
+            return result
+
+        except ProviderNotConnectedError:
+            return self.provider_settings.get("chain_id", self.config.provider.chain_id)
 
     @property
     def gas_price(self) -> int:
@@ -128,7 +139,7 @@ class LocalProvider(TestProviderAPI, Web3Provider):
 
     def send_call(self, txn: TransactionAPI, **kwargs) -> bytes:
         data = txn.dict(exclude_none=True)
-        block_id = kwargs.pop("block_identifier", None)
+        block_id = kwargs.pop("block_identifier", kwargs.pop("block_id", None))
         state = kwargs.pop("state_override", None)
         call_kwargs = {"block_identifier": block_id, "state_override": state}
 
@@ -141,11 +152,14 @@ class LocalProvider(TestProviderAPI, Web3Provider):
         tx_params = cast(TxParams, data)
 
         try:
-            return self.web3.eth.call(tx_params, **call_kwargs)
+            result = self.web3.eth.call(tx_params, **call_kwargs)
         except ValidationError as err:
             raise VirtualMachineError(base_err=err) from err
-        except TransactionFailed as err:
+        except (TransactionFailed, ContractPanicError) as err:
             raise self.get_virtual_machine_error(err, txn=txn) from err
+
+        self._increment_call_func_coverage_hit_count(txn)
+        return result
 
     def send_transaction(self, txn: TransactionAPI) -> ReceiptAPI:
         try:
@@ -157,6 +171,9 @@ class LocalProvider(TestProviderAPI, Web3Provider):
         receipt = self.get_receipt(
             txn_hash.hex(), required_confirmations=txn.required_confirmations or 0
         )
+
+        # NOTE: Caching must happen before error enrichment.
+        self.chain_manager.history.append(receipt)
 
         if receipt.failed:
             txn_dict = txn.dict()
@@ -170,7 +187,6 @@ class LocalProvider(TestProviderAPI, Web3Provider):
                 vm_err = self.get_virtual_machine_error(err, txn=receipt)
                 raise vm_err from err
 
-        self.chain_manager.history.append(receipt)
         return receipt
 
     def snapshot(self) -> SnapshotID:
@@ -223,6 +239,18 @@ class LocalProvider(TestProviderAPI, Web3Provider):
 
             else:
                 return VirtualMachineError(base_err=exception, **kwargs)
+
+        elif isinstance(exception, ContractPanicError):
+            # If the ape-solidity plugin is installed, we are able to enrich the data.
+            message = exception.message
+            raw_data = exception.data if isinstance(exception.data, str) else "0x"
+            error = ContractLogicError(base_err=exception, revert_message=raw_data, **kwargs)
+            enriched_error = self.compiler_manager.enrich_error(error)
+            if is_0x_prefixed(enriched_error.message):
+                # Failed to enrich. Use nicer message from web3.py.
+                enriched_error.message = message or enriched_error.message
+
+            return enriched_error
 
         elif isinstance(exception, TransactionFailed):
             err_message = str(exception).split("execution reverted: ")[-1] or None

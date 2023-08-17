@@ -1,4 +1,3 @@
-from fnmatch import fnmatch
 from itertools import tee
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Dict, Iterator, List, Optional, Set
@@ -13,7 +12,8 @@ from rich.tree import Tree
 
 from ape.types.address import AddressType
 from ape.utils.basemodel import BaseInterfaceModel
-from ape.utils.trace import parse_as_str, parse_gas_table, parse_rich_tree
+from ape.utils.misc import is_evm_precompile, is_zero_hex
+from ape.utils.trace import _exclude_gas, parse_as_str, parse_gas_table, parse_rich_tree
 
 if TYPE_CHECKING:
     from ape.types import ContractFunctionPath
@@ -167,35 +167,25 @@ class CallTreeNode(BaseInterfaceModel):
         """
 
         exclusions = exclude or []
+        if (
+            not self.contract_id
+            or not self.method_id
+            or _exclude_gas(exclusions, self.contract_id, self.method_id)
+        ):
+            return merge_reports(*(c.get_gas_report(exclude) for c in self.calls))
 
-        for exclusion in exclusions:
-            if exclusion.method_name is None and fnmatch(self.contract_id, exclusion.contract_name):
-                # Skip this whole contract. Search contracts from sub-calls.
-                return merge_reports(*(c.get_gas_report(exclude) for c in self.calls))
+        elif not is_zero_hex(self.method_id) and not is_evm_precompile(self.method_id):
+            reports = [
+                *[c.get_gas_report(exclude) for c in self.calls],
+                {
+                    self.contract_id: {
+                        self.method_id: [self.gas_cost] if self.gas_cost is not None else []
+                    }
+                },
+            ]
+            return merge_reports(*reports)
 
-            for excl in exclusions:
-                if not excl.method_name:
-                    # Full contract skips handled above.
-                    continue
-
-                elif not fnmatch(self.contract_id, excl.contract_name):
-                    # Method may match, but contract does not match, so continue.
-                    continue
-
-                elif self.method_id and fnmatch(self.method_id, excl.method_name):
-                    # Skip this report because of the method name exclusion criteria.
-                    return merge_reports(*(c.get_gas_report(exclude) for c in self.calls))
-
-        reports = [c.get_gas_report(exclude) for c in self.calls]
-        if self.method_id:
-            report = {
-                self.contract_id: {
-                    self.method_id: [self.gas_cost] if self.gas_cost is not None else []
-                }
-            }
-            reports.append(report)
-
-        return merge_reports(*reports)
+        return merge_reports(*(c.get_gas_report(exclude) for c in self.calls))
 
 
 class TraceFrame(BaseInterfaceModel):
@@ -623,12 +613,12 @@ class SourceTraceback(BaseModel):
         Args:
             location (``SourceLocation``): The location to add.
             function (``Function``): The function executing.
+            source_path (Optional[``Path``]): The path of the source file.
             depth (int): The depth of the function call in the call tree.
             pcs (Optional[Set[int]]): The program counter values.
             source_path (Optional[``Path``]): The path of the source file.
         """
 
-        # Exclude signature ASTs.
         asts = function.get_content_asts(location)
         content = function.get_content(location)
         if not asts or not content:
@@ -666,11 +656,12 @@ class SourceTraceback(BaseModel):
         name: str,
         _type: str,
         compiler_name: str,
+        full_name: Optional[str] = None,
         source_path: Optional[Path] = None,
         pcs: Optional[Set[int]] = None,
     ):
         pcs = pcs or set()
-        closure = Closure(name=name)
+        closure = Closure(name=name, full_name=full_name or name)
         depth = self.last.depth - 1 if self.last else 0
         statement = Statement(type=_type, pcs=pcs)
         flow = ControlFlow(

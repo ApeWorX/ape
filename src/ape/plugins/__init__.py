@@ -5,6 +5,7 @@ import subprocess
 from typing import Any, Callable, Generator, Iterator, List, Optional, Tuple, Type, cast
 
 from ape.__modules__ import __modules__
+from ape.exceptions import ApeAttributeError
 from ape.logging import logger
 
 from .account import AccountPlugin
@@ -155,7 +156,7 @@ class PluginManager:
 
     def __getattr__(self, attr_name: str) -> Iterator[Tuple[str, Tuple]]:
         if not hasattr(plugin_manager.hook, attr_name):
-            raise AttributeError(f"{self.__class__.__name__} has no attribute '{attr_name}'.")
+            raise ApeAttributeError(f"{self.__class__.__name__} has no attribute '{attr_name}'.")
 
         # Do this to get access to the package name
         hook_fn = getattr(plugin_manager.hook, attr_name)

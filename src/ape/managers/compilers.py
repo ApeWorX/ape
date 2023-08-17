@@ -5,7 +5,7 @@ from ethpm_types import ContractType
 from ethpm_types.source import Content
 
 from ape.api import CompilerAPI
-from ape.exceptions import CompilerError, ContractLogicError
+from ape.exceptions import ApeAttributeError, CompilerError, ContractLogicError
 from ape.logging import logger
 from ape.utils import get_relative_path
 
@@ -37,11 +37,10 @@ class CompilerManager(BaseManager):
         except AttributeError:
             pass
 
-        compiler = self.get_compiler(name)
-        if not compiler:
-            raise AttributeError(f"No attribute or compiler named '{name}'.")
+        if compiler := self.get_compiler(name):
+            return compiler
 
-        return compiler
+        raise ApeAttributeError(f"No attribute or compiler named '{name}'.")
 
     @property
     def registered_compilers(self) -> Dict[str, CompilerAPI]:
@@ -235,12 +234,16 @@ class CompilerManager(BaseManager):
             :class:`~ape.exceptions.ContractLogicError`: The enriched exception.
         """
 
-        address = err.contract_address or getattr(err.txn, "receiver", None)
+        address = err.address
         if not address:
             # Contract address not found.
             return err
 
-        contract = self.chain_manager.contracts.get(address)
+        try:
+            contract = self.chain_manager.contracts.get(address)
+        except RecursionError:
+            contract = None
+
         if not contract or not contract.source_id:
             # Contract or source not found.
             return err
@@ -272,3 +275,28 @@ class CompilerManager(BaseManager):
 
         compiler = self.registered_compilers[path.suffix]
         return compiler.flatten_contract(path)
+
+    def can_trace_source(self, filename: str) -> bool:
+        """
+        Check if Ape is able trace the source lines for the given file.
+        Checks that both the compiler is registered and that it supports
+        the :meth:`~ape.api.compilers.CompilerAPI.trace_source` API method.
+
+        Args:
+            filename (str): The file to check.
+
+        Returns:
+            bool
+        """
+        path = Path(filename)
+        if not path.is_file():
+            return False
+
+        extension = path.suffix
+        if extension in self.registered_compilers:
+            compiler = self.registered_compilers[extension]
+            if compiler.supports_source_tracing:
+                return True
+
+        # We are not able to get coverage for this file.
+        return False

@@ -12,7 +12,7 @@ from typing import TYPE_CHECKING, Any, Dict, Iterator, List, Optional, Union
 import click
 from eth_utils import humanize_hash
 from ethpm_types import ContractType
-from ethpm_types.abi import ErrorABI
+from ethpm_types.abi import ConstructorABI, ErrorABI, MethodABI
 from rich import print as rich_print
 
 from ape.logging import LogLevel, logger
@@ -73,14 +73,51 @@ class ArgumentsLengthError(ContractError):
     Raised when calling a contract method with the wrong number of arguments.
     """
 
-    def __init__(self, arguments_length: int, inputs_length: Optional[int] = None):
-        abi_suffix = f" ({inputs_length})" if inputs_length else ""
-        message = (
+    def __init__(
+        self,
+        arguments_length: int,
+        inputs: Union[MethodABI, ConstructorABI, int, List, None] = None,
+        **kwargs,
+    ):
+        # For backwards compat. # TODO: Remove in 0.7
+        if "inputs_length" in kwargs and not inputs:
+            inputs = kwargs["inputs_length"]
+
+        prefix = (
             f"The number of the given arguments ({arguments_length}) "
-            f"do not match what is defined in the "
-            f"ABI{abi_suffix}."
+            f"do not match what is defined in the ABI"
         )
-        super().__init__(message)
+        if inputs is None:
+            super().__init__(f"{prefix}.")
+            return
+
+        inputs_ls: List[Union[MethodABI, ConstructorABI, int]] = (
+            inputs if isinstance(inputs, list) else [inputs]
+        )
+        if not inputs_ls:
+            suffix = ""
+        elif any(not isinstance(x, int) for x in inputs_ls):
+            # Handle ABI arguments
+            parts = ""
+            for idx, ipt in enumerate(inputs_ls):
+                if isinstance(ipt, int):
+                    part = f"{ipt}"
+                else:
+                    # Signature without outputs.
+                    input_args = ", ".join(i.signature for i in ipt.inputs)
+                    part = f"{getattr(ipt, 'name', '__init__')}({input_args})"
+
+                parts = f"{parts}\n\t{part}"
+
+            suffix = f":\n{parts}"
+
+        else:
+            # Was only given integers.
+            options = ", ".join([str(x) for x in inputs_ls])
+            one_of = "one of " if len(inputs_ls) > 1 else ""
+            suffix = f" ({one_of}{options})"
+
+        super().__init__(f"{prefix}{suffix}")
 
 
 class DecodingError(ContractError):
@@ -92,6 +129,12 @@ class DecodingError(ContractError):
     def __init__(self, message: Optional[str] = None):
         message = message or "Output corrupted."
         super().__init__(message)
+
+
+class MethodNonPayableError(ContractError):
+    """
+    Raises when sending funds to a non-payable method
+    """
 
 
 class TransactionError(ContractError):
@@ -123,15 +166,25 @@ class TransactionError(ContractError):
 
         # Finalizes expected revert message.
         super().__init__(ex_message)
+        self._set_tb()
 
-        if not source_traceback and txn:
-            self.source_traceback = _get_ape_traceback(txn)
+    @property
+    def address(self) -> Optional["AddressType"]:
+        return (
+            self.contract_address
+            or getattr(self.txn, "receiver", None)
+            or getattr(self.txn, "contract_address", None)
+        )
+
+    def _set_tb(self):
+        if not self.source_traceback and self.txn:
+            self.source_traceback = _get_ape_traceback(self.txn)
 
         src_tb = self.source_traceback
-        if src_tb is not None and txn is not None:
+        if src_tb is not None and self.txn is not None:
             # Create a custom Pythonic traceback using lines from the sources
             # found from analyzing the trace of the transaction.
-            py_tb = _get_custom_python_traceback(self, txn, src_tb)
+            py_tb = _get_custom_python_traceback(self, self.txn, src_tb)
             if py_tb:
                 self.__traceback__ = py_tb
 
@@ -193,16 +246,16 @@ class ContractLogicError(VirtualMachineError):
         if len(trace) == 0:
             raise ValueError("Missing trace.")
 
-        contract_address = self.contract_address or getattr(self.txn, "receiver", None)
-        if not contract_address:
-            raise ValueError("Could not fetch contract information to check dev message.")
+        if address := self.address:
+            try:
+                contract_type = trace[-1].chain_manager.contracts[address]
+            except Exception as err:
+                raise ValueError(
+                    f"Could not fetch contract at {address} to check dev message."
+                ) from err
 
-        try:
-            contract_type = trace[-1].chain_manager.contracts[contract_address]
-        except ValueError as err:
-            raise ValueError(
-                f"Could not fetch contract at {contract_address} to check dev message."
-            ) from err
+        else:
+            raise ValueError("Could not fetch contract information to check dev message.")
 
         if contract_type.pcmap is None:
             raise ValueError("Compiler does not support source code mapping.")
@@ -349,6 +402,12 @@ class ProjectError(ApeException):
     """
 
 
+class ApeAttributeError(ProjectError, AttributeError):
+    """
+    Raised when trying to access items via ``.`` access.
+    """
+
+
 class UnknownVersionError(ProjectError):
     """
     Raised when trying to install an unknown version of a package.
@@ -375,13 +434,21 @@ class BlockNotFoundError(ProviderError):
     Raised when unable to find a block.
     """
 
-    def __init__(self, block_id: "BlockID"):
+    def __init__(self, block_id: "BlockID", reason: Optional[str] = None):
         if isinstance(block_id, bytes):
             block_id_str = block_id.hex()
         else:
             block_id_str = str(block_id)
 
-        super().__init__(f"Block with ID '{block_id_str}' not found.")
+        message = (
+            "Missing latest block."
+            if block_id == "latest"
+            else f"Block with ID '{block_id_str}' not found."
+        )
+        if reason:
+            message = f"{message} Reason: {reason}"
+
+        super().__init__(message)
 
 
 class TransactionNotFoundError(ProviderError):
@@ -425,6 +492,26 @@ class ChainError(ApeException):
     """
     Raised when problems occur in the :class:`~ape.managers.chain.ChainManager`.
     """
+
+
+class ContractNotFoundError(ChainError):
+    """
+    Raised when a contract is not found at an address.
+    """
+
+    def __init__(self, address: "AddressType", has_explorer: bool, provider_name: str):
+        msg = f"Failed to get contract type for address '{address}'."
+        msg += (
+            " Contract may need verification."
+            if has_explorer
+            else (
+                f" Current provider '{provider_name}' has no associated "
+                "explorer plugin. Try installing an explorer plugin using "
+                f"{click.style(text='ape plugins install etherscan', fg='green')}, "
+                "or using a network with explorer support."
+            )
+        )
+        super().__init__(msg)
 
 
 class UnknownSnapshotError(ChainError):

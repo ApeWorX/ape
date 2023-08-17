@@ -44,8 +44,10 @@ class InterfaceCompiler(CompilerAPI):
                 contract_type_data = data
                 if "contractName" not in contract_type_data:
                     contract_type_data["contractName"] = path.stem
-                if "sourceId" not in contract_type_data:
-                    contract_type_data["sourceId"] = source_id
+
+                # NOTE: Always set the source ID to the source of the JSON file
+                # to avoid manifest corruptions later on.
+                contract_type_data["sourceId"] = source_id
 
                 if (
                     "deploymentBytecode" not in contract_type_data
@@ -82,27 +84,24 @@ class InterfaceCompiler(CompilerAPI):
         return contract_types
 
     def enrich_error(self, err: ContractLogicError) -> ContractLogicError:
-        if not is_0x_prefixed(err.revert_message):
+        if not (address := err.address) or not is_0x_prefixed(err.revert_message):
             return err
 
         # Check for ErrorABI.
         bytes_message = HexBytes(err.revert_message)
         selector = bytes_message[:4]
         input_data = bytes_message[4:]
-        address = err.contract_address or getattr(err.txn, "receiver", None)
-        if not address:
+
+        try:
+            contract = self.chain_manager.contracts.instance_at(address)
+        except Exception:
             return err
 
-        if not self.network_manager.active_provider:
-            # Connection required.
-            return err
-
-        contract = self.chain_manager.contracts.instance_at(address)
-        if not contract:
-            return err
-
-        if selector not in contract.contract_type.errors:
-            # Not an ErrorABI selector.
+        if (
+            not contract
+            or not self.network_manager.active_provider
+            or selector not in contract.contract_type.errors
+        ):
             return err
 
         ecosystem = self.provider.network.ecosystem
@@ -114,6 +113,6 @@ class InterfaceCompiler(CompilerAPI):
             inputs,
             txn=err.txn,
             trace=err.trace,
-            contract_address=err.contract_address,
+            contract_address=address,
             source_traceback=err.source_traceback,
         )

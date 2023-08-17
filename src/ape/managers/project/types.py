@@ -3,9 +3,9 @@ from contextlib import contextmanager
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
-import yaml
 from ethpm_types import ContractType, PackageManifest, Source
 from ethpm_types.utils import compute_checksum
+from yaml import safe_dump, safe_load
 
 from ape.api import ProjectAPI
 from ape.logging import logger
@@ -152,8 +152,9 @@ class BaseProject(ProjectAPI):
         config_data["contracts_folder"] = contracts_folder_config_item
         self.config_file.parent.mkdir(parents=True, exist_ok=True)
         self.config_file.touch()
-        with open(self.config_file, "w") as f:
-            yaml.safe_dump(config_data, f)
+
+        with open(self.config_file, "w") as file:
+            safe_dump(config_data, file)
 
         return True
 
@@ -178,7 +179,7 @@ class BaseProject(ProjectAPI):
     ) -> PackageManifest:
         # Read the project config and migrate project-settings to Ape settings if needed.
         with self._as_ape_project():
-            self.project_manager._load_dependencies()
+            self.project_manager.load_dependencies()
             manifest = self._get_base_manifest(use_cache=use_cache)
             source_paths: List[Path] = list(
                 set(
@@ -220,7 +221,7 @@ class BaseProject(ProjectAPI):
             with self.config_manager.using_project(
                 self.path, contracts_folder=self.contracts_folder
             ):
-                self.project_manager._load_dependencies()
+                self.project_manager.load_dependencies()
                 return self.compiler_manager.compile(project_sources.sources_needing_compilation)
         else:
             # Already in project
@@ -261,7 +262,7 @@ class BrownieProject(BaseProject):
 
         migrated_config_data: Dict[str, Any] = {}
         with open(self.brownie_config_path) as brownie_config_file:
-            brownie_config_data = yaml.safe_load(brownie_config_file) or {}
+            brownie_config_data = safe_load(brownie_config_file) or {}
 
         # Migrate dependencies
         dependencies = []

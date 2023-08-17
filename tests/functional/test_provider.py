@@ -4,10 +4,11 @@ import pytest
 from eth_tester.exceptions import TransactionFailed  # type: ignore
 from eth_typing import HexStr
 from eth_utils import ValidationError
+from web3.exceptions import ContractPanicError
 
-from ape.exceptions import BlockNotFoundError, ProviderNotConnectedError, TransactionNotFoundError
+from ape.exceptions import BlockNotFoundError, ContractLogicError, TransactionNotFoundError
 from ape.types import LogFilter
-from ape_test.provider import CHAIN_ID
+from ape.utils import DEFAULT_TEST_CHAIN_ID
 
 
 @pytest.mark.parametrize("block_id", (0, "0", "0x0", HexStr("0x0")))
@@ -34,6 +35,18 @@ def test_get_block_transaction(vyper_contract_instance, owner, eth_tester_provid
     assert block.transactions[-1].txn_hash.hex() == receipt.txn_hash
 
 
+def test_estimate_gas(vyper_contract_instance, eth_tester_provider, owner):
+    txn = vyper_contract_instance.setNumber.as_transaction(900, sender=owner)
+    estimate = eth_tester_provider.estimate_gas_cost(txn)
+    assert estimate > 0
+
+
+def test_estimate_gas_of_static_fee_txn(vyper_contract_instance, eth_tester_provider, owner):
+    txn = vyper_contract_instance.setNumber.as_transaction(900, sender=owner, type=0)
+    estimate = eth_tester_provider.estimate_gas_cost(txn)
+    assert estimate > 0
+
+
 def test_estimate_gas_with_max_value_from_block(mocker, eth_tester_provider):
     mock_txn = mocker.patch("ape.api.networks.NetworkAPI.gas_limit", new_callable=mock.PropertyMock)
     mock_txn.return_value = "max"
@@ -45,7 +58,7 @@ def test_estimate_gas_with_max_value_from_block(mocker, eth_tester_provider):
 
 def test_chain_id(eth_tester_provider):
     chain_id = eth_tester_provider.chain_id
-    assert chain_id == CHAIN_ID
+    assert chain_id == DEFAULT_TEST_CHAIN_ID
 
 
 def test_chain_id_is_cached(eth_tester_provider):
@@ -55,17 +68,19 @@ def test_chain_id_is_cached(eth_tester_provider):
     web3 = eth_tester_provider._web3
     eth_tester_provider._web3 = None
     chain_id = eth_tester_provider.chain_id
-    assert chain_id == CHAIN_ID
+    assert chain_id == DEFAULT_TEST_CHAIN_ID
     eth_tester_provider._web3 = web3  # Undo
 
 
-def test_chain_id_when_none_raises(eth_tester_provider):
+def test_chain_id_when_disconnected(eth_tester_provider):
     eth_tester_provider.disconnect()
+    try:
+        actual = eth_tester_provider.chain_id
+        expected = DEFAULT_TEST_CHAIN_ID
+        assert actual == expected
 
-    with pytest.raises(ProviderNotConnectedError, match="Not connected to a network provider."):
-        _ = eth_tester_provider.chain_id
-
-    eth_tester_provider.connect()  # Undo
+    finally:
+        eth_tester_provider.connect()
 
 
 def test_get_receipt_not_exists_with_timeout(eth_tester_provider):
@@ -155,7 +170,7 @@ def test_provider_get_balance(project, networks, accounts):
     """
     balance = networks.provider.get_balance(accounts.test_accounts[0].address)
 
-    assert type(balance) == int
+    assert type(balance) is int
     assert balance == 1000000000000000000000000
 
 
@@ -203,3 +218,26 @@ def test_get_virtual_machine_error_when_txn_failed_includes_base_error(eth_teste
     txn_failed = TransactionFailed()
     actual = eth_tester_provider.get_virtual_machine_error(txn_failed)
     assert actual.base_err == txn_failed
+
+
+def test_get_virtual_machine_error_panic(eth_tester_provider, mocker):
+    data = "0x4e487b710000000000000000000000000000000000000000000000000000000000000032"
+    message = "Panic error 0x32: Array index is out of bounds."
+    exception = ContractPanicError(data=data, message=message)
+    enrich_spy = mocker.spy(eth_tester_provider.compiler_manager, "enrich_error")
+    actual = eth_tester_provider.get_virtual_machine_error(exception)
+    assert enrich_spy.call_count == 1
+    enrich_spy.assert_called_once_with(actual)
+    assert isinstance(actual, ContractLogicError)
+
+
+def test_gas_price(eth_tester_provider):
+    actual = eth_tester_provider.gas_price
+    assert isinstance(actual, int)
+
+
+def test_get_code(eth_tester_provider, vyper_contract_instance):
+    address = vyper_contract_instance.address
+    assert eth_tester_provider.get_code(address) == eth_tester_provider.get_code(
+        address, block_id=1
+    )

@@ -7,7 +7,13 @@ from eth_account import Account
 
 from ape.api.address import BaseAddress
 from ape.api.transactions import ReceiptAPI, TransactionAPI
-from ape.exceptions import AccountsError, AliasAlreadyInUseError, SignatureError, TransactionError
+from ape.exceptions import (
+    AccountsError,
+    AliasAlreadyInUseError,
+    MethodNonPayableError,
+    SignatureError,
+    TransactionError,
+)
 from ape.logging import logger
 from ape.types import AddressType, MessageSignature, SignableMessage
 from ape.utils import BaseInterfaceModel, abstractmethod
@@ -117,7 +123,7 @@ class AccountAPI(BaseInterfaceModel, BaseAddress):
             raise TransactionError("Transaction not prepared.")
 
         # The conditions below should never reached but are here for mypy's sake.
-        # The `max_fee` was either set manaully or from `prepare_transaction()`.
+        # The `max_fee` was either set manually or from `prepare_transaction()`.
         # The `gas_limit` was either set manually or from `prepare_transaction()`.
         if max_fee is None:
             raise TransactionError("`max_fee` failed to get set in transaction preparation.")
@@ -214,22 +220,20 @@ class AccountAPI(BaseInterfaceModel, BaseAddress):
         Returns:
             :class:`~ape.contracts.ContractInstance`: An instance of the deployed contract.
         """
-
-        from ape.contracts import ContractInstance
-
         txn = contract(*args, **kwargs)
-        txn.sender = self.address
-        receipt = self.call(txn, **kwargs)
+        if kwargs.get("value") and not contract.contract_type.constructor.is_payable:
+            raise MethodNonPayableError("Sending funds to a non-payable constructor.")
 
-        address = receipt.contract_address
-        if not address:
+        txn.sender = self.address
+        receipt = contract._cache_wrap(lambda: self.call(txn, **kwargs))
+        if not (address := receipt.contract_address):
             raise AccountsError(f"'{receipt.txn_hash}' did not create a contract.")
 
         contract_type = contract.contract_type
         styled_address = click.style(receipt.contract_address, bold=True)
         contract_name = contract_type.name or "<Unnamed Contract>"
         logger.success(f"Contract '{contract_name}' deployed to: {styled_address}")
-        instance = ContractInstance.from_receipt(receipt, contract_type)
+        instance = self.chain_manager.contracts.instance_from_receipt(receipt, contract_type)
         self.chain_manager.contracts.cache_deployment(instance)
 
         if publish:
@@ -237,6 +241,20 @@ class AccountAPI(BaseInterfaceModel, BaseAddress):
             self.provider.network.publish_contract(address)
 
         return instance
+
+    def declare(self, contract: "ContractContainer", *args, **kwargs) -> ReceiptAPI:
+        transaction = self.provider.network.ecosystem.encode_contract_blueprint(
+            contract.contract_type, *args, **kwargs
+        )
+        receipt = self.call(transaction)
+        if receipt.contract_address:
+            self.chain_manager.contracts.cache_blueprint(
+                receipt.contract_address, contract.contract_type
+            )
+        else:
+            logger.debug("Failed to cache contract declaration: missing contract address.")
+
+        return receipt
 
     def check_signature(
         self,
@@ -487,8 +505,7 @@ class ImpersonatedAccount(AccountAPI):
         self, txn: TransactionAPI, send_everything: bool = False, private: bool = False, **kwargs
     ) -> ReceiptAPI:
         txn = self.prepare_transaction(txn)
-        if not txn.sender:
-            txn.sender = self.raw_address
+        txn.sender = txn.sender or self.raw_address
 
         return (
             self.provider.send_private_transaction(txn)

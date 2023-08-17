@@ -1,4 +1,4 @@
-from typing import Dict, List, Optional, Union
+from typing import Dict, List, NoReturn, Optional, Union
 
 import click
 from ethpm_types import ContractType
@@ -30,7 +30,7 @@ class ApeCliContextObject(ManagerAccessMixin):
         self.config_manager.load()
 
     @staticmethod
-    def abort(msg: str, base_error: Optional[Exception] = None):
+    def abort(msg: str, base_error: Optional[Exception] = None) -> NoReturn:
         """
         End execution of the current command invocation.
 
@@ -47,16 +47,18 @@ class ApeCliContextObject(ManagerAccessMixin):
         raise Abort(msg)
 
 
-def verbosity_option(cli_logger: Optional[CliLogger] = None):
+def verbosity_option(cli_logger: Optional[CliLogger] = None, default: str = DEFAULT_LOG_LEVEL):
     """A decorator that adds a `--verbosity, -v` option to the decorated
     command.
     """
     _logger = cli_logger or logger
-    kwarguments = _create_verbosity_kwargs(_logger=_logger)
+    kwarguments = _create_verbosity_kwargs(_logger=_logger, default=default)
     return lambda f: click.option(*_VERBOSITY_VALUES, **kwarguments)(f)
 
 
-def _create_verbosity_kwargs(_logger: Optional[CliLogger] = None) -> Dict:
+def _create_verbosity_kwargs(
+    _logger: Optional[CliLogger] = None, default: str = DEFAULT_LOG_LEVEL
+) -> Dict:
     cli_logger = _logger or logger
 
     def set_level(ctx, param, value):
@@ -66,7 +68,7 @@ def _create_verbosity_kwargs(_logger: Optional[CliLogger] = None) -> Dict:
     names_str = f"{', '.join(level_names[:-1])}, or {level_names[-1]}"
     return {
         "callback": set_level,
-        "default": DEFAULT_LOG_LEVEL,
+        "default": default or DEFAULT_LOG_LEVEL,
         "metavar": "LVL",
         "expose_value": False,
         "help": f"One of {names_str}",
@@ -74,15 +76,19 @@ def _create_verbosity_kwargs(_logger: Optional[CliLogger] = None) -> Dict:
     }
 
 
-def ape_cli_context():
+def ape_cli_context(default_log_level: str = DEFAULT_LOG_LEVEL):
     """
     A ``click`` context object with helpful utilities.
     Use in your commands to get access to common utility features,
     such as logging or accessing managers.
+
+    Args:
+        default_log_level (str): The log-level value to pass to
+          :meth:`~ape.cli.options.verbosity_option`.
     """
 
     def decorator(f):
-        f = verbosity_option(logger)(f)
+        f = verbosity_option(logger, default=default_log_level)(f)
         f = click.make_pass_decorator(ApeCliContextObject, ensure=True)(f)
         return f
 

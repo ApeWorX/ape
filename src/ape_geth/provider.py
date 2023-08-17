@@ -3,6 +3,7 @@ import os
 import shutil
 import sys
 from abc import ABC
+from itertools import tee
 from pathlib import Path
 from subprocess import DEVNULL, PIPE, Popen
 from typing import Any, Dict, Iterator, List, Optional, Tuple, Union, cast
@@ -19,7 +20,6 @@ from evm_trace import (
     get_calltree_from_geth_trace,
     get_calltree_from_parity_trace,
 )
-from geth import LoggingMixin  # type: ignore
 from geth.accounts import ensure_account_exists  # type: ignore
 from geth.chain import initialize_chain  # type: ignore
 from geth.process import BaseGethProcess  # type: ignore
@@ -35,24 +35,33 @@ from web3.providers import AutoProvider, IPCProvider
 from web3.providers.auto import load_provider_from_environment
 from yarl import URL
 
-from ape.api import PluginConfig, TestProviderAPI, TransactionAPI, UpstreamProvider, Web3Provider
+from ape.api import (
+    PluginConfig,
+    SubprocessProvider,
+    TestProviderAPI,
+    TransactionAPI,
+    UpstreamProvider,
+    Web3Provider,
+)
 from ape.exceptions import APINotImplementedError, ProviderError
 from ape.logging import LogLevel, logger
-from ape.types import CallTreeNode, SnapshotID, TraceFrame
+from ape.types import CallTreeNode, SnapshotID, SourceTraceback, TraceFrame
 from ape.utils import (
     DEFAULT_NUMBER_OF_TEST_ACCOUNTS,
+    DEFAULT_TEST_CHAIN_ID,
     DEFAULT_TEST_MNEMONIC,
+    JoinableQueue,
     generate_dev_accounts,
     raises_not_implemented,
+    spawn,
 )
 
 DEFAULT_PORT = 8545
 DEFAULT_HOSTNAME = "localhost"
 DEFAULT_SETTINGS = {"uri": f"http://{DEFAULT_HOSTNAME}:{DEFAULT_PORT}"}
-GETH_DEV_CHAIN_ID = 1337
 
 
-class GethDevProcess(LoggingMixin, BaseGethProcess):
+class GethDevProcess(BaseGethProcess):
     """
     A developer-configured geth that only exists until disconnected.
     """
@@ -64,11 +73,14 @@ class GethDevProcess(LoggingMixin, BaseGethProcess):
         port: int = DEFAULT_PORT,
         mnemonic: str = DEFAULT_TEST_MNEMONIC,
         number_of_accounts: int = DEFAULT_NUMBER_OF_TEST_ACCOUNTS,
-        chain_id: int = GETH_DEV_CHAIN_ID,
+        chain_id: int = DEFAULT_TEST_CHAIN_ID,
         initial_balance: Union[str, int] = to_wei(10000, "ether"),
         executable: Optional[str] = None,
+        auto_disconnect: bool = True,
+        extra_funded_accounts: Optional[List[str]] = None,
     ):
-        if not shutil.which("geth"):
+        executable = executable or "geth"
+        if not shutil.which(executable):
             raise GethNotInstalledError()
 
         self.data_dir = data_dir
@@ -76,6 +88,7 @@ class GethDevProcess(LoggingMixin, BaseGethProcess):
         self._port = port
         self.data_dir.mkdir(exist_ok=True, parents=True)
         self.is_running = False
+        self._auto_disconnect = auto_disconnect
 
         geth_kwargs = construct_test_chain_kwargs(
             data_dir=self.data_dir,
@@ -96,6 +109,10 @@ class GethDevProcess(LoggingMixin, BaseGethProcess):
         sealer = ensure_account_exists(**geth_kwargs).decode().replace("0x", "")
         geth_kwargs["miner_etherbase"] = sealer
         accounts = generate_dev_accounts(mnemonic, number_of_accounts=number_of_accounts)
+        addresses = [a.address for a in accounts]
+        addresses.extend(extra_funded_accounts or [])
+        bal_dict = {"balance": str(initial_balance)}
+        alloc = {a: bal_dict for a in addresses}
         genesis_data: Dict = {
             "overwrite": True,
             "coinbase": "0x0000000000000000000000000000000000000000",
@@ -118,21 +135,12 @@ class GethDevProcess(LoggingMixin, BaseGethProcess):
                 "parisBlock": 0,
                 "clique": {"period": 0, "epoch": 30000},
             },
-            "alloc": {a.address: {"balance": str(initial_balance)} for a in accounts},
+            "alloc": alloc,
         }
-
-        def make_logs_paths(stream_name: str):
-            path = data_dir / "geth-logs" / f"{stream_name}_{self._port}"
-            path.parent.mkdir(exist_ok=True, parents=True)
-            return path
 
         initialize_chain(genesis_data, **geth_kwargs)
         self.proc: Optional[Popen] = None
-        super().__init__(
-            geth_kwargs,
-            stdout_logfile_path=make_logs_paths("stdout"),
-            stderr_logfile_path=make_logs_paths("stderr"),
-        )
+        super().__init__(geth_kwargs)
 
     @classmethod
     def from_uri(cls, uri: str, data_folder: Path, **kwargs):
@@ -144,6 +152,10 @@ class GethDevProcess(LoggingMixin, BaseGethProcess):
         port = parsed_uri.port if parsed_uri.port is not None else DEFAULT_PORT
         mnemonic = kwargs.get("mnemonic", DEFAULT_TEST_MNEMONIC)
         number_of_accounts = kwargs.get("number_of_accounts", DEFAULT_NUMBER_OF_TEST_ACCOUNTS)
+        extra_accounts = [
+            HexBytes(a).hex().lower() for a in kwargs.get("extra_funded_accounts", [])
+        ]
+
         return cls(
             data_folder,
             hostname=parsed_uri.host,
@@ -151,17 +163,20 @@ class GethDevProcess(LoggingMixin, BaseGethProcess):
             mnemonic=mnemonic,
             number_of_accounts=number_of_accounts,
             executable=kwargs.get("executable"),
+            auto_disconnect=kwargs.get("auto_disconnect", True),
+            extra_funded_accounts=extra_accounts,
         )
 
-    def connect(self):
+    def connect(self, timeout: int = 60):
         home = str(Path.home())
         ipc_path = self.ipc_path.replace(home, "$HOME")
         logger.info(f"Starting geth (HTTP='{self._hostname}:{self._port}', IPC={ipc_path}).")
         self.start()
-        self.wait_for_rpc(timeout=60)
+        self.wait_for_rpc(timeout=timeout)
 
         # Register atexit handler to make sure disconnect is called for normal object lifecycle.
-        atexit.register(self.disconnect)
+        if self._auto_disconnect:
+            atexit.register(self.disconnect)
 
     def start(self):
         if self.is_running:
@@ -187,6 +202,12 @@ class GethDevProcess(LoggingMixin, BaseGethProcess):
         if self.data_dir.is_dir():
             shutil.rmtree(self.data_dir)
 
+    def wait(self, *args, **kwargs):
+        if self.proc is None:
+            return
+
+        self.proc.wait(*args, **kwargs)
+
 
 class GethNetworkConfig(PluginConfig):
     # Make sure you are running the right networks when you try for these
@@ -194,7 +215,7 @@ class GethNetworkConfig(PluginConfig):
     goerli: dict = DEFAULT_SETTINGS.copy()
     sepolia: dict = DEFAULT_SETTINGS.copy()
     # Make sure to run via `geth --dev` (or similar)
-    local: dict = DEFAULT_SETTINGS.copy()
+    local: dict = {**DEFAULT_SETTINGS.copy(), "chain_id": DEFAULT_TEST_CHAIN_ID}
 
 
 class GethConfig(PluginConfig):
@@ -228,6 +249,9 @@ class BaseGethProvider(Web3Provider, ABC):
 
     name: str = "geth"
 
+    """Is ``None`` until known."""
+    _can_use_parity_traces: Optional[bool] = None
+
     @property
     def uri(self) -> str:
         if "uri" in self.provider_settings:
@@ -248,7 +272,10 @@ class BaseGethProvider(Web3Provider, ABC):
 
     @property
     def _clean_uri(self) -> str:
-        return str(URL(self.uri).with_user(None).with_password(None))
+        url = URL(self.uri).with_user(None).with_password(None)
+        # If there is a path, hide it but show that you are hiding it.
+        # Use string interpolation to prevent URL-character encoding.
+        return f"{url.with_path('')}/[hidden]" if url.path else f"{url}"
 
     @property
     def ipc_path(self) -> Path:
@@ -315,6 +342,7 @@ class BaseGethProvider(Web3Provider, ABC):
         self.network.verify_chain_id(chain_id)
 
     def disconnect(self):
+        self._can_use_parity_traces = None
         self._web3 = None
         self._client_version = None
 
@@ -331,14 +359,27 @@ class BaseGethProvider(Web3Provider, ABC):
         )
 
     def get_call_tree(self, txn_hash: str) -> CallTreeNode:
-        if "erigon" in self.client_version.lower():
+        if self._can_use_parity_traces is True:
             return self._get_parity_call_tree(txn_hash)
+
+        elif self._can_use_parity_traces is False:
+            return self._get_geth_call_tree(txn_hash)
+
+        elif "erigon" in self.client_version.lower():
+            tree = self._get_parity_call_tree(txn_hash)
+            self._can_use_parity_traces = True
+            return tree
 
         try:
             # Try the Parity traces first, in case node client supports it.
-            return self._get_parity_call_tree(txn_hash)
+            tree = self._get_parity_call_tree(txn_hash)
         except (ValueError, APINotImplementedError, ProviderError):
+            self._can_use_parity_traces = False
             return self._get_geth_call_tree(txn_hash)
+
+        # Parity style works.
+        self._can_use_parity_traces = True
+        return tree
 
     def _get_parity_call_tree(self, txn_hash: str) -> CallTreeNode:
         result = self._make_request("trace_transaction", [txn_hash])
@@ -355,7 +396,7 @@ class BaseGethProvider(Web3Provider, ABC):
         return self._create_call_tree_node(evm_call, txn_hash=txn_hash)
 
     def _log_connection(self, client_name: str):
-        msg = f"Connecting to existing {client_name} node at "
+        msg = f"Connecting to existing {client_name.strip()} node at"
         suffix = (
             self.ipc_path.as_posix().replace(Path.home().as_posix(), "$HOME")
             if self.ipc_path.exists()
@@ -388,34 +429,38 @@ class BaseGethProvider(Web3Provider, ABC):
             del results[:]
 
 
-class GethDev(BaseGethProvider, TestProviderAPI):
+class GethDev(BaseGethProvider, TestProviderAPI, SubprocessProvider):
     _process: Optional[GethDevProcess] = None
     name: str = "geth"
+    _can_use_parity_traces = False
+
+    @property
+    def process_name(self) -> str:
+        return self.name
 
     @property
     def chain_id(self) -> int:
-        return GETH_DEV_CHAIN_ID
+        return self.geth_config.ethereum.local.get("chain_id", DEFAULT_TEST_CHAIN_ID)
 
     @property
     def data_dir(self) -> Path:
-        # Overriden from BaseGeth class for placing debug logs in ape data folder.
-        return self.geth_config.data_dir or self.data_folder / "dev"
+        # Overridden from BaseGeth class for placing debug logs in ape data folder.
+        return self.geth_config.data_dir or self.data_folder / self.name
 
     def __repr__(self):
-        if self._process is None:
-            # Exclude chain ID when not connected
+        try:
+            return f"<geth chain_id={self.chain_id}>"
+        except Exception:
             return "<geth>"
-
-        return super().__repr__()
 
     def connect(self):
         self._set_web3()
         if not self.is_connected:
-            self._start_geth()
+            self.start()
         else:
             self._complete_connect()
 
-    def _start_geth(self):
+    def start(self, timeout: int = 20):
         test_config = self.config_manager.get_config("test").dict()
 
         # Allow configuring a custom executable besides your $PATH geth.
@@ -423,8 +468,18 @@ class GethDev(BaseGethProvider, TestProviderAPI):
             test_config["executable"] = self.geth_config.executable
 
         test_config["ipc_path"] = self.ipc_path
+        test_config["auto_disconnect"] = self._test_runner is None or test_config.get(
+            "disconnect_providers_after", True
+        )
+
+        # Include extra accounts to allocated funds to at genesis.
+        extra_accounts = self.geth_config.ethereum.local.get("extra_funded_accounts", [])
+        extra_accounts.extend(self.provider_settings.get("extra_funded_accounts", []))
+        extra_accounts = list(set([HexBytes(a).hex().lower() for a in extra_accounts]))
+        test_config["extra_funded_accounts"] = extra_accounts
+
         process = GethDevProcess.from_uri(self.uri, self.data_dir, **test_config)
-        process.connect()
+        process.connect(timeout=timeout)
         if not self.web3.is_connected():
             process.disconnect()
             raise ConnectionError("Unable to connect to locally running geth.")
@@ -433,11 +488,27 @@ class GethDev(BaseGethProvider, TestProviderAPI):
 
         self._process = process
 
+        # For subprocess-provider
+        if self._process is not None and (process := self._process.proc):
+            self.stderr_queue = JoinableQueue()
+            self.stdout_queue = JoinableQueue()
+
+            self.process = process
+
+            # Start listening to output.
+            spawn(self.produce_stdout_queue)
+            spawn(self.produce_stderr_queue)
+            spawn(self.consume_stdout_queue)
+            spawn(self.consume_stderr_queue)
+
     def disconnect(self):
         # Must disconnect process first.
         if self._process is not None:
             self._process.disconnect()
             self._process = None
+
+        # Also unset the subprocess-provider reference.
+        self.process = None
 
         super().disconnect()
 
@@ -481,8 +552,15 @@ class GethDev(BaseGethProvider, TestProviderAPI):
 
         show_gas = kwargs.pop("show_gas_report", False)
         show_trace = kwargs.pop("show_trace", False)
-        track_gas = self._test_runner is not None and self._test_runner.gas_tracker.enabled
-        needs_trace = show_gas or show_trace or track_gas
+
+        if self._test_runner is not None:
+            track_gas = self._test_runner.gas_tracker.enabled
+            track_coverage = self._test_runner.coverage_tracker.enabled
+        else:
+            track_gas = False
+            track_coverage = False
+
+        needs_trace = track_gas or track_coverage or show_gas or show_trace
         if not needs_trace:
             return self._eth_call(arguments)
 
@@ -490,6 +568,7 @@ class GethDev(BaseGethProvider, TestProviderAPI):
         # such as gas usage data.
 
         result, trace_frames = self._trace_call(arguments)
+        trace_frames, frames_copy = tee(trace_frames)
         return_value = HexBytes(result["returnValue"])
         root_node_kwargs = {
             "gas_cost": result.get("gas", 0),
@@ -507,7 +586,7 @@ class GethDev(BaseGethProvider, TestProviderAPI):
         call_tree = self._create_call_tree_node(evm_call_tree)
 
         receiver = txn.receiver
-        if track_gas and show_gas and not show_trace:
+        if track_gas and show_gas and not show_trace and call_tree:
             # Optimization to enrich early and in_place=True.
             call_tree.enrich()
 
@@ -517,6 +596,21 @@ class GethDev(BaseGethProvider, TestProviderAPI):
             # Use `in_place=False` in case also `show_trace=True`
             enriched_call_tree = call_tree.enrich(in_place=False)
             self._test_runner.gas_tracker.append_gas(enriched_call_tree, receiver)
+
+        if track_coverage and self._test_runner is not None and receiver:
+            contract_type = self.chain_manager.contracts.get(receiver)
+            if contract_type:
+                traceframes = (self._create_trace_frame(x) for x in frames_copy)
+                method_id = HexBytes(txn.data)
+                selector = (
+                    contract_type.methods[method_id].selector
+                    if method_id in contract_type.methods
+                    else None
+                )
+                source_traceback = SourceTraceback.create(contract_type, traceframes, method_id)
+                self._test_runner.coverage_tracker.cover(
+                    source_traceback, function=selector, contract=contract_type.name
+                )
 
         if show_gas:
             enriched_call_tree = call_tree.enrich(in_place=False)
@@ -550,6 +644,9 @@ class GethDev(BaseGethProvider, TestProviderAPI):
 
     def get_call_tree(self, txn_hash: str, **root_node_kwargs) -> CallTreeNode:
         return self._get_geth_call_tree(txn_hash, **root_node_kwargs)
+
+    def build_command(self) -> List[str]:
+        return self._process.command if self._process else []
 
 
 class Geth(BaseGethProvider, UpstreamProvider):

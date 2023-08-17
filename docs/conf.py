@@ -12,8 +12,12 @@
 import os
 import re
 import sys
+from functools import lru_cache
 from pathlib import Path
 from typing import List
+
+import requests
+from semantic_version import Version  # type: ignore
 
 sys.path.insert(0, os.path.abspath(".."))
 
@@ -89,20 +93,20 @@ def fixpath(path: str) -> str:
     return new
 
 
+@lru_cache(maxsize=None)
 def get_versions() -> List[str]:
-    build_dir = Path(__file__).parent / "_build" / "ape"
-    if not build_dir.exists():
-        return []
-
-    pattern = re.compile(r"v\d+.?\d?.?\d?")
-
-    versions = [
-        d.name
-        for d in build_dir.iterdir()
-        if d.is_dir() and pattern.match(d.stem) and "beta" not in d.name and "alpha" not in d.name
-    ]
-
-    return versions
+    """
+    Get all the versions from the Web.
+    """
+    api_url = "https://api.github.com/repos/ApeWorx/ape/git/trees/gh-pages?recursive=1"
+    response = requests.get(api_url)
+    response.raise_for_status()
+    pattern = re.compile(r"v\d+.?\d+.?\d+$")
+    data = response.json()
+    tree = data.get("tree", [])
+    versions = list({x["path"] for x in tree if x["type"] == "tree" and pattern.match(x["path"])})
+    sorted_version_objs = sorted([Version(v.lstrip("v")) for v in versions], reverse=True)
+    return [f"v{x}" for x in sorted_version_objs]
 
 
 html_context = {

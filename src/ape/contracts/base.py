@@ -2,7 +2,7 @@ import types
 from functools import partial
 from itertools import islice
 from pathlib import Path
-from typing import Any, Dict, Iterator, List, Optional, Tuple, Type, Union
+from typing import Any, Callable, Dict, Iterator, List, Optional, Tuple, Type, Union
 
 import click
 import pandas as pd
@@ -13,10 +13,13 @@ from ape.api import AccountAPI, Address, ReceiptAPI, TransactionAPI
 from ape.api.address import BaseAddress
 from ape.api.query import ContractEventQuery, extract_fields
 from ape.exceptions import (
+    ApeAttributeError,
     ArgumentsLengthError,
     ChainError,
     ContractError,
+    ContractLogicError,
     CustomError,
+    MethodNonPayableError,
     TransactionNotFoundError,
 )
 from ape.logging import logger
@@ -246,7 +249,7 @@ def _select_method_abi(abis: List[MethodABI], args: Union[Tuple, List]) -> Metho
             selected_abi = abi
 
     if not selected_abi:
-        raise ArgumentsLengthError(len(args))
+        raise ArgumentsLengthError(len(args), inputs=abis)
 
     return selected_abi
 
@@ -374,7 +377,7 @@ class ContractEvent(ManagerAccessMixin):
 
     def __init__(
         self,
-        contract: "ContractInstance",
+        contract: "ContractTypeWrapper",
         abi: EventABI,
         cached_logs: Optional[List[ContractLog]] = None,
     ) -> None:
@@ -402,10 +405,10 @@ class ContractEvent(ManagerAccessMixin):
         yield from self.range(self.chain_manager.blocks.height + 1)
 
     @property
-    def log_filter(self):
-        return LogFilter.from_event(
-            event=self.abi, addresses=[self.contract.address], start_block=0
-        )
+    def log_filter(self) -> LogFilter:
+        # NOTE: This shouldn't really be called when given contract containers.
+        addresses = [] if not hasattr(self.contract, "address") else [self.contract.address]
+        return LogFilter.from_event(event=self.abi, addresses=addresses, start_block=0)
 
     @singledispatchmethod
     def __getitem__(self, value) -> Union[ContractLog, List[ContractLog]]:
@@ -431,6 +434,7 @@ class ContractEvent(ManagerAccessMixin):
                 return next(islice(logs, index, index + 1))
             else:
                 return list(logs)[index]
+
         except (IndexError, StopIteration) as err:
             raise IndexError(f"No log at index '{index}' for event '{self.abi.name}'.") from err
 
@@ -486,11 +490,12 @@ class ContractEvent(ManagerAccessMixin):
             py_type = ecosystem.get_python_types(input_abi)
             converted_args[key] = self.conversion_manager.convert(value, py_type)
 
-        return MockContractLog(
-            contract_address=self.contract.address,
-            event_arguments=converted_args,  # Use the converted arguments
-            event_name=self.abi.name,
-        )
+        properties = {"event_arguments": converted_args, "event_name": self.abi.name}
+        if hasattr(self.contract, "address"):
+            # Only address if this is off an instance.
+            properties["contract_address"] = self.contract.address
+
+        return MockContractLog(**properties)
 
     def query(
         self,
@@ -536,14 +541,18 @@ class ContractEvent(ManagerAccessMixin):
         if columns[0] == "*":
             columns = list(ContractLog.__fields__)  # type: ignore
 
-        contract_event_query = ContractEventQuery(
-            columns=columns,
-            contract=self.contract.address,
-            event=self.abi,
-            start_block=start_block,
-            stop_block=stop_block,
-            step=step,
-        )
+        query = {
+            "columns": columns,
+            "event": self.abi,
+            "start_block": start_block,
+            "stop_block": stop_block,
+            "step": step,
+        }
+        if hasattr(self.contract, "address"):
+            # Only query for a specific contract when checking an instance.
+            query["contract"] = self.contract.address
+
+        contract_event_query = ContractEventQuery(**query)
         contract_events = self.query_manager.query(
             contract_event_query, engine_to_use=engine_to_use
         )
@@ -576,11 +585,26 @@ class ContractEvent(ManagerAccessMixin):
             Iterator[:class:`~ape.contracts.base.ContractLog`]
         """
 
+        if not hasattr(self.contract, "address"):
+            return
+
         start_block = None
         stop_block = None
 
         if stop is None:
-            start_block = 0
+            contract = None
+            try:
+                contract = self.chain_manager.contracts.instance_at(self.contract.address)
+            except Exception:
+                pass
+
+            if contract:
+                start_block = contract.receipt.block_number
+            else:
+                start_block = self.chain_manager.contracts.get_creation_receipt(
+                    self.contract.address
+                ).block_number
+
             stop_block = start_or_stop
         elif start_or_stop is not None and stop is not None:
             start_block = start_or_stop
@@ -738,6 +762,13 @@ class ContractTypeWrapper(ManagerAccessMixin):
         input_dict = ecosystem.decode_calldata(method, rest_calldata)
         return method.selector, input_dict
 
+    def _create_custom_error_type(self, abi: ErrorABI) -> Type[CustomError]:
+        def exec_body(namespace):
+            namespace["abi"] = abi
+            namespace["contract"] = self
+
+        return types.new_class(abi.name, (CustomError,), {}, exec_body)
+
 
 class ContractInstance(BaseAddress, ContractTypeWrapper):
     """
@@ -804,25 +835,29 @@ class ContractInstance(BaseAddress, ContractTypeWrapper):
         return instance
 
     @property
-    def receipt(self) -> Optional[ReceiptAPI]:
+    def receipt(self) -> ReceiptAPI:
         """
         The receipt associated with deploying the contract instance,
         if it is known and exists.
         """
 
-        if not self._cached_receipt and self.txn_hash:
+        if self._cached_receipt:
+            return self._cached_receipt
+
+        if self.txn_hash:
+            # Hash is known. Use that to get the receipt.
             try:
                 receipt = self.chain_manager.get_receipt(self.txn_hash)
             except (TransactionNotFoundError, ValueError, ChainError):
-                return None
+                pass
+            else:
+                self._cached_receipt = receipt
+                return receipt
 
-            self._cached_receipt = receipt
-            return receipt
-
-        elif self._cached_receipt:
-            return self._cached_receipt
-
-        return None
+        # Brute force find the receipt.
+        receipt = self.chain_manager.contracts.get_creation_receipt(self.address)
+        self._cached_receipt = receipt
+        return receipt
 
     def __repr__(self) -> str:
         contract_name = self.contract_type.name or "Unnamed contract"
@@ -856,7 +891,7 @@ class ContractInstance(BaseAddress, ContractTypeWrapper):
             }
         except Exception as err:
             # NOTE: Must raise AttributeError for __attr__ method or will seg fault
-            raise AttributeError(str(err)) from err
+            raise ApeAttributeError(str(err)) from err
 
     @cached_property
     def _mutable_methods_(self) -> Dict[str, ContractTransactionHandler]:
@@ -875,7 +910,7 @@ class ContractInstance(BaseAddress, ContractTypeWrapper):
             }
         except Exception as err:
             # NOTE: Must raise AttributeError for __attr__ method or will seg fault
-            raise AttributeError(str(err)) from err
+            raise ApeAttributeError(str(err)) from err
 
     def call_view_method(self, method_name: str, *args, **kwargs) -> Any:
         """
@@ -908,7 +943,7 @@ class ContractInstance(BaseAddress, ContractTypeWrapper):
         else:
             # Didn't find anything that matches
             name = self.contract_type.name or self.__class__.__name__
-            raise AttributeError(f"'{name}' has no attribute '{method_name}'.")
+            raise ApeAttributeError(f"'{name}' has no attribute '{method_name}'.")
 
     def invoke_transaction(self, method_name: str, *args, **kwargs) -> ReceiptAPI:
         """
@@ -943,7 +978,7 @@ class ContractInstance(BaseAddress, ContractTypeWrapper):
         else:
             # Didn't find anything that matches
             name = self.contract_type.name or self.__class__.__name__
-            raise AttributeError(f"'{name}' has no attribute '{method_name}'.")
+            raise ApeAttributeError(f"'{name}' has no attribute '{method_name}'.")
 
     def get_event_by_signature(self, signature: str) -> ContractEvent:
         """
@@ -1014,7 +1049,7 @@ class ContractInstance(BaseAddress, ContractTypeWrapper):
             }
         except Exception as err:
             # NOTE: Must raise AttributeError for __attr__ method or will seg fault
-            raise AttributeError(str(err)) from err
+            raise ApeAttributeError(str(err)) from err
 
     @cached_property
     def _errors_(self) -> Dict[str, List[Type[CustomError]]]:
@@ -1054,14 +1089,7 @@ class ContractInstance(BaseAddress, ContractTypeWrapper):
 
         except Exception as err:
             # NOTE: Must raise AttributeError for __attr__ method or will seg fault
-            raise AttributeError(str(err)) from err
-
-    def _create_custom_error_type(self, abi: ErrorABI) -> Type[CustomError]:
-        def exec_body(namespace):
-            namespace["abi"] = abi
-            namespace["contract"] = self
-
-        return types.new_class(abi.name, (CustomError,), {}, exec_body)
+            raise ApeAttributeError(str(err)) from err
 
     def __dir__(self) -> List[str]:
         """
@@ -1115,7 +1143,7 @@ class ContractInstance(BaseAddress, ContractTypeWrapper):
             # Didn't find anything that matches
             # NOTE: `__getattr__` *must* raise `AttributeError`
             name = self.contract_type.name or self.__class__.__name__
-            raise AttributeError(f"'{name}' has no attribute '{attr_name}'.")
+            raise ApeAttributeError(f"'{name}' has no attribute '{attr_name}'.")
 
         elif (
             int(attr_name in self._view_methods_)
@@ -1126,7 +1154,7 @@ class ContractInstance(BaseAddress, ContractTypeWrapper):
         ):
             # ABI should not contain a mix of events, mutable and view methods that match
             # NOTE: `__getattr__` *must* raise `AttributeError`
-            raise AttributeError(f"{self.__class__.__name__} has corrupted ABI.")
+            raise ApeAttributeError(f"{self.__class__.__name__} has corrupted ABI.")
 
         if attr_name in self._view_methods_:
             return self._view_methods_[attr_name]
@@ -1137,7 +1165,7 @@ class ContractInstance(BaseAddress, ContractTypeWrapper):
         elif attr_name in self._events_:
             evt_options = self._events_[attr_name]
             if len(evt_options) > 1:
-                raise AttributeError(
+                raise ApeAttributeError(
                     f"Multiple events named '{attr_name}' in '{self.contract_type.name}'.\n"
                     f"Use '{self.get_event_by_signature.__name__}' look-up."
                 )
@@ -1147,7 +1175,7 @@ class ContractInstance(BaseAddress, ContractTypeWrapper):
         elif attr_name in self._errors_:
             err_options = self._errors_[attr_name]
             if len(err_options) > 1:
-                raise AttributeError(
+                raise ApeAttributeError(
                     f"Multiple errors named '{attr_name}' in '{self.contract_type.name}'.\n"
                     f"Use '{self.get_error_by_signature.__name__}' look-up."
                 )
@@ -1155,7 +1183,9 @@ class ContractInstance(BaseAddress, ContractTypeWrapper):
             return err_options[0]
 
         else:
-            raise AttributeError(f"No attribute '{attr_name}' found in contract '{self.address}'.")
+            raise ApeAttributeError(
+                f"No attribute '{attr_name}' found in contract '{self.address}'."
+            )
 
 
 class ContractContainer(ContractTypeWrapper):
@@ -1176,6 +1206,39 @@ class ContractContainer(ContractTypeWrapper):
 
     def __repr__(self) -> str:
         return f"<{self.contract_type.name}>"
+
+    def __getattr__(self, name: str) -> Any:
+        """
+        Access a contract error or event type via its ABI name using ``.`` access.
+
+        Args:
+            name (str): The name of the event or error.
+
+        Returns:
+            :class:`~ape.types.ContractEvent` or a subclass of :class:`~ape.exceptions.CustomError`
+            or any real attribute of the class.
+        """
+
+        try:
+            # First, check if requesting a regular attribute on this class.
+            return self.__getattribute__(name)
+        except AttributeError:
+            pass
+
+        try:
+            if name in self.contract_type.events:
+                abi = self.contract_type.events[name]
+                return ContractEvent(contract=self, abi=abi)
+
+            elif name in self.contract_type.errors:
+                abi = self.contract_type.errors[name]
+                return self._create_custom_error_type(abi)
+
+        except Exception as err:
+            # __getattr__ must raise AttributeError
+            raise ApeAttributeError(str(err)) from err
+
+        raise ApeAttributeError(f"No ABI with name '{name}'.")
 
     @property
     def deployments(self):
@@ -1231,7 +1294,7 @@ class ContractContainer(ContractTypeWrapper):
             else 0
         )
         if inputs_length != args_length:
-            raise ArgumentsLengthError(args_length, inputs_length=inputs_length)
+            raise ArgumentsLengthError(args_length, inputs=self.constructor.abi)
 
         return self.constructor.serialize_transaction(*args, **kwargs)
 
@@ -1239,16 +1302,21 @@ class ContractContainer(ContractTypeWrapper):
         txn = self(*args, **kwargs)
         private = kwargs.get("private", False)
 
+        if kwargs.get("value") and not self.contract_type.constructor.is_payable:
+            raise MethodNonPayableError("Sending funds to a non-payable constructor.")
+
         if "sender" in kwargs and isinstance(kwargs["sender"], AccountAPI):
             # Handle account-related preparation if needed, such as signing
-            receipt = kwargs["sender"].call(txn, **kwargs)
+            receipt = self._cache_wrap(lambda: kwargs["sender"].call(txn, **kwargs))
 
         else:
             txn = self.provider.prepare_transaction(txn)
-            receipt = (
-                self.provider.send_private_transaction(txn)
-                if private
-                else self.provider.send_transaction(txn)
+            receipt = self._cache_wrap(
+                lambda: (
+                    self.provider.send_private_transaction(txn)
+                    if private
+                    else self.provider.send_transaction(txn)
+                )
             )
 
         address = receipt.contract_address
@@ -1266,6 +1334,48 @@ class ContractContainer(ContractTypeWrapper):
             self.provider.network.publish_contract(address)
 
         return instance
+
+    def _cache_wrap(self, function: Callable) -> ReceiptAPI:
+        """
+        A helper method to ensure a contract type is cached as early on
+        as possible to help enrich errors from ``deploy()`` transactions
+        as well produce nicer tracebacks for these errors. It also helps
+        make assertions about these revert conditions in your tests.
+        """
+        try:
+            return function()
+        except ContractLogicError as err:
+            if address := err.address:
+                self.chain_manager.contracts[address] = self.contract_type
+                err._set_tb()  # Re-try setting source traceback
+                new_err = None
+                try:
+                    # Try enrichment again now that the contract type is cached.
+                    new_err = self.compiler_manager.enrich_error(err)
+                except Exception:
+                    pass
+
+                if new_err:
+                    raise new_err from err
+
+            raise  # The error after caching.
+
+    def declare(self, *args, **kwargs) -> ReceiptAPI:
+        transaction = self.provider.network.ecosystem.encode_contract_blueprint(
+            self.contract_type, *args, **kwargs
+        )
+        if "sender" in kwargs and isinstance(kwargs["sender"], AccountAPI):
+            return kwargs["sender"].call(transaction)
+
+        receipt = self.provider.send_transaction(transaction)
+        if receipt.contract_address:
+            self.chain_manager.contracts.cache_blueprint(
+                receipt.contract_address, self.contract_type
+            )
+        else:
+            logger.debug("Failed to cache contract declaration: missing contract address.")
+
+        return receipt
 
 
 def _get_non_contract_error(address: str, network_name: str) -> ContractError:

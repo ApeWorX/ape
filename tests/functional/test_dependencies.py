@@ -114,3 +114,24 @@ def test_npm_dependency():
         manifest = dependency.extract_manifest()
         assert manifest.sources
         assert str(manifest.sources["contract.json"].content) == f"{source_content}\n"
+
+
+def test_compile(project_with_downloaded_dependencies):
+    name = "OpenZeppelin"
+    oz_442 = project_with_downloaded_dependencies.dependencies[name]["4.4.2"]
+    # NOTE: the test data is pre-compiled because the ape-solidity plugin is required.
+    actual = oz_442.compile()
+    assert len(actual.contract_types) > 0
+
+
+def test_compile_with_extra_settings(dependency_manager, project):
+    settings = {".json": {"evm_version": "paris"}}
+    path = "__test_path__"
+    base_path = project.path / path
+    contracts_path = base_path / "contracts"
+    contracts_path.mkdir(parents=True)
+    (contracts_path / "contract.json").write_text('{"abi": []}')
+
+    data = {"name": "FooBar", "local": path, "config_override": settings}
+    dependency = dependency_manager.decode_dependency(data)
+    assert dependency.config_override == settings

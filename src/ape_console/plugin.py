@@ -18,11 +18,10 @@ from ape.utils import cached_property
 class ApeConsoleMagics(Magics):
     @cached_property
     def ipython(self):
-        ipython = get_ipython()
-        if not ipython:
-            raise ValueError("Must be called from an IPython session.")
+        if ipython := get_ipython():
+            return ipython
 
-        return ipython
+        raise ValueError("Must be called from an IPython session.")
 
     @line_magic
     def ape(self, line: str = ""):

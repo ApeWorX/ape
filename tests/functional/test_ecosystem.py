@@ -6,9 +6,10 @@ from ethpm_types import HexBytes
 from ethpm_types.abi import ABIType, MethodABI
 
 from ape.api.networks import LOCAL_NETWORK_NAME
+from ape.exceptions import DecodingError
 from ape.types import AddressType
 from ape.utils import DEFAULT_LOCAL_TRANSACTION_ACCEPTANCE_TIMEOUT
-from ape_ethereum.ecosystem import Block
+from ape_ethereum.ecosystem import BLUEPRINT_HEADER, Block
 from ape_ethereum.transactions import TransactionType
 
 LOG = {
@@ -238,3 +239,40 @@ def test_gas_limit_local_networks(ethereum, network_name):
 def test_gas_limit_live_networks(ethereum):
     network = ethereum.get_network("goerli")
     assert network.gas_limit == "auto"
+
+
+def test_encode_blueprint_contract(ethereum, vyper_contract_type):
+    actual = ethereum.encode_contract_blueprint(vyper_contract_type)
+    ct_bytes = vyper_contract_type.deployment_bytecode.to_bytes()
+    # EIP-5202
+    expected = (
+        HexBytes("0x61")
+        + (6971).to_bytes(2, "big")  # preface and length
+        + HexBytes("0x3d81600a3d39f3")  # return stuff
+        + BLUEPRINT_HEADER
+        + HexBytes(0)
+        + ct_bytes
+    )
+    assert actual.data == HexBytes(expected)
+
+
+def test_decode_return_data_non_empty_padding_bytes(ethereum):
+    raw_data = HexBytes(
+        "0x08c379a000000000000000000000000000000000000000000000000000000000000000200"
+        "000000000000000000000000000000000000000000000000000000000000012696e73756666"
+        "696369656e742066756e64730000000000000000000000000000"
+    )
+    abi = MethodABI.parse_obj(
+        {
+            "type": "function",
+            "name": "transfer",
+            "stateMutability": "nonpayable",
+            "inputs": [
+                {"name": "receiver", "type": "address"},
+                {"name": "amount", "type": "uint256"},
+            ],
+            "outputs": [{"name": "", "type": "bool"}],
+        }
+    )
+    with pytest.raises(DecodingError):
+        ethereum.decode_returndata(abi, raw_data)

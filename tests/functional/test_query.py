@@ -5,8 +5,7 @@ import pandas as pd
 import pytest
 
 from ape.api.query import validate_and_expand_columns
-from ape.utils import BaseInterfaceModel
-from ape_test.provider import CHAIN_ID
+from ape.utils import DEFAULT_TEST_CHAIN_ID, BaseInterfaceModel
 
 
 def test_basic_query(chain, eth_tester_provider):
@@ -51,13 +50,23 @@ def test_block_transaction_query(chain, eth_tester_provider, sender, receiver):
     query = chain.blocks[-1].transactions
     assert len(query) == 1
     assert query[0].value == 100
-    assert query[0].chain_id == CHAIN_ID
+    assert query[0].chain_id == DEFAULT_TEST_CHAIN_ID
 
 
 def test_transaction_contract_event_query(contract_instance, owner, eth_tester_provider):
     contract_instance.fooAndBar(sender=owner)
     time.sleep(0.1)
     df_events = contract_instance.FooHappened.query("*", start_block=-1)
+    assert isinstance(df_events, pd.DataFrame)
+    assert df_events.event_name[0] == "FooHappened"
+
+
+def test_transaction_contract_event_query_starts_query_at_deploy_tx(
+    contract_instance, owner, eth_tester_provider
+):
+    contract_instance.fooAndBar(sender=owner)
+    time.sleep(0.1)
+    df_events = contract_instance.FooHappened.query("*")
     assert isinstance(df_events, pd.DataFrame)
     assert df_events.event_name[0] == "FooHappened"
 

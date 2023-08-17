@@ -9,6 +9,7 @@ from ethpm_types import HexBytes
 DEFAULT_NUMBER_OF_TEST_ACCOUNTS = 10
 DEFAULT_TEST_MNEMONIC = "test test test test test test test test test test test junk"
 DEFAULT_HD_PATH = "m/44'/60'/0'/{}"
+DEFAULT_TEST_CHAIN_ID = 1337
 GeneratedDevAccount = namedtuple("GeneratedDevAccount", ("address", "private_key"))
 """
 An account key-pair generated from the test mnemonic. Set the test mnemonic

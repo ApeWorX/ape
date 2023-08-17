@@ -8,6 +8,7 @@ from pathlib import Path
 from typing import Dict, Optional, Set
 
 from github import Github, UnknownObjectException
+from github.Auth import Token as GithubToken
 from github.GitRelease import GitRelease
 from github.Organization import Organization
 from github.Repository import Repository as GithubRepository
@@ -67,7 +68,8 @@ class GithubClient:
 
     def __init__(self):
         token = os.environ[self.TOKEN_KEY] if self.TOKEN_KEY in os.environ else None
-        self._client = Github(login_or_token=token, user_agent=USER_AGENT)
+        auth = GithubToken(token) if token else None
+        self._client = Github(auth=auth, user_agent=USER_AGENT)
 
     @cached_property
     def ape_org(self) -> Organization:
@@ -114,8 +116,9 @@ class GithubClient:
             except UnknownObjectException:
                 return None
 
-        release = _try_get_release(version)
-        if not release:
+        if release := _try_get_release(version):
+            return release
+        else:
             original_version = str(version)
             # Try an alternative tag style
             if version.startswith("v"):
@@ -123,11 +126,10 @@ class GithubClient:
             else:
                 version = f"v{version}"
 
-            release = _try_get_release(version)
-            if not release:
-                raise UnknownVersionError(original_version, repo.name)
+            if release := _try_get_release(version):
+                return release
 
-        return release
+            raise UnknownVersionError(original_version, repo.name)
 
     def get_repo(self, repo_path: str) -> GithubRepository:
         """

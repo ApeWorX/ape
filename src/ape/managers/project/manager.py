@@ -1,6 +1,6 @@
 import shutil
 from pathlib import Path
-from typing import Dict, Iterable, List, Optional, Type, Union
+from typing import Any, Dict, Iterable, List, Optional, Type, Union
 
 from ethpm_types import ContractInstance as EthPMContractInstance
 from ethpm_types import ContractType, PackageManifest, PackageMeta, Source
@@ -12,7 +12,7 @@ from ethpm_types.utils import AnyUrl
 from ape.api import DependencyAPI, ProjectAPI
 from ape.api.networks import LOCAL_NETWORK_NAME
 from ape.contracts import ContractContainer, ContractInstance, ContractNamespace
-from ape.exceptions import APINotImplementedError, ProjectError
+from ape.exceptions import ApeAttributeError, APINotImplementedError, ChainError, ProjectError
 from ape.logging import logger
 from ape.managers.base import BaseManager
 from ape.managers.project.types import ApeProject, BrownieProject
@@ -62,7 +62,7 @@ class ProjectManager(BaseManager):
         in this project's ``ape-config.yaml`` file.
         """
 
-        return self._load_dependencies()
+        return self.load_dependencies()
 
     @property
     def sources(self) -> Dict[str, Source]:
@@ -286,6 +286,16 @@ class ProjectManager(BaseManager):
     def _package_deployments_folder(self) -> Path:
         return self.local_project._cache_folder / "deployments"
 
+    @property
+    def _contract_sources(self) -> List[ContractSource]:
+        sources = []
+        for contract in self.contracts.values():
+            contract_src = self._create_contract_source(contract)
+            if contract_src:
+                sources.append(contract_src)
+
+        return sources
+
     def get_project(
         self,
         path: Path,
@@ -401,7 +411,7 @@ class ProjectManager(BaseManager):
 
         return self.local_project.contracts
 
-    def __getattr__(self, attr_name: str) -> Union[ContractContainer, ContractNamespace]:
+    def __getattr__(self, attr_name: str) -> Any:
         """
         Get a contract container from an existing contract type in
         the local project using ``.`` access.
@@ -416,13 +426,15 @@ class ProjectManager(BaseManager):
             contract = project.MyContract
 
         Raises:
-            AttributeError: When the given name is not a contract in the project.
+            :class:`~ape.exceptions.ApeAttributeError`: When the given name is not
+              a contract in the project.
 
         Args:
             attr_name (str): The name of the contract in the project.
 
         Returns:
-            :class:`~ape.contracts.ContractContainer`
+            :class:`~ape.contracts.ContractContainer`,
+            a :class:`~ape.contracts.ContractNamespace`, or any attribute.
         """
 
         result = self._get_attr(attr_name)
@@ -454,12 +466,12 @@ class ProjectManager(BaseManager):
         contract_type = contract_types.get(attr_name)
         if not contract_type:
             # Still not found. Contract likely doesn't exist.
-            return self._handle_attr_not_found(attr_name)
+            return self._handle_attr_or_contract_not_found(attr_name)
 
         result = self._get_attr(attr_name)
         if not result:
             # Shouldn't happen.
-            return self._handle_attr_not_found(attr_name)
+            return self._handle_attr_or_contract_not_found(attr_name)
 
         return result
 
@@ -474,8 +486,7 @@ class ProjectManager(BaseManager):
 
         try:
             # NOTE: Will compile project (if needed)
-            contract = self._get_contract(attr_name)
-            if contract:
+            if contract := self._get_contract(attr_name):
                 return contract
 
             # Check if using namespacing.
@@ -484,7 +495,7 @@ class ProjectManager(BaseManager):
                 for ct in [
                     self._get_contract(ct.name)
                     for n, ct in self.contracts.items()
-                    if ct.name and n.split(".")[0] == attr_name
+                    if ct.name and "." in n and n.split(".")[0] == attr_name
                 ]
                 if ct
             ]
@@ -493,20 +504,36 @@ class ProjectManager(BaseManager):
 
         except Exception as err:
             # __getattr__ has to raise `AttributeError`
-            raise AttributeError(str(err)) from err
+            raise ApeAttributeError(str(err)) from err
 
         return None
 
-    def _handle_attr_not_found(self, attr_name: str):
+    def _handle_attr_or_contract_not_found(self, attr_name: str):
         message = f"{self.__class__.__name__} has no attribute or contract named '{attr_name}'."
+
+        file_check_appended = False
+        for file in self.contracts_folder.glob("**/*"):
+            # Possibly, the user was trying to use a source ID instead of a contract name.
+            if file.stem != attr_name:
+                continue
+
+            message = (
+                f"{message} However, there is a source file named '{attr_name}', "
+                "did you mean to reference a contract name from this source file?"
+            )
+            file_check_appended = True
+            break
+
+        # Possibly, the user does not have compiler plugins installed or working.
         missing_exts = self.extensions_with_missing_compilers([])
         if missing_exts:
+            start = "Else, could" if file_check_appended else "Could"
             message = (
-                f"{message} Could it be from one of the missing compilers for extensions: "
+                f"{message} {start} it be from one of the missing compilers for extensions: "
                 + f'{", ".join(sorted(missing_exts))}?'
             )
 
-        raise AttributeError(message)
+        raise ApeAttributeError(message)
 
     def get_contract(self, contract_name: str) -> ContractContainer:
         """
@@ -528,7 +555,7 @@ class ProjectManager(BaseManager):
 
         contract = self._get_contract(contract_name)
         if not contract:
-            raise ValueError(f"No contract found with name '{contract_name}'.")
+            raise ProjectError(f"No contract found with name '{contract_name}'.")
 
         return contract
 
@@ -652,9 +679,9 @@ class ProjectManager(BaseManager):
 
         return self.local_project.cached_manifest.contract_types or {}
 
-    def _load_dependencies(self) -> Dict[str, Dict[str, DependencyAPI]]:
+    def load_dependencies(self, use_cache: bool = True) -> Dict[str, Dict[str, DependencyAPI]]:
         project_id = str(self.path)
-        if project_id in self._cached_dependencies:
+        if use_cache and project_id in self._cached_dependencies:
             return self._cached_dependencies[project_id]
 
         for dependency_config in self.config_manager.dependencies:
@@ -663,7 +690,8 @@ class ProjectManager(BaseManager):
             project_dependencies = self._cached_dependencies.get(project_id, {})
 
             if (
-                dependency_name in project_dependencies
+                use_cache
+                and dependency_name in project_dependencies
                 and version_id in project_dependencies[dependency_name]
             ):
                 # Already cached
@@ -680,7 +708,7 @@ class ProjectManager(BaseManager):
             self._cached_dependencies[project_id] = project_dependencies
 
             # Only extract manifest if wasn't cached and must happen after caching.
-            dependency_config.extract_manifest()
+            dependency_config.extract_manifest(use_cache=use_cache)
 
         return self._cached_dependencies.get(project_id, {})
 
@@ -702,9 +730,12 @@ class ProjectManager(BaseManager):
             raise ProjectError("Can only publish deployments on a live network.")
 
         contract_name = contract.contract_type.name
-        receipt = contract.receipt
-        if not receipt:
-            raise ProjectError(f"Contract '{contract_name}' transaction receipt is unknown.")
+        try:
+            receipt = contract.receipt
+        except ChainError as err:
+            raise ProjectError(
+                f"Contract '{contract_name}' transaction receipt is unknown."
+            ) from err
 
         block_number = receipt.block_number
         block_hash_bytes = self.provider.get_block(block_number).hash

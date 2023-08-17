@@ -1,10 +1,9 @@
 import re
 from copy import deepcopy
-from enum import IntEnum
 from typing import Any, Dict, Iterator, List, Optional, Tuple, Type, Union, cast
 
 from eth_abi import decode, encode
-from eth_abi.exceptions import InsufficientDataBytes
+from eth_abi.exceptions import InsufficientDataBytes, NonEmptyPaddingBytes
 from eth_typing import Hash32
 from eth_utils import (
     encode_hex,
@@ -16,12 +15,12 @@ from eth_utils import (
     to_checksum_address,
     to_int,
 )
-from ethpm_types import HexBytes
+from ethpm_types import ContractType, HexBytes
 from ethpm_types.abi import ABIType, ConstructorABI, EventABI, MethodABI
 from pydantic import Field, validator
 
 from ape.api import BlockAPI, EcosystemAPI, PluginConfig, ReceiptAPI, TransactionAPI
-from ape.api.networks import LOCAL_NETWORK_NAME, ProxyInfoAPI
+from ape.api.networks import LOCAL_NETWORK_NAME
 from ape.contracts.base import ContractCall
 from ape.exceptions import (
     ApeException,
@@ -33,6 +32,7 @@ from ape.exceptions import (
 from ape.logging import logger
 from ape.types import (
     AddressType,
+    AutoGasLimit,
     CallTreeNode,
     ContractLog,
     GasLimit,
@@ -50,7 +50,9 @@ from ape.utils import (
     is_array,
     returns_array,
 )
+from ape.utils.abi import _convert_kwargs
 from ape.utils.misc import DEFAULT_MAX_RETRIES_TX
+from ape_ethereum.proxies import ProxyInfo, ProxyType
 from ape_ethereum.transactions import (
     AccessListTransaction,
     BaseTransaction,
@@ -67,23 +69,7 @@ NETWORKS = {
     "goerli": (5, 5),
     "sepolia": (11155111, 11155111),
 }
-
-
-class ProxyType(IntEnum):
-    Minimal = 0  # eip-1167 minimal proxy contract
-    Standard = 1  # eip-1967 standard proxy storage slots
-    Beacon = 2  # eip-1967 beacon proxy
-    UUPS = 3  # # eip-1822 universal upgradeable proxy standard
-    Vyper = 4  # vyper <0.2.9 create_forwarder_to
-    Clones = 5  # 0xsplits clones
-    GnosisSafe = 6
-    OpenZeppelin = 7  # openzeppelin upgradeability proxy
-    Delegate = 8  # eip-897 delegate proxy
-    ZeroAge = 9  # a more-minimal proxy
-
-
-class ProxyInfo(ProxyInfoAPI):
-    type: ProxyType
+BLUEPRINT_HEADER = HexBytes("0xfe71")
 
 
 class NetworkConfig(PluginConfig):
@@ -116,7 +102,10 @@ class NetworkConfig(PluginConfig):
 
     @validator("gas_limit", pre=True, allow_reuse=True)
     def validate_gas_limit(cls, value):
-        if value in ("auto", "max"):
+        if isinstance(value, dict) and "auto" in value:
+            return AutoGasLimit.parse_obj(value["auto"])
+
+        elif value in ("auto", "max") or isinstance(value, AutoGasLimit):
             return value
 
         elif isinstance(value, int):
@@ -125,7 +114,7 @@ class NetworkConfig(PluginConfig):
         elif isinstance(value, str) and value.isnumeric():
             return int(value)
 
-        elif is_hex(value) and is_0x_prefixed(value):
+        elif isinstance(value, str) and is_hex(value) and is_0x_prefixed(value):
             return to_int(HexBytes(value))
 
         elif is_hex(value):
@@ -210,6 +199,25 @@ class Ethereum(EcosystemAPI):
     def encode_address(cls, address: AddressType) -> RawAddress:
         return str(address)
 
+    def encode_contract_blueprint(
+        self, contract_type: ContractType, *args, **kwargs
+    ) -> TransactionAPI:
+        # EIP-5202 implementation.
+        bytes_obj = contract_type.deployment_bytecode
+        contract_bytes = (bytes_obj.to_bytes() or b"") if bytes_obj else b""
+        header = kwargs.pop("header", BLUEPRINT_HEADER)
+        blueprint_bytecode = header + HexBytes(0) + contract_bytes
+        len_bytes = len(blueprint_bytecode).to_bytes(2, "big")
+        return_data_size = kwargs.pop("return_data_size", HexBytes("0x61"))
+        return_instructions = kwargs.pop("return_instructions", HexBytes("0x3d81600a3d39f3"))
+        deploy_bytecode = HexBytes(
+            return_data_size + len_bytes + return_instructions + blueprint_bytecode
+        )
+        converted_kwargs = _convert_kwargs(kwargs, self.conversion_manager.convert)
+        return self.encode_deployment(
+            deploy_bytecode, contract_type.constructor, **converted_kwargs
+        )
+
     def get_proxy_info(self, address: AddressType) -> Optional[ProxyInfo]:
         contract_code = self.provider.get_code(address)
         if isinstance(contract_code, bytes):
@@ -220,10 +228,16 @@ class Ethereum(EcosystemAPI):
             return None
 
         patterns = {
-            ProxyType.Minimal: r"363d3d373d3d3d363d73(.{40})5af43d82803e903d91602b57fd5bf3",
-            ProxyType.Vyper: r"366000600037611000600036600073(.{40})5af4602c57600080fd5b6110006000f3",  # noqa: E501
-            ProxyType.Clones: r"36603057343d52307f830d2d700a97af574b186c80d40429385d24241565b08a7c559ba283a964d9b160203da23d3df35b3d3d3d3d363d3d37363d73(.{40})5af43d3d93803e605b57fd5bf3",  # noqa: E501
-            ProxyType.ZeroAge: r"3d3d3d3d363d3d37363d73(.{40})5af43d3d93803e602a57fd5bf3",
+            ProxyType.Minimal: r"^363d3d373d3d3d363d73(.{40})5af43d82803e903d91602b57fd5bf3",
+            ProxyType.ZeroAge: r"^3d3d3d3d363d3d37363d73(.{40})5af43d3d93803e602a57fd5bf3",
+            ProxyType.Clones: r"^36603057343d52307f830d2d700a97af574b186c80d40429385d24241565b08a7c559ba283a964d9b160203da23d3df35b3d3d3d3d363d3d37363d73(.{40})5af43d3d93803e605b57fd5bf3",  # noqa: E501
+            ProxyType.Vyper: r"^366000600037611000600036600073(.{40})5af4602c57600080fd5b6110006000f3",  # noqa: E501
+            ProxyType.VyperBeta: r"^366000600037611000600036600073(.{40})5af41558576110006000f3",
+            ProxyType.CWIA: r"^3d3d3d3d363d3d3761.{4}603736393661.{4}013d73(.{40})5af43d3d93803e603557fd5bf3.*",  # noqa: E501
+            ProxyType.OldCWIA: r"^363d3d3761.{4}603836393d3d3d3661.{4}013d73(.{40})5af43d82803e903d91603657fd5bf3.*",  # noqa: E501
+            ProxyType.SudoswapCWIA: r"^3d3d3d3d363d3d37605160353639366051013d73(.{40})5af43d3d93803e603357fd5bf3.*",  # noqa: E501
+            ProxyType.SoladyCWIA: r"36602c57343d527f9e4ac34f21c619cefc926c8bd93b54bf5a39c7ab2127a895af1cc0691d7e3dff593da1005b363d3d373d3d3d3d61.{4}806062363936013d73(.{40})5af43d3d93803e606057fd5bf3.*",  # noqa: E501
+            ProxyType.SoladyPush0: r"^5f5f365f5f37365f73(.{40})5af43d5f5f3e6029573d5ffd5b3d5ff3",
         }
         for type, pattern in patterns.items():
             match = re.match(pattern, code)
@@ -262,19 +276,19 @@ class Ethereum(EcosystemAPI):
 
             return ProxyInfo(type=type, target=target)
 
-        # gnosis safe stores implementation in slot 0, read `NAME()` to be sure
+        # gnosis safe >=1.1.0 provides `masterCopy()`, it is also stored in slot 0
         abi = MethodABI(
             type="function",
-            name="NAME",
+            name="masterCopy",
             stateMutability="view",
-            outputs=[ABIType(type="string")],
+            outputs=[ABIType(type="address")],
         )
         try:
-            name = ContractCall(abi, address)(skip_trace=True)
-            raw_target = self.provider.get_storage_at(address, 0)[-20:].hex()
-            target = self.conversion_manager.convert(raw_target, AddressType)
+            singleton = ContractCall(abi, address)(skip_trace=True)
+            slot_0 = self.provider.get_storage_at(address, 0)
+            target = self.conversion_manager.convert(slot_0[-20:], AddressType)
             # NOTE: `target` is set in initialized proxies
-            if name in ("Gnosis Safe", "Default Callback Handler") and target != ZERO_ADDRESS:
+            if target != ZERO_ADDRESS and target == singleton:
                 return ProxyInfo(type=ProxyType.GnosisSafe, target=target)
 
         except ApeException:
@@ -434,8 +448,8 @@ class Ethereum(EcosystemAPI):
 
         try:
             vm_return_values = decode(output_types_str_ls, raw_data)
-        except InsufficientDataBytes as err:
-            raise DecodingError() from err
+        except (InsufficientDataBytes, NonEmptyPaddingBytes) as err:
+            raise DecodingError(str(err)) from err
 
         if not vm_return_values:
             return vm_return_values
@@ -529,7 +543,7 @@ class Ethereum(EcosystemAPI):
         txn.data = deployment_bytecode
 
         # Encode args, if there are any
-        if abi:
+        if abi and args:
             txn.data += self.encode_calldata(abi, *args)
 
         return txn  # type: ignore
@@ -594,7 +608,7 @@ class Ethereum(EcosystemAPI):
         if isinstance(kwargs.get("chainId"), str):
             kwargs["chainId"] = int(kwargs["chainId"], 16)
 
-        elif "chainId" not in kwargs:
+        elif "chainId" not in kwargs and self.network_manager.active_provider is not None:
             kwargs["chainId"] = self.provider.chain_id
 
         if "input" in kwargs:
@@ -691,17 +705,47 @@ class Ethereum(EcosystemAPI):
 
             return intermediary_node
 
-        contract_type = self.chain_manager.contracts.get(address)
-        if not contract_type:
+        if not (contract_type := self.chain_manager.contracts.get(address)):
             return enriched_call
 
         enriched_call.contract_id = self._enrich_address(address, **kwargs)
-        method_id_bytes = HexBytes(enriched_call.method_id) if enriched_call.method_id else None
-        if method_id_bytes and method_id_bytes in contract_type.methods:
-            method_abi = contract_type.methods[method_id_bytes]
-            enriched_call.method_id = method_abi.name or enriched_call.method_id
-            enriched_call = self._enrich_calldata(enriched_call, method_abi, **kwargs)
-            enriched_call = self._enrich_returndata(enriched_call, method_abi, **kwargs)
+        method_abi: Optional[Union[MethodABI, ConstructorABI]] = None
+        if "CREATE" in (enriched_call.call_type or ""):
+            method_abi = contract_type.constructor
+            name = "__new__"
+
+        elif enriched_call.method_id is None:
+            name = enriched_call.method_id or "0x"
+
+        else:
+            method_id_bytes = HexBytes(enriched_call.method_id)
+            if method_id_bytes in contract_type.methods:
+                method_abi = contract_type.methods[method_id_bytes]
+                assert isinstance(method_abi, MethodABI)  # For mypy
+
+                # Check if method name duplicated. If that is the case, use selector.
+                times = len([x for x in contract_type.methods if x.name == method_abi.name])
+                name = (
+                    method_abi.name if times == 1 else method_abi.selector
+                ) or enriched_call.method_id
+                enriched_call = self._enrich_calldata(
+                    enriched_call, method_abi, contract_type, **kwargs
+                )
+            else:
+                name = enriched_call.method_id or "0x"
+
+        enriched_call.method_id = name
+
+        if method_abi:
+            enriched_call = self._enrich_calldata(
+                enriched_call, method_abi, contract_type, **kwargs
+            )
+
+            if isinstance(method_abi, MethodABI):
+                enriched_call = self._enrich_returndata(enriched_call, method_abi, **kwargs)
+            else:
+                # For constructors, don't include outputs, as it is likely a large amount of bytes.
+                enriched_call.outputs = None
 
         return enriched_call
 
@@ -739,7 +783,13 @@ class Ethereum(EcosystemAPI):
 
         return address
 
-    def _enrich_calldata(self, call: CallTreeNode, method_abi: MethodABI, **kwargs) -> CallTreeNode:
+    def _enrich_calldata(
+        self,
+        call: CallTreeNode,
+        method_abi: Union[MethodABI, ConstructorABI],
+        contract_type: ContractType,
+        **kwargs,
+    ) -> CallTreeNode:
         calldata = call.inputs
         if isinstance(calldata, str):
             calldata_arg = HexBytes(calldata)
@@ -749,6 +799,16 @@ class Ethereum(EcosystemAPI):
             # Not sure if we can get here.
             # Mostly for mypy's sake.
             return call
+
+        if call.call_type and "CREATE" in call.call_type:
+            # Strip off bytecode
+            bytecode = (
+                contract_type.deployment_bytecode.to_bytes()
+                if contract_type.deployment_bytecode
+                else b""
+            )
+            # TODO: Handle Solidity Metadata (delegate to Compilers again?)
+            calldata_arg = HexBytes(calldata_arg.split(bytecode)[-1])
 
         try:
             call.inputs = self.decode_calldata(method_abi, calldata_arg)
@@ -762,8 +822,11 @@ class Ethereum(EcosystemAPI):
     def _enrich_returndata(
         self, call: CallTreeNode, method_abi: MethodABI, **kwargs
     ) -> CallTreeNode:
-        default_return_value = "<?>"
+        if call.call_type and "CREATE" in call.call_type:
+            call.outputs = ""
+            return call
 
+        default_return_value = "<?>"
         if isinstance(call.outputs, str) and is_0x_prefixed(call.outputs):
             return_value_bytes = HexBytes(call.outputs)
         elif isinstance(call.outputs, HexBytes):
@@ -782,7 +845,7 @@ class Ethereum(EcosystemAPI):
                     if not call.failed
                     else None
                 )
-            except (DecodingError, InsufficientDataBytes):
+            except DecodingError:
                 if return_value_bytes == HexBytes("0x"):
                     # Empty result, but it failed decoding because of its length.
                     return_values = ("",)
@@ -793,7 +856,16 @@ class Ethereum(EcosystemAPI):
                 else tuple([self._enrich_value(v, **kwargs) for v in return_values or ()])
             )
 
-        call.outputs = values[0] if len(values) == 1 else values
+        output_val = values[0] if len(values) == 1 else values
+        if (
+            isinstance(output_val, str)
+            and is_0x_prefixed(output_val)
+            and "." not in output_val
+            and not int(output_val, 16)
+        ):
+            output_val = ""
+
+        call.outputs = output_val
         return call
 
     def get_python_types(self, abi_type: ABIType) -> Union[Type, Tuple, List]:

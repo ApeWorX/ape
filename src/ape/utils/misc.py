@@ -2,12 +2,14 @@ import asyncio
 import json
 import sys
 from asyncio import gather
-from functools import cached_property, lru_cache, singledispatchmethod
+from datetime import datetime
+from functools import cached_property, lru_cache, singledispatchmethod, wraps
 from pathlib import Path
-from typing import Any, Callable, Coroutine, Dict, List, Mapping, Optional
+from typing import Any, Callable, Coroutine, Dict, List, Mapping, Optional, cast
 
 import requests
 import yaml
+from eth_utils import is_0x_prefixed
 from ethpm_types import HexBytes
 from importlib_metadata import PackageNotFoundError, distributions, packages_distributions
 from importlib_metadata import version as version_metadata
@@ -15,10 +17,11 @@ from tqdm.auto import tqdm  # type: ignore
 
 from ape.exceptions import APINotImplementedError, ProviderNotConnectedError
 from ape.logging import logger
+from ape.types import AddressType
 from ape.utils.os import expand_environment_variables
 
 EMPTY_BYTES32 = HexBytes("0x0000000000000000000000000000000000000000000000000000000000000000")
-ZERO_ADDRESS = "0x0000000000000000000000000000000000000000"
+ZERO_ADDRESS: AddressType = cast(AddressType, "0x0000000000000000000000000000000000000000")
 DEFAULT_TRANSACTION_ACCEPTANCE_TIMEOUT = 120
 DEFAULT_LOCAL_TRANSACTION_ACCEPTANCE_TIMEOUT = 20
 DEFAULT_MAX_RETRIES_TX = 20
@@ -269,10 +272,7 @@ def to_int(value) -> int:
     if isinstance(value, int):
         return value
     elif isinstance(value, str):
-        if value.startswith("0x"):
-            return int(value, 16)
-        else:
-            return int(value)
+        return int(value, 16) if is_0x_prefixed(value) else int(value)
     elif isinstance(value, bytes):
         return int.from_bytes(value, "big")
 
@@ -337,13 +337,88 @@ def allow_disconnected(fn: Callable):
     return inner
 
 
+def nonreentrant(key_fn):
+    def inner(f):
+        locks = set()
+
+        @wraps(f)
+        def wrapper(*args, **kwargs):
+            key = key_fn(*args, **kwargs)
+            if key in locks:
+                raise RecursionError(f"nonreentrant {f.__qualname__}:{key}")
+            locks.add(key)
+            try:
+                return f(*args, **kwargs)
+            finally:
+                locks.discard(key)
+
+        return wrapper
+
+    return inner
+
+
+def get_current_timestamp_ms() -> int:
+    """
+    Get the current UNIX timestamp in milliseconds.
+
+    Returns:
+        int
+    """
+    return round(datetime.utcnow().timestamp() * 1000)
+
+
+def is_evm_precompile(address: str) -> bool:
+    """
+    Returns ``True`` if the given address string is a known
+    Ethereum pre-compile address.
+
+    Args:
+        address (str):
+
+    Returns:
+        bool
+    """
+    try:
+        address = address.replace("0x", "")
+        return 0 < sum(int(x) for x in address) < 10
+    except Exception:
+        return False
+
+
+def is_zero_hex(address: str) -> bool:
+    """
+    Returns ``True`` if the hex str is only zero.
+    **NOTE**: Empty hexes like ``"0x"`` are considered zero.
+
+    Args:
+        address (str): The address to check.
+
+    Returns:
+        bool
+    """
+
+    try:
+        if addr := address.replace("0x", ""):
+            return sum(int(x) for x in addr) == 0
+        else:
+            # "0x" counts as zero.
+            return True
+
+    except Exception:
+        return False
+
+
 __all__ = [
     "allow_disconnected",
     "cached_property",
     "extract_nested_value",
     "gas_estimation_error_message",
+    "get_current_timestamp_ms",
     "get_package_version",
+    "is_evm_precompile",
+    "is_zero_hex",
     "load_config",
+    "nonreentrant",
     "raises_not_implemented",
     "run_until_complete",
     "singledispatchmethod",

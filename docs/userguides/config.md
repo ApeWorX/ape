@@ -1,7 +1,14 @@
 # Configure Ape
 
-An `ape-config.yaml` file allows you to configure ape. This guide serves as an index of the settings you can include
-in an `ape-config.yaml` file.
+You can configure Ape using configuration files with the name `ape-config.yaml`.
+There are two locations you can place an `ape-config.yaml` file.
+
+1. In the root of your project
+2. In your `$HOME/.ape` directory (global)
+
+Project settings take precedent, but global settings allow you to configure preferences across all projects, such as your default mainnet provider (e.g. Alchemy versus running your own node).
+
+This guide serves as an index of the settings you can include in any `ape-config.yaml` file.
 
 ## Contracts Folder
 
@@ -95,8 +102,19 @@ You may use one of:
 - `"auto"` - gas limit is estimated for each transaction
 - `"max"` - the maximum block gas limit is used
 - A number or numeric string, base 10 or 16 (e.g. `1234`, `"1234"`, `0x1234`, `"0x1234"`)
+- An object with key `"auto"` for specifying an estimate-multiplier for transaction insurance
 
-For the local network configuration, the default is `"max"`. Otherwise it is `"auto"`.
+To use the auto-multiplier, make your config like this:
+
+```yaml
+ethereum:
+  mainnet:
+    gas_limit:
+      auto:
+        multiplier: 1.2  # Multiply 1.2 times the result of eth_estimateGas
+```
+
+For the local network configuration, the default is `"max"`. Otherwise, it is `"auto"`.
 
 ## Plugins
 

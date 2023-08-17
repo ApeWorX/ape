@@ -2,19 +2,27 @@ from itertools import chain
 from typing import Optional, Type
 
 import click
+from eth_utils import is_hex
 
-from ape import accounts
+from ape import accounts, project
 from ape.api import AccountAPI
 from ape.cli.choices import Alias
 from ape.cli.paramtype import AllFilePaths
-from ape.exceptions import AliasAlreadyInUseError
+from ape.exceptions import AccountsError, AliasAlreadyInUseError
 
 _flatten = chain.from_iterable
 
 
-def _require_non_existing_alias(value):
+def _alias_callback(ctx, param, value):
     if value in accounts.aliases:
+        # Alias cannot be used.
         raise AliasAlreadyInUseError(value)
+
+    elif not isinstance(value, str):
+        raise AccountsError(f"Alias must be a str, not '{type(value)}'.")
+    elif is_hex(value) and len(value) >= 42:
+        raise AccountsError("Longer aliases cannot be hex strings.")
+
     return value
 
 
@@ -35,9 +43,7 @@ def non_existing_alias_argument():
     A ``click.argument`` for an account alias that does not yet exist in ape.
     """
 
-    return click.argument(
-        "alias", callback=lambda ctx, param, value: _require_non_existing_alias(value)
-    )
+    return click.argument("alias", callback=_alias_callback)
 
 
 def _create_contracts_paths(ctx, param, value):
@@ -49,8 +55,8 @@ def _create_contracts_paths(ctx, param, value):
     resolved_contract_paths = set()
     for contract_path in contract_paths:
         # Adds missing absolute path as well as extension.
-        resolved_contract_path = ctx.obj.project_manager.lookup_path(contract_path)
-
+        pm = project if ctx.obj is None else ctx.obj.project_manager
+        resolved_contract_path = pm.lookup_path(contract_path)
         if not resolved_contract_path:
             _raise_bad_arg(contract_path.name)
 

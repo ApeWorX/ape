@@ -19,9 +19,11 @@
    userguides/transactions
    userguides/console
    userguides/contracts
+   userguides/proxy
    userguides/testing
    userguides/scripts
    userguides/publishing
+   userguides/logging
 ```
 
 ```{eval-rst}
@@ -31,6 +33,7 @@
 
    commands/accounts.rst
    commands/compile.rst
+   commands/pm.rst
    commands/console.rst
    commands/init.rst
    commands/networks.rst
