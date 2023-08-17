@@ -2,7 +2,7 @@
 # See LICENSE in the project root for license information.
 #---------------------------------------------------------------------------------------------
 
-ARG PYTHON_VERSION="3.9"
+ARG PYTHON_VERSION="3.10"
 ARG PLUGINS_FILE="./recommended-plugins.txt"
 
 FROM python:${PYTHON_VERSION} as builder
