@@ -1369,7 +1369,12 @@ class ContractCache(BaseManager):
             # Get the first contract receipt, which is the first time it appears
             return next(creation_receipts)
         except StopIteration:
-            raise ChainError(f"Failed to find a contract-creation receipt for '{address}'.")
+            raise ChainError(
+                f"Failed to find a contract-creation receipt for '{address}'. "
+                "Note that it may be the case that the backend used cannot detect contracts "
+                "deployed by other contracts, and you may receive better results by installing "
+                "a plugin that supports it, like Etherscan."
+            )
 
 
 class ReportManager(BaseManager):
