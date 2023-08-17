@@ -9,6 +9,7 @@ from ape.api.query import (
     BaseInterfaceModel,
     BlockQuery,
     BlockTransactionQuery,
+    ContractCreationQuery,
     ContractEventQuery,
 )
 from ape.contracts.base import ContractLog, LogFilter
@@ -39,6 +40,12 @@ class DefaultQueryProvider(QueryAPI):
         return self.provider.get_block(query.block_id).num_transactions * 100
 
     @estimate_query.register
+    def estimate_contract_creation_query(self, query: ContractCreationQuery) -> int:
+        # NOTE: Extremely expensive query, involves binary search of all blocks in a chain
+        #       Very loose estimate of 5s per transaction for this query.
+        return 5000
+
+    @estimate_query.register
     def estimate_contract_events_query(self, query: ContractEventQuery) -> int:
         # NOTE: Very loose estimate of 100ms per block for this query.
         return (1 + query.stop_block - query.start_block) * 100
@@ -67,6 +74,14 @@ class DefaultQueryProvider(QueryAPI):
         self, query: BlockTransactionQuery
     ) -> Iterator[TransactionAPI]:
         return self.provider.get_transactions_by_block(query.block_id)
+
+    @perform_query.register
+    def perform_contract_creation_query(self, query: ContractCreationQuery) -> Iterator[ReceiptAPI]:
+        yield from self.provider.get_contract_creation_receipts(
+            address=query.contract,
+            start_block=query.start_block,
+            stop_block=query.stop_block,
+        )
 
     @perform_query.register
     def perform_contract_events_query(self, query: ContractEventQuery) -> Iterator[ContractLog]:
