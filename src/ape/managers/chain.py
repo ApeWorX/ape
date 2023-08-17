@@ -17,6 +17,7 @@ from ape.api.networks import LOCAL_NETWORK_NAME, NetworkAPI, ProxyInfoAPI
 from ape.api.query import (
     AccountTransactionQuery,
     BlockQuery,
+    ContractCreationQuery,
     extract_fields,
     validate_and_expand_columns,
 )
@@ -1348,35 +1349,26 @@ class ContractCache(BaseManager):
         Returns:
             :class:`~ape.apt.transactions.ReceiptAPI`
         """
-        if stop_block is None and (stop := self.chain_manager.blocks.head.number):
-            stop_block = stop
-        elif stop_block is None:
-            raise ChainError("Chain missing blocks.")
+        if stop_block is None:
+            stop_block = self.chain_manager.blocks.height
 
-        mid_block = (stop_block - start_block) // 2 + start_block
-        # NOTE: biased towards mid_block == start_block
-
-        if start_block == mid_block:
-            for tx in self.chain_manager.blocks[mid_block].transactions:
-                if (receipt := tx.receipt) and receipt.contract_address == address:
-                    return receipt
-
-            if mid_block + 1 <= stop_block:
-                return self.get_creation_receipt(
-                    address, start_block=mid_block + 1, stop_block=stop_block
+        # TODO: Refactor the name of this somehow to be clearer
+        creation_receipts = cast(
+            Iterator[ReceiptAPI],
+            self.query_manager.query(
+                ContractCreationQuery(
+                    columns=["*"],
+                    contract=address,
+                    start_block=start_block,
+                    stop_block=stop_block,
                 )
-            else:
-                raise ChainError(f"Failed to find a contract-creation receipt for '{address}'.")
+            ),
+        )
 
-        elif self.provider.get_code(address, block_id=mid_block):
-            return self.get_creation_receipt(address, start_block=start_block, stop_block=mid_block)
-
-        elif mid_block + 1 <= stop_block:
-            return self.get_creation_receipt(
-                address, start_block=mid_block + 1, stop_block=stop_block
-            )
-
-        else:
+        try:
+            # Get the first contract receipt, which is the first time it appears
+            return next(creation_receipts)
+        except StopIteration:
             raise ChainError(f"Failed to find a contract-creation receipt for '{address}'.")
 
 
