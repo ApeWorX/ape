@@ -98,7 +98,7 @@ test:
   number_of_accounts: 5
 ```
 
-If your are running tests against `anvil`, your generated test accounts may not correspond to the `anvil`'s generated accounts despite using the same mnemonic. In such a case, you are able to specify a custom derivation path in `ape-config.yaml`:
+If you are running tests against `anvil`, your generated test accounts may not correspond to the `anvil`'s generated accounts despite using the same mnemonic. In such a case, you are able to specify a custom derivation path in `ape-config.yaml`:
 
 ```yaml
 test:
