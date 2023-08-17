@@ -388,6 +388,27 @@ class ProviderAPI(BaseInterfaceModel):
             Iterator[:class:`~ape.api.transactions.ReceiptAPI`]
         """
 
+    @raises_not_implemented
+    def get_contract_creation_receipts(  # type: ignore[empty-body]
+        self,
+        address: AddressType,
+        start_block: int = 0,
+        stop_block: int = -1,
+        contract_code: Optional[HexBytes] = None,
+    ) -> Iterator[ReceiptAPI]:
+        """
+        Get all receipts where a contract address was created or re-created.
+
+        Args:
+            address (``AddressType``): The address of the account.
+            start_block (int): The block number to start the search with.
+            stop_block (int): The block number to stop the search with.
+            contract_code (Optional[bytes]): The code of the contract at the stop block.
+
+        Returns:
+            Iterator[:class:`~ape.api.transactions.ReceiptAPI`]
+        """
+
     @abstractmethod
     def send_transaction(self, txn: TransactionAPI) -> ReceiptAPI:
         """
