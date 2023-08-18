@@ -1,6 +1,7 @@
 from enum import IntEnum, auto
 
-from ethpm_types import ContractType
+from ethpm_types import ContractType, MethodABI
+from ethpm_types.abi import ABIType
 from lazyasd import LazyObject  # type: ignore
 
 from ape.api.networks import ProxyInfoAPI
@@ -58,6 +59,26 @@ class ProxyType(IntEnum):
 
 class ProxyInfo(ProxyInfoAPI):
     type: ProxyType
+
+
+MASTER_COPY_ABI = MethodABI(
+    type="function",
+    name="masterCopy",
+    stateMutability="view",
+    outputs=[ABIType(type="address")],
+)
+PROXY_TYPE_ABI = MethodABI(
+    type="function",
+    name="proxyType",
+    stateMutability="view",
+    outputs=[ABIType(type="uint256")],
+)
+IMPLEMENTATION_ABI = MethodABI(
+    type="function",
+    name="implementation",
+    stateMutability="view",
+    outputs=[ABIType(type="address")],
+)
 
 
 def _make_minimal_proxy() -> ContractContainer:
