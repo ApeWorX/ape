@@ -53,11 +53,11 @@ from ape.utils import (
 from ape.utils.abi import _convert_kwargs
 from ape.utils.misc import DEFAULT_MAX_RETRIES_TX
 from ape_ethereum.proxies import (
-    ProxyInfo,
-    ProxyType,
+    IMPLEMENTATION_ABI,
     MASTER_COPY_ABI,
     PROXY_TYPE_ABI,
-    IMPLEMENTATION_ABI,
+    ProxyInfo,
+    ProxyType,
 )
 from ape_ethereum.transactions import (
     AccessListTransaction,
