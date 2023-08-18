@@ -251,6 +251,13 @@ class Ethereum(EcosystemAPI):
                 target = self.conversion_manager.convert(match.group(1), AddressType)
                 return ProxyInfo(type=type, target=target)
 
+        sequence_pattern = r"363d3d373d3d3d363d30545af43d82803e903d91601857fd5bf3"
+        if re.match(sequence_pattern, code):
+            # the implementation is stored in the slot matching proxy address
+            slot = self.provider.get_storage_at(address, address)
+            target = self.conversion_manager.convert(slot[-20:], AddressType)
+            return ProxyInfo(type=ProxyType.Sequence, target=target)
+
         def str_to_slot(text):
             return int(keccak(text=text).hex(), 16)
 
@@ -270,7 +277,7 @@ class Ethereum(EcosystemAPI):
             if sum(storage) == 0:
                 continue
 
-            target = self.conversion_manager.convert(storage[-20:].hex(), AddressType)
+            target = self.conversion_manager.convert(storage[-20:], AddressType)
             # read `target.implementation()`
             if type == ProxyType.Beacon:
                 target = ContractCall(IMPLEMENTATION_ABI, target)(skip_trace=True)
