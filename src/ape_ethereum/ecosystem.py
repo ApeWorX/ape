@@ -262,6 +262,7 @@ class Ethereum(EcosystemAPI):
         }
         for type, slot in slots.items():
             try:
+                # TODO perf: use a batch call here when ape adds support
                 storage = self.provider.get_storage_at(address, slot)
             except APINotImplementedError:
                 continue
@@ -272,59 +273,40 @@ class Ethereum(EcosystemAPI):
             target = self.conversion_manager.convert(storage[-20:].hex(), AddressType)
             # read `target.implementation()`
             if type == ProxyType.Beacon:
-                abi = MethodABI(
-                    type="function",
-                    name="implementation",
-                    stateMutability="view",
-                    outputs=[ABIType(type="address")],
-                )
-                target = ContractCall(abi, target)(skip_trace=True)
+                target = ContractCall(IMPLEMENTATION_ABI, target)(skip_trace=True)
 
             return ProxyInfo(type=type, target=target)
 
-        # gnosis safe >=1.1.0 provides `masterCopy()`, it is also stored in slot 0
-        abi = MethodABI(
-            type="function",
-            name="masterCopy",
-            stateMutability="view",
-            outputs=[ABIType(type="address")],
-        )
-        try:
-            singleton = ContractCall(abi, address)(skip_trace=True)
-            slot_0 = self.provider.get_storage_at(address, 0)
-            target = self.conversion_manager.convert(slot_0[-20:], AddressType)
-            # NOTE: `target` is set in initialized proxies
-            if target != ZERO_ADDRESS and target == singleton:
-                return ProxyInfo(type=ProxyType.GnosisSafe, target=target)
+        # safe >=1.1.0 provides `masterCopy()`, which is also stored in slot 0
+        # detect safe-specific bytecode of push32 keccak256("masterCopy()")
+        safe_pattern = b"\x7f" + keccak(text="masterCopy()")[:4] + bytes(28)
+        if safe_pattern.hex() in code:
+            try:
+                singleton = ContractCall(MASTER_COPY_ABI, address)(skip_trace=True)
+                slot_0 = self.provider.get_storage_at(address, 0)
+                target = self.conversion_manager.convert(slot_0[-20:], AddressType)
+                # NOTE: `target` is set in initialized proxies
+                if target != ZERO_ADDRESS and target == singleton:
+                    return ProxyInfo(type=ProxyType.GnosisSafe, target=target)
+            except ApeException:
+                pass
 
-        except ApeException:
-            pass
+        # eip-897 delegate proxy, read `proxyType()` and `implementation()`
+        # perf: only make a call when a proxyType() selector is mentioned in the code
+        eip897_pattern = b"\x63" + keccak(text="proxyType()")[:4]
+        if eip897_pattern.hex() in code:
+            try:
+                proxy_type = ContractCall(PROXY_TYPE_ABI, address)(skip_trace=True)
+                if proxy_type not in (1, 2):
+                    raise ValueError(f"ProxyType '{proxy_type}' not permitted by EIP-897.")
 
-        # delegate proxy, read `proxyType()` and `implementation()`
-        proxy_type_abi = MethodABI(
-            type="function",
-            name="proxyType",
-            stateMutability="view",
-            outputs=[ABIType(type="uint256")],
-        )
-        implementation_abi = MethodABI(
-            type="function",
-            name="implementation",
-            stateMutability="view",
-            outputs=[ABIType(type="address")],
-        )
-        try:
-            proxy_type = ContractCall(proxy_type_abi, address)(skip_trace=True)
-            if proxy_type not in (1, 2):
-                raise ValueError(f"ProxyType '{proxy_type}' not permitted by EIP-897.")
+                target = ContractCall(IMPLEMENTATION_ABI, address)(skip_trace=True)
+                # avoid recursion
+                if target != ZERO_ADDRESS:
+                    return ProxyInfo(type=ProxyType.Delegate, target=target)
 
-            target = ContractCall(implementation_abi, address)(skip_trace=True)
-            # avoid recursion
-            if target != ZERO_ADDRESS:
-                return ProxyInfo(type=ProxyType.Delegate, target=target)
-
-        except (ApeException, ValueError):
-            pass
+            except (ApeException, ValueError):
+                pass
 
         return None
 
