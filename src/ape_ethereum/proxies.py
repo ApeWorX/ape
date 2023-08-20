@@ -56,6 +56,9 @@ class ProxyType(IntEnum):
     # https://github.com/sudoswap/lssvm2/blob/main/src/lib/LSSVMPairCloner.sol
     SudoswapCWIA = auto()  # a variant used in sudoswap
 
+    # https://github.com/0xSplits/clones-with-immutable-args/blob/864a87a/src/ClonesWithImmutableArgs.sol
+    SplitsCWIA = auto()  # a variant used in 0xsplits
+
     # https://github.com/0xsequence/wallet-contracts/blob/master/contracts/Wallet.sol
     Sequence = auto()
 
