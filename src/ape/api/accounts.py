@@ -68,7 +68,7 @@ class AccountAPI(BaseInterfaceModel, BaseAddress):
           **signer_options: Additional kwargs given to the signer to modify the signing operation.
 
         Returns:
-            :class:`~ape.types.signatures.MessageSignature` (optional): The signed message.
+            :class:`~ape.types.signatures.MessageSignature` (optional): The signature corresponding to the message.
         """
 
     @abstractmethod
