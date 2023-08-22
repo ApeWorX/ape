@@ -13,7 +13,6 @@ from eth_utils import (
     is_hex_address,
     keccak,
     to_checksum_address,
-    to_int,
 )
 from ethpm_types import ContractType, HexBytes
 from ethpm_types.abi import ABIType, ConstructorABI, EventABI, MethodABI
@@ -49,6 +48,7 @@ from ape.utils import (
     StructParser,
     is_array,
     returns_array,
+    to_int,
 )
 from ape.utils.abi import _convert_kwargs
 from ape.utils.misc import DEFAULT_MAX_RETRIES_TX
@@ -165,9 +165,22 @@ class Block(BlockAPI):
         EMPTY_BYTES32, alias="parentHash"
     )  # NOTE: genesis block has no parent hash
 
-    @validator("total_difficulty", pre=True)
-    def validate_total_difficulty(cls, value):
-        return value or 0
+    @validator(
+        "base_fee",
+        "difficulty",
+        "gas_limit",
+        "gas_used",
+        "number",
+        "size",
+        "timestamp",
+        "total_difficulty",
+        pre=True,
+    )
+    def validate_ints(cls, value):
+        if not value:
+            return 0
+
+        return to_int(value)
 
 
 class Ethereum(EcosystemAPI):
