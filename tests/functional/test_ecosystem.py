@@ -165,7 +165,7 @@ def test_decode_block_when_hash_is_none(ethereum):
         "totalDifficulty": 131073,
         "extraData": HexBytes("0x"),
         "size": 513,
-        "gasLimit": 30000000,
+        "gasLimit": 0,
         "gasUsed": 0,
         "timestamp": 1660932629,
         "transactions": [],
@@ -174,6 +174,7 @@ def test_decode_block_when_hash_is_none(ethereum):
     }
     actual = ethereum.decode_block(block_data_with_none_hash)
     assert actual.hash is None
+    assert actual.gas_limit == 0
 
 
 def test_decode_block_with_hex_values(ethereum):
