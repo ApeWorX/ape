@@ -1,6 +1,7 @@
 from enum import IntEnum, auto
 
-from ethpm_types import ContractType
+from ethpm_types import ContractType, MethodABI
+from ethpm_types.abi import ABIType
 from lazyasd import LazyObject  # type: ignore
 
 from ape.api.networks import ProxyInfoAPI
@@ -55,9 +56,35 @@ class ProxyType(IntEnum):
     # https://github.com/sudoswap/lssvm2/blob/main/src/lib/LSSVMPairCloner.sol
     SudoswapCWIA = auto()  # a variant used in sudoswap
 
+    # https://github.com/0xSplits/clones-with-immutable-args/blob/864a87a/src/ClonesWithImmutableArgs.sol
+    SplitsCWIA = auto()  # a variant used in 0xsplits
+
+    # https://github.com/0xsequence/wallet-contracts/blob/master/contracts/Wallet.sol
+    Sequence = auto()
+
 
 class ProxyInfo(ProxyInfoAPI):
     type: ProxyType
+
+
+MASTER_COPY_ABI = MethodABI(
+    type="function",
+    name="masterCopy",
+    stateMutability="view",
+    outputs=[ABIType(type="address")],
+)
+PROXY_TYPE_ABI = MethodABI(
+    type="function",
+    name="proxyType",
+    stateMutability="view",
+    outputs=[ABIType(type="uint256")],
+)
+IMPLEMENTATION_ABI = MethodABI(
+    type="function",
+    name="implementation",
+    stateMutability="view",
+    outputs=[ABIType(type="address")],
+)
 
 
 def _make_minimal_proxy() -> ContractContainer:
