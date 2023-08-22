@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import TYPE_CHECKING, Iterator, List, Optional, Type, Union
+from typing import TYPE_CHECKING, Any, Iterator, List, Optional, Type, Union
 
 import click
 from eip712.messages import SignableMessage as EIP712SignableMessage
@@ -54,18 +54,21 @@ class AccountAPI(BaseInterfaceModel, BaseAddress):
         return None
 
     @abstractmethod
-    def sign_message(self, msg: SignableMessage) -> Optional[MessageSignature]:
+    def sign_message(self, msg: Any, **signer_options) -> Optional[MessageSignature]:
         """
         Sign a message.
 
         Args:
-          msg (:class:`~ape.types.signatures.SignableMessage`): The message to sign.
+          msg (Any): The message to sign. Account plugins can handle various types of messages.
+            For example, :class:`~ape.accounts.LocalAccount` can handle
+            :class:`~ape.types.signatures.SignableMessage`
             See these
             `docs <https://eth-account.readthedocs.io/en/stable/eth_account.html#eth_account.messages.SignableMessage>`__  # noqa: E501
             for more type information on this type.
+          **signer_options: Additional kwargs given to the signer to modify the signing operation.
 
         Returns:
-          :class:`~ape.types.signatures.MessageSignature` (optional): The signed message.
+            :class:`~ape.types.signatures.MessageSignature` (optional): The signed message.
         """
 
     @abstractmethod
@@ -494,7 +497,7 @@ class ImpersonatedAccount(AccountAPI):
     def address(self) -> AddressType:
         return self.raw_address
 
-    def sign_message(self, msg: SignableMessage) -> Optional[MessageSignature]:
+    def sign_message(self, msg: Any, **signer_options) -> Optional[MessageSignature]:
         raise NotImplementedError("This account cannot sign messages")
 
     def sign_transaction(self, txn: TransactionAPI, **kwargs) -> Optional[TransactionAPI]:

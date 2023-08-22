@@ -1,10 +1,11 @@
 import json
 from os import environ
 from pathlib import Path
-from typing import Iterator, Optional
+from typing import Any, Iterator, Optional
 
 import click
 from eth_account import Account as EthAccount
+from eth_account.messages import encode_defunct
 from eth_utils import to_bytes
 from ethpm_types import HexBytes
 
@@ -119,17 +120,20 @@ class KeyfileAccount(AccountAPI):
         self.__decrypt_keyfile(passphrase)
         self.keyfile_path.unlink()
 
-    def sign_message(self, msg: SignableMessage) -> Optional[MessageSignature]:
-        user_approves = self.__autosign or click.confirm(f"{msg}\n\nSign: ")
-        if not user_approves:
-            return None
-
-        signed_msg = EthAccount.sign_message(msg, self.__key)
-        return MessageSignature(
-            v=signed_msg.v,
-            r=to_bytes(signed_msg.r),
-            s=to_bytes(signed_msg.s),
-        )
+    def sign_message(self, msg: Any, **signer_options) -> Optional[MessageSignature]:
+        if isinstance(msg, str):
+            msg = encode_defunct(text=msg)
+        if isinstance(msg, SignableMessage):
+            user_approves = self.__autosign or click.confirm(f"{msg}\n\nSign: ")
+            if not user_approves:
+                return None
+            signed_msg = EthAccount.sign_message(msg, self.__key)
+            return MessageSignature(
+                v=signed_msg.v,
+                r=to_bytes(signed_msg.r),
+                s=to_bytes(signed_msg.s),
+            )
+        raise TypeError(f"Can't sign message of type {type(msg)}")
 
     def sign_transaction(self, txn: TransactionAPI, **kwargs) -> Optional[TransactionAPI]:
         user_approves = self.__autosign or click.confirm(f"{txn}\n\nSign: ")
