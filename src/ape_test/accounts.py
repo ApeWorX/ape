@@ -111,6 +111,7 @@ class TestAccount(TestAccountAPI):
                 r=to_bytes(signed_msg.r),
                 s=to_bytes(signed_msg.s),
             )
+        return None
 
     def sign_transaction(self, txn: TransactionAPI, **kwargs) -> Optional[TransactionAPI]:
         # Signs anything that's given to it
