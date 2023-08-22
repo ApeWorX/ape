@@ -4,6 +4,7 @@ from pathlib import Path
 from typing import Any, Dict, Iterator, Optional
 
 import click
+from eip712.messages import EIP712Message
 from eth_account import Account as EthAccount
 from eth_account.messages import encode_defunct
 from eth_keys import keys  # type: ignore
@@ -158,8 +159,11 @@ class KeyfileAccount(AccountAPI):
 
     def sign_message(self, msg: Any, **signer_options) -> Optional[MessageSignature]:
         if isinstance(msg, str):
-            # Convert to SignableMessage for handling below
+            # Convert str to SignableMessage for handling below
             msg = encode_defunct(text=msg)
+        elif isinstance(msg, EIP712Message):
+            # Convert EIP712Message to SignableMessage for handling below
+            msg = msg.signable_message
         if isinstance(msg, SignableMessage):
             user_approves = self.__autosign or click.confirm(f"{msg}\n\nSign: ")
             if not user_approves:
