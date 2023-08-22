@@ -176,6 +176,35 @@ def test_decode_block_when_hash_is_none(ethereum):
     assert actual.hash is None
 
 
+def test_decode_block_with_hex_values(ethereum):
+    """
+    When using WS providers directly, the values are all hex strings (more raw).
+    This test ensures we can still decode blocks that are in this form.
+    """
+    raw_block = {
+        "baseFeePerGas": "0x62d76fae2",
+        "difficulty": "0x0",
+        "extraData": "0x506f776572656420627920626c6f58726f757465",
+        "gasLimit": "0x1c9c380",
+        "gasUsed": "0x91b5e5",
+        "hash": "0x925cac44d8bac5df3e3eeed6379b3924d6769a054b3c4079899c1d9b442a4041",
+        "logsBloom": "0x7823d304ab8c72f91270a023c11482f341a08a00c91b00f8859906c8e9f22e04b19d311e422cfa79d8107e2b901fc7d9c62fcd2d8a673802f500f4a023693525a2ce66481cc51d1a4e97422b8424912b8c719c6821589a240d5015c5cbe4de46b3b60ad43621cd2f540119b3c938d88f011a49d755a31cc415f34896596912d40b0397d0c544571704ea001c56303f02086e16a3a3b7168f443d224034102ca4c6b21456932dae401c8da7c51d36ae3804c8a084811802c708ae94b7010302100700a28f156d2ca2d61420320e82e8b9927b626bc0ec003dfa09009e3d1668798fb0f8c81a205eb100ee8ea2e20c6041b2d8b2b01bd4d14e8acfaa317049d654",  # noqa: E501
+        "miner": "0x6b3a8798e5fb9fc5603f3ab5ea2e8136694e55d0",
+        "mixHash": "0x0493af8ac5b7de66c7660c22a703a54069cbd561a2767537eaef994bd77e084b",
+        "nonce": "0x0000000000000000",
+        "number": "0x11234df",
+        "parentHash": "0x47651c13bda353d1bbc610bbdb8a9aa1436629f05f8a32a27f143200da698df8",
+        "receiptsRoot": "0xa5abe7eeac74aa03ea82421fcef9b74d1822cfe0ee4b29a8dc01eef31e7d0019",
+        "sha3Uncles": "0x1dcc4de8dec75d7aab85b567b6ccd41ad312451b948a7413f0a142fd40d49347",
+        "size": "0x1cf02",
+        "stateRoot": "0x59eb1dfb098361d1f74dffc8436da680715f671dc3f02be28f4db3f44b1a09bf",
+        "timestamp": "0x64e4b0cb",
+        "transactionsRoot": "0xf2e3c3e4fbe06ff882f3deb8a7ec8cbbe09e55b2c995d93dd0a36d5e843f3efc",
+    }
+    actual = ethereum.decode_block(raw_block)
+    assert actual.difficulty == 0
+
+
 def test_decode_receipt(eth_tester_provider, ethereum):
     receipt_data = {
         "provider": eth_tester_provider,
