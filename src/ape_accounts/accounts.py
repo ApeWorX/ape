@@ -158,6 +158,7 @@ class KeyfileAccount(AccountAPI):
 
     def sign_message(self, msg: Any, **signer_options) -> Optional[MessageSignature]:
         if isinstance(msg, str):
+            # Convert to SignableMessage for handling below
             msg = encode_defunct(text=msg)
         if isinstance(msg, SignableMessage):
             user_approves = self.__autosign or click.confirm(f"{msg}\n\nSign: ")
