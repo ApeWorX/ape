@@ -138,7 +138,8 @@ class KeyfileAccount(AccountAPI):
                 r=to_bytes(signed_msg.r),
                 s=to_bytes(signed_msg.s),
             )
-        raise TypeError(f"Can't sign message of type {type(msg)}")
+        logger.warning("Unsupported message type, (type=%r, msg=%r)", type(msg), msg)
+        return None
 
     def sign_transaction(self, txn: TransactionAPI, **kwargs) -> Optional[TransactionAPI]:
         user_approves = self.__autosign or click.confirm(f"{txn}\n\nSign: ")
