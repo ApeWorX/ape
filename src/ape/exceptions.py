@@ -131,6 +131,12 @@ class DecodingError(ContractError):
         super().__init__(message)
 
 
+class MethodNonPayableError(ContractError):
+    """
+    Raises when sending funds to a non-payable method
+    """
+
+
 class TransactionError(ContractError):
     """
     Raised when issues occur related to transactions.
@@ -428,13 +434,21 @@ class BlockNotFoundError(ProviderError):
     Raised when unable to find a block.
     """
 
-    def __init__(self, block_id: "BlockID"):
+    def __init__(self, block_id: "BlockID", reason: Optional[str] = None):
         if isinstance(block_id, bytes):
             block_id_str = block_id.hex()
         else:
             block_id_str = str(block_id)
 
-        super().__init__(f"Block with ID '{block_id_str}' not found.")
+        message = (
+            "Missing latest block."
+            if block_id == "latest"
+            else f"Block with ID '{block_id_str}' not found."
+        )
+        if reason:
+            message = f"{message} Reason: {reason}"
+
+        super().__init__(message)
 
 
 class TransactionNotFoundError(ProviderError):

@@ -1,4 +1,4 @@
-from enum import IntEnum
+from enum import IntEnum, auto
 
 from ethpm_types import ContractType
 from lazyasd import LazyObject  # type: ignore
@@ -13,18 +13,47 @@ MINIMAL_PROXY_BYTES = (
 
 
 class ProxyType(IntEnum):
-    Minimal = 0  # eip-1167 minimal proxy contract
-    Standard = 1  # eip-1967 standard proxy storage slots
-    Beacon = 2  # eip-1967 beacon proxy
-    UUPS = 3  # # eip-1822 universal upgradeable proxy standard
-    Vyper = 4  # vyper <0.2.9 create_forwarder_to
-    Clones = 5  # 0xsplits clones
-    GnosisSafe = 6
-    OpenZeppelin = 7  # openzeppelin upgradeability proxy
-    Delegate = 8  # eip-897 delegate proxy
-    ZeroAge = 9  # a more-minimal proxy
-    SoladyPush0 = 10  # solady push0 minimal proxy
-    ClonesWithImmutableArgs = 11  # https://github.com/wighawag/clones-with-immutable-args/blob/master/src/ClonesWithImmutableArgs.sol  # noqa: E501
+    # https://eips.ethereum.org/EIPS/eip-1167
+    Minimal = auto()  # eip-1167 minimal proxy contract
+
+    # https://eips.ethereum.org/EIPS/eip-1967
+    Standard = auto()  # eip-1967 standard proxy storage slots
+    Beacon = auto()  # eip-1967 beacon proxy
+
+    # https://eips.ethereum.org/EIPS/eip-1822
+    UUPS = auto()  # # eip-1822 universal upgradeable proxy standard
+
+    # https://github.com/vyperlang/vyper/blob/v0.2.8/vyper/functions/functions.py#L1428
+    Vyper = auto()  # vyper <0.2.9 create_forwarder_to
+    # https://github.com/vyperlang/vyper/blob/v0.1.0-beta.4/vyper/functions/functions.py#L633
+    VyperBeta = auto()  # vyper 0.1-beta
+
+    # https://github.com/0xSplits/splits-contracts/blob/main/contracts/libraries/Clones.sol
+    Clones = auto()  # 0xsplits clones
+
+    # https://github.com/safe-global/safe-contracts/blob/main/contracts/proxies/SafeProxy.sol
+    GnosisSafe = auto()
+
+    # https://github.com/OpenZeppelin/openzeppelin-labs/blob/master/initializer_contracts/contracts/UpgradeabilityProxy.sol
+    OpenZeppelin = auto()  # openzeppelin upgradeability proxy
+
+    # https://eips.ethereum.org/EIPS/eip-897
+    Delegate = auto()  # eip-897 delegate proxy
+
+    # https://medium.com/coinmonks/the-more-minimal-proxy-5756ae08ee48
+    ZeroAge = auto()  # a more-minimal proxy
+
+    # https://github.com/wighawag/clones-with-immutable-args/blob/master/src/ClonesWithImmutableArgs.sol
+    CWIA = auto()  # clones with immutable args
+    # https://github.com/wighawag/clones-with-immutable-args/blob/bb93749/src/ClonesWithCallData.sol
+    OldCWIA = auto()
+
+    # https://github.com/Vectorized/solady/blob/main/src/utils/LibClone.sol
+    SoladyPush0 = auto()  # solady push0 minimal proxy
+    SoladyCWIA = auto()  # clones with immutable args with a receive method
+
+    # https://github.com/sudoswap/lssvm2/blob/main/src/lib/LSSVMPairCloner.sol
+    SudoswapCWIA = auto()  # a variant used in sudoswap
 
 
 class ProxyInfo(ProxyInfoAPI):
