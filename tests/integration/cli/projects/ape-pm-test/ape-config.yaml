@@ -1,0 +1,16 @@
+dependencies:
+  # - name: Uniswap-periphery
+  #   github: uniswap/v3-periphery
+  #   ref: 1.3.0
+  - name: Uniswap-core
+    github: uniswap/v3-core
+    ref: 1.0.0
+  - name: OpenZeppelin
+    github: OpenZeppelin/openzeppelin-contracts
+    version: 4.9.3
+  - name: OpenZeppelin
+    github: OpenZeppelin/openzeppelin-contracts
+    version: 4.9.0
+  - name: OpenZeppelin
+    github: OpenZeppelin/openzeppelin-contracts
+    version: 4.9.1
