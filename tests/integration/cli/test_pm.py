@@ -103,3 +103,10 @@ def test_compile_dependency(ape_cli, runner, project):
     result = runner.invoke(ape_cli, ["pm", "compile", name])
     assert result.exit_code == 0, result.output
     assert f"Package '{name}' compiled." in result.output
+
+
+# Remove tests
+# 1. remove single package - ape pm remove Uniswap-core -y
+# 2. remove single package with confirmation - ape pm remove Uniswap-core
+#
+# 3. prompt for option
