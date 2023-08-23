@@ -1,5 +1,4 @@
 import json
-from os import rmdir
 from pathlib import Path
 from shutil import rmtree
 from typing import Tuple
@@ -166,9 +165,9 @@ def remove(cli_ctx, package, versions, yes):
     If specific versions are provided, only those versions of the package will be removed. If no versions are provided, the command will prompt you to choose versions to remove. You can also choose to remove all versions of the package.
 
     Examples:
-    - Remove specific versions: ape pm remove OpenZeppelin 4.9.0 4.9.3
-    - Prompt to choose versions: ape pm remove OpenZeppelin
-    - Remove all versions: ape pm remove OpenZeppelin -y
+    - \nRemove specific versions: ape pm remove OpenZeppelin 4.9.0 4.9.3
+    - \nPrompt to choose versions: ape pm remove OpenZeppelin
+    - \nRemove all versions: ape pm remove OpenZeppelin -y
     """
     package_dir = cli_ctx.dependency_manager.DATA_FOLDER / "packages" / package
     if not package_dir.is_dir():
