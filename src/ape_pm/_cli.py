@@ -162,7 +162,9 @@ def remove(cli_ctx, package, versions, yes):
 
     This command removes a package from the installed packages.
 
-    If specific versions are provided, only those versions of the package will be removed. If no versions are provided, the command will prompt you to choose versions to remove. You can also choose to remove all versions of the package.
+    If specific versions are provided, only those versions of the package will be removed.
+    If no versions are provided, the command will prompt you to choose versions to remove.
+    You can also choose to remove all versions of the package.
 
     Examples:
     - \nRemove specific versions: ape pm remove OpenZeppelin 4.9.0 4.9.3
@@ -179,7 +181,11 @@ def remove(cli_ctx, package, versions, yes):
         available_versions = [d.name for d in package_dir.iterdir() if d.is_dir()]
         if not available_versions:
             cli_ctx.abort(f"No installed versions of package '{package}' found.")
-        version_prompt = f"Which versions of package '{package}' do you want to remove? {available_versions} (separate multiple versions with comma, or 'all')"
+        version_prompt = (
+            f"Which versions of package '{package}' do you want to remove? "
+            f"{available_versions} (separate multiple versions with comma, or 'all')"
+        )
+
         if yes:
             versions_to_remove = available_versions
             version_prompt = ""

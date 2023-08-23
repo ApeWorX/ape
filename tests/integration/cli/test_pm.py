@@ -113,7 +113,8 @@ def test_compile_dependency(ape_cli, runner, project):
 
 # current testing Done
 # `ape pm remove OpenZeppelin`
-# Which versions of package 'OpenZeppelin' do you want to remove? ['v4.9.3', 'v4.9.1', 'v4.9.0'] (separate multiple versions with comma, or 'all'): v4.9.3
+# Which versions of package 'OpenZeppelin' do you want to remove?
+# ['v4.9.3', 'v4.9.1', 'v4.9.0'] (separate multiple versions with comma, or 'all'): v4.9.3
 # Are you sure you want to remove version 'v4.9.3' of package 'OpenZeppelin'? [y/N]: y
 # SUCCESS: Version 'v4.9.3' of package 'OpenZeppelin' removed.
 
