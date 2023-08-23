@@ -157,8 +157,7 @@ def install(cli_ctx, package, name, version, ref, force):
 @click.option(
     "-y", "--yes", is_flag=True, help="Automatically confirm the removal of the package(s)"
 )
-@click.option("--all", is_flag=True, help="Remove all versions of the package")
-def remove(cli_ctx, package, versions, yes, all):
+def remove(cli_ctx, package, versions, yes):
     """
     Remove a package.
 
@@ -169,27 +168,11 @@ def remove(cli_ctx, package, versions, yes, all):
     Examples:
     - Remove specific versions: ape pm remove OpenZeppelin 4.9.0 4.9.3
     - Prompt to choose versions: ape pm remove OpenZeppelin
-    - Remove all versions: ape pm remove OpenZeppelin --all
-
-    Args:
-        package (str): The name of the package to remove.
-        versions (tuple[str], optional): The versions of the package to remove. If not provided, the command will prompt for version selection. Defaults to None.
-        yes (bool): Automatically confirm the removal of the package(s) without prompting for confirmation. Defaults to False.
-        all (bool): Remove all versions of the package without prompting for confirmation. Defaults to False.
+    - Remove all versions: ape pm remove OpenZeppelin -y
     """
     package_dir = cli_ctx.dependency_manager.DATA_FOLDER / "packages" / package
     if not package_dir.is_dir():
         cli_ctx.abort(f"Package '{package}' is not installed.")
-
-    if all:
-        if yes or click.confirm(
-            f"Are you sure you want to remove all versions of package '{package}'?"
-        ):
-            rmtree(package_dir)
-            cli_ctx.logger.success(f"All versions of package '{package}' removed.")
-        else:
-            cli_ctx.logger.info("Removal of all versions cancelled.")
-        return
 
     # remove multiple versions if no version is specified
     versions_to_remove = versions if versions else []
