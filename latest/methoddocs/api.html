@@ -373,6 +373,7 @@
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.providers.ProviderAPI.get_receipt"><code class="docutils literal notranslate"><span class="pre">ProviderAPI.get_receipt()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.providers.ProviderAPI.get_transactions_by_block"><code class="docutils literal notranslate"><span class="pre">ProviderAPI.get_transactions_by_block()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.providers.ProviderAPI.get_virtual_machine_error"><code class="docutils literal notranslate"><span class="pre">ProviderAPI.get_virtual_machine_error()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ape.api.providers.ProviderAPI.http_uri"><code class="docutils literal notranslate"><span class="pre">ProviderAPI.http_uri</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.providers.ProviderAPI.is_connected"><code class="docutils literal notranslate"><span class="pre">ProviderAPI.is_connected</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.providers.ProviderAPI.max_gas"><code class="docutils literal notranslate"><span class="pre">ProviderAPI.max_gas</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.providers.ProviderAPI.name"><code class="docutils literal notranslate"><span class="pre">ProviderAPI.name</span></code></a></li>
@@ -387,6 +388,7 @@
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.providers.ProviderAPI.send_transaction"><code class="docutils literal notranslate"><span class="pre">ProviderAPI.send_transaction()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.providers.ProviderAPI.supports_tracing"><code class="docutils literal notranslate"><span class="pre">ProviderAPI.supports_tracing</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.providers.ProviderAPI.update_settings"><code class="docutils literal notranslate"><span class="pre">ProviderAPI.update_settings()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ape.api.providers.ProviderAPI.ws_uri"><code class="docutils literal notranslate"><span class="pre">ProviderAPI.ws_uri</span></code></a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="#ape.api.providers.SubprocessProvider"><code class="docutils literal notranslate"><span class="pre">SubprocessProvider</span></code></a><ul>
@@ -423,6 +425,7 @@
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.providers.Web3Provider.get_storage_at"><code class="docutils literal notranslate"><span class="pre">Web3Provider.get_storage_at()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.providers.Web3Provider.get_transactions_by_block"><code class="docutils literal notranslate"><span class="pre">Web3Provider.get_transactions_by_block()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.providers.Web3Provider.get_virtual_machine_error"><code class="docutils literal notranslate"><span class="pre">Web3Provider.get_virtual_machine_error()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ape.api.providers.Web3Provider.http_uri"><code class="docutils literal notranslate"><span class="pre">Web3Provider.http_uri</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.providers.Web3Provider.is_connected"><code class="docutils literal notranslate"><span class="pre">Web3Provider.is_connected</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.providers.Web3Provider.max_gas"><code class="docutils literal notranslate"><span class="pre">Web3Provider.max_gas</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.providers.Web3Provider.prepare_transaction"><code class="docutils literal notranslate"><span class="pre">Web3Provider.prepare_transaction()</span></code></a></li>
@@ -432,6 +435,7 @@
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.providers.Web3Provider.supports_tracing"><code class="docutils literal notranslate"><span class="pre">Web3Provider.supports_tracing</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.providers.Web3Provider.update_settings"><code class="docutils literal notranslate"><span class="pre">Web3Provider.update_settings()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.providers.Web3Provider.web3"><code class="docutils literal notranslate"><span class="pre">Web3Provider.web3</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ape.api.providers.Web3Provider.ws_uri"><code class="docutils literal notranslate"><span class="pre">Web3Provider.ws_uri</span></code></a></li>
 </ul>
 </li>
 </ul>
@@ -2450,6 +2454,12 @@ topic filters. Defaults to getting all events.</p>
 </dd></dl>
 
 <dl class="py property">
+<dt class="sig sig-object py" id="ape.api.providers.ProviderAPI.http_uri">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">http_uri</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#ape.api.providers.ProviderAPI.http_uri" title="Permalink to this definition"></a></dt>
+<dd><p>Return the raw HTTP/HTTPS URI to connect to this provider, if supported.</p>
+</dd></dl>
+
+<dl class="py property">
 <dt class="sig sig-object py" id="ape.api.providers.ProviderAPI.is_connected">
 <em class="property"><span class="pre">abstract</span><span class="w"> </span><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">is_connected</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><a class="headerlink" href="#ape.api.providers.ProviderAPI.is_connected" title="Permalink to this definition"></a></dt>
 <dd><p><code class="docutils literal notranslate"><span class="pre">True</span></code> if currently connected to the provider. <code class="docutils literal notranslate"><span class="pre">False</span></code> otherwise.</p>
@@ -2591,6 +2601,12 @@ May require a reconnect.</p>
 <dd class="field-odd"><p><strong>new_settings</strong> (<em>dict</em>) – The new provider settings.</p>
 </dd>
 </dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="ape.api.providers.ProviderAPI.ws_uri">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">ws_uri</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#ape.api.providers.ProviderAPI.ws_uri" title="Permalink to this definition"></a></dt>
+<dd><p>Return the raw WS/WSS URI to connect to this provider, if supported.</p>
 </dd></dl>
 
 </dd></dl>
@@ -2990,6 +3006,12 @@ checked in <code class="docutils literal notranslate"><span class="pre">ape.reve
 </dd></dl>
 
 <dl class="py property">
+<dt class="sig sig-object py" id="ape.api.providers.Web3Provider.http_uri">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">http_uri</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#ape.api.providers.Web3Provider.http_uri" title="Permalink to this definition"></a></dt>
+<dd><p>Return the raw HTTP/HTTPS URI to connect to this provider, if supported.</p>
+</dd></dl>
+
+<dl class="py property">
 <dt class="sig sig-object py" id="ape.api.providers.Web3Provider.is_connected">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">is_connected</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><a class="headerlink" href="#ape.api.providers.Web3Provider.is_connected" title="Permalink to this definition"></a></dt>
 <dd><p><code class="docutils literal notranslate"><span class="pre">True</span></code> if currently connected to the provider. <code class="docutils literal notranslate"><span class="pre">False</span></code> otherwise.</p>
@@ -3103,6 +3125,12 @@ May require a reconnect.</p>
 <dt class="sig sig-object py" id="ape.api.providers.Web3Provider.web3">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">web3</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Web3</span></em><a class="headerlink" href="#ape.api.providers.Web3Provider.web3" title="Permalink to this definition"></a></dt>
 <dd><p>Access to the <code class="docutils literal notranslate"><span class="pre">web3</span></code> object as if you did <code class="docutils literal notranslate"><span class="pre">Web3(HTTPProvider(uri))</span></code>.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="ape.api.providers.Web3Provider.ws_uri">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">ws_uri</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#ape.api.providers.Web3Provider.ws_uri" title="Permalink to this definition"></a></dt>
+<dd><p>Return the raw WS/WSS URI to connect to this provider, if supported.</p>
 </dd></dl>
 
 </dd></dl>
