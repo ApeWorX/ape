@@ -1,12 +1,12 @@
 # @version 0.3.7
 
-import interfaces.ISubRevertsVy as ISubRevertsVy
+import interfaces.ISubReverts as ISubReverts
 
-sub_reverts: public(ISubRevertsVy)
+sub_reverts: public(ISubReverts)
 MAX_NUM: constant(uint256) = 32
 
 @external
-def __init__(sub_reverts: ISubRevertsVy):
+def __init__(sub_reverts: ISubReverts):
     self.sub_reverts = sub_reverts
 
 @external

@@ -55,7 +55,7 @@ from ape.utils.testing import (
     GeneratedDevAccount,
     generate_dev_accounts,
 )
-from ape.utils.trace import TraceStyles, parse_coverage_tables, parse_gas_table
+from ape.utils.trace import USER_ASSERT_TAG, TraceStyles, parse_coverage_tables, parse_gas_table
 
 __all__ = [
     "abstractmethod",
@@ -108,5 +108,6 @@ __all__ = [
     "TraceStyles",
     "use_temp_sys_path",
     "USER_AGENT",
+    "USER_ASSERT_TAG",
     "ZERO_ADDRESS",
 ]

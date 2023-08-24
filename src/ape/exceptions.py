@@ -2,7 +2,6 @@ import sys
 import tempfile
 import time
 import traceback
-from collections import deque
 from functools import cached_property
 from inspect import getframeinfo, stack
 from pathlib import Path
@@ -11,7 +10,6 @@ from typing import TYPE_CHECKING, Any, Dict, Iterator, List, Optional, Union
 
 import click
 from eth_utils import humanize_hash
-from ethpm_types import ContractType
 from ethpm_types.abi import ConstructorABI, ErrorABI, MethodABI
 from rich import print as rich_print
 
@@ -242,109 +240,7 @@ class ContractLogicError(VirtualMachineError):
             ``ValueError``: When unable to get dev message.
         """
 
-        trace = self._get_trace()
-        if len(trace) == 0:
-            raise ValueError("Missing trace.")
-
-        if address := self.address:
-            try:
-                contract_type = trace[-1].chain_manager.contracts[address]
-            except Exception as err:
-                raise ValueError(
-                    f"Could not fetch contract at {address} to check dev message."
-                ) from err
-
-        else:
-            raise ValueError("Could not fetch contract information to check dev message.")
-
-        if contract_type.pcmap is None:
-            raise ValueError("Compiler does not support source code mapping.")
-
-        pc = None
-        pcmap = contract_type.pcmap.parse()
-
-        # To find a suitable line for inspecting dev messages, we must start at the revert and work
-        # our way backwards. If the last frame's PC is in the PC map, the offending line is very
-        # likely a 'raise' statement.
-        if trace[-1].pc in pcmap:
-            pc = trace[-1].pc
-
-        # Otherwise we must traverse the trace backwards until we find our first suitable candidate.
-        else:
-            last_depth = 1
-            while len(trace) > 0:
-                frame = trace.pop()
-                if frame.depth > last_depth:
-                    # Call was made, get the new PCMap.
-                    contract_type = self._find_next_contract(trace)
-                    if not contract_type.pcmap:
-                        raise ValueError("Compiler does not support source code mapping.")
-
-                    pcmap = contract_type.pcmap.parse()
-                    last_depth += 1
-
-                if frame.pc in pcmap:
-                    pc = frame.pc
-                    break
-
-        # We were unable to find a suitable PC that matched the compiler's map.
-        if pc is None:
-            return None
-
-        offending_source = pcmap[pc]
-        if offending_source is None:
-            return None
-
-        dev_messages = contract_type.dev_messages or {}
-        if offending_source.line_start is None:
-            # Check for a `dev` field in PCMap.
-            return None if offending_source.dev is None else offending_source.dev
-
-        elif offending_source.line_start in dev_messages:
-            return dev_messages[offending_source.line_start]
-
-        elif offending_source.dev is not None:
-            return offending_source.dev
-
-        # Dev message is neither found from the compiler or from a dev-comment.
-        return None
-
-    def _get_trace(self) -> deque:
-        trace = None
-        if self.trace is None and self.txn is not None:
-            try:
-                trace = deque(self.txn.trace)
-            except APINotImplementedError as err:
-                raise ValueError(
-                    "Cannot check dev message; provider must support transaction tracing."
-                ) from err
-
-            except (ProviderError, SignatureError) as err:
-                raise ValueError("Cannot fetch transaction trace.") from err
-
-        elif self.trace is not None:
-            trace = deque(self.trace)
-
-        if not trace:
-            raise ValueError("Cannot fetch transaction trace.")
-
-        return trace
-
-    def _find_next_contract(self, trace: deque) -> ContractType:
-        msg = "Could not fetch contract at '{address}' to check dev message."
-        idx = len(trace) - 1
-        while idx >= 0:
-            frame = trace[idx]
-            if frame.contract_address:
-                ct = frame.chain_manager.contracts.get(frame.contract_address)
-                if not ct:
-                    raise ValueError(msg.format(address=frame.contract_address))
-
-                return ct
-
-            idx -= 1
-
-        raise ValueError(msg.format(address=frame.contract_address))
+        return self.source_traceback.revert_type if self.source_traceback else None
 
     @classmethod
     def from_error(cls, err: Exception):
