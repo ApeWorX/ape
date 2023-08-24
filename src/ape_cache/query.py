@@ -173,7 +173,7 @@ class CacheQueryProvider(QueryAPI):
     @_estimate_query_clause.register
     def _block_estimate_query_clause(self, query: BlockQuery) -> Select:
         return (
-            select([func.count()])
+            select(func.count())
             .select_from(Blocks)
             .where(Blocks.number >= query.start_block)
             .where(Blocks.number <= query.stop_block)
@@ -183,7 +183,7 @@ class CacheQueryProvider(QueryAPI):
     @_estimate_query_clause.register
     def _transaction_estimate_query_clause(self, query: BlockTransactionQuery) -> Select:
         return (
-            select([func.count()])
+            select(func.count())
             .select_from(Transactions)
             .where(Transactions.block_hash == query.block_id)
         )
@@ -191,7 +191,7 @@ class CacheQueryProvider(QueryAPI):
     @_estimate_query_clause.register
     def _contract_events_estimate_query_clause(self, query: ContractEventQuery) -> Select:
         return (
-            select([func.count()])
+            select(func.count())
             .select_from(ContractEvents)
             .where(ContractEvents.block_number >= query.start_block)
             .where(ContractEvents.block_number <= query.stop_block)
