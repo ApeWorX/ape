@@ -170,6 +170,20 @@ class ProviderAPI(BaseInterfaceModel):
         Disconnect from a provider, such as tear-down a process or quit an HTTP session.
         """
 
+    @property
+    def http_uri(self) -> Optional[str]:
+        """
+        Return the raw HTTP/HTTPS URI to connect to this provider, if supported.
+        """
+        return None
+
+    @property
+    def ws_uri(self) -> Optional[str]:
+        """
+        Return the raw WS/WSS URI to connect to this provider, if supported.
+        """
+        return None
+
     @abstractmethod
     def update_settings(self, new_settings: dict):
         """
@@ -719,6 +733,32 @@ class Web3Provider(ProviderAPI, ABC):
             raise ProviderNotConnectedError()
 
         return self._web3
+
+    @property
+    def http_uri(self) -> Optional[str]:
+        if (
+            hasattr(self.web3.provider, "endpoint_uri")
+            and isinstance(self.web3.provider.endpoint_uri, str)
+            and self.web3.provider.endpoint_uri.startswith("http")
+        ):
+            return self.web3.provider.endpoint_uri
+
+        elif hasattr(self, "uri"):
+            # NOTE: Some providers define this
+            return self.uri
+
+        return None
+
+    @property
+    def ws_uri(self) -> Optional[str]:
+        if (
+            hasattr(self.web3.provider, "endpoint_uri")
+            and isinstance(self.web3.provider.endpoint_uri, str)
+            and self.web3.provider.endpoint_uri.startswith("ws")
+        ):
+            return self.web3.provider.endpoint_uri
+
+        return None
 
     @property
     def client_version(self) -> str:

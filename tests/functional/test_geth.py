@@ -119,6 +119,8 @@ def geth_vyper_receipt(geth_vyper_contract, owner):
 
 @geth_process_test
 def test_uri(geth_provider):
+    assert geth_provider.http_uri == GETH_URI
+    assert not geth_provider.ws_uri
     assert geth_provider.uri == GETH_URI
 
 
