@@ -193,7 +193,10 @@ class CompilerAPI(BaseInterfaceModel):
         if "address" not in data:
             return None, calldata
 
-        addr = data["address"]
+        # NOTE: Handling when providers give us odd address values.
+        raw_addr = HexBytes(data["address"]).hex().replace("0x", "")
+        zeroes = max(40 - len(raw_addr), 0) * "0"
+        addr = f"0x{zeroes}{raw_addr}"
 
         try:
             address = self.provider.network.ecosystem.decode_address(addr)

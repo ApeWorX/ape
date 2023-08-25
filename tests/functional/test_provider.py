@@ -11,6 +11,11 @@ from ape.types import LogFilter
 from ape.utils import DEFAULT_TEST_CHAIN_ID
 
 
+def test_uri(eth_tester_provider):
+    assert not eth_tester_provider.http_uri
+    assert not eth_tester_provider.ws_uri
+
+
 @pytest.mark.parametrize("block_id", (0, "0", "0x0", HexStr("0x0")))
 def test_get_block(eth_tester_provider, block_id, vyper_contract_instance, owner):
     block = eth_tester_provider.get_block(block_id)
