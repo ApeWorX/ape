@@ -10,5 +10,5 @@ test:
 
 compile:
   exclude:
-    - exclude_dir
+    - exclude_dir/*
     - Excl*.json
