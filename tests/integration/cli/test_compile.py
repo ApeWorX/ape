@@ -82,8 +82,8 @@ def test_compile(ape_cli, runner, project, clean_cache):
     for file in expected_files:
         assert file.name in manifest.sources
 
-    assert all([f.stem in result.output for f in expected_files])
-    assert not any([f.stem in result.output for f in unexpected_files])
+    assert all(f.stem in result.output for f in expected_files)
+    assert not any(f.stem in result.output for f in unexpected_files)
 
     result = runner.invoke(ape_cli, ["compile"], catch_exceptions=False)
     assert result.exit_code == 0, result.output
@@ -299,10 +299,17 @@ def test_raw_compiler_output_bytecode(ape_cli, runner, project):
 
 
 @skip_projects_except("with-contracts")
-def test_compile_after_deleting_cache_file(ape_cli, runner, project):
+def test_compile_after_deleting_cache_file(project):
     assert project.RawVyperOutput
     path = project.local_project._cache_folder / "RawVyperOutput.json"
     path.unlink()
 
     # Should still work (will have to figure it out its missing and put back).
     assert project.RawVyperOutput
+
+
+@skip_projects_except("with-contracts")
+def test_compile_exclude(ape_cli, runner):
+    result = runner.invoke(ape_cli, ["compile", "--force"], catch_exceptions=False)
+    assert "Compiling 'Exclude.json'" not in result.output
+    assert "Compiling 'exclude_dir/UnwantedContract.json'" not in result.output
