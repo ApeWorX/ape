@@ -630,7 +630,9 @@ class GethDev(BaseGethProvider, TestProviderAPI, SubprocessProvider):
         try:
             result = self._make_request("eth_call", arguments)
         except Exception as err:
-            trace = (self._create_trace_frame(x) for x in self._trace_call(arguments)[1])
+            trace, trace2 = tee(
+                self._create_trace_frame(x) for x in self._trace_call(arguments)[1]
+            )
             contract_address = arguments[0]["to"]
             contract_type = self.chain_manager.contracts.get(contract_address)
             method_id = arguments[0].get("data", "")[:10] or None
@@ -640,7 +642,7 @@ class GethDev(BaseGethProvider, TestProviderAPI, SubprocessProvider):
                 else None
             )
             raise self.get_virtual_machine_error(
-                err, trace=trace, contract_address=contract_address, source_traceback=tb
+                err, trace=trace2, contract_address=contract_address, source_traceback=tb
             ) from err
 
         if "error" in result:
