@@ -158,7 +158,7 @@ def install(cli_ctx, package, name, version, ref, force):
 )
 def remove(cli_ctx, package, versions, yes):
     """
-    Remove a package.
+    Remove a package
 
     This command removes a package from the installed packages.
 
