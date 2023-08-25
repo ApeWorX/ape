@@ -491,17 +491,13 @@ class SourceTraceback(BaseModel):
     @classmethod
     def create(
         cls,
-        contract_type: Union[ContractType, AddressType],
+        contract_type: ContractType,
         trace: Iterator[TraceFrame],
         data: Union[HexBytes, str],
     ):
         trace, second_trace = tee(trace)
         if not second_trace or not (accessor := next(second_trace, None)):
             return cls.parse_obj([])
-
-        if not isinstance(contract_type, ContractType):
-            if not (contract_type := accessor.chain_manager.contracts.get(contract_type)):
-                return cls.parse_obj([])
 
         if not (source_id := contract_type.source_id):
             return cls.parse_obj([])

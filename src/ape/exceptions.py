@@ -2,7 +2,6 @@ import sys
 import tempfile
 import time
 import traceback
-from functools import cached_property
 from inspect import getframeinfo, stack
 from pathlib import Path
 from types import CodeType, TracebackType
@@ -219,7 +218,7 @@ class ContractLogicError(VirtualMachineError):
             txn=txn,
         )
 
-        if revert_message is None and (dev := self.dev_message):
+        if revert_message is None and source_traceback is not None and (dev := self.dev_message):
             try:
                 # Attempt to use dev message as main exception message.
                 self.message = dev
@@ -230,7 +229,7 @@ class ContractLogicError(VirtualMachineError):
     def revert_message(self):
         return self.message
 
-    @cached_property
+    @property
     def dev_message(self) -> Optional[str]:
         """
         The dev-string message of the exception.

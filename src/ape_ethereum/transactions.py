@@ -175,10 +175,10 @@ class Receipt(ReceiptAPI):
 
         return self.contract_type.methods[method_id]
 
-    @property
+    @cached_property
     def source_traceback(self) -> SourceTraceback:
         if contract_type := self.contract_type:
-            SourceTraceback.create(contract_type, self.trace, HexBytes(self.data))
+            return SourceTraceback.create(contract_type, self.trace, HexBytes(self.data))
 
         return SourceTraceback.parse_obj([])
 
