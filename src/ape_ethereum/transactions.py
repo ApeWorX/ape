@@ -175,13 +175,12 @@ class Receipt(ReceiptAPI):
 
         return self.contract_type.methods[method_id]
 
-    @property
+    @cached_property
     def source_traceback(self) -> SourceTraceback:
-        contract_type = self.contract_type
-        if not contract_type:
-            return SourceTraceback.parse_obj([])
+        if contract_type := self.contract_type:
+            return SourceTraceback.create(contract_type, self.trace, HexBytes(self.data))
 
-        return SourceTraceback.create(contract_type, self.trace, HexBytes(self.data))
+        return SourceTraceback.parse_obj([])
 
     def raise_for_status(self):
         if self.gas_limit is not None and self.ran_out_of_gas:
@@ -192,8 +191,7 @@ class Receipt(ReceiptAPI):
             raise TransactionError(f"Transaction '{txn_hash}' failed.", txn=self)
 
     def show_trace(self, verbose: bool = False, file: IO[str] = sys.stdout):
-        call_tree = self.call_tree
-        if not call_tree:
+        if not (call_tree := self.call_tree):
             return
 
         call_tree.enrich(use_symbol_for_tokens=True)
@@ -223,8 +221,7 @@ class Receipt(ReceiptAPI):
         )
 
     def show_gas_report(self, file: IO[str] = sys.stdout):
-        call_tree = self.call_tree
-        if not call_tree:
+        if not (call_tree := self.call_tree):
             return
 
         call_tree.enrich()
@@ -283,8 +280,7 @@ class Receipt(ReceiptAPI):
                     event_abi = selectors[contract_address][selector]
                 except KeyError:
                     # Likely a library log
-                    library_log = self._decode_ds_note(log)
-                    if library_log:
+                    if library_log := self._decode_ds_note(log):
                         decoded_logs.append(library_log)
                 else:
                     decoded_logs.extend(
@@ -300,8 +296,7 @@ class Receipt(ReceiptAPI):
             # non-zero bytes found after selector
             return None
 
-        contract_type = self.chain_manager.contracts.get(log["address"])
-        if contract_type is None:
+        if not (contract_type := self.chain_manager.contracts.get(log["address"])):
             # contract type for {log['address']} not found
             return None
 
