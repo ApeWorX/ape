@@ -72,9 +72,13 @@
 
 ## Multicall
 
-Ape comes with builtin `multicall` method. Yes you're reading this right. No need to install external modules to do multicall, ape got you covered.Perform the Multicall call. This call will trigger again every time the `Call` object is called.
+The `ape_ethereum` core plugin comes with a `multi-call` module.
+Yes you're reading this right.
+No need to install external modules to do multicall, ape got you covered.
+Perform the Multicall call.
+This call will trigger again every time the `Call` object is called.
 
-```js
+```bash
 Raises:
     :class:`~ape_ethereum.multicall.exceptions.UnsupportedChain`: If there is not an instance of Multicall3 deployed on the current chain at the expected address.
 
@@ -85,7 +89,7 @@ Returns:
     Iterator[Any]: the sequence of values produced by performing each call stored by this instance.
 ```
 
-#### Usage
+### Usage
 
 Here is an example of how you can use multicall.
 
@@ -103,7 +107,6 @@ a, b, ..., z = call()  # Performs multicall
 # OR
 # The return type of the multicall is a generator object. So basically this will convert the result returned by the multicall into a list
 result = list(call()) 
-
 ```
 
 ### Practical Example
@@ -123,9 +126,8 @@ for pool_address in pools:
 
 print(multicall_result[0])
 
-"""
+# output
 [17368643486106939361172, 31867695075486]
-"""
 ```
 
 <!-- ### Encode Multicall Transaction
@@ -149,7 +151,9 @@ encoded_call = call.as_transaction()
 
 ## Multicall Transaction
 
-Create a sequence of calls to execute at once using `eth_sendTransaction` via the Multicall3 contract. Execute the Multicall transaction. The transaction will broadcast again every time the `Transaction` object is called.
+Create a sequence of calls to execute at once using `eth_sendTransaction` via the Multicall3 contract.
+Execute the Multicall transaction.
+The transaction will broadcast again every time the `Transaction` object is called.
 
 ```bash
 Raises:
