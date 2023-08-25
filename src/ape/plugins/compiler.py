@@ -1,4 +1,4 @@
-from typing import Tuple, Type
+from typing import Type
 
 from ape.api import CompilerAPI
 
@@ -13,7 +13,7 @@ class CompilerPlugin(PluginType):
     """
 
     @hookspec
-    def register_compiler(self) -> Tuple[Tuple[str], Type[CompilerAPI]]:  # type: ignore[empty-body]
+    def register_compiler(self) -> Type[CompilerAPI]:  # type: ignore[empty-body]
         """
         A hook for returning the set of file extensions the plugin handles
         and the compiler class that can be used to compile them.
@@ -22,8 +22,8 @@ class CompilerPlugin(PluginType):
 
             @plugins.register(plugins.CompilerPlugin)
             def register_compiler():
-                return (".json",), InterfaceCompiler
+                return InterfaceCompiler
 
         Returns:
-            Tuple[Tuple[str], Type[:class:`~ape.api.CompilerAPI`]]
+            Type[:class:`~ape.api.CompilerAPI`]
         """

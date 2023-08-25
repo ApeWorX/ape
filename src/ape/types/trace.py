@@ -503,10 +503,11 @@ class SourceTraceback(BaseModel):
             return cls.parse_obj([])
 
         ext = f".{source_id.split('.')[-1]}"
-        if ext not in accessor.compiler_manager.registered_compilers:
+        if ext not in accessor.compiler_manager.supported_extensions:
             return cls.parse_obj([])
 
-        compiler = accessor.compiler_manager.registered_compilers[ext]
+        compiler = accessor.compiler_manager.get_compiler(ext)
+        assert compiler is not None
         try:
             return compiler.trace_source(contract_type, trace, HexBytes(data))
         except NotImplementedError:

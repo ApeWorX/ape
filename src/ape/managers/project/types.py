@@ -125,8 +125,8 @@ class BaseProject(ProjectAPI):
             return files
 
         compilers = self.compiler_manager.registered_compilers
-        for extension in compilers:
-            ext = extension.replace(".", "\\.")
+        for compiler in compilers.values():
+            ext = compiler.extension.replace(".", "\\.")
             pattern = rf"[\w|-]+{ext}"
             ext_files = get_all_files_in_directory(self.contracts_folder, pattern=pattern)
             files.extend(ext_files)

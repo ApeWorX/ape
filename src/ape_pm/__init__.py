@@ -5,4 +5,4 @@ from .compiler import InterfaceCompiler
 
 @plugins.register(plugins.CompilerPlugin)
 def register_compiler():
-    return (".json",), InterfaceCompiler
+    return InterfaceCompiler

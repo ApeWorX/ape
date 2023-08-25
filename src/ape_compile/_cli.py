@@ -4,14 +4,19 @@ from typing import Dict, Set
 import click
 from ethpm_types import ContractType
 
-from ape.cli import ape_cli_context, contract_file_paths_argument
+from ape.cli import (
+    NetworkBoundCommand,
+    ape_cli_context,
+    contract_file_paths_argument,
+    network_option,
+)
 
 
 def _include_dependencies_callback(ctx, param, value):
     return value or ctx.obj.config_manager.get_config("compile").include_dependencies
 
 
-@click.command(short_help="Compile select contract source files")
+@click.command(short_help="Compile select contract source files", cls=NetworkBoundCommand)
 @contract_file_paths_argument()
 @click.option(
     "-f",
@@ -37,7 +42,15 @@ def _include_dependencies_callback(ctx, param, value):
     callback=_include_dependencies_callback,
 )
 @ape_cli_context()
-def cli(cli_ctx, file_paths: Set[Path], use_cache: bool, display_size: bool, include_dependencies):
+@network_option()
+def cli(
+    cli_ctx,
+    file_paths: Set[Path],
+    use_cache: bool,
+    display_size: bool,
+    include_dependencies: bool,
+    network: str,
+):
     """
     Compiles the manifest for this project and saves the results
     back to the manifest.

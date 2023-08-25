@@ -43,6 +43,10 @@ class CompilerManager(BaseManager):
         raise ApeAttributeError(f"No attribute or compiler named '{name}'.")
 
     @property
+    def supported_extensions(self) -> Set[str]:
+        return set(compiler.extension for compiler in self.registered_compilers.values())
+
+    @property
     def registered_compilers(self) -> Dict[str, CompilerAPI]:
         """
         Each compile-able file extension mapped to its respective
@@ -52,6 +56,12 @@ class CompilerManager(BaseManager):
             Dict[str, :class:`~ape.api.compiler.CompilerAPI`]: The mapping of file-extensions
             to compiler API classes.
         """
+        current_ecosystem = self.network_manager.network.ecosystem.name
+        ecosystem_config = self.config_manager.get_config(current_ecosystem)
+        try:
+            supported_compilers = ecosystem_config.compilers
+        except AttributeError:
+            raise CompilerError(f"No compilers defined for ecosystem={current_ecosystem}.")
 
         cache_key = self.config_manager.PROJECT_FOLDER
         if cache_key in self._registered_compilers_cache:
@@ -59,26 +69,25 @@ class CompilerManager(BaseManager):
 
         registered_compilers = {}
 
-        for plugin_name, (extensions, compiler_class) in self.plugin_manager.register_compiler:
+        for plugin_name, compiler_class in self.plugin_manager.register_compiler:
             # TODO: Investigate side effects of loading compiler plugins.
             #       See if this needs to be refactored.
             self.config_manager.get_config(plugin_name=plugin_name)
 
-            compiler = compiler_class()
+            compiler = compiler_class()  # type: ignore[operator]
 
-            for extension in extensions:
-                if extension not in registered_compilers:
-                    registered_compilers[extension] = compiler
+            if compiler.name in supported_compilers:
+                registered_compilers[compiler.name] = compiler
 
         self._registered_compilers_cache[cache_key] = registered_compilers
         return registered_compilers
 
-    def get_compiler(self, name: str) -> Optional[CompilerAPI]:
+    def get_compiler(self, identifier: str) -> CompilerAPI:
         for compiler in self.registered_compilers.values():
-            if compiler.name == name:
+            if compiler.name == identifier or compiler.extension == identifier:
                 return compiler
 
-        return None
+        raise ValueError("No compiler identified with '{identifier}'")
 
     def compile(self, contract_filepaths: List[Path]) -> Dict[str, ContractType]:
         """
@@ -124,10 +133,8 @@ class CompilerManager(BaseManager):
             for path in paths_to_compile:
                 source_id = get_relative_path(path, contracts_folder)
                 logger.info(f"Compiling '{source_id}'.")
-
-            compiled_contracts = self.registered_compilers[extension].compile(
-                paths_to_compile, base_path=contracts_folder
-            )
+            compiler = self.get_compiler(extension)
+            compiled_contracts = compiler.compile(paths_to_compile, base_path=contracts_folder)
             for contract_type in compiled_contracts:
                 contract_name = contract_type.name
                 if not contract_name:
@@ -176,9 +183,11 @@ class CompilerManager(BaseManager):
         imports_dict: Dict[str, List[str]] = {}
         base_path = base_path or self.project_manager.contracts_folder
 
-        for ext, compiler in self.registered_compilers.items():
+        for compiler in self.registered_compilers.values():
             try:
-                sources = [p for p in contract_filepaths if p.suffix == ext and p.is_file()]
+                sources = [
+                    p for p in contract_filepaths if p.suffix == compiler.extension and p.is_file()
+                ]
                 imports = compiler.get_imports(contract_filepaths=sources, base_path=base_path)
             except NotImplementedError:
                 imports = None
@@ -214,7 +223,7 @@ class CompilerManager(BaseManager):
 
     def _get_contract_extensions(self, contract_filepaths: List[Path]) -> Set[str]:
         extensions = {path.suffix for path in contract_filepaths}
-        unhandled_extensions = {s for s in extensions - set(self.registered_compilers) if s}
+        unhandled_extensions = {s for s in extensions - self.supported_extensions if s}
         if len(unhandled_extensions) > 0:
             unhandled_extensions_str = ", ".join(unhandled_extensions)
             raise CompilerError(f"No compiler found for extensions [{unhandled_extensions_str}].")
@@ -249,11 +258,11 @@ class CompilerManager(BaseManager):
             return err
 
         ext = Path(contract.source_id).suffix
-        if ext not in self.registered_compilers:
+        if ext not in self.supported_extensions:
             # Compiler not found.
             return err
 
-        compiler = self.registered_compilers[ext]
+        compiler = self.get_compiler(ext)
         return compiler.enrich_error(err)
 
     def flatten_contract(self, path: Path) -> Content:
@@ -268,12 +277,12 @@ class CompilerManager(BaseManager):
             ``ethpm_types.source.Content``: The flattened contract content.
         """
 
-        if path.suffix not in self.registered_compilers:
+        if path.suffix not in self.supported_extensions:
             raise CompilerError(
                 f"Unable to flatten contract. Missing compiler for '{path.suffix}'."
             )
 
-        compiler = self.registered_compilers[path.suffix]
+        compiler = self.get_compiler(path.suffix)
         return compiler.flatten_contract(path)
 
     def can_trace_source(self, filename: str) -> bool:
@@ -293,8 +302,8 @@ class CompilerManager(BaseManager):
             return False
 
         extension = path.suffix
-        if extension in self.registered_compilers:
-            compiler = self.registered_compilers[extension]
+        if extension in self.supported_extensions:
+            compiler = self.get_compiler(extension)
             if compiler.supports_source_tracing:
                 return True
 

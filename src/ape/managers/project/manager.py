@@ -107,7 +107,7 @@ class ProjectManager(BaseManager):
         if not self.contracts_folder.is_dir():
             return files
 
-        for extension in self.compiler_manager.registered_compilers:
+        for extension in self.compiler_manager.supported_extensions:
             files.extend((x for x in self.contracts_folder.rglob(f"*{extension}") if x.is_file()))
 
         return files
@@ -169,8 +169,10 @@ class ProjectManager(BaseManager):
         )
         compiler_list: List[Compiler] = []
         contracts_folder = self.config_manager.contracts_folder
-        for ext, compiler in self.compiler_manager.registered_compilers.items():
-            sources = [x for x in self.source_paths if x.is_file() and x.suffix == ext]
+        for compiler in self.compiler_manager.registered_compilers.values():
+            sources = [
+                x for x in self.source_paths if x.is_file() and x.suffix == compiler.extension
+            ]
             if not sources:
                 continue
 
@@ -183,7 +185,9 @@ class ProjectManager(BaseManager):
                     # These are unlikely to be part of the published manifest
                     continue
                 elif len(versions) > 1:
-                    raise (ProjectError(f"Unable to create version map for '{ext}'."))
+                    raise (
+                        ProjectError(f"Unable to create version map for '{compiler.extension}'.")
+                    )
 
                 version = versions[0]
                 version_map = {version: sources}
@@ -336,7 +340,7 @@ class ProjectManager(BaseManager):
             else path / "contracts"
         )
         if not contracts_folder.is_dir():
-            extensions = list(self.compiler_manager.registered_compilers.keys())
+            extensions = list(self.compiler_manager.supported_extensions)
             path_patterns_to_ignore = self.config_manager.compiler.ignore_files
 
             def find_contracts_folder(sub_dir: Path) -> Optional[Path]:
@@ -586,7 +590,7 @@ class ProjectManager(BaseManager):
                 elif (
                     file.suffix
                     and file.suffix not in extensions_found
-                    and file.suffix not in self.compiler_manager.registered_compilers
+                    and file.suffix not in self.compiler_manager.supported_extensions
                 ):
                     extensions_found.append(file.suffix)
 

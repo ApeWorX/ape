@@ -30,6 +30,11 @@ class CompilerAPI(BaseInterfaceModel):
     def name(self) -> str:
         ...
 
+    @property
+    @abstractmethod
+    def extension(self) -> str:
+        ...
+
     @abstractmethod
     def get_versions(self, all_paths: List[Path]) -> Set[str]:
         """

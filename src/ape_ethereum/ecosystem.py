@@ -152,6 +152,7 @@ class EthereumConfig(PluginConfig):
     sepolia_fork: NetworkConfig = _create_local_config()
     local: NetworkConfig = _create_local_config(default_provider="test")
     default_network: str = LOCAL_NETWORK_NAME
+    compilers: Dict[str, Dict[str, Any]] = {"ethpm": {}}
 
 
 class Block(BlockAPI):

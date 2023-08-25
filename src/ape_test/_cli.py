@@ -11,7 +11,7 @@ import pytest
 from watchdog import events  # type: ignore
 from watchdog.observers import Observer  # type: ignore
 
-from ape.cli import ape_cli_context
+from ape.cli import NetworkBoundCommand, ape_cli_context, network_option
 from ape.utils import ManagerAccessMixin, cached_property
 
 # Copied from https://github.com/olzhasar/pytest-watcher/blob/master/pytest_watcher/watcher.py
@@ -44,7 +44,7 @@ class EventHandler(events.FileSystemEventHandler, ManagerAccessMixin):
 
     @cached_property
     def _extensions_to_watch(self) -> List[str]:
-        return [".py", *self.compiler_manager.registered_compilers.keys()]
+        return [".py", *self.compiler_manager.supported_extensions]
 
     def _is_path_watched(self, filepath: str) -> bool:
         """
@@ -78,8 +78,10 @@ def _run_main_loop(delay: float, pytest_args: Sequence[str]) -> None:
     add_help_option=False,  # NOTE: This allows pass-through to pytest's help
     short_help="Launches pytest and runs the tests for a project",
     context_settings=dict(ignore_unknown_options=True),
+    cls=NetworkBoundCommand,
 )
 @ape_cli_context()
+@network_option()
 @click.option(
     "-w",
     "--watch",
@@ -104,7 +106,7 @@ def _run_main_loop(delay: float, pytest_args: Sequence[str]) -> None:
     help="Delay between polling cycles for `ape test --watch`. Defaults to 0.5 seconds.",
 )
 @click.argument("pytest_args", nargs=-1, type=click.UNPROCESSED)
-def cli(cli_ctx, watch, watch_folders, watch_delay, pytest_args):
+def cli(cli_ctx, watch, watch_folders, watch_delay, pytest_args, network):
     if watch:
         event_handler = EventHandler()
 

@@ -16,6 +16,10 @@ class InterfaceCompiler(CompilerAPI):
     def name(self) -> str:
         return "ethpm"
 
+    @property
+    def extension(self) -> str:
+        return ".json"
+
     def get_versions(self, all_paths: List[Path]) -> Set[str]:
         # NOTE: This bypasses the serialization of this compiler into the package manifest's
         #       ``compilers`` field. You should not do this with a real compiler plugin.

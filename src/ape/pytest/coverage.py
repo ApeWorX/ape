@@ -49,10 +49,11 @@ class CoverageData(ManagerAccessMixin):
         for src in self.sources:
             source_cov = project_coverage.include(src)
             ext = Path(src.source_id).suffix
-            if ext not in self.compiler_manager.registered_compilers:
+            if ext not in self.compiler_manager.supported_extensions:
                 continue
 
-            compiler = self.compiler_manager.registered_compilers[ext]
+            compiler = self.compiler_manager.get_compiler(ext)
+            assert compiler is not None
             try:
                 compiler.init_coverage_profile(source_cov, src)
             except NotImplementedError:
