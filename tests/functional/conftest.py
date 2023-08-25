@@ -149,11 +149,6 @@ def vyper_fallback_container(vyper_fallback_contract_type) -> ContractContainer:
     return ContractContainer(contract_type=vyper_fallback_contract_type)
 
 
-@pytest.fixture(scope="session")
-def vyper_math_check(get_contract_type) -> ContractContainer:
-    return ContractContainer(contract_type=get_contract_type("math_checks_vy037"))
-
-
 @pytest.fixture
 def vyper_contract_instance(
     owner, vyper_contract_container, networks_connected_to_tester
