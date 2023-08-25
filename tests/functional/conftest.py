@@ -173,12 +173,12 @@ def vyper_fallback_contract(owner, vyper_fallback_container):
 
 @pytest.fixture(scope="session")
 def reverts_contract_type(get_contract_type) -> ContractType:
-    return get_contract_type("reverts_contract_vy037")
+    return get_contract_type("reverts_contract")
 
 
-@pytest.fixture(scope="session", params=("vy037", "vy039"))
-def revert_strings_contract_type(get_contract_type, request) -> ContractType:
-    return get_contract_type(f"sub_reverts_{request.param}")
+@pytest.fixture(scope="session")
+def sub_reverts_contract_type(get_contract_type) -> ContractType:
+    return get_contract_type("sub_reverts")
 
 
 @pytest.fixture(scope="session")
@@ -187,8 +187,8 @@ def reverts_contract_container(reverts_contract_type) -> ContractContainer:
 
 
 @pytest.fixture(scope="session")
-def sub_reverts_contract_container(revert_strings_contract_type) -> ContractContainer:
-    return ContractContainer(contract_type=revert_strings_contract_type)
+def sub_reverts_contract_container(sub_reverts_contract_type) -> ContractContainer:
+    return ContractContainer(contract_type=sub_reverts_contract_type)
 
 
 @pytest.fixture
