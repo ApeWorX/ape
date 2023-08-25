@@ -76,16 +76,11 @@ class ApeColorFormatter(logging.Formatter):
             record.levelname = click.style(record.levelname, **styles)
 
         path = Path(record.pathname)
-        found = False
+        record.plugin = ""
         for part in path.parts:
             if part.startswith("ape-"):
                 record.plugin = f" ({part})"
-                found = True
                 break
-
-        if not found:
-            # Likely from a REPL or Ape Core.
-            record.plugin = ""
 
         return super().format(record)
 
