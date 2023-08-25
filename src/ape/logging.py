@@ -3,6 +3,7 @@ import logging
 import sys
 import traceback
 from enum import IntEnum
+from pathlib import Path
 from typing import IO, Any, Dict, Optional, Union
 
 import click
@@ -19,7 +20,7 @@ class LogLevel(IntEnum):
 logging.addLevelName(LogLevel.SUCCESS.value, LogLevel.SUCCESS.name)
 logging.SUCCESS = LogLevel.SUCCESS.value  # type: ignore
 DEFAULT_LOG_LEVEL = LogLevel.INFO.name
-DEFAULT_LOG_FORMAT = "%(levelname)s: %(message)s"
+DEFAULT_LOG_FORMAT = "%(levelname)s%(plugin)s: %(message)s"
 
 
 def success(self, message, *args, **kws):
@@ -68,11 +69,24 @@ class ApeColorFormatter(logging.Formatter):
 
     def format(self, record):
         if _isatty(sys.stdout) and _isatty(sys.stderr):
-            # only color log messages when sys.stdout and sys.stderr are sent to the terminal
+            # Only color log messages when sys.stdout and sys.stderr are sent to the terminal.
             level = LogLevel(record.levelno)
             default_dict: Dict[str, Any] = {}
             styles: Dict[str, Any] = CLICK_STYLE_KWARGS.get(level, default_dict)
             record.levelname = click.style(record.levelname, **styles)
+
+        path = Path(record.pathname)
+        found = False
+        if path.glob("*ape_*"):
+            for part in path.parts:
+                if part.startswith("ape-"):
+                    record.plugin = f" ({part})"
+                    found = True
+                    break
+
+        if not found:
+            # Likely from a REPL or Ape Core.
+            record.plugin = ""
 
         return super().format(record)
 
