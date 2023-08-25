@@ -77,12 +77,11 @@ class ApeColorFormatter(logging.Formatter):
 
         path = Path(record.pathname)
         found = False
-        if path.glob("*ape_*"):
-            for part in path.parts:
-                if part.startswith("ape-"):
-                    record.plugin = f" ({part})"
-                    found = True
-                    break
+        for part in path.parts:
+            if part.startswith("ape-"):
+                record.plugin = f" ({part})"
+                found = True
+                break
 
         if not found:
             # Likely from a REPL or Ape Core.
