@@ -239,8 +239,9 @@ def project_with_contract(temp_config):
 def project_with_source_files_contract(temp_config):
     bases_source_dir = BASE_SOURCES_DIRECTORY
     project_source_dir = APE_PROJECT_FOLDER
+    data = {"ethereum": {"compilers": ["ethpm"]}}
 
-    with temp_config() as project:
+    with temp_config(data) as project:
         copy_tree(str(project_source_dir), str(project.path))
         copy_tree(str(bases_source_dir), f"{project.path}/contracts/")
         yield project

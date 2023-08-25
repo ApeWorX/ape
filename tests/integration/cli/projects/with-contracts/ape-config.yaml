@@ -12,3 +12,7 @@ compile:
   exclude:
     - exclude_dir/*
     - Excl*.json
+
+ethereum:
+  compilers:
+    - ethpm

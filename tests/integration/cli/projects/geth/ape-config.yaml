@@ -1,6 +1,8 @@
 ethereum:
   local:
     default_provider: geth
+  compilers:
+    - ethpm
 
 # Change the default URI for one of the networks to
 # ensure that the default values of the other networks

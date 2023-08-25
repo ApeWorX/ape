@@ -7,3 +7,7 @@ compile:
   # NOTE: this should say `include_dependencies: false` below.
   # (it gets replaced with `true` in a test temporarily)
   include_dependencies: false
+
+ethereum:
+  compilers:
+    - ethpm

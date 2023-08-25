@@ -1,3 +1,7 @@
 dependencies:
   - name: sub-dependency
     local: ./sub_dependency
+
+ethereum:
+  compilers:
+    - ethpm

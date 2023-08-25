@@ -12,6 +12,7 @@ from click.testing import CliRunner
 
 import ape
 from ape.exceptions import APINotImplementedError, UnknownSnapshotError
+from ape.logging import logger
 from ape.managers.config import CONFIG_FILE_NAME
 from ape.types import AddressType
 from ape.utils import ZERO_ADDRESS
@@ -319,8 +320,11 @@ def skip_if_plugin_installed(*plugin_names: str):
         for name in names:
             # Compilers
             if name in ("solidity", "vyper"):
-                compiler = ape.compilers.get_compiler(name)
-                if compiler:
+                try:
+                    ape.compilers.get_compiler(name)
+                except ValueError:
+                    logger.debug(f"Compiler not found: {name}")
+                else:
 
                     def test_skip_from_compiler():
                         pytest.mark.skip(msg_f.format(name))

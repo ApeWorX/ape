@@ -15,3 +15,7 @@ dependencies:
 
   - name: renamed-contracts-folder-specified-in-config
     local: ./renamed_contracts_folder_specified_in_config
+
+ethereum:
+  compilers:
+    - ethpm

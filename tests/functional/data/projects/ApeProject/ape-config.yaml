@@ -1,1 +1,5 @@
 contracts_folder: ./contracts
+
+ethereum:
+  compilers:
+    - ethpm

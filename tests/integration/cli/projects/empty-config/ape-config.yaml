@@ -1,1 +1,4 @@
 # Empty config
+ethereum:
+  compilers:
+    - ethpm
