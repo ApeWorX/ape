@@ -689,16 +689,9 @@ class TestProviderAPI(ProviderAPI):
         ):
             return
 
-        cov_data = self._test_runner.coverage_tracker.data
-        if not cov_data:
-            return
-
-        contract_type = self.chain_manager.contracts.get(txn.receiver)
-        if not contract_type:
-            return
-
-        contract_src = self.project_manager._create_contract_source(contract_type)
-        if not contract_src:
+        if not (contract_type := self.chain_manager.contracts.get(txn.receiver)) or not (
+            contract_src := self.project_manager._create_contract_source(contract_type)
+        ):
             return
 
         method_id = txn.data[:4]

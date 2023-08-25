@@ -589,15 +589,15 @@ class GethDev(BaseGethProvider, TestProviderAPI, SubprocessProvider):
             # Optimization to enrich early and in_place=True.
             call_tree.enrich()
 
-        if track_gas and call_tree and (receiver := txn.receiver) and self._test_runner is not None:
+        if track_gas and call_tree and self._test_runner is not None and txn.receiver:
             # Gas report being collected, likely for showing a report
             # at the end of a test run.
             # Use `in_place=False` in case also `show_trace=True`
             enriched_call_tree = call_tree.enrich(in_place=False)
-            self._test_runner.gas_tracker.append_gas(enriched_call_tree, receiver)
+            self._test_runner.gas_tracker.append_gas(enriched_call_tree, txn.receiver)
 
-        if track_coverage and self._test_runner is not None and receiver:
-            contract_type = self.chain_manager.contracts.get(receiver)
+        if track_coverage and self._test_runner is not None and txn.receiver:
+            contract_type = self.chain_manager.contracts.get(txn.receiver)
             if contract_type:
                 traceframes = (self._create_trace_frame(x) for x in frames_copy)
                 method_id = HexBytes(txn.data)
