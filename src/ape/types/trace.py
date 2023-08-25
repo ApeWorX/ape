@@ -1,6 +1,6 @@
 from itertools import chain, tee
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Dict, Iterator, List, Optional, Set
+from typing import TYPE_CHECKING, Any, Dict, Iterator, List, Optional, Set, Union
 
 from ethpm_types import ASTNode, BaseModel, ContractType, HexBytes
 from ethpm_types.ast import SourceLocation
@@ -489,17 +489,21 @@ class SourceTraceback(BaseModel):
     __root__: List[ControlFlow]
 
     @classmethod
-    def create(cls, contract_type: ContractType, trace: Iterator[TraceFrame], data: HexBytes):
-        source_id = contract_type.source_id
-        if not source_id:
+    def create(
+        cls,
+        contract_type: Union[ContractType, AddressType],
+        trace: Iterator[TraceFrame],
+        data: Union[HexBytes, str],
+    ):
+        trace, second_trace = tee(trace)
+        if not second_trace or not (accessor := next(second_trace, None)):
             return cls.parse_obj([])
 
-        trace, second_trace = tee(trace)
-        if second_trace:
-            accessor = next(second_trace, None)
-            if not accessor:
+        if not isinstance(contract_type, ContractType):
+            if not (contract_type := accessor.chain_manager.contracts.get(contract_type)):
                 return cls.parse_obj([])
-        else:
+
+        if not (source_id := contract_type.source_id):
             return cls.parse_obj([])
 
         ext = f".{source_id.split('.')[-1]}"
@@ -508,7 +512,7 @@ class SourceTraceback(BaseModel):
 
         compiler = accessor.compiler_manager.registered_compilers[ext]
         try:
-            return compiler.trace_source(contract_type, trace, data)
+            return compiler.trace_source(contract_type, trace, HexBytes(data))
         except NotImplementedError:
             return cls.parse_obj([])
 
@@ -600,7 +604,7 @@ class SourceTraceback(BaseModel):
         segments: List[str] = []
         for control_flow in reversed(self.__root__):
             if last_depth is None or control_flow.depth == last_depth - 1:
-                if (control_flow.depth == 0 and len(segments) >= 1):
+                if control_flow.depth == 0 and len(segments) >= 1:
                     # Ignore 0-layer segments if source code was hit
                     continue
 

@@ -56,6 +56,7 @@ from ape.types import (
     ContractLog,
     LogFilter,
     SnapshotID,
+    SourceTraceback,
     TraceFrame,
 )
 from ape.utils import (
@@ -1531,8 +1532,7 @@ class Web3Provider(ProviderAPI, ABC):
         if not isinstance(err_data, dict):
             return VirtualMachineError(base_err=exception, **kwargs)
 
-        err_msg = err_data.get("message")
-        if not err_msg:
+        if not (err_msg := err_data.get("message")):
             return VirtualMachineError(base_err=exception, **kwargs)
 
         if txn is not None and "nonce too low" in str(err_msg):
@@ -1553,9 +1553,14 @@ class Web3Provider(ProviderAPI, ABC):
         txn: Optional[TransactionAPI] = None,
         trace: Optional[Iterator[TraceFrame]] = None,
         contract_address: Optional[AddressType] = None,
+        source_traceback: Optional[SourceTraceback] = None,
     ) -> ContractLogicError:
         message = str(exception).split(":")[-1].strip()
-        params: Dict = {"trace": trace, "contract_address": contract_address}
+        params: Dict = {
+            "trace": trace,
+            "contract_address": contract_address,
+            "source_traceback": source_traceback,
+        }
         no_reason = message == "execution reverted"
 
         if isinstance(exception, Web3ContractLogicError) and no_reason:

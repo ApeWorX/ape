@@ -178,12 +178,10 @@ class TransactionError(ContractError):
         if not self.source_traceback and self.txn:
             self.source_traceback = _get_ape_traceback(self.txn)
 
-        src_tb = self.source_traceback
-        if src_tb is not None and self.txn is not None:
+        if (src_tb := self.source_traceback) and self.txn is not None:
             # Create a custom Pythonic traceback using lines from the sources
             # found from analyzing the trace of the transaction.
-            py_tb = _get_custom_python_traceback(self, self.txn, src_tb)
-            if py_tb:
+            if py_tb := _get_custom_python_traceback(self, self.txn, src_tb):
                 self.__traceback__ = py_tb
 
 
@@ -211,12 +209,6 @@ class ContractLogicError(VirtualMachineError):
         self.txn = txn
         self.trace = trace
         self.contract_address = contract_address
-        if revert_message is None:
-            try:
-                # Attempt to use dev message as main exception message.
-                revert_message = self.dev_message
-            except Exception:
-                pass
 
         super().__init__(
             base_err=base_err,
@@ -226,6 +218,13 @@ class ContractLogicError(VirtualMachineError):
             trace=trace,
             txn=txn,
         )
+
+        if revert_message is None and (dev := self.dev_message):
+            try:
+                # Attempt to use dev message as main exception message.
+                self.message = dev
+            except Exception:
+                pass
 
     @property
     def revert_message(self):

@@ -585,12 +585,11 @@ class GethDev(BaseGethProvider, TestProviderAPI, SubprocessProvider):
         # NOTE: Don't pass txn_hash here, as it will fail (this is not a real txn).
         call_tree = self._create_call_tree_node(evm_call_tree)
 
-        receiver = txn.receiver
         if track_gas and show_gas and not show_trace and call_tree:
             # Optimization to enrich early and in_place=True.
             call_tree.enrich()
 
-        if track_gas and call_tree and receiver is not None and self._test_runner is not None:
+        if track_gas and call_tree and (receiver := txn.receiver) and self._test_runner is not None:
             # Gas report being collected, likely for showing a report
             # at the end of a test run.
             # Use `in_place=False` in case also `show_trace=True`
@@ -633,8 +632,10 @@ class GethDev(BaseGethProvider, TestProviderAPI, SubprocessProvider):
         except Exception as err:
             trace = (self._create_trace_frame(x) for x in self._trace_call(arguments)[1])
             contract_address = arguments[0]["to"]
+            method_id = arguments[0].get("data", "")[:10] or None
+            tb = SourceTraceback.create(contract_address, trace, method_id) if method_id else None
             raise self.get_virtual_machine_error(
-                err, trace=trace, contract_address=contract_address
+                err, trace=trace, contract_address=contract_address, source_traceback=tb
             ) from err
 
         if "error" in result:

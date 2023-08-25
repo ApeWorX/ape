@@ -2,7 +2,6 @@ from functools import cached_property
 from pathlib import Path
 from typing import Dict, Iterator, List, Optional, Set, Tuple
 
-from eth_utils import add_0x_prefix
 from ethpm_types import ContractType, HexBytes
 from ethpm_types.source import Content, ContractSource
 from evm_trace.geth import TraceFrame as EvmTraceFrame
@@ -195,7 +194,7 @@ class CompilerAPI(BaseInterfaceModel):
             return None, calldata
 
         # NOTE: Handling when providers give us odd address values.
-        raw_addr = HexBytes(data["address"]).hex().replace('0x', '')
+        raw_addr = HexBytes(data["address"]).hex().replace("0x", "")
         zeroes = max(40 - len(raw_addr), 0) * "0"
         addr = f"0x{zeroes}{raw_addr}"
 
