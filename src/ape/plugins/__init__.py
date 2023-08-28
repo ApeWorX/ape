@@ -2,7 +2,7 @@ import functools
 import importlib
 import pkgutil
 import subprocess
-from typing import Any, Callable, Generator, Iterator, List, Optional, Tuple, Type, cast
+from typing import Any, Callable, Generator, Iterator, List, Optional, Tuple, Type
 
 from ape.__modules__ import __modules__
 from ape.exceptions import ApeAttributeError
@@ -41,10 +41,6 @@ class AllPluginHooks(
 
 # All hookspecs are registered
 plugin_manager.add_hookspecs(AllPluginHooks)
-
-# Add cast so that mypy knows that pm.hook is actually a `Plugins` instance.
-# Without this hint there really is no way for mypy to know this.
-plugin_manager.hook = cast(AllPluginHooks, plugin_manager.hook)
 
 
 def clean_plugin_name(name: str) -> str:
