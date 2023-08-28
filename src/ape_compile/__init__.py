@@ -1,4 +1,4 @@
-from typing import Any, Optional
+from typing import Any, List, Optional
 
 from pydantic import Field, validator
 
@@ -22,6 +22,11 @@ class Config(PluginConfig):
     should configure ``include_dependencies`` to be ``True``.
     """
 
+    exclude: List[str] = []
+    """
+    Source exclusion globs across all file types.
+    """
+
     @validator("evm_version")
     def warn_deprecate(cls, value):
         if value:
@@ -31,6 +36,10 @@ class Config(PluginConfig):
             )
 
         return None
+
+    @validator("exclude", pre=True)
+    def validate_exclude(cls, value):
+        return value or []
 
 
 @plugins.register(plugins.Config)

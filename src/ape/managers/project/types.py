@@ -178,6 +178,7 @@ class BaseProject(ProjectAPI):
         self, file_paths: Optional[List[Path]] = None, use_cache: bool = True
     ) -> PackageManifest:
         # Read the project config and migrate project-settings to Ape settings if needed.
+        compile_config = self.config_manager.get_config("compile")
         with self._as_ape_project():
             self.project_manager.load_dependencies()
             manifest = self._get_base_manifest(use_cache=use_cache)
@@ -185,7 +186,11 @@ class BaseProject(ProjectAPI):
                 set(
                     [p for p in self.source_paths if p in file_paths]
                     if file_paths
-                    else self.source_paths
+                    else [
+                        p
+                        for p in self.source_paths
+                        if not any(p.match(e) for e in compile_config.exclude)
+                    ]
                 )
             )
             project_sources = _ProjectSources(manifest, source_paths, self.contracts_folder)
