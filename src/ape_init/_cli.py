@@ -9,7 +9,7 @@ from ape.cli import ape_cli_context
 from ape.utils import github_client
 
 try:
-    import tomllib
+    import tomllib # type: ignore[import]
 # backwards compatibility
 except ModuleNotFoundError:
     import tomli as tomllib
@@ -25,7 +25,7 @@ def read_dependencies_from_toml(file_path, cli_ctx) -> List[str]:
                 f"Unable to populate contnets from pyproject.toml file. {file_path} doesn't exists."
             )
 
-        except tomli.TOMLDecodeError:
+        except tomllib.TOMLDecodeError:
             cli_ctx.logger.warning(f"Error reading {file_path} file.")
 
     # Extract the 'tool.poetry.dependencies' section
@@ -37,7 +37,7 @@ def read_dependencies_from_toml(file_path, cli_ctx) -> List[str]:
     return ape_plugins
 
 
-def write_ape_config_yml(dependencies: List[str], file_to_write: pathlib.PosixPath):
+def write_ape_config_yml(dependencies: List[str], file_to_write: Path):
     dependency_text = "plugins:\n" + "\n".join(
         [f"  - name: {dependency}" for dependency in dependencies]
     )
