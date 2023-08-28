@@ -194,7 +194,8 @@ class CompilerAPI(BaseInterfaceModel):
             return None, calldata
 
         # NOTE: Handling when providers give us odd address values.
-        raw_addr = HexBytes(data["address"]).hex().replace("0x", "")
+        # NOTE: `or ""` because sometimes the address key exists and is None.
+        raw_addr = HexBytes(data.get("address") or "").hex().replace("0x", "")
         zeroes = max(40 - len(raw_addr), 0) * "0"
         addr = f"0x{zeroes}{raw_addr}"
 
