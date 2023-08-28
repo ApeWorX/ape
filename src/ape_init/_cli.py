@@ -1,36 +1,47 @@
+import pathlib
 import shutil
 from pathlib import Path
+from typing import List
 
 import click
 
 from ape.cli import ape_cli_context
 from ape.utils import github_client
 
-
-def read_dependencies_from_toml(file_path):
-    with open(file_path, "r") as file:
-        content = file.readlines()
-
-    in_dependencies = False
-    dependencies = []
-
-    for line in content:
-        stripped_line = line.strip()
-        if "[tool.ape.plugins]" in stripped_line:
-            in_dependencies = True
-        elif "[" in stripped_line and "]" in stripped_line:
-            in_dependencies = False
-        elif in_dependencies and stripped_line.startswith("ape-"):
-            dependencies.append(stripped_line.split("=")[0][4:])
-
-    return dependencies
+try:
+    import tomllib
+# backwards compatibility
+except ModuleNotFoundError:
+    import tomli as tomllib
 
 
-def write_ape_config_yml(dependencies, file_to_write):
-    with open(file_to_write, "w") as file:
-        file.write("plugins:\n")
-        for dependency in dependencies:
-            file.write(f"  - name: {dependency}\n")
+def read_dependencies_from_toml(file_path, cli_ctx) -> List[str]:
+
+    with open("./pyproject.toml", "rb") as file:
+        try:
+            data = tomllib.load(file)
+        except FileNotFoundError:
+            cli_ctx.logger.warning(
+                f"Unable to populate contnets from pyproject.toml file. {file_path} doesn't exists."
+            )
+
+        except tomli.TOMLDecodeError:
+            cli_ctx.logger.warning(f"Error reading {file_path} file.")
+
+    # Extract the 'tool.poetry.dependencies' section
+    dependencies = data.get("tool", {}).get("poetry", {}).get("dependencies", {})
+
+    # Check each dependency to see if it starts with 'ape-', because we know these are the ape plugins
+    ape_plugins = [dep[4:] for dep in dependencies if dep.startswith("ape-")]
+
+    return ape_plugins
+
+
+def write_ape_config_yml(dependencies: List[str], file_to_write: pathlib.PosixPath):
+    dependency_text = "plugins:\n" + "\n".join(
+        [f"  - name: {dependency}" for dependency in dependencies]
+    )
+    file_to_write.write_text(dependency_text)
 
 
 @click.command(short_help="Initalize an ape project")
@@ -79,7 +90,7 @@ __pycache__
             git_ignore_path.write_text(body.lstrip())
 
         ape_config = project_folder / "ape-config.yaml"
-        if ape_config.exists():
+        if ape_config.is_file():
             cli_ctx.logger.warning(f"'{ape_config}' exists")
         else:
             project_name = click.prompt("Please enter project name")
@@ -87,8 +98,8 @@ __pycache__
             cli_ctx.logger.success(f"{project_name} is written in ape-config.yaml")
 
         pyproject_toml = project_folder / "pyproject.toml"
-        if pyproject_toml.exists():
-            dependencies = read_dependencies_from_toml(pyproject_toml)
+        if pyproject_toml.is_file():
+            dependencies = read_dependencies_from_toml(pyproject_toml, cli_ctx)
             write_ape_config_yml(dependencies, ape_config)
             cli_ctx.logger.success(
                 f"Generated {ape_config} based on the currect pyproject.toml file"
