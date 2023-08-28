@@ -585,20 +585,19 @@ class GethDev(BaseGethProvider, TestProviderAPI, SubprocessProvider):
         # NOTE: Don't pass txn_hash here, as it will fail (this is not a real txn).
         call_tree = self._create_call_tree_node(evm_call_tree)
 
-        receiver = txn.receiver
         if track_gas and show_gas and not show_trace and call_tree:
             # Optimization to enrich early and in_place=True.
             call_tree.enrich()
 
-        if track_gas and call_tree and receiver is not None and self._test_runner is not None:
+        if track_gas and call_tree and self._test_runner is not None and txn.receiver:
             # Gas report being collected, likely for showing a report
             # at the end of a test run.
             # Use `in_place=False` in case also `show_trace=True`
             enriched_call_tree = call_tree.enrich(in_place=False)
-            self._test_runner.gas_tracker.append_gas(enriched_call_tree, receiver)
+            self._test_runner.gas_tracker.append_gas(enriched_call_tree, txn.receiver)
 
-        if track_coverage and self._test_runner is not None and receiver:
-            contract_type = self.chain_manager.contracts.get(receiver)
+        if track_coverage and self._test_runner is not None and txn.receiver:
+            contract_type = self.chain_manager.contracts.get(txn.receiver)
             if contract_type:
                 traceframes = (self._create_trace_frame(x) for x in frames_copy)
                 method_id = HexBytes(txn.data)
@@ -631,10 +630,17 @@ class GethDev(BaseGethProvider, TestProviderAPI, SubprocessProvider):
         try:
             result = self._make_request("eth_call", arguments)
         except Exception as err:
-            trace = (self._create_trace_frame(x) for x in self._trace_call(arguments)[1])
+            trace, trace2 = tee(self._create_trace_frame(x) for x in self._trace_call(arguments)[1])
             contract_address = arguments[0]["to"]
+            contract_type = self.chain_manager.contracts.get(contract_address)
+            method_id = arguments[0].get("data", "")[:10] or None
+            tb = (
+                SourceTraceback.create(contract_type, trace, method_id)
+                if method_id and contract_type
+                else None
+            )
             raise self.get_virtual_machine_error(
-                err, trace=trace, contract_address=contract_address
+                err, trace=trace2, contract_address=contract_address, source_traceback=tb
             ) from err
 
         if "error" in result:
