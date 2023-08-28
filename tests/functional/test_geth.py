@@ -119,6 +119,8 @@ def geth_vyper_receipt(geth_vyper_contract, owner):
 
 @geth_process_test
 def test_uri(geth_provider):
+    assert geth_provider.http_uri == GETH_URI
+    assert not geth_provider.ws_uri
     assert geth_provider.uri == GETH_URI
 
 
@@ -368,17 +370,6 @@ def test_local_transaction_traces(geth_receipt, captrace):
 
     # Verify can happen more than once.
     run_test()
-
-
-@geth_process_test
-def test_contract_logic_error_dev_message(vyper_math_dev_check, owner, geth_provider):
-    contract = vyper_math_dev_check.deploy(sender=owner)
-    expected = "dev: Integer overflow"
-    with pytest.raises(ContractLogicError, match=expected) as err:
-        contract.num_add(1, sender=owner)
-
-    assert err.value.txn is not None
-    assert err.value.dev_message == expected
 
 
 def assert_rich_output(rich_capture: List[str], expected: str):

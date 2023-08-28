@@ -1,6 +1,6 @@
-from itertools import tee
+from itertools import chain, tee
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Dict, Iterator, List, Optional, Set
+from typing import TYPE_CHECKING, Any, Dict, Iterator, List, Optional, Set, Union
 
 from ethpm_types import ASTNode, BaseModel, ContractType, HexBytes
 from ethpm_types.ast import SourceLocation
@@ -489,17 +489,17 @@ class SourceTraceback(BaseModel):
     __root__: List[ControlFlow]
 
     @classmethod
-    def create(cls, contract_type: ContractType, trace: Iterator[TraceFrame], data: HexBytes):
-        source_id = contract_type.source_id
-        if not source_id:
+    def create(
+        cls,
+        contract_type: ContractType,
+        trace: Iterator[TraceFrame],
+        data: Union[HexBytes, str],
+    ):
+        trace, second_trace = tee(trace)
+        if not second_trace or not (accessor := next(second_trace, None)):
             return cls.parse_obj([])
 
-        trace, second_trace = tee(trace)
-        if second_trace:
-            accessor = next(second_trace, None)
-            if not accessor:
-                return cls.parse_obj([])
-        else:
+        if not (source_id := contract_type.source_id):
             return cls.parse_obj([])
 
         ext = f".{source_id.split('.')[-1]}"
@@ -508,7 +508,7 @@ class SourceTraceback(BaseModel):
 
         compiler = accessor.compiler_manager.registered_compilers[ext]
         try:
-            return compiler.trace_source(contract_type, trace, data)
+            return compiler.trace_source(contract_type, trace, HexBytes(data))
         except NotImplementedError:
             return cls.parse_obj([])
 
@@ -533,10 +533,25 @@ class SourceTraceback(BaseModel):
     def __setitem__(self, key, value):
         return self.__root__.__setitem__(key, value)
 
+    @property
+    def revert_type(self) -> Optional[str]:
+        """
+        The revert type, such as a builtin-error code or a user dev-message,
+        if there is one.
+        """
+
+        return self.statements[-1].type if self.statements[-1].type != "source" else None
+
     def append(self, __object) -> None:
+        """
+        Append the given control flow to this one.
+        """
         self.__root__.append(__object)
 
     def extend(self, __iterable) -> None:
+        """
+        Append all the control flows from the given traceback to this one.
+        """
         if not isinstance(__iterable, SourceTraceback):
             raise TypeError("Can only extend another traceback object.")
 
@@ -544,13 +559,37 @@ class SourceTraceback(BaseModel):
 
     @property
     def last(self) -> Optional[ControlFlow]:
+        """
+        The last control flow in the traceback, if there is one.
+        """
         return self.__root__[-1] if len(self.__root__) else None
 
     @property
     def execution(self) -> List[ControlFlow]:
+        """
+        All the control flows in order. Each set of statements in
+        a control flow is separated by a jump.
+        """
         return list(self.__root__)
 
+    @property
+    def statements(self) -> List[Statement]:
+        """
+        All statements from each control flow.
+        """
+        return list(chain(*[x.statements for x in self.__root__]))
+
+    @property
+    def source_statements(self) -> List[SourceStatement]:
+        """
+        All source statements from each control flow.
+        """
+        return list(chain(*[x.source_statements for x in self.__root__]))
+
     def format(self) -> str:
+        """
+        Get a formatted traceback string for displaying to users.
+        """
         if not len(self.__root__):
             # No calls.
             return ""
@@ -566,6 +605,10 @@ class SourceTraceback(BaseModel):
                     continue
 
                 last_depth = control_flow.depth
+                content_str = control_flow.format()
+                if not content_str.strip():
+                    continue
+
                 segment = f"{indent}{control_flow.source_header}\n{control_flow.format()}"
 
                 # Try to include next statement for display purposes.
@@ -660,6 +703,20 @@ class SourceTraceback(BaseModel):
         source_path: Optional[Path] = None,
         pcs: Optional[Set[int]] = None,
     ):
+        """
+        A convenience method for appending a control flow that happened
+        from an internal compiler built-in code. See the ape-vyper plugin
+        for a usage example.
+
+        Args:
+            name (str): The name of the compiler built-in.
+            _type (str): A str describing the type of check.
+            compiler_name (str): The name of the compiler.
+            full_name (Optional[str]): A full-name ID.
+            source_path (Optional[Path]): The source file related, if there is one.
+            pcs (Optional[Set[int]]): Program counter values mapping to this check.
+        """
+        # TODO: Assess if compiler_name is needed or get rid of in v0.7.
         pcs = pcs or set()
         closure = Closure(name=name, full_name=full_name or name)
         depth = self.last.depth - 1 if self.last else 0

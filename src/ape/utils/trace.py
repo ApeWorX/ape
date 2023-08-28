@@ -16,6 +16,7 @@ if TYPE_CHECKING:
 
 _WRAP_THRESHOLD = 50
 _INDENT = 2
+USER_ASSERT_TAG = "USER_ASSERT"
 
 
 class TraceStyles:

@@ -56,6 +56,7 @@ from ape.types import (
     ContractLog,
     LogFilter,
     SnapshotID,
+    SourceTraceback,
     TraceFrame,
 )
 from ape.utils import (
@@ -168,6 +169,20 @@ class ProviderAPI(BaseInterfaceModel):
         """
         Disconnect from a provider, such as tear-down a process or quit an HTTP session.
         """
+
+    @property
+    def http_uri(self) -> Optional[str]:
+        """
+        Return the raw HTTP/HTTPS URI to connect to this provider, if supported.
+        """
+        return None
+
+    @property
+    def ws_uri(self) -> Optional[str]:
+        """
+        Return the raw WS/WSS URI to connect to this provider, if supported.
+        """
+        return None
 
     @abstractmethod
     def update_settings(self, new_settings: dict):
@@ -688,16 +703,9 @@ class TestProviderAPI(ProviderAPI):
         ):
             return
 
-        cov_data = self._test_runner.coverage_tracker.data
-        if not cov_data:
-            return
-
-        contract_type = self.chain_manager.contracts.get(txn.receiver)
-        if not contract_type:
-            return
-
-        contract_src = self.project_manager._create_contract_source(contract_type)
-        if not contract_src:
+        if not (contract_type := self.chain_manager.contracts.get(txn.receiver)) or not (
+            contract_src := self.project_manager._create_contract_source(contract_type)
+        ):
             return
 
         method_id = txn.data[:4]
@@ -725,6 +733,32 @@ class Web3Provider(ProviderAPI, ABC):
             raise ProviderNotConnectedError()
 
         return self._web3
+
+    @property
+    def http_uri(self) -> Optional[str]:
+        if (
+            hasattr(self.web3.provider, "endpoint_uri")
+            and isinstance(self.web3.provider.endpoint_uri, str)
+            and self.web3.provider.endpoint_uri.startswith("http")
+        ):
+            return self.web3.provider.endpoint_uri
+
+        elif hasattr(self, "uri"):
+            # NOTE: Some providers define this
+            return self.uri
+
+        return None
+
+    @property
+    def ws_uri(self) -> Optional[str]:
+        if (
+            hasattr(self.web3.provider, "endpoint_uri")
+            and isinstance(self.web3.provider.endpoint_uri, str)
+            and self.web3.provider.endpoint_uri.startswith("ws")
+        ):
+            return self.web3.provider.endpoint_uri
+
+        return None
 
     @property
     def client_version(self) -> str:
@@ -1531,8 +1565,7 @@ class Web3Provider(ProviderAPI, ABC):
         if not isinstance(err_data, dict):
             return VirtualMachineError(base_err=exception, **kwargs)
 
-        err_msg = err_data.get("message")
-        if not err_msg:
+        if not (err_msg := err_data.get("message")):
             return VirtualMachineError(base_err=exception, **kwargs)
 
         if txn is not None and "nonce too low" in str(err_msg):
@@ -1553,9 +1586,14 @@ class Web3Provider(ProviderAPI, ABC):
         txn: Optional[TransactionAPI] = None,
         trace: Optional[Iterator[TraceFrame]] = None,
         contract_address: Optional[AddressType] = None,
+        source_traceback: Optional[SourceTraceback] = None,
     ) -> ContractLogicError:
         message = str(exception).split(":")[-1].strip()
-        params: Dict = {"trace": trace, "contract_address": contract_address}
+        params: Dict = {
+            "trace": trace,
+            "contract_address": contract_address,
+            "source_traceback": source_traceback,
+        }
         no_reason = message == "execution reverted"
 
         if isinstance(exception, Web3ContractLogicError) and no_reason:
