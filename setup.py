@@ -112,7 +112,7 @@ setup(
         "tqdm>=4.62.3,<5.0",
         "traitlets>=5.3.0",
         "watchdog>=3.0,<4",
-        "tomli>=2.0.1",
+        "tomli>=2.0.1 ; python_version<3.11",
         # ** Dependencies maintained by Ethereum Foundation **
         "eth-abi>=4.1.0,<5",
         "eth-account>=0.8,<0.9",
