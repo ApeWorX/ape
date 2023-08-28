@@ -90,7 +90,7 @@ geth:
 If you would like to connect to a URI using the `geth` provider, you can specify a URI for the provider name in the `--network` option:
 
 ```bash
-ape run script --network ethereum:mainnet:https://foo.bar
+ape run script --network etheruem:mainnet:https://foo.bar
 ```
 
 Additionally, if you want to connect to an unknown ecosystem or network, you can use the URI by itself.
