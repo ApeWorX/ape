@@ -71,10 +71,14 @@ def test_compile(ape_cli, runner, project, clean_cache):
     # Don't expect directories that may happen to have `.json` in name
     # as well as hidden files, such as `.gitkeep`. Both examples are present
     # in the test project!
+    excluded = ("Exclude.json", "UnwantedContract.json")
     expected_files = [
         f
         for f in all_files
-        if f.name.count(".") == 1 and f.is_file() and not f.name.startswith(".")
+        if f.name.count(".") == 1
+        and f.is_file()
+        and not f.name.startswith(".")
+        and f.name not in excluded
     ]
     unexpected_files = [f for f in all_files if f not in expected_files]
 
