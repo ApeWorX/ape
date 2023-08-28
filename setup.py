@@ -19,7 +19,7 @@ extras_require = {
     ],
     "lint": [
         "black>=23.7.0,<24",  # Auto-formatter and linter
-        "mypy>=1.4.1,<2",  # Static type analyzer
+        "mypy>=1.5.1,<2",  # Static type analyzer
         "types-PyYAML",  # Needed due to mypy typeshed
         "types-requests",  # Needed due to mypy typeshed
         "types-setuptools",  # Needed due to mypy typeshed
@@ -29,7 +29,7 @@ extras_require = {
         "flake8-breakpoint>=1.1.0,<2",  # detect breakpoints left in code
         "flake8-print>=4.0.1,<5",  # detect print statements left in code
         "isort>=5.10.1,<6",  # Import sorting linter
-        "mdformat>=0.7.16",  # Auto-formatter for markdown
+        "mdformat>=0.7.17",  # Auto-formatter for markdown
         "mdformat-gfm>=0.3.5",  # Needed for formatting GitHub-flavored markdown
         "mdformat-frontmatter>=0.4.1",  # Needed for frontmatters-style headers in issue templates
         "mdformat-pyproject>=0.0.1",  # Allows configuring in pyproject.toml
@@ -100,7 +100,7 @@ setup(
         "lazyasd>=0.1.4",
         "packaging>=23.0,<24",
         "pandas>=1.3.0,<2",
-        "pluggy>=0.12,<2",
+        "pluggy>=0.12,<1.3",
         "pydantic>=1.10.8,<2",
         "PyGithub>=1.59,<2",
         "pytest>=6.0,<8.0",
