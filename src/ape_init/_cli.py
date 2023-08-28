@@ -1,4 +1,3 @@
-import pathlib
 import shutil
 from pathlib import Path
 from typing import List
@@ -9,7 +8,7 @@ from ape.cli import ape_cli_context
 from ape.utils import github_client
 
 try:
-    import tomllib # type: ignore[import]
+    import tomllib  # type: ignore[import]
 # backwards compatibility
 except ModuleNotFoundError:
     import tomli as tomllib
