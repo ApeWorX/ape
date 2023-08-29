@@ -622,19 +622,33 @@ class TransactionHistory(BaseManager):
             :class:`~ape.api.transactions.ReceiptAPI`: The receipt.
         """
 
-        try:
-            address = self.provider.network.ecosystem.decode_address(account_or_hash)
-            return self._get_account_history(address)
-        except Exception as err:
-            # Use Transaction hash
+        def _get_receipt() -> Optional[ReceiptAPI]:
             try:
                 return self._get_receipt(account_or_hash)
             except Exception:
-                pass
+                return None
+
+        try:
+            address = self.provider.network.ecosystem.decode_address(account_or_hash)
+            history = self._get_account_history(address)
+            if len(history) > 0:
+                return history
+
+        except Exception as err:
+            # Try to treat as transaction hash.
+            if receipt := _get_receipt():
+                return receipt
 
             raise ChainError(
                 f"'{account_or_hash}' is not a known address or transaction hash."
             ) from err
+
+        # No account history found. Check for transaction hash.
+        if receipt := _get_receipt():
+            return receipt
+
+        # Nothing found. Return empty history
+        return history
 
     def _get_receipt(self, txn_hash: str) -> ReceiptAPI:
         receipt = self._hash_to_receipt_map.get(txn_hash)

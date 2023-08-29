@@ -547,9 +547,8 @@ class ReceiptAPI(BaseInterfaceModel):
             return
 
         tracker = self._test_runner.coverage_tracker
-        if self.provider.supports_tracing:
-            traceback = self.source_traceback
-            if traceback is not None and len(traceback) > 0 and self._test_runner is not None:
+        if self.provider.supports_tracing and (traceback := self.source_traceback):
+            if len(traceback) > 0:
                 tracker.cover(traceback)
 
         elif method := self.method_called:

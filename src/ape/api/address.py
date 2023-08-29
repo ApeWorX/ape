@@ -100,7 +100,8 @@ class BaseAddress(BaseInterface):
         elif "sender" not in kwargs and self.account_manager.default_sender is not None:
             return self.account_manager.default_sender.call(txn, **kwargs)
 
-        return self.provider.send_transaction(txn)
+        receipt = self.provider.send_transaction(txn)
+        return receipt
 
     @property
     def nonce(self) -> int:
