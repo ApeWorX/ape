@@ -270,9 +270,12 @@ def _parse_verbose_coverage(coverage: "CoverageReport", statement: bool = True) 
                         # Create a row per unique type.
                         builtins = {x.tag for x in fn.statements if x.tag}
                         for builtin in builtins:
-                            name = (
-                                f"__{builtin.lower().strip().replace(' ', '_').replace(':', '')}__"
-                            )
+                            name_chars = [
+                                c
+                                for c in builtin.lower().strip().replace(" ", "_")
+                                if c.isalpha() or c == "_"
+                            ]
+                            name = f"__{''.join(name_chars).replace('dev_', '')}__"
                             miss = (
                                 0
                                 if not any(
