@@ -229,17 +229,6 @@ method_id, input_dict = contract.decode_input(bytes_value)
 
 The `ape_ethereum` core plugin comes with a `multi-call` module.
 
-```bash
-Raises:
-    :class:`~ape_ethereum.multicall.exceptions.UnsupportedChain`: If there is not an instance of Multicall3 deployed on the current chain at the expected address.
-
-Args:
-    **call_kwargs: the kwargs to pass through to the call handler.
-
-Returns:
-    Iterator[Any]: the sequence of values produced by performing each call stored by this instance.
-```
-
 ### Usage
 
 Here is an example of how you can use multicall.
