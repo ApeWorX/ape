@@ -625,7 +625,7 @@ class GethDev(BaseGethProvider, TestProviderAPI, SubprocessProvider):
     def _trace_call(self, arguments: List[Any]) -> Tuple[Dict, Iterator[EvmTraceFrame]]:
         result = self._make_request("debug_traceCall", arguments)
         trace_data = result.get("structLogs", [])
-        return result, (EvmTraceFrame(**f) for f in trace_data)
+        return result, create_trace_frames(trace_data)
 
     def _eth_call(self, arguments: List) -> bytes:
         try:
