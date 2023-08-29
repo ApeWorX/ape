@@ -50,7 +50,14 @@ class RevertsContextManager(ManagerAccessMixin):
             raise AssertionError(str(err)) from err
 
         if dev_message is None:
-            raise AssertionError("Could not find the source of the revert.")
+            err_message = "Could not find the source of the revert."
+
+            # Attempt to show source traceback so the user can see the real failure.
+            if (info := self.revert_info) and (ex := info.value):
+                if tb := ex.source_traceback:
+                    err_message = f"{err_message}\n{tb}"
+
+            raise AssertionError(err_message)
 
         if not (
             (self.dev_message.match(dev_message) is not None)
@@ -156,6 +163,11 @@ class RevertsContextManager(ManagerAccessMixin):
                 f"However, an exception of type {type(exc_value)} occurred: {exc_value}."
             ) from exc_value
 
+        # Set the exception on the returned info.
+        # This allows the user to make further assertions on the exception.
+        if self.revert_info is not None:
+            self.revert_info.value = exc_value
+
         if self.dev_message is not None:
             self._check_dev_message(exc_value)
 
@@ -165,11 +177,6 @@ class RevertsContextManager(ManagerAccessMixin):
         elif self.expected_message is not None and isinstance(exc_value, CustomError):
             # Is a custom error type.
             self._check_custom_error(exc_value)
-
-        # Set the exception on the returned info.
-        # This allows the user to make further assertions on the exception.
-        if self.revert_info is not None:
-            self.revert_info.value = exc_value
 
         # Returning True causes the expected exception not to get raised
         # and the test to pass

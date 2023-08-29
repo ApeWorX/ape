@@ -16,6 +16,7 @@ from ethpm_types import HexBytes
 from evm_trace import CallType, ParityTraceList
 from evm_trace import TraceFrame as EvmTraceFrame
 from evm_trace import (
+    create_trace_frames,
     get_calltree_from_geth_call_trace,
     get_calltree_from_geth_trace,
     get_calltree_from_parity_trace,
@@ -350,8 +351,8 @@ class BaseGethProvider(Web3Provider, ABC):
         frames = self._stream_request(
             "debug_traceTransaction", [txn_hash, {"enableMemory": True}], "result.structLogs.item"
         )
-        for frame in frames:
-            yield self._create_trace_frame(EvmTraceFrame(**frame))
+        for frame in create_trace_frames(frames):
+            yield self._create_trace_frame(frame)
 
     def _get_transaction_trace_using_call_tracer(self, txn_hash: str) -> Dict:
         return self._make_request(
@@ -624,7 +625,7 @@ class GethDev(BaseGethProvider, TestProviderAPI, SubprocessProvider):
     def _trace_call(self, arguments: List[Any]) -> Tuple[Dict, Iterator[EvmTraceFrame]]:
         result = self._make_request("debug_traceCall", arguments)
         trace_data = result.get("structLogs", [])
-        return result, (EvmTraceFrame(**f) for f in trace_data)
+        return result, create_trace_frames(trace_data)
 
     def _eth_call(self, arguments: List) -> bytes:
         try:

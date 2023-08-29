@@ -771,11 +771,10 @@ class ProjectManager(BaseManager):
         destination.write_text(artifact.json())
 
     def _create_contract_source(self, contract_type: ContractType) -> Optional[ContractSource]:
-        if not contract_type.source_id:
+        if not (source_id := contract_type.source_id):
             return None
 
-        src = self._lookup_source(contract_type.source_id)
-        if not src:
+        if not (src := self._lookup_source(source_id)):
             return None
 
         try:
