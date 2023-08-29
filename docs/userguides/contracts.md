@@ -228,10 +228,6 @@ method_id, input_dict = contract.decode_input(bytes_value)
 ## Multicall
 
 The `ape_ethereum` core plugin comes with a `multi-call` module.
-Yes you're reading this right.
-No need to install external modules to do multicall, ape got you covered.
-Perform the Multicall call.
-This call will trigger again every time the `Call` object is called.
 
 ```bash
 Raises:
@@ -264,46 +260,6 @@ a, b, ..., z = call()  # Performs multicall
 result = list(call()) 
 ```
 
-### Practical Example
-
-This is a sample example of how you can perform multicall in a real world scenario. This piece of code will perfrom multicall on a `Uniswap V2` pool contract.
-
-```py
-from ape_ethereum import multicall
-from ape import project
-
-pool = ["0xF4b8A02D4e8D76070bD7092B54D2cBbe90fa72e9","0x80067013d7F7aF4e86b3890489AcAFe79F31a4Cb"]
-
-for pool_address in pools:
-    uniswap_v2_pair_contract = project.IUniswapV2Pair.at(pool_address)
-    call.add(uniswap_v2_pair_contract.getReserves)
-    multicall_result = list(call())
-
-print(multicall_result[0])
-
-# output
-[17368643486106939361172, 31867695075486]
-```
-
-<!-- ### Encode Multicall Transaction
-Encode the Multicall transaction as a ``TransactionAPI`` object, but do not execute it.
-Returns:
-```js
-:class:`~ape.api.transactions.TransactionAPI`
-```
-
-```py
-from ape_ethereum import multicall
-
-call = multicall.Call()
-call.add(contract.myMethod, *call_args)
-call.add(contract.myMethod, *call_args)
-...  # Add as many calls as desired
-call.add(contract.myMethod, *call_args)
-
-encoded_call = call.as_transaction()
-``` -->
-
 ## Multicall Transaction
 
 Create a sequence of calls to execute at once using `eth_sendTransaction` via the Multicall3 contract.
@@ -335,4 +291,26 @@ txn.add(contract.myMethod, *call_args)
 a, b, ..., z = txn(sender=my_signer)  # Sends the multical transaction
 # OR
 result = list(txn(sender=my_signer))
+```
+
+### Practical Example
+
+This is a sample example of how you can perform multicall in a real world scenario.
+This piece of code will perfrom multicall on a `Uniswap V2` pool contract.
+
+```py
+from ape_ethereum import multicall
+from ape import project
+
+pool = ["0xF4b8A02D4e8D76070bD7092B54D2cBbe90fa72e9","0x80067013d7F7aF4e86b3890489AcAFe79F31a4Cb"]
+
+for pool_address in pools:
+    uniswap_v2_pair_contract = project.IUniswapV2Pair.at(pool_address)
+    call.add(uniswap_v2_pair_contract.getReserves)
+    multicall_result = list(call())
+
+print(multicall_result[0])
+
+# output
+[17368643486106939361172, 31867695075486]
 ```
