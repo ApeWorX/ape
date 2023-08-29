@@ -255,18 +255,6 @@ Create a sequence of calls to execute at once using `eth_sendTransaction` via th
 Execute the Multicall transaction.
 The transaction will broadcast again every time the `Transaction` object is called.
 
-```bash
-Raises:
-    :class:`UnsupportedChain`: If there is not an instance of Multicall3 deployed
-        on the current chain at the expected address.
-
-Args:
-    **txn_kwargs: the kwargs to pass through to the transaction handler.
-
-Returns:
-    :class:`~ape.api.transactions.ReceiptAPI`
-```
-
 ### Usage example:
 
 ```py
