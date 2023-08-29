@@ -7,3 +7,8 @@ dependencies:
 test:
   # `false` because running pytest within pytest.
   disconnect_providers_after: false
+
+compile:
+  exclude:
+    - exclude_dir/*
+    - Excl*.json
