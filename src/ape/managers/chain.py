@@ -1714,5 +1714,5 @@ class ChainManager(BaseManager):
         receipt = self.chain_manager.history[transaction_hash]
         if not isinstance(receipt, ReceiptAPI):
             raise ChainError(f"No receipt found with hash '{transaction_hash}'.")
-        
+
         return receipt
