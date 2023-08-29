@@ -98,6 +98,21 @@ from ape import Contract
 contract = Contract("v2.registry.ychad.eth")
 ```
 
+## From ABIs
+
+You can load contracts using their ABIs:
+
+```python
+from ape import Contract
+
+address = "0x68b3465833fb72A70ecDF485E0e4C7bD8665Fc45"
+abi = '[{"inputs":[{"internalType":"contract MultiWrapper"...]
+
+contract = Contract(address, abi=abi)
+```
+
+This will create the Contract instance from the given ABI. 
+
 ## From Previous Deployment
 
 Ape keeps track of your deployments for you so you can always refer back to a version that you deployed previously.

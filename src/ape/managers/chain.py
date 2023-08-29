@@ -8,6 +8,7 @@ from typing import IO, Collection, Dict, Iterator, List, Optional, Set, Type, Un
 
 import pandas as pd
 from ethpm_types import ContractType
+from ethpm_types.abi import ABI
 from rich import get_console
 from rich.console import Console as RichConsole
 
@@ -1140,6 +1141,9 @@ class ContractCache(BaseManager):
         address: Union[str, AddressType],
         contract_type: Optional[ContractType] = None,
         txn_hash: Optional[str] = None,
+        abi: Optional[
+            Union[List[ABI], str, Path]
+        ] = None,  # ABI can be string, List[ABI] or a Path object
     ) -> ContractInstance:
         """
         Get a contract at the given address. If the contract type of the contract is known,
@@ -1159,6 +1163,8 @@ class ContractCache(BaseManager):
               in case it is not already known.
             txn_hash (Optional[str]): The hash of the transaction responsible for deploying the
               contract, if known. Useful for publishing. Defaults to ``None``.
+            abi (Union[Optional[List[ethpm_types.abi.ABI], str, Path]] = None): Will load the contract
+            from abi provided like Contract(address, abi=abi) by the user.
 
         Returns:
             :class:`~ape.contracts.base.ContractInstance`
@@ -1181,6 +1187,43 @@ class ContractCache(BaseManager):
                 logger.error(str(err))
             else:
                 raise  # Current exception
+
+        if abi:
+            # if abi is type string then convert it to json object
+            if isinstance(abi, str):
+                try:
+                    # convert the abi from string to list
+                    list_abi = ContractType.parse_raw(abi)
+                    # Create a new ContractType with the provided ABI
+                    contract_type = ContractType(abi=list_abi)
+                except Exception as err:
+                    if contract_type:
+                        # If a default contract type was provided, don't error and use it.
+                        logger.error(str(err))
+                    else:
+                        raise  # Current exception
+            # if it's of type List[ABI] pass it directly to ContractType Class
+            elif isinstance(abi, list):
+                # Use the provided abi directly
+                contract_type = ContractType(abi=abi)
+            elif isinstance(abi, Path):
+                # Handle both absolute and relative paths
+                if not abi.is_absolute():
+                    project_folder = Path.cwd()
+                    abi = project_folder / abi
+                try:
+                    with abi.open() as f:
+                        list_abi = ContractType.parse_raw(f)
+                        # Create a new ContractType with the provided ABI from the file
+                        contract_type = ContractType(abi=list_abi)
+                except Exception as err:
+                    if contract_type:
+                        # If a default contract type was provided, don't error and use it.
+                        logger.error(str(err))
+                    else:
+                        raise  # Current exception
+            else:
+                raise TypeError("Invalid ABI type, expecting str, List[ABI] or a json file")
 
         if not contract_type:
             raise ContractNotFoundError(

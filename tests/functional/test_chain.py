@@ -669,3 +669,18 @@ def test_get_contract_receipt(chain, vyper_contract_instance):
     chain.mine()
     receipt = chain.contracts.get_creation_receipt(address)
     assert receipt.contract_address == address
+
+
+def test_load_solidity_contract_from_abi():
+    # USDC contract
+    abi = '[{"constant":false,"inputs":[{"name":"newImplementation","type":"address"}],"name":"upgradeTo","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":false,"inputs":[{"name":"newImplementation","type":"address"},{"name":"data","type":"bytes"}],"name":"upgradeToAndCall","outputs":[],"payable":true,"stateMutability":"payable","type":"function"},{"constant":true,"inputs":[],"name":"implementation","outputs":[{"name":"","type":"address"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"name":"newAdmin","type":"address"}],"name":"changeAdmin","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[],"name":"admin","outputs":[{"name":"","type":"address"}],"payable":false,"stateMutability":"view","type":"function"},{"inputs":[{"name":"_implementation","type":"address"}],"payable":false,"stateMutability":"nonpayable","type":"constructor"},{"payable":true,"stateMutability":"payable","type":"fallback"},{"anonymous":false,"inputs":[{"indexed":false,"name":"previousAdmin","type":"address"},{"indexed":false,"name":"newAdmin","type":"address"}],"name":"AdminChanged","type":"event"},{"anonymous":false,"inputs":[{"indexed":false,"name":"implementation","type":"address"}],"name":"Upgraded","type":"event"}]'
+    address = "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48"
+
+    contract = ape.Contract(address, abi=abi)
+
+    assert isinstance(contract, ContractInstance)
+    assert contract.address == address
+
+
+def test_load_vyper_contract_from_abi():
+    pass
