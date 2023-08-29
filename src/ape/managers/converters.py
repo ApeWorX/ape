@@ -347,8 +347,12 @@ class ConversionManager(BaseManager):
             try:
                 return converter.convert(value)
             except Exception as err:
-                raise ConversionError(
-                    f"Failed to convert '{value}' using '{converter.__class__.__name__}'."
-                ) from err
+                try:
+                    error_value = f" '{value}' "
+                except Exception:
+                    error_value = " "
+
+                message = f"Failed to convert{error_value}using '{converter.__class__.__name__}'."
+                raise ConversionError(message) from err
 
         raise ConversionError(f"No conversion registered to handle '{value}'.")
