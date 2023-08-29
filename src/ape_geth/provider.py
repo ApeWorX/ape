@@ -16,6 +16,7 @@ from ethpm_types import HexBytes
 from evm_trace import CallType, ParityTraceList
 from evm_trace import TraceFrame as EvmTraceFrame
 from evm_trace import (
+    create_trace_frames,
     get_calltree_from_geth_call_trace,
     get_calltree_from_geth_trace,
     get_calltree_from_parity_trace,
