@@ -347,11 +347,10 @@ class BaseGethProvider(Web3Provider, ABC):
         self._client_version = None
 
     def get_transaction_trace(self, txn_hash: str) -> Iterator[TraceFrame]:
-        frames = self._stream_request(
+        struct_logs = self._stream_request(
             "debug_traceTransaction", [txn_hash, {"enableMemory": True}], "result.structLogs.item"
         )
-        for frame in frames:
-            yield self._create_trace_frame(EvmTraceFrame(**frame))
+        yield from create_trace_frames(struct_logs)
 
     def _get_transaction_trace_using_call_tracer(self, txn_hash: str) -> Dict:
         return self._make_request(

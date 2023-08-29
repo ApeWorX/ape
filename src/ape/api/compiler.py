@@ -6,6 +6,7 @@ from ethpm_types import ContractType, HexBytes
 from ethpm_types.source import Content, ContractSource
 from evm_trace.geth import TraceFrame as EvmTraceFrame
 from evm_trace.geth import create_call_node_data
+from evm_trace.utils import to_address
 from semantic_version import Version  # type: ignore
 
 from ape.exceptions import APINotImplementedError, ContractLogicError
@@ -189,18 +190,11 @@ class CompilerAPI(BaseInterfaceModel):
         evm_frame = EvmTraceFrame(**frame.raw)
         data = create_call_node_data(evm_frame)
         calldata = data.get("calldata", HexBytes(""))
-
-        if "address" not in data:
+        if not (address := (data.get("address", frame.contract_address) or None)):
             return None, calldata
 
-        # NOTE: Handling when providers give us odd address values.
-        # NOTE: `or ""` because sometimes the address key exists and is None.
-        raw_addr = HexBytes(data.get("address") or "").hex().replace("0x", "")
-        zeroes = max(40 - len(raw_addr), 0) * "0"
-        addr = f"0x{zeroes}{raw_addr}"
-
         try:
-            address = self.provider.network.ecosystem.decode_address(addr)
+            address = self.provider.network.ecosystem.decode_address(address)
         except Exception:
             return None, calldata
 
