@@ -261,18 +261,42 @@ def _parse_verbose_coverage(coverage: "CoverageReport", statement: bool = True) 
                         # It is impossible to really track.
                         continue
 
-                    row = (
-                        (
-                            fn.name,
-                            fn.full_name,
-                            f"{fn.lines_valid}",
-                            f"{fn.miss_count}",
-                            f"{round(fn.line_rate * 100, 2)}%",
+                    counts = [
+                        f"{fn.lines_valid}",
+                        f"{fn.miss_count}",
+                        f"{round(fn.line_rate * 100, 2)}%",
+                    ]
+                    if fn.name == "__builtin__":
+                        # Create a row per unique type.
+                        builtins = {x.tag for x in fn.statements if x.tag}
+                        for builtin in builtins:
+                            name = (
+                                f"__{builtin.lower().strip().replace(' ', '_').replace(':', '')}__"
+                            )
+                            miss = (
+                                0
+                                if not any(
+                                    s.hit_count > 0 for s in fn.statements if s.tag == builtin
+                                )
+                                else 1
+                            )
+                            rows.append(
+                                tuple((name, name, "1", f"{miss}", "0.0%" if miss else "100.0%"))
+                            )
+
+                    else:
+                        row = (
+                            tuple(
+                                [
+                                    fn.name,
+                                    fn.full_name,
+                                    *counts,
+                                ]
+                            )
+                            if statement
+                            else (fn.name, fn.full_name, "✓" if fn.hit_count > 0 else "x")
                         )
-                        if statement
-                        else (fn.name, fn.full_name, "✓" if fn.hit_count > 0 else "x")
-                    )
-                    rows.append(row)
+                        rows.append(row)
 
                 # Handle cases where normal names are duplicated.
                 # Use full names in this case.

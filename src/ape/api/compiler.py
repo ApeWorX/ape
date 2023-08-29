@@ -6,7 +6,6 @@ from ethpm_types import ContractType, HexBytes
 from ethpm_types.source import Content, ContractSource
 from evm_trace.geth import TraceFrame as EvmTraceFrame
 from evm_trace.geth import create_call_node_data
-from evm_trace.utils import to_address
 from semantic_version import Version  # type: ignore
 
 from ape.exceptions import APINotImplementedError, ContractLogicError
