@@ -95,7 +95,7 @@ jobs:
             pip install .[test]
 
         - name: Run Tests
-          run: pytest -m "not fuzzing" -s --cov=src -n auto --dist loadscope
+          run: ape test -m "not fuzzing" -s --cov=src --dist loadscope
 
     fuzzing:
         runs-on: ubuntu-latest
@@ -117,4 +117,4 @@ jobs:
             pip install .[test]
 
         - name: Run Tests
-          run: pytest -m "fuzzing" --no-cov -s
+          run: ape test -m "fuzzing" --no-cov -s
