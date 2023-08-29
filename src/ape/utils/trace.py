@@ -261,11 +261,6 @@ def _parse_verbose_coverage(coverage: "CoverageReport", statement: bool = True) 
                         # It is impossible to really track.
                         continue
 
-                    counts = [
-                        f"{fn.lines_valid}",
-                        f"{fn.miss_count}",
-                        f"{round(fn.line_rate * 100, 2)}%",
-                    ]
                     if fn.name == "__builtin__":
                         # Create a row per unique type.
                         builtins = {x.tag for x in fn.statements if x.tag}
@@ -287,12 +282,12 @@ def _parse_verbose_coverage(coverage: "CoverageReport", statement: bool = True) 
 
                     else:
                         row = (
-                            tuple(
-                                [
-                                    fn.name,
-                                    fn.full_name,
-                                    *counts,
-                                ]
+                            (
+                                fn.name,
+                                fn.full_name,
+                                f"{fn.lines_valid}",
+                                f"{fn.miss_count}",
+                                f"{round(fn.line_rate * 100, 2)}%",
                             )
                             if statement
                             else (fn.name, fn.full_name, "✓" if fn.hit_count > 0 else "x")
