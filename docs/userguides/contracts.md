@@ -295,7 +295,7 @@ result = list(txn(sender=my_signer))
 
 ### Practical Example
 
-This is a sample example of how you can perform multicall in a real world scenario.
+This is an example of how you can perform multicall in a real world scenario.
 This piece of code will perfrom multicall on a `Uniswap V2` pool contract.
 
 ```py
