@@ -623,33 +623,19 @@ class TransactionHistory(BaseManager):
             :class:`~ape.api.transactions.ReceiptAPI`: The receipt.
         """
 
-        def _get_receipt() -> Optional[ReceiptAPI]:
+        try:
+            address = self.provider.network.ecosystem.decode_address(account_or_hash)
+            return self._get_account_history(address)
+        except Exception as err:
+            # Use Transaction hash
             try:
                 return self._get_receipt(account_or_hash)
             except Exception:
-                return None
-
-        try:
-            address = self.provider.network.ecosystem.decode_address(account_or_hash)
-            history = self._get_account_history(address)
-            if len(history) > 0:
-                return history
-
-        except Exception as err:
-            # Try to treat as transaction hash.
-            if receipt := _get_receipt():
-                return receipt
+                pass
 
             raise ChainError(
                 f"'{account_or_hash}' is not a known address or transaction hash."
             ) from err
-
-        # No account history found. Check for transaction hash.
-        if receipt := _get_receipt():
-            return receipt
-
-        # Nothing found. Return empty history
-        return history
 
     def _get_receipt(self, txn_hash: str) -> ReceiptAPI:
         receipt = self._hash_to_receipt_map.get(txn_hash)
@@ -1177,8 +1163,9 @@ class ContractCache(BaseManager):
               in case it is not already known.
             txn_hash (Optional[str]): The hash of the transaction responsible for deploying the
               contract, if known. Useful for publishing. Defaults to ``None``.
-            abi (Union[Optional[List[ethpm_types.abi.ABI], str, Path]] = None): Will load the contract
-            from abi provided like Contract(address, abi=abi) by the user.
+            abi (Union[Optional[List[ethpm_types.abi.ABI], str, Path]] = None):
+            Will load the contract from abi provided like Contract(address, abi=abi)
+            by the user.
 
         Returns:
             :class:`~ape.contracts.base.ContractInstance`
@@ -1754,8 +1741,4 @@ class ChainManager(BaseManager):
         Returns:
             :class:`~ape.apt.transactions.ReceiptAPI`
         """
-        receipt = self.chain_manager.history[transaction_hash]
-        if not isinstance(receipt, ReceiptAPI):
-            raise ChainError(f"No receipt found with hash '{transaction_hash}'.")
-
-        return receipt
+        return self.chain_manager.history[transaction_hash]

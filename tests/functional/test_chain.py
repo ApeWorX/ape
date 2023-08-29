@@ -671,16 +671,334 @@ def test_get_contract_receipt(chain, vyper_contract_instance):
     assert receipt.contract_address == address
 
 
-def test_load_solidity_contract_from_abi():
-    # USDC contract
-    abi = '[{"constant":false,"inputs":[{"name":"newImplementation","type":"address"}],"name":"upgradeTo","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":false,"inputs":[{"name":"newImplementation","type":"address"},{"name":"data","type":"bytes"}],"name":"upgradeToAndCall","outputs":[],"payable":true,"stateMutability":"payable","type":"function"},{"constant":true,"inputs":[],"name":"implementation","outputs":[{"name":"","type":"address"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"name":"newAdmin","type":"address"}],"name":"changeAdmin","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[],"name":"admin","outputs":[{"name":"","type":"address"}],"payable":false,"stateMutability":"view","type":"function"},{"inputs":[{"name":"_implementation","type":"address"}],"payable":false,"stateMutability":"nonpayable","type":"constructor"},{"payable":true,"stateMutability":"payable","type":"fallback"},{"anonymous":false,"inputs":[{"indexed":false,"name":"previousAdmin","type":"address"},{"indexed":false,"name":"newAdmin","type":"address"}],"name":"AdminChanged","type":"event"},{"anonymous":false,"inputs":[{"indexed":false,"name":"implementation","type":"address"}],"name":"Upgraded","type":"event"}]'
-    address = "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48"
+def test_load_solidity_contract_from_abi(chain, config, dummy_live_network):
+    # DAI contract
+    abi = '[{"inputs":[{"internalType":"uint256","name":"chainId_","type":"uint256"}] \
+    ,"payable":false,"stateMutability":"nonpayable","type":"constructor"} \
+    ,{"anonymous":false ,"inputs":[{"indexed":true,"internalType":"address" \
+    ,"name":"src","type":"address"} ,{"indexed":true,"internalType":"address" \
+    ,"name":"guy","type":"address"} ,{"indexed":false,"internalType":"uint256" \
+    ,"name":"wad","type":"uint256"}] ,"name":"Approval","type":"event"} \
+    ,{"anonymous":true,"inputs":[{"indexed":true ,"internalType":"bytes4" \
+    ,"name":"sig","type":"bytes4"},{"indexed":true ,"internalType":"address" \
+    ,"name":"usr","type":"address"},{"indexed":true ,"internalType":"bytes32" \
+    ,"name":"arg1","type":"bytes32"},{"indexed":true ,"internalType":"bytes32" \
+    ,"name":"arg2","type":"bytes32"},{"indexed":false ,"internalType":"bytes" \
+    ,"name":"data","type":"bytes"}],"name":"LogNote" ,"type":"event"} \
+    ,{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address" \
+    ,"name":"src","type":"address"},{"indexed":true,"internalType":"address" \
+    ,"name":"dst","type":"address"},{"indexed":false,"internalType":"uint256" \
+    ,"name":"wad","type":"uint256"}],"name":"Transfer","type":"event"} \
+    ,{"constant":true ,"inputs":[],"name":"DOMAIN_SEPARATOR","outputs":[{"internalType":"bytes32" \
+    ,"name":"","type":"bytes32"}],"payable":false,"stateMutability":"view" \
+    ,"type":"function"},{"constant":true,"inputs":[],"name":"PERMIT_TYPEHASH" \
+    ,"outputs":[{"internalType":"bytes32","name":"","type":"bytes32"}] \
+    ,"payable":false ,"stateMutability":"view","type":"function"} \
+    ,{"constant":true,"inputs":[{"internalType":"address" ,"name":"" \
+    ,"type":"address"},{"internalType":"address","name":"","type":"address"}] \
+    ,"name":"allowance","outputs":[{"internalType":"uint256","name":"" \
+    ,"type":"uint256"}] ,"payable":false,"stateMutability":"view" \
+    ,"type":"function"},{"constant":false ,"inputs":[{"internalType":"address" \
+    ,"name":"usr","type":"address"},{"internalType":"uint256" ,"name":"wad" \
+    ,"type":"uint256"}],"name":"approve","outputs":[{"internalType":"bool" \
+    ,"name":"","type":"bool"}],"payable":false,"stateMutability":"nonpayable" \
+    ,"type":"function"},{"constant":true,"inputs":[{"internalType":"address" \
+    ,"name":"","type":"address"}],"name":"balanceOf","outputs":[{"internalType":"uint256" \
+    ,"name":"","type":"uint256"}],"payable":false,"stateMutability":"view" \
+    ,"type":"function"},{"constant":false,"inputs":[{"internalType":"address" \
+    ,"name":"usr","type":"address"},{"internalType":"uint256","name":"wad" \
+    ,"type":"uint256"}],"name":"burn","outputs":[],"payable":false \
+    ,"stateMutability":"nonpayable" ,"type":"function"},{"constant":true \
+    ,"inputs":[],"name":"decimals","outputs":[{"internalType":"uint8" \
+    ,"name":"","type":"uint8"}],"payable":false,"stateMutability":"view" \
+    ,"type":"function"} ,{"constant":false,"inputs":[{"internalType":"address" \
+    ,"name":"guy","type":"address"}] ,"name":"deny","outputs":[] \
+    ,"payable":false,"stateMutability":"nonpayable" ,"type":"function"} \
+    ,{"constant":false,"inputs":[{"internalType":"address" ,"name":"usr" \
+    ,"type":"address"},{"internalType":"uint256","name":"wad" ,"type":"uint256"}] \
+    ,"name":"mint","outputs":[],"payable":false,"stateMutability":"nonpayable" \
+    ,"type":"function"},{"constant":false,"inputs":[{"internalType":"address" \
+    ,"name":"src","type":"address"},{"internalType":"address","name":"dst" \
+    ,"type":"address"},{"internalType":"uint256","name":"wad","type":"uint256"}] \
+    ,"name":"move","outputs":[],"payable":false,"stateMutability":"nonpayable" \
+    ,"type":"function"},{"constant":true,"inputs":[],"name":"name" \
+    ,"outputs":[{"internalType":"string" ,"name":"","type":"string"}] \
+    ,"payable":false,"stateMutability":"view","type":"function"} \
+    ,{"constant":true,"inputs":[{"internalType":"address","name":"" \
+    ,"type":"address"}] ,"name":"nonces","outputs":[{"internalType":"uint256" \
+    ,"name":"","type":"uint256"}] ,"payable":false,"stateMutability":"view" \
+    ,"type":"function"},{"constant":false ,"inputs":[{"internalType":"address" \
+    ,"name":"holder","type":"address"} ,{"internalType":"address" \
+    ,"name":"spender","type":"address"},{"internalType":"uint256" \
+    ,"name":"nonce","type":"uint256"},{"internalType":"uint256","name":"expiry" \
+    ,"type":"uint256"},{"internalType":"bool","name":"allowed","type":"bool"} \
+    ,{"internalType":"uint8","name":"v","type":"uint8"},{"internalType":"bytes32" \
+    ,"name":"r","type":"bytes32"},{"internalType":"bytes32","name":"s" \
+    ,"type":"bytes32"}] ,"name":"permit","outputs":[],"payable":false \
+    ,"stateMutability":"nonpayable" ,"type":"function"},{"constant":false \
+    ,"inputs":[{"internalType":"address" ,"name":"usr","type":"address"} \
+    ,{"internalType":"uint256","name":"wad" ,"type":"uint256"}],"name":"pull" \
+    ,"outputs":[],"payable":false,"stateMutability":"nonpayable" \
+    ,"type":"function"},{"constant":false,"inputs":[{"internalType":"address" \
+    ,"name":"usr","type":"address"},{"internalType":"uint256","name":"wad" \
+    ,"type":"uint256"}],"name":"push","outputs":[],"payable":false \
+    ,"stateMutability":"nonpayable" ,"type":"function"},{"constant":false \
+    ,"inputs":[{"internalType":"address" ,"name":"guy","type":"address"}] \
+    ,"name":"rely","outputs":[],"payable":false ,"stateMutability":"nonpayable" \
+    ,"type":"function"},{"constant":true,"inputs":[] ,"name":"symbol" \
+    ,"outputs":[{"internalType":"string","name":"","type":"string"}] \
+    ,"payable":false,"stateMutability":"view","type":"function"} \
+    ,{"constant":true ,"inputs":[],"name":"totalSupply","outputs":[{"internalType":"uint256" \
+    ,"name":"","type":"uint256"}],"payable":false,"stateMutability":"view" \
+    ,"type":"function"},{"constant":false,"inputs":[{"internalType":"address" \
+    ,"name":"dst","type":"address"},{"internalType":"uint256","name":"wad" \
+    ,"type":"uint256"}],"name":"transfer","outputs":[{"internalType":"bool" \
+    ,"name":"","type":"bool"}],"payable":false,"stateMutability":"nonpayable" \
+    ,"type":"function"},{"constant":false,"inputs":[{"internalType":"address" \
+    ,"name":"src","type":"address"},{"internalType":"address","name":"dst" \
+    ,"type":"address"},{"internalType":"uint256","name":"wad","type":"uint256"}] \
+    ,"name":"transferFrom","outputs":[{"internalType":"bool","name":"" \
+    ,"type":"bool"}] ,"payable":false,"stateMutability":"nonpayable" \
+    ,"type":"function"},{"constant":true ,"inputs":[],"name":"version" \
+    ,"outputs":[{"internalType":"string","name":"" ,"type":"string"}] \
+    ,"payable":false,"stateMutability":"view","type":"function"} \
+    ,{"constant":true,"inputs":[{"internalType":"address","name":"" \
+    ,"type":"address"}] ,"name":"wards","outputs":[{"internalType":"uint256" \
+    ,"name":"","type":"uint256"}] ,"payable":false,"stateMutability":"view" \
+    ,"type":"function"}]'
+    address = "0x11fE4B6AE13d2a6055C8D9cF65c55bac32B5d844"
 
     contract = ape.Contract(address, abi=abi)
 
     assert isinstance(contract, ContractInstance)
     assert contract.address == address
+    # assert contract.decimals() == 16
+    # assert contract.version() == 1
+    # assert contract.totalSupply() == 3904456506157525762047420835
+    # assert contract.symbol() == "DAI"
+    # assert contract.balanceOf(address) == 692968173032095170399055
+    # assert contract.allowance(address, address) == 0
+    # assert (
+    #     contract.PERMIT_TYPEHASH
+    #     == "0xea2aa0a1be11a07ed86d755c93467f4f82362b452371d1ba94d1715123511acb"
+    # )
+    # assert (
+    #     contract.DOMAIN_SEPARATOR
+    #     == "0xdbb8cf42e1ecb028be3f3dbc922e1d878b963f411dc388ced501601c60f7c6f7"
+    # )
 
 
 def test_load_vyper_contract_from_abi():
-    pass
+    abi = '[{"name":"Transfer","inputs":[{"type":"address","name":"_from" \
+    ,"indexed":true},{"type":"address","name":"_to","indexed":true} \
+    ,{"type":"uint256","name":"_value","indexed":false}] \
+    ,"anonymous":false,"type":"event"},{"name":"Approval" \
+    ,"inputs":[{"type":"address","name":"_owner","indexed":true} \
+    ,{"type":"address","name":"_spender","indexed":true} \
+    ,{"type":"uint256","name":"_value","indexed":false}] \
+    ,"anonymous":false,"type":"event"},{"name":"UpdateMiningParameters" \
+    ,"inputs":[{"type":"uint256","name":"time","indexed":false} \
+    ,{"type":"uint256","name":"rate","indexed":false},{"type":"uint256" \
+    ,"name":"supply","indexed":false}],"anonymous":false \
+    ,"type":"event"},{"name":"SetMinter","inputs":[{"type":"address" \
+    ,"name":"minter","indexed":false}],"anonymous":false \
+    ,"type":"event"},{"name":"SetAdmin","inputs":[{"type":"address" \
+    ,"name":"admin","indexed":false}],"anonymous":false \
+    ,"type":"event"},{"outputs":[],"inputs":[{"type":"string" \
+    ,"name":"_name"},{"type":"string","name":"_symbol"} \
+    ,{"type":"uint256","name":"_decimals"}],"stateMutability":"nonpayable" \
+    ,"type":"constructor"},{"name":"update_mining_parameters" \
+    ,"outputs":[],"inputs":[],"stateMutability":"nonpayable" \
+    ,"type":"function","gas":148748},{"name":"start_epoch_time_write" \
+    ,"outputs":[{"type":"uint256","name":""}],"inputs":[] \
+    ,"stateMutability":"nonpayable","type":"function","gas":149603} \
+    ,{"name":"future_epoch_time_write","outputs":[{"type":"uint256" \
+    ,"name":""}],"inputs":[],"stateMutability":"nonpayable" \
+    ,"type":"function","gas":149806},{"name":"available_supply" \
+    ,"outputs":[{"type":"uint256","name":""}],"inputs":[] \
+    ,"stateMutability":"view","type":"function","gas":4018} \
+    ,{"name":"mintable_in_timeframe","outputs":[{"type":"uint256" \
+    ,"name":""}],"inputs":[{"type":"uint256","name":"start"} \
+    ,{"type":"uint256","name":"end"}],"stateMutability":"view" \
+    ,"type":"function","gas":2216141},{"name":"set_minter" \
+    ,"outputs":[],"inputs":[{"type":"address","name":"_minter"}] \
+    ,"stateMutability":"nonpayable","type":"function","gas":38698} \
+    ,{"name":"set_admin","outputs":[],"inputs":[{"type":"address" \
+    ,"name":"_admin"}],"stateMutability":"nonpayable","type":"function" \
+    ,"gas":37837},{"name":"totalSupply","outputs":[{"type":"uint256" \
+    ,"name":""}],"inputs":[],"stateMutability":"view","type":"function" \
+    ,"gas":1421},{"name":"allowance","outputs":[{"type":"uint256" \
+    ,"name":""}],"inputs":[{"type":"address","name":"_owner"} \
+    ,{"type":"address","name":"_spender"}],"stateMutability":"view" \
+    ,"type":"function","gas":1759},{"name":"transfer","outputs":[{"type":"bool" \
+    ,"name":""}],"inputs":[{"type":"address","name":"_to"} \
+    ,{"type":"uint256","name":"_value"}],"stateMutability":"nonpayable" \
+    ,"type":"function","gas":75139},{"name":"transferFrom" \
+    ,"outputs":[{"type":"bool","name":""}],"inputs":[{"type":"address" \
+    ,"name":"_from"},{"type":"address","name":"_to"},{"type":"uint256" \
+    ,"name":"_value"}],"stateMutability":"nonpayable","type":"function" \
+    ,"gas":111433},{"name":"approve","outputs":[{"type":"bool" \
+    ,"name":""}],"inputs":[{"type":"address","name":"_spender"} \
+    ,{"type":"uint256","name":"_value"}],"stateMutability":"nonpayable" \
+    ,"type":"function","gas":39288},{"name":"mint","outputs":[{"type":"bool" \
+    ,"name":""}],"inputs":[{"type":"address","name":"_to"} \
+    ,{"type":"uint256","name":"_value"}],"stateMutability":"nonpayable" \
+    ,"type":"function","gas":228030},{"name":"burn","outputs":[{"type":"bool" \
+    ,"name":""}],"inputs":[{"type":"uint256","name":"_value"}] \
+    ,"stateMutability":"nonpayable","type":"function","gas":74999} \
+    ,{"name":"set_name","outputs":[],"inputs":[{"type":"string" \
+    ,"name":"_name"},{"type":"string","name":"_symbol"}] \
+    ,"stateMutability":"nonpayable","type":"function","gas":178270} \
+    ,{"name":"name","outputs":[{"type":"string","name":""}] \
+    ,"inputs":[],"stateMutability":"view","type":"function" \
+    ,"gas":8063},{"name":"symbol","outputs":[{"type":"string" \
+    ,"name":""}],"inputs":[],"stateMutability":"view","type":"function" \
+    ,"gas":7116},{"name":"decimals","outputs":[{"type":"uint256" \
+    ,"name":""}],"inputs":[],"stateMutability":"view","type":"function" \
+    ,"gas":1721},{"name":"balanceOf","outputs":[{"type":"uint256" \
+    ,"name":""}],"inputs":[{"type":"address","name":"arg0"}] \
+    ,"stateMutability":"view","type":"function","gas":1905} \
+    ,{"name":"minter","outputs":[{"type":"address","name":""}] \
+    ,"inputs":[],"stateMutability":"view","type":"function" \
+    ,"gas":1781},{"name":"admin","outputs":[{"type":"address" \
+    ,"name":""}],"inputs":[],"stateMutability":"view","type":"function" \
+    ,"gas":1811},{"name":"mining_epoch","outputs":[{"type":"int128" \
+    ,"name":""}],"inputs":[],"stateMutability":"view","type":"function" \
+    ,"gas":1841},{"name":"start_epoch_time","outputs":[{"type":"uint256" \
+    ,"name":""}],"inputs":[],"stateMutability":"view","type":"function" \
+    ,"gas":1871},{"name":"rate","outputs":[{"type":"uint256" \
+    ,"name":""}],"inputs":[],"stateMutability":"view","type":"function" \
+    ,"gas":1901}]'
+
+    address = "0xD533a949740bb3306d119CC777fa900bA034cd52"
+
+    contract = ape.Contract(address, abi=abi)
+
+    assert isinstance(contract, ContractInstance)
+    assert contract.address == address
+    # assert contract.decimals() == 16
+    # assert contract.totalSupply() == 2002927401151950590800175370
+    # assert contract.symbol() == "CRV"
+    # assert contract.balanceOf(address) == 53507330013758476347431
+    # assert contract.allowance(address, address) == 0
+    # assert contract.rate() == 5181574864521283150
+    # assert contract.apply_supply() == 2010432086387450781284496650
+    # assert contract.name() == "Curve DAO Token"
+    # assert contract.minter() == "0xd061D61a4d941c39E5453435B6345Dc261C2fcE0"
+    # assert contract.admin() == "0x40907540d8a6C65c637785e8f8B742ae6b0b9968"
+    # assert contract.minting_epoch() == 3
+    # assert contract.start_epoch_time() == 1691965048
+
+
+def test_load_contract_from_abi_type_ABI():
+    abi = [
+        {
+            "name": "Transfer",
+            "inputs": [
+                {"type": "address", "name": "_from", "indexed": True},
+                {"type": "address", "name": "_to", "indexed": True},
+                {"type": "uint256", "name": "_value", "indexed": False},
+            ],
+            "anonymous": False,
+            "type": "event",
+        },
+        {
+            "name": "Approval",
+            "inputs": [
+                {"type": "address", "name": "_owner", "indexed": True},
+                {"type": "address", "name": "_spender", "indexed": True},
+                {"type": "uint256", "name": "_value", "indexed": False},
+            ],
+            "anonymous": False,
+            "type": "event",
+        },
+        {
+            "name": "UpdateMiningParameters",
+            "inputs": [
+                {"type": "uint256", "name": "time", "indexed": False},
+                {"type": "uint256", "name": "rate", "indexed": False},
+                {"type": "uint256", "name": "supply", "indexed": False},
+            ],
+            "anonymous": False,
+            "type": "event",
+        },
+        {
+            "name": "SetMinter",
+            "inputs": [{"type": "address", "name": "minter", "indexed": False}],
+            "anonymous": False,
+            "type": "event",
+        },
+        {
+            "name": "SetAdmin",
+            "inputs": [{"type": "address", "name": "admin", "indexed": False}],
+            "anonymous": False,
+            "type": "event",
+        },
+        {
+            "outputs": [],
+            "inputs": [
+                {"type": "string", "name": "_name"},
+                {"type": "string", "name": "_symbol"},
+                {"type": "uint256", "name": "_decimals"},
+            ],
+            "stateMutability": "nonpayable",
+            "type": "constructor",
+        },
+        {
+            "name": "update_mining_parameters",
+            "outputs": [],
+            "inputs": [],
+            "stateMutability": "nonpayable",
+            "type": "function",
+            "gas": 148748,
+        },
+        {
+            "name": "balanceOf",
+            "outputs": [{"type": "uint256", "name": ""}],
+            "inputs": [{"type": "address", "name": "arg0"}],
+            "stateMutability": "view",
+            "type": "function",
+            "gas": 1905,
+        },
+        # [...]
+        {
+            "name": "mining_epoch",
+            "outputs": [{"type": "int128", "name": ""}],
+            "inputs": [],
+            "stateMutability": "view",
+            "type": "function",
+            "gas": 1841,
+        },
+        {
+            "name": "start_epoch_time",
+            "outputs": [{"type": "uint256", "name": ""}],
+            "inputs": [],
+            "stateMutability": "view",
+            "type": "function",
+            "gas": 1871,
+        },
+        {
+            "name": "rate",
+            "outputs": [{"type": "uint256", "name": ""}],
+            "inputs": [],
+            "stateMutability": "view",
+            "type": "function",
+            "gas": 1901,
+        },
+    ]
+
+    address = "0xD533a949740bb3306d119CC777fa900bA034cd52"
+
+    contract = ape.Contract(address, abi=abi)
+
+    assert isinstance(contract, ContractInstance)
+    assert contract.address == address
+    # assert contract.balanceOf(address) == 53507330013758476347431
+    # assert contract.allowance(address, address) == 0
+    # assert contract.rate() == 5181574864521283150
+    # assert contract.apply_supply() == 2010432086387450781284496650
+    # assert contract.name() == "Curve DAO Token"
+    # assert contract.minter() == "0xd061D61a4d941c39E5453435B6345Dc261C2fcE0"
+    # assert contract.admin() == "0x40907540d8a6C65c637785e8f8B742ae6b0b9968"
+    # assert contract.minting_epoch() == 3
+    # assert contract.start_epoch_time() == 1691965048
