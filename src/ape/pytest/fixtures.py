@@ -184,17 +184,14 @@ class ReceiptCapture(ManagerAccessMixin):
         if not receipt:
             return
 
-        contract_address = receipt.receiver or receipt.contract_address
-        if not contract_address:
+        if not (contract_address := (receipt.receiver or receipt.contract_address)):
             return
 
-        contract_type = self.chain_manager.contracts.get(contract_address)
-        if not contract_type:
+        if not (contract_type := self.chain_manager.contracts.get(contract_address)):
             # Not an invoke-transaction or a known address
             return
 
-        source_id = contract_type.source_id or None
-        if not source_id:
+        if not (source_id := (contract_type.source_id or None)):
             # Not a local or known contract type.
             return
 
