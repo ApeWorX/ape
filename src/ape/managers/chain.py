@@ -1711,4 +1711,8 @@ class ChainManager(BaseManager):
         Returns:
             :class:`~ape.apt.transactions.ReceiptAPI`
         """
-        return self.chain_manager.history[transaction_hash]
+        receipt = self.chain_manager.history[transaction_hash]
+        if not isinstance(receipt, ReceiptAPI):
+            raise ChainError(f"No receipt found with hash '{transaction_hash}'.")
+        
+        return receipt
