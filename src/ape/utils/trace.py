@@ -278,9 +278,7 @@ def _parse_verbose_coverage(coverage: "CoverageReport", statement: bool = True) 
                             name = f"__{''.join(name_chars).replace('dev_', '')}__"
                             miss = (
                                 0
-                                if not any(
-                                    s.hit_count > 0 for s in fn.statements if s.tag == builtin
-                                )
+                                if any(s.hit_count > 0 for s in fn.statements if s.tag == builtin)
                                 else 1
                             )
                             rows.append(
