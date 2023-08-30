@@ -5,6 +5,7 @@ import pytest
 from tests.integration.cli.utils import github_xfail
 
 TEST_PLUGIN_NAME = "tokens"
+TEST_PLUGIN_NAME_2 = "optimism"
 
 
 class PluginsList(list):
@@ -138,6 +139,12 @@ def test_upgrade(ape_plugins_runner, installed_plugin):
 def test_upgrade_failure(ape_plugins_runner):
     result = ape_plugins_runner.invoke(["install", "NOT_EXISTS", "--upgrade"])
     assert result.exit_code == 1
+
+
+@github_xfail()
+def test_install_multiple_in_one_str(ape_plugins_runner):
+    result = ape_plugins_runner.invoke(["install", f"{TEST_PLUGIN_NAME} {TEST_PLUGIN_NAME_2}"])
+    assert result.exit_code == 0
 
 
 @github_xfail()
