@@ -284,11 +284,9 @@ def test_contract_decode_logs_falsy_check(owner, vyper_contract_instance):
     Verifies a bug fix where false-y values differing were ignored.
     """
 
-    receipt = vyper_contract_instance.setNumber(1, sender=owner)
-    events = list(receipt.decode_logs())  # no abi
-
+    tx = vyper_contract_instance.setNumber(1, sender=owner)
     with pytest.raises(AssertionError):
-        assert events == [vyper_contract_instance.NumberChange(newNum=0)]
+        assert tx.events == [vyper_contract_instance.NumberChange(newNum=0)]
 
 
 def test_contract_log_container(owner, contract_instance):
