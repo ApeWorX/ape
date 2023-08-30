@@ -122,24 +122,26 @@ class KeyfileAccount(AccountAPI):
         self.keyfile_path.unlink()
 
     def sign_message(self, msg: Any, **signer_options) -> Optional[MessageSignature]:
+        if not isinstance(msg, (SignableMessage, EIP712Message, str)):
+            logger.warning("Unsupported message type, (type=%r, msg=%r)", type(msg), msg)
+            return None
+
+        user_approves = self.__autosign or click.confirm(f"Message: {msg}\n\nSign: ")
         if isinstance(msg, str):
             # Convert str to SignableMessage for handling below
             msg = encode_defunct(text=msg)
         elif isinstance(msg, EIP712Message):
             # Convert EIP712Message to SignableMessage for handling below
             msg = msg.signable_message
-        if isinstance(msg, SignableMessage):
-            user_approves = self.__autosign or click.confirm(f"{msg}\n\nSign: ")
-            if not user_approves:
-                return None
-            signed_msg = EthAccount.sign_message(msg, self.__key)
-            return MessageSignature(
-                v=signed_msg.v,
-                r=to_bytes(signed_msg.r),
-                s=to_bytes(signed_msg.s),
-            )
-        logger.warning("Unsupported message type, (type=%r, msg=%r)", type(msg), msg)
-        return None
+
+        if not user_approves:
+            return None
+        signed_msg = EthAccount.sign_message(msg, self.__key)
+        return MessageSignature(
+            v=signed_msg.v,
+            r=to_bytes(signed_msg.r),
+            s=to_bytes(signed_msg.s),
+        )
 
     def sign_transaction(self, txn: TransactionAPI, **kwargs) -> Optional[TransactionAPI]:
         user_approves = self.__autosign or click.confirm(f"{txn}\n\nSign: ")
