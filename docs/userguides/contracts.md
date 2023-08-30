@@ -111,7 +111,7 @@ abi = '[{"inputs":[{"internalType":"contract MultiWrapper"...]
 contract = Contract(address, abi=abi)
 ```
 
-This will create the Contract instance from the given ABI. 
+This will create the Contract instance from the given ABI.
 
 ## From Previous Deployment
 

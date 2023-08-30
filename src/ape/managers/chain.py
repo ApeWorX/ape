@@ -1194,7 +1194,7 @@ class ContractCache(BaseManager):
             if isinstance(abi, str):
                 try:
                     # convert the abi from string to list
-                    list_abi = ContractType.parse_raw(abi)
+                    list_abi = json.loads(abi)
                     # Create a new ContractType with the provided ABI
                     contract_type = ContractType(abi=list_abi)
                 except Exception as err:
@@ -1214,7 +1214,7 @@ class ContractCache(BaseManager):
                     abi = project_folder / abi
                 try:
                     with abi.open() as f:
-                        list_abi = ContractType.parse_raw(f)
+                        list_abi = json.loads(f)
                         # Create a new ContractType with the provided ABI from the file
                         contract_type = ContractType(abi=list_abi)
                 except Exception as err:
