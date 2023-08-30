@@ -2,8 +2,9 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Any, Iterator, List, Optional, Type, Union
 
 import click
-from eip712.messages import SignableMessage as EIP712SignableMessage
+from eip712.messages import EIP712Message, SignableMessage as EIP712SignableMessage
 from eth_account import Account
+from eth_account.messages import encode_defunct
 
 from ape.api.address import BaseAddress
 from ape.api.transactions import ReceiptAPI, TransactionAPI
@@ -261,7 +262,7 @@ class AccountAPI(BaseInterfaceModel, BaseAddress):
 
     def check_signature(
         self,
-        data: Union[SignableMessage, TransactionAPI],
+        data: Union[SignableMessage, TransactionAPI, str, EIP712Message],
         signature: Optional[MessageSignature] = None,  # TransactionAPI doesn't need it
     ) -> bool:
         """
@@ -276,6 +277,10 @@ class AccountAPI(BaseInterfaceModel, BaseAddress):
         Returns:
             bool: ``True`` if the data was signed by this account. ``False`` otherwise.
         """
+        if isinstance(data, str):
+            data = encode_defunct(text=data)
+        if isinstance(data, EIP712Message):
+            data = data.signable_message
         if isinstance(data, (SignableMessage, EIP712SignableMessage)):
             if signature:
                 return self.address == Account.recover_message(data, vrs=signature)
