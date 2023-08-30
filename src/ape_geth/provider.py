@@ -330,15 +330,8 @@ class BaseGethProvider(Web3Provider, ABC):
                 or len(block.get("extraData", "")) > MAX_EXTRADATA_LENGTH
             )
 
-        if is_likely_poa:
-            try:
-                self.web3.middleware_onion.inject(geth_poa_middleware, layer=0)
-            except ValueError as err:
-                if "You can't add the same un-named instance twice" in str(err):
-                    # Already added
-                    pass
-                else:
-                    raise  # Original error
+        if is_likely_poa and geth_poa_middleware not in self.web3.middleware_onion:
+            self.web3.middleware_onion.inject(geth_poa_middleware, layer=0)
 
         self.network.verify_chain_id(chain_id)
 
