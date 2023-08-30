@@ -1607,7 +1607,8 @@ class Web3Provider(ProviderAPI, ABC):
                 elif txn:
                     err_trace = self.provider.get_transaction_trace(txn.txn_hash.hex())
 
-                data = list(err_trace)[-1].raw if err_trace else {}
+                trace_ls = list(err_trace) if err_trace else []
+                data = trace_ls[-1] if len(trace_ls) > 0 else {}
                 memory = data.get("memory", [])
                 return_value = "".join([x[2:] for x in memory[4:]])
                 if return_value:
