@@ -41,26 +41,30 @@ def plugins_argument():
     or plugins loaded from the local config file.
     """
 
+    def load_from_file(ctx, file_path: Path) -> List[PluginInstallRequest]:
+        if file_path.is_file() and file_path.name != CONFIG_FILE_NAME:
+            file_path = file_path / CONFIG_FILE_NAME
+
+        if file_path.is_file():
+            config = load_config(file_path)
+            if plugins := config.get("plugins"):
+                return [PluginInstallRequest.parse_obj(d) for d in plugins]
+
+        ctx.obj.logger.warning(f"No plugins found at '{file_path}'.")
+        return []
+
     def callback(ctx, param, value: Tuple[str]):
         if not value:
             ctx.obj.abort("You must give at least one requirement to install.")
 
-        elif len(value) == 1 and Path(value[0]).resolve().exists():
+        elif len(value) == 1:
             # User passed in a path to a file.
             file_path = Path(value[0]).expanduser().resolve()
-
-            # Config file
-            if file_path.name != CONFIG_FILE_NAME:
-                file_path = file_path / CONFIG_FILE_NAME
-
-            config = load_config(file_path)
-            plugins = config.get("plugins") or []
-
-            if not plugins:
-                ctx.obj.logger.warning(f"No plugins found at '{file_path}'.")
-                sys.exit(0)
-
-            return [PluginInstallRequest.parse_obj(d) for d in plugins]
+            return (
+                load_from_file(ctx, file_path)
+                if file_path.exists()
+                else [PluginInstallRequest(name=v) for v in value[0].split(" ")]
+            )
 
         else:
             return [PluginInstallRequest(name=v) for v in value]
