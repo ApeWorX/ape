@@ -89,6 +89,10 @@ def test_compile(ape_cli, runner, project, clean_cache):
     assert all(f.stem in result.output for f in expected_files)
     assert not any(f.stem in result.output for f in unexpected_files)
 
+    # Copy in .build to show that those file won't compile.
+    # (Anything in a .build is ignored, even if in a contracts folder to prevent accidents).
+    shutil.copytree(project.path / ".build", project.contracts_folder / ".build")
+
     result = runner.invoke(ape_cli, ["compile"], catch_exceptions=False)
     assert result.exit_code == 0, result.output
     # First time it compiles, it caches
