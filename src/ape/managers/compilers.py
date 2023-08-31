@@ -118,7 +118,7 @@ class CompilerManager(BaseManager):
                 and path not in paths_to_ignore
                 and path not in built_paths
                 and path.suffix == extension
-                and ".cache" not in [p.name for p in path.parents]
+                and not any(x in [p.name for p in path.parents] for x in (".cache", ".build"))
             ]
 
             for path in paths_to_compile:
