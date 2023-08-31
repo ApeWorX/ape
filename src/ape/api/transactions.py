@@ -447,21 +447,12 @@ class ReceiptAPI(BaseInterfaceModel):
         since this is not available from the receipt object.
         """
 
-        call_tree = self.call_tree
-        if not call_tree:
+        if not (call_tree := self.call_tree) or not (method_abi := self.method_called):
             return None
 
-        method_abi = self.method_called
-        if not method_abi:
-            return None
-
-        if isinstance(call_tree.outputs, str):
+        if isinstance(call_tree.outputs, (str, HexBytes, int)):
             output = self.provider.network.ecosystem.decode_returndata(
                 method_abi, HexBytes(call_tree.outputs)
-            )
-        elif isinstance(call_tree.outputs, HexBytes):
-            output = self.provider.network.ecosystem.decode_returndata(
-                method_abi, call_tree.outputs
             )
         else:
             # Already enriched.
