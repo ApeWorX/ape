@@ -1085,11 +1085,10 @@ class Web3Provider(ProviderAPI, ABC):
     ) -> bytes:
         account = self.account_manager.test_accounts[0]
         receipt = account.call(txn, **kwargs)
-        call_tree = receipt.call_tree
-        if not call_tree:
+        if not (call_tree := receipt.call_tree):
             return self._send_call(txn, **kwargs)
 
-        # Grab raw retrurndata before enrichment
+        # Grab raw returndata before enrichment
         returndata = call_tree.outputs
 
         if (track_gas or track_coverage) and show_gas and not show_trace:
@@ -1454,6 +1453,9 @@ class Web3Provider(ProviderAPI, ABC):
             ),
         )
 
+        # NOTE: Ensure to cache even the failed receipts.
+        self.chain_manager.history.append(receipt)
+
         if receipt.failed:
             txn_dict = receipt.transaction.dict()
             txn_params = cast(TxParams, txn_dict)
@@ -1467,7 +1469,6 @@ class Web3Provider(ProviderAPI, ABC):
                 raise vm_err from err
 
         logger.info(f"Confirmed {receipt.txn_hash} (total fees paid = {receipt.total_fees_paid})")
-        self.chain_manager.history.append(receipt)
         return receipt
 
     def _create_call_tree_node(
@@ -1606,7 +1607,8 @@ class Web3Provider(ProviderAPI, ABC):
                 elif txn:
                     err_trace = self.provider.get_transaction_trace(txn.txn_hash.hex())
 
-                data = list(err_trace)[-1].raw if err_trace else {}
+                trace_ls: List[TraceFrame] = list(err_trace) if err_trace else []
+                data = trace_ls[-1].raw if len(trace_ls) > 0 else {}
                 memory = data.get("memory", [])
                 return_value = "".join([x[2:] for x in memory[4:]])
                 if return_value:

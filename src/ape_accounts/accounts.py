@@ -50,7 +50,18 @@ class KeyfileAccount(AccountAPI):
     __cached_key: Optional[HexBytes] = None
 
     def __repr__(self):
-        return f"<{self.__class__.__name__} address={self.address} alias={self.alias}>"
+        # NOTE: Prevent errors from preventing repr from working.
+        try:
+            address_str = f" address={self.address} "
+        except Exception:
+            address_str = ""
+
+        try:
+            alias_str = f" alias={self.alias} "
+        except Exception:
+            alias_str = ""
+
+        return f"<{self.__class__.__name__}{address_str}{alias_str}>"
 
     @property
     def alias(self) -> str:

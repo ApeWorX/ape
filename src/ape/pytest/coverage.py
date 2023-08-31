@@ -76,7 +76,6 @@ class CoverageData(ManagerAccessMixin):
         self, src_path: Path, pcs: Iterable[int], inc_fn_hits: bool = True
     ) -> Tuple[Set[int], List[str]]:
         source_id = str(get_relative_path(src_path.absolute(), self.base_path))
-
         if source_id not in self.report.sources:
             # The source is not tracked for coverage.
             return set(), []
@@ -87,8 +86,7 @@ class CoverageData(ManagerAccessMixin):
             if pc < 0:
                 continue
 
-            source_coverage = self.report.get_source_coverage(source_id)
-            if not source_coverage:
+            if not (source_coverage := self.report.get_source_coverage(source_id)):
                 continue
 
             for contract in source_coverage.contracts:

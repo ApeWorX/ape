@@ -367,7 +367,7 @@ class MockContractLog(BaseContractLog):
         for name, value in self.event_arguments.items():
             # Make sure `value` is not `None` (user explicitly set it `None`)
             # NOTE: `other.event_arguments[name]` will raise `IndexError` only if ABIs don't match
-            if value and value != other.event_arguments[name]:
+            if value is not None and value != other.event_arguments[name]:
                 return False
 
         return True
