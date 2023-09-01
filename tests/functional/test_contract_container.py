@@ -7,9 +7,14 @@ from ape_ethereum.ecosystem import ProxyType
 
 
 def test_deploy(
-    sender, contract_container, networks_connected_to_tester, project, chain, clean_contracts_cache
+    not_owner,
+    contract_container,
+    networks_connected_to_tester,
+    project,
+    chain,
+    clean_contracts_cache,
 ):
-    contract = contract_container.deploy(4, sender=sender, something_else="IGNORED")
+    contract = contract_container.deploy(4, sender=not_owner, something_else="IGNORED")
     assert contract.txn_hash
     assert contract.myNumber() == 4
 
@@ -21,14 +26,19 @@ def test_deploy(
 
 
 def test_deploy_wrong_number_of_arguments(
-    sender, contract_container, networks_connected_to_tester, project, chain, clean_contracts_cache
+    not_owner,
+    contract_container,
+    networks_connected_to_tester,
+    project,
+    chain,
+    clean_contracts_cache,
 ):
     expected = (
         r"The number of the given arguments \(0\) do not match what is defined in the "
         r"ABI:\n\n\t.*__init__\(uint256 num\).*"
     )
     with pytest.raises(ArgumentsLengthError, match=expected):
-        contract_container.deploy(sender=sender)
+        contract_container.deploy(sender=not_owner)
 
 
 def test_deploy_and_publish_local_network(owner, contract_container):

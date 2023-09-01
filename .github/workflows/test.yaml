@@ -81,7 +81,7 @@ jobs:
         - name: Setup Go
           uses: actions/setup-go@v4
           with:
-            go-version: '^1.20.1'
+            go-version: '^1.20.7'
 
         - name: Install Geth
           uses: gacts/install-geth-tools@v1
@@ -95,7 +95,7 @@ jobs:
             pip install .[test]
 
         - name: Run Tests
-          run: pytest -m "not fuzzing" -s --cov=src -n auto --dist loadscope
+          run: pytest -m "not fuzzing" -s --cov=src -n auto --dist loadgroup
 
     fuzzing:
         runs-on: ubuntu-latest

@@ -1211,9 +1211,9 @@ class ContractCache(BaseManager):
         if not txn_hash:
             # Check for txn_hash in deployments.
             deployments = self._deployments.get(contract_type.name) or []
-            for deployment in deployments:
-                if deployment["address"] == contract_address:
-                    txn_hash = deployment.get("transaction_hash")
+            for deployment in deployments[::-1]:
+                if deployment["address"] == contract_address and "transaction_hash" in deployment:
+                    txn_hash = deployment["transaction_hash"]
                     break
 
         return ContractInstance(contract_address, contract_type, txn_hash=txn_hash)
