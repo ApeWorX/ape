@@ -1142,7 +1142,7 @@ class ContractCache(BaseManager):
         contract_type: Optional[ContractType] = None,
         txn_hash: Optional[str] = None,
         abi: Optional[
-            Union[List[ABI], str, Path]
+            Union[Union[List[ABI], object], str, Path]
         ] = None,  # ABI can be string, List[ABI or object] or a Path object
     ) -> ContractInstance:
         """
