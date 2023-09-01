@@ -18,6 +18,7 @@ from ape.utils.basemodel import (
 )
 from ape.utils.github import GithubClient, github_client
 from ape.utils.misc import (
+    DEFAULT_LIVE_NETWORK_BASE_FEE_MULTIPLIER,
     DEFAULT_LOCAL_TRANSACTION_ACCEPTANCE_TIMEOUT,
     DEFAULT_TRANSACTION_ACCEPTANCE_TIMEOUT,
     EMPTY_BYTES32,
@@ -64,6 +65,7 @@ __all__ = [
     "BaseInterface",
     "BaseInterfaceModel",
     "cached_property",
+    "DEFAULT_LIVE_NETWORK_BASE_FEE_MULTIPLIER",
     "DEFAULT_LOCAL_TRANSACTION_ACCEPTANCE_TIMEOUT",
     "DEFAULT_NUMBER_OF_TEST_ACCOUNTS",
     "DEFAULT_TEST_CHAIN_ID",
