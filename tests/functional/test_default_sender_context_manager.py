@@ -54,22 +54,21 @@ def test_default_sender_account(
         assert tx.transaction.sender == owner.address
 
 
-def test_nested_default_sender(solidity_contract_instance, owner, test_accounts):
+def test_nested_default_sender(solidity_contract_instance, owner, test_accounts, not_owner):
     with test_accounts.use_sender(owner):
         tx = solidity_contract_instance.setNumber(1)
         assert tx.transaction.sender == owner.address
-        with test_accounts.use_sender(test_accounts[0]):
+        with test_accounts.use_sender(not_owner):
             with reverts():
                 solidity_contract_instance.setNumber(2)
         solidity_contract_instance.setNumber(3)
         assert tx.transaction.sender == owner.address
 
 
-def test_with_error(solidity_contract_instance, accounts):
+def test_with_error(solidity_contract_instance, accounts, not_owner):
     # safe to use reverts with use_sender and when outside of the use_sender
     # there is no remaining default_user set
-    user = accounts.test_accounts[0]
     with reverts("!authorized"):
-        with accounts.test_accounts.use_sender(user):
+        with accounts.test_accounts.use_sender(not_owner):
             solidity_contract_instance.setNumber(2)
     assert accounts.default_sender is None

@@ -134,6 +134,7 @@ class GethDevProcess(BaseGethProcess):
                 "berlinBlock": 0,
                 "londonBlock": 0,
                 "parisBlock": 0,
+                "shanghaiTime": 0,
                 "clique": {"period": 0, "epoch": 30000},
             },
             "alloc": alloc,

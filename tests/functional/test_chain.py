@@ -15,7 +15,7 @@ from ape.exceptions import (
     ConversionError,
 )
 from ape_ethereum.transactions import Receipt, TransactionStatusEnum
-from tests.conftest import skip_if_plugin_installed
+from tests.conftest import explorer_test, skip_if_plugin_installed
 
 
 @pytest.fixture
@@ -28,15 +28,16 @@ def contract_1(project_with_contract):
     return project_with_contract.ApeContract1
 
 
-def test_snapshot_and_restore(chain, sender, receiver, vyper_contract_instance, owner):
+def test_snapshot_and_restore(chain, owner, receiver, vyper_contract_instance):
     initial_balance = receiver.balance  # Initial balance at block 0.
     blocks_to_mine = 5
     snapshot_ids = []
 
     # Since this receipt is before the snapshotting, it will be present after restoring
     receipt_to_keep = vyper_contract_instance.setNumber(3, sender=owner)
-    start_block = chain.blocks.height
+    checkpoint_nonce = owner.nonce  # Will restore here.
 
+    start_block = chain.blocks.height
     for i in range(blocks_to_mine):
         snapshot_id = chain.snapshot()
         snapshot_ids.append(snapshot_id)
@@ -48,13 +49,14 @@ def test_snapshot_and_restore(chain, sender, receiver, vyper_contract_instance, 
     receipt_to_lose = vyper_contract_instance.setNumber(3, sender=owner)
 
     # Increase receiver's balance
-    account_nonce = sender.nonce
-    sender.transfer(receiver, "123 wei")
+    owner.transfer(receiver, "123 wei")
 
     # Show that we can also provide the snapshot ID as an argument.
     restore_index = 2
     chain.restore(snapshot_ids[restore_index])
-    assert sender.nonce == account_nonce
+
+    # The nonce is the same as it when we snapshotted.
+    assert owner.nonce == checkpoint_nonce
 
     assert chain.blocks[-1].number == start_block + restore_index
 
@@ -148,6 +150,7 @@ def test_history(sender, receiver, chain):
     assert txn.receiver == receipt.receiver == receiver
 
 
+@explorer_test
 def test_history_caches_sender_over_address_key(
     mocker, chain, eth_tester_provider, sender, vyper_contract_container, ethereum
 ):
@@ -338,9 +341,9 @@ def test_contract_caches_default_contract_type_when_used(solidity_contract_insta
     assert isinstance(contract, ContractInstance)
 
 
-def test_set_balance(chain, test_accounts):
+def test_set_balance(chain, owner):
     with pytest.raises(APINotImplementedError):
-        chain.set_balance(test_accounts[0], "1000 ETH")
+        chain.set_balance(owner, "1000 ETH")
 
 
 def test_instance_at(chain, contract_instance):
@@ -370,6 +373,7 @@ def test_instance_at_when_given_name_as_contract_type(chain, contract_instance):
         chain.contracts.instance_at(address, contract_type=bad_contract_type)
 
 
+@explorer_test
 def test_instance_at_uses_given_contract_type_when_retrieval_fails(mocker, chain, caplog):
     # The manager always attempts retrieval so that default contact types can
     # get cached. However, sometimes an explorer plugin may fail. If given a contract-type
@@ -393,6 +397,7 @@ def test_instance_at_uses_given_contract_type_when_retrieval_fails(mocker, chain
     assert caplog.records[-1].message == expected_fail_message
 
 
+@explorer_test
 def test_instance_at_contract_type_not_found(chain):
     new_address = "0x4a986a6dca6dbF99Bc3D17F8d71aFB0D60E740F9"
     expected = (
@@ -405,6 +410,7 @@ def test_instance_at_contract_type_not_found(chain):
         chain.contracts.instance_at(new_address)
 
 
+@explorer_test
 def test_contracts_getitem_contract_not_found(chain):
     new_address = "0x4a986a6dca6dbF99Bc3D17F8d71aFB0D60E740F9"
     expected = (
