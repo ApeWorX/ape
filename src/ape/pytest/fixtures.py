@@ -94,12 +94,16 @@ class PytestApeFixtures(ManagerAccessMixin):
             snapshot_id = None
 
         if self._track_transactions:
+            did_yield = False
             try:
                 with self.receipt_capture:
                     yield
+                    did_yield = True
 
             except BlockNotFoundError:
-                yield
+                if not did_yield:
+                    # Prevent double yielding.
+                    yield
 
         else:
             yield
