@@ -24,9 +24,10 @@ ape.config.PROJECT_FOLDER = PROJECT_FOLDER
 
 # Needed to test tracing support in core `ape test` command.
 pytest_plugins = ["pytester"]
-geth_process_test = pytest.mark.xdist_group(name="geth-tests")
 GETH_URI = "http://127.0.0.1:5550"
 ALIAS = "__FUNCTIONAL_TESTS_ALIAS__"
+geth_process_test = pytest.mark.xdist_group(name="geth-tests")
+explorer_test = pytest.mark.xdist_group(name="explorer-tests")
 
 
 @pytest.fixture(autouse=True)
@@ -91,8 +92,43 @@ def test_accounts(accounts):
 
 
 @pytest.fixture(scope="session")
-def sender(test_accounts):
+def owner(test_accounts):
     return test_accounts[0]
+
+
+@pytest.fixture(scope="session")
+def sender(test_accounts):
+    return test_accounts[1]
+
+
+@pytest.fixture(scope="session")
+def receiver(test_accounts):
+    return test_accounts[2]
+
+
+@pytest.fixture(scope="session")
+def not_owner(test_accounts):
+    return test_accounts[3]
+
+
+@pytest.fixture(scope="session")
+def helper(test_accounts):
+    return test_accounts[4]
+
+
+@pytest.fixture
+def signer(test_accounts):
+    return test_accounts[5]
+
+
+@pytest.fixture
+def geth_account(test_accounts):
+    return test_accounts[6]
+
+
+@pytest.fixture
+def geth_second_account(test_accounts):
+    return test_accounts[7]
 
 
 @pytest.fixture
@@ -266,8 +302,8 @@ def empty_data_folder():
 
 
 @pytest.fixture
-def keyfile_account(sender, keyparams, temp_accounts_path, temp_keyfile_account_ctx):
-    with temp_keyfile_account_ctx(temp_accounts_path, ALIAS, keyparams, sender) as account:
+def keyfile_account(owner, keyparams, temp_accounts_path, temp_keyfile_account_ctx):
+    with temp_keyfile_account_ctx(temp_accounts_path, ALIAS, keyparams, owner) as account:
         yield account
 
 

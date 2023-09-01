@@ -77,21 +77,6 @@ def contracts_folder():
 
 
 @pytest.fixture(scope="session")
-def receiver(test_accounts):
-    return test_accounts[1]
-
-
-@pytest.fixture(scope="session")
-def owner(test_accounts):
-    return test_accounts[2]
-
-
-@pytest.fixture(scope="session")
-def not_owner(test_accounts):
-    return test_accounts[7]
-
-
-@pytest.fixture(scope="session")
 def address():
     return TEST_ADDRESS
 
@@ -188,16 +173,11 @@ def sub_reverts_contract_container(sub_reverts_contract_type) -> ContractContain
 
 @pytest.fixture
 def reverts_contract_instance(
-    owner, reverts_contract_container, sub_reverts_contract_instance, geth_provider
+    owner, reverts_contract_container, sub_reverts_contract_instance, eth_tester_provider
 ) -> ContractInstance:
     return owner.deploy(
         reverts_contract_container, sub_reverts_contract_instance, required_confirmations=0
     )
-
-
-@pytest.fixture
-def sub_reverts_contract_instance(owner, sub_reverts_contract_container, geth_provider):
-    return owner.deploy(sub_reverts_contract_container, required_confirmations=0)
 
 
 @pytest.fixture(params=("solidity", "vyper"))
@@ -478,27 +458,9 @@ def unique_calldata():
 
 
 @pytest.fixture
-def leaf_contract_geth(geth_provider, owner, get_contract_type):
-    """
-    The last contract called by `contract_with_call_depth`.
-    """
-    ct = get_contract_type("contract_c")
-    return owner.deploy(ContractContainer(ct))
-
-
-@pytest.fixture
 def leaf_contract(eth_tester_provider, owner, get_contract_type):
     ct = get_contract_type("contract_c")
     return owner.deploy(ContractContainer(ct))
-
-
-@pytest.fixture
-def middle_contract_geth(geth_provider, owner, leaf_contract_geth, get_contract_type):
-    """
-    The middle contract called by `contract_with_call_depth`.
-    """
-    ct = get_contract_type("contract_b")
-    return owner.deploy(ContractContainer(ct), leaf_contract_geth)
 
 
 @pytest.fixture
@@ -508,24 +470,16 @@ def middle_contract(eth_tester_provider, owner, get_contract_type, leaf_contract
 
 
 @pytest.fixture
-def contract_with_call_depth_geth(
-    owner, geth_provider, get_contract_type, leaf_contract_geth, middle_contract_geth
-):
-    """
-    This contract has methods that make calls to other local contracts
-    and is used for any testing that requires nested calls, such as
-    call trees or event-name clashes.
-    """
-    contract = ContractContainer(get_contract_type("contract_a"))
-    return owner.deploy(contract, middle_contract_geth, leaf_contract_geth)
-
-
-@pytest.fixture
 def contract_with_call_depth(
     owner, eth_tester_provider, get_contract_type, leaf_contract, middle_contract
 ):
     contract = ContractContainer(get_contract_type("contract_a"))
     return owner.deploy(contract, middle_contract, leaf_contract)
+
+
+@pytest.fixture
+def sub_reverts_contract_instance(owner, sub_reverts_contract_container, eth_tester_provider):
+    return owner.deploy(sub_reverts_contract_container, required_confirmations=0)
 
 
 @pytest.fixture(scope="session")
@@ -541,12 +495,6 @@ def error_contract(owner, error_contract_container, eth_tester_provider):
 
 
 @pytest.fixture
-def error_contract_geth(owner, error_contract_container, geth_provider):
-    _ = geth_provider  # Ensure uses geth
-    return owner.deploy(error_contract_container, 1)
-
-
-@pytest.fixture
 def vyper_factory(owner, get_contract_type):
     return owner.deploy(ContractContainer(get_contract_type("vyper_factory")))
 
@@ -555,8 +503,3 @@ def vyper_factory(owner, get_contract_type):
 def vyper_blueprint(owner, vyper_contract_container):
     receipt = owner.declare(vyper_contract_container)
     return receipt.contract_address
-
-
-@pytest.fixture
-def geth_vyper_contract(owner, vyper_contract_container, geth_provider):
-    return owner.deploy(vyper_contract_container, 0)

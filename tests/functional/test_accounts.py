@@ -12,10 +12,12 @@ from ape.types.signatures import recover_signer
 from ape.utils.testing import DEFAULT_NUMBER_OF_TEST_ACCOUNTS
 from ape_ethereum.ecosystem import ProxyType
 from ape_test.accounts import TestAccount
+from tests.conftest import explorer_test
 
 # NOTE: Even though `__test__` is set to `False` on the class,
 # it must be set here as well for it to properly work for some reason.
 TestAccount.__test__ = False
+
 MISSING_VALUE_TRANSFER_ERR_MSG = "Must provide 'VALUE' or use 'send_everything=True"
 
 APE_TEST_PATH = "ape_test.accounts.TestAccount"
@@ -23,11 +25,6 @@ APE_ACCOUNTS_PATH = "ape_accounts.accounts.KeyfileAccount"
 
 PASSPHRASE = "a"
 INVALID_PASSPHRASE = "incorrect passphrase"
-
-
-@pytest.fixture
-def signer(test_accounts):
-    return test_accounts[2]
 
 
 @pytest.fixture(params=(APE_TEST_PATH, APE_ACCOUNTS_PATH))
@@ -192,11 +189,13 @@ def test_deploy(owner, contract_container, chain, clean_contracts_cache):
     assert contract_from_cache.txn_hash == contract.txn_hash
 
 
+@explorer_test
 def test_deploy_and_publish_local_network(owner, contract_container):
     with pytest.raises(ProjectError, match="Can only publish deployments on a live network"):
         owner.deploy(contract_container, 0, publish=True)
 
 
+@explorer_test
 def test_deploy_and_publish_live_network_no_explorer(owner, contract_container, dummy_live_network):
     dummy_live_network.__dict__["explorer"] = None
     expected_message = "Unable to publish contract - no explorer plugin installed."
@@ -204,6 +203,7 @@ def test_deploy_and_publish_live_network_no_explorer(owner, contract_container, 
         owner.deploy(contract_container, 0, publish=True, required_confirmations=0)
 
 
+@explorer_test
 def test_deploy_and_publish(mocker, owner, contract_container, dummy_live_network):
     mock_explorer = mocker.MagicMock()
     dummy_live_network.__dict__["explorer"] = mock_explorer
@@ -211,6 +211,7 @@ def test_deploy_and_publish(mocker, owner, contract_container, dummy_live_networ
     mock_explorer.publish_contract.assert_called_once_with(contract.address)
 
 
+@explorer_test
 def test_deploy_and_not_publish(mocker, owner, contract_container, dummy_live_network):
     mock_explorer = mocker.MagicMock()
     dummy_live_network.__dict__["explorer"] = mock_explorer
@@ -261,12 +262,12 @@ def test_accounts_splice_access(test_accounts):
     assert len(test_accounts[::2]) == len(test_accounts) / 2
 
 
-def test_accounts_address_access(test_accounts, accounts):
-    assert accounts[test_accounts[0].address] == test_accounts[0]
+def test_accounts_address_access(owner, accounts):
+    assert accounts[owner.address] == owner
 
 
-def test_accounts_contains(accounts, test_accounts):
-    assert test_accounts[0].address in accounts
+def test_accounts_contains(accounts, owner):
+    assert owner.address in accounts
 
 
 def test_autosign_messages(runner, keyfile_account):
@@ -429,15 +430,15 @@ def test_account_comparison_to_non_account(core_account):
 
 
 def test_create_account(test_accounts):
+    length_at_start = len(test_accounts)
     created_acc = test_accounts.generate_test_account()
 
     assert isinstance(created_acc, TestAccount)
-    assert created_acc.index == len(test_accounts)
+    assert created_acc.index == length_at_start
 
     second_created_acc = test_accounts.generate_test_account()
 
     assert created_acc.address != second_created_acc.address
-
     assert second_created_acc.index == created_acc.index + 1
 
 
@@ -474,7 +475,6 @@ def test_using_different_hd_path(test_accounts, temp_config):
     old_first_account = test_accounts[0]
     with temp_config(test_config):
         new_first_account = test_accounts[0]
-
         assert old_first_account.address != new_first_account.address
 
 
@@ -488,7 +488,6 @@ def test_using_random_mnemonic(test_accounts, temp_config):
     old_first_account = test_accounts[0]
     with temp_config(test_config):
         new_first_account = test_accounts[0]
-
         assert old_first_account.address != new_first_account.address
 
 
