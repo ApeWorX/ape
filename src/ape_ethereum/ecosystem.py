@@ -103,6 +103,9 @@ class NetworkConfig(PluginConfig):
     The default for local networks is ``"max"``, otherwise ``"auto"``.
     """
 
+    base_fee_multiplier: float = 1.0
+    """A multiplier to apply to a transaction base fee."""
+
     class Config:
         smart_union = True
 
@@ -131,16 +134,23 @@ class NetworkConfig(PluginConfig):
 
 def _create_local_config(default_provider: Optional[str] = None, **kwargs) -> NetworkConfig:
     return _create_config(
-        required_confirmations=0,
+        base_fee_multiplier=1.0,
         default_provider=default_provider,
-        transaction_acceptance_timeout=DEFAULT_LOCAL_TRANSACTION_ACCEPTANCE_TIMEOUT,
         gas_limit="max",
+        required_confirmations=0,
+        transaction_acceptance_timeout=DEFAULT_LOCAL_TRANSACTION_ACCEPTANCE_TIMEOUT,
         **kwargs,
     )
 
 
-def _create_config(required_confirmations: int = 2, **kwargs) -> NetworkConfig:
-    return NetworkConfig(required_confirmations=required_confirmations, **kwargs)
+def _create_config(
+    required_confirmations: int = 2, base_fee_multiplier: float = 1.4, **kwargs
+) -> NetworkConfig:
+    return NetworkConfig(
+        base_fee_multiplier=base_fee_multiplier,
+        required_confirmations=required_confirmations,
+        **kwargs,
+    )
 
 
 class EthereumConfig(PluginConfig):
@@ -183,10 +193,7 @@ class Block(BlockAPI):
         pre=True,
     )
     def validate_ints(cls, value):
-        if not value:
-            return 0
-
-        return to_int(value)
+        return to_int(value) if value else 0
 
 
 class Ethereum(EcosystemAPI):

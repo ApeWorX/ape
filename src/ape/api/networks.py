@@ -718,6 +718,13 @@ class NetworkAPI(BaseInterfaceModel):
         return self.gas_limit.multiplier if isinstance(self.gas_limit, AutoGasLimit) else 1.0
 
     @property
+    def base_fee_multiplier(self) -> float:
+        """
+        A multiplier to apply to a transaction base fee.
+        """
+        return self._network_config.get("base_fee_multiplier", 1.0)
+
+    @property
     def chain_id(self) -> int:
         """
         The ID of the blockchain.
