@@ -762,8 +762,7 @@ class Ethereum(EcosystemAPI):
         elif address == ZERO_ADDRESS:
             return "ZERO_ADDRESS"
 
-        contract_type = self.chain_manager.contracts.get(address)
-        if not contract_type:
+        if not (contract_type := self.chain_manager.contracts.get(address)):
             return address
 
         elif kwargs.get("use_symbol_for_tokens") and "symbol" in contract_type.view_methods:
