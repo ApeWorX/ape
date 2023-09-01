@@ -72,6 +72,10 @@ def parse_as_str(call: "CallTreeNode", stylize: bool = False, verbose: bool = Fa
         and is_0x_prefixed(call.method_id)
         else str(call.method_id or "")
     )
+    if "(" in method:
+        # Only show short name, not ID name
+        # (it is the full signature when multiple methods have the same name).
+        method = method.split("(")[0].strip() or method
 
     if stylize:
         contract = f"[{TraceStyles.CONTRACTS}]{contract}[/]"
