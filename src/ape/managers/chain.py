@@ -1143,7 +1143,7 @@ class ContractCache(BaseManager):
         txn_hash: Optional[str] = None,
         abi: Optional[
             Union[List[ABI], str, Path]
-        ] = None,  # ABI can be string, List[ABI] or a Path object
+        ] = None,  # ABI can be string, List[ABI or object] or a Path object
     ) -> ContractInstance:
         """
         Get a contract at the given address. If the contract type of the contract is known,
@@ -1214,7 +1214,8 @@ class ContractCache(BaseManager):
                     abi = project_folder / abi
                 try:
                     with abi.open() as f:
-                        list_abi = json.loads(f)
+                        json_str = f.read()
+                        list_abi = json.loads(json_str)
                         # Create a new ContractType with the provided ABI from the file
                         contract_type = ContractType(abi=list_abi)
                 except Exception as err:

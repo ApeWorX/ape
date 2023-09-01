@@ -1,5 +1,6 @@
 import time
 from datetime import datetime, timedelta
+from pathlib import Path
 from queue import Queue
 from typing import List
 
@@ -764,8 +765,17 @@ def test_load_contract_from_abi_type_ABI(solidity_contract_instance):
     assert contract.myNumber() == 0
 
 
-def test_load_contract_from_file(solidity_contract_instance, solidity_contract_instance_abi):
+def test_load_contract_from_file(solidity_contract_instance):
     """
     need feedback about the json file specifications
     """
-    pass
+    PROJECT_PATH = Path(__file__).parent
+    CONTRACTS_FOLDER = PROJECT_PATH / "data" / "contracts" / "ethereum"
+    json_abi_file = f"{CONTRACTS_FOLDER}/solidity_contract_json.json"
+
+    address = solidity_contract_instance.address
+    contract = ape.Contract(address, abi=json_abi_file)
+
+    assert isinstance(contract, ContractInstance)
+    assert contract.address == address
+    assert contract.myNumber() == 0
