@@ -71,7 +71,13 @@ def test_compile(ape_cli, runner, project, clean_cache):
     # Don't expect directories that may happen to have `.json` in name
     # as well as hidden files, such as `.gitkeep`. Both examples are present
     # in the test project!
-    excluded = ("Exclude.json", "UnwantedContract.json")
+    excluded = (
+        "Exclude.json",
+        "UnwantedContract.json",
+        "tsconfig.json",
+        "package.json",
+        "package-lock.json",
+    )
     expected_files = [
         f
         for f in all_files
@@ -79,6 +85,7 @@ def test_compile(ape_cli, runner, project, clean_cache):
         and f.is_file()
         and not f.name.startswith(".")
         and f.name not in excluded
+        and f.suffix == ".json"
     ]
     unexpected_files = [f for f in all_files if f not in expected_files]
 
@@ -86,18 +93,23 @@ def test_compile(ape_cli, runner, project, clean_cache):
     for file in expected_files:
         assert file.name in manifest.sources
 
-    assert all(f.stem in result.output for f in expected_files)
+    missing = [f.name for f in expected_files if f.stem not in result.output]
+    assert not missing, f"Missing: {', '.join(missing)}"
     assert not any(f.stem in result.output for f in unexpected_files)
 
     # Copy in .build to show that those file won't compile.
     # (Anything in a .build is ignored, even if in a contracts folder to prevent accidents).
     shutil.copytree(project.path / ".build", project.contracts_folder / ".build")
 
-    result = runner.invoke(ape_cli, ["compile"], catch_exceptions=False)
-    assert result.exit_code == 0, result.output
-    # First time it compiles, it caches
-    for file in project.path.glob("contracts/**/*"):
-        assert file.stem not in result.output
+    try:
+        result = runner.invoke(ape_cli, ["compile"], catch_exceptions=False)
+        assert result.exit_code == 0, result.output
+        # First time it compiles, it caches
+        for file in project.path.glob("contracts/**/*"):
+            assert file.stem not in result.output
+
+    finally:
+        shutil.rmtree(project.contracts_folder / ".build", ignore_errors=True)
 
 
 @skip_projects_except("multiple-interfaces")

@@ -27,7 +27,6 @@ class InterfaceCompiler(CompilerAPI):
         filepaths.sort()  # Sort to assist in reproducing consistent results.
         contract_types: List[ContractType] = []
         contract_type_data: Dict
-
         for path in filepaths:
             data = json.loads(path.read_text())
             source_path = (
