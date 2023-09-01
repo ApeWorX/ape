@@ -39,6 +39,7 @@ from ape.types import (
     TransactionSignature,
 )
 from ape.utils import (
+    DEFAULT_LIVE_NETWORK_BASE_FEE_MULTIPLIER,
     DEFAULT_LOCAL_TRANSACTION_ACCEPTANCE_TIMEOUT,
     DEFAULT_TRANSACTION_ACCEPTANCE_TIMEOUT,
     EMPTY_BYTES32,
@@ -144,7 +145,9 @@ def _create_local_config(default_provider: Optional[str] = None, **kwargs) -> Ne
 
 
 def _create_config(
-    required_confirmations: int = 2, base_fee_multiplier: float = 1.4, **kwargs
+    required_confirmations: int = 2,
+    base_fee_multiplier: float = DEFAULT_LIVE_NETWORK_BASE_FEE_MULTIPLIER,
+    **kwargs,
 ) -> NetworkConfig:
     return NetworkConfig(
         base_fee_multiplier=base_fee_multiplier,
