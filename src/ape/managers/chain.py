@@ -7,7 +7,7 @@ from pathlib import Path
 from typing import IO, Collection, Dict, Iterator, List, Optional, Set, Type, Union, cast
 
 import pandas as pd
-from ethpm_types import ContractType, ABI
+from ethpm_types import ABI, ContractType
 from rich import get_console
 from rich.console import Console as RichConsole
 
