@@ -238,3 +238,8 @@ def test_gas_limits(networks, config, project_with_source_files_contract):
     _ = project_with_source_files_contract  # Ensure use of project with default config
     assert networks.ethereum.goerli.gas_limit == "auto"
     assert networks.ethereum.local.gas_limit == "max"
+
+
+def test_base_fee_multiplier(networks):
+    assert networks.ethereum.mainnet.base_fee_multiplier == 1.4
+    assert networks.ethereum.local.base_fee_multiplier == 1.0

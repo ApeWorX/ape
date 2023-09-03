@@ -56,17 +56,17 @@ def existing_manifest(ape_project):
     return ape_project.create_manifest()
 
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def contract_type_0(vyper_contract_type):
     return _make_new_contract(vyper_contract_type, "NewContract_0")
 
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def contract_type_1(vyper_contract_type):
     return _make_new_contract(vyper_contract_type, "NewContract_1")
 
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def existing_source_path(vyper_contract_type, contract_type_0, contracts_folder):
     source_path = contracts_folder / "NewContract_0.json"
     source_path.touch()
@@ -154,6 +154,7 @@ def test_create_manifest_when_file_changed_with_cached_references_that_no_longer
     if cache_location.is_file():
         cache_location.unlink()
 
+    ape_project._cache_folder.mkdir(exist_ok=True)
     cache_location.touch()
     cache_location.write_text(manifest_with_non_existent_sources.json())
 

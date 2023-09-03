@@ -236,7 +236,7 @@ class DependencyAPI(BaseInterfaceModel):
     **NOTE**: This must be the name of a directory in the project.
     """
 
-    exclude: List[str] = ["package.json", "package-lock.json"]
+    exclude: List[str] = ["package.json", "package-lock.json", "**/.build/**/*.json"]
     """
     A list of glob-patterns for excluding files in dependency projects.
     """

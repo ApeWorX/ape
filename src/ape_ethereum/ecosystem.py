@@ -39,6 +39,7 @@ from ape.types import (
     TransactionSignature,
 )
 from ape.utils import (
+    DEFAULT_LIVE_NETWORK_BASE_FEE_MULTIPLIER,
     DEFAULT_LOCAL_TRANSACTION_ACCEPTANCE_TIMEOUT,
     DEFAULT_TRANSACTION_ACCEPTANCE_TIMEOUT,
     EMPTY_BYTES32,
@@ -103,6 +104,9 @@ class NetworkConfig(PluginConfig):
     The default for local networks is ``"max"``, otherwise ``"auto"``.
     """
 
+    base_fee_multiplier: float = 1.0
+    """A multiplier to apply to a transaction base fee."""
+
     class Config:
         smart_union = True
 
@@ -131,16 +135,25 @@ class NetworkConfig(PluginConfig):
 
 def _create_local_config(default_provider: Optional[str] = None, **kwargs) -> NetworkConfig:
     return _create_config(
-        required_confirmations=0,
+        base_fee_multiplier=1.0,
         default_provider=default_provider,
-        transaction_acceptance_timeout=DEFAULT_LOCAL_TRANSACTION_ACCEPTANCE_TIMEOUT,
         gas_limit="max",
+        required_confirmations=0,
+        transaction_acceptance_timeout=DEFAULT_LOCAL_TRANSACTION_ACCEPTANCE_TIMEOUT,
         **kwargs,
     )
 
 
-def _create_config(required_confirmations: int = 2, **kwargs) -> NetworkConfig:
-    return NetworkConfig(required_confirmations=required_confirmations, **kwargs)
+def _create_config(
+    required_confirmations: int = 2,
+    base_fee_multiplier: float = DEFAULT_LIVE_NETWORK_BASE_FEE_MULTIPLIER,
+    **kwargs,
+) -> NetworkConfig:
+    return NetworkConfig(
+        base_fee_multiplier=base_fee_multiplier,
+        required_confirmations=required_confirmations,
+        **kwargs,
+    )
 
 
 class EthereumConfig(PluginConfig):
@@ -183,10 +196,7 @@ class Block(BlockAPI):
         pre=True,
     )
     def validate_ints(cls, value):
-        if not value:
-            return 0
-
-        return to_int(value)
+        return to_int(value) if value else 0
 
 
 class Ethereum(EcosystemAPI):
@@ -762,8 +772,7 @@ class Ethereum(EcosystemAPI):
         elif address == ZERO_ADDRESS:
             return "ZERO_ADDRESS"
 
-        contract_type = self.chain_manager.contracts.get(address)
-        if not contract_type:
+        if not (contract_type := self.chain_manager.contracts.get(address)):
             return address
 
         elif kwargs.get("use_symbol_for_tokens") and "symbol" in contract_type.view_methods:

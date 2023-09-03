@@ -131,10 +131,10 @@ def test_call_use_block_identifier(contract_instance, owner, chain):
     assert actual == 3
 
 
-def test_revert(sender, contract_instance):
+def test_revert(not_owner, contract_instance):
     # 'sender' is not the owner so it will revert (with a message)
     with pytest.raises(ContractLogicError, match="!authorized") as err:
-        contract_instance.setNumber(5, sender=sender)
+        contract_instance.setNumber(5, sender=not_owner)
 
     assert err.value.txn is not None
 
@@ -149,9 +149,9 @@ def test_revert_no_message(owner, contract_instance):
 
 
 @pytest.mark.parametrize("gas", ("200000", 200000, "max", "auto", "0x235426"))
-def test_revert_specify_gas(sender, contract_instance, gas):
+def test_revert_specify_gas(not_owner, contract_instance, gas):
     with pytest.raises(ContractLogicError, match="!authorized") as err:
-        contract_instance.setNumber(5, sender=sender, gas=gas)
+        contract_instance.setNumber(5, sender=not_owner, gas=gas)
 
     assert err.value.txn is not None
 
@@ -164,9 +164,9 @@ def test_revert_no_message_specify_gas(owner, contract_instance):
     assert err.value.txn is not None
 
 
-def test_revert_static_fee_type(sender, contract_instance):
+def test_revert_static_fee_type(not_owner, contract_instance):
     with pytest.raises(ContractLogicError, match="!authorized") as err:
-        contract_instance.setNumber(5, sender=sender, type=0)
+        contract_instance.setNumber(5, sender=not_owner, type=0)
 
     assert err.value.txn is not None
 
@@ -203,12 +203,12 @@ def test_repr(vyper_contract_instance):
     )
     assert (
         repr(vyper_contract_instance.setNumber)
-        == "<TestContractVy 0xF7F78379391C5dF2Db5B66616d18fF92edB82022>.setNumber"
+        == f"<TestContractVy {vyper_contract_instance.address}>.setNumber"
     )
     assert str(vyper_contract_instance.setNumber) == "setNumber(uint256 num)"
     assert (
         repr(vyper_contract_instance.myNumber)
-        == "<TestContractVy 0xF7F78379391C5dF2Db5B66616d18fF92edB82022>.myNumber"
+        == f"<TestContractVy {vyper_contract_instance.address}>.myNumber"
     )
     assert str(vyper_contract_instance.myNumber) == "myNumber() -> uint256"
     assert (
@@ -217,12 +217,12 @@ def test_repr(vyper_contract_instance):
     )
 
 
-def test_structs(contract_instance, sender, chain):
+def test_structs(contract_instance, owner, chain):
     actual = contract_instance.getStruct()
     actual_sender, actual_prev_block = actual
 
     # Expected: a == msg.sender
-    assert actual.a == actual["a"] == actual[0] == actual_sender == sender
+    assert actual.a == actual["a"] == actual[0] == actual_sender == owner
     assert is_checksum_address(actual.a)
 
     # Expected: b == block.prevhash.
@@ -230,18 +230,18 @@ def test_structs(contract_instance, sender, chain):
     assert type(actual.b) is HexBytes
 
 
-def test_nested_structs(contract_instance, sender, chain):
+def test_nested_structs(contract_instance, owner, chain):
     actual_1 = contract_instance.getNestedStruct1()
     actual_2 = contract_instance.getNestedStruct2()
     actual_sender_1, actual_prev_block_1 = actual_1.t
     actual_sender_2, actual_prev_block_2 = actual_2.t
 
     # Expected: t.a == msg.sender
-    assert actual_1.t.a == actual_1.t["a"] == actual_1.t[0] == actual_sender_1 == sender
+    assert actual_1.t.a == actual_1.t["a"] == actual_1.t[0] == actual_sender_1 == owner
     assert is_checksum_address(actual_1.t.a)
     assert is_checksum_address(actual_sender_1)
     assert actual_1.foo == 1
-    assert actual_2.t.a == actual_2.t["a"] == actual_2.t[0] == actual_sender_2 == sender
+    assert actual_2.t.a == actual_2.t["a"] == actual_2.t[0] == actual_sender_2 == owner
     assert is_checksum_address(actual_2.t.a)
     assert is_checksum_address(actual_sender_2)
     assert actual_2.foo == 2
@@ -265,19 +265,19 @@ def test_nested_structs(contract_instance, sender, chain):
     assert type(actual_2.t.b) is HexBytes
 
 
-def test_nested_structs_in_tuples(contract_instance, sender, chain):
+def test_nested_structs_in_tuples(contract_instance, owner, chain):
     result_1 = contract_instance.getNestedStructWithTuple1()
     struct_1 = result_1[0]
     assert result_1[1] == 1
     assert struct_1.foo == 1
-    assert struct_1.t.a == sender
+    assert struct_1.t.a == owner
     assert is_checksum_address(struct_1.t.a)
 
     result_2 = contract_instance.getNestedStructWithTuple2()
     struct_2 = result_2[1]
     assert result_2[0] == 2
     assert struct_2.foo == 2
-    assert struct_2.t.a == sender
+    assert struct_2.t.a == owner
     assert is_checksum_address(struct_2.t.a)
 
 
@@ -326,12 +326,12 @@ def test_vyper_structs_with_array(vyper_contract_instance):
     assert len(actual.arr) == 2
 
 
-def test_solidity_structs_with_array(solidity_contract_instance, sender):
+def test_solidity_structs_with_array(solidity_contract_instance, owner):
     actual = solidity_contract_instance.getStructWithArray()
     assert actual.foo == 1
     assert actual.bar == 2
     assert len(actual.arr) == 2, "Unexpected array length"
-    assert actual.arr[0].a == sender
+    assert actual.arr[0].a == owner
     assert is_checksum_address(actual.arr[0].a)
 
 
@@ -341,76 +341,76 @@ def test_arrays(contract_instance):
     assert contract_instance.getFilledArray() == [1, 2, 3]
 
 
-def test_address_arrays(contract_instance, sender):
+def test_address_arrays(contract_instance, owner):
     actual = contract_instance.getAddressArray()
-    assert actual == [sender, sender]
+    assert actual == [owner, owner]
     assert is_checksum_address(actual[0])
     assert is_checksum_address(actual[1])
 
 
-def test_contract_instance_as_address_input(contract_instance, sender):
-    contract_instance.setAddress(contract_instance, sender=sender)
+def test_contract_instance_as_address_input(contract_instance, owner):
+    contract_instance.setAddress(contract_instance, sender=owner)
     assert contract_instance.theAddress() == contract_instance
 
 
-def test_account_as_address_input(contract_instance, sender):
-    contract_instance.setAddress(sender, sender=sender)
-    assert contract_instance.theAddress() == sender
+def test_account_as_address_input(contract_instance, owner):
+    contract_instance.setAddress(owner, sender=owner)
+    assert contract_instance.theAddress() == owner
 
 
-def test_int_as_address_input(contract_instance, sender):
-    contract_instance.setAddress(int(sender.address, 16), sender=sender)
-    assert contract_instance.theAddress() == sender
+def test_int_as_address_input(contract_instance, owner):
+    contract_instance.setAddress(int(owner.address, 16), sender=owner)
+    assert contract_instance.theAddress() == owner
 
 
-def test_vyper_struct_arrays(vyper_contract_instance, sender):
+def test_vyper_struct_arrays(vyper_contract_instance, owner):
     # NOTE: Vyper struct arrays <=0.3.3 don't include struct info
     actual_dynamic = vyper_contract_instance.getDynamicStructArray()
     assert len(actual_dynamic) == 2
-    assert actual_dynamic[0][0][0] == sender
+    assert actual_dynamic[0][0][0] == owner
     assert is_checksum_address(actual_dynamic[0][0][0])
     assert actual_dynamic[0][1] == 1
-    assert actual_dynamic[1][0][0] == sender
+    assert actual_dynamic[1][0][0] == owner
     assert is_checksum_address(actual_dynamic[1][0][0])
     assert actual_dynamic[1][1] == 2
 
     actual_static = vyper_contract_instance.getStaticStructArray()
     assert len(actual_static) == 2
     assert actual_static[0][0] == 1
-    assert actual_static[0][1][0] == sender
+    assert actual_static[0][1][0] == owner
     assert is_checksum_address(actual_static[0][1][0])
     assert actual_static[1][0] == 2
-    assert actual_static[1][1][0] == sender
+    assert actual_static[1][1][0] == owner
     assert is_checksum_address(actual_static[1][1][0])
 
 
-def test_solidity_dynamic_struct_arrays(solidity_contract_instance, sender):
+def test_solidity_dynamic_struct_arrays(solidity_contract_instance, owner):
     # Run test twice to make sure we can call method more than 1 time and have
     # the same result.
     for _ in range(2):
         actual_dynamic = solidity_contract_instance.getDynamicStructArray()
         assert len(actual_dynamic) == 2
         assert actual_dynamic[0].foo == 1
-        assert actual_dynamic[0].t.a == sender
+        assert actual_dynamic[0].t.a == owner
         assert is_checksum_address(actual_dynamic[0].t.a)
 
         assert actual_dynamic[1].foo == 2
-        assert actual_dynamic[1].t.a == sender
+        assert actual_dynamic[1].t.a == owner
         assert is_checksum_address(actual_dynamic[1].t.a)
 
 
-def test_solidity_static_struct_arrays(solidity_contract_instance, sender):
+def test_solidity_static_struct_arrays(solidity_contract_instance, owner):
     # Run test twice to make sure we can call method more than 1 time and have
     # the same result.
     for _ in range(2):
         actual_dynamic = solidity_contract_instance.getStaticStructArray()
         assert len(actual_dynamic) == 3
         assert actual_dynamic[0].foo == 1
-        assert actual_dynamic[0].t.a == sender
+        assert actual_dynamic[0].t.a == owner
         assert is_checksum_address(actual_dynamic[0].t.a)
 
         assert actual_dynamic[1].foo == 2
-        assert actual_dynamic[1].t.a == sender
+        assert actual_dynamic[1].t.a == owner
         assert is_checksum_address(actual_dynamic[1].t.a)
 
 
@@ -484,12 +484,12 @@ def test_get_nested_array_mixed_dynamic(contract_instance, owner):
     assert actual[2] == actual[3] == actual[4] == []
 
 
-def test_get_nested_address_array(contract_instance, sender, zero_address):
+def test_get_nested_address_array(contract_instance, owner, zero_address):
     actual = contract_instance.getNestedAddressArray()
     assert len(actual) == 2
     assert len(actual[0]) == 3
     assert len(actual[1]) == 3
-    assert actual[0] == [sender, sender, sender]
+    assert actual[0] == [owner, owner, owner]
     assert actual[1] == [zero_address, zero_address, zero_address]
 
 
@@ -837,11 +837,11 @@ def test_private_transaction_live_network(vyper_contract_instance, owner, dummy_
 
 
 def test_contract_declared_from_blueprint(
-    vyper_blueprint, vyper_factory, vyper_contract_container, sender
+    vyper_blueprint, vyper_factory, vyper_contract_container, owner
 ):
     # Call the factory method that calls `create_from_blueprint()` and logs an events
     # with the resulting address. The first arg is necessary calldata.
-    receipt = vyper_factory.create_contract(vyper_blueprint, 321, sender=sender)
+    receipt = vyper_factory.create_contract(vyper_blueprint, 321, sender=owner)
 
     # Create a contract instance at this new address using the contract type
     # from the blueprint.
@@ -849,7 +849,7 @@ def test_contract_declared_from_blueprint(
     instance = vyper_contract_container.at(address)
 
     # Ensure we can invoke a method on that contract.
-    receipt = instance.setAddress(sender, sender=sender)
+    receipt = instance.setAddress(owner, sender=owner)
     assert not receipt.failed
 
 
