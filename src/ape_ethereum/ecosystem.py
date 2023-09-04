@@ -792,7 +792,7 @@ class Ethereum(EcosystemAPI):
             # bytes32 symbol appears in ds-token
             if isinstance(symbol, bytes):
                 try:
-                    return symbol.rstrip(b'\x00').decode()
+                    return symbol.rstrip(b"\x00").decode()
                 except UnicodeDecodeError:
                     return str(symbol)
 
