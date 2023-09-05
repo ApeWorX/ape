@@ -1,6 +1,5 @@
 import json
 from pathlib import Path
-from shutil import rmtree
 from typing import Tuple
 
 import click
@@ -179,7 +178,7 @@ def remove(cli_ctx, package, versions, yes):
     if not package_dir.is_dir():
         cli_ctx.abort(f"Package '{package}' is not installed.")
 
-    # remove multiple versions if no version is specified
+    # Remove multiple versions if no version is specified
     versions_to_remove = versions if versions else []
     if not versions_to_remove:
         available_versions = [d.name for d in package_dir.iterdir() if d.is_dir()]
@@ -196,23 +195,31 @@ def remove(cli_ctx, package, versions, yes):
                 f"{available_versions} (separate multiple versions with comma, or 'all')"
             )
             versions_input = click.prompt(version_prompt)
-            versions_to_remove = [v.strip() for v in versions_input.split(",") if v.strip()]
+            if versions_input.strip() == "all":
+                versions_to_remove = available_versions
+            else:
+                versions_to_remove = [v.strip() for v in versions_input.split(",") if v.strip()]
+
+            # Prevents a double-prompt.
+            yes = True
 
     if not versions_to_remove:
         cli_ctx.logger.info("No versions selected for removal.")
         return
 
-    # remove all the versions specified
+    # Remove all the versions specified
     for version in versions_to_remove:
-        version_dir = package_dir / version
-        if version_dir.is_dir():
-            if yes or click.confirm(
-                f"Are you sure you want to remove version '{version}' of package '{package}'?"
-            ):
-                rmtree(version_dir)
-                cli_ctx.logger.success(f"Version '{version}' of package '{package}' removed.")
-        else:
-            cli_ctx.abort(f"Version '{version}' of package '{package}' is not installed.")
+        if not (package_dir / version).is_dir() and not (package_dir / f"v{version}").is_dir():
+            cli_ctx.logger.warning(
+                f"Version '{version}' of package '{package_dir.name}' is not installed."
+            )
+            continue
+
+        elif yes or click.confirm(
+            f"Are you sure you want to remove version '{version}' of package '{package}'?"
+        ):
+            cli_ctx.project_manager.remove_dependency(package_dir.name, versions=[version])
+            cli_ctx.logger.success(f"Version '{version}' of package '{package_dir.name}' removed.")
 
 
 @cli.command()
