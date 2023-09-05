@@ -788,7 +788,7 @@ class Ethereum(EcosystemAPI):
 
             if isinstance(symbol, str):
                 return symbol.strip()
-            
+
             # bytes32 symbol appears in ds-token
             if isinstance(symbol, bytes):
                 try:
