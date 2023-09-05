@@ -84,6 +84,9 @@ def _package_callback(ctx, param, value):
         # Is an NPM style dependency
         return {"npm:": value[4:]}
 
+    elif value == ".":
+        return value
+
     # Check if is a local package.
     try:
         path = Path(value).absolute()
@@ -122,7 +125,8 @@ def install(cli_ctx, package, name, version, ref, force):
     """
 
     log_name = None
-    if not package:
+
+    if not package or package == ".":
         # `ape pm install`: Load all dependencies from current package.
         cli_ctx.project_manager.load_dependencies(use_cache=not force)
 
@@ -181,15 +185,16 @@ def remove(cli_ctx, package, versions, yes):
         available_versions = [d.name for d in package_dir.iterdir() if d.is_dir()]
         if not available_versions:
             cli_ctx.abort(f"No installed versions of package '{package}' found.")
-        version_prompt = (
-            f"Which versions of package '{package}' do you want to remove? "
-            f"{available_versions} (separate multiple versions with comma, or 'all')"
-        )
 
-        if yes:
+        # If there is only one version, use that.
+        if len(available_versions) == 1 or yes:
             versions_to_remove = available_versions
-            version_prompt = ""
+
         else:
+            version_prompt = (
+                f"Which versions of package '{package}' do you want to remove? "
+                f"{available_versions} (separate multiple versions with comma, or 'all')"
+            )
             versions_input = click.prompt(version_prompt)
             versions_to_remove = [v.strip() for v in versions_input.split(",") if v.strip()]
 
@@ -207,7 +212,7 @@ def remove(cli_ctx, package, versions, yes):
                 rmtree(version_dir)
                 cli_ctx.logger.success(f"Version '{version}' of package '{package}' removed.")
         else:
-            cli_ctx.logger.warning(f"Version '{version}' of package '{package}' is not installed.")
+            cli_ctx.abort(f"Version '{version}' of package '{package}' is not installed.")
 
 
 @cli.command()

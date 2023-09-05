@@ -105,98 +105,86 @@ def test_compile_dependency(ape_cli, runner, project):
     assert f"Package '{name}' compiled." in result.output
 
 
-# Remove tests
-# 1. remove single package - ape pm remove Uniswap-core -y
-# 2. remove single package with confirmation - ape pm remove Uniswap-core
-#
-# 3. prompt for option
+@skip_projects_except("only-dependencies")
+def test_remove(ape_cli, runner, project):
+    # Install packages
+    runner.invoke(ape_cli, ["pm", "install", "."])
 
-# current testing Done
-# `ape pm remove OpenZeppelin`
-# Which versions of package 'OpenZeppelin' do you want to remove?
-# ['v4.9.3', 'v4.9.1', 'v4.9.0'] (separate multiple versions with comma, or 'all'): v4.9.3
-# Are you sure you want to remove version 'v4.9.3' of package 'OpenZeppelin'? [y/N]: y
-# SUCCESS: Version 'v4.9.3' of package 'OpenZeppelin' removed.
-
-# remove all versions of OpenZeppelin
-# `ape pm remove OpenZeppelin -y`
-# SUCCESS: Version 'v4.9.1' of package 'OpenZeppelin' removed.
-# SUCCESS: Version 'v4.9.0' of package 'OpenZeppelin' removed.
+    package_name = "dependency-in-project-only"
+    result = runner.invoke(ape_cli, ["pm", "remove", package_name], input="y\n")
+    expected_message = f"Version 'local' of package '{package_name}' removed."
+    assert result.exit_code == 0, result.output
+    assert expected_message in result.output
 
 
-@run_once
-def test_remove_package_not_installed(ape_cli, runner):
-    package_name = "UnknownPackage"
+@skip_projects_except("only-dependencies")
+def test_remove_not_exists(ape_cli, runner, project):
+    package_name = "_this_does_not_exist_"
     result = runner.invoke(ape_cli, ["pm", "remove", package_name])
-    expected_message = f"Package '{package_name}' is not installed."
+    expected_message = f"ERROR: Package '{package_name}' is not installed."
     assert result.exit_code != 0
     assert expected_message in result.output
 
 
-@run_once
+@skip_projects_except("only-dependencies")
 def test_remove_specific_version(ape_cli, runner):
-    package_name = "OpenZeppelin"
-    version = "4.9.0"
-    runner.invoke(
-        ape_cli,
-        [
-            "pm",
-            "install",
-            "gh:OpenZeppelin/openzeppelin-contracts",
-            "--name",
-            "OpenZeppelin",
-            "--version",
-            "4.9.0",
-        ],
-    )
-    result = runner.invoke(ape_cli, ["pm", "remove", package_name, version])
+    # Install packages
+    runner.invoke(ape_cli, ["pm", "install", "."])
+
+    package_name = "dependency-in-project-only"
+    version = "local"
+    result = runner.invoke(ape_cli, ["pm", "remove", package_name], input="y\n")
     expected_message = f"Version '{version}' of package '{package_name}' removed."
     assert result.exit_code == 0
     assert expected_message in result.output
 
 
-@run_once
-def test_remove_all_versions(ape_cli, runner):
-    package_name = "OpenZeppelin"
-    result = runner.invoke(ape_cli, ["pm", "remove", package_name, "--all"], input="y\n")
-    expected_message = f"All versions of package '{package_name}' removed."
-    assert result.exit_code == 0
-    assert expected_message in result.output
-
-
-@run_once
+@skip_projects_except("only-dependencies")
 def test_remove_all_versions_with_y(ape_cli, runner):
-    package_name = "OpenZeppelin"
-    result = runner.invoke(ape_cli, ["pm", "remove", package_name, "--all", "-y"])
-    expected_message = f"All versions of package '{package_name}' removed."
+    # Install packages
+    runner.invoke(ape_cli, ["pm", "install", "."])
+
+    package_name = "dependency-in-project-only"
+    result = runner.invoke(ape_cli, ["pm", "remove", package_name, "-y"])
+    expected_message = f"SUCCESS: Version 'local' of package '{package_name}' removed."
     assert result.exit_code == 0
     assert expected_message in result.output
 
 
-@run_once
+@skip_projects_except("only-dependencies")
 def test_remove_specific_version_with_y(ape_cli, runner):
-    package_name = "OpenZeppelin"
-    version = "4.9.3"
+    # Install packages
+    runner.invoke(ape_cli, ["pm", "install", "."])
+
+    package_name = "dependency-in-project-only"
+    version = "local"
     result = runner.invoke(ape_cli, ["pm", "remove", package_name, version, "-y"])
     expected_message = f"Version '{version}' of package '{package_name}' removed."
     assert result.exit_code == 0
     assert expected_message in result.output
 
 
-@run_once
+@skip_projects_except("only-dependencies")
 def test_remove_cancel(ape_cli, runner):
-    package_name = "OpenZeppelin"
-    version = "4.9.0"
+    # Install packages
+    runner.invoke(ape_cli, ["pm", "install", "."])
+
+    package_name = "dependency-in-project-only"
+    version = "local"
     result = runner.invoke(ape_cli, ["pm", "remove", package_name, version], input="n\n")
     assert result.exit_code == 0
-    assert "Removal of version cancelled." in result.output
+    expected_message = f"Version '{version}' of package '{package_name}' removed."
+    assert expected_message not in result.output
 
 
-@run_once
+@skip_projects_except("only-dependencies")
 def test_remove_invalid_version(ape_cli, runner):
-    package_name = "OpenZeppelin"
-    invalid_version = "4.9.5"
+    # Install packages
+    runner.invoke(ape_cli, ["pm", "install", "."])
+
+    package_name = "dependency-in-project-only"
+    invalid_version = "0.0.0"
     result = runner.invoke(ape_cli, ["pm", "remove", package_name, invalid_version])
     expected_message = f"Version '{invalid_version}' of package '{package_name}' is not installed."
-    assert result.exit_code != 0
+    assert result.exit_code != 0, result.output
     assert expected_message in result.output
