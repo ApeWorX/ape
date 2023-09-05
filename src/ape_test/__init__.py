@@ -1,6 +1,9 @@
 from typing import Dict, List, NewType, Optional, Union
 
-from pydantic import NonNegativeInt
+try:
+    from pydantic.v1 import NonNegativeInt
+except ImportError:
+    from pydantic import NonNegativeInt
 
 from ape import plugins
 from ape.api import PluginConfig

@@ -2,7 +2,10 @@ import subprocess
 import sys
 from typing import List, Optional, Tuple
 
-from pydantic import root_validator
+try:
+    from pydantic.v1 import root_validator
+except ImportError:
+    from pydantic import root_validator
 
 from ape.__modules__ import __modules__
 from ape.logging import ApeLogger

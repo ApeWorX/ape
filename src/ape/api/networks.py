@@ -11,7 +11,11 @@ from eth_account._utils.legacy_transactions import (
 from eth_utils import keccak, to_int
 from ethpm_types import ContractType, HexBytes
 from ethpm_types.abi import ABIType, ConstructorABI, EventABI, MethodABI
-from pydantic import BaseModel
+
+try:
+    from pydantic.v1 import BaseModel
+except ImportError:
+    from pydantic import BaseModel
 
 from ape.exceptions import (
     NetworkError,

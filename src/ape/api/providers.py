@@ -21,7 +21,12 @@ from eth_utils import add_0x_prefix, to_hex
 from ethpm_types import HexBytes
 from evm_trace import CallTreeNode as EvmCallTreeNode
 from evm_trace import TraceFrame as EvmTraceFrame
-from pydantic import Field, root_validator, validator
+
+try:
+    from pydantic.v1 import Field, root_validator, validator
+except ImportError:
+    from pydantic import Field, root_validator, validator
+
 from web3 import Web3
 from web3.exceptions import ContractLogicError as Web3ContractLogicError
 from web3.exceptions import MethodUnavailable, TimeExhausted, TransactionNotFound

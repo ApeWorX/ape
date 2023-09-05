@@ -1,7 +1,11 @@
 from enum import Enum
 from typing import Any, Dict, Optional, TypeVar
 
-from pydantic import BaseModel, BaseSettings
+try:
+    from pydantic.v1 import BaseModel, BaseSettings
+except ImportError:
+    from pydantic import BaseModel, BaseSettings
+
 
 T = TypeVar("T")
 

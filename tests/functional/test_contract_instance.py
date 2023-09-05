@@ -4,7 +4,11 @@ from typing import List, Tuple
 import pytest
 from eth_utils import is_checksum_address, to_hex
 from ethpm_types import ContractType, HexBytes
-from pydantic import BaseModel
+
+try:
+    from pydantic.v1 import BaseModel
+except ImportError:
+    from pydantic import BaseModel
 
 from ape import Contract
 from ape.api import TransactionAPI

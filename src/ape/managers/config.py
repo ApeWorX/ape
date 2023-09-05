@@ -3,7 +3,10 @@ from contextlib import contextmanager
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Dict, Generator, List, Optional, Union
 
-from pydantic import root_validator
+try:
+    from pydantic.v1 import root_validator
+except ImportError:
+    from pydantic import root_validator
 
 from ape.api import ConfigDict, DependencyAPI, PluginConfig
 from ape.exceptions import ConfigError, NetworkError

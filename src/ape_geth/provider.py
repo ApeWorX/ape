@@ -25,7 +25,12 @@ from geth.accounts import ensure_account_exists  # type: ignore
 from geth.chain import initialize_chain  # type: ignore
 from geth.process import BaseGethProcess  # type: ignore
 from geth.wrapper import construct_test_chain_kwargs  # type: ignore
-from pydantic import Extra
+
+try:
+    from pydantic.v1 import Extra
+except ImportError:
+    from pydantic import Extra
+
 from requests.exceptions import ConnectionError
 from web3 import HTTPProvider, Web3
 from web3.exceptions import ExtraDataLengthError

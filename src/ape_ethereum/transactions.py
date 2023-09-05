@@ -11,7 +11,11 @@ from eth_account._utils.legacy_transactions import (
 from eth_utils import decode_hex, encode_hex, keccak, to_hex, to_int
 from ethpm_types import ContractType, HexBytes
 from ethpm_types.abi import EventABI, MethodABI
-from pydantic import BaseModel, Field, root_validator, validator
+
+try:
+    from pydantic.v1 import BaseModel, Field, root_validator, validator
+except ImportError:
+    from pydantic import BaseModel, Field, root_validator, validator
 
 from ape.api import ReceiptAPI, TransactionAPI
 from ape.contracts import ContractEvent

@@ -9,7 +9,11 @@ from xml.etree.ElementTree import Element, SubElement, tostring
 import requests
 from ethpm_types import BaseModel
 from ethpm_types.source import ContractSource, SourceLocation
-from pydantic import NonNegativeInt, validator
+
+try:
+    from pydantic.v1 import NonNegativeInt, validator
+except ImportError:
+    from pydantic import NonNegativeInt, validator
 
 from ape.logging import logger
 from ape.utils.misc import get_current_timestamp_ms

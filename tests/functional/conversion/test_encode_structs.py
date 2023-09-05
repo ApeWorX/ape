@@ -3,7 +3,11 @@ from typing import Dict, Tuple, cast
 import pytest
 from ethpm_types import HexBytes
 from ethpm_types.abi import MethodABI
-from pydantic import BaseModel
+
+try:
+    from pydantic.v1 import BaseModel
+except ImportError:
+    from pydantic import BaseModel
 
 from ape.types import AddressType
 
