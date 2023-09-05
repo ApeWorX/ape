@@ -131,6 +131,29 @@ For `npm` dependencies, you use an `npm:` prefix.
 For local dependencies, you give it a path to the local dependency.
 `--version` is not required when using a local dependency.
 
+### remove
+
+Remove previously installed packages using the `remove` command:
+
+```shell
+ape pm remove OpenZeppelin
+```
+
+If there is only one version of a package installed, it will remove that.
+If there are more than one versions installed, you must either supply the versions as additional arguments or else the CLI will prompt you:
+
+```shell
+ape pm remove OpenZeppelin 4.5.0 4.6.0
+```
+
+To skip the confirmation prompts, use the `--yes` flag (abbreviated as `-y`):
+
+```shell
+ape pm remove OpenZeppelin all --yes
+```
+
+**NOTE**: Additionally, use the `all` special version key to delete all versions.
+
 ### compile
 
 Dependencies are not compiled when they are installed.

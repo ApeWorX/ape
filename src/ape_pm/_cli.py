@@ -180,7 +180,10 @@ def remove(cli_ctx, package, versions, yes):
 
     # Remove multiple versions if no version is specified
     versions_to_remove = versions if versions else []
-    if not versions_to_remove:
+    if len(versions_to_remove) == 1 and versions_to_remove[0] == "all":
+        versions_to_remove = [d.name for d in package_dir.iterdir() if d.is_dir()]
+
+    elif not versions_to_remove:
         available_versions = [d.name for d in package_dir.iterdir() if d.is_dir()]
         if not available_versions:
             cli_ctx.abort(f"No installed versions of package '{package}' found.")
