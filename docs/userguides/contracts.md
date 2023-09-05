@@ -250,3 +250,37 @@ contract = ape.Contract("0x...")
 bytes_value = contract.encode_input(0, 1, 2, 4, 5)
 method_id, input_dict = contract.decode_input(bytes_value)
 ```
+
+## Multi-Call and Multi-Transaction
+
+The `ape_ethereum` core plugin comes with a `multicall` module containing tools for interacting with the [multicall3 smart contract](https://github.com/mds1/multicall).
+Multicall allows you to group function calls and transactions into a single call or transaction.
+
+Here is an example of how you can use the multicall module:
+
+```python
+import ape
+from ape_ethereum import multicall
+
+
+ADDRESSES = ("0xF4b8A02D4e8D76070bD7092B54D2cBbe90fa72e9", "0x80067013d7F7aF4e86b3890489AcAFe79F31a4Cb")
+POOLS = [ape.project.IPool.at(a) for a in ADDRESSES]
+
+
+def main():
+    # Use multi-call.
+    call = multicall.Call()
+    for pool in POOLS:
+        call.add(pool.getReserves)
+    
+    print(list(call()))
+    
+    # Use multi-transaction.
+    tx = multicall.Transaction()
+    for pool in POOLS:
+        tx.add(pool.ApplyDiscount, 123)
+    
+    acct = ape.accounts.load("signer")
+    for result in tx(sender=acct):
+        print(result)
+```

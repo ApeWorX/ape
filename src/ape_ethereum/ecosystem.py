@@ -786,8 +786,15 @@ class Ethereum(EcosystemAPI):
             except ContractError:
                 symbol = None
 
-            if symbol and str(symbol).strip():
-                return str(symbol).strip()
+            if isinstance(symbol, str):
+                return symbol.strip()
+
+            # bytes32 symbol appears in ds-token
+            if isinstance(symbol, bytes):
+                try:
+                    return symbol.rstrip(b"\x00").decode()
+                except UnicodeDecodeError:
+                    return str(symbol)
 
         name = contract_type.name.strip() if contract_type.name else None
         return name or self._get_contract_id_from_address(address)
