@@ -1154,9 +1154,7 @@ class ContractCache(BaseManager):
         address: Union[str, AddressType],
         contract_type: Optional[ContractType] = None,
         txn_hash: Optional[str] = None,
-        abi: Optional[
-            Union[Union[List[ABI], Dict], str, Path]
-        ] = None,  # ABI can be string, List[ABI or object] or a Path object
+        abi: Optional[Union[Union[List[ABI], Dict], str, Path]] = None,
     ) -> ContractInstance:
         """
         Get a contract at the given address. If the contract type of the contract is known,
@@ -1176,9 +1174,8 @@ class ContractCache(BaseManager):
               in case it is not already known.
             txn_hash (Optional[str]): The hash of the transaction responsible for deploying the
               contract, if known. Useful for publishing. Defaults to ``None``.
-            abi (Union[Optional[List[ethpm_types.abi.ABI], str, Path]] = None):
-            Will load the contract from abi provided like Contract(address, abi=abi)
-            by the user.
+            abi (Optional[Union[Union[List[ABI], Dict], str, Path]]): Use an ABI str, dict, path,
+              or ethpm models to create a contract instance class.
 
         Returns:
             :class:`~ape.contracts.base.ContractInstance`
@@ -1203,7 +1200,7 @@ class ContractCache(BaseManager):
                 raise  # Current exception
 
         if abi:
-            # if abi is type string then convert it to json object
+            # if the ABI is a str then convert it to a JSON dictionary.
             if isinstance(abi, Path) or (
                 isinstance(abi, str) and "{" not in abi and Path(abi).is_file()
             ):
