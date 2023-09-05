@@ -139,8 +139,8 @@ Remove previously installed packages using the `remove` command:
 ape pm remove OpenZeppelin
 ```
 
-If there is only one version of a package installed, it will remove that.
-If there are more than one versions installed, you must either supply the versions as additional arguments or else the CLI will prompt you:
+If there is a single version installed, the command will remove the single version.
+If there are more than one version installed, you must supply the versions as additional arguments or the CLI will prompt you:
 
 ```shell
 ape pm remove OpenZeppelin 4.5.0 4.6.0
