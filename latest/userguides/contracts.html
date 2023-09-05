@@ -143,6 +143,7 @@
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="#decoding-and-encoding-inputs">Decoding and Encoding Inputs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#multi-call-and-multi-transaction">Multi-Call and Multi-Transaction</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="proxy.html">Proxy Contracts</a></li>
@@ -384,6 +385,38 @@ If an input does not have a name, its key is its stringified input index.</p>
 <span class="c1"># Only works if unique amount of args.</span>
 <span class="n">bytes_value</span> <span class="o">=</span> <span class="n">contract</span><span class="o">.</span><span class="n">encode_input</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span>
 <span class="n">method_id</span><span class="p">,</span> <span class="n">input_dict</span> <span class="o">=</span> <span class="n">contract</span><span class="o">.</span><span class="n">decode_input</span><span class="p">(</span><span class="n">bytes_value</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="multi-call-and-multi-transaction">
+<h2>Multi-Call and Multi-Transaction<a class="headerlink" href="#multi-call-and-multi-transaction" title="Permalink to this heading"></a></h2>
+<p>The <code class="docutils literal notranslate"><span class="pre">ape_ethereum</span></code> core plugin comes with a <code class="docutils literal notranslate"><span class="pre">multicall</span></code> module containing tools for interacting with the <a class="reference external" href="https://github.com/mds1/multicall">multicall3 smart contract</a>.
+Multicall allows you to group function calls and transactions into a single call or transaction.</p>
+<p>Here is an example of how you can use the multicall module:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">ape</span>
+<span class="kn">from</span> <span class="nn">ape_ethereum</span> <span class="kn">import</span> <span class="n">multicall</span>
+
+
+<span class="n">ADDRESSES</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;0xF4b8A02D4e8D76070bD7092B54D2cBbe90fa72e9&quot;</span><span class="p">,</span> <span class="s2">&quot;0x80067013d7F7aF4e86b3890489AcAFe79F31a4Cb&quot;</span><span class="p">)</span>
+<span class="n">POOLS</span> <span class="o">=</span> <span class="p">[</span><span class="n">ape</span><span class="o">.</span><span class="n">project</span><span class="o">.</span><span class="n">IPool</span><span class="o">.</span><span class="n">at</span><span class="p">(</span><span class="n">a</span><span class="p">)</span> <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="n">ADDRESSES</span><span class="p">]</span>
+
+
+<span class="k">def</span> <span class="nf">main</span><span class="p">():</span>
+    <span class="c1"># Use multi-call.</span>
+    <span class="n">call</span> <span class="o">=</span> <span class="n">multicall</span><span class="o">.</span><span class="n">Call</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">pool</span> <span class="ow">in</span> <span class="n">POOLS</span><span class="p">:</span>
+        <span class="n">call</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">pool</span><span class="o">.</span><span class="n">getReserves</span><span class="p">)</span>
+    
+    <span class="nb">print</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">call</span><span class="p">()))</span>
+    
+    <span class="c1"># Use multi-transaction.</span>
+    <span class="n">tx</span> <span class="o">=</span> <span class="n">multicall</span><span class="o">.</span><span class="n">Transaction</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">pool</span> <span class="ow">in</span> <span class="n">POOLS</span><span class="p">:</span>
+        <span class="n">tx</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">pool</span><span class="o">.</span><span class="n">ApplyDiscount</span><span class="p">,</span> <span class="mi">123</span><span class="p">)</span>
+    
+    <span class="n">acct</span> <span class="o">=</span> <span class="n">ape</span><span class="o">.</span><span class="n">accounts</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;signer&quot;</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">result</span> <span class="ow">in</span> <span class="n">tx</span><span class="p">(</span><span class="n">sender</span><span class="o">=</span><span class="n">acct</span><span class="p">):</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
 </pre></div>
 </div>
 </section>
