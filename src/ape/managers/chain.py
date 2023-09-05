@@ -1206,9 +1206,7 @@ class ContractCache(BaseManager):
             # if abi is type string then convert it to json object
             if isinstance(abi, str):
                 try:
-                    # convert the abi from string to list
                     list_abi = json.loads(abi)
-                    # Create a new ContractType with the provided ABI
                     contract_type = ContractType(abi=list_abi)
                 except Exception as err:
                     if contract_type:
@@ -1216,9 +1214,7 @@ class ContractCache(BaseManager):
                         logger.error(str(err))
                     else:
                         raise  # Current exception
-            # if it's of type List[ABI] pass it directly to ContractType Class
             elif isinstance(abi, list):
-                # Use the provided abi directly
                 contract_type = ContractType(abi=abi)
             elif isinstance(abi, Path):
                 # Handle both absolute and relative paths
@@ -1226,11 +1222,8 @@ class ContractCache(BaseManager):
                     project_folder = Path.cwd()
                     abi = project_folder / abi
                 try:
-                    with abi.open() as f:
-                        json_str = f.read()
-                        list_abi = json.loads(json_str)
-                        # Create a new ContractType with the provided ABI from the file
-                        contract_type = ContractType(abi=list_abi)
+                    list_abi = json.loads(abi.read_text())
+                    contract_type = ContractType(abi=list_abi)
                 except Exception as err:
                     if contract_type:
                         # If a default contract type was provided, don't error and use it.

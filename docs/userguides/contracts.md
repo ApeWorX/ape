@@ -106,35 +106,20 @@ You can load contracts using their ABIs:
 from ape import Contract
 
 address = "0x68b3465833fb72A70ecDF485E0e4C7bD8665Fc45"
-abi = '[{"inputs":[{"internalType":"contract MultiWrapper"...]'
 
-contract = Contract(address, abi=abi)
-# or 
-# path can be relative to project or absolute
-abi_file = "abi.json"
-contract = Contract(address, abi=abi_file)
-# or
-abi_as_object = [
-        {
-            "inputs": [{"internalType": "uint256", "name": "num", "type": "uint256"}],
-            "stateMutability": "nonpayable",
-            "type": "constructor",
-        },
-        {
-            "anonymous": False,
-            "inputs": [
-                {
-                    "indexed": True,
-                    "internalType": "address",
-                    "name": "newAddress",
-                    "type": "address",
-                }
-            ],
-            "name": "AddressChange",
-            "type": "event",
-        }
-      ]
-contract = Contract(address, abi=abi_as_object)
+# Using a JSON str:
+contract = Contract(
+    address, abi='[{"name":"foo","type":"fallback", "stateMutability":"nonpayable"}]'
+)
+
+# Using a JSON file path:
+contract = Contract(address, abi="abi.json")
+
+# Using a Python dictionary from JSON:
+contract = Contract(
+    address,
+    abi=[{"name":"foo","type":"fallback", "stateMutability":"nonpayable"}]
+)
 ```
 
 This will create the Contract instance from the given ABI.
