@@ -1155,7 +1155,7 @@ class ContractCache(BaseManager):
         contract_type: Optional[ContractType] = None,
         txn_hash: Optional[str] = None,
         abi: Optional[
-            Union[Union[List[ABI], object], str, Path]
+            Union[Union[List[ABI], Dict], str, Path]
         ] = None,  # ABI can be string, List[ABI or object] or a Path object
     ) -> ContractInstance:
         """
@@ -1204,34 +1204,42 @@ class ContractCache(BaseManager):
 
         if abi:
             # if abi is type string then convert it to json object
-            if isinstance(abi, str):
-                try:
-                    list_abi = json.loads(abi)
-                    contract_type = ContractType(abi=list_abi)
-                except Exception as err:
-                    if contract_type:
-                        # If a default contract type was provided, don't error and use it.
-                        logger.error(str(err))
-                    else:
-                        raise  # Current exception
-            elif isinstance(abi, list):
-                contract_type = ContractType(abi=abi)
-            elif isinstance(abi, Path):
+            if isinstance(abi, Path) or (
+                isinstance(abi, str) and "{" not in abi and Path(abi).is_file()
+            ):
                 # Handle both absolute and relative paths
+                abi = Path(abi)
                 if not abi.is_absolute():
-                    project_folder = Path.cwd()
-                    abi = project_folder / abi
+                    abi = self.project_manager.path / abi
+
                 try:
-                    list_abi = json.loads(abi.read_text())
-                    contract_type = ContractType(abi=list_abi)
+                    abi = json.loads(abi.read_text())
                 except Exception as err:
                     if contract_type:
                         # If a default contract type was provided, don't error and use it.
                         logger.error(str(err))
                     else:
                         raise  # Current exception
+
+            elif isinstance(abi, str):
+                # JSON str
+                try:
+                    abi = json.loads(abi)
+                except Exception as err:
+                    if contract_type:
+                        # If a default contract type was provided, don't error and use it.
+                        logger.error(str(err))
+                    else:
+                        raise  # Current exception
+
+            # If the ABI was a str, it should be a list now.
+            if isinstance(abi, list):
+                contract_type = ContractType(abi=abi)
+
             else:
-                raise TypeError("Invalid ABI type, expecting str, List[ABI] or a json file")
+                raise TypeError(
+                    f"Invalid ABI type '{type(abi)}', expecting str, List[ABI] or a JSON file."
+                )
 
         if not contract_type:
             raise ContractNotFoundError(
