@@ -167,9 +167,9 @@ def remove(cli_ctx, package, versions, yes):
     versions to remove. You can also choose to remove all versions of the package.
 
     Examples:\n
-    - Remove specific versions: ape pm remove OpenZeppelin 4.9.0 4.9.3\n
-    - Prompt to choose versions: ape pm remove OpenZeppelin\n
-    - Remove all versions: ape pm remove OpenZeppelin -y
+    - Remove specific versions: ape pm remove <PackageName> "1.0.0" "2.0.0"\n
+    - Prompt to choose versions: ape pm remove <PackageName>\n
+    - Remove all versions: ape pm remove <PackageName> -y
     """
     package_dir = cli_ctx.dependency_manager.DATA_FOLDER / "packages" / package
     if not package_dir.is_dir():
