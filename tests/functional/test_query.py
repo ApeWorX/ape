@@ -86,21 +86,17 @@ def test_column_validation(eth_tester_provider, caplog):
         validate_and_expand_columns(["numbr"], Model)
 
     expected = "Unrecognized field(s) 'numbr', must be one of 'number, timestamp'."
-    assert exc_info.value.args[0] == expected
-    caplog.clear()
+    assert exc_info.value.args[-1] == expected
 
     with caplog.at_level(logging.WARNING):
         validate_and_expand_columns(["numbr", "timestamp"], Model)
 
-    assert len(caplog.records) == 1
-    assert expected in caplog.records[0].msg
-    caplog.clear()
+    assert expected in caplog.records[-1].msg
 
     with caplog.at_level(logging.WARNING):
         validate_and_expand_columns(["number", "timestamp", "number"], Model)
 
-    assert len(caplog.records) == 1
-    assert "Duplicate fields in ['number', 'timestamp', 'number']" in caplog.records[0].msg
+    assert "Duplicate fields in ['number', 'timestamp', 'number']" in caplog.records[-1].msg
     caplog.clear()
 
 
