@@ -7,7 +7,7 @@ from pathlib import Path
 from typing import IO, Collection, Dict, Iterator, List, Optional, Set, Type, Union, cast
 
 import pandas as pd
-from ethpm_types import ContractType
+from ethpm_types import ABI, ContractType
 from rich import get_console
 from rich.console import Console as RichConsole
 
@@ -1154,6 +1154,7 @@ class ContractCache(BaseManager):
         address: Union[str, AddressType],
         contract_type: Optional[ContractType] = None,
         txn_hash: Optional[str] = None,
+        abi: Optional[Union[Union[List[ABI], Dict], str, Path]] = None,
     ) -> ContractInstance:
         """
         Get a contract at the given address. If the contract type of the contract is known,
@@ -1173,6 +1174,8 @@ class ContractCache(BaseManager):
               in case it is not already known.
             txn_hash (Optional[str]): The hash of the transaction responsible for deploying the
               contract, if known. Useful for publishing. Defaults to ``None``.
+            abi (Optional[Union[Union[List[ABI], Dict], str, Path]]): Use an ABI str, dict, path,
+              or ethpm models to create a contract instance class.
 
         Returns:
             :class:`~ape.contracts.base.ContractInstance`
@@ -1195,6 +1198,45 @@ class ContractCache(BaseManager):
                 logger.error(str(err))
             else:
                 raise  # Current exception
+
+        if abi:
+            # if the ABI is a str then convert it to a JSON dictionary.
+            if isinstance(abi, Path) or (
+                isinstance(abi, str) and "{" not in abi and Path(abi).is_file()
+            ):
+                # Handle both absolute and relative paths
+                abi = Path(abi)
+                if not abi.is_absolute():
+                    abi = self.project_manager.path / abi
+
+                try:
+                    abi = json.loads(abi.read_text())
+                except Exception as err:
+                    if contract_type:
+                        # If a default contract type was provided, don't error and use it.
+                        logger.error(str(err))
+                    else:
+                        raise  # Current exception
+
+            elif isinstance(abi, str):
+                # JSON str
+                try:
+                    abi = json.loads(abi)
+                except Exception as err:
+                    if contract_type:
+                        # If a default contract type was provided, don't error and use it.
+                        logger.error(str(err))
+                    else:
+                        raise  # Current exception
+
+            # If the ABI was a str, it should be a list now.
+            if isinstance(abi, list):
+                contract_type = ContractType(abi=abi)
+
+            else:
+                raise TypeError(
+                    f"Invalid ABI type '{type(abi)}', expecting str, List[ABI] or a JSON file."
+                )
 
         if not contract_type:
             raise ContractNotFoundError(
