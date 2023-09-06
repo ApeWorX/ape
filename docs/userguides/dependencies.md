@@ -140,7 +140,7 @@ ape pm remove OpenZeppelin
 ```
 
 If there is a single version installed, the command will remove the single version.
-If there are more than one version installed, you must supply the versions as additional arguments or the CLI will prompt you:
+If multiple versions are installed, pass additional arguments specifying the version(s) to be removed:
 
 ```shell
 ape pm remove OpenZeppelin 4.5.0 4.6.0
