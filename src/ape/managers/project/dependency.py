@@ -1,8 +1,9 @@
 import json
 import os
+import shutil
 import tempfile
 from pathlib import Path
-from typing import Dict, Iterable, Optional, Type
+from typing import Dict, Iterable, List, Optional, Type
 
 from ethpm_types import PackageManifest
 from ethpm_types.utils import AnyUrl
@@ -20,6 +21,10 @@ class DependencyManager(ManagerAccessMixin):
 
     def __init__(self, data_folder: Path):
         self.DATA_FOLDER = data_folder
+
+    @property
+    def packages_folder(self) -> Path:
+        return self.DATA_FOLDER / "packages"
 
     @cached_property
     def dependency_types(self) -> Dict[str, Type[DependencyAPI]]:
@@ -42,6 +47,57 @@ class DependencyManager(ManagerAccessMixin):
 
         dep_id = config_dependency_data.get("name", json.dumps(config_dependency_data))
         raise ProjectError(f"No installed dependency API that supports '{dep_id}'.")
+
+    def get_versions(self, name: str) -> List[Path]:
+        path = self.packages_folder / name
+        if not path.is_dir():
+            logger.warning("Dependency not installed.")
+            return []
+
+        return [x for x in path.iterdir() if x.is_dir()]
+
+    def remove_dependency(self, name: str, versions: Optional[List[str]] = None):
+        versions = versions or []
+        available_versions = self.get_versions(name)
+        if not available_versions:
+            # Clean up (user was already warned).
+            if (self.packages_folder / name).is_dir():
+                shutil.rmtree(self.packages_folder / name, ignore_errors=True)
+
+            return
+
+        # Use single version if there is one and wasn't given anything.
+        versions = (
+            [x.name for x in available_versions]
+            if not versions and len(available_versions) == 1
+            else versions
+        )
+        if not versions:
+            raise ProjectError("Please specify versions to remove.")
+
+        path = self.packages_folder / name
+        for version in versions:
+            if (path / version).is_dir():
+                version_key = version
+            elif (path / f"v{version}").is_dir():
+                version_key = f"v{version}"
+            else:
+                raise ProjectError(f"Version '{version}' of package '{name}' is not installed.")
+
+            path = self.packages_folder / name / version_key
+            if not path.is_dir():
+                available_versions_str = ", ".join([x.name for x in available_versions])
+                raise ProjectError(
+                    f"Version '{version}' not found in dependency {name}. "
+                    f"Available versions: {available_versions_str}"
+                )
+
+            shutil.rmtree(path)
+
+        # If there are no more versions, delete the whole package directory.
+        remaining_versions = self.get_versions(name)
+        if not remaining_versions:
+            shutil.rmtree(self.packages_folder / name, ignore_errors=True)
 
 
 class GithubDependency(DependencyAPI):

@@ -19,6 +19,7 @@ from ape.utils import ZERO_ADDRESS
 # NOTE: Ensure that we don't use local paths for these
 DATA_FOLDER = Path(mkdtemp()).resolve()
 ape.config.DATA_FOLDER = DATA_FOLDER
+ape.config.dependency_manager.DATA_FOLDER = DATA_FOLDER
 PROJECT_FOLDER = Path(mkdtemp()).resolve()
 ape.config.PROJECT_FOLDER = PROJECT_FOLDER
 
@@ -297,8 +298,10 @@ def temp_config(config):
 def empty_data_folder():
     current_data_folder = ape.config.DATA_FOLDER
     ape.config.DATA_FOLDER = Path(mkdtemp()).resolve()
+    ape.config.dependency_manager.DATA_FOLDER = ape.config.DATA_FOLDER
     yield
     ape.config.DATA_FOLDER = current_data_folder
+    ape.config.dependency_manager.DATA_FOLDER = ape.config.DATA_FOLDER
 
 
 @pytest.fixture

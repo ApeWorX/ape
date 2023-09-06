@@ -9,7 +9,7 @@ EXPECTED_FAIL_MESSAGE = "Unknown package '{}'."
 def test_install_path_not_exists(ape_cli, runner):
     path = "path/to/nowhere"
     result = runner.invoke(ape_cli, ["pm", "install", path])
-    assert result.exit_code != 0
+    assert result.exit_code != 0, result.output
     assert EXPECTED_FAIL_MESSAGE.format(path) in result.output
 
 
@@ -86,7 +86,7 @@ def test_compile_package_not_exists(ape_cli, runner):
     name = "NOT_EXISTS"
     result = runner.invoke(ape_cli, ["pm", "compile", name])
     expected = f"Dependency '{name}' unknown. Is it installed?"
-    assert result.exit_code != 0
+    assert result.exit_code != 0, result.output
     assert expected in result.output
 
 
@@ -103,3 +103,90 @@ def test_compile_dependency(ape_cli, runner, project):
     result = runner.invoke(ape_cli, ["pm", "compile", name])
     assert result.exit_code == 0, result.output
     assert f"Package '{name}' compiled." in result.output
+
+
+@skip_projects_except("only-dependencies")
+def test_remove(ape_cli, runner, project):
+    package_name = "dependency-in-project-only"
+
+    # Install packages
+    runner.invoke(ape_cli, ["pm", "install", ".", "--force"])
+
+    result = runner.invoke(ape_cli, ["pm", "remove", package_name], input="y\n")
+    expected_message = f"Version 'local' of package '{package_name}' removed."
+    assert result.exit_code == 0, result.output
+    assert expected_message in result.output
+
+
+@skip_projects_except("only-dependencies")
+def test_remove_not_exists(ape_cli, runner, project):
+    package_name = "_this_does_not_exist_"
+    result = runner.invoke(ape_cli, ["pm", "remove", package_name])
+    expected_message = f"ERROR: Package '{package_name}' is not installed."
+    assert result.exit_code != 0, result.output
+    assert expected_message in result.output
+
+
+@skip_projects_except("only-dependencies")
+def test_remove_specific_version(ape_cli, runner, project):
+    package_name = "dependency-in-project-only"
+    version = "local"
+
+    # Install packages
+    runner.invoke(ape_cli, ["pm", "install", ".", "--force"])
+
+    result = runner.invoke(ape_cli, ["pm", "remove", package_name], input="y\n")
+    expected_message = f"Version '{version}' of package '{package_name}' removed."
+    assert result.exit_code == 0, result.output
+    assert expected_message in result.output
+
+
+@skip_projects_except("only-dependencies")
+def test_remove_all_versions_with_y(ape_cli, runner):
+    # Install packages
+    runner.invoke(ape_cli, ["pm", "install", ".", "--force"])
+
+    package_name = "dependency-in-project-only"
+    result = runner.invoke(ape_cli, ["pm", "remove", package_name, "-y"])
+    expected_message = f"SUCCESS: Version 'local' of package '{package_name}' removed."
+    assert result.exit_code == 0, result.output
+    assert expected_message in result.output
+
+
+@skip_projects_except("only-dependencies")
+def test_remove_specific_version_with_y(ape_cli, runner):
+    # Install packages
+    runner.invoke(ape_cli, ["pm", "install", ".", "--force"])
+
+    package_name = "dependency-in-project-only"
+    version = "local"
+    result = runner.invoke(ape_cli, ["pm", "remove", package_name, version, "-y"])
+    expected_message = f"Version '{version}' of package '{package_name}' removed."
+    assert result.exit_code == 0, result.output
+    assert expected_message in result.output
+
+
+@skip_projects_except("only-dependencies")
+def test_remove_cancel(ape_cli, runner):
+    # Install packages
+    runner.invoke(ape_cli, ["pm", "install", ".", "--force"])
+
+    package_name = "dependency-in-project-only"
+    version = "local"
+    result = runner.invoke(ape_cli, ["pm", "remove", package_name, version], input="n\n")
+    assert result.exit_code == 0, result.output
+    expected_message = f"Version '{version}' of package '{package_name}' removed."
+    assert expected_message not in result.output
+
+
+@skip_projects_except("only-dependencies")
+def test_remove_invalid_version(ape_cli, runner):
+    # Install packages
+    runner.invoke(ape_cli, ["pm", "install", ".", "--force"])
+
+    package_name = "dependency-in-project-only"
+    invalid_version = "0.0.0"
+    result = runner.invoke(ape_cli, ["pm", "remove", package_name, invalid_version])
+
+    expected_message = f"Version '{invalid_version}' of package '{package_name}' is not installed."
+    assert expected_message in result.output

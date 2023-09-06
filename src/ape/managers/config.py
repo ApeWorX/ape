@@ -124,9 +124,8 @@ class ConfigManager(BaseInterfaceModel):
 
     @property
     def packages_folder(self) -> Path:
-        path = self.DATA_FOLDER / "packages"
-        path.mkdir(parents=True, exist_ok=True)
-        return path
+        self.dependency_manager.packages_folder.mkdir(parents=True, exist_ok=True)
+        return self.dependency_manager.packages_folder
 
     @property
     def _plugin_configs(self) -> Dict[str, PluginConfig]:

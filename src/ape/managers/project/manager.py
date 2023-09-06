@@ -712,6 +712,48 @@ class ProjectManager(BaseManager):
 
         return self._cached_dependencies.get(project_id, {})
 
+    def remove_dependency(self, dependency_name: str, versions: Optional[List[str]] = None):
+        project_id = str(self.path)
+
+        try:
+            self.dependency_manager.remove_dependency(dependency_name, versions=versions)
+        finally:
+            # Delete locally.
+            if dependency_name in self._cached_dependencies.get(project_id, {}):
+                versions_available = self.dependency_manager.get_versions(dependency_name)
+                if not versions and len(versions_available) == 1:
+                    versions = [x.name for x in versions_available]
+                elif not versions:
+                    raise ProjectError("`versions` kwarg required.")
+
+                local_versions = self._cached_dependencies.get(project_id, {}).get(
+                    dependency_name, {}
+                )
+                for version in versions:
+                    if version in local_versions:
+                        version_key = version
+                    elif f"v{version}" in local_versions:
+                        version_key = f"v{version}"
+                    else:
+                        logger.warning(f"Version '{version}' not installed.")
+                        continue
+
+                    del self._cached_dependencies[project_id][dependency_name][version_key]
+
+            # Clean ups.
+            if (
+                project_id in self._cached_dependencies
+                and dependency_name in self._cached_dependencies[project_id]
+                and not self._cached_dependencies[project_id][dependency_name]
+            ):
+                del self._cached_dependencies[project_id][dependency_name]
+
+            if (
+                project_id in self._cached_dependencies
+                and not self._cached_dependencies[project_id]
+            ):
+                del self._cached_dependencies[project_id]
+
     def track_deployment(self, contract: ContractInstance):
         """
         Indicate that a contract deployment should be included in the package manifest
