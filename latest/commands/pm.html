@@ -147,6 +147,7 @@
 <li class="toctree-l2"><a class="reference internal" href="#pm-compile">compile</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#pm-install">install</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#pm-list">list</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#pm-remove">remove</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="console.html">console</a></li>
@@ -294,6 +295,49 @@
 <dt class="sig sig-object std" id="cmdoption-pm-list-all">
 <span class="sig-name descname"><span class="pre">--all</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-pm-list-all" title="Permalink to this definition"></a></dt>
 <dd><p>Include packages not referenced by the local project</p>
+</dd></dl>
+
+</section>
+<section id="pm-remove">
+<h2>remove<a class="headerlink" href="#pm-remove" title="Permalink to this heading"></a></h2>
+<p>Remove a package</p>
+<p>This command removes a package from the installed packages.</p>
+<p>If specific versions are provided, only those versions of the package will be
+removed. If no versions are provided, the command will prompt you to choose
+versions to remove. You can also choose to remove all versions of the package.</p>
+<p>Examples:</p>
+<ul class="simple">
+<li><p>Remove specific versions: ape pm remove &lt;PackageName&gt; “1.0.0” “2.0.0”</p></li>
+<li><p>Prompt to choose versions: ape pm remove &lt;PackageName&gt;</p></li>
+<li><p>Remove all versions: ape pm remove &lt;PackageName&gt; -y</p></li>
+</ul>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>pm<span class="w"> </span>remove<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span><span class="w"> </span>PACKAGE<span class="w"> </span><span class="o">[</span>VERSIONS<span class="o">]</span>...
+</pre></div>
+</div>
+<p class="rubric">Options</p>
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-pm-remove-v">
+<span id="cmdoption-pm-remove-verbosity"></span><span class="sig-name descname"><span class="pre">-v</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--verbosity</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;LVL&gt;</span></span><a class="headerlink" href="#cmdoption-pm-remove-v" title="Permalink to this definition"></a></dt>
+<dd><p>One of ERROR, WARNING, SUCCESS, INFO, or DEBUG</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-pm-remove-y">
+<span id="cmdoption-pm-remove-yes"></span><span class="sig-name descname"><span class="pre">-y</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--yes</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-pm-remove-y" title="Permalink to this definition"></a></dt>
+<dd><p>Automatically confirm the removal of the package(s)</p>
+</dd></dl>
+
+<p class="rubric">Arguments</p>
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-pm-remove-arg-PACKAGE">
+<span id="cmdoption-pm-remove-arg-package"></span><span class="sig-name descname"><span class="pre">PACKAGE</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-pm-remove-arg-PACKAGE" title="Permalink to this definition"></a></dt>
+<dd><p>Required argument</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-pm-remove-arg-VERSIONS">
+<span id="cmdoption-pm-remove-arg-versions"></span><span class="sig-name descname"><span class="pre">VERSIONS</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-pm-remove-arg-VERSIONS" title="Permalink to this definition"></a></dt>
+<dd><p>Optional argument(s)</p>
 </dd></dl>
 
 </section>

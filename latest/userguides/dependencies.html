@@ -133,6 +133,7 @@
 <li class="toctree-l2"><a class="reference internal" href="#package-management-cli">Package Management CLI</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#list">list</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#install">install</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#remove">remove</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#compile">compile</a></li>
 </ul>
 </li>
@@ -319,6 +320,23 @@ Then, add the following to your config so that Ape can find the dependency:</p>
 For <code class="docutils literal notranslate"><span class="pre">npm</span></code> dependencies, you use an <code class="docutils literal notranslate"><span class="pre">npm:</span></code> prefix.
 For local dependencies, you give it a path to the local dependency.
 <code class="docutils literal notranslate"><span class="pre">--version</span></code> is not required when using a local dependency.</p>
+</section>
+<section id="remove">
+<h3>remove<a class="headerlink" href="#remove" title="Permalink to this heading"></a></h3>
+<p>Remove previously installed packages using the <code class="docutils literal notranslate"><span class="pre">remove</span></code> command:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>ape<span class="w"> </span>pm<span class="w"> </span>remove<span class="w"> </span>OpenZeppelin
+</pre></div>
+</div>
+<p>If there is a single version installed, the command will remove the single version.
+If multiple versions are installed, pass additional arguments specifying the version(s) to be removed:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>ape<span class="w"> </span>pm<span class="w"> </span>remove<span class="w"> </span>OpenZeppelin<span class="w"> </span><span class="m">4</span>.5.0<span class="w"> </span><span class="m">4</span>.6.0
+</pre></div>
+</div>
+<p>To skip the confirmation prompts, use the <code class="docutils literal notranslate"><span class="pre">--yes</span></code> flag (abbreviated as <code class="docutils literal notranslate"><span class="pre">-y</span></code>):</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>ape<span class="w"> </span>pm<span class="w"> </span>remove<span class="w"> </span>OpenZeppelin<span class="w"> </span>all<span class="w"> </span>--yes
+</pre></div>
+</div>
+<p><strong>NOTE</strong>: Additionally, use the <code class="docutils literal notranslate"><span class="pre">all</span></code> special version key to delete all versions.</p>
 </section>
 <section id="compile">
 <h3>compile<a class="headerlink" href="#compile" title="Permalink to this heading"></a></h3>
