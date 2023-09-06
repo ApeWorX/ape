@@ -1154,7 +1154,7 @@ class ContractCache(BaseManager):
         address: Union[str, AddressType],
         contract_type: Optional[ContractType] = None,
         txn_hash: Optional[str] = None,
-        abi: Optional[Union[Union[List[ABI], Dict], str, Path]] = None,
+        abi: Optional[Union[List[ABI], Dict, str, Path]] = None,
     ) -> ContractInstance:
         """
         Get a contract at the given address. If the contract type of the contract is known,
@@ -1174,7 +1174,7 @@ class ContractCache(BaseManager):
               in case it is not already known.
             txn_hash (Optional[str]): The hash of the transaction responsible for deploying the
               contract, if known. Useful for publishing. Defaults to ``None``.
-            abi (Optional[Union[Union[List[ABI], Dict], str, Path]]): Use an ABI str, dict, path,
+            abi (Optional[Union[List[ABI], Dict, str, Path]]): Use an ABI str, dict, path,
               or ethpm models to create a contract instance class.
 
         Returns:
