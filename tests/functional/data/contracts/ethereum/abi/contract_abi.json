@@ -1,0 +1,205 @@
+[{"inputs":[{"internalType":"uint256","name":"num"
+    ,"type":"uint256"}],"stateMutability":"nonpayable"
+    ,"type":"constructor"},{"anonymous":false,"inputs":[{"indexed":true
+    ,"internalType":"address","name":"newAddress","type":"address"}]
+    ,"name":"AddressChange","type":"event"},{"anonymous":false
+    ,"inputs":[{"indexed":true,"internalType":"uint256"
+    ,"name":"bar","type":"uint256"}],"name":"BarHappened"
+    ,"type":"event"},{"anonymous":false,"inputs":[{"indexed":true
+    ,"internalType":"uint256","name":"foo","type":"uint256"}]
+    ,"name":"FooHappened","type":"event"},{"anonymous":false
+    ,"inputs":[{"indexed":false,"internalType":"bytes32"
+    ,"name":"b","type":"bytes32"},{"indexed":false,"internalType":"uint256"
+    ,"name":"prevNum","type":"uint256"},{"indexed":false
+    ,"internalType":"string","name":"dynData","type":"string"}
+    ,{"indexed":true,"internalType":"uint256","name":"newNum"
+    ,"type":"uint256"},{"indexed":true,"internalType":"string"
+    ,"name":"dynIndexed","type":"string"}],"name":"NumberChange"
+    ,"type":"event"},{"inputs":[{"internalType":"address"
+    ,"name":"","type":"address"}],"name":"balances","outputs":[{"internalType":"uint256"
+    ,"name":"","type":"uint256"}],"stateMutability":"view"
+    ,"type":"function"},{"inputs":[],"name":"fooAndBar"
+    ,"outputs":[],"stateMutability":"nonpayable","type":"function"}
+    ,{"inputs":[{"internalType":"uint256","name":"a0","type":"uint256"}
+    ,{"internalType":"uint256","name":"a1","type":"uint256"}
+    ,{"internalType":"uint256","name":"a2","type":"uint256"}
+    ,{"internalType":"uint256","name":"a3","type":"uint256"}
+    ,{"internalType":"uint256","name":"a4","type":"uint256"}
+    ,{"internalType":"uint256","name":"a5","type":"uint256"}
+    ,{"internalType":"uint256","name":"a6","type":"uint256"}
+    ,{"internalType":"uint256","name":"a7","type":"uint256"}
+    ,{"internalType":"uint256","name":"a8","type":"uint256"}
+    ,{"internalType":"uint256","name":"a9","type":"uint256"}]
+    ,"name":"functionWithUniqueAmountOfArguments","outputs":[]
+    ,"stateMutability":"view","type":"function"},{"inputs":[]
+    ,"name":"getAddressArray","outputs":[{"internalType":"address[2]"
+    ,"name":"","type":"address[2]"}],"stateMutability":"view"
+    ,"type":"function"},{"inputs":[],"name":"getArrayWithBiggerSize"
+    ,"outputs":[{"internalType":"uint256[20]","name":""
+    ,"type":"uint256[20]"}],"stateMutability":"pure","type":"function"}
+    ,{"inputs":[],"name":"getDynamicStructArray","outputs":
+    [{"components":[{"components":[{"internalType":"address"
+    ,"name":"a","type":"address"},{"internalType":"bytes32"
+    ,"name":"b","type":"bytes32"}],"internalType":"struct TestContractSol.MyStruct","name":"t","type":"tuple"}
+    ,{"internalType":"uint256","name":"foo","type":"uint256"}]
+    ,"internalType":"struct TestContractSol.NestedStruct1[]"
+    ,"name":"","type":"tuple[]"}],"stateMutability":"view"
+    ,"type":"function"},{"inputs":[],"name":"getEmptyArray"
+    ,"outputs":[{"internalType":"uint256[]","name":"","type":"uint256[]"}]
+    ,"stateMutability":"pure","type":"function"},{"inputs":[]
+    ,"name":"getEmptyDynArrayOfStructs","outputs":[{"components":[{"internalType":"address"
+    ,"name":"a","type":"address"},{"internalType":"bytes32"
+    ,"name":"b","type":"bytes32"}],"internalType":"struct TestContractSol.MyStruct[]","name":"","type":"tuple[]"}]
+    ,"stateMutability":"pure","type":"function"},{"inputs":[]
+    ,"name":"getEmptyTupleOfArrayOfStructsAndDynArrayOfStructs"
+    ,"outputs":[{"components":[{"internalType":"address"
+    ,"name":"a","type":"address"},{"internalType":"bytes32"
+    ,"name":"b","type":"bytes32"}],"internalType":"struct TestContractSol.MyStruct[3]","name":"","type":"tuple[3]"}
+    ,{"components":[{"internalType":"address","name":"a"
+    ,"type":"address"},{"internalType":"bytes32","name":"b"
+    ,"type":"bytes32"}],"internalType":"struct TestContractSol.MyStruct[]"
+    ,"name":"","type":"tuple[]"}],"stateMutability":"pure"
+    ,"type":"function"},{"inputs":[],"name":"getEmptyTupleOfDynArrayStructs"
+    ,"outputs":[{"components":[{"internalType":"address"
+    ,"name":"a","type":"address"},{"internalType":"bytes32"
+    ,"name":"b","type":"bytes32"}],"internalType":"struct TestContractSol.MyStruct[]","name":"","type":"tuple[]"}
+    ,{"components":[{"internalType":"address","name":"a"
+    ,"type":"address"},{"internalType":"bytes32","name":"b"
+    ,"type":"bytes32"}],"internalType":"struct TestContractSol.MyStruct[]"
+    ,"name":"","type":"tuple[]"}],"stateMutability":"pure"
+    ,"type":"function"},{"inputs":[],"name":"getEmptyTupleOfIntAndDynArray"
+    ,"outputs":[{"internalType":"uint256[]","name":"","type":"uint256[]"}
+    ,{"components":[{"internalType":"address","name":"a"
+    ,"type":"address"},{"internalType":"bytes32","name":"b"
+    ,"type":"bytes32"}],"internalType":"struct TestContractSol.MyStruct[]"
+    ,"name":"","type":"tuple[]"}],"stateMutability":"pure"
+    ,"type":"function"},{"inputs":[],"name":"getFilledArray"
+    ,"outputs":[{"internalType":"uint256[3]","name":""
+    ,"type":"uint256[3]"}],"stateMutability":"pure","type":"function"}
+    ,{"inputs":[],"name":"getNamedSingleItem","outputs":[{"internalType":"uint256"
+    ,"name":"foo","type":"uint256"}],"stateMutability":"pure"
+    ,"type":"function"},{"inputs":[],"name":"getNestedAddressArray"
+    ,"outputs":[{"internalType":"address[3][]","name":""
+    ,"type":"address[3][]"}],"stateMutability":"view","type":"function"}
+    ,{"inputs":[],"name":"getNestedArrayDynamicFixed","outputs":[{"internalType":"uint256[2][]"
+    ,"name":"","type":"uint256[2][]"}],"stateMutability":"pure"
+    ,"type":"function"},{"inputs":[],"name":"getNestedArrayFixedDynamic"
+    ,"outputs":[{"internalType":"uint256[][3]","name":""
+    ,"type":"uint256[][3]"}],"stateMutability":"view","type":"function"}
+    ,{"inputs":[],"name":"getNestedArrayFixedFixed","outputs":[{"internalType":"uint256[2][3]"
+    ,"name":"","type":"uint256[2][3]"}],"stateMutability":"pure"
+    ,"type":"function"},{"inputs":[],"name":"getNestedArrayMixedDynamic"
+    ,"outputs":[{"internalType":"uint256[][3][][5]","name":""
+    ,"type":"uint256[][3][][5]"}],"stateMutability":"view"
+    ,"type":"function"},{"inputs":[],"name":"getNestedStruct1"
+    ,"outputs":[{"components":[{"components":[{"internalType":"address"
+    ,"name":"a","type":"address"},{"internalType":"bytes32"
+    ,"name":"b","type":"bytes32"}],"internalType":"struct TestContractSol.MyStruct","name":"t","type":"tuple"}
+    ,{"internalType":"uint256","name":"foo","type":"uint256"}]
+    ,"internalType":"struct TestContractSol.NestedStruct1"
+    ,"name":"","type":"tuple"}],"stateMutability":"view"
+    ,"type":"function"},{"inputs":[],"name":"getNestedStruct2"
+    ,"outputs":[{"components":[{"internalType":"uint256"
+    ,"name":"foo","type":"uint256"},{"components":[{"internalType":"address"
+    ,"name":"a","type":"address"},{"internalType":"bytes32"
+    ,"name":"b","type":"bytes32"}],"internalType":"struct TestContractSol.MyStruct","name":"t","type":"tuple"}]
+    ,"internalType":"struct TestContractSol.NestedStruct2"
+    ,"name":"","type":"tuple"}],"stateMutability":"view"
+    ,"type":"function"},{"inputs":[],"name":"getNestedStructWithTuple1"
+    ,"outputs":[{"components":[{"components":[{"internalType":"address"
+    ,"name":"a","type":"address"},{"internalType":"bytes32"
+    ,"name":"b","type":"bytes32"}],"internalType":"struct TestContractSol.MyStruct","name":"t","type":"tuple"}
+    ,{"internalType":"uint256","name":"foo","type":"uint256"}]
+    ,"internalType":"struct TestContractSol.NestedStruct1"
+    ,"name":"","type":"tuple"},{"internalType":"uint256"
+    ,"name":"","type":"uint256"}],"stateMutability":"view"
+    ,"type":"function"},{"inputs":[],"name":"getNestedStructWithTuple2"
+    ,"outputs":[{"internalType":"uint256","name":"","type":"uint256"}
+    ,{"components":[{"internalType":"uint256","name":"foo"
+    ,"type":"uint256"},{"components":[{"internalType":"address"
+    ,"name":"a","type":"address"},{"internalType":"bytes32"
+    ,"name":"b","type":"bytes32"}],"internalType":"struct TestContractSol.MyStruct","name":"t","type":"tuple"}]
+    ,"internalType":"struct TestContractSol.NestedStruct2"
+    ,"name":"","type":"tuple"}],"stateMutability":"view"
+    ,"type":"function"},{"inputs":[],"name":"getPartiallyNamedTuple"
+    ,"outputs":[{"internalType":"uint256","name":"foo"
+    ,"type":"uint256"},{"internalType":"uint256","name":""
+    ,"type":"uint256"}],"stateMutability":"pure","type":"function"}
+    ,{"inputs":[],"name":"getSingleItemArray","outputs":[{"internalType":"uint256[1]"
+    ,"name":"","type":"uint256[1]"}],"stateMutability":"pure"
+    ,"type":"function"},{"inputs":[],"name":"getStaticStructArray"
+    ,"outputs":[{"components":[{"internalType":"uint256"
+    ,"name":"foo","type":"uint256"},{"components":[{"internalType":"address"
+    ,"name":"a","type":"address"},{"internalType":"bytes32"
+    ,"name":"b","type":"bytes32"}],"internalType":"struct TestContractSol.MyStruct","name":"t","type":"tuple"}]
+    ,"internalType":"struct TestContractSol.NestedStruct2[3]"
+    ,"name":"","type":"tuple[3]"}],"stateMutability":"view"
+    ,"type":"function"},{"inputs":[],"name":"getStruct"
+    ,"outputs":[{"components":[{"internalType":"address"
+    ,"name":"a","type":"address"},{"internalType":"bytes32"
+    ,"name":"b","type":"bytes32"}],"internalType":"struct TestContractSol.MyStruct","name":"","type":"tuple"}]
+    ,"stateMutability":"view","type":"function"},{"inputs":[]
+    ,"name":"getStructWithArray","outputs":[{"components":[{"internalType":"uint256"
+    ,"name":"foo","type":"uint256"},{"components":[{"internalType":"address"
+    ,"name":"a","type":"address"},{"internalType":"bytes32"
+    ,"name":"b","type":"bytes32"}],"internalType":"struct TestContractSol.MyStruct[2]","name":"arr","type":"tuple[2]"}
+    ,{"internalType":"uint256","name":"bar","type":"uint256"}]
+    ,"internalType":"struct TestContractSol.WithArray"
+    ,"name":"","type":"tuple"}],"stateMutability":"view"
+    ,"type":"function"},{"inputs":[],"name":"getTupleAllNamed"
+    ,"outputs":[{"internalType":"uint256","name":"foo"
+    ,"type":"uint256"},{"internalType":"uint256","name":"bar"
+    ,"type":"uint256"}],"stateMutability":"pure","type":"function"}
+    ,{"inputs":[],"name":"getTupleOfAddressArray","outputs":[{"internalType":"address[20]"
+    ,"name":"","type":"address[20]"},{"internalType":"int128[20]"
+    ,"name":"","type":"int128[20]"}],"stateMutability":"view"
+    ,"type":"function"},{"inputs":[],"name":"getTupleOfArrays"
+    ,"outputs":[{"internalType":"uint256[20]","name":""
+    ,"type":"uint256[20]"},{"internalType":"uint256[20]"
+    ,"name":"","type":"uint256[20]"}],"stateMutability":"pure"
+    ,"type":"function"},{"inputs":[],"name":"getTupleOfIntAndStructArray"
+    ,"outputs":[{"internalType":"uint256","name":"","type":"uint256"}
+    ,{"components":[{"internalType":"uint256","name":"one"
+    ,"type":"uint256"},{"internalType":"uint256","name":"two"
+    ,"type":"uint256"},{"internalType":"uint256","name":"three"
+    ,"type":"uint256"},{"internalType":"uint256","name":"four"
+    ,"type":"uint256"},{"internalType":"uint256","name":"five"
+    ,"type":"uint256"},{"internalType":"uint256","name":"six"
+    ,"type":"uint256"}],"internalType":"struct TestContractSol.IntStruct[5]"
+    ,"name":"","type":"tuple[5]"}],"stateMutability":"pure"
+    ,"type":"function"},{"inputs":[],"name":"getUnnamedTuple"
+    ,"outputs":[{"internalType":"uint256","name":"","type":"uint256"}
+    ,{"internalType":"uint256","name":"","type":"uint256"}]
+    ,"stateMutability":"pure","type":"function"},{"inputs":[]
+    ,"name":"myNumber","outputs":[{"internalType":"uint256"
+    ,"name":"","type":"uint256"}],"stateMutability":"view"
+    ,"type":"function"},{"inputs":[],"name":"owner","outputs":[{"internalType":"address"
+    ,"name":"","type":"address"}],"stateMutability":"view"
+    ,"type":"function"},{"inputs":[],"name":"prevNumber"
+    ,"outputs":[{"internalType":"uint256","name":"","type":"uint256"}]
+    ,"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address"
+    ,"name":"_address","type":"address"}],"name":"setAddress"
+    ,"outputs":[],"stateMutability":"nonpayable","type":"function"}
+    ,{"inputs":[{"internalType":"address","name":"_address"
+    ,"type":"address"},{"internalType":"uint256","name":"bal"
+    ,"type":"uint256"}],"name":"setBalance","outputs":[]
+    ,"stateMutability":"nonpayable","type":"function"}
+    ,{"inputs":[{"internalType":"uint256","name":"num"
+    ,"type":"uint256"}],"name":"setNumber","outputs":[]
+    ,"stateMutability":"nonpayable","type":"function"}
+    ,{"inputs":[{"internalType":"uint256","name":"num"
+    ,"type":"uint256"},{"internalType":"address","name":"_address"
+    ,"type":"address"}],"name":"setNumber","outputs":[]
+    ,"stateMutability":"nonpayable","type":"function"}
+    ,{"inputs":[{"components":[{"internalType":"address"
+    ,"name":"a","type":"address"},{"internalType":"bytes32"
+    ,"name":"b","type":"bytes32"}],"internalType":"struct TestContractSol.MyStruct","name":"_my_struct","type":"tuple"}]
+    ,"name":"setStruct","outputs":[],"stateMutability":"pure"
+    ,"type":"function"},{"inputs":[{"components":[{"internalType":"address"
+    ,"name":"a","type":"address"},{"internalType":"bytes32"
+    ,"name":"b","type":"bytes32"}],"internalType":"struct TestContractSol.MyStruct[2]","name":"_my_struct_array"
+    ,"type":"tuple[2]"}],"name":"setStructArray","outputs":[]
+    ,"stateMutability":"pure","type":"function"},{"inputs":[]
+    ,"name":"theAddress","outputs":[{"internalType":"address"
+    ,"name":"","type":"address"}],"stateMutability":"view"
+    ,"type":"function"}]
