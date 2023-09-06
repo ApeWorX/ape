@@ -66,7 +66,7 @@ class DependencyManager(ManagerAccessMixin):
 
             return
 
-        # Use single version if there is one ans wasn't given anything.
+        # Use single version if there is one and wasn't given anything.
         versions = (
             [x.name for x in available_versions]
             if not versions and len(available_versions) == 1
