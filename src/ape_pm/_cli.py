@@ -85,7 +85,9 @@ def _list(cli_ctx, _all):
     def get_package_str(_package) -> str:
         name = click.style(_package["name"], bold=True)
         version = _package["version"]
-        compiled = click.style(_package["compiled"], fg="green") if _package.get("compiled") else "-"
+        compiled = (
+            click.style(_package["compiled"], fg="green") if _package.get("compiled") else "-"
+        )
         spacing_name = ((longest_name - len(_package["name"])) + len(tab)) * " "
         spacing_version = ((longest_version - len(version)) + len(tab)) * " "
         return f"{name}{spacing_name}{version}{spacing_version + compiled}"
