@@ -190,3 +190,11 @@ def test_remove_invalid_version(ape_cli, runner):
 
     expected_message = f"Version '{invalid_version}' of package '{package_name}' is not installed."
     assert expected_message in result.output
+
+
+@skip_projects_except("only-dependencies")
+def test_list(ape_cli, runner):
+    package_name = "dependency-in-project-only"
+    result = runner.invoke(ape_cli, ["pm", "list"])
+    assert result.exit_code == 0, result.output
+    assert package_name in result.output
