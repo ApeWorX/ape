@@ -31,6 +31,7 @@ from ape.api.config import PluginConfig
 from ape.api.networks import LOCAL_NETWORK_NAME, NetworkAPI
 from ape.api.query import BlockTransactionQuery
 from ape.api.transactions import ReceiptAPI, TransactionAPI
+from ape.contracts.base import ContractTypeWrapper
 from ape.exceptions import (
     ApeException,
     APINotImplementedError,
@@ -596,6 +597,41 @@ class ProviderAPI(BaseInterfaceModel):
             call-tree objects.
         """
 
+    @raises_not_implemented
+    def poll_blocks(
+        self,
+        start_block: Optional[int] = None,
+        stop_block: Optional[int] = None,
+        required_confirmations: Optional[int] = None,
+        new_block_timeout: Optional[int] = None,
+    ) -> Iterator[BlockAPI]: # type: ignore[empty-body]
+        """
+        Poll new blocks. Optionally set a start block to include historical blocks.
+
+        **NOTE**: When a chain reorganization occurs, this method logs an error and
+        yields the missed blocks, even if they were previously yielded with different
+        block numbers.
+
+        **NOTE**: This is a daemon method; it does not terminate unless an exception occurs
+        or a ``stop`` is given.
+
+        Args:
+            start_block (Optional[int]): The block number to start with. Defaults to the pending
+              block number.
+            stop_block (Optional[int]): Optionally set a future block number to stop at.
+              Defaults to never-ending.
+            required_confirmations (Optional[int]): The amount of confirmations to wait
+              before yielding the block. The more confirmations, the less likely a reorg will occur.
+              Defaults to the network's configured required confirmations.
+            new_block_timeout (Optional[float]): The amount of time to wait for a new block before
+              timing out. Defaults to 10 seconds for local networks or ``50 * block_time`` for live
+              networks.
+
+        Returns:
+            Iterator[:class:`~ape.api.providers.BlockAPI`]
+
+        """
+
     def prepare_transaction(self, txn: TransactionAPI) -> TransactionAPI:
         """
         Set default values on the transaction.
@@ -623,6 +659,7 @@ class ProviderAPI(BaseInterfaceModel):
                went wrong in the call.
         """
         return VirtualMachineError(base_err=exception, **kwargs)
+
 
 
 class TestProviderAPI(ProviderAPI):
@@ -1590,6 +1627,301 @@ class Web3Provider(ProviderAPI, ABC):
             )
         )
         return self.compiler_manager.enrich_error(result)
+
+    @property
+    def head(self) -> BlockAPI:
+        return self.get_block("latest")
+
+    @property
+    def height(self) -> int:
+        return self.head.number
+
+    def range_blocks(
+        self,
+        start_or_stop: int,
+        stop: Optional[int] = None,
+        step: int = 1,
+        engine_to_use: Optional[str] = None,
+    ) -> Iterator[BlockAPI]:
+        """
+        Iterate over blocks. Works similarly to python ``range()``.
+
+        Raises:
+            :class:`~ape.exceptions.ChainError`: When ``stop`` is greater
+                than the chain length.
+            :class:`~ape.exceptions.ChainError`: When ``stop`` is less
+                than ``start_block``.
+            :class:`~ape.exceptions.ChainError`: When ``stop`` is less
+                than 0.
+            :class:`~ape.exceptions.ChainError`: When ``start`` is less
+                than 0.
+
+        Args:
+            start_or_stop (int): When given just a single value, it is the stop.
+              Otherwise, it is the start. This mimics the behavior of ``range``
+              built-in Python function.
+            stop (Optional[int]): The block number to stop before. Also the total
+              number of blocks to get. If not setting a start value, is set by
+              the first argument.
+            step (Optional[int]): The value to increment by. Defaults to ``1``.
+             number of blocks to get. Defaults to the latest block.
+            engine_to_use (Optional[str]): query engine to use, bypasses query
+              engine selection algorithm.
+
+        Returns:
+            Iterator[:class:`~ape.api.providers.BlockAPI`]
+        """
+
+        if stop is None:
+            stop = start_or_stop
+            start = 0
+        else:
+            start = start_or_stop
+
+        if stop > len(self):
+            raise ChainError(
+                f"'stop={stop}' cannot be greater than the chain length ({len(self)}). "
+                f"Use '{self.poll_blocks.__name__}()' to wait for future blocks."
+            )
+
+        # Note: the range `stop_block` is a non-inclusive stop, while the
+        #       `.query` method uses an inclusive stop, so we must adjust downwards.
+        query = BlockQuery(
+            columns=list(self.head.__fields__),  # TODO: fetch the block fields from EcosystemAPI
+            start_block=start,
+            stop_block=stop - 1,
+            step=step,
+        )
+
+        blocks = self.query_manager.query(query, engine_to_use=engine_to_use)
+        yield from cast(Iterator[BlockAPI], blocks)
+
+
+    def poll_blocks(self, start_block: Optional[int] = None, stop_block: Optional[int] = None, required_confirmations: Optional[int] = None, new_block_timeout: Optional[int] = None) -> Iterator[BlockAPI]:
+        network_name = self.network.name
+        block_time = self.provider.network.block_time
+        timeout = (
+            (
+                10.0
+                if network_name == LOCAL_NETWORK_NAME or network_name.endswith("-fork")
+                else 50 * block_time
+            )
+            if new_block_timeout is None
+            else new_block_timeout
+        )
+
+        if required_confirmations is None:
+            required_confirmations = self.network.required_confirmations
+
+        if stop_block is not None and stop_block <= self.chain_manager.blocks.height:
+            raise ValueError("Stop block must be greater than the current block.")
+
+        block = None
+
+        if start_block is not None:
+            # Front-load historical blocks.
+            for block in self.range(start_block, self.height - required_confirmations + 1):
+                yield block
+
+        if block:
+            last_yielded_hash = block.hash
+            last_yielded_number = block.number
+
+            # Only sleep if pre-yielded a block
+            time.sleep(block_time)
+
+        else:
+            last_yielded_hash = None
+            last_yielded_number = None
+
+        # Set `time_since_last` even if haven't yield yet.
+        # This helps with timing out the first time.
+        time_since_last = time.time()
+
+        def _try_timeout():
+            if time.time() - time_since_last > timeout:
+                time_waited = round(time.time() - time_since_last, 4)
+                message = f"Timed out waiting for new block (time_waited={time_waited})."
+                if (
+                    self.network.name == LOCAL_NETWORK_NAME
+                    or self.network.name.endswith("-fork")
+                ):
+                    message += (
+                        " If using a local network, try configuring mining to mine on an interval "
+                        "or adjusting the block time."
+                    )
+
+                raise ChainError(message)
+
+        while True:
+            confirmable_block_number = self.height - required_confirmations
+            confirmable_block = None
+            try:
+                confirmable_block = self.get_block(confirmable_block_number)
+            except BlockNotFoundError:
+                # Handle race condition with required_confs = 0 and re-org
+                _try_timeout()
+                time.sleep(block_time)
+
+            if (
+                last_yielded_hash is not None
+                and confirmable_block is not None
+                and confirmable_block.hash == last_yielded_hash
+                and last_yielded_number is not None
+                and confirmable_block_number == last_yielded_number
+            ):
+                # No changes
+                _try_timeout()
+                time.sleep(block_time)
+                continue
+
+            elif (
+                last_yielded_number is not None
+                and confirmable_block_number < last_yielded_number
+                or (
+                    confirmable_block_number == last_yielded_number
+                    and confirmable_block is not None
+                    and confirmable_block.hash != last_yielded_hash
+                )
+            ):
+                # Re-org detected.
+                logger.error(
+                    "Chain has reorganized since returning the last block. "
+                    "Try adjusting the required network confirmations."
+                )
+                # NOTE: One limitation is that it does not detect if the re-org is exactly
+                # the same as what was already yielded, from start to end.
+
+                # Next, drop down and yield the new blocks (even though duplicate numbers)
+                start = confirmable_block_number
+
+            elif last_yielded_number is not None and last_yielded_number < confirmable_block_number:
+                # New blocks
+                start = last_yielded_number + 1
+
+            elif last_yielded_number is None:
+                # First time iterating
+                start = confirmable_block_number
+
+            else:
+                start = confirmable_block_number
+
+            # Yield blocks
+            block = None
+
+            # Reset 'stop' in case a re-org occurred.
+            stop: int = min(confirmable_block_number + 1, len(self))
+            if start < stop:
+                for block in self.range(start, stop):
+                    yield block
+
+            if block:
+                last_yielded_hash = block.hash
+                last_yielded_number = block.number
+                time_since_last = time.time()
+            else:
+                _try_timeout()
+
+            time.sleep(block_time)
+
+    def range_contract_events(
+        self,
+        contract: ContractTypeWrapper,
+        start_or_stop: int,
+        stop: Optional[int] = None,
+        search_topics: Optional[Dict[str, Any]] = None,
+        extra_addresses: Optional[List] = None,
+    ) -> Iterator[ContractLog]:
+        """
+        Search through the logs for this event using the given filter parameters.
+
+        Args:
+            start_or_stop (int): When also given ``stop``, this is the the
+              earliest block number in the desired log set.
+              Otherwise, it is the total amount of blocks to get starting from ``0``.
+            stop (Optional[int]): The latest block number in the
+              desired log set. Defaults to delegating to provider.
+            search_topics (Optional[Dict]): Search topics, such as indexed event inputs,
+              to query by. Defaults to getting all events.
+            extra_addresses (Optional[List[``AddressType``]]): Additional contract
+              addresses containing the same event type. Defaults to only looking at
+              the contract instance where this event is defined.
+
+        Returns:
+            Iterator[:class:`~ape.contracts.base.ContractLog`]
+        """
+
+        if not hasattr(contract, "address"):
+            return
+
+        start_block = None
+        stop_block = None
+
+        if stop is None:
+            contract = None
+            try:
+                contract = self.chain_manager.contracts.instance_at(contract.address)
+            except Exception:
+                pass
+
+            if contract:
+                start_block = contract.receipt.block_number
+            else:
+                start_block = self.chain_manager.contracts.get_creation_receipt(
+                    contract.address
+                ).block_number
+
+            stop_block = start_or_stop
+        elif start_or_stop is not None and stop is not None:
+            start_block = start_or_stop
+            stop_block = stop - 1
+
+        stop_block = min(stop_block, self.chain_manager.blocks.height)
+
+        addresses = set([contract.address] + (extra_addresses or []))
+        contract_event_query = ContractEventQuery(
+            columns=list(ContractLog.__fields__.keys()),
+            contract=addresses,
+            event=self.abi,
+            search_topics=search_topics,
+            start_block=start_block,
+            stop_block=stop_block,
+        )
+        yield from self.query_manager.query(contract_event_query)  # type: ignore
+
+
+    def poll_logs(
+        self,
+        contract: ContractTypeWrapper,
+        start_block: Optional[int] = None,
+        stop_block: Optional[int] = None,
+        required_confirmations: Optional[int] = None,
+        new_block_timeout: Optional[int] = None,
+    ) -> Iterator[ContractLog]:
+
+        required_confirmations = (
+            required_confirmations or self.network.required_confirmations
+        )
+
+        # NOTE: We process historical blocks separately here to minimize rpc calls
+        height = max(self.chain_manager.blocks.height - required_confirmations, 0)
+        if start_block and height > 0 and start_block < height:
+            yield from self.range(start_block, height)
+            start_block = height + 1
+
+        # NOTE: Now we process the rest
+        for new_block in self.chain_manager.blocks.poll_blocks(
+            start_block=start_block,
+            stop_block=stop_block,
+            required_confirmations=required_confirmations,
+            new_block_timeout=new_block_timeout,
+        ):
+            if new_block.number is None:
+                continue
+
+            # Get all events in the new block.
+            yield from self.range_contract_events(contract, new_block.number, stop=new_block.number + 1)
+
 
 
 class UpstreamProvider(ProviderAPI):
