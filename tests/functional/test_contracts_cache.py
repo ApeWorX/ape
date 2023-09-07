@@ -70,7 +70,8 @@ def test_instance_at_uses_given_contract_type_when_retrieval_fails(mocker, chain
 
 
 @explorer_test
-def test_instance_at_contract_type_not_found(chain):
+def test_instance_at_contract_type_not_found(chain, eth_tester_provider):
+    eth_tester_provider.network.__dict__["explorer"] = None
     new_address = "0x4a986a6dca6dbF99Bc3D17F8d71aFB0D60E740F9"
     expected = (
         rf"Failed to get contract type for address '{new_address}'. "
@@ -136,7 +137,8 @@ def test_cache_default_contract_type_when_used(solidity_contract_instance, chain
 
 
 @explorer_test
-def test_contracts_getitem_contract_not_found(chain):
+def test_contracts_getitem_contract_not_found(chain, eth_tester_provider):
+    eth_tester_provider.network.__dict__["explorer"] = None
     new_address = "0x4a986a6dca6dbF99Bc3D17F8d71aFB0D60E740F9"
     expected = (
         rf"Failed to get contract type for address '{new_address}'. "
