@@ -33,41 +33,84 @@ def _list(cli_ctx, _all):
     """
 
     packages = []
+    packages_folder = cli_ctx.dependency_manager.DATA_FOLDER / "packages"
     if _all:
-        location = cli_ctx.dependency_manager.DATA_FOLDER / "packages"
-        if not location.is_dir():
+        if not packages_folder.is_dir():
             _echo_no_packages(False)
             return
 
-        for dependency in location.iterdir():
+        for dependency in packages_folder.iterdir():
             base_item = {"name": dependency.name}
             for version_dir in dependency.iterdir():
-                item = {"version": version_dir.name, **base_item}
-                file = next(version_dir.iterdir(), None)
-                item["compiled"] = (
-                    bool(json.loads(file.read_text()).get("contractTypes")) if file else False
-                )
+                item = {
+                    "version": version_dir.name,
+                    **base_item,
+                    "compiled": _check_compiled(version_dir),
+                }
                 packages.append(item)
 
     else:
         # Limit to local project.
-        for name, versions in cli_ctx.project_manager.dependencies.items():
-            base_item = {"name": name}
-            for version, dep in versions.items():
-                item = {**base_item, "version": version, "compiled": bool(dep.contract_types)}
-                packages.append(item)
+        for dependency in cli_ctx.config_manager.dependencies:
+            item = {"name": dependency.name, "version": dependency.version_id, "compiled": False}
+
+            # Check if compiled.
+            if packages_folder.is_dir():
+                for package_dir in packages_folder.iterdir():
+                    if package_dir.is_dir() and package_dir.name == dependency.name:
+                        for version_dir in package_dir.iterdir():
+                            versions = [dependency.version_id]
+                            if versions[0].startswith("v"):
+                                versions.append(dependency.version_id[1:])
+                            else:
+                                versions.append(f"v{dependency.version_id}")
+
+                            if version_dir.is_dir() and version_dir.name in versions:
+                                item["compiled"] = _check_compiled(version_dir)
+
+            packages.append(item)
 
     if not packages:
         _echo_no_packages(not _all)
         return
 
     # Output gathered packages.
-    click.echo("Packages:")
-    for package in packages:
-        name = click.style(package["name"], bold=True)
-        version = package["version"]
-        compiled = click.style(package["compiled"], fg="green") if package.get("compiled") else ""
-        click.echo(f"  {name} {version}{' '  + compiled if compiled else ''}")
+    longest_name = max([4, *[len(p["name"]) for p in packages]])
+    longest_version = max([7, *[len(p["version"]) for p in packages]])
+    tab = "  "
+
+    header_name_space = ((longest_name - len("NAME")) + 2) * " "
+    version_name_space = ((longest_version - len("VERSION")) + 2) * " "
+
+    def get_package_str(_package) -> str:
+        name = click.style(_package["name"], bold=True)
+        version = _package["version"]
+        compiled = (
+            click.style(_package["compiled"], fg="green") if _package.get("compiled") else "-"
+        )
+        spacing_name = ((longest_name - len(_package["name"])) + len(tab)) * " "
+        spacing_version = ((longest_version - len(version)) + len(tab)) * " "
+        return f"{name}{spacing_name}{version}{spacing_version + compiled}"
+
+    def rows():
+        yield f"NAME{header_name_space}VERSION{version_name_space}COMPILED\n"
+        for _package in packages:
+            yield f"{get_package_str(_package)}\n"
+
+    if len(packages) > 16:
+        click.echo_via_pager(rows())
+    else:
+        for row in rows():
+            click.echo(row.strip())
+
+
+def _check_compiled(version_dir: Path) -> bool:
+    file = next(version_dir.iterdir(), None)
+    return (
+        bool(json.loads(file.read_text()).get("contractTypes"))
+        if file and file.is_file()
+        else False
+    )
 
 
 def _package_callback(ctx, param, value):
