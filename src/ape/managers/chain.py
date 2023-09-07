@@ -839,9 +839,9 @@ class ContractCache(BaseManager):
                 address_file.unlink(missing_ok=True)
 
             if self._proxy_info_cache.is_dir():
-                info = self._get_proxy_info_from_disk(address)
-                if info:
-                    target = info.target
+                disk_info = self._get_proxy_info_from_disk(address)
+                if disk_info:
+                    target = disk_info.target
                     address_file = self._proxy_info_cache / f"{address}.json"
                     address_file.unlink()
 
