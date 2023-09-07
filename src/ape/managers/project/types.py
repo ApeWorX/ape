@@ -178,8 +178,8 @@ class BaseProject(ProjectAPI):
         self, file_paths: Optional[List[Path]] = None, use_cache: bool = True
     ) -> PackageManifest:
         # Read the project config and migrate project-settings to Ape settings if needed.
-        compile_config = self.config_manager.get_config("compile")
         with self._as_ape_project():
+            compile_config = self.config_manager.get_config("compile")
             self.project_manager.load_dependencies()
             manifest = self._get_base_manifest(use_cache=use_cache)
             source_paths: List[Path] = list(
