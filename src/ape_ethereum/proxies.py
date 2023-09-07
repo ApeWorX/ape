@@ -7,9 +7,10 @@ from lazyasd import LazyObject  # type: ignore
 from ape.api.networks import ProxyInfoAPI
 from ape.contracts import ContractContainer
 
+MINIMAL_PROXY_TARGET_PLACEHOLDER = "bebebebebebebebebebebebebebebebebebebebe"
 MINIMAL_PROXY_BYTES = (
     "0x3d602d80600a3d3981f3363d3d373d3d3d363d73"
-    "bebebebebebebebebebebebebebebebebebebebe5af43d82803e903d91602b57fd5bf3"
+    f"{MINIMAL_PROXY_TARGET_PLACEHOLDER}5af43d82803e903d91602b57fd5bf3"
 )
 
 
@@ -87,8 +88,10 @@ IMPLEMENTATION_ABI = MethodABI(
 )
 
 
-def _make_minimal_proxy() -> ContractContainer:
-    bytecode = {"bytecode": MINIMAL_PROXY_BYTES}
+def _make_minimal_proxy(address: str = MINIMAL_PROXY_TARGET_PLACEHOLDER) -> ContractContainer:
+    address = address.replace("0x", "")
+    code = MINIMAL_PROXY_BYTES.replace(MINIMAL_PROXY_TARGET_PLACEHOLDER, address)
+    bytecode = {"bytecode": code}
     contract_type = ContractType(abi=[], deploymentBytecode=bytecode)
     return ContractContainer(contract_type=contract_type)
 

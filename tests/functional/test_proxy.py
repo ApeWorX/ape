@@ -1,12 +1,8 @@
-import pytest
-
 from ape_ethereum.proxies import ProxyType
-from ape_ethereum.proxies import minimal_proxy as minimal_proxy_container
 
-
-@pytest.fixture
-def minimal_proxy(owner):
-    return owner.deploy(minimal_proxy_container)
+"""
+NOTE: Most proxy tests are in `geth/test_proxy.py`.
+"""
 
 
 def test_minimal_proxy(ethereum, minimal_proxy):
