@@ -7,9 +7,8 @@ from ethpm_types.source import Content
 from ape.api import CompilerAPI
 from ape.exceptions import ApeAttributeError, CompilerError, ContractLogicError
 from ape.logging import logger
+from ape.managers.base import BaseManager
 from ape.utils import get_relative_path
-
-from .base import BaseManager
 
 
 class CompilerManager(BaseManager):

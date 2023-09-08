@@ -383,21 +383,9 @@ class DependencyAPI(BaseInterfaceModel):
             with self.config_manager.using_project(
                 path, contracts_folder=contracts_folder, **config_data
             ) as project:
-                contracts_folder.mkdir(parents=True, exist_ok=True)
-                for source_id, source_obj in (manifest.sources or {}).items():
-                    content = source_obj.content or ""
-                    absolute_path = contracts_folder / source_id
-                    source_path = contracts_folder / get_relative_path(
-                        absolute_path, contracts_folder.absolute()
-                    )
-
-                    # Create content, including sub-directories.
-                    source_path.parent.mkdir(parents=True, exist_ok=True)
-                    source_path.touch()
-                    source_path.write_text(str(content))
-
-                manifest = project.local_project.create_manifest(file_paths=None, use_cache=False)
-                self._write_manifest_to_cache(manifest)
+                manifest.unpack_sources(contracts_folder)
+                compiled_manifest = project.local_project.create_manifest()
+                self._write_manifest_to_cache(compiled_manifest)
                 return manifest
 
     def _extract_local_manifest(
@@ -526,4 +514,4 @@ def _get_dependency_configs_from_manifest(manifest: PackageManifest) -> Dict:
 
         dependencies_config.append(dependency)
 
-    return {"dependencies": dependencies_config}
+    return {"dependencies": dependencies_config} if dependencies_config else {}
