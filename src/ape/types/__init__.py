@@ -164,10 +164,10 @@ class LogFilter(BaseModel):
         from ape import convert
         from ape.utils.abi import LogInputABICollection, is_dynamic_sized_type
 
-        event = getattr(event, "abi", event)
+        event_abi = event.abi if hasattr(event, "abi") else event
         search_topics = search_topics or {}
-        topic_filter: List[Optional[HexStr]] = [encode_hex(keccak(text=event.selector))]
-        abi_inputs = LogInputABICollection(event)
+        topic_filter: List[Optional[HexStr]] = [encode_hex(keccak(text=event_abi.selector))]
+        abi_inputs = LogInputABICollection(event_abi)
 
         def encode_topic_value(abi_type, value):
             if isinstance(value, (list, tuple)):
