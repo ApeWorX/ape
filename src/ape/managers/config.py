@@ -255,7 +255,7 @@ class ConfigManager(BaseInterfaceModel):
 
     @contextmanager
     def using_project(
-        self, project_folder: Path, contracts_folder: Optional[Path] = None
+        self, project_folder: Path, contracts_folder: Optional[Path] = None, **config
     ) -> Generator["ProjectManager", None, None]:
         """
         Temporarily change the project context.
@@ -303,7 +303,7 @@ class ConfigManager(BaseInterfaceModel):
             project = self.project_manager.get_project(
                 project_folder, contracts_folder=contracts_folder
             )
-            clean_config = project.process_config_file(contracts_folder=contracts_folder)
+            clean_config = project.process_config_file(contracts_folder=contracts_folder, **config)
             self.load(force_reload=True)
             yield self.project_manager
 

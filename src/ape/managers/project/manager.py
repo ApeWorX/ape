@@ -552,11 +552,10 @@ class ProjectManager(BaseManager):
             :class:`~ape.contracts.ContractContainer`
         """
 
-        contract = self._get_contract(contract_name)
-        if not contract:
-            raise ProjectError(f"No contract found with name '{contract_name}'.")
+        if contract := self._get_contract(contract_name):
+            return contract
 
-        return contract
+        raise ProjectError(f"No contract found with name '{contract_name}'.")
 
     def extensions_with_missing_compilers(
         self, extensions: Optional[List[str]] = None
@@ -620,10 +619,8 @@ class ProjectManager(BaseManager):
                 return None
 
             for file_path in dir_path.iterdir():
-                if file_path.is_dir():
-                    result = find_in_dir(file_path)
-                    if result:
-                        return result
+                if file_path.is_dir() and (result := find_in_dir(file_path)):
+                    return result
 
                 # If the user provided an extension, it has to match.
                 ext_okay = ext == file_path.suffix if ext is not None else True
