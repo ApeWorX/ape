@@ -29,3 +29,18 @@ except ImportError:
     )
     from pydantic.dataclasses import dataclass
     from pydantic_settings import BaseSettings
+
+__all__ = (
+    "BaseModel",
+    "BaseSettings",
+    "Extra",
+    "Field",
+    "FileUrl",
+    "HttpUrl",
+    "NonNegativeInt",
+    "PositiveInt",
+    "ValidationError",
+    "root_validator",
+    "validator",
+    "dataclass",
+)
