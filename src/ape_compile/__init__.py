@@ -1,11 +1,7 @@
 from typing import Any, List, Optional
 
-try:
-    from pydantic.v1 import Field, validator
-except ImportError:
-    from pydantic import Field, validator
-
 from ape import plugins
+from ape._compat import Field, validator
 from ape.api import PluginConfig
 from ape.logging import logger
 

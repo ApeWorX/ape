@@ -5,12 +5,8 @@ import pytest
 from eth_utils import is_checksum_address, to_hex
 from ethpm_types import ContractType, HexBytes
 
-try:
-    from pydantic.v1 import BaseModel
-except ImportError:
-    from pydantic import BaseModel
-
 from ape import Contract
+from ape._compat import BaseModel
 from ape.api import TransactionAPI
 from ape.contracts import ContractInstance
 from ape.exceptions import (

@@ -4,11 +4,7 @@ from eth_account import Account
 from eth_account.messages import SignableMessage
 from eth_utils import to_bytes, to_hex
 
-try:
-    from pydantic.v1.dataclasses import dataclass
-except ImportError:
-    from pydantic.dataclasses import dataclass
-
+from ape._compat import dataclass
 from ape.types import AddressType
 
 

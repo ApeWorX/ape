@@ -4,11 +4,7 @@ import pytest
 from ethpm_types import HexBytes
 from ethpm_types.abi import MethodABI
 
-try:
-    from pydantic.v1 import BaseModel
-except ImportError:
-    from pydantic import BaseModel
-
+from ape._compat import BaseModel
 from ape.types import AddressType
 
 ABI = MethodABI.parse_obj(

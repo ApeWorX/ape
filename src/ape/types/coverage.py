@@ -10,11 +10,7 @@ import requests
 from ethpm_types import BaseModel
 from ethpm_types.source import ContractSource, SourceLocation
 
-try:
-    from pydantic.v1 import NonNegativeInt, validator
-except ImportError:
-    from pydantic import NonNegativeInt, validator
-
+from ape._compat import NonNegativeInt, validator
 from ape.logging import logger
 from ape.utils.misc import get_current_timestamp_ms
 from ape.version import version as ape_version

@@ -2,12 +2,8 @@ import subprocess
 import sys
 from typing import List, Optional, Tuple
 
-try:
-    from pydantic.v1 import root_validator
-except ImportError:
-    from pydantic import root_validator
-
 from ape.__modules__ import __modules__
+from ape._compat import root_validator
 from ape.logging import ApeLogger
 from ape.plugins import clean_plugin_name
 from ape.utils import BaseInterfaceModel, cached_property, get_package_version, github_client

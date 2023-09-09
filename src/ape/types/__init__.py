@@ -29,14 +29,9 @@ from ethpm_types import (
 )
 from ethpm_types.abi import EventABI
 from ethpm_types.source import Closure
-
-try:
-    from pydantic.v1 import BaseModel, root_validator, validator
-except ImportError:
-    from pydantic import BaseModel, root_validator, validator
-
 from web3.types import FilterParams
 
+from ape._compat import BaseModel, root_validator, validator
 from ape.types.address import AddressType, RawAddress
 from ape.types.coverage import (
     ContractCoverage,

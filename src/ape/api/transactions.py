@@ -6,10 +6,9 @@ from typing import IO, TYPE_CHECKING, Any, Iterator, List, Optional, Union
 from eth_utils import is_0x_prefixed, is_hex, to_int
 from ethpm_types import HexBytes
 from ethpm_types.abi import EventABI, MethodABI
-from pydantic import validator
-from pydantic.fields import Field
 from tqdm import tqdm  # type: ignore
 
+from ape._compat import Field, validator
 from ape.api.explorers import ExplorerAPI
 from ape.exceptions import (
     NetworkError,

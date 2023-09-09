@@ -9,13 +9,7 @@ from ethpm_types.manifest import PackageName
 from ethpm_types.utils import Algorithm, AnyUrl, compute_checksum
 from packaging.version import InvalidVersion, Version
 
-try:
-    from pydantic.v1 import ValidationError
-except ImportError:
-    from pydantic import ValidationError
-
-from yaml import safe_dump
-
+from ape._compat import ValidationError
 from ape.logging import logger
 from ape.utils import (
     BaseInterfaceModel,

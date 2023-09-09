@@ -12,11 +12,7 @@ from eth_utils import keccak, to_int
 from ethpm_types import ContractType, HexBytes
 from ethpm_types.abi import ABIType, ConstructorABI, EventABI, MethodABI
 
-try:
-    from pydantic.v1 import BaseModel
-except ImportError:
-    from pydantic import BaseModel
-
+from ape._compat import BaseModel
 from ape.exceptions import (
     NetworkError,
     NetworkMismatchError,

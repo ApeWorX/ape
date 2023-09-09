@@ -3,11 +3,7 @@ from typing import Any, Dict, Iterator, List, Optional, Sequence, Set, Type, Uni
 
 from ethpm_types.abi import EventABI, MethodABI
 
-try:
-    from pydantic.v1 import BaseModel, NonNegativeInt, PositiveInt, root_validator
-except ImportError:
-    from pydantic import BaseModel, NonNegativeInt, PositiveInt, root_validator
-
+from ape._compat import BaseModel, NonNegativeInt, PositiveInt, root_validator
 from ape.api.transactions import ReceiptAPI, TransactionAPI
 from ape.logging import logger
 from ape.types import AddressType
