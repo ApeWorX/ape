@@ -50,6 +50,8 @@ class ProjectManager(BaseManager):
         path: Path,
     ) -> None:
         self.path = Path(path) if isinstance(path, str) else path
+        if self.path.is_file():
+            self.path = self.path.parent
 
     def __str__(self) -> str:
         return f'Project("{self.path}")'

@@ -312,11 +312,7 @@ class LocalDependency(DependencyAPI):
 
     @property
     def path(self) -> Path:
-        given_path = Path(self.local).resolve().absolute()
-        if not given_path.is_dir():
-            raise ProjectError(f"No project exists at path '{given_path}'.")
-
-        return given_path
+        return Path(self.local).resolve().absolute()
 
     @property
     def version_id(self) -> str:
@@ -324,8 +320,7 @@ class LocalDependency(DependencyAPI):
 
     @property
     def uri(self) -> AnyUrl:
-        path = self._target_manifest_cache_file.resolve().absolute()
-        return FileUrl(f"file://{path}", scheme="file")
+        return FileUrl(self.path.as_uri(), scheme="file")
 
     def extract_manifest(self, use_cache: bool = True) -> PackageManifest:
         return self._extract_local_manifest(self.path, use_cache=use_cache)

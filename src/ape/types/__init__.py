@@ -126,7 +126,7 @@ class LogFilter(BaseModel):
     @root_validator()
     def compute_selectors(cls, values):
         values["selectors"] = {
-            encode_hex(keccak(text=event.selector)): event for event in values["events"]
+            encode_hex(keccak(text=event.selector)): event for event in values.get("events", [])
         }
 
         return values
@@ -152,7 +152,7 @@ class LogFilter(BaseModel):
     @classmethod
     def from_event(
         cls,
-        event: EventABI,
+        event: Union[EventABI, "ContractEvent"],
         search_topics: Optional[Dict[str, Any]] = None,
         addresses: Optional[List[AddressType]] = None,
         start_block=None,
@@ -164,7 +164,9 @@ class LogFilter(BaseModel):
         from ape import convert
         from ape.utils.abi import LogInputABICollection, is_dynamic_sized_type
 
-        event_abi = event.abi if hasattr(event, "abi") else event
+        event_abi: EventABI = (
+            event.abi if hasattr(event, "abi") else event  # type: ignore[assignment]
+        )
         search_topics = search_topics or {}
         topic_filter: List[Optional[HexStr]] = [encode_hex(keccak(text=event_abi.selector))]
         abi_inputs = LogInputABICollection(event_abi)
@@ -200,7 +202,7 @@ class LogFilter(BaseModel):
 
         return cls(
             addresses=addresses or [],
-            events=[event],
+            events=[event_abi],
             topic_filter=topic_filter,
             start_block=start_block,
             stop_block=stop_block,

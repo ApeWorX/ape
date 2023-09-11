@@ -346,8 +346,10 @@ class DependencyAPI(BaseInterfaceModel):
 
     def get(self, contract_name: str) -> Optional["ContractContainer"]:
         manifest = self.compile()
-        if contract_type := manifest.get_contract_type(contract_name):
-            return self.chain_manager.contracts.get_container(contract_type)
+        options = (contract_name, contract_name.replace("-", "_"))
+        for name in options:
+            if contract_type := manifest.get_contract_type(name):
+                return self.chain_manager.contracts.get_container(contract_type)
 
         return None
 
@@ -386,7 +388,7 @@ class DependencyAPI(BaseInterfaceModel):
                 manifest.unpack_sources(contracts_folder)
                 compiled_manifest = project.local_project.create_manifest()
                 self._write_manifest_to_cache(compiled_manifest)
-                return manifest
+                return compiled_manifest
 
     def _extract_local_manifest(
         self, project_path: Path, use_cache: bool = True
@@ -431,16 +433,6 @@ class DependencyAPI(BaseInterfaceModel):
             excluded_files.update({f for f in project.contracts_folder.glob(pattern)})
 
         return [s for s in all_sources if s not in excluded_files]
-
-    def _get_project(self, project_path: Path) -> ProjectAPI:
-        project_path = project_path.resolve()
-        contracts_folder = project_path / self.contracts_folder
-        return self.project_manager.get_project(
-            project_path,
-            contracts_folder=contracts_folder,
-            name=self.name,
-            version=self.version,
-        )
 
     def _write_manifest_to_cache(self, manifest: PackageManifest):
         self._target_manifest_cache_file.unlink(missing_ok=True)
@@ -499,7 +491,7 @@ def _get_dependency_configs_from_manifest(manifest: PackageManifest) -> Dict:
         else:
             uri_str = str(uri)
 
-        dependency = {"name": str(package_name)}
+        dependency: Dict = {"name": str(package_name)}
         if uri_str.startswith("https://"):
             # Assume GitHub dependency
             version = uri_str.split("/")[-1]
