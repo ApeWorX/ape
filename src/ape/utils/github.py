@@ -2,7 +2,6 @@ import os
 import shutil
 import subprocess
 import tempfile
-from urllib3.util.retry import Retry
 import zipfile
 from io import BytesIO
 from pathlib import Path
@@ -13,6 +12,7 @@ from github.Auth import Token as GithubToken
 from github.GitRelease import GitRelease
 from github.Organization import Organization
 from github.Repository import Repository as GithubRepository
+from urllib3.util.retry import Retry
 
 from ape.exceptions import CompilerError, ProjectError, UnknownVersionError
 from ape.logging import logger
