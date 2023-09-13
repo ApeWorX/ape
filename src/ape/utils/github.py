@@ -12,6 +12,7 @@ from github.Auth import Token as GithubToken
 from github.GitRelease import GitRelease
 from github.Organization import Organization
 from github.Repository import Repository as GithubRepository
+from urllib3.util.retry import Retry
 
 from ape.exceptions import CompilerError, ProjectError, UnknownVersionError
 from ape.logging import logger
@@ -21,11 +22,10 @@ from ape.utils.misc import USER_AGENT, cached_property, stream_response
 class GitProcessWrapper:
     @cached_property
     def git(self) -> str:
-        git_cmd_path = shutil.which("git")
-        if not git_cmd_path:
-            raise ProjectError("`git` not installed.")
+        if path := shutil.which("git"):
+            return path
 
-        return git_cmd_path
+        raise ProjectError("`git` not installed.")
 
     def clone(self, url: str, target_path: Optional[Path] = None, branch: Optional[str] = None):
         command = [self.git, "-c", "advice.detachedHead=false", "clone", url]
@@ -69,14 +69,15 @@ class GithubClient:
     def __init__(self):
         token = os.environ[self.TOKEN_KEY] if self.TOKEN_KEY in os.environ else None
         auth = GithubToken(token) if token else None
-        self._client = Github(auth=auth, user_agent=USER_AGENT)
+        retry = Retry(total=10, backoff_factor=1.0, status_forcelist=[403])
+        self._client = Github(auth=auth, user_agent=USER_AGENT, retry=retry)
 
     @cached_property
     def ape_org(self) -> Organization:
         """
         The ``ApeWorX`` organization on ``Github`` (https://github.com/ApeWorX).
         """
-        return self._client.get_organization("ApeWorX")
+        return self.get_organization("ApeWorX")
 
     @cached_property
     def available_plugins(self) -> Set[str]:
@@ -152,6 +153,9 @@ class GithubClient:
 
         else:
             return self._repo_cache[repo_path]
+
+    def get_organization(self, name: str) -> Organization:
+        return self._client.get_organization(name)
 
     def clone_repo(
         self,
