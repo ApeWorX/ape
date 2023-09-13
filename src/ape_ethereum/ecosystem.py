@@ -674,11 +674,32 @@ class Ethereum(EcosystemAPI):
                 logger.debug("failed to decode log data for %s", log, exc_info=True)
                 continue
 
+            # Since LogABICollection does not have access to the Ecosystem,
+            # the rest of the decoding must happen here.
+            _types = [x.canonical_type for x in abi.abi.inputs]
+            converted_arguments: Dict = {}
+
+            for _type, (key, value) in zip(_types, event_arguments.items()):
+                if isinstance(value, Struct):
+                    struct_types = _type.lstrip("(").rstrip(")").split(",")
+                    for struct_type, (struct_key, struct_val) in zip(struct_types, value.items()):
+                        if struct_type == "address":
+                            value[struct_key] = self.decode_address(struct_val)
+                        elif "bytes" in struct_type:
+                            value[struct_key] = HexBytes(struct_val)
+                        else:
+                            value[struct_key] = struct_val
+
+                    converted_arguments[key] = value
+
+                elif _type == "address":
+                    converted_arguments[key] = self.decode_primitive_value(value, _type)
+
             yield ContractLog(
                 block_hash=log["blockHash"],
                 block_number=log["blockNumber"],
                 contract_address=self.decode_address(log["address"]),
-                event_arguments=event_arguments,
+                event_arguments=converted_arguments,
                 event_name=abi.event_name,
                 log_index=log["logIndex"],
                 transaction_hash=log["transactionHash"],
