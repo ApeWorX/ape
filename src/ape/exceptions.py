@@ -693,7 +693,10 @@ def _get_custom_python_traceback(
             continue
 
         depth = exec_item.depth
-        lineno = exec_item.begin_lineno
+
+        # NOTE: Use the last lineno executed as "the line number".
+        lineno = exec_item.begin_lineno if exec_item.end_lineno is None else exec_item.end_lineno
+
         if lineno is None:
             idx -= 1
             continue
