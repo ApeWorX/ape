@@ -92,7 +92,7 @@ def test_compile_package_not_exists(ape_cli, runner):
 
 @skip_projects_except("with-contracts", "with-dependencies")
 def test_compile(ape_cli, runner, project):
-    result = runner.invoke(ape_cli, ["pm", "compile"])
+    result = runner.invoke(ape_cli, ["pm", "compile", "--force"])
     assert result.exit_code == 0, result.output
 
     if project.path.as_posix().endswith("with-contracts"):
