@@ -1,4 +1,5 @@
 import os.path
+import re
 import tempfile
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
@@ -199,13 +200,21 @@ class ProjectAPI(BaseInterfaceModel):
         source_dict: Dict[str, Source] = {}
         for source_path in filepaths:
             key = str(get_relative_path(source_path, base_path))
+
+            try:
+                text = source_path.read_text("utf8")
+            except UnicodeDecodeError:
+                # Let it attempt to find the encoding.
+                # (this is much slower and a-typical).
+                text = source_path.read_text()
+
             source_dict[key] = Source(
                 checksum=Checksum(
                     algorithm="md5",
                     hash=compute_checksum(source_path.read_bytes()),
                 ),
                 urls=[],
-                content=source_path.read_text("utf8"),
+                content=text,
                 imports=source_imports.get(key, []),
                 references=source_references.get(key, []),
             )
@@ -426,7 +435,10 @@ class DependencyAPI(BaseInterfaceModel):
         return project_manifest
 
     def _get_sources(self, project: ProjectAPI) -> List[Path]:
-        all_sources = get_all_files_in_directory(project.contracts_folder)
+        escaped_extensions = [re.escape(ext) for ext in self.compiler_manager.registered_compilers]
+        extension_pattern = "|".join(escaped_extensions)
+        pattern = f"\w*({extension_pattern})"
+        all_sources = get_all_files_in_directory(project.contracts_folder, pattern=pattern)
 
         excluded_files = set()
         for pattern in set(self.exclude):
