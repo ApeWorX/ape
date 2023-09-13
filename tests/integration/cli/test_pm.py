@@ -90,11 +90,17 @@ def test_compile_package_not_exists(ape_cli, runner):
     assert expected in result.output
 
 
-@skip_projects_except("with-contracts")
+@skip_projects_except("with-contracts", "with-dependencies")
 def test_compile(ape_cli, runner, project):
     result = runner.invoke(ape_cli, ["pm", "compile"])
     assert result.exit_code == 0, result.output
-    assert "Package '__FooDep__' compiled." in result.output
+
+    if project.path.as_posix().endswith("with-contracts"):
+        assert "Package '__FooDep__' compiled." in result.output
+    else:
+        # Tests against a bug where we couldn't have hyphens in
+        # dependency project contracts.
+        assert "Compiling 'hyphen-DependencyContract.json'" in result.output
 
 
 @skip_projects_except("with-contracts")

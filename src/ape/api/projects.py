@@ -437,7 +437,7 @@ class DependencyAPI(BaseInterfaceModel):
     def _get_sources(self, project: ProjectAPI) -> List[Path]:
         escaped_extensions = [re.escape(ext) for ext in self.compiler_manager.registered_compilers]
         extension_pattern = "|".join(escaped_extensions)
-        pattern = rf"\w*({extension_pattern})"
+        pattern = rf".*({extension_pattern})"
         all_sources = get_all_files_in_directory(project.contracts_folder, pattern=pattern)
 
         excluded_files = set()
