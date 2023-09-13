@@ -295,6 +295,10 @@ class ContractLog(BaseContractLog):
         return self.chain_manager.blocks[self.block_number]
 
     @property
+    def timestamp(self) -> int:
+        return self.block.timestamp
+
+    @property
     def _event_args_str(self) -> str:
         return " ".join(f"{key}={val}" for key, val in self.event_arguments.items())
 
