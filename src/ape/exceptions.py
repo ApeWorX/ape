@@ -350,8 +350,10 @@ class TransactionNotFoundError(ProviderError):
     Raised when unable to find a transaction.
     """
 
-    def __init__(self, txn_hash: str):
-        super().__init__(f"Transaction '{txn_hash}' not found.")
+    def __init__(self, txn_hash: str, error_messsage: Optional[str] = None):
+        message = f"Transaction '{txn_hash}' not found."
+        suffix = f" Error: {error_messsage}" if error_messsage else ""
+        super().__init__(f"{message}{suffix}")
 
 
 class NetworkMismatchError(ProviderError):

@@ -90,7 +90,12 @@ def test_chain_id_when_disconnected(eth_tester_provider):
 
 def test_get_receipt_not_exists_with_timeout(eth_tester_provider):
     unknown_txn = "0x053cba5c12172654d894f66d5670bab6215517a94189a9ffc09bc40a589ec04d"
-    with pytest.raises(TransactionNotFoundError, match=f"Transaction '{unknown_txn}' not found"):
+    expected = (
+        f"Transaction '{unknown_txn}' not found. "
+        rf"Error: Transaction HexBytes\('{unknown_txn}'\) "
+        "is not in the chain after 0 seconds"
+    )
+    with pytest.raises(TransactionNotFoundError, match=expected):
         eth_tester_provider.get_receipt(unknown_txn, timeout=0)
 
 
