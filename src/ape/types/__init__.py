@@ -262,18 +262,20 @@ class ContractLog(BaseContractLog):
 
     @validator("block_number", "log_index", "transaction_index", pre=True)
     def validate_hex_ints(cls, value):
-        if not isinstance(value, int):
+        if value is None:
+            # Should only happen for optionals.
+            return value
+
+        elif not isinstance(value, int):
             return to_int(value)
 
         return value
 
     @validator("contract_address", pre=True)
     def validate_address(cls, value):
-        from ape import convert
+        return cls.conversion_manager.convert(value, AddressType)
 
-        return convert(value, AddressType)
-
-    # NOTE: This class has an overrided `__getattr__` method, but `block` is a reserved keyword
+    # NOTE: This class has an overridden `__getattr__` method, but `block` is a reserved keyword
     #       in most smart contract languages, so it is safe to use. Purposely avoid adding
     #       `.datetime` and `.timestamp` in case they are used as event arg names.
     @cached_property
@@ -299,8 +301,7 @@ class ContractLog(BaseContractLog):
         """
 
         try:
-            normal_attribute = self.__getattribute__(item)
-            return normal_attribute
+            return self.__getattribute__(item)
         except AttributeError:
             pass
 

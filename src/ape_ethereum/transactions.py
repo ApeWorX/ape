@@ -270,22 +270,64 @@ class Receipt(ReceiptAPI):
                 for address, contract in contract_types.items()
             }
 
+            def get_default_log(
+                _log: Dict, logs: ContractLogContainer, name: Optional[str] = None
+            ) -> ContractLog:
+                # For when we fail to decode.
+                if not name:
+                    name = "UnknownLog"
+                    index = _log.get("logIndex")
+                    if index is not None:
+                        name = f"{name}_WithIndex_{index}"
+
+                return ContractLog(
+                    block_hash=self.block.hash,
+                    block_number=self.block_number,
+                    event_arguments={"__root__": _log["data"]},
+                    event_name=f"<{name}>",
+                    log_index=logs[-1].log_index + 1 if logs else 0,
+                    transaction_hash=self.txn_hash,
+                    transaction_index=logs[-1].transaction_index if logs else None,
+                )
+
             decoded_logs: ContractLogContainer = ContractLogContainer()
             for log in self.logs:
-                contract_address = log["address"]
-                if contract_address not in selectors:
-                    continue
-                try:
-                    selector = encode_hex(log["topics"][0])
-                    event_abi = selectors[contract_address][selector]
-                except KeyError:
-                    # Likely a library log
-                    if library_log := self._decode_ds_note(log):
+                if contract_address := log.get("address"):
+                    if contract_address in selectors and (topics := log.get("topics")):
+                        selector = encode_hex(topics[0])
+                        if selector in selectors[contract_address]:
+                            event_abi = selectors[contract_address][selector]
+                            decoded_logs.extend(
+                                self.provider.network.ecosystem.decode_logs([log], event_abi)
+                            )
+
+                        elif library_log := self._decode_ds_note(log):
+                            decoded_logs.append(library_log)
+
+                        else:
+                            # Search for selector in other spots:
+                            name = f"UnknownLogWithSelector_{selector}"
+                            obj = get_default_log(log, decoded_logs, name=name)
+                            decoded_logs.append(obj)
+
+                    elif library_log := self._decode_ds_note(log):
                         decoded_logs.append(library_log)
+
+                    else:
+                        name = f"UnknownLogAtAddress_{contract_address}"
+                        index = log.get("logIndex")
+                        if index is not None:
+                            name = f"{name}_AndLogIndex_{index}"
+
+                        obj = get_default_log(log, decoded_logs, name=name)
+                        decoded_logs.append(obj)
+
+                elif library_log := self._decode_ds_note(log):
+                    decoded_logs.append(library_log)
+
                 else:
-                    decoded_logs.extend(
-                        self.provider.network.ecosystem.decode_logs([log], event_abi)
-                    )
+                    obj = get_default_log(log, decoded_logs)
+                    decoded_logs.append(obj)
 
             return decoded_logs
 

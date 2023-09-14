@@ -3,10 +3,12 @@ from dataclasses import make_dataclass
 from typing import Any, Dict, List, Optional, Tuple, Union
 
 from eth_abi import decode, grammar
+from eth_abi.exceptions import DecodingError, InsufficientDataBytes
 from eth_utils import decode_hex
 from ethpm_types import HexBytes
 from ethpm_types.abi import ABIType, ConstructorABI, EventABI, EventABIType, MethodABI
 
+from ape.logging import logger
 from ape.types import AddressType
 
 ARRAY_PATTERN = re.compile(r"[(*\w,? )]*\[\d*]")
@@ -344,21 +346,85 @@ class LogInputABICollection:
     def event_name(self):
         return self.abi.name
 
-    def decode(self, topics: List[str], data: str) -> Dict:
+    def decode(self, topics: List[str], data: str, use_hex_on_fail: bool = False) -> Dict:
         decoded = {}
         for abi, topic_value in zip(self.topic_abi_types, topics[1:]):
             # reference types as indexed arguments are written as a hash
             # https://docs.soliditylang.org/en/v0.8.15/contracts.html#events
             abi_type = "bytes32" if is_dynamic_sized_type(abi.type) else abi.canonical_type
-            value = decode([abi_type], decode_hex(topic_value))[0]
-            decoded[abi.name] = self.decode_value(abi_type, value)
+            hex_value = decode_hex(topic_value)
+
+            try:
+                value = decode([abi_type], hex_value)[0]
+            except InsufficientDataBytes as err:
+                warning_message = f"Failed to decode log topic '{self.event_name}'."
+
+                # Try again with strict=False
+                try:
+                    value = decode([abi_type], hex_value, strict=False)[0]
+                except Exception:
+                    # Even with strict=False, we failed to decode.
+                    # This should be a rare occasion, if it ever happens.
+                    logger.warn_from_exception(err, warning_message)
+                    if use_hex_on_fail:
+                        if abi.name not in decoded:
+                            # This allow logs to still be findable on the receipt.
+                            decoded[abi.name] = hex_value
+
+                    else:
+                        raise DecodingError(str(err)) from err
+
+                else:
+                    # This happens when providers accidentally leave off trailing zeroes.
+                    warning_message = (
+                        f"{warning_message} "
+                        "However, we are able to get a value using decode(strict=False)"
+                    )
+                    logger.warn_from_exception(err, warning_message)
+                    decoded[abi.name] = self.decode_value(abi_type, value)
+
+            else:
+                # The data was formatted correctly and we were able to decode logs.
+                decoded[abi.name] = self.decode_value(abi_type, value)
 
         data_abi_types = [abi.canonical_type for abi in self.data_abi_types]
         hex_data = decode_hex(data) if isinstance(data, str) else data
-        data_values = decode(data_abi_types, hex_data)
 
-        for abi, value in zip(self.data_abi_types, data_values):
-            decoded[abi.name] = self.decode_value(abi.canonical_type, value)
+        try:
+            data_values = decode(data_abi_types, hex_data)
+        except InsufficientDataBytes as err:
+            warning_message = f"Failed to decode log data '{self.event_name}'."
+
+            # Try again with strict=False
+            try:
+                data_values = decode(data_abi_types, hex_data, strict=False)
+            except Exception:
+                # Even with strict=False, we failed to decode.
+                # This should be a rare occasion, if it ever happens.
+                logger.warn_from_exception(err, warning_message)
+                if use_hex_on_fail:
+                    for abi in self.data_abi_types:
+                        if abi.name not in decoded:
+                            # This allow logs to still be findable on the receipt.
+                            decoded[abi.name] = hex_data
+
+                else:
+                    raise DecodingError(str(err)) from err
+
+            else:
+                # This happens when providers accidentally leave off trailing zeroes.
+                warning_message = (
+                    f"{warning_message} "
+                    "However, we are able to get a value using decode(strict=False)"
+                )
+                logger.warn_from_exception(err, warning_message)
+                for abi, value in zip(self.data_abi_types, data_values):
+                    decoded[abi.name] = self.decode_value(abi.canonical_type, value)
+
+        else:
+            # The data was formatted correctly and we were able to decode logs.
+            for abi, value in zip(self.data_abi_types, data_values):
+                decoded[abi.name] = self.decode_value(abi.canonical_type, value)
 
         return decoded
 
