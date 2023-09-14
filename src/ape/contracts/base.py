@@ -1389,7 +1389,7 @@ class ContractContainer(ContractTypeWrapper):
 
 
 def _get_non_contract_error(address: str, network_name: str) -> ContractError:
-    raise ContractError(
+    return ContractError(
         f"Unable to make contract call. "
         f"'{address}' is not a contract on network '{network_name}'."
     )
