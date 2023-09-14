@@ -122,7 +122,12 @@ def test_get_block_not_found(geth_provider):
 
 @geth_process_test
 def test_get_receipt_not_exists_with_timeout(geth_provider, txn_hash):
-    with pytest.raises(TransactionNotFoundError, match=f"Transaction '{txn_hash}' not found"):
+    expected = (
+        f"Transaction '{txn_hash}' not found. "
+        rf"Error: Transaction HexBytes\('{txn_hash}'\) "
+        "is not in the chain after 0 seconds"
+    )
+    with pytest.raises(TransactionNotFoundError, match=expected):
         geth_provider.get_receipt(txn_hash, timeout=0)
 
 
