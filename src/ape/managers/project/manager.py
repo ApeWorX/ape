@@ -44,13 +44,14 @@ class ProjectManager(BaseManager):
     """The project path."""
 
     _cached_projects: Dict[str, ProjectAPI] = {}
-    _cached_dependencies: Dict[str, Dict[str, Dict[str, DependencyAPI]]] = {}
 
     def __init__(
         self,
         path: Path,
     ) -> None:
         self.path = Path(path) if isinstance(path, str) else path
+        if self.path.is_file():
+            self.path = self.path.parent
 
     def __str__(self) -> str:
         return f'Project("{self.path}")'
@@ -553,11 +554,10 @@ class ProjectManager(BaseManager):
             :class:`~ape.contracts.ContractContainer`
         """
 
-        contract = self._get_contract(contract_name)
-        if not contract:
-            raise ProjectError(f"No contract found with name '{contract_name}'.")
+        if contract := self._get_contract(contract_name):
+            return contract
 
-        return contract
+        raise ProjectError(f"No contract found with name '{contract_name}'.")
 
     def extensions_with_missing_compilers(
         self, extensions: Optional[List[str]] = None
@@ -621,10 +621,8 @@ class ProjectManager(BaseManager):
                 return None
 
             for file_path in dir_path.iterdir():
-                if file_path.is_dir():
-                    result = find_in_dir(file_path)
-                    if result:
-                        return result
+                if file_path.is_dir() and (result := find_in_dir(file_path)):
+                    return result
 
                 # If the user provided an extension, it has to match.
                 ext_okay = ext == file_path.suffix if ext is not None else True
@@ -680,79 +678,12 @@ class ProjectManager(BaseManager):
         return self.local_project.cached_manifest.contract_types or {}
 
     def load_dependencies(self, use_cache: bool = True) -> Dict[str, Dict[str, DependencyAPI]]:
-        project_id = str(self.path)
-        if use_cache and project_id in self._cached_dependencies:
-            return self._cached_dependencies[project_id]
-
-        for dependency_config in self.config_manager.dependencies:
-            dependency_name = dependency_config.name
-            version_id = dependency_config.version_id
-            project_dependencies = self._cached_dependencies.get(project_id, {})
-
-            if (
-                use_cache
-                and dependency_name in project_dependencies
-                and version_id in project_dependencies[dependency_name]
-            ):
-                # Already cached
-                continue
-
-            # Cache manifest for next time.
-            if dependency_name in project_dependencies:
-                # Dependency is cached but version is not.
-                project_dependencies[dependency_name][version_id] = dependency_config
-            else:
-                # First time caching dependency
-                project_dependencies[dependency_name] = {version_id: dependency_config}
-
-            self._cached_dependencies[project_id] = project_dependencies
-
-            # Only extract manifest if wasn't cached and must happen after caching.
-            dependency_config.extract_manifest(use_cache=use_cache)
-
-        return self._cached_dependencies.get(project_id, {})
+        return self.dependency_manager.load_dependencies(self.path.as_posix(), use_cache=use_cache)
 
     def remove_dependency(self, dependency_name: str, versions: Optional[List[str]] = None):
-        project_id = str(self.path)
-
-        try:
-            self.dependency_manager.remove_dependency(dependency_name, versions=versions)
-        finally:
-            # Delete locally.
-            if dependency_name in self._cached_dependencies.get(project_id, {}):
-                versions_available = self.dependency_manager.get_versions(dependency_name)
-                if not versions and len(versions_available) == 1:
-                    versions = [x.name for x in versions_available]
-                elif not versions:
-                    raise ProjectError("`versions` kwarg required.")
-
-                local_versions = self._cached_dependencies.get(project_id, {}).get(
-                    dependency_name, {}
-                )
-                for version in versions:
-                    if version in local_versions:
-                        version_key = version
-                    elif f"v{version}" in local_versions:
-                        version_key = f"v{version}"
-                    else:
-                        logger.warning(f"Version '{version}' not installed.")
-                        continue
-
-                    del self._cached_dependencies[project_id][dependency_name][version_key]
-
-            # Clean ups.
-            if (
-                project_id in self._cached_dependencies
-                and dependency_name in self._cached_dependencies[project_id]
-                and not self._cached_dependencies[project_id][dependency_name]
-            ):
-                del self._cached_dependencies[project_id][dependency_name]
-
-            if (
-                project_id in self._cached_dependencies
-                and not self._cached_dependencies[project_id]
-            ):
-                del self._cached_dependencies[project_id]
+        self.dependency_manager.remove_dependency(
+            self.path.as_posix(), dependency_name, versions=versions
+        )
 
     def track_deployment(self, contract: ContractInstance):
         """
