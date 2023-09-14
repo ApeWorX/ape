@@ -262,7 +262,11 @@ class ContractLog(BaseContractLog):
 
     @validator("block_number", "log_index", "transaction_index", pre=True)
     def validate_hex_ints(cls, value):
-        if not isinstance(value, int):
+        if value is None:
+            # Should only happen for optionals.
+            return value
+
+        elif not isinstance(value, int):
             return to_int(value)
 
         return value
