@@ -357,13 +357,34 @@ class LogInputABICollection:
             try:
                 value = decode([abi_type], hex_value)[0]
             except InsufficientDataBytes as err:
-                logger.warn_from_exception(err, f"Failed to decode log data '{self.event_name}'.")
-                if use_hex_on_fail:
-                    decoded[abi.name] = hex_value
+                warning_message = f"Failed to decode log topic '{self.event_name}'."
+
+                # Try again with strict=False
+                try:
+                    value = decode([abi_type], hex_value, strict=False)[0]
+                except Exception:
+                    # Even with strict=False, we failed to decode.
+                    # This should be a rare occasion, if it ever happens.
+                    logger.warn_from_exception(err, warning_message)
+                    if use_hex_on_fail:
+                        if abi.name not in decoded:
+                            # This allow logs to still be findable on the receipt.
+                            decoded[abi.name] = hex_value
+
+                    else:
+                        raise DecodingError(str(err)) from err
+
                 else:
-                    raise DecodingError(str(err)) from err
+                    # This happens when providers accidentally leave off trailing zeroes.
+                    warning_message = (
+                        f"{warning_message} "
+                        "However, we are able to get a value using decode(strict=False)"
+                    )
+                    logger.warn_from_exception(err, warning_message)
+                    decoded[abi.name] = self.decode_value(abi_type, value)
 
             else:
+                # The data was formatted correctly and we were able to decode logs.
                 decoded[abi.name] = self.decode_value(abi_type, value)
 
         data_abi_types = [abi.canonical_type for abi in self.data_abi_types]
@@ -372,15 +393,36 @@ class LogInputABICollection:
         try:
             data_values = decode(data_abi_types, hex_data)
         except InsufficientDataBytes as err:
-            logger.warn_from_exception(err, f"Failed to decode log data '{self.event_name}'.")
-            if use_hex_on_fail:
-                for abi in self.data_abi_types:
-                    # Set each to the full data, so it's at least there.
-                    decoded[abi.name] = hex_data
+            warning_message = f"Failed to decode log data '{self.event_name}'."
+
+            # Try again with strict=False
+            try:
+                data_values = decode(data_abi_types, hex_data, strict=False)
+            except Exception:
+                # Even with strict=False, we failed to decode.
+                # This should be a rare occasion, if it ever happens.
+                logger.warn_from_exception(err, warning_message)
+                if use_hex_on_fail:
+                    for abi in self.data_abi_types:
+                        if abi.name not in decoded:
+                            # This allow logs to still be findable on the receipt.
+                            decoded[abi.name] = hex_data
+
+                else:
+                    raise DecodingError(str(err)) from err
+
             else:
-                raise DecodingError(str(err)) from err
+                # This happens when providers accidentally leave off trailing zeroes.
+                warning_message = (
+                    f"{warning_message} "
+                    "However, we are able to get a value using decode(strict=False)"
+                )
+                logger.warn_from_exception(err, warning_message)
+                for abi, value in zip(self.data_abi_types, data_values):
+                    decoded[abi.name] = self.decode_value(abi.canonical_type, value)
 
         else:
+            # The data was formatted correctly and we were able to decode logs.
             for abi, value in zip(self.data_abi_types, data_values):
                 decoded[abi.name] = self.decode_value(abi.canonical_type, value)
 

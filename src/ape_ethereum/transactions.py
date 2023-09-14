@@ -305,6 +305,7 @@ class Receipt(ReceiptAPI):
                             decoded_logs.append(library_log)
 
                         else:
+                            # Search for selector in other spots:
                             name = f"UnknownLogWithSelector_{selector}"
                             obj = get_default_log(log, decoded_logs, name=name)
                             decoded_logs.append(obj)
