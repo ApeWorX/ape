@@ -1205,7 +1205,7 @@ class Web3Provider(ProviderAPI, ABC):
                 HexBytes(txn_hash), timeout=timeout
             )
         except TimeExhausted as err:
-            raise TransactionNotFoundError(txn_hash) from err
+            raise TransactionNotFoundError(txn_hash, error_messsage=str(err)) from err
 
         network_config: Dict = self.network.config.dict().get(self.network.name, {})
         max_retries = network_config.get("max_get_transaction_retries", DEFAULT_MAX_RETRIES_TX)
