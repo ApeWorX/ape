@@ -695,6 +695,10 @@ class Ethereum(EcosystemAPI):
                 elif _type == "address":
                     converted_arguments[key] = self.decode_primitive_value(value, _type)
 
+                else:
+                    # No change.
+                    converted_arguments[key] = value
+
             yield ContractLog(
                 block_hash=log["blockHash"],
                 block_number=log["blockNumber"],
