@@ -283,14 +283,11 @@ class Receipt(ReceiptAPI):
                     continue
 
                 selector = encode_hex(topics[0])
-                if contract_address in selectors and selector in selectors[contract_address]:
+                if selector in selectors[contract_address]:
                     event_abi = selectors[contract_address][selector]
                     decoded_logs.extend(
                         self.provider.network.ecosystem.decode_logs([log], event_abi)
                     )
-
-                    # Log found - no need to keep searching.
-                    break
 
                 else:
                     # Likely a library log
