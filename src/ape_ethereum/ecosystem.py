@@ -4,7 +4,7 @@ from typing import Any, Dict, Iterator, List, Optional, Tuple, Type, Union, cast
 
 from eth_abi import decode, encode
 from eth_abi.exceptions import InsufficientDataBytes, NonEmptyPaddingBytes
-from eth_typing import Hash32
+from eth_typing import Hash32, HexStr
 from eth_utils import (
     encode_hex,
     humanize_hash,
@@ -28,7 +28,6 @@ from ape.exceptions import (
     ConversionError,
     DecodingError,
 )
-from ape.logging import logger
 from ape.types import (
     AddressType,
     AutoGasLimit,
@@ -200,12 +199,11 @@ class Block(BlockAPI):
 
 
 class Ethereum(EcosystemAPI):
+    """
+    Default transaction type should be overridden id chain doesn't support EIP-1559
+    """
+
     name: str = "ethereum"
-
-    """
-    Default transaction type should be overidden id chain doesn't support EIP-1559
-    """
-
     fee_token_symbol: str = "ETH"
 
     @property
@@ -288,7 +286,7 @@ class Ethereum(EcosystemAPI):
             ProxyType.OpenZeppelin: str_to_slot("org.zeppelinos.proxy.implementation"),
             ProxyType.UUPS: str_to_slot("PROXIABLE"),
         }
-        for type, slot in slots.items():
+        for _type, slot in slots.items():
             try:
                 # TODO perf: use a batch call here when ape adds support
                 storage = self.provider.get_storage_at(address, slot)
@@ -300,10 +298,10 @@ class Ethereum(EcosystemAPI):
 
             target = self.conversion_manager.convert(storage[-20:], AddressType)
             # read `target.implementation()`
-            if type == ProxyType.Beacon:
+            if _type == ProxyType.Beacon:
                 target = ContractCall(IMPLEMENTATION_ABI, target)(skip_trace=True)
 
-            return ProxyInfo(type=type, target=target)
+            return ProxyInfo(type=_type, target=target)
 
         # safe >=1.1.0 provides `masterCopy()`, which is also stored in slot 0
         # detect safe-specific bytecode of push32 keccak256("masterCopy()")
@@ -654,25 +652,26 @@ class Ethereum(EcosystemAPI):
             encode_hex(keccak(text=abi.selector)): LogInputABICollection(abi) for abi in events
         }
 
+        def get_abi(_topic: HexStr) -> Optional[LogInputABICollection]:
+            return abi_inputs[_topic] if _topic in abi_inputs else None
+
         for log in logs:
             if log.get("anonymous"):
                 raise NotImplementedError(
                     "decoding anonymous logs is not supported with this method"
                 )
             topics = log["topics"]
-            # web3.py converts topics to hexbytes, data is always a hexstr
+            # web3.py converts topics to HexBytes, data is always a HexStr
             if isinstance(log["topics"][0], bytes):
                 topics = [encode_hex(t) for t in log["topics"]]
-            try:
-                abi = abi_inputs[topics[0]]
-            except KeyError:
+
+            elif not topics:
                 continue
 
-            try:
-                event_arguments = abi.decode(topics, log["data"])
-            except InsufficientDataBytes:
-                logger.debug("failed to decode log data for %s", log, exc_info=True)
+            if not (abi := get_abi(topics[0])):
                 continue
+
+            event_arguments = abi.decode(topics, log["data"], use_hex_on_fail=True)
 
             # Since LogABICollection does not have access to the Ecosystem,
             # the rest of the decoding must happen here.

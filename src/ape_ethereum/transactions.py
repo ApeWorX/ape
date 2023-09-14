@@ -273,19 +273,32 @@ class Receipt(ReceiptAPI):
             decoded_logs: ContractLogContainer = ContractLogContainer()
             for log in self.logs:
                 contract_address = log["address"]
-                if contract_address not in selectors:
+                if (
+                    not (contract_address := log.get("address"))
+                    or contract_address not in selectors
+                ):
                     continue
-                try:
-                    selector = encode_hex(log["topics"][0])
+
+                if not (topics := log.get("topics")):
+                    continue
+
+                selector = encode_hex(topics[0])
+                if contract_address in selectors and selector in selectors[contract_address]:
                     event_abi = selectors[contract_address][selector]
-                except KeyError:
-                    # Likely a library log
-                    if library_log := self._decode_ds_note(log):
-                        decoded_logs.append(library_log)
-                else:
                     decoded_logs.extend(
                         self.provider.network.ecosystem.decode_logs([log], event_abi)
                     )
+
+                    # Log found - no need to keep searching.
+                    break
+
+                else:
+                    # Likely a library log
+                    if library_log := self._decode_ds_note(log):
+                        decoded_logs.append(library_log)
+
+                        # Log found - no need to keep searching.
+                        break
 
             return decoded_logs
 
