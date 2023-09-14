@@ -31,7 +31,7 @@ from ape.api.config import PluginConfig
 from ape.api.networks import LOCAL_NETWORK_NAME, NetworkAPI
 from ape.api.query import BlockTransactionQuery
 from ape.api.transactions import ReceiptAPI, TransactionAPI
-from ape.contracts.base import ContractTypeWrapper
+from ape.contracts.base import ContractInstance, ContractTypeWrapper
 from ape.exceptions import (
     ApeException,
     APINotImplementedError,
@@ -600,13 +600,12 @@ class ProviderAPI(BaseInterfaceModel):
     @raises_not_implemented
     def poll_blocks(
         self,
-        start_block: Optional[int] = None,
         stop_block: Optional[int] = None,
         required_confirmations: Optional[int] = None,
         new_block_timeout: Optional[int] = None,
     ) -> Iterator[BlockAPI]: # type: ignore[empty-body]
         """
-        Poll new blocks. Optionally set a start block to include historical blocks.
+        Poll new blocks.
 
         **NOTE**: When a chain reorganization occurs, this method logs an error and
         yields the missed blocks, even if they were previously yielded with different
@@ -1679,7 +1678,7 @@ class Web3Provider(ProviderAPI, ABC):
             start = start_or_stop
 
         if stop > len(self):
-            raise ChainError(
+            raise ProviderError(
                 f"'stop={stop}' cannot be greater than the chain length ({len(self)}). "
                 f"Use '{self.poll_blocks.__name__}()' to wait for future blocks."
             )
@@ -1697,7 +1696,11 @@ class Web3Provider(ProviderAPI, ABC):
         yield from cast(Iterator[BlockAPI], blocks)
 
 
-    def poll_blocks(self, start_block: Optional[int] = None, stop_block: Optional[int] = None, required_confirmations: Optional[int] = None, new_block_timeout: Optional[int] = None) -> Iterator[BlockAPI]:
+    def poll_blocks(
+            self,
+            stop_block: Optional[int] = None,
+            required_confirmations: Optional[int] = None,
+            new_block_timeout: Optional[int] = None) -> Iterator[BlockAPI]:
         network_name = self.network.name
         block_time = self.provider.network.block_time
         timeout = (
@@ -1718,21 +1721,8 @@ class Web3Provider(ProviderAPI, ABC):
 
         block = None
 
-        if start_block is not None:
-            # Front-load historical blocks.
-            for block in self.range(start_block, self.height - required_confirmations + 1):
-                yield block
-
-        if block:
-            last_yielded_hash = block.hash
-            last_yielded_number = block.number
-
-            # Only sleep if pre-yielded a block
-            time.sleep(block_time)
-
-        else:
-            last_yielded_hash = None
-            last_yielded_number = None
+        last_yielded_hash = None
+        last_yielded_number = None
 
         # Set `time_since_last` even if haven't yield yet.
         # This helps with timing out the first time.
@@ -1751,7 +1741,7 @@ class Web3Provider(ProviderAPI, ABC):
                         "or adjusting the block time."
                     )
 
-                raise ChainError(message)
+                raise ProviderError(message)
 
         while True:
             confirmable_block_number = self.height - required_confirmations
@@ -1812,7 +1802,7 @@ class Web3Provider(ProviderAPI, ABC):
             # Reset 'stop' in case a re-org occurred.
             stop: int = min(confirmable_block_number + 1, len(self))
             if start < stop:
-                for block in self.range(start, stop):
+                for block in self.range_blocks(start, stop):
                     yield block
 
             if block:
@@ -1826,7 +1816,7 @@ class Web3Provider(ProviderAPI, ABC):
 
     def range_contract_events(
         self,
-        contract: ContractTypeWrapper,
+        contract: ContractInstance,
         start_or_stop: int,
         stop: Optional[int] = None,
         search_topics: Optional[Dict[str, Any]] = None,
@@ -1893,7 +1883,6 @@ class Web3Provider(ProviderAPI, ABC):
     def poll_logs(
         self,
         contract: ContractTypeWrapper,
-        start_block: Optional[int] = None,
         stop_block: Optional[int] = None,
         required_confirmations: Optional[int] = None,
         new_block_timeout: Optional[int] = None,
@@ -1903,15 +1892,13 @@ class Web3Provider(ProviderAPI, ABC):
             required_confirmations or self.network.required_confirmations
         )
 
-        # NOTE: We process historical blocks separately here to minimize rpc calls
         height = max(self.chain_manager.blocks.height - required_confirmations, 0)
-        if start_block and height > 0 and start_block < height:
-            yield from self.range(start_block, height)
-            start_block = height + 1
+
+        if stop_block is not None and stop_block <= height:
+            raise ValueError("Stop block must be greater than the current block.")
 
         # NOTE: Now we process the rest
         for new_block in self.chain_manager.blocks.poll_blocks(
-            start_block=start_block,
             stop_block=stop_block,
             required_confirmations=required_confirmations,
             new_block_timeout=new_block_timeout,
