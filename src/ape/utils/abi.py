@@ -3,7 +3,7 @@ from dataclasses import make_dataclass
 from typing import Any, Dict, List, Optional, Tuple, Union
 
 from eth_abi import decode, grammar
-from eth_utils import decode_hex, to_checksum_address
+from eth_utils import decode_hex
 from ethpm_types import HexBytes
 from ethpm_types.abi import ABIType, ConstructorABI, EventABI, EventABIType, MethodABI
 
@@ -49,7 +49,7 @@ class StructParser:
     A utility class responsible for parsing structs out of values.
     """
 
-    def __init__(self, method_abi: Union[ConstructorABI, MethodABI]):
+    def __init__(self, method_abi: Union[ConstructorABI, MethodABI, EventABI]):
         self.abi = method_abi
 
     @property
@@ -62,7 +62,7 @@ class StructParser:
         name = self.abi.name if isinstance(self.abi, MethodABI) else "constructor"
         return f"{name}_return"
 
-    def encode_input(self, values: Union[List, Tuple]) -> Any:
+    def encode_input(self, values: Union[List, Tuple, Dict]) -> Any:
         """
         Convert dicts and other objects to struct inputs.
 
@@ -73,31 +73,34 @@ class StructParser:
             Any: The same input values only decoded into structs when applicable.
         """
 
-        return [self._encode_input(ipt, v) for ipt, v in zip(self.abi.inputs, values)]
+        return [self._encode(ipt, v) for ipt, v in zip(self.abi.inputs, values)]
 
-    def _encode_input(self, input_type, value):
+    def decode_input(self, values: Union[List, Tuple, Dict[str, Any]]) -> Any:
+        return self._decode(self.abi.inputs, values) if isinstance(self.abi, EventABI) else None
+
+    def _encode(self, _type: ABIType, value: Any):
         if (
-            input_type.type == "tuple"
-            and input_type.components
-            and all(m.name for m in input_type.components)
+            _type.type == "tuple"
+            and _type.components
+            and all(m.name for m in _type.components)
             and not isinstance(value, tuple)
         ):
             if isinstance(value, dict):
-                return tuple([value[m.name] for m in input_type.components])
+                return tuple([value[m.name] for m in _type.components])
 
             else:
-                arg = [getattr(value, m.name) for m in input_type.components if m.name]
+                arg = [getattr(value, m.name) for m in _type.components if m.name]
                 return tuple(arg)
 
         elif (
-            str(input_type.type).startswith("tuple[")
+            str(_type.type).startswith("tuple[")
             and isinstance(value, (list, tuple))
-            and len(input_type.components) > 0
+            and len(_type.components or []) > 0
         ):
-            non_array_type_data = input_type.dict()
+            non_array_type_data = _type.dict()
             non_array_type_data["type"] = "tuple"
             non_array_type = ABIType(**non_array_type_data)
-            return [self._encode_input(non_array_type, v) for v in value]
+            return [self._encode(non_array_type, v) for v in value]
 
         return value
 
@@ -114,46 +117,41 @@ class StructParser:
             Any: The same input values only decoded into structs when applicable.
         """
 
-        return (
-            self._decode_output(self.abi.outputs, values)
-            if isinstance(self.abi, MethodABI)
-            else None
-        )
+        return self._decode(self.abi.outputs, values) if isinstance(self.abi, MethodABI) else None
 
-    def _decode_output(self, output_types: List[ABIType], values: Union[List, Tuple]):
-        if is_struct(output_types):
-            return_value = self._create_struct(output_types[0], values)
-            return return_value
+    def _decode(self, _types: List[ABIType], values: Union[List, Tuple, Dict[str, Any]]):
+        if is_struct(_types):
+            return self._create_struct(_types[0], values)
 
-        elif is_named_tuple(output_types, values):
+        elif isinstance(values, (list, tuple)) and is_named_tuple(_types, values):
             # Handle tuples. NOTE: unnamed output structs appear as tuples with named members
-            return create_struct(self.default_name, output_types, values)
+            return create_struct(self.default_name, _types, values)
 
         return_values: List = []
-        has_array_return = _is_array_return(output_types)
+        has_array_return = _is_array_return(_types)
         has_array_of_tuples_return = (
-            has_array_return and len(output_types) == 1 and "tuple" in output_types[0].type
+            has_array_return and len(_types) == 1 and "tuple" in _types[0].type
         )
         if has_array_return and not has_array_of_tuples_return:
             # Normal array
             return values
 
         elif has_array_of_tuples_return:
-            item_type_str = str(output_types[0].type).split("[")[0]
-            data = {**output_types[0].dict(), "type": item_type_str, "internalType": item_type_str}
+            item_type_str = str(_types[0].type).split("[")[0]
+            data = {**_types[0].dict(), "type": item_type_str, "internalType": item_type_str}
             output_type = ABIType.parse_obj(data)
 
-            if not values[0]:
+            if isinstance(values, (list, tuple)) and not values[0]:
                 # Only returned an empty list.
                 return_values.append([])
 
-            else:
+            elif isinstance(values, (list, tuple)):
                 for value in values[0]:
-                    item = self._decode_output([output_type], [value])
+                    item = self._decode([output_type], [value])
                     return_values.append(item)
 
         else:
-            for output_type, value in zip(output_types, values):
+            for output_type, value in zip(_types, values):
                 if isinstance(value, (tuple, list)):
                     item_type_str = str(output_type.type).split("[")[0]
                     if item_type_str == "tuple":
@@ -166,10 +164,10 @@ class StructParser:
                         item_type = ABIType.parse_obj(item_type_data)
 
                         if is_struct(output_type):
-                            parsed_item = self._decode_output([item_type], [value])
+                            parsed_item = self._decode([item_type], [value])
                         else:
                             # Is array of structs.
-                            parsed_item = [self._decode_output([item_type], [v]) for v in value]
+                            parsed_item = [self._decode([item_type], [v]) for v in value]
 
                         # If it's an empty dynamic array of structs, replace `None` with empty list
                         output_raw_type = output_type.type
@@ -190,7 +188,7 @@ class StructParser:
 
         return return_values
 
-    def _create_struct(self, out_abi: ABIType, out_value) -> Optional[Any]:
+    def _create_struct(self, out_abi: ABIType, out_value: Any) -> Optional[Any]:
         if not out_abi.components or not out_value[0]:
             # Likely an empty tuple or not a struct.
             return None
@@ -202,12 +200,11 @@ class StructParser:
             name = out_abi.name or self.default_name
 
         components = self._parse_components(out_abi.components, out_value[0])
-        result = create_struct(
+        return create_struct(
             name,
             out_abi.components,
             components,
         )
-        return result
 
     def _parse_components(self, components: List[ABIType], values) -> List:
         parsed_values = []
@@ -216,7 +213,7 @@ class StructParser:
                 new_value = self._create_struct(component, (value,))
                 parsed_values.append(new_value)
             elif is_array(component.type) and "tuple" in component.type and component.components:
-                new_value = [self._decode_output(component.components, v) for v in value]
+                new_value = [self._decode(component.components, v) for v in value]
                 parsed_values.append(new_value)
             else:
                 parsed_values.append(value)
@@ -257,6 +254,10 @@ class Struct:
         """Override"""
         return {}
 
+    def __setitem__(self, key, value):
+        """Override"""
+        pass
+
 
 def create_struct(
     name: str, types: List[ABIType], output_values: Union[List[Any], Tuple[Any, ...]]
@@ -278,13 +279,21 @@ def create_struct(
         Any: The struct dataclass.
     """
 
-    def get_item(struct, index) -> Any:
+    def get_item(struct, key) -> Any:
         # NOTE: Allow struct to function as a tuple and dict as well
         struct_values = tuple(getattr(struct, field) for field in struct.__dataclass_fields__)
-        if isinstance(index, str):
-            return dict(zip(struct.__dataclass_fields__, struct_values))[index]
+        if isinstance(key, str):
+            return dict(zip(struct.__dataclass_fields__, struct_values))[key]
 
-        return struct_values[index]
+        return struct_values[key]
+
+    def set_item(struct, key, value):
+        if isinstance(key, str):
+            setattr(struct, key, value)
+        else:
+            struct_values = tuple(getattr(struct, field) for field in struct.__dataclass_fields__)
+            field_to_set = struct_values[key]
+            setattr(struct, field_to_set, value)
 
     def is_equal(struct, other) -> bool:
         _len = len(other)
@@ -296,11 +305,20 @@ def create_struct(
     def items(struct) -> List[Tuple]:
         return [(k, struct[k]) for k, v in struct.__dataclass_fields__.items()]
 
+    # NOTE: Should never be "_{i}", but mypy complains and we need a unique value
+    properties = [m.name or f"_{i}" for i, m in enumerate(types)]
+    methods = {
+        "__eq__": is_equal,
+        "__getitem__": get_item,
+        "__setitem__": set_item,
+        "__len__": length,
+        "items": items,
+    }
+
     struct_def = make_dataclass(
         name,
-        # NOTE: Should never be "_{i}", but mypy complains and we need a unique value
-        [m.name or f"_{i}" for i, m in enumerate(types)],
-        namespace={"__getitem__": get_item, "__eq__": is_equal, "__len__": length, "items": items},
+        properties,
+        namespace=methods,
         bases=(Struct,),  # We set a base class for subclass checking elsewhere.
     )
 
@@ -344,11 +362,16 @@ class LogInputABICollection:
 
         return decoded
 
-    def decode_value(self, abi_type, value):
-        if abi_type == "address":
-            return to_checksum_address(value)
-        elif abi_type == "bytes32":
+    def decode_value(self, abi_type: str, value: Any) -> Any:
+        if abi_type == "bytes32":
             return HexBytes(value)
+
+        elif isinstance(value, (list, tuple)):
+            parser = StructParser(self.abi)
+            return parser.decode_input([value])
+
+        # NOTE: All the rest of the types are handled by the
+        #  ecosystem API through the calling function.
 
         return value
 

@@ -32,6 +32,10 @@ contract TestContractSol {
         uint256 indexed bar
     );
 
+    event EventWithStruct(
+        MyStruct a_struct
+    );
+
     struct MyStruct {
         address a;
         bytes32 b;
@@ -277,5 +281,11 @@ contract TestContractSol {
 
     function setStructArray(MyStruct[2] memory _my_struct_array) public pure {
 
+    }
+
+    function logStruct() public {
+        bytes32 _bytes = 0x1234567890abcdef0123456789abcdef0123456789abcdef0123456789abcdef;
+        MyStruct memory _struct = MyStruct(msg.sender, _bytes);
+        emit EventWithStruct(_struct);
     }
 }

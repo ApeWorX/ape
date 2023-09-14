@@ -1,4 +1,4 @@
-# @version 0.3.7
+# @version 0.3.9
 
 event NumberChange:
     b: bytes32
@@ -15,6 +15,9 @@ event FooHappened:
 
 event BarHappened:
     bar: indexed(uint256)
+
+event EventWithStruct:
+    a_struct: MyStruct
 
 struct MyStruct:
     a: address
@@ -270,3 +273,12 @@ def setStruct(_my_struct: MyStruct):
 @external
 def setStructArray(_my_struct_array: MyStruct[2]):
     pass
+
+@external
+def logStruct():
+    _bytes: bytes32 = 0x1234567890abcdef0123456789abcdef0123456789abcdef0123456789abcdef
+    _struct: MyStruct = MyStruct({
+        a: msg.sender,
+        b: _bytes
+    })
+    log EventWithStruct(_struct)

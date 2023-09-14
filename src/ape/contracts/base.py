@@ -25,7 +25,7 @@ from ape.exceptions import (
 from ape.logging import logger
 from ape.types import AddressType, ContractLog, LogFilter, MockContractLog
 from ape.utils import ManagerAccessMixin, cached_property, singledispatchmethod
-from ape.utils.abi import _convert_args, _convert_kwargs
+from ape.utils.abi import StructParser, _convert_args, _convert_kwargs
 
 
 class ContractConstructor(ManagerAccessMixin):
@@ -458,7 +458,7 @@ class ContractEvent(ManagerAccessMixin):
 
     def __call__(self, *args: Any, **kwargs: Any) -> MockContractLog:
         # Create a dictionary from the positional arguments
-        event_args: Dict[Any, Any] = dict(zip((input.name for input in self.abi.inputs), args))
+        event_args: Dict[Any, Any] = dict(zip((ipt.name for ipt in self.abi.inputs), args))
 
         overlapping_keys = set(k for k in event_args.keys() if k is not None) & set(
             k for k in kwargs.keys() if k is not None
@@ -473,22 +473,32 @@ class ContractEvent(ManagerAccessMixin):
         event_args.update(kwargs)
 
         # Check that event_args.keys() is a subset of the expected input names
-        if unknown_input_names := set(event_args.keys()) - {
-            input.name for input in self.abi.inputs
-        }:
+        if unknown_input_names := set(event_args.keys()) - {ipt.name for ipt in self.abi.inputs}:
             raise ValueError(
                 f"Invalid argument keys found, expected subset of {', '.join(unknown_input_names)}"
             )
 
         # Convert the arguments using the conversion manager
         converted_args = {}
+        ecosystem = self.provider.network.ecosystem
+        parser = StructParser(self.abi)
+
         for key, value in event_args.items():
             if value is None:
                 continue
-            input_abi = next(input for input in self.abi.inputs if input.name == key)
-            ecosystem = self.provider.network.ecosystem
+
+            input_abi = next(ipt for ipt in self.abi.inputs if ipt.name == key)
             py_type = ecosystem.get_python_types(input_abi)
-            converted_args[key] = self.conversion_manager.convert(value, py_type)
+            if isinstance(value, dict):
+                ls_values = list(value.values())
+                converted_values = self.conversion_manager.convert(ls_values, py_type)
+                converted_args[key] = parser.decode_input([converted_values])
+
+            elif isinstance(value, (list, tuple)):
+                converted_args[key] = parser.decode_input(value)
+
+            else:
+                converted_args[key] = self.conversion_manager.convert(value, py_type)
 
         properties = {"event_arguments": converted_args, "event_name": self.abi.name}
         if hasattr(self.contract, "address"):

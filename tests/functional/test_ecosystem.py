@@ -274,15 +274,17 @@ def test_gas_limit_live_networks(ethereum):
 def test_encode_blueprint_contract(ethereum, vyper_contract_type):
     actual = ethereum.encode_contract_blueprint(vyper_contract_type)
     ct_bytes = vyper_contract_type.deployment_bytecode.to_bytes()
+
     # EIP-5202
     expected = (
         HexBytes("0x61")
-        + (6971).to_bytes(2, "big")  # preface and length
+        + (len(ct_bytes) + 3).to_bytes(2, "big")  # preface and length
         + HexBytes("0x3d81600a3d39f3")  # return stuff
         + BLUEPRINT_HEADER
         + HexBytes(0)
         + ct_bytes
     )
+
     assert actual.data == HexBytes(expected)
 
 

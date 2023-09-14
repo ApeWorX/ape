@@ -319,3 +319,10 @@ def test_filter_events_with_same_abi(
 
     result_c = receipt.events.filter(leaf_contract.OneOfMany)
     assert result_c == [leaf_contract.OneOfMany(addr=contract_with_call_depth.address)]
+
+
+def test_structs_in_events(contract_instance, owner):
+    tx = contract_instance.logStruct(sender=owner)
+    expected_bytes = HexBytes(0x1234567890ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF)
+    expected = contract_instance.EventWithStruct(a_struct={"a": owner, "b": expected_bytes})
+    assert tx.events == [expected]
