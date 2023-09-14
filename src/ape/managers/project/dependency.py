@@ -18,6 +18,7 @@ from ape.utils import ManagerAccessMixin, cached_property, github_client, load_c
 
 class DependencyManager(ManagerAccessMixin):
     DATA_FOLDER: Path
+    _cached_dependencies: Dict[str, Dict[str, Dict[str, DependencyAPI]]] = {}
 
     def __init__(self, data_folder: Path):
         self.DATA_FOLDER = data_folder
@@ -48,6 +49,40 @@ class DependencyManager(ManagerAccessMixin):
         dep_id = config_dependency_data.get("name", json.dumps(config_dependency_data))
         raise ProjectError(f"No installed dependency API that supports '{dep_id}'.")
 
+    def load_dependencies(
+        self, project_id: str, use_cache: bool = True
+    ) -> Dict[str, Dict[str, DependencyAPI]]:
+        if use_cache and project_id in self._cached_dependencies:
+            return self._cached_dependencies[project_id]
+
+        for dependency_config in self.config_manager.dependencies:
+            dependency_name = dependency_config.name
+            version_id = dependency_config.version_id
+            project_dependencies = self._cached_dependencies.get(project_id, {})
+
+            if (
+                use_cache
+                and dependency_name in project_dependencies
+                and version_id in project_dependencies[dependency_name]
+            ):
+                # Already cached
+                continue
+
+            # Cache manifest for next time.
+            if dependency_name in project_dependencies:
+                # Dependency is cached but version is not.
+                project_dependencies[dependency_name][version_id] = dependency_config
+            else:
+                # First time caching dependency
+                project_dependencies[dependency_name] = {version_id: dependency_config}
+
+            self._cached_dependencies[project_id] = project_dependencies
+
+            # Only extract manifest if wasn't cached and must happen after caching.
+            dependency_config.extract_manifest(use_cache=use_cache)
+
+        return self._cached_dependencies.get(project_id, {})
+
     def get_versions(self, name: str) -> List[Path]:
         path = self.packages_folder / name
         if not path.is_dir():
@@ -56,7 +91,11 @@ class DependencyManager(ManagerAccessMixin):
 
         return [x for x in path.iterdir() if x.is_dir()]
 
-    def remove_dependency(self, name: str, versions: Optional[List[str]] = None):
+    def remove_dependency(self, project_id: str, name: str, versions: Optional[List[str]] = None):
+        self._remove_local_dependency(project_id, name, versions=versions)
+        self._remove_disk_dependency(name, versions=versions)
+
+    def _remove_disk_dependency(self, name: str, versions: Optional[List[str]] = None):
         versions = versions or []
         available_versions = self.get_versions(name)
         if not available_versions:
@@ -98,6 +137,40 @@ class DependencyManager(ManagerAccessMixin):
         remaining_versions = self.get_versions(name)
         if not remaining_versions:
             shutil.rmtree(self.packages_folder / name, ignore_errors=True)
+
+    def _remove_local_dependency(
+        self, project_id: str, name: str, versions: Optional[List[str]] = None
+    ):
+        versions = versions or []
+        if name in self._cached_dependencies.get(project_id, {}):
+            versions_available = self.dependency_manager.get_versions(name)
+            if not versions and len(versions_available) == 1:
+                versions = [x.name for x in versions_available]
+            elif not versions:
+                raise ProjectError("`versions` kwarg required.")
+
+            local_versions = self._cached_dependencies.get(project_id, {}).get(name, {})
+            for version in versions:
+                if version in local_versions:
+                    version_key = version
+                elif f"v{version}" in local_versions:
+                    version_key = f"v{version}"
+                else:
+                    logger.warning(f"Version '{version}' not installed.")
+                    continue
+
+                del self._cached_dependencies[project_id][name][version_key]
+
+        # Local clean ups.
+        if (
+            project_id in self._cached_dependencies
+            and name in self._cached_dependencies[project_id]
+            and not self._cached_dependencies[project_id][name]
+        ):
+            del self._cached_dependencies[project_id][name]
+
+        if project_id in self._cached_dependencies and not self._cached_dependencies[project_id]:
+            del self._cached_dependencies[project_id]
 
 
 class GithubDependency(DependencyAPI):
@@ -239,11 +312,7 @@ class LocalDependency(DependencyAPI):
 
     @property
     def path(self) -> Path:
-        given_path = Path(self.local).resolve().absolute()
-        if not given_path.is_dir():
-            raise ProjectError(f"No project exists at path '{given_path}'.")
-
-        return given_path
+        return Path(self.local).resolve().absolute()
 
     @property
     def version_id(self) -> str:
@@ -251,8 +320,7 @@ class LocalDependency(DependencyAPI):
 
     @property
     def uri(self) -> AnyUrl:
-        path = self._target_manifest_cache_file.resolve().absolute()
-        return FileUrl(f"file://{path}", scheme="file")
+        return FileUrl(self.path.as_uri(), scheme="file")
 
     def extract_manifest(self, use_cache: bool = True) -> PackageManifest:
         return self._extract_local_manifest(self.path, use_cache=use_cache)

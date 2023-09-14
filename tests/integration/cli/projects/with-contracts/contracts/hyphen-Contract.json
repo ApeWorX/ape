@@ -1,0 +1,3 @@
+[
+    {"name":"testForHavingHyphenInContractName","type":"fallback", "stateMutability":"nonpayable"}
+]

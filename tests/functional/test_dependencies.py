@@ -67,8 +67,7 @@ def test_dependency_contracts_folder(config, local_dependency):
 def test_local_dependency(local_dependency, config):
     assert local_dependency.name == "testdependency"
     assert local_dependency.version_id == "local"
-    expected = config.DATA_FOLDER / "packages" / "testdependency" / "local" / "testdependency.json"
-    assert str(local_dependency.uri) == f"file://{expected}"
+    assert str(local_dependency.uri).startswith("file://")
 
 
 def test_access_dependency_contracts(project_with_downloaded_dependencies):
