@@ -350,8 +350,10 @@ class TransactionNotFoundError(ProviderError):
     Raised when unable to find a transaction.
     """
 
-    def __init__(self, txn_hash: str):
-        super().__init__(f"Transaction '{txn_hash}' not found.")
+    def __init__(self, txn_hash: str, error_messsage: Optional[str] = None):
+        message = f"Transaction '{txn_hash}' not found."
+        suffix = f" Error: {error_messsage}" if error_messsage else ""
+        super().__init__(f"{message}{suffix}")
 
 
 class NetworkMismatchError(ProviderError):
@@ -693,7 +695,10 @@ def _get_custom_python_traceback(
             continue
 
         depth = exec_item.depth
-        lineno = exec_item.begin_lineno
+
+        # NOTE: Use the last lineno executed as "the line number".
+        lineno = exec_item.begin_lineno if exec_item.end_lineno is None else exec_item.end_lineno
+
         if lineno is None:
             idx -= 1
             continue

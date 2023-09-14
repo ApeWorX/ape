@@ -1,4 +1,5 @@
 import os.path
+import re
 import tempfile
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
@@ -8,7 +9,6 @@ from ethpm_types.manifest import PackageName
 from ethpm_types.utils import AnyUrl, compute_checksum
 from packaging.version import InvalidVersion, Version
 from pydantic import ValidationError
-from yaml import safe_dump
 
 from ape.exceptions import ApeAttributeError
 from ape.logging import logger
@@ -200,13 +200,21 @@ class ProjectAPI(BaseInterfaceModel):
         source_dict: Dict[str, Source] = {}
         for source_path in filepaths:
             key = str(get_relative_path(source_path, base_path))
+
+            try:
+                text = source_path.read_text("utf8")
+            except UnicodeDecodeError:
+                # Let it attempt to find the encoding.
+                # (this is much slower and a-typical).
+                text = source_path.read_text()
+
             source_dict[key] = Source(
                 checksum=Checksum(
                     algorithm="md5",
                     hash=compute_checksum(source_path.read_bytes()),
                 ),
                 urls=[],
-                content=source_path.read_text("utf8"),
+                content=text,
                 imports=source_imports.get(key, []),
                 references=source_references.get(key, []),
             )
@@ -347,9 +355,10 @@ class DependencyAPI(BaseInterfaceModel):
 
     def get(self, contract_name: str) -> Optional["ContractContainer"]:
         manifest = self.compile()
-        if hasattr(manifest, contract_name):
-            contract_type = getattr(manifest, contract_name)
-            return self.chain_manager.contracts.get_container(contract_type)
+        options = (contract_name, contract_name.replace("-", "_"))
+        for name in options:
+            if contract_type := manifest.get_contract_type(name):
+                return self.chain_manager.contracts.get_container(contract_type)
 
         return None
 
@@ -370,105 +379,25 @@ class DependencyAPI(BaseInterfaceModel):
             # Already compiled
             return manifest
 
-        sources = manifest.sources or {}  # NOTE: Already handled excluded files
-        compilers_touched = []
+        # Figure the config data needed to compile this dependency.
+        # Use a combination of looking at the manifest's other artifacts
+        # as well, config overrides, and the base project's config.
+        config_data: Dict[str, Any] = {
+            **_get_compile_configs_from_manifest(manifest),
+            **_get_dependency_configs_from_manifest(manifest),
+            **self.config_override,
+        }
+
         with tempfile.TemporaryDirectory() as temp_dir:
-            project = self._get_project(Path(temp_dir))
-            contracts_folder = project.contracts_folder.absolute()
-            contracts_folder.mkdir(parents=True, exist_ok=True)
-            for source_id, source_obj in sources.items():
-                content = source_obj.content or ""
-                absolute_path = contracts_folder / source_id
-                source_path = contracts_folder / get_relative_path(
-                    absolute_path, contracts_folder.absolute()
-                )
-
-                # Create content, including sub-directories.
-                source_path.parent.mkdir(parents=True, exist_ok=True)
-                source_path.touch()
-                source_path.write_text(str(content))
-
-            # Handle import remapping entries indicated in the manifest file
-            target_config_file = project.path / project.config_file_name
-            packages_used = set()
-            config_data: Dict[str, Any] = {}
-            for compiler in [x for x in manifest.compilers or [] if x.settings]:
-                name = compiler.name.lower()
-                compiler_data = {}
-                settings = compiler.settings or {}
-                remapping_list = []
-                for remapping in settings.get("remappings") or []:
-                    parts = remapping.split("=")
-                    key = parts[0]
-                    link = parts[1]
-                    if link.startswith(f".cache{os.path.sep}"):
-                        link = os.path.sep.join(link.split(f".cache{os.path.sep}"))[1:]
-
-                    packages_used.add(link)
-                    new_entry = f"{key}={link}"
-                    remapping_list.append(new_entry)
-
-                if remapping_list:
-                    compiler_data["import_remapping"] = remapping_list
-
-                if "evm_version" in settings:
-                    compiler_data["evm_version"] = settings["evm_version"]
-
-                for key, setting in self.config_override.items():
-                    if key == compiler.name.strip().lower():
-                        compiler_data = {**compiler_data, **setting}
-                        compilers_touched.append(key)
-                        break
-
-                if compiler_data:
-                    config_data[name] = compiler_data
-
-            # Handle dependencies indicated in the manifest file
-            dependencies_config: List[Dict] = []
-            dependencies = manifest.dependencies or {}
-            dependencies_used = {
-                p: d for p, d in dependencies.items() if any(p.lower() in x for x in packages_used)
-            }
-            for package_name, uri in dependencies_used.items():
-                if "://" not in str(uri) and hasattr(uri, "scheme"):
-                    uri_str = f"{uri.scheme}://{uri}"
-                else:
-                    uri_str = str(uri)
-
-                dependency = {"name": str(package_name)}
-                if uri_str.startswith("https://"):
-                    # Assume GitHub dependency
-                    version = uri_str.split("/")[-1]
-                    dependency["github"] = uri_str.replace(f"/releases/tag/{version}", "")
-                    dependency["github"] = dependency["github"].replace("https://github.com/", "")
-
-                    # NOTE: If version fails, the dependency system will automatically try `ref`.
-                    dependency["version"] = version
-
-                elif uri_str.startswith("file://"):
-                    dependency["local"] = uri_str.replace("file://", "")
-
-                dependencies_config.append(dependency)
-
-            if dependencies_config:
-                config_data["dependencies"] = dependencies_config
-
-            # Merge compiler data
-            overrides = self.config_override
-            for name in compilers_touched:
-                if name in overrides and name in config_data:
-                    config_data[name] = {**config_data[name], **overrides[name]}
-                    del overrides[name]
-
-            config_data = {**config_data, **overrides}
-            if config_data:
-                target_config_file.unlink(missing_ok=True)
-                with open(target_config_file, "w") as cf:
-                    safe_dump(config_data, cf)
-
-            manifest = project.create_manifest()
-            self._write_manifest_to_cache(manifest)
-            return manifest
+            path = Path(temp_dir)
+            contracts_folder = path / config_data.get("contracts_folder", "contracts")
+            with self.config_manager.using_project(
+                path, contracts_folder=contracts_folder, **config_data
+            ) as project:
+                manifest.unpack_sources(contracts_folder)
+                compiled_manifest = project.local_project.create_manifest()
+                self._write_manifest_to_cache(compiled_manifest)
+                return compiled_manifest
 
     def _extract_local_manifest(
         self, project_path: Path, use_cache: bool = True
@@ -488,8 +417,8 @@ class DependencyAPI(BaseInterfaceModel):
         with self.config_manager.using_project(
             project_path,
             contracts_folder=(project_path / self.contracts_folder).expanduser().resolve(),
-        ):
-            project = self._get_project(project_path)
+        ) as pm:
+            project = pm.local_project
             sources = self._get_sources(project)
             dependencies = self.project_manager._extract_manifest_dependencies()
             project_manifest = project._create_manifest(
@@ -506,23 +435,16 @@ class DependencyAPI(BaseInterfaceModel):
         return project_manifest
 
     def _get_sources(self, project: ProjectAPI) -> List[Path]:
-        all_sources = get_all_files_in_directory(project.contracts_folder)
+        escaped_extensions = [re.escape(ext) for ext in self.compiler_manager.registered_compilers]
+        extension_pattern = "|".join(escaped_extensions)
+        pattern = rf".*({extension_pattern})"
+        all_sources = get_all_files_in_directory(project.contracts_folder, pattern=pattern)
 
         excluded_files = set()
         for pattern in set(self.exclude):
             excluded_files.update({f for f in project.contracts_folder.glob(pattern)})
 
         return [s for s in all_sources if s not in excluded_files]
-
-    def _get_project(self, project_path: Path) -> ProjectAPI:
-        project_path = project_path.resolve()
-        contracts_folder = project_path / self.contracts_folder
-        return self.project_manager.get_project(
-            project_path,
-            contracts_folder=contracts_folder,
-            name=self.name,
-            version=self.version,
-        )
 
     def _write_manifest_to_cache(self, manifest: PackageManifest):
         self._target_manifest_cache_file.unlink(missing_ok=True)
@@ -541,3 +463,59 @@ def _load_manifest_from_file(file_path: Path) -> Optional[PackageManifest]:
         logger.warning(f"Existing manifest file '{file_path}' corrupted. Re-building.")
         logger.debug(str(err))
         return None
+
+
+def _get_compile_configs_from_manifest(manifest: PackageManifest) -> Dict[str, Dict]:
+    configs: Dict[str, Dict] = {}
+    for compiler in [x for x in manifest.compilers or [] if x.settings]:
+        name = compiler.name.strip().lower()
+        compiler_data = {}
+        settings = compiler.settings or {}
+        remapping_list = []
+        for remapping in settings.get("remappings") or []:
+            parts = remapping.split("=")
+            key = parts[0]
+            link = parts[1]
+            if link.startswith(f".cache{os.path.sep}"):
+                link = os.path.sep.join(link.split(f".cache{os.path.sep}"))[1:]
+
+            new_entry = f"{key}={link}"
+            remapping_list.append(new_entry)
+
+        if remapping_list:
+            compiler_data["import_remapping"] = remapping_list
+
+        if "evm_version" in settings:
+            compiler_data["evm_version"] = settings["evm_version"]
+
+        if compiler_data:
+            configs[name] = compiler_data
+
+    return configs
+
+
+def _get_dependency_configs_from_manifest(manifest: PackageManifest) -> Dict:
+    dependencies_config: List[Dict] = []
+    dependencies = manifest.dependencies or {}
+    for package_name, uri in dependencies.items():
+        if "://" not in str(uri) and hasattr(uri, "scheme"):
+            uri_str = f"{uri.scheme}://{uri}"
+        else:
+            uri_str = str(uri)
+
+        dependency: Dict = {"name": str(package_name)}
+        if uri_str.startswith("https://"):
+            # Assume GitHub dependency
+            version = uri_str.split("/")[-1]
+            dependency["github"] = uri_str.replace(f"/releases/tag/{version}", "")
+            dependency["github"] = dependency["github"].replace("https://github.com/", "")
+
+            # NOTE: If version fails, the dependency system will automatically try `ref`.
+            dependency["version"] = version
+
+        elif uri_str.startswith("file://"):
+            dependency["local"] = uri_str.replace("file://", "")
+
+        dependencies_config.append(dependency)
+
+    return {"dependencies": dependencies_config} if dependencies_config else {}

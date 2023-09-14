@@ -304,18 +304,25 @@ def test_filter_events_with_same_abi(
     filtering. This test verifies we filter by contract address as well as ABI.
     """
 
-    receipt = contract_with_call_depth.emitLogWithSameInterfaceFromMultipleContracts(sender=owner)
+    tx = contract_with_call_depth.emitLogWithSameInterfaceFromMultipleContracts(sender=owner)
 
-    assert contract_with_call_depth.OneOfMany(addr=owner.address) in receipt.events
-    assert middle_contract.OneOfMany(addr=contract_with_call_depth.address) in receipt.events
-    assert leaf_contract.OneOfMany(addr=contract_with_call_depth.address) in receipt.events
+    assert contract_with_call_depth.OneOfMany(addr=owner.address) in tx.events
+    assert middle_contract.OneOfMany(addr=contract_with_call_depth.address) in tx.events
+    assert leaf_contract.OneOfMany(addr=contract_with_call_depth.address) in tx.events
 
     # Ensure each contract's event appears only once
-    result_a = receipt.events.filter(contract_with_call_depth.OneOfMany)
+    result_a = tx.events.filter(contract_with_call_depth.OneOfMany)
     assert result_a == [contract_with_call_depth.OneOfMany(addr=owner.address)]
 
-    result_b = receipt.events.filter(middle_contract.OneOfMany)
+    result_b = tx.events.filter(middle_contract.OneOfMany)
     assert result_b == [middle_contract.OneOfMany(addr=contract_with_call_depth.address)]
 
-    result_c = receipt.events.filter(leaf_contract.OneOfMany)
+    result_c = tx.events.filter(leaf_contract.OneOfMany)
     assert result_c == [leaf_contract.OneOfMany(addr=contract_with_call_depth.address)]
+
+
+def test_structs_in_events(contract_instance, owner):
+    tx = contract_instance.logStruct(sender=owner)
+    expected_bytes = HexBytes(0x1234567890ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF)
+    expected = contract_instance.EventWithStruct(a_struct={"a": owner, "b": expected_bytes})
+    assert tx.events == [expected]

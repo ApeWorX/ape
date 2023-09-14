@@ -111,6 +111,7 @@ setup(
         "SQLAlchemy>=1.4.35",
         "tqdm>=4.62.3,<5.0",
         "traitlets>=5.3.0",
+        "urllib3>=1.26.16,<2",
         "watchdog>=3.0,<4",
         # ** Dependencies maintained by Ethereum Foundation **
         "eth-abi>=4.1.0,<5",
@@ -122,7 +123,7 @@ setup(
         "web3[tester]>=6.7.0,<7",
         # ** Dependencies maintained by ApeWorX **
         "eip712>=0.2.1,<0.3",
-        "ethpm-types>=0.5.3,<0.6",
+        "ethpm-types>=0.5.6,<0.6",
         "evm-trace>=0.1.0a23",
     ],
     entry_points={

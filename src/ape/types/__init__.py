@@ -126,7 +126,7 @@ class LogFilter(BaseModel):
     @root_validator()
     def compute_selectors(cls, values):
         values["selectors"] = {
-            encode_hex(keccak(text=event.selector)): event for event in values["events"]
+            encode_hex(keccak(text=event.selector)): event for event in values.get("events", [])
         }
 
         return values
@@ -152,7 +152,7 @@ class LogFilter(BaseModel):
     @classmethod
     def from_event(
         cls,
-        event: EventABI,
+        event: Union[EventABI, "ContractEvent"],
         search_topics: Optional[Dict[str, Any]] = None,
         addresses: Optional[List[AddressType]] = None,
         start_block=None,
@@ -164,10 +164,10 @@ class LogFilter(BaseModel):
         from ape import convert
         from ape.utils.abi import LogInputABICollection, is_dynamic_sized_type
 
-        event = getattr(event, "abi", event)
+        event_abi: EventABI = getattr(event, "abi", event)  # type: ignore
         search_topics = search_topics or {}
-        topic_filter: List[Optional[HexStr]] = [encode_hex(keccak(text=event.selector))]
-        abi_inputs = LogInputABICollection(event)
+        topic_filter: List[Optional[HexStr]] = [encode_hex(keccak(text=event_abi.selector))]
+        abi_inputs = LogInputABICollection(event_abi)
 
         def encode_topic_value(abi_type, value):
             if isinstance(value, (list, tuple)):
@@ -190,7 +190,7 @@ class LogFilter(BaseModel):
         invalid_topics = set(search_topics) - set(topic_names)
         if invalid_topics:
             raise ValueError(
-                f"{event.name} defines {', '.join(topic_names)} as indexed topics, "
+                f"{event_abi.name} defines {', '.join(topic_names)} as indexed topics, "
                 f"but you provided {', '.join(invalid_topics)}"
             )
 
@@ -200,7 +200,7 @@ class LogFilter(BaseModel):
 
         return cls(
             addresses=addresses or [],
-            events=[event],
+            events=[event_abi],
             topic_filter=topic_filter,
             start_block=start_block,
             stop_block=stop_block,
@@ -262,18 +262,20 @@ class ContractLog(BaseContractLog):
 
     @validator("block_number", "log_index", "transaction_index", pre=True)
     def validate_hex_ints(cls, value):
-        if not isinstance(value, int):
+        if value is None:
+            # Should only happen for optionals.
+            return value
+
+        elif not isinstance(value, int):
             return to_int(value)
 
         return value
 
     @validator("contract_address", pre=True)
     def validate_address(cls, value):
-        from ape import convert
+        return cls.conversion_manager.convert(value, AddressType)
 
-        return convert(value, AddressType)
-
-    # NOTE: This class has an overrided `__getattr__` method, but `block` is a reserved keyword
+    # NOTE: This class has an overridden `__getattr__` method, but `block` is a reserved keyword
     #       in most smart contract languages, so it is safe to use. Purposely avoid adding
     #       `.datetime` and `.timestamp` in case they are used as event arg names.
     @cached_property
@@ -299,8 +301,7 @@ class ContractLog(BaseContractLog):
         """
 
         try:
-            normal_attribute = self.__getattribute__(item)
-            return normal_attribute
+            return self.__getattribute__(item)
         except AttributeError:
             pass
 
