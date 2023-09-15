@@ -565,9 +565,11 @@ class ProviderContextManager(ManagerAccessMixin):
 
     connected_providers: Dict[str, "ProviderAPI"] = {}
     provider_stack: List[str] = []
+    disconnect_map: Dict[str, bool] = {}
 
-    def __init__(self, provider: "ProviderAPI"):
+    def __init__(self, provider: "ProviderAPI", disconnect_after: bool = False):
         self._provider = provider
+        self._disconnect_after = disconnect_after
 
     @property
     def empty(self) -> bool:
@@ -589,6 +591,7 @@ class ProviderContextManager(ManagerAccessMixin):
             raise ProviderNotConnectedError()
 
         self.provider_stack.append(provider_id)
+        self.disconnect_map[provider_id] = self._disconnect_after
         if provider_id in self.connected_providers:
             # Using already connected instance
             if must_connect:
@@ -609,6 +612,12 @@ class ProviderContextManager(ManagerAccessMixin):
 
         # Clear last provider
         exiting_provider_id = self.provider_stack.pop()
+
+        # Disconnect the provider in same cases.
+        if self.disconnect_map[exiting_provider_id]:
+            if provider := self.network_manager.active_provider:
+                provider.disconnect()
+
         if not self.provider_stack:
             self.network_manager.active_provider = None
             return
@@ -619,8 +628,7 @@ class ProviderContextManager(ManagerAccessMixin):
             # Active provider is not changing
             return
 
-        previous_provider = self.connected_providers[previous_provider_id]
-        if previous_provider:
+        if previous_provider := self.connected_providers[previous_provider_id]:
             self.network_manager.active_provider = previous_provider
 
     def disconnect_all(self):
@@ -889,6 +897,7 @@ class NetworkAPI(BaseInterfaceModel):
         self,
         provider_name: str,
         provider_settings: Optional[Dict] = None,
+        disconnect_after: bool = False,
     ) -> ProviderContextManager:
         """
         Use and connect to a provider in a temporary context. When entering the context, it calls
@@ -905,6 +914,9 @@ class NetworkAPI(BaseInterfaceModel):
 
         Args:
             provider_name (str): The name of the provider to use.
+            disconnect_after (bool): Set to ``True`` to force a disconnect after ending
+              the context. This defaults to ``False`` so you can re-connect to the
+              same network, such as in a multi-chain testing scenario.
             provider_settings (dict, optional): Settings to apply to the provider.
               Defaults to ``None``.
 
@@ -913,9 +925,8 @@ class NetworkAPI(BaseInterfaceModel):
         """
 
         settings = provider_settings or {}
-        return ProviderContextManager(
-            provider=self.get_provider(provider_name=provider_name, provider_settings=settings),
-        )
+        provider = self.get_provider(provider_name=provider_name, provider_settings=settings)
+        return ProviderContextManager(provider=provider, disconnect_after=disconnect_after)
 
     @property
     def default_provider(self) -> Optional[str]:
@@ -955,7 +966,9 @@ class NetworkAPI(BaseInterfaceModel):
             raise NetworkError(f"Provider '{provider_name}' not found in network '{self.choice}'.")
 
     def use_default_provider(
-        self, provider_settings: Optional[Dict] = None
+        self,
+        provider_settings: Optional[Dict] = None,
+        disconnect_after: bool = False,
     ) -> ProviderContextManager:
         """
         Temporarily connect and use the default provider. When entering the context, it calls
@@ -973,13 +986,18 @@ class NetworkAPI(BaseInterfaceModel):
 
         Args:
             provider_settings (dict, optional): Settings to override the provider.
+            disconnect_after (bool): Set to ``True`` to force a disconnect after ending
+              the context. This defaults to ``False`` so you can re-connect to the
+              same network, such as in a multi-chain testing scenario.
 
         Returns:
             :class:`~ape.api.networks.ProviderContextManager`
         """
         if self.default_provider:
             settings = provider_settings or {}
-            return self.use_provider(self.default_provider, provider_settings=settings)
+            return self.use_provider(
+                self.default_provider, provider_settings=settings, disconnect_after=disconnect_after
+            )
 
         raise NetworkError(f"No providers for network '{self.name}'.")
 
