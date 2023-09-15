@@ -96,9 +96,11 @@ class NetworkManager(BaseManager):
         provider_settings = provider_settings or {}
 
         if provider_name:
-            return forked_network.use_provider(provider_name, provider_settings)
+            return forked_network.use_provider(
+                provider_name, provider_settings, disconnect_after=True
+            )
 
-        return forked_network.use_default_provider(provider_settings)
+        return forked_network.use_default_provider(provider_settings, disconnect_after=True)
 
     @property
     def ecosystem_names(self) -> Set[str]:
@@ -441,6 +443,7 @@ class NetworkManager(BaseManager):
         self,
         network_choice: Optional[str] = None,
         provider_settings: Optional[Dict] = None,
+        disconnect_after: bool = False,
     ) -> ProviderContextManager:
         """
         Parse a network choice into a context manager for managing a temporary
@@ -465,7 +468,7 @@ class NetworkManager(BaseManager):
         provider = self.get_provider_from_choice(
             network_choice=network_choice, provider_settings=provider_settings
         )
-        return ProviderContextManager(provider=provider)
+        return ProviderContextManager(provider=provider, disconnect_after=disconnect_after)
 
     @property
     def default_ecosystem(self) -> EcosystemAPI:
