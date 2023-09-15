@@ -15,6 +15,7 @@ from ape.exceptions import ChainError, ContractLogicError
 from ape.logging import LogLevel
 from ape.logging import logger as _logger
 from ape.types import AddressType, ContractLog
+from ape_ethereum.proxies import minimal_proxy as _minimal_proxy_container
 
 PROJECT_PATH = Path(__file__).parent
 CONTRACTS_FOLDER = PROJECT_PATH / "data" / "contracts" / "ethereum" / "local"
@@ -503,3 +504,13 @@ def vyper_factory(owner, get_contract_type):
 def vyper_blueprint(owner, vyper_contract_container):
     receipt = owner.declare(vyper_contract_container)
     return receipt.contract_address
+
+
+@pytest.fixture
+def minimal_proxy_container():
+    return _minimal_proxy_container
+
+
+@pytest.fixture
+def minimal_proxy(owner, minimal_proxy_container):
+    return owner.deploy(minimal_proxy_container)

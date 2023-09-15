@@ -823,12 +823,30 @@ class ContractCache(BaseManager):
         if address in self._local_contract_types:
             del self._local_contract_types[address]
 
-        if self._is_live_network:
-            if not self._contract_types_cache.is_dir():
-                return
+        # Delete proxy.
+        if address in self._local_proxies:
+            info = self._local_proxies[address]
+            target = info.target
+            del self._local_proxies[address]
 
-            address_file = self._contract_types_cache / f"{address}.json"
-            address_file.unlink(missing_ok=True)
+            # Also delete target.
+            if target in self._local_contract_types:
+                del self._local_contract_types[target]
+
+        if self._is_live_network:
+            if self._contract_types_cache.is_dir():
+                address_file = self._contract_types_cache / f"{address}.json"
+                address_file.unlink(missing_ok=True)
+
+            if self._proxy_info_cache.is_dir():
+                disk_info = self._get_proxy_info_from_disk(address)
+                if disk_info:
+                    target = disk_info.target
+                    address_file = self._proxy_info_cache / f"{address}.json"
+                    address_file.unlink()
+
+                    # Also delete the target.
+                    self.__delitem__(target)
 
     def __contains__(self, address: AddressType) -> bool:
         return self.get(address) is not None
