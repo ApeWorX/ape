@@ -10,7 +10,7 @@ from ethpm_types.utils import AnyUrl, compute_checksum
 from packaging.version import InvalidVersion, Version
 from pydantic import ValidationError
 
-from ape.exceptions import ApeAttributeError
+from ape.exceptions import ApeAttributeError, ProjectError
 from ape.logging import logger
 from ape.utils import (
     BaseInterfaceModel,
@@ -411,10 +411,32 @@ class DependencyAPI(BaseInterfaceModel):
             return cached_manifest
 
         if project_path.is_file() and project_path.suffix == ".json":
-            # Was given a path to a manifest JSON.
-            manifest = PackageManifest.parse_file(project_path)
-            self._write_manifest_to_cache(manifest)
-            return manifest
+            try:
+                manifest = PackageManifest.parse_file(project_path)
+
+            except ValueError:
+                if project_path.parent.is_dir():
+                    logger.warning(
+                        "Was given a file-path to a non-manifest file. " "Using parent directory."
+                    )
+                    project_path = project_path.parent
+
+                else:
+                    raise ProjectError(f"Invalid local project '{project_path}'.")
+
+            else:
+                # Was given a path to a manifest JSON.
+                self._write_manifest_to_cache(manifest)
+                return manifest
+
+        elif project_path.parent.is_dir():
+            logger.warning(
+                "Was given a file-path to a non-manifest file. " "Using parent directory."
+            )
+            project_path = project_path.parent
+
+        else:
+            raise ProjectError(f"Invalid local project '{project_path}'.")
 
         # NOTE: Dependencies are not compiled here. Instead, the sources are packaged
         # for later usage via imports. For legacy reasons, many dependency-esque projects
