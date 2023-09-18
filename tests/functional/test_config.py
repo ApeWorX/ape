@@ -1,4 +1,3 @@
-import logging
 from typing import Dict, Union
 
 import pytest
@@ -24,12 +23,11 @@ def test_integer_deployment_addresses(networks):
 )
 def test_bad_value_in_deployments(ecosystems, networks, err_part, caplog, plugin_manager):
     deployments = _create_deployments()
-    with caplog.at_level(logging.WARNING):
-        all_ecosystems = dict(plugin_manager.ecosystems)
-        ecosystem_dict = {e: all_ecosystems[e] for e in ecosystems if e in all_ecosystems}
-        DeploymentConfigCollection(deployments, ecosystem_dict, networks)
-        assert len(caplog.records) > 0, "Nothing was logged"
-        assert f"Invalid {err_part}" in caplog.records[0].message
+    all_ecosystems = dict(plugin_manager.ecosystems)
+    ecosystem_dict = {e: all_ecosystems[e] for e in ecosystems if e in all_ecosystems}
+    DeploymentConfigCollection(deployments, ecosystem_dict, networks)
+    assert len(caplog.records) > 0, "Nothing was logged"
+    assert f"Invalid {err_part}" in caplog.records[0].message
 
 
 def _create_deployments(ecosystem_name: str = "ethereum", network_name: str = "local") -> Dict:
