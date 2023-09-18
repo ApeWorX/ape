@@ -414,7 +414,7 @@ class DependencyAPI(BaseInterfaceModel):
             try:
                 manifest = PackageManifest.parse_file(project_path)
 
-            except ValueError:
+            except ValueError as err:
                 if project_path.parent.is_dir():
                     logger.warning(
                         "Was given a file-path to a non-manifest file. Using parent directory."
@@ -422,7 +422,7 @@ class DependencyAPI(BaseInterfaceModel):
                     project_path = project_path.parent
 
                 else:
-                    raise ProjectError(f"Invalid local project '{project_path}'.")
+                    raise ProjectError(f"Invalid local project '{project_path}'.") from err
 
             else:
                 # Was given a path to a manifest JSON.
