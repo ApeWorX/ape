@@ -602,7 +602,7 @@ class ProviderAPI(BaseInterfaceModel):
         stop_block: Optional[int] = None,
         required_confirmations: Optional[int] = None,
         new_block_timeout: Optional[int] = None,
-    ) -> Iterator[BlockAPI]: # type: ignore[empty-body]
+    ) -> Iterator[BlockAPI]:  # type: ignore[empty-body]
         """
         Poll new blocks.
 
@@ -657,7 +657,6 @@ class ProviderAPI(BaseInterfaceModel):
                went wrong in the call.
         """
         return VirtualMachineError(base_err=exception, **kwargs)
-
 
 
 class TestProviderAPI(ProviderAPI):
@@ -1694,12 +1693,12 @@ class Web3Provider(ProviderAPI, ABC):
         blocks = self.query_manager.query(query, engine_to_use=engine_to_use)
         yield from cast(Iterator[BlockAPI], blocks)
 
-
     def poll_blocks(
-            self,
-            stop_block: Optional[int] = None,
-            required_confirmations: Optional[int] = None,
-            new_block_timeout: Optional[int] = None) -> Iterator[BlockAPI]:
+        self,
+        stop_block: Optional[int] = None,
+        required_confirmations: Optional[int] = None,
+        new_block_timeout: Optional[int] = None,
+    ) -> Iterator[BlockAPI]:
         network_name = self.network.name
         block_time = self.provider.network.block_time
         timeout = (
@@ -1731,10 +1730,7 @@ class Web3Provider(ProviderAPI, ABC):
             if time.time() - time_since_last > timeout:
                 time_waited = round(time.time() - time_since_last, 4)
                 message = f"Timed out waiting for new block (time_waited={time_waited})."
-                if (
-                    self.network.name == LOCAL_NETWORK_NAME
-                    or self.network.name.endswith("-fork")
-                ):
+                if self.network.name == LOCAL_NETWORK_NAME or self.network.name.endswith("-fork"):
                     message += (
                         " If using a local network, try configuring mining to mine on an interval "
                         "or adjusting the block time."
@@ -1878,7 +1874,6 @@ class Web3Provider(ProviderAPI, ABC):
         )
         yield from self.query_manager.query(contract_event_query)  # type: ignore
 
-
     def poll_logs(
         self,
         contract: "ContractTypeWrapper",
@@ -1886,10 +1881,7 @@ class Web3Provider(ProviderAPI, ABC):
         required_confirmations: Optional[int] = None,
         new_block_timeout: Optional[int] = None,
     ) -> Iterator[ContractLog]:
-
-        required_confirmations = (
-            required_confirmations or self.network.required_confirmations
-        )
+        required_confirmations = required_confirmations or self.network.required_confirmations
 
         height = max(self.chain_manager.blocks.height - required_confirmations, 0)
 
@@ -1906,8 +1898,9 @@ class Web3Provider(ProviderAPI, ABC):
                 continue
 
             # Get all events in the new block.
-            yield from self.range_contract_events(contract, new_block.number, stop=new_block.number + 1)
-
+            yield from self.range_contract_events(
+                contract, new_block.number, stop=new_block.number + 1
+            )
 
 
 class UpstreamProvider(ProviderAPI):
