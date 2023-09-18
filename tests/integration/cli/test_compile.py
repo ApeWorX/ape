@@ -282,14 +282,15 @@ def test_compile_only_dependency(ape_cli, runner, project, clean_cache, caplog):
     # Trigger actual dependency compilation
     dependency = project.dependencies["dependency-in-project-only"]["local"]
     _ = dependency.DependencyInProjectOnly
+
+    # Pop the log record off here so we can check the tail again below.
     log_record = caplog.records.pop()
     assert expected_log_message in log_record.message
 
     # It should not need to compile again.
     _ = dependency.DependencyInProjectOnly
     if caplog.records:
-        log_record = caplog.records.pop()
-        assert expected_log_message not in log_record.message, "Compiled twice!"
+        assert expected_log_message not in caplog.records[-1].message, "Compiled twice!"
 
     # Force a re-compile and trigger the dependency to compile via CLI
     result = runner.invoke(
