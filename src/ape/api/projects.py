@@ -416,25 +416,24 @@ class DependencyAPI(BaseInterfaceModel):
 
             except ValueError as err:
                 if project_path.parent.is_dir():
-                    logger.warning(
-                        "Was given a file-path to a non-manifest file. Using parent directory."
-                    )
                     project_path = project_path.parent
 
                 else:
-                    raise ProjectError(f"Invalid local project '{project_path}'.") from err
+                    raise ProjectError(f"Invalid manifest file: '{project_path}'.") from err
 
             else:
                 # Was given a path to a manifest JSON.
                 self._write_manifest_to_cache(manifest)
                 return manifest
 
-        elif project_path.parent.is_dir():
-            logger.warning("Was given a file-path to a non-manifest file. Using parent directory.")
-            project_path = project_path.parent
+        elif (project_path.parent / project_path.name.replace("-", "_")).is_dir():
+            project_path = project_path.parent / project_path.name.replace("-", "_")
 
-        else:
-            raise ProjectError(f"Invalid local project '{project_path}'.")
+        elif (project_path.parent / project_path.name.replace("_", "-")).is_dir():
+            project_path = project_path.parent / project_path.name.replace("_", "-")
+
+        elif project_path.parent.is_dir():
+            project_path = project_path.parent
 
         # NOTE: Dependencies are not compiled here. Instead, the sources are packaged
         # for later usage via imports. For legacy reasons, many dependency-esque projects
