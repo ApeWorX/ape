@@ -2,7 +2,8 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Any, Iterator, List, Optional, Type, Union
 
 import click
-from eip712.messages import EIP712Message, SignableMessage as EIP712SignableMessage
+from eip712.messages import EIP712Message
+from eip712.messages import SignableMessage as EIP712SignableMessage
 from eth_account import Account
 from eth_account.messages import encode_defunct
 
