@@ -240,6 +240,7 @@ def test_compile_with_dependency(ape_cli, runner, project, contract_path):
         "containing-sub-dependencies",
         "renamed-complex-contracts-folder",
         "renamed-contracts-folder-specified-in-config",
+        "manifest-dependency",
     ):
         assert name in list(project.dependencies.keys())
         dependency = project.dependencies[name]["local"]

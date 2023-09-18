@@ -410,6 +410,12 @@ class DependencyAPI(BaseInterfaceModel):
         if cached_manifest:
             return cached_manifest
 
+        if project_path.is_file() and project_path.suffix == ".json":
+            # Was given a path to a manifest JSON.
+            manifest = PackageManifest.parse_file(project_path)
+            self._write_manifest_to_cache(manifest)
+            return manifest
+
         # NOTE: Dependencies are not compiled here. Instead, the sources are packaged
         # for later usage via imports. For legacy reasons, many dependency-esque projects
         # are not meant to compile on their own.
