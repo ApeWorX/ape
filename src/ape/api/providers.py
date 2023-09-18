@@ -29,9 +29,8 @@ from web3.types import RPCEndpoint, TxParams
 
 from ape.api.config import PluginConfig
 from ape.api.networks import LOCAL_NETWORK_NAME, NetworkAPI
-from ape.api.query import BlockTransactionQuery
+from ape.api.query import BlockTransactionQuery, ContractEventQuery
 from ape.api.transactions import ReceiptAPI, TransactionAPI
-from ape.contracts.base import ContractInstance, ContractTypeWrapper
 from ape.exceptions import (
     ApeException,
     APINotImplementedError,
@@ -1816,7 +1815,7 @@ class Web3Provider(ProviderAPI, ABC):
 
     def range_contract_events(
         self,
-        contract: ContractInstance,
+        contract: "ContractInstance",
         start_or_stop: int,
         stop: Optional[int] = None,
         search_topics: Optional[Dict[str, Any]] = None,
@@ -1882,7 +1881,7 @@ class Web3Provider(ProviderAPI, ABC):
 
     def poll_logs(
         self,
-        contract: ContractTypeWrapper,
+        contract: "ContractTypeWrapper",
         stop_block: Optional[int] = None,
         required_confirmations: Optional[int] = None,
         new_block_timeout: Optional[int] = None,
