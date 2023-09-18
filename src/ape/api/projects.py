@@ -417,7 +417,7 @@ class DependencyAPI(BaseInterfaceModel):
             except ValueError:
                 if project_path.parent.is_dir():
                     logger.warning(
-                        "Was given a file-path to a non-manifest file. " "Using parent directory."
+                        "Was given a file-path to a non-manifest file. Using parent directory."
                     )
                     project_path = project_path.parent
 
@@ -430,9 +430,7 @@ class DependencyAPI(BaseInterfaceModel):
                 return manifest
 
         elif project_path.parent.is_dir():
-            logger.warning(
-                "Was given a file-path to a non-manifest file. " "Using parent directory."
-            )
+            logger.warning("Was given a file-path to a non-manifest file. Using parent directory.")
             project_path = project_path.parent
 
         else:
