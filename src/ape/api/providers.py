@@ -29,7 +29,7 @@ from web3.types import RPCEndpoint, TxParams
 
 from ape.api.config import PluginConfig
 from ape.api.networks import LOCAL_NETWORK_NAME, NetworkAPI
-from ape.api.query import BlockTransactionQuery, ContractEventQuery
+from ape.api.query import BlockQuery, BlockTransactionQuery, ContractEventQuery
 from ape.api.transactions import ReceiptAPI, TransactionAPI
 from ape.exceptions import (
     ApeException,
