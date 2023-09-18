@@ -1,4 +1,3 @@
-import logging
 import time
 
 import pandas as pd
@@ -88,13 +87,11 @@ def test_column_validation(eth_tester_provider, caplog):
     expected = "Unrecognized field(s) 'numbr', must be one of 'number, timestamp'."
     assert exc_info.value.args[-1] == expected
 
-    with caplog.at_level(logging.WARNING):
-        validate_and_expand_columns(["numbr", "timestamp"], Model)
+    validate_and_expand_columns(["numbr", "timestamp"], Model)
 
     assert expected in caplog.records[-1].msg
 
-    with caplog.at_level(logging.WARNING):
-        validate_and_expand_columns(["number", "timestamp", "number"], Model)
+    validate_and_expand_columns(["number", "timestamp", "number"], Model)
 
     assert "Duplicate fields in ['number', 'timestamp', 'number']" in caplog.records[-1].msg
 
