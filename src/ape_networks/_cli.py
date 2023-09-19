@@ -86,7 +86,7 @@ def run(cli_ctx, network):
     """
 
     # Ignore web3 logs
-    cli_ctx.logger._clear_web3_loggers()
+    cli_ctx.logger._clear_extra_loggers()
 
     network_ctx = cli_ctx.network_manager.parse_network_choice(network)
     provider = network_ctx._provider

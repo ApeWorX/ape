@@ -104,13 +104,12 @@ class ClickHandler(logging.Handler):
 
 class CliLogger:
     _mentioned_verbosity_option = False
+    _extra_loggers: Dict[str, logging.Logger] = {}
 
     def __init__(
         self,
         _logger: logging.Logger,
         fmt: str,
-        web3_request_logger: Optional[logging.Logger] = None,
-        web3_http_logger: Optional[logging.Logger] = None,
     ):
         self.error = _logger.error
         self.warning = _logger.warning
@@ -118,30 +117,19 @@ class CliLogger:
         self.info = _logger.info
         self.debug = _logger.debug
         self._logger = _logger
-        self._web3_request_manager_logger = web3_request_logger
-        self._web3_http_provider_logger = web3_http_logger
         self._load_from_sys_argv()
         self.fmt = fmt
 
     @classmethod
-    def create(cls, fmt: Optional[str] = None, third_party: bool = True) -> "CliLogger":
+    def create(cls, fmt: Optional[str] = None) -> "CliLogger":
         fmt = fmt or DEFAULT_LOG_FORMAT
-        kwargs = {}
-        if third_party:
-            kwargs["web3_request_logger"] = _get_logger("web3.RequestManager", fmt=fmt)
-            kwargs["web3_http_logger"] = _get_logger("web3.providers.HTTPProvider", fmt=fmt)
-
-        _logger = _get_logger("ape", fmt=fmt)
-        return cls(_logger, fmt, **kwargs)
+        _logger = get_logger("ape", fmt=fmt)
+        return cls(_logger, fmt)
 
     def format(self, fmt: Optional[str] = None):
         self.fmt = fmt or DEFAULT_LOG_FORMAT
         fmt = fmt or DEFAULT_LOG_FORMAT
         _format_logger(self._logger, fmt)
-        if req_log := self._web3_request_manager_logger:
-            _format_logger(req_log, fmt)
-        if prov_log := self._web3_http_provider_logger:
-            _format_logger(prov_log, fmt)
 
     def _load_from_sys_argv(self, default: Optional[Union[str, int]] = None):
         """
@@ -179,13 +167,9 @@ class CliLogger:
         if level == self._logger.level:
             return
 
-        for log in (
-            self._logger,
-            self._web3_http_provider_logger,
-            self._web3_request_manager_logger,
-        ):
-            if obj := log:
-                obj.setLevel(level)
+        self._logger.setLevel(level)
+        for _logger in self._extra_loggers.values():
+            _logger.setLevel(level)
 
     def log_error(self, err: Exception):
         """
@@ -228,9 +212,11 @@ class CliLogger:
         stack_trace = traceback.format_exc()
         self._logger.debug(stack_trace)
 
-    def _clear_web3_loggers(self):
-        self._web3_request_manager_logger = None
-        self._web3_http_provider_logger = None
+    def create_logger(self, new_name: str) -> logging.Logger:
+        _logger = get_logger(new_name, self.fmt)
+        _logger.setLevel(self.level)
+        self._extra_loggers[new_name] = _logger
+        return _logger
 
 
 def _format_logger(_logger: logging.Logger, fmt: str):
@@ -246,11 +232,21 @@ def _format_logger(_logger: logging.Logger, fmt: str):
     _logger.addHandler(handler)
 
 
-def _get_logger(name: str, fmt: Optional[str] = None) -> logging.Logger:
-    """Get a logger with the given ``name`` and configure it for usage with Click."""
-    obj = logging.getLogger(name)
-    _format_logger(obj, fmt=fmt or DEFAULT_LOG_FORMAT)
-    return obj
+def get_logger(name: str, fmt: Optional[str] = None) -> logging.Logger:
+    """
+    Get a logger with the given ``name`` and configure it for usage with Ape.
+
+    Args:
+        name (str): The name of the logger.
+        fmt (Optional[str]): The format of the logger. Defaults to the Ape
+          logger's default format: ``"%(levelname)s%(plugin)s: %(message)s"``.
+
+    Returns:
+        ``logging.Logger``
+    """
+    _logger = logging.getLogger(name)
+    _format_logger(_logger, fmt=fmt or DEFAULT_LOG_FORMAT)
+    return _logger
 
 
 def _get_level(level: Optional[Union[str, int]] = None) -> str:

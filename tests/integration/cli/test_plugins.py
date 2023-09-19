@@ -158,7 +158,7 @@ def test_install_from_config_file(ape_cli, runner, temp_config, caplog):
 
 
 @github_xfail()
-def test_uninstall(ape_cli, runner, installed_plugin, caplog):
+def test_uninstall(ape_cli, runner, installed_plugin):
     result = runner.invoke(
         ape_cli, ["plugins", "uninstall", TEST_PLUGIN_NAME, "--yes"], catch_exceptions=False
     )
