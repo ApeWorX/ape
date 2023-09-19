@@ -597,12 +597,12 @@ class ProviderAPI(BaseInterfaceModel):
         """
 
     @raises_not_implemented
-    def poll_blocks(
+    def poll_blocks(  # type: ignore[empty-body]
         self,
         stop_block: Optional[int] = None,
         required_confirmations: Optional[int] = None,
         new_block_timeout: Optional[int] = None,
-    ) -> Iterator[BlockAPI]:  # type: ignore[empty-body]
+    ) -> Iterator[BlockAPI]:
         """
         Poll new blocks.
 
@@ -1631,7 +1631,7 @@ class Web3Provider(ProviderAPI, ABC):
 
     @property
     def height(self) -> int:
-        return self.head.number
+        return self.head.number or 0
 
     def range_blocks(
         self,
