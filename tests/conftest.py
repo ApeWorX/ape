@@ -396,6 +396,7 @@ def ape_caplog(caplog):
     class ApeCaplog:
         def __init__(self):
             self.messages_at_start = list(caplog.messages)
+            self.set_levels()
 
         def __getattr__(self, name: str) -> Any:
             return getattr(caplog, name)
@@ -424,6 +425,11 @@ def ape_caplog(caplog):
             """
             return caplog.messages[-1] if len(caplog.messages) else ""
 
+        @classmethod
+        def set_levels(cls):
+            logger.set_level(LogLevel.INFO)
+            caplog.set_level(LogLevel.WARNING)
+
         def assert_last_log(self, message: str):
             assert message in self.head, self.fail_message
 
@@ -446,11 +452,10 @@ def ape_caplog(caplog):
                 time.sleep(delay)
 
                 # Reset levels in case they got switched.
+                self.set_levels()
                 logger.set_level(LogLevel.INFO)
                 caplog.set_level(LogLevel.WARNING)
 
             pytest.fail(self.fail_message)
 
-    logger.set_level(LogLevel.INFO)
-    caplog.set_level(LogLevel.WARNING)
     return ApeCaplog()
