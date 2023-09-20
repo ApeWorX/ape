@@ -205,26 +205,26 @@ def test_block_times(ethereum):
     assert ethereum.goerli.block_time == 15
 
 
-def test_ecosystems_when_default_network_not_exists(temp_config, caplog, networks):
+def test_ecosystems_when_default_network_not_exists(temp_config, ape_caplog, networks):
     bad_network = "NOT_EXISTS"
     config = {"ethereum": {"default_network": bad_network}}
     with temp_config(config):
         assert networks.ecosystems
 
-    err = caplog.messages[-1]
+    err = ape_caplog.messages[-1]
     assert err == (
         f"Failed setting default network: "
         f"'{bad_network}' is not a valid network for ecosystem 'ethereum'."
     )
 
 
-def test_ecosystems_when_default_provider_not_exists(temp_config, caplog, networks):
+def test_ecosystems_when_default_provider_not_exists(temp_config, ape_caplog, networks):
     bad_provider = "NOT_EXISTS"
     config = {"ethereum": {"goerli": {"default_provider": bad_provider}}}
     with temp_config(config):
         assert networks.ecosystems
 
-    err = caplog.messages[-1]
+    err = ape_caplog.messages[-1]
     assert err == (
         f"Failed setting default provider: "
         f"Provider '{bad_provider}' not found in network 'ethereum:goerli'."

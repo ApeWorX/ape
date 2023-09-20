@@ -80,7 +80,7 @@ def test_column_expansion():
     assert columns == list(Model.__fields__)
 
 
-def test_column_validation(eth_tester_provider, caplog):
+def test_column_validation(eth_tester_provider, ape_caplog):
     with pytest.raises(ValueError) as exc_info:
         validate_and_expand_columns(["numbr"], Model)
 
@@ -88,10 +88,10 @@ def test_column_validation(eth_tester_provider, caplog):
     assert exc_info.value.args[-1] == expected
 
     validate_and_expand_columns(["numbr", "timestamp"], Model)
-    assert expected in caplog.messages[-1]
+    assert expected in ape_caplog.messages[-1]
 
     validate_and_expand_columns(["number", "timestamp", "number"], Model)
-    assert "Duplicate fields in ['number', 'timestamp', 'number']" in caplog.messages[-1]
+    assert "Duplicate fields in ['number', 'timestamp', 'number']" in ape_caplog.messages[-1]
 
 
 def test_specify_engine(chain, eth_tester_provider):

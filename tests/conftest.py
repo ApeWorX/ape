@@ -12,6 +12,7 @@ from click.testing import CliRunner
 
 import ape
 from ape.exceptions import APINotImplementedError, UnknownSnapshotError
+from ape.logging import LogLevel, logger
 from ape.managers.config import CONFIG_FILE_NAME
 from ape.types import AddressType
 from ape.utils import ZERO_ADDRESS
@@ -387,3 +388,10 @@ def skip_if_plugin_installed(*plugin_names: str):
 @pytest.fixture
 def zero_address():
     return ZERO_ADDRESS
+
+
+@pytest.fixture
+def ape_caplog(caplog):
+    logger.set_level(LogLevel.INFO)
+    caplog.set_level(LogLevel.WARNING)
+    return caplog
