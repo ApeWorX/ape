@@ -5,7 +5,7 @@ from typing import List, Optional, Tuple
 from pydantic import root_validator
 
 from ape.__modules__ import __modules__
-from ape.logging import CliLogger
+from ape.logging import ApeLogger
 from ape.plugins import clean_plugin_name
 from ape.utils import BaseInterfaceModel, cached_property, get_package_version, github_client
 
@@ -194,7 +194,7 @@ class PluginInstallRequest(BaseInterfaceModel):
 
 
 class ModifyPluginResultHandler:
-    def __init__(self, logger: CliLogger, plugin: PluginInstallRequest):
+    def __init__(self, logger: ApeLogger, plugin: PluginInstallRequest):
         self._logger = logger
         self._plugin = plugin
 

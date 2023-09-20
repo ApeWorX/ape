@@ -102,7 +102,7 @@ class ClickHandler(logging.Handler):
             self.handleError(record)
 
 
-class CliLogger:
+class ApeLogger:
     _mentioned_verbosity_option = False
     _extra_loggers: Dict[str, logging.Logger] = {}
 
@@ -121,7 +121,7 @@ class CliLogger:
         self.fmt = fmt
 
     @classmethod
-    def create(cls, fmt: Optional[str] = None) -> "CliLogger":
+    def create(cls, fmt: Optional[str] = None) -> "ApeLogger":
         fmt = fmt or DEFAULT_LOG_FORMAT
         _logger = get_logger("ape", fmt=fmt)
         return cls(_logger, fmt)
@@ -258,7 +258,10 @@ def _get_level(level: Optional[Union[str, int]] = None) -> str:
     return level
 
 
-logger = CliLogger.create()
+logger = ApeLogger.create()
+
+# TODO: Can remove this type alias after 0.7
+CliLogger = ApeLogger
 
 
-__all__ = ["DEFAULT_LOG_LEVEL", "logger", "LogLevel"]
+__all__ = ["DEFAULT_LOG_LEVEL", "logger", "LogLevel", "ApeLogger"]
