@@ -21,13 +21,15 @@ def test_integer_deployment_addresses(networks):
     "ecosystems,networks,err_part",
     [(["ERRORS"], ["mainnet"], "ecosystem"), (["ethereum"], ["ERRORS"], "network")],
 )
-def test_bad_value_in_deployments(ecosystems, networks, err_part, caplog, plugin_manager):
+def test_bad_value_in_deployments(ecosystems, networks, err_part, assert_log, plugin_manager):
     deployments = _create_deployments()
     all_ecosystems = dict(plugin_manager.ecosystems)
     ecosystem_dict = {e: all_ecosystems[e] for e in ecosystems if e in all_ecosystems}
     DeploymentConfigCollection(deployments, ecosystem_dict, networks)
-    assert len(caplog.records) > 0, "Nothing was logged"
-    assert f"Invalid {err_part}" in caplog.records[0].message
+    assert_log(
+        lambda: DeploymentConfigCollection(deployments, ecosystem_dict, networks),
+        f"Invalid {err_part}",
+    )
 
 
 def _create_deployments(ecosystem_name: str = "ethereum", network_name: str = "local") -> Dict:

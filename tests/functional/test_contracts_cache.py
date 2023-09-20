@@ -46,7 +46,7 @@ def test_instance_at_when_given_name_as_contract_type(chain, contract_instance):
 
 
 @explorer_test
-def test_instance_at_uses_given_contract_type_when_retrieval_fails(mocker, chain, caplog):
+def test_instance_at_uses_given_contract_type_when_retrieval_fails(mocker, chain, assert_log):
     # The manager always attempts retrieval so that default contact types can
     # get cached. However, sometimes an explorer plugin may fail. If given a contract-type
     # in that situation, we can use it and not fail and log the error instead.
@@ -64,9 +64,11 @@ def test_instance_at_uses_given_contract_type_when_retrieval_fails(mocker, chain
     chain.contracts.get = mocker.MagicMock()
     chain.contracts.get.side_effect = fn
 
-    actual = chain.contracts.instance_at(new_address, contract_type=expected_contract_type)
+    actual = assert_log(
+        lambda: chain.contracts.instance_at(new_address, contract_type=expected_contract_type),
+        expected_fail_message,
+    )
     assert actual.contract_type == expected_contract_type
-    assert caplog.records[-1].message == expected_fail_message
 
 
 @explorer_test

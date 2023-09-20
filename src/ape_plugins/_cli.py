@@ -42,7 +42,7 @@ def plugins_argument():
     """
 
     def load_from_file(ctx, file_path: Path) -> List[PluginInstallRequest]:
-        if file_path.is_file() and file_path.name != CONFIG_FILE_NAME:
+        if file_path.is_dir() and (file_path / CONFIG_FILE_NAME).is_file():
             file_path = file_path / CONFIG_FILE_NAME
 
         if file_path.is_file():

@@ -4,7 +4,7 @@ import tempfile
 from contextlib import contextmanager
 from pathlib import Path
 from tempfile import mkdtemp
-from typing import Dict, Optional
+from typing import Callable, Dict, Optional
 
 import pytest
 import yaml
@@ -387,3 +387,33 @@ def skip_if_plugin_installed(*plugin_names: str):
 @pytest.fixture
 def zero_address():
     return ZERO_ADDRESS
+
+
+@pytest.fixture
+def assert_log(caplog):
+    """
+    A utility for asserting logs occurred.
+    It will attempt the operation more than once to verify the log.
+    """
+
+    class CheckState:
+        TIMES: int = 3
+        times_tried: int = 0
+        success: bool = False
+
+    state = CheckState()
+
+    def fn(op: Callable, expected: str):
+        result = None
+        while state.times_tried < state.TIMES:
+            result = op()
+            if len(caplog.records) > 0 and expected in caplog.records[-1].message:
+                state.success = True
+                break
+            else:
+                state.times_tried += 1
+
+        assert state.success, f"Log '{expected}' not found."
+        return result
+
+    return fn

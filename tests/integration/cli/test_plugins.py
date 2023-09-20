@@ -148,13 +148,12 @@ def test_install_multiple_in_one_str(ape_plugins_runner):
 
 
 @github_xfail()
-def test_install_from_config_file(ape_cli, runner, temp_config, caplog):
+def test_install_from_config_file(ape_cli, runner, temp_config):
     plugins_config = {"plugins": [{"name": TEST_PLUGIN_NAME}]}
     with temp_config(plugins_config):
         result = runner.invoke(ape_cli, ["plugins", "install", "."], catch_exceptions=False)
         assert result.exit_code == 0, result.output
-
-    assert TEST_PLUGIN_NAME in caplog.records[-1].message
+        assert TEST_PLUGIN_NAME in result.stdout
 
 
 @github_xfail()
