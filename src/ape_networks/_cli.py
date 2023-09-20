@@ -85,8 +85,8 @@ def run(cli_ctx, network):
     Start a node process
     """
 
-    # Ignore web3 logs
-    cli_ctx.logger._clear_web3_loggers()
+    # Ignore extra loggers, such as web3 loggers.
+    cli_ctx.logger._extra_loggers = {}
 
     network_ctx = cli_ctx.network_manager.parse_network_choice(network)
     provider = network_ctx._provider

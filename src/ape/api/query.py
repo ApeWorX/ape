@@ -1,5 +1,5 @@
 from functools import lru_cache
-from typing import Any, Dict, Iterator, List, Optional, Set, Type, Union
+from typing import Any, Dict, Iterator, List, Optional, Sequence, Set, Type, Union
 
 from ethpm_types.abi import EventABI, MethodABI
 from pydantic import BaseModel, NonNegativeInt, PositiveInt, root_validator
@@ -53,7 +53,9 @@ def _all_columns(Model: Type[BaseInterfaceModel]) -> Set[str]:
     return columns
 
 
-def validate_and_expand_columns(columns: List[str], Model: Type[BaseInterfaceModel]) -> List[str]:
+def validate_and_expand_columns(
+    columns: Sequence[str], Model: Type[BaseInterfaceModel]
+) -> List[str]:
     if len(columns) == 1 and columns[0] == "*":
         # NOTE: By default, only pull explicit fields
         #       (because they are cheap to pull, but properties might not be)

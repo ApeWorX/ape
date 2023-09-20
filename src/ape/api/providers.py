@@ -723,6 +723,11 @@ class Web3Provider(ProviderAPI, ABC):
     _web3: Optional[Web3] = None
     _client_version: Optional[str] = None
 
+    def __init__(self, *args, **kwargs):
+        logger.create_logger("web3.RequestManager")
+        logger.create_logger("web3.providers.HTTPProvider")
+        super().__init__(*args, **kwargs)
+
     @property
     def web3(self) -> Web3:
         """

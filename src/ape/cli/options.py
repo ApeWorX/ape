@@ -12,7 +12,7 @@ from ape.cli.choices import (
 )
 from ape.cli.utils import Abort
 from ape.exceptions import ContractError
-from ape.logging import DEFAULT_LOG_LEVEL, CliLogger, LogLevel, logger
+from ape.logging import DEFAULT_LOG_LEVEL, ApeLogger, LogLevel, logger
 from ape.managers.base import ManagerAccessMixin
 
 _VERBOSITY_VALUES = ("--verbosity", "-v")
@@ -47,7 +47,7 @@ class ApeCliContextObject(ManagerAccessMixin):
         raise Abort(msg)
 
 
-def verbosity_option(cli_logger: Optional[CliLogger] = None, default: str = DEFAULT_LOG_LEVEL):
+def verbosity_option(cli_logger: Optional[ApeLogger] = None, default: str = DEFAULT_LOG_LEVEL):
     """A decorator that adds a `--verbosity, -v` option to the decorated
     command.
     """
@@ -57,7 +57,7 @@ def verbosity_option(cli_logger: Optional[CliLogger] = None, default: str = DEFA
 
 
 def _create_verbosity_kwargs(
-    _logger: Optional[CliLogger] = None, default: str = DEFAULT_LOG_LEVEL
+    _logger: Optional[ApeLogger] = None, default: str = DEFAULT_LOG_LEVEL
 ) -> Dict:
     cli_logger = _logger or logger
 

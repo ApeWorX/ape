@@ -18,7 +18,7 @@ extras_require = {
         "hypothesis-jsonschema==0.19.0",  # JSON Schema fuzzer extension
     ],
     "lint": [
-        "black>=23.7.0,<24",  # Auto-formatter and linter
+        "black>=23.9.1,<24",  # Auto-formatter and linter
         "mypy>=1.5.1,<2",  # Static type analyzer
         "types-PyYAML",  # Needed due to mypy typeshed
         "types-requests",  # Needed due to mypy typeshed
