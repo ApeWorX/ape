@@ -1811,7 +1811,7 @@ class Web3Provider(ProviderAPI, ABC):
 
     def range_contract_events(
         self,
-        contract: "ContractInstance",
+        contract: "ContractInstance", # noqa: F821
         start_or_stop: int,
         stop: Optional[int] = None,
         search_topics: Optional[Dict[str, Any]] = None,
@@ -1876,7 +1876,7 @@ class Web3Provider(ProviderAPI, ABC):
 
     def poll_logs(
         self,
-        contract: "ContractTypeWrapper",
+        contract: "ContractTypeWrapper", # noqa: F821
         stop_block: Optional[int] = None,
         required_confirmations: Optional[int] = None,
         new_block_timeout: Optional[int] = None,
