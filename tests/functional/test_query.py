@@ -88,7 +88,7 @@ def test_column_validation(eth_tester_provider, ape_caplog):
     assert exc_info.value.args[-1] == expected
 
     validate_and_expand_columns(["numbr", "timestamp"], Model)
-    assert expected in ape_caplog.messages[-1]
+    ape_caplog.assert_last_log(expected)
 
     validate_and_expand_columns(["number", "timestamp", "number"], Model)
     assert "Duplicate fields in ['number', 'timestamp', 'number']" in ape_caplog.messages[-1]

@@ -100,7 +100,7 @@ def test_poll_blocks(chain_that_mined_5, eth_tester_provider, owner, PollDaemon)
     assert second == third - 1
 
 
-def test_poll_blocks_reorg(chain_that_mined_5, eth_tester_provider, owner, PollDaemon, caplog):
+def test_poll_blocks_reorg(chain_that_mined_5, eth_tester_provider, owner, PollDaemon, ape_caplog):
     blocks: Queue = Queue(maxsize=6)
     poller = chain_that_mined_5.blocks.poll_blocks()
 
@@ -131,8 +131,8 @@ def test_poll_blocks_reorg(chain_that_mined_5, eth_tester_provider, owner, PollD
         "Chain has reorganized since returning the last block. "
         "Try adjusting the required network confirmations."
     )
-    assert caplog.records, "Didn't detect re-org"
-    assert expected_error in caplog.messages[-1]
+    assert ape_caplog.records, "Didn't detect re-org"
+    ape_caplog.assert_last_log(expected_error)
 
     # Show that there are duplicate blocks
     block_numbers: List[int] = [blocks.get().number for _ in range(6)]

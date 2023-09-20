@@ -4,7 +4,7 @@ import tempfile
 from contextlib import contextmanager
 from pathlib import Path
 from tempfile import mkdtemp
-from typing import Dict, Optional
+from typing import Any, Dict, Optional
 
 import pytest
 import yaml
@@ -392,6 +392,33 @@ def zero_address():
 
 @pytest.fixture
 def ape_caplog(caplog):
+    class ApeCaplog:
+        def __init__(self):
+            self.messages_at_start = list(caplog.messages)
+
+        def __getattr__(self, name: str) -> Any:
+            return getattr(caplog, name)
+
+        @property
+        def fail_message(self) -> str:
+            logs_before_message = (
+                f"Failed to detect logs. "
+                f"However, we did have logs before the operation: "
+                f"{', '.join(self.messages_at_start)}"
+            )
+            return logs_before_message if self.messages_at_start else "failed to detect log"
+
+        @property
+        def head(self) -> str:
+            """
+            A str representing the latest logged line.
+            Initialized to empty str.
+            """
+            return caplog.messages[-1] if len(caplog.messages) else ""
+
+        def assert_last_log(self, message: str):
+            assert message in self.head, self.fail_message
+
     logger.set_level(LogLevel.INFO)
     caplog.set_level(LogLevel.WARNING)
-    return caplog
+    return ApeCaplog()

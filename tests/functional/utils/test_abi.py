@@ -69,9 +69,7 @@ def test_decoding_with_strict(collection, topics, log_data_missing_trailing_zero
     the user and still proceed to decode the log.
     """
     actual = collection.decode(topics, log_data_missing_trailing_zeroes)
-    assert (
-        "However, we are able to get a value using decode(strict=False)" in ape_caplog.messages[-1]
-    )
+    ape_caplog.assert_last_log("However, we are able to get a value using decode(strict=False)")
     expected = {
         "name": "Launchnodes",
         "nodeOperatorId": 30,
