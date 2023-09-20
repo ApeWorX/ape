@@ -26,7 +26,7 @@ def test_bad_value_in_deployments(ecosystems, networks, err_part, caplog, plugin
     all_ecosystems = dict(plugin_manager.ecosystems)
     ecosystem_dict = {e: all_ecosystems[e] for e in ecosystems if e in all_ecosystems}
     DeploymentConfigCollection(deployments, ecosystem_dict, networks)
-    assert f"Invalid {err_part}" in caplog.records[-1].message
+    assert f"Invalid {err_part}" in caplog.messages[-1]
 
 
 def _create_deployments(ecosystem_name: str = "ethereum", network_name: str = "local") -> Dict:

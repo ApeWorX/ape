@@ -69,10 +69,7 @@ def test_decoding_with_strict(collection, topics, log_data_missing_trailing_zero
     the user and still proceed to decode the log.
     """
     actual = collection.decode(topics, log_data_missing_trailing_zeroes)
-    assert (
-        "However, we are able to get a value using decode(strict=False)"
-        in caplog.records[-1].message
-    )
+    assert "However, we are able to get a value using decode(strict=False)" in caplog.messages[-1]
     expected = {
         "name": "Launchnodes",
         "nodeOperatorId": 30,

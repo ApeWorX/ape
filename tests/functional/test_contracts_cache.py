@@ -65,7 +65,7 @@ def test_instance_at_uses_given_contract_type_when_retrieval_fails(mocker, chain
     chain.contracts.get.side_effect = fn
 
     actual = chain.contracts.instance_at(new_address, contract_type=expected_contract_type)
-    assert expected_fail_message in caplog.records[-1].message
+    assert expected_fail_message in caplog.messages[-1]
     assert actual.contract_type == expected_contract_type
 
 
@@ -217,7 +217,7 @@ def test_get_deployments_live_migration(
     chain.contracts._write_deployments_mapping(old_style_map)
     actual = chain.contracts.get_deployments(contract_0)
     assert actual == [contract]
-    assert caplog.records[-1].message == "Migrating 'deployments_map.json'."
+    assert caplog.messages[-1] == "Migrating 'deployments_map.json'."
 
 
 def test_get_multiple_deployments_live(
@@ -283,7 +283,7 @@ def test_get_multiple_no_addresses(chain, caplog):
     contract_map = chain.contracts.get_multiple([])
     assert not contract_map
     assert "WARNING" in caplog.records[-1].levelname
-    assert "No addresses provided." in caplog.records[-1].message
+    assert "No addresses provided." in caplog.messages[-1]
 
 
 def test_get_all_include_non_contract_address(vyper_contract_instance, chain, owner):

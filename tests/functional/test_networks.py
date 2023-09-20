@@ -211,7 +211,7 @@ def test_ecosystems_when_default_network_not_exists(temp_config, caplog, network
     with temp_config(config):
         assert networks.ecosystems
 
-    err = caplog.records[-1].message
+    err = caplog.messages[-1]
     assert err == (
         f"Failed setting default network: "
         f"'{bad_network}' is not a valid network for ecosystem 'ethereum'."
@@ -224,7 +224,7 @@ def test_ecosystems_when_default_provider_not_exists(temp_config, caplog, networ
     with temp_config(config):
         assert networks.ecosystems
 
-    err = caplog.records[-1].message
+    err = caplog.messages[-1]
     assert err == (
         f"Failed setting default provider: "
         f"Provider '{bad_provider}' not found in network 'ethereum:goerli'."

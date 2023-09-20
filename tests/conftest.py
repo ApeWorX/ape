@@ -4,7 +4,7 @@ import tempfile
 from contextlib import contextmanager
 from pathlib import Path
 from tempfile import mkdtemp
-from typing import Callable, Dict, Optional
+from typing import Dict, Optional
 
 import pytest
 import yaml

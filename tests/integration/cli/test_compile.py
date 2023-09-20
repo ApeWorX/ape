@@ -284,12 +284,12 @@ def test_compile_only_dependency(ape_cli, runner, project, clean_cache, caplog):
 
     # Pop the log record off here so we can check the tail again below.
     length_before = len(caplog.records)
-    assert expected_log_message in caplog.records[-1].message
+    assert expected_log_message in caplog.messages[-1]
 
     # It should not need to compile again.
     _ = dependency.DependencyInProjectOnly
     if caplog.records:
-        if expected_log_message in caplog.records[-1].message:
+        if expected_log_message in caplog.messages[-1]:
             length_after = len(caplog.records)
             # The only way it should be the same log is if there
             # were not additional logs.

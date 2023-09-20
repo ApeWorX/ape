@@ -132,7 +132,7 @@ def test_poll_blocks_reorg(chain_that_mined_5, eth_tester_provider, owner, PollD
         "Try adjusting the required network confirmations."
     )
     assert caplog.records, "Didn't detect re-org"
-    assert expected_error in caplog.records[-1].message
+    assert expected_error in caplog.messages[-1]
 
     # Show that there are duplicate blocks
     block_numbers: List[int] = [blocks.get().number for _ in range(6)]
