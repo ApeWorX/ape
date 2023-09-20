@@ -68,8 +68,10 @@ def test_decoding_with_strict(collection, topics, log_data_missing_trailing_zero
     When using strict=False, it was able to properly decode. In this case, in Ape, we warn
     the user and still proceed to decode the log.
     """
-    actual = collection.decode(topics, log_data_missing_trailing_zeroes)
-    ape_caplog.assert_last_log("However, we are able to get a value using decode(strict=False)")
+    actual = ape_caplog.assert_last_log_with_retries(
+        lambda: collection.decode(topics, log_data_missing_trailing_zeroes),
+        "However, we are able to get a value using decode(strict=False)",
+    )
     expected = {
         "name": "Launchnodes",
         "nodeOperatorId": 30,

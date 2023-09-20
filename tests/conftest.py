@@ -1,10 +1,11 @@
 import json
 import shutil
 import tempfile
+import time
 from contextlib import contextmanager
 from pathlib import Path
 from tempfile import mkdtemp
-from typing import Any, Dict, Optional
+from typing import Any, Callable, Dict, Optional
 
 import pytest
 import yaml
@@ -425,6 +426,30 @@ def ape_caplog(caplog):
 
         def assert_last_log(self, message: str):
             assert message in self.head, self.fail_message
+
+        def assert_last_log_with_retries(
+            self, op: Callable, message: str, tries: int = 2, delay: float = 5.0
+        ):
+            times_tried = 0
+            return_value = None
+            while times_tried <= tries:
+                result = op()
+
+                # Only save the first return value.
+                if return_value is None and result is not None:
+                    return_value = result
+
+                times_tried += 1
+                if message in self.head:
+                    return return_value
+
+                time.sleep(delay)
+
+                # Reset levels in case they got switched.
+                logger.set_level(LogLevel.INFO)
+                caplog.set_level(LogLevel.WARNING)
+
+            pytest.fail(self.fail_message)
 
     logger.set_level(LogLevel.INFO)
     caplog.set_level(LogLevel.WARNING)

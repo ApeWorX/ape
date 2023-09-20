@@ -87,8 +87,9 @@ def test_column_validation(eth_tester_provider, ape_caplog):
     expected = "Unrecognized field(s) 'numbr', must be one of 'number, timestamp'."
     assert exc_info.value.args[-1] == expected
 
-    validate_and_expand_columns(["numbr", "timestamp"], Model)
-    ape_caplog.assert_last_log(expected)
+    ape_caplog.assert_last_log_with_retries(
+        lambda: validate_and_expand_columns(["numbr", "timestamp"], Model), expected
+    )
 
     validate_and_expand_columns(["number", "timestamp", "number"], Model)
     assert "Duplicate fields in ['number', 'timestamp', 'number']" in ape_caplog.messages[-1]
