@@ -401,12 +401,19 @@ def ape_caplog(caplog):
 
         @property
         def fail_message(self) -> str:
-            logs_before_message = (
-                f"Failed to detect logs. "
-                f"However, we did have logs before the operation: "
-                f"{', '.join(self.messages_at_start)}"
-            )
-            return logs_before_message if self.messages_at_start else "failed to detect log"
+            if caplog.messages:
+                last_message = caplog.messages[-1]
+                return f"Actual last message: {last_message}"
+
+            elif self.messages_at_start:
+                return (
+                    f"Failed to detect logs. "
+                    f"However, we did have logs before the operation: "
+                    f"{', '.join(self.messages_at_start)}"
+                )
+
+            else:
+                return "No logs found!"
 
         @property
         def head(self) -> str:

@@ -1318,15 +1318,6 @@ class ContractCache(BaseManager):
         if not deployments:
             return []
 
-        if isinstance(deployments[0], str):
-            # TODO: Remove this migration logic >= version 0.6.0
-            logger.debug("Migrating 'deployments_map.json'.")
-            deployments = [{"address": a} for a in deployments]
-            self._deployments = {
-                **self._deployments,
-                contract_type.name: deployments,
-            }
-
         instances: List[ContractInstance] = []
         for deployment in deployments:
             address = deployment["address"]

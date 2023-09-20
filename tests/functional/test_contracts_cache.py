@@ -209,17 +209,6 @@ def test_get_deployments_live(
     assert address_from_api_1 == deployed_contract_1.address
 
 
-def test_get_deployments_live_migration(
-    chain, owner, contract_0, dummy_live_network, ape_caplog, use_debug
-):
-    contract = owner.deploy(contract_0, required_confirmations=0)
-    old_style_map = {"ethereum": {"goerli": {"ApeContract0": [contract.address]}}}
-    chain.contracts._write_deployments_mapping(old_style_map)
-    actual = chain.contracts.get_deployments(contract_0)
-    assert actual == [contract]
-    assert ape_caplog.messages[-1] == "Migrating 'deployments_map.json'."
-
-
 def test_get_multiple_deployments_live(
     chain, owner, contract_0, contract_1, remove_disk_writes_deployments, dummy_live_network
 ):
