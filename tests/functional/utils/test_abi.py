@@ -62,15 +62,16 @@ def log_data_missing_trailing_zeroes():
     )
 
 
-def test_decoding_with_strict(collection, topics, log_data_missing_trailing_zeroes, assert_log):
+def test_decoding_with_strict(collection, topics, log_data_missing_trailing_zeroes, caplog):
     """
     This test is for a time where Alchemy gave us log data when it was missing trailing zeroes.
     When using strict=False, it was able to properly decode. In this case, in Ape, we warn
     the user and still proceed to decode the log.
     """
-    actual = assert_log(
-        lambda: collection.decode(topics, log_data_missing_trailing_zeroes),
-        "However, we are able to get a value using decode(strict=False)",
+    actual = collection.decode(topics, log_data_missing_trailing_zeroes)
+    assert (
+        "However, we are able to get a value using decode(strict=False)"
+        in caplog.records[-1].message
     )
     expected = {
         "name": "Launchnodes",
