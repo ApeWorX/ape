@@ -67,7 +67,7 @@ class AccountAPI(BaseInterfaceModel, BaseAddress):
             for more type information on this type.
 
         Returns:
-            :class:`~ape.types.signatures.MessageSignature` (optional): The signature corresponding to the message.
+            :class:`~ape.types.signatures.MessageSignature` (optional): The signed message.
         """
 
     @abstractmethod
