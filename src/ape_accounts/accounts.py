@@ -4,7 +4,6 @@ from pathlib import Path
 from typing import Iterator, Optional
 
 import click
-from eip712.messages import EIP712Message
 from eth_account import Account as EthAccount
 from eth_utils import to_bytes
 from ethpm_types import HexBytes
