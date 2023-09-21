@@ -101,13 +101,16 @@ class TestAccount(TestAccountAPI):
     def address(self) -> AddressType:
         return self.network_manager.ethereum.decode_address(self.address_str)
 
-    def sign_message(self, msg: SignableMessage) -> Optional[MessageSignature]:
-        signed_msg = EthAccount.sign_message(msg, self.private_key)
-        return MessageSignature(
-            v=signed_msg.v,
-            r=to_bytes(signed_msg.r),
-            s=to_bytes(signed_msg.s),
-        )
+    def sign_message(self, msg: Any, **signer_options) -> Optional[MessageSignature]:
+        if isinstance(msg, str):
+            msg = encode_defunct(text=msg)
+        if isinstance(msg, SignableMessage):
+            signed_msg = EthAccount.sign_message(msg, self.private_key)
+            return MessageSignature(
+                v=signed_msg.v,
+                r=to_bytes(signed_msg.r),
+                s=to_bytes(signed_msg.s),
+            )
 
     def sign_transaction(self, txn: TransactionAPI, **kwargs) -> Optional[TransactionAPI]:
         # Signs anything that's given to it
