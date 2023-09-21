@@ -12,7 +12,7 @@ from eth_utils import decode_hex, encode_hex, keccak, to_hex, to_int
 from ethpm_types import ContractType, HexBytes
 from ethpm_types.abi import EventABI, MethodABI
 
-from ape._compat import BaseModel, Field, root_validator, validator
+from ape._pydantic_compat import BaseModel, Field, root_validator, validator
 from ape.api import ReceiptAPI, TransactionAPI
 from ape.contracts import ContractEvent
 from ape.exceptions import OutOfGasError, SignatureError, TransactionError

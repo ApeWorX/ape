@@ -31,7 +31,7 @@ from ethpm_types.abi import EventABI
 from ethpm_types.source import Closure
 from web3.types import FilterParams
 
-from ape._compat import BaseModel, root_validator, validator
+from ape._pydantic_compat import BaseModel, root_validator, validator
 from ape.types.address import AddressType, RawAddress
 from ape.types.coverage import (
     ContractCoverage,

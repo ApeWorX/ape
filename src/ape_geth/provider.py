@@ -35,7 +35,7 @@ from web3.providers import AutoProvider, IPCProvider
 from web3.providers.auto import load_provider_from_environment
 from yarl import URL
 
-from ape._compat import Extra
+from ape._pydantic_compat import Extra
 from ape.api import (
     PluginConfig,
     SubprocessProvider,

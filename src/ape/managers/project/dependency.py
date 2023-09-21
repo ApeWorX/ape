@@ -9,7 +9,7 @@ from ethpm_types import PackageManifest
 from ethpm_types.utils import AnyUrl
 from semantic_version import NpmSpec, Version  # type: ignore
 
-from ape._compat import FileUrl, HttpUrl, root_validator
+from ape._pydantic_compat import FileUrl, HttpUrl, root_validator
 from ape.api import DependencyAPI
 from ape.exceptions import ProjectError, UnknownVersionError
 from ape.logging import logger

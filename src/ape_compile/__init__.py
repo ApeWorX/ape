@@ -1,7 +1,7 @@
 from typing import Any, List, Optional
 
 from ape import plugins
-from ape._compat import Field, validator
+from ape._pydantic_compat import Field, validator
 from ape.api import PluginConfig
 from ape.logging import logger
 

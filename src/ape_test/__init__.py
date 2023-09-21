@@ -1,7 +1,7 @@
 from typing import Dict, List, NewType, Optional, Union
 
 from ape import plugins
-from ape._compat import NonNegativeInt
+from ape._pydantic_compat import NonNegativeInt
 from ape.api import PluginConfig
 from ape.api.networks import LOCAL_NETWORK_NAME
 from ape.utils import DEFAULT_HD_PATH, DEFAULT_NUMBER_OF_TEST_ACCOUNTS, DEFAULT_TEST_MNEMONIC

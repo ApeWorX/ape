@@ -9,7 +9,7 @@ from evm_trace.gas import merge_reports
 from rich.table import Table
 from rich.tree import Tree
 
-from ape._compat import Field
+from ape._pydantic_compat import Field
 from ape.types.address import AddressType
 from ape.utils.basemodel import BaseInterfaceModel
 from ape.utils.misc import is_evm_precompile, is_zero_hex

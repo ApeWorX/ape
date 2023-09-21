@@ -6,7 +6,7 @@ from eth_utils import is_checksum_address, to_hex
 from ethpm_types import ContractType, HexBytes
 
 from ape import Contract
-from ape._compat import BaseModel
+from ape._pydantic_compat import BaseModel
 from ape.api import TransactionAPI
 from ape.contracts import ContractInstance
 from ape.exceptions import (

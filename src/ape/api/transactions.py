@@ -8,7 +8,7 @@ from ethpm_types import HexBytes
 from ethpm_types.abi import EventABI, MethodABI
 from tqdm import tqdm  # type: ignore
 
-from ape._compat import Field, validator
+from ape._pydantic_compat import Field, validator
 from ape.api.explorers import ExplorerAPI
 from ape.exceptions import (
     NetworkError,

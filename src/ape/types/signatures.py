@@ -4,7 +4,7 @@ from eth_account import Account
 from eth_account.messages import SignableMessage
 from eth_utils import to_bytes, to_hex
 
-from ape._compat import dataclass
+from ape._pydantic_compat import dataclass
 from ape.types import AddressType
 
 
