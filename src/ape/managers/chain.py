@@ -159,14 +159,16 @@ class BlockContainer(BaseManager):
             )
 
         query = BlockQuery(
-            columns=columns,
+            columns=list(columns),
             start_block=start_block,
             stop_block=stop_block,
             step=step,
         )
 
         blocks = self.query_manager.query(query, engine_to_use=engine_to_use)
-        columns = validate_and_expand_columns(columns, self.head.__class__)  # type: ignore
+        columns: List[str] = validate_and_expand_columns(  # type: ignore
+            columns, self.head.__class__
+        )
         blocks = map(partial(extract_fields, columns=columns), blocks)
         return pd.DataFrame(columns=columns, data=blocks)
 
@@ -486,7 +488,7 @@ class AccountHistory(BaseInterfaceModel):
             )
 
         query = AccountTransactionQuery(
-            columns=columns,
+            columns=list(columns),
             account=self.address,
             start_nonce=start_nonce,
             stop_nonce=stop_nonce,

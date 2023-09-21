@@ -98,7 +98,7 @@ and otherwise you can provide a numeric value.
 """
 
 
-TopicFilter = Sequence[Union[Optional[HexStr], List[Optional[HexStr]]]]
+TopicFilter = Sequence[Union[Optional[HexStr], Sequence[Optional[HexStr]]]]
 
 
 @dataclass

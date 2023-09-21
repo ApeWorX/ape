@@ -120,7 +120,11 @@ class StructParser:
 
         return self._decode(self.abi.outputs, values) if isinstance(self.abi, MethodABI) else None
 
-    def _decode(self, _types: Sequence[ABIType], values: Union[Sequence, Dict[str, Any]]):
+    def _decode(
+        self,
+        _types: Union[Sequence[ABIType]],
+        values: Union[Sequence, Dict[str, Any]],
+    ):
         if is_struct(_types):
             return self._create_struct(_types[0], values)
 
