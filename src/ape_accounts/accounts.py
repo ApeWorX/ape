@@ -1,12 +1,11 @@
 import json
 from os import environ
 from pathlib import Path
-from typing import Any, Iterator, Optional
+from typing import Iterator, Optional
 
 import click
 from eip712.messages import EIP712Message
 from eth_account import Account as EthAccount
-from eth_account.messages import encode_defunct
 from eth_utils import to_bytes
 from ethpm_types import HexBytes
 
@@ -121,21 +120,11 @@ class KeyfileAccount(AccountAPI):
         self.__decrypt_keyfile(passphrase)
         self.keyfile_path.unlink()
 
-    def sign_message(self, msg: Any, **signer_options) -> Optional[MessageSignature]:
-        if not isinstance(msg, (SignableMessage, EIP712Message, str)):
-            logger.warning("Unsupported message type, (type=%r, msg=%r)", type(msg), msg)
-            return None
-
-        user_approves = self.__autosign or click.confirm(f"Message: {msg}\n\nSign: ")
-        if isinstance(msg, str):
-            # Convert str to SignableMessage for handling below
-            msg = encode_defunct(text=msg)
-        elif isinstance(msg, EIP712Message):
-            # Convert EIP712Message to SignableMessage for handling below
-            msg = msg.signable_message
-
+    def sign_message(self, msg: SignableMessage) -> Optional[MessageSignature]:
+        user_approves = self.__autosign or click.confirm(f"{msg}\n\nSign: ")
         if not user_approves:
             return None
+
         signed_msg = EthAccount.sign_message(msg, self.__key)
         return MessageSignature(
             v=signed_msg.v,
