@@ -1,6 +1,6 @@
 # support both pydantic v1 and v2
 try:
-    from pydantic.v1 import (
+    from pydantic.v1 import (  # type: ignore
         BaseModel,
         BaseSettings,
         Extra,
@@ -13,9 +13,8 @@ try:
         root_validator,
         validator,
     )
-    from pydantic.v1.dataclasses import dataclass
 except ImportError:
-    from pydantic import (
+    from pydantic import (  # type: ignore
         BaseModel,
         Extra,
         Field,
@@ -27,12 +26,13 @@ except ImportError:
         root_validator,
         validator,
     )
-    from pydantic.dataclasses import dataclass
-    from pydantic_settings import BaseSettings
+    from pydantic.dataclasses import dataclass  # type: ignore
+    from pydantic_settings import BaseSettings  # type: ignore
 
 __all__ = (
     "BaseModel",
     "BaseSettings",
+    "dataclass",
     "Extra",
     "Field",
     "FileUrl",
@@ -42,5 +42,4 @@ __all__ = (
     "ValidationError",
     "root_validator",
     "validator",
-    "dataclass",
 )
