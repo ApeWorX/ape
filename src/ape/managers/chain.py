@@ -1,5 +1,4 @@
 import json
-import time
 from concurrent.futures import ThreadPoolExecutor
 from contextlib import contextmanager
 from functools import partial
@@ -24,7 +23,6 @@ from ape.api.query import (
 from ape.contracts import ContractContainer, ContractInstance
 from ape.exceptions import (
     APINotImplementedError,
-    BlockNotFoundError,
     ChainError,
     ContractNotFoundError,
     ConversionError,
@@ -271,18 +269,6 @@ class BlockContainer(BaseManager):
         Returns:
             Iterator[:class:`~ape.api.providers.BlockAPI`]
         """
-        network_name = self.provider.network.name
-        block_time = self.provider.network.block_time
-        timeout = (
-            (
-                10.0
-                if network_name == LOCAL_NETWORK_NAME or network_name.endswith("-fork")
-                else 50 * block_time
-            )
-            if new_block_timeout is None
-            else new_block_timeout
-        )
-
         if required_confirmations is None:
             required_confirmations = self.network_confirmations
 
@@ -300,9 +286,9 @@ class BlockContainer(BaseManager):
         yield from self.provider.poll_blocks(
             stop_block=stop_block,
             required_confirmations=required_confirmations,
-            new_block_timeout=new_block_timeout)
+            new_block_timeout=new_block_timeout,
+        )
 
-        
     def _get_block(self, block_id: BlockID) -> BlockAPI:
         return self.provider.get_block(block_id)
 
