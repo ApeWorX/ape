@@ -1,5 +1,16 @@
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any, Dict, List, Literal, Optional, Sequence, Union, cast
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    Dict,
+    Iterator,
+    List,
+    Literal,
+    Optional,
+    Sequence,
+    Union,
+    cast,
+)
 
 from eth_abi.abi import encode
 from eth_abi.packed import encode_packed
@@ -21,7 +32,6 @@ from ethpm_types.source import Closure
 from pydantic import BaseModel, root_validator, validator
 from web3.types import FilterParams
 
-from ape.exceptions import ApeAttributeError
 from ape.types.address import AddressType, RawAddress
 from ape.types.coverage import (
     ContractCoverage,
@@ -32,7 +42,7 @@ from ape.types.coverage import (
 )
 from ape.types.signatures import MessageSignature, SignableMessage, TransactionSignature
 from ape.types.trace import CallTreeNode, ControlFlow, GasReport, SourceTraceback, TraceFrame
-from ape.utils import BaseInterfaceModel, cached_property
+from ape.utils import BaseInterfaceModel, ExtraModelAttributes, cached_property
 from ape.utils.misc import ZERO_ADDRESS, to_int
 
 if TYPE_CHECKING:
@@ -294,23 +304,13 @@ class ContractLog(BaseContractLog):
     def __repr__(self) -> str:
         return f"<{self.event_name} {self._event_args_str}>"
 
-    def __getattr__(self, item: str) -> Any:
-        """
-        Access properties from the log via ``.`` access.
-
-        Args:
-            item (str): The name of the property.
-        """
-
-        try:
-            return self.__getattribute__(item)
-        except AttributeError:
-            pass
-
-        if item not in self.event_arguments:
-            raise ApeAttributeError(f"{self.__class__.__name__} has no attribute '{item}'.")
-
-        return self.event_arguments[item]
+    def __ape_extra_attributes__(self) -> Iterator[ExtraModelAttributes]:
+        yield ExtraModelAttributes(
+            name=self.event_name,
+            attributes=self.event_arguments,
+            include_getattr=True,
+            include_getitem=True,
+        )
 
     def __contains__(self, item: str) -> bool:
         return item in self.event_arguments
@@ -337,9 +337,6 @@ class ContractLog(BaseContractLog):
 
         # call __eq__ on parent class
         return super().__eq__(other)
-
-    def __getitem__(self, item: str) -> Any:
-        return self.event_arguments[item]
 
     def get(self, item: str, default: Optional[Any] = None) -> Any:
         return self.event_arguments.get(item, default)

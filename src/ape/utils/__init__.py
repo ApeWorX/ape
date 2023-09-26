@@ -13,6 +13,7 @@ from ape.utils.abi import (
 from ape.utils.basemodel import (
     BaseInterface,
     BaseInterfaceModel,
+    ExtraModelAttributes,
     ManagerAccessMixin,
     injected_before_use,
 )
@@ -75,6 +76,7 @@ __all__ = [
     "EMPTY_BYTES32",
     "expand_environment_variables",
     "extract_nested_value",
+    "ExtraModelAttributes",
     "get_relative_path",
     "gas_estimation_error_message",
     "get_package_version",
