@@ -14,7 +14,7 @@ from eth_utils import (
 )
 from ethpm_types import ConstructorABI, EventABI, HexBytes, MethodABI
 
-from ape.api import ConverterAPI
+from ape.api import ConverterAPI, TransactionAPI
 from ape.api.address import BaseAddress
 from ape.exceptions import ConversionError
 from ape.types import AddressType
@@ -372,8 +372,6 @@ class ConversionManager(BaseManager):
         return self.convert(pre_processed_args, tuple)
 
     def convert_method_kwargs(self, kwargs) -> Dict:
-        from ape.api.transactions import TransactionAPI
-
         fields = TransactionAPI.__fields__
 
         kwargs_to_convert = {k: v for k, v in kwargs.items() if k == "sender" or k in fields}
