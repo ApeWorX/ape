@@ -49,6 +49,7 @@
               <option value="">Select version...</option>
               <option value="latest">latest</option>
               <option value="stable">stable</option>
+                <option value="v0.6.20">v0.6.20</option>
                 <option value="v0.6.19">v0.6.19</option>
                 <option value="v0.6.18">v0.6.18</option>
                 <option value="v0.6.17">v0.6.17</option>
@@ -162,11 +163,7 @@
 <li class="toctree-l1"><a class="reference internal" href="types.html">ape.types</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">ape.utils</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#ape.utils.BaseInterface"><code class="docutils literal notranslate"><span class="pre">BaseInterface</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="#ape.utils.BaseInterfaceModel"><code class="docutils literal notranslate"><span class="pre">BaseInterfaceModel</span></code></a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#ape.utils.BaseInterfaceModel.dict"><code class="docutils literal notranslate"><span class="pre">BaseInterfaceModel.dict()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="#ape.utils.BaseInterfaceModel.json"><code class="docutils literal notranslate"><span class="pre">BaseInterfaceModel.json()</span></code></a></li>
-</ul>
-</li>
+<li class="toctree-l2"><a class="reference internal" href="#ape.utils.BaseInterfaceModel"><code class="docutils literal notranslate"><span class="pre">BaseInterfaceModel</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#ape.utils.GeneratedDevAccount"><code class="docutils literal notranslate"><span class="pre">GeneratedDevAccount</span></code></a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#ape.utils.GeneratedDevAccount.address"><code class="docutils literal notranslate"><span class="pre">GeneratedDevAccount.address</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ape.utils.GeneratedDevAccount.private_key"><code class="docutils literal notranslate"><span class="pre">GeneratedDevAccount.private_key</span></code></a></li>
@@ -274,19 +271,6 @@
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ape.utils.</span></span><span class="sig-name descname"><span class="pre">BaseInterfaceModel</span></span><a class="headerlink" href="#ape.utils.BaseInterfaceModel" title="Permalink to this definition"></a></dt>
 <dd><p>Bases: <a class="reference internal" href="#ape.utils.BaseInterface" title="ape.utils.basemodel.BaseInterface"><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseInterface</span></code></a>, <code class="xref py py-class docutils literal notranslate"><span class="pre">BaseModel</span></code></p>
 <p>An abstract base-class with manager access on a pydantic base model.</p>
-<dl class="py method">
-<dt class="sig sig-object py" id="ape.utils.BaseInterfaceModel.dict">
-<span class="sig-name descname"><span class="pre">dict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Dict</span></span></span><a class="headerlink" href="#ape.utils.BaseInterfaceModel.dict" title="Permalink to this definition"></a></dt>
-<dd><p>Generate a dictionary representation of the model, optionally specifying which fields to include or exclude.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="ape.utils.BaseInterfaceModel.json">
-<span class="sig-name descname"><span class="pre">json</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="headerlink" href="#ape.utils.BaseInterfaceModel.json" title="Permalink to this definition"></a></dt>
-<dd><p>Generate a JSON representation of the model, <cite>include</cite> and <cite>exclude</cite> arguments as per <cite>dict()</cite>.</p>
-<p><cite>encoder</cite> is an optional function to supply as <cite>default</cite> to json.dumps(), other arguments as per <cite>json.dumps()</cite>.</p>
-</dd></dl>
-
 </dd></dl>
 
 <dl class="py class">
@@ -792,13 +776,13 @@ Ethereum pre-compile address.</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="ape.utils.is_named_tuple">
-<span class="sig-prename descclassname"><span class="pre">ape.utils.</span></span><span class="sig-name descname"><span class="pre">is_named_tuple</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">outputs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">ABIType</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_values</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Tuple</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="headerlink" href="#ape.utils.is_named_tuple" title="Permalink to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">ape.utils.</span></span><span class="sig-name descname"><span class="pre">is_named_tuple</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">outputs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Sequence</span><span class="p"><span class="pre">[</span></span><span class="pre">ABIType</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_values</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Sequence</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="headerlink" href="#ape.utils.is_named_tuple" title="Permalink to this definition"></a></dt>
 <dd><p>Returns <code class="docutils literal notranslate"><span class="pre">True</span></code> if the given output is a tuple where every item is named.</p>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="ape.utils.is_struct">
-<span class="sig-prename descclassname"><span class="pre">ape.utils.</span></span><span class="sig-name descname"><span class="pre">is_struct</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">outputs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ABIType</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">ABIType</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="headerlink" href="#ape.utils.is_struct" title="Permalink to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">ape.utils.</span></span><span class="sig-name descname"><span class="pre">is_struct</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">outputs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ABIType</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Sequence</span><span class="p"><span class="pre">[</span></span><span class="pre">ABIType</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="headerlink" href="#ape.utils.is_struct" title="Permalink to this definition"></a></dt>
 <dd><p>Returns <code class="docutils literal notranslate"><span class="pre">True</span></code> if the given output is a struct.</p>
 </dd></dl>
 
