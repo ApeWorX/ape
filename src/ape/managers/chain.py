@@ -297,107 +297,12 @@ class BlockContainer(BaseManager):
             for block in self.range(start_block, self.height - required_confirmations + 1):
                 yield block
 
-        if block:
-            last_yielded_hash = block.hash
-            last_yielded_number = block.number
+        yield from self.provider.poll_blocks(
+            stop_block=stop_block,
+            required_confirmations=required_confirmations,
+            new_block_timeout=new_block_timeout)
 
-            # Only sleep if pre-yielded a block
-            time.sleep(block_time)
-
-        else:
-            last_yielded_hash = None
-            last_yielded_number = None
-
-        # Set `time_since_last` even if haven't yield yet.
-        # This helps with timing out the first time.
-        time_since_last = time.time()
-
-        def _try_timeout():
-            if time.time() - time_since_last > timeout:
-                time_waited = round(time.time() - time_since_last, 4)
-                message = f"Timed out waiting for new block (time_waited={time_waited})."
-                if (
-                    self.provider.network.name == LOCAL_NETWORK_NAME
-                    or self.provider.network.name.endswith("-fork")
-                ):
-                    message += (
-                        " If using a local network, try configuring mining to mine on an interval "
-                        "or adjusting the block time."
-                    )
-
-                raise ChainError(message)
-
-        while True:
-            confirmable_block_number = self.height - required_confirmations
-            confirmable_block = None
-            try:
-                confirmable_block = self._get_block(confirmable_block_number)
-            except BlockNotFoundError:
-                # Handle race condition with required_confs = 0 and re-org
-                _try_timeout()
-                time.sleep(block_time)
-
-            if (
-                last_yielded_hash is not None
-                and confirmable_block is not None
-                and confirmable_block.hash == last_yielded_hash
-                and last_yielded_number is not None
-                and confirmable_block_number == last_yielded_number
-            ):
-                # No changes
-                _try_timeout()
-                time.sleep(block_time)
-                continue
-
-            elif (
-                last_yielded_number is not None
-                and confirmable_block_number < last_yielded_number
-                or (
-                    confirmable_block_number == last_yielded_number
-                    and confirmable_block is not None
-                    and confirmable_block.hash != last_yielded_hash
-                )
-            ):
-                # Re-org detected.
-                logger.error(
-                    "Chain has reorganized since returning the last block. "
-                    "Try adjusting the required network confirmations."
-                )
-                # NOTE: One limitation is that it does not detect if the re-org is exactly
-                # the same as what was already yielded, from start to end.
-
-                # Next, drop down and yield the new blocks (even though duplicate numbers)
-                start = confirmable_block_number
-
-            elif last_yielded_number is not None and last_yielded_number < confirmable_block_number:
-                # New blocks
-                start = last_yielded_number + 1
-
-            elif last_yielded_number is None:
-                # First time iterating
-                start = confirmable_block_number
-
-            else:
-                start = confirmable_block_number
-
-            # Yield blocks
-            block = None
-
-            # Reset 'stop' in case a re-org occurred.
-            stop: int = min(confirmable_block_number + 1, len(self))
-            if start < stop:
-                for block in self.range(start, stop):
-                    yield block
-
-            if block:
-                last_yielded_hash = block.hash
-                last_yielded_number = block.number
-                time_since_last = time.time()
-            else:
-                _try_timeout()
-
-            time.sleep(block_time)
-
+        
     def _get_block(self, block_id: BlockID) -> BlockAPI:
         return self.provider.get_block(block_id)
 
