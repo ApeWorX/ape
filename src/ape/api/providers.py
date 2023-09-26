@@ -1437,7 +1437,7 @@ class Web3Provider(ProviderAPI, ABC):
                     num_blocks_behind = last_yielded_height - confirmed_block.number
                     logger.error(f"{num_blocks_behind} Block reorganization detected. Try adjusting the required network confirmations")
                 last_yielded_height = confirmed_block.number
-                yield confirmed_block
+                yield self.network.ecosystem.decode_block(confirmed_block)
 
     def poll_logs(
             self,
@@ -1450,12 +1450,13 @@ class Web3Provider(ProviderAPI, ABC):
             required_confirmations or self.provider.network.required_confirmations
         )
         for block in self.poll_blocks(stop_block, required_confirmations, new_block_timeout):
-            yield from self.web3.eth.get_logs({
+            for log in self.web3.eth.get_logs({
                 "fromBlock": block.number,
                 "toBlock": block.number,
                 "address": address,
                 "topics": topics
-            })
+            }):
+                yield ContractLog.parse_obj(log)
 
     def block_ranges(self, start=0, stop=None, page=None):
         if stop is None:
