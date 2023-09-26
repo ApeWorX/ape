@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING, Any, Dict, Iterator, List, Optional, Union
 
 from ethpm_types import Checksum, ContractType, PackageManifest, Source
 from ethpm_types.manifest import PackageName
-from ethpm_types.utils import AnyUrl, compute_checksum
+from ethpm_types.utils import Algorithm, AnyUrl, compute_checksum
 from packaging.version import InvalidVersion, Version
 from pydantic import ValidationError
 
@@ -210,7 +210,7 @@ class ProjectAPI(BaseInterfaceModel):
 
             source_dict[key] = Source(
                 checksum=Checksum(
-                    algorithm="md5",
+                    algorithm=Algorithm.MD5,
                     hash=compute_checksum(source_path.read_bytes()),
                 ),
                 urls=[],

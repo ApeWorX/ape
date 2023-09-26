@@ -6,9 +6,8 @@ from ape import plugins
 from ape.api import PluginConfig
 from ape.api.networks import LOCAL_NETWORK_NAME
 from ape.utils import DEFAULT_HD_PATH, DEFAULT_NUMBER_OF_TEST_ACCOUNTS, DEFAULT_TEST_MNEMONIC
-
-from .accounts import TestAccount, TestAccountContainer
-from .provider import EthTesterProviderConfig, LocalProvider
+from ape_test.accounts import TestAccount, TestAccountContainer
+from ape_test.provider import EthTesterProviderConfig, LocalProvider
 
 
 class GasExclusion(PluginConfig):
@@ -79,7 +78,7 @@ class CoverageConfig(PluginConfig):
     the ``--coverage`` flag.
     """
 
-    reports = CoverageReportsConfig()
+    reports: CoverageReportsConfig = CoverageReportsConfig()
     """
     Enable reports.
     """

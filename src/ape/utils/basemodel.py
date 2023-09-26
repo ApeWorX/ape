@@ -88,10 +88,10 @@ class ManagerAccessMixin:
         Returns:
             :class:`~ape.api.providers.ProviderAPI`
         """
-        if self.network_manager.active_provider is None:
-            raise ProviderNotConnectedError()
+        if provider := self.network_manager.active_provider:
+            return provider
 
-        return self.network_manager.active_provider
+        raise ProviderNotConnectedError()
 
 
 class BaseInterface(ManagerAccessMixin, ABC):
@@ -266,27 +266,3 @@ class BaseInterfaceModel(BaseInterface, BaseModel):
         """
         # Filter out protected/private members
         return [member for member in super().__dir__() if not member.startswith("_")]
-
-    def dict(self, *args, **kwargs) -> Dict:
-        if "by_alias" not in kwargs:
-            kwargs["by_alias"] = True
-
-        if "exclude_none" not in kwargs:
-            kwargs["exclude_none"] = True
-
-        return super().dict(*args, **kwargs)
-
-    def json(self, *args, **kwargs) -> str:
-        if "separators" not in kwargs:
-            kwargs["separators"] = (",", ":")
-
-        if "sort_keys" not in kwargs:
-            kwargs["sort_keys"] = True
-
-        if "by_alias" not in kwargs:
-            kwargs["by_alias"] = True
-
-        if "exclude_none" not in kwargs:
-            kwargs["exclude_none"] = True
-
-        return super().json(*args, **kwargs)

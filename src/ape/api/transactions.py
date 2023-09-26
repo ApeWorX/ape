@@ -124,7 +124,7 @@ class TransactionAPI(BaseInterfaceModel):
         to submit the transaction.
         """
         if self.max_fee is None:
-            raise TransactionError("Max fee must not be null.")
+            raise TransactionError("`self.max_fee` must not be None.")
 
         return self.value + self.max_fee
 

@@ -50,7 +50,6 @@ from ape.utils import (
     returns_array,
     to_int,
 )
-from ape.utils.abi import _convert_kwargs
 from ape.utils.misc import DEFAULT_MAX_RETRIES_TX
 from ape_ethereum.proxies import (
     IMPLEMENTATION_ABI,
@@ -91,7 +90,7 @@ class NetworkConfig(PluginConfig):
     block_time: int = 0
     transaction_acceptance_timeout: int = DEFAULT_TRANSACTION_ACCEPTANCE_TIMEOUT
     default_transaction_type: TransactionType = TransactionType.DYNAMIC
-    max_receipt_retries = DEFAULT_MAX_RETRIES_TX
+    max_receipt_retries: int = DEFAULT_MAX_RETRIES_TX
 
     gas_limit: GasLimit = "auto"
     """
@@ -237,7 +236,7 @@ class Ethereum(EcosystemAPI):
         deploy_bytecode = HexBytes(
             return_data_size + len_bytes + return_instructions + blueprint_bytecode
         )
-        converted_kwargs = _convert_kwargs(kwargs, self.conversion_manager.convert)
+        converted_kwargs = self.conversion_manager.convert_method_kwargs(kwargs)
         return self.encode_deployment(
             deploy_bytecode, contract_type.constructor, **converted_kwargs
         )
@@ -264,11 +263,10 @@ class Ethereum(EcosystemAPI):
             ProxyType.SplitsCWIA: r"36602f57343d527f9e4ac34f21c619cefc926c8bd93b54bf5a39c7ab2127a895af1cc0691d7e3dff60203da13d3df35b3d3d3d3d363d3d3761.{4}606736393661.{4}013d73(.{40})5af43d3d93803e606557fd5bf3.*",  # noqa: E501
             ProxyType.SoladyPush0: r"^5f5f365f5f37365f73(.{40})5af43d5f5f3e6029573d5ffd5b3d5ff3",
         }
-        for type, pattern in patterns.items():
-            match = re.match(pattern, code)
-            if match:
+        for type_, pattern in patterns.items():
+            if match := re.match(pattern, code):
                 target = self.conversion_manager.convert(match.group(1), AddressType)
-                return ProxyInfo(type=type, target=target)
+                return ProxyInfo(type=type_, target=target)
 
         sequence_pattern = r"363d3d373d3d3d363d30545af43d82803e903d91601857fd5bf3"
         if re.match(sequence_pattern, code):
@@ -350,7 +348,7 @@ class Ethereum(EcosystemAPI):
                 break
 
         if txn_hash:
-            txn_hash = txn_hash.hex() if isinstance(txn_hash, HexBytes) else txn_hash
+            txn_hash = txn_hash.hex() if isinstance(txn_hash, bytes) else txn_hash
 
         data_bytes = data.get("data", b"")
         if data_bytes and isinstance(data_bytes, str):
@@ -359,8 +357,12 @@ class Ethereum(EcosystemAPI):
         elif "input" in data and isinstance(data["input"], str):
             data["input"] = HexBytes(data["input"])
 
+        block_number = data.get("block_number") or data.get("blockNumber")
+        if block_number is None:
+            raise ValueError("Missing block number.")
+
         receipt = Receipt(
-            block_number=data.get("block_number") or data.get("blockNumber"),
+            block_number=block_number,
             contract_address=data.get("contract_address") or data.get("contractAddress"),
             gas_limit=data.get("gas", data.get("gas_limit", data.get("gasLimit"))) or 0,
             gas_price=data.get("gas_price", data.get("gasPrice")) or 0,
@@ -491,7 +493,7 @@ class Ethereum(EcosystemAPI):
         return tuple(output_values)
 
     def _enrich_value(self, value: Any, **kwargs) -> Any:
-        if isinstance(value, HexBytes):
+        if isinstance(value, bytes):
             try:
                 string_value = value.strip(b"\x00").decode("utf8")
                 return f'"{string_value}"'
@@ -554,13 +556,14 @@ class Ethereum(EcosystemAPI):
         self, deployment_bytecode: HexBytes, abi: ConstructorABI, *args, **kwargs
     ) -> BaseTransaction:
         txn = self.create_transaction(**kwargs)
-        txn.data = deployment_bytecode
+        data = HexBytes(deployment_bytecode)
 
         # Encode args, if there are any
         if abi and args:
-            txn.data += self.encode_calldata(abi, *args)
+            data = HexBytes(data + self.encode_calldata(abi, *args))
 
-        return txn  # type: ignore
+        txn.data = data
+        return cast(BaseTransaction, txn)
 
     def encode_transaction(
         self,
@@ -573,9 +576,9 @@ class Ethereum(EcosystemAPI):
 
         # Add method ID
         txn.data = self.get_method_selector(abi)
-        txn.data += self.encode_calldata(abi, *args)
+        txn.data = HexBytes(txn.data + self.encode_calldata(abi, *args))
 
-        return txn  # type: ignore
+        return cast(BaseTransaction, txn)
 
     def create_transaction(self, **kwargs) -> TransactionAPI:
         """
@@ -837,10 +840,8 @@ class Ethereum(EcosystemAPI):
         **kwargs,
     ) -> CallTreeNode:
         calldata = call.inputs
-        if isinstance(calldata, str):
+        if isinstance(calldata, (str, bytes, int)):
             calldata_arg = HexBytes(calldata)
-        elif isinstance(calldata, HexBytes):
-            calldata_arg = calldata
         else:
             # Not sure if we can get here.
             # Mostly for mypy's sake.
@@ -873,10 +874,10 @@ class Ethereum(EcosystemAPI):
             return call
 
         default_return_value = "<?>"
-        if isinstance(call.outputs, str) and is_0x_prefixed(call.outputs):
+        if (isinstance(call.outputs, str) and is_0x_prefixed(call.outputs)) or isinstance(
+            call.outputs, (int, bytes)
+        ):
             return_value_bytes = HexBytes(call.outputs)
-        elif isinstance(call.outputs, HexBytes):
-            return_value_bytes = call.outputs
         else:
             return_value_bytes = None
 
@@ -918,9 +919,9 @@ class Ethereum(EcosystemAPI):
         return self._python_type_for_abi_type(abi_type)
 
 
-def parse_type(type: Dict[str, Any]) -> Union[str, Tuple, List]:
-    if "tuple" not in type["type"]:
-        return type["type"]
+def parse_type(type_: Dict[str, Any]) -> Union[str, Tuple, List]:
+    if "tuple" not in type_["type"]:
+        return type_["type"]
 
-    result = tuple([parse_type(c) for c in type["components"]])
-    return [result] if is_array(type["type"]) else result
+    result = tuple([parse_type(c) for c in type_["components"]])
+    return [result] if is_array(type_["type"]) else result

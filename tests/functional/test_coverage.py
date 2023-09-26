@@ -75,7 +75,7 @@ def coverage_project(source_contract, second_source_contract):
 
 @pytest.fixture
 def coverage_report(coverage_project):
-    return CoverageReport(source_folders=[Path.cwd()], projects=[coverage_project], timestamp=None)
+    return CoverageReport(source_folders=[Path.cwd()], projects=[coverage_project], timestamp=0)
 
 
 class TestFunctionCoverage:

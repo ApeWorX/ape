@@ -293,18 +293,16 @@ def test_autosign_transactions(runner, keyfile_account, receiver):
         assert keyfile_account.transfer(receiver, "1 gwei")
 
 
-def test_impersonate_not_implemented(accounts):
-    test_address = "0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045"
+def test_impersonate_not_implemented(accounts, address):
     expected_err_msg = (
         "Your provider does not support impersonating accounts:\n"
-        f"No account with address '{test_address}'."
+        f"No account with address '{address}'."
     )
     with pytest.raises(IndexError, match=expected_err_msg):
-        _ = accounts[test_address]
+        _ = accounts[address]
 
 
-def test_impersonated_account_ignores_signature_check_on_txn(accounts):
-    address = "0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045"
+def test_impersonated_account_ignores_signature_check_on_txn(accounts, address):
     account = ImpersonatedAccount(raw_address=address)
 
     # Impersonate hack, since no providers in core actually support it.
