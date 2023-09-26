@@ -36,7 +36,7 @@ class DeploymentConfigCollection(BaseModel):
         root_data = data.get("__root__", data)
         valid_ecosystems = root_data.pop("valid_ecosystems", {})
         valid_networks = root_data.pop("valid_networks", {})
-        valid_data = {}
+        valid_data: Dict = {}
         for ecosystem_name, networks in root_data.items():
             if ecosystem_name not in valid_ecosystems:
                 logger.warning(f"Invalid ecosystem '{ecosystem_name}' in deployments config.")
