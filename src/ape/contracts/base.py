@@ -699,6 +699,14 @@ class ContractEvent(ManagerAccessMixin):
             start_block = height + 1
 
         # NOTE: Now we process the rest
+        yield from self.provider.poll_logs(
+            stop_block=stop_block,
+            address=self.contract.address,
+            required_confirmations=required_confirmations,
+            new_block_timeout=new_block_timeout,
+        )
+
+        # NOTE: Now we process the rest
         for new_block in self.chain_manager.blocks.poll_blocks(
             start_block=start_block,
             stop_block=stop_block,
