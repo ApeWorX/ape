@@ -260,8 +260,7 @@
 </li>
 <li class="toctree-l2"><a class="reference internal" href="#module-ape.api.networks">Networks</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#ape.api.networks.EcosystemAPI"><code class="docutils literal notranslate"><span class="pre">EcosystemAPI</span></code></a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#ape.api.networks.EcosystemAPI.__getattr__"><code class="docutils literal notranslate"><span class="pre">EcosystemAPI.__getattr__()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#ape.api.networks.EcosystemAPI.__getitem__"><code class="docutils literal notranslate"><span class="pre">EcosystemAPI.__getitem__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ape.api.networks.EcosystemAPI.__ape_extra_attributes__"><code class="docutils literal notranslate"><span class="pre">EcosystemAPI.__ape_extra_attributes__()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.networks.EcosystemAPI.__hash__"><code class="docutils literal notranslate"><span class="pre">EcosystemAPI.__hash__</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.networks.EcosystemAPI.add_network"><code class="docutils literal notranslate"><span class="pre">EcosystemAPI.add_network()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.networks.EcosystemAPI.config"><code class="docutils literal notranslate"><span class="pre">EcosystemAPI.config</span></code></a></li>
@@ -331,6 +330,7 @@
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.projects.DependencyAPI.cached_manifest"><code class="docutils literal notranslate"><span class="pre">DependencyAPI.cached_manifest</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.projects.DependencyAPI.compile"><code class="docutils literal notranslate"><span class="pre">DependencyAPI.compile()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.projects.DependencyAPI.config_override"><code class="docutils literal notranslate"><span class="pre">DependencyAPI.config_override</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ape.api.projects.DependencyAPI.contracts"><code class="docutils literal notranslate"><span class="pre">DependencyAPI.contracts</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.projects.DependencyAPI.contracts_folder"><code class="docutils literal notranslate"><span class="pre">DependencyAPI.contracts_folder</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.projects.DependencyAPI.exclude"><code class="docutils literal notranslate"><span class="pre">DependencyAPI.exclude</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.projects.DependencyAPI.extract_manifest"><code class="docutils literal notranslate"><span class="pre">DependencyAPI.extract_manifest()</span></code></a></li>
@@ -1286,40 +1286,18 @@ in a particular ecosystem.</p>
 <dd><p>Bases: <a class="reference internal" href="utils.html#ape.utils.BaseInterfaceModel" title="ape.utils.basemodel.BaseInterfaceModel"><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseInterfaceModel</span></code></a></p>
 <p>A set of related networks, such as Ethereum.</p>
 <dl class="py method">
-<dt class="sig sig-object py" id="ape.api.networks.EcosystemAPI.__getattr__">
-<span class="sig-name descname"><span class="pre">__getattr__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">network_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#ape.api.networks.NetworkAPI" title="ape.api.networks.NetworkAPI"><span class="pre">NetworkAPI</span></a></span></span><a class="headerlink" href="#ape.api.networks.EcosystemAPI.__getattr__" title="Permalink to this definition"></a></dt>
-<dd><p>Get a network by name using <code class="docutils literal notranslate"><span class="pre">.</span></code> access.</p>
-<p>Usage example:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">ape</span> <span class="kn">import</span> <span class="n">networks</span>
-<span class="n">mainnet</span> <span class="o">=</span> <span class="n">networks</span><span class="o">.</span><span class="n">ecosystem</span><span class="o">.</span><span class="n">mainnet</span>
-</pre></div>
-</div>
+<dt class="sig sig-object py" id="ape.api.networks.EcosystemAPI.__ape_extra_attributes__">
+<span class="sig-name descname"><span class="pre">__ape_extra_attributes__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Iterator</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="utils.html#ape.utils.ExtraModelAttributes" title="ape.utils.basemodel.ExtraModelAttributes"><span class="pre">ExtraModelAttributes</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#ape.api.networks.EcosystemAPI.__ape_extra_attributes__" title="Permalink to this definition"></a></dt>
+<dd><p>Override this method to supply extra attributes
+to a model in Ape; this allow more properties
+to be available when invoking <code class="docutils literal notranslate"><span class="pre">__getattr__</span></code>.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Raises<span class="colon">:</span></dt>
-<dd class="field-odd"><p><a class="reference internal" href="exceptions.html#ape.exceptions.NetworkNotFoundError" title="ape.exceptions.NetworkNotFoundError"><strong>NetworkNotFoundError</strong></a> – When there is no network with the given name.</p>
-</dd>
-<dt class="field-even">Parameters<span class="colon">:</span></dt>
-<dd class="field-even"><p><strong>network_name</strong> (<em>str</em>) – The name of the network to retrieve.</p>
-</dd>
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p><a class="reference internal" href="#ape.api.networks.NetworkAPI" title="ape.api.networks.NetworkAPI"><code class="xref py py-class docutils literal notranslate"><span class="pre">NetworkAPI</span></code></a></p>
+<dd class="field-odd"><p>A
+series of instances defining extra model attributes.</p>
 </dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="ape.api.networks.EcosystemAPI.__getitem__">
-<span class="sig-name descname"><span class="pre">__getitem__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">network_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#ape.api.networks.NetworkAPI" title="ape.api.networks.NetworkAPI"><span class="pre">NetworkAPI</span></a></span></span><a class="headerlink" href="#ape.api.networks.EcosystemAPI.__getitem__" title="Permalink to this definition"></a></dt>
-<dd><p>Get a network by name.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Raises<span class="colon">:</span></dt>
-<dd class="field-odd"><p><a class="reference internal" href="exceptions.html#ape.exceptions.NetworkNotFoundError" title="ape.exceptions.NetworkNotFoundError"><strong>NetworkNotFoundError</strong></a> – When there is no network with the given name.</p>
-</dd>
-<dt class="field-even">Parameters<span class="colon">:</span></dt>
-<dd class="field-even"><p><strong>network_name</strong> (<em>str</em>) – The name of the network to retrieve.</p>
-</dd>
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p><a class="reference internal" href="#ape.api.networks.NetworkAPI" title="ape.api.networks.NetworkAPI"><code class="xref py py-class docutils literal notranslate"><span class="pre">NetworkAPI</span></code></a></p>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>Iterator[<a class="reference internal" href="utils.html#ape.utils.ExtraModelAttributes" title="ape.utils.basemodel.ExtraModelAttributes"><code class="xref py py-class docutils literal notranslate"><span class="pre">ExtraModelAttributes</span></code></a>]</p>
 </dd>
 </dl>
 </dd></dl>
@@ -2070,6 +2048,13 @@ a re-compile.</p>
 <dt class="sig sig-object py" id="ape.api.projects.DependencyAPI.config_override">
 <span class="sig-name descname"><span class="pre">config_override</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span></em><a class="headerlink" href="#ape.api.projects.DependencyAPI.config_override" title="Permalink to this definition"></a></dt>
 <dd><p>Extra settings to include in the dependency’s configuration.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="ape.api.projects.DependencyAPI.contracts">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">contracts</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="contracts.html#ape.contracts.base.ContractContainer" title="ape.contracts.base.ContractContainer"><span class="pre">ContractContainer</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#ape.api.projects.DependencyAPI.contracts" title="Permalink to this definition"></a></dt>
+<dd><p>A mapping of name to contract type of all the contracts
+in this dependency.</p>
 </dd></dl>
 
 <dl class="py attribute">

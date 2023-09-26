@@ -164,6 +164,14 @@
 <li class="toctree-l1 current"><a class="current reference internal" href="#">ape.utils</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#ape.utils.BaseInterface"><code class="docutils literal notranslate"><span class="pre">BaseInterface</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#ape.utils.BaseInterfaceModel"><code class="docutils literal notranslate"><span class="pre">BaseInterfaceModel</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#ape.utils.ExtraModelAttributes"><code class="docutils literal notranslate"><span class="pre">ExtraModelAttributes</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#ape.utils.ExtraModelAttributes.attributes"><code class="docutils literal notranslate"><span class="pre">ExtraModelAttributes.attributes</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#ape.utils.ExtraModelAttributes.get"><code class="docutils literal notranslate"><span class="pre">ExtraModelAttributes.get()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#ape.utils.ExtraModelAttributes.include_getattr"><code class="docutils literal notranslate"><span class="pre">ExtraModelAttributes.include_getattr</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#ape.utils.ExtraModelAttributes.include_getitem"><code class="docutils literal notranslate"><span class="pre">ExtraModelAttributes.include_getitem</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#ape.utils.ExtraModelAttributes.name"><code class="docutils literal notranslate"><span class="pre">ExtraModelAttributes.name</span></code></a></li>
+</ul>
+</li>
 <li class="toctree-l2"><a class="reference internal" href="#ape.utils.GeneratedDevAccount"><code class="docutils literal notranslate"><span class="pre">GeneratedDevAccount</span></code></a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#ape.utils.GeneratedDevAccount.address"><code class="docutils literal notranslate"><span class="pre">GeneratedDevAccount.address</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ape.utils.GeneratedDevAccount.private_key"><code class="docutils literal notranslate"><span class="pre">GeneratedDevAccount.private_key</span></code></a></li>
@@ -271,6 +279,56 @@
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ape.utils.</span></span><span class="sig-name descname"><span class="pre">BaseInterfaceModel</span></span><a class="headerlink" href="#ape.utils.BaseInterfaceModel" title="Permalink to this definition"></a></dt>
 <dd><p>Bases: <a class="reference internal" href="#ape.utils.BaseInterface" title="ape.utils.basemodel.BaseInterface"><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseInterface</span></code></a>, <code class="xref py py-class docutils literal notranslate"><span class="pre">BaseModel</span></code></p>
 <p>An abstract base-class with manager access on a pydantic base model.</p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ape.utils.ExtraModelAttributes">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ape.utils.</span></span><span class="sig-name descname"><span class="pre">ExtraModelAttributes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">attributes</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">BaseModel</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">include_getattr</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">include_getitem</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.utils.ExtraModelAttributes" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">BaseModel</span></code></p>
+<p>A class for defining extra model attributes.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ape.utils.ExtraModelAttributes.attributes">
+<span class="sig-name descname"><span class="pre">attributes</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">BaseModel</span></em><a class="headerlink" href="#ape.utils.ExtraModelAttributes.attributes" title="Permalink to this definition"></a></dt>
+<dd><p>The attributes.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ape.utils.ExtraModelAttributes.get">
+<span class="sig-name descname"><span class="pre">get</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Any</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></span><a class="headerlink" href="#ape.utils.ExtraModelAttributes.get" title="Permalink to this definition"></a></dt>
+<dd><p>Get an attribute.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>name</strong> (<em>str</em>) – The name of the attribute.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The attribute if it exists, else <code class="docutils literal notranslate"><span class="pre">None</span></code>.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Optional[Any]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ape.utils.ExtraModelAttributes.include_getattr">
+<span class="sig-name descname"><span class="pre">include_getattr</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><a class="headerlink" href="#ape.utils.ExtraModelAttributes.include_getattr" title="Permalink to this definition"></a></dt>
+<dd><p>Whether to use these in <code class="docutils literal notranslate"><span class="pre">__getattr__</span></code>.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ape.utils.ExtraModelAttributes.include_getitem">
+<span class="sig-name descname"><span class="pre">include_getitem</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><a class="headerlink" href="#ape.utils.ExtraModelAttributes.include_getitem" title="Permalink to this definition"></a></dt>
+<dd><p>Whether to use these in <code class="docutils literal notranslate"><span class="pre">__getitem__</span></code>.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ape.utils.ExtraModelAttributes.name">
+<span class="sig-name descname"><span class="pre">name</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#ape.utils.ExtraModelAttributes.name" title="Permalink to this definition"></a></dt>
+<dd><p>The name of the attributes. This is important
+in instances such as when an attribute is missing,
+we can show a more accurate exception message.</p>
+</dd></dl>
+
 </dd></dl>
 
 <dl class="py class">
