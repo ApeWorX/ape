@@ -18,7 +18,7 @@ def test_integer_deployment_addresses(networks):
     }
     config = DeploymentConfigCollection(__root__=data)
     assert (
-        config.root["ethereum"]["local"][0]["address"]
+        config.__root__["ethereum"]["local"][0]["address"]
         == "0x0c25212c557d00024b7Ca3df3238683A35541354"
     )
 

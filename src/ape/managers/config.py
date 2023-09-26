@@ -33,9 +33,11 @@ class DeploymentConfigCollection(BaseModel):
 
     @root_validator(pre=True)
     def validate_deployments(cls, data: Dict):
-        valid_ecosystems = data.pop("valid_ecosystems", {})
-        valid_networks = data.pop("valid_networks", {})
-        for ecosystem_name, networks in data.items():
+        root_data = data.get("__root__", data)
+        valid_ecosystems = root_data.pop("valid_ecosystems", {})
+        valid_networks = root_data.pop("valid_networks", {})
+        valid_data = {}
+        for ecosystem_name, networks in root_data.items():
             if ecosystem_name not in valid_ecosystems:
                 logger.warning(f"Invalid ecosystem '{ecosystem_name}' in deployments config.")
                 continue
@@ -46,21 +48,29 @@ class DeploymentConfigCollection(BaseModel):
                     logger.warning(f"Invalid network '{network_name}' in deployments config.")
                     continue
 
+                valid_deployments = []
                 for deployment in [d for d in contract_deployments]:
-                    address = deployment.get("address", None)
-                    if "address" not in deployment:
+                    if not (address := deployment.get("address")):
                         logger.warning(
                             f"Missing 'address' field in deployment "
                             f"(ecosystem={ecosystem_name}, network={network_name})"
                         )
                         continue
 
+                    valid_deployment = {**deployment}
                     try:
-                        deployment["address"] = ecosystem.decode_address(address)
+                        valid_deployment["address"] = ecosystem.decode_address(address)
                     except ValueError as err:
                         logger.warning(str(err))
 
-        return data
+                    valid_deployments.append(valid_deployment)
+
+                valid_data[ecosystem_name] = {
+                    **valid_data.get(ecosystem_name, {}),
+                    network_name: valid_deployments,
+                }
+
+        return {"__root__": valid_data}
 
 
 class ConfigManager(BaseInterfaceModel):
