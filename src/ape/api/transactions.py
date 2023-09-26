@@ -27,7 +27,13 @@ from ape.types import (
     TraceFrame,
     TransactionSignature,
 )
-from ape.utils import BaseInterfaceModel, abstractmethod, cached_property, raises_not_implemented
+from ape.utils import (
+    BaseInterfaceModel,
+    ExtraModelAttributes,
+    abstractmethod,
+    cached_property,
+    raises_not_implemented,
+)
 
 if TYPE_CHECKING:
     from ape.api.providers import BlockAPI
@@ -261,8 +267,8 @@ class ReceiptAPI(BaseInterfaceModel):
     def __repr__(self) -> str:
         return f"<{self.__class__.__name__} {self.txn_hash}>"
 
-    def __getattr__(self, item: str) -> Any:
-        return getattr(self.transaction, item)
+    def __ape_extra_attributes__(self) -> Iterator[ExtraModelAttributes]:
+        yield ExtraModelAttributes(name="transaction", attributes=self.transaction)
 
     @validator("transaction", pre=True)
     def confirm_transaction(cls, value):

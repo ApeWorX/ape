@@ -1,9 +1,9 @@
 from abc import ABC
-from typing import TYPE_CHECKING, ClassVar, Dict, List, Optional, cast
+from typing import TYPE_CHECKING, Any, ClassVar, Dict, Iterator, List, Optional, Union, cast
 
-from ethpm_types import BaseModel
+from ethpm_types import BaseModel as _BaseModel
 
-from ape.exceptions import ProviderNotConnectedError
+from ape.exceptions import ApeAttributeError, ProviderNotConnectedError
 from ape.logging import logger
 from ape.utils.misc import cached_property, singledispatchmethod
 
@@ -98,6 +98,137 @@ class BaseInterface(ManagerAccessMixin, ABC):
     """
     Abstract class that has manager access.
     """
+
+
+class ExtraModelAttributes(_BaseModel):
+    """
+    A class for defining extra model attributes.
+    """
+
+    name: str
+    """
+    The name of the attributes. This is important
+    in instances such as when an attribute is missing,
+    we can show a more accurate exception message.
+    """
+
+    attributes: Union[Dict[str, Any], "BaseModel"]
+    """The attributes."""
+
+    include_getattr: bool = True
+    """Whether to use these in ``__getattr__``."""
+
+    include_getitem: bool = False
+    """Whether to use these in ``__getitem__``."""
+
+    def get(self, name: str) -> Optional[Any]:
+        """
+        Get an attribute.
+
+        Args:
+            name (str): The name of the attribute.
+
+        Returns:
+            Optional[Any]: The attribute if it exists, else ``None``.
+        """
+
+        res = self._get(name)
+        if res is not None:
+            return res
+
+        alt = None
+        if ("-" not in name and "_" not in name) or ("-" in name and "_" in name):
+            alt = None
+        elif "-" in name:
+            alt = name.replace("-", "_")
+        elif "_" in name:
+            alt = name.replace("_", "-")
+
+        if alt:
+            res = self._get(alt)
+            if res is not None:
+                return res
+
+        return None
+
+    def _get(self, name: str) -> Optional[Any]:
+        return (
+            self.attributes.get(name)
+            if isinstance(self.attributes, dict)
+            else getattr(self.attributes, name, None)
+        )
+
+
+class BaseModel(_BaseModel):
+    """
+    An ape-pydantic BaseModel.
+    """
+
+    def __ape_extra_attributes__(self) -> Iterator[ExtraModelAttributes]:
+        """
+        Override this method to supply extra attributes
+        to a model in Ape; this allow more properties
+        to be available when invoking ``__getattr__``.
+
+        Returns:
+            Iterator[:class:`~ape.utils.basemodel.ExtraModelAttributes`]: A
+            series of instances defining extra model attributes.
+        """
+        return iter(())
+
+    def __getattr__(self, name: str) -> Any:
+        """
+        An overridden ``__getattr__`` implementation that takes into
+        account :meth:`~ape.utils.basemodel.BaseModel.__ape_extra_attributes__`.
+        """
+
+        try:
+            return super().__getattr__(name)
+        except AttributeError:
+            extras_checked = set()
+            for ape_extra in self.__ape_extra_attributes__():
+                if not ape_extra.include_getattr:
+                    continue
+
+                res = ape_extra.get(name)
+                if res is not None:
+                    # Attribute was found in one of the supplied
+                    # extra attributes mappings.
+                    return res
+
+                extras_checked.add(ape_extra.name)
+
+            # The error message mentions the alternative mappings,
+            # such as a contract-type map.
+            message = f"No attribute with name '{name}'."
+            if extras_checked:
+                extras_str = ", ".join(extras_checked)
+                message = f"{message} Also checked '{extras_str}'."
+
+            raise ApeAttributeError(message)
+
+    def __getitem__(self, name: Any) -> Any:
+        # For __getitem__, we first try the extra (unlike `__getattr__`).
+        extras_checked = set()
+        for extra in self.__ape_extra_attributes__():
+            if not extra.include_getitem:
+                continue
+
+            res = extra.get(name)
+            if res is not None:
+                return res
+
+            extras_checked.add(extra.name)
+
+        # NOTE: If extras were supplied, the user was expecting it to be
+        #   there (unlike __getattr__).
+        if extras_checked:
+            extras_str = ", ".join(extras_checked)
+            raise IndexError(f"Unable to find '{name}' in any of '{extras_str}'.")
+
+        # The user did not supply any extra __getitem__ attributes.
+        # Do what you would have normally done.
+        return super().__getitem__(name)
 
 
 class BaseInterfaceModel(BaseInterface, BaseModel):

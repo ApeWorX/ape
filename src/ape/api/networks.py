@@ -25,6 +25,7 @@ from ape.types import AddressType, AutoGasLimit, CallTreeNode, ContractLog, GasL
 from ape.utils import (
     DEFAULT_TRANSACTION_ACCEPTANCE_TIMEOUT,
     BaseInterfaceModel,
+    ExtraModelAttributes,
     ManagerAccessMixin,
     abstractmethod,
     cached_property,
@@ -221,45 +222,13 @@ class EcosystemAPI(BaseInterfaceModel):
         if len(self.networks) == 0:
             raise NetworkError("Must define at least one network in ecosystem")
 
-    def __getitem__(self, network_name: str) -> "NetworkAPI":
-        """
-        Get a network by name.
-
-        Raises:
-            :class:`~ape.exceptions.NetworkNotFoundError`:
-              When there is no network with the given name.
-
-        Args:
-            network_name (str): The name of the network to retrieve.
-
-        Returns:
-            :class:`~ape.api.networks.NetworkAPI`
-        """
-        return self.get_network(network_name)
-
-    def __getattr__(self, network_name: str) -> "NetworkAPI":
-        """
-        Get a network by name using ``.`` access.
-
-        Usage example::
-
-            from ape import networks
-            mainnet = networks.ecosystem.mainnet
-
-        Raises:
-            :class:`~ape.exceptions.NetworkNotFoundError`:
-              When there is no network with the given name.
-
-        Args:
-            network_name (str): The name of the network to retrieve.
-
-        Returns:
-            :class:`~ape.api.networks.NetworkAPI`
-        """
-        try:
-            return self.get_network(network_name.replace("_", "-"))
-        except NetworkNotFoundError:
-            return self.__getattribute__(network_name)
+    def __ape_extra_attributes__(self) -> Iterator[ExtraModelAttributes]:
+        yield ExtraModelAttributes(
+            name="networks",
+            attributes=self.networks,
+            include_getattr=True,
+            include_getitem=True,
+        )
 
     def add_network(self, network_name: str, network: "NetworkAPI"):
         """

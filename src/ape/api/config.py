@@ -40,7 +40,7 @@ class PluginConfig(BaseSettings):
         return cls(**update(default_values, overrides))
 
     def __getattr__(self, attr_name: str) -> Any:
-        # allow hyphens in plugin config files
+        # Allow hyphens in plugin config files.
         attr_name = attr_name.replace("-", "_")
         return super().__getattribute__(attr_name)
 
