@@ -686,7 +686,7 @@ class NetworkAPI(BaseInterfaceModel):
         return cls(
             name="adhoc",
             ecosystem=ethereum,
-            data_folder=data_folder,
+            data_folder=Path(data_folder),
             request_header=request_header,
             _default_provider="geth",
         )

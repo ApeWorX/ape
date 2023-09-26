@@ -50,7 +50,6 @@ from ape.utils import (
     returns_array,
     to_int,
 )
-from ape.utils.abi import _convert_kwargs
 from ape.utils.misc import DEFAULT_MAX_RETRIES_TX
 from ape_ethereum.proxies import (
     IMPLEMENTATION_ABI,
@@ -237,7 +236,7 @@ class Ethereum(EcosystemAPI):
         deploy_bytecode = HexBytes(
             return_data_size + len_bytes + return_instructions + blueprint_bytecode
         )
-        converted_kwargs = _convert_kwargs(kwargs, self.conversion_manager.convert)
+        converted_kwargs = self.conversion_manager.convert_method_kwargs(kwargs)
         return self.encode_deployment(
             deploy_bytecode, contract_type.constructor, **converted_kwargs
         )

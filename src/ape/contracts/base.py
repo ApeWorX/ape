@@ -25,7 +25,7 @@ from ape.exceptions import (
 from ape.logging import logger
 from ape.types import AddressType, ContractLog, LogFilter, MockContractLog
 from ape.utils import ManagerAccessMixin, cached_property, singledispatchmethod
-from ape.utils.abi import StructParser, _convert_args, _convert_kwargs
+from ape.utils.abi import StructParser
 
 
 class ContractConstructor(ManagerAccessMixin):
@@ -54,10 +54,10 @@ class ContractConstructor(ManagerAccessMixin):
         return self.abi.selector, decoded_inputs
 
     def serialize_transaction(self, *args, **kwargs) -> TransactionAPI:
-        arguments = _convert_args(args, self.conversion_manager.convert, self.abi)
-        kwargs = _convert_kwargs(kwargs, self.conversion_manager.convert)
+        arguments = self.conversion_manager.convert_method_args(self.abi, args)
+        converted_kwargs = self.conversion_manager.convert_method_kwargs(kwargs)
         return self.provider.network.ecosystem.encode_deployment(
-            self.deployment_bytecode, self.abi, *arguments, **kwargs
+            self.deployment_bytecode, self.abi, *arguments, **converted_kwargs
         )
 
     def __call__(self, private: bool = False, *args, **kwargs) -> ReceiptAPI:
@@ -86,9 +86,9 @@ class ContractCall(ManagerAccessMixin):
         return self.abi.signature
 
     def serialize_transaction(self, *args, **kwargs) -> TransactionAPI:
-        kwargs = _convert_kwargs(kwargs, self.conversion_manager.convert)
+        converted_kwargs = self.conversion_manager.convert_method_kwargs(kwargs)
         return self.provider.network.ecosystem.encode_transaction(
-            self.address, self.abi, *args, **kwargs
+            self.address, self.abi, *args, **converted_kwargs
         )
 
     def __call__(self, *args, **kwargs) -> Any:
@@ -130,9 +130,9 @@ class ContractMethodHandler(ManagerAccessMixin):
 
     def encode_input(self, *args) -> HexBytes:
         selected_abi = _select_method_abi(self.abis, args)
-        args = self._convert_tuple(args, selected_abi)
+        arguments = self.conversion_manager.convert_method_args(selected_abi, args)
         ecosystem = self.provider.network.ecosystem
-        encoded_calldata = ecosystem.encode_calldata(selected_abi, *args)
+        encoded_calldata = ecosystem.encode_calldata(selected_abi, *arguments)
         method_id = ecosystem.get_method_selector(selected_abi)
         return HexBytes(method_id + encoded_calldata)
 
@@ -179,9 +179,6 @@ class ContractMethodHandler(ManagerAccessMixin):
 
         raise err
 
-    def _convert_tuple(self, v: tuple, abi) -> tuple:
-        return _convert_args(v, self.conversion_manager.convert, abi)
-
 
 class ContractCallHandler(ContractMethodHandler):
     def __call__(self, *args, **kwargs) -> Any:
@@ -190,12 +187,12 @@ class ContractCallHandler(ContractMethodHandler):
             raise _get_non_contract_error(self.contract.address, network)
 
         selected_abi = _select_method_abi(self.abis, args)
-        args = self._convert_tuple(args, selected_abi)
+        arguments = self.conversion_manager.convert_method_args(selected_abi, args)
 
         return ContractCall(
             abi=selected_abi,
             address=self.contract.address,
-        )(*args, **kwargs)
+        )(*arguments, **kwargs)
 
     def as_transaction(self, *args, **kwargs):
         """
@@ -236,7 +233,7 @@ class ContractCallHandler(ContractMethodHandler):
         """
 
         selected_abi = _select_method_abi(self.abis, args)
-        arguments = _convert_args(args, self.conversion_manager.convert, selected_abi)
+        arguments = self.conversion_manager.convert_method_args(selected_abi, args)
         return self.transact.estimate_gas_cost(*arguments, **kwargs)
 
 
@@ -271,10 +268,10 @@ class ContractTransaction(ManagerAccessMixin):
             # Automatically impersonate contracts (if API available) when sender
             kwargs["sender"] = self.account_manager.test_accounts[kwargs["sender"].address]
 
-        arguments = _convert_args(args, self.conversion_manager.convert, self.abi)
-        kwargs = _convert_kwargs(kwargs, self.conversion_manager.convert)
+        arguments = self.conversion_manager.convert_method_args(self.abi, args)
+        converted_kwargs = self.conversion_manager.convert_method_kwargs(kwargs)
         return self.provider.network.ecosystem.encode_transaction(
-            self.address, self.abi, *arguments, **kwargs
+            self.address, self.abi, *arguments, **converted_kwargs
         )
 
     def __call__(self, *args, **kwargs) -> ReceiptAPI:
@@ -328,7 +325,7 @@ class ContractTransactionHandler(ContractMethodHandler):
             reported in the fee-currency's smallest unit, e.g. Wei.
         """
         selected_abi = _select_method_abi(self.abis, args)
-        arguments = _convert_args(args, self.conversion_manager.convert, selected_abi)
+        arguments = self.conversion_manager.convert_method_args(selected_abi, args)
         txn = self.as_transaction(*arguments, **kwargs)
         return self.provider.estimate_gas_cost(txn)
 
@@ -356,7 +353,6 @@ class ContractTransactionHandler(ContractMethodHandler):
             raise _get_non_contract_error(self.contract.address, network)
 
         selected_abi = _select_method_abi(self.abis, args)
-        args = self._convert_tuple(args, selected_abi)
 
         return ContractTransaction(
             abi=selected_abi,

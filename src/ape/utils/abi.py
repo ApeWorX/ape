@@ -9,7 +9,6 @@ from ethpm_types import HexBytes
 from ethpm_types.abi import ABIType, ConstructorABI, EventABI, EventABIType, MethodABI
 
 from ape.logging import logger
-from ape.types import AddressType
 
 ARRAY_PATTERN = re.compile(r"[(*\w,? )]*\[\d*]")
 
@@ -440,31 +439,3 @@ class LogInputABICollection:
         #  ecosystem API through the calling function.
 
         return value
-
-
-def _convert_args(arguments, converter, abi: Union[MethodABI, ConstructorABI]) -> Tuple:
-    input_types = [i.canonical_type for i in abi.inputs]
-    pre_processed_args = []
-    for ipt, argument in zip(input_types, arguments):
-        # Handle primitive-addresses separately since they may not occur
-        # on the tuple-conversion if they are integers or bytes.
-        if str(ipt) == "address":
-            converted_value = converter(argument, AddressType)
-            pre_processed_args.append(converted_value)
-        else:
-            pre_processed_args.append(argument)
-
-    return converter(pre_processed_args, tuple)
-
-
-def _convert_kwargs(kwargs, converter) -> Dict:
-    from ape.api.transactions import TransactionAPI
-
-    fields = TransactionAPI.__fields__
-
-    kwargs_to_convert = {k: v for k, v in kwargs.items() if k == "sender" or k in fields}
-    converted_fields = {
-        k: converter(v, AddressType if k == "sender" else fields[k].type_)
-        for k, v in kwargs_to_convert.items()
-    }
-    return {**kwargs, **converted_fields}
