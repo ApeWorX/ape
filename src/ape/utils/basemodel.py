@@ -100,6 +100,18 @@ class BaseInterface(ManagerAccessMixin, ABC):
     """
 
 
+def _get_alt(name: str) -> Optional[str]:
+    alt = None
+    if ("-" not in name and "_" not in name) or ("-" in name and "_" in name):
+        alt = None
+    elif "-" in name:
+        alt = name.replace("-", "_")
+    elif "_" in name:
+        alt = name.replace("_", "-")
+
+    return alt
+
+
 class ExtraModelAttributes(_BaseModel):
     """
     A class for defining extra model attributes.
@@ -121,6 +133,16 @@ class ExtraModelAttributes(_BaseModel):
     include_getitem: bool = False
     """Whether to use these in ``__getitem__``."""
 
+    def __contains__(self, name: str) -> bool:
+        attr_dict = self.attributes if isinstance(self.attributes, dict) else self.attributes.dict()
+        if name in attr_dict:
+            return True
+
+        elif alt := _get_alt(name):
+            return alt in attr_dict
+
+        return False
+
     def get(self, name: str) -> Optional[Any]:
         """
         Get an attribute.
@@ -136,15 +158,7 @@ class ExtraModelAttributes(_BaseModel):
         if res is not None:
             return res
 
-        alt = None
-        if ("-" not in name and "_" not in name) or ("-" in name and "_" in name):
-            alt = None
-        elif "-" in name:
-            alt = name.replace("-", "_")
-        elif "_" in name:
-            alt = name.replace("_", "-")
-
-        if alt:
+        if alt := _get_alt(name):
             res = self._get(alt)
             if res is not None:
                 return res
@@ -190,11 +204,10 @@ class BaseModel(_BaseModel):
                 if not ape_extra.include_getattr:
                     continue
 
-                res = ape_extra.get(name)
-                if res is not None:
+                if name in ape_extra:
                     # Attribute was found in one of the supplied
                     # extra attributes mappings.
-                    return res
+                    return ape_extra.get(name)
 
                 extras_checked.add(ape_extra.name)
 
@@ -214,9 +227,8 @@ class BaseModel(_BaseModel):
             if not extra.include_getitem:
                 continue
 
-            res = extra.get(name)
-            if res is not None:
-                return res
+            if name in extra:
+                return extra.get(name)
 
             extras_checked.add(extra.name)
 

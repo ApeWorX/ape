@@ -192,3 +192,8 @@ def test_track_coverage(deploy_receipt, mocker):
 
     assert mock_runner.track_coverage.call_count == 0
     ManagerAccessMixin._test_runner = original
+
+
+def test_access_from_tx(deploy_receipt):
+    actual = deploy_receipt.receiver
+    assert actual == ""
