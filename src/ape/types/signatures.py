@@ -9,10 +9,7 @@ from ape.types import AddressType
 
 
 def _left_pad_bytes(val: bytes, num_bytes: int) -> bytes:
-    if len(val) < num_bytes:
-        return b"\x00" * (num_bytes - len(val)) + val
-
-    return val
+    return b"\x00" * (num_bytes - len(val)) + val if len(val) < num_bytes else val
 
 
 @dataclass(frozen=True)

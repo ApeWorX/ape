@@ -230,7 +230,7 @@ class ApeProject(BaseProject):
 
 
 class BrownieProject(BaseProject):
-    config_file_name = "brownie-config.yaml"
+    config_file_name: str = "brownie-config.yaml"
 
     @property
     def brownie_config_path(self) -> Path:

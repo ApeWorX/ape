@@ -94,7 +94,7 @@ def extract_fields(item, columns):
 
 
 class _BaseQuery(BaseModel):
-    columns: List[str]
+    columns: Sequence[str]
 
     # TODO: Support "*" from getting the EcosystemAPI fields
 

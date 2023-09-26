@@ -287,7 +287,7 @@ class LocalDependency(DependencyAPI):
     """
 
     local: str
-    version = "local"
+    version: str = "local"
 
     @root_validator()
     def validate_contracts_folder(cls, value):

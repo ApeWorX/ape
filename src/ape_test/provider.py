@@ -109,16 +109,16 @@ class LocalProvider(TestProviderAPI, Web3Provider):
 
     @property
     def chain_id(self) -> int:
+        if self.cached_chain_id:
+            return self.cached_chain_id
+
         try:
-            if self.cached_chain_id:
-                return self.cached_chain_id
-
             result = self._make_request("eth_chainId", [])
-            self.cached_chain_id = result
-            return result
-
         except ProviderNotConnectedError:
-            return self.provider_settings.get("chain_id", self.config.provider.chain_id)
+            result = self.provider_settings.get("chain_id", self.config.provider.chain_id)
+
+        self.cached_chain_id = result
+        return result
 
     @property
     def gas_price(self) -> int:

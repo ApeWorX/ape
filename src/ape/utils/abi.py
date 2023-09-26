@@ -1,6 +1,6 @@
 import re
 from dataclasses import make_dataclass
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, List, Optional, Sequence, Tuple, Union
 
 from eth_abi import decode, grammar
 from eth_abi.exceptions import DecodingError, InsufficientDataBytes
@@ -9,7 +9,6 @@ from ethpm_types import HexBytes
 from ethpm_types.abi import ABIType, ConstructorABI, EventABI, EventABIType, MethodABI
 
 from ape.logging import logger
-from ape.types import AddressType
 
 ARRAY_PATTERN = re.compile(r"[(*\w,? )]*\[\d*]")
 
@@ -42,7 +41,7 @@ def returns_array(abi: MethodABI) -> bool:
     return _is_array_return(abi.outputs)
 
 
-def _is_array_return(outputs: List[ABIType]):
+def _is_array_return(outputs: Sequence[ABIType]):
     return len(outputs) == 1 and is_array(outputs[0].type)
 
 
@@ -77,7 +76,7 @@ class StructParser:
 
         return [self._encode(ipt, v) for ipt, v in zip(self.abi.inputs, values)]
 
-    def decode_input(self, values: Union[List, Tuple, Dict[str, Any]]) -> Any:
+    def decode_input(self, values: Union[Sequence, Dict[str, Any]]) -> Any:
         return self._decode(self.abi.inputs, values) if isinstance(self.abi, EventABI) else None
 
     def _encode(self, _type: ABIType, value: Any):
@@ -121,7 +120,7 @@ class StructParser:
 
         return self._decode(self.abi.outputs, values) if isinstance(self.abi, MethodABI) else None
 
-    def _decode(self, _types: List[ABIType], values: Union[List, Tuple, Dict[str, Any]]):
+    def _decode(self, _types: Sequence[ABIType], values: Union[Sequence, Dict[str, Any]]):
         if is_struct(_types):
             return self._create_struct(_types[0], values)
 
@@ -223,23 +222,21 @@ class StructParser:
         return parsed_values
 
 
-def is_struct(outputs: Union[ABIType, List[ABIType]]) -> bool:
+def is_struct(outputs: Union[ABIType, Sequence[ABIType]]) -> bool:
     """
     Returns ``True`` if the given output is a struct.
     """
 
-    if not isinstance(outputs, (tuple, list)):
-        outputs = [outputs]
-
+    outputs_seq = outputs if isinstance(outputs, (tuple, list)) else [outputs]
     return (
-        len(outputs) == 1
-        and "[" not in outputs[0].type
-        and outputs[0].components not in (None, [])
-        and all(c.name != "" for c in outputs[0].components or [])
+        len(outputs_seq) == 1
+        and "[" not in outputs_seq[0].type
+        and outputs_seq[0].components not in (None, [])
+        and all(c.name != "" for c in outputs_seq[0].components or [])
     )
 
 
-def is_named_tuple(outputs: List[ABIType], output_values: Union[List, Tuple]) -> bool:
+def is_named_tuple(outputs: Sequence[ABIType], output_values: Sequence) -> bool:
     """
     Returns ``True`` if the given output is a tuple where every item is named.
     """
@@ -261,9 +258,7 @@ class Struct:
         pass
 
 
-def create_struct(
-    name: str, types: List[ABIType], output_values: Union[List[Any], Tuple[Any, ...]]
-) -> Any:
+def create_struct(name: str, types: Sequence[ABIType], output_values: Sequence) -> Any:
     """
     Create a dataclass representing an ABI struct that can be used as inputs or outputs.
     The struct properties can be accessed via ``.`` notation, as keys in a dictionary, or
@@ -440,31 +435,3 @@ class LogInputABICollection:
         #  ecosystem API through the calling function.
 
         return value
-
-
-def _convert_args(arguments, converter, abi: Union[MethodABI, ConstructorABI]) -> Tuple:
-    input_types = [i.canonical_type for i in abi.inputs]
-    pre_processed_args = []
-    for ipt, argument in zip(input_types, arguments):
-        # Handle primitive-addresses separately since they may not occur
-        # on the tuple-conversion if they are integers or bytes.
-        if str(ipt) == "address":
-            converted_value = converter(argument, AddressType)
-            pre_processed_args.append(converted_value)
-        else:
-            pre_processed_args.append(argument)
-
-    return converter(pre_processed_args, tuple)
-
-
-def _convert_kwargs(kwargs, converter) -> Dict:
-    from ape.api.transactions import TransactionAPI
-
-    fields = TransactionAPI.__fields__
-
-    kwargs_to_convert = {k: v for k, v in kwargs.items() if k == "sender" or k in fields}
-    converted_fields = {
-        k: converter(v, AddressType if k == "sender" else fields[k].type_)
-        for k, v in kwargs_to_convert.items()
-    }
-    return {**kwargs, **converted_fields}

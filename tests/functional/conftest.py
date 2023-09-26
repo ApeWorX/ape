@@ -2,7 +2,7 @@ import threading
 import time
 from distutils.dir_util import copy_tree
 from pathlib import Path
-from typing import Optional
+from typing import Optional, cast
 
 import pytest
 from ethpm_types import ContractType, HexBytes
@@ -30,7 +30,7 @@ def get_contract_type():
 
 
 ALIAS_2 = "__FUNCTIONAL_TESTS_ALIAS_2__"
-TEST_ADDRESS = "0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045"
+TEST_ADDRESS = cast(AddressType, "0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045")
 BASE_PROJECTS_DIRECTORY = (Path(__file__).parent / "data" / "projects").absolute()
 PROJECT_WITH_LONG_CONTRACTS_FOLDER = BASE_PROJECTS_DIRECTORY / "LongContractsFolder"
 APE_PROJECT_FOLDER = BASE_PROJECTS_DIRECTORY / "ApeProject"
@@ -378,7 +378,7 @@ def assert_log_values(contract_instance):
         address: Optional[AddressType] = None,
     ):
         assert log.contract_address == address or contract_instance.address
-        assert isinstance(log.b, HexBytes)
+        assert isinstance(log.b, bytes)
         expected_previous_number = number - 1 if previous_number is None else previous_number
         assert log.prevNum == expected_previous_number, "Event param 'prevNum' has unexpected value"
         assert log.newNum == number, "Event param 'newNum' has unexpected value"

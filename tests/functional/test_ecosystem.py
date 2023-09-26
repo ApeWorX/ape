@@ -54,7 +54,7 @@ def test_encode_address(ethereum):
     assert actual == raw_address
 
 
-def test_encode_calldata(ethereum):
+def test_encode_calldata(ethereum, address):
     abi = MethodABI(
         type="function",
         name="callMe",
@@ -65,7 +65,6 @@ def test_encode_calldata(ethereum):
             ABIType(name="d", type="bytes4[]"),
         ],
     )
-    address = "0xd8da6bf26964af9d7eed9e03e53415d37aa96045"
     byte_array = ["0x456", "0x678"]
     values = ("0x123", address, HexBytes(55), byte_array)
 

@@ -1,4 +1,4 @@
-from typing import Dict, Tuple
+from typing import Dict, Tuple, cast
 
 import pytest
 from ethpm_types import HexBytes
@@ -48,7 +48,7 @@ EXPECTED = HexBytes(
     "0000000000000000000000000000000000000000000000000000000000000001"
     "000000000000000000000000d9b7fdb3fc0a0aa3a507dcf0976bc23d49a9c7a3"
 )
-ADDRESS = "0xD9b7fdb3FC0A0Aa3A507dCf0976bc23D49a9C7A3"
+ADDRESS = cast(AddressType, "0xD9b7fdb3FC0A0Aa3A507dCf0976bc23D49a9C7A3")
 DATA_BY_TYPE_KEY = {
     "tuple": (1, HexBytes("0x02"), True, ADDRESS),
     "dict": {"a": 1, "b": HexBytes("0x02"), "c": True, "d": ADDRESS},

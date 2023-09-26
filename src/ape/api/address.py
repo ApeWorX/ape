@@ -5,7 +5,6 @@ from ethpm_types import HexBytes
 from ape.exceptions import ConversionError
 from ape.types import AddressType, ContractCode
 from ape.utils import BaseInterface, abstractmethod, cached_property
-from ape.utils.abi import _convert_kwargs
 
 if TYPE_CHECKING:
     from ape.api.transactions import ReceiptAPI, TransactionAPI
@@ -167,7 +166,7 @@ class BaseAddress(BaseInterface):
         return self.chain_manager.history[self.address]
 
     def as_transaction(self, **kwargs) -> "TransactionAPI":
-        converted_kwargs = _convert_kwargs(kwargs, self.conversion_manager.convert)
+        converted_kwargs = self.conversion_manager.convert_method_kwargs(kwargs)
         return self.provider.network.ecosystem.create_transaction(
             receiver=self.address, **converted_kwargs
         )
