@@ -13,7 +13,7 @@ from ape.utils import BaseInterfaceModel, load_config
 if TYPE_CHECKING:
     from .project import ProjectManager
 
-from ethpm_types import PackageMeta
+from ethpm_types import BaseModel, PackageMeta
 
 CONFIG_FILE_NAME = "ape-config.yaml"
 
@@ -28,8 +28,13 @@ class CompilerConfig(PluginConfig):
     """List of globular files to ignore"""
 
 
-class DeploymentConfigCollection(dict):
-    def __init__(self, data: Dict, valid_ecosystems: Dict, valid_networks: List[str]):
+class DeploymentConfigCollection(BaseModel):
+    __root__: Dict
+
+    @root_validator(pre=True)
+    def validate_deployments(cls, data: Dict):
+        valid_ecosystems = data.pop("valid_ecosystems", {})
+        valid_networks = data.pop("valid_networks", {})
         for ecosystem_name, networks in data.items():
             if ecosystem_name not in valid_ecosystems:
                 logger.warning(f"Invalid ecosystem '{ecosystem_name}' in deployments config.")
@@ -55,7 +60,7 @@ class DeploymentConfigCollection(dict):
                     except ValueError as err:
                         logger.warning(str(err))
 
-        super().__init__(data)
+        return data
 
 
 class ConfigManager(BaseInterfaceModel):
@@ -194,7 +199,11 @@ class ConfigManager(BaseInterfaceModel):
         valid_ecosystems = dict(self.plugin_manager.ecosystems)
         valid_network_names = [n[1] for n in [e[1] for e in self.plugin_manager.networks]]
         self.deployments = configs["deployments"] = DeploymentConfigCollection(
-            deployments, valid_ecosystems, valid_network_names
+            __root__={
+                **deployments,
+                "valid_ecosystems": valid_ecosystems,
+                "valid_networks": valid_network_names,
+            }
         )
 
         for plugin_name, config_class in self.plugin_manager.config_class:

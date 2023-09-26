@@ -496,7 +496,7 @@ class ContractEvent(ManagerAccessMixin):
             else:
                 converted_args[key] = self.conversion_manager.convert(value, py_type)
 
-        properties = {"event_arguments": converted_args, "event_name": self.abi.name}
+        properties: Dict = {"event_arguments": converted_args, "event_name": self.abi.name}
         if hasattr(self.contract, "address"):
             # Only address if this is off an instance.
             properties["contract_address"] = self.contract.address
@@ -547,7 +547,7 @@ class ContractEvent(ManagerAccessMixin):
         if columns[0] == "*":
             columns = list(ContractLog.__fields__)  # type: ignore
 
-        query = {
+        query: Dict = {
             "columns": columns,
             "event": self.abi,
             "start_block": start_block,
@@ -591,7 +591,7 @@ class ContractEvent(ManagerAccessMixin):
             Iterator[:class:`~ape.contracts.base.ContractLog`]
         """
 
-        if not hasattr(self.contract, "address"):
+        if not (contract_address := getattr(self.contract, "address", None)):
             return
 
         start_block = None
@@ -600,16 +600,16 @@ class ContractEvent(ManagerAccessMixin):
         if stop is None:
             contract = None
             try:
-                contract = self.chain_manager.contracts.instance_at(self.contract.address)
+                contract = self.chain_manager.contracts.instance_at(contract_address)
             except Exception:
                 pass
 
             if contract:
                 start_block = contract.receipt.block_number
             else:
-                start_block = self.chain_manager.contracts.get_creation_receipt(
-                    self.contract.address
-                ).block_number
+                cache = self.chain_manager.contracts
+                receipt = cache.get_creation_receipt(contract_address)
+                start_block = receipt.block_number
 
             stop_block = start_or_stop
         elif start_or_stop is not None and stop is not None:
@@ -618,7 +618,7 @@ class ContractEvent(ManagerAccessMixin):
 
         stop_block = min(stop_block, self.chain_manager.blocks.height)
 
-        addresses = set([self.contract.address] + (extra_addresses or []))
+        addresses = list(set([contract_address] + (extra_addresses or [])))
         contract_event_query = ContractEventQuery(
             columns=list(ContractLog.__fields__.keys()),
             contract=addresses,
@@ -1140,7 +1140,7 @@ class ContractInstance(BaseAddress, ContractTypeWrapper):
         if attr_name in set(super(BaseAddress, self).__dir__()):
             return super(BaseAddress, self).__getattribute__(attr_name)
 
-        if attr_name not in {
+        elif attr_name not in {
             *self._view_methods_,
             *self._mutable_methods_,
             *self._events_,

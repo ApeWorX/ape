@@ -1,10 +1,10 @@
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any, Dict, List, Literal, Optional, Union
+from typing import TYPE_CHECKING, Any, Dict, List, Literal, Optional, Sequence, Union, cast
 
 from eth_abi.abi import encode
 from eth_abi.packed import encode_packed
-from eth_typing import HexStr
-from eth_utils import encode_hex, keccak
+from eth_typing import Hash32, HexStr
+from eth_utils import encode_hex, keccak, to_hex
 from ethpm_types import (
     ABI,
     Bytecode,
@@ -88,7 +88,7 @@ and otherwise you can provide a numeric value.
 """
 
 
-TopicFilter = List[Union[Optional[HexStr], List[Optional[HexStr]]]]
+TopicFilter = Sequence[Union[Optional[HexStr], List[Optional[HexStr]]]]
 
 
 @dataclass
@@ -142,11 +142,13 @@ class LogFilter(BaseModel):
         return convert(value, AddressType)
 
     def dict(self, client=None):
+        _Hash32 = Union[Hash32, HexBytes, HexStr]
+        topics = cast(Sequence[Optional[Union[_Hash32, Sequence[_Hash32]]]], self.topic_filter)
         return FilterParams(
             address=self.addresses,
-            fromBlock=hex(self.start_block),  # type: ignore
-            toBlock=hex(self.stop_block),  # type: ignore
-            topics=self.topic_filter,  # type: ignore
+            fromBlock=to_hex(self.start_block),
+            toBlock=to_hex(self.stop_block),
+            topics=topics,
         )
 
     @classmethod

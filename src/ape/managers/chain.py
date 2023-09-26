@@ -113,7 +113,7 @@ class BlockContainer(BaseManager):
 
     def query(
         self,
-        *columns: List[str],
+        *columns: str,
         start_block: int = 0,
         stop_block: Optional[int] = None,
         step: int = 1,
@@ -130,7 +130,7 @@ class BlockContainer(BaseManager):
               than the chain length.
 
         Args:
-            columns (List[str]): columns in the DataFrame to return
+            *columns (str): columns in the DataFrame to return
             start_block (int): The first block, by number, to include in the
               query. Defaults to 0.
             stop_block (Optional[int]): The last block, by number, to include
@@ -438,12 +438,12 @@ class AccountHistory(BaseInterfaceModel):
             start_nonce = receipt.nonce + 1  # start next loop on the next item
 
         if start_nonce != stop_nonce:
-            # NOTE: there is no more sessional history, so just return query engine iterator
+            # NOTE: there is no more session history, so just return query engine iterator
             yield from iter(self[start_nonce : stop_nonce + 1])  # noqa: E203
 
     def query(
         self,
-        *columns: List[str],
+        *columns: str,
         start_nonce: int = 0,
         stop_nonce: Optional[int] = None,
         engine_to_use: Optional[str] = None,
@@ -459,7 +459,7 @@ class AccountHistory(BaseInterfaceModel):
               than the account's current nonce.
 
         Args:
-            columns (List[str]): columns in the DataFrame to return
+            *columns (str): columns in the DataFrame to return
             start_nonce (int): The first transaction, by nonce, to include in the
               query. Defaults to 0.
             stop_nonce (Optional[int]): The last transaction, by nonce, to include

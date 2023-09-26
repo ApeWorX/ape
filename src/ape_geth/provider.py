@@ -246,8 +246,8 @@ class BaseGethProvider(Web3Provider, ABC):
     _client_version: Optional[str] = None
 
     # optimal values for geth
-    block_page_size = 5000
-    concurrency = 16
+    block_page_size: int = 5000
+    concurrency: int = 16
 
     name: str = "geth"
 
@@ -450,10 +450,10 @@ class GethDev(BaseGethProvider, TestProviderAPI, SubprocessProvider):
 
     def connect(self):
         self._set_web3()
-        if not self.is_connected:
-            self.start()
-        else:
+        if self.is_connected:
             self._complete_connect()
+        else:
+            self.start()
 
     def start(self, timeout: int = 20):
         test_config = self.config_manager.get_config("test").dict()

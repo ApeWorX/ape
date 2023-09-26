@@ -115,7 +115,7 @@ class EcosystemAPI(BaseInterfaceModel):
         or Starknet's ``Declare`` transaction type.
 
         Args:
-            contract (``ContractType``): The type of contract to create a blueprint for.
+            contract_type (``ContractType``): The type of contract to create a blueprint for.
               This is the type of contract that will get created by factory contracts.
             *args: Calldata, if applicable.
             **kwargs: Transaction specifications, such as ``value``.
