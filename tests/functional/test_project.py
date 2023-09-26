@@ -1,5 +1,6 @@
 import shutil
 from pathlib import Path
+from urllib.parse import urlparse
 
 import pytest
 import yaml
@@ -183,7 +184,10 @@ def test_meta(temp_config, project):
         assert project.meta.license == "MIT"
         assert project.meta.description == "test"
         assert project.meta.keywords == ["testing"]
-        assert str(project.meta.links["apeworx.io"]).startswith("https://apeworx.io")
+
+        actual_url = urlparse(project.meta.links["apeworx.io"])
+        assert actual_url.hostname == "apeworx.io"
+        assert actual_url.scheme == "https"
 
 
 def test_brownie_project_configure(config, base_projects_directory):
