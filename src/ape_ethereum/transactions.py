@@ -121,10 +121,7 @@ class AccessListTransaction(BaseTransaction):
 
     @validator("type", allow_reuse=True)
     def check_type(cls, value):
-        if isinstance(value, TransactionType):
-            return value.value
-
-        return value
+        return value.value if isinstance(value, TransactionType) else value
 
 
 class Receipt(ReceiptAPI):

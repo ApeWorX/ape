@@ -1250,8 +1250,8 @@ class Web3Provider(ProviderAPI, ABC):
     def get_transactions_by_account_nonce(
         self,
         account: AddressType,
-        start_nonce: int,
-        stop_nonce: int,
+        start_nonce: int = 0,
+        stop_nonce: int = -1,
     ) -> Iterator[ReceiptAPI]:
         if start_nonce > stop_nonce:
             raise ValueError("Starting nonce cannot be greater than stop nonce for search")
@@ -1326,7 +1326,7 @@ class Web3Provider(ProviderAPI, ABC):
             stop_block = min(stop, start_block + page - 1)
             yield start_block, stop_block
 
-    def get_contract_creation_receipts(  # type: ignore[empty-body]
+    def get_contract_creation_receipts(
         self,
         address: AddressType,
         start_block: int = 0,
@@ -1657,7 +1657,7 @@ class SubprocessProvider(ProviderAPI):
     A provider that manages a process, such as for ``ganache``.
     """
 
-    PROCESS_WAIT_TIMEOUT = 15
+    PROCESS_WAIT_TIMEOUT: int = 15
     process: Optional[Popen] = None
     is_stopping: bool = False
 

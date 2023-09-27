@@ -421,7 +421,6 @@ __all__ = [
     "ContractLogContainer",
     "ContractType",
     "ControlFlow",
-    "CoverageItem",
     "CoverageProject",
     "CoverageReport",
     "CoverageStatement",
