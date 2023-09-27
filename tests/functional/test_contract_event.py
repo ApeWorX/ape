@@ -326,3 +326,11 @@ def test_structs_in_events(contract_instance, owner):
     expected_bytes = HexBytes(0x1234567890ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF)
     expected = contract_instance.EventWithStruct(a_struct={"a": owner, "b": expected_bytes})
     assert tx.events == [expected]
+
+
+def test_address_arrays_in_events(contract_instance, owner):
+    tx = contract_instance.logAddressArray(sender=owner)
+    expected = contract_instance.EventWithAddressArray(
+        some_id=1001, some_address=owner, participants=[owner], agents=[owner]
+    )
+    assert tx.events == [expected]
