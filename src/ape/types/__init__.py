@@ -342,6 +342,21 @@ class ContractLog(BaseContractLog):
         return self.event_arguments.get(item, default)
 
 
+def _equal_event_inputs(mock_input: Any, real_input: Any) -> bool:
+    if mock_input is None:
+        # Check is skipped.
+        return True
+
+    elif isinstance(mock_input, (list, tuple)):
+        if not isinstance(real_input, (list, tuple)) or len(real_input) != len(mock_input):
+            return False
+
+        return all(_equal_event_inputs(m, r) for m, r in zip(mock_input, real_input))
+
+    else:
+        return mock_input == real_input
+
+
 class MockContractLog(BaseContractLog):
     """
     A mock version of the ContractLog class used for testing purposes.
@@ -365,9 +380,9 @@ class MockContractLog(BaseContractLog):
         # NOTE: `self.event_arguments` contains a subset of items from `other.event_arguments`,
         #       but we skip those the user doesn't care to check
         for name, value in self.event_arguments.items():
-            # Make sure `value` is not `None` (user explicitly set it `None`)
-            # NOTE: `other.event_arguments[name]` will raise `IndexError` only if ABIs don't match
-            if value is not None and value != other.event_arguments[name]:
+            other_input = other.event_arguments.get(name)
+            if not _equal_event_inputs(value, other_input):
+                # Only exit on False; Else, keep checking.
                 return False
 
         return True
@@ -406,7 +421,6 @@ __all__ = [
     "ContractLogContainer",
     "ContractType",
     "ControlFlow",
-    "CoverageItem",
     "CoverageProject",
     "CoverageReport",
     "CoverageStatement",

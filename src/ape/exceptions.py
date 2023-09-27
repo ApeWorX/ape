@@ -5,9 +5,10 @@ import traceback
 from inspect import getframeinfo, stack
 from pathlib import Path
 from types import CodeType, TracebackType
-from typing import TYPE_CHECKING, Any, Dict, Iterator, List, Optional, Union
+from typing import TYPE_CHECKING, Any, Dict, Iterator, List, Optional, Union, cast
 
 import click
+from eth_typing import Hash32
 from eth_utils import humanize_hash
 from ethpm_types.abi import ConstructorABI, ErrorABI, MethodABI
 from rich import print as rich_print
@@ -418,7 +419,7 @@ class UnknownSnapshotError(ChainError):
     def __init__(self, snapshot_id: "SnapshotID"):
         if isinstance(snapshot_id, bytes):
             # Is block hash
-            snapshot_id = humanize_hash(snapshot_id)  # type: ignore
+            snapshot_id = humanize_hash(cast(Hash32, snapshot_id))
 
         super().__init__(f"Unknown snapshot ID '{str(snapshot_id)}'.")
 

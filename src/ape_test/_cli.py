@@ -8,8 +8,8 @@ from typing import List, Sequence
 
 import click
 import pytest
-from watchdog import events  # type: ignore
-from watchdog.observers import Observer  # type: ignore
+from watchdog import events
+from watchdog.observers import Observer
 
 from ape.cli import ape_cli_context
 from ape.utils import ManagerAccessMixin, cached_property

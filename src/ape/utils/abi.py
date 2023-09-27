@@ -77,7 +77,11 @@ class StructParser:
         return [self._encode(ipt, v) for ipt, v in zip(self.abi.inputs, values)]
 
     def decode_input(self, values: Union[Sequence, Dict[str, Any]]) -> Any:
-        return self._decode(self.abi.inputs, values) if isinstance(self.abi, EventABI) else None
+        return (
+            self._decode(self.abi.inputs, values)
+            if isinstance(self.abi, (EventABI, MethodABI))
+            else None
+        )
 
     def _encode(self, _type: ABIType, value: Any):
         if (
@@ -384,7 +388,8 @@ class LogInputABICollection:
 
             else:
                 # The data was formatted correctly and we were able to decode logs.
-                decoded[abi.name] = self.decode_value(abi_type, value)
+                result = self.decode_value(abi_type, value)
+                decoded[abi.name] = result
 
         data_abi_types = [abi.canonical_type for abi in self.data_abi_types]
         hex_data = decode_hex(data) if isinstance(data, str) else data
@@ -430,6 +435,10 @@ class LogInputABICollection:
     def decode_value(self, abi_type: str, value: Any) -> Any:
         if abi_type == "bytes32":
             return HexBytes(value)
+
+        elif isinstance(value, (list, tuple)) and is_array(abi_type):
+            sub_type = "[".join(abi_type.split("[")[:-1])
+            return [self.decode_value(sub_type, v) for v in value]
 
         elif isinstance(value, (list, tuple)):
             parser = StructParser(self.abi)

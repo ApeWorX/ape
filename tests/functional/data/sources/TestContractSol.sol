@@ -36,6 +36,13 @@ contract TestContractSol {
         MyStruct a_struct
     );
 
+    event EventWithAddressArray(
+        uint32 indexed some_id,
+        address indexed some_address,
+        address[] participants,
+        address[1] agents
+    );
+
     struct MyStruct {
         address a;
         bytes32 b;
@@ -287,5 +294,12 @@ contract TestContractSol {
         bytes32 _bytes = 0x1234567890abcdef0123456789abcdef0123456789abcdef0123456789abcdef;
         MyStruct memory _struct = MyStruct(msg.sender, _bytes);
         emit EventWithStruct(_struct);
+    }
+
+    function logAddressArray() public {
+        address[] memory ppl = new address[](1);
+        ppl[0] = msg.sender;
+        address[1] memory agts = [msg.sender];
+        emit EventWithAddressArray(1001, msg.sender, ppl, agts);
     }
 }
