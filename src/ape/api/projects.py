@@ -10,7 +10,7 @@ from ethpm_types.source import Content
 from ethpm_types.utils import Algorithm, AnyUrl, compute_checksum
 from packaging.version import InvalidVersion, Version
 
-from ape._compat import ValidationError
+from ape._pydantic_compat import ValidationError
 from ape.logging import logger
 from ape.utils import (
     BaseInterfaceModel,
