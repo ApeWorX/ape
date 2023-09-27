@@ -1,6 +1,6 @@
 import re
 from enum import Enum
-from typing import Any, List, Optional, Type, Union
+from typing import Any, Iterator, List, Optional, Type, Union
 
 import click
 from click import Choice, Context, Parameter
@@ -8,6 +8,7 @@ from click import Choice, Context, Parameter
 from ape import accounts, networks
 from ape.api.accounts import AccountAPI
 from ape.exceptions import AccountsError
+from ape.types import LazySequence
 
 ADHOC_NETWORK_PATTERN = re.compile(r"\w*:\w*:https?://\w*.*")
 
@@ -36,7 +37,7 @@ class Alias(click.Choice):
         self._account_type = account_type
 
     @property
-    def choices(self) -> List[str]:  # type: ignore
+    def choices(self) -> Iterator[str]:  # type: ignore
         """
         The aliases available to choose from.
 
@@ -44,8 +45,11 @@ class Alias(click.Choice):
             List[str]: A list of account aliases the user may choose from.
         """
 
-        options = _get_account_by_type(self._account_type)
-        return [a.alias for a in options if a.alias is not None]
+        for acct in _get_account_by_type(self._account_type):
+            if acct.alias is None:
+                continue
+
+            yield acct.alias
 
 
 class PromptChoice(click.ParamType):
@@ -257,7 +261,7 @@ class NetworkChoice(click.Choice):
         provider: Optional[Union[List[str], str]] = None,
     ):
         super().__init__(
-            list(
+            LazySequence(
                 networks.get_network_choices(
                     ecosystem_filter=ecosystem, network_filter=network, provider_filter=provider
                 )
@@ -306,7 +310,7 @@ def output_format_choice(options: Optional[List[OutputFormat]] = None) -> Choice
         :class:`click.Choice`
     """
 
-    options = options or [o for o in OutputFormat]
+    options = options or list(OutputFormat)
 
     # Uses `str` form of enum for CLI choices.
     return click.Choice([o.value for o in options], case_sensitive=False)

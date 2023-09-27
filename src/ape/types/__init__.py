@@ -2,6 +2,7 @@ from dataclasses import dataclass
 from typing import (
     TYPE_CHECKING,
     Any,
+    Callable,
     Dict,
     Iterator,
     List,
@@ -404,6 +405,43 @@ class ContractLogContainer(list):
 
     def __contains__(self, val: Any) -> bool:
         return any(log == val for log in self)
+
+
+class LazySequence(Sequence):
+    def __init__(self, generator: Union[Iterator, Callable]):
+        self._generator = generator
+        self.cache: List = []
+
+    def __getitem__(self, index: Union[int, slice]) -> Union[Any, Sequence[Any]]:
+        if isinstance(index, int):
+            while len(self.cache) <= index:
+                # Catch up the cache.
+                if value := next(self.generator, None):
+                    self.cache.append(value)
+
+            return self.cache[index]
+
+        elif isinstance(index, slice):
+            # TODO: Make slices lazier. Right now, it deqeues all.
+            for item in self.generator:
+                self.cache.append(item)
+
+            return self.cache[index]
+
+        else:
+            raise TypeError("Index must be int or slice.")
+
+    def __len__(self):
+        # NOTE: This will deque everything.
+
+        for value in self.generator:
+            self.cache.append(value)
+
+        return len(self.cache)
+
+    @property
+    def generator(self) -> Iterator:
+        return self.generator() if callable(self.generator) else self._generator
 
 
 __all__ = [

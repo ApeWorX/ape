@@ -10,6 +10,7 @@ from ape.cli import ape_cli_context, network_option
 from ape.cli.choices import OutputFormat
 from ape.cli.options import output_format_option
 from ape.logging import LogLevel
+from ape.types import LazySequence
 
 
 def _filter_option(name: str, options):
@@ -29,12 +30,20 @@ def cli():
     """
 
 
+def _lazy_get(name: str) -> LazySequence:
+    # NOTE: Using fn generator to maintain laziness.
+    def gen():
+        yield from getattr(networks, f"{name}_names")
+
+    return LazySequence(gen)
+
+
 @cli.command(name="list", short_help="List registered networks")
 @ape_cli_context()
 @output_format_option()
-@_filter_option("ecosystem", networks.ecosystem_names)
-@_filter_option("network", networks.network_names)
-@_filter_option("provider", networks.provider_names)
+@_filter_option("ecosystem", _lazy_get("ecosystem"))
+@_filter_option("network", _lazy_get("network"))
+@_filter_option("provider", _lazy_get("provider"))
 def _list(cli_ctx, output_format, ecosystem_filter, network_filter, provider_filter):
     if output_format == OutputFormat.TREE:
         default_suffix = "[dim default]  (default)"

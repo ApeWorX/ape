@@ -1,4 +1,4 @@
-from typing import Dict, List, NoReturn, Optional, Union
+from typing import Callable, Dict, List, NoReturn, Optional, Union
 
 import click
 from ethpm_types import ContractType
@@ -96,7 +96,7 @@ def ape_cli_context(default_log_level: str = DEFAULT_LOG_LEVEL):
 
 
 def network_option(
-    default: Optional[str] = "auto",
+    default: Optional[Union[str, Callable]] = "auto",
     ecosystem: Optional[Union[List[str], str]] = None,
     network: Optional[Union[List[str], str]] = None,
     provider: Optional[Union[List[str], str]] = None,
@@ -126,8 +126,13 @@ def network_option(
     if auto and not required:
         if ecosystem:
             default = ecosystem[0] if isinstance(ecosystem, (list, tuple)) else ecosystem
+
         else:
-            default = networks.default_ecosystem.name
+            # NOTE: Use a function as the default so it is calculated lazily
+            def fn():
+                return networks.default_ecosystem.name
+
+            default = fn
 
     elif auto:
         default = None
