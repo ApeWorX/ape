@@ -1250,8 +1250,8 @@ class Web3Provider(ProviderAPI, ABC):
     def get_transactions_by_account_nonce(
         self,
         account: AddressType,
-        start_nonce: int,
-        stop_nonce: int,
+        start_nonce: int = 0,
+        stop_nonce: int = -1,
     ) -> Iterator[ReceiptAPI]:
         if start_nonce > stop_nonce:
             raise ValueError("Starting nonce cannot be greater than stop nonce for search")
