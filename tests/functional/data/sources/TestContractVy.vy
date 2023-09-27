@@ -23,6 +23,7 @@ event EventWithAddressArray:
     some_id: uint256
     some_address: address
     participants: DynArray[address, 1024]
+    agents: address[1]
 
 struct MyStruct:
     a: address
@@ -289,7 +290,8 @@ def logStruct():
     log EventWithStruct(_struct)
 
 @external
-def logDynamicAddressArray():
+def logAddressArray():
     ppl: DynArray[address, 1024] = []
     ppl.append(msg.sender)
-    log EventWithAddressArray(1001, msg.sender, ppl)
+    agts: address[1] = [msg.sender]
+    log EventWithAddressArray(1001, msg.sender, ppl, agts)

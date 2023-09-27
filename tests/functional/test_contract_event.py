@@ -328,9 +328,9 @@ def test_structs_in_events(contract_instance, owner):
     assert tx.events == [expected]
 
 
-def test_dynamic_address_arrays_in_events(contract_instance, owner):
-    tx = contract_instance.logDynamicAddressArray(sender=owner)
+def test_address_arrays_in_events(contract_instance, owner):
+    tx = contract_instance.logAddressArray(sender=owner)
     expected = contract_instance.EventWithAddressArray(
-        some_id=1001, some_address=owner, participants=[owner]
+        some_id=1001, some_address=owner, participants=[owner], agents=[owner]
     )
     assert tx.events == [expected]

@@ -38,8 +38,9 @@ contract TestContractSol {
 
     event EventWithAddressArray(
         uint32 indexed some_id,
-        address indexed some_dddress,
-        address[] participants
+        address indexed some_address,
+        address[] participants,
+        address[1] agents
     );
 
     struct MyStruct {
@@ -295,9 +296,10 @@ contract TestContractSol {
         emit EventWithStruct(_struct);
     }
 
-    function logDynamicAddressArray() public {
+    function logAddressArray() public {
         address[] memory ppl = new address[](1);
         ppl[0] = msg.sender;
-        emit EventWithAddressArray(1001, msg.sender, ppl);
+        address[1] memory agts = [msg.sender];
+        emit EventWithAddressArray(1001, msg.sender, ppl, agts);
     }
 }
