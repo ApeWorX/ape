@@ -1657,7 +1657,7 @@ class SubprocessProvider(ProviderAPI):
     A provider that manages a process, such as for ``ganache``.
     """
 
-    PROCESS_WAIT_TIMEOUT = 15
+    PROCESS_WAIT_TIMEOUT: int = 15
     process: Optional[Popen] = None
     is_stopping: bool = False
 
