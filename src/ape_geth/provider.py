@@ -503,7 +503,8 @@ class GethDev(BaseGethProvider, TestProviderAPI, SubprocessProvider):
             self._process = None
 
         # Also unset the subprocess-provider reference.
-        self.process = None
+        # NOTE: Type ignore is wrong; TODO: figure out why.
+        self.process = None  # type: ignore[assignment]
 
         super().disconnect()
 
@@ -670,7 +671,10 @@ def _create_web3(uri: str, ipc_path: Optional[Path] = None):
 
     def ipc_provider():
         # NOTE: This mypy complaint seems incorrect.
-        return IPCProvider(ipc_path=ipc_path)  # type: ignore[arg-type]
+        if not (path := ipc_path):
+            raise ValueError("IPC Path required.")
+
+        return IPCProvider(ipc_path=path)
 
     # NOTE: This tuple is ordered by try-attempt.
     # Try ENV, then IPC, and then HTTP last.

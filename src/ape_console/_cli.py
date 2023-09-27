@@ -9,8 +9,8 @@ from types import ModuleType
 from typing import Any, Dict, cast
 
 import click
-import IPython  # type: ignore
-from IPython.terminal.ipapp import Config as IPythonConfig  # type: ignore
+import IPython
+from IPython.terminal.ipapp import Config as IPythonConfig
 
 from ape import config
 from ape import project as default_project
