@@ -207,7 +207,9 @@ class Ethereum(EcosystemAPI):
 
     @property
     def config(self) -> EthereumConfig:
-        return self.config_manager.get_config("ethereum")
+        result = self.config_manager.get_config("ethereum")
+        assert isinstance(result, EthereumConfig)  # For mypy
+        return result
 
     @property
     def default_transaction_type(self) -> TransactionType:
