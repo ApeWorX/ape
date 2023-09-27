@@ -1420,7 +1420,8 @@ class Web3Provider(ProviderAPI, ABC):
                 txn.max_fee = int(self.base_fee * multiplier + txn.max_priority_fee)
             # else: Assume user specified the correct amount or txn will fail and waste gas
 
-        if txn.gas_limit is None:
+        gas_limit = self.network.gas_limit if txn.gas_limit is None else txn.gas_limit
+        if gas_limit in (None, "auto"):
             multiplier = self.network.auto_gas_multiplier
             if multiplier != 1.0:
                 gas = min(int(self.estimate_gas_cost(txn) * multiplier), self.max_gas)
@@ -1428,6 +1429,12 @@ class Web3Provider(ProviderAPI, ABC):
                 gas = self.estimate_gas_cost(txn)
 
             txn.gas_limit = gas
+
+        elif gas_limit == "max":
+            txn.gas_limit = self.max_gas
+
+        elif gas_limit is not None:
+            txn.gas_limit = gas_limit
 
         if txn.required_confirmations is None:
             txn.required_confirmations = self.network.required_confirmations

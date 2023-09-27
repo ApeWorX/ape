@@ -251,3 +251,11 @@ def test_get_code(eth_tester_provider, vyper_contract_instance):
     assert eth_tester_provider.get_code(address) == eth_tester_provider.get_code(
         address, block_id=1
     )
+
+
+def test_prepare_static_tx_with_max_gas(eth_tester_provider, vyper_contract_instance, owner):
+    tx = vyper_contract_instance.setNumber.as_transaction(123, sender=owner, type=0)
+    assert tx.type == 0
+    assert tx.gas_limit == eth_tester_provider.max_gas
+    actual = eth_tester_provider.prepare_transaction(tx)
+    assert actual.gas_limit == eth_tester_provider.max_gas
