@@ -1,4 +1,5 @@
 # support both pydantic v1 and v2
+
 try:
     from pydantic.v1 import (  # type: ignore
         BaseModel,
@@ -16,6 +17,7 @@ try:
 except ImportError:
     from pydantic import (  # type: ignore
         BaseModel,
+        BaseSettings,
         Extra,
         Field,
         FileUrl,
@@ -27,7 +29,6 @@ except ImportError:
         validator,
     )
     from pydantic.dataclasses import dataclass  # type: ignore
-    from pydantic_settings import BaseSettings  # type: ignore
 
 __all__ = (
     "BaseModel",
