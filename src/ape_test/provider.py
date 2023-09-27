@@ -84,8 +84,9 @@ class LocalProvider(TestProviderAPI, Web3Provider):
             # Remove from dict before estimating
             txn_dict.pop("gas")
 
+        txn_data = cast(TxParams, txn_dict)
         try:
-            return estimate_gas(txn_dict, block_identifier=block_id)  # type: ignore
+            return estimate_gas(txn_data, block_identifier=block_id)
         except (ValidationError, TransactionFailed) as err:
             ape_err = self.get_virtual_machine_error(err, txn=txn)
             gas_match = self._INVALID_NONCE_PATTERN.match(str(ape_err))

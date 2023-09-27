@@ -419,7 +419,7 @@ class CacheQueryProvider(QueryAPI):
             new_dict = {k: v for k, v in val.dict(by_alias=False).items() if k in table_columns}
             for col in table_columns:
                 if col == "txn_hash":
-                    new_dict["txn_hash"] = val.txn_hash  # type: ignore
+                    new_dict["txn_hash"] = val.txn_hash
                 elif col == "sender":
                     new_dict["sender"] = new_dict["sender"].encode()
                 elif col == "receiver" and "receiver" in new_dict:
@@ -429,7 +429,7 @@ class CacheQueryProvider(QueryAPI):
                 elif col == "block_hash":
                     new_dict["block_hash"] = query.block_id
                 elif col == "signature":
-                    new_dict["signature"] = val.signature.encode_rsv()  # type: ignore
+                    new_dict["signature"] = val.signature.encode_rsv()
                 elif col not in new_dict:
                     new_dict[col] = None
             new_result.append(new_dict)

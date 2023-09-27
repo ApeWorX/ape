@@ -1326,7 +1326,7 @@ class Web3Provider(ProviderAPI, ABC):
             stop_block = min(stop, start_block + page - 1)
             yield start_block, stop_block
 
-    def get_contract_creation_receipts(  # type: ignore[empty-body]
+    def get_contract_creation_receipts(
         self,
         address: AddressType,
         start_block: int = 0,

@@ -3,8 +3,8 @@ import shlex
 import click
 from click.testing import CliRunner
 from eth_utils import is_hex
-from IPython import get_ipython  # type: ignore
-from IPython.core.magic import Magics, line_magic, magics_class  # type: ignore
+from IPython import get_ipython
+from IPython.core.magic import Magics, line_magic, magics_class
 
 import ape
 from ape._cli import cli
