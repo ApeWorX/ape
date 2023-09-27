@@ -19,6 +19,11 @@ event BarHappened:
 event EventWithStruct:
     a_struct: MyStruct
 
+event EventWithAddressArray:
+    some_id: uint256
+    some_address: address
+    participants: DynArray[address, 1024]
+
 struct MyStruct:
     a: address
     b: bytes32
@@ -282,3 +287,9 @@ def logStruct():
         b: _bytes
     })
     log EventWithStruct(_struct)
+
+@external
+def logDynamicAddressArray():
+    ppl: DynArray[address, 1024] = []
+    ppl.append(msg.sender)
+    log EventWithAddressArray(1001, msg.sender, ppl)

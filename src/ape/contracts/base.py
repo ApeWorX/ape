@@ -1,3 +1,4 @@
+import difflib
 import types
 from functools import partial
 from itertools import islice
@@ -469,10 +470,20 @@ class ContractEvent(ManagerAccessMixin):
         event_args.update(kwargs)
 
         # Check that event_args.keys() is a subset of the expected input names
-        if unknown_input_names := set(event_args.keys()) - {ipt.name for ipt in self.abi.inputs}:
-            raise ValueError(
-                f"Invalid argument keys found, expected subset of {', '.join(unknown_input_names)}"
-            )
+        keys_given = set(event_args.keys())
+        keys_expected = {ipt.name for ipt in self.abi.inputs}
+        if unknown_input_names := keys_given - keys_expected:
+            message = "Unknown keys: "
+            sections = []
+            for unknown in unknown_input_names:
+                if matches := difflib.get_close_matches(unknown, keys_expected, n=1, cutoff=0.5):
+                    matches_str = ", ".join(matches)
+                    sections.append(f"{unknown} (did you mean: '{matches_str}'?)")
+                else:
+                    sections.append(unknown)
+
+            message = f"{message} '{', '.join(sections)}'"
+            raise ValueError(message)
 
         # Convert the arguments using the conversion manager
         converted_args = {}
