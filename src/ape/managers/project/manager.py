@@ -702,7 +702,6 @@ class ProjectManager(BaseManager):
         if network == LOCAL_NETWORK_NAME or network.endswith("-fork"):
             raise ProjectError("Can only publish deployments on a live network.")
 
-        contract_name = contract.contract_type.name
         if not (contract_name := contract.contract_type.name):
             raise ProjectError("Contract name required when publishing.")
 

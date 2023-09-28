@@ -16,8 +16,8 @@ from eth_utils import (
 )
 from ethpm_types import ContractType, HexBytes
 from ethpm_types.abi import ABIType, ConstructorABI, EventABI, MethodABI
-from pydantic import Field, validator
 
+from ape._pydantic_compat import Field, validator
 from ape.api import BlockAPI, EcosystemAPI, PluginConfig, ReceiptAPI, TransactionAPI
 from ape.api.networks import LOCAL_NETWORK_NAME
 from ape.contracts.base import ContractCall

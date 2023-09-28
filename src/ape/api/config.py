@@ -1,7 +1,7 @@
 from enum import Enum
 from typing import Any, Dict, Optional, TypeVar
 
-from pydantic import BaseModel, BaseSettings
+from ape._pydantic_compat import BaseModel, BaseSettings
 
 T = TypeVar("T")
 

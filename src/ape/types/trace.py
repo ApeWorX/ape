@@ -6,10 +6,10 @@ from ethpm_types import ASTNode, BaseModel, ContractType, HexBytes
 from ethpm_types.ast import SourceLocation
 from ethpm_types.source import Closure, Content, Function, SourceStatement, Statement
 from evm_trace.gas import merge_reports
-from pydantic import Field
 from rich.table import Table
 from rich.tree import Tree
 
+from ape._pydantic_compat import Field
 from ape.types.address import AddressType
 from ape.utils.basemodel import BaseInterfaceModel
 from ape.utils.misc import is_evm_precompile, is_zero_hex
