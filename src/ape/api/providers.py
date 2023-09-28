@@ -1477,7 +1477,7 @@ class Web3Provider(ProviderAPI, ABC):
                 start_time = time.time()
                 while confirmed_block is None:
                     if time.time() - start_time > timeout:
-                        raise RuntimeError(
+                        raise ProviderError(
                             f"Timed out waiting for block {confirmed_block_number} to be available."
                         )
                     logger.warning(f"Block {confirmed_block_number} not found. Waiting 1 seconds.")
