@@ -102,6 +102,7 @@ def test_decode_logs(owner, contract_instance, assert_log_values):
         logs = receipt.decode_logs(event_type)
         assert len(logs) == 1
         assert_log_values(logs[0], num)
+        assert receipt.timestamp == logs[0].timestamp
 
     assert_receipt_logs(receipt_0, 1)
     assert_receipt_logs(receipt_1, 2)
