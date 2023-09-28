@@ -14,6 +14,7 @@ try:
         root_validator,
         validator,
     )
+    from pydantic.v1.dataclasses import dataclass  # type: ignore
 except ImportError:
     from pydantic import (  # type: ignore
         BaseModel,
