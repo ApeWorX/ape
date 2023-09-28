@@ -4,11 +4,9 @@ from typing import Dict, Iterator, List, Optional, Set, Union
 import yaml
 
 from ape.api import EcosystemAPI, ProviderAPI, ProviderContextManager
-from ape.api.networks import LOCAL_NETWORK_NAME, NetworkAPI
+from ape.api.networks import NetworkAPI
 from ape.exceptions import ApeAttributeError, NetworkError
-from ape.logging import logger
-
-from .base import BaseManager
+from ape.managers.base import BaseManager
 
 
 class NetworkManager(BaseManager):
@@ -28,7 +26,6 @@ class NetworkManager(BaseManager):
 
     _active_provider: Optional[ProviderAPI] = None
     _default: Optional[str] = None
-    _ecosystems_by_project: Dict[str, Dict[str, EcosystemAPI]] = {}
 
     def __repr__(self):
         provider = self.active_provider
@@ -144,48 +141,15 @@ class NetworkManager(BaseManager):
         All the registered ecosystems in ``ape``, such as ``ethereum``.
         """
 
-        project_name = self.config_manager.PROJECT_FOLDER.stem
-        if project_name in self._ecosystems_by_project:
-            return self._ecosystems_by_project[project_name]
+        def to_kwargs(name: str) -> Dict:
+            return {
+                "name": name,
+                "data_folder": self.config_manager.DATA_FOLDER / name,
+                "request_header": self.config_manager.REQUEST_HEADER,
+            }
 
-        ecosystem_dict = {}
-        for plugin_name, ecosystem_class in self.plugin_manager.ecosystems:
-            ecosystem = ecosystem_class(  # type: ignore
-                name=plugin_name,
-                data_folder=self.config_manager.DATA_FOLDER / plugin_name,
-                request_header=self.config_manager.REQUEST_HEADER,
-            )
-            ecosystem_config = self.config_manager.get_config(plugin_name).dict()
-            default_network = ecosystem_config.get("default_network", LOCAL_NETWORK_NAME)
-
-            try:
-                ecosystem.set_default_network(default_network)
-            except NetworkError as err:
-                message = f"Failed setting default network: {err}"
-                logger.error(message)
-
-            if ecosystem_config:
-                for network_name, network in ecosystem.networks.items():
-                    network_name = network_name.replace("-", "_")
-                    if network_name not in ecosystem_config:
-                        continue
-
-                    network_config = ecosystem_config[network_name]
-                    if "default_provider" not in network_config:
-                        continue
-
-                    default_provider = network_config["default_provider"]
-                    if default_provider:
-                        try:
-                            network.set_default_provider(default_provider)
-                        except NetworkError as err:
-                            message = f"Failed setting default provider: {err}"
-                            logger.error(message)
-
-            ecosystem_dict[plugin_name] = ecosystem
-
-        self._ecosystems_by_project[project_name] = ecosystem_dict
-        return ecosystem_dict
+        ecosystems = self.plugin_manager.ecosystems
+        return {n: cls(**to_kwargs(n)) for n, cls in ecosystems}  # type: ignore
 
     def create_adhoc_geth_provider(self, uri: str) -> ProviderAPI:
         """
@@ -485,6 +449,9 @@ class NetworkManager(BaseManager):
 
         if self._default:
             return ecosystems[self._default]
+
+        elif self.config_manager.default_ecosystem:
+            return ecosystems[self.config_manager.default_ecosystem]
 
         # If explicit default is not set, use first registered ecosystem
         elif len(ecosystems) > 0:

@@ -108,8 +108,11 @@ def test_list_yaml(ape_cli, runner):
 
 
 @skip_projects_except("geth")
-def test_geth(ape_cli, runner, networks):
+def test_geth(ape_cli, runner, networks, project):
     result = runner.invoke(ape_cli, ["networks", "list"])
+    assert (
+        networks.provider.network.default_provider == "geth"
+    ), "Setup failed - default provider didn't apply from config"
     assert_rich_text(result.output, _GETH_NETWORKS_TREE)
 
     # Assert that URI still exists for local network
