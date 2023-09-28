@@ -1,5 +1,6 @@
 import re
 from enum import Enum
+from functools import lru_cache
 from typing import Any, Iterator, List, Optional, Type, Union
 
 import click
@@ -243,6 +244,53 @@ class AccountAliasPromptChoice(PromptChoice):
         return self.fail("Invalid choice. Type the number or the alias.", param=param)
 
 
+_NETWORK_FILTER = Optional[Union[List[str], str]]
+
+
+def get_networks(
+    ecosystem: _NETWORK_FILTER = None,
+    network: _NETWORK_FILTER = None,
+    provider: _NETWORK_FILTER = None,
+) -> LazySequence:
+    # NOTE: Use str-keys and a lru_cache.
+    return _get_networks_sequence_from_cache(
+        _network_filter_to_key(ecosystem),
+        _network_filter_to_key(network),
+        _network_filter_to_key(provider),
+    )
+
+
+@lru_cache(maxsize=None)
+def _get_networks_sequence_from_cache(ecosystem_key: str, network_key: str, provider_key: str):
+    return LazySequence(
+        networks.get_network_choices(
+            ecosystem_filter=_key_to_network_filter(ecosystem_key),
+            network_filter=_key_to_network_filter(network_key),
+            provider_filter=_key_to_network_filter(provider_key),
+        )
+    )
+
+
+def _network_filter_to_key(filter_: _NETWORK_FILTER) -> str:
+    if filter_ is None:
+        return "__none__"
+
+    elif isinstance(filter_, list):
+        return ",".join(filter_)
+
+    return filter_
+
+
+def _key_to_network_filter(key: str) -> _NETWORK_FILTER:
+    if key == "__none__":
+        return None
+
+    elif "," in key:
+        return [n.strip() for n in key.split(",")]
+
+    return key
+
+
 class NetworkChoice(click.Choice):
     """
     A ``click.Choice`` to provide network choice defaults for the active project.
@@ -256,17 +304,12 @@ class NetworkChoice(click.Choice):
     def __init__(
         self,
         case_sensitive=True,
-        ecosystem: Optional[Union[List[str], str]] = None,
-        network: Optional[Union[List[str], str]] = None,
-        provider: Optional[Union[List[str], str]] = None,
+        ecosystem: _NETWORK_FILTER = None,
+        network: _NETWORK_FILTER = None,
+        provider: _NETWORK_FILTER = None,
     ):
         super().__init__(
-            LazySequence(
-                networks.get_network_choices(
-                    ecosystem_filter=ecosystem, network_filter=network, provider_filter=provider
-                )
-            ),
-            case_sensitive,
+            get_networks(ecosystem=ecosystem, network=network, provider=provider), case_sensitive
         )
 
     def get_metavar(self, param):

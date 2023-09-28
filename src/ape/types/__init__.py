@@ -448,9 +448,19 @@ class LazySequence(Sequence):
 
         return len(self.cache)
 
+    def __iter__(self) -> Any:
+        yield from self.cache
+        for value in self.generator:
+            yield value
+            self.cache.append(value)
+
     @property
     def generator(self) -> Iterator:
-        return self.generator() if callable(self.generator) else self._generator
+        if callable(self._generator):
+            self._generator = self._generator()
+
+        assert isinstance(self._generator, Iterator)  # For type-checking.
+        yield from self._generator
 
 
 __all__ = [
