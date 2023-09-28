@@ -296,6 +296,11 @@ class ContractLog(BaseContractLog):
 
     @property
     def timestamp(self) -> int:
+        """
+        The UNIX timestamp of when the event was emitted.
+
+        NOTE: This performs a block lookup.
+        """
         return self.block.timestamp
 
     @property
