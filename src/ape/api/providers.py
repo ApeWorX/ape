@@ -1421,8 +1421,12 @@ class Web3Provider(ProviderAPI, ABC):
             # else: Assume user specified the correct amount or txn will fail and waste gas
 
         gas_limit = self.network.gas_limit if txn.gas_limit is None else txn.gas_limit
-        if gas_limit in (None, "auto"):
-            multiplier = self.network.auto_gas_multiplier
+        if gas_limit in (None, "auto") or isinstance(gas_limit, AutoGasLimit):
+            multiplier = (
+                gas_limit.multiplier
+                if isinstance(gas_limit, AutoGasLimit)
+                else self.network.auto_gas_multiplier
+            )
             if multiplier != 1.0:
                 gas = min(int(self.estimate_gas_cost(txn) * multiplier), self.max_gas)
             else:
