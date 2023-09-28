@@ -107,7 +107,6 @@ class NetworkManager(BaseManager):
         """
         The set of all ecosystem names in ``ape``.
         """
-
         return {e[0] for e in self.plugin_manager.ecosystems}
 
     @property

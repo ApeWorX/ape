@@ -55,12 +55,10 @@ def _create_contracts_paths(ctx, param, value):
     resolved_contract_paths = set()
     for contract_path in contract_paths:
         # Adds missing absolute path as well as extension.
-        pm = project if ctx.obj is None else ctx.obj.project_manager
-        resolved_contract_path = pm.lookup_path(contract_path)
-        if not resolved_contract_path:
+        if resolved_contract_path := project.lookup_path(contract_path):
+            resolved_contract_paths.add(resolved_contract_path)
+        else:
             _raise_bad_arg(contract_path.name)
-
-        resolved_contract_paths.add(resolved_contract_path)
 
     return resolved_contract_paths
 
