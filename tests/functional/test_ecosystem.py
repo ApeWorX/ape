@@ -307,3 +307,19 @@ def test_decode_return_data_non_empty_padding_bytes(ethereum):
     )
     with pytest.raises(DecodingError):
         ethereum.decode_returndata(abi, raw_data)
+
+
+@pytest.mark.parametrize("type_", TransactionType)
+def test_create_transaction_uses_network_gas_limit(type_, ethereum, eth_tester_provider, owner):
+    tx = ethereum.create_transaction(type=type_.value, sender=owner.address)
+    assert tx.type == type_
+    assert tx.gas_limit == eth_tester_provider.max_gas
+
+
+@pytest.mark.parametrize("type_", TransactionType)
+def test_encode_transaction(type_, ethereum, vyper_contract_instance, owner, eth_tester_provider):
+    abi = vyper_contract_instance.contract_type.methods[0]
+    actual = ethereum.encode_transaction(
+        vyper_contract_instance.address, abi, sender=owner.address, type=type_.value
+    )
+    assert actual.gas_limit == eth_tester_provider.max_gas

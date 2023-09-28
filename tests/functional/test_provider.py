@@ -9,6 +9,7 @@ from web3.exceptions import ContractPanicError
 from ape.exceptions import BlockNotFoundError, ContractLogicError, TransactionNotFoundError
 from ape.types import LogFilter
 from ape.utils import DEFAULT_TEST_CHAIN_ID
+from ape_ethereum.transactions import TransactionType
 
 
 def test_uri(eth_tester_provider):
@@ -253,9 +254,11 @@ def test_get_code(eth_tester_provider, vyper_contract_instance):
     )
 
 
-def test_prepare_static_tx_with_max_gas(eth_tester_provider, vyper_contract_instance, owner):
-    tx = vyper_contract_instance.setNumber.as_transaction(123, sender=owner, type=0)
-    assert tx.type == 0
-    assert tx.gas_limit == eth_tester_provider.max_gas
+@pytest.mark.parametrize("type_", TransactionType)
+def test_prepare_static_tx_with_max_gas(type_, eth_tester_provider, ethereum, owner):
+    tx = ethereum.create_transaction(type=type_.value, sender=owner.address)
+    tx.gas_limit = None  # Undo set from validator
+    assert tx.gas_limit is None, "Test setup failed - couldn't clear tx gas limit."
+
     actual = eth_tester_provider.prepare_transaction(tx)
     assert actual.gas_limit == eth_tester_provider.max_gas

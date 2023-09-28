@@ -1433,7 +1433,7 @@ class Web3Provider(ProviderAPI, ABC):
         elif gas_limit == "max":
             txn.gas_limit = self.max_gas
 
-        elif gas_limit is not None:
+        elif gas_limit is not None and isinstance(gas_limit, int):
             txn.gas_limit = gas_limit
 
         if txn.required_confirmations is None:
