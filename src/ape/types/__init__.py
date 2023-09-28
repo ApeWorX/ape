@@ -30,9 +30,9 @@ from ethpm_types import (
 )
 from ethpm_types.abi import EventABI
 from ethpm_types.source import Closure
-from pydantic import BaseModel, root_validator, validator
 from web3.types import FilterParams
 
+from ape._pydantic_compat import BaseModel, root_validator, validator
 from ape.types.address import AddressType, RawAddress
 from ape.types.coverage import (
     ContractCoverage,
@@ -99,7 +99,7 @@ and otherwise you can provide a numeric value.
 """
 
 
-TopicFilter = Sequence[Union[Optional[HexStr], List[Optional[HexStr]]]]
+TopicFilter = Sequence[Union[Optional[HexStr], Sequence[Optional[HexStr]]]]
 
 
 @dataclass

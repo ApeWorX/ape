@@ -6,10 +6,11 @@ from typing import TYPE_CHECKING, Any, Dict, Iterator, List, Optional, Union
 
 from ethpm_types import Checksum, ContractType, PackageManifest, Source
 from ethpm_types.manifest import PackageName
+from ethpm_types.source import Content
 from ethpm_types.utils import Algorithm, AnyUrl, compute_checksum
 from packaging.version import InvalidVersion, Version
-from pydantic import ValidationError
 
+from ape._pydantic_compat import ValidationError
 from ape.logging import logger
 from ape.utils import (
     BaseInterfaceModel,
@@ -143,7 +144,7 @@ class ProjectAPI(BaseInterfaceModel):
                     continue
 
                 contract_name = p.stem
-                contract_type = ContractType().parse_file(p)
+                contract_type = ContractType.parse_file(p)
                 if contract_type.name is None:
                     contract_type.name = contract_name
 
@@ -214,7 +215,7 @@ class ProjectAPI(BaseInterfaceModel):
                     hash=compute_checksum(source_path.read_bytes()),
                 ),
                 urls=[],
-                content=text,
+                content=Content(__root__={i + 1: x for i, x in enumerate(text.splitlines())}),
                 imports=source_imports.get(key, []),
                 references=source_references.get(key, []),
             )
