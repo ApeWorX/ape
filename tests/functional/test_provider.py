@@ -255,7 +255,7 @@ def test_get_code(eth_tester_provider, vyper_contract_instance):
 
 
 @pytest.mark.parametrize("type_", TransactionType)
-def test_prepare_static_tx_with_max_gas(type_, eth_tester_provider, ethereum, owner):
+def test_prepare_tx_with_max_gas(type_, eth_tester_provider, ethereum, owner):
     tx = ethereum.create_transaction(type=type_.value, sender=owner.address)
     tx.gas_limit = None  # Undo set from validator
     assert tx.gas_limit is None, "Test setup failed - couldn't clear tx gas limit."

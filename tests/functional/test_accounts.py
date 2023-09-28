@@ -11,6 +11,7 @@ from ape.types import AutoGasLimit
 from ape.types.signatures import recover_signer
 from ape.utils.testing import DEFAULT_NUMBER_OF_TEST_ACCOUNTS
 from ape_ethereum.ecosystem import ProxyType
+from ape_ethereum.transactions import TransactionType
 from ape_test.accounts import TestAccount
 from tests.conftest import explorer_test
 
@@ -502,7 +503,7 @@ def test_declare(contract_container, sender):
 @pytest.mark.parametrize(
     "tx_type,params", [(0, ["gas_price"]), (2, ["max_fee", "max_priority_fee"])]
 )
-def test_prepare_transaction(sender, ethereum, tx_type, params):
+def test_prepare_transaction_using_auto_gas(sender, ethereum, tx_type, params):
     def clear_network_property_cached():
         for field in ("gas_limit", "auto_gas_multiplier"):
             if field in tx.provider.network.__dict__:
@@ -551,3 +552,13 @@ def test_prepare_transaction(sender, ethereum, tx_type, params):
     finally:
         tx.provider.network.config.local.gas_limit = original_limit
         clear_network_property_cached()
+
+
+@pytest.mark.parametrize("type_", (TransactionType.STATIC, TransactionType.DYNAMIC))
+def test_prepare_transaction_and_call_using_max_gas(type_, ethereum, sender, eth_tester_provider):
+    tx = ethereum.create_transaction(type=type_.value)
+    tx = sender.prepare_transaction(tx)
+    assert tx.gas_limit == eth_tester_provider.max_gas, "Test setup failed - gas limit unexpected."
+
+    actual = sender.call(tx)
+    assert not actual.failed
