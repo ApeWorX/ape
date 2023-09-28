@@ -27,7 +27,6 @@ class ApeCliContextObject(ManagerAccessMixin):
 
     def __init__(self):
         self.logger = logger
-        self.config_manager.load()
 
     @staticmethod
     def abort(msg: str, base_error: Optional[Exception] = None) -> NoReturn:
