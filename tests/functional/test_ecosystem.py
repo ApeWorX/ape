@@ -312,7 +312,7 @@ def test_decode_return_data_non_empty_padding_bytes(ethereum):
 @pytest.mark.parametrize("tx_type", TransactionType)
 def test_create_transaction_uses_network_gas_limit(tx_type, ethereum, eth_tester_provider, owner):
     tx = ethereum.create_transaction(type=tx_type.value, sender=owner.address)
-    assert tx.type == tx_type
+    assert tx.type == tx_type.value
     assert tx.gas_limit == eth_tester_provider.max_gas
 
 

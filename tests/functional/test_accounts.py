@@ -500,10 +500,12 @@ def test_declare(contract_container, sender):
     assert not receipt.failed
 
 
-@pytest.mark.parametrize(
-    "tx_type,params", [(0, ["gas_price"]), (2, ["max_fee", "max_priority_fee"])]
-)
-def test_prepare_transaction_using_auto_gas(sender, ethereum, tx_type, params):
+@pytest.mark.parametrize("tx_type", (TransactionType.STATIC, TransactionType.DYNAMIC))
+def test_prepare_transaction_using_auto_gas(sender, ethereum, tx_type):
+    params = (
+        ("gas_price",) if tx_type is TransactionType.STATIC else ("max_fee", "max_priority_fee")
+    )
+
     def clear_network_property_cached():
         for field in ("gas_limit", "auto_gas_multiplier"):
             if field in ethereum.local.__dict__:
@@ -515,6 +517,7 @@ def test_prepare_transaction_using_auto_gas(sender, ethereum, tx_type, params):
     try:
         ethereum.config.local.gas_limit = auto_gas
         clear_network_property_cached()
+        assert ethereum.local.gas_limit == auto_gas, "Setup failed - auto gas not set."
 
         # NOTE: Must create tx _after_ setting network gas value.
         tx = ethereum.create_transaction(type=tx_type)
@@ -523,7 +526,7 @@ def test_prepare_transaction_using_auto_gas(sender, ethereum, tx_type, params):
         assert tx.nonce is None
         for param in params:
             # Custom fields depending on type.
-            assert getattr(tx, param) is None
+            assert getattr(tx, param) is None, f"'{param}' unexpectedly set."
 
         # Gas should NOT yet be estimated, as that happens closer to sending.
         assert tx.gas_limit is None
@@ -538,15 +541,14 @@ def test_prepare_transaction_using_auto_gas(sender, ethereum, tx_type, params):
         # Show multipliers work. First, reset network to use one (hack).
         gas_smaller = tx.gas_limit
 
-        clear_network_property_cached()
         auto_gas.multiplier = 1.1
-        tx.provider.network.config.local.gas_limit = auto_gas
-        assert tx.provider.network.gas_limit == auto_gas
+        ethereum.config.local.gas_limit = auto_gas
+        clear_network_property_cached()
+        assert ethereum.local.gas_limit == auto_gas, "Setup failed - auto gas multiplier not set."
 
         tx2 = ethereum.create_transaction(type=tx_type)
         tx2 = sender.prepare_transaction(tx2)
         gas_bigger = tx2.gas_limit
-
         assert gas_smaller < gas_bigger
 
         for param in params:

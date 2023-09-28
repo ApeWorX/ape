@@ -1,3 +1,4 @@
+from functools import cached_property
 from typing import Dict, Iterator, List, Optional, Set, Union
 
 import yaml
@@ -137,7 +138,7 @@ class NetworkManager(BaseManager):
 
         return names
 
-    @property
+    @cached_property
     def ecosystems(self) -> Dict[str, EcosystemAPI]:
         """
         All the registered ecosystems in ``ape``, such as ``ethereum``.

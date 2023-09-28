@@ -602,10 +602,13 @@ class Ethereum(EcosystemAPI):
         if "type" in kwargs:
             if kwargs["type"] is None:
                 version = TransactionType.DYNAMIC
-            elif not isinstance(kwargs["type"], int):
-                version = TransactionType(self.conversion_manager.convert(kwargs["type"], int))
-            else:
+            elif isinstance(kwargs["type"], TransactionType):
+                version = kwargs["type"]
+            elif isinstance(kwargs["type"], int):
                 version = TransactionType(kwargs["type"])
+            else:
+                # Using hex values or alike.
+                version = TransactionType(self.conversion_manager.convert(kwargs["type"], int))
 
         elif "gas_price" in kwargs:
             version = TransactionType.STATIC

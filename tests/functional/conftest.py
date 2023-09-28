@@ -9,7 +9,6 @@ from ethpm_types import ContractType, HexBytes
 
 import ape
 from ape.api import EcosystemAPI, NetworkAPI, TransactionAPI
-from ape.api.networks import LOCAL_NETWORK_NAME
 from ape.contracts import ContractContainer, ContractInstance
 from ape.exceptions import ChainError, ContractLogicError
 from ape.logging import LogLevel
@@ -416,9 +415,10 @@ def use_debug(logger):
 
 @pytest.fixture
 def dummy_live_network(chain):
+    original_network = chain.provider.network.name
     chain.provider.network.name = "goerli"
     yield chain.provider.network
-    chain.provider.network.name = LOCAL_NETWORK_NAME
+    chain.provider.network.name = original_network
 
 
 @pytest.fixture(scope="session")
