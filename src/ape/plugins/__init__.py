@@ -146,6 +146,8 @@ class PluginManager:
         return f"<{self.__class__.__name__}>"
 
     def __getattr__(self, attr_name: str) -> Iterator[Tuple[str, Tuple]]:
+        # NOTE: The first time this method is called, the actual
+        #  plugin registration occurs. Registration only happens once.
         self._register_plugins()
 
         if not hasattr(plugin_manager.hook, attr_name):
