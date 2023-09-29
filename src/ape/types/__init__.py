@@ -9,8 +9,10 @@ from typing import (
     Literal,
     Optional,
     Sequence,
+    TypeVar,
     Union,
     cast,
+    overload,
 )
 
 from eth_abi.abi import encode
@@ -416,12 +418,23 @@ class ContractLogContainer(list):
         return any(log == val for log in self)
 
 
-class LazySequence(Sequence):
-    def __init__(self, generator: Union[Iterator, Callable]):
+T = TypeVar("T")
+
+
+class LazySequence(Sequence[T]):
+    def __init__(self, generator: Union[Iterator[T], Callable[[], Iterator[T]]]):
         self._generator = generator
         self.cache: List = []
 
-    def __getitem__(self, index: Union[int, slice]) -> Union[Any, Sequence[Any]]:
+    @overload
+    def __getitem__(self, index: int) -> T:
+        ...
+
+    @overload
+    def __getitem__(self, index: slice) -> Sequence[T]:
+        ...
+
+    def __getitem__(self, index: Union[int, slice]) -> Union[T, Sequence[T]]:
         if isinstance(index, int):
             while len(self.cache) <= index:
                 # Catch up the cache.
@@ -440,7 +453,7 @@ class LazySequence(Sequence):
         else:
             raise TypeError("Index must be int or slice.")
 
-    def __len__(self):
+    def __len__(self) -> int:
         # NOTE: This will deque everything.
 
         for value in self.generator:
@@ -448,7 +461,7 @@ class LazySequence(Sequence):
 
         return len(self.cache)
 
-    def __iter__(self) -> Any:
+    def __iter__(self) -> Iterator[T]:
         yield from self.cache
         for value in self.generator:
             yield value

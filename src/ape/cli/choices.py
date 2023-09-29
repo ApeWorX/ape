@@ -1,7 +1,7 @@
 import re
 from enum import Enum
 from functools import lru_cache
-from typing import Any, Iterator, List, Optional, Type, Union
+from typing import Any, Iterator, List, Optional, Sequence, Type, Union
 
 import click
 from click import Choice, Context, Parameter
@@ -36,16 +36,10 @@ class Alias(click.Choice):
         # NOTE: we purposely skip the constructor of `Choice`
         self.case_sensitive = False
         self._account_type = account_type
+        self.choices = LazySequence(self._choices_iterator)
 
     @property
-    def choices(self) -> Iterator[str]:  # type: ignore
-        """
-        The aliases available to choose from.
-
-        Returns:
-            List[str]: A list of account aliases the user may choose from.
-        """
-
+    def _choices_iterator(self) -> Iterator[str]:
         for acct in _get_account_by_type(self._account_type):
             if acct.alias is None:
                 continue
@@ -72,7 +66,7 @@ class PromptChoice(click.ParamType):
             click.echo(f"__expected_{choice}")
     """
 
-    def __init__(self, choices, name: Optional[str] = None):
+    def __init__(self, choices: Sequence[str], name: Optional[str] = None):
         self.choices = choices
         # Since we purposely skip the super() constructor, we need to make
         # sure the class still has a name.
@@ -164,6 +158,7 @@ class AccountAliasPromptChoice(PromptChoice):
         self._account_type = account_type
         self._prompt_message = prompt_message or "Select an account"
         self.name = name
+        self.choices = LazySequence(self._choices_iterator)
 
     def convert(
         self, value: Any, param: Optional[Parameter], ctx: Optional[Context]
@@ -206,21 +201,15 @@ class AccountAliasPromptChoice(PromptChoice):
             click.echo()
 
     @property
-    def choices(self) -> List[str]:
-        """
-        All the account aliases.
+    def _choices_iterator(self) -> Iterator[str]:
+        # Yield real accounts.
+        for account in _get_account_by_type(self._account_type):
+            if account and (alias := account.alias):
+                yield alias
 
-        Returns:
-            List[str]: A list of all the account aliases.
-        """
-
-        _accounts = [
-            a.alias
-            for a in _get_account_by_type(self._account_type)
-            if a is not None and a.alias is not None
-        ]
-        _accounts.extend([f"TEST::{i}" for i, _ in enumerate(accounts.test_accounts)])
-        return _accounts
+        # Yield test accounts (at the end).
+        for idx, _ in enumerate(accounts.test_accounts):
+            yield f"TEST::{idx}"
 
     def get_user_selected_account(self) -> AccountAPI:
         """
