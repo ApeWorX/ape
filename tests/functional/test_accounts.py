@@ -53,6 +53,12 @@ def test_sign_message(signer, message):
     assert signer.check_signature(message, signature)
 
 
+def test_sign_string(signer):
+    message = "Hello Apes!"
+    signature = signer.sign_message(message)
+    assert signer.check_signature(message, signature)
+
+
 def test_sign_message_unsupported_type_returns_none(signer):
     message = 1234
     signature = signer.sign_message(message)
