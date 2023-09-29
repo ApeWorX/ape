@@ -6,6 +6,7 @@ from eip712.messages import EIP712Message
 from eip712.messages import SignableMessage as EIP712SignableMessage
 from eth_account import Account
 from eth_account.messages import encode_defunct
+from hexbytes import HexBytes
 
 from ape.api.address import BaseAddress
 from ape.api.transactions import ReceiptAPI, TransactionAPI
@@ -263,7 +264,7 @@ class AccountAPI(BaseInterfaceModel, BaseAddress):
 
     def check_signature(
         self,
-        data: Union[SignableMessage, TransactionAPI, str, EIP712Message],
+        data: Union[SignableMessage, TransactionAPI, str, EIP712Message, int],
         signature: Optional[MessageSignature] = None,  # TransactionAPI doesn't need it
     ) -> bool:
         """
@@ -280,6 +281,8 @@ class AccountAPI(BaseInterfaceModel, BaseAddress):
         """
         if isinstance(data, str):
             data = encode_defunct(text=data)
+        elif isinstance(data, int):
+            data = encode_defunct(hexstr=HexBytes(data).hex())
         if isinstance(data, EIP712Message):
             data = data.signable_message
         if isinstance(data, (SignableMessage, EIP712SignableMessage)):

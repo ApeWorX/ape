@@ -59,8 +59,14 @@ def test_sign_string(signer):
     assert signer.check_signature(message, signature)
 
 
+def test_sign_int(signer):
+    message = 4
+    signature = signer.sign_message(message)
+    assert signer.check_signature(message, signature)
+
+
 def test_sign_message_unsupported_type_returns_none(signer):
-    message = 1234
+    message = 1234.123
     signature = signer.sign_message(message)
     assert signature is None
 

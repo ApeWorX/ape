@@ -3,6 +3,7 @@ from typing import Any, Iterator, List, Optional
 from eth_account import Account as EthAccount
 from eth_account.messages import SignableMessage, encode_defunct
 from eth_utils import to_bytes
+from hexbytes import HexBytes
 
 from ape.api import TestAccountAPI, TestAccountContainerAPI, TransactionAPI
 from ape.types import AddressType, MessageSignature, TransactionSignature
@@ -102,8 +103,14 @@ class TestAccount(TestAccountAPI):
         return self.network_manager.ethereum.decode_address(self.address_str)
 
     def sign_message(self, msg: Any, **signer_options) -> Optional[MessageSignature]:
+        # Convert str and int to SignableMessage if needed
         if isinstance(msg, str):
             msg = encode_defunct(text=msg)
+        elif isinstance(msg, int):
+            msg = HexBytes(msg).hex()
+            msg = encode_defunct(hexstr=msg)
+
+        # Process SignableMessage
         if isinstance(msg, SignableMessage):
             signed_msg = EthAccount.sign_message(msg, self.private_key)
             return MessageSignature(
