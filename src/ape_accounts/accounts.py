@@ -158,7 +158,7 @@ class KeyfileAccount(AccountAPI):
         self.keyfile_path.unlink()
 
     def sign_message(self, msg: Any, **signer_options) -> Optional[MessageSignature]:
-        if not isinstance(msg, (SignableMessage, EIP712Message, str, int)):
+        if not isinstance(msg, (SignableMessage, EIP712Message, str, int, bytes)):
             logger.warning("Unsupported message type, (type=%r, msg=%r)", type(msg), msg)
             return None
 
@@ -197,6 +197,8 @@ class KeyfileAccount(AccountAPI):
 
             # Convert EIP712Message to SignableMessage for handling below
             msg = msg.signable_message
+        elif isinstance(msg, SignableMessage):
+            user_approves = self.__autosign or click.confirm(f"{msg}\n\nSign: ")
 
         if not user_approves:
             return None
