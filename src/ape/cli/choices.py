@@ -9,7 +9,7 @@ from click import Choice, Context, Parameter
 from ape import accounts, networks
 from ape.api.accounts import AccountAPI
 from ape.exceptions import AccountsError
-from ape.types import LazySequence
+from ape.types import _LazySequence
 
 ADHOC_NETWORK_PATTERN = re.compile(r"\w*:\w*:https?://\w*.*")
 
@@ -36,7 +36,7 @@ class Alias(click.Choice):
         # NOTE: we purposely skip the constructor of `Choice`
         self.case_sensitive = False
         self._account_type = account_type
-        self.choices = LazySequence(self._choices_iterator)
+        self.choices = _LazySequence(self._choices_iterator)
 
     @property
     def _choices_iterator(self) -> Iterator[str]:
@@ -158,7 +158,7 @@ class AccountAliasPromptChoice(PromptChoice):
         self._account_type = account_type
         self._prompt_message = prompt_message or "Select an account"
         self.name = name
-        self.choices = LazySequence(self._choices_iterator)
+        self.choices = _LazySequence(self._choices_iterator)
 
     def convert(
         self, value: Any, param: Optional[Parameter], ctx: Optional[Context]
@@ -240,7 +240,7 @@ def get_networks(
     ecosystem: _NETWORK_FILTER = None,
     network: _NETWORK_FILTER = None,
     provider: _NETWORK_FILTER = None,
-) -> LazySequence:
+) -> _LazySequence:
     # NOTE: Use str-keys and lru_cache.
     return _get_networks_sequence_from_cache(
         _network_filter_to_key(ecosystem),
@@ -251,7 +251,7 @@ def get_networks(
 
 @lru_cache(maxsize=None)
 def _get_networks_sequence_from_cache(ecosystem_key: str, network_key: str, provider_key: str):
-    return LazySequence(
+    return _LazySequence(
         networks.get_network_choices(
             ecosystem_filter=_key_to_network_filter(ecosystem_key),
             network_filter=_key_to_network_filter(network_key),

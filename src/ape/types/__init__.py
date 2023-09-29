@@ -418,23 +418,23 @@ class ContractLogContainer(list):
         return any(log == val for log in self)
 
 
-T = TypeVar("T")
+_T = TypeVar("_T")  # _LazySequence generic.
 
 
-class LazySequence(Sequence[T]):
-    def __init__(self, generator: Union[Iterator[T], Callable[[], Iterator[T]]]):
+class _LazySequence(Sequence[_T]):
+    def __init__(self, generator: Union[Iterator[_T], Callable[[], Iterator[_T]]]):
         self._generator = generator
         self.cache: List = []
 
     @overload
-    def __getitem__(self, index: int) -> T:
+    def __getitem__(self, index: int) -> _T:
         ...
 
     @overload
-    def __getitem__(self, index: slice) -> Sequence[T]:
+    def __getitem__(self, index: slice) -> Sequence[_T]:
         ...
 
-    def __getitem__(self, index: Union[int, slice]) -> Union[T, Sequence[T]]:
+    def __getitem__(self, index: Union[int, slice]) -> Union[_T, Sequence[_T]]:
         if isinstance(index, int):
             while len(self.cache) <= index:
                 # Catch up the cache.
@@ -461,7 +461,7 @@ class LazySequence(Sequence[T]):
 
         return len(self.cache)
 
-    def __iter__(self) -> Iterator[T]:
+    def __iter__(self) -> Iterator[_T]:
         yield from self.cache
         for value in self.generator:
             yield value

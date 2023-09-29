@@ -120,7 +120,7 @@ def valid_impl(api_class: Any) -> bool:
 class PluginManager:
     _unimplemented_plugins: List[str] = []
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.__registered = False
 
     @functools.cached_property
