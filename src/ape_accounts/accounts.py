@@ -162,11 +162,36 @@ class KeyfileAccount(AccountAPI):
             logger.warning("Unsupported message type, (type=%r, msg=%r)", type(msg), msg)
             return None
 
-        user_approves = self.__autosign or click.confirm(f"Message: {msg}\n\nSign: ")
+        user_approves = False
+
         if isinstance(msg, str):
             # Convert str to SignableMessage for handling below
+            user_approves = self.__autosign or click.confirm(f"Message: {msg}\n\nSign: ")
             msg = encode_defunct(text=msg)
         elif isinstance(msg, EIP712Message):
+            # Display message data to user
+            display_msg = "Signing Message\n"
+
+            # Domain Data
+            display_msg += "Domain\n"
+            if msg._name_:
+                display_msg += f"\tName: {msg._name_}\n"
+            if msg._version_:
+                display_msg += f"\tVersion: {msg._version_}\n"
+            if msg._chainId_:
+                display_msg += f"\tChain ID: {msg._chainId_}\n"
+            if msg._verifyingContract_:
+                display_msg += f"\tContract: {msg._verifyingContract_}\n"
+            if msg._salt_:
+                display_msg += f"\tSalt: {msg._salt_}\n"
+
+            # Message Data
+            display_msg += "Message\n"
+            for field, value in msg._body_["message"].items():
+                display_msg += f"\t{field}: {value}\n"
+
+            user_approves = self.__autosign or click.confirm(f"{display_msg}\nSign: ")
+
             # Convert EIP712Message to SignableMessage for handling below
             msg = msg.signable_message
 
