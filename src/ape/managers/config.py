@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING, Any, Dict, Generator, List, Optional, Union
 
 from ape._pydantic_compat import root_validator
 from ape.api import ConfigDict, DependencyAPI, PluginConfig
-from ape.exceptions import ConfigError, NetworkError
+from ape.exceptions import ConfigError
 from ape.logging import logger
 from ape.utils import BaseInterfaceModel, load_config
 
@@ -181,11 +181,6 @@ class ConfigManager(BaseInterfaceModel):
         compiler_dict = user_config.pop("compiler", CompilerConfig().dict())
         configs["compiler"] = compiler_dict
         self.compiler = CompilerConfig(**compiler_dict)
-
-        try:
-            self.network_manager.set_default_ecosystem(self.default_ecosystem)
-        except NetworkError as err:
-            logger.warning(str(err))
 
         dependencies = user_config.pop("dependencies", []) or []
         if not isinstance(dependencies, list):

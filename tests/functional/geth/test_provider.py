@@ -68,6 +68,7 @@ def test_chain_id_live_network_not_connected(networks):
 def test_chain_id_live_network_connected_uses_web3_chain_id(mocker, geth_provider):
     mock_network = mocker.MagicMock()
     mock_network.chain_id = 999999999  # Shouldn't use hardcoded network
+    mock_network.name = "mock"
     orig_network = geth_provider.network
 
     try:

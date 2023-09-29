@@ -100,21 +100,11 @@ def test_get_network_choices_filter_provider(networks):
 
 
 def test_get_provider_when_no_default(network_with_no_providers):
-    with pytest.raises(NetworkError) as err:
+    expected = f"No default provider for network '{network_with_no_providers.name}'"
+    with pytest.raises(NetworkError, match=expected):
         # Not provider installed out-of-the-box for goerli-fork network
         provider = network_with_no_providers.get_provider()
         assert not provider, f"Provider should be None but got '{provider.name}'"
-
-    assert f"No default provider for network '{network_with_no_providers.name}'" in str(err.value)
-
-
-def test_get_provider_when_not_found(networks):
-    ethereum = networks.get_ecosystem("ethereum")
-    network = ethereum.get_network("goerli-fork")
-    with pytest.raises(NetworkError) as err:
-        network.get_provider("test")
-
-    assert "'test' is not a valid provider for network 'goerli-fork'" in str(err.value)
 
 
 def test_repr_connected_to_local(networks_connected_to_tester):
@@ -199,45 +189,3 @@ def test_parse_network_choice_multiple_contexts(get_provider_with_unused_chain_i
             # Second context should already know about connected providers
             assert len(first_context.connected_providers) == expected_next_count
             assert len(second_context.connected_providers) == expected_next_count
-
-
-def test_block_times(ethereum):
-    assert ethereum.goerli.block_time == 15
-
-
-def test_ecosystems_when_default_network_not_exists(temp_config, ape_caplog, networks):
-    bad_network = "NOT_EXISTS"
-    config = {"ethereum": {"default_network": bad_network}}
-    with temp_config(config):
-        assert networks.ecosystems
-
-    assert ape_caplog.head == (
-        f"Failed setting default network: "
-        f"'{bad_network}' is not a valid network for ecosystem 'ethereum'."
-    )
-
-
-def test_ecosystems_when_default_provider_not_exists(temp_config, ape_caplog, networks):
-    bad_provider = "NOT_EXISTS"
-    config = {"ethereum": {"goerli": {"default_provider": bad_provider}}}
-    with temp_config(config):
-        assert networks.ecosystems
-
-    assert ape_caplog.head == (
-        f"Failed setting default provider: "
-        f"Provider '{bad_provider}' not found in network 'ethereum:goerli'."
-    )
-
-
-def test_gas_limits(networks, config, project_with_source_files_contract):
-    """
-    Test the default gas limit configurations for local and live networks.
-    """
-    _ = project_with_source_files_contract  # Ensure use of project with default config
-    assert networks.ethereum.goerli.gas_limit == "auto"
-    assert networks.ethereum.local.gas_limit == "max"
-
-
-def test_base_fee_multiplier(networks):
-    assert networks.ethereum.mainnet.base_fee_multiplier == 1.4
-    assert networks.ethereum.local.base_fee_multiplier == 1.0

@@ -74,7 +74,7 @@ class EcosystemAPI(BaseInterfaceModel):
     fee_token_decimals: int = 18
     """The number of the decimals the fee token has."""
 
-    _default_network: str = LOCAL_NETWORK_NAME
+    _default_network: Optional[str] = None
 
     def __repr__(self) -> str:
         return f"<{self.name}>"
@@ -254,7 +254,25 @@ class EcosystemAPI(BaseInterfaceModel):
         Returns:
             str
         """
-        return self._default_network
+
+        if network := self._default_network:
+            # Was set programatically.
+            return network
+
+        elif network := self.config.get("default_network"):
+            # Default found in config.
+            return network
+
+        elif LOCAL_NETWORK_NAME in self.networks:
+            # Default to the LOCAL_NETWORK_NAME, at last resort.
+            return LOCAL_NETWORK_NAME
+
+        elif len(self.networks) >= 1:
+            # Use the first network.
+            return self.networks[0]
+
+        # Very unlikely scenario.
+        raise ValueError("No networks found.")
 
     def set_default_network(self, network_name: str):
         """
@@ -425,7 +443,7 @@ class EcosystemAPI(BaseInterfaceModel):
         Returns:
             dict: A dictionary containing the providers in a network.
         """
-        data: Dict[str, Any] = {"name": network_name}
+        data: Dict[str, Any] = {"name": str(network_name)}
 
         # Only add isDefault key when True
         if network_name == self.default_network:
@@ -435,10 +453,10 @@ class EcosystemAPI(BaseInterfaceModel):
         network = self[network_name]
 
         if network.explorer:
-            data["explorer"] = network.explorer.name
+            data["explorer"] = str(network.explorer.name)
 
         for provider_name in network.providers:
-            provider_data = {"name": provider_name}
+            provider_data: Dict = {"name": str(provider_name)}
 
             # Only add isDefault key when True
             if provider_name == network.default_provider:
@@ -906,12 +924,19 @@ class NetworkAPI(BaseInterfaceModel):
             Optional[str]
         """
 
-        if self._default_provider:
-            return self._default_provider
+        if provider := self._default_provider:
+            # Was set programatically.
+            return provider
 
-        if len(self.providers) > 0:
+        elif provider_from_config := self._network_config.get("default_provider"):
+            # The default is found in the Network's config class.
+            return provider_from_config
+
+        elif len(self.providers) > 0:
+            # No default set anywhere - use the first installed.
             return list(self.providers)[0]
 
+        # There are no providers at all for this network.
         return None
 
     @property

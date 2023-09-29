@@ -19,7 +19,7 @@ from ape.exceptions import (
     MethodNonPayableError,
 )
 from ape.types import AddressType
-from ape_ethereum.transactions import TransactionStatusEnum
+from ape_ethereum.transactions import TransactionStatusEnum, TransactionType
 
 MATCH_TEST_CONTRACT = re.compile(r"<TestContract((Sol)|(Vy))")
 
@@ -871,3 +871,9 @@ def test_sending_funds_to_non_payable_constructor_by_accountDeploy(
         match="Sending funds to a non-payable constructor.",
     ):
         owner.deploy(solidity_contract_container, 1, value="1 ether")
+
+
+@pytest.mark.parametrize("tx_type", TransactionType)
+def test_as_transaction(tx_type, vyper_contract_instance, owner, eth_tester_provider):
+    tx = vyper_contract_instance.setNumber.as_transaction(987, sender=owner, type=tx_type.value)
+    assert tx.gas_limit == eth_tester_provider.max_gas

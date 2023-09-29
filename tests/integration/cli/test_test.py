@@ -232,6 +232,10 @@ def test_gas_flag_set_in_config(geth_provider, setup_pytester, project, pytester
         local:
           uri: {GETH_URI}
 
+    ethereum:
+      local:
+        default_provider: geth
+
     test:
       disconnect_providers_after: false
       gas:
@@ -270,6 +274,10 @@ def test_gas_flag_exclusions_set_in_config(
       ethereum:
         local:
           uri: {GETH_URI}
+
+    ethereum:
+      local:
+        default_provider: geth
 
     test:
       disconnect_providers_after: false

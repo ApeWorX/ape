@@ -24,14 +24,16 @@ def test_integer_deployment_addresses(networks):
 
 
 @pytest.mark.parametrize(
-    "ecosystems,networks,err_part",
+    "ecosystem_names,network_names,err_part",
     [(["ERRORS"], ["mainnet"], "ecosystem"), (["ethereum"], ["ERRORS"], "network")],
 )
-def test_bad_value_in_deployments(ecosystems, networks, err_part, ape_caplog, plugin_manager):
+def test_bad_value_in_deployments(
+    ecosystem_names, network_names, err_part, ape_caplog, plugin_manager
+):
     deployments = _create_deployments()
     all_ecosystems = dict(plugin_manager.ecosystems)
-    ecosystem_dict = {e: all_ecosystems[e] for e in ecosystems if e in all_ecosystems}
-    data = {**deployments, "valid_ecosystems": ecosystem_dict, "valid_networks": networks}
+    ecosystem_dict = {e: all_ecosystems[e] for e in ecosystem_names if e in all_ecosystems}
+    data = {**deployments, "valid_ecosystems": ecosystem_dict, "valid_networks": network_names}
     ape_caplog.assert_last_log_with_retries(
         lambda: DeploymentConfigCollection(__root__=data),
         f"Invalid {err_part}",

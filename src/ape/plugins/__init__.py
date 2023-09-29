@@ -211,7 +211,9 @@ class PluginManager:
                 # Likely only ever a single class in a registration, but just in case.
                 api_name = " - ".join([p.__name__ for p in classes])
                 for api_cls in classes:
-                    if hasattr(api_cls, "__abstractmethods__") and api_cls.__abstractmethods__:
+                    if (
+                        abstract_methods := getattr(api_cls, "__abstractmethods__", None)
+                    ) and isinstance(abstract_methods, dict):
                         unimplemented_methods.extend(api_cls.__abstractmethods__)
 
             else:
@@ -220,8 +222,11 @@ class PluginManager:
 
         elif hasattr(results, "__name__"):
             api_name = results.__name__
-            if hasattr(results, "__abstractmethods__") and results.__abstractmethods__:
+            if (abstract_methods := getattr(results, "__abstractmethods__", None)) and isinstance(
+                abstract_methods, dict
+            ):
                 unimplemented_methods.extend(results.__abstractmethods__)
+
         else:
             api_name = results
 
