@@ -340,9 +340,9 @@ def test_get_project_without_contracts_path(project):
 
 
 def test_get_project_with_contracts_path(project):
-    project_path = WITH_DEPS_PROJECT / "renamed_contracts_folder"
-    project = project.get_project(project_path, project_path / "sources")
-    assert project.contracts_folder == project_path / "sources"
+    project_path = WITH_DEPS_PROJECT / "renamed_contracts_folder_specified_in_config"
+    project = project.get_project(project_path, project_path / "my_contracts")
+    assert project.contracts_folder == project_path / "my_contracts"
 
 
 def test_get_project_figure_out_contracts_path(project):
@@ -351,6 +351,8 @@ def test_get_project_figure_out_contracts_path(project):
     to figure it out.
     """
     project_path = WITH_DEPS_PROJECT / "renamed_contracts_folder"
+    (project_path / "ape-config.yaml").unlink(missing_ok=True)  # Clean from prior.
+
     project = project.get_project(project_path)
     assert project.contracts_folder == project_path / "sources"
 

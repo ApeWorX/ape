@@ -218,6 +218,9 @@ def add_padding_to_strings(
         List[str]: A list of equal-length strings with padded spaces.
     """
 
+    if not str_list:
+        return []
+
     longest_item = len(max(str_list, key=len))
     spaced_items = []
 

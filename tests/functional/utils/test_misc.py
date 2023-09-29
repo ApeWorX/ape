@@ -27,11 +27,16 @@ def test_extract_nested_value_non_dict_in_middle_returns_none():
     assert not extract_nested_value(structure, "foo", "non_dict", "test")
 
 
-def test_add_spacing_to_strings():
+def test_add_padding_to_strings():
     string_list = ["foo", "address", "ethereum"]
     expected = ["foo         ", "address     ", "ethereum    "]
     actual = add_padding_to_strings(string_list, extra_spaces=4)
     assert actual == expected
+
+
+def test_add_padding_to_strings_empty_list():
+    actual = add_padding_to_strings([])
+    assert actual == []
 
 
 def test_raises_not_implemented():
