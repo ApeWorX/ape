@@ -283,7 +283,7 @@ class AccountAPI(BaseInterfaceModel, BaseAddress):
             data = encode_defunct(text=data)
         elif isinstance(data, int):
             data = encode_defunct(hexstr=HexBytes(data).hex())
-        if isinstance(data, EIP712Message):
+        elif isinstance(data, EIP712Message):
             data = data.signable_message
         if isinstance(data, (SignableMessage, EIP712SignableMessage)):
             if signature:
