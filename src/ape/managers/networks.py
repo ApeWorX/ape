@@ -500,7 +500,7 @@ class NetworkManager(BaseManager):
 
     def _get_ecosystem_data(self, ecosystem_name: str) -> Dict:
         ecosystem = self[ecosystem_name]
-        ecosystem_data: Dict = {"name": ecosystem_name}
+        ecosystem_data: Dict = {"name": str(ecosystem_name)}
 
         # Only add isDefault key when True
         if ecosystem_name == self.default_ecosystem.name:

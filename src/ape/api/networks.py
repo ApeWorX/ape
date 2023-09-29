@@ -443,7 +443,7 @@ class EcosystemAPI(BaseInterfaceModel):
         Returns:
             dict: A dictionary containing the providers in a network.
         """
-        data: Dict[str, Any] = {"name": network_name}
+        data: Dict[str, Any] = {"name": str(network_name)}
 
         # Only add isDefault key when True
         if network_name == self.default_network:
@@ -453,10 +453,10 @@ class EcosystemAPI(BaseInterfaceModel):
         network = self[network_name]
 
         if network.explorer:
-            data["explorer"] = network.explorer.name
+            data["explorer"] = str(network.explorer.name)
 
         for provider_name in network.providers:
-            provider_data = {"name": provider_name}
+            provider_data = {"name": str(provider_name)}
 
             # Only add isDefault key when True
             if provider_name == network.default_provider:

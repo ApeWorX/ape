@@ -505,3 +505,10 @@ def minimal_proxy_container():
 @pytest.fixture
 def minimal_proxy(owner, minimal_proxy_container):
     return owner.deploy(minimal_proxy_container)
+
+
+@pytest.fixture
+def mock_explorer(mocker):
+    explorer = mocker.MagicMock()
+    explorer.name = "mock"  # Needed for network data serialization.
+    return explorer
