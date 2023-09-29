@@ -121,6 +121,10 @@ class PluginManager:
     _unimplemented_plugins: List[str] = []
 
     def __init__(self) -> None:
+        self.__registered = False
+
+    @functools.cached_property
+    def _plugin_modules(self) -> Tuple[str, ...]:
         # NOTE: Unable to use pkgutil.iter_modules() for installed plugins
         # because it does not work with editable installs.
         # See https://github.com/python/cpython/issues/99805.
@@ -134,23 +138,18 @@ class PluginManager:
         core_plugin_module_names = {
             n for _, n, ispkg in pkgutil.iter_modules() if n.startswith("ape_")
         }
-        module_names = installed_plugin_module_names.union(core_plugin_module_names)
 
-        for module_name in module_names:
-            try:
-                module = importlib.import_module(module_name)
-                plugin_manager.register(module)
-            except Exception as err:
-                if module_name in __modules__:
-                    # Always raise core plugin registration errors.
-                    raise
-
-                logger.warn_from_exception(err, f"Error loading plugin package '{module_name}'.")
+        # NOTE: Returns tuple because this shouldn't change.
+        return tuple(installed_plugin_module_names.union(core_plugin_module_names))
 
     def __repr__(self):
         return f"<{self.__class__.__name__}>"
 
     def __getattr__(self, attr_name: str) -> Iterator[Tuple[str, Tuple]]:
+        # NOTE: The first time this method is called, the actual
+        #  plugin registration occurs. Registration only happens once.
+        self._register_plugins()
+
         if not hasattr(plugin_manager.hook, attr_name):
             raise ApeAttributeError(f"{self.__class__.__name__} has no attribute '{attr_name}'.")
 
@@ -173,6 +172,23 @@ class PluginManager:
                     validated_plugin = self._validate_plugin(plugin_name, result)
                     if validated_plugin:
                         yield validated_plugin
+
+    def _register_plugins(self):
+        if self.__registered:
+            return
+
+        for module_name in self._plugin_modules:
+            try:
+                module = importlib.import_module(module_name)
+                plugin_manager.register(module)
+            except Exception as err:
+                if module_name in __modules__:
+                    # Always raise core plugin registration errors.
+                    raise
+
+                logger.warn_from_exception(err, f"Error loading plugin package '{module_name}'.")
+
+        self.__registered = True
 
     def _validate_plugin(self, plugin_name: str, plugin_cls) -> Optional[Tuple[str, Tuple]]:
         if valid_impl(plugin_cls):

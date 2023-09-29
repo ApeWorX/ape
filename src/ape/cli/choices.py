@@ -1,6 +1,7 @@
 import re
 from enum import Enum
-from typing import Any, List, Optional, Type, Union
+from functools import lru_cache
+from typing import Any, Iterator, List, Optional, Sequence, Type, Union
 
 import click
 from click import Choice, Context, Parameter
@@ -8,6 +9,7 @@ from click import Choice, Context, Parameter
 from ape import accounts, networks
 from ape.api.accounts import AccountAPI
 from ape.exceptions import AccountsError
+from ape.types import _LazySequence
 
 ADHOC_NETWORK_PATTERN = re.compile(r"\w*:\w*:https?://\w*.*")
 
@@ -34,18 +36,15 @@ class Alias(click.Choice):
         # NOTE: we purposely skip the constructor of `Choice`
         self.case_sensitive = False
         self._account_type = account_type
+        self.choices = _LazySequence(self._choices_iterator)
 
     @property
-    def choices(self) -> List[str]:  # type: ignore
-        """
-        The aliases available to choose from.
+    def _choices_iterator(self) -> Iterator[str]:
+        for acct in _get_account_by_type(self._account_type):
+            if acct.alias is None:
+                continue
 
-        Returns:
-            List[str]: A list of account aliases the user may choose from.
-        """
-
-        options = _get_account_by_type(self._account_type)
-        return [a.alias for a in options if a.alias is not None]
+            yield acct.alias
 
 
 class PromptChoice(click.ParamType):
@@ -67,7 +66,7 @@ class PromptChoice(click.ParamType):
             click.echo(f"__expected_{choice}")
     """
 
-    def __init__(self, choices, name: Optional[str] = None):
+    def __init__(self, choices: Sequence[str], name: Optional[str] = None):
         self.choices = choices
         # Since we purposely skip the super() constructor, we need to make
         # sure the class still has a name.
@@ -159,6 +158,7 @@ class AccountAliasPromptChoice(PromptChoice):
         self._account_type = account_type
         self._prompt_message = prompt_message or "Select an account"
         self.name = name
+        self.choices = _LazySequence(self._choices_iterator)
 
     def convert(
         self, value: Any, param: Optional[Parameter], ctx: Optional[Context]
@@ -201,21 +201,15 @@ class AccountAliasPromptChoice(PromptChoice):
             click.echo()
 
     @property
-    def choices(self) -> List[str]:
-        """
-        All the account aliases.
+    def _choices_iterator(self) -> Iterator[str]:
+        # Yield real accounts.
+        for account in _get_account_by_type(self._account_type):
+            if account and (alias := account.alias):
+                yield alias
 
-        Returns:
-            List[str]: A list of all the account aliases.
-        """
-
-        _accounts = [
-            a.alias
-            for a in _get_account_by_type(self._account_type)
-            if a is not None and a.alias is not None
-        ]
-        _accounts.extend([f"TEST::{i}" for i, _ in enumerate(accounts.test_accounts)])
-        return _accounts
+        # Yield test accounts (at the end).
+        for idx, _ in enumerate(accounts.test_accounts):
+            yield f"TEST::{idx}"
 
     def get_user_selected_account(self) -> AccountAPI:
         """
@@ -239,6 +233,53 @@ class AccountAliasPromptChoice(PromptChoice):
         return self.fail("Invalid choice. Type the number or the alias.", param=param)
 
 
+_NETWORK_FILTER = Optional[Union[List[str], str]]
+
+
+def get_networks(
+    ecosystem: _NETWORK_FILTER = None,
+    network: _NETWORK_FILTER = None,
+    provider: _NETWORK_FILTER = None,
+) -> _LazySequence:
+    # NOTE: Use str-keys and lru_cache.
+    return _get_networks_sequence_from_cache(
+        _network_filter_to_key(ecosystem),
+        _network_filter_to_key(network),
+        _network_filter_to_key(provider),
+    )
+
+
+@lru_cache(maxsize=None)
+def _get_networks_sequence_from_cache(ecosystem_key: str, network_key: str, provider_key: str):
+    return _LazySequence(
+        networks.get_network_choices(
+            ecosystem_filter=_key_to_network_filter(ecosystem_key),
+            network_filter=_key_to_network_filter(network_key),
+            provider_filter=_key_to_network_filter(provider_key),
+        )
+    )
+
+
+def _network_filter_to_key(filter_: _NETWORK_FILTER) -> str:
+    if filter_ is None:
+        return "__none__"
+
+    elif isinstance(filter_, list):
+        return ",".join(filter_)
+
+    return filter_
+
+
+def _key_to_network_filter(key: str) -> _NETWORK_FILTER:
+    if key == "__none__":
+        return None
+
+    elif "," in key:
+        return [n.strip() for n in key.split(",")]
+
+    return key
+
+
 class NetworkChoice(click.Choice):
     """
     A ``click.Choice`` to provide network choice defaults for the active project.
@@ -252,17 +293,12 @@ class NetworkChoice(click.Choice):
     def __init__(
         self,
         case_sensitive=True,
-        ecosystem: Optional[Union[List[str], str]] = None,
-        network: Optional[Union[List[str], str]] = None,
-        provider: Optional[Union[List[str], str]] = None,
+        ecosystem: _NETWORK_FILTER = None,
+        network: _NETWORK_FILTER = None,
+        provider: _NETWORK_FILTER = None,
     ):
         super().__init__(
-            list(
-                networks.get_network_choices(
-                    ecosystem_filter=ecosystem, network_filter=network, provider_filter=provider
-                )
-            ),
-            case_sensitive,
+            get_networks(ecosystem=ecosystem, network=network, provider=provider), case_sensitive
         )
 
     def get_metavar(self, param):
@@ -306,7 +342,7 @@ def output_format_choice(options: Optional[List[OutputFormat]] = None) -> Choice
         :class:`click.Choice`
     """
 
-    options = options or [o for o in OutputFormat]
+    options = options or list(OutputFormat)
 
     # Uses `str` form of enum for CLI choices.
     return click.Choice([o.value for o in options], case_sensitive=False)

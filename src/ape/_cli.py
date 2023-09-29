@@ -1,7 +1,7 @@
 import difflib
 import re
 import sys
-from typing import Any, Dict
+from typing import Any, Dict, List, Optional
 
 import click
 import importlib_metadata as metadata
@@ -29,7 +29,8 @@ def display_config(ctx, param, value):
 
 
 class ApeCLI(click.MultiCommand):
-    _commands = None
+    _commands: Optional[Dict] = None
+    _CLI_GROUP_NAME = "ape_cli_subcommands"
 
     def invoke(self, ctx) -> Any:
         try:
@@ -48,11 +49,14 @@ class ApeCLI(click.MultiCommand):
         if usage_error.message is None:
             raise usage_error
 
-        match = re.match("No such command '(.*)'.", usage_error.message)
-        if not match:
+        elif not (match := re.match("No such command '(.*)'.", usage_error.message)):
             raise usage_error
 
-        bad_arg = match.groups()[0]
+        groups = match.groups()
+        if len(groups) < 1:
+            raise usage_error
+
+        bad_arg = groups[0]
         suggested_commands = difflib.get_close_matches(
             bad_arg, list(usage_error.ctx.command.commands.keys()), cutoff=_DIFFLIB_CUT_OFF
         )
@@ -66,30 +70,22 @@ class ApeCLI(click.MultiCommand):
 
     @property
     def commands(self) -> Dict:
-        group_name = "ape_cli_subcommands"
-        if not self._commands:
-            try:
-                entry_points = metadata.entry_points(group=group_name)
-            except TypeError:
-                entry_points = metadata.entry_points()
-                entry_points = (
-                    entry_points[group_name] if group_name in entry_points else []  # type: ignore
-                )
+        if self._commands:
+            return self._commands
 
-            if not entry_points:
-                raise Abort("Missing registered cli subcommands")
+        entry_points = metadata.entry_points(group=self._CLI_GROUP_NAME)
+        if not entry_points:
+            raise Abort("Missing registered CLI subcommands.")
 
-            self._commands = {
-                clean_plugin_name(entry_point.name): entry_point.load
-                for entry_point in entry_points
-            }
-
+        self._commands = {
+            clean_plugin_name(entry_point.name): entry_point.load for entry_point in entry_points
+        }
         return self._commands
 
-    def list_commands(self, ctx):
+    def list_commands(self, ctx) -> List[str]:
         return list(sorted(self.commands))
 
-    def get_command(self, ctx, name):
+    def get_command(self, ctx, name) -> Optional[click.Command]:
         if name in self.commands:
             try:
                 return self.commands[name]()
@@ -99,6 +95,7 @@ class ApeCLI(click.MultiCommand):
                 )
 
         # NOTE: don't return anything so Click displays proper error
+        return None
 
 
 @click.command(cls=ApeCLI, context_settings=dict(help_option_names=["-h", "--help"]))

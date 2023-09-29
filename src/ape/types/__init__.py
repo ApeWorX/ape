@@ -2,14 +2,17 @@ from dataclasses import dataclass
 from typing import (
     TYPE_CHECKING,
     Any,
+    Callable,
     Dict,
     Iterator,
     List,
     Literal,
     Optional,
     Sequence,
+    TypeVar,
     Union,
     cast,
+    overload,
 )
 
 from eth_abi.abi import encode
@@ -413,6 +416,64 @@ class ContractLogContainer(list):
 
     def __contains__(self, val: Any) -> bool:
         return any(log == val for log in self)
+
+
+_T = TypeVar("_T")  # _LazySequence generic.
+
+
+class _LazySequence(Sequence[_T]):
+    def __init__(self, generator: Union[Iterator[_T], Callable[[], Iterator[_T]]]):
+        self._generator = generator
+        self.cache: List = []
+
+    @overload
+    def __getitem__(self, index: int) -> _T:
+        ...
+
+    @overload
+    def __getitem__(self, index: slice) -> Sequence[_T]:
+        ...
+
+    def __getitem__(self, index: Union[int, slice]) -> Union[_T, Sequence[_T]]:
+        if isinstance(index, int):
+            while len(self.cache) <= index:
+                # Catch up the cache.
+                if value := next(self.generator, None):
+                    self.cache.append(value)
+
+            return self.cache[index]
+
+        elif isinstance(index, slice):
+            # TODO: Make slices lazier. Right now, it deqeues all.
+            for item in self.generator:
+                self.cache.append(item)
+
+            return self.cache[index]
+
+        else:
+            raise TypeError("Index must be int or slice.")
+
+    def __len__(self) -> int:
+        # NOTE: This will deque everything.
+
+        for value in self.generator:
+            self.cache.append(value)
+
+        return len(self.cache)
+
+    def __iter__(self) -> Iterator[_T]:
+        yield from self.cache
+        for value in self.generator:
+            yield value
+            self.cache.append(value)
+
+    @property
+    def generator(self) -> Iterator:
+        if callable(self._generator):
+            self._generator = self._generator()
+
+        assert isinstance(self._generator, Iterator)  # For type-checking.
+        yield from self._generator
 
 
 __all__ = [
