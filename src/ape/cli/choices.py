@@ -241,7 +241,7 @@ def get_networks(
     network: _NETWORK_FILTER = None,
     provider: _NETWORK_FILTER = None,
 ) -> LazySequence:
-    # NOTE: Use str-keys and a lru_cache.
+    # NOTE: Use str-keys an lru_cache.
     return _get_networks_sequence_from_cache(
         _network_filter_to_key(ecosystem),
         _network_filter_to_key(network),
