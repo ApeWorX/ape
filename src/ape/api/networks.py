@@ -456,7 +456,7 @@ class EcosystemAPI(BaseInterfaceModel):
             data["explorer"] = str(network.explorer.name)
 
         for provider_name in network.providers:
-            provider_data = {"name": str(provider_name)}
+            provider_data: Dict = {"name": str(provider_name)}
 
             # Only add isDefault key when True
             if provider_name == network.default_provider:
