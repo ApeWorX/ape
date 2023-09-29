@@ -1,13 +1,13 @@
+import json
+from functools import cached_property
 from typing import Dict, Iterator, List, Optional, Set, Union
 
 import yaml
 
 from ape.api import EcosystemAPI, ProviderAPI, ProviderContextManager
-from ape.api.networks import LOCAL_NETWORK_NAME, NetworkAPI
+from ape.api.networks import NetworkAPI
 from ape.exceptions import ApeAttributeError, NetworkError
-from ape.logging import logger
-
-from .base import BaseManager
+from ape.managers.base import BaseManager
 
 
 class NetworkManager(BaseManager):
@@ -27,7 +27,6 @@ class NetworkManager(BaseManager):
 
     _active_provider: Optional[ProviderAPI] = None
     _default: Optional[str] = None
-    _ecosystems_by_project: Dict[str, Dict[str, EcosystemAPI]] = {}
 
     def __repr__(self):
         provider = self.active_provider
@@ -137,54 +136,21 @@ class NetworkManager(BaseManager):
 
         return names
 
-    @property
+    @cached_property
     def ecosystems(self) -> Dict[str, EcosystemAPI]:
         """
         All the registered ecosystems in ``ape``, such as ``ethereum``.
         """
 
-        project_name = self.config_manager.PROJECT_FOLDER.stem
-        if project_name in self._ecosystems_by_project:
-            return self._ecosystems_by_project[project_name]
+        def to_kwargs(name: str) -> Dict:
+            return {
+                "name": name,
+                "data_folder": self.config_manager.DATA_FOLDER / name,
+                "request_header": self.config_manager.REQUEST_HEADER,
+            }
 
-        ecosystem_dict = {}
-        for plugin_name, ecosystem_class in self.plugin_manager.ecosystems:
-            ecosystem = ecosystem_class(  # type: ignore
-                name=plugin_name,
-                data_folder=self.config_manager.DATA_FOLDER / plugin_name,
-                request_header=self.config_manager.REQUEST_HEADER,
-            )
-            ecosystem_config = self.config_manager.get_config(plugin_name).dict()
-            default_network = ecosystem_config.get("default_network", LOCAL_NETWORK_NAME)
-
-            try:
-                ecosystem.set_default_network(default_network)
-            except NetworkError as err:
-                message = f"Failed setting default network: {err}"
-                logger.error(message)
-
-            if ecosystem_config:
-                for network_name, network in ecosystem.networks.items():
-                    network_name = network_name.replace("-", "_")
-                    if network_name not in ecosystem_config:
-                        continue
-
-                    network_config = ecosystem_config[network_name]
-                    if "default_provider" not in network_config:
-                        continue
-
-                    default_provider = network_config["default_provider"]
-                    if default_provider:
-                        try:
-                            network.set_default_provider(default_provider)
-                        except NetworkError as err:
-                            message = f"Failed setting default provider: {err}"
-                            logger.error(message)
-
-            ecosystem_dict[plugin_name] = ecosystem
-
-        self._ecosystems_by_project[project_name] = ecosystem_dict
-        return ecosystem_dict
+        ecosystems = self.plugin_manager.ecosystems
+        return {n: cls(**to_kwargs(n)) for n, cls in ecosystems}  # type: ignore
 
     def create_adhoc_geth_provider(self, uri: str) -> ProviderAPI:
         """
@@ -485,6 +451,9 @@ class NetworkManager(BaseManager):
         if self._default:
             return ecosystems[self._default]
 
+        elif self.config_manager.default_ecosystem:
+            return ecosystems[self.config_manager.default_ecosystem]
+
         # If explicit default is not set, use first registered ecosystem
         elif len(ecosystems) > 0:
             return list(ecosystems.values())[0]
@@ -529,16 +498,17 @@ class NetworkManager(BaseManager):
 
         return data
 
-    def _get_ecosystem_data(self, ecosystem_name) -> Dict:
+    def _get_ecosystem_data(self, ecosystem_name: str) -> Dict:
         ecosystem = self[ecosystem_name]
-        ecosystem_data = {"name": ecosystem_name}
+        ecosystem_data: Dict = {"name": str(ecosystem_name)}
 
         # Only add isDefault key when True
         if ecosystem_name == self.default_ecosystem.name:
             ecosystem_data["isDefault"] = True
 
         ecosystem_data["networks"] = []
-        for network_name in getattr(self, ecosystem_name).networks.keys():
+
+        for network_name in getattr(self, ecosystem_name).networks:
             network_data = ecosystem.get_network_data(network_name)
             ecosystem_data["networks"].append(network_data)
 
@@ -556,7 +526,24 @@ class NetworkManager(BaseManager):
             str
         """
 
-        return yaml.dump(self.network_data, sort_keys=False)
+        data = self.network_data
+        if not isinstance(data, dict):
+            raise TypeError(
+                f"Unexpected network data type: {type(data)}. "
+                f"Expecting dict. YAML dump will fail."
+            )
+
+        try:
+            return yaml.dump(data, sort_keys=False)
+        except ValueError as err:
+            try:
+                data_str = json.dumps(data)
+            except Exception:
+                data_str = str(data)
+
+            raise NetworkError(
+                f"Network data did not dump to YAML: {data_str}\nAcual err: {err}"
+            ) from err
 
 
 def _validate_filter(arg: Optional[Union[List[str], str]], options: Set[str]):

@@ -6,7 +6,7 @@ from ethpm_types import HexBytes
 from ethpm_types.abi import ABIType, MethodABI
 
 from ape.api.networks import LOCAL_NETWORK_NAME
-from ape.exceptions import DecodingError
+from ape.exceptions import DecodingError, NetworkError
 from ape.types import AddressType
 from ape.utils import DEFAULT_LOCAL_TRANSACTION_ACCEPTANCE_TIMEOUT
 from ape_ethereum.ecosystem import BLUEPRINT_HEADER, Block
@@ -307,3 +307,26 @@ def test_decode_return_data_non_empty_padding_bytes(ethereum):
     )
     with pytest.raises(DecodingError):
         ethereum.decode_returndata(abi, raw_data)
+
+
+@pytest.mark.parametrize("tx_type", TransactionType)
+def test_create_transaction_uses_network_gas_limit(tx_type, ethereum, eth_tester_provider, owner):
+    tx = ethereum.create_transaction(type=tx_type.value, sender=owner.address)
+    assert tx.type == tx_type.value
+    assert tx.gas_limit == eth_tester_provider.max_gas
+
+
+@pytest.mark.parametrize("tx_type", TransactionType)
+def test_encode_transaction(tx_type, ethereum, vyper_contract_instance, owner, eth_tester_provider):
+    abi = vyper_contract_instance.contract_type.methods[0]
+    actual = ethereum.encode_transaction(
+        vyper_contract_instance.address, abi, sender=owner.address, type=tx_type.value
+    )
+    assert actual.gas_limit == eth_tester_provider.max_gas
+
+
+def test_set_default_network_not_exists(temp_config, ethereum):
+    bad_network = "NOT_EXISTS"
+    expected = f"'{bad_network}' is not a valid network for ecosystem 'ethereum'."
+    with pytest.raises(NetworkError, match=expected):
+        ethereum.set_default_network(bad_network)

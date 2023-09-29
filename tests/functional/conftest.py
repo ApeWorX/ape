@@ -8,8 +8,7 @@ import pytest
 from ethpm_types import ContractType, HexBytes
 
 import ape
-from ape.api import EcosystemAPI, NetworkAPI, TransactionAPI
-from ape.api.networks import LOCAL_NETWORK_NAME
+from ape.api import TransactionAPI
 from ape.contracts import ContractContainer, ContractInstance
 from ape.exceptions import ChainError, ContractLogicError
 from ape.logging import LogLevel
@@ -46,15 +45,6 @@ def pytest_collection_finish(session):
     with ape.networks.parse_network_choice("::test"):
         # Sets the active provider
         yield
-
-
-@pytest.fixture
-def mock_network_api(mocker):
-    mock = mocker.MagicMock(spec=NetworkAPI)
-    mock_ecosystem = mocker.MagicMock(spec=EcosystemAPI)
-    mock_ecosystem.virtual_machine_error_class = _ContractLogicError
-    mock.ecosystem = mock_ecosystem
-    return mock
 
 
 @pytest.fixture
@@ -416,9 +406,10 @@ def use_debug(logger):
 
 @pytest.fixture
 def dummy_live_network(chain):
+    original_network = chain.provider.network.name
     chain.provider.network.name = "goerli"
     yield chain.provider.network
-    chain.provider.network.name = LOCAL_NETWORK_NAME
+    chain.provider.network.name = original_network
 
 
 @pytest.fixture(scope="session")
@@ -514,3 +505,10 @@ def minimal_proxy_container():
 @pytest.fixture
 def minimal_proxy(owner, minimal_proxy_container):
     return owner.deploy(minimal_proxy_container)
+
+
+@pytest.fixture
+def mock_explorer(mocker):
+    explorer = mocker.MagicMock()
+    explorer.name = "mock"  # Needed for network data serialization.
+    return explorer

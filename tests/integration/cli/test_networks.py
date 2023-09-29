@@ -96,7 +96,9 @@ def test_list(ape_cli, runner):
 
 @run_once
 def test_list_yaml(ape_cli, runner):
-    result = runner.invoke(ape_cli, ["networks", "list", "--format", "yaml"])
+    result = runner.invoke(
+        ape_cli, ["networks", "list", "--format", "yaml"], catch_exceptions=False
+    )
     expected_lines = _DEFAULT_NETWORKS_YAML.strip().split("\n")
 
     for expected_line in expected_lines:
@@ -104,12 +106,15 @@ def test_list_yaml(ape_cli, runner):
             # Skip these lines in case test-runner has installed providers
             continue
 
-        assert expected_line in result.output
+        assert expected_line in result.output, result.output
 
 
 @skip_projects_except("geth")
-def test_geth(ape_cli, runner, networks):
+def test_geth(ape_cli, runner, networks, project):
     result = runner.invoke(ape_cli, ["networks", "list"])
+    assert (
+        networks.provider.network.default_provider == "geth"
+    ), "Setup failed - default provider didn't apply from config"
     assert_rich_text(result.output, _GETH_NETWORKS_TREE)
 
     # Assert that URI still exists for local network

@@ -203,9 +203,9 @@ def ethereum(networks):
 
 
 @pytest.fixture(autouse=True)
-def eth_tester_provider():
+def eth_tester_provider(ethereum):
     if not ape.networks.active_provider or ape.networks.provider.name != "test":
-        with ape.networks.ethereum.local.use_provider("test") as provider:
+        with ethereum.local.use_provider("test") as provider:
             yield provider
     else:
         yield ape.networks.provider
