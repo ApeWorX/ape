@@ -506,7 +506,8 @@ class NetworkManager(BaseManager):
             ecosystem_data["isDefault"] = True
 
         ecosystem_data["networks"] = []
-        for network_name in getattr(self, ecosystem_name).networks.keys():
+
+        for network_name in getattr(self, ecosystem_name).networks:
             network_data = ecosystem.get_network_data(network_name)
             ecosystem_data["networks"].append(network_data)
 
