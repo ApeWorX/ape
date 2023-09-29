@@ -557,9 +557,9 @@ def test_prepare_transaction_using_auto_gas(sender, ethereum, tx_type):
         clear_network_property_cached()
 
 
-@pytest.mark.parametrize("type_", (TransactionType.STATIC, TransactionType.DYNAMIC))
-def test_prepare_transaction_and_call_using_max_gas(type_, ethereum, sender, eth_tester_provider):
-    tx = ethereum.create_transaction(type=type_.value)
+@pytest.mark.parametrize("tx_type", (TransactionType.STATIC, TransactionType.DYNAMIC))
+def test_prepare_transaction_and_call_using_max_gas(tx_type, ethereum, sender, eth_tester_provider):
+    tx = ethereum.create_transaction(type=tx_type.value)
     tx = sender.prepare_transaction(tx)
     assert tx.gas_limit == eth_tester_provider.max_gas, "Test setup failed - gas limit unexpected."
 

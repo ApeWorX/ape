@@ -18,7 +18,7 @@ def test_history(sender, receiver, chain):
 
 @explorer_test
 def test_history_caches_sender_over_address_key(
-    mocker, chain, eth_tester_provider, sender, vyper_contract_container, ethereum, mock_explorer
+    chain, eth_tester_provider, sender, vyper_contract_container, ethereum, mock_explorer
 ):
     # When getting receipts from the explorer for contracts, it includes transactions
     # made to the contract. This test shows we cache by sender and not address key.
