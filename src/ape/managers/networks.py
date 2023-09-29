@@ -1,3 +1,4 @@
+import json
 from functools import cached_property
 from typing import Dict, Iterator, List, Optional, Set, Union
 
@@ -497,9 +498,9 @@ class NetworkManager(BaseManager):
 
         return data
 
-    def _get_ecosystem_data(self, ecosystem_name) -> Dict:
+    def _get_ecosystem_data(self, ecosystem_name: str) -> Dict:
         ecosystem = self[ecosystem_name]
-        ecosystem_data = {"name": ecosystem_name}
+        ecosystem_data: Dict = {"name": ecosystem_name}
 
         # Only add isDefault key when True
         if ecosystem_name == self.default_ecosystem.name:
@@ -525,7 +526,24 @@ class NetworkManager(BaseManager):
             str
         """
 
-        return yaml.dump(self.network_data, sort_keys=False)
+        data = self.network_data
+        if not isinstance(data, dict):
+            raise TypeError(
+                f"Unexpected network data type: {type(data)}. "
+                f"Expecting dict. YAML dump will fail."
+            )
+
+        try:
+            return yaml.dump(data, sort_keys=False)
+        except ValueError as err:
+            try:
+                data_str = json.dumps(data)
+            except Exception:
+                data_str = str(data)
+
+            raise NetworkError(
+                f"Network data did not dump to YAML: {data_str}\nAcual err: {err}"
+            ) from err
 
 
 def _validate_filter(arg: Optional[Union[List[str], str]], options: Set[str]):

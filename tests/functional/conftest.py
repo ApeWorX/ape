@@ -8,7 +8,7 @@ import pytest
 from ethpm_types import ContractType, HexBytes
 
 import ape
-from ape.api import EcosystemAPI, NetworkAPI, TransactionAPI
+from ape.api import TransactionAPI
 from ape.contracts import ContractContainer, ContractInstance
 from ape.exceptions import ChainError, ContractLogicError
 from ape.logging import LogLevel
@@ -45,15 +45,6 @@ def pytest_collection_finish(session):
     with ape.networks.parse_network_choice("::test"):
         # Sets the active provider
         yield
-
-
-@pytest.fixture
-def mock_network_api(mocker):
-    mock = mocker.MagicMock(spec=NetworkAPI)
-    mock_ecosystem = mocker.MagicMock(spec=EcosystemAPI)
-    mock_ecosystem.virtual_machine_error_class = _ContractLogicError
-    mock.ecosystem = mock_ecosystem
-    return mock
 
 
 @pytest.fixture
