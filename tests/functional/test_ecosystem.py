@@ -6,7 +6,7 @@ from ethpm_types import HexBytes
 from ethpm_types.abi import ABIType, MethodABI
 
 from ape.api.networks import LOCAL_NETWORK_NAME
-from ape.exceptions import DecodingError
+from ape.exceptions import DecodingError, NetworkError
 from ape.types import AddressType
 from ape.utils import DEFAULT_LOCAL_TRANSACTION_ACCEPTANCE_TIMEOUT
 from ape_ethereum.ecosystem import BLUEPRINT_HEADER, Block
@@ -323,3 +323,10 @@ def test_encode_transaction(tx_type, ethereum, vyper_contract_instance, owner, e
         vyper_contract_instance.address, abi, sender=owner.address, type=tx_type.value
     )
     assert actual.gas_limit == eth_tester_provider.max_gas
+
+
+def test_set_default_network_not_exists(temp_config, ethereum):
+    bad_network = "NOT_EXISTS"
+    expected = f"'{bad_network}' is not a valid network for ecosystem 'ethereum'."
+    with pytest.raises(NetworkError, match=expected):
+        ethereum.set_default_network(bad_network)
