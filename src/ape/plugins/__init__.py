@@ -2,7 +2,7 @@ import functools
 import importlib
 import pkgutil
 import subprocess
-from typing import Any, Callable, Generator, Iterator, List, Optional, Tuple, Type
+from typing import Any, Callable, Generator, Iterator, List, Optional, Set, Tuple, Type
 
 from ape.__modules__ import __modules__
 from ape.exceptions import ApeAttributeError
@@ -123,25 +123,6 @@ class PluginManager:
     def __init__(self) -> None:
         self.__registered = False
 
-    @functools.cached_property
-    def _plugin_modules(self) -> Tuple[str, ...]:
-        # NOTE: Unable to use pkgutil.iter_modules() for installed plugins
-        # because it does not work with editable installs.
-        # See https://github.com/python/cpython/issues/99805.
-        result = subprocess.check_output(
-            ["pip", "list", "--format", "freeze", "--disable-pip-version-check"]
-        )
-        packages = result.decode("utf8").splitlines()
-        installed_plugin_module_names = {
-            p.split("==")[0].replace("-", "_") for p in packages if p.startswith("ape-")
-        }
-        core_plugin_module_names = {
-            n for _, n, ispkg in pkgutil.iter_modules() if n.startswith("ape_")
-        }
-
-        # NOTE: Returns tuple because this shouldn't change.
-        return tuple(installed_plugin_module_names.union(core_plugin_module_names))
-
     def __repr__(self):
         return f"<{self.__class__.__name__}>"
 
@@ -172,6 +153,30 @@ class PluginManager:
                     validated_plugin = self._validate_plugin(plugin_name, result)
                     if validated_plugin:
                         yield validated_plugin
+
+    @property
+    def registered_plugins(self) -> Set[str]:
+        self._register_plugins()
+        return {x[0] for x in plugin_manager.list_name_plugin()}
+
+    @functools.cached_property
+    def _plugin_modules(self) -> Tuple[str, ...]:
+        # NOTE: Unable to use pkgutil.iter_modules() for installed plugins
+        # because it does not work with editable installs.
+        # See https://github.com/python/cpython/issues/99805.
+        result = subprocess.check_output(
+            ["pip", "list", "--format", "freeze", "--disable-pip-version-check"]
+        )
+        packages = result.decode("utf8").splitlines()
+        installed_plugin_module_names = {
+            p.split("==")[0].replace("-", "_") for p in packages if p.startswith("ape-")
+        }
+        core_plugin_module_names = {
+            n for _, n, ispkg in pkgutil.iter_modules() if n.startswith("ape_")
+        }
+
+        # NOTE: Returns tuple because this shouldn't change.
+        return tuple(installed_plugin_module_names.union(core_plugin_module_names))
 
     def _register_plugins(self):
         if self.__registered:

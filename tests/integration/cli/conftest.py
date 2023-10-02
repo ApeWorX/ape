@@ -228,7 +228,7 @@ def ape_plugins_runner():
         def invoke_list(self, arguments: Optional[List] = None):
             arguments = arguments or []
             result = self.invoke(["list", *arguments])
-            assert result.exit_code == 0
+            assert result.exit_code == 0, result.output
             return ListResult.parse_output(result.output)
 
     return PluginSubprocessRunner()

@@ -1,38 +1,26 @@
 import subprocess
 import sys
 from pathlib import Path
-from typing import Collection, Dict, List, Set, Tuple
+from typing import List, Tuple
 
 import click
 
 from ape.cli import ape_cli_context, skip_confirmation_option
 from ape.managers.config import CONFIG_FILE_NAME
-from ape.plugins import plugin_manager
-from ape.utils import add_padding_to_strings, github_client, load_config
-from ape_plugins.utils import ModifyPluginResultHandler, PluginInstallRequest
+from ape.utils import github_client, load_config
+from ape_plugins.utils import (
+    ModifyPluginResultHandler,
+    PluginMetadata,
+    PluginMetadataList,
+    PluginType,
+)
 
 
 @click.group(short_help="Manage ape plugins")
 def cli():
     """
-    Command-line helper for managing installed plugins.
+    Command-line helper for managing plugins.
     """
-
-
-def _display_section(header: str, lines: List[Set[str]]):
-    click.echo(header)
-    for output in lines:
-        if output:
-            formatted_output = _format_output(output)
-            click.echo("  {}".format("\n  ".join(formatted_output)))
-
-
-def _format_output(plugins_list: Collection[str]) -> Set:
-    output = set()
-    for i in plugins_list:
-        text = i.replace("ape_", "")
-        output.add(text)
-    return output
 
 
 def plugins_argument():
@@ -41,14 +29,14 @@ def plugins_argument():
     or plugins loaded from the local config file.
     """
 
-    def load_from_file(ctx, file_path: Path) -> List[PluginInstallRequest]:
+    def load_from_file(ctx, file_path: Path) -> List[PluginMetadata]:
         if file_path.is_dir() and (file_path / CONFIG_FILE_NAME).is_file():
             file_path = file_path / CONFIG_FILE_NAME
 
         if file_path.is_file():
             config = load_config(file_path)
             if plugins := config.get("plugins"):
-                return [PluginInstallRequest.parse_obj(d) for d in plugins]
+                return [PluginMetadata.parse_obj(d) for d in plugins]
 
         ctx.obj.logger.warning(f"No plugins found at '{file_path}'.")
         return []
@@ -63,11 +51,11 @@ def plugins_argument():
             return (
                 load_from_file(ctx, file_path)
                 if file_path.exists()
-                else [PluginInstallRequest(name=v) for v in value[0].split(" ")]
+                else [PluginMetadata(name=v) for v in value[0].split(" ")]
             )
 
         else:
-            return [PluginInstallRequest(name=v) for v in value]
+            return [PluginMetadata(name=v) for v in value]
 
     return click.argument(
         "plugins",
@@ -88,75 +76,36 @@ def upgrade_option(help: str = "", **kwargs):
     return click.option("-U", "--upgrade", default=False, is_flag=True, help=help, **kwargs)
 
 
+def _display_all_callback(ctx, param, value):
+    return (
+        (PluginType.CORE, PluginType.INSTALLED, PluginType.THIRD_PARTY, PluginType.AVAILABLE)
+        if value
+        else (PluginType.INSTALLED, PluginType.THIRD_PARTY)
+    )
+
+
 @cli.command(name="list", short_help="Display plugins")
 @click.option(
     "-a",
     "--all",
-    "display_all",
+    "to_display",
     default=False,
     is_flag=True,
+    callback=_display_all_callback,
     help="Display all plugins installed and available (including Core)",
 )
 @ape_cli_context()
-def _list(cli_ctx, display_all):
-    installed_core_plugins = set()
-    installed_org_plugins = {}
-    installed_third_party_plugins = {}
-    plugin_list = plugin_manager.list_name_plugin()
-    spaced_names = add_padding_to_strings([p[0] for p in plugin_list], extra_spaces=4)
+def _list(cli_ctx, to_display):
+    registered_plugins = cli_ctx.plugin_manager.registered_plugins
+    available_plugins = github_client.available_plugins
+    metadata = PluginMetadataList.from_package_names(registered_plugins.union(available_plugins))
+    if output := metadata.to_str(include=to_display):
+        click.echo(output)
+        if not metadata.installed and not metadata.third_party:
+            click.echo("No plugins installed (besides core plugins).")
 
-    for name in spaced_names:
-        plugin = PluginInstallRequest(name=name.strip())
-        if plugin.in_core:
-            if not display_all:
-                continue
-
-            installed_core_plugins.add(name)
-
-        elif plugin.is_available:
-            installed_org_plugins[name] = plugin.current_version
-        elif not plugin.in_core or not plugin.is_available:
-            installed_third_party_plugins[name] = plugin.current_version
-        else:
-            cli_ctx.logger.error(f"'{plugin.name}' is not a plugin.")
-
-    sections: Dict[str, List[Set[str]]] = {}
-    if display_all:
-        sections["Installed Core Plugins"] = [installed_core_plugins]
-
-    # Get all plugins that are available and not already installed.
-    available_plugins = list(
-        github_client.available_plugins - {p.strip() for p in installed_org_plugins.keys()}
-    )
-
-    formatted_org_plugins = {f"{k}{v}" for k, v in installed_org_plugins.items()}
-    formatted_installed_third_party_plugins = {
-        f"{k}{v}" for k, v in installed_third_party_plugins.items()
-    }
-    # Get the list of plugin lists that are populated.
-    installed_plugin_lists = [
-        ls for ls in [formatted_org_plugins, formatted_installed_third_party_plugins] if ls
-    ]
-    if installed_plugin_lists:
-        sections["Installed Plugins"] = installed_plugin_lists
-    elif not display_all and available_plugins:
-        # User has no plugins installed | can't verify installed plugins
-        click.echo("No plugins installed. Use '--all' to see available plugins.")
-
-    if display_all:
-        available_second_output = _format_output(available_plugins)
-        if available_second_output:
-            sections["Available Plugins"] = [available_second_output]
-        elif github_client.available_plugins:
-            click.echo("You have installed all the available plugins.\n")
-
-    for i in range(len(sections)):
-        header = list(sections.keys())[i]
-        output = sections[header]
-        _display_section(f"{header}:", output)
-
-        if i < len(sections) - 1:
-            click.echo()
+    else:
+        click.echo("No plugins installed.")
 
 
 @cli.command()
@@ -168,44 +117,50 @@ def install(cli_ctx, plugins, skip_confirmation, upgrade):
     """Install plugins"""
 
     failures_occurred = False
-    for plugin_request in plugins:
-        if plugin_request.in_core:
-            cli_ctx.logger.error(f"Cannot install core 'ape' plugin '{plugin_request.name}'.")
+    for plugin in plugins:
+        if plugin.in_core:
+            cli_ctx.logger.error(f"Cannot install core 'ape' plugin '{plugin.name}'.")
             failures_occurred = True
             continue
 
-        elif plugin_request.version is not None and upgrade:
+        elif plugin.version is not None and upgrade:
             cli_ctx.logger.error(
                 f"Cannot use '--upgrade' option when specifying "
-                f"a version for plugin '{plugin_request.name}'."
+                f"a version for plugin '{plugin.name}'."
             )
             failures_occurred = True
             continue
 
-        # if plugin is installed but not a 2nd class. It must be a third party
-        elif not plugin_request.is_installed and not plugin_request.is_available:
-            cli_ctx.logger.warning(f"Plugin '{plugin_request.name}' is not an trusted plugin.")
+        # if plugin is installed but not trusted. It must be a third party
+        elif plugin.is_third_party:
+            cli_ctx.logger.warning(f"Plugin '{plugin.name}' is not an trusted plugin.")
 
-        result_handler = ModifyPluginResultHandler(cli_ctx.logger, plugin_request)
-        pip_arguments = [sys.executable, "-m", "pip", "install", "--quiet"]
+        result_handler = ModifyPluginResultHandler(plugin)
+        pip_arguments = [sys.executable, "-m", "pip", "install"]
 
         if upgrade:
-            cli_ctx.logger.info(f"Upgrading '{plugin_request.name}'...")
-            pip_arguments.extend(("--upgrade", plugin_request.package_name))
+            cli_ctx.logger.info(f"Upgrading '{plugin.name}'...")
+            pip_arguments.extend(("--upgrade", plugin.package_name))
 
-            version_before = plugin_request.current_version
+            version_before = plugin.current_version
+
+            # NOTE: There can issues when --quiet is not at the end.
+            pip_arguments.append("--quiet")
+
             result = subprocess.call(pip_arguments)
 
             # Returns ``True`` when upgraded successfully
             failures_occurred = not result_handler.handle_upgrade_result(result, version_before)
 
-        elif plugin_request.can_install and (
-            plugin_request.is_available
+        elif plugin.can_install and (
+            plugin.is_available
             or skip_confirmation
-            or click.confirm(f"Install unknown 3rd party plugin '{plugin_request.name}'?")
+            or click.confirm(f"Install the '{plugin.name}' plugin?")
         ):
-            cli_ctx.logger.info(f"Installing {plugin_request}...")
-            pip_arguments.append(plugin_request.install_str)
+            cli_ctx.logger.info(f"Installing {plugin}...")
+
+            # NOTE: There can issues when --quiet is not at the end.
+            pip_arguments.extend((plugin.install_str, "--quiet"))
 
             # NOTE: Be *extremely careful* with this command, as it modifies the user's
             #       installed packages, to potentially catastrophic results
@@ -215,8 +170,7 @@ def install(cli_ctx, plugins, skip_confirmation, upgrade):
 
         else:
             cli_ctx.logger.warning(
-                f"'{plugin_request.name}' is already installed. "
-                f"Did you mean to include '--upgrade'."
+                f"'{plugin.name}' is already installed. " f"Did you mean to include '--upgrade'."
             )
 
     if failures_occurred:
@@ -237,7 +191,7 @@ def uninstall(cli_ctx, plugins, skip_confirmation):
             cli_ctx.logger.warning("Specifying a version when uninstalling is not necessary.")
             did_warn_about_version = True
 
-        result_handler = ModifyPluginResultHandler(cli_ctx.logger, plugin)
+        result_handler = ModifyPluginResultHandler(plugin)
 
         # if plugin is installed but not a 2nd class. It must be a third party
         if plugin.is_installed and not plugin.is_available:
@@ -259,7 +213,7 @@ def uninstall(cli_ctx, plugins, skip_confirmation):
             skip_confirmation or click.confirm(f"Remove plugin '{plugin}'?")
         ):
             cli_ctx.logger.info(f"Uninstalling '{plugin.name}'...")
-            args = [sys.executable, "-m", "pip", "uninstall", "--quiet", "-y", plugin.package_name]
+            args = [sys.executable, "-m", "pip", "uninstall", "-y", plugin.package_name, "--quiet"]
 
             # NOTE: Be *extremely careful* with this command, as it modifies the user's
             #       installed packages, to potentially catastrophic results
