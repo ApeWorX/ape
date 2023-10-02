@@ -17,9 +17,9 @@ class PluginsList(list):
 
 
 class ListResult:
-    CORE_KEY = "Installed Core Plugins:"
-    INSTALLED_KEY = "Installed Plugins:"
-    AVAILABLE_KEY = "Available Plugins:"
+    CORE_KEY = "Core Plugins"
+    INSTALLED_KEY = "Installed Plugins"
+    AVAILABLE_KEY = "Available Plugins"
 
     def __init__(self, lines: List[str]):
         self._lines = lines
