@@ -19,7 +19,7 @@ from ape_plugins.utils import (
 @click.group(short_help="Manage ape plugins")
 def cli():
     """
-    Command-line helper for managing installed plugins.
+    Command-line helper for managing plugins.
     """
 
 

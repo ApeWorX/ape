@@ -113,7 +113,7 @@ class TestPluginMetadata:
         assert not metadata.is_available
 
 
-class TestPluginDisplaySectionMap:
+class TestApePluginsRepr:
     def test_str(self, plugin_metadata):
         plugin_map = ApePluginsRepr(plugin_metadata)
         actual = str(plugin_map)
