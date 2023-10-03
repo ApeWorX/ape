@@ -186,7 +186,7 @@ class KeyfileAccount(AccountAPI):
             if msg._verifyingContract_:
                 display_msg += f"\tContract: {msg._verifyingContract_}\n"
             if msg._salt_:
-                display_msg += f"\tSalt: {msg._salt_.decode('utf-8')}\n"
+                display_msg += f"\tSalt: 0x{msg._salt_.hex()}\n"
 
             # Message Data
             display_msg += "Message\n"
