@@ -635,7 +635,7 @@ class ProviderAPI(BaseInterfaceModel):
         stop_block: Optional[int] = None,
         required_confirmations: Optional[int] = None,
         new_block_timeout: Optional[int] = None,
-    ) -> Iterator[BlockAPI]:  # type: ignore[empty-body]
+    ) -> Iterator[BlockAPI]:
         """
         Poll new blocks.
 
@@ -670,7 +670,7 @@ class ProviderAPI(BaseInterfaceModel):
         topics: Optional[List[Union[str, List[str]]]] = None,
         required_confirmations: Optional[int] = None,
         new_block_timeout: Optional[int] = None,
-    ) -> Iterator[ContractLog]:  # type: ignore[empty-body]
+    ) -> Iterator[ContractLog]:
         """
         Poll new blocks. Optionally set a start block to include historical blocks.
 
@@ -684,6 +684,10 @@ class ProviderAPI(BaseInterfaceModel):
         Args:
             stop_block (Optional[int]): Optionally set a future block number to stop at.
               Defaults to never-ending.
+            address (Optional[str]): The address of the contract to filter logs by.
+              Defaults to all addresses.
+            topics (Optional[List[Union[str, List[str]]]]): The topics to filter logs by.
+              Defaults to all topics.
             required_confirmations (Optional[int]): The amount of confirmations to wait
               before yielding the block. The more confirmations, the less likely a reorg will occur.
               Defaults to the network's configured required confirmations.
@@ -1480,7 +1484,7 @@ class Web3Provider(ProviderAPI, ABC):
                         raise ProviderError(
                             f"Timed out waiting for block {confirmed_block_number} to be available."
                         )
-                    logger.warning(f"Block {confirmed_block_number} not found. Waiting 1 seconds.")
+                    logger.warning(f"Block {confirmed_block_number} not found. Waiting 1 second.")
                     time.sleep(1)
                     confirmed_block = self.web3.eth.get_block(confirmed_block_number)
                 if last_yielded_height and confirmed_block.number < last_yielded_height:
