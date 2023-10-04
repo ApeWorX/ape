@@ -189,3 +189,9 @@ def test_parse_network_choice_multiple_contexts(get_provider_with_unused_chain_i
             # Second context should already know about connected providers
             assert len(first_context.connected_providers) == expected_next_count
             assert len(second_context.connected_providers) == expected_next_count
+
+
+def test_getattr_ecosystem_with_hyphenated_name(networks, ethereum):
+    networks.ecosystems["hyphen-in-name"] = networks.ecosystems["ethereum"]
+    assert networks.hyphen_in_name  # Make sure does not raise AttributeError
+    del networks.ecosystems["hyphen-in-name"]

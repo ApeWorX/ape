@@ -227,6 +227,13 @@ class NetworkManager(BaseManager):
         """
 
         if attr_name not in self.ecosystems:
+            # First try alternating the hyphen and underscores.
+            attr_name_fix = (
+                attr_name.replace("_", "-") if "_" in attr_name else attr_name.replace("-", "_")
+            )
+            if attr_name_fix in self.ecosystems:
+                return self.ecosystems[attr_name_fix]
+
             raise ApeAttributeError(f"{self.__class__.__name__} has no attribute '{attr_name}'.")
 
         return self.ecosystems[attr_name]
