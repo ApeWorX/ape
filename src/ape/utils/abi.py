@@ -188,10 +188,10 @@ class StructParser:
                             parsed_item = []
 
                     else:
-                        # Handle tuple of arrays
-                        parsed_item = [v for v in value]
+                        parsed_item = [HexBytes(v) if isinstance(v, bytes) else v for v in value]
 
                     return_values.append(parsed_item)
+
                 else:
                     return_values.append(value)
 
@@ -442,7 +442,8 @@ class LogInputABICollection:
 
         elif isinstance(value, (list, tuple)):
             parser = StructParser(self.abi)
-            return parser.decode_input([value])
+            result = parser.decode_input([value])
+            return result[0] if len(result) == 1 else result
 
         # NOTE: All the rest of the types are handled by the
         #  ecosystem API through the calling function.
