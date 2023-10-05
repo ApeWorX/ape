@@ -701,7 +701,7 @@ class ContractEvent(ManagerAccessMixin):
         # NOTE: Now we process the rest
         yield from self.provider.poll_logs(
             stop_block=stop_block,
-            address=self.contract.address,
+            address=self.contract.contract_type.address,
             required_confirmations=required_confirmations,
             new_block_timeout=new_block_timeout,
         )

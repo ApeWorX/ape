@@ -1512,18 +1512,16 @@ class Web3Provider(ProviderAPI, ABC):
         for block in self.poll_blocks(stop_block, required_confirmations, new_block_timeout):
             if block.number is None:
                 raise ValueError("Block number cannot be None")
-
-            log_filter = {
+            log_params: Dict[str, int | AddressType | List[Union[str, List[str]]]] = {
                 "fromBlock": block.number,
                 "toBlock": block.number,
             }
-
             if address is not None:
-                log_filter["address"] = address
+                log_params["address"] = address
             if topics is not None:
-                log_filter["topics"] = topics
-
-            for log in self.web3.eth.get_logs(log_filter):
+                log_params["topics"] = topics
+            log_params_obj = LogFilter(**log_params).dict()
+            for log in self.web3.eth.get_logs(log_params_obj):
                 yield ContractLog.parse_obj(log)
 
     def block_ranges(self, start=0, stop=None, page=None):
