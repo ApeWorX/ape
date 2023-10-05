@@ -4,10 +4,9 @@ from ape.exceptions import NetworkError, ProviderNotFoundError
 
 
 def test_get_provider_when_not_found(ethereum):
-    network = ethereum.get_network("goerli-fork")
-    expected = (
-        "No provider named 'test' in network 'goerli-fork' in ecosystem 'ethereum'. Options:.*"
-    )
+    name = "goerli-fork"
+    network = ethereum.get_network(name)
+    expected = f"No provider named 'test' in network '{name}' in ecosystem 'ethereum'.*"
     with pytest.raises(ProviderNotFoundError, match=expected):
         network.get_provider("test")
 
