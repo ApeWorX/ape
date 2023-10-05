@@ -5,55 +5,53 @@ from .utils import run_once, skip_projects_except
 
 _DEFAULT_NETWORKS_TREE = """
 ethereum  (default)
-├── mainnet
-│   └── geth  (default)
 ├── goerli
 │   └── geth  (default)
-├── sepolia
-│   └── geth  (default)
-└── local  (default)
-    ├── geth
-    └── test  (default)
+├── local  (default)
+│   └── test  (default)
+├── mainnet
+│   └── test  (default)
+└── sepolia
+    └── geth  (default)
 """
 _DEFAULT_NETWORKS_YAML = """
 ecosystems:
-- name: ethereum
-  isDefault: true
+- isDefault: true
+  name: ethereum
   networks:
-  - name: mainnet
-    providers:
-    - name: geth
-      isDefault: true
-  - name: mainnet-fork
-    providers: []
   - name: goerli
     providers:
-    - name: geth
-      isDefault: true
+    - isDefault: true
+      name: geth
   - name: goerli-fork
+    providers: []
+  - isDefault: true
+    name: local
+    providers:
+    - name: geth
+    - isDefault: true
+      name: test
+  - name: mainnet
+    providers:
+    - isDefault: true
+      name: geth
+  - name: mainnet-fork
     providers: []
   - name: sepolia
     providers:
-    - name: geth
-      isDefault: true
+    - isDefault: true
+      name: geth
   - name: sepolia-fork
     providers: []
-  - name: local
-    isDefault: true
-    providers:
-    - name: geth
-    - name: test
-      isDefault: true
 """
 _GETH_NETWORKS_TREE = """
 ethereum  (default)
-├── mainnet
-│   └── geth  (default)
 ├── goerli
 │   └── geth  (default)
-└── local  (default)
-    ├── geth  (default)
-    └── test
+├── local  (default)
+│   └── geth  (default)
+└── mainnet
+    └── geth  (default)
 """
 _TEST_PROVIDER_TREE_OUTPUT = """
 ethereum  (default)
@@ -91,7 +89,11 @@ def assert_rich_text(actual: str, expected: str):
 @run_once
 def test_list(ape_cli, runner):
     result = runner.invoke(ape_cli, ["networks", "list"])
-    assert_rich_text(result.output, _DEFAULT_NETWORKS_TREE)
+
+    # Grab ethereum
+    actual = "ethereum  (default)\n" + "".join(result.output.split("ethereum  (default)\n")[-1])
+
+    assert_rich_text(actual, _DEFAULT_NETWORKS_TREE)
 
 
 @run_once
@@ -115,25 +117,37 @@ def test_geth(ape_cli, runner, networks, project):
     assert (
         networks.provider.network.default_provider == "geth"
     ), "Setup failed - default provider didn't apply from config"
-    assert_rich_text(result.output, _GETH_NETWORKS_TREE)
+
+    # Grab ethereum
+    actual = "ethereum  (default)\n" + "".join(result.output.split("ethereum  (default)\n")[-1])
+
+    assert_rich_text(actual, _GETH_NETWORKS_TREE)
 
     # Assert that URI still exists for local network
     # (was bug where one network's URI disappeared when setting different network's URI)
     geth_provider = networks.get_provider_from_choice(f"ethereum:{LOCAL_NETWORK_NAME}:geth")
-    actual = geth_provider.uri
-    assert actual == GETH_URI
+    actual_uri = geth_provider.uri
+    assert actual_uri == GETH_URI
 
 
 @run_once
 def test_filter_networks(ape_cli, runner, networks):
     result = runner.invoke(ape_cli, ["networks", "list", "--network", "goerli"])
-    assert_rich_text(result.output, _GOERLI_NETWORK_TREE_OUTPUT)
+
+    # Grab ethereum
+    actual = "ethereum  (default)\n" + "".join(result.output.split("ethereum  (default)\n")[-1])
+
+    assert_rich_text(actual, _GOERLI_NETWORK_TREE_OUTPUT)
 
 
 @run_once
 def test_filter_providers(ape_cli, runner, networks):
     result = runner.invoke(ape_cli, ["networks", "list", "--provider", "test"])
-    assert_rich_text(result.output, _TEST_PROVIDER_TREE_OUTPUT)
+
+    # Grab ethereum
+    actual = "ethereum  (default)\n" + "".join(result.output.split("ethereum  (default)\n")[-1])
+
+    assert_rich_text(actual, _TEST_PROVIDER_TREE_OUTPUT)
 
 
 @run_once
