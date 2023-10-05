@@ -1434,9 +1434,9 @@ class Web3Provider(ProviderAPI, ABC):
         required_confirmations: Optional[int] = None,
         new_block_timeout: Optional[int] = None,
     ) -> Iterator[BlockAPI]:
-        filter = self.web3.eth.filter("latest")
         network_name = self.network.name
         block_time = self.network.block_time
+        wait_time = block_time / 2
         timeout = (
             (
                 10.0
@@ -1448,7 +1448,7 @@ class Web3Provider(ProviderAPI, ABC):
         )
 
         if required_confirmations is None:
-            required_confirmations = self.network_confirmations
+            required_confirmations = self.network.required_confirmations
 
         last_yielded_height = None
 
@@ -1459,42 +1459,44 @@ class Web3Provider(ProviderAPI, ABC):
                 and last_yielded_height >= stop_block
             ):
                 break
-            changes = self.web3.eth.get_filter_changes(filter.filter_id)
-            for new_block_hash in changes:
-                block = self.web3.eth.get_block(new_block_hash)
-                confirmed_block_number = block.number - required_confirmations
-                if last_yielded_height and confirmed_block_number < last_yielded_height:
-                    num_blocks_behind = last_yielded_height - confirmed_block_number
-                    if num_blocks_behind > required_confirmations:
-                        logger.error(
-                            f"{num_blocks_behind} Block reorganization detected. "
-                            + "Try adjusting the required network confirmations"
-                        )
-                    else:
-                        logger.warning(
-                            f"{num_blocks_behind} Block reorganization detected. "
-                            + "Reorg is within the required network confirmations"
-                        )
-                        last_yielded_height = confirmed_block_number
-                        continue
-                confirmed_block = self.web3.eth.get_block(confirmed_block_number)
-                start_time = time.time()
-                while confirmed_block is None:
-                    if time.time() - start_time > timeout:
-                        raise ProviderError(
-                            f"Timed out waiting for block {confirmed_block_number} to be available."
-                        )
-                    logger.warning(f"Block {confirmed_block_number} not found. Waiting 1 second.")
-                    time.sleep(1)
-                    confirmed_block = self.web3.eth.get_block(confirmed_block_number)
-                if last_yielded_height and confirmed_block.number < last_yielded_height:
-                    num_blocks_behind = last_yielded_height - confirmed_block.number
-                    logger.error(
-                        f"{num_blocks_behind} Block reorganization detected. "
-                        + "Try adjusting the required network confirmations"
-                    )
-                last_yielded_height = confirmed_block.number
-                yield self.network.ecosystem.decode_block(confirmed_block)
+            latest_block = self.web3.eth.block_number
+            if last_yielded_height is None:
+                last_yielded_height = latest_block - required_confirmations
+            elif latest_block - required_confirmations <= last_yielded_height:
+                time.sleep(wait_time)
+                continue
+            else:
+                for block_num in range(
+                    last_yielded_height + 1, latest_block - required_confirmations + 1
+                ):
+                    confirmed_block = self.web3.eth.get_block(block_num)
+                    if not confirmed_block:
+                        start_time = time.time()
+                        while confirmed_block is None:
+                            if time.time() - start_time > timeout:
+                                raise ProviderError(
+                                    f"Timed out waiting for block {block_num} to be available."
+                                )
+                            time.sleep(1)
+                            confirmed_block = self.web3.eth.get_block(block_num)
+
+                    if last_yielded_height and confirmed_block.number < last_yielded_height:
+                        num_blocks_behind = last_yielded_height - confirmed_block.number
+                        if num_blocks_behind > required_confirmations:
+                            logger.error(
+                                f"{num_blocks_behind} Block reorganization detected. "
+                                + "Try adjusting the required network confirmations"
+                            )
+                        else:
+                            logger.warning(
+                                f"{num_blocks_behind} Block reorganization detected. "
+                                + "Reorg is within the required network confirmations"
+                            )
+                            last_yielded_height = confirmed_block.number
+                            continue
+
+                    last_yielded_height = latest_block - required_confirmations
+                    yield self.network.ecosystem.decode_block(dict(confirmed_block))
 
     def poll_logs(
         self,
