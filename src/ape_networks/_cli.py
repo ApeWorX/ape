@@ -47,7 +47,8 @@ def _lazy_get(name: str) -> _LazySequence:
 def _list(cli_ctx, output_format, ecosystem_filter, network_filter, provider_filter):
     if output_format == OutputFormat.TREE:
         default_suffix = "[dim default]  (default)"
-        ecosystems = cli_ctx.network_manager.network_data["ecosystems"]
+        ecosystems = {e["name"]: e for e in cli_ctx.network_manager.network_data["ecosystems"]}
+        ecosystems = {n: ecosystems[n] for n in sorted(ecosystems)}
 
         def make_sub_tree(data: Dict, create_tree: Callable) -> Tree:
             name = f"[bold green]{data['name']}"
@@ -57,17 +58,18 @@ def _list(cli_ctx, output_format, ecosystem_filter, network_filter, provider_fil
             sub_tree = create_tree(name)
             return sub_tree
 
-        for ecosystem in ecosystems:
+        for ecosystem_name, ecosystem in ecosystems.items():
             if ecosystem_filter and ecosystem["name"] not in ecosystem_filter:
                 continue
 
             ecosystem_tree = make_sub_tree(ecosystem, Tree)
-            _networks = ecosystem["networks"]
+            _networks = {n["name"]: n for n in ecosystem["networks"]}
+            _networks = {n: _networks[n] for n in sorted(_networks)}
             if network_filter:
-                _networks = [n for n in _networks if n["name"] in network_filter]
+                _networks = {n: v for n, v in _networks.items() if n in network_filter}
 
-            for network in _networks:
-                if network_filter and network["name"] not in network_filter:
+            for network_name, network in _networks.items():
+                if network_filter and network_name not in network_filter:
                     continue
 
                 providers = network["providers"]
