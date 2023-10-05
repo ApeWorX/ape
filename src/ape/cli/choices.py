@@ -315,14 +315,16 @@ class NetworkChoice(click.Choice):
 
         try:
             return super().convert(value, param, ctx)
-        except BadParameter:
+        except BadParameter as err:
             # Find out actual bad parts of the value to show better error.
             # The following line should raise a nicer error.
             networks.get_provider_from_choice(network_choice=value)
 
-            # If an error was not raised for some reason, raise the original
-            # BadParameter error.
-            raise
+            # If an error was not raised for some reason, raise a simpler error.
+            # NOTE: Still avoid showing the massive network options list.
+            raise click.BadParameter(
+                "Invalid network choice. Use `ape networks list` to see options."
+            ) from err
 
 
 class OutputFormat(Enum):
