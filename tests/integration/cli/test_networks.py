@@ -8,6 +8,7 @@ ethereum  (default)
 ├── goerli
 │   └── geth  (default)
 ├── local  (default)
+│   ├── geth
 │   └── test  (default)
 ├── mainnet
 │   └── test  (default)

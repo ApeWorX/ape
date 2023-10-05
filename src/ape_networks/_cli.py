@@ -78,6 +78,7 @@ def _list(cli_ctx, output_format, ecosystem_filter, network_filter, provider_fil
 
                 if providers:
                     network_tree = make_sub_tree(network, ecosystem_tree.add)
+                    providers = sorted(providers, key=lambda p: p["name"])
                     for provider in providers:
                         make_sub_tree(provider, network_tree.add)
 
