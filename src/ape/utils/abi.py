@@ -93,6 +93,10 @@ class StructParser:
             if isinstance(value, dict):
                 return tuple([value[m.name] for m in _type.components])
 
+            elif isinstance(value, (list, tuple)):
+                # NOTE: Args must be passed in correct order.
+                return tuple(value)
+
             else:
                 arg = [getattr(value, m.name) for m in _type.components if m.name]
                 return tuple(arg)
