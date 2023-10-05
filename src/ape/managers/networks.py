@@ -544,7 +544,7 @@ class NetworkManager(BaseManager):
             )
 
         try:
-            return yaml.dump(data, sort_keys=False)
+            return yaml.dump(data, sort_keys=True)
         except ValueError as err:
             try:
                 data_str = json.dumps(data)
