@@ -1510,14 +1510,20 @@ class Web3Provider(ProviderAPI, ABC):
             required_confirmations or self.provider.network.required_confirmations
         )
         for block in self.poll_blocks(stop_block, required_confirmations, new_block_timeout):
-            for log in self.web3.eth.get_logs(
-                {
-                    "fromBlock": block.number,
-                    "toBlock": block.number,
-                    "address": address,
-                    "topics": topics,
-                }
-            ):
+            if block.number is None:
+                raise ValueError("Block number cannot be None")
+
+            log_filter = {
+                "fromBlock": block.number,
+                "toBlock": block.number,
+            }
+
+            if address is not None:
+                log_filter["address"] = address
+            if topics is not None:
+                log_filter["topics"] = topics
+
+            for log in self.web3.eth.get_logs(log_filter):
                 yield ContractLog.parse_obj(log)
 
     def block_ranges(self, start=0, stop=None, page=None):
