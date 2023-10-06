@@ -6,7 +6,7 @@ import yaml
 
 from ape.api import EcosystemAPI, ProviderAPI, ProviderContextManager
 from ape.api.networks import NetworkAPI
-from ape.exceptions import ApeAttributeError, NetworkError
+from ape.exceptions import ApeAttributeError, EcosystemNotFoundError, NetworkError
 from ape.managers.base import BaseManager
 
 
@@ -207,7 +207,7 @@ class NetworkManager(BaseManager):
             :class:`~ape.api.networks.EcosystemAPI`
         """
         if ecosystem_name not in self.ecosystems:
-            raise NetworkError(f"Unknown ecosystem '{ecosystem_name}'.")
+            raise IndexError(f"Unknown ecosystem '{ecosystem_name}'.")
 
         return self.ecosystems[ecosystem_name]
 
@@ -337,7 +337,7 @@ class NetworkManager(BaseManager):
         """
 
         if ecosystem_name not in self.ecosystem_names:
-            raise NetworkError(f"Ecosystem '{ecosystem_name}' not found.")
+            raise EcosystemNotFoundError(ecosystem_name, options=self.ecosystem_names)
 
         return self.ecosystems[ecosystem_name]
 
@@ -433,6 +433,9 @@ class NetworkManager(BaseManager):
               (see :meth:`~ape.managers.networks.NetworkManager.get_network_choices`).
               Defaults to the default ecosystem, network, and provider combination.
             provider_settings (dict, optional): Settings for the provider. Defaults to None.
+            disconnect_after (bool): Set to True to terminate the connection completely
+              at the end of context. NOTE: May only work if the network was also started
+              from this session.
 
         Returns:
             :class:`~api.api.networks.ProviderContextManager`
@@ -484,7 +487,7 @@ class NetworkManager(BaseManager):
             self._default = ecosystem_name
 
         else:
-            raise NetworkError(f"Ecosystem '{ecosystem_name}' is not a registered ecosystem.")
+            raise EcosystemNotFoundError(ecosystem_name, options=self.ecosystem_names)
 
     @property
     def network_data(self) -> Dict:
@@ -549,7 +552,7 @@ class NetworkManager(BaseManager):
                 data_str = str(data)
 
             raise NetworkError(
-                f"Network data did not dump to YAML: {data_str}\nAcual err: {err}"
+                f"Network data did not dump to YAML: {data_str}\nActual err: {err}"
             ) from err
 
 
