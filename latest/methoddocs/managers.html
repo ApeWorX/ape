@@ -2305,6 +2305,9 @@ available choices (or use CLI command <code class="docutils literal notranslate"
 (see <a class="reference internal" href="#ape.managers.networks.NetworkManager.get_network_choices" title="ape.managers.networks.NetworkManager.get_network_choices"><code class="xref py py-meth docutils literal notranslate"><span class="pre">get_network_choices()</span></code></a>).
 Defaults to the default ecosystem, network, and provider combination.</p></li>
 <li><p><strong>provider_settings</strong> (<em>dict</em><em>, </em><em>optional</em>) – Settings for the provider. Defaults to None.</p></li>
+<li><p><strong>disconnect_after</strong> (<em>bool</em>) – Set to True to terminate the connection completely
+at the end of context. NOTE: May only work if the network was also started
+from this session.</p></li>
 </ul>
 </dd>
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
