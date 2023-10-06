@@ -4,7 +4,7 @@ from functools import lru_cache
 from typing import Any, Iterator, List, Optional, Sequence, Type, Union
 
 import click
-from click import Choice, Context, Parameter
+from click import BadParameter, Choice, Context, Parameter
 
 from ape import accounts, networks
 from ape.api.accounts import AccountAPI
@@ -313,7 +313,18 @@ class NetworkChoice(click.Choice):
             # By-pass choice constraints when using adhoc network
             return value
 
-        return super().convert(value, param, ctx)
+        try:
+            return super().convert(value, param, ctx)
+        except BadParameter as err:
+            # Find out actual bad parts of the value to show better error.
+            # The following line should raise a nicer error.
+            networks.get_provider_from_choice(network_choice=value)
+
+            # If an error was not raised for some reason, raise a simpler error.
+            # NOTE: Still avoid showing the massive network options list.
+            raise click.BadParameter(
+                "Invalid network choice. Use `ape networks list` to see options."
+            ) from err
 
 
 class OutputFormat(Enum):

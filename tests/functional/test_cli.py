@@ -161,7 +161,7 @@ def test_network_option_specified(runner, network_cmd):
 def test_network_option_unknown(runner, network_cmd):
     result = runner.invoke(network_cmd, ["--network", "UNKNOWN"])
     assert result.exit_code != 0, result.output
-    assert "Invalid value for '--network'" in result.output
+    assert "No ecosystem named 'UNKNOWN'" in str(result.exception)
 
 
 @pytest.mark.parametrize(
