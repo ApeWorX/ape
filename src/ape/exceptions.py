@@ -724,8 +724,9 @@ class CustomError(ContractLogicError):
 
 
 def _get_ape_traceback(txn: FailedTxn) -> Optional["SourceTraceback"]:
-    is_receipt = "ReceiptAPI" in [t.__name__ for t in txn.__class__.__bases__]
-    receipt: "ReceiptAPI" = txn if is_receipt else txn.receipt  # type: ignore
+    from ape.api.transactions import ReceiptAPI
+
+    receipt: "ReceiptAPI" = txn if isinstance(txn, ReceiptAPI) else txn.receipt  # type: ignore
     if not receipt:
         return None
 
