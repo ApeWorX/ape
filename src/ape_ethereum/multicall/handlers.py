@@ -50,7 +50,7 @@ class BaseMulticall(ManagerAccessMixin):
             @pytest.fixture(scope="session")
             def use_multicall():
                 # NOTE: use this fixture any test where you want to use a multicall
-                multicall.BaseMulticall.inject()
+                return multicall.BaseMulticall.inject()
         """
         from ape_ethereum import multicall
 
