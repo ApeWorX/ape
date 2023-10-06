@@ -18,6 +18,7 @@ from ape.exceptions import (
     NetworkMismatchError,
     NetworkNotFoundError,
     ProviderNotConnectedError,
+    ProviderNotFoundError,
     SignatureError,
 )
 from ape.logging import logger
@@ -287,8 +288,7 @@ class EcosystemAPI(BaseInterfaceModel):
         if network_name in self.networks:
             self._default_network = network_name
         else:
-            message = f"'{network_name}' is not a valid network for ecosystem '{self.name}'."
-            raise NetworkError(message)
+            raise NetworkNotFoundError(network_name, ecosystem=self.name, options=self.networks)
 
     @abstractmethod
     def encode_deployment(
@@ -428,7 +428,7 @@ class EcosystemAPI(BaseInterfaceModel):
         if name in self.networks:
             return self.networks[name]
 
-        raise NetworkNotFoundError(network_name)
+        raise NetworkNotFoundError(network_name, ecosystem=self.name, options=self.networks)
 
     def get_network_data(self, network_name: str) -> Dict:
         """
@@ -877,8 +877,12 @@ class NetworkAPI(BaseInterfaceModel):
             return provider
 
         else:
-            message = f"'{provider_name}' is not a valid provider for network '{self.name}'"
-            raise NetworkError(message)
+            raise ProviderNotFoundError(
+                provider_name,
+                network=self.name,
+                ecosystem=self.ecosystem.name,
+                options=self.providers,
+            )
 
     def use_provider(
         self,

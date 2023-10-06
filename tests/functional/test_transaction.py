@@ -44,7 +44,7 @@ def test_create_dynamic_fee_kwargs(ethereum, fee_kwargs):
         assert txn.max_fee == int(100e9)
 
 
-def test_txn_hash(owner, eth_tester_provider, ethereum):
+def test_txn_hash_and_receipt(owner, eth_tester_provider, ethereum):
     txn = ethereum.create_transaction()
     txn = owner.prepare_transaction(txn)
     txn = owner.sign_transaction(txn)
@@ -52,6 +52,10 @@ def test_txn_hash(owner, eth_tester_provider, ethereum):
 
     actual = txn.txn_hash.hex()
     receipt = eth_tester_provider.send_transaction(txn)
+
+    # Show that we can access the receipt from the transaction.
+    assert txn.receipt == receipt
+
     expected = receipt.txn_hash
 
     assert actual == expected
@@ -82,3 +86,8 @@ def test_txn_str_when_data_is_bytes(ethereum):
     txn = ethereum.create_transaction(data=HexBytes("0x123"))
     actual = str(txn)
     assert isinstance(actual, str)
+
+
+def test_transaction_with_none_receipt(ethereum):
+    txn = ethereum.create_transaction(data=HexBytes("0x123"))
+    assert txn.receipt is None
