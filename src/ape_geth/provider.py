@@ -383,10 +383,6 @@ class BaseGethProvider(Web3Provider, ABC):
         self._can_use_parity_traces = True
         return tree
 
-    def set_code(self, address: AddressType, code: ContractCode) -> bool:
-        # NOTE: Does no work on regular Geth nodes, will still raise APINotImpemented.
-        return self._make_request("debug_setCode", [address, code])
-
     def _get_parity_call_tree(self, txn_hash: str) -> CallTreeNode:
         result = self._make_request("trace_transaction", [txn_hash])
         if not result:
