@@ -46,12 +46,7 @@ from ape.api import (
 )
 from ape.exceptions import APINotImplementedError, ProviderError
 from ape.logging import LogLevel, logger
-from ape.types import (
-    CallTreeNode,
-    SnapshotID,
-    SourceTraceback,
-    TraceFrame,
-)
+from ape.types import CallTreeNode, SnapshotID, SourceTraceback, TraceFrame
 from ape.utils import (
     DEFAULT_NUMBER_OF_TEST_ACCOUNTS,
     DEFAULT_TEST_CHAIN_ID,
