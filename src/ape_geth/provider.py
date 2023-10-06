@@ -47,9 +47,7 @@ from ape.api import (
 from ape.exceptions import APINotImplementedError, ProviderError
 from ape.logging import LogLevel, logger
 from ape.types import (
-    AddressType,
     CallTreeNode,
-    ContractCode,
     SnapshotID,
     SourceTraceback,
     TraceFrame,
