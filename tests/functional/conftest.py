@@ -5,11 +5,12 @@ from pathlib import Path
 from typing import Optional, cast
 
 import pytest
-from ethpm_types import ContractType, HexBytes
+from ethpm_types import ContractType, HexBytes, MethodABI
 
 import ape
 from ape.api import TransactionAPI
 from ape.contracts import ContractContainer, ContractInstance
+from ape.contracts.base import ContractCallHandler
 from ape.exceptions import ChainError, ContractLogicError
 from ape.logging import LogLevel
 from ape.logging import logger as _logger
@@ -34,6 +35,103 @@ BASE_PROJECTS_DIRECTORY = (Path(__file__).parent / "data" / "projects").absolute
 PROJECT_WITH_LONG_CONTRACTS_FOLDER = BASE_PROJECTS_DIRECTORY / "LongContractsFolder"
 APE_PROJECT_FOLDER = BASE_PROJECTS_DIRECTORY / "ApeProject"
 BASE_SOURCES_DIRECTORY = (Path(__file__).parent / "data/sources").absolute()
+
+CALL_WITH_STRUCT_INPUT = MethodABI.parse_obj(
+    {
+        "type": "function",
+        "name": "getTradeableOrderWithSignature",
+        "stateMutability": "view",
+        "inputs": [
+            {"name": "owner", "type": "address", "internalType": "address"},
+            {
+                "name": "params",
+                "type": "tuple",
+                "components": [
+                    {
+                        "name": "handler",
+                        "type": "address",
+                        "internalType": "contract IConditionalOrder",
+                    },
+                    {"name": "salt", "type": "bytes32", "internalType": "bytes32"},
+                    {"name": "staticInput", "type": "bytes", "internalType": "bytes"},
+                ],
+                "internalType": "struct IConditionalOrder.ConditionalOrderParams",
+            },
+            {"name": "offchainInput", "type": "bytes", "internalType": "bytes"},
+            {"name": "proof", "type": "bytes32[]", "internalType": "bytes32[]"},
+        ],
+        "outputs": [
+            {
+                "name": "order",
+                "type": "tuple",
+                "components": [
+                    {"name": "sellToken", "type": "address", "internalType": "contract IERC20"},
+                    {"name": "buyToken", "type": "address", "internalType": "contract IERC20"},
+                    {"name": "receiver", "type": "address", "internalType": "address"},
+                    {"name": "sellAmount", "type": "uint256", "internalType": "uint256"},
+                    {"name": "buyAmount", "type": "uint256", "internalType": "uint256"},
+                    {"name": "validTo", "type": "uint32", "internalType": "uint32"},
+                    {"name": "appData", "type": "bytes32", "internalType": "bytes32"},
+                    {"name": "feeAmount", "type": "uint256", "internalType": "uint256"},
+                    {"name": "kind", "type": "bytes32", "internalType": "bytes32"},
+                    {"name": "partiallyFillable", "type": "bool", "internalType": "bool"},
+                    {"name": "sellTokenBalance", "type": "bytes32", "internalType": "bytes32"},
+                    {"name": "buyTokenBalance", "type": "bytes32", "internalType": "bytes32"},
+                ],
+                "internalType": "struct GPv2Order.Data",
+            },
+            {"name": "signature", "type": "bytes", "internalType": "bytes"},
+        ],
+    }
+)
+METHOD_WITH_STRUCT_INPUT = MethodABI.parse_obj(
+    {
+        "type": "function",
+        "name": "getTradeableOrderWithSignature",
+        "stateMutability": "view",
+        "inputs": [
+            {"name": "owner", "type": "address", "internalType": "address"},
+            {
+                "name": "params",
+                "type": "tuple",
+                "components": [
+                    {
+                        "name": "handler",
+                        "type": "address",
+                        "internalType": "contract IConditionalOrder",
+                    },
+                    {"name": "salt", "type": "bytes32", "internalType": "bytes32"},
+                    {"name": "staticInput", "type": "bytes", "internalType": "bytes"},
+                ],
+                "internalType": "struct IConditionalOrder.ConditionalOrderParams",
+            },
+            {"name": "offchainInput", "type": "bytes", "internalType": "bytes"},
+            {"name": "proof", "type": "bytes32[]", "internalType": "bytes32[]"},
+        ],
+        "outputs": [
+            {
+                "name": "order",
+                "type": "tuple",
+                "components": [
+                    {"name": "sellToken", "type": "address", "internalType": "contract IERC20"},
+                    {"name": "buyToken", "type": "address", "internalType": "contract IERC20"},
+                    {"name": "receiver", "type": "address", "internalType": "address"},
+                    {"name": "sellAmount", "type": "uint256", "internalType": "uint256"},
+                    {"name": "buyAmount", "type": "uint256", "internalType": "uint256"},
+                    {"name": "validTo", "type": "uint32", "internalType": "uint32"},
+                    {"name": "appData", "type": "bytes32", "internalType": "bytes32"},
+                    {"name": "feeAmount", "type": "uint256", "internalType": "uint256"},
+                    {"name": "kind", "type": "bytes32", "internalType": "bytes32"},
+                    {"name": "partiallyFillable", "type": "bool", "internalType": "bool"},
+                    {"name": "sellTokenBalance", "type": "bytes32", "internalType": "bytes32"},
+                    {"name": "buyTokenBalance", "type": "bytes32", "internalType": "bytes32"},
+                ],
+                "internalType": "struct GPv2Order.Data",
+            },
+            {"name": "signature", "type": "bytes", "internalType": "bytes"},
+        ],
+    }
+)
 
 
 class _ContractLogicError(ContractLogicError):
@@ -512,3 +610,49 @@ def mock_explorer(mocker):
     explorer = mocker.MagicMock()
     explorer.name = "mock"  # Needed for network data serialization.
     return explorer
+
+
+@pytest.fixture
+def call_abi_with_struct_input():
+    return CALL_WITH_STRUCT_INPUT
+
+
+@pytest.fixture
+def fake_contract(mocker):
+    # Only needed for initialization; never used.
+    return mocker.MagicMock()
+
+
+@pytest.fixture
+def call_handler_with_struct_input(fake_contract, call_abi_with_struct_input):
+    abi = call_abi_with_struct_input
+    return ContractCallHandler(contract=fake_contract, abis=[abi])
+
+
+@pytest.fixture(scope="session")
+def struct_input_for_call(owner):
+    return [owner, [owner, b"skip", b"skip"], b"skip", [b"skip"]]
+
+
+@pytest.fixture(scope="session")
+def output_from_struct_input_call():
+    # Expected when using `struct_input_for_call`.
+    return HexBytes(
+        "0x26e0a1960000000000000000000000001e59ce931b4cfea3fe4b875411e280e173cb7a9c"
+        "00000000000000000000000000000000000000000000000000000000000000800000000000"
+        "00000000000000000000000000000000000000000000000000012000000000000000000000"
+        "000000000000000000000000000000000000000001600000000000000000000000001e59ce"
+        "931b4cfea3fe4b875411e280e173cb7a9c736b697000000000000000000000000000000000"
+        "00000000000000000000000000000000000000000000000000000000000000000000000000"
+        "00000000000060000000000000000000000000000000000000000000000000000000000000"
+        "0004736b697000000000000000000000000000000000000000000000000000000000000000"
+        "0000000000000000000000000000000000000000000000000000000004736b697000000000"
+        "00000000000000000000000000000000000000000000000000000000000000000000000000"
+        "00000000000000000000000000000000000001736b69700000000000000000000000000000"
+        "0000000000000000000000000000"
+    )
+
+
+@pytest.fixture
+def method_abi_with_struct_input():
+    return METHOD_WITH_STRUCT_INPUT

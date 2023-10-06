@@ -46,7 +46,14 @@ from ape.api import (
 )
 from ape.exceptions import APINotImplementedError, ProviderError
 from ape.logging import LogLevel, logger
-from ape.types import CallTreeNode, SnapshotID, SourceTraceback, TraceFrame
+from ape.types import (
+    AddressType,
+    CallTreeNode,
+    ContractCode,
+    SnapshotID,
+    SourceTraceback,
+    TraceFrame,
+)
 from ape.utils import (
     DEFAULT_NUMBER_OF_TEST_ACCOUNTS,
     DEFAULT_TEST_CHAIN_ID,
@@ -375,6 +382,10 @@ class BaseGethProvider(Web3Provider, ABC):
         # Parity style works.
         self._can_use_parity_traces = True
         return tree
+
+    def set_code(self, address: AddressType, code: ContractCode) -> bool:
+        # NOTE: Does no work on regular Geth nodes, will still raise APINotImpemented.
+        return self._make_request("debug_setCode", [address, code])
 
     def _get_parity_call_tree(self, txn_hash: str) -> CallTreeNode:
         result = self._make_request("trace_transaction", [txn_hash])
