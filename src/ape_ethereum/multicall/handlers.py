@@ -168,7 +168,7 @@ class Call(BaseMulticall):
 
     @property
     def returnData(self) -> List[HexBytes]:
-        result = self._result  # Decl for typing reasons.
+        result = self._result  # Declare for typing reasons.
         if not result:
             raise NotExecutedError()
 
@@ -178,7 +178,7 @@ class Call(BaseMulticall):
             and type(result[0]) is bool
             and isinstance(result[1], bytes)
         ):
-            # Call3[] or Call3Value[] when only single call.s
+            # Call3[] or Call3Value[] when only single call.
             return [result[1]]
 
         elif isinstance(result, tuple):
