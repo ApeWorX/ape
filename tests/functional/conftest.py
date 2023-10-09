@@ -656,3 +656,23 @@ def output_from_struct_input_call():
 @pytest.fixture
 def method_abi_with_struct_input():
     return METHOD_WITH_STRUCT_INPUT
+
+
+@pytest.fixture
+def mock_compiler(mocker):
+    mock = mocker.MagicMock()
+    mock.ext = ".__mock__"
+
+    def mock_compile(paths, *args, **kwargs):
+        result = []
+        for path in paths:
+            if path.suffix == mock.ext:
+                name = path.stem
+                code = HexBytes(123).hex()
+                contract_type = ContractType(contractName=name, abi=[], deploymentBytecode=code)
+                result.append(contract_type)
+
+        return result
+
+    mock.compile.side_effect = mock_compile
+    return mock
