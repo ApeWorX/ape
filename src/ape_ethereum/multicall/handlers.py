@@ -1,5 +1,5 @@
 from types import ModuleType
-from typing import Any, Dict, Iterator, List, Tuple, Union
+from typing import Any, Dict, Iterator, List, Optional, Tuple, Union
 
 from ape.api import ReceiptAPI, TransactionAPI
 from ape.contracts.base import (
@@ -28,13 +28,13 @@ class BaseMulticall(ManagerAccessMixin):
     def __init__(
         self,
         address: AddressType = MULTICALL3_ADDRESS,
-        supported_chains: List[int] = SUPPORTED_CHAINS,
+        supported_chains: Optional[List[int]] = None,
     ) -> None:
         """
         Initialize a new Multicall session object. By default, there are no calls to make.
         """
         self.address = address
-        self.supported_chains = supported_chains
+        self.supported_chains = supported_chains or SUPPORTED_CHAINS
         self.calls: List[Dict] = []
 
     @classmethod
@@ -147,7 +147,7 @@ class Call(BaseMulticall):
     def __init__(
         self,
         address: AddressType = MULTICALL3_ADDRESS,
-        supported_chains: List[int] = SUPPORTED_CHAINS,
+        supported_chains: Optional[List[int]] = None,
     ) -> None:
         super().__init__(address=address, supported_chains=supported_chains)
 
