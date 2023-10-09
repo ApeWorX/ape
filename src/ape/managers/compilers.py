@@ -122,8 +122,8 @@ class CompilerManager(BaseManager):
                 and not any(x in [p.name for p in path.parents] for x in (".cache", ".build"))
             ]
 
-            for path in paths_to_compile:
-                source_id = get_relative_path(path, contracts_folder)
+            source_ids = [get_relative_path(p, contracts_folder) for p in paths_to_compile]
+            for source_id in source_ids:
                 logger.info(f"Compiling '{source_id}'.")
 
             compiled_contracts = self.registered_compilers[extension].compile(
@@ -155,11 +155,25 @@ class CompilerManager(BaseManager):
                     raise CompilerError(error_message)
 
                 elif contract_name in built_names:
-                    error_message = (
-                        f"{ContractType.__name__} collision between "
-                        f"with contract named '{contract_name}'."
+                    # Ensure we are not colliding.
+                    existing_artifact = (
+                        self.project_manager.local_project._cache_folder / f"{contract_name}.json"
                     )
-                    raise CompilerError(error_message)
+
+                    try:
+                        existing_contract = ContractType.parse_file(existing_artifact)
+                    except Exception:
+                        existing_artifact.unlink()
+
+                    else:
+                        path = self.project_manager.lookup_path(existing_contract.source_id)
+                        if path and existing_contract.source_id != contract_type.source_id:
+                            error_message = f"{ContractType.__name__} collision '{contract_name}'."
+                            raise CompilerError(error_message)
+
+                        elif not path:
+                            # Artifact remaining from deleted contract, can delete.
+                            existing_artifact.unlink()
 
                 contract_types_dict[contract_name] = contract_type
 

@@ -36,7 +36,8 @@ def build_docs(path: Path) -> Path:
     try:
         subprocess.check_call(["sphinx-build", "docs", str(path)])
     except subprocess.SubprocessError as err:
-        raise ApeDocsBuildError(f"Command 'sphinx-build docs {path}' failed.") from err
+        message = f"Command 'sphinx-build docs {path}' failed.\nErr:{err}"
+        raise ApeDocsBuildError(message) from err
 
     return path
 
