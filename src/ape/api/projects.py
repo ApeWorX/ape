@@ -137,19 +137,22 @@ class ProjectAPI(BaseInterfaceModel):
 
     @property
     def contracts(self) -> Dict[str, ContractType]:
-        if self._contracts is None:
-            contracts = {}
-            for p in self._cache_folder.glob("*.json"):
-                if p == self.manifest_cachefile:
-                    continue
+        if self._contracts is not None:
+            return self._contracts
 
-                contract_name = p.stem
-                contract_type = ContractType.parse_file(p)
-                if contract_type.name is None:
-                    contract_type.name = contract_name
+        contracts = {}
+        for p in self._cache_folder.glob("*.json"):
+            if p == self.manifest_cachefile:
+                continue
 
-                contracts[contract_type.name] = contract_type
-            self._contracts = contracts
+            contract_name = p.stem
+            contract_type = ContractType.parse_file(p)
+            if contract_type.name is None:
+                contract_type.name = contract_name
+
+            contracts[contract_type.name] = contract_type
+
+        self._contracts = contracts
         return self._contracts
 
     @property
