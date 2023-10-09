@@ -173,11 +173,11 @@ class Call(BaseMulticall):
             raise NotExecutedError()
 
         elif isinstance(result, tuple):
-            # Call3[]
+            # Result[] that decoded.
             return result[1]
 
         elif isinstance(result, list):
-            # Call3Value[]
+            # Result[] that decoded incorrectly.
             return_data = []
             for tuple_result in result:
                 data = tuple_result[1]
