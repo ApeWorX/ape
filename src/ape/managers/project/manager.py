@@ -407,7 +407,7 @@ class ProjectManager(BaseManager):
         Returns:
             Dict[str, ``ContractType``]
         """
-        if self.local_project._cached_manifest is None:
+        if self.local_project.cached_manifest is None:
             return self.load_contracts()
 
         return self.local_project.contracts

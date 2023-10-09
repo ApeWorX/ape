@@ -1,3 +1,4 @@
+import os
 import shutil
 from pathlib import Path
 from urllib.parse import urlparse
@@ -394,3 +395,21 @@ def test_getattr_contract_not_exists(project):
     contract.touch()
     with pytest.raises(AttributeError, match=expected):
         _ = project.ThisIsNotAContractThatExists
+
+
+def test_build_file_only_modified_once(project_with_contract):
+    project = project_with_contract
+    artifact = project.path / ".build" / "__local__.json"
+    _ = project.contracts  # Ensure compiled.
+
+    # NOTE: This is how re-create the bug. Delete the underscore-prefixed
+    #  cached object and attempt to re-compile. Previously, the ProjectManager
+    #  was relying on an internal cache rather than the external one, and thus
+    #  caused the file to get unnecessarily re-made (modified).
+    project.local_project._cached_manifest = None
+
+    # Prove the file is not unnecessarily modified.
+    time_before = os.path.getmtime(artifact)
+    _ = project.contracts
+    time_after = os.path.getmtime(artifact)
+    assert time_before == time_after
