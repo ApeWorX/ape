@@ -3,7 +3,7 @@ from typing import Any, Dict
 import pytest
 from eth_typing import HexAddress, HexStr
 from ethpm_types import HexBytes
-from ethpm_types.abi import ABIType, MethodABI
+from ethpm_types.abi import ABIType, EventABI, MethodABI
 
 from ape.api.networks import LOCAL_NETWORK_NAME
 from ape.exceptions import DecodingError, NetworkNotFoundError
@@ -136,6 +136,68 @@ def test_decode_logs(ethereum, vyper_contract_instance):
 def test_decode_logs_empty_list(ethereum, event_abi):
     actual = [x for x in ethereum.decode_logs([], event_abi)]
     assert actual == []
+
+
+def test_decode_logs_with_struct_from_interface(ethereum):
+    abi = EventABI.parse_obj(
+        {
+            "type": "event",
+            "name": "ConditionalOrderCreated",
+            "inputs": [
+                {"name": "owner", "type": "address", "internalType": "address", "indexed": True},
+                {
+                    "name": "params",
+                    "type": "tuple",
+                    "components": [
+                        {
+                            "name": "handler",
+                            "type": "address",
+                            "internalType": "contract IConditionalOrder",
+                        },
+                        {"name": "salt", "type": "bytes32", "internalType": "bytes32"},
+                        {"name": "staticInput", "type": "bytes", "internalType": "bytes"},
+                    ],
+                    "internalType": "struct IConditionalOrder.ConditionalOrderParams",
+                    "indexed": False,
+                },
+            ],
+            "anonymous": False,
+        }
+    )
+    logs = [
+        {
+            "address": "0xfdafc9d1902f4e0b84f65f49f244b32b31013b74",
+            "blockHash": "0xec1b8e18412dd91114c0b3ea03c41d02243d60cd05661861df5765fb5ec462c6",
+            "blockNumber": "0x11101cc",
+            "data": "0x00000000000000000000000000000000000000000000000000000000000000200000000000000000000000006cf1e9ca41f7611def408122793c358a3d11e5a5000000000000000000000000000000000000000000000000000000189e491e96000000000000000000000000000000000000000000000000000000000000006000000000000000000000000000000000000000000000000000000000000001400000000000000000000000006b175474e89094c44da98b954eedeac495271d0f000000000000000000000000c02aaa39b223fe8d0a0e5c4f27ead9083c756cc2000000000000000000000000e7602ca44f83a5e9ba8bd14125ddcb295f3d63bd00000000000000000000000000000000000000000000018eb03406b6af33c8c3000000000000000000000000000000000000000000000000345d7669a1e8815700000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000012c00000000000000000000000000000000000000000000000000000000000000007b9bc44550e2cc369010139a1d3a5a6ec6d65910379e0ee35a7c3cdf24cb12a7",  # noqa: E501
+            "logIndex": "0x97",
+            "removed": False,
+            "topics": [
+                "0x2cceac5555b0ca45a3744ced542f54b56ad2eb45e521962372eef212a2cbf361",
+                "0x000000000000000000000000e7602ca44f83a5e9ba8bd14125ddcb295f3d63bd",
+            ],
+            "transactionHash": "0x55859e74e591100e0f37f146abc0dbebe2252eaf5f533319ca77427745b85ceb",
+            "transactionIndex": "0x45",
+        }
+    ]
+    actual = list(ethereum.decode_logs(logs, abi))
+    assert len(actual) == 1
+    assert actual[0].owner == "0xE7602Ca44f83a5E9Ba8BD14125dDcb295f3D63BD"
+    assert actual[0].params == [
+        "0x6cf1e9ca41f7611def408122793c358a3d11e5a5",
+        HexBytes("0x000000000000000000000000000000000000000000000000000000189e491e96"),
+        HexBytes(
+            "0x0000000000000000000000006b175474e89094c44da98b954eedeac495271d0f0000000"
+            "00000000000000000c02aaa39b223fe8d0a0e5c4f27ead9083c756cc20000000000000000"
+            "00000000e7602ca44f83a5e9ba8bd14125ddcb295f3d63bd0000000000000000000000000"
+            "0000000000000000000018eb03406b6af33c8c30000000000000000000000000000000000"
+            "00000000000000345d7669a1e881570000000000000000000000000000000000000000000"
+            "0000000000000000000000000000000000000000000000000000000000000000000000000"
+            "0000000000020000000000000000000000000000000000000000000000000000000000000"
+            "12c00000000000000000000000000000000000000000000000000000000000000007b9bc4"
+            "4550e2cc369010139a1d3a5a6ec6d65910379e0ee35a7c3cdf24cb12a7"
+        ),
+    ]
 
 
 def test_decode_block_when_hash_is_none(ethereum):
