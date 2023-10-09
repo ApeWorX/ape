@@ -100,6 +100,8 @@ class CompilerManager(BaseManager):
         contracts_folder = self.config_manager.contracts_folder
         contract_types_dict: Dict[str, ContractType] = {}
         built_paths = [p for p in self.project_manager.local_project._cache_folder.glob("*.json")]
+        built_names = [p.stem for p in built_paths if p.stem != "__local__"]
+
         for extension in extensions:
             path_patterns_to_ignore = self.config_manager.compiler.ignore_files
             ignore_path_lists = [contracts_folder.rglob(p) for p in path_patterns_to_ignore]
@@ -149,6 +151,13 @@ class CompilerManager(BaseManager):
                         f"{ContractType.__name__} collision between sources "
                         f"'{contract_type.source_id}' and "
                         f"'{already_added_contract_type.source_id}'."
+                    )
+                    raise CompilerError(error_message)
+
+                elif contract_name in built_names:
+                    error_message = (
+                        f"{ContractType.__name__} collision between "
+                        f"with contract named '{contract_name}'."
                     )
                     raise CompilerError(error_message)
 

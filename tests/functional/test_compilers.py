@@ -67,6 +67,20 @@ def test_flatten_contract(compilers, project_with_contract):
     with pytest.raises(APINotImplementedError):
         compilers.flatten_contract(path)
 
-    expected = r"Unable to flatten contract\. Missing compiler for '.foo'."
+    expected = r"Unable to flatten contract\. Missing compiler for '.foo'\."
     with pytest.raises(CompilerError, match=expected):
         compilers.flatten_contract(Path("contract.foo"))
+
+
+def test_contract_type_collision(compilers, project_with_contract, mock_compiler):
+    existing_compilers = compilers._registered_compilers_cache[project_with_contract.path]
+    all_compilers = {**existing_compilers, mock_compiler.ext: mock_compiler}
+    compilers._registered_compilers_cache[project_with_contract.path] = all_compilers
+
+    # Make contracts of type .__mock__ with the same names.
+    contract_name = next(iter(project_with_contract.contracts))
+    new_contract = project_with_contract.path / f"{contract_name}{mock_compiler.ext}"
+    new_contract.write_text("foobar")
+
+    with pytest.raises(CompilerError, match="ContractType collision.*"):
+        compilers.compile([new_contract])

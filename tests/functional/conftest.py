@@ -512,3 +512,23 @@ def mock_explorer(mocker):
     explorer = mocker.MagicMock()
     explorer.name = "mock"  # Needed for network data serialization.
     return explorer
+
+
+@pytest.fixture
+def mock_compiler(mocker):
+    mock = mocker.MagicMock()
+    mock.ext = ".__mock__"
+
+    def mock_compile(paths, *args, **kwargs):
+        result = []
+        for path in paths:
+            if path.suffix == mock.ext:
+                name = path.stem
+                code = HexBytes(123).hex()
+                contract_type = ContractType(contractName=name, abi=[], deploymentBytecode=code)
+                result.append(contract_type)
+
+        return result
+
+    mock.compile.side_effect = mock_compile
+    return mock
