@@ -16,9 +16,9 @@ class ReturndataClass:
 
 
 RETURNDATA_PARAMS = {
-    "aggregate": ReturndataClass(),
-    "aggregate3value": (1, [RETURNDATA]),
-    "aggregate3": [(True, RETURNDATA)],
+    "result": ReturndataClass(),
+    # Happens when using Call() for a single call.
+    "result_single": [False, RETURNDATA],
 }
 
 

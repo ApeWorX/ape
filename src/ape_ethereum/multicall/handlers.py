@@ -172,25 +172,22 @@ class Call(BaseMulticall):
         if not result:
             raise NotExecutedError()
 
+        elif (
+            isinstance(result, (tuple, list))
+            and len(result) >= 2
+            and type(result[0]) is bool
+            and isinstance(result[1], bytes)
+        ):
+            # Call3[] or Call3Value[] when only single call.s
+            return [result[1]]
+
         elif isinstance(result, tuple):
-            # Result[] that decoded.
-            return result[1]
-
-        elif isinstance(result, list):
-            # Result[] that decoded incorrectly.
-            return_data = []
-            for tuple_result in result:
-                data = tuple_result[1]
-                if tuple_result[0]:
-                    self._failed_results.append(data)
-
-                return_data.append(data)
-
-            return return_data
+            # Call3[] or Call3Value[] when multiple calls.
+            return list(r[1] for r in self._result)  # type: ignore
 
         else:
             # blockNumber: uint256, returnData: Call[]
-            return result.returnData  # type: ignore[attr-defined]
+            return result.returnData  # type: ignore
 
     def _decode_results(self) -> Iterator[Any]:
         for abi, data in zip(self.abis, self.returnData):
