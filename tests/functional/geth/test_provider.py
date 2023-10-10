@@ -1,8 +1,9 @@
-from typing import cast
+from typing import List, Tuple, cast
 
 import pytest
 from eth_typing import HexStr
 
+from ape.api import ReceiptAPI
 from ape.exceptions import BlockNotFoundError, NetworkMismatchError, TransactionNotFoundError
 from ape_ethereum.ecosystem import Block
 from tests.conftest import GETH_URI, geth_process_test
@@ -237,3 +238,15 @@ def test_isolate(chain, geth_contract, geth_account):
 def test_gas_price(geth_provider):
     actual = geth_provider.gas_price
     assert isinstance(actual, int)
+
+
+@geth_process_test
+def test_get_contract_creation_receipts(mock_geth, geth_contract):
+    mock_geth._web3.eth.get_code.return_value = b"123"
+    result = next(mock_geth.get_contract_creation_receipts(geth_contract.address))
+    assert isinstance(result, ReceiptAPI)
+
+    # Ensure we tried using OTS.
+    actual = mock_geth._web3.provider.make_request.call_args
+    expected: Tuple[str, List] = ("ots_getApiLevel", [])
+    assert any(arguments == expected for arguments in actual)
