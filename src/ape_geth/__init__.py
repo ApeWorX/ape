@@ -3,6 +3,7 @@ from ape.api.networks import LOCAL_NETWORK_NAME
 
 from .provider import Geth as GethProvider
 from .provider import GethConfig, GethDev, GethNetworkConfig
+from .query import OTSQueryEngine
 
 
 @plugins.register(plugins.Config)
@@ -18,3 +19,8 @@ def providers():
         yield "ethereum", network_name, GethProvider
 
     yield "ethereum", LOCAL_NETWORK_NAME, GethDev
+
+
+@plugins.register(plugins.QueryPlugin)
+def query_engines():
+    yield OTSQueryEngine

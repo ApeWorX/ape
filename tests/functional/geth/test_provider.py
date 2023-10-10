@@ -1,4 +1,4 @@
-from typing import List, Tuple, cast
+from typing import cast
 
 import pytest
 from eth_typing import HexStr
@@ -237,18 +237,3 @@ def test_isolate(chain, geth_contract, geth_account):
 def test_gas_price(geth_provider):
     actual = geth_provider.gas_price
     assert isinstance(actual, int)
-
-
-@geth_process_test
-def test_get_contract_creation_receipts(mock_geth, geth_contract):
-    mock_geth._web3.eth.get_code.return_value = b"123"
-
-    # NOTE: Due to mocks, this next part may not actually find the contract.
-    #  but that is ok but we mostly want to make sure it tries OTS. There
-    #  are other tests for the brute-force logic.
-    next(mock_geth.get_contract_creation_receipts(geth_contract.address), None)
-
-    # Ensure we tried using OTS.
-    actual = mock_geth._web3.provider.make_request.call_args
-    expected: Tuple[str, List] = ("ots_getApiLevel", [])
-    assert any(arguments == expected for arguments in actual)

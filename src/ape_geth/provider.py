@@ -426,26 +426,23 @@ class BaseGethProvider(Web3Provider, ABC):
         )
         logger.info(f"{msg} {suffix}.")
 
-    def get_contract_creation_receipts(
-        self,
-        address: AddressType,
-        start_block: int = 0,
-        stop_block: Optional[int] = None,
-        contract_code: Optional[HexBytes] = None,
-    ) -> Iterator[ReceiptAPI]:
-        if self._ots_api_level is not None:
-            result = self._make_request("ots_getContractCreator", [address])
-            if not result:
-                # NOTE: Skip the explorer part of the error message via `has_explorer=True`.
-                raise ContractNotFoundError(address, has_explorer=True, provider_name=self.name)
+    def ots_get_contract_creator(self, address: AddressType) -> Optional[Dict]:
+        if self._ots_api_level is None:
+            return None
 
+        result = self._make_request("ots_getContractCreator", [address])
+        if result is None:
+            # NOTE: Skip the explorer part of the error message via `has_explorer=True`.
+            raise ContractNotFoundError(address, has_explorer=True, provider_name=self.name)
+
+        return result
+
+    def _get_contract_creation_receipt(self, address: AddressType) -> Optional[ReceiptAPI]:
+        if result := self.ots_get_contract_creator(address):
             tx_hash = result["hash"]
-            yield self.get_receipt(tx_hash)
+            return self.get_receipt(tx_hash)
 
-        else:
-            yield from super().get_contract_creation_receipts(
-                address, start_block=start_block, stop_block=stop_block, contract_code=contract_code
-            )
+        return None
 
     def _make_request(self, endpoint: str, parameters: Optional[List] = None) -> Any:
         parameters = parameters or []
