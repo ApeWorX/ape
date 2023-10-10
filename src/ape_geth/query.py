@@ -20,12 +20,13 @@ class OTSQueryEngine(QueryAPI):
 
     @estimate_query.register
     def estimate_contract_creation_query(self, query: ContractCreationQuery) -> Optional[int]:
-        if self.network_manager.active_provider:
-            if not isinstance(self.provider, BaseGethProvider):
+        if provider := self.network_manager.active_provider:
+            if not isinstance(provider, BaseGethProvider):
                 return None
+            elif uri := provider.http_uri:
+                return 225 if uri.startswith("http://") else 600
 
-        # About 225 ms per query
-        return 225
+        return None
 
     @perform_query.register
     def get_contract_creation_receipt(self, query: ContractCreationQuery) -> Iterator[ReceiptAPI]:

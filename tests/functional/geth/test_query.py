@@ -6,6 +6,7 @@ from tests.conftest import geth_process_test
 
 @geth_process_test
 def test_get_contract_creation_receipts(mock_geth, geth_contract, chain, networks, geth_provider):
+    geth_provider.__dict__["explorer"] = None
     provider = networks.active_provider
     networks.active_provider = mock_geth
     mock_geth._web3.eth.get_block.side_effect = geth_provider.get_block
