@@ -331,7 +331,6 @@ class CacheQueryProvider(QueryAPI):
             result = conn.execute(
                 select([Transactions]).where(Transactions.block_hash == query.block_id)
             )
-
             if not result:
                 # NOTE: Should be unreachable if estimated correctly
                 raise QueryEngineError(f"Could not perform query:\n{query}")
