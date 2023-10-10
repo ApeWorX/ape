@@ -298,13 +298,20 @@ class BaseGethProvider(Web3Provider, ABC):
         return _get_default_data_dir()
 
     @cached_property
-    def _ots_enabled(self) -> bool:
+    def _ots_api_level(self) -> Union[int, bool]:
+        # NOTE: Returns False when OTS namespace is not enabled.
         try:
             result = self._make_request("ots_getApiLevel")
         except (NotImplementedError, ApeException, ValueError):
             return False
 
-        return isinstance(result, int) or (isinstance(result, str) and result.isnumeric())
+        if isinstance(result, int):
+            return result
+
+        elif isinstance(result, str) and result.isnumeric():
+            return int(result)
+
+        return False
 
     def _set_web3(self):
         self._client_version = None  # Clear cached version when connecting to another URI.
@@ -426,7 +433,7 @@ class BaseGethProvider(Web3Provider, ABC):
         stop_block: Optional[int] = None,
         contract_code: Optional[HexBytes] = None,
     ) -> Iterator[ReceiptAPI]:
-        if self._ots_enabled:
+        if self._ots_api_level is not False:
             result = self._make_request("ots_getContractCreator", [address])
             if not result:
                 # NOTE: Skip the explorer part of the error message via `has_explorer=True`.
