@@ -1367,7 +1367,7 @@ class Web3Provider(ProviderAPI, ABC):
             )
 
         elif mid_block + 1 <= stop_block:
-            # The code does no exist yet, we need to look ahead.
+            # The code does not exist yet, we need to look ahead.
             yield from self.get_contract_creation_receipts(
                 address,
                 start_block=mid_block + 1,
