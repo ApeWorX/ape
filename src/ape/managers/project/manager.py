@@ -1,6 +1,6 @@
 import shutil
 from pathlib import Path
-from typing import Any, Dict, Iterable, List, Optional, Type, Union, cast
+from typing import Any, Dict, Iterable, List, Optional, Set, Type, Union, cast
 
 from eth_pydantic_types import Bip122Uri, HexStr
 from ethpm_types import ContractInstance as EthPMContractInstance
@@ -573,9 +573,7 @@ class ProjectManager(BaseManager):
 
         raise ProjectError(f"No contract found with name '{contract_name}'.")
 
-    def extensions_with_missing_compilers(
-        self, extensions: Optional[List[str]] = None
-    ) -> List[str]:
+    def extensions_with_missing_compilers(self, extensions: Optional[List[str]] = None) -> Set[str]:
         """
         All file extensions in the ``contracts/`` directory (recursively)
         that do not correspond to a registered compiler.
@@ -585,10 +583,10 @@ class ProjectManager(BaseManager):
                 are in this list. Useful for checking against a subset of source files.
 
         Returns:
-            List[str]: A list of file extensions found in the ``contracts/`` directory
+            Set[str]: A list of file extensions found in the ``contracts/`` directory
             that do not have associated compilers installed.
         """
-        extensions_found = []
+        extensions_found = set()
 
         def _append_extensions_in_dir(directory: Path):
             if not directory.is_dir():
@@ -597,16 +595,12 @@ class ProjectManager(BaseManager):
             for file in directory.iterdir():
                 if file.is_dir():
                     _append_extensions_in_dir(file)
-                elif (
-                    file.suffix
-                    and file.suffix not in extensions_found
-                    and file.suffix not in self.compiler_manager.registered_compilers
-                ):
-                    extensions_found.append(file.suffix)
+                else:
+                    extensions_found.add(file.suffix)
 
         _append_extensions_in_dir(self.contracts_folder)
         if extensions:
-            extensions_found = [e for e in extensions_found if e in extensions]
+            extensions_found = {e for e in extensions_found if e in extensions}
 
         return extensions_found
 

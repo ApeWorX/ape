@@ -16,7 +16,7 @@ from web3.exceptions import ContractPanicError
 from web3.providers.eth_tester.defaults import API_ENDPOINTS, static_return
 from web3.types import TxParams
 
-from ape.api import PluginConfig, ReceiptAPI, TestProviderAPI, TransactionAPI, Web3Provider
+from ape.api import PluginConfig, ReceiptAPI, TestProviderAPI, TransactionAPI
 from ape.exceptions import (
     ContractLogicError,
     ProviderError,
@@ -25,8 +25,9 @@ from ape.exceptions import (
     UnknownSnapshotError,
     VirtualMachineError,
 )
-from ape.types import SnapshotID
+from ape.types import BlockID, SnapshotID
 from ape.utils import DEFAULT_TEST_CHAIN_ID, gas_estimation_error_message
+from ape_ethereum.provider import Web3Provider
 
 
 class EthTesterProviderConfig(PluginConfig):
@@ -78,7 +79,9 @@ class LocalProvider(TestProviderAPI, Web3Provider):
         self.disconnect()
         self.connect()
 
-    def estimate_gas_cost(self, txn: TransactionAPI, **kwargs) -> int:
+    def estimate_gas_cost(
+        self, txn: TransactionAPI, block_id: Optional[BlockID] = None, **kwargs
+    ) -> int:
         if isinstance(self.network.gas_limit, int):
             return self.network.gas_limit
 
@@ -86,7 +89,6 @@ class LocalProvider(TestProviderAPI, Web3Provider):
             block = self.web3.eth.get_block("latest")
             return block["gasLimit"]
 
-        block_id = kwargs.pop("block_identifier", kwargs.pop("block_id", None))
         estimate_gas = self.web3.eth.estimate_gas
         txn_dict = txn.model_dump(mode="json")
         txn_dict.pop("gas", None)
@@ -103,7 +105,7 @@ class LocalProvider(TestProviderAPI, Web3Provider):
                 # and then set it back.
                 expected_nonce, actual_nonce = gas_match.groups()
                 txn.nonce = int(expected_nonce)
-                txn_params: TxParams = cast(TxParams, txn.model_dump(mode="json"))
+                txn_params: TxParams = cast(TxParams, txn.model_dump(by_alias=True, mode="json"))
                 value = estimate_gas(txn_params, block_identifier=block_id)
                 txn.nonce = int(actual_nonce)
                 return value
@@ -148,11 +150,17 @@ class LocalProvider(TestProviderAPI, Web3Provider):
         """
         return self._get_last_base_fee()
 
-    def send_call(self, txn: TransactionAPI, **kwargs) -> bytes:
+    def send_call(
+        self,
+        txn: TransactionAPI,
+        block_id: Optional[BlockID] = None,
+        state: Optional[Dict] = None,
+        **kwargs,
+    ) -> HexBytes:
         data = txn.model_dump(mode="json", exclude_none=True)
         block_id = kwargs.pop("block_identifier", kwargs.pop("block_id", None))
         state = kwargs.pop("state_override", None)
-        call_kwargs = {"block_identifier": block_id, "state_override": state}
+        call_kwargs: Dict = {"block_identifier": block_id, "state_override": state}
 
         # Remove unneeded properties
         data.pop("gas", None)
@@ -170,7 +178,7 @@ class LocalProvider(TestProviderAPI, Web3Provider):
             raise self.get_virtual_machine_error(err, txn=txn) from err
 
         self._increment_call_func_coverage_hit_count(txn)
-        return result
+        return HexBytes(result)
 
     def send_transaction(self, txn: TransactionAPI) -> ReceiptAPI:
         try:

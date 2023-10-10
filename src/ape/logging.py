@@ -283,8 +283,5 @@ def sanitize_url(url: str) -> str:
 
 logger = ApeLogger.create()
 
-# TODO: Can remove this type alias after 0.7
-CliLogger = ApeLogger
-
 
 __all__ = ["DEFAULT_LOG_LEVEL", "logger", "LogLevel", "ApeLogger"]

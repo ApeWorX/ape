@@ -18,8 +18,9 @@ from ape.exceptions import (
     ApeAttributeError,
     ArgumentsLengthError,
     ChainError,
-    ContractError,
+    ContractDataError,
     ContractLogicError,
+    ContractNotFoundError,
     CustomError,
     MethodNonPayableError,
     TransactionNotFoundError,
@@ -140,7 +141,8 @@ class ContractMethodHandler(ManagerAccessMixin):
 
     def decode_input(self, calldata: bytes) -> Tuple[str, Dict[str, Any]]:
         matching_abis = []
-        err = ContractError(
+        rest_calldata = None
+        err = ContractDataError(
             f"Unable to find matching method ABI for calldata '{calldata.hex()}'. "
             "Try prepending a method ID to the beginning of the calldata."
         )
@@ -154,7 +156,7 @@ class ContractMethodHandler(ManagerAccessMixin):
         if len(matching_abis) == 1:
             abi = matching_abis[0]
             decoded_input = self.provider.network.ecosystem.decode_calldata(
-                matching_abis[0], HexBytes(rest_calldata)
+                matching_abis[0], HexBytes(rest_calldata or "")
             )
             return abi.selector, decoded_input
 
@@ -164,7 +166,6 @@ class ContractMethodHandler(ManagerAccessMixin):
         # Brute-force find method ABI
         valid_results = []
         for abi in self.abis:
-            decoded_calldata = {}
             try:
                 decoded_calldata = self.provider.network.ecosystem.decode_calldata(
                     abi, HexBytes(calldata)
@@ -185,8 +186,11 @@ class ContractMethodHandler(ManagerAccessMixin):
 class ContractCallHandler(ContractMethodHandler):
     def __call__(self, *args, **kwargs) -> Any:
         if not self.contract.is_contract:
-            network = self.provider.network.name
-            raise _get_non_contract_error(self.contract.address, network)
+            raise ContractNotFoundError(
+                self.contract.address,
+                self.provider.network.explorer is not None,
+                self.provider.name,
+            )
 
         selected_abi = _select_method_abi(self.abis, args)
         arguments = self.conversion_manager.convert_method_args(selected_abi, args)
@@ -351,8 +355,11 @@ class ContractTransactionHandler(ContractMethodHandler):
 
     def _as_transaction(self, *args) -> ContractTransaction:
         if not self.contract.is_contract:
-            network = self.provider.network.name
-            raise _get_non_contract_error(self.contract.address, network)
+            raise ContractNotFoundError(
+                self.contract.address,
+                self.provider.network.explorer is not None,
+                self.provider.name,
+            )
 
         selected_abi = _select_method_abi(self.abis, args)
 
@@ -757,7 +764,7 @@ class ContractTypeWrapper(ManagerAccessMixin):
             method = None
 
         if not method:
-            raise ContractError(
+            raise ContractDataError(
                 f"Unable to find method ABI from calldata '{calldata.hex()}'. "
                 "Try prepending the method ID to the beginning of the calldata."
             )
@@ -811,7 +818,7 @@ class ContractInstance(BaseAddress, ContractTypeWrapper):
 
         if has_value and has_non_payable_fallback and self.contract_type.receive is None:
             # User is sending a value when the contract doesn't accept it.
-            raise ContractError(
+            raise MethodNonPayableError(
                 "Contract's fallback is non-payable and there is no receive ABI. "
                 "Unable to send value."
             )
@@ -819,7 +826,9 @@ class ContractInstance(BaseAddress, ContractTypeWrapper):
         elif has_value and has_data and has_non_payable_fallback:
             # User is sending both value and data. When sending data, the fallback
             # is always triggered. Thus, since it is non-payable, it would fail.
-            raise ContractError("Sending both value= and data= but fallback is non-payable.")
+            raise MethodNonPayableError(
+                "Sending both value= and data= but fallback is non-payable."
+            )
 
         return super().__call__(*args, **kwargs)
 
@@ -827,7 +836,7 @@ class ContractInstance(BaseAddress, ContractTypeWrapper):
     def from_receipt(cls, receipt: ReceiptAPI, contract_type: ContractType) -> "ContractInstance":
         address = receipt.contract_address
         if not address:
-            raise ContractError(
+            raise ChainError(
                 "Receipt missing 'contract_address' field. "
                 "Was this from a deploy transaction (e.g. `project.MyContract.deploy()`)?"
             )
@@ -1004,7 +1013,8 @@ class ContractInstance(BaseAddress, ContractTypeWrapper):
 
         name_from_sig = signature.split("(")[0].strip()
         options = self._events_.get(name_from_sig, [])
-        err = ContractError(f"No event found with signature '{signature}'.")
+
+        err = ContractDataError(f"No event found with signature '{signature}'.")
         if not options:
             raise err
 
@@ -1028,7 +1038,7 @@ class ContractInstance(BaseAddress, ContractTypeWrapper):
 
         name_from_sig = signature.split("(")[0].strip()
         options = self._errors_.get(name_from_sig, [])
-        err = ContractError(f"No error found with signature '{signature}'.")
+        err = ContractDataError(f"No error found with signature '{signature}'.")
         if not options:
             raise err
 
@@ -1328,7 +1338,7 @@ class ContractContainer(ContractTypeWrapper):
 
         address = receipt.contract_address
         if not address:
-            raise ContractError(f"'{receipt.txn_hash}' did not create a contract.")
+            raise ChainError(f"'{receipt.txn_hash}' did not create a contract.")
 
         styled_address = click.style(receipt.contract_address, bold=True)
         contract_name = self.contract_type.name or "<Unnamed Contract>"
@@ -1383,13 +1393,6 @@ class ContractContainer(ContractTypeWrapper):
             logger.debug("Failed to cache contract declaration: missing contract address.")
 
         return receipt
-
-
-def _get_non_contract_error(address: str, network_name: str) -> ContractError:
-    return ContractError(
-        f"Unable to make contract call. "
-        f"'{address}' is not a contract on network '{network_name}'."
-    )
 
 
 class ContractNamespace:

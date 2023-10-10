@@ -127,13 +127,13 @@ Alternatively, you can call the [get_user_selected_account()](../methoddocs/cli.
 
 ```python
 import click
-from ape.cli import get_user_selected_account
+from ape.cli import select_account
 
 
 @click.command()
 def cmd():
-    account = get_user_selected_account("Select an account to use")
-    click.echo(f"You selected {account.address}.")
+   account = select_account("Select an account to use")
+   click.echo(f"You selected {account.address}.")
 ```
 
 Similarly, there are a couple custom arguments for aliases alone that are useful when making CLIs for account creation.

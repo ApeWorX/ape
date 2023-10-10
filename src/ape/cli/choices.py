@@ -124,7 +124,7 @@ class PromptChoice(click.ParamType):
     def fail_from_invalid_choice(self, param):
         return self.fail("Invalid choice.", param=param)
 
-    def get_user_selected_choice(self) -> str:
+    def select(self) -> str:
         choices = "\n".join(self.choices)
         choice = click.prompt(f"Select one of the following:\n{choices}").strip()
         if not choice.isnumeric():
@@ -138,7 +138,7 @@ class PromptChoice(click.ParamType):
         raise IndexError(f"Choice index '{choice_idx}' out of range.")
 
 
-def get_user_selected_account(
+def select_account(
     prompt_message: Optional[str] = None, account_type: _ACCOUNT_TYPE_FILTER = None
 ) -> AccountAPI:
     """
@@ -162,7 +162,7 @@ def get_user_selected_account(
         raise AccountsError(f"Cannot return accounts with type '{account_type}'.")
 
     prompt = AccountAliasPromptChoice(prompt_message=prompt_message, account_type=account_type)
-    return prompt.get_user_selected_account()
+    return prompt.select_account()
 
 
 class AccountAliasPromptChoice(PromptChoice):
@@ -241,7 +241,7 @@ class AccountAliasPromptChoice(PromptChoice):
             for idx, _ in enumerate(accounts.test_accounts):
                 yield f"TEST::{idx}"
 
-    def get_user_selected_account(self) -> AccountAPI:
+    def select_account(self) -> AccountAPI:
         """
         Returns the selected account.
 

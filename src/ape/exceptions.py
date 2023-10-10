@@ -68,13 +68,16 @@ class SignatureError(AccountsError):
     """
 
 
-class ContractError(ApeException):
+class ContractDataError(ApeException):
     """
-    Raised when issues occur with contracts.
+    Raised when issues occur with local contract.
+    **NOTE**: This error has nothing to do with on-chain
+    contract logic errors; it is more about ABI-related
+    issues and alike.
     """
 
 
-class ArgumentsLengthError(ContractError):
+class ArgumentsLengthError(ContractDataError):
     """
     Raised when calling a contract method with the wrong number of arguments.
     """
@@ -85,10 +88,6 @@ class ArgumentsLengthError(ContractError):
         inputs: Union[MethodABI, ConstructorABI, int, List, None] = None,
         **kwargs,
     ):
-        # For backwards compat. # TODO: Remove in 0.7
-        if "inputs_length" in kwargs and not inputs:
-            inputs = kwargs["inputs_length"]
-
         prefix = (
             f"The number of the given arguments ({arguments_length}) "
             f"do not match what is defined in the ABI"
@@ -126,7 +125,7 @@ class ArgumentsLengthError(ContractError):
         super().__init__(f"{prefix}{suffix}")
 
 
-class DecodingError(ContractError):
+class DecodingError(ContractDataError):
     """
     Raised when issues occur while decoding data from
     a contract call, transaction, or event.
@@ -137,13 +136,13 @@ class DecodingError(ContractError):
         super().__init__(message)
 
 
-class MethodNonPayableError(ContractError):
+class MethodNonPayableError(ContractDataError):
     """
     Raises when sending funds to a non-payable method
     """
 
 
-class TransactionError(ContractError):
+class TransactionError(ApeException):
     """
     Raised when issues occur related to transactions.
     """

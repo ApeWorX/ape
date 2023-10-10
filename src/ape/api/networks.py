@@ -140,12 +140,9 @@ class EcosystemAPI(BaseInterfaceModel):
             :class:`~ape.ape.transactions.TransactionAPI`
         """
 
-    def serialize_transaction(self, transaction: "TransactionAPI") -> bytes:
+    def serialize_transaction(self) -> bytes:
         """
         Serialize a transaction to bytes.
-
-        Args:
-            transaction (:class:`~ape.api.transactions.TransactionAPI`): The transaction to encode.
 
         Returns:
             bytes

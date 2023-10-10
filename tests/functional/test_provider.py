@@ -6,10 +6,10 @@ from eth_typing import HexStr
 from eth_utils import ValidationError
 from web3.exceptions import ContractPanicError
 
-from ape.api.providers import _sanitize_web3_url
 from ape.exceptions import BlockNotFoundError, ContractLogicError, TransactionNotFoundError
 from ape.types import LogFilter
 from ape.utils import DEFAULT_TEST_CHAIN_ID
+from ape_ethereum.provider import _sanitize_web3_url
 from ape_ethereum.transactions import TransactionType
 
 

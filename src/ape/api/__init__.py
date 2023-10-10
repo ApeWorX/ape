@@ -18,14 +18,7 @@ from .networks import (
     create_network_type,
 )
 from .projects import DependencyAPI, ProjectAPI
-from .providers import (
-    BlockAPI,
-    ProviderAPI,
-    SubprocessProvider,
-    TestProviderAPI,
-    UpstreamProvider,
-    Web3Provider,
-)
+from .providers import BlockAPI, ProviderAPI, SubprocessProvider, TestProviderAPI, UpstreamProvider
 from .query import QueryAPI, QueryType
 from .transactions import ReceiptAPI, TransactionAPI
 
@@ -58,5 +51,4 @@ __all__ = [
     "TestProviderAPI",
     "TransactionAPI",
     "UpstreamProvider",
-    "Web3Provider",
 ]

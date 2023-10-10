@@ -1,16 +1,12 @@
-from typing import Any, List, Optional
+from typing import List
 
-from pydantic import Field, field_validator
+from pydantic import field_validator
 
 from ape import plugins
 from ape.api import PluginConfig
-from ape.logging import logger
 
 
 class Config(PluginConfig):
-    # TODO: Remove in 0.7
-    evm_version: Optional[Any] = Field(None, exclude=True, repr=False)
-
     include_dependencies: bool = False
     """
     Set to ``True`` to compile dependencies during ``ape compile``.
@@ -26,16 +22,6 @@ class Config(PluginConfig):
     """
     Source exclusion globs across all file types.
     """
-
-    @field_validator("evm_version")
-    def warn_deprecate(cls, value):
-        if value:
-            logger.warning(
-                "`evm_version` config is deprecated. "
-                "Please set in respective compiler plugin config."
-            )
-
-        return None
 
     @field_validator("exclude", mode="before")
     def validate_exclude(cls, value):

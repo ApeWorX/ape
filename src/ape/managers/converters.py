@@ -145,64 +145,6 @@ class IntAddressConverter(ConverterAPI):
         return to_checksum_address(to_hex(value))
 
 
-class ListTupleConverter(ConverterAPI):
-    """
-    A converter that converts all items in a tuple or list recursively.
-    """
-
-    def is_convertible(self, value: Any) -> bool:
-        return isinstance(value, (list, tuple))
-
-    def convert(self, value: Union[List, Tuple]) -> Union[List, Tuple]:
-        """
-        Convert the items inside the given list or tuple.
-
-        Args:
-            value (Union[List, Tuple]): The collection to convert.
-
-        Returns:
-            Union[list, tuple]: Depending on the input
-        """
-
-        converted_value: List[Any] = []
-
-        for v in value:
-            # Ignore already-primitive values and assume they are already converted
-            # (since we don't know the type they are supposed to be, only that
-            # they should be primitive). Also, ignore dicts because they are handled
-            # at the ecosystem level.
-            if (
-                (isinstance(v, str) and is_hex(v))
-                or isinstance(v, (int, bytes))
-                or isinstance(v, dict)
-            ):
-                converted_value.append(v)
-                continue
-
-            # Try all of them to see if one converts it over (only use first one)
-            conversion_found = False
-            # NOTE: Double loop required because we might not know the exact type of the inner
-            #       items. The UX of having to specify all inner items seemed poor as well.
-            for typ in self.conversion_manager._converters:
-                for check_fn, convert_fn in map(
-                    lambda c: (c.is_convertible, c.convert),
-                    self.conversion_manager._converters[typ],
-                ):
-                    if check_fn(v):
-                        converted_value.append(convert_fn(v))
-                        conversion_found = True
-                        break
-
-                if conversion_found:
-                    break
-
-            if not conversion_found:
-                # NOTE: If no conversions found, just insert the original
-                converted_value.append(v)
-
-        return value.__class__(converted_value)
-
-
 class TimestampConverter(ConverterAPI):
     """
     Converts either a string, datetime object, or a timedelta object to a timestamp.
@@ -263,8 +205,6 @@ class ConversionManager(BaseManager):
             bytes: [HexConverter()],
             int: [TimestampConverter(), HexIntConverter(), StringIntConverter()],
             Decimal: [],
-            list: [ListTupleConverter()],
-            tuple: [ListTupleConverter()],
             bool: [],
             str: [],
         }
@@ -372,17 +312,17 @@ class ConversionManager(BaseManager):
         arguments: Sequence[Any],
     ):
         input_types = [i.canonical_type for i in abi.inputs]
-        pre_processed_args = []
+        converted_arguments = []
         for ipt, argument in zip(input_types, arguments):
             # Handle primitive-addresses separately since they may not occur
             # on the tuple-conversion if they are integers or bytes.
             if str(ipt) == "address":
                 converted_value = self.convert(argument, AddressType)
-                pre_processed_args.append(converted_value)
+                converted_arguments.append(converted_value)
             else:
-                pre_processed_args.append(argument)
+                converted_arguments.append(argument)
 
-        return self.convert(pre_processed_args, tuple)
+        return converted_arguments
 
     def convert_method_kwargs(self, kwargs) -> Dict:
         fields = TransactionAPI.model_fields
