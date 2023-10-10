@@ -3,6 +3,7 @@ import os
 import shutil
 import sys
 from abc import ABC
+from functools import cached_property
 from itertools import tee
 from pathlib import Path
 from subprocess import DEVNULL, PIPE, Popen
@@ -38,15 +39,21 @@ from yarl import URL
 from ape._pydantic_compat import Extra
 from ape.api import (
     PluginConfig,
+    ReceiptAPI,
     SubprocessProvider,
     TestProviderAPI,
     TransactionAPI,
     UpstreamProvider,
     Web3Provider,
 )
-from ape.exceptions import APINotImplementedError, ProviderError
+from ape.exceptions import (
+    ApeException,
+    APINotImplementedError,
+    ContractNotFoundError,
+    ProviderError,
+)
 from ape.logging import LogLevel, logger
-from ape.types import CallTreeNode, SnapshotID, SourceTraceback, TraceFrame
+from ape.types import AddressType, CallTreeNode, SnapshotID, SourceTraceback, TraceFrame
 from ape.utils import (
     DEFAULT_NUMBER_OF_TEST_ACCOUNTS,
     DEFAULT_TEST_CHAIN_ID,
@@ -290,6 +297,15 @@ class BaseGethProvider(Web3Provider, ABC):
 
         return _get_default_data_dir()
 
+    @cached_property
+    def _ots_enabled(self) -> bool:
+        try:
+            result = self._make_request("ots_getApiLevel")
+        except (NotImplementedError, ApeException, ValueError):
+            return False
+
+        return isinstance(result, int) or (isinstance(result, str) and result.isnumeric())
+
     def _set_web3(self):
         self._client_version = None  # Clear cached version when connecting to another URI.
         self._web3 = _create_web3(self.uri, ipc_path=self.ipc_path)
@@ -310,6 +326,7 @@ class BaseGethProvider(Web3Provider, ABC):
             self.block_page_size = 50_000
         else:
             client_name = client_version.split("/")[0]
+            logger.warning(f"Connecting Geth plugin to non-Geth client '{client_name}'.")
             logger.warning(f"Connecting Geth plugin to non-Geth client '{client_name}'.")
 
         self.web3.eth.set_gas_price_strategy(rpc_gas_price_strategy)
@@ -402,7 +419,29 @@ class BaseGethProvider(Web3Provider, ABC):
         )
         logger.info(f"{msg} {suffix}.")
 
-    def _make_request(self, endpoint: str, parameters: List) -> Any:
+    def get_contract_creation_receipts(
+        self,
+        address: AddressType,
+        start_block: int = 0,
+        stop_block: Optional[int] = None,
+        contract_code: Optional[HexBytes] = None,
+    ) -> Iterator[ReceiptAPI]:
+        if self._ots_enabled:
+            result = self._make_request("ots_getContractCreator", [address])
+            if not result:
+                # NOTE: Skip the explorer part of the error message via `has_explorer=True`.
+                raise ContractNotFoundError(address, has_explorer=True, provider_name=self.name)
+
+            tx_hash = result["hash"]
+            yield self.get_receipt(tx_hash)
+
+        else:
+            yield from super().get_contract_creation_receipts(
+                address, start_block=start_block, stop_block=stop_block, contract_code=contract_code
+            )
+
+    def _make_request(self, endpoint: str, parameters: Optional[List] = None) -> Any:
+        parameters = parameters or []
         try:
             return super()._make_request(endpoint, parameters)
         except ProviderError as err:
