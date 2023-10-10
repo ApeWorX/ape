@@ -1358,6 +1358,7 @@ class Web3Provider(ProviderAPI, ABC):
         # TODO: Handle when code is nonzero but doesn't match
         # TODO: Handle when code is empty after it's not (re-init)
         elif HexBytes(self.get_code(address, block_id=mid_block)) == contract_code:
+            # If the code exists, we need to look backwards.
             yield from self.get_contract_creation_receipts(
                 address,
                 start_block=start_block,
@@ -1366,6 +1367,7 @@ class Web3Provider(ProviderAPI, ABC):
             )
 
         elif mid_block + 1 <= stop_block:
+            # The code does not exist yet, we need to look ahead.
             yield from self.get_contract_creation_receipts(
                 address,
                 start_block=mid_block + 1,
