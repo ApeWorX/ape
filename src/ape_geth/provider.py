@@ -295,18 +295,21 @@ class BaseGethProvider(Web3Provider, ABC):
         self._web3 = _create_web3(self.uri, ipc_path=self.ipc_path)
 
     def _complete_connect(self):
-        if "geth" in self.client_version.lower():
+        client_version = self.client_version.lower()
+        if "geth" in client_version:
             self._log_connection("Geth")
-        elif "erigon" in self.client_version.lower():
+        elif "reth" in client_version:
+            self._log_connection("Reth")
+        elif "erigon" in client_version:
             self._log_connection("Erigon")
             self.concurrency = 8
             self.block_page_size = 40_000
-        elif "nethermind" in self.client_version.lower():
+        elif "nethermind" in client_version:
             self._log_connection("Nethermind")
             self.concurrency = 32
             self.block_page_size = 50_000
         else:
-            client_name = self.client_version.split("/")[0]
+            client_name = client_version.split("/")[0]
             logger.warning(f"Connecting Geth plugin to non-Geth client '{client_name}'.")
 
         self.web3.eth.set_gas_price_strategy(rpc_gas_price_strategy)
