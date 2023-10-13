@@ -213,10 +213,10 @@ class BaseModel(_BaseModel):
 
             # The error message mentions the alternative mappings,
             # such as a contract-type map.
-            message = f"No attribute with name '{name}'."
+            message = f"'{repr(self)}' has no attribute '{name}'"
             if extras_checked:
                 extras_str = ", ".join(extras_checked)
-                message = f"{message} Also checked '{extras_str}'."
+                message = f"{message}. Also checked '{extras_str}'"
 
             raise ApeAttributeError(message)
 
