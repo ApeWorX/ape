@@ -128,7 +128,7 @@ class ProviderAPI(BaseInterfaceModel):
     network: NetworkAPI
     """A reference to the network this provider provides."""
 
-    provider_settings: dict
+    provider_settings: Dict = {}
     """The settings for the provider, as overrides to the configuration."""
 
     data_folder: Path

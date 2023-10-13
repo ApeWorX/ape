@@ -861,16 +861,23 @@ class NetworkAPI(BaseInterfaceModel):
             provider_name = "geth"
 
         if provider_name in self.providers:
-            provider = self.providers[provider_name](provider_settings=provider_settings)
-
+            provider = self.providers[provider_name]()
             connection_id = provider.connection_id
+
             if not connection_id:
                 # Provider not yet connected
+                provider.provider_settings = provider_settings
                 return provider
 
-            if connection_id in ProviderContextManager.connected_providers:
-                return ProviderContextManager.connected_providers[connection_id]
+            elif connection_id in ProviderContextManager.connected_providers:
+                connected_provider = ProviderContextManager.connected_providers[connection_id]
+                new_settings = {**connected_provider.provider_settings, **provider_settings}
+                if connected_provider.provider_settings != provider_settings:
+                    connected_provider.update_settings(new_settings)
 
+                return connected_provider
+
+            provider.provider_settings = provider_settings
             return provider
 
         else:
