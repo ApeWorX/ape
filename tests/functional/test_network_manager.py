@@ -19,9 +19,9 @@ chain_id_factory = NewChainID()
 def get_provider_with_unused_chain_id(networks_connected_to_tester):
     networks = networks_connected_to_tester
 
-    def fn():
+    def fn(**more_settings):
         chain_id = chain_id_factory()
-        settings = {"chain_id": chain_id}
+        settings = {"chain_id": chain_id, **more_settings}
         choice = "ethereum:local:test"
         context = networks.parse_network_choice(choice, provider_settings=settings)
         return context
@@ -177,6 +177,15 @@ def test_parse_network_choice_new_chain_id(get_provider_with_unused_chain_id, ge
 
     for provider in context.connected_providers.values():
         assert provider._web3 is not None
+
+
+def test_disconnect_after(get_provider_with_unused_chain_id):
+    context = get_provider_with_unused_chain_id(disconnect_after=True)
+    with context as provider:
+        connection_id = provider.connection_id
+        assert connection_id in context.connected_providers
+
+    assert context not in context.connected_providers
 
 
 def test_parse_network_choice_multiple_contexts(get_provider_with_unused_chain_id):
