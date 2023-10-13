@@ -184,6 +184,38 @@ class ProviderAPI(BaseInterfaceModel):
         """
         return None
 
+    @property
+    def settings(self) -> PluginConfig:
+        """
+        The combination of settings from ``ape-config.yaml`` and ``.provider_settings``.
+        """
+        CustomConfig = self.config.__class__
+        data = {**self.config.dict(), **self.provider_settings}
+        return CustomConfig.parse_obj(data)
+
+    @property
+    def connection_id(self) -> Optional[str]:
+        """
+        A connection ID for this provider's connection used for managing
+        multiple connections to providers and identifying them, especially if
+        using multiple providers of the same type, such as multiple Geth --dev
+        nodes.
+        """
+
+        try:
+            chain_id = self.chain_id
+        except Exception:
+            if chain_id := self.settings.get("chain_id"):
+                pass
+
+            else:
+                # A connection is required to obtain a chain ID for this provider.
+                return None
+
+        # NOTE: If other provider settings are different, ``.update_settings()``
+        #    should be called.
+        return f"{self.network_choice}:-{chain_id}"
+
     @abstractmethod
     def update_settings(self, new_settings: dict):
         """

@@ -573,22 +573,22 @@ class ProviderContextManager(ManagerAccessMixin):
         if must_connect:
             self._provider.connect()
 
-        provider_id = self.get_provider_id(self._provider)
-        if provider_id is None:
+        connection_id = self._provider.connection_id
+        if connection_id is None:
             raise ProviderNotConnectedError()
 
-        self.provider_stack.append(provider_id)
-        self.disconnect_map[provider_id] = self._disconnect_after
-        if provider_id in self.connected_providers:
+        self.provider_stack.append(connection_id)
+        self.disconnect_map[connection_id] = self._disconnect_after
+        if connection_id in self.connected_providers:
             # Using already connected instance
             if must_connect:
                 # Disconnect if had to connect to check chain ID
                 self._provider.disconnect()
 
-            self._provider = self.connected_providers[provider_id]
+            self._provider = self.connected_providers[connection_id]
         else:
             # Adding provider for the first time. Retain connection.
-            self.connected_providers[provider_id] = self._provider
+            self.connected_providers[connection_id] = self._provider
 
         self.network_manager.active_provider = self._provider
         return self._provider
@@ -598,24 +598,28 @@ class ProviderContextManager(ManagerAccessMixin):
             return
 
         # Clear last provider
-        exiting_provider_id = self.provider_stack.pop()
+        current_id = self.provider_stack.pop()
 
         # Disconnect the provider in same cases.
-        if self.disconnect_map[exiting_provider_id]:
+        if self.disconnect_map[current_id]:
             if provider := self.network_manager.active_provider:
                 provider.disconnect()
+
+            del self.disconnect_map[current_id]
+            if current_id in self.connected_providers:
+                del self.connected_providers[current_id]
 
         if not self.provider_stack:
             self.network_manager.active_provider = None
             return
 
         # Reset the original active provider
-        previous_provider_id = self.provider_stack[-1]
-        if previous_provider_id == exiting_provider_id:
+        prior_id = self.provider_stack[-1]
+        if prior_id == current_id:
             # Active provider is not changing
             return
 
-        if previous_provider := self.connected_providers[previous_provider_id]:
+        if previous_provider := self.connected_providers[prior_id]:
             self.network_manager.active_provider = previous_provider
 
     def disconnect_all(self):
@@ -627,13 +631,6 @@ class ProviderContextManager(ManagerAccessMixin):
 
         self.network_manager.active_provider = None
         self.connected_providers = {}
-
-    @classmethod
-    def get_provider_id(cls, provider: "ProviderAPI") -> Optional[str]:
-        if not provider.is_connected:
-            return None
-
-        return f"{provider.network_choice}:-{provider.chain_id}"
 
 
 class NetworkAPI(BaseInterfaceModel):
@@ -866,13 +863,13 @@ class NetworkAPI(BaseInterfaceModel):
         if provider_name in self.providers:
             provider = self.providers[provider_name](provider_settings=provider_settings)
 
-            provider_id = ProviderContextManager.get_provider_id(provider)
-            if not provider_id:
+            connection_id = provider.connection_id
+            if not connection_id:
                 # Provider not yet connected
                 return provider
 
-            if provider_id in ProviderContextManager.connected_providers:
-                return ProviderContextManager.connected_providers[provider_id]
+            if connection_id in ProviderContextManager.connected_providers:
+                return ProviderContextManager.connected_providers[connection_id]
 
             return provider
 

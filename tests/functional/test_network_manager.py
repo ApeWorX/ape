@@ -147,16 +147,16 @@ def test_parse_network_choice_same_provider(chain, networks_connected_to_tester,
     context = get_context()
     start_count = len(context.connected_providers)
     original_block_number = chain.blocks.height
-    provider_id = id(chain.provider)
+    object_id = id(chain.provider)
 
     with context:
-        assert id(chain.provider) == provider_id
+        assert id(chain.provider) == object_id
         count = len(context.connected_providers)
 
         # Does not create a new provider since it is the same chain ID
         assert count == start_count
 
-    assert id(chain.provider) == provider_id
+    assert id(chain.provider) == object_id
     assert len(context.connected_providers) == start_count
     assert chain.blocks.height == original_block_number
 
