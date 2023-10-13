@@ -45,7 +45,7 @@ class LocalProvider(TestProviderAPI, Web3Provider):
         return self._evm_backend
 
     def connect(self):
-        chain_id = self.provider_settings.get("chain_id", self.config.provider.chain_id)
+        chain_id = self.settings.chain_id
         if self._web3 is not None:
             connected_chain_id = self.chain_id
             if connected_chain_id == chain_id:
@@ -53,8 +53,8 @@ class LocalProvider(TestProviderAPI, Web3Provider):
                 return
 
         self._evm_backend = PyEVMBackend.from_mnemonic(
-            mnemonic=self.config["mnemonic"],
-            num_accounts=self.config["number_of_accounts"],
+            mnemonic=self.config.mnemonic,
+            num_accounts=self.config.number_of_accounts,
         )
         endpoints = {**API_ENDPOINTS}
         endpoints["eth"]["chainId"] = static_return(chain_id)
@@ -109,6 +109,13 @@ class LocalProvider(TestProviderAPI, Web3Provider):
                 ) from ape_err
 
     @property
+    def settings(self) -> EthTesterProviderConfig:
+        self.config.provider = EthTesterProviderConfig.parse_obj(
+            {**self.config.provider.dict(), **self.provider_settings}
+        )
+        return self.config.provider
+
+    @property
     def chain_id(self) -> int:
         if self.cached_chain_id:
             return self.cached_chain_id
@@ -116,7 +123,7 @@ class LocalProvider(TestProviderAPI, Web3Provider):
         try:
             result = self._make_request("eth_chainId", [])
         except ProviderNotConnectedError:
-            result = self.provider_settings.get("chain_id", self.config.provider.chain_id)
+            result = self.settings.chain_id
 
         self.cached_chain_id = result
         return result

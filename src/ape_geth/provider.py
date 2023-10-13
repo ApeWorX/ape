@@ -7,7 +7,7 @@ from functools import cached_property
 from itertools import tee
 from pathlib import Path
 from subprocess import DEVNULL, PIPE, Popen
-from typing import Any, Dict, Iterator, List, Optional, Tuple, Union, cast
+from typing import Any, Dict, Iterator, List, Optional, Tuple, Union
 
 import ijson  # type: ignore
 import requests
@@ -267,17 +267,13 @@ class BaseGethProvider(Web3Provider, ABC):
             # Use adhoc, scripted value
             return self.provider_settings["uri"]
 
-        config = self.config.dict().get(self.network.ecosystem.name, None)
+        config = self.settings.dict().get(self.network.ecosystem.name, None)
         if config is None:
             return DEFAULT_SETTINGS["uri"]
 
         # Use value from config file
         network_config = config.get(self.network.name) or DEFAULT_SETTINGS
         return network_config.get("uri", DEFAULT_SETTINGS["uri"])
-
-    @property
-    def geth_config(self) -> GethConfig:
-        return cast(GethConfig, self.config_manager.get_config("geth"))
 
     @property
     def _clean_uri(self) -> str:
@@ -288,12 +284,12 @@ class BaseGethProvider(Web3Provider, ABC):
 
     @property
     def ipc_path(self) -> Path:
-        return self.geth_config.ipc_path or self.data_dir / "geth.ipc"
+        return self.settings.ipc_path or self.data_dir / "geth.ipc"
 
     @property
     def data_dir(self) -> Path:
-        if self.geth_config.data_dir:
-            return self.geth_config.data_dir.expanduser()
+        if self.settings.data_dir:
+            return self.settings.data_dir.expanduser()
 
         return _get_default_data_dir()
 
@@ -481,12 +477,12 @@ class GethDev(BaseGethProvider, TestProviderAPI, SubprocessProvider):
 
     @property
     def chain_id(self) -> int:
-        return self.geth_config.ethereum.local.get("chain_id", DEFAULT_TEST_CHAIN_ID)
+        return self.settings.ethereum.local.get("chain_id", DEFAULT_TEST_CHAIN_ID)
 
     @property
     def data_dir(self) -> Path:
         # Overridden from BaseGeth class for placing debug logs in ape data folder.
-        return self.geth_config.data_dir or self.data_folder / self.name
+        return self.settings.data_dir or self.data_folder / self.name
 
     def __repr__(self):
         try:
@@ -505,8 +501,8 @@ class GethDev(BaseGethProvider, TestProviderAPI, SubprocessProvider):
         test_config = self.config_manager.get_config("test").dict()
 
         # Allow configuring a custom executable besides your $PATH geth.
-        if self.geth_config.executable is not None:
-            test_config["executable"] = self.geth_config.executable
+        if self.settings.executable is not None:
+            test_config["executable"] = self.settings.executable
 
         test_config["ipc_path"] = self.ipc_path
         test_config["auto_disconnect"] = self._test_runner is None or test_config.get(
@@ -514,7 +510,7 @@ class GethDev(BaseGethProvider, TestProviderAPI, SubprocessProvider):
         )
 
         # Include extra accounts to allocated funds to at genesis.
-        extra_accounts = self.geth_config.ethereum.local.get("extra_funded_accounts", [])
+        extra_accounts = self.settings.ethereum.local.get("extra_funded_accounts", [])
         extra_accounts.extend(self.provider_settings.get("extra_funded_accounts", []))
         extra_accounts = list(set([HexBytes(a).hex().lower() for a in extra_accounts]))
         test_config["extra_funded_accounts"] = extra_accounts
