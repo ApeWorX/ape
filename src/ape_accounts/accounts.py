@@ -5,7 +5,7 @@ from typing import Iterator, Optional
 
 import click
 from eth_account import Account as EthAccount
-from eth_keys import keys
+from eth_keys import keys # type: ignore
 from eth_utils import to_bytes
 from ethpm_types import HexBytes
 
