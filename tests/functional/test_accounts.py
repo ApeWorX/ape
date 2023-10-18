@@ -3,6 +3,7 @@ from os import environ
 import pytest
 from eip712.messages import EIP712Message
 from eth_account.messages import encode_defunct
+from hexbytes import HexBytes
 
 import ape
 from ape.api import ImpersonatedAccount
@@ -565,3 +566,8 @@ def test_prepare_transaction_and_call_using_max_gas(tx_type, ethereum, sender, e
 
     actual = sender.call(tx)
     assert not actual.failed
+
+
+def test_public_key(runner, keyfile_account):
+    with runner.isolation(input="a\ny\n"):
+        assert isinstance(keyfile_account.public_key, HexBytes)

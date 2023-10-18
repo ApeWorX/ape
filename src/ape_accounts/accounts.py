@@ -5,6 +5,7 @@ from typing import Iterator, Optional
 
 import click
 from eth_account import Account as EthAccount
+from eth_keys import keys
 from eth_utils import to_bytes
 from ethpm_types import HexBytes
 
@@ -91,6 +92,17 @@ class KeyfileAccount(AccountAPI):
             self.__cached_key = key
 
         return key
+
+    @property
+    def public_key(self) -> HexBytes:
+        key = self.__key
+
+        # Derive the public key from the private key
+        pk = keys.PrivateKey(key)
+        # convert from eth_keys.datatypes.PublicKey to str to make it HexBytes
+        publicKey = str(pk.public_key)
+
+        return HexBytes(bytes.fromhex(publicKey[2:]))
 
     def unlock(self, passphrase: Optional[str] = None):
         if not passphrase:
