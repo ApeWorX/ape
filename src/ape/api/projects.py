@@ -11,7 +11,7 @@ from ethpm_types.utils import Algorithm, AnyUrl, compute_checksum
 from packaging.version import InvalidVersion, Version
 
 from ape._pydantic_compat import ValidationError
-from ape.exceptions import ApeAttributeError, ProjectError
+from ape.exceptions import ProjectError
 from ape.logging import logger
 from ape.utils import (
     BaseInterfaceModel,
