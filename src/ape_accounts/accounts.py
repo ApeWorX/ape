@@ -5,7 +5,7 @@ from typing import Iterator, Optional
 
 import click
 from eth_account import Account as EthAccount
-from eth_keys import keys # type: ignore
+from eth_keys import keys  # type: ignore
 from eth_utils import to_bytes
 from ethpm_types import HexBytes
 
@@ -95,12 +95,19 @@ class KeyfileAccount(AccountAPI):
 
     @property
     def public_key(self) -> HexBytes:
+        if "public_key" in self.keyfile:
+            return HexBytes(bytes.fromhex(self.keyfile["public_key"]))
         key = self.__key
 
         # Derive the public key from the private key
         pk = keys.PrivateKey(key)
         # convert from eth_keys.datatypes.PublicKey to str to make it HexBytes
         publicKey = str(pk.public_key)
+
+        key_file_data = self.keyfile
+        key_file_data["public_key"] = publicKey[2:]
+
+        self.keyfile_path.write_text(json.dumps(key_file_data))
 
         return HexBytes(bytes.fromhex(publicKey[2:]))
 

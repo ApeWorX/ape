@@ -571,3 +571,15 @@ def test_prepare_transaction_and_call_using_max_gas(tx_type, ethereum, sender, e
 def test_public_key(runner, keyfile_account):
     with runner.isolation(input="a\ny\n"):
         assert isinstance(keyfile_account.public_key, HexBytes)
+
+
+def test_load_public_key_from_keyfile(runner, keyfile_account):
+    with runner.isolation(input="a\ny\n"):
+        assert isinstance(keyfile_account.public_key, HexBytes)
+
+        assert (
+            keyfile_account.public_key.hex()
+            == "0x79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798483ada7726a3c4655da4fbfc0e1108a8fd17b448a68554199c47d08ffb10d4b8"  # noqa: 501
+        )
+        # no need for password when loading from the keyfile
+        assert keyfile_account.public_key
