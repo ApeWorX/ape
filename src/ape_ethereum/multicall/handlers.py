@@ -1,4 +1,5 @@
-from typing import Any, Iterator, List, Tuple, Union
+from types import ModuleType
+from typing import Any, Dict, Iterator, List, Optional, Tuple, Union
 
 from ape.api import ReceiptAPI, TransactionAPI
 from ape.contracts.base import (
@@ -8,8 +9,9 @@ from ape.contracts.base import (
     ContractTransactionHandler,
     _select_method_abi,
 )
-from ape.exceptions import ChainError
-from ape.types import ContractType, HexBytes
+from ape.exceptions import ChainError, DecodingError
+from ape.logging import logger
+from ape.types import AddressType, ContractType, HexBytes
 from ape.utils import ManagerAccessMixin, cached_property
 from ape.utils.abi import MethodABI
 
@@ -23,14 +25,20 @@ from .exceptions import InvalidOption, NotExecutedError, UnsupportedChainError, 
 
 
 class BaseMulticall(ManagerAccessMixin):
-    def __init__(self) -> None:
+    def __init__(
+        self,
+        address: AddressType = MULTICALL3_ADDRESS,
+        supported_chains: Optional[List[int]] = None,
+    ) -> None:
         """
         Initialize a new Multicall session object. By default, there are no calls to make.
         """
-        self.calls: List[dict] = []
+        self.address = address
+        self.supported_chains = supported_chains or SUPPORTED_CHAINS
+        self.calls: List[Dict] = []
 
     @classmethod
-    def inject(cls):
+    def inject(cls) -> ModuleType:
         """
         Create the multicall module contract on-chain, so we can use it.
         Must use a provider that supports ``debug_setCode``.
@@ -42,23 +50,24 @@ class BaseMulticall(ManagerAccessMixin):
             @pytest.fixture(scope="session")
             def use_multicall():
                 # NOTE: use this fixture any test where you want to use a multicall
-                multicall.BaseMulticall.deploy()
+                return multicall.BaseMulticall.inject()
         """
-        active_provider = cls.network_manager.active_provider
-        assert active_provider, "Must be connected to an active network to deploy"
         from ape_ethereum import multicall
 
-        active_provider.set_code(
-            multicall.constants.MULTICALL3_ADDRESS,
-            multicall.constants.MULTICALL3_CODE,
-        )
+        provider = cls.network_manager.provider
+        provider.set_code(MULTICALL3_ADDRESS, MULTICALL3_CODE)
+
+        if provider.chain_id not in SUPPORTED_CHAINS:
+            SUPPORTED_CHAINS.append(provider.chain_id)
+
         return multicall
 
     @cached_property
     def contract(self) -> ContractInstance:
         try:
-            # See if we can fetch it from an explorer first
-            contract = self.chain_manager.contracts.instance_at(MULTICALL3_ADDRESS)
+            # NOTE: This will attempt to fetch the contract, such as from an explorer,
+            #   if it is not yet cached.
+            contract = self.chain_manager.contracts.instance_at(self.address)
 
         except ChainError:
             # else use our backend (with less methods)
@@ -67,7 +76,7 @@ class BaseMulticall(ManagerAccessMixin):
                 contract_type=ContractType.parse_obj(MULTICALL3_CONTRACT_TYPE),
             )
 
-        if self.provider.chain_id not in SUPPORTED_CHAINS and contract.code != MULTICALL3_CODE:
+        if self.provider.chain_id not in self.supported_chains and contract.code != MULTICALL3_CODE:
             # NOTE: 2nd condition allows for use in local test deployments and fork networks
             raise UnsupportedChainError()
 
@@ -95,13 +104,15 @@ class BaseMulticall(ManagerAccessMixin):
         Adds a call to the Multicall session object.
 
         Raises:
-            :class:`InvalidOption`: If one of the kwarg modifiers is not able to be used.
+            :class:`~ape_ethereum.multicall.exceptions.InvalidOption`: If one
+              of the kwarg modifiers is not able to be used.
 
         Args:
-            call: :class:`ContractMethodHandler` The method to call.
+            call (:class:`~ape_ethereum.multicall.handlers.ContractMethodHandler`):
+              The method to call.
             *args: The arguments to invoke the method with.
-            allowFailure: bool Whether the call is allowed to fail.
-            value: int The amount of ether to forward with the call.
+            allowFailure (bool): Whether the call is allowed to fail.
+            value (int): The amount of ether to forward with the call.
         """
 
         # Append call dict to the list
@@ -133,11 +144,16 @@ class Call(BaseMulticall):
         a, b, ..., z = call()  # Performs multicall
     """
 
-    def __init__(self) -> None:
-        super().__init__()
+    def __init__(
+        self,
+        address: AddressType = MULTICALL3_ADDRESS,
+        supported_chains: Optional[List[int]] = None,
+    ) -> None:
+        super().__init__(address=address, supported_chains=supported_chains)
 
         self.abis: List[MethodABI] = []
         self._result: Union[None, Tuple[int, List[HexBytes]], List[Tuple[bool, HexBytes]]] = None
+        self._failed_results: List[HexBytes] = []
 
     @property
     def handler(self) -> ContractCallHandler:  # type: ignore[override]
@@ -152,20 +168,40 @@ class Call(BaseMulticall):
 
     @property
     def returnData(self) -> List[HexBytes]:
-        if not self._result:
+        result = self._result  # Declare for typing reasons.
+        if not result:
             raise NotExecutedError()
 
-        elif isinstance(self._result, tuple):
-            # Call3[] or Call3Value[]
-            return list(r[1] for r in self._result)  # type: ignore[index]
+        elif (
+            isinstance(result, (tuple, list))
+            and len(result) >= 2
+            and type(result[0]) is bool
+            and isinstance(result[1], bytes)
+        ):
+            # Call3[] or Call3Value[] when only single call.
+            return [result[1]]
+
+        elif isinstance(result, tuple):
+            # Call3[] or Call3Value[] when multiple calls.
+            return list(r[1] for r in self._result)  # type: ignore
 
         else:
             # blockNumber: uint256, returnData: Call[]
-            return self._result.returnData  # type: ignore[attr-defined]
+            return result.returnData  # type: ignore
 
     def _decode_results(self) -> Iterator[Any]:
         for abi, data in zip(self.abis, self.returnData):
-            result = self.provider.network.ecosystem.decode_returndata(abi, data)
+            if data in self._failed_results:
+                # The call failed.
+                yield data
+                continue
+
+            try:
+                result = self.provider.network.ecosystem.decode_returndata(abi, data)
+            except DecodingError as err:
+                logger.error(err)
+                yield data  # Yield the raw data
+                continue
 
             if isinstance(result, (list, tuple)) and len(result) == 1:
                 yield result[0]
@@ -179,7 +215,7 @@ class Call(BaseMulticall):
         is called.
 
         Raises:
-            :class:`~ape_ethereum.multicall.exceptions.UnsupportedChain`:
+            :class:`~ape_ethereum.multicall.exceptions.UnsupportedChainError`:
               If there is not an instance of Multicall3 deployed
               on the current chain at the expected address.
 
@@ -210,14 +246,14 @@ class Transaction(BaseMulticall):
 
     Usage example::
 
-        from ape_ethereum import multicall
+        from ape_ethereum.multicall import Transaction
 
-        txn = multitxn.Transaction()
+        txn = Transaction()
         txn.add(contract.myMethod, *call_args)
         txn.add(contract.myMethod, *call_args)
         ...  # Add as many calls as desired to execute
         txn.add(contract.myMethod, *call_args)
-        a, b, ..., z = txn(sender=my_signer)  # Sends the multical transaction
+        a, b, ..., z = txn(sender=my_signer)  # Sends the multicall transaction
     """
 
     def _validate_calls(self, **txn_kwargs) -> None:

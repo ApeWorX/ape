@@ -1,3 +1,4 @@
+import difflib
 import sys
 import tempfile
 import time
@@ -5,9 +6,10 @@ import traceback
 from inspect import getframeinfo, stack
 from pathlib import Path
 from types import CodeType, TracebackType
-from typing import TYPE_CHECKING, Any, Dict, Iterator, List, Optional, Union
+from typing import TYPE_CHECKING, Any, Collection, Dict, Iterator, List, Optional, Union, cast
 
 import click
+from eth_typing import Hash32
 from eth_utils import humanize_hash
 from ethpm_types.abi import ConstructorABI, ErrorABI, MethodABI
 from rich import print as rich_print
@@ -273,14 +275,87 @@ class NetworkError(ApeException):
     """
 
 
+class EcosystemNotFoundError(NetworkError):
+    """
+    Raised when the ecosystem with the given name was not found.
+    """
+
+    def __init__(self, ecosystem: str, options: Optional[Collection[str]] = None):
+        self.ecosystem = ecosystem
+        self.options = options
+        message = f"No ecosystem named '{ecosystem}'."
+        if options:
+            close_matches = difflib.get_close_matches(ecosystem, options, cutoff=0.6)
+            if close_matches:
+                message = f"{message} Did you mean '{', '.join(close_matches)}'?"
+            else:
+                # No close matches. Show all the options.
+                options_str = "\n".join(sorted(options))
+                message = f"{message} Options:\n{options_str}"
+
+        super().__init__(message)
+
+
 class NetworkNotFoundError(NetworkError):
     """
     Raised when the network with the given name was not found.
     """
 
-    def __init__(self, network: str):
+    def __init__(
+        self,
+        network: str,
+        ecosystem: Optional[str] = None,
+        options: Optional[Collection[str]] = None,
+    ):
         self.network = network
-        message = f"No network named '{network}'."
+        message = (
+            f"No network in '{ecosystem}' named '{network}'."
+            if ecosystem
+            else f"No network named '{network}'."
+        )
+        if options:
+            close_matches = difflib.get_close_matches(network, options, cutoff=0.6)
+            if close_matches:
+                message = f"{message} Did you mean '{', '.join(close_matches)}'?"
+            else:
+                # No close matches - show all options.
+                options_str = "\n".join(sorted(options))
+                message = f"{message} Options:\n{options_str}"
+
+        super().__init__(message)
+
+
+class ProviderNotFoundError(NetworkError):
+    """
+    Raised when the provider with the given name was not found.
+    """
+
+    def __init__(
+        self,
+        provider: str,
+        network: Optional[str] = None,
+        ecosystem: Optional[str] = None,
+        options: Optional[Collection[str]] = None,
+    ):
+        self.provider = provider
+        self.network = network
+        self.ecosystem = ecosystem
+        message = f"No provider named '{provider}'"
+        if network:
+            message = f"{message} in network '{network}'"
+        if ecosystem:
+            message = f"{message} in ecosystem '{ecosystem}'"
+        if options:
+            close_matches = difflib.get_close_matches(provider, options, cutoff=0.6)
+            if close_matches:
+                message = f"{message} Did you mean '{', '.join(close_matches)}'?"
+            else:
+                # No close matches. Show all provider options.
+                options_str = "\n".join(sorted(options))
+                message = f"{message}. Options:\n{options_str}"
+        else:
+            message = f"{message}."
+
         super().__init__(message)
 
 
@@ -418,7 +493,7 @@ class UnknownSnapshotError(ChainError):
     def __init__(self, snapshot_id: "SnapshotID"):
         if isinstance(snapshot_id, bytes):
             # Is block hash
-            snapshot_id = humanize_hash(snapshot_id)  # type: ignore
+            snapshot_id = humanize_hash(cast(Hash32, snapshot_id))
 
         super().__init__(f"Unknown snapshot ID '{str(snapshot_id)}'.")
 
@@ -649,8 +724,9 @@ class CustomError(ContractLogicError):
 
 
 def _get_ape_traceback(txn: FailedTxn) -> Optional["SourceTraceback"]:
-    is_receipt = "ReceiptAPI" in [t.__name__ for t in txn.__class__.__bases__]
-    receipt: "ReceiptAPI" = txn if is_receipt else txn.receipt  # type: ignore
+    from ape.api.transactions import ReceiptAPI
+
+    receipt: "ReceiptAPI" = txn if isinstance(txn, ReceiptAPI) else txn.receipt  # type: ignore
     if not receipt:
         return None
 

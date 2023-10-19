@@ -1,9 +1,9 @@
 from functools import lru_cache
-from typing import Any, Dict, Iterator, List, Optional, Set, Type, Union
+from typing import Any, Dict, Iterator, List, Optional, Sequence, Set, Type, Union
 
 from ethpm_types.abi import EventABI, MethodABI
-from pydantic import BaseModel, NonNegativeInt, PositiveInt, root_validator
 
+from ape._pydantic_compat import BaseModel, NonNegativeInt, PositiveInt, root_validator
 from ape.api.transactions import ReceiptAPI, TransactionAPI
 from ape.logging import logger
 from ape.types import AddressType
@@ -53,7 +53,9 @@ def _all_columns(Model: Type[BaseInterfaceModel]) -> Set[str]:
     return columns
 
 
-def validate_and_expand_columns(columns: List[str], Model: Type[BaseInterfaceModel]) -> List[str]:
+def validate_and_expand_columns(
+    columns: Sequence[str], Model: Type[BaseInterfaceModel]
+) -> List[str]:
     if len(columns) == 1 and columns[0] == "*":
         # NOTE: By default, only pull explicit fields
         #       (because they are cheap to pull, but properties might not be)
@@ -92,7 +94,7 @@ def extract_fields(item, columns):
 
 
 class _BaseQuery(BaseModel):
-    columns: List[str]
+    columns: Sequence[str]
 
     # TODO: Support "*" from getting the EcosystemAPI fields
 

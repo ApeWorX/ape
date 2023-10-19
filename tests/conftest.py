@@ -1,10 +1,11 @@
 import json
 import shutil
 import tempfile
+import time
 from contextlib import contextmanager
 from pathlib import Path
 from tempfile import mkdtemp
-from typing import Dict, Optional
+from typing import Any, Callable, Dict, Optional
 
 import pytest
 import yaml
@@ -12,6 +13,7 @@ from click.testing import CliRunner
 
 import ape
 from ape.exceptions import APINotImplementedError, UnknownSnapshotError
+from ape.logging import LogLevel, logger
 from ape.managers.config import CONFIG_FILE_NAME
 from ape.types import AddressType
 from ape.utils import ZERO_ADDRESS
@@ -201,9 +203,9 @@ def ethereum(networks):
 
 
 @pytest.fixture(autouse=True)
-def eth_tester_provider():
+def eth_tester_provider(ethereum):
     if not ape.networks.active_provider or ape.networks.provider.name != "test":
-        with ape.networks.ethereum.local.use_provider("test") as provider:
+        with ethereum.local.use_provider("test") as provider:
             yield provider
     else:
         yield ape.networks.provider
@@ -387,3 +389,73 @@ def skip_if_plugin_installed(*plugin_names: str):
 @pytest.fixture
 def zero_address():
     return ZERO_ADDRESS
+
+
+@pytest.fixture
+def ape_caplog(caplog):
+    class ApeCaplog:
+        def __init__(self):
+            self.messages_at_start = list(caplog.messages)
+            self.set_levels()
+
+        def __getattr__(self, name: str) -> Any:
+            return getattr(caplog, name)
+
+        @property
+        def fail_message(self) -> str:
+            if caplog.messages:
+                last_message = caplog.messages[-1]
+                return f"Actual last message: {last_message}"
+
+            elif self.messages_at_start:
+                return (
+                    f"Failed to detect logs. "
+                    f"However, we did have logs before the operation: "
+                    f"{', '.join(self.messages_at_start)}"
+                )
+
+            else:
+                return "No logs found!"
+
+        @property
+        def head(self) -> str:
+            """
+            A str representing the latest logged line.
+            Initialized to empty str.
+            """
+            return caplog.messages[-1] if len(caplog.messages) else ""
+
+        @classmethod
+        def set_levels(cls):
+            logger.set_level(LogLevel.INFO)
+            caplog.set_level(LogLevel.WARNING)
+
+        def assert_last_log(self, message: str):
+            assert message in self.head, self.fail_message
+
+        def assert_last_log_with_retries(
+            self, op: Callable, message: str, tries: int = 2, delay: float = 5.0
+        ):
+            times_tried = 0
+            return_value = None
+            while times_tried <= tries:
+                result = op()
+
+                # Only save the first return value.
+                if return_value is None and result is not None:
+                    return_value = result
+
+                times_tried += 1
+                if message in self.head:
+                    return return_value
+
+                time.sleep(delay)
+
+                # Reset levels in case they got switched.
+                self.set_levels()
+                logger.set_level(LogLevel.INFO)
+                caplog.set_level(LogLevel.WARNING)
+
+            pytest.fail(self.fail_message)
+
+    return ApeCaplog()

@@ -46,7 +46,7 @@ def test_instance_at_when_given_name_as_contract_type(chain, contract_instance):
 
 
 @explorer_test
-def test_instance_at_uses_given_contract_type_when_retrieval_fails(mocker, chain, caplog):
+def test_instance_at_uses_given_contract_type_when_retrieval_fails(mocker, chain, ape_caplog):
     # The manager always attempts retrieval so that default contact types can
     # get cached. However, sometimes an explorer plugin may fail. If given a contract-type
     # in that situation, we can use it and not fail and log the error instead.
@@ -65,8 +65,8 @@ def test_instance_at_uses_given_contract_type_when_retrieval_fails(mocker, chain
     chain.contracts.get.side_effect = fn
 
     actual = chain.contracts.instance_at(new_address, contract_type=expected_contract_type)
+    ape_caplog.assert_last_log(expected_fail_message)
     assert actual.contract_type == expected_contract_type
-    assert caplog.records[-1].message == expected_fail_message
 
 
 @explorer_test
@@ -209,17 +209,6 @@ def test_get_deployments_live(
     assert address_from_api_1 == deployed_contract_1.address
 
 
-def test_get_deployments_live_migration(
-    chain, owner, contract_0, dummy_live_network, caplog, use_debug
-):
-    contract = owner.deploy(contract_0, required_confirmations=0)
-    old_style_map = {"ethereum": {"goerli": {"ApeContract0": [contract.address]}}}
-    chain.contracts._write_deployments_mapping(old_style_map)
-    actual = chain.contracts.get_deployments(contract_0)
-    assert actual == [contract]
-    assert caplog.records[-1].message == "Migrating 'deployments_map.json'."
-
-
 def test_get_multiple_deployments_live(
     chain, owner, contract_0, contract_1, remove_disk_writes_deployments, dummy_live_network
 ):
@@ -283,7 +272,7 @@ def test_get_multiple_no_addresses(chain, caplog):
     contract_map = chain.contracts.get_multiple([])
     assert not contract_map
     assert "WARNING" in caplog.records[-1].levelname
-    assert "No addresses provided." in caplog.records[-1].message
+    assert "No addresses provided." in caplog.messages[-1]
 
 
 def test_get_all_include_non_contract_address(vyper_contract_instance, chain, owner):

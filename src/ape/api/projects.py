@@ -2,18 +2,20 @@ import os.path
 import re
 import tempfile
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
+from typing import TYPE_CHECKING, Any, Dict, Iterator, List, Optional, Union
 
 from ethpm_types import Checksum, ContractType, PackageManifest, Source
 from ethpm_types.manifest import PackageName
-from ethpm_types.utils import AnyUrl, compute_checksum
+from ethpm_types.source import Content
+from ethpm_types.utils import Algorithm, AnyUrl, compute_checksum
 from packaging.version import InvalidVersion, Version
-from pydantic import ValidationError
 
+from ape._pydantic_compat import ValidationError
 from ape.exceptions import ApeAttributeError, ProjectError
 from ape.logging import logger
 from ape.utils import (
     BaseInterfaceModel,
+    ExtraModelAttributes,
     abstractmethod,
     cached_property,
     get_all_files_in_directory,
@@ -136,19 +138,22 @@ class ProjectAPI(BaseInterfaceModel):
 
     @property
     def contracts(self) -> Dict[str, ContractType]:
-        if self._contracts is None:
-            contracts = {}
-            for p in self._cache_folder.glob("*.json"):
-                if p == self.manifest_cachefile:
-                    continue
+        if self._contracts is not None:
+            return self._contracts
 
-                contract_name = p.stem
-                contract_type = ContractType().parse_file(p)
-                if contract_type.name is None:
-                    contract_type.name = contract_name
+        contracts = {}
+        for p in self._cache_folder.glob("*.json"):
+            if p == self.manifest_cachefile:
+                continue
 
-                contracts[contract_type.name] = contract_type
-            self._contracts = contracts
+            contract_name = p.stem
+            contract_type = ContractType.parse_file(p)
+            if contract_type.name is None:
+                contract_type.name = contract_name
+
+            contracts[contract_type.name] = contract_type
+
+        self._contracts = contracts
         return self._contracts
 
     @property
@@ -210,11 +215,11 @@ class ProjectAPI(BaseInterfaceModel):
 
             source_dict[key] = Source(
                 checksum=Checksum(
-                    algorithm="md5",
+                    algorithm=Algorithm.MD5,
                     hash=compute_checksum(source_path.read_bytes()),
                 ),
                 urls=[],
-                content=text,
+                content=Content(__root__={i + 1: x for i, x in enumerate(text.splitlines())}),
                 imports=source_imports.get(key, []),
                 references=source_references.get(key, []),
             )
@@ -258,6 +263,14 @@ class DependencyAPI(BaseInterfaceModel):
 
     def __repr__(self):
         return f"<{self.__class__.__name__} name='{self.name}'>"
+
+    def __ape_extra_attributes__(self) -> Iterator[ExtraModelAttributes]:
+        yield ExtraModelAttributes(
+            name=self.name,
+            attributes=self.contracts,
+            include_getattr=True,
+            include_getitem=True,
+        )
 
     @property
     @abstractmethod
@@ -321,46 +334,19 @@ class DependencyAPI(BaseInterfaceModel):
 
         return self._cached_manifest
 
-    def __getitem__(self, contract_name: str) -> "ContractContainer":
-        try:
-            container = self.get(contract_name)
-        except Exception as err:
-            raise IndexError(str(err)) from err
-
-        if not container:
-            raise IndexError(f"Contract '{contract_name}' not found.")
-
-        return container
-
-    def __getattr__(self, contract_name: str) -> "ContractContainer":
-        try:
-            return self.__getattribute__(contract_name)
-        except AttributeError:
-            pass
-
-        try:
-            container = self.get(contract_name)
-        except Exception as err:
-            raise ApeAttributeError(
-                f"Dependency project '{self.name}' has no contract "
-                f"or attribute '{contract_name}'.\n{err}"
-            ) from err
-
-        if not container:
-            raise ApeAttributeError(
-                f"Dependency project '{self.name}' has no contract '{contract_name}'."
-            )
-
-        return container
+    @cached_property
+    def contracts(self) -> Dict[str, "ContractContainer"]:
+        """
+        A mapping of name to contract type of all the contracts
+        in this dependency.
+        """
+        return {
+            n: self.chain_manager.contracts.get_container(c)
+            for n, c in (self.compile().contract_types or {}).items()
+        }
 
     def get(self, contract_name: str) -> Optional["ContractContainer"]:
-        manifest = self.compile()
-        options = (contract_name, contract_name.replace("-", "_"))
-        for name in options:
-            if contract_type := manifest.get_contract_type(name):
-                return self.chain_manager.contracts.get_container(contract_type)
-
-        return None
+        return self.contracts.get(contract_name)
 
     def compile(self, use_cache: bool = True) -> PackageManifest:
         """

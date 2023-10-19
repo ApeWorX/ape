@@ -102,6 +102,7 @@ def test_decode_logs(owner, contract_instance, assert_log_values):
         logs = receipt.decode_logs(event_type)
         assert len(logs) == 1
         assert_log_values(logs[0], num)
+        assert receipt.timestamp == logs[0].timestamp
 
     assert_receipt_logs(receipt_0, 1)
     assert_receipt_logs(receipt_1, 2)
@@ -192,3 +193,8 @@ def test_track_coverage(deploy_receipt, mocker):
 
     assert mock_runner.track_coverage.call_count == 0
     ManagerAccessMixin._test_runner = original
+
+
+def test_access_from_tx(deploy_receipt):
+    actual = deploy_receipt.receiver
+    assert actual == ""

@@ -1,5 +1,7 @@
+import os
 import shutil
 from pathlib import Path
+from urllib.parse import urlparse
 
 import pytest
 import yaml
@@ -183,7 +185,10 @@ def test_meta(temp_config, project):
         assert project.meta.license == "MIT"
         assert project.meta.description == "test"
         assert project.meta.keywords == ["testing"]
-        assert "https://apeworx.io" in project.meta.links["apeworx.io"]
+
+        actual_url = urlparse(project.meta.links["apeworx.io"])
+        assert actual_url.hostname == "apeworx.io"
+        assert actual_url.scheme == "https"
 
 
 def test_brownie_project_configure(config, base_projects_directory):
@@ -193,7 +198,7 @@ def test_brownie_project_configure(config, base_projects_directory):
         # Left from previous run
         expected_config_file.unlink()
 
-    project = BrownieProject(path=project_path, contracts_folder="contracts")
+    project = BrownieProject(path=project_path, contracts_folder=Path("contracts"))
     project.process_config_file()
     assert expected_config_file.is_file()
 
@@ -336,9 +341,9 @@ def test_get_project_without_contracts_path(project):
 
 
 def test_get_project_with_contracts_path(project):
-    project_path = WITH_DEPS_PROJECT / "renamed_contracts_folder"
-    project = project.get_project(project_path, project_path / "sources")
-    assert project.contracts_folder == project_path / "sources"
+    project_path = WITH_DEPS_PROJECT / "renamed_contracts_folder_specified_in_config"
+    project = project.get_project(project_path, project_path / "my_contracts")
+    assert project.contracts_folder == project_path / "my_contracts"
 
 
 def test_get_project_figure_out_contracts_path(project):
@@ -347,6 +352,8 @@ def test_get_project_figure_out_contracts_path(project):
     to figure it out.
     """
     project_path = WITH_DEPS_PROJECT / "renamed_contracts_folder"
+    (project_path / "ape-config.yaml").unlink(missing_ok=True)  # Clean from prior.
+
     project = project.get_project(project_path)
     assert project.contracts_folder == project_path / "sources"
 
@@ -388,3 +395,21 @@ def test_getattr_contract_not_exists(project):
     contract.touch()
     with pytest.raises(AttributeError, match=expected):
         _ = project.ThisIsNotAContractThatExists
+
+
+def test_build_file_only_modified_once(project_with_contract):
+    project = project_with_contract
+    artifact = project.path / ".build" / "__local__.json"
+    _ = project.contracts  # Ensure compiled.
+
+    # NOTE: This is how re-create the bug. Delete the underscore-prefixed
+    #  cached object and attempt to re-compile. Previously, the ProjectManager
+    #  was relying on an internal cache rather than the external one, and thus
+    #  caused the file to get unnecessarily re-made (modified).
+    project.local_project._cached_manifest = None
+
+    # Prove the file is not unnecessarily modified.
+    time_before = os.path.getmtime(artifact)
+    _ = project.contracts
+    time_after = os.path.getmtime(artifact)
+    assert time_before == time_after

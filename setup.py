@@ -18,7 +18,7 @@ extras_require = {
         "hypothesis-jsonschema==0.19.0",  # JSON Schema fuzzer extension
     ],
     "lint": [
-        "black>=23.7.0,<24",  # Auto-formatter and linter
+        "black>=23.9.1,<24",  # Auto-formatter and linter
         "mypy>=1.5.1,<2",  # Static type analyzer
         "types-PyYAML",  # Needed due to mypy typeshed
         "types-requests",  # Needed due to mypy typeshed
@@ -33,6 +33,7 @@ extras_require = {
         "mdformat-gfm>=0.3.5",  # Needed for formatting GitHub-flavored markdown
         "mdformat-frontmatter>=0.4.1",  # Needed for frontmatters-style headers in issue templates
         "mdformat-pyproject>=0.0.1",  # Allows configuring in pyproject.toml
+        "pydantic<2.0",  # Needed for successful type check. TODO: Remove after full v2 support.
     ],
     "doc": [
         "myst-parser>=1.0.0,<2",  # Parse markdown docs
@@ -101,7 +102,7 @@ setup(
         "packaging>=23.0,<24",
         "pandas>=1.3.0,<2",
         "pluggy>=1.3,<2",
-        "pydantic>=1.10.8,<2",
+        "pydantic>=1.10.8,<3",
         "PyGithub>=1.59,<2",
         "pytest>=6.0,<8.0",
         "python-dateutil>=2.8.2,<3",
@@ -123,7 +124,7 @@ setup(
         "web3[tester]>=6.7.0,<7",
         # ** Dependencies maintained by ApeWorX **
         "eip712>=0.2.1,<0.3",
-        "ethpm-types>=0.5.6,<0.6",
+        "ethpm-types>=0.5.8,<0.6",
         "evm-trace>=0.1.0a23",
     ],
     entry_points={

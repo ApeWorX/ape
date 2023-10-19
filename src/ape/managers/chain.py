@@ -113,7 +113,7 @@ class BlockContainer(BaseManager):
 
     def query(
         self,
-        *columns: List[str],
+        *columns: str,
         start_block: int = 0,
         stop_block: Optional[int] = None,
         step: int = 1,
@@ -130,7 +130,7 @@ class BlockContainer(BaseManager):
               than the chain length.
 
         Args:
-            columns (List[str]): columns in the DataFrame to return
+            *columns (str): columns in the DataFrame to return
             start_block (int): The first block, by number, to include in the
               query. Defaults to 0.
             stop_block (Optional[int]): The last block, by number, to include
@@ -159,14 +159,16 @@ class BlockContainer(BaseManager):
             )
 
         query = BlockQuery(
-            columns=columns,
+            columns=list(columns),
             start_block=start_block,
             stop_block=stop_block,
             step=step,
         )
 
         blocks = self.query_manager.query(query, engine_to_use=engine_to_use)
-        columns = validate_and_expand_columns(columns, self.head.__class__)  # type: ignore
+        columns: List[str] = validate_and_expand_columns(  # type: ignore
+            columns, self.head.__class__
+        )
         blocks = map(partial(extract_fields, columns=columns), blocks)
         return pd.DataFrame(columns=columns, data=blocks)
 
@@ -438,12 +440,12 @@ class AccountHistory(BaseInterfaceModel):
             start_nonce = receipt.nonce + 1  # start next loop on the next item
 
         if start_nonce != stop_nonce:
-            # NOTE: there is no more sessional history, so just return query engine iterator
+            # NOTE: there is no more session history, so just return query engine iterator
             yield from iter(self[start_nonce : stop_nonce + 1])  # noqa: E203
 
     def query(
         self,
-        *columns: List[str],
+        *columns: str,
         start_nonce: int = 0,
         stop_nonce: Optional[int] = None,
         engine_to_use: Optional[str] = None,
@@ -459,7 +461,7 @@ class AccountHistory(BaseInterfaceModel):
               than the account's current nonce.
 
         Args:
-            columns (List[str]): columns in the DataFrame to return
+            *columns (str): columns in the DataFrame to return
             start_nonce (int): The first transaction, by nonce, to include in the
               query. Defaults to 0.
             stop_nonce (Optional[int]): The last transaction, by nonce, to include
@@ -486,7 +488,7 @@ class AccountHistory(BaseInterfaceModel):
             )
 
         query = AccountTransactionQuery(
-            columns=columns,
+            columns=list(columns),
             account=self.address,
             start_nonce=start_nonce,
             stop_nonce=stop_nonce,
@@ -1317,15 +1319,6 @@ class ContractCache(BaseManager):
         deployments = self._deployments.get(contract_name, [])
         if not deployments:
             return []
-
-        if isinstance(deployments[0], str):
-            # TODO: Remove this migration logic >= version 0.6.0
-            logger.debug("Migrating 'deployments_map.json'.")
-            deployments = [{"address": a} for a in deployments]
-            self._deployments = {
-                **self._deployments,
-                contract_type.name: deployments,
-            }
 
         instances: List[ContractInstance] = []
         for deployment in deployments:

@@ -3,6 +3,7 @@ from typing import Dict, Union
 import pytest
 
 from ape.api import PluginConfig
+from ape.api.networks import LOCAL_NETWORK_NAME
 from ape.managers.config import CONFIG_FILE_NAME, DeploymentConfigCollection, merge_configs
 from ape.types import GasLimit
 from ape_ethereum.ecosystem import NetworkConfig
@@ -10,24 +11,33 @@ from tests.functional.conftest import PROJECT_WITH_LONG_CONTRACTS_FOLDER
 
 
 def test_integer_deployment_addresses(networks):
-    deployments_data = _create_deployments()
-    config = DeploymentConfigCollection(
-        deployments_data, {"ethereum": networks.ethereum}, ["local"]
+    data = {
+        **_create_deployments(),
+        "valid_ecosystems": {"ethereum": networks.ethereum},
+        "valid_networks": [LOCAL_NETWORK_NAME],
+    }
+    config = DeploymentConfigCollection(__root__=data)
+    assert (
+        config.__root__["ethereum"]["local"][0]["address"]
+        == "0x0c25212c557d00024b7Ca3df3238683A35541354"
     )
-    assert config["ethereum"]["local"][0]["address"] == "0x0c25212c557d00024b7Ca3df3238683A35541354"
 
 
 @pytest.mark.parametrize(
-    "ecosystems,networks,err_part",
+    "ecosystem_names,network_names,err_part",
     [(["ERRORS"], ["mainnet"], "ecosystem"), (["ethereum"], ["ERRORS"], "network")],
 )
-def test_bad_value_in_deployments(ecosystems, networks, err_part, caplog, plugin_manager):
+def test_bad_value_in_deployments(
+    ecosystem_names, network_names, err_part, ape_caplog, plugin_manager
+):
     deployments = _create_deployments()
     all_ecosystems = dict(plugin_manager.ecosystems)
-    ecosystem_dict = {e: all_ecosystems[e] for e in ecosystems if e in all_ecosystems}
-    DeploymentConfigCollection(deployments, ecosystem_dict, networks)
-    assert len(caplog.records) > 0, "Nothing was logged"
-    assert f"Invalid {err_part}" in caplog.records[0].message
+    ecosystem_dict = {e: all_ecosystems[e] for e in ecosystem_names if e in all_ecosystems}
+    data = {**deployments, "valid_ecosystems": ecosystem_dict, "valid_networks": network_names}
+    ape_caplog.assert_last_log_with_retries(
+        lambda: DeploymentConfigCollection(__root__=data),
+        f"Invalid {err_part}",
+    )
 
 
 def _create_deployments(ecosystem_name: str = "ethereum", network_name: str = "local") -> Dict:

@@ -21,12 +21,12 @@ from eth_utils import add_0x_prefix, to_hex
 from ethpm_types import HexBytes
 from evm_trace import CallTreeNode as EvmCallTreeNode
 from evm_trace import TraceFrame as EvmTraceFrame
-from pydantic import Field, root_validator, validator
 from web3 import Web3
 from web3.exceptions import ContractLogicError as Web3ContractLogicError
 from web3.exceptions import MethodUnavailable, TimeExhausted, TransactionNotFound
 from web3.types import RPCEndpoint, TxParams
 
+from ape._pydantic_compat import Field, root_validator, validator
 from ape.api.config import PluginConfig
 from ape.api.networks import LOCAL_NETWORK_NAME, NetworkAPI
 from ape.api.query import BlockTransactionQuery
@@ -104,7 +104,7 @@ class BlockAPI(BaseInterfaceModel):
     @validator("hash", "parent_hash", pre=True)
     def validate_hexbytes(cls, value):
         # NOTE: pydantic treats these values as bytes and throws an error
-        if value and not isinstance(value, HexBytes):
+        if value and not isinstance(value, bytes):
             return HexBytes(value)
 
         return value
@@ -723,6 +723,11 @@ class Web3Provider(ProviderAPI, ABC):
     _web3: Optional[Web3] = None
     _client_version: Optional[str] = None
 
+    def __init__(self, *args, **kwargs):
+        logger.create_logger("web3.RequestManager")
+        logger.create_logger("web3.providers.HTTPProvider")
+        super().__init__(*args, **kwargs)
+
     @property
     def web3(self) -> Web3:
         """
@@ -1245,8 +1250,8 @@ class Web3Provider(ProviderAPI, ABC):
     def get_transactions_by_account_nonce(
         self,
         account: AddressType,
-        start_nonce: int,
-        stop_nonce: int,
+        start_nonce: int = 0,
+        stop_nonce: int = -1,
     ) -> Iterator[ReceiptAPI]:
         if start_nonce > stop_nonce:
             raise ValueError("Starting nonce cannot be greater than stop nonce for search")
@@ -1321,7 +1326,7 @@ class Web3Provider(ProviderAPI, ABC):
             stop_block = min(stop, start_block + page - 1)
             yield start_block, stop_block
 
-    def get_contract_creation_receipts(  # type: ignore[empty-body]
+    def get_contract_creation_receipts(
         self,
         address: AddressType,
         start_block: int = 0,
@@ -1353,6 +1358,7 @@ class Web3Provider(ProviderAPI, ABC):
         # TODO: Handle when code is nonzero but doesn't match
         # TODO: Handle when code is empty after it's not (re-init)
         elif HexBytes(self.get_code(address, block_id=mid_block)) == contract_code:
+            # If the code exists, we need to look backwards.
             yield from self.get_contract_creation_receipts(
                 address,
                 start_block=start_block,
@@ -1361,6 +1367,7 @@ class Web3Provider(ProviderAPI, ABC):
             )
 
         elif mid_block + 1 <= stop_block:
+            # The code does not exist yet, we need to look ahead.
             yield from self.get_contract_creation_receipts(
                 address,
                 start_block=mid_block + 1,
@@ -1415,14 +1422,25 @@ class Web3Provider(ProviderAPI, ABC):
                 txn.max_fee = int(self.base_fee * multiplier + txn.max_priority_fee)
             # else: Assume user specified the correct amount or txn will fail and waste gas
 
-        if txn.gas_limit is None:
-            multiplier = self.network.auto_gas_multiplier
+        gas_limit = self.network.gas_limit if txn.gas_limit is None else txn.gas_limit
+        if gas_limit in (None, "auto") or isinstance(gas_limit, AutoGasLimit):
+            multiplier = (
+                gas_limit.multiplier
+                if isinstance(gas_limit, AutoGasLimit)
+                else self.network.auto_gas_multiplier
+            )
             if multiplier != 1.0:
                 gas = min(int(self.estimate_gas_cost(txn) * multiplier), self.max_gas)
             else:
                 gas = self.estimate_gas_cost(txn)
 
             txn.gas_limit = gas
+
+        elif gas_limit == "max":
+            txn.gas_limit = self.max_gas
+
+        elif gas_limit is not None and isinstance(gas_limit, int):
+            txn.gas_limit = gas_limit
 
         if txn.required_confirmations is None:
             txn.required_confirmations = self.network.required_confirmations
@@ -1652,7 +1670,7 @@ class SubprocessProvider(ProviderAPI):
     A provider that manages a process, such as for ``ganache``.
     """
 
-    PROCESS_WAIT_TIMEOUT = 15
+    PROCESS_WAIT_TIMEOUT: int = 15
     process: Optional[Popen] = None
     is_stopping: bool = False
 

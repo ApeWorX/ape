@@ -1,13 +1,13 @@
 import shutil
 from pathlib import Path
-from typing import Any, Dict, Iterable, List, Optional, Type, Union
+from typing import Any, Dict, Iterable, List, Optional, Type, Union, cast
 
 from ethpm_types import ContractInstance as EthPMContractInstance
 from ethpm_types import ContractType, PackageManifest, PackageMeta, Source
 from ethpm_types.contract_type import BIP122_URI
 from ethpm_types.manifest import PackageName
 from ethpm_types.source import Compiler, ContractSource
-from ethpm_types.utils import AnyUrl
+from ethpm_types.utils import AnyUrl, Hex
 
 from ape.api import DependencyAPI, ProjectAPI
 from ape.api.networks import LOCAL_NETWORK_NAME
@@ -196,7 +196,7 @@ class ProjectManager(BaseManager):
                 filtered_contract_types = [
                     ct for ct in contract_types if ct.source_id in source_ids
                 ]
-                contract_type_names = [ct.name for ct in filtered_contract_types]
+                contract_type_names = [ct.name for ct in filtered_contract_types if ct.name]
                 compiler_list.append(
                     Compiler(
                         name=compiler.name,
@@ -407,7 +407,7 @@ class ProjectManager(BaseManager):
         Returns:
             Dict[str, ``ContractType``]
         """
-        if self.local_project._cached_manifest is None:
+        if self.local_project.cached_manifest is None:
             return self.load_contracts()
 
         return self.local_project.contracts
@@ -702,7 +702,9 @@ class ProjectManager(BaseManager):
         if network == LOCAL_NETWORK_NAME or network.endswith("-fork"):
             raise ProjectError("Can only publish deployments on a live network.")
 
-        contract_name = contract.contract_type.name
+        if not (contract_name := contract.contract_type.name):
+            raise ProjectError("Contract name required when publishing.")
+
         try:
             receipt = contract.receipt
         except ChainError as err:
@@ -721,10 +723,10 @@ class ProjectManager(BaseManager):
 
         block_hash = block_hash_bytes.hex()
         artifact = EthPMContractInstance(
-            address=contract.address,
+            address=cast(Hex, contract.address),
             block=block_hash,
             contractType=contract_name,
-            transaction=contract.txn_hash,
+            transaction=cast(Hex, contract.txn_hash),
             runtimeBytecode=contract.contract_type.runtime_bytecode,
         )
 

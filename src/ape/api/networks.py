@@ -11,13 +11,14 @@ from eth_account._utils.legacy_transactions import (
 from eth_utils import keccak, to_int
 from ethpm_types import ContractType, HexBytes
 from ethpm_types.abi import ABIType, ConstructorABI, EventABI, MethodABI
-from pydantic import BaseModel
 
+from ape._pydantic_compat import BaseModel
 from ape.exceptions import (
     NetworkError,
     NetworkMismatchError,
     NetworkNotFoundError,
     ProviderNotConnectedError,
+    ProviderNotFoundError,
     SignatureError,
 )
 from ape.logging import logger
@@ -25,6 +26,7 @@ from ape.types import AddressType, AutoGasLimit, CallTreeNode, ContractLog, GasL
 from ape.utils import (
     DEFAULT_TRANSACTION_ACCEPTANCE_TIMEOUT,
     BaseInterfaceModel,
+    ExtraModelAttributes,
     ManagerAccessMixin,
     abstractmethod,
     cached_property,
@@ -73,7 +75,7 @@ class EcosystemAPI(BaseInterfaceModel):
     fee_token_decimals: int = 18
     """The number of the decimals the fee token has."""
 
-    _default_network: str = LOCAL_NETWORK_NAME
+    _default_network: Optional[str] = None
 
     def __repr__(self) -> str:
         return f"<{self.name}>"
@@ -115,7 +117,7 @@ class EcosystemAPI(BaseInterfaceModel):
         or Starknet's ``Declare`` transaction type.
 
         Args:
-            contract (``ContractType``): The type of contract to create a blueprint for.
+            contract_type (``ContractType``): The type of contract to create a blueprint for.
               This is the type of contract that will get created by factory contracts.
             *args: Calldata, if applicable.
             **kwargs: Transaction specifications, such as ``value``.
@@ -142,9 +144,9 @@ class EcosystemAPI(BaseInterfaceModel):
 
         unsigned_txn = serializable_unsigned_transaction_from_dict(txn_data)
         signature = (
-            self.signature.v,  # type: ignore
-            to_int(self.signature.r),  # type: ignore
-            to_int(self.signature.s),  # type: ignore
+            self.signature.v,
+            to_int(self.signature.r),
+            to_int(self.signature.s),
         )
 
         signed_txn = encode_transaction(unsigned_txn, signature)
@@ -221,45 +223,13 @@ class EcosystemAPI(BaseInterfaceModel):
         if len(self.networks) == 0:
             raise NetworkError("Must define at least one network in ecosystem")
 
-    def __getitem__(self, network_name: str) -> "NetworkAPI":
-        """
-        Get a network by name.
-
-        Raises:
-            :class:`~ape.exceptions.NetworkNotFoundError`:
-              When there is no network with the given name.
-
-        Args:
-            network_name (str): The name of the network to retrieve.
-
-        Returns:
-            :class:`~ape.api.networks.NetworkAPI`
-        """
-        return self.get_network(network_name)
-
-    def __getattr__(self, network_name: str) -> "NetworkAPI":
-        """
-        Get a network by name using ``.`` access.
-
-        Usage example::
-
-            from ape import networks
-            mainnet = networks.ecosystem.mainnet
-
-        Raises:
-            :class:`~ape.exceptions.NetworkNotFoundError`:
-              When there is no network with the given name.
-
-        Args:
-            network_name (str): The name of the network to retrieve.
-
-        Returns:
-            :class:`~ape.api.networks.NetworkAPI`
-        """
-        try:
-            return self.get_network(network_name.replace("_", "-"))
-        except NetworkNotFoundError:
-            return self.__getattribute__(network_name)
+    def __ape_extra_attributes__(self) -> Iterator[ExtraModelAttributes]:
+        yield ExtraModelAttributes(
+            name="networks",
+            attributes=self.networks,
+            include_getattr=True,
+            include_getitem=True,
+        )
 
     def add_network(self, network_name: str, network: "NetworkAPI"):
         """
@@ -285,7 +255,25 @@ class EcosystemAPI(BaseInterfaceModel):
         Returns:
             str
         """
-        return self._default_network
+
+        if network := self._default_network:
+            # Was set programatically.
+            return network
+
+        elif network := self.config.get("default_network"):
+            # Default found in config.
+            return network
+
+        elif LOCAL_NETWORK_NAME in self.networks:
+            # Default to the LOCAL_NETWORK_NAME, at last resort.
+            return LOCAL_NETWORK_NAME
+
+        elif len(self.networks) >= 1:
+            # Use the first network.
+            return self.networks[0]
+
+        # Very unlikely scenario.
+        raise ValueError("No networks found.")
 
     def set_default_network(self, network_name: str):
         """
@@ -300,8 +288,7 @@ class EcosystemAPI(BaseInterfaceModel):
         if network_name in self.networks:
             self._default_network = network_name
         else:
-            message = f"'{network_name}' is not a valid network for ecosystem '{self.name}'."
-            raise NetworkError(message)
+            raise NetworkNotFoundError(network_name, ecosystem=self.name, options=self.networks)
 
     @abstractmethod
     def encode_deployment(
@@ -441,7 +428,7 @@ class EcosystemAPI(BaseInterfaceModel):
         if name in self.networks:
             return self.networks[name]
 
-        raise NetworkNotFoundError(network_name)
+        raise NetworkNotFoundError(network_name, ecosystem=self.name, options=self.networks)
 
     def get_network_data(self, network_name: str) -> Dict:
         """
@@ -456,7 +443,7 @@ class EcosystemAPI(BaseInterfaceModel):
         Returns:
             dict: A dictionary containing the providers in a network.
         """
-        data: Dict[str, Any] = {"name": network_name}
+        data: Dict[str, Any] = {"name": str(network_name)}
 
         # Only add isDefault key when True
         if network_name == self.default_network:
@@ -466,10 +453,10 @@ class EcosystemAPI(BaseInterfaceModel):
         network = self[network_name]
 
         if network.explorer:
-            data["explorer"] = network.explorer.name
+            data["explorer"] = str(network.explorer.name)
 
         for provider_name in network.providers:
-            provider_data = {"name": provider_name}
+            provider_data: Dict = {"name": str(provider_name)}
 
             # Only add isDefault key when True
             if provider_name == network.default_provider:
@@ -686,7 +673,7 @@ class NetworkAPI(BaseInterfaceModel):
         return cls(
             name="adhoc",
             ecosystem=ethereum,
-            data_folder=data_folder,
+            data_folder=Path(data_folder),
             request_header=request_header,
             _default_provider="geth",
         )
@@ -890,8 +877,12 @@ class NetworkAPI(BaseInterfaceModel):
             return provider
 
         else:
-            message = f"'{provider_name}' is not a valid provider for network '{self.name}'"
-            raise NetworkError(message)
+            raise ProviderNotFoundError(
+                provider_name,
+                network=self.name,
+                ecosystem=self.ecosystem.name,
+                options=self.providers,
+            )
 
     def use_provider(
         self,
@@ -937,12 +928,19 @@ class NetworkAPI(BaseInterfaceModel):
             Optional[str]
         """
 
-        if self._default_provider:
-            return self._default_provider
+        if provider := self._default_provider:
+            # Was set programatically.
+            return provider
 
-        if len(self.providers) > 0:
+        elif provider_from_config := self._network_config.get("default_provider"):
+            # The default is found in the Network's config class.
+            return provider_from_config
+
+        elif len(self.providers) > 0:
+            # No default set anywhere - use the first installed.
             return list(self.providers)[0]
 
+        # There are no providers at all for this network.
         return None
 
     @property

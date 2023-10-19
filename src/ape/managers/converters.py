@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta, timezone
 from decimal import Decimal
-from typing import Any, Dict, List, Tuple, Type, Union
+from typing import Any, Dict, List, Sequence, Tuple, Type, Union
 
 from dateutil.parser import parse  # type: ignore
 from eth_utils import (
@@ -12,9 +12,9 @@ from eth_utils import (
     to_hex,
     to_int,
 )
-from ethpm_types import HexBytes
+from ethpm_types import ConstructorABI, EventABI, HexBytes, MethodABI
 
-from ape.api import ConverterAPI
+from ape.api import ConverterAPI, TransactionAPI
 from ape.api.address import BaseAddress
 from ape.exceptions import ConversionError
 from ape.types import AddressType
@@ -291,11 +291,7 @@ class ConversionManager(BaseManager):
             bool: ``True`` when we consider the given value to be the given type.
         """
 
-        if type is AddressType:
-            return is_checksum_address(value)
-
-        else:
-            return isinstance(value, type)
+        return is_checksum_address(value) if type is AddressType else isinstance(value, type)
 
     def convert(self, value: Any, type: Union[Type, Tuple, List]) -> Any:
         """
@@ -356,3 +352,31 @@ class ConversionManager(BaseManager):
                 raise ConversionError(message) from err
 
         raise ConversionError(f"No conversion registered to handle '{value}'.")
+
+    def convert_method_args(
+        self,
+        abi: Union[MethodABI, ConstructorABI, EventABI],
+        arguments: Sequence[Any],
+    ):
+        input_types = [i.canonical_type for i in abi.inputs]
+        pre_processed_args = []
+        for ipt, argument in zip(input_types, arguments):
+            # Handle primitive-addresses separately since they may not occur
+            # on the tuple-conversion if they are integers or bytes.
+            if str(ipt) == "address":
+                converted_value = self.convert(argument, AddressType)
+                pre_processed_args.append(converted_value)
+            else:
+                pre_processed_args.append(argument)
+
+        return self.convert(pre_processed_args, tuple)
+
+    def convert_method_kwargs(self, kwargs) -> Dict:
+        fields = TransactionAPI.__fields__
+
+        kwargs_to_convert = {k: v for k, v in kwargs.items() if k == "sender" or k in fields}
+        converted_fields = {
+            k: self.convert(v, AddressType if k == "sender" else fields[k].type_)
+            for k, v in kwargs_to_convert.items()
+        }
+        return {**kwargs, **converted_fields}

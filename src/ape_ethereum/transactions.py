@@ -11,8 +11,8 @@ from eth_account._utils.legacy_transactions import (
 from eth_utils import decode_hex, encode_hex, keccak, to_hex, to_int
 from ethpm_types import ContractType, HexBytes
 from ethpm_types.abi import EventABI, MethodABI
-from pydantic import BaseModel, Field, root_validator, validator
 
+from ape._pydantic_compat import BaseModel, Field, root_validator, validator
 from ape.api import ReceiptAPI, TransactionAPI
 from ape.contracts import ContractEvent
 from ape.exceptions import OutOfGasError, SignatureError, TransactionError
@@ -107,10 +107,7 @@ class DynamicFeeTransaction(BaseTransaction):
 
     @validator("type", allow_reuse=True)
     def check_type(cls, value):
-        if isinstance(value, TransactionType):
-            return value.value
-
-        return value
+        return value.value if isinstance(value, TransactionType) else value
 
 
 class AccessListTransaction(BaseTransaction):
@@ -124,10 +121,7 @@ class AccessListTransaction(BaseTransaction):
 
     @validator("type", allow_reuse=True)
     def check_type(cls, value):
-        if isinstance(value, TransactionType):
-            return value.value
-
-        return value
+        return value.value if isinstance(value, TransactionType) else value
 
 
 class Receipt(ReceiptAPI):

@@ -3,17 +3,16 @@ from contextlib import contextmanager
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Dict, Generator, List, Optional, Union
 
-from pydantic import root_validator
-
+from ape._pydantic_compat import root_validator
 from ape.api import ConfigDict, DependencyAPI, PluginConfig
-from ape.exceptions import ConfigError, NetworkError
+from ape.exceptions import ConfigError
 from ape.logging import logger
 from ape.utils import BaseInterfaceModel, load_config
 
 if TYPE_CHECKING:
     from .project import ProjectManager
 
-from ethpm_types import PackageMeta
+from ethpm_types import BaseModel, PackageMeta
 
 CONFIG_FILE_NAME = "ape-config.yaml"
 
@@ -28,9 +27,16 @@ class CompilerConfig(PluginConfig):
     """List of globular files to ignore"""
 
 
-class DeploymentConfigCollection(dict):
-    def __init__(self, data: Dict, valid_ecosystems: Dict, valid_networks: List[str]):
-        for ecosystem_name, networks in data.items():
+class DeploymentConfigCollection(BaseModel):
+    __root__: Dict
+
+    @root_validator(pre=True)
+    def validate_deployments(cls, data: Dict):
+        root_data = data.get("__root__", data)
+        valid_ecosystems = root_data.pop("valid_ecosystems", {})
+        valid_networks = root_data.pop("valid_networks", {})
+        valid_data: Dict = {}
+        for ecosystem_name, networks in root_data.items():
             if ecosystem_name not in valid_ecosystems:
                 logger.warning(f"Invalid ecosystem '{ecosystem_name}' in deployments config.")
                 continue
@@ -41,21 +47,29 @@ class DeploymentConfigCollection(dict):
                     logger.warning(f"Invalid network '{network_name}' in deployments config.")
                     continue
 
+                valid_deployments = []
                 for deployment in [d for d in contract_deployments]:
-                    address = deployment.get("address", None)
-                    if "address" not in deployment:
+                    if not (address := deployment.get("address")):
                         logger.warning(
                             f"Missing 'address' field in deployment "
                             f"(ecosystem={ecosystem_name}, network={network_name})"
                         )
                         continue
 
+                    valid_deployment = {**deployment}
                     try:
-                        deployment["address"] = ecosystem.decode_address(address)
+                        valid_deployment["address"] = ecosystem.decode_address(address)
                     except ValueError as err:
                         logger.warning(str(err))
 
-        super().__init__(data)
+                    valid_deployments.append(valid_deployment)
+
+                valid_data[ecosystem_name] = {
+                    **valid_data.get(ecosystem_name, {}),
+                    network_name: valid_deployments,
+                }
+
+        return {"__root__": valid_data}
 
 
 class ConfigManager(BaseInterfaceModel):
@@ -168,11 +182,6 @@ class ConfigManager(BaseInterfaceModel):
         configs["compiler"] = compiler_dict
         self.compiler = CompilerConfig(**compiler_dict)
 
-        try:
-            self.network_manager.set_default_ecosystem(self.default_ecosystem)
-        except NetworkError as err:
-            logger.warning(str(err))
-
         dependencies = user_config.pop("dependencies", []) or []
         if not isinstance(dependencies, list):
             raise ConfigError("'dependencies' config item must be a list of dicts.")
@@ -194,7 +203,11 @@ class ConfigManager(BaseInterfaceModel):
         valid_ecosystems = dict(self.plugin_manager.ecosystems)
         valid_network_names = [n[1] for n in [e[1] for e in self.plugin_manager.networks]]
         self.deployments = configs["deployments"] = DeploymentConfigCollection(
-            deployments, valid_ecosystems, valid_network_names
+            __root__={
+                **deployments,
+                "valid_ecosystems": valid_ecosystems,
+                "valid_networks": valid_network_names,
+            }
         )
 
         for plugin_name, config_class in self.plugin_manager.config_class:

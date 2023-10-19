@@ -1,3 +1,4 @@
+import difflib
 import types
 from functools import partial
 from itertools import islice
@@ -25,7 +26,7 @@ from ape.exceptions import (
 from ape.logging import logger
 from ape.types import AddressType, ContractLog, LogFilter, MockContractLog
 from ape.utils import ManagerAccessMixin, cached_property, singledispatchmethod
-from ape.utils.abi import StructParser, _convert_args, _convert_kwargs
+from ape.utils.abi import StructParser
 
 
 class ContractConstructor(ManagerAccessMixin):
@@ -54,10 +55,10 @@ class ContractConstructor(ManagerAccessMixin):
         return self.abi.selector, decoded_inputs
 
     def serialize_transaction(self, *args, **kwargs) -> TransactionAPI:
-        arguments = _convert_args(args, self.conversion_manager.convert, self.abi)
-        kwargs = _convert_kwargs(kwargs, self.conversion_manager.convert)
+        arguments = self.conversion_manager.convert_method_args(self.abi, args)
+        converted_kwargs = self.conversion_manager.convert_method_kwargs(kwargs)
         return self.provider.network.ecosystem.encode_deployment(
-            self.deployment_bytecode, self.abi, *arguments, **kwargs
+            self.deployment_bytecode, self.abi, *arguments, **converted_kwargs
         )
 
     def __call__(self, private: bool = False, *args, **kwargs) -> ReceiptAPI:
@@ -86,9 +87,9 @@ class ContractCall(ManagerAccessMixin):
         return self.abi.signature
 
     def serialize_transaction(self, *args, **kwargs) -> TransactionAPI:
-        kwargs = _convert_kwargs(kwargs, self.conversion_manager.convert)
+        converted_kwargs = self.conversion_manager.convert_method_kwargs(kwargs)
         return self.provider.network.ecosystem.encode_transaction(
-            self.address, self.abi, *args, **kwargs
+            self.address, self.abi, *args, **converted_kwargs
         )
 
     def __call__(self, *args, **kwargs) -> Any:
@@ -130,9 +131,9 @@ class ContractMethodHandler(ManagerAccessMixin):
 
     def encode_input(self, *args) -> HexBytes:
         selected_abi = _select_method_abi(self.abis, args)
-        args = self._convert_tuple(args, selected_abi)
+        arguments = self.conversion_manager.convert_method_args(selected_abi, args)
         ecosystem = self.provider.network.ecosystem
-        encoded_calldata = ecosystem.encode_calldata(selected_abi, *args)
+        encoded_calldata = ecosystem.encode_calldata(selected_abi, *arguments)
         method_id = ecosystem.get_method_selector(selected_abi)
         return HexBytes(method_id + encoded_calldata)
 
@@ -179,9 +180,6 @@ class ContractMethodHandler(ManagerAccessMixin):
 
         raise err
 
-    def _convert_tuple(self, v: tuple, abi) -> tuple:
-        return _convert_args(v, self.conversion_manager.convert, abi)
-
 
 class ContractCallHandler(ContractMethodHandler):
     def __call__(self, *args, **kwargs) -> Any:
@@ -190,12 +188,12 @@ class ContractCallHandler(ContractMethodHandler):
             raise _get_non_contract_error(self.contract.address, network)
 
         selected_abi = _select_method_abi(self.abis, args)
-        args = self._convert_tuple(args, selected_abi)
+        arguments = self.conversion_manager.convert_method_args(selected_abi, args)
 
         return ContractCall(
             abi=selected_abi,
             address=self.contract.address,
-        )(*args, **kwargs)
+        )(*arguments, **kwargs)
 
     def as_transaction(self, *args, **kwargs):
         """
@@ -236,7 +234,7 @@ class ContractCallHandler(ContractMethodHandler):
         """
 
         selected_abi = _select_method_abi(self.abis, args)
-        arguments = _convert_args(args, self.conversion_manager.convert, selected_abi)
+        arguments = self.conversion_manager.convert_method_args(selected_abi, args)
         return self.transact.estimate_gas_cost(*arguments, **kwargs)
 
 
@@ -271,10 +269,10 @@ class ContractTransaction(ManagerAccessMixin):
             # Automatically impersonate contracts (if API available) when sender
             kwargs["sender"] = self.account_manager.test_accounts[kwargs["sender"].address]
 
-        arguments = _convert_args(args, self.conversion_manager.convert, self.abi)
-        kwargs = _convert_kwargs(kwargs, self.conversion_manager.convert)
+        arguments = self.conversion_manager.convert_method_args(self.abi, args)
+        converted_kwargs = self.conversion_manager.convert_method_kwargs(kwargs)
         return self.provider.network.ecosystem.encode_transaction(
-            self.address, self.abi, *arguments, **kwargs
+            self.address, self.abi, *arguments, **converted_kwargs
         )
 
     def __call__(self, *args, **kwargs) -> ReceiptAPI:
@@ -328,7 +326,7 @@ class ContractTransactionHandler(ContractMethodHandler):
             reported in the fee-currency's smallest unit, e.g. Wei.
         """
         selected_abi = _select_method_abi(self.abis, args)
-        arguments = _convert_args(args, self.conversion_manager.convert, selected_abi)
+        arguments = self.conversion_manager.convert_method_args(selected_abi, args)
         txn = self.as_transaction(*arguments, **kwargs)
         return self.provider.estimate_gas_cost(txn)
 
@@ -356,7 +354,6 @@ class ContractTransactionHandler(ContractMethodHandler):
             raise _get_non_contract_error(self.contract.address, network)
 
         selected_abi = _select_method_abi(self.abis, args)
-        args = self._convert_tuple(args, selected_abi)
 
         return ContractTransaction(
             abi=selected_abi,
@@ -473,10 +470,20 @@ class ContractEvent(ManagerAccessMixin):
         event_args.update(kwargs)
 
         # Check that event_args.keys() is a subset of the expected input names
-        if unknown_input_names := set(event_args.keys()) - {ipt.name for ipt in self.abi.inputs}:
-            raise ValueError(
-                f"Invalid argument keys found, expected subset of {', '.join(unknown_input_names)}"
-            )
+        keys_given = set(event_args.keys())
+        keys_expected = {ipt.name for ipt in self.abi.inputs}
+        if unknown_input_names := keys_given - keys_expected:
+            message = "Unknown keys: "
+            sections = []
+            for unknown in unknown_input_names:
+                if matches := difflib.get_close_matches(unknown, keys_expected, n=1, cutoff=0.5):
+                    matches_str = ", ".join(matches)
+                    sections.append(f"{unknown} (did you mean: '{matches_str}'?)")
+                else:
+                    sections.append(unknown)
+
+            message = f"{message} '{', '.join(sections)}'"
+            raise ValueError(message)
 
         # Convert the arguments using the conversion manager
         converted_args = {}
@@ -500,7 +507,7 @@ class ContractEvent(ManagerAccessMixin):
             else:
                 converted_args[key] = self.conversion_manager.convert(value, py_type)
 
-        properties = {"event_arguments": converted_args, "event_name": self.abi.name}
+        properties: Dict = {"event_arguments": converted_args, "event_name": self.abi.name}
         if hasattr(self.contract, "address"):
             # Only address if this is off an instance.
             properties["contract_address"] = self.contract.address
@@ -551,7 +558,7 @@ class ContractEvent(ManagerAccessMixin):
         if columns[0] == "*":
             columns = list(ContractLog.__fields__)  # type: ignore
 
-        query = {
+        query: Dict = {
             "columns": columns,
             "event": self.abi,
             "start_block": start_block,
@@ -595,7 +602,7 @@ class ContractEvent(ManagerAccessMixin):
             Iterator[:class:`~ape.contracts.base.ContractLog`]
         """
 
-        if not hasattr(self.contract, "address"):
+        if not (contract_address := getattr(self.contract, "address", None)):
             return
 
         start_block = None
@@ -604,16 +611,16 @@ class ContractEvent(ManagerAccessMixin):
         if stop is None:
             contract = None
             try:
-                contract = self.chain_manager.contracts.instance_at(self.contract.address)
+                contract = self.chain_manager.contracts.instance_at(contract_address)
             except Exception:
                 pass
 
             if contract:
                 start_block = contract.receipt.block_number
             else:
-                start_block = self.chain_manager.contracts.get_creation_receipt(
-                    self.contract.address
-                ).block_number
+                cache = self.chain_manager.contracts
+                receipt = cache.get_creation_receipt(contract_address)
+                start_block = receipt.block_number
 
             stop_block = start_or_stop
         elif start_or_stop is not None and stop is not None:
@@ -622,7 +629,7 @@ class ContractEvent(ManagerAccessMixin):
 
         stop_block = min(stop_block, self.chain_manager.blocks.height)
 
-        addresses = set([self.contract.address] + (extra_addresses or []))
+        addresses = list(set([contract_address] + (extra_addresses or [])))
         contract_event_query = ContractEventQuery(
             columns=list(ContractLog.__fields__.keys()),
             contract=addresses,
@@ -1144,7 +1151,7 @@ class ContractInstance(BaseAddress, ContractTypeWrapper):
         if attr_name in set(super(BaseAddress, self).__dir__()):
             return super(BaseAddress, self).__getattribute__(attr_name)
 
-        if attr_name not in {
+        elif attr_name not in {
             *self._view_methods_,
             *self._mutable_methods_,
             *self._events_,

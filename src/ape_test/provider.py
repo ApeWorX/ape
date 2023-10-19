@@ -84,8 +84,9 @@ class LocalProvider(TestProviderAPI, Web3Provider):
             # Remove from dict before estimating
             txn_dict.pop("gas")
 
+        txn_data = cast(TxParams, txn_dict)
         try:
-            return estimate_gas(txn_dict, block_identifier=block_id)  # type: ignore
+            return estimate_gas(txn_data, block_identifier=block_id)
         except (ValidationError, TransactionFailed) as err:
             ape_err = self.get_virtual_machine_error(err, txn=txn)
             gas_match = self._INVALID_NONCE_PATTERN.match(str(ape_err))
@@ -109,16 +110,16 @@ class LocalProvider(TestProviderAPI, Web3Provider):
 
     @property
     def chain_id(self) -> int:
+        if self.cached_chain_id:
+            return self.cached_chain_id
+
         try:
-            if self.cached_chain_id:
-                return self.cached_chain_id
-
             result = self._make_request("eth_chainId", [])
-            self.cached_chain_id = result
-            return result
-
         except ProviderNotConnectedError:
-            return self.provider_settings.get("chain_id", self.config.provider.chain_id)
+            result = self.provider_settings.get("chain_id", self.config.provider.chain_id)
+
+        self.cached_chain_id = result
+        return result
 
     @property
     def gas_price(self) -> int:

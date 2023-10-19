@@ -4,9 +4,9 @@ from typing import List, Tuple
 import pytest
 from eth_utils import is_checksum_address, to_hex
 from ethpm_types import ContractType, HexBytes
-from pydantic import BaseModel
 
 from ape import Contract
+from ape._pydantic_compat import BaseModel
 from ape.api import TransactionAPI
 from ape.contracts import ContractInstance
 from ape.exceptions import (
@@ -19,7 +19,7 @@ from ape.exceptions import (
     MethodNonPayableError,
 )
 from ape.types import AddressType
-from ape_ethereum.transactions import TransactionStatusEnum
+from ape_ethereum.transactions import TransactionStatusEnum, TransactionType
 
 MATCH_TEST_CONTRACT = re.compile(r"<TestContract((Sol)|(Vy))")
 
@@ -227,7 +227,7 @@ def test_structs(contract_instance, owner, chain):
 
     # Expected: b == block.prevhash.
     assert actual.b == actual["b"] == actual[1] == actual_prev_block == chain.blocks[-2].hash
-    assert type(actual.b) is HexBytes
+    assert isinstance(actual.b, bytes)
 
 
 def test_nested_structs(contract_instance, owner, chain):
@@ -254,7 +254,7 @@ def test_nested_structs(contract_instance, owner, chain):
         == actual_prev_block_1
         == chain.blocks[-2].hash
     )
-    assert type(actual_1.t.b) is HexBytes
+    assert isinstance(actual_1.t.b, bytes)
     assert (
         actual_2.t.b
         == actual_2.t["b"]
@@ -262,7 +262,7 @@ def test_nested_structs(contract_instance, owner, chain):
         == actual_prev_block_2
         == chain.blocks[-2].hash
     )
-    assert type(actual_2.t.b) is HexBytes
+    assert isinstance(actual_2.t.b, bytes)
 
 
 def test_nested_structs_in_tuples(contract_instance, owner, chain):
@@ -871,3 +871,9 @@ def test_sending_funds_to_non_payable_constructor_by_accountDeploy(
         match="Sending funds to a non-payable constructor.",
     ):
         owner.deploy(solidity_contract_container, 1, value="1 ether")
+
+
+@pytest.mark.parametrize("tx_type", TransactionType)
+def test_as_transaction(tx_type, vyper_contract_instance, owner, eth_tester_provider):
+    tx = vyper_contract_instance.setNumber.as_transaction(987, sender=owner, type=tx_type.value)
+    assert tx.gas_limit == eth_tester_provider.max_gas

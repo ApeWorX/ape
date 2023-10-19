@@ -10,11 +10,11 @@ from typing import Any, Dict, Union
 import click
 from click import Command, Context, Option
 
+from ape import project
 from ape.cli import NetworkBoundCommand, network_option, verbosity_option
 from ape.cli.options import _VERBOSITY_VALUES, _create_verbosity_kwargs
 from ape.exceptions import ApeException, handle_ape_exception
 from ape.logging import logger
-from ape.managers.project import ProjectManager
 from ape.utils import get_relative_path, use_temp_sys_path
 from ape_console._cli import console
 
@@ -88,7 +88,7 @@ class ScriptCommand(click.MultiCommand):
                 raise
 
     def _get_command(self, filepath: Path) -> Union[click.Command, click.Group, None]:
-        relative_filepath = get_relative_path(filepath, self._project.path)
+        relative_filepath = get_relative_path(filepath, project.path)
 
         # First load the code module by compiling it
         # NOTE: This does not execute the module
@@ -168,27 +168,11 @@ class ScriptCommand(click.MultiCommand):
             return call
 
     @property
-    def _project(self) -> ProjectManager:
-        """
-        A class representing the project that is active at runtime.
-        (This is the same object as from ``from ape import project``).
-
-        Returns:
-            :class:`~ape.managers.project.ProjectManager`
-        """
-
-        from ape import project
-
-        project.config_manager.load()
-
-        return project
-
-    @property
     def commands(self) -> Dict[str, Union[click.Command, click.Group]]:
-        if not self._project.scripts_folder.is_dir():
+        if not project.scripts_folder.is_dir():
             return {}
 
-        return self._get_cli_commands(self._project.scripts_folder)
+        return self._get_cli_commands(project.scripts_folder)
 
     def _get_cli_commands(self, base_path: Path) -> Dict:
         commands: Dict[str, Command] = {}
@@ -234,9 +218,7 @@ class ScriptCommand(click.MultiCommand):
 
     def _launch_console(self):
         trace = inspect.trace()
-        trace_frames = [
-            x for x in trace if x.filename.startswith(str(self._project.scripts_folder))
-        ]
+        trace_frames = [x for x in trace if x.filename.startswith(str(project.scripts_folder))]
         if not trace_frames:
             # Error from Ape internals; avoid launching console.
             sys.exit(1)
@@ -257,7 +239,7 @@ class ScriptCommand(click.MultiCommand):
             if frame:
                 del frame
 
-        return console(project=self._project, extra_locals=extra_locals, embed=True)
+        return console(project=project, extra_locals=extra_locals, embed=True)
 
 
 @click.command(

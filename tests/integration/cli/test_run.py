@@ -21,7 +21,7 @@ def test_run(ape_cli, runner, project):
 
     scripts = [s for s in project.scripts_folder.glob("*.py") if not s.name.startswith("error")]
     for script_file in scripts:
-        result = runner.invoke(ape_cli, ["run", script_file.stem])
+        result = runner.invoke(ape_cli, ["run", script_file.stem], catch_exceptions=False)
         assert (
             result.exit_code == 0
         ), f"Unexpected exit code for '{script_file.name}'\n{result.output}"

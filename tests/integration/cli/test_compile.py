@@ -284,13 +284,20 @@ def test_compile_only_dependency(ape_cli, runner, project, clean_cache, caplog):
     _ = dependency.DependencyInProjectOnly
 
     # Pop the log record off here so we can check the tail again below.
-    log_record = caplog.records.pop()
-    assert expected_log_message in log_record.message
+    length_before = len(caplog.records)
+    assert expected_log_message in caplog.messages[-1]
 
     # It should not need to compile again.
     _ = dependency.DependencyInProjectOnly
     if caplog.records:
-        assert expected_log_message not in caplog.records[-1].message, "Compiled twice!"
+        if expected_log_message in caplog.messages[-1]:
+            length_after = len(caplog.records)
+            # The only way it should be the same log is if there
+            # were not additional logs.
+            assert length_after == length_before
+
+        else:
+            pytest.fail("Compiled twice!")
 
     # Force a re-compile and trigger the dependency to compile via CLI
     result = runner.invoke(

@@ -2,7 +2,7 @@ import functools
 import importlib
 import pkgutil
 import subprocess
-from typing import Any, Callable, Generator, Iterator, List, Optional, Tuple, Type
+from typing import Any, Callable, Generator, Iterator, List, Optional, Set, Tuple, Type
 
 from ape.__modules__ import __modules__
 from ape.exceptions import ApeAttributeError
@@ -121,36 +121,16 @@ class PluginManager:
     _unimplemented_plugins: List[str] = []
 
     def __init__(self) -> None:
-        # NOTE: Unable to use pkgutil.iter_modules() for installed plugins
-        # because it does not work with editable installs.
-        # See https://github.com/python/cpython/issues/99805.
-        result = subprocess.check_output(
-            ["pip", "list", "--format", "freeze", "--disable-pip-version-check"]
-        )
-        packages = result.decode("utf8").splitlines()
-        installed_plugin_module_names = {
-            p.split("==")[0].replace("-", "_") for p in packages if p.startswith("ape-")
-        }
-        core_plugin_module_names = {
-            n for _, n, ispkg in pkgutil.iter_modules() if n.startswith("ape_")
-        }
-        module_names = installed_plugin_module_names.union(core_plugin_module_names)
-
-        for module_name in module_names:
-            try:
-                module = importlib.import_module(module_name)
-                plugin_manager.register(module)
-            except Exception as err:
-                if module_name in __modules__:
-                    # Always raise core plugin registration errors.
-                    raise
-
-                logger.warn_from_exception(err, f"Error loading plugin package '{module_name}'.")
+        self.__registered = False
 
     def __repr__(self):
         return f"<{self.__class__.__name__}>"
 
     def __getattr__(self, attr_name: str) -> Iterator[Tuple[str, Tuple]]:
+        # NOTE: The first time this method is called, the actual
+        #  plugin registration occurs. Registration only happens once.
+        self._register_plugins()
+
         if not hasattr(plugin_manager.hook, attr_name):
             raise ApeAttributeError(f"{self.__class__.__name__} has no attribute '{attr_name}'.")
 
@@ -174,6 +154,47 @@ class PluginManager:
                     if validated_plugin:
                         yield validated_plugin
 
+    @property
+    def registered_plugins(self) -> Set[str]:
+        self._register_plugins()
+        return {x[0] for x in plugin_manager.list_name_plugin()}
+
+    @functools.cached_property
+    def _plugin_modules(self) -> Tuple[str, ...]:
+        # NOTE: Unable to use pkgutil.iter_modules() for installed plugins
+        # because it does not work with editable installs.
+        # See https://github.com/python/cpython/issues/99805.
+        result = subprocess.check_output(
+            ["pip", "list", "--format", "freeze", "--disable-pip-version-check"]
+        )
+        packages = result.decode("utf8").splitlines()
+        installed_plugin_module_names = {
+            p.split("==")[0].replace("-", "_") for p in packages if p.startswith("ape-")
+        }
+        core_plugin_module_names = {
+            n for _, n, ispkg in pkgutil.iter_modules() if n.startswith("ape_")
+        }
+
+        # NOTE: Returns tuple because this shouldn't change.
+        return tuple(installed_plugin_module_names.union(core_plugin_module_names))
+
+    def _register_plugins(self):
+        if self.__registered:
+            return
+
+        for module_name in self._plugin_modules:
+            try:
+                module = importlib.import_module(module_name)
+                plugin_manager.register(module)
+            except Exception as err:
+                if module_name in __modules__:
+                    # Always raise core plugin registration errors.
+                    raise
+
+                logger.warn_from_exception(err, f"Error loading plugin package '{module_name}'.")
+
+        self.__registered = True
+
     def _validate_plugin(self, plugin_name: str, plugin_cls) -> Optional[Tuple[str, Tuple]]:
         if valid_impl(plugin_cls):
             return clean_plugin_name(plugin_name), plugin_cls
@@ -195,7 +216,9 @@ class PluginManager:
                 # Likely only ever a single class in a registration, but just in case.
                 api_name = " - ".join([p.__name__ for p in classes])
                 for api_cls in classes:
-                    if hasattr(api_cls, "__abstractmethods__") and api_cls.__abstractmethods__:
+                    if (
+                        abstract_methods := getattr(api_cls, "__abstractmethods__", None)
+                    ) and isinstance(abstract_methods, dict):
                         unimplemented_methods.extend(api_cls.__abstractmethods__)
 
             else:
@@ -204,8 +227,11 @@ class PluginManager:
 
         elif hasattr(results, "__name__"):
             api_name = results.__name__
-            if hasattr(results, "__abstractmethods__") and results.__abstractmethods__:
+            if (abstract_methods := getattr(results, "__abstractmethods__", None)) and isinstance(
+                abstract_methods, dict
+            ):
                 unimplemented_methods.extend(results.__abstractmethods__)
+
         else:
             api_name = results
 

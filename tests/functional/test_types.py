@@ -1,3 +1,5 @@
+from typing import Dict
+
 import pytest
 from eth_utils import to_hex
 from ethpm_types.abi import EventABI
@@ -11,7 +13,7 @@ BLOCK_NUMBER = 323423
 EVENT_NAME = "MyEvent"
 LOG_INDEX = 7
 TXN_INDEX = 2
-RAW_LOG = {
+RAW_LOG: Dict = {
     "block_hash": BLOCK_HASH,
     "block_number": BLOCK_NUMBER,
     "contract_address": ZERO_ADDRESS,

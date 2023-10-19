@@ -14,7 +14,7 @@ from ape.types import ContractLog
 @pytest.fixture
 def assert_log_values(owner, chain):
     def _assert_log_values(log: ContractLog, number: int, previous_number: Optional[int] = None):
-        assert isinstance(log.b, HexBytes)
+        assert isinstance(log.b, bytes)
         expected_previous_number = number - 1 if previous_number is None else previous_number
         assert log.prevNum == expected_previous_number, "Event param 'prevNum' has unexpected value"
         assert log.newNum == number, "Event param 'newNum' has unexpected value"
@@ -325,4 +325,12 @@ def test_structs_in_events(contract_instance, owner):
     tx = contract_instance.logStruct(sender=owner)
     expected_bytes = HexBytes(0x1234567890ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF)
     expected = contract_instance.EventWithStruct(a_struct={"a": owner, "b": expected_bytes})
+    assert tx.events == [expected]
+
+
+def test_address_arrays_in_events(contract_instance, owner):
+    tx = contract_instance.logAddressArray(sender=owner)
+    expected = contract_instance.EventWithAddressArray(
+        some_id=1001, some_address=owner, participants=[owner], agents=[owner]
+    )
     assert tx.events == [expected]

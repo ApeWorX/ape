@@ -5,7 +5,7 @@ from asyncio import gather
 from datetime import datetime
 from functools import cached_property, lru_cache, singledispatchmethod, wraps
 from pathlib import Path
-from typing import Any, Callable, Coroutine, Dict, List, Mapping, Optional, cast
+from typing import TYPE_CHECKING, Any, Callable, Coroutine, Dict, List, Mapping, Optional, cast
 
 import requests
 import yaml
@@ -17,11 +17,14 @@ from tqdm.auto import tqdm  # type: ignore
 
 from ape.exceptions import APINotImplementedError, ProviderNotConnectedError
 from ape.logging import logger
-from ape.types import AddressType
 from ape.utils.os import expand_environment_variables
 
+if TYPE_CHECKING:
+    from ape.types import AddressType
+
+
 EMPTY_BYTES32 = HexBytes("0x0000000000000000000000000000000000000000000000000000000000000000")
-ZERO_ADDRESS: AddressType = cast(AddressType, "0x0000000000000000000000000000000000000000")
+ZERO_ADDRESS: "AddressType" = cast("AddressType", "0x0000000000000000000000000000000000000000")
 DEFAULT_TRANSACTION_ACCEPTANCE_TIMEOUT = 120
 DEFAULT_LOCAL_TRANSACTION_ACCEPTANCE_TIMEOUT = 20
 DEFAULT_LIVE_NETWORK_BASE_FEE_MULTIPLIER = 1.4
@@ -214,6 +217,9 @@ def add_padding_to_strings(
     Returns:
         List[str]: A list of equal-length strings with padded spaces.
     """
+
+    if not str_list:
+        return []
 
     longest_item = len(max(str_list, key=len))
     spaced_items = []

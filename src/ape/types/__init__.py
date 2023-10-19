@@ -1,10 +1,24 @@
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any, Dict, List, Literal, Optional, Union
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    Callable,
+    Dict,
+    Iterator,
+    List,
+    Literal,
+    Optional,
+    Sequence,
+    TypeVar,
+    Union,
+    cast,
+    overload,
+)
 
 from eth_abi.abi import encode
 from eth_abi.packed import encode_packed
-from eth_typing import HexStr
-from eth_utils import encode_hex, keccak
+from eth_typing import Hash32, HexStr
+from eth_utils import encode_hex, keccak, to_hex
 from ethpm_types import (
     ABI,
     Bytecode,
@@ -18,10 +32,9 @@ from ethpm_types import (
 )
 from ethpm_types.abi import EventABI
 from ethpm_types.source import Closure
-from pydantic import BaseModel, root_validator, validator
 from web3.types import FilterParams
 
-from ape.exceptions import ApeAttributeError
+from ape._pydantic_compat import BaseModel, root_validator, validator
 from ape.types.address import AddressType, RawAddress
 from ape.types.coverage import (
     ContractCoverage,
@@ -32,7 +45,7 @@ from ape.types.coverage import (
 )
 from ape.types.signatures import MessageSignature, SignableMessage, TransactionSignature
 from ape.types.trace import CallTreeNode, ControlFlow, GasReport, SourceTraceback, TraceFrame
-from ape.utils import BaseInterfaceModel, cached_property
+from ape.utils import BaseInterfaceModel, ExtraModelAttributes, cached_property
 from ape.utils.misc import ZERO_ADDRESS, to_int
 
 if TYPE_CHECKING:
@@ -88,7 +101,7 @@ and otherwise you can provide a numeric value.
 """
 
 
-TopicFilter = List[Union[Optional[HexStr], List[Optional[HexStr]]]]
+TopicFilter = Sequence[Union[Optional[HexStr], Sequence[Optional[HexStr]]]]
 
 
 @dataclass
@@ -142,11 +155,13 @@ class LogFilter(BaseModel):
         return convert(value, AddressType)
 
     def dict(self, client=None):
+        _Hash32 = Union[Hash32, HexBytes, HexStr]
+        topics = cast(Sequence[Optional[Union[_Hash32, Sequence[_Hash32]]]], self.topic_filter)
         return FilterParams(
             address=self.addresses,
-            fromBlock=hex(self.start_block),  # type: ignore
-            toBlock=hex(self.stop_block),  # type: ignore
-            topics=self.topic_filter,  # type: ignore
+            fromBlock=to_hex(self.start_block),
+            toBlock=to_hex(self.stop_block),
+            topics=topics,
         )
 
     @classmethod
@@ -283,6 +298,15 @@ class ContractLog(BaseContractLog):
         return self.chain_manager.blocks[self.block_number]
 
     @property
+    def timestamp(self) -> int:
+        """
+        The UNIX timestamp of when the event was emitted.
+
+        NOTE: This performs a block lookup.
+        """
+        return self.block.timestamp
+
+    @property
     def _event_args_str(self) -> str:
         return " ".join(f"{key}={val}" for key, val in self.event_arguments.items())
 
@@ -292,23 +316,13 @@ class ContractLog(BaseContractLog):
     def __repr__(self) -> str:
         return f"<{self.event_name} {self._event_args_str}>"
 
-    def __getattr__(self, item: str) -> Any:
-        """
-        Access properties from the log via ``.`` access.
-
-        Args:
-            item (str): The name of the property.
-        """
-
-        try:
-            return self.__getattribute__(item)
-        except AttributeError:
-            pass
-
-        if item not in self.event_arguments:
-            raise ApeAttributeError(f"{self.__class__.__name__} has no attribute '{item}'.")
-
-        return self.event_arguments[item]
+    def __ape_extra_attributes__(self) -> Iterator[ExtraModelAttributes]:
+        yield ExtraModelAttributes(
+            name=self.event_name,
+            attributes=self.event_arguments,
+            include_getattr=True,
+            include_getitem=True,
+        )
 
     def __contains__(self, item: str) -> bool:
         return item in self.event_arguments
@@ -336,11 +350,23 @@ class ContractLog(BaseContractLog):
         # call __eq__ on parent class
         return super().__eq__(other)
 
-    def __getitem__(self, item: str) -> Any:
-        return self.event_arguments[item]
-
     def get(self, item: str, default: Optional[Any] = None) -> Any:
         return self.event_arguments.get(item, default)
+
+
+def _equal_event_inputs(mock_input: Any, real_input: Any) -> bool:
+    if mock_input is None:
+        # Check is skipped.
+        return True
+
+    elif isinstance(mock_input, (list, tuple)):
+        if not isinstance(real_input, (list, tuple)) or len(real_input) != len(mock_input):
+            return False
+
+        return all(_equal_event_inputs(m, r) for m, r in zip(mock_input, real_input))
+
+    else:
+        return mock_input == real_input
 
 
 class MockContractLog(BaseContractLog):
@@ -366,9 +392,9 @@ class MockContractLog(BaseContractLog):
         # NOTE: `self.event_arguments` contains a subset of items from `other.event_arguments`,
         #       but we skip those the user doesn't care to check
         for name, value in self.event_arguments.items():
-            # Make sure `value` is not `None` (user explicitly set it `None`)
-            # NOTE: `other.event_arguments[name]` will raise `IndexError` only if ABIs don't match
-            if value is not None and value != other.event_arguments[name]:
+            other_input = other.event_arguments.get(name)
+            if not _equal_event_inputs(value, other_input):
+                # Only exit on False; Else, keep checking.
                 return False
 
         return True
@@ -392,6 +418,64 @@ class ContractLogContainer(list):
         return any(log == val for log in self)
 
 
+_T = TypeVar("_T")  # _LazySequence generic.
+
+
+class _LazySequence(Sequence[_T]):
+    def __init__(self, generator: Union[Iterator[_T], Callable[[], Iterator[_T]]]):
+        self._generator = generator
+        self.cache: List = []
+
+    @overload
+    def __getitem__(self, index: int) -> _T:
+        ...
+
+    @overload
+    def __getitem__(self, index: slice) -> Sequence[_T]:
+        ...
+
+    def __getitem__(self, index: Union[int, slice]) -> Union[_T, Sequence[_T]]:
+        if isinstance(index, int):
+            while len(self.cache) <= index:
+                # Catch up the cache.
+                if value := next(self.generator, None):
+                    self.cache.append(value)
+
+            return self.cache[index]
+
+        elif isinstance(index, slice):
+            # TODO: Make slices lazier. Right now, it deqeues all.
+            for item in self.generator:
+                self.cache.append(item)
+
+            return self.cache[index]
+
+        else:
+            raise TypeError("Index must be int or slice.")
+
+    def __len__(self) -> int:
+        # NOTE: This will deque everything.
+
+        for value in self.generator:
+            self.cache.append(value)
+
+        return len(self.cache)
+
+    def __iter__(self) -> Iterator[_T]:
+        yield from self.cache
+        for value in self.generator:
+            yield value
+            self.cache.append(value)
+
+    @property
+    def generator(self) -> Iterator:
+        if callable(self._generator):
+            self._generator = self._generator()
+
+        assert isinstance(self._generator, Iterator)  # For type-checking.
+        yield from self._generator
+
+
 __all__ = [
     "ABI",
     "AddressType",
@@ -407,7 +491,6 @@ __all__ = [
     "ContractLogContainer",
     "ContractType",
     "ControlFlow",
-    "CoverageItem",
     "CoverageProject",
     "CoverageReport",
     "CoverageStatement",

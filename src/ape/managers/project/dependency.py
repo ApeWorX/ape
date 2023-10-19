@@ -7,9 +7,9 @@ from typing import Dict, Iterable, List, Optional, Type
 
 from ethpm_types import PackageManifest
 from ethpm_types.utils import AnyUrl
-from pydantic import FileUrl, HttpUrl, root_validator
 from semantic_version import NpmSpec, Version  # type: ignore
 
+from ape._pydantic_compat import FileUrl, HttpUrl, root_validator
 from ape.api import DependencyAPI
 from ape.exceptions import ProjectError, UnknownVersionError
 from ape.logging import logger
@@ -287,7 +287,7 @@ class LocalDependency(DependencyAPI):
     """
 
     local: str
-    version = "local"
+    version: str = "local"
 
     @root_validator()
     def validate_contracts_folder(cls, value):

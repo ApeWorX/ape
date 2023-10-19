@@ -3,6 +3,7 @@ from os import environ
 import pytest
 from eip712.messages import EIP712Message
 from eth_account.messages import encode_defunct
+from hexbytes import HexBytes
 
 import ape
 from ape.api import ImpersonatedAccount
@@ -11,6 +12,7 @@ from ape.types import AutoGasLimit
 from ape.types.signatures import recover_signer
 from ape.utils.testing import DEFAULT_NUMBER_OF_TEST_ACCOUNTS
 from ape_ethereum.ecosystem import ProxyType
+from ape_ethereum.transactions import TransactionType
 from ape_test.accounts import TestAccount
 from tests.conftest import explorer_test
 
@@ -204,16 +206,14 @@ def test_deploy_and_publish_live_network_no_explorer(owner, contract_container, 
 
 
 @explorer_test
-def test_deploy_and_publish(mocker, owner, contract_container, dummy_live_network):
-    mock_explorer = mocker.MagicMock()
+def test_deploy_and_publish(owner, contract_container, dummy_live_network, mock_explorer):
     dummy_live_network.__dict__["explorer"] = mock_explorer
     contract = owner.deploy(contract_container, 0, publish=True, required_confirmations=0)
     mock_explorer.publish_contract.assert_called_once_with(contract.address)
 
 
 @explorer_test
-def test_deploy_and_not_publish(mocker, owner, contract_container, dummy_live_network):
-    mock_explorer = mocker.MagicMock()
+def test_deploy_and_not_publish(owner, contract_container, dummy_live_network, mock_explorer):
     dummy_live_network.__dict__["explorer"] = mock_explorer
     owner.deploy(contract_container, 0, publish=True, required_confirmations=0)
     assert not mock_explorer.call_count
@@ -293,18 +293,16 @@ def test_autosign_transactions(runner, keyfile_account, receiver):
         assert keyfile_account.transfer(receiver, "1 gwei")
 
 
-def test_impersonate_not_implemented(accounts):
-    test_address = "0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045"
+def test_impersonate_not_implemented(accounts, address):
     expected_err_msg = (
         "Your provider does not support impersonating accounts:\n"
-        f"No account with address '{test_address}'."
+        f"No account with address '{address}'."
     )
     with pytest.raises(IndexError, match=expected_err_msg):
-        _ = accounts[test_address]
+        _ = accounts[address]
 
 
-def test_impersonated_account_ignores_signature_check_on_txn(accounts):
-    address = "0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045"
+def test_impersonated_account_ignores_signature_check_on_txn(accounts, address):
     account = ImpersonatedAccount(raw_address=address)
 
     # Impersonate hack, since no providers in core actually support it.
@@ -501,28 +499,33 @@ def test_declare(contract_container, sender):
     assert not receipt.failed
 
 
-@pytest.mark.parametrize(
-    "tx_type,params", [(0, ["gas_price"]), (2, ["max_fee", "max_priority_fee"])]
-)
-def test_prepare_transaction(sender, ethereum, tx_type, params):
+@pytest.mark.parametrize("tx_type", (TransactionType.STATIC, TransactionType.DYNAMIC))
+def test_prepare_transaction_using_auto_gas(sender, ethereum, tx_type):
+    params = (
+        ("gas_price",) if tx_type is TransactionType.STATIC else ("max_fee", "max_priority_fee")
+    )
+
     def clear_network_property_cached():
         for field in ("gas_limit", "auto_gas_multiplier"):
-            if field in tx.provider.network.__dict__:
-                del tx.provider.network.__dict__[field]
+            if field in ethereum.local.__dict__:
+                del ethereum.local.__dict__[field]
 
-    tx = ethereum.create_transaction(type=tx_type, gas_limit="auto")
     auto_gas = AutoGasLimit(multiplier=1.0)
-    original_limit = tx.provider.network.config.local.gas_limit
+    original_limit = ethereum.config.local.gas_limit
 
     try:
-        tx.provider.network.config.local.gas_limit = auto_gas
+        ethereum.config.local.gas_limit = auto_gas
         clear_network_property_cached()
+        assert ethereum.local.gas_limit == auto_gas, "Setup failed - auto gas not set."
+
+        # NOTE: Must create tx _after_ setting network gas value.
+        tx = ethereum.create_transaction(type=tx_type)
 
         # Show tx doesn't have these by default.
         assert tx.nonce is None
         for param in params:
             # Custom fields depending on type.
-            assert getattr(tx, param) is None
+            assert getattr(tx, param) is None, f"'{param}' unexpectedly set."
 
         # Gas should NOT yet be estimated, as that happens closer to sending.
         assert tx.gas_limit is None
@@ -532,24 +535,51 @@ def test_prepare_transaction(sender, ethereum, tx_type, params):
 
         # We expect these fields to have been set.
         assert tx.nonce is not None
-        assert tx.gas_limit is not None  # Gas was estimated (using eth_estimateGas).
+        assert tx.gas_limit is not None
 
         # Show multipliers work. First, reset network to use one (hack).
         gas_smaller = tx.gas_limit
 
-        clear_network_property_cached()
         auto_gas.multiplier = 1.1
-        tx.provider.network.config.local.gas_limit = auto_gas
+        ethereum.config.local.gas_limit = auto_gas
+        clear_network_property_cached()
+        assert ethereum.local.gas_limit == auto_gas, "Setup failed - auto gas multiplier not set."
 
-        tx2 = ethereum.create_transaction(type=tx_type, gas_limit="auto")
+        tx2 = ethereum.create_transaction(type=tx_type)
         tx2 = sender.prepare_transaction(tx2)
         gas_bigger = tx2.gas_limit
-
         assert gas_smaller < gas_bigger
 
         for param in params:
             assert getattr(tx, param) is not None
 
     finally:
-        tx.provider.network.config.local.gas_limit = original_limit
+        ethereum.config.local.gas_limit = original_limit
         clear_network_property_cached()
+
+
+@pytest.mark.parametrize("tx_type", (TransactionType.STATIC, TransactionType.DYNAMIC))
+def test_prepare_transaction_and_call_using_max_gas(tx_type, ethereum, sender, eth_tester_provider):
+    tx = ethereum.create_transaction(type=tx_type.value)
+    tx = sender.prepare_transaction(tx)
+    assert tx.gas_limit == eth_tester_provider.max_gas, "Test setup failed - gas limit unexpected."
+
+    actual = sender.call(tx)
+    assert not actual.failed
+
+
+def test_public_key(runner, keyfile_account):
+    with runner.isolation(input="a\ny\n"):
+        assert isinstance(keyfile_account.public_key, HexBytes)
+
+
+def test_load_public_key_from_keyfile(runner, keyfile_account):
+    with runner.isolation(input="a\ny\n"):
+        assert isinstance(keyfile_account.public_key, HexBytes)
+
+        assert (
+            keyfile_account.public_key.hex()
+            == "0x79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798483ada7726a3c4655da4fbfc0e1108a8fd17b448a68554199c47d08ffb10d4b8"  # noqa: 501
+        )
+        # no need for password when loading from the keyfile
+        assert keyfile_account.public_key

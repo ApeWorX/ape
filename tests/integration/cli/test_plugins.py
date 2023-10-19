@@ -17,9 +17,9 @@ class PluginsList(list):
 
 
 class ListResult:
-    CORE_KEY = "Installed Core Plugins:"
-    INSTALLED_KEY = "Installed Plugins:"
-    AVAILABLE_KEY = "Available Plugins:"
+    CORE_KEY = "Core Plugins"
+    INSTALLED_KEY = "Installed Plugins"
+    AVAILABLE_KEY = "Available Plugins"
 
     def __init__(self, lines: List[str]):
         self._lines = lines
@@ -148,17 +148,16 @@ def test_install_multiple_in_one_str(ape_plugins_runner):
 
 
 @github_xfail()
-def test_install_from_config_file(ape_cli, runner, temp_config, caplog):
+def test_install_from_config_file(ape_cli, runner, temp_config):
     plugins_config = {"plugins": [{"name": TEST_PLUGIN_NAME}]}
     with temp_config(plugins_config):
         result = runner.invoke(ape_cli, ["plugins", "install", "."], catch_exceptions=False)
         assert result.exit_code == 0, result.output
-
-    assert TEST_PLUGIN_NAME in caplog.records[-1].message
+        assert TEST_PLUGIN_NAME in result.stdout
 
 
 @github_xfail()
-def test_uninstall(ape_cli, runner, installed_plugin, caplog):
+def test_uninstall(ape_cli, runner, installed_plugin):
     result = runner.invoke(
         ape_cli, ["plugins", "uninstall", TEST_PLUGIN_NAME, "--yes"], catch_exceptions=False
     )

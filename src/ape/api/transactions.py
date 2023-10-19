@@ -6,10 +6,9 @@ from typing import IO, TYPE_CHECKING, Any, Iterator, List, Optional, Union
 from eth_utils import is_0x_prefixed, is_hex, to_int
 from ethpm_types import HexBytes
 from ethpm_types.abi import EventABI, MethodABI
-from pydantic import validator
-from pydantic.fields import Field
 from tqdm import tqdm  # type: ignore
 
+from ape._pydantic_compat import Field, validator
 from ape.api.explorers import ExplorerAPI
 from ape.exceptions import (
     NetworkError,
@@ -27,7 +26,13 @@ from ape.types import (
     TraceFrame,
     TransactionSignature,
 )
-from ape.utils import BaseInterfaceModel, abstractmethod, cached_property, raises_not_implemented
+from ape.utils import (
+    BaseInterfaceModel,
+    ExtraModelAttributes,
+    abstractmethod,
+    cached_property,
+    raises_not_implemented,
+)
 
 if TYPE_CHECKING:
     from ape.api.providers import BlockAPI
@@ -118,7 +123,7 @@ class TransactionAPI(BaseInterfaceModel):
         to submit the transaction.
         """
         if self.max_fee is None:
-            raise TransactionError("Max fee must not be null.")
+            raise TransactionError("`self.max_fee` must not be None.")
 
         return self.value + self.max_fee
 
@@ -261,8 +266,8 @@ class ReceiptAPI(BaseInterfaceModel):
     def __repr__(self) -> str:
         return f"<{self.__class__.__name__} {self.txn_hash}>"
 
-    def __getattr__(self, item: str) -> Any:
-        return getattr(self.transaction, item)
+    def __ape_extra_attributes__(self) -> Iterator[ExtraModelAttributes]:
+        yield ExtraModelAttributes(name="transaction", attributes=self.transaction)
 
     @validator("transaction", pre=True)
     def confirm_transaction(cls, value):
