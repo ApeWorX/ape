@@ -267,6 +267,14 @@ Bypass the original failing attempt by including a <code class="docutils literal
 <li><p>When there is not a suitable <code class="docutils literal notranslate"><span class="pre">DependencyAPI</span></code> implementation available for downloading your dependency.</p></li>
 <li><p>Testing the framework.</p></li>
 </ul>
+<p>You can also reference local project manifests and use those as dependencies.
+To do this, use a local value pointing to the manifest file, like this:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">dependencies</span><span class="p">:</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">MyDependency</span>
+<span class="w">    </span><span class="nt">local</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">./my-dependency.json</span>
+<span class="w">    </span><span class="nt">version</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1.0.0</span>
+</pre></div>
+</div>
 </section>
 <section id="npm">
 <h3>NPM<a class="headerlink" href="#npm" title="Permalink to this heading"></a></h3>
