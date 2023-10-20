@@ -11,6 +11,7 @@ from ethpm_types.utils import Algorithm, AnyUrl, compute_checksum
 from packaging.version import InvalidVersion, Version
 
 from ape._pydantic_compat import ValidationError
+from ape.exceptions import ProjectError
 from ape.logging import logger
 from ape.utils import (
     BaseInterfaceModel,
@@ -394,6 +395,31 @@ class DependencyAPI(BaseInterfaceModel):
         )
         if cached_manifest:
             return cached_manifest
+
+        if project_path.is_file() and project_path.suffix == ".json":
+            try:
+                manifest = PackageManifest.parse_file(project_path)
+
+            except ValueError as err:
+                if project_path.parent.is_dir():
+                    project_path = project_path.parent
+
+                else:
+                    raise ProjectError(f"Invalid manifest file: '{project_path}'.") from err
+
+            else:
+                # Was given a path to a manifest JSON.
+                self._write_manifest_to_cache(manifest)
+                return manifest
+
+        elif (project_path.parent / project_path.name.replace("-", "_")).is_dir():
+            project_path = project_path.parent / project_path.name.replace("-", "_")
+
+        elif (project_path.parent / project_path.name.replace("_", "-")).is_dir():
+            project_path = project_path.parent / project_path.name.replace("_", "-")
+
+        elif project_path.parent.is_dir():
+            project_path = project_path.parent
 
         # NOTE: Dependencies are not compiled here. Instead, the sources are packaged
         # for later usage via imports. For legacy reasons, many dependency-esque projects

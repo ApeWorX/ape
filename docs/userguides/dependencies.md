@@ -62,6 +62,16 @@ This is helpful when:
 - When there is not a suitable `DependencyAPI` implementation available for downloading your dependency.
 - Testing the framework.
 
+You can also reference local project manifests and use those as dependencies.
+To do this, use a local value pointing to the manifest file, like this:
+
+```yaml
+dependencies:
+  - name: MyDependency
+    local: ./my-dependency.json
+    version: 1.0.0
+```
+
 ### NPM
 
 You can use dependencies from NPM.
