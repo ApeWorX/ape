@@ -158,22 +158,20 @@ class KeyfileAccount(AccountAPI):
         self.keyfile_path.unlink()
 
     def sign_message(self, msg: Any, **signer_options) -> Optional[MessageSignature]:
-        if not isinstance(msg, (SignableMessage, EIP712Message, str, int, bytes)):
-            logger.warning("Unsupported message type, (type=%r, msg=%r)", type(msg), msg)
-            return None
-
         user_approves = False
 
         if isinstance(msg, str):
-            # Convert str to SignableMessage for handling below
             user_approves = self.__autosign or click.confirm(f"Message: {msg}\n\nSign: ")
             msg = encode_defunct(text=msg)
         elif isinstance(msg, int):
             user_approves = self.__autosign or click.confirm(f"Message: {msg}\n\nSign: ")
             msg = encode_defunct(hexstr=HexBytes(msg).hex())
+        elif isinstance(msg, bytes):
+            user_approves = self.__autosign or click.confirm(f"Message: {msg.hex()}\n\nSign: ")
+            msg = encode_defunct(primitive=msg)
         elif isinstance(msg, EIP712Message):
             # Display message data to user
-            display_msg = "Signing Message\n"
+            display_msg = f"Signing EIP712 Message\n"
 
             # Domain Data
             display_msg += "Domain\n"
@@ -197,7 +195,12 @@ class KeyfileAccount(AccountAPI):
 
             # Convert EIP712Message to SignableMessage for handling below
             msg = msg.signable_message
-        elif isinstance(msg, SignableMessage):
+        else:
+            logger.warning("Unsupported message type, (type=%r, msg=%r)", type(msg), msg)
+            return None
+
+        # msg should be a SignableMessage at this point
+        if isinstance(msg, SignableMessage):
             user_approves = self.__autosign or click.confirm(f"{msg}\n\nSign: ")
 
         if not user_approves:
