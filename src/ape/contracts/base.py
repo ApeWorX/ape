@@ -706,19 +706,6 @@ class ContractEvent(ManagerAccessMixin):
             new_block_timeout=new_block_timeout,
         )
 
-        # NOTE: Now we process the rest
-        for new_block in self.chain_manager.blocks.poll_blocks(
-            start_block=start_block,
-            stop_block=stop_block,
-            required_confirmations=required_confirmations,
-            new_block_timeout=new_block_timeout,
-        ):
-            if new_block.number is None:
-                continue
-
-            # Get all events in the new block.
-            yield from self.range(new_block.number, stop=new_block.number + 1)
-
 
 class ContractTypeWrapper(ManagerAccessMixin):
     contract_type: ContractType
