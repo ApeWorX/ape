@@ -171,7 +171,7 @@ class KeyfileAccount(AccountAPI):
             msg = encode_defunct(primitive=msg)
         elif isinstance(msg, EIP712Message):
             # Display message data to user
-            display_msg = f"Signing EIP712 Message\n"
+            display_msg = "Signing EIP712 Message\n"
 
             # Domain Data
             display_msg += "Domain\n"
