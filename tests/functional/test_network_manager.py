@@ -167,6 +167,7 @@ def test_parse_network_choice_same_provider(chain, networks_connected_to_tester,
         assert provider._web3 is not None
 
 
+@pytest.mark.xdist_group(name="multiple-eth-testers")
 def test_parse_network_choice_new_chain_id(get_provider_with_unused_chain_id, get_context):
     start_count = len(get_context().connected_providers)
     context = get_provider_with_unused_chain_id()
@@ -182,17 +183,26 @@ def test_parse_network_choice_new_chain_id(get_provider_with_unused_chain_id, ge
         assert provider._web3 is not None
 
 
+@pytest.mark.xdist_group(name="multiple-eth-testers")
 def test_disconnect_after(get_provider_with_unused_chain_id):
     context = get_provider_with_unused_chain_id()
     with context as provider:
         connection_id = provider.connection_id
         assert connection_id in context.connected_providers
 
-    assert context not in context.connected_providers
+    assert connection_id not in context.connected_providers
 
 
-def test_parse_network_choice_multiple_contexts(get_provider_with_unused_chain_id):
+@pytest.mark.xdist_group(name="multiple-eth-testers")
+def test_parse_network_choice_multiple_contexts(
+    eth_tester_provider, get_provider_with_unused_chain_id
+):
     first_context = get_provider_with_unused_chain_id()
+    assert (
+        eth_tester_provider.chain_id == DEFAULT_TEST_CHAIN_ID
+    ), "Test setup failed - expecting to start on default chain ID"
+    assert eth_tester_provider._make_request("eth_chainId") == DEFAULT_TEST_CHAIN_ID
+
     with first_context:
         start_count = len(first_context.connected_providers)
         expected_next_count = start_count + 1
@@ -201,6 +211,9 @@ def test_parse_network_choice_multiple_contexts(get_provider_with_unused_chain_i
             # Second context should already know about connected providers
             assert len(first_context.connected_providers) == expected_next_count
             assert len(second_context.connected_providers) == expected_next_count
+
+    assert eth_tester_provider.chain_id == DEFAULT_TEST_CHAIN_ID
+    assert eth_tester_provider._make_request("eth_chainId") == DEFAULT_TEST_CHAIN_ID
 
 
 def test_getattr_ecosystem_with_hyphenated_name(networks, ethereum):

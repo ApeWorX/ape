@@ -879,17 +879,7 @@ class NetworkAPI(BaseInterfaceModel):
             provider_name = "geth"
 
         if provider_name in self.providers:
-            provider = self.providers[provider_name]()
-
-            if not provider.is_connected:
-                # Apply the settings before first connection process.
-                provider.provider_settings = provider_settings
-
-            elif provider.provider_settings != provider_settings:
-                # Handle new settings.
-                new_settings = {**provider.provider_settings, **provider_settings}
-                provider.update_settings(new_settings)
-
+            provider = self.providers[provider_name](provider_settings=provider_settings)
             if provider.connection_id in ProviderContextManager.connected_providers:
                 # Likely multi-chain testing or utilizing multiple on-going connections.
                 return ProviderContextManager.connected_providers[provider.connection_id]
