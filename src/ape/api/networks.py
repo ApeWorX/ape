@@ -1,7 +1,18 @@
 from functools import partial
 from pathlib import Path
 from tempfile import mkdtemp
-from typing import TYPE_CHECKING, Any, Dict, Iterator, List, Optional, Tuple, Type, Union
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    Collection,
+    Dict,
+    Iterator,
+    List,
+    Optional,
+    Tuple,
+    Type,
+    Union,
+)
 
 from eth_account import Account as EthAccount
 from eth_account._utils.legacy_transactions import (
@@ -430,7 +441,9 @@ class EcosystemAPI(BaseInterfaceModel):
 
         raise NetworkNotFoundError(network_name, ecosystem=self.name, options=self.networks)
 
-    def get_network_data(self, network_name: str) -> Dict:
+    def get_network_data(
+        self, network_name: str, provider_filter: Optional[Collection[str]] = None
+    ) -> Dict:
         """
         Get a dictionary of data about providers in the network.
 
@@ -439,6 +452,8 @@ class EcosystemAPI(BaseInterfaceModel):
 
         Args:
             network_name (str): The name of the network to get provider data from.
+            provider_filter (Optional[Collection[str]]): Optional filter the providers
+              by name.
 
         Returns:
             dict: A dictionary containing the providers in a network.
@@ -456,6 +471,9 @@ class EcosystemAPI(BaseInterfaceModel):
             data["explorer"] = str(network.explorer.name)
 
         for provider_name in network.providers:
+            if provider_filter and provider_name not in provider_filter:
+                continue
+
             provider_data: Dict = {"name": str(provider_name)}
 
             # Only add isDefault key when True
