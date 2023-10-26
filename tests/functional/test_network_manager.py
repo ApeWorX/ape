@@ -23,7 +23,7 @@ def get_provider_with_unused_chain_id(networks_connected_to_tester):
         chain_id = chain_id_factory()
         settings = {"chain_id": chain_id, **more_settings}
         choice = "ethereum:local:test"
-        disconnect_after = settings.pop("disconnect_after", False)
+        disconnect_after = settings.pop("disconnect_after", True)
         context = networks.parse_network_choice(
             choice, disconnect_after=disconnect_after, provider_settings=settings
         )
@@ -183,7 +183,7 @@ def test_parse_network_choice_new_chain_id(get_provider_with_unused_chain_id, ge
 
 
 def test_disconnect_after(get_provider_with_unused_chain_id):
-    context = get_provider_with_unused_chain_id(disconnect_after=True)
+    context = get_provider_with_unused_chain_id()
     with context as provider:
         connection_id = provider.connection_id
         assert connection_id in context.connected_providers
