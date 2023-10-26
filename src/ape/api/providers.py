@@ -214,7 +214,7 @@ class ProviderAPI(BaseInterfaceModel):
 
         # NOTE: If other provider settings are different, ``.update_settings()``
         #    should be called.
-        return f"{self.network_choice}:-{chain_id}"
+        return f"{self.network_choice}:{chain_id}"
 
     @abstractmethod
     def update_settings(self, new_settings: dict):
@@ -1747,7 +1747,7 @@ class SubprocessProvider(ProviderAPI):
     @property
     def connection_id(self) -> Optional[str]:
         cmd_id = ",".join(self.build_command())
-        return f"{self.network_choice}:-{cmd_id}"
+        return f"{self.network_choice}:{cmd_id}"
 
     def _get_process_output_logger(self, name: str, path: Path):
         logger = getLogger(f"{self.name}_{name}_subprocessProviderLogger")

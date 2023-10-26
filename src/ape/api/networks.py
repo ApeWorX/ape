@@ -862,22 +862,20 @@ class NetworkAPI(BaseInterfaceModel):
 
         if provider_name in self.providers:
             provider = self.providers[provider_name]()
-            connection_id = provider.connection_id
 
-            if not connection_id:
-                # Provider not yet connected
+            if not provider.is_connected:
+                # Apply the settings before first connection process.
                 provider.provider_settings = provider_settings
-                return provider
 
-            elif connection_id in ProviderContextManager.connected_providers:
-                connected_provider = ProviderContextManager.connected_providers[connection_id]
-                new_settings = {**connected_provider.provider_settings, **provider_settings}
-                if connected_provider.provider_settings != provider_settings:
-                    connected_provider.update_settings(new_settings)
+            elif provider.provider_settings != provider_settings:
+                # Handle new settings.
+                new_settings = {**provider.provider_settings, **provider_settings}
+                provider.update_settings(new_settings)
 
-                return connected_provider
+            if provider.connection_id in ProviderContextManager.connected_providers:
+                # Likely multi-chain testing or utilizing multiple on-going connections.
+                return ProviderContextManager.connected_providers[provider.connection_id]
 
-            provider.provider_settings = provider_settings
             return provider
 
         else:
