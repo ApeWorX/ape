@@ -1,34 +1,17 @@
-import operator
 import re
 from ast import literal_eval
 from typing import Dict, Optional, cast
 
 from eth.exceptions import HeaderNotFound
 from eth_tester.backends import PyEVMBackend  # type: ignore
-from eth_tester.exceptions import FilterNotFound, TransactionFailed  # type: ignore
-from eth_utils import decode_hex, encode_hex, is_0x_prefixed, is_null, keccak
-from eth_utils.curried import apply_formatter_if
+from eth_tester.exceptions import TransactionFailed  # type: ignore
+from eth_utils import is_0x_prefixed
 from eth_utils.exceptions import ValidationError
-from eth_utils.toolz import compose, excepts
+from eth_utils.toolz import merge
 from ethpm_types import HexBytes
 from web3 import EthereumTesterProvider, Web3
 from web3.exceptions import ContractPanicError
-from web3.providers.eth_tester.defaults import (
-    call_eth_tester,
-    client_version,
-    create_log_filter,
-    create_new_account,
-    get_logs,
-    get_transaction_by_block_hash_and_index,
-    get_transaction_by_block_number_and_index,
-    not_implemented,
-    null_if_block_not_found,
-    null_if_filter_not_found,
-    null_if_transaction_not_found,
-    personal_send_transaction,
-    static_return,
-    without_eth_tester,
-)
+from web3.providers.eth_tester.defaults import API_ENDPOINTS, static_return
 from web3.types import TxParams
 
 from ape.api import PluginConfig, ReceiptAPI, TestProviderAPI, TransactionAPI, Web3Provider
@@ -74,8 +57,7 @@ class LocalProvider(TestProviderAPI, Web3Provider):
             mnemonic=self.config.mnemonic,
             num_accounts=self.config.number_of_accounts,
         )
-        endpoints = get_endpoints()
-        endpoints["eth"]["chainId"] = static_return(chain_id)
+        endpoints = get_endpoints(chain_id)
         tester = EthereumTesterProvider(ethereum_tester=self._evm_backend, api_endpoints=endpoints)
         self._web3 = Web3(tester)
 
@@ -297,220 +279,6 @@ class LocalProvider(TestProviderAPI, Web3Provider):
             return VirtualMachineError(base_err=exception, **kwargs)
 
 
-def get_endpoints():
-    # HACK: Until https://github.com/ethereum/web3.py/issues/3136 resolved.
-    return {
-        "web3": {
-            "clientVersion": client_version,
-            "sha3": compose(
-                encode_hex,
-                keccak,
-                decode_hex,
-                without_eth_tester(operator.itemgetter(0)),
-            ),
-        },
-        "net": {
-            "version": static_return("1"),
-            "listening": static_return(False),
-            "peerCount": static_return(0),
-        },
-        "eth": {
-            "protocolVersion": static_return(63),
-            "syncing": static_return(False),
-            "coinbase": compose(
-                operator.itemgetter(0),
-                call_eth_tester("get_accounts"),
-            ),
-            "mining": static_return(False),
-            "hashrate": static_return(0),
-            "chainId": static_return(131277322940537),  # from fixture generation file
-            "feeHistory": not_implemented,
-            "maxPriorityFeePerGas": static_return(10**9),
-            "gasPrice": static_return(10**9),  # must be >= base fee post-London
-            "accounts": call_eth_tester("get_accounts"),
-            "blockNumber": compose(
-                operator.itemgetter("number"),
-                call_eth_tester("get_block_by_number", fn_kwargs={"block_number": "latest"}),
-            ),
-            "getBalance": call_eth_tester("get_balance"),
-            "getStorageAt": call_eth_tester("get_storage_at"),
-            "getProof": not_implemented,
-            "getTransactionCount": call_eth_tester("get_nonce"),
-            "getBlockTransactionCountByHash": null_if_block_not_found(
-                compose(
-                    len,
-                    operator.itemgetter("transactions"),
-                    call_eth_tester("get_block_by_hash"),
-                )
-            ),
-            "getBlockTransactionCountByNumber": null_if_block_not_found(
-                compose(
-                    len,
-                    operator.itemgetter("transactions"),
-                    call_eth_tester("get_block_by_number"),
-                )
-            ),
-            "getUncleCountByBlockHash": null_if_block_not_found(
-                compose(
-                    len,
-                    operator.itemgetter("uncles"),
-                    call_eth_tester("get_block_by_hash"),
-                )
-            ),
-            "getUncleCountByBlockNumber": null_if_block_not_found(
-                compose(
-                    len,
-                    operator.itemgetter("uncles"),
-                    call_eth_tester("get_block_by_number"),
-                )
-            ),
-            "getCode": call_eth_tester("get_code"),
-            "sign": not_implemented,
-            "signTransaction": not_implemented,
-            "sendTransaction": call_eth_tester("send_transaction"),
-            "sendRawTransaction": call_eth_tester("send_raw_transaction"),
-            "call": call_eth_tester("call"),  # TODO: untested
-            "estimateGas": call_eth_tester("estimate_gas"),  # TODO: untested
-            "getBlockByHash": null_if_block_not_found(call_eth_tester("get_block_by_hash")),
-            "getBlockByNumber": null_if_block_not_found(call_eth_tester("get_block_by_number")),
-            "getTransactionByHash": null_if_transaction_not_found(
-                call_eth_tester("get_transaction_by_hash")
-            ),
-            "getTransactionByBlockHashAndIndex": get_transaction_by_block_hash_and_index,
-            "getTransactionByBlockNumberAndIndex": get_transaction_by_block_number_and_index,  # noqa: E501
-            "getTransactionReceipt": null_if_transaction_not_found(
-                compose(
-                    apply_formatter_if(
-                        compose(is_null, operator.itemgetter("block_number")),
-                        static_return(None),
-                    ),
-                    call_eth_tester("get_transaction_receipt"),
-                )
-            ),
-            "getUncleByBlockHashAndIndex": not_implemented,
-            "getUncleByBlockNumberAndIndex": not_implemented,
-            "getCompilers": not_implemented,
-            "compileLLL": not_implemented,
-            "compileSolidity": not_implemented,
-            "compileSerpent": not_implemented,
-            "newFilter": create_log_filter,
-            "newBlockFilter": call_eth_tester("create_block_filter"),
-            "newPendingTransactionFilter": call_eth_tester("create_pending_transaction_filter"),
-            "uninstallFilter": excepts(
-                FilterNotFound,
-                compose(
-                    is_null,
-                    call_eth_tester("delete_filter"),
-                ),
-                static_return(False),
-            ),
-            "getFilterChanges": null_if_filter_not_found(
-                call_eth_tester("get_only_filter_changes")
-            ),
-            "getFilterLogs": null_if_filter_not_found(call_eth_tester("get_all_filter_logs")),
-            "getLogs": get_logs,
-            "getWork": not_implemented,
-            "submitWork": not_implemented,
-            "submitHashrate": not_implemented,
-        },
-        "db": {
-            "putString": not_implemented,
-            "getString": not_implemented,
-            "putHex": not_implemented,
-            "getHex": not_implemented,
-        },
-        "admin": {
-            "add_peer": not_implemented,
-            "datadir": not_implemented,
-            "node_info": not_implemented,
-            "peers": not_implemented,
-            "start_http": not_implemented,
-            "start_ws": not_implemented,
-            "stop_http": not_implemented,
-            "stop_ws": not_implemented,
-        },
-        "debug": {
-            "backtraceAt": not_implemented,
-            "blockProfile": not_implemented,
-            "cpuProfile": not_implemented,
-            "dumpBlock": not_implemented,
-            "gtStats": not_implemented,
-            "getBlockRLP": not_implemented,
-            "goTrace": not_implemented,
-            "memStats": not_implemented,
-            "seedHashSign": not_implemented,
-            "setBlockProfileRate": not_implemented,
-            "setHead": not_implemented,
-            "stacks": not_implemented,
-            "startCPUProfile": not_implemented,
-            "startGoTrace": not_implemented,
-            "stopCPUProfile": not_implemented,
-            "stopGoTrace": not_implemented,
-            "traceBlock": not_implemented,
-            "traceBlockByNumber": not_implemented,
-            "traceBlockByHash": not_implemented,
-            "traceBlockFromFile": not_implemented,
-            "traceTransaction": not_implemented,
-            "verbosity": not_implemented,
-            "vmodule": not_implemented,
-            "writeBlockProfile": not_implemented,
-            "writeMemProfile": not_implemented,
-        },
-        "miner": {
-            "make_dag": not_implemented,
-            "set_extra": not_implemented,
-            "set_gas_price": not_implemented,
-            "start": not_implemented,
-            "stop": not_implemented,
-            "start_auto_dag": not_implemented,
-            "stop_auto_dag": not_implemented,
-        },
-        "personal": {
-            "ec_recover": not_implemented,
-            "import_raw_key": call_eth_tester("add_account"),
-            "list_accounts": call_eth_tester("get_accounts"),
-            "list_wallets": not_implemented,
-            "lock_account": excepts(
-                ValidationError,
-                compose(static_return(True), call_eth_tester("lock_account")),
-                static_return(False),
-            ),
-            "new_account": create_new_account,
-            "unlock_account": excepts(
-                ValidationError,
-                compose(static_return(True), call_eth_tester("unlock_account")),
-                static_return(False),
-            ),
-            "send_transaction": personal_send_transaction,
-            "sign": not_implemented,
-            # deprecated
-            "ecRecover": not_implemented,
-            "importRawKey": call_eth_tester("add_account"),
-            "listAccounts": call_eth_tester("get_accounts"),
-            "lockAccount": excepts(
-                ValidationError,
-                compose(static_return(True), call_eth_tester("lock_account")),
-                static_return(False),
-            ),
-            "newAccount": create_new_account,
-            "unlockAccount": excepts(
-                ValidationError,
-                compose(static_return(True), call_eth_tester("unlock_account")),
-                static_return(False),
-            ),
-            "sendTransaction": personal_send_transaction,
-        },
-        "testing": {
-            "timeTravel": call_eth_tester("time_travel"),
-        },
-        "txpool": {
-            "content": not_implemented,
-            "inspect": not_implemented,
-            "status": not_implemented,
-        },
-        "evm": {
-            "mine": call_eth_tester("mine_blocks"),
-            "revert": call_eth_tester("revert_to_snapshot"),
-            "snapshot": call_eth_tester("take_snapshot"),
-        },
-    }
+def get_endpoints(chain_id: int):
+    eth_endpoints = merge(API_ENDPOINTS["eth"], {"chainId": static_return(chain_id)})
+    return merge(API_ENDPOINTS, {"eth": eth_endpoints})
