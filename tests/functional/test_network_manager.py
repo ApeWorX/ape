@@ -14,6 +14,30 @@ class NewChainID:
 
 chain_id_factory = NewChainID()
 
+DEFAULT_CHOICES = {
+    "::geth",
+    "::test",
+    ":goerli",
+    ":goerli:geth",
+    ":sepolia",
+    ":sepolia:geth",
+    ":local",
+    ":mainnet",
+    ":mainnet:geth",
+    "ethereum",
+    "ethereum::test",
+    "ethereum::geth",
+    "ethereum:goerli",
+    "ethereum:goerli:geth",
+    "ethereum:sepolia",
+    "ethereum:sepolia:geth",
+    "ethereum:local",
+    "ethereum:local:geth",
+    "ethereum:local:test",
+    "ethereum:mainnet",
+    "ethereum:mainnet:geth",
+}
+
 
 @pytest.fixture
 def get_provider_with_unused_chain_id(networks_connected_to_tester):
@@ -58,30 +82,24 @@ def network_with_no_providers(ethereum):
         network.__dict__["providers"] = providers
 
 
+def test_get_network_choices(networks, ethereum, mocker):
+    # Simulate having a provider like foundry installed.
+    mock_provider = mocker.MagicMock()
+    ethereum.networks["mainnet-fork"].providers["mock"] = mock_provider
+    ethereum.networks["local"].providers["mock"] = mock_provider
+
+    # Ensure the provider shows up both mainnet fork and local
+    # (There was once a bug where it was skipped!)
+    expected = {":mainnet-fork:mock", ":local:mock"}
+
+    actual = {c for c in networks.get_network_choices()}
+    expected = DEFAULT_CHOICES.union(expected)
+    assert expected.issubset(actual)
+
+
 def test_get_network_choices_filter_ecosystem(networks):
     actual = {c for c in networks.get_network_choices(ecosystem_filter="ethereum")}
-    all_choices = {
-        "::geth",
-        "::test",
-        ":goerli",
-        ":goerli:geth",
-        ":sepolia",
-        ":sepolia:geth",
-        ":local",
-        ":mainnet",
-        ":mainnet:geth",
-        "ethereum",
-        "ethereum:goerli",
-        "ethereum:goerli:geth",
-        "ethereum:sepolia",
-        "ethereum:sepolia:geth",
-        "ethereum:local",
-        "ethereum:local:geth",
-        "ethereum:local:test",
-        "ethereum:mainnet",
-        "ethereum:mainnet:geth",
-    }
-    assert all_choices.issubset(actual)
+    assert DEFAULT_CHOICES.issubset(actual)
 
 
 def test_get_network_choices_filter_network(networks):

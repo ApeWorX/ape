@@ -305,12 +305,13 @@ class NetworkManager(BaseManager):
                     ):
                         yield f"::{provider_name}"
 
-                    elif ecosystem_name == self.default_ecosystem.name:
+                    if ecosystem_name == self.default_ecosystem.name:
                         yield f":{network_name}:{provider_name}"
 
-                    elif network_name == ecosystem.default_network:
+                    if network_name == ecosystem.default_network:
                         yield f"{ecosystem_name}::{provider_name}"
 
+                    # Always include the full path as an option.
                     yield f"{ecosystem_name}:{network_name}:{provider_name}"
 
                 # Providers were yielded if we reached this point.
