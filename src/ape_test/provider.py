@@ -57,7 +57,8 @@ class LocalProvider(TestProviderAPI, Web3Provider):
             mnemonic=self.config.mnemonic,
             num_accounts=self.config.number_of_accounts,
         )
-        endpoints = get_endpoints(chain_id)
+        endpoints = {**API_ENDPOINTS}
+        endpoints["eth"] = merge(endpoints["eth"], {"chainId": static_return(chain_id)})
         tester = EthereumTesterProvider(ethereum_tester=self._evm_backend, api_endpoints=endpoints)
         self._web3 = Web3(tester)
 
@@ -277,8 +278,3 @@ class LocalProvider(TestProviderAPI, Web3Provider):
 
         else:
             return VirtualMachineError(base_err=exception, **kwargs)
-
-
-def get_endpoints(chain_id: int):
-    eth_endpoints = merge(API_ENDPOINTS["eth"], {"chainId": static_return(chain_id)})
-    return merge(API_ENDPOINTS, {"eth": eth_endpoints})
