@@ -135,3 +135,71 @@ from ape import chain
 
 block = chain.provider.get_block("latest")
 ```
+
+## Provider Context Manager
+
+Use the `ProviderContextManager` to change network-context in Python.
+For example, if you are using a script connected to one network, you can change connection in the middle of the script by using the context manager:
+
+```python
+from ape import chain, networks
+
+
+def main():
+    start_provider = chain.provider.name
+    with networks.ethereum.mainnet.use_provider("geth") as provider:
+        # We are using a different provider than the one we started with.
+        assert start_provider != provider.name
+```
+
+Jump between networks to simulate multi-chain behavior.
+
+```python
+import click
+from ape import networks
+
+@click.command()
+def cli():
+    with networks.polygon.mainnet.use_provider("geth"):
+        ...
+    with networks.ethereum.mainnet.use_provider("geth"):
+        ...
+```
+
+You can also use the `parse_network_choice()` method when working with network choice strings:
+
+```python
+from ape import networks
+
+# Same as doing `networks.ethereum.local.use_provider("test")`.
+with networks.parse_network_choice("ethereum:local:test") as provider:
+    print(provider)
+```
+
+**NOTE**: Providers do not disconnect until the very end of your Python session.
+This is so you can easily switch network contexts in a bridge or multi-chain environment, which happens in fixtures and other sessions out of Ape's control.
+However, sometimes you may definitely want your temporary network session to end before continuing, in which case you can use the `disconnect_after=True` kwarg:
+
+```python
+from ape import networks
+
+with networks.parse_network_choice("ethereum:local:foundry", disconnect_after=True) as provider:
+    print(provider)
+```
+
+#### Forked Context
+
+Using the `networks.fork()` method, you can achieve similar effects to using a forked network with `disconnect_after=True`.
+For example, let's say we are running the following script on the network `ethereum:mainnet`.
+We can switch to a forked network by doing this:
+
+```python
+from ape import networks
+
+def main():
+    with networks.fork("foundry"):
+        ...
+        # Do stuff on a local, forked version of mainnet
+
+    # Switch back to mainnet.
+```
