@@ -110,3 +110,26 @@ vyper.compile([Path("path/to/contract.vy")])
 solidity = compilers.get_compiler("solidity", settings=settings["solidity"])
 vyper.compile([Path("path/to/contract.sol")])
 ```
+
+## Compile Source Code
+
+Instead of compiling project source files, you can compile code (str) directly:
+
+```python
+from ape import accounts, compilers
+
+CODE = """
+   ... source code here
+"""
+
+container = compilers.compile_source(
+   "vyper",
+   CODE,
+   settings={"vyper": {"version": "0.3.7"}}, 
+   contractName="MyContract",
+)
+
+owner = accounts.test_accounts[0]
+
+instance = container.deploy(sender=owner)
+```

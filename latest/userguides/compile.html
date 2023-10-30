@@ -133,6 +133,7 @@
 <li class="toctree-l2"><a class="reference internal" href="#ignore-files">Ignore Files</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#dependencies">Dependencies</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#settings">Settings</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#compile-source-code">Compile Source Code</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="clis.html">CLIs</a></li>
@@ -294,6 +295,28 @@ For example, when using the <code class="docutils literal notranslate"><span cla
 
 <span class="n">solidity</span> <span class="o">=</span> <span class="n">compilers</span><span class="o">.</span><span class="n">get_compiler</span><span class="p">(</span><span class="s2">&quot;solidity&quot;</span><span class="p">,</span> <span class="n">settings</span><span class="o">=</span><span class="n">settings</span><span class="p">[</span><span class="s2">&quot;solidity&quot;</span><span class="p">])</span>
 <span class="n">vyper</span><span class="o">.</span><span class="n">compile</span><span class="p">([</span><span class="n">Path</span><span class="p">(</span><span class="s2">&quot;path/to/contract.sol&quot;</span><span class="p">)])</span>
+</pre></div>
+</div>
+</section>
+<section id="compile-source-code">
+<h2>Compile Source Code<a class="headerlink" href="#compile-source-code" title="Permalink to this heading"></a></h2>
+<p>Instead of compiling project source files, you can compile code (str) directly:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">ape</span> <span class="kn">import</span> <span class="n">accounts</span><span class="p">,</span> <span class="n">compilers</span>
+
+<span class="n">CODE</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">   ... source code here</span>
+<span class="s2">&quot;&quot;&quot;</span>
+
+<span class="n">container</span> <span class="o">=</span> <span class="n">compilers</span><span class="o">.</span><span class="n">compile_source</span><span class="p">(</span>
+   <span class="s2">&quot;vyper&quot;</span><span class="p">,</span>
+   <span class="n">CODE</span><span class="p">,</span>
+   <span class="n">settings</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;vyper&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;version&quot;</span><span class="p">:</span> <span class="s2">&quot;0.3.7&quot;</span><span class="p">}},</span> 
+   <span class="n">contractName</span><span class="o">=</span><span class="s2">&quot;MyContract&quot;</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="n">owner</span> <span class="o">=</span> <span class="n">accounts</span><span class="o">.</span><span class="n">test_accounts</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+<span class="n">instance</span> <span class="o">=</span> <span class="n">container</span><span class="o">.</span><span class="n">deploy</span><span class="p">(</span><span class="n">sender</span><span class="o">=</span><span class="n">owner</span><span class="p">)</span>
 </pre></div>
 </div>
 </section>
