@@ -223,7 +223,7 @@ class CompilerManager(BaseManager):
             compiler_name (str): The name of the compiler to use.
             code (str): The source code to compile.
             settings (Optional[Dict]): Compiler settings.
-            **kwargs: Additional overrides.
+            **kwargs: Additional overrides for the ``ethpm_types.ContractType`` model.
 
         Returns:
             ``ContractContainer``: A contract container ready to be deployed.

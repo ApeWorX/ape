@@ -113,7 +113,7 @@ class CompilerAPI(BaseInterfaceModel):
               project ``contracts/`` directory. Defaults to ``None``. When using in a project
               via ``compilers.compile_source()``, gets set to the project's ``contracts/``
               directory.
-            **kwargs: Additional overrides.
+            **kwargs: Additional overrides for the ``ethpm_types.ContractType`` model.
 
         Returns:
             ``ContractType``: A compiled contract artifact.
