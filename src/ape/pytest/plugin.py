@@ -14,14 +14,14 @@ from ape.utils import ManagerAccessMixin
 
 
 def pytest_addoption(parser):
-    def add_option(name, **kwargs):
+    def add_option(*names, **kwargs):
         try:
-            parser.addoption(name, **kwargs)
+            parser.addoption(*names, **kwargs)
         except ValueError as err:
             if "already added" in str(err):
                 # A different plugin added an option
                 # with this name. It should be ok to share it.
-                logger.warning(f"Multiple pytest options named '{name}'.")
+                logger.warning(f"Multiple pytest options named '{names[0]}'.")
                 return
 
             raise  # The same ValueError as if we were not error handling.
