@@ -4,6 +4,7 @@ from pathlib import Path
 import pytest
 
 from ape import networks, project
+from ape.exceptions import ConfigError
 from ape.logging import LogLevel, logger
 from ape.pytest.config import ConfigWrapper
 from ape.pytest.coverage import CoverageTracker
@@ -18,13 +19,17 @@ def pytest_addoption(parser):
         try:
             parser.addoption(*names, **kwargs)
         except ValueError as err:
+            name_str = ", ".join(names)
             if "already added" in str(err):
                 # A different plugin added an option
                 # with this name. It should be ok to share it.
-                logger.warning(f"Multiple pytest options named '{names[0]}'.")
-                return
+                raise ConfigError(
+                    f"Another pytest plugin besides `ape_test` uses an option with "
+                    f"one of '{name_str}'. Note that Ape does not support being "
+                    f"installed alongside Brownie; please use separate environments!"
+                )
 
-            raise  # The same ValueError as if we were not error handling.
+            raise ConfigError(f"Failing add option {name_str}: {err}") from err
 
     add_option("--showinternal", action="store_true")
     add_option(
