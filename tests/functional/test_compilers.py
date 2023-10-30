@@ -126,6 +126,7 @@ def test_compile_with_settings(mock_compiler, compilers, project_with_contract):
 
 
 def test_compile_str_path(compilers, project_with_contract):
-    path_str = str(next(iter(project_with_contract.source_paths)))
-    actual = compilers.compile([path_str])
-    assert actual["ApeContract1"].name == "ApeContract1"
+    path = next(iter(project_with_contract.source_paths))
+    actual = compilers.compile([str(path)])
+    contract_name = path.stem
+    assert actual[contract_name].name == contract_name
