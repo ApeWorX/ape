@@ -16,7 +16,7 @@ from ape.exceptions import APINotImplementedError, UnknownSnapshotError
 from ape.logging import LogLevel, logger
 from ape.managers.config import CONFIG_FILE_NAME
 from ape.types import AddressType
-from ape.utils import ZERO_ADDRESS
+from ape.utils import DEFAULT_TEST_CHAIN_ID, ZERO_ADDRESS
 
 # NOTE: Ensure that we don't use local paths for these
 DATA_FOLDER = Path(mkdtemp()).resolve()
@@ -205,7 +205,9 @@ def ethereum(networks):
 @pytest.fixture(autouse=True)
 def eth_tester_provider(ethereum):
     # NOTE: Ensure it uses the default instance of eth-tester.
-    with ethereum.local.use_provider("test", provider_settings={"chain_id": 1337}) as provider:
+    with ethereum.local.use_provider(
+        "test", provider_settings={"chain_id": DEFAULT_TEST_CHAIN_ID}
+    ) as provider:
         yield provider
 
 

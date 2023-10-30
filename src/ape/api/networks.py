@@ -452,7 +452,7 @@ class EcosystemAPI(BaseInterfaceModel):
 
         Args:
             network_name (str): The name of the network to get provider data from.
-            provider_filter (Optional[Collection[str]]): Optional filter the providers
+            provider_filter (Optional[Collection[str]]): Optionally filter the providers
               by name.
 
         Returns:
