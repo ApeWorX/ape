@@ -138,12 +138,11 @@ block = chain.provider.get_block("latest")
 
 ## Provider Context Manager
 
-Use the `ProviderContextManager` to change network-context in Python.
-For example, if you are using a script connected to one network, you can change connection in the middle of the script by using the context manager:
+Use the `ProviderContextManager` to change the network-context in Python.
+For example, if you are using a script with a default network connection, you can change connection in the middle of the script by using the provider context manager:
 
 ```python
 from ape import chain, networks
-
 
 def main():
     start_provider = chain.provider.name
