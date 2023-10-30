@@ -5,6 +5,7 @@ from ethpm_types import ContractType
 from ethpm_types.source import Content
 
 from ape.api import CompilerAPI
+from ape.contracts import ContractContainer
 from ape.exceptions import ApeAttributeError, CompilerError, ContractLogicError
 from ape.logging import logger
 from ape.managers.base import BaseManager
@@ -195,6 +196,37 @@ class CompilerManager(BaseManager):
                 contract_types_dict[contract_name] = contract_type
 
         return contract_types_dict
+
+    def compile_source(
+        self,
+        compiler_name: str,
+        code: str,
+        settings: Optional[Dict] = None,
+        contract_type_overrides: Optional[Dict] = None,
+    ) -> ContractContainer:
+        """
+        Compile the given program.
+
+        Usage example::
+
+            code = '[{"name":"foo","type":"fallback", "stateMutability":"nonpayable"}]'
+            contract_type = compilers.compile_source("ethpm", code, contractName="MyContract")
+
+        Args:
+            compiler_name (str): The name of the compiler to use.
+            code (str): The source code to compile.
+            settings (Optional[Dict]): Compiler settings.
+            contract_type_overrides (Optional[Dict]): Additional ``ContractType`` overrides.
+
+        Returns:
+            ``ContractContainer``: A contract container ready to be deployed.
+        """
+        compiler = self.get_compiler(compiler_name, settings=settings)
+        if not compiler:
+            raise ValueError(f"Compiler '{compiler_name}' not found.")
+
+        contract_type = compiler.compile_code(code, **contract_type_overrides or {})
+        return ContractContainer(contract_type=contract_type)
 
     def get_imports(
         self, contract_filepaths: Sequence[Path], base_path: Optional[Path] = None
