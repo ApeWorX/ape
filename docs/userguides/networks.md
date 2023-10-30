@@ -139,6 +139,9 @@ block = chain.provider.get_block("latest")
 ## Provider Context Manager
 
 Use the `ProviderContextManager` to change the network-context in Python.
+When entering a network for the first time, it will connect to that network.
+**You do not need to call `.connect()` or `.disconnect()` manually**.
+
 For example, if you are using a script with a default network connection, you can change connection in the middle of the script by using the provider context manager:
 
 ```python
@@ -175,7 +178,7 @@ with networks.parse_network_choice("ethereum:local:test") as provider:
     print(provider)
 ```
 
-**NOTE**: Providers do not disconnect until the very end of your Python session.
+**A note about disconnect**: Providers do not disconnect until the very end of your Python session.
 This is so you can easily switch network contexts in a bridge or multi-chain environment, which happens in fixtures and other sessions out of Ape's control.
 However, sometimes you may definitely want your temporary network session to end before continuing, in which case you can use the `disconnect_after=True` kwarg:
 
