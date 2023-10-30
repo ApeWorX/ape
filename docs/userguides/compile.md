@@ -125,7 +125,7 @@ CODE = """
 container = compilers.compile_source(
    "vyper",
    CODE,
-   settings={"version": "0.3.7"}, 
+   settings={"vyper": {"version": "0.3.7"}}, 
    contract_type_overrides={"contractName": "MyContract"}
 )
 

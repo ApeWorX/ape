@@ -225,7 +225,11 @@ class CompilerManager(BaseManager):
         if not compiler:
             raise ValueError(f"Compiler '{compiler_name}' not found.")
 
-        contract_type = compiler.compile_code(code, **contract_type_overrides or {})
+        contract_type = compiler.compile_code(
+            code,
+            base_path=self.project_manager.contracts_folder,
+            contract_type_overrides=(contract_type_overrides or {}),
+        )
         return ContractContainer(contract_type=contract_type)
 
     def get_imports(
