@@ -102,7 +102,7 @@ class CompilerAPI(BaseInterfaceModel):
         self,
         code: str,
         base_path: Optional[Path] = None,
-        contract_type_overrides: Optional[Dict] = None,
+        **contract_type_overrides,
     ) -> ContractType:
         """
         Compile a program.
@@ -112,7 +112,7 @@ class CompilerAPI(BaseInterfaceModel):
             base_path (Optional[pathlib.Path]): Optionally provide the base path, such as the
               project ``contracts/`` directory. Defaults to ``None``. When using in a project
               via ``ape compile``, gets set to the project's ``contracts/`` directory.
-            contract_type_overrides (Optional[Dict]): ContractType overrides
+            **contract_type_overrides: ContractType overrides
               (needed if unable to gather required properties from source code alone, such as
               ``contractName``).
 

@@ -184,14 +184,17 @@ class CompilerManager(BaseManager):
                         existing_artifact.unlink()
 
                     else:
-                        path = self.project_manager.lookup_path(existing_contract.source_id)
-                        if path and existing_contract.source_id != contract_type.source_id:
-                            error_message = f"{ContractType.__name__} collision '{contract_name}'."
-                            raise CompilerError(error_message)
+                        if existing_contract.source_id:
+                            path = self.project_manager.lookup_path(existing_contract.source_id)
+                            if path and existing_contract.source_id != contract_type.source_id:
+                                error_message = (
+                                    f"{ContractType.__name__} collision '{contract_name}'."
+                                )
+                                raise CompilerError(error_message)
 
-                        elif not path:
-                            # Artifact remaining from deleted contract, can delete.
-                            existing_artifact.unlink()
+                            elif not path:
+                                # Artifact remaining from deleted contract, can delete.
+                                existing_artifact.unlink()
 
                 contract_types_dict[contract_name] = contract_type
 
@@ -210,7 +213,10 @@ class CompilerManager(BaseManager):
         Usage example::
 
             code = '[{"name":"foo","type":"fallback", "stateMutability":"nonpayable"}]'
-            contract_type = compilers.compile_source("ethpm", code, contractName="MyContract")
+            contract_type_overrides = {"contractName": "MyContract"}
+            contract_type = compilers.compile_source(
+                "ethpm", code, contract_type_overrides=contract_type_overrides
+            )
 
         Args:
             compiler_name (str): The name of the compiler to use.
