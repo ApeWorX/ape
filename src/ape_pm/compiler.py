@@ -1,6 +1,6 @@
 import json
 from pathlib import Path
-from typing import List, Optional, Set
+from typing import Dict, List, Optional, Set
 
 from eth_utils import is_0x_prefixed
 from ethpm_types import ContractType, HexBytes
@@ -38,7 +38,7 @@ class InterfaceCompiler(CompilerAPI):
                 contract_type = self.compile_code(
                     path.read_text(),
                     base_path=base_path,
-                    sourceId=source_id,
+                    contract_type_overrides={"sourceId": source_id},
                 )
 
                 # NOTE: Try getting name/ ID from code-JSON first.
@@ -58,7 +58,7 @@ class InterfaceCompiler(CompilerAPI):
         self,
         code: str,
         base_path: Optional[Path] = None,
-        **contract_type_overrides,
+        contract_type_overrides: Optional[Dict] = None,
     ) -> ContractType:
         data = json.loads(code)
         if isinstance(data, list):
