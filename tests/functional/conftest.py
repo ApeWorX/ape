@@ -661,9 +661,11 @@ def method_abi_with_struct_input():
 @pytest.fixture
 def mock_compiler(mocker):
     mock = mocker.MagicMock()
+    mock.name = "mock"
     mock.ext = ".__mock__"
 
-    def mock_compile(paths, *args, **kwargs):
+    def mock_compile(paths, base_path=None):
+        mock.tracked_settings.append(mock.compiler_settings)
         result = []
         for path in paths:
             if path.suffix == mock.ext:

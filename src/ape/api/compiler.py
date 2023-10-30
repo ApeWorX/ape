@@ -8,6 +8,7 @@ from evm_trace.geth import TraceFrame as EvmTraceFrame
 from evm_trace.geth import create_call_node_data
 from semantic_version import Version  # type: ignore
 
+from ape.api.config import PluginConfig
 from ape.exceptions import APINotImplementedError, ContractLogicError
 from ape.types.coverage import ContractSourceCoverage
 from ape.types.trace import SourceTraceback, TraceFrame
@@ -25,10 +26,31 @@ class CompilerAPI(BaseInterfaceModel):
     this API.
     """
 
+    compiler_settings: Dict = {}
+    """
+    Adhoc compiler settings.
+    """
+
     @property
     @abstractmethod
     def name(self) -> str:
         ...
+
+    @property
+    def config(self) -> PluginConfig:
+        """
+        The provider's configuration.
+        """
+        return self.config_manager.get_config(self.name)
+
+    @property
+    def settings(self) -> PluginConfig:
+        """
+        The combination of settings from ``ape-config.yaml`` and ``.compiler_settings``.
+        """
+        CustomConfig = self.config.__class__
+        data = {**self.config.dict(), **self.compiler_settings}
+        return CustomConfig.parse_obj(data)
 
     @abstractmethod
     def get_versions(self, all_paths: List[Path]) -> Set[str]:
@@ -76,11 +98,34 @@ class CompilerAPI(BaseInterfaceModel):
         """
 
     @raises_not_implemented
+    def compile_code(  # type: ignore[empty-body]
+        self,
+        code: str,
+        base_path: Optional[Path] = None,
+        **kwargs,
+    ) -> ContractType:
+        """
+        Compile a program.
+
+        Args:
+            code (str): The code to compile.
+            base_path (Optional[pathlib.Path]): Optionally provide the base path, such as the
+              project ``contracts/`` directory. Defaults to ``None``. When using in a project
+              via ``compilers.compile_source()``, gets set to the project's ``contracts/``
+              directory.
+            **kwargs: Additional overrides for the ``ethpm_types.ContractType`` model.
+
+        Returns:
+            ``ContractType``: A compiled contract artifact.
+        """
+
+    @raises_not_implemented
     def get_imports(  # type: ignore[empty-body]
         self, contract_filepaths: List[Path], base_path: Optional[Path]
     ) -> Dict[str, List[str]]:
         """
-        Returns a list of imports as source_ids for each contract's source_id in a given compiler.
+        Returns a list of imports as source_ids for each contract's source_id in a given
+        compiler.
 
         Args:
             contract_filepaths (List[pathlib.Path]): A list of source file paths to compile.

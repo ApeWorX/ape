@@ -2,6 +2,7 @@ from pathlib import Path
 
 import pytest
 
+from ape.contracts import ContractContainer
 from ape.exceptions import APINotImplementedError, CompilerError
 from tests.conftest import skip_if_plugin_installed
 
@@ -43,6 +44,22 @@ def test_get_compiler(compilers):
     compiler = compilers.get_compiler("ethpm")
     assert compiler.name == "ethpm"
     assert compilers.get_compiler("foobar") is None
+
+
+def test_get_compiler_with_settings(compilers, mock_compiler, project_with_contract):
+    existing_compilers = compilers._registered_compilers_cache[project_with_contract.path]
+    all_compilers = {**existing_compilers, mock_compiler.ext: mock_compiler}
+
+    try:
+        compilers._registered_compilers_cache[project_with_contract.path] = all_compilers
+        compiler_0 = compilers.get_compiler("mock", settings={"bar": "foo"})
+        compiler_1 = compiler_0.get_compiler("mock", settings={"foo": "bar"})
+
+    finally:
+        compilers._registered_compilers_cache[project_with_contract.path] = existing_compilers
+
+    assert compiler_0.compiler_settings != compiler_1.compiler_settings
+    assert id(compiler_0) != id(compiler_1)
 
 
 def test_getattr(compilers):
@@ -89,3 +106,34 @@ def test_contract_type_collision(compilers, project_with_contract, mock_compiler
 
     finally:
         compilers._registered_compilers_cache[project_with_contract.path] = existing_compilers
+
+
+def test_compile_with_settings(mock_compiler, compilers, project_with_contract):
+    existing_compilers = compilers._registered_compilers_cache[project_with_contract.path]
+    all_compilers = {**existing_compilers, mock_compiler.ext: mock_compiler}
+    new_contract = project_with_contract.path / f"AMockContract{mock_compiler.ext}"
+    new_contract.write_text("foobar")
+    settings = {"mock": {"foo": "bar"}}
+
+    try:
+        compilers._registered_compilers_cache[project_with_contract.path] = all_compilers
+        compilers.compile([new_contract], settings=settings)
+
+    finally:
+        compilers._registered_compilers_cache[project_with_contract.path] = existing_compilers
+
+    actual = mock_compiler.method_calls[0][2]["update"]["compiler_settings"]["mock"]
+    assert actual == settings["mock"]
+
+
+def test_compile_str_path(compilers, project_with_contract):
+    path = next(iter(project_with_contract.source_paths))
+    actual = compilers.compile([str(path)])
+    contract_name = path.stem
+    assert actual[contract_name].name == contract_name
+
+
+def test_compile_source(compilers):
+    code = '[{"name":"foo","type":"fallback", "stateMutability":"nonpayable"}]'
+    actual = compilers.compile_source("ethpm", code)
+    assert isinstance(actual, ContractContainer)
