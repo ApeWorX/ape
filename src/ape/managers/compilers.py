@@ -72,14 +72,22 @@ class CompilerManager(BaseManager):
         self._registered_compilers_cache[cache_key] = registered_compilers
         return registered_compilers
 
-    def get_compiler(self, name: str) -> Optional[CompilerAPI]:
+    def get_compiler(self, name: str, settings: Optional[Dict] = None) -> Optional[CompilerAPI]:
         for compiler in self.registered_compilers.values():
-            if compiler.name == name:
-                return compiler
+            if compiler.name != name:
+                continue
+
+            if settings is not None and settings != compiler.compiler_settings:
+                # Use a new instance to support multiple compilers of same type.
+                return compiler.copy(update={"compiler_settings": settings})
+
+            return compiler
 
         return None
 
-    def compile(self, contract_filepaths: List[Path]) -> Dict[str, ContractType]:
+    def compile(
+        self, contract_filepaths: List[Path], settings: Optional[Dict] = None
+    ) -> Dict[str, ContractType]:
         """
         Invoke :meth:`ape.ape.compiler.CompilerAPI.compile` for each of the given files.
         For example, use the `ape-solidity plugin <https://github.com/ApeWorX/ape-solidity>`__
@@ -92,6 +100,8 @@ class CompilerManager(BaseManager):
         Args:
             contract_filepaths (List[pathlib.Path]): The list of files to compile,
               as ``pathlib.Path`` objects.
+            settings (Optional[Dict]): Adhoc compiler settings. Defaults to None.
+              Ensure the compiler name key is present in the dict for it to work.
 
         Returns:
             Dict[str, ``ContractType``]: A mapping of contract names to their type.
@@ -126,9 +136,14 @@ class CompilerManager(BaseManager):
             for source_id in source_ids:
                 logger.info(f"Compiling '{source_id}'.")
 
-            compiled_contracts = self.registered_compilers[extension].compile(
-                paths_to_compile, base_path=contracts_folder
-            )
+            name = self.registered_compilers[extension].name
+            compiler = self.get_compiler(name, settings=settings)
+            if compiler is None:
+                # For mypy - should not be possible.
+                raise ValueError("Compiler should not be None")
+
+            compiled_contracts = compiler.compile(paths_to_compile, base_path=contracts_folder)
+
             for contract_type in compiled_contracts:
                 contract_name = contract_type.name
                 if not contract_name:
