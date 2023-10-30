@@ -215,7 +215,9 @@ class CompilerManager(BaseManager):
             code = '[{"name":"foo","type":"fallback", "stateMutability":"nonpayable"}]'
             contract_type_overrides = {"contractName": "MyContract"}
             contract_type = compilers.compile_source(
-                "ethpm", code, contract_type_overrides=contract_type_overrides
+                "ethpm",
+                code,
+                contract_type_overrides=contract_type_overrides,
             )
 
         Args:

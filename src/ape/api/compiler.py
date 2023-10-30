@@ -111,7 +111,8 @@ class CompilerAPI(BaseInterfaceModel):
             code (str): The code to compile.
             base_path (Optional[pathlib.Path]): Optionally provide the base path, such as the
               project ``contracts/`` directory. Defaults to ``None``. When using in a project
-              via ``ape compile``, gets set to the project's ``contracts/`` directory.
+              via ``compilers.compile_source()``, gets set to the project's ``contracts/``
+              directory.
             **contract_type_overrides: ContractType overrides
               (needed if unable to gather required properties from source code alone, such as
               ``contractName``).
