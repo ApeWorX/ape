@@ -196,8 +196,8 @@ class ProviderAPI(BaseInterfaceModel):
     @property
     def connection_id(self) -> Optional[str]:
         """
-        A connection ID to uniquely identify and manage multiple 
-        connections to providers, especially when working with multiple 
+        A connection ID to uniquely identify and manage multiple
+        connections to providers, especially when working with multiple
         providers of the same type, like multiple Geth --dev nodes.
         """
 
