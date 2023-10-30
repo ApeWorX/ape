@@ -102,7 +102,7 @@ class CompilerAPI(BaseInterfaceModel):
         self,
         code: str,
         base_path: Optional[Path] = None,
-        contract_type_overrides: Optional[Dict] = None,
+        **kwargs,
     ) -> ContractType:
         """
         Compile a program.
@@ -113,9 +113,7 @@ class CompilerAPI(BaseInterfaceModel):
               project ``contracts/`` directory. Defaults to ``None``. When using in a project
               via ``compilers.compile_source()``, gets set to the project's ``contracts/``
               directory.
-            contract_type_overrides (Optional[Dict]): ContractType overrides
-              (needed if unable to gather required properties from source code alone, such as
-              ``contractName``).
+            **kwargs: Additional overrides.
 
         Returns:
             ``ContractType``: A compiled contract artifact.

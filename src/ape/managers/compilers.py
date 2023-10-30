@@ -205,7 +205,7 @@ class CompilerManager(BaseManager):
         compiler_name: str,
         code: str,
         settings: Optional[Dict] = None,
-        contract_type_overrides: Optional[Dict] = None,
+        **kwargs,
     ) -> ContractContainer:
         """
         Compile the given program.
@@ -213,18 +213,17 @@ class CompilerManager(BaseManager):
         Usage example::
 
             code = '[{"name":"foo","type":"fallback", "stateMutability":"nonpayable"}]'
-            contract_type_overrides = {"contractName": "MyContract"}
             contract_type = compilers.compile_source(
                 "ethpm",
                 code,
-                contract_type_overrides=contract_type_overrides,
+                contractName="MyContract",
             )
 
         Args:
             compiler_name (str): The name of the compiler to use.
             code (str): The source code to compile.
             settings (Optional[Dict]): Compiler settings.
-            contract_type_overrides (Optional[Dict]): Additional ``ContractType`` overrides.
+            **kwargs: Additional overrides.
 
         Returns:
             ``ContractContainer``: A contract container ready to be deployed.
@@ -236,7 +235,7 @@ class CompilerManager(BaseManager):
         contract_type = compiler.compile_code(
             code,
             base_path=self.project_manager.contracts_folder,
-            contract_type_overrides=(contract_type_overrides or {}),
+            **kwargs,
         )
         return ContractContainer(contract_type=contract_type)
 

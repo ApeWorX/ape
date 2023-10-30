@@ -126,7 +126,7 @@ container = compilers.compile_source(
    "vyper",
    CODE,
    settings={"vyper": {"version": "0.3.7"}}, 
-   contract_type_overrides={"contractName": "MyContract"}
+   contractName="MyContract",
 )
 
 owner = accounts.test_accounts[0]
