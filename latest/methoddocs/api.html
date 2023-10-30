@@ -223,8 +223,11 @@
 <li class="toctree-l2"><a class="reference internal" href="#module-ape.api.compiler">Compiler</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#ape.api.compiler.CompilerAPI"><code class="docutils literal notranslate"><span class="pre">CompilerAPI</span></code></a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.compiler.CompilerAPI.compile"><code class="docutils literal notranslate"><span class="pre">CompilerAPI.compile()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ape.api.compiler.CompilerAPI.compiler_settings"><code class="docutils literal notranslate"><span class="pre">CompilerAPI.compiler_settings</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ape.api.compiler.CompilerAPI.config"><code class="docutils literal notranslate"><span class="pre">CompilerAPI.config</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.compiler.CompilerAPI.enrich_error"><code class="docutils literal notranslate"><span class="pre">CompilerAPI.enrich_error()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.compiler.CompilerAPI.get_versions"><code class="docutils literal notranslate"><span class="pre">CompilerAPI.get_versions()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ape.api.compiler.CompilerAPI.settings"><code class="docutils literal notranslate"><span class="pre">CompilerAPI.settings</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.compiler.CompilerAPI.supports_source_tracing"><code class="docutils literal notranslate"><span class="pre">CompilerAPI.supports_source_tracing</span></code></a></li>
 </ul>
 </li>
@@ -1068,7 +1071,7 @@ or to refer to an EOA the user doesn’t personally control.</p>
 <span id="compiler"></span><h2>Compiler<a class="headerlink" href="#module-ape.api.compiler" title="Permalink to this heading"></a></h2>
 <dl class="py class">
 <dt class="sig sig-object py" id="ape.api.compiler.CompilerAPI">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ape.api.compiler.</span></span><span class="sig-name descname"><span class="pre">CompilerAPI</span></span><a class="headerlink" href="#ape.api.compiler.CompilerAPI" title="Permalink to this definition"></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ape.api.compiler.</span></span><span class="sig-name descname"><span class="pre">CompilerAPI</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">compiler_settings</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.api.compiler.CompilerAPI" title="Permalink to this definition"></a></dt>
 <dd><p>Bases: <a class="reference internal" href="utils.html#ape.utils.BaseInterfaceModel" title="ape.utils.basemodel.BaseInterfaceModel"><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseInterfaceModel</span></code></a></p>
 <p>Compiler plugins, such as for languages like
 <a class="reference external" href="https://docs.soliditylang.org/en/v0.8.11/">Solidity</a> or
@@ -1093,6 +1096,18 @@ via <code class="docutils literal notranslate"><span class="pre">ape</span> <spa
 <dd class="field-even"><p>List[<code class="xref py py-class docutils literal notranslate"><span class="pre">ContractType</span></code>]</p>
 </dd>
 </dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ape.api.compiler.CompilerAPI.compiler_settings">
+<span class="sig-name descname"><span class="pre">compiler_settings</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span></em><a class="headerlink" href="#ape.api.compiler.CompilerAPI.compiler_settings" title="Permalink to this definition"></a></dt>
+<dd><p>Adhoc compiler settings.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="ape.api.compiler.CompilerAPI.config">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">config</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#ape.api.config.PluginConfig" title="ape.api.config.PluginConfig"><span class="pre">PluginConfig</span></a></em><a class="headerlink" href="#ape.api.compiler.CompilerAPI.config" title="Permalink to this definition"></a></dt>
+<dd><p>The provider’s configuration.</p>
 </dd></dl>
 
 <dl class="py method">
@@ -1129,6 +1144,12 @@ to enrich.</p>
 <dd class="field-odd"><p>Set[str]</p>
 </dd>
 </dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="ape.api.compiler.CompilerAPI.settings">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">settings</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#ape.api.config.PluginConfig" title="ape.api.config.PluginConfig"><span class="pre">PluginConfig</span></a></em><a class="headerlink" href="#ape.api.compiler.CompilerAPI.settings" title="Permalink to this definition"></a></dt>
+<dd><p>The combination of settings from <code class="docutils literal notranslate"><span class="pre">ape-config.yaml</span></code> and <code class="docutils literal notranslate"><span class="pre">.compiler_settings</span></code>.</p>
 </dd></dl>
 
 <dl class="py property">
