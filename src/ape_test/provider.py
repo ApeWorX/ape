@@ -1,12 +1,13 @@
 import re
 from ast import literal_eval
-from typing import Optional, cast
+from typing import Dict, Optional, cast
 
 from eth.exceptions import HeaderNotFound
 from eth_tester.backends import PyEVMBackend  # type: ignore
 from eth_tester.exceptions import TransactionFailed  # type: ignore
 from eth_utils import is_0x_prefixed
 from eth_utils.exceptions import ValidationError
+from eth_utils.toolz import merge
 from ethpm_types import HexBytes
 from web3 import EthereumTesterProvider, Web3
 from web3.exceptions import ContractPanicError
@@ -45,19 +46,19 @@ class LocalProvider(TestProviderAPI, Web3Provider):
         return self._evm_backend
 
     def connect(self):
-        chain_id = self.provider_settings.get("chain_id", self.config.provider.chain_id)
+        chain_id = self.settings.chain_id
         if self._web3 is not None:
-            connected_chain_id = self.chain_id
+            connected_chain_id = self._make_request("eth_chainId")
             if connected_chain_id == chain_id:
                 # Is already connected and settings have not changed.
                 return
 
         self._evm_backend = PyEVMBackend.from_mnemonic(
-            mnemonic=self.config["mnemonic"],
-            num_accounts=self.config["number_of_accounts"],
+            mnemonic=self.config.mnemonic,
+            num_accounts=self.config.number_of_accounts,
         )
         endpoints = {**API_ENDPOINTS}
-        endpoints["eth"]["chainId"] = static_return(chain_id)
+        endpoints["eth"] = merge(endpoints["eth"], {"chainId": static_return(chain_id)})
         tester = EthereumTesterProvider(ethereum_tester=self._evm_backend, api_endpoints=endpoints)
         self._web3 = Web3(tester)
 
@@ -65,9 +66,13 @@ class LocalProvider(TestProviderAPI, Web3Provider):
         self.cached_chain_id = None
         self._web3 = None
         self._evm_backend = None
+        self.provider_settings = {}
 
-    def update_settings(self, new_settings: dict):
-        pass
+    def update_settings(self, new_settings: Dict):
+        self.cached_chain_id = None
+        self.provider_settings = {**self.provider_settings, **new_settings}
+        self.disconnect()
+        self.connect()
 
     def estimate_gas_cost(self, txn: TransactionAPI, **kwargs) -> int:
         if isinstance(self.network.gas_limit, int):
@@ -80,9 +85,7 @@ class LocalProvider(TestProviderAPI, Web3Provider):
         block_id = kwargs.pop("block_identifier", kwargs.pop("block_id", None))
         estimate_gas = self.web3.eth.estimate_gas
         txn_dict = txn.dict()
-        if txn_dict.get("gas") == "auto":
-            # Remove from dict before estimating
-            txn_dict.pop("gas")
+        txn_dict.pop("gas", None)
 
         txn_data = cast(TxParams, txn_dict)
         try:
@@ -109,14 +112,20 @@ class LocalProvider(TestProviderAPI, Web3Provider):
                 ) from ape_err
 
     @property
+    def settings(self) -> EthTesterProviderConfig:
+        return EthTesterProviderConfig.parse_obj(
+            {**self.config.provider.dict(), **self.provider_settings}
+        )
+
+    @property
     def chain_id(self) -> int:
         if self.cached_chain_id:
             return self.cached_chain_id
 
         try:
-            result = self._make_request("eth_chainId", [])
+            result = self._make_request("eth_chainId")
         except ProviderNotConnectedError:
-            result = self.provider_settings.get("chain_id", self.config.provider.chain_id)
+            result = self.settings.chain_id
 
         self.cached_chain_id = result
         return result

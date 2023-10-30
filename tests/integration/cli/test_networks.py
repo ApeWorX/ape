@@ -109,6 +109,14 @@ def test_list_yaml(ape_cli, runner):
             # Skip these lines in case test-runner has installed providers
             continue
 
+        if (
+            expected_line.lstrip().startswith("- name:")
+            and expected_line not in result.output
+            and "explorer:" in result.output
+        ):
+            # May have explorers installed - ignore that.
+            expected_line = expected_line.lstrip(" -")
+
         assert expected_line in result.output, result.output
 
 

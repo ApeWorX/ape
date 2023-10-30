@@ -1,6 +1,6 @@
 import json
 from functools import cached_property
-from typing import Dict, Iterator, List, Optional, Set, Union
+from typing import Collection, Dict, Iterator, List, Optional, Set, Union
 
 import yaml
 
@@ -501,15 +501,33 @@ class NetworkManager(BaseManager):
         Returns:
             dict
         """
+        return self.get_network_data()
+
+    def get_network_data(
+        self,
+        ecosystem_filter: Optional[Collection[str]] = None,
+        network_filter: Optional[Collection[str]] = None,
+        provider_filter: Optional[Collection[str]] = None,
+    ):
         data: Dict = {"ecosystems": []}
 
         for ecosystem_name in self:
-            ecosystem_data = self._get_ecosystem_data(ecosystem_name)
+            if ecosystem_filter and ecosystem_name not in ecosystem_filter:
+                continue
+
+            ecosystem_data = self._get_ecosystem_data(
+                ecosystem_name, network_filter=network_filter, provider_filter=provider_filter
+            )
             data["ecosystems"].append(ecosystem_data)
 
         return data
 
-    def _get_ecosystem_data(self, ecosystem_name: str) -> Dict:
+    def _get_ecosystem_data(
+        self,
+        ecosystem_name: str,
+        network_filter: Optional[Collection[str]] = None,
+        provider_filter: Optional[Collection[str]] = None,
+    ) -> Dict:
         ecosystem = self[ecosystem_name]
         ecosystem_data: Dict = {"name": str(ecosystem_name)}
 
@@ -520,16 +538,21 @@ class NetworkManager(BaseManager):
         ecosystem_data["networks"] = []
 
         for network_name in getattr(self, ecosystem_name).networks:
-            network_data = ecosystem.get_network_data(network_name)
+            if network_filter and network_name not in network_filter:
+                continue
+
+            network_data = ecosystem.get_network_data(network_name, provider_filter=provider_filter)
             ecosystem_data["networks"].append(network_data)
 
         return ecosystem_data
 
     @property
+    # TODO: Remove in 0.7
     def networks_yaml(self) -> str:
         """
         Get a ``yaml`` ``str`` representing all the networks
         in all the ecosystems.
+        **NOTE**: Deprecated.
 
         View the result via CLI command ``ape networks list --format yaml``.
 

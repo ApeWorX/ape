@@ -43,11 +43,14 @@ DEFAULT_CHOICES = {
 def get_provider_with_unused_chain_id(networks_connected_to_tester):
     networks = networks_connected_to_tester
 
-    def fn():
+    def fn(**more_settings):
         chain_id = chain_id_factory()
-        settings = {"chain_id": chain_id}
+        settings = {"chain_id": chain_id, **more_settings}
         choice = "ethereum:local:test"
-        context = networks.parse_network_choice(choice, provider_settings=settings)
+        disconnect_after = settings.pop("disconnect_after", True)
+        context = networks.parse_network_choice(
+            choice, disconnect_after=disconnect_after, provider_settings=settings
+        )
         return context
 
     return fn
@@ -165,16 +168,16 @@ def test_parse_network_choice_same_provider(chain, networks_connected_to_tester,
     context = get_context()
     start_count = len(context.connected_providers)
     original_block_number = chain.blocks.height
-    provider_id = id(chain.provider)
+    object_id = id(chain.provider)
 
     with context:
-        assert id(chain.provider) == provider_id
+        assert id(chain.provider) == object_id
         count = len(context.connected_providers)
 
         # Does not create a new provider since it is the same chain ID
         assert count == start_count
 
-    assert id(chain.provider) == provider_id
+    assert id(chain.provider) == object_id
     assert len(context.connected_providers) == start_count
     assert chain.blocks.height == original_block_number
 
@@ -182,6 +185,7 @@ def test_parse_network_choice_same_provider(chain, networks_connected_to_tester,
         assert provider._web3 is not None
 
 
+@pytest.mark.xdist_group(name="multiple-eth-testers")
 def test_parse_network_choice_new_chain_id(get_provider_with_unused_chain_id, get_context):
     start_count = len(get_context().connected_providers)
     context = get_provider_with_unused_chain_id()
@@ -197,8 +201,26 @@ def test_parse_network_choice_new_chain_id(get_provider_with_unused_chain_id, ge
         assert provider._web3 is not None
 
 
-def test_parse_network_choice_multiple_contexts(get_provider_with_unused_chain_id):
+@pytest.mark.xdist_group(name="multiple-eth-testers")
+def test_disconnect_after(get_provider_with_unused_chain_id):
+    context = get_provider_with_unused_chain_id()
+    with context as provider:
+        connection_id = provider.connection_id
+        assert connection_id in context.connected_providers
+
+    assert connection_id not in context.connected_providers
+
+
+@pytest.mark.xdist_group(name="multiple-eth-testers")
+def test_parse_network_choice_multiple_contexts(
+    eth_tester_provider, get_provider_with_unused_chain_id
+):
     first_context = get_provider_with_unused_chain_id()
+    assert (
+        eth_tester_provider.chain_id == DEFAULT_TEST_CHAIN_ID
+    ), "Test setup failed - expecting to start on default chain ID"
+    assert eth_tester_provider._make_request("eth_chainId") == DEFAULT_TEST_CHAIN_ID
+
     with first_context:
         start_count = len(first_context.connected_providers)
         expected_next_count = start_count + 1
@@ -207,6 +229,9 @@ def test_parse_network_choice_multiple_contexts(get_provider_with_unused_chain_i
             # Second context should already know about connected providers
             assert len(first_context.connected_providers) == expected_next_count
             assert len(second_context.connected_providers) == expected_next_count
+
+    assert eth_tester_provider.chain_id == DEFAULT_TEST_CHAIN_ID
+    assert eth_tester_provider._make_request("eth_chainId") == DEFAULT_TEST_CHAIN_ID
 
 
 def test_getattr_ecosystem_with_hyphenated_name(networks, ethereum):

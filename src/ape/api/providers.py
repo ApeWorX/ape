@@ -128,7 +128,7 @@ class ProviderAPI(BaseInterfaceModel):
     network: NetworkAPI
     """A reference to the network this provider provides."""
 
-    provider_settings: dict
+    provider_settings: Dict = {}
     """The settings for the provider, as overrides to the configuration."""
 
     data_folder: Path
@@ -183,6 +183,37 @@ class ProviderAPI(BaseInterfaceModel):
         Return the raw WS/WSS URI to connect to this provider, if supported.
         """
         return None
+
+    @property
+    def settings(self) -> PluginConfig:
+        """
+        The combination of settings from ``ape-config.yaml`` and ``.provider_settings``.
+        """
+        CustomConfig = self.config.__class__
+        data = {**self.config.dict(), **self.provider_settings}
+        return CustomConfig.parse_obj(data)
+
+    @property
+    def connection_id(self) -> Optional[str]:
+        """
+        A connection ID to uniquely identify and manage multiple
+        connections to providers, especially when working with multiple
+        providers of the same type, like multiple Geth --dev nodes.
+        """
+
+        try:
+            chain_id = self.chain_id
+        except Exception:
+            if chain_id := self.settings.get("chain_id"):
+                pass
+
+            else:
+                # A connection is required to obtain a chain ID for this provider.
+                return None
+
+        # NOTE: If other provider settings are different, ``.update_settings()``
+        #    should be called.
+        return f"{self.network_choice}:{chain_id}"
 
     @abstractmethod
     def update_settings(self, new_settings: dict):
@@ -1536,7 +1567,8 @@ class Web3Provider(ProviderAPI, ABC):
             raw=evm_frame.dict(),
         )
 
-    def _make_request(self, endpoint: str, parameters: List) -> Any:
+    def _make_request(self, endpoint: str, parameters: Optional[List] = None) -> Any:
+        parameters = parameters or []
         coroutine = self.web3.provider.make_request(RPCEndpoint(endpoint), parameters)
         result = run_until_complete(coroutine)
 
@@ -1711,6 +1743,11 @@ class SubprocessProvider(ProviderAPI):
     @cached_property
     def _stderr_logger(self) -> Logger:
         return self._get_process_output_logger("stderr", self.stderr_logs_path)
+
+    @property
+    def connection_id(self) -> Optional[str]:
+        cmd_id = ",".join(self.build_command())
+        return f"{self.network_choice}:{cmd_id}"
 
     def _get_process_output_logger(self, name: str, path: Path):
         logger = getLogger(f"{self.name}_{name}_subprocessProviderLogger")

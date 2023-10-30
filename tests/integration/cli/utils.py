@@ -4,7 +4,9 @@ from typing import Callable, Dict
 import pytest
 
 __projects_directory__ = Path(__file__).parent / "projects"
-__project_names__ = [p.stem for p in __projects_directory__.iterdir() if p.is_dir()]
+__project_names__ = [
+    p.stem for p in __projects_directory__.iterdir() if p.is_dir() and not p.stem.startswith(".")
+]
 
 
 def assert_failure(result, expected_output):
