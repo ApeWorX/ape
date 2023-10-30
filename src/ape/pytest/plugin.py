@@ -14,33 +14,41 @@ from ape.utils import ManagerAccessMixin
 
 
 def pytest_addoption(parser):
-    parser.addoption(
-        "--showinternal",
-        action="store_true",
-    )
-    parser.addoption(
+    def add_option(*args, **kwargs):
+        try:
+            parser.addoption(*args, **kwargs)
+        except ValueError as err:
+            if "already added" in str(err):
+                # A different plugin added an option
+                # with this name. It should be ok to share it.
+                return
+
+            raise  # The same ValueError as if we were not error handling.
+
+    add_option("--showinternal", action="store_true")
+    add_option(
         "--network",
         action="store",
         default=networks.default_ecosystem.name,
         help="Override the default network and provider (see ``ape networks list`` for options).",
     )
-    parser.addoption(
+    add_option(
         "--interactive",
         "-I",
         action="store_true",
         help="Open an interactive console each time a test fails.",
     )
-    parser.addoption(
+    add_option(
         "--disable-isolation",
         action="store_true",
         help="Disable test and fixture isolation (see provider for info on snapshot availability).",
     )
-    parser.addoption(
+    add_option(
         "--gas",
         action="store_true",
         help="Show a transaction gas report at the end of the test session.",
     )
-    parser.addoption(
+    add_option(
         "--gas-exclude",
         action="store",
         help="A comma-separated list of contract:method-name glob-patterns to ignore.",
