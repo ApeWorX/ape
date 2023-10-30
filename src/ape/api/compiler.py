@@ -98,11 +98,34 @@ class CompilerAPI(BaseInterfaceModel):
         """
 
     @raises_not_implemented
+    def compile_code(  # type: ignore[empty-body]
+        self,
+        code: str,
+        base_path: Optional[Path] = None,
+        **kwargs,
+    ) -> ContractType:
+        """
+        Compile a program.
+
+        Args:
+            code (str): The code to compile.
+            base_path (Optional[pathlib.Path]): Optionally provide the base path, such as the
+              project ``contracts/`` directory. Defaults to ``None``. When using in a project
+              via ``compilers.compile_source()``, gets set to the project's ``contracts/``
+              directory.
+            **kwargs: Additional overrides for the ``ethpm_types.ContractType`` model.
+
+        Returns:
+            ``ContractType``: A compiled contract artifact.
+        """
+
+    @raises_not_implemented
     def get_imports(  # type: ignore[empty-body]
         self, contract_filepaths: List[Path], base_path: Optional[Path]
     ) -> Dict[str, List[str]]:
         """
-        Returns a list of imports as source_ids for each contract's source_id in a given compiler.
+        Returns a list of imports as source_ids for each contract's source_id in a given
+        compiler.
 
         Args:
             contract_filepaths (List[pathlib.Path]): A list of source file paths to compile.

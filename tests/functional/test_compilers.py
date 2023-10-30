@@ -2,6 +2,7 @@ from pathlib import Path
 
 import pytest
 
+from ape.contracts import ContractContainer
 from ape.exceptions import APINotImplementedError, CompilerError
 from tests.conftest import skip_if_plugin_installed
 
@@ -130,3 +131,9 @@ def test_compile_str_path(compilers, project_with_contract):
     actual = compilers.compile([str(path)])
     contract_name = path.stem
     assert actual[contract_name].name == contract_name
+
+
+def test_compile_source(compilers):
+    code = '[{"name":"foo","type":"fallback", "stateMutability":"nonpayable"}]'
+    actual = compilers.compile_source("ethpm", code)
+    assert isinstance(actual, ContractContainer)
