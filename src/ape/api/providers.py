@@ -196,10 +196,9 @@ class ProviderAPI(BaseInterfaceModel):
     @property
     def connection_id(self) -> Optional[str]:
         """
-        A connection ID for this provider's connection used for managing
-        multiple connections to providers and identifying them, especially if
-        using multiple providers of the same type, such as multiple Geth --dev
-        nodes.
+        A connection ID to uniquely identify and manage multiple 
+        connections to providers, especially when working with multiple 
+        providers of the same type, like multiple Geth --dev nodes.
         """
 
         try:
