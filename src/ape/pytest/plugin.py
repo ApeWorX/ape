@@ -21,8 +21,6 @@ def pytest_addoption(parser):
         except ValueError as err:
             name_str = ", ".join(names)
             if "already added" in str(err):
-                # A different plugin added an option
-                # with this name. It should be ok to share it.
                 raise ConfigError(
                     f"Another pytest plugin besides `ape_test` uses an option with "
                     f"one of '{name_str}'. Note that Ape does not support being "
