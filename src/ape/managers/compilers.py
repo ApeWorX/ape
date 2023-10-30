@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Set
+from typing import Any, Dict, List, Optional, Sequence, Set, Union
 
 from ethpm_types import ContractType
 from ethpm_types.source import Content
@@ -86,7 +86,7 @@ class CompilerManager(BaseManager):
         return None
 
     def compile(
-        self, contract_filepaths: List[Path], settings: Optional[Dict] = None
+        self, contract_filepaths: Sequence[Union[Path, str]], settings: Optional[Dict] = None
     ) -> Dict[str, ContractType]:
         """
         Invoke :meth:`ape.ape.compiler.CompilerAPI.compile` for each of the given files.
@@ -98,15 +98,17 @@ class CompilerManager(BaseManager):
               extension as well as when there is a contract-type collision across compilers.
 
         Args:
-            contract_filepaths (List[pathlib.Path]): The list of files to compile,
-              as ``pathlib.Path`` objects.
+            contract_filepaths (Sequence[Union[pathlib.Path], str]): The list of files to compile,
+              as ``pathlib.Path`` objects. You can also pass a list of `str` that will
+              automatically get turned to ``pathlib.Path`` objects.
             settings (Optional[Dict]): Adhoc compiler settings. Defaults to None.
               Ensure the compiler name key is present in the dict for it to work.
 
         Returns:
             Dict[str, ``ContractType``]: A mapping of contract names to their type.
         """
-        extensions = self._get_contract_extensions(contract_filepaths)
+        contract_file_paths = [Path(p) if isinstance(p, str) else p for p in contract_filepaths]
+        extensions = self._get_contract_extensions(contract_file_paths)
         contracts_folder = self.config_manager.contracts_folder
         contract_types_dict: Dict[str, ContractType] = {}
         built_paths = [p for p in self.project_manager.local_project._cache_folder.glob("*.json")]
@@ -124,7 +126,7 @@ class CompilerManager(BaseManager):
             # Filter out in-source cache files from dependencies.
             paths_to_compile = [
                 path
-                for path in contract_filepaths
+                for path in contract_file_paths
                 if path.is_file()
                 and path not in paths_to_ignore
                 and path not in built_paths
@@ -195,14 +197,14 @@ class CompilerManager(BaseManager):
         return contract_types_dict
 
     def get_imports(
-        self, contract_filepaths: List[Path], base_path: Optional[Path] = None
+        self, contract_filepaths: Sequence[Path], base_path: Optional[Path] = None
     ) -> Dict[str, List[str]]:
         """
         Combine import dicts from all compilers, where the key is a contract's source_id
         and the value is a list of import source_ids.
 
         Args:
-            contract_filepaths (List[pathlib.Path]): A list of source file paths to compile.
+            contract_filepaths (Sequence[pathlib.Path]): A list of source file paths to compile.
             base_path (Optional[pathlib.Path]): Optionally provide the base path, such as the
               project ``contracts/`` directory. Defaults to ``None``. When using in a project
               via ``ape compile``, gets set to the project's ``contracts/`` directory.

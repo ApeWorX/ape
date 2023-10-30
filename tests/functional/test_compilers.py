@@ -123,3 +123,9 @@ def test_compile_with_settings(mock_compiler, compilers, project_with_contract):
 
     actual = mock_compiler.method_calls[0][2]["update"]["compiler_settings"]["mock"]
     assert actual == settings["mock"]
+
+
+def test_compile_str_path(compilers, project_with_contract):
+    path_str = str(next(iter(project_with_contract.source_paths)))
+    actual = compilers.compile([path_str])
+    assert actual["ApeContract1"].name == "ApeContract1"
