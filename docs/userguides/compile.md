@@ -95,6 +95,7 @@ vyper:
 You can also configure adhoc settings in Python code:
 
 ```python
+from pathlib import Path
 from ape import compilers
 
 settings = {"vyper": {"version": "0.3.7"}, "solidity": {"version": "0.8.0"}}
@@ -104,8 +105,8 @@ compilers.compile(
 
 # Or, more explicitly:
 vyper = compilers.get_compiler("vyper", settings=settings["vyper"])
-vyper.compile("path/to/contract.vy")
+vyper.compile([Path("path/to/contract.vy")])
 
 solidity = compilers.get_compiler("solidity", settings=settings["solidity"])
-vyper.compile("path/to/contract.sol")
+vyper.compile([Path("path/to/contract.sol")])
 ```
