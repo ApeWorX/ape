@@ -8,6 +8,7 @@ from evm_trace.geth import TraceFrame as EvmTraceFrame
 from evm_trace.geth import create_call_node_data
 from semantic_version import Version  # type: ignore
 
+from ape.api.config import PluginConfig
 from ape.exceptions import APINotImplementedError, ContractLogicError
 from ape.types.coverage import ContractSourceCoverage
 from ape.types.trace import SourceTraceback, TraceFrame
@@ -25,10 +26,31 @@ class CompilerAPI(BaseInterfaceModel):
     this API.
     """
 
+    compiler_settings: Dict = {}
+    """
+    Adhoc compiler settings.
+    """
+
     @property
     @abstractmethod
     def name(self) -> str:
         ...
+
+    @property
+    def config(self) -> PluginConfig:
+        """
+        The provider's configuration.
+        """
+        return self.config_manager.get_config(self.name)
+
+    @property
+    def settings(self) -> PluginConfig:
+        """
+        The combination of settings from ``ape-config.yaml`` and ``.compiler_settings``.
+        """
+        CustomConfig = self.config.__class__
+        data = {**self.config.dict(), **self.compiler_settings}
+        return CustomConfig.parse_obj(data)
 
     @abstractmethod
     def get_versions(self, all_paths: List[Path]) -> Set[str]:
