@@ -569,14 +569,21 @@ If not given anything, it will prompt the user to select an account.</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="ape.cli.options.ape_cli_context">
-<span class="sig-prename descclassname"><span class="pre">ape.cli.options.</span></span><span class="sig-name descname"><span class="pre">ape_cli_context</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">default_log_level</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'INFO'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.cli.options.ape_cli_context" title="Permalink to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">ape.cli.options.</span></span><span class="sig-name descname"><span class="pre">ape_cli_context</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">default_log_level:</span> <span class="pre">str</span> <span class="pre">=</span> <span class="pre">'INFO'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">obj_type:</span> <span class="pre">~typing.Type</span> <span class="pre">=</span> <span class="pre">&lt;class</span> <span class="pre">'ape.cli.options.ApeCliContextObject'&gt;</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.cli.options.ape_cli_context" title="Permalink to this definition"></a></dt>
 <dd><p>A <code class="docutils literal notranslate"><span class="pre">click</span></code> context object with helpful utilities.
 Use in your commands to get access to common utility features,
 such as logging or accessing managers.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>default_log_level</strong> (<em>str</em>) – The log-level value to pass to
-<a class="reference internal" href="#ape.cli.options.verbosity_option" title="ape.cli.options.verbosity_option"><code class="xref py py-meth docutils literal notranslate"><span class="pre">verbosity_option()</span></code></a>.</p>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>default_log_level</strong> (<em>str</em>) – The log-level value to pass to
+<a class="reference internal" href="#ape.cli.options.verbosity_option" title="ape.cli.options.verbosity_option"><code class="xref py py-meth docutils literal notranslate"><span class="pre">verbosity_option()</span></code></a>.</p></li>
+<li><p><strong>obj_type</strong> (<em>Type</em>) – The context object type. Defaults to
+<a class="reference internal" href="#ape.cli.options.ApeCliContextObject" title="ape.cli.options.ApeCliContextObject"><code class="xref py py-class docutils literal notranslate"><span class="pre">ApeCliContextObject</span></code></a>. Sub-class
+the context to extend its functionality in your CLIs,
+such as if you want to add additional manager classes
+to the context.</p></li>
+</ul>
 </dd>
 </dl>
 </dd></dl>

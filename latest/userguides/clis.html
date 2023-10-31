@@ -226,6 +226,31 @@ Here is an example using all of those features from the <code class="docutils li
     <span class="n">cli_ctx</span><span class="o">.</span><span class="n">abort</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Bad account: </span><span class="si">{</span><span class="n">account</span><span class="o">.</span><span class="n">address</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
+<p>In Ape, it is easy to extend the CLI context object and use the extended version in your CLIs:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">ape.cli</span> <span class="kn">import</span> <span class="n">ApeCliContextObject</span><span class="p">,</span> <span class="n">ape_cli_context</span>
+<span class="kn">import</span> <span class="nn">click</span>
+
+<span class="k">class</span> <span class="nc">MyManager</span><span class="p">:</span>
+<span class="w">   </span><span class="sd">&quot;&quot;&quot;My custom manager.&quot;&quot;&quot;</span>
+
+<span class="k">class</span> <span class="nc">CustomContext</span><span class="p">(</span><span class="n">ApeCliContextObject</span><span class="p">):</span>
+<span class="w">   </span><span class="sd">&quot;&quot;&quot;Add new managers to your custom context&quot;&quot;&quot;</span>
+   <span class="n">my_manager</span><span class="p">:</span> <span class="n">MyManager</span> <span class="o">=</span> <span class="n">MyManager</span><span class="p">()</span>
+   
+   <span class="nd">@property</span>
+   <span class="k">def</span> <span class="nf">signer</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">      </span><span class="sd">&quot;&quot;&quot;Utilize existing managers in your custom context.&quot;&quot;&quot;</span>
+      <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">account_manager</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;my_account&quot;</span><span class="p">)</span>
+
+<span class="nd">@click</span><span class="o">.</span><span class="n">command</span><span class="p">()</span>
+<span class="nd">@ape_cli_context</span><span class="p">(</span><span class="n">obj_type</span><span class="o">=</span><span class="n">CustomContext</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">cli</span><span class="p">(</span><span class="n">cli_ctx</span><span class="p">):</span>
+    <span class="c1"># Access your manager.</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">cli_ctx</span><span class="o">.</span><span class="n">my_manager</span><span class="p">)</span>
+    <span class="c1"># Access other Ape managers.</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">cli_ctx</span><span class="o">.</span><span class="n">account_manager</span><span class="p">)</span>
+</pre></div>
+</div>
 </section>
 <section id="network-tools">
 <h2>Network Tools<a class="headerlink" href="#network-tools" title="Permalink to this heading"></a></h2>

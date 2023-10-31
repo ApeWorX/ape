@@ -34,6 +34,33 @@ def cmd(cli_ctx):
     cli_ctx.abort(f"Bad account: {account.address}")
 ```
 
+In Ape, it is easy to extend the CLI context object and use the extended version in your CLIs:
+
+```python
+from ape.cli import ApeCliContextObject, ape_cli_context
+import click
+
+class MyManager:
+   """My custom manager."""
+
+class CustomContext(ApeCliContextObject):
+   """Add new managers to your custom context"""
+   my_manager: MyManager = MyManager()
+   
+   @property
+   def signer(self):
+      """Utilize existing managers in your custom context."""
+      return self.account_manager.load("my_account")
+
+@click.command()
+@ape_cli_context(obj_type=CustomContext)
+def cli(cli_ctx):
+    # Access your manager.
+    print(cli_ctx.my_manager)
+    # Access other Ape managers.
+    print(cli_ctx.account_manager)
+```
+
 ## Network Tools
 
 The `@network_option()` allows you to select an ecosystem / network / provider combination.
