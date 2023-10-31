@@ -80,7 +80,7 @@ The CLI tool contains all the Ape commands and the Python SDK contains the class
 
 ## **Ape Modular Plugin System:**
 
-Our [list of plugins](https://www.apeworx.io/#plugins) is the best way to have the most interoperable experience with Web3.
+Our modular plugin system is the best way to have the most interoperable experience with Web3.
 
 **NOTE**: If a plugin does not originate from the [ApeWorX GitHub Organization](https://github.com/ApeWorX?q=ape&type=all), you will get a warning about installing 3rd-party plugins.
 
