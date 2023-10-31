@@ -138,7 +138,7 @@ block = chain.provider.get_block("latest")
 
 ## Provider Context Manager
 
-Use the `ProviderContextManager` to change the network-context in Python.
+Use the [ProviderContextManager](../methoddocs/api.html#ape.api.networks.ProviderContextManager) to change the network-context in Python.
 When entering a network for the first time, it will connect to that network.
 **You do not need to call `.connect()` or `.disconnect()` manually**.
 
@@ -168,7 +168,28 @@ def cli():
         ...
 ```
 
-You can also use the `parse_network_choice()` method when working with network choice strings:
+The argument to [use_provider()](../methoddocs/api.html#ape.api.networks.NetworkAPI.use_provider) is the name of the provider you want to use.
+You can also tell Ape to use the default provider by calling method [use_default_provider()](../methoddocs/api.html#ape.api.networks.NetworkAPI.use_default_provider) instead.
+This will use whatever provider is set as default for your ecosystem / network combination (via one of your `ape-config.yaml` files).
+
+For example, let's say I have a default provider set like this:
+
+```yaml
+arbitrum:
+  mainnet:
+    default_provider: alchemy
+```
+
+```python
+import ape
+
+# Use the provider configured as the default for the arbitrum::mainnet network.
+# In this case, it will use the "alchemy" provider.
+with ape.networks.arbitrum.mainnet.use_default_provider():
+    ...
+```
+
+You can also use the [parse_network_choice()](../methoddocs/managers.html#ape.managers.networks.NetworkManager.parse_network_choice) method when working with network choice strings:
 
 ```python
 from ape import networks
@@ -189,7 +210,7 @@ with networks.parse_network_choice("ethereum:local:foundry", disconnect_after=Tr
     print(provider)
 ```
 
-#### Forked Context
+### Forked Context
 
 Using the `networks.fork()` method, you can achieve similar effects to using a forked network with `disconnect_after=True`.
 For example, let's say we are running the following script on the network `ethereum:mainnet`.
