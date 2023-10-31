@@ -329,8 +329,8 @@ of event arguments between a MockContractLog and a ContractLog instance.</p>
 <dt class="sig sig-object py" id="ape.types.signatures.SignableMessage">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ape.types.signatures.</span></span><span class="sig-name descname"><span class="pre">SignableMessage</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">version</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bytes</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">header</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bytes</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">body</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bytes</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.types.signatures.SignableMessage" title="Permalink to this definition"></a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">NamedTuple</span></code></p>
-<p>A message compatible with <a href="#id1"><span class="problematic" id="id2">EIP-191_</span></a> that is ready to be signed.</p>
-<p>The properties are components of an <a href="#id3"><span class="problematic" id="id4">EIP-191_</span></a> signable message. Other message formats
+<p>A message compatible with <a class="reference external" href="https://eips.ethereum.org/EIPS/eip-191">EIP-191</a> that is ready to be signed.</p>
+<p>The properties are components of an <a class="reference external" href="https://eips.ethereum.org/EIPS/eip-191">EIP-191</a> signable message. Other message formats
 can be encoded into this format for easy signing. This data structure doesn’t need
 to know about the original message format. For example, you can think of
 EIP-712 as compiling down to an EIP-191 message.</p>

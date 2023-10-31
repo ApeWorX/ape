@@ -266,13 +266,11 @@ To disable isolation add the <code class="docutils literal notranslate"><span cl
 </section>
 <section id="fixtures">
 <h2>Fixtures<a class="headerlink" href="#fixtures" title="Permalink to this heading"></a></h2>
-<p>Fixtures are any type of reusable instances of something with configurable scopes. <code class="docutils literal notranslate"><span class="pre">pytest</span></code> handles passing fixtures
-into each test method as test-time. To learn more about <a class="reference external" href="https://docs.pytest.org/en/7.1.x/explanation/fixtures.html">fixtures</a></p>
-<p>Define fixtures for static data used by tests. This data can be accessed by all tests in the suite unless specified otherwise. This could be data as well as helpers of modules which will be passed to all tests.</p>
-<p>A common place to define fixtures are in the <strong>conftest.py</strong> which should be saved under the test directory:</p>
-<p>conftest.py is used to import external plugins or modules. By defining the following global variable, pytest will load the module and make it available for its test.</p>
-<p>You can define your own fixtures or use existing ones. The <code class="docutils literal notranslate"><span class="pre">ape-test</span></code> plugin comes
-with fixtures you will likely want to use:</p>
+<p>You can define and use <code class="docutils literal notranslate"><span class="pre">pytest</span></code> fixtures in your Ape tests.
+Learn more about fixtures from <a class="reference external" href="https://docs.pytest.org/en/7.1.x/explanation/fixtures.html">this guide</a>.
+The syntax and functionalities of fixtures work exactly the same in Ape as it does with <code class="docutils literal notranslate"><span class="pre">pytest</span></code>.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">ape-test</span></code> plugin comes with fixtures you will likely want to use.
+The following guide explains each fixture that comes with Ape.</p>
 <section id="accounts-fixture">
 <h3>accounts fixture<a class="headerlink" href="#accounts-fixture" title="Permalink to this heading"></a></h3>
 <p>You have access to test accounts.
