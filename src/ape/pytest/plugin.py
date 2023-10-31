@@ -4,6 +4,7 @@ from pathlib import Path
 import pytest
 
 from ape import networks, project
+from ape.exceptions import ConfigError
 from ape.logging import LogLevel, logger
 from ape.pytest.config import ConfigWrapper
 from ape.pytest.coverage import CoverageTracker
@@ -14,33 +15,44 @@ from ape.utils import ManagerAccessMixin
 
 
 def pytest_addoption(parser):
-    parser.addoption(
-        "--showinternal",
-        action="store_true",
-    )
-    parser.addoption(
+    def add_option(*names, **kwargs):
+        try:
+            parser.addoption(*names, **kwargs)
+        except ValueError as err:
+            name_str = ", ".join(names)
+            if "already added" in str(err):
+                raise ConfigError(
+                    f"Another pytest plugin besides `ape_test` uses an option with "
+                    f"one of '{name_str}'. Note that Ape does not support being "
+                    f"installed alongside Brownie; please use separate environments!"
+                )
+
+            raise ConfigError(f"Failed adding option {name_str}: {err}") from err
+
+    add_option("--showinternal", action="store_true")
+    add_option(
         "--network",
         action="store",
         default=networks.default_ecosystem.name,
         help="Override the default network and provider (see ``ape networks list`` for options).",
     )
-    parser.addoption(
+    add_option(
         "--interactive",
         "-I",
         action="store_true",
         help="Open an interactive console each time a test fails.",
     )
-    parser.addoption(
+    add_option(
         "--disable-isolation",
         action="store_true",
         help="Disable test and fixture isolation (see provider for info on snapshot availability).",
     )
-    parser.addoption(
+    add_option(
         "--gas",
         action="store_true",
         help="Show a transaction gas report at the end of the test session.",
     )
-    parser.addoption(
+    add_option(
         "--gas-exclude",
         action="store",
         help="A comma-separated list of contract:method-name glob-patterns to ignore.",
