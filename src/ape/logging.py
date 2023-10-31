@@ -4,7 +4,7 @@ import sys
 import traceback
 from enum import IntEnum
 from pathlib import Path
-from typing import IO, Any, Dict, Optional, Union
+from typing import IO, Any, Callable, Dict, Optional, Sequence, Union
 
 import click
 from yarl import URL
@@ -87,25 +87,18 @@ class ApeColorFormatter(logging.Formatter):
 
 
 class ClickHandler(logging.Handler):
-    def __init__(self, echo_kwargs):
+    def __init__(
+        self, echo_kwargs: Dict, handlers: Optional[Sequence[Callable[[str], str]]] = None
+    ):
         super().__init__()
         self.echo_kwargs = echo_kwargs
+        self.handlers = handlers or []
 
     def emit(self, record):
         try:
             msg = self.format(record)
-
-            # Sanitize URLs
-            if "http://" in msg or "https://" in msg or "ws://" in msg or "wss://" in msg:
-                parts = msg.split(" http") if "http" in msg else msg.split(" ws")
-                rest = parts[1].split(' ')
-                url = f"http{rest[0].strip()}"
-                sanitized_url = URL(url).with_user(None).with_password(None)
-
-                # If there is a path, hide it but show that you are hiding it.
-                # Use string interpolation to prevent URL-character encoding.
-                sanitized_url_str = f"{sanitized_url.with_path('')}/[hidden]" if sanitized_url.path else f"{url}"
-                msg = f"{parts[0]}{sanitized_url_str} {' '.join(rest[1:])}".strip()
+            for handler in self.handlers:
+                msg = handler(msg)
 
             level = record.levelname.lower()
             if self.echo_kwargs.get(level):
@@ -226,15 +219,19 @@ class ApeLogger:
         stack_trace = traceback.format_exc()
         self._logger.debug(stack_trace)
 
-    def create_logger(self, new_name: str) -> logging.Logger:
-        _logger = get_logger(new_name, self.fmt)
+    def create_logger(
+        self, new_name: str, handlers: Optional[Sequence[Callable[[str], str]]] = None
+    ) -> logging.Logger:
+        _logger = get_logger(new_name, fmt=self.fmt, handlers=handlers)
         _logger.setLevel(self.level)
         self._extra_loggers[new_name] = _logger
         return _logger
 
 
-def _format_logger(_logger: logging.Logger, fmt: str):
-    handler = ClickHandler(echo_kwargs=CLICK_ECHO_KWARGS)
+def _format_logger(
+    _logger: logging.Logger, fmt: str, handlers: Optional[Sequence[Callable[[str], str]]] = None
+):
+    handler = ClickHandler(echo_kwargs=CLICK_ECHO_KWARGS, handlers=handlers)
     formatter = ApeColorFormatter(fmt=fmt)
     handler.setFormatter(formatter)
 
@@ -246,7 +243,9 @@ def _format_logger(_logger: logging.Logger, fmt: str):
     _logger.addHandler(handler)
 
 
-def get_logger(name: str, fmt: Optional[str] = None) -> logging.Logger:
+def get_logger(
+    name: str, fmt: Optional[str] = None, handlers: Optional[Sequence[Callable[[str], str]]] = None
+) -> logging.Logger:
     """
     Get a logger with the given ``name`` and configure it for usage with Ape.
 
@@ -259,7 +258,7 @@ def get_logger(name: str, fmt: Optional[str] = None) -> logging.Logger:
         ``logging.Logger``
     """
     _logger = logging.getLogger(name)
-    _format_logger(_logger, fmt=fmt or DEFAULT_LOG_FORMAT)
+    _format_logger(_logger, fmt=fmt or DEFAULT_LOG_FORMAT, handlers=handlers)
     return _logger
 
 
@@ -270,6 +269,14 @@ def _get_level(level: Optional[Union[str, int]] = None) -> str:
         return LogLevel(int(level)).name
 
     return level
+
+
+def sanitize_url(url: str) -> str:
+    url_obj = URL(url).with_user(None).with_password(None)
+
+    # If there is a path, hide it but show that you are hiding it.
+    # Use string interpolation to prevent URL-character encoding.
+    return f"{url_obj.with_path('')}/[hidden]" if url_obj.path else f"{url}"
 
 
 logger = ApeLogger.create()

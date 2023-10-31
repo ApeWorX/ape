@@ -46,7 +46,7 @@ from ape.exceptions import (
     TransactionNotFoundError,
     VirtualMachineError,
 )
-from ape.logging import LogLevel, logger
+from ape.logging import LogLevel, logger, sanitize_url
 from ape.types import (
     AddressType,
     AutoGasLimit,
@@ -745,6 +745,17 @@ class TestProviderAPI(ProviderAPI):
             self._test_runner.coverage_tracker.hit_function(contract_src, method)
 
 
+def _sanitize_web3_url(msg: str) -> str:
+    if "URI: " not in msg:
+        return msg
+
+    parts = msg.split("URI: ")
+    prefix = parts[0]
+    rest = parts[1].split(" ")
+    sanitized_url = sanitize_url(rest[0])
+    return f"{prefix} URI: {sanitized_url} {' '.join(rest[1:])}"
+
+
 class Web3Provider(ProviderAPI, ABC):
     """
     A base provider mixin class that uses the
@@ -755,8 +766,8 @@ class Web3Provider(ProviderAPI, ABC):
     _client_version: Optional[str] = None
 
     def __init__(self, *args, **kwargs):
-        logger.create_logger("web3.RequestManager")
-        logger.create_logger("web3.providers.HTTPProvider")
+        logger.create_logger("web3.RequestManager", handlers=(_sanitize_web3_url,))
+        logger.create_logger("web3.providers.HTTPProvider", handlers=(_sanitize_web3_url,))
         super().__init__(*args, **kwargs)
 
     @property
