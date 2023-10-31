@@ -14,6 +14,7 @@ from ape.cli.choices import (
 )
 from ape.cli.commands import NetworkBoundCommand
 from ape.cli.options import (
+    ApeCliContextObject,
     account_option,
     ape_cli_context,
     contract_option,
@@ -33,6 +34,7 @@ __all__ = [
     "Alias",
     "AllFilePaths",
     "ape_cli_context",
+    "ApeCliContextObject",
     "contract_file_paths_argument",
     "contract_option",
     "existing_alias_argument",
