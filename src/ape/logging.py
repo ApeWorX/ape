@@ -96,10 +96,10 @@ class ClickHandler(logging.Handler):
             msg = self.format(record)
 
             # Sanitize URLs
-            if "http" in msg:
-                parts = msg.split("http")
+            if "http://" in msg or "https://" in msg or "ws://" in msg or "wss://" in msg:
+                parts = msg.split(" http") if "http" in msg else msg.split(" ws")
                 rest = parts[1].split(' ')
-                url = f"http{rest[0].rstrip()}"
+                url = f"http{rest[0].strip()}"
                 sanitized_url = URL(url).with_user(None).with_password(None)
 
                 # If there is a path, hide it but show that you are hiding it.
