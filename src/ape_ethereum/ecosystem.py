@@ -131,13 +131,23 @@ class NetworkConfig(PluginConfig):
         raise ValueError(f"Invalid gas limit '{value}'")
 
 
-def _create_local_config(default_provider: Optional[str] = None, **kwargs) -> NetworkConfig:
+class ForkedNetworkConfig(NetworkConfig):
+    upstream_provider: Optional[str] = None
+    """
+    The provider to use as the upstream-provider for this forked network.
+    """
+
+
+def _create_local_config(
+    default_provider: Optional[str] = None, use_fork: bool = False, **kwargs
+) -> NetworkConfig:
     return _create_config(
         base_fee_multiplier=1.0,
         default_provider=default_provider,
         gas_limit="max",
         required_confirmations=0,
         transaction_acceptance_timeout=DEFAULT_LOCAL_TRANSACTION_ACCEPTANCE_TIMEOUT,
+        cls=ForkedNetworkConfig if use_fork else NetworkConfig,
         **kwargs,
     )
 
@@ -145,9 +155,10 @@ def _create_local_config(default_provider: Optional[str] = None, **kwargs) -> Ne
 def _create_config(
     required_confirmations: int = 2,
     base_fee_multiplier: float = DEFAULT_LIVE_NETWORK_BASE_FEE_MULTIPLIER,
+    cls: Type[NetworkConfig] = NetworkConfig,
     **kwargs,
 ) -> NetworkConfig:
-    return NetworkConfig(
+    return cls(
         base_fee_multiplier=base_fee_multiplier,
         required_confirmations=required_confirmations,
         **kwargs,
@@ -156,11 +167,11 @@ def _create_config(
 
 class EthereumConfig(PluginConfig):
     mainnet: NetworkConfig = _create_config(block_time=13)
-    mainnet_fork: NetworkConfig = _create_local_config()
+    mainnet_fork: ForkedNetworkConfig = _create_local_config(use_fork=True)
     goerli: NetworkConfig = _create_config(block_time=15)
-    goerli_fork: NetworkConfig = _create_local_config()
+    goerli_fork: ForkedNetworkConfig = _create_local_config(use_fork=True)
     sepolia: NetworkConfig = _create_config(block_time=15)
-    sepolia_fork: NetworkConfig = _create_local_config()
+    sepolia_fork: ForkedNetworkConfig = _create_local_config(use_fork=True)
     local: NetworkConfig = _create_local_config(default_provider="test")
     default_network: str = LOCAL_NETWORK_NAME
 

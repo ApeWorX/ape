@@ -48,7 +48,7 @@ from .config import PluginConfig
 
 if TYPE_CHECKING:
     from .explorers import ExplorerAPI
-    from .providers import BlockAPI, ProviderAPI
+    from .providers import BlockAPI, ProviderAPI, UpstreamProvider
     from .transactions import ReceiptAPI, TransactionAPI
 
 
@@ -1044,6 +1044,54 @@ class NetworkAPI(BaseInterfaceModel):
         """
         if self.name not in ("adhoc", LOCAL_NETWORK_NAME) and self.chain_id != chain_id:
             raise NetworkMismatchError(chain_id, self)
+
+
+class ForkedNetworkAPI(NetworkAPI):
+    @property
+    def upstream_network(self) -> NetworkAPI:
+        """
+        The network being forked.
+        """
+        network_name = self.name.replace("-fork", "")
+        return self.ecosystem.get_network(network_name)
+
+    @property
+    def upstream_provider(self) -> Optional["UpstreamProvider"]:
+        """
+        The provider used when requesting data before the local fork.
+        Set this in your config under the network settings.
+        When not set, will attempt to use the default provider, if one
+        exists.
+        """
+
+        config_choice = self._network_config.get("upstream_provider")
+        if provider_name := config_choice or self.upstream_network.default_provider:
+            return self.get_provider(provider_name)
+
+        return None
+
+    @property
+    def upstream_chain_id(self) -> int:
+        """
+        The chain Id of the upstream network.
+        For example, when on ``mainnet-fork``, this should always
+        return the chain ID for ``mainnet``. Some providers may use
+        a different chain ID for forked networks while some do not.
+        This property should ALWAYS be that of the forked network, regardless.
+        """
+        return self.upstream_network.chain_id
+
+    def use_upstream_provider(self) -> ProviderContextManager:
+        """
+        Connect to the upstream provider.
+
+        Returns:
+            :class:`~ape.api.networks.ProviderContextManager`
+        """
+        if provider := self.upstream_provider:
+            return self.upstream_network.use_provider(provider.name)
+
+        raise NetworkError(f"Network {self.upstream_network.name} has no providers.")
 
 
 def create_network_type(chain_id: int, network_id: int) -> Type[NetworkAPI]:
