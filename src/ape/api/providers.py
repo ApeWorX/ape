@@ -750,7 +750,7 @@ def _sanitize_web3_url(msg: str) -> str:
         return msg
 
     parts = msg.split("URI: ")
-    prefix = parts[0]
+    prefix = parts[0].strip()
     rest = parts[1].split(" ")
     sanitized_url = sanitize_url(rest[0])
     return f"{prefix} URI: {sanitized_url} {' '.join(rest[1:])}"

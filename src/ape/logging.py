@@ -253,6 +253,7 @@ def get_logger(
         name (str): The name of the logger.
         fmt (Optional[str]): The format of the logger. Defaults to the Ape
           logger's default format: ``"%(levelname)s%(plugin)s: %(message)s"``.
+        handlers (Optional[Sequence[Callable[[str], str]]]): Additional log message handlers.
 
     Returns:
         ``logging.Logger``
