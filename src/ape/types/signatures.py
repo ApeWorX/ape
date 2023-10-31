@@ -7,6 +7,11 @@ from pydantic.dataclasses import dataclass
 
 from ape.types import AddressType
 
+# Fix 404 in doc link.
+SignableMessage.__doc__ = SignableMessage.__doc__.replace(
+    "EIP-191_", "`EIP-191 <https://eips.ethereum.org/EIPS/eip-191>`__"
+)
+
 
 def _left_pad_bytes(val: bytes, num_bytes: int) -> bytes:
     return b"\x00" * (num_bytes - len(val)) + val if len(val) < num_bytes else val
