@@ -47,17 +47,12 @@ To disable isolation add the `--disable-isolation` flag when running `ape test`
 
 ## Fixtures
 
-Fixtures are any type of reusable instances of something with configurable scopes. `pytest` handles passing fixtures
-into each test method as test-time. To learn more about [fixtures](https://docs.pytest.org/en/7.1.x/explanation/fixtures.html)
+You can define and use `pytest` fixtures in your Ape tests.
+Learn more about fixtures from [this guide](https://docs.pytest.org/en/7.1.x/explanation/fixtures.html).
+The syntax and functionalities of fixtures work exactly the same in Ape as it does with `pytest`.
 
-Define fixtures for static data used by tests. This data can be accessed by all tests in the suite unless specified otherwise. This could be data as well as helpers of modules which will be passed to all tests.
-
-A common place to define fixtures are in the **conftest.py** which should be saved under the test directory:
-
-conftest.py is used to import external plugins or modules. By defining the following global variable, pytest will load the module and make it available for its test.
-
-You can define your own fixtures or use existing ones. The `ape-test` plugin comes
-with fixtures you will likely want to use:
+The `ape-test` plugin comes with fixtures you will likely want to use.
+The following guide explains each fixture that comes with Ape.
 
 ### accounts fixture
 

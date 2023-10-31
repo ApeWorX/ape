@@ -18,7 +18,7 @@ This guide is for showcasing utilities that ship with Ape to assist in your CLI 
 
 ## Ape Context Decorator
 
-The `@ape_cli_context` gives you access to all the root Ape objects (`accounts`, `networks` etc.), the ape logger, and an `abort` method for stopping execution of your CLI gracefully.
+The [@ape_cli_context](../methoddocs/cli.html#ape.cli.options.ape_cli_context) gives you access to all the root Ape objects (`accounts`, `networks` etc.), the ape logger, and an [abort](../methoddocs/cli.html#ape.cli.options.ApeCliContextObject.abort) method for stopping execution of your CLI gracefully.
 Here is an example using all of those features from the `cli_ctx`:
 
 ```python
@@ -36,8 +36,8 @@ def cmd(cli_ctx):
 
 ## Network Tools
 
-The `@network_option()` allows you to select an ecosystem / network / provider combination.
-When using with the `NetworkBoundCommand` cls, you can cause your CLI to connect before any of your code executes.
+The [@network_option()](../methoddocs/cli.html#ape.cli.options.network_option) allows you to select an ecosystem / network / provider combination.
+When using with the [NetworkBoundCommand](../methoddocs/cli.html#ape.cli.commands.NetworkBoundCommand) class, you can cause your CLI to connect before any of your code executes.
 This is useful if your script or command requires a provider connection in order for it to run.
 
 ```python
@@ -62,7 +62,7 @@ def cmd(network):
 
 ## Account Tools
 
-Use the `@account_option()` for adding an option to your CLIs to select an account.
+Use the [@account_option()](../methoddocs/cli.html#ape.cli.options.account_option) for adding an option to your CLIs to select an account.
 This option does several things:
 
 1. If you only have a single account in Ape (from both test accounts _and_ other accounts), it will use that account as the default.
@@ -96,7 +96,7 @@ And when invoking the command from the CLI, it would look like the following:
 <prefix> cmd --account TEST::0  # Use the test account at index 0.
 ```
 
-Alternatively, you can call the `get_user_selected_account()` directly to have more control of when the account gets selected:
+Alternatively, you can call the [get_user_selected_account()](../methoddocs/cli.html#ape.cli.choices.get_user_selected_account) directly to have more control of when the account gets selected:
 
 ```python
 import click
@@ -110,8 +110,8 @@ def cmd():
 ```
 
 Similarly, there are a couple custom arguments for aliases alone that are useful when making CLIs for account creation.
-If you use `@existing_alias_argument()` and specify an alias does not already exist, it will error.
-And visa-versa when using `@non_existing_alias_argument()`
+If you use [@existing_alias_argument()](../methoddocs/cli.html#ape.cli.arguments.existing_alias_argument) and specify an alias does not already exist, it will error.
+And visa-versa when using [@non_existing_alias_argument()](../methoddocs/cli.html#ape.cli.arguments.non_existing_alias_argument).
 
 ```python
 import click
