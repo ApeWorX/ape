@@ -105,7 +105,7 @@ class ClickHandler(logging.Handler):
                 # If there is a path, hide it but show that you are hiding it.
                 # Use string interpolation to prevent URL-character encoding.
                 sanitized_url_str = f"{sanitized_url.with_path('')}/[hidden]" if sanitized_url.path else f"{url}"
-                msg = f"{parts[0]}{sanitized_url_str}{' '.join(rest[1:])}"
+                msg = f"{parts[0]}{sanitized_url_str} {' '.join(rest[1:])}".strip()
 
             level = record.levelname.lower()
             if self.echo_kwargs.get(level):
