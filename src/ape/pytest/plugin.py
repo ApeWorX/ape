@@ -27,7 +27,7 @@ def pytest_addoption(parser):
                     f"installed alongside Brownie; please use separate environments!"
                 )
 
-            raise ConfigError(f"Failing add option {name_str}: {err}") from err
+            raise ConfigError(f"Failed adding option {name_str}: {err}") from err
 
     add_option("--showinternal", action="store_true")
     add_option(
