@@ -2017,6 +2017,11 @@ an instance of this context manager.</p>
 <span class="n">mainnet</span> <span class="o">=</span> <span class="n">networks</span><span class="o">.</span><span class="n">ethereum</span><span class="o">.</span><span class="n">mainnet</span>  <span class="c1"># An instance of NetworkAPI</span>
 <span class="k">with</span> <span class="n">mainnet</span><span class="o">.</span><span class="n">use_provider</span><span class="p">(</span><span class="s2">&quot;infura&quot;</span><span class="p">):</span>
     <span class="o">...</span>
+
+<span class="c1"># Or, using choice-strings:</span>
+
+<span class="k">with</span> <span class="n">networks</span><span class="o">.</span><span class="n">parse_network_choice</span><span class="p">(</span><span class="s2">&quot;ethereum:local:test&quot;</span><span class="p">):</span>
+    <span class="o">...</span>
 </pre></div>
 </div>
 </dd></dl>

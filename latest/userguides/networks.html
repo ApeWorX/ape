@@ -138,6 +138,10 @@
 <li class="toctree-l2"><a class="reference internal" href="#ad-hoc-network-connection">Ad-hoc Network Connection</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#running-a-network-process">Running a Network Process</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#provider-interaction">Provider Interaction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#provider-context-manager">Provider Context Manager</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#forked-context">Forked Context</a></li>
+</ul>
+</li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="developing_plugins.html">Developing Plugins</a></li>
@@ -318,6 +322,84 @@ You can call methods directly from the provider, like this:</p>
 <span class="n">block</span> <span class="o">=</span> <span class="n">chain</span><span class="o">.</span><span class="n">provider</span><span class="o">.</span><span class="n">get_block</span><span class="p">(</span><span class="s2">&quot;latest&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
+</section>
+<section id="provider-context-manager">
+<h2>Provider Context Manager<a class="headerlink" href="#provider-context-manager" title="Permalink to this heading"></a></h2>
+<p>Use the <a class="reference external" href="../methoddocs/api.html#ape.api.networks.ProviderContextManager">ProviderContextManager</a> to change the network-context in Python.
+When entering a network for the first time, it will connect to that network.
+<strong>You do not need to call <code class="docutils literal notranslate"><span class="pre">.connect()</span></code> or <code class="docutils literal notranslate"><span class="pre">.disconnect()</span></code> manually</strong>.</p>
+<p>For example, if you are using a script with a default network connection, you can change connection in the middle of the script by using the provider context manager:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">ape</span> <span class="kn">import</span> <span class="n">chain</span><span class="p">,</span> <span class="n">networks</span>
+
+<span class="k">def</span> <span class="nf">main</span><span class="p">():</span>
+    <span class="n">start_provider</span> <span class="o">=</span> <span class="n">chain</span><span class="o">.</span><span class="n">provider</span><span class="o">.</span><span class="n">name</span>
+    <span class="k">with</span> <span class="n">networks</span><span class="o">.</span><span class="n">ethereum</span><span class="o">.</span><span class="n">mainnet</span><span class="o">.</span><span class="n">use_provider</span><span class="p">(</span><span class="s2">&quot;geth&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">provider</span><span class="p">:</span>
+        <span class="c1"># We are using a different provider than the one we started with.</span>
+        <span class="k">assert</span> <span class="n">start_provider</span> <span class="o">!=</span> <span class="n">provider</span><span class="o">.</span><span class="n">name</span>
+</pre></div>
+</div>
+<p>Jump between networks to simulate multi-chain behavior.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">click</span>
+<span class="kn">from</span> <span class="nn">ape</span> <span class="kn">import</span> <span class="n">networks</span>
+
+<span class="nd">@click</span><span class="o">.</span><span class="n">command</span><span class="p">()</span>
+<span class="k">def</span> <span class="nf">cli</span><span class="p">():</span>
+    <span class="k">with</span> <span class="n">networks</span><span class="o">.</span><span class="n">polygon</span><span class="o">.</span><span class="n">mainnet</span><span class="o">.</span><span class="n">use_provider</span><span class="p">(</span><span class="s2">&quot;geth&quot;</span><span class="p">):</span>
+        <span class="o">...</span>
+    <span class="k">with</span> <span class="n">networks</span><span class="o">.</span><span class="n">ethereum</span><span class="o">.</span><span class="n">mainnet</span><span class="o">.</span><span class="n">use_provider</span><span class="p">(</span><span class="s2">&quot;geth&quot;</span><span class="p">):</span>
+        <span class="o">...</span>
+</pre></div>
+</div>
+<p>The argument to <a class="reference external" href="../methoddocs/api.html#ape.api.networks.NetworkAPI.use_provider">use_provider()</a> is the name of the provider you want to use.
+You can also tell Ape to use the default provider by calling method <a class="reference external" href="../methoddocs/api.html#ape.api.networks.NetworkAPI.use_default_provider">use_default_provider()</a> instead.
+This will use whatever provider is set as default for your ecosystem / network combination (via one of your <code class="docutils literal notranslate"><span class="pre">ape-config.yaml</span></code> files).</p>
+<p>For example, let’s say I have a default provider set like this:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">arbitrum</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">mainnet</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">default_provider</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">alchemy</span>
+</pre></div>
+</div>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">ape</span>
+
+<span class="c1"># Use the provider configured as the default for the arbitrum::mainnet network.</span>
+<span class="c1"># In this case, it will use the &quot;alchemy&quot; provider.</span>
+<span class="k">with</span> <span class="n">ape</span><span class="o">.</span><span class="n">networks</span><span class="o">.</span><span class="n">arbitrum</span><span class="o">.</span><span class="n">mainnet</span><span class="o">.</span><span class="n">use_default_provider</span><span class="p">():</span>
+    <span class="o">...</span>
+</pre></div>
+</div>
+<p>You can also use the <a class="reference external" href="../methoddocs/managers.html#ape.managers.networks.NetworkManager.parse_network_choice">parse_network_choice()</a> method when working with network choice strings:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">ape</span> <span class="kn">import</span> <span class="n">networks</span>
+
+<span class="c1"># Same as doing `networks.ethereum.local.use_provider(&quot;test&quot;)`.</span>
+<span class="k">with</span> <span class="n">networks</span><span class="o">.</span><span class="n">parse_network_choice</span><span class="p">(</span><span class="s2">&quot;ethereum:local:test&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">provider</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">provider</span><span class="p">)</span>
+</pre></div>
+</div>
+<p><strong>A note about disconnect</strong>: Providers do not disconnect until the very end of your Python session.
+This is so you can easily switch network contexts in a bridge or multi-chain environment, which happens in fixtures and other sessions out of Ape’s control.
+However, sometimes you may definitely want your temporary network session to end before continuing, in which case you can use the <code class="docutils literal notranslate"><span class="pre">disconnect_after=True</span></code> kwarg:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">ape</span> <span class="kn">import</span> <span class="n">networks</span>
+
+<span class="k">with</span> <span class="n">networks</span><span class="o">.</span><span class="n">parse_network_choice</span><span class="p">(</span><span class="s2">&quot;ethereum:local:foundry&quot;</span><span class="p">,</span> <span class="n">disconnect_after</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="k">as</span> <span class="n">provider</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">provider</span><span class="p">)</span>
+</pre></div>
+</div>
+<section id="forked-context">
+<h3>Forked Context<a class="headerlink" href="#forked-context" title="Permalink to this heading"></a></h3>
+<p>Using the <code class="docutils literal notranslate"><span class="pre">networks.fork()</span></code> method, you can achieve similar effects to using a forked network with <code class="docutils literal notranslate"><span class="pre">disconnect_after=True</span></code>.
+For example, let’s say we are running the following script on the network <code class="docutils literal notranslate"><span class="pre">ethereum:mainnet</span></code>.
+We can switch to a forked network by doing this:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">ape</span> <span class="kn">import</span> <span class="n">networks</span>
+
+<span class="k">def</span> <span class="nf">main</span><span class="p">():</span>
+    <span class="k">with</span> <span class="n">networks</span><span class="o">.</span><span class="n">fork</span><span class="p">(</span><span class="s2">&quot;foundry&quot;</span><span class="p">):</span>
+        <span class="o">...</span>
+        <span class="c1"># Do stuff on a local, forked version of mainnet</span>
+
+    <span class="c1"># Switch back to mainnet.</span>
+</pre></div>
+</div>
+</section>
 </section>
 </section>
 
