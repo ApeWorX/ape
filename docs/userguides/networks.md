@@ -135,3 +135,94 @@ from ape import chain
 
 block = chain.provider.get_block("latest")
 ```
+
+## Provider Context Manager
+
+Use the [ProviderContextManager](../methoddocs/api.html#ape.api.networks.ProviderContextManager) to change the network-context in Python.
+When entering a network for the first time, it will connect to that network.
+**You do not need to call `.connect()` or `.disconnect()` manually**.
+
+For example, if you are using a script with a default network connection, you can change connection in the middle of the script by using the provider context manager:
+
+```python
+from ape import chain, networks
+
+def main():
+    start_provider = chain.provider.name
+    with networks.ethereum.mainnet.use_provider("geth") as provider:
+        # We are using a different provider than the one we started with.
+        assert start_provider != provider.name
+```
+
+Jump between networks to simulate multi-chain behavior.
+
+```python
+import click
+from ape import networks
+
+@click.command()
+def cli():
+    with networks.polygon.mainnet.use_provider("geth"):
+        ...
+    with networks.ethereum.mainnet.use_provider("geth"):
+        ...
+```
+
+The argument to [use_provider()](../methoddocs/api.html#ape.api.networks.NetworkAPI.use_provider) is the name of the provider you want to use.
+You can also tell Ape to use the default provider by calling method [use_default_provider()](../methoddocs/api.html#ape.api.networks.NetworkAPI.use_default_provider) instead.
+This will use whatever provider is set as default for your ecosystem / network combination (via one of your `ape-config.yaml` files).
+
+For example, let's say I have a default provider set like this:
+
+```yaml
+arbitrum:
+  mainnet:
+    default_provider: alchemy
+```
+
+```python
+import ape
+
+# Use the provider configured as the default for the arbitrum::mainnet network.
+# In this case, it will use the "alchemy" provider.
+with ape.networks.arbitrum.mainnet.use_default_provider():
+    ...
+```
+
+You can also use the [parse_network_choice()](../methoddocs/managers.html#ape.managers.networks.NetworkManager.parse_network_choice) method when working with network choice strings:
+
+```python
+from ape import networks
+
+# Same as doing `networks.ethereum.local.use_provider("test")`.
+with networks.parse_network_choice("ethereum:local:test") as provider:
+    print(provider)
+```
+
+**A note about disconnect**: Providers do not disconnect until the very end of your Python session.
+This is so you can easily switch network contexts in a bridge or multi-chain environment, which happens in fixtures and other sessions out of Ape's control.
+However, sometimes you may definitely want your temporary network session to end before continuing, in which case you can use the `disconnect_after=True` kwarg:
+
+```python
+from ape import networks
+
+with networks.parse_network_choice("ethereum:local:foundry", disconnect_after=True) as provider:
+    print(provider)
+```
+
+### Forked Context
+
+Using the `networks.fork()` method, you can achieve similar effects to using a forked network with `disconnect_after=True`.
+For example, let's say we are running the following script on the network `ethereum:mainnet`.
+We can switch to a forked network by doing this:
+
+```python
+from ape import networks
+
+def main():
+    with networks.fork("foundry"):
+        ...
+        # Do stuff on a local, forked version of mainnet
+
+    # Switch back to mainnet.
+```

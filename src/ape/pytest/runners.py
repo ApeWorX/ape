@@ -133,7 +133,8 @@ class PytestApeRunner(ManagerAccessMixin):
         """
         if (
             self.config_wrapper.isolation is False
-            or isinstance(item, pytest.DoctestItem)  # doctests don't have fixturenames
+            # doctests don't have fixturenames
+            or (hasattr(pytest, "DoctestItem") and isinstance(item, pytest.DoctestItem))
             or "_function_isolation" in item.fixturenames  # prevent double injection
         ):
             # isolation is disabled via cmdline option
