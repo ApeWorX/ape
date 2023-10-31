@@ -1,4 +1,4 @@
-from typing import Callable, Dict, List, NoReturn, Optional, Union
+from typing import Callable, Dict, List, NoReturn, Optional, Type, Union
 
 import click
 from ethpm_types import ContractType
@@ -75,7 +75,9 @@ def _create_verbosity_kwargs(
     }
 
 
-def ape_cli_context(default_log_level: str = DEFAULT_LOG_LEVEL):
+def ape_cli_context(
+    default_log_level: str = DEFAULT_LOG_LEVEL, obj_type: Type = ApeCliContextObject
+):
     """
     A ``click`` context object with helpful utilities.
     Use in your commands to get access to common utility features,
@@ -84,11 +86,16 @@ def ape_cli_context(default_log_level: str = DEFAULT_LOG_LEVEL):
     Args:
         default_log_level (str): The log-level value to pass to
           :meth:`~ape.cli.options.verbosity_option`.
+        obj_type (Type): The context object type. Defaults to
+          :class:`~ape.cli.options.ApeCliContextObject`. Sub-class
+          the context to extend its functionality in your CLIs,
+          such as if you want to add additional manager classes
+          to the context.
     """
 
     def decorator(f):
         f = verbosity_option(logger, default=default_log_level)(f)
-        f = click.make_pass_decorator(ApeCliContextObject, ensure=True)(f)
+        f = click.make_pass_decorator(obj_type, ensure=True)(f)
         return f
 
     return decorator
