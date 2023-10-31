@@ -566,6 +566,11 @@ class ProviderContextManager(ManagerAccessMixin):
         mainnet = networks.ethereum.mainnet  # An instance of NetworkAPI
         with mainnet.use_provider("infura"):
             ...
+
+        # Or, using choice-strings:
+
+        with networks.parse_network_choice("ethereum:local:test"):
+            ...
     """
 
     connected_providers: Dict[str, "ProviderAPI"] = {}
