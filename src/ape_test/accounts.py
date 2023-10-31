@@ -51,7 +51,7 @@ class TestAccountContainer(TestAccountContainerAPI):
     @property
     def aliases(self) -> Iterator[str]:
         for index in range(self._num_of_accounts):
-            yield f"dev_{index}"
+            yield f"TEST::{index}"
 
     def _is_config_changed(self):
         current_mnemonic = self.config["mnemonic"]
@@ -95,7 +95,7 @@ class TestAccount(TestAccountAPI):
 
     @property
     def alias(self) -> str:
-        return f"dev_{self.index}"
+        return f"TEST::{self.index}"
 
     @property
     def address(self) -> AddressType:

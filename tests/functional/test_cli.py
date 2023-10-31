@@ -108,7 +108,7 @@ def test_get_user_selected_account_no_accounts_found(no_accounts):
 
 def test_get_user_selected_account_one_account(runner, one_account):
     # No input needed when only one account
-    with runner.isolation():
+    with runner.isolation("0\n"):
         account = get_user_selected_account()
 
     assert account == one_account
@@ -133,9 +133,7 @@ def test_get_user_selected_account_custom_prompt(runner, keyfile_account, second
 
 
 def test_get_user_selected_account_specify_type(runner, one_keyfile_account):
-    with runner.isolation():
-        account = get_user_selected_account(account_type=type(one_keyfile_account))
-
+    account = get_user_selected_account(account_type=type(one_keyfile_account))
     assert account == one_keyfile_account
 
 
@@ -144,6 +142,20 @@ def test_get_user_selected_account_unknown_type(runner, keyfile_account):
         get_user_selected_account(account_type=str)  # type: ignore
 
     assert "Cannot return accounts with type '<class 'str'>'" in str(err.value)
+
+
+def test_get_user_selected_account_with_account_list(
+    runner, keyfile_account, second_keyfile_account
+):
+    account = get_user_selected_account(account_type=[keyfile_account])
+    assert account == keyfile_account
+
+    account = get_user_selected_account(account_type=[second_keyfile_account])
+    assert account == second_keyfile_account
+
+    with runner.isolation(input="1\n"):
+        account = get_user_selected_account(account_type=[keyfile_account, second_keyfile_account])
+        assert account == second_keyfile_account
 
 
 def test_network_option_default(runner, network_cmd):
@@ -233,7 +245,7 @@ def test_account_option_uses_single_account_as_default(runner, one_account):
     """
 
     @click.command()
-    @account_option()
+    @account_option(account_type=[one_account])
     def cmd(account):
         _expected = get_expected_account_str(account)
         click.echo(_expected)
