@@ -7,6 +7,7 @@ from pathlib import Path
 from typing import IO, Any, Dict, Optional, Union
 
 import click
+from yarl import URL
 
 
 class LogLevel(IntEnum):
@@ -93,6 +94,19 @@ class ClickHandler(logging.Handler):
     def emit(self, record):
         try:
             msg = self.format(record)
+
+            # Sanitize URLs
+            if "http" in msg:
+                parts = msg.split("http")
+                rest = parts[1].split(' ')
+                url = f"http{rest[0].rstrip()}"
+                sanitized_url = URL(url).with_user(None).with_password(None)
+
+                # If there is a path, hide it but show that you are hiding it.
+                # Use string interpolation to prevent URL-character encoding.
+                sanitized_url_str = f"{sanitized_url.with_path('')}/[hidden]" if sanitized_url.path else f"{url}"
+                msg = f"{parts[0]}{sanitized_url_str}{' '.join(rest[1:])}"
+
             level = record.levelname.lower()
             if self.echo_kwargs.get(level):
                 click.echo(msg, **self.echo_kwargs[level])
