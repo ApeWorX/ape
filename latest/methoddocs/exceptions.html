@@ -170,6 +170,7 @@
 <li class="toctree-l2"><a class="reference internal" href="#ape.exceptions.AliasAlreadyInUseError"><code class="docutils literal notranslate"><span class="pre">AliasAlreadyInUseError</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#ape.exceptions.ApeAttributeError"><code class="docutils literal notranslate"><span class="pre">ApeAttributeError</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#ape.exceptions.ApeException"><code class="docutils literal notranslate"><span class="pre">ApeException</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#ape.exceptions.ApeIndexError"><code class="docutils literal notranslate"><span class="pre">ApeIndexError</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#ape.exceptions.ArgumentsLengthError"><code class="docutils literal notranslate"><span class="pre">ArgumentsLengthError</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#ape.exceptions.BlockNotFoundError"><code class="docutils literal notranslate"><span class="pre">BlockNotFoundError</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#ape.exceptions.ChainError"><code class="docutils literal notranslate"><span class="pre">ChainError</span></code></a></li>
@@ -292,6 +293,14 @@ that already maps to another account.</p>
 <em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ape.exceptions.</span></span><span class="sig-name descname"><span class="pre">ApeException</span></span><a class="headerlink" href="#ape.exceptions.ApeException" title="Permalink to this definition"></a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Exception</span></code></p>
 <p>An exception raised by ape.</p>
+</dd></dl>
+
+<dl class="py exception">
+<dt class="sig sig-object py" id="ape.exceptions.ApeIndexError">
+<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ape.exceptions.</span></span><span class="sig-name descname"><span class="pre">ApeIndexError</span></span><a class="headerlink" href="#ape.exceptions.ApeIndexError" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ape.exceptions.ApeException" title="ape.exceptions.ApeException"><code class="xref py py-class docutils literal notranslate"><span class="pre">ApeException</span></code></a>, <code class="xref py py-class docutils literal notranslate"><span class="pre">IndexError</span></code></p>
+<p>An exception that is also an IndexError.
+Useful for nicely displaying IndexErrors.</p>
 </dd></dl>
 
 <dl class="py exception">
