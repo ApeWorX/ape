@@ -3,7 +3,7 @@ from typing import TYPE_CHECKING, Any, ClassVar, Dict, Iterator, List, Optional,
 
 from ethpm_types import BaseModel as _BaseModel
 
-from ape.exceptions import ApeAttributeError, ProviderNotConnectedError, ApeIndexError
+from ape.exceptions import ApeAttributeError, ApeIndexError, ProviderNotConnectedError
 from ape.logging import logger
 from ape.utils.misc import cached_property, singledispatchmethod
 
@@ -136,8 +136,7 @@ class ExtraModelAttributes(_BaseModel):
     additional_error_message: Optional[str] = None
     """
     An additional error message to include at the end of
-    the normal IndexError message. The full message would
-    be ``"Unable to find '<key>' in any of '<extra0>, <extra1>'.[?]<additional_error_message>"``
+    the normal IndexError message.
     """
 
     def __contains__(self, name: str) -> bool:
