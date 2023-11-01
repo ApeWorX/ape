@@ -52,7 +52,7 @@ from ape.exceptions import (
     ContractNotFoundError,
     ProviderError,
 )
-from ape.logging import LogLevel, logger
+from ape.logging import LogLevel, logger, sanitize_url
 from ape.types import AddressType, CallTreeNode, SnapshotID, SourceTraceback, TraceFrame
 from ape.utils import (
     DEFAULT_NUMBER_OF_TEST_ACCOUNTS,
@@ -277,10 +277,7 @@ class BaseGethProvider(Web3Provider, ABC):
 
     @property
     def _clean_uri(self) -> str:
-        url = URL(self.uri).with_user(None).with_password(None)
-        # If there is a path, hide it but show that you are hiding it.
-        # Use string interpolation to prevent URL-character encoding.
-        return f"{url.with_path('')}/[hidden]" if url.path else f"{url}"
+        return sanitize_url(self.uri)
 
     @property
     def ipc_path(self) -> Path:
