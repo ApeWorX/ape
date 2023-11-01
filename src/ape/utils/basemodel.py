@@ -3,7 +3,7 @@ from typing import TYPE_CHECKING, Any, ClassVar, Dict, Iterator, List, Optional,
 
 from ethpm_types import BaseModel as _BaseModel
 
-from ape.exceptions import ApeAttributeError, ProviderNotConnectedError
+from ape.exceptions import ApeAttributeError, ApeIndexError, ProviderNotConnectedError
 from ape.logging import logger
 from ape.utils.misc import cached_property, singledispatchmethod
 
@@ -133,6 +133,12 @@ class ExtraModelAttributes(_BaseModel):
     include_getitem: bool = False
     """Whether to use these in ``__getitem__``."""
 
+    additional_error_message: Optional[str] = None
+    """
+    An additional error message to include at the end of
+    the normal IndexError message.
+    """
+
     def __contains__(self, name: str) -> bool:
         attr_dict = self.attributes if isinstance(self.attributes, dict) else self.attributes.dict()
         if name in attr_dict:
@@ -223,6 +229,7 @@ class BaseModel(_BaseModel):
     def __getitem__(self, name: Any) -> Any:
         # For __getitem__, we first try the extra (unlike `__getattr__`).
         extras_checked = set()
+        additional_error_messages = {}
         for extra in self.__ape_extra_attributes__():
             if not extra.include_getitem:
                 continue
@@ -232,11 +239,27 @@ class BaseModel(_BaseModel):
 
             extras_checked.add(extra.name)
 
+            if extra.additional_error_message:
+                additional_error_messages[extra.name] = extra.additional_error_message
+
         # NOTE: If extras were supplied, the user was expecting it to be
         #   there (unlike __getattr__).
         if extras_checked:
-            extras_str = ", ".join(extras_checked)
-            raise IndexError(f"Unable to find '{name}' in any of '{extras_str}'.")
+            prefix = f"Unable to find '{name}' in"
+            if not additional_error_messages:
+                extras_str = ", ".join(extras_checked)
+                message = f"{prefix} any of '{extras_str}'."
+
+            else:
+                # The class is including additional error messages for the IndexError.
+                message = ""
+                for extra_checked in extras_checked:
+                    additional_message = additional_error_messages.get(extra_checked)
+                    suffix = f" {additional_message}" if additional_message else ""
+                    sub_message = f"{prefix} '{extra_checked}'.{suffix}"
+                    message = f"{message}\n{sub_message}" if message else sub_message
+
+            raise ApeIndexError(message)
 
         # The user did not supply any extra __getitem__ attributes.
         # Do what you would have normally done.

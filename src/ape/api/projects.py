@@ -270,6 +270,7 @@ class DependencyAPI(BaseInterfaceModel):
             attributes=self.contracts,
             include_getattr=True,
             include_getitem=True,
+            additional_error_message="Do you have the necessary compiler plugins installed?",
         )
 
     @property
@@ -382,6 +383,15 @@ class DependencyAPI(BaseInterfaceModel):
             ) as project:
                 manifest.unpack_sources(contracts_folder)
                 compiled_manifest = project.local_project.create_manifest()
+
+                if not compiled_manifest.contract_types:
+                    # Manifest is empty. No need to write to disk.
+                    logger.warning(
+                        "Compiled manifest produced no contract types! "
+                        "Are you missing compiler plugins?"
+                    )
+                    return compiled_manifest
+
                 self._write_manifest_to_cache(compiled_manifest)
                 return compiled_manifest
 

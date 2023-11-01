@@ -32,6 +32,13 @@ class ApeException(Exception):
     """
 
 
+class ApeIndexError(ApeException, IndexError):
+    """
+    An exception that is also an IndexError.
+    Useful for nicely displaying IndexErrors.
+    """
+
+
 class APINotImplementedError(ApeException, NotImplementedError):
     """
     An error raised when an API class does not implement an abstract method.
