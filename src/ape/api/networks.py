@@ -1056,7 +1056,7 @@ class ForkedNetworkAPI(NetworkAPI):
         return self.ecosystem.get_network(network_name)
 
     @property
-    def upstream_provider(self) -> Optional["UpstreamProvider"]:
+    def upstream_provider(self) -> "UpstreamProvider":
         """
         The provider used when requesting data before the local fork.
         Set this in your config under the network settings.
@@ -1068,7 +1068,7 @@ class ForkedNetworkAPI(NetworkAPI):
         if provider_name := config_choice or self.upstream_network.default_provider:
             return self.get_provider(provider_name)
 
-        return None
+        raise NetworkError(f"Upstream network '{self.upstream_network}' has no providers.")
 
     @property
     def upstream_chain_id(self) -> int:
@@ -1088,10 +1088,7 @@ class ForkedNetworkAPI(NetworkAPI):
         Returns:
             :class:`~ape.api.networks.ProviderContextManager`
         """
-        if provider := self.upstream_provider:
-            return self.upstream_network.use_provider(provider.name)
-
-        raise NetworkError(f"Network {self.upstream_network.name} has no providers.")
+        return self.upstream_network.use_provider(self.upstream_provider.name)
 
 
 def create_network_type(chain_id: int, network_id: int) -> Type[NetworkAPI]:
