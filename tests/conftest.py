@@ -459,3 +459,11 @@ def ape_caplog(caplog):
             pytest.fail(self.fail_message)
 
     return ApeCaplog()
+
+
+@pytest.fixture
+def mock_home_directory(tmp_path):
+    original_home = Path.home()
+    Path.home = lambda: tmp_path  # type: ignore[method-assign]
+    yield tmp_path
+    Path.home = lambda: original_home  # type: ignore[method-assign]
