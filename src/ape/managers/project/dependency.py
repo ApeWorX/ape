@@ -374,8 +374,16 @@ class NpmDependency(DependencyAPI):
             )
 
     @property
+    def package_suffix(self) -> Path:
+        return Path("node_modules") / str(self.npm)
+
+    @property
     def package_folder(self) -> Path:
-        return Path.cwd() / "node_modules" / str(self.npm)
+        return Path.cwd() / self.package_suffix
+
+    @property
+    def global_package_folder(self) -> Path:
+        return Path.home() / self.package_suffix
 
     @cached_property
     def version_from_json(self) -> Optional[str]:
@@ -416,6 +424,9 @@ class NpmDependency(DependencyAPI):
                 )
 
             return self._extract_local_manifest(self.package_folder, use_cache=use_cache)
+
+        elif self.global_package_folder.is_dir():
+            return self._extract_local_manifest(self.global_package_folder, use_cache=use_cache)
 
         else:
             raise ProjectError(f"NPM package '{self.npm}' not installed.")
