@@ -41,6 +41,8 @@ def generate_dev_accounts(
         number_of_accounts (int): Number of accounts. Defaults to ``10``.
         hd_path_format (str): Hard Wallets/HD Keys derivation path format.
           Defaults to ``"m/44'/60'/0'/{}"``.
+        start_index (int): The index to start from in the path. Defaults
+          to 0.
 
     Returns:
         List[:class:`~ape.utils.GeneratedDevAccount`]: List of development accounts.

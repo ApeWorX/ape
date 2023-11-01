@@ -1,7 +1,7 @@
 import re
 from enum import Enum
 from functools import lru_cache
-from typing import Any, Iterator, List, Optional, Sequence, Type, Union
+from typing import Any, Callable, Iterator, List, Optional, Sequence, Type, Union
 
 import click
 from click import BadParameter, Choice, Context, Parameter
@@ -12,14 +12,36 @@ from ape.exceptions import AccountsError
 from ape.types import _LazySequence
 
 ADHOC_NETWORK_PATTERN = re.compile(r"\w*:\w*:https?://\w*.*")
+_ACCOUNT_TYPE_FILTER = Union[
+    None, Sequence[AccountAPI], Type[AccountAPI], Callable[[AccountAPI], bool]
+]
 
 
-def _get_account_by_type(account_type: Optional[Type[AccountAPI]] = None) -> List[AccountAPI]:
-    account_list = (
-        list(accounts) if not account_type else accounts.get_accounts_by_type(account_type)
-    )
-    account_list.sort(key=lambda a: a.alias or "")
-    return account_list
+def _get_accounts(account_type: _ACCOUNT_TYPE_FILTER) -> List[AccountAPI]:
+    add_test_accounts = False
+    if account_type is None:
+        account_list = list(accounts)
+
+        # Include test accounts at end.
+        add_test_accounts = True
+
+    elif isinstance(account_type, type):
+        # Filtering by type.
+        account_list = accounts.get_accounts_by_type(account_type)
+
+    elif isinstance(account_type, (list, tuple, set)):
+        # Given an account list.
+        account_list = account_type  # type: ignore
+
+    else:
+        # Filtering by callable.
+        account_list = [a for a in accounts if account_type(a)]  # type: ignore
+
+    sorted_accounts = sorted(account_list, key=lambda a: a.alias or "")
+    if add_test_accounts:
+        sorted_accounts.extend(accounts.test_accounts)
+
+    return sorted_accounts
 
 
 class Alias(click.Choice):
@@ -32,7 +54,7 @@ class Alias(click.Choice):
 
     name = "alias"
 
-    def __init__(self, account_type: Optional[Type[AccountAPI]] = None):
+    def __init__(self, account_type: _ACCOUNT_TYPE_FILTER = None):
         # NOTE: we purposely skip the constructor of `Choice`
         self.case_sensitive = False
         self._account_type = account_type
@@ -40,7 +62,7 @@ class Alias(click.Choice):
 
     @property
     def _choices_iterator(self) -> Iterator[str]:
-        for acct in _get_account_by_type(self._account_type):
+        for acct in _get_accounts(account_type=self._account_type):
             if acct.alias is None:
                 continue
 
@@ -117,8 +139,7 @@ class PromptChoice(click.ParamType):
 
 
 def get_user_selected_account(
-    prompt_message: Optional[str] = None,
-    account_type: Optional[Type[AccountAPI]] = None,
+    prompt_message: Optional[str] = None, account_type: _ACCOUNT_TYPE_FILTER = None
 ) -> AccountAPI:
     """
     Prompt the user to pick from their accounts and return that account.
@@ -128,14 +149,16 @@ def get_user_selected_account(
 
     Args:
         prompt_message (Optional[str]): Customize the prompt message.
-        account_type (Optional[Type[:class:`~ape.api.accounts.AccountAPI`]]]):
-          If given, the user may only select an account of this type.
+        account_type (Union[None, Type[AccountAPI], Callable[[AccountAPI], bool]]):
+          If given, the user may only select a matching account. You can provide
+          a list of accounts, an account class type, or a callable for filtering
+          the accounts.
 
     Returns:
         :class:`~ape.api.accounts.AccountAPI`
     """
 
-    if account_type and not issubclass(account_type, AccountAPI):
+    if account_type and isinstance(account_type, type) and not issubclass(account_type, AccountAPI):
         raise AccountsError(f"Cannot return accounts with type '{account_type}'.")
 
     prompt = AccountAliasPromptChoice(prompt_message=prompt_message, account_type=account_type)
@@ -150,7 +173,7 @@ class AccountAliasPromptChoice(PromptChoice):
 
     def __init__(
         self,
-        account_type: Optional[Type[AccountAPI]] = None,
+        account_type: _ACCOUNT_TYPE_FILTER = None,
         prompt_message: Optional[str] = None,
         name: str = "account",
     ):
@@ -163,7 +186,15 @@ class AccountAliasPromptChoice(PromptChoice):
     def convert(
         self, value: Any, param: Optional[Parameter], ctx: Optional[Context]
     ) -> Optional[AccountAPI]:
-        if isinstance(value, str) and value.startswith("TEST::"):
+        if value is None:
+            return None
+
+        if isinstance(value, str) and value.isnumeric():
+            alias = super().convert(value, param, ctx)
+        else:
+            alias = value
+
+        if isinstance(alias, str) and alias.startswith("TEST::"):
             idx_str = value.replace("TEST::", "")
             if not idx_str.isnumeric():
                 self.fail(f"Cannot reference test account by '{value}'.", param=param)
@@ -174,12 +205,10 @@ class AccountAliasPromptChoice(PromptChoice):
 
             self.fail(f"Index '{idx_str}' is not valid.", param=param)
 
-        if value and value in accounts.aliases:
-            return accounts.load(value)
+        elif alias and alias in accounts.aliases:
+            return accounts.load(alias)
 
-        # Prompt the user if they didn't provide a value.
-        alias = super().convert(value, param, ctx)
-        return accounts.load(alias) if alias else None
+        return None
 
     def print_choices(self):
         choices = dict(enumerate(self.choices, 0))
@@ -203,13 +232,14 @@ class AccountAliasPromptChoice(PromptChoice):
     @property
     def _choices_iterator(self) -> Iterator[str]:
         # Yield real accounts.
-        for account in _get_account_by_type(self._account_type):
+        for account in _get_accounts(account_type=self._account_type):
             if account and (alias := account.alias):
                 yield alias
 
-        # Yield test accounts (at the end).
-        for idx, _ in enumerate(accounts.test_accounts):
-            yield f"TEST::{idx}"
+        # Yield test accounts.
+        if self._account_type is None:
+            for idx, _ in enumerate(accounts.test_accounts):
+                yield f"TEST::{idx}"
 
     def get_user_selected_account(self) -> AccountAPI:
         """

@@ -5,6 +5,7 @@ from ethpm_types import ContractType
 
 from ape import networks, project
 from ape.cli.choices import (
+    _ACCOUNT_TYPE_FILTER,
     AccountAliasPromptChoice,
     NetworkChoice,
     OutputFormat,
@@ -182,7 +183,7 @@ def _account_callback(ctx, param, value):
     return value
 
 
-def account_option():
+def account_option(account_type: _ACCOUNT_TYPE_FILTER = None):
     """
     A CLI option that accepts either the account alias or the account number.
     If not given anything, it will prompt the user to select an account.
@@ -190,7 +191,7 @@ def account_option():
 
     return click.option(
         "--account",
-        type=AccountAliasPromptChoice(),
+        type=AccountAliasPromptChoice(account_type=account_type),
         callback=_account_callback,
     )
 

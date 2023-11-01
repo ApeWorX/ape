@@ -1,12 +1,10 @@
 from itertools import chain
-from typing import Optional, Type
 
 import click
 from eth_utils import is_hex
 
 from ape import accounts, project
-from ape.api import AccountAPI
-from ape.cli.choices import Alias
+from ape.cli.choices import _ACCOUNT_TYPE_FILTER, Alias
 from ape.cli.paramtype import AllFilePaths
 from ape.exceptions import AccountsError, AliasAlreadyInUseError
 
@@ -26,7 +24,7 @@ def _alias_callback(ctx, param, value):
     return value
 
 
-def existing_alias_argument(account_type: Optional[Type[AccountAPI]] = None):
+def existing_alias_argument(account_type: _ACCOUNT_TYPE_FILTER = None):
     """
     A ``click.argument`` for an existing account alias.
 
