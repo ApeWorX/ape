@@ -1,5 +1,5 @@
 from ape import plugins
-from ape.api import NetworkAPI, create_network_type
+from ape.api import ForkedNetworkAPI, NetworkAPI, create_network_type
 from ape.api.networks import LOCAL_NETWORK_NAME
 
 from ._converters import WeiConversions
@@ -25,7 +25,7 @@ def ecosystems():
 def networks():
     for network_name, network_params in NETWORKS.items():
         yield "ethereum", network_name, create_network_type(*network_params)
-        yield "ethereum", f"{network_name}-fork", NetworkAPI
+        yield "ethereum", f"{network_name}-fork", ForkedNetworkAPI
 
     # NOTE: This works for local providers, as they get chain_id from themselves
     yield "ethereum", LOCAL_NETWORK_NAME, NetworkAPI

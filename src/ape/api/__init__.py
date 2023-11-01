@@ -10,7 +10,13 @@ from .compiler import CompilerAPI
 from .config import ConfigDict, ConfigEnum, PluginConfig
 from .convert import ConverterAPI
 from .explorers import ExplorerAPI
-from .networks import EcosystemAPI, NetworkAPI, ProviderContextManager, create_network_type
+from .networks import (
+    EcosystemAPI,
+    ForkedNetworkAPI,
+    NetworkAPI,
+    ProviderContextManager,
+    create_network_type,
+)
 from .projects import DependencyAPI, ProjectAPI
 from .providers import (
     BlockAPI,
@@ -36,6 +42,7 @@ __all__ = [
     "DependencyAPI",
     "EcosystemAPI",
     "ExplorerAPI",
+    "ForkedNetworkAPI",
     "ImpersonatedAccount",
     "PluginConfig",
     "ProjectAPI",
