@@ -296,6 +296,14 @@
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.networks.EcosystemAPI.set_default_network"><code class="docutils literal notranslate"><span class="pre">EcosystemAPI.set_default_network()</span></code></a></li>
 </ul>
 </li>
+<li class="toctree-l3"><a class="reference internal" href="#ape.api.networks.ForkedNetworkAPI"><code class="docutils literal notranslate"><span class="pre">ForkedNetworkAPI</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#ape.api.networks.ForkedNetworkAPI.__hash__"><code class="docutils literal notranslate"><span class="pre">ForkedNetworkAPI.__hash__</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ape.api.networks.ForkedNetworkAPI.upstream_chain_id"><code class="docutils literal notranslate"><span class="pre">ForkedNetworkAPI.upstream_chain_id</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ape.api.networks.ForkedNetworkAPI.upstream_network"><code class="docutils literal notranslate"><span class="pre">ForkedNetworkAPI.upstream_network</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ape.api.networks.ForkedNetworkAPI.upstream_provider"><code class="docutils literal notranslate"><span class="pre">ForkedNetworkAPI.upstream_provider</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ape.api.networks.ForkedNetworkAPI.use_upstream_provider"><code class="docutils literal notranslate"><span class="pre">ForkedNetworkAPI.use_upstream_provider()</span></code></a></li>
+</ul>
+</li>
 <li class="toctree-l3"><a class="reference internal" href="#ape.api.networks.NetworkAPI"><code class="docutils literal notranslate"><span class="pre">NetworkAPI</span></code></a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.networks.NetworkAPI.__hash__"><code class="docutils literal notranslate"><span class="pre">NetworkAPI.__hash__</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.networks.NetworkAPI.auto_gas_multiplier"><code class="docutils literal notranslate"><span class="pre">NetworkAPI.auto_gas_multiplier</span></code></a></li>
@@ -1738,6 +1746,53 @@ does not use any known proxy pattern.</p>
 </dd>
 <dt class="field-even">Parameters<span class="colon">:</span></dt>
 <dd class="field-even"><p><strong>network_name</strong> (<em>str</em>) – The name of the default network to switch to.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ape.api.networks.ForkedNetworkAPI">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ape.api.networks.</span></span><span class="sig-name descname"><span class="pre">ForkedNetworkAPI</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ecosystem</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#ape.api.networks.EcosystemAPI" title="ape.api.networks.EcosystemAPI"><span class="pre">EcosystemAPI</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_folder</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">request_header</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.api.networks.ForkedNetworkAPI" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ape.api.networks.NetworkAPI" title="ape.api.networks.NetworkAPI"><code class="xref py py-class docutils literal notranslate"><span class="pre">NetworkAPI</span></code></a></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ape.api.networks.ForkedNetworkAPI.__hash__">
+<span class="sig-name descname"><span class="pre">__hash__</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#ape.api.networks.ForkedNetworkAPI.__hash__" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="ape.api.networks.ForkedNetworkAPI.upstream_chain_id">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">upstream_chain_id</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="headerlink" href="#ape.api.networks.ForkedNetworkAPI.upstream_chain_id" title="Permalink to this definition"></a></dt>
+<dd><p>The chain Id of the upstream network.
+For example, when on <code class="docutils literal notranslate"><span class="pre">mainnet-fork</span></code>, this should always
+return the chain ID for <code class="docutils literal notranslate"><span class="pre">mainnet</span></code>. Some providers may use
+a different chain ID for forked networks while some do not.
+This property should ALWAYS be that of the forked network, regardless.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="ape.api.networks.ForkedNetworkAPI.upstream_network">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">upstream_network</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#ape.api.networks.NetworkAPI" title="ape.api.networks.NetworkAPI"><span class="pre">NetworkAPI</span></a></em><a class="headerlink" href="#ape.api.networks.ForkedNetworkAPI.upstream_network" title="Permalink to this definition"></a></dt>
+<dd><p>The network being forked.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="ape.api.networks.ForkedNetworkAPI.upstream_provider">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">upstream_provider</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#ape.api.providers.UpstreamProvider" title="ape.api.providers.UpstreamProvider"><span class="pre">UpstreamProvider</span></a></em><a class="headerlink" href="#ape.api.networks.ForkedNetworkAPI.upstream_provider" title="Permalink to this definition"></a></dt>
+<dd><p>The provider used when requesting data before the local fork.
+Set this in your config under the network settings.
+When not set, will attempt to use the default provider, if one
+exists.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ape.api.networks.ForkedNetworkAPI.use_upstream_provider">
+<span class="sig-name descname"><span class="pre">use_upstream_provider</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#ape.api.networks.ProviderContextManager" title="ape.api.networks.ProviderContextManager"><span class="pre">ProviderContextManager</span></a></span></span><a class="headerlink" href="#ape.api.networks.ForkedNetworkAPI.use_upstream_provider" title="Permalink to this definition"></a></dt>
+<dd><p>Connect to the upstream provider.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="#ape.api.networks.ProviderContextManager" title="ape.api.networks.ProviderContextManager"><code class="xref py py-class docutils literal notranslate"><span class="pre">ProviderContextManager</span></code></a></p>
 </dd>
 </dl>
 </dd></dl>
