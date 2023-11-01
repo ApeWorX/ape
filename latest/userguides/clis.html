@@ -341,6 +341,32 @@ And visa-versa when using <a class="reference external" href="../methoddocs/cli.
     <span class="n">click</span><span class="o">.</span><span class="n">echo</span><span class="p">(</span><span class="n">alias</span><span class="p">)</span>
 </pre></div>
 </div>
+<p>You can control additional filtering of the accounts by using the <code class="docutils literal notranslate"><span class="pre">account_type</span></code> kwarg.
+Use <code class="docutils literal notranslate"><span class="pre">account_type</span></code> to filter the choices by specific types of <a class="reference external" href="../methoddocs/api.html#ape.api.accounts.AccountAPI">AccountAPI</a>, or you can give it a list of already known accounts, or you can provide a callable-filter that takes an account and returns a boolean.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">click</span>
+<span class="kn">from</span> <span class="nn">ape</span> <span class="kn">import</span> <span class="n">accounts</span>
+<span class="kn">from</span> <span class="nn">ape.cli</span> <span class="kn">import</span> <span class="n">existing_alias_argument</span><span class="p">,</span> <span class="n">get_user_selected_account</span>
+<span class="kn">from</span> <span class="nn">ape_accounts.accounts</span> <span class="kn">import</span> <span class="n">KeyfileAccount</span>
+
+<span class="c1"># NOTE: This is just an example and not anything specific or recommended.</span>
+<span class="n">APPLICATION_PREFIX</span> <span class="o">=</span> <span class="s2">&quot;&lt;FOO_BAR&gt;&quot;</span>
+
+<span class="nd">@click</span><span class="o">.</span><span class="n">command</span><span class="p">()</span>
+<span class="nd">@existing_alias_argument</span><span class="p">(</span><span class="n">account_type</span><span class="o">=</span><span class="n">KeyfileAccount</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">cli_0</span><span class="p">(</span><span class="n">alias</span><span class="p">):</span>
+   <span class="k">pass</span>
+   
+<span class="nd">@click</span><span class="o">.</span><span class="n">command</span><span class="p">()</span>
+<span class="nd">@existing_alias_argument</span><span class="p">(</span><span class="n">account_type</span><span class="o">=</span><span class="k">lambda</span> <span class="n">a</span><span class="p">:</span> <span class="n">a</span><span class="o">.</span><span class="n">alias</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="n">APPLICATION_PREFIX</span><span class="p">))</span>
+<span class="k">def</span> <span class="nf">cli_1</span><span class="p">(</span><span class="n">alias</span><span class="p">):</span>
+   <span class="k">pass</span>
+    
+   
+<span class="c1"># Select from the given accounts directly.</span>
+<span class="n">my_accounts</span> <span class="o">=</span> <span class="p">[</span><span class="n">accounts</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;me&quot;</span><span class="p">),</span> <span class="n">accounts</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;me2&quot;</span><span class="p">)]</span>
+<span class="n">selected_account</span> <span class="o">=</span> <span class="n">get_user_selected_account</span><span class="p">(</span><span class="n">account_type</span><span class="o">=</span><span class="n">my_accounts</span><span class="p">)</span>
+</pre></div>
+</div>
 </section>
 </section>
 

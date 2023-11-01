@@ -158,3 +158,31 @@ def create_account(alias):
     # We know the alias is not yet used in Ape at this point.
     click.echo(alias)
 ```
+
+You can control additional filtering of the accounts by using the `account_type` kwarg.
+Use `account_type` to filter the choices by specific types of [AccountAPI](../methoddocs/api.html#ape.api.accounts.AccountAPI), or you can give it a list of already known accounts, or you can provide a callable-filter that takes an account and returns a boolean.
+
+```python
+import click
+from ape import accounts
+from ape.cli import existing_alias_argument, get_user_selected_account
+from ape_accounts.accounts import KeyfileAccount
+
+# NOTE: This is just an example and not anything specific or recommended.
+APPLICATION_PREFIX = "<FOO_BAR>"
+
+@click.command()
+@existing_alias_argument(account_type=KeyfileAccount)
+def cli_0(alias):
+   pass
+   
+@click.command()
+@existing_alias_argument(account_type=lambda a: a.alias.startswith(APPLICATION_PREFIX))
+def cli_1(alias):
+   pass
+    
+   
+# Select from the given accounts directly.
+my_accounts = [accounts.load("me"), accounts.load("me2")]
+selected_account = get_user_selected_account(account_type=my_accounts)
+```
