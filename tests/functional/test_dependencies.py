@@ -95,24 +95,31 @@ def test_dependency_using_reference(ref, recwarn, dependency_manager):
     assert DeprecationWarning not in [w.category for w in recwarn.list]
 
 
-def test_npm_dependency():
+def test_npm_dependency(mock_home_directory):
     name = "@gnosis.pm"
     package = "safe-singleton-factory"
     version = "1.0.0"
+    dependency = NpmDependency(name=package, npm=f"{name}/{package}", version=version)
     with tempfile.TemporaryDirectory() as temp_dir:
         os.chdir(temp_dir)
-        package_folder = Path(temp_dir) / "node_modules" / name / package
-        contracts_folder = package_folder / "contracts"
-        contracts_folder.mkdir(parents=True)
-        package_json = package_folder / "package.json"
-        package_json.write_text(f'{{"version": "{version}"}}')
-        file = contracts_folder / "contract.json"
-        source_content = '{"abi": []}'
-        file.write_text(source_content)
-        dependency = NpmDependency(name=package, npm=f"{name}/{package}", version=version)
-        manifest = dependency.extract_manifest()
-        assert manifest.sources
-        assert str(manifest.sources["contract.json"].content) == f"{source_content}\n"
+
+        # Test with both local and global node modules install.
+        for base in (Path(temp_dir), mock_home_directory):
+            package_folder = base / "node_modules" / name / package
+            contracts_folder = package_folder / "contracts"
+            contracts_folder.mkdir(parents=True)
+            package_json = package_folder / "package.json"
+            package_json.write_text(f'{{"version": "{version}"}}')
+            file = contracts_folder / "contract.json"
+            source_content = '{"abi": []}'
+            file.write_text(source_content)
+
+            manifest = dependency.extract_manifest(use_cache=False)
+
+            assert manifest.sources
+            assert str(manifest.sources["contract.json"].content) == f"{source_content}\n"
+
+            shutil.rmtree(package_folder)
 
 
 def test_compile(project_with_downloaded_dependencies):
