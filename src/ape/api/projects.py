@@ -143,7 +143,7 @@ class ProjectAPI(BaseInterfaceModel):
 
         contracts = {}
         for p in self._cache_folder.glob("*.json"):
-            if p == self.manifest_cachefile:
+            if p == self.manifest_cachefile or p.name.startswith(".") or not p.is_file():
                 continue
 
             contract_name = p.stem

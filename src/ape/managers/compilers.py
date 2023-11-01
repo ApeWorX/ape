@@ -1,8 +1,9 @@
+import json
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Sequence, Set, Union
 
 from ethpm_types import ContractType
-from ethpm_types.source import Content
+from ethpm_types.source import Compiler, Content
 
 from ape.api import CompilerAPI
 from ape.contracts import ContractContainer
@@ -41,6 +42,19 @@ class CompilerManager(BaseManager):
             return compiler
 
         raise ApeAttributeError(f"No attribute or compiler named '{name}'.")
+
+    @property
+    def compilers_data_file(self) -> Path:
+        # NOTE: Private file to avoid collision with contract type JSONs.
+        return self.project_manager.local_project._cache_folder / ".compilers.json"
+
+    @property
+    def compiler_data(self) -> List[Compiler]:
+        return (
+            [Compiler.parse_obj(x) for x in json.loads(self.compilers_data_file.read_text())]
+            if self.compilers_data_file.is_file()
+            else []
+        )
 
     @property
     def registered_compilers(self) -> Dict[str, CompilerAPI]:

@@ -1,3 +1,4 @@
+import json
 import os
 import shutil
 from pathlib import Path
@@ -8,6 +9,7 @@ import yaml
 from ethpm_types import ContractInstance as EthPMContractInstance
 from ethpm_types import ContractType, Source
 from ethpm_types.manifest import PackageManifest
+from ethpm_types.source import Compiler
 
 from ape import Contract
 from ape.exceptions import ProjectError
@@ -99,6 +101,37 @@ def project_without_deployments(project):
         shutil.rmtree(project._package_deployments_folder)
 
     return project
+
+
+@pytest.fixture
+def solidity_compiler_artifact(project, compilers):
+    _ = project  # Ensure this happens _in_ the root project.
+    compilers.compilers_data_file.unlink(missing_ok=True)
+    compiler_data = {
+        "contractTypes": ["Test"],
+        "name": "solidity",
+        "settings": {
+            "optimizer": {"enabled": True, "runs": 200},
+            "outputSelection": {
+                "Test.sol": {
+                    "": ["ast"],
+                    "*": [
+                        "abi",
+                        "bin-runtime",
+                        "devdoc",
+                        "userdoc",
+                        "evm.bytecode.object",
+                        "evm.bytecode.sourceMap",
+                        "evm.deployedBytecode.object",
+                    ],
+                }
+            },
+            "viaIR": False,
+        },
+        "version": "0.8.17+commit.8df45f5f",
+    }
+    compilers.compilers_data_file.write_text(json.dumps([compiler_data]))
+    return Compiler.parse_obj(compiler_data)
 
 
 def _make_new_contract(existing_contract: ContractType, name: str):
@@ -328,10 +361,10 @@ def test_track_deployment_from_unknown_contract_given_txn_hash(
     assert actual.runtime_bytecode == contract.contract_type.runtime_bytecode
 
 
-def test_compiler_data(config, project_path, contracts_folder):
-    # See ape-solidity / ape-vyper for better tests
-    with config.using_project(project_path, contracts_folder=contracts_folder) as project:
-        assert not project.compiler_data
+def test_compiler_data(solidity_compiler_artifact, project):
+    actual = project.compiler_data
+    assert len(actual) == 1
+    assert actual[0] == solidity_compiler_artifact
 
 
 def test_get_project_without_contracts_path(project):

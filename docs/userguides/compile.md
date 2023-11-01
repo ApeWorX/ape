@@ -111,6 +111,25 @@ solidity = compilers.get_compiler("solidity", settings=settings["solidity"])
 vyper.compile([Path("path/to/contract.sol")])
 ```
 
+### Settings Artifacts
+
+Compiler build artifacts can be found in the the `<project>/.build/compilers.json` file.
+Each compiler in your project has an associated [ethpm_types.source.Compiler](https://github.com/ApeWorX/ethpm-types/blob/main/ethpm_types/source.py) build artifact.
+This data contains the versions and settings used for each contract in your project.
+For example, assume you have`ape-solidity` creating a contract named `Test` from file `Test.sol`.
+The structure of `.builds/compilers.json` file would be:
+
+```json
+[
+   {
+      "contractTypes": ["Test"],
+      "name": "solidity",
+      "settings": {"optimizer": {"enabled": true, "runs": 200}, "outputSelection": {"Test.sol": {"": ["ast"], "*": ["abi", "bin-runtime", "devdoc", "userdoc", "evm.bytecode.object", "evm.bytecode.sourceMap", "evm.deployedBytecode.object"]}}, "viaIR": false},
+      "version": "0.8.17+commit.8df45f5f"
+   }
+]
+```
+
 ## Compile Source Code
 
 Instead of compiling project source files, you can compile code (str) directly:

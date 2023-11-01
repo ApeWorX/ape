@@ -12,11 +12,10 @@ from ethpm_types.utils import AnyUrl, Hex
 from ape.api import DependencyAPI, ProjectAPI
 from ape.api.networks import LOCAL_NETWORK_NAME
 from ape.contracts import ContractContainer, ContractInstance, ContractNamespace
-from ape.exceptions import ApeAttributeError, APINotImplementedError, ChainError, ProjectError
+from ape.exceptions import ApeAttributeError, ChainError, ProjectError
 from ape.logging import logger
 from ape.managers.base import BaseManager
 from ape.managers.project.types import ApeProject, BrownieProject
-from ape.utils import get_relative_path
 
 
 class ProjectManager(BaseManager):
@@ -162,50 +161,18 @@ class ProjectManager(BaseManager):
         """
         return self._get_compiler_data()
 
-    def _get_compiler_data(self, compile_if_needed: bool = True):
-        contract_types: Iterable[ContractType] = (
-            self.contracts.values()
-            if compile_if_needed
-            else self._get_cached_contract_types().values()
-        )
-        compiler_list: List[Compiler] = []
-        contracts_folder = self.config_manager.contracts_folder
-        for ext, compiler in self.compiler_manager.registered_compilers.items():
-            sources = [x for x in self.source_paths if x.is_file() and x.suffix == ext]
-            if not sources:
-                continue
+    def _get_compiler_data(self, compile_if_needed: bool = True) -> List[Compiler]:
+        if not self.compiler_manager.compilers_data_file.is_file():
+            if compile_if_needed:
+                self.load_contracts()
 
-            try:
-                version_map = compiler.get_version_map(sources, contracts_folder)
-            except APINotImplementedError:
-                versions = list(compiler.get_versions(sources))
-                if len(versions) == 0:
-                    # Skipping compilers that don't use versions
-                    # These are unlikely to be part of the published manifest
-                    continue
-                elif len(versions) > 1:
-                    raise (ProjectError(f"Unable to create version map for '{ext}'."))
+            if self.compiler_manager.compilers_data_file.is_file():
+                # After compiling, settings files were generated.
+                return self._get_compiler_data(compile_if_needed=False)
 
-                version = versions[0]
-                version_map = {version: sources}
+            return []
 
-            settings = compiler.get_compiler_settings(sources, base_path=contracts_folder)
-            for version, paths in version_map.items():
-                version_settings = settings.get(version, {}) if version and settings else {}
-                source_ids = [str(get_relative_path(p, contracts_folder)) for p in paths]
-                filtered_contract_types = [
-                    ct for ct in contract_types if ct.source_id in source_ids
-                ]
-                contract_type_names = [ct.name for ct in filtered_contract_types if ct.name]
-                compiler_list.append(
-                    Compiler(
-                        name=compiler.name,
-                        version=str(version),
-                        settings=version_settings,
-                        contractTypes=contract_type_names,
-                    )
-                )
-        return compiler_list
+        return sorted(self.compiler_manager.compiler_data, key=lambda c: c.name)
 
     @property
     def meta(self) -> PackageMeta:
