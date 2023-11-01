@@ -34,3 +34,9 @@ def test_gas_limits(networks, config, project_with_source_files_contract):
 def test_base_fee_multiplier(networks):
     assert networks.ethereum.mainnet.base_fee_multiplier == 1.4
     assert networks.ethereum.local.base_fee_multiplier == 1.0
+
+
+def test_forked_networks(ethereum):
+    mainnet_fork = ethereum.mainnet_fork
+    assert mainnet_fork.upstream_network.name == "mainnet"
+    assert mainnet_fork.upstream_chain_id == 1
