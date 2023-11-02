@@ -19,7 +19,12 @@ def test_run(ape_cli, runner, project):
     # By default, no commands are run
     assert "Super secret script output" not in result.output
 
-    scripts = [s for s in project.scripts_folder.glob("*.py") if not s.name.startswith("error")]
+    not_part_of_test = ("output_contract_view_methods",)
+    scripts = [
+        s
+        for s in project.scripts_folder.glob("*.py")
+        if not s.name.startswith("error") and s.stem not in not_part_of_test
+    ]
     for script_file in scripts:
         result = runner.invoke(ape_cli, ["run", script_file.stem], catch_exceptions=False)
         assert (
