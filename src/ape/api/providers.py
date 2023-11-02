@@ -1452,6 +1452,8 @@ class Web3Provider(ProviderAPI, ABC):
 
         last_yielded_height = None
 
+        reorg_height = None
+
         while True:
             if (
                 stop_block is not None
@@ -1462,7 +1464,8 @@ class Web3Provider(ProviderAPI, ABC):
             latest_block = self.web3.eth.block_number
             if last_yielded_height is None:
                 last_yielded_height = latest_block - required_confirmations
-            elif latest_block - required_confirmations <= last_yielded_height:
+            elif latest_block - required_confirmations <= last_yielded_height and reorg_height is None:
+                print("continuing")
                 time.sleep(wait_time)
                 continue
             else:
@@ -1470,6 +1473,8 @@ class Web3Provider(ProviderAPI, ABC):
                     last_yielded_height + 1, latest_block - required_confirmations + 1
                 ):
                     confirmed_block = self.web3.eth.get_block(block_num)
+                    if reorg_height and confirmed_block and confirmed_block.number == reorg_height:
+                        reorg_height = None
                     if not confirmed_block:
                         start_time = time.time()
                         while confirmed_block is None:
@@ -1487,6 +1492,8 @@ class Web3Provider(ProviderAPI, ABC):
                                 f"{num_blocks_behind} Block reorganization detected. "
                                 + "Try adjusting the required network confirmations"
                             )
+                            reorg_height = confirmed_block.number
+                            last_yielded_height = confirmed_block.number
                         else:
                             logger.warning(
                                 f"{num_blocks_behind} Block reorganization detected. "
