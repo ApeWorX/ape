@@ -19,7 +19,12 @@ def test_run(ape_cli, runner, project):
     # By default, no commands are run
     assert "Super secret script output" not in result.output
 
-    scripts = [s for s in project.scripts_folder.glob("*.py") if not s.name.startswith("error")]
+    not_part_of_test = ("output_contract_view_methods",)
+    scripts = [
+        s
+        for s in project.scripts_folder.glob("*.py")
+        if not s.name.startswith("error") and s.stem not in not_part_of_test
+    ]
     for script_file in scripts:
         result = runner.invoke(ape_cli, ["run", script_file.stem], catch_exceptions=False)
         assert (
@@ -161,3 +166,24 @@ def test_scripts_module_already_installed(ape_cli, runner, project, mocker):
     assert result.exit_code == 0, result.output
 
     del sys.modules["scripts"]
+
+
+@skip_projects_except("script")
+def test_run_recompiles_if_needed(ape_cli, runner, project):
+    """
+    Ensure that when a change is made to a contract,
+    when we run a script, it re-compiles the script first.
+    """
+    # Ensure we begin compiled.
+    runner.invoke(ape_cli, ["compile", "--force"])
+
+    # Make a change to the contract
+    contract = project.contracts_folder / "contract.json"
+    method_name = project.TestContractVy.contract_type.view_methods[0].name
+    new_method_name = f"f__{method_name}__"
+    new_contract_text = contract.read_text().replace(method_name, new_method_name)
+    contract.write_text(new_contract_text)
+
+    # Run the script. It better recompile first!
+    result = runner.invoke(ape_cli, ["run", "output_contract_view_methods"])
+    assert new_method_name in result.output

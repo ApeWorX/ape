@@ -24,6 +24,7 @@ skip_non_compilable_projects = skip_projects(
     "only-dependencies",
     "test",
     "bad-contracts",
+    "script",
     "with-dependencies",
     "with-contracts",
 )
