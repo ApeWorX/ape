@@ -766,7 +766,9 @@ class ProjectManager(BaseManager):
         return None
 
     def _get_contract(self, name: str) -> Optional[ContractContainer]:
-        if name in self.contracts:
+        # NOTE: Use `load_contracts()` to re-compile changed contracts if needed.
+        #   Else, if you make changes to a contract, it won't catch the need to re-compile.
+        if name in self.load_contracts():
             return self.chain_manager.contracts.get_container(self.contracts[name])
 
         return None
