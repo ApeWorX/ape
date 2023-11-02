@@ -335,9 +335,8 @@ def test_address_arrays_in_events(contract_instance, owner):
     )
     assert tx.events == [expected]
 
+
 def test_uint_arrays_in_events(contract_instance, owner):
     tx = contract_instance.logUintArray(sender=owner)
-    expected = contract_instance.EventWithUintArray(
-        agents=[1]
-    )
+    expected = contract_instance.EventWithUintArray(agents=[1])
     assert tx.events == [expected]
