@@ -314,7 +314,9 @@ class ContractLog(BaseContractLog):
         return f"{self.event_name}({self._event_args_str})"
 
     def __repr__(self) -> str:
-        return f"<{self.event_name} {self._event_args_str}>"
+        event_arg_str = self._event_args_str
+        suffix = f" {event_arg_str}" if event_arg_str else ""
+        return f"<{self.event_name}{suffix}>"
 
     def __ape_extra_attributes__(self) -> Iterator[ExtraModelAttributes]:
         yield ExtraModelAttributes(
