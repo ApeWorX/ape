@@ -40,3 +40,5 @@ def test_forked_networks(ethereum):
     mainnet_fork = ethereum.mainnet_fork
     assert mainnet_fork.upstream_network.name == "mainnet"
     assert mainnet_fork.upstream_chain_id == 1
+    # Just make sure it doesn't fail when trying to access.
+    assert mainnet_fork.upstream_provider

@@ -1066,7 +1066,7 @@ class ForkedNetworkAPI(NetworkAPI):
 
         config_choice = self._network_config.get("upstream_provider")
         if provider_name := config_choice or self.upstream_network.default_provider:
-            return self.get_provider(provider_name)
+            return self.upstream_network.get_provider(provider_name)
 
         raise NetworkError(f"Upstream network '{self.upstream_network}' has no providers.")
 
