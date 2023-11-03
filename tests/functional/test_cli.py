@@ -9,8 +9,10 @@ from ape.cli import (
     PromptChoice,
     account_option,
     contract_file_paths_argument,
+    existing_alias_argument,
     get_user_selected_account,
     network_option,
+    non_existing_alias_argument,
     verbosity_option,
 )
 from ape.exceptions import AccountsError
@@ -346,3 +348,53 @@ def test_contract_file_paths_argument(runner):
 
     result = runner.invoke(cmd, ["path0", "path1"])
     assert "Contract 'path0' not found" in result.output
+
+
+def test_existing_alias_option(runner):
+    @click.command()
+    @existing_alias_argument()
+    def cmd(alias):
+        click.echo(alias)
+
+    result = runner.invoke(cmd, ["TEST::0"])
+    assert "TEST::0" in result.output
+
+
+def test_existing_alias_option_custom_callback(runner):
+    magic_value = "THIS IS A TEST"
+
+    def custom_callback(*args, **kwargs):
+        return magic_value
+
+    @click.command()
+    @existing_alias_argument(callback=custom_callback)
+    def cmd(alias):
+        click.echo(alias)
+
+    result = runner.invoke(cmd, ["TEST::0"])
+    assert magic_value in result.output
+
+
+def test_non_existing_alias_option(runner):
+    @click.command()
+    @non_existing_alias_argument()
+    def cmd(alias):
+        click.echo(alias)
+
+    result = runner.invoke(cmd, ["non-exists"])
+    assert "non-exists" in result.output
+
+
+def test_non_existing_alias_option_custom_callback(runner):
+    magic_value = "THIS IS A TEST"
+
+    def custom_callback(*args, **kwargs):
+        return magic_value
+
+    @click.command()
+    @non_existing_alias_argument(callback=custom_callback)
+    def cmd(alias):
+        click.echo(alias)
+
+    result = runner.invoke(cmd, ["non-exists"])
+    assert magic_value in result.output
