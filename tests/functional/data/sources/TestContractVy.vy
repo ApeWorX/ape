@@ -25,6 +25,9 @@ event EventWithAddressArray:
     participants: DynArray[address, 1024]
     agents: address[1]
 
+event EventWithUintArray:
+    agents: uint256[1]
+
 struct MyStruct:
     a: address
     b: bytes32
@@ -295,3 +298,8 @@ def logAddressArray():
     ppl.append(msg.sender)
     agts: address[1] = [msg.sender]
     log EventWithAddressArray(1001, msg.sender, ppl, agts)
+
+@external
+def logUintArray():
+    agts: uint256[1] = [1]
+    log EventWithUintArray(agts)

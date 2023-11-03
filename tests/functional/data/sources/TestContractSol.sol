@@ -43,6 +43,10 @@ contract TestContractSol {
         address[1] agents
     );
 
+    event EventWithUintArray(
+        uint256[1] agents
+    );
+
     struct MyStruct {
         address a;
         bytes32 b;
@@ -301,5 +305,10 @@ contract TestContractSol {
         ppl[0] = msg.sender;
         address[1] memory agts = [msg.sender];
         emit EventWithAddressArray(1001, msg.sender, ppl, agts);
+    }
+
+    function logUintArray() public {
+        uint256[1] memory agts = [uint256(1)];
+        emit EventWithUintArray(agts);
     }
 }
