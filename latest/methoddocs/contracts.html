@@ -50,6 +50,7 @@
               <option value="">Select version...</option>
               <option value="latest">latest</option>
               <option value="stable">stable</option>
+                <option value="v0.6.24">v0.6.24</option>
                 <option value="v0.6.23">v0.6.23</option>
                 <option value="v0.6.22">v0.6.22</option>
                 <option value="v0.6.21">v0.6.21</option>
@@ -542,7 +543,7 @@ Use the event types via <code class="docutils literal notranslate"><span class="
 <dt class="sig sig-object py" id="ape.contracts.base.ContractEvent.poll_logs">
 <span class="sig-name descname"><span class="pre">poll_logs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">start_block</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stop_block</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">required_confirmations</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">new_block_timeout</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Iterator</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="types.html#ape.types.ContractLog" title="ape.types.ContractLog"><span class="pre">ContractLog</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#ape.contracts.base.ContractEvent.poll_logs" title="Permalink to this definition"></a></dt>
 <dd><p>Poll new blocks. Optionally set a start block to include historical blocks.</p>
-<p><strong>NOTE</strong>: This is a daemon method; it does not terminate unless an exception occurrs.</p>
+<p><strong>NOTE</strong>: This is a daemon method; it does not terminate unless an exception occurs.</p>
 <p>Usage example:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">for</span> <span class="n">new_log</span> <span class="ow">in</span> <span class="n">contract</span><span class="o">.</span><span class="n">MyEvent</span><span class="o">.</span><span class="n">poll_logs</span><span class="p">():</span>
     <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;New event log found: block_number=</span><span class="si">{</span><span class="n">new_log</span><span class="o">.</span><span class="n">block_number</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
@@ -600,8 +601,8 @@ engine selection algorithm.</p></li>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>start_or_stop</strong> (<em>int</em>) – When also given <code class="docutils literal notranslate"><span class="pre">stop</span></code>, this is the the
-earliest block number in the desired log set.
+<li><p><strong>start_or_stop</strong> (<em>int</em>) – When also given <code class="docutils literal notranslate"><span class="pre">stop</span></code>, this is the earliest
+block number in the desired log set.
 Otherwise, it is the total amount of blocks to get starting from <code class="docutils literal notranslate"><span class="pre">0</span></code>.</p></li>
 <li><p><strong>stop</strong> (<em>Optional</em><em>[</em><em>int</em><em>]</em>) – The latest block number in the
 desired log set. Defaults to delegating to provider.</p></li>
