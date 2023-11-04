@@ -587,8 +587,8 @@ class ContractEvent(ManagerAccessMixin):
         Search through the logs for this event using the given filter parameters.
 
         Args:
-            start_or_stop (int): When also given ``stop``, this is the 
-              earliest block number in the desired log set.
+            start_or_stop (int): When also given ``stop``, this is the earliest 
+              block number in the desired log set.
               Otherwise, it is the total amount of blocks to get starting from ``0``.
             stop (Optional[int]): The latest block number in the
               desired log set. Defaults to delegating to provider.
