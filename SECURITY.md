@@ -1,6 +1,6 @@
 # Security Policy
 
-This document describes the Security Policy for ApeWorX Ltd., including vulnerability disclosures for the Ape Framework, any of it's maintained plugins, or any packages we maintain used by those as dependencies.
+This document describes the Security Policy for ApeWorX Ltd., including vulnerability disclosures for the Ape Framework, any of its maintained plugins, or any packages we maintain used by those as dependencies.
 We are committed to conduct our Security Process in a professional and civil manner.
 Public shaming, under-reporting, or misrepresentation of vulnerabilities will not be tolerated.
 

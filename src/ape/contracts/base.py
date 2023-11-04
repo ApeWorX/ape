@@ -336,7 +336,7 @@ class ContractTransactionHandler(ContractMethodHandler):
         Get the :class:`~ape.contracts.base.ContractCallHandler` equivalent
         of this transaction handler. The call-handler uses the ``eth_call``
         RPC under-the-hood and thus it gets reverted before submitted.
-        This a useful way to simulate a transaction without invoking it.
+        This is a useful way to simulate a transaction without invoking it.
         """
 
         return ContractCallHandler(self.contract, self.abis)
@@ -587,8 +587,8 @@ class ContractEvent(ManagerAccessMixin):
         Search through the logs for this event using the given filter parameters.
 
         Args:
-            start_or_stop (int): When also given ``stop``, this is the the
-              earliest block number in the desired log set.
+            start_or_stop (int): When also given ``stop``, this is the earliest
+              block number in the desired log set.
               Otherwise, it is the total amount of blocks to get starting from ``0``.
             stop (Optional[int]): The latest block number in the
               desired log set. Defaults to delegating to provider.
@@ -665,7 +665,7 @@ class ContractEvent(ManagerAccessMixin):
         """
         Poll new blocks. Optionally set a start block to include historical blocks.
 
-        **NOTE**: This is a daemon method; it does not terminate unless an exception occurrs.
+        **NOTE**: This is a daemon method; it does not terminate unless an exception occurs.
 
         Usage example::
 
