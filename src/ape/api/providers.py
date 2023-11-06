@@ -26,7 +26,7 @@ from web3.exceptions import ContractLogicError as Web3ContractLogicError
 from web3.exceptions import MethodUnavailable, TimeExhausted, TransactionNotFound
 from web3.types import RPCEndpoint, TxParams
 
-from ape._pydantic_compat import Field, root_validator, validator
+from ape._pydantic_compat import Field, root_validator, validator, dataclass
 from ape.api.config import PluginConfig
 from ape.api.networks import LOCAL_NETWORK_NAME, NetworkAPI
 from ape.api.query import BlockTransactionQuery
@@ -1450,43 +1450,43 @@ class Web3Provider(ProviderAPI, ABC):
         if required_confirmations is None:
             required_confirmations = self.network.required_confirmations
 
-        end_of_last_range = None
+        # Track if a re-org happens, a what height.
         reorg_height = None
-        time_of_last_yield = None
+
+        @dataclass
+        class YieldAction:
+            number: int
+            time: float
+
+        # Pretend we _did_ yield the last confirmed item, for logic's sake.
+        last = YieldAction(
+            number=self.web3.eth.block_number - required_confirmations,
+            time=time.time()
+        )
 
         while True:
-            if (
-                stop_block is not None
-                and end_of_last_range is not None
-                and end_of_last_range >= stop_block
-            ):
-                break
 
-            current_height = self.web3.eth.block_number
+            # elif (
+            #     current_height - required_confirmations <= end_of_last_range
+            #     and reorg_height is None
+            # ):
+            #     # In this case, we have not yet reached the point where a new block is confirmed,
+            #     # but things may have progressed.
+            #     logger.debug("No confirmed blocks. Waiting.")
+            #     time.sleep(wait_time)
+            #
+            #     if time.time() - time_of_last_yield > timeout:
+            #         raise ProviderError("Timed out waiting for confirmable block.")
+            #
+            #     continue
 
-            # If end of last range was never set, we set an "as-if" value.
-            if end_of_last_range is None:
-                end_of_last_range = current_height - required_confirmations
-                time_of_last_yield = time.time()
-
-            elif (
-                current_height - required_confirmations <= end_of_last_range
-                and reorg_height is None
-            ):
-                # In this case, we have not yet reached the point where a new block is confirmed,
-                # but things may have progressed.
-                logger.debug("No confirmed blocks. Waiting.")
-                time.sleep(wait_time)
-
-                if time.time() - time_of_last_yield > timeout:
-                    raise ProviderError("Timed out waiting for confirmable block.")
-
-                continue
+            start_block_range = last_number_yielded + 1
+            end_block_range = current_height - required_confirmations + 1
+            if end_block_range < start_block_range:
+                breakpoint()
 
             else:
-                for block_num in range(
-                    end_of_last_range + 1, current_height - required_confirmations + 1
-                ):
+                for block_num in range(start_block_range, end_block_range):
                     confirmed_block = self.web3.eth.get_block(block_num)
 
                     if (
@@ -1507,25 +1507,28 @@ class Web3Provider(ProviderAPI, ABC):
                             time.sleep(1)
                             confirmed_block = self.web3.eth.get_block(block_num)
 
-                    if end_of_last_range and confirmed_block.number < end_of_last_range:
-                        num_blocks_behind = end_of_last_range - confirmed_block.number
+                    if last_number_yielded and confirmed_block.number < last_number_yielded:
+                        num_blocks_behind = last_number_yielded - confirmed_block.number
+                        reorg_height = confirmed_block.number
+
                         if num_blocks_behind > required_confirmations:
                             logger.error(
                                 f"{num_blocks_behind} Block reorganization detected. "
                                 + "Try adjusting the required network confirmations"
                             )
-                            reorg_height = confirmed_block.number
-                            end_of_last_range = confirmed_block.number
                         else:
+                            # No "bad" blocks were yielded yet.
                             logger.warning(
                                 f"{num_blocks_behind} Block reorganization detected. "
                                 + "Reorg is within the required network confirmations"
                             )
-                            end_of_last_range = confirmed_block.number
                             continue
 
-                    end_of_last_range = current_height - required_confirmations
                     yield self.network.ecosystem.decode_block(dict(confirmed_block))
+                    last_number_yielded = confirmed_block.number
+
+                    if stop_block is not None and confirmed_block.number == stop_block:
+                        return
 
     def poll_logs(
         self,
