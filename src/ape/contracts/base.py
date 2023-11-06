@@ -688,9 +688,8 @@ class ContractEvent(ManagerAccessMixin):
             Iterator[:class:`~ape.types.ContractLog`]
         """
 
-        required_confirmations = (
-            required_confirmations or self.provider.network.required_confirmations
-        )
+        if required_confirmations is None:
+            required_confirmations = self.provider.network.required_confirmations
 
         # NOTE: We process historical blocks separately here to minimize rpc calls
         height = max(self.chain_manager.blocks.height - required_confirmations, 0)

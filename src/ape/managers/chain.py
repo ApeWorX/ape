@@ -269,6 +269,7 @@ class BlockContainer(BaseManager):
         Returns:
             Iterator[:class:`~ape.api.providers.BlockAPI`]
         """
+
         if required_confirmations is None:
             required_confirmations = self.network_confirmations
 

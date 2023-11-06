@@ -1535,9 +1535,9 @@ class Web3Provider(ProviderAPI, ABC):
         required_confirmations: Optional[int] = None,
         new_block_timeout: Optional[int] = None,
     ) -> Iterator[ContractLog]:
-        required_confirmations = (
-            required_confirmations or self.provider.network.required_confirmations
-        )
+        if required_confirmations is None:
+            required_confirmations = self.network.required_confirmations
+
         for block in self.poll_blocks(stop_block, required_confirmations, new_block_timeout):
             if block.number is None:
                 raise ValueError("Block number cannot be None")
