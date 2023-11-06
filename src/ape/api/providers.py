@@ -1450,31 +1450,53 @@ class Web3Provider(ProviderAPI, ABC):
         if required_confirmations is None:
             required_confirmations = self.network.required_confirmations
 
-        last_yielded_height = None
-
+        end_of_last_range = None
         reorg_height = None
+        time_of_last_yield = None
 
         while True:
             if (
                 stop_block is not None
-                and last_yielded_height is not None
-                and last_yielded_height >= stop_block
+                and end_of_last_range is not None
+                and end_of_last_range >= stop_block
             ):
                 break
-            latest_block = self.web3.eth.block_number
-            if last_yielded_height is None:
-                last_yielded_height = latest_block - required_confirmations
-            elif latest_block - required_confirmations <= last_yielded_height and reorg_height is None:
-                print("continuing")
+
+            current_height = self.web3.eth.block_number
+
+            # If end of last range was never set, we set an "as-if" value.
+            if end_of_last_range is None:
+                end_of_last_range = current_height - required_confirmations
+                time_of_last_yield = time.time()
+
+            elif (
+                current_height - required_confirmations <= end_of_last_range
+                and reorg_height is None
+            ):
+                # In this case, we have not yet reached the point where a new block is confirmed,
+                # but things may have progressed.
+                logger.debug("No confirmed blocks. Waiting.")
                 time.sleep(wait_time)
+
+                if time.time() - time_of_last_yield > timeout:
+                    raise ProviderError("Timed out waiting for confirmable block.")
+
                 continue
+
             else:
                 for block_num in range(
-                    last_yielded_height + 1, latest_block - required_confirmations + 1
+                    end_of_last_range + 1, current_height - required_confirmations + 1
                 ):
                     confirmed_block = self.web3.eth.get_block(block_num)
-                    if reorg_height and confirmed_block and confirmed_block.number == reorg_height:
+
+                    if (
+                        reorg_height is not None
+                        and confirmed_block is not None
+                        and confirmed_block.number == reorg_height
+                    ):
+                        # Done handling re-org.
                         reorg_height = None
+
                     if not confirmed_block:
                         start_time = time.time()
                         while confirmed_block is None:
@@ -1485,24 +1507,24 @@ class Web3Provider(ProviderAPI, ABC):
                             time.sleep(1)
                             confirmed_block = self.web3.eth.get_block(block_num)
 
-                    if last_yielded_height and confirmed_block.number < last_yielded_height:
-                        num_blocks_behind = last_yielded_height - confirmed_block.number
+                    if end_of_last_range and confirmed_block.number < end_of_last_range:
+                        num_blocks_behind = end_of_last_range - confirmed_block.number
                         if num_blocks_behind > required_confirmations:
                             logger.error(
                                 f"{num_blocks_behind} Block reorganization detected. "
                                 + "Try adjusting the required network confirmations"
                             )
                             reorg_height = confirmed_block.number
-                            last_yielded_height = confirmed_block.number
+                            end_of_last_range = confirmed_block.number
                         else:
                             logger.warning(
                                 f"{num_blocks_behind} Block reorganization detected. "
                                 + "Reorg is within the required network confirmations"
                             )
-                            last_yielded_height = confirmed_block.number
+                            end_of_last_range = confirmed_block.number
                             continue
 
-                    last_yielded_height = latest_block - required_confirmations
+                    end_of_last_range = current_height - required_confirmations
                     yield self.network.ecosystem.decode_block(dict(confirmed_block))
 
     def poll_logs(

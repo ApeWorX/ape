@@ -11,7 +11,7 @@ import ape
 from ape.api import TransactionAPI
 from ape.contracts import ContractContainer, ContractInstance
 from ape.contracts.base import ContractCallHandler
-from ape.exceptions import ChainError, ContractLogicError
+from ape.exceptions import ChainError, ContractLogicError, ProviderError
 from ape.logging import LogLevel
 from ape.logging import logger as _logger
 from ape.types import AddressType, ContractLog
@@ -435,7 +435,7 @@ class PollDaemonThread(threading.Thread):
 
             try:
                 self._handler(next(self._poller))
-            except ChainError:
+            except (ChainError, ProviderError):
                 # Check if can stop once more before exiting
                 if self._do_stop():
                     return
