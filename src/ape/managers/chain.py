@@ -245,7 +245,7 @@ class BlockContainer(BaseManager):
         block numbers.
 
         **NOTE**: This is a daemon method; it does not terminate unless an exception occurs
-        or a ``stop`` is given.
+        or a ``stop_block`` is given.
 
         Usage example::
 

@@ -644,7 +644,7 @@ class ProviderAPI(BaseInterfaceModel):
         block numbers.
 
         **NOTE**: This is a daemon method; it does not terminate unless an exception occurs
-        or a ``stop`` is given.
+        or a ``stop_block`` is given.
 
         Args:
             start_block (Optional[int]): The block number to start with. Defaults to the pending
