@@ -274,11 +274,7 @@ class BlockContainer(BaseManager):
         network_name = self.provider.network.name
         block_time = self.provider.network.block_time
         timeout = (
-            (
-                10.0
-                if network_name == LOCAL_NETWORK_NAME or network_name.endswith("-fork")
-                else 50 * block_time
-            )
+            (10.0 if self.provider.network.is_dev else 50 * block_time)
             if new_block_timeout is None
             else new_block_timeout
         )
@@ -316,10 +312,7 @@ class BlockContainer(BaseManager):
             if time.time() - time_since_last > timeout:
                 time_waited = round(time.time() - time_since_last, 4)
                 message = f"Timed out waiting for new block (time_waited={time_waited})."
-                if (
-                    self.provider.network.name == LOCAL_NETWORK_NAME
-                    or self.provider.network.name.endswith("-fork")
-                ):
+                if self.provider.network.is_dev:
                     message += (
                         " If using a local network, try configuring mining to mine on an interval "
                         "or adjusting the block time."
@@ -1103,7 +1096,7 @@ class ContractCache(BaseManager):
 
             return contract_type
 
-        if self._network.name == LOCAL_NETWORK_NAME:
+        if self._network.is_local:
             # Don't check disk-cache or explorer when using local
             if default:
                 self._local_contract_types[address_key] = default

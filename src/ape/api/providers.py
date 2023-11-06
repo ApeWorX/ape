@@ -496,7 +496,7 @@ class ProviderAPI(BaseInterfaceModel):
         Returns:
             :class:`~ape.api.transactions.ReceiptAPI`
         """
-        if self.network.name == LOCAL_NETWORK_NAME or self.network.name.endswith("-fork"):
+        if self.network.is_dev:
             # Send the transaction as normal so testers can verify private=True
             # and the txn still goes through.
             logger.warning(

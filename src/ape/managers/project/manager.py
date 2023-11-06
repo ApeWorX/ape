@@ -10,7 +10,6 @@ from ethpm_types.source import Compiler, ContractSource
 from ethpm_types.utils import AnyUrl, Hex
 
 from ape.api import DependencyAPI, ProjectAPI
-from ape.api.networks import LOCAL_NETWORK_NAME
 from ape.contracts import ContractContainer, ContractInstance, ContractNamespace
 from ape.exceptions import ApeAttributeError, APINotImplementedError, ChainError, ProjectError
 from ape.logging import logger
@@ -698,8 +697,7 @@ class ProjectManager(BaseManager):
               to track as a deployment of the project.
         """
 
-        network = self.provider.network.name
-        if network == LOCAL_NETWORK_NAME or network.endswith("-fork"):
+        if self.provider.network.is_dev:
             raise ProjectError("Can only publish deployments on a live network.")
 
         if not (contract_name := contract.contract_type.name):
