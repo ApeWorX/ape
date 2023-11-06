@@ -13,7 +13,7 @@ from rich.console import Console as RichConsole
 
 from ape.api import BlockAPI, ReceiptAPI
 from ape.api.address import BaseAddress
-from ape.api.networks import LOCAL_NETWORK_NAME, NetworkAPI, ProxyInfoAPI
+from ape.api.networks import NetworkAPI, ProxyInfoAPI
 from ape.api.query import (
     AccountTransactionQuery,
     BlockQuery,
@@ -271,7 +271,6 @@ class BlockContainer(BaseManager):
         Returns:
             Iterator[:class:`~ape.api.providers.BlockAPI`]
         """
-        network_name = self.provider.network.name
         block_time = self.provider.network.block_time
         timeout = (
             (10.0 if self.provider.network.is_dev else 50 * block_time)
@@ -728,7 +727,7 @@ class ContractCache(BaseManager):
         if not self.network_manager.active_provider:
             return False
 
-        return self._network.name != LOCAL_NETWORK_NAME and not self._network.name.endswith("-fork")
+        return not self._network.is_dev
 
     @property
     def _data_network_name(self) -> str:
