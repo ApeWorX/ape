@@ -12,7 +12,7 @@ from rich.console import Console as RichConsole
 
 from ape.api import BlockAPI, ReceiptAPI
 from ape.api.address import BaseAddress
-from ape.api.networks import LOCAL_NETWORK_NAME, NetworkAPI, ProxyInfoAPI
+from ape.api.networks import NetworkAPI, ProxyInfoAPI
 from ape.api.query import (
     AccountTransactionQuery,
     BlockQuery,
@@ -624,7 +624,7 @@ class ContractCache(BaseManager):
         if not self.network_manager.active_provider:
             return False
 
-        return self._network.name != LOCAL_NETWORK_NAME and not self._network.name.endswith("-fork")
+        return not self._network.is_dev
 
     @property
     def _data_network_name(self) -> str:
@@ -992,7 +992,7 @@ class ContractCache(BaseManager):
 
             return contract_type
 
-        if self._network.name == LOCAL_NETWORK_NAME:
+        if self._network.is_local:
             # Don't check disk-cache or explorer when using local
             if default:
                 self._local_contract_types[address_key] = default

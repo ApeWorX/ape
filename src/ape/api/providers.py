@@ -26,7 +26,7 @@ from web3.exceptions import ContractLogicError as Web3ContractLogicError
 from web3.exceptions import MethodUnavailable, TimeExhausted, TransactionNotFound
 from web3.types import RPCEndpoint, TxParams
 
-from ape._pydantic_compat import Field, root_validator, validator, dataclass
+from ape._pydantic_compat import Field, dataclass, root_validator, validator
 from ape.api.config import PluginConfig
 from ape.api.networks import LOCAL_NETWORK_NAME, NetworkAPI
 from ape.api.query import BlockTransactionQuery
@@ -496,7 +496,7 @@ class ProviderAPI(BaseInterfaceModel):
         Returns:
             :class:`~ape.api.transactions.ReceiptAPI`
         """
-        if self.network.name == LOCAL_NETWORK_NAME or self.network.name.endswith("-fork"):
+        if self.network.is_dev:
             # Send the transaction as normal so testers can verify private=True
             # and the txn still goes through.
             logger.warning(
@@ -1014,10 +1014,14 @@ class Web3Provider(ProviderAPI, ABC):
     @cached_property
     def chain_id(self) -> int:
         default_chain_id = None
-        if self.network.name not in (
-            "adhoc",
-            LOCAL_NETWORK_NAME,
-        ) and not self.network.name.endswith("-fork"):
+        if (
+            self.network.name
+            not in (
+                "adhoc",
+                LOCAL_NETWORK_NAME,
+            )
+            and not self.network.is_fork
+        ):
             # If using a live network, the chain ID is hardcoded.
             default_chain_id = self.network.chain_id
 
@@ -1368,7 +1372,7 @@ class Web3Provider(ProviderAPI, ABC):
         if start_nonce > stop_nonce:
             raise ValueError("Starting nonce cannot be greater than stop nonce for search")
 
-        if self.network.name != LOCAL_NETWORK_NAME and (stop_nonce - start_nonce) > 2:
+        if not self.network.is_local and (stop_nonce - start_nonce) > 2:
             # NOTE: RPC usage might be acceptable to find 1 or 2 transactions reasonably quickly
             logger.warning(
                 "Performing this action is likely to be very slow and may "
@@ -1434,101 +1438,94 @@ class Web3Provider(ProviderAPI, ABC):
         required_confirmations: Optional[int] = None,
         new_block_timeout: Optional[int] = None,
     ) -> Iterator[BlockAPI]:
-        network_name = self.network.name
+        # Wait half the time as the block time
+        # to get data faster.
         block_time = self.network.block_time
         wait_time = block_time / 2
+
+        # The timeout occurs when there is chain activity
+        # after a certain time.
         timeout = (
-            (
-                10.0
-                if network_name == LOCAL_NETWORK_NAME or network_name.endswith("-fork")
-                else 50 * block_time
-            )
+            (10.0 if self.network.is_dev else 50 * block_time)
             if new_block_timeout is None
             else new_block_timeout
         )
 
+        # Only yield confirmed blocks.
         if required_confirmations is None:
             required_confirmations = self.network.required_confirmations
 
-        # Track if a re-org happens, a what height.
-        reorg_height = None
-
         @dataclass
         class YieldAction:
+            hash: bytes
             number: int
             time: float
 
         # Pretend we _did_ yield the last confirmed item, for logic's sake.
+        fake_last_block = self.get_block(self.web3.eth.block_number - required_confirmations)
         last = YieldAction(
-            number=self.web3.eth.block_number - required_confirmations,
-            time=time.time()
+            number=fake_last_block.number, hash=fake_last_block.hash, time=time.time()
         )
 
+        # A helper method for various points of ensuring we didn't timeout.
+        def assert_chain_activity():
+            time_waiting = time.time() - last.time
+            if time_waiting > timeout:
+                raise ProviderError("Timed out waiting for next block.")
+
+        # Begin the daemon.
         while True:
+            # The next block we want is simply 1 after the last.
+            next_block = last.number + 1
 
-            # elif (
-            #     current_height - required_confirmations <= end_of_last_range
-            #     and reorg_height is None
-            # ):
-            #     # In this case, we have not yet reached the point where a new block is confirmed,
-            #     # but things may have progressed.
-            #     logger.debug("No confirmed blocks. Waiting.")
-            #     time.sleep(wait_time)
-            #
-            #     if time.time() - time_of_last_yield > timeout:
-            #         raise ProviderError("Timed out waiting for confirmable block.")
-            #
-            #     continue
+            # Use an "adjused" head, based on the required confirmations.
+            head = self.get_block("latest")
 
-            start_block_range = last_number_yielded + 1
-            end_block_range = current_height - required_confirmations + 1
-            if end_block_range < start_block_range:
-                breakpoint()
+            try:
+                adjusted_head = self.get_block(head.number - required_confirmations)
+            except Exception:
+                # TODO: I did encounter this sometimes in a re-org, needs better handling
+                continue
 
-            else:
-                for block_num in range(start_block_range, end_block_range):
-                    confirmed_block = self.web3.eth.get_block(block_num)
+            if adjusted_head.number == last.number and adjusted_head.hash == last.hash:
+                # The chain has not moved! Verify we have activity.
+                assert_chain_activity()
+                time.sleep(wait_time)
+                continue
 
-                    if (
-                        reorg_height is not None
-                        and confirmed_block is not None
-                        and confirmed_block.number == reorg_height
-                    ):
-                        # Done handling re-org.
-                        reorg_height = None
+            elif adjusted_head.number < last.number or (
+                adjusted_head.number == last.number and adjusted_head.hash != last.hash
+            ):
+                # Re-org detected! Error and catch up the chain.
+                logger.error(
+                    "Chain has reorganized since returning the last block. "
+                    "Try adjusting the required network confirmations."
+                )
+                # Catch up the chain by setting the "next" to this tiny head.
+                next_block = adjusted_head.number
 
-                    if not confirmed_block:
-                        start_time = time.time()
-                        while confirmed_block is None:
-                            if time.time() - start_time > timeout:
-                                raise ProviderError(
-                                    f"Timed out waiting for block {block_num} to be available."
-                                )
-                            time.sleep(1)
-                            confirmed_block = self.web3.eth.get_block(block_num)
+                # NOTE: Drop down to code outside of switch-of-ifs
 
-                    if last_number_yielded and confirmed_block.number < last_number_yielded:
-                        num_blocks_behind = last_number_yielded - confirmed_block.number
-                        reorg_height = confirmed_block.number
+            elif adjusted_head.number < next_block:
+                # Wait for the next block.
+                # But first, let's make sure the chain is still active.
+                assert_chain_activity()
+                time.sleep(wait_time)
+                continue
 
-                        if num_blocks_behind > required_confirmations:
-                            logger.error(
-                                f"{num_blocks_behind} Block reorganization detected. "
-                                + "Try adjusting the required network confirmations"
-                            )
-                        else:
-                            # No "bad" blocks were yielded yet.
-                            logger.warning(
-                                f"{num_blocks_behind} Block reorganization detected. "
-                                + "Reorg is within the required network confirmations"
-                            )
-                            continue
+            # NOTE: Should only get here if yielding blocks!
+            #  Either because it is finally time or because a re-org allows us.
+            for block_idx in range(next_block, adjusted_head.number + 1):
+                block = self.get_block(block_idx)
+                yield block
 
-                    yield self.network.ecosystem.decode_block(dict(confirmed_block))
-                    last_number_yielded = confirmed_block.number
+                # This is the point at which the daemon will end,
+                # provider the user passes in a `stop_block` arg.
+                if stop_block is not None and block.number >= stop_block:
+                    return
 
-                    if stop_block is not None and confirmed_block.number == stop_block:
-                        return
+                # Set the last action, used for checking timeouts and re-orgs.
+                last = YieldAction(number=block.number, hash=block.hash, time=time.time())
 
     def poll_logs(
         self,
