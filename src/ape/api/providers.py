@@ -496,7 +496,7 @@ class ProviderAPI(BaseInterfaceModel):
         Returns:
             :class:`~ape.api.transactions.ReceiptAPI`
         """
-        if self.network.name == LOCAL_NETWORK_NAME or self.network.name.endswith("-fork"):
+        if self.network.is_dev:
             # Send the transaction as normal so testers can verify private=True
             # and the txn still goes through.
             logger.warning(
@@ -944,10 +944,14 @@ class Web3Provider(ProviderAPI, ABC):
     @cached_property
     def chain_id(self) -> int:
         default_chain_id = None
-        if self.network.name not in (
-            "adhoc",
-            LOCAL_NETWORK_NAME,
-        ) and not self.network.name.endswith("-fork"):
+        if (
+            self.network.name
+            not in (
+                "adhoc",
+                LOCAL_NETWORK_NAME,
+            )
+            and not self.network.is_fork
+        ):
             # If using a live network, the chain ID is hardcoded.
             default_chain_id = self.network.chain_id
 

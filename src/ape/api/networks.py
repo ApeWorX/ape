@@ -817,6 +817,27 @@ class NetworkAPI(BaseInterfaceModel):
 
         return None  # May not have an block explorer
 
+    @property
+    def is_fork(self) -> bool:
+        """
+        True when using a forked network.
+        """
+        return self.name.endswith("-fork")
+
+    @property
+    def is_local(self) -> bool:
+        """
+        True when using the local network.
+        """
+        return self.name == LOCAL_NETWORK_NAME
+
+    @property
+    def is_dev(self) -> bool:
+        """
+        True when using a local network, including forks.
+        """
+        return self.is_local or self.is_fork
+
     @cached_property
     def providers(self):  # -> Dict[str, Partial[ProviderAPI]]
         """

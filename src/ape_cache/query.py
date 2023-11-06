@@ -117,7 +117,7 @@ class CacheQueryProvider(QueryAPI):
         Returns:
             Optional[`sqlalchemy.engine.Connection`]
         """
-        if self.provider.network.name == LOCAL_NETWORK_NAME:
+        if self.provider.network.is_local:
             return None
 
         if not self.network_manager.active_provider:
