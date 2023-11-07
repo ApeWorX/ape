@@ -5,7 +5,7 @@ from typing import List
 import pytest
 from ethpm_types import HexBytes
 
-from ape.exceptions import ChainError
+from ape.exceptions import ChainError, ProviderError
 
 
 def test_iterate_blocks(chain_that_mined_5):
@@ -144,6 +144,6 @@ def test_poll_blocks_timeout(
 ):
     poller = chain_that_mined_5.blocks.poll_blocks(new_block_timeout=1)
 
-    with pytest.raises(ChainError, match=r"Timed out waiting for new block \(time_waited=1.\d+\)."):
+    with pytest.raises(ProviderError, match=r"Timed out waiting for next block."):
         with PollDaemon("blocks", poller, lambda x: None, lambda: False):
             time.sleep(1.5)
