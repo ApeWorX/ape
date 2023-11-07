@@ -148,6 +148,7 @@ def test_poll_blocks_timeout(
         with PollDaemon("blocks", poller, lambda x: None, lambda: False):
             time.sleep(1.5)
 
+
 def test_poll_blocks_reorg_with_timeout(
     vyper_contract_instance, chain_that_mined_5, eth_tester_provider, owner, PollDaemon, ape_caplog
 ):
