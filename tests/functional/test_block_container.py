@@ -147,3 +147,30 @@ def test_poll_blocks_timeout(
     with pytest.raises(ProviderError, match=r"Timed out waiting for next block."):
         with PollDaemon("blocks", poller, lambda x: None, lambda: False):
             time.sleep(1.5)
+
+def test_poll_blocks_reorg_with_timeout(
+    vyper_contract_instance, chain_that_mined_5, eth_tester_provider, owner, PollDaemon, ape_caplog
+):
+    blocks: Queue = Queue(maxsize=6)
+    poller = chain_that_mined_5.blocks.poll_blocks(new_block_timeout=1)
+
+    with pytest.raises(ProviderError, match=r"Timed out waiting for next block."):
+        with PollDaemon("blocks", poller, blocks.put, blocks.full):
+            # Sleep first to ensure listening before mining.
+            time.sleep(1)
+
+            snapshot = chain_that_mined_5.snapshot()
+            chain_that_mined_5.mine(2)
+
+            # Wait to allow blocks before re-org to get yielded
+            time.sleep(5)
+
+            # Simulate re-org by reverting to the snapshot
+            chain_that_mined_5.restore(snapshot)
+
+            # Allow it time to trigger realizing there was a re-org
+            time.sleep(1)
+            chain_that_mined_5.mine(2)
+            time.sleep(1)
+
+            chain_that_mined_5.mine(3)

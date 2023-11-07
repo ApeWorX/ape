@@ -1485,6 +1485,7 @@ class Web3Provider(ProviderAPI, ABC):
                 adjusted_head = self.get_block(head.number - required_confirmations)
             except Exception:
                 # TODO: I did encounter this sometimes in a re-org, needs better handling
+                assert_chain_activity()
                 continue
 
             if adjusted_head.number == last.number and adjusted_head.hash == last.hash:
