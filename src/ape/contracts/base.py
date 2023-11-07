@@ -374,7 +374,7 @@ class ContractEvent(ManagerAccessMixin):
 
     def __init__(
         self,
-        contract: "ContractTypeWrapper",
+        contract: "ContractContainer",
         abi: EventABI,
         cached_logs: Optional[List[ContractLog]] = None,
     ) -> None:
