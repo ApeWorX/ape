@@ -1443,7 +1443,7 @@ class Web3Provider(ProviderAPI, ABC):
         block_time = self.network.block_time
         wait_time = block_time / 2
 
-        # The timeout occurs when there is chain activity
+        # The timeout occurs when there is no chain activity
         # after a certain time.
         timeout = (
             (10.0 if self.network.is_dev else 50 * block_time)
