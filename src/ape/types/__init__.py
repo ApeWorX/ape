@@ -160,7 +160,7 @@ class LogFilter(BaseModel):
         return FilterParams(
             address=self.addresses,
             fromBlock=to_hex(self.start_block),
-            toBlock=to_hex(self.stop_block),
+            toBlock=to_hex(self.stop_block or self.start_block),
             topics=topics,
         )
 

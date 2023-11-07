@@ -1539,20 +1539,23 @@ class Web3Provider(ProviderAPI, ABC):
         if required_confirmations is None:
             required_confirmations = self.network.required_confirmations
 
+        if stop_block is not None:
+            if stop_block <= (self.provider.get_block("latest").number or 0):
+                raise ValueError("'stop' argument must be in the future.")
+
         for block in self.poll_blocks(stop_block, required_confirmations, new_block_timeout):
             if block.number is None:
                 raise ValueError("Block number cannot be None")
             log_params: Dict[str, int | AddressType | List[Union[str, List[str]]]] = {
-                "fromBlock": block.number,
-                "toBlock": block.number,
+                "start_block": block.number,
+                "stop_block": block.number,
             }
             if address is not None:
-                log_params["address"] = address
+                log_params["addresses"] = [address]
             if topics is not None:
                 log_params["topics"] = topics
             log_params_obj = LogFilter(**log_params).dict()
-            for log in self.web3.eth.get_logs(log_params_obj):
-                yield ContractLog.parse_obj(log)
+            yield from self.get_contract_logs(LogFilter(**log_params))
 
     def block_ranges(self, start=0, stop=None, page=None):
         if stop is None:
