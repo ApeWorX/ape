@@ -19,6 +19,7 @@ from typing import Any, Dict, Iterator, List, Optional, Union, cast
 from eth_typing import BlockNumber, HexStr
 from eth_utils import add_0x_prefix, to_hex
 from ethpm_types import HexBytes
+from ethpm_types.abi import EventABI
 from evm_trace import CallTreeNode as EvmCallTreeNode
 from evm_trace import TraceFrame as EvmTraceFrame
 from web3 import Web3
@@ -670,6 +671,7 @@ class ProviderAPI(BaseInterfaceModel):
         topics: Optional[List[Union[str, List[str]]]] = None,
         required_confirmations: Optional[int] = None,
         new_block_timeout: Optional[int] = None,
+        events: List[EventABI] = [],
     ) -> Iterator[ContractLog]:
         """
         Poll new blocks. Optionally set a start block to include historical blocks.
@@ -1535,6 +1537,7 @@ class Web3Provider(ProviderAPI, ABC):
         topics: Optional[List[Union[str, List[str]]]] = None,
         required_confirmations: Optional[int] = None,
         new_block_timeout: Optional[int] = None,
+        events: List[EventABI] = [],
     ) -> Iterator[ContractLog]:
         if required_confirmations is None:
             required_confirmations = self.network.required_confirmations
@@ -1549,12 +1552,12 @@ class Web3Provider(ProviderAPI, ABC):
             log_params: Dict[str, int | AddressType | List[Union[str, List[str]]]] = {
                 "start_block": block.number,
                 "stop_block": block.number,
+                "events": events,
             }
             if address is not None:
                 log_params["addresses"] = [address]
             if topics is not None:
                 log_params["topics"] = topics
-            log_params_obj = LogFilter(**log_params).dict()
             yield from self.get_contract_logs(LogFilter(**log_params))
 
     def block_ranges(self, start=0, stop=None, page=None):
@@ -1629,7 +1632,8 @@ class Web3Provider(ProviderAPI, ABC):
             # eth-tester expects a different format, let web3 handle the conversions for it
             raw = "EthereumTester" not in self.client_version
             logs = self._get_logs(page_filter.dict(), raw)
-            return self.network.ecosystem.decode_logs(logs, *log_filter.events)
+            decoded_logs = list(self.network.ecosystem.decode_logs(logs, *log_filter.events))
+            return decoded_logs
 
         with ThreadPoolExecutor(self.concurrency) as pool:
             for page in pool.map(fetch_log_page, block_ranges):

@@ -703,6 +703,7 @@ class ContractEvent(ManagerAccessMixin):
             address=self.contract.address,
             required_confirmations=required_confirmations,
             new_block_timeout=new_block_timeout,
+            events=[self.abi],
         )
 
 
