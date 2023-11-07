@@ -1549,7 +1549,7 @@ class Web3Provider(ProviderAPI, ABC):
         for block in self.poll_blocks(stop_block, required_confirmations, new_block_timeout):
             if block.number is None:
                 raise ValueError("Block number cannot be None")
-            log_params: Dict[str, int | AddressType | List[Union[str, List[str]]]] = {
+            log_params: Dict[str, int | AddressType | List[EventABI] | List[AddressType] | List[Union[str, EventABI, AddressType, List[str]]]] = {
                 "start_block": block.number,
                 "stop_block": block.number,
                 "events": events,
