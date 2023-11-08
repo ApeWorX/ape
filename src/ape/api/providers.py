@@ -1465,7 +1465,8 @@ class Web3Provider(ProviderAPI, ABC):
 
         # Pretend we _did_ yield the last confirmed item, for logic's sake.
         fake_last_block = self.get_block(self.web3.eth.block_number - required_confirmations)
-        last = YieldAction(
+        # NOTE: type warning ignored due to pydantic compat issue
+        last = YieldAction(  # type: ignore
             number=fake_last_block.number, hash=fake_last_block.hash, time=time.time()
         )
 
@@ -1484,9 +1485,14 @@ class Web3Provider(ProviderAPI, ABC):
             head = self.get_block("latest")
 
             try:
+                if head.number is None or head.hash is None:
+                    raise ProviderError("Head block has no number or hash.")
                 adjusted_head = self.get_block(head.number - required_confirmations)
+                if adjusted_head.number is None or adjusted_head.hash is None:
+                    raise ProviderError("Adjusted head block has no number or hash.")
             except Exception:
                 # TODO: I did encounter this sometimes in a re-org, needs better handling
+                # and maybe bubbling up the block number/hash exceptions above.
                 assert_chain_activity()
                 continue
 
@@ -1520,6 +1526,8 @@ class Web3Provider(ProviderAPI, ABC):
             #  Either because it is finally time or because a re-org allows us.
             for block_idx in range(next_block, adjusted_head.number + 1):
                 block = self.get_block(block_idx)
+                if block.number is None or block.hash is None:
+                    raise ProviderError("Block has no number or hash.")
                 yield block
 
                 # This is the point at which the daemon will end,
@@ -1528,7 +1536,7 @@ class Web3Provider(ProviderAPI, ABC):
                     return
 
                 # Set the last action, used for checking timeouts and re-orgs.
-                last = YieldAction(number=block.number, hash=block.hash, time=time.time())
+                last = YieldAction(number=block.number, hash=block.hash, time=time.time())  # type: ignore
 
     def poll_logs(
         self,
@@ -1549,7 +1557,14 @@ class Web3Provider(ProviderAPI, ABC):
         for block in self.poll_blocks(stop_block, required_confirmations, new_block_timeout):
             if block.number is None:
                 raise ValueError("Block number cannot be None")
-            log_params: Dict[str, int | AddressType | List[EventABI] | List[AddressType] | List[Union[str, EventABI, AddressType, List[str]]]] = {
+            log_params: Dict[
+                str,
+                int
+                | AddressType
+                | List[EventABI]
+                | List[AddressType]
+                | List[Union[str, EventABI, AddressType, List[str]]],
+            ] = {
                 "start_block": block.number,
                 "stop_block": block.number,
                 "events": events,
