@@ -1466,9 +1466,9 @@ class Web3Provider(ProviderAPI, ABC):
         # Pretend we _did_ yield the last confirmed item, for logic's sake.
         fake_last_block = self.get_block(self.web3.eth.block_number - required_confirmations)
         # NOTE: type warning ignored due to pydantic compat issue
-        last = YieldAction(  # type: ignore
+        last = YieldAction(
             number=fake_last_block.number, hash=fake_last_block.hash, time=time.time()
-        )
+        )  # type: ignore
 
         # A helper method for various points of ensuring we didn't timeout.
         def assert_chain_activity():
@@ -1536,7 +1536,9 @@ class Web3Provider(ProviderAPI, ABC):
                     return
 
                 # Set the last action, used for checking timeouts and re-orgs.
-                last = YieldAction(number=block.number, hash=block.hash, time=time.time())  # type: ignore
+                last = YieldAction(
+                    number=block.number, hash=block.hash, time=time.time()
+                )  # type: ignore
 
     def poll_logs(
         self,
