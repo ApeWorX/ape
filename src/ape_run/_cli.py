@@ -10,7 +10,7 @@ from typing import Any, Dict, Union
 import click
 from click import Command, Context, Option
 
-from ape import project
+from ape import project, networks
 from ape.cli import NetworkBoundCommand, network_option, verbosity_option
 from ape.cli.options import _VERBOSITY_VALUES, _create_verbosity_kwargs
 from ape.exceptions import ApeException, handle_ape_exception
@@ -76,13 +76,15 @@ class ScriptCommand(click.MultiCommand):
             if ctx.params["interactive"]:
                 # Print the exception trace and then launch the console
                 # Attempt to use source-traceback style printing.
-                if not isinstance(err, ApeException) or not handle_ape_exception(
-                    err, [ctx.obj.project_manager.path]
-                ):
-                    err_info = traceback.format_exc()
-                    click.echo(err_info)
+                network_value = ctx.params.get("network") or networks.default_ecosystem.name
+                with networks.parse_network_choice(network_value):
+                    if not isinstance(err, ApeException) or not handle_ape_exception(
+                        err, [ctx.obj.project_manager.path]
+                    ):
+                        err_info = traceback.format_exc()
+                        click.echo(err_info)
 
-                self._launch_console()
+                    self._launch_console()
             else:
                 # Don't handle error - raise exception as normal.
                 raise
