@@ -4,6 +4,7 @@ from tempfile import mkdtemp
 from typing import (
     TYPE_CHECKING,
     Any,
+    ClassVar,
     Collection,
     Dict,
     Iterator,
@@ -576,7 +577,7 @@ class ProviderContextManager(ManagerAccessMixin):
     connected_providers: Dict[str, "ProviderAPI"] = {}
     provider_stack: List[str] = []
     disconnect_map: Dict[str, bool] = {}
-    recycled_provider = None
+    recycled_provider: ClassVar[Optional["ProviderAPI"]] = None
 
     def __init__(
         self,
