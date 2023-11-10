@@ -577,7 +577,12 @@ class ProviderContextManager(ManagerAccessMixin):
     connected_providers: Dict[str, "ProviderAPI"] = {}
     provider_stack: List[str] = []
     disconnect_map: Dict[str, bool] = {}
-    recycled_provider: ClassVar[Optional["ProviderAPI"]] = None
+
+    # We store a provider object at the class level for use when disconnecting
+    # due to an exception, when interactive mode is set. If we don't hold on
+    # to a reference to this object, the provider is dropped and reconnecting results
+    # in losing state when using a spawned local provider
+    _recycled_provider: ClassVar[Optional["ProviderAPI"]] = None
 
     def __init__(
         self,
@@ -595,16 +600,21 @@ class ProviderContextManager(ManagerAccessMixin):
         return not self.connected_providers or not self.provider_stack
 
     def __enter__(self, *args, **kwargs):
-        if self.recycled_provider is not None:
-            self._provider = self.recycled_provider
-            ProviderContextManager.recycled_provider = None
+        # If we have a recycled provider available, this means our last exit
+        # was due to an exception during interactive mode. We should resume that
+        # same connection, but also clear the object so we don't do this again
+        # in later provider contexts, which we would want to behave normally
+        if self._recycled_provider is not None:
+            # set inner var to the recycled provider for use in push_provider()
+            self._provider = self._recycled_provider
+            ProviderContextManager._recycled_provider = None
         return self.push_provider()
 
-    def __exit__(self, *args, **kwargs):
-        if not self._disconnect_on_exit and args[0] is not None and not self._skipped_disconnect:
-            self._skipped_disconnect = True
+    def __exit__(self, exception, *args, **kwargs):
+        if not self._disconnect_on_exit and exception is not None:
+            # We want to skip disconnection when exiting due to an exception in interactive mode
             if provider := self.network_manager.active_provider:
-                ProviderContextManager.recycled_provider = provider
+                ProviderContextManager._recycled_provider = provider
         else:
             self.pop_provider()
 
