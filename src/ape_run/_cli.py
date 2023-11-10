@@ -77,7 +77,7 @@ class ScriptCommand(click.MultiCommand):
                 # Print the exception trace and then launch the console
                 # Attempt to use source-traceback style printing.
                 network_value = ctx.params.get("network") or networks.default_ecosystem.name
-                with networks.parse_network_choice(network_value):
+                with networks.parse_network_choice(network_value, disconnect_on_exit=False):
                     if not isinstance(err, ApeException) or not handle_ape_exception(
                         err, [ctx.obj.project_manager.path]
                     ):

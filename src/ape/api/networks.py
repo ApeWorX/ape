@@ -576,20 +576,36 @@ class ProviderContextManager(ManagerAccessMixin):
     connected_providers: Dict[str, "ProviderAPI"] = {}
     provider_stack: List[str] = []
     disconnect_map: Dict[str, bool] = {}
+    recycled_provider = None
 
-    def __init__(self, provider: "ProviderAPI", disconnect_after: bool = False):
+    def __init__(
+        self,
+        provider: "ProviderAPI",
+        disconnect_after: bool = False,
+        disconnect_on_exit: bool = True,
+    ):
         self._provider = provider
         self._disconnect_after = disconnect_after
+        self._disconnect_on_exit = disconnect_on_exit
+        self._skipped_disconnect = False
 
     @property
     def empty(self) -> bool:
         return not self.connected_providers or not self.provider_stack
 
     def __enter__(self, *args, **kwargs):
+        if self.recycled_provider is not None:
+            self._provider = self.recycled_provider
+            ProviderContextManager.recycled_provider = None
         return self.push_provider()
 
     def __exit__(self, *args, **kwargs):
-        self.pop_provider()
+        if not self._disconnect_on_exit and args[0] is not None and not self._skipped_disconnect:
+            self._skipped_disconnect = True
+            if provider := self.network_manager.active_provider:
+                ProviderContextManager.recycled_provider = provider
+        else:
+            self.pop_provider()
 
     def push_provider(self):
         must_connect = not self._provider.is_connected
