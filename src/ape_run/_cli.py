@@ -10,7 +10,7 @@ from typing import Any, Dict, Union
 import click
 from click import Command, Context, Option
 
-from ape import project, networks
+from ape import networks, project
 from ape.cli import NetworkBoundCommand, network_option, verbosity_option
 from ape.cli.options import _VERBOSITY_VALUES, _create_verbosity_kwargs
 from ape.exceptions import ApeException, handle_ape_exception
