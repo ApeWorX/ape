@@ -234,6 +234,27 @@ message = encode_defunct(text="Hello Apes!")
 signature = account.sign_message(message)
 ```
 
+## Signed Message
+
+Get the signed message signature as well as message hash signed by the account
+
+```py
+from ape import accounts
+from eth_account.messages import encode_defunct
+
+account = accounts.load("<ALIAS>")
+account.set_autosign(True)
+
+# Now, you will not be prompted to sign messages or transactions
+message = encode_defunct(text="Hello Apes!")
+signature = account.sign_message(message)
+
+# signature
+print(signature.signature)
+# message hash
+print(signature.messageHash)
+```
+
 ## Hardware Wallets
 
 Because of the plugin system in Ape, we are able to support other types of accounts including hardware wallet accounts.
