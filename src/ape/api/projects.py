@@ -182,7 +182,7 @@ class ProjectAPI(BaseInterfaceModel):
         initial_manifest: Optional[PackageManifest] = None,
     ) -> PackageManifest:
         manifest = initial_manifest or PackageManifest()
-        manifest.name = PackageName(name.lower()) if name is not None else manifest.name
+        manifest.name = PackageName(__root__=name.lower()) if name is not None else manifest.name
         manifest.version = version or manifest.version
         manifest.sources = cls._create_source_dict(source_paths, contracts_path)
         manifest.contract_types = contract_types
