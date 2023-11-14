@@ -160,7 +160,6 @@ class KeyfileAccount(AccountAPI):
             v=signed_msg.v,
             r=to_bytes(signed_msg.r),
             s=to_bytes(signed_msg.s),
-            _signature=signed_msg.signature,
         )
 
     def sign_transaction(self, txn: TransactionAPI, **kwargs) -> Optional[TransactionAPI]:

@@ -595,12 +595,3 @@ def test_signed_messge_hash(signer):
         signature.messageHash.hex()
         == "0x46b937e48a6aaec0a17aac9dc326950632c949b1f1f9300073b1ef55b905c278"
     )
-
-
-def test_signed_messge_signature(signer):
-    message = encode_defunct(text="Hello Apes!")
-    signature = signer.sign_message(message)
-
-    assert signer.check_signature(message, signature)
-    assert isinstance(signature.signature, HexBytes)
-    assert signature.signature

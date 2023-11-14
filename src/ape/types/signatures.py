@@ -1,4 +1,4 @@
-from typing import Iterator, Union
+from typing import Iterator, Optional, Union
 
 from eth_account import Account
 from eth_account.messages import SignableMessage
@@ -23,8 +23,7 @@ class _Signature:
     v: int
     r: bytes
     s: bytes
-    _messageHash: HexBytes
-    _signature: HexBytes
+    _messageHash: Optional[SignableMessage] = None
 
     def __iter__(self) -> Iterator[Union[int, bytes]]:
         # NOTE: Allows tuple destructuring
@@ -41,11 +40,8 @@ class _Signature:
     def encode_rsv(self) -> bytes:
         return _left_pad_bytes(self.r, 32) + _left_pad_bytes(self.s, 32) + to_bytes(self.v)
 
-    def messageHash(self) -> HexBytes:
+    def messageHash(self) -> SignableMessage:
         return self._messageHash
-
-    def signature(self) -> HexBytes:
-        return self._signature
 
 
 class MessageSignature(_Signature):
