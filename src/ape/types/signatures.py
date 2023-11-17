@@ -4,7 +4,7 @@ from eth_account import Account
 from eth_account.messages import SignableMessage
 from eth_utils import to_bytes, to_hex
 from pydantic.dataclasses import dataclass
-
+from hexbytes import HexBytes
 from ape.types import AddressType
 
 # Fix 404 in doc link.
@@ -22,7 +22,7 @@ class _Signature:
     v: int
     r: bytes
     s: bytes
-    messageHash: Optional[SignableMessage] = None
+    messageHash: Optional[HexBytes] = None
 
     def __iter__(self) -> Iterator[Union[int, bytes]]:
         # NOTE: Allows tuple destructuring
