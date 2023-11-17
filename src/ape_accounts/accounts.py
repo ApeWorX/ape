@@ -156,7 +156,7 @@ class KeyfileAccount(AccountAPI):
 
         signed_msg = EthAccount.sign_message(msg, self.__key)
         return MessageSignature(
-            _messageHash=signed_msg.messageHash,
+            messageHash=signed_msg.messageHash,
             v=signed_msg.v,
             r=to_bytes(signed_msg.r),
             s=to_bytes(signed_msg.s),

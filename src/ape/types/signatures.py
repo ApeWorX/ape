@@ -22,7 +22,7 @@ class _Signature:
     v: int
     r: bytes
     s: bytes
-    _messageHash: Optional[SignableMessage] = None
+    messageHash: Optional[SignableMessage] = None
 
     def __iter__(self) -> Iterator[Union[int, bytes]]:
         # NOTE: Allows tuple destructuring
@@ -38,7 +38,6 @@ class _Signature:
 
     def encode_rsv(self) -> bytes:
         return _left_pad_bytes(self.r, 32) + _left_pad_bytes(self.s, 32) + to_bytes(self.v)
-
 
 
 class MessageSignature(_Signature):
