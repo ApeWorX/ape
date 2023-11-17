@@ -399,7 +399,7 @@ def test_getattr_contract_not_exists(project):
 
 def test_build_file_only_modified_once(project_with_contract):
     project = project_with_contract
-    artifact = project.path / ".build" / "__local__.json"
+    artifact = project.path / ".build" / "ethereum" / "__local__.json"
     _ = project.contracts  # Ensure compiled.
 
     # NOTE: This is how re-create the bug. Delete the underscore-prefixed

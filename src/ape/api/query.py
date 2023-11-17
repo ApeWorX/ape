@@ -3,7 +3,7 @@ from typing import Any, Dict, Iterator, List, Optional, Sequence, Set, Type, Uni
 
 from ethpm_types.abi import EventABI, MethodABI
 
-from ape._pydantic_compat import BaseModel, NonNegativeInt, PositiveInt, root_validator
+from ape._pydantic_compat import BaseModel, NonNegativeInt, root_validator
 from ape.api.transactions import ReceiptAPI, TransactionAPI
 from ape.logging import logger
 from ape.types import AddressType
@@ -102,7 +102,7 @@ class _BaseQuery(BaseModel):
 class _BaseBlockQuery(_BaseQuery):
     start_block: NonNegativeInt = 0
     stop_block: NonNegativeInt
-    step: PositiveInt = 1
+    step: int = 1
 
     @root_validator(pre=True)
     def check_start_block_before_stop_block(cls, values):
@@ -140,6 +140,7 @@ class AccountTransactionQuery(_BaseQuery):
     account: AddressType
     start_nonce: NonNegativeInt = 0
     stop_nonce: NonNegativeInt
+    step: int = 1
 
     @root_validator(pre=True)
     def check_start_nonce_before_stop_nonce(cls, values: Dict) -> Dict:
