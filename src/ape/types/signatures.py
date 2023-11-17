@@ -39,8 +39,6 @@ class _Signature:
     def encode_rsv(self) -> bytes:
         return _left_pad_bytes(self.r, 32) + _left_pad_bytes(self.s, 32) + to_bytes(self.v)
 
-    def messageHash(self) -> SignableMessage:
-        return self._messageHash
 
 
 class MessageSignature(_Signature):
