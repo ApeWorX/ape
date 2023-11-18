@@ -441,6 +441,9 @@ class ApePluginsRepr:
         if PluginType.AVAILABLE in self.include and self.metadata.available:
             sections.append(self.metadata.available)
 
+        if not sections:
+            return ""
+
         # Use a single max length for all the sections.
         max_length = max(x.max_name_length for x in sections)
 
