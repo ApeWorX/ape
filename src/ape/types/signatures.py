@@ -3,8 +3,9 @@ from typing import Iterator, Optional, Union
 from eth_account import Account
 from eth_account.messages import SignableMessage
 from eth_utils import to_bytes, to_hex
-from pydantic.dataclasses import dataclass
 from hexbytes import HexBytes
+from pydantic.dataclasses import dataclass
+
 from ape.types import AddressType
 
 # Fix 404 in doc link.

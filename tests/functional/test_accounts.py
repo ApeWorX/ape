@@ -595,3 +595,5 @@ def test_signed_messge_hash(signer):
         signature.messageHash.hex()
         == "0x46b937e48a6aaec0a17aac9dc326950632c949b1f1f9300073b1ef55b905c278"
     )
+
+    assert recover_signer(message, signature) == signer
