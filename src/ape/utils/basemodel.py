@@ -203,7 +203,7 @@ class BaseModel(_BaseModel):
         """
 
         try:
-            return super().__getattr__(name)
+            return super().__getattribute__(name)
         except AttributeError:
             extras_checked = set()
             for ape_extra in self.__ape_extra_attributes__():

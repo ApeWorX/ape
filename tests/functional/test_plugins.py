@@ -115,8 +115,8 @@ class TestPluginMetadata:
 
 class TestApePluginsRepr:
     def test_str(self, plugin_metadata):
-        plugin_map = ApePluginsRepr(plugin_metadata)
-        actual = str(plugin_map)
+        representation = ApePluginsRepr(plugin_metadata)
+        actual = str(representation)
         expected = f"""
 Installed Plugins
   installed     {VERSION}
@@ -127,8 +127,8 @@ Third-party Plugins
         assert actual == expected.strip()
 
     def test_str_all_types(self, plugin_metadata):
-        plugin_map = ApePluginsRepr(plugin_metadata, include=list(PluginType))
-        actual = str(plugin_map)
+        representation = ApePluginsRepr(plugin_metadata, include=list(PluginType))
+        actual = str(representation)
         expected = f"""
 Core Plugins
   run
@@ -143,3 +143,8 @@ Available Plugins
   available
         """
         assert actual == expected.strip()
+
+    def test_str_no_plugins(self):
+        plugins = PluginMetadataList.from_package_names([])
+        representation = ApePluginsRepr(plugins)
+        assert str(representation) == ""
