@@ -4,6 +4,7 @@ from tempfile import mkdtemp
 from typing import (
     TYPE_CHECKING,
     Any,
+    ClassVar,
     Collection,
     Dict,
     Iterator,
@@ -577,19 +578,45 @@ class ProviderContextManager(ManagerAccessMixin):
     provider_stack: List[str] = []
     disconnect_map: Dict[str, bool] = {}
 
-    def __init__(self, provider: "ProviderAPI", disconnect_after: bool = False):
+    # We store a provider object at the class level for use when disconnecting
+    # due to an exception, when interactive mode is set. If we don't hold on
+    # to a reference to this object, the provider is dropped and reconnecting results
+    # in losing state when using a spawned local provider
+    _recycled_provider: ClassVar[Optional["ProviderAPI"]] = None
+
+    def __init__(
+        self,
+        provider: "ProviderAPI",
+        disconnect_after: bool = False,
+        disconnect_on_exit: bool = True,
+    ):
         self._provider = provider
         self._disconnect_after = disconnect_after
+        self._disconnect_on_exit = disconnect_on_exit
+        self._skipped_disconnect = False
 
     @property
     def empty(self) -> bool:
         return not self.connected_providers or not self.provider_stack
 
     def __enter__(self, *args, **kwargs):
+        # If we have a recycled provider available, this means our last exit
+        # was due to an exception during interactive mode. We should resume that
+        # same connection, but also clear the object so we don't do this again
+        # in later provider contexts, which we would want to behave normally
+        if self._recycled_provider is not None:
+            # set inner var to the recycled provider for use in push_provider()
+            self._provider = self._recycled_provider
+            ProviderContextManager._recycled_provider = None
         return self.push_provider()
 
-    def __exit__(self, *args, **kwargs):
-        self.pop_provider()
+    def __exit__(self, exception, *args, **kwargs):
+        if not self._disconnect_on_exit and exception is not None:
+            # We want to skip disconnection when exiting due to an exception in interactive mode
+            if provider := self.network_manager.active_provider:
+                ProviderContextManager._recycled_provider = provider
+        else:
+            self.pop_provider()
 
     def push_provider(self):
         must_connect = not self._provider.is_connected
