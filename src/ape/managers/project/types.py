@@ -178,6 +178,7 @@ class BaseProject(ProjectAPI):
         contract_types = project_sources.remaining_cached_contract_types
         compiled_contract_types = self._compile(project_sources)
         contract_types.update(compiled_contract_types)
+        compiler_data = self.project_manager.compiler_data
         manifest = self._create_manifest(
             source_paths,
             self.contracts_folder,
@@ -185,6 +186,7 @@ class BaseProject(ProjectAPI):
             initial_manifest=manifest,
             name=self.name,
             version=self.version,
+            compiler_data=compiler_data,
         )
         # Cache the updated manifest so `self.cached_manifest` reads it next time
         self.manifest_cachefile.write_text(manifest.json())

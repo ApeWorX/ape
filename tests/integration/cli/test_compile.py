@@ -91,6 +91,7 @@ def test_compile(ape_cli, runner, project, clean_cache):
     unexpected_files = [f for f in all_files if f not in expected_files]
 
     manifest = project.extract_manifest()
+    assert manifest.compilers
     for file in expected_files:
         assert file.name in manifest.sources
 
