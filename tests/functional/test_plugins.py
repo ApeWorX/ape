@@ -1,8 +1,15 @@
 from typing import Set
+from unittest import mock
 
 import pytest
 
-from ape_plugins.utils import ApePluginsRepr, PluginMetadata, PluginMetadataList, PluginType
+from ape_plugins.utils import (
+    ApePluginsRepr,
+    PluginGroup,
+    PluginMetadata,
+    PluginMetadataList,
+    PluginType,
+)
 
 CORE_PLUGINS = ("run",)
 AVAILABLE_PLUGINS = ("available", "installed")
@@ -148,3 +155,33 @@ Available Plugins
         plugins = PluginMetadataList.from_package_names([])
         representation = ApePluginsRepr(plugins)
         assert str(representation) == ""
+
+
+class TestPluginGroup:
+    def test_name(self):
+        group = PluginGroup(plugin_type=PluginType.INSTALLED)
+        assert group.name == "Installed"
+
+    def test_name_when_plugin_type_is_str(self):
+        group = PluginGroup(plugin_type=PluginType.INSTALLED)
+        group.plugin_type = PluginType.INSTALLED.value  # Hack
+        assert group.name == "Installed"
+
+    def test_repr(self):
+        group = PluginGroup(plugin_type=PluginType.INSTALLED)
+        assert repr(group) == "<Installed Plugins Group>"
+
+    def test_repr_when_plugin_type_is_str(self):
+        group = PluginGroup(plugin_type=PluginType.INSTALLED)
+        group.plugin_type = PluginType.INSTALLED.value  # Hack
+        assert repr(group) == "<Installed Plugins Group>"
+
+    def test_repr_when_exception(self, mocker):
+        """
+        Exceptions CANNOT happen in a repr!
+        """
+        patch = mocker.patch("ape_plugins.utils.PluginGroup.name", new_callable=mock.PropertyMock)
+        patch.side_effect = ValueError("repr fail test")
+        group = PluginGroup(plugin_type=PluginType.INSTALLED)
+
+        assert repr(group) == "<PluginGroup>"

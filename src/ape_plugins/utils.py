@@ -5,7 +5,7 @@ from functools import cached_property
 from typing import Iterator, List, Optional, Sequence, Set, Tuple
 
 from ape.__modules__ import __modules__
-from ape._pydantic_compat import root_validator
+from ape._pydantic_compat import root_validator, validator
 from ape.logging import logger
 from ape.plugins import clean_plugin_name
 from ape.utils import BaseInterfaceModel, get_package_version, github_client
@@ -373,14 +373,27 @@ class PluginGroup(BaseModel):
         return len(self.plugins) > 0
 
     def __repr__(self) -> str:
-        return f"<{self.name} Plugins Group>"
+        try:
+            return f"<{self.name} Plugins Group>"
+        except Exception:
+            # Prevent exceptions happening in repr()
+            logger.log_debug_stack_trace()
+            return "<PluginGroup>"
 
     def __str__(self) -> str:
         return self.to_str()
 
+    @validator("plugin_type")
+    def validate_plugin_type(cls, value):
+        return PluginType(value) if isinstance(value, str) else value
+
+    @property
+    def plugin_type_str(self) -> str:
+        return getattr(self.plugin_type, "value", str(self.plugin_type))
+
     @property
     def name(self) -> str:
-        return self.plugin_type.value.capitalize()
+        return self.plugin_type_str.capitalize()
 
     @property
     def plugin_names(self) -> List[str]:
@@ -426,8 +439,13 @@ class ApePluginsRepr:
         self.metadata = metadata
 
     def __repr__(self) -> str:
-        to_display_str = ", ".join([x.value for x in self.include])
-        return f"<PluginMap to_display='{to_display_str}'>"
+        try:
+            to_display_str = ", ".join([x.value for x in self.include])
+            return f"<PluginMap to_display='{to_display_str}'>"
+        except Exception:
+            # Prevent exceptions happening in repr()
+            logger.log_debug_stack_trace()
+            return "<ApePluginsRepr>"
 
     def __str__(self) -> str:
         sections = []
