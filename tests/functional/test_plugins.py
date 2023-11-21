@@ -164,7 +164,7 @@ class TestPluginGroup:
 
     def test_name_when_plugin_type_is_str(self):
         group = PluginGroup(plugin_type=PluginType.INSTALLED)
-        group.plugin_type = PluginType.INSTALLED.value  # Hack
+        group.plugin_type = PluginType.INSTALLED.value  # type: ignore[assignment]
         assert group.name == "Installed"
 
     def test_repr(self):
@@ -173,7 +173,7 @@ class TestPluginGroup:
 
     def test_repr_when_plugin_type_is_str(self):
         group = PluginGroup(plugin_type=PluginType.INSTALLED)
-        group.plugin_type = PluginType.INSTALLED.value  # Hack
+        group.plugin_type = PluginType.INSTALLED.value  # type: ignore[assignment]
         assert repr(group) == "<Installed Plugins Group>"
 
     def test_repr_when_exception(self, mocker):
