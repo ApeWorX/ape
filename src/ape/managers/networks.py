@@ -418,6 +418,7 @@ class NetworkManager(BaseManager):
         network_choice: Optional[str] = None,
         provider_settings: Optional[Dict] = None,
         disconnect_after: bool = False,
+        disconnect_on_exit: bool = True,
     ) -> ProviderContextManager:
         """
         Parse a network choice into a context manager for managing a temporary
@@ -445,7 +446,11 @@ class NetworkManager(BaseManager):
         provider = self.get_provider_from_choice(
             network_choice=network_choice, provider_settings=provider_settings
         )
-        return ProviderContextManager(provider=provider, disconnect_after=disconnect_after)
+        return ProviderContextManager(
+            provider=provider,
+            disconnect_after=disconnect_after,
+            disconnect_on_exit=disconnect_on_exit,
+        )
 
     @property
     def default_ecosystem(self) -> EcosystemAPI:
