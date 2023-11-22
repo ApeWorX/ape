@@ -1546,7 +1546,7 @@ class Web3Provider(ProviderAPI, ABC):
             # Use raw value since it is not a real address.
             contract_id = address.hex()
 
-        call_type = evm_call.call_type.value
+        call_type = getattr(evm_call.call_type, "value", evm_call.call_type)
         return CallTreeNode(
             calls=[self._create_call_tree_node(x, txn_hash=txn_hash) for x in evm_call.calls],
             call_type=call_type,
