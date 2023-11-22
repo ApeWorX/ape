@@ -1546,14 +1546,15 @@ class Web3Provider(ProviderAPI, ABC):
             # Use raw value since it is not a real address.
             contract_id = address.hex()
 
-        call_type = getattr(evm_call.call_type, "value", evm_call.call_type)
+        call_type_str: str = getattr(evm_call.call_type, "value", f"{evm_call.call_type}")
+        input_data = evm_call.calldata if "CREATE" in call_type_str else evm_call.calldata[4:].hex()
         return CallTreeNode(
             calls=[self._create_call_tree_node(x, txn_hash=txn_hash) for x in evm_call.calls],
-            call_type=call_type,
+            call_type=call_type_str,
             contract_id=contract_id,
             failed=evm_call.failed,
             gas_cost=evm_call.gas_cost,
-            inputs=evm_call.calldata if "CREATE" in call_type else evm_call.calldata[4:].hex(),
+            inputs=input_data,
             method_id=evm_call.calldata[:4].hex(),
             outputs=evm_call.returndata.hex(),
             raw=evm_call.dict(),
