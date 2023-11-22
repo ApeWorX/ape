@@ -276,6 +276,10 @@ class BaseGethProvider(Web3Provider, ABC):
         return network_config.get("uri", DEFAULT_SETTINGS["uri"])
 
     @property
+    def connection_id(self) -> Optional[str]:
+        return f"{self.network_choice}:{self.uri}"
+
+    @property
     def _clean_uri(self) -> str:
         return sanitize_url(self.uri)
 
@@ -694,10 +698,6 @@ class Geth(BaseGethProvider, UpstreamProvider):
     @property
     def connection_str(self) -> str:
         return self.uri
-
-    @property
-    def connection_id(self) -> Optional[str]:
-        return f"{self.network_choice}:{self.uri}"
 
     def connect(self):
         self._set_web3()
