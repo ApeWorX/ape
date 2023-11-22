@@ -695,6 +695,10 @@ class Geth(BaseGethProvider, UpstreamProvider):
     def connection_str(self) -> str:
         return self.uri
 
+    @property
+    def connection_id(self) -> Optional[str]:
+        return f"{self.network_choice}:{self.uri}"
+
     def connect(self):
         self._set_web3()
         if not self.is_connected:
