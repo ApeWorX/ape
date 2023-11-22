@@ -281,6 +281,7 @@ class BaseInterfaceModel(BaseInterface, BaseModel):
         arbitrary_types_allowed = True
         underscore_attrs_are_private = True
         copy_on_model_validation = "none"
+        use_enum_values = False
 
     def __dir__(self) -> List[str]:
         """

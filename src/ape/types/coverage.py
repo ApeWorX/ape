@@ -7,11 +7,11 @@ from xml.dom.minidom import getDOMImplementation
 from xml.etree.ElementTree import Element, SubElement, tostring
 
 import requests
-from ethpm_types import BaseModel
 from ethpm_types.source import ContractSource, SourceLocation
 
 from ape._pydantic_compat import NonNegativeInt, validator
 from ape.logging import logger
+from ape.utils.basemodel import BaseModel
 from ape.utils.misc import get_current_timestamp_ms
 from ape.version import version as ape_version
 
