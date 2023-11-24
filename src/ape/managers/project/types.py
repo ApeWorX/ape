@@ -180,7 +180,7 @@ class BaseProject(ProjectAPI):
         contract_types.update(compiled_contract_types)
         # NOTE: We need to prevent compilation or else we get an endless loop, because
         # compilation results in creating a manifest, which triggers compilation, etc.
-        compiler_data = self.project_manager._get_compiler_data(compile_if_needed=False)
+        compiler_data = self.project_manager.get_compiler_data(compile_if_needed=False)
         manifest = self._create_manifest(
             source_paths,
             self.contracts_folder,

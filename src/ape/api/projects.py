@@ -447,7 +447,7 @@ class DependencyAPI(BaseInterfaceModel):
             project_manifest = project._create_manifest(
                 sources, project.contracts_folder, {}, name=project.name, version=project.version
             )
-            compiler_data = self.project_manager._get_compiler_data(compile_if_needed=False)
+            compiler_data = self.project_manager.get_compiler_data(compile_if_needed=False)
 
         if dependencies:
             project_manifest.dependencies = dependencies
