@@ -149,6 +149,7 @@ def test_repr_disconnected(networks_disconnected):
 def test_get_provider_from_choice_adhoc_provider(networks_connected_to_tester):
     uri = "https://geth:1234567890abcdef@geth.foo.bar/"
     provider = networks_connected_to_tester.get_provider_from_choice(f"ethereum:local:{uri}")
+    assert uri in provider.connection_id
     assert provider.name == "geth"
     assert provider.uri == uri
     assert provider.network.name == "local"

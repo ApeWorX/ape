@@ -203,7 +203,7 @@ class BaseModel(_BaseModel):
         """
 
         try:
-            return super().__getattr__(name)
+            return super().__getattribute__(name)
         except AttributeError:
             extras_checked = set()
             for ape_extra in self.__ape_extra_attributes__():
@@ -281,6 +281,7 @@ class BaseInterfaceModel(BaseInterface, BaseModel):
         arbitrary_types_allowed = True
         underscore_attrs_are_private = True
         copy_on_model_validation = "none"
+        use_enum_values = False
 
     def __dir__(self) -> List[str]:
         """

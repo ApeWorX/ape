@@ -287,9 +287,10 @@ class BlockContainer(BaseManager):
         # Get number of last block with the necessary amount of confirmations.
         block = None
 
-        if start_block is not None:
+        head_minus_confirms = self.height - required_confirmations
+        if start_block is not None and start_block <= head_minus_confirms:
             # Front-load historical blocks.
-            for block in self.range(start_block, self.height - required_confirmations + 1):
+            for block in self.range(start_block, head_minus_confirms + 1):
                 yield block
 
         if block:
