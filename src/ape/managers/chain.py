@@ -530,10 +530,11 @@ class AccountHistory(BaseInterfaceModel):
 
     @__getitem__.register
     def __getitem_slice(self, indices: slice) -> List[ReceiptAPI]:
-        start, stop, step = (
+        # start, stop, step = (
+        start, stop = (
             indices.start or 0,
             indices.stop or len(self),
-            indices.step or 1,
+            # indices.step  or 1,
         )
 
         if start < 0:
@@ -559,7 +560,7 @@ class AccountHistory(BaseInterfaceModel):
                         account=self.address,
                         start_nonce=start,
                         stop_nonce=stop - 1,
-                        step=step,
+                        # step=step,
                     )
                 )
             ),
