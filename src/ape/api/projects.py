@@ -4,7 +4,7 @@ import tempfile
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Dict, Iterator, List, Optional, Union
 
-from ethpm_types import Checksum, ContractType, PackageManifest, Source
+from ethpm_types import Checksum, Compiler, ContractType, PackageManifest, Source
 from ethpm_types.manifest import PackageName
 from ethpm_types.source import Content
 from ethpm_types.utils import Algorithm, AnyUrl, compute_checksum
@@ -180,12 +180,14 @@ class ProjectAPI(BaseInterfaceModel):
         name: Optional[str] = None,
         version: Optional[str] = None,
         initial_manifest: Optional[PackageManifest] = None,
+        compiler_data: Optional[List[Compiler]] = None,
     ) -> PackageManifest:
         manifest = initial_manifest or PackageManifest()
         manifest.name = PackageName(__root__=name.lower()) if name is not None else manifest.name
         manifest.version = version or manifest.version
         manifest.sources = cls._create_source_dict(source_paths, contracts_path)
         manifest.contract_types = contract_types
+        manifest.compilers = compiler_data or []
         return manifest
 
     @classmethod
@@ -445,7 +447,7 @@ class DependencyAPI(BaseInterfaceModel):
             project_manifest = project._create_manifest(
                 sources, project.contracts_folder, {}, name=project.name, version=project.version
             )
-            compiler_data = self.project_manager._get_compiler_data(compile_if_needed=False)
+            compiler_data = self.project_manager.get_compiler_data(compile_if_needed=False)
 
         if dependencies:
             project_manifest.dependencies = dependencies
