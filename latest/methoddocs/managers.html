@@ -50,6 +50,7 @@
               <option value="">Select version...</option>
               <option value="latest">latest</option>
               <option value="stable">stable</option>
+                <option value="v0.6.26">v0.6.26</option>
                 <option value="v0.6.25">v0.6.25</option>
                 <option value="v0.6.24">v0.6.24</option>
                 <option value="v0.6.23">v0.6.23</option>
@@ -377,6 +378,7 @@
 <li class="toctree-l4"><a class="reference internal" href="#ape.managers.project.manager.ProjectManager.dependencies"><code class="docutils literal notranslate"><span class="pre">ProjectManager.dependencies</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.managers.project.manager.ProjectManager.extensions_with_missing_compilers"><code class="docutils literal notranslate"><span class="pre">ProjectManager.extensions_with_missing_compilers()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.managers.project.manager.ProjectManager.extract_manifest"><code class="docutils literal notranslate"><span class="pre">ProjectManager.extract_manifest()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ape.managers.project.manager.ProjectManager.get_compiler_data"><code class="docutils literal notranslate"><span class="pre">ProjectManager.get_compiler_data()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.managers.project.manager.ProjectManager.get_contract"><code class="docutils literal notranslate"><span class="pre">ProjectManager.get_contract()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.managers.project.manager.ProjectManager.get_project"><code class="docutils literal notranslate"><span class="pre">ProjectManager.get_project()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.managers.project.manager.ProjectManager.interfaces_folder"><code class="docutils literal notranslate"><span class="pre">ProjectManager.interfaces_folder</span></code></a></li>
@@ -2502,6 +2504,21 @@ that do not have associated compilers installed.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
 <dd class="field-odd"><p>ethpm_types.manifest.PackageManifest</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ape.managers.project.manager.ProjectManager.get_compiler_data">
+<span class="sig-name descname"><span class="pre">get_compiler_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">compile_if_needed</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Compiler</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#ape.managers.project.manager.ProjectManager.get_compiler_data" title="Permalink to this definition"></a></dt>
+<dd><p>A list of <code class="docutils literal notranslate"><span class="pre">Compiler</span></code> objects representing the raw-data specifics of a compiler.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>compile_if_needed</strong> (<em>bool</em>) – Set to <code class="docutils literal notranslate"><span class="pre">False</span></code> to only return cached compiler data.
+Defaults to <code class="docutils literal notranslate"><span class="pre">True</span></code>.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>List[Compiler]</p>
 </dd>
 </dl>
 </dd></dl>
