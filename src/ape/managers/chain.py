@@ -276,9 +276,14 @@ class BlockContainer(BaseManager):
         if stop_block is not None and stop_block <= self.chain_manager.blocks.height:
             raise ValueError("'stop' argument must be in the future.")
 
-        if start_block is not None:
+
+        # Get number of last block with the necessary amount of confirmations.
+        block = None
+
+        head_minus_confirms = self.height - required_confirmations
+        if start_block is not None and start_block <= head_minus_confirms:
             # Front-load historical blocks.
-            for block in self.range(start_block, self.height - required_confirmations + 1):
+            for block in self.range(start_block, head_minus_confirms + 1):
                 yield block
 
         yield from self.provider.poll_blocks(

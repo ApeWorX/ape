@@ -138,9 +138,7 @@ class ForkedNetworkConfig(NetworkConfig):
     """
 
 
-def _create_local_config(
-    default_provider: Optional[str] = None, use_fork: bool = False, **kwargs
-) -> NetworkConfig:
+def _create_local_config(default_provider: Optional[str] = None, use_fork: bool = False, **kwargs):
     return _create_config(
         base_fee_multiplier=1.0,
         default_provider=default_provider,
@@ -155,7 +153,7 @@ def _create_local_config(
 def _create_config(
     required_confirmations: int = 2,
     base_fee_multiplier: float = DEFAULT_LIVE_NETWORK_BASE_FEE_MULTIPLIER,
-    cls: Type[NetworkConfig] = NetworkConfig,
+    cls: Type = NetworkConfig,
     **kwargs,
 ) -> NetworkConfig:
     return cls(

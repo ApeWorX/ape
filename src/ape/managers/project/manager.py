@@ -161,6 +161,19 @@ class ProjectManager(BaseManager):
         """
         return self._get_compiler_data()
 
+    def get_compiler_data(self, compile_if_needed: bool = True) -> List[Compiler]:
+        """
+        A list of ``Compiler`` objects representing the raw-data specifics of a compiler.
+
+        Args:
+            compile_if_needed (bool): Set to ``False`` to only return cached compiler data.
+              Defaults to ``True``.
+
+        Returns:
+            List[Compiler]
+        """
+        return self._get_compiler_data(compile_if_needed=compile_if_needed)
+
     def _get_compiler_data(self, compile_if_needed: bool = True):
         contract_types: Iterable[ContractType] = (
             self.contracts.values()

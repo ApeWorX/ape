@@ -91,6 +91,9 @@ def test_compile(ape_cli, runner, project, clean_cache):
     unexpected_files = [f for f in all_files if f not in expected_files]
 
     manifest = project.extract_manifest()
+    non_json = [f for f in expected_files if f.suffix != ".json"]
+    if len(non_json) > 0:
+        assert manifest.compilers
     for file in expected_files:
         assert file.name in manifest.sources
 

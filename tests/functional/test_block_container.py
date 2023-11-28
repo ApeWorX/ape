@@ -175,3 +175,21 @@ def test_poll_blocks_reorg_with_timeout(
             time.sleep(1)
 
             chain_that_mined_5.mine(3)
+            
+def test_poll_blocks_future(chain_that_mined_5, eth_tester_provider, owner, PollDaemon):
+    blocks: Queue = Queue(maxsize=3)
+    poller = chain_that_mined_5.blocks.poll_blocks(
+        start_block=chain_that_mined_5.blocks.head.number + 1
+    )
+
+    with PollDaemon("blocks", poller, blocks.put, blocks.full):
+        # Sleep first to ensure listening before mining.
+        time.sleep(1)
+        eth_tester_provider.mine(3)
+
+    assert blocks.full()
+    first = blocks.get().number
+    second = blocks.get().number
+    third = blocks.get().number
+    assert first == second - 1
+    assert second == third - 1
