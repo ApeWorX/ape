@@ -249,8 +249,6 @@ print(signature.encode_vrs())
 # message hash
 print(signature.message_hash)
 
-# recover the signer from
-signer = recover_signer(message, signature.encode_vrs())
 ```
 
 ## Hardware Wallets
