@@ -1481,12 +1481,12 @@ class Web3Provider(ProviderAPI, ABC):
             # The next block we want is simply 1 after the last.
             next_block = last.number + 1
 
-            # Use an "adjused" head, based on the required confirmations.
             head = self.get_block("latest")
 
             try:
                 if head.number is None or head.hash is None:
                     raise ProviderError("Head block has no number or hash.")
+                # Use an "adjused" head, based on the required confirmations.
                 adjusted_head = self.get_block(head.number - required_confirmations)
                 if adjusted_head.number is None or adjusted_head.hash is None:
                     raise ProviderError("Adjusted head block has no number or hash.")
