@@ -175,7 +175,8 @@ def test_poll_blocks_reorg_with_timeout(
             time.sleep(1)
 
             chain_that_mined_5.mine(3)
-            
+
+
 def test_poll_blocks_future(chain_that_mined_5, eth_tester_provider, owner, PollDaemon):
     blocks: Queue = Queue(maxsize=3)
     poller = chain_that_mined_5.blocks.poll_blocks(
