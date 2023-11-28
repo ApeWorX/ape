@@ -239,20 +239,18 @@ signature = account.sign_message(message)
 Get the signed message signature as well as message hash signed by the account
 
 ```py
-from ape import accounts
-from eth_account.messages import encode_defunct
+from ape.types.signatures import recover_signer
 
-account = accounts.load("<ALIAS>")
-account.set_autosign(True)
-
-# Now, you will not be prompted to sign messages or transactions
-message = encode_defunct(text="Hello Apes!")
+[...]
 signature = account.sign_message(message)
 
 # signature
 print(signature.encode_vrs())
 # message hash
-print(signature.messageHash)
+print(signature.message_hash)
+
+# recover the signer from
+signer = recover_signer(message, signature.encode_vrs())
 ```
 
 ## Hardware Wallets

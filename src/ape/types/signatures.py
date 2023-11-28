@@ -22,7 +22,7 @@ class _Signature:
     v: int
     r: bytes
     s: bytes
-    messageHash: Optional[bytes] = None
+    message_hash: Optional[bytes] = None
 
     def __iter__(self) -> Iterator[Union[int, bytes]]:
         # NOTE: Allows tuple destructuring

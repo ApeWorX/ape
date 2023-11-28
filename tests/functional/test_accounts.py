@@ -590,9 +590,9 @@ def test_signed_messge_hash(signer):
     signature = signer.sign_message(message)
 
     assert signer.check_signature(message, signature)
-    assert isinstance(signature.messageHash, HexBytes)
+    assert isinstance(signature.message_hash, HexBytes)
     assert (
-        signature.messageHash.hex()
+        signature.message_hash.hex()
         == "0x46b937e48a6aaec0a17aac9dc326950632c949b1f1f9300073b1ef55b905c278"
     )
 
