@@ -195,13 +195,11 @@ class KeyfileAccount(AccountAPI):
 
             # Convert EIP712Message to SignableMessage for handling below
             msg = msg.signable_message
+        elif isinstance(msg, SignableMessage):
+            user_approves = self.__autosign or click.confirm(f"{msg}\n\nSign: ")
         else:
             logger.warning("Unsupported message type, (type=%r, msg=%r)", type(msg), msg)
             return None
-
-        # msg should be a SignableMessage at this point
-        if isinstance(msg, SignableMessage):
-            user_approves = self.__autosign or click.confirm(f"{msg}\n\nSign: ")
 
         if not user_approves:
             return None
