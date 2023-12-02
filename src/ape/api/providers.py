@@ -755,7 +755,7 @@ def _sanitize_web3_url(msg: str) -> str:
 
     # * To remote the `,` from the url http://127.0.0.1:8545,
     if "," in rest[0]:
-        rest[0] = rest[0].strip(",")
+        rest[0] = rest[0].rstrip(",")
     sanitized_url = sanitize_url(rest[0])
     return f"{prefix} URI: {sanitized_url} {' '.join(rest[1:])}"
 
