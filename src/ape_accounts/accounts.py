@@ -160,7 +160,10 @@ class KeyfileAccount(AccountAPI):
         if not user_approves:
             return None
 
-        signed_msg = EthAccount.sign_message(msg, self.__key)
+        # Hack to allow hashes to work
+        method = EthAccount.sign_message if isinstance(msg, SignableMessage) else EthAccount.signHash
+
+        signed_msg = method(msg, self.__key)
         return MessageSignature(
             v=signed_msg.v,
             r=to_bytes(signed_msg.r),
