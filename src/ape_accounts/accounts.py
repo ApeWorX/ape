@@ -1,7 +1,7 @@
 import json
 from os import environ
 from pathlib import Path
-from typing import Dict, Iterator, Optional
+from typing import Callable, Dict, Iterator, Optional
 
 import click
 from eth_account import Account as EthAccount
@@ -160,8 +160,17 @@ class KeyfileAccount(AccountAPI):
         if not user_approves:
             return None
 
+        method: Callable
+
         # Hack to allow hashes to work
-        method = EthAccount.sign_message if isinstance(msg, SignableMessage) else EthAccount.signHash
+        if isinstance(msg, SignableMessage):
+            method = EthAccount.sign_message
+
+        else:
+            logger.warning(
+                "Signing a hash is dangerous! Please ensure you trust what you are signing."
+            )
+            method = EthAccount.signHash
 
         signed_msg = method(msg, self.__key)
         return MessageSignature(

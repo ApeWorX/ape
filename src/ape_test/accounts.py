@@ -102,7 +102,12 @@ class TestAccount(TestAccountAPI):
         return self.network_manager.ethereum.decode_address(self.address_str)
 
     def sign_message(self, msg: SignableMessage) -> Optional[MessageSignature]:
-        signed_msg = EthAccount.sign_message(msg, self.private_key)
+        # Hack to allow hashes to work
+        method = (
+            EthAccount.sign_message if isinstance(msg, SignableMessage) else EthAccount.signHash
+        )
+
+        signed_msg = method(msg, self.private_key)
         return MessageSignature(
             v=signed_msg.v,
             r=to_bytes(signed_msg.r),
