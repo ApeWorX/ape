@@ -372,6 +372,8 @@ def test_unlock_from_prompt_and_sign_transaction(runner, keyfile_account, receiv
 
 def test_unlock_with_passphrase_from_env_and_sign_message(runner, keyfile_account):
     ENV_VARIABLE = f"APE_ACCOUNTS_{keyfile_account.alias}_PASSPHRASE"
+    message = encode_defunct(text="Hello Apes!")
+
     # Set environment variable with passphrase
     environ[ENV_VARIABLE] = PASSPHRASE
 
@@ -380,8 +382,6 @@ def test_unlock_with_passphrase_from_env_and_sign_message(runner, keyfile_accoun
 
     # Account should be unlocked
     assert not keyfile_account.locked
-
-    message = encode_defunct(text="Hello Apes!")
 
     # y: yes, sign (note: unlocking makes the key available but is not the same as autosign).
     with runner.isolation(input="y\n"):
