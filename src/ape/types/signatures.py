@@ -15,7 +15,7 @@ SignableMessage.__doc__ = (SignableMessage.__doc__ or "").replace(
 
 
 # Improve repr to force hexstr for body instead of raw bytes.
-def signable_message_repr(msg: SignableMessage) -> str:
+def signable_message_repr(msg) -> str:
     name = getattr(SignableMessage, "__name__", "SignableMessage")
     default_value = "<unknown!>"  # Shouldn't happen
     version_str = _bytes_to_human_str(msg.version) or default_value
@@ -24,7 +24,7 @@ def signable_message_repr(msg: SignableMessage) -> str:
     return f"{name}(" f'version="{version_str}", header="{header_str}", body="{body_str}")'
 
 
-SignableMessage.__repr__ = signable_message_repr
+SignableMessage.__repr__ = signable_message_repr  # type: ignore[method-assign]
 
 
 def _bytes_to_human_str(bytes_value: bytes) -> Optional[str]:
