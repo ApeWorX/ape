@@ -32,6 +32,8 @@ class InterfaceCompiler(CompilerAPI):
             )
             source_id = str(source_path)
             code = path.read_text()
+            if not code:
+                continue
 
             try:
                 # NOTE: Always set the source ID to the source of the JSON file
