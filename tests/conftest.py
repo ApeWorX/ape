@@ -309,6 +309,8 @@ def empty_data_folder():
 @pytest.fixture
 def keyfile_account(owner, keyparams, temp_accounts_path, temp_keyfile_account_ctx):
     with temp_keyfile_account_ctx(temp_accounts_path, ALIAS, keyparams, owner) as account:
+        # Ensure starts off locked.
+        account.lock()
         yield account
 
 
