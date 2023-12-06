@@ -38,19 +38,22 @@ def core_account(request, owner, keyfile_account):
         yield keyfile_account  # from ape_accounts plugin
 
 
+@pytest.fixture
+def message():
+    return encode_defunct(text="Hello Apes!")
+
+
 class Foo(EIP712Message):
     _name_: "string" = "Foo"  # type: ignore  # noqa: F821
     bar: "address"  # type: ignore  # noqa: F821
 
 
-def test_sign_message(signer):
-    message = encode_defunct(text="Hello Apes!")
+def test_sign_message(signer, message):
     signature = signer.sign_message(message)
     assert signer.check_signature(message, signature)
 
 
-def test_recover_signer(signer):
-    message = encode_defunct(text="Hello Apes!")
+def test_recover_signer(signer, message):
     signature = signer.sign_message(message)
     assert recover_signer(message, signature) == signer
 
@@ -62,11 +65,10 @@ def test_sign_eip712_message(signer):
     assert signer.check_signature(message, signature)
 
 
-def test_sign_message_with_prompts(runner, keyfile_account):
+def test_sign_message_with_prompts(runner, keyfile_account, message):
     # "y\na\ny": yes sign, password, yes keep unlocked
     start_nonce = keyfile_account.nonce
     with runner.isolation(input="y\na\ny"):
-        message = encode_defunct(text="Hello Apes!")
         signature = keyfile_account.sign_message(message)
         assert keyfile_account.check_signature(message, signature)
 
@@ -270,9 +272,8 @@ def test_accounts_contains(accounts, owner):
     assert owner.address in accounts
 
 
-def test_autosign_messages(runner, keyfile_account):
+def test_autosign_messages(runner, keyfile_account, message):
     keyfile_account.set_autosign(True, passphrase="a")
-    message = encode_defunct(text="Hello Apes!")
     signature = keyfile_account.sign_message(message)
     assert keyfile_account.check_signature(message, signature)
 
@@ -329,9 +330,8 @@ def test_contract_as_sender_non_fork_network(contract_instance):
         contract_instance.setNumber(5, sender=contract_instance)
 
 
-def test_unlock_with_passphrase_and_sign_message(runner, keyfile_account):
+def test_unlock_with_passphrase_and_sign_message(runner, keyfile_account, message):
     keyfile_account.unlock(passphrase="a")
-    message = encode_defunct(text="Hello Apes!")
 
     # y: yes, sign (note: unlocking makes the key available but is not the same as autosign).
     with runner.isolation(input="y\n"):
@@ -339,11 +339,10 @@ def test_unlock_with_passphrase_and_sign_message(runner, keyfile_account):
         assert keyfile_account.check_signature(message, signature)
 
 
-def test_unlock_from_prompt_and_sign_message(runner, keyfile_account):
+def test_unlock_from_prompt_and_sign_message(runner, keyfile_account, message):
     # a = password
     with runner.isolation(input="a\n"):
         keyfile_account.unlock()
-        message = encode_defunct(text="Hello Apes!")
 
     # yes, sign the message
     with runner.isolation(input="y\n"):
@@ -370,9 +369,8 @@ def test_unlock_from_prompt_and_sign_transaction(runner, keyfile_account, receiv
         assert receipt.receiver == receiver
 
 
-def test_unlock_with_passphrase_from_env_and_sign_message(runner, keyfile_account):
+def test_unlock_with_passphrase_from_env_and_sign_message(runner, keyfile_account, message):
     ENV_VARIABLE = f"APE_ACCOUNTS_{keyfile_account.alias}_PASSPHRASE"
-    message = encode_defunct(text="Hello Apes!")
 
     # Set environment variable with passphrase
     environ[ENV_VARIABLE] = PASSPHRASE
@@ -401,6 +399,20 @@ def test_unlock_with_wrong_passphrase_from_env(keyfile_account):
 
     # Account should be unlocked
     assert keyfile_account.locked
+
+
+def test_unlock_and_reload(runner, accounts, keyfile_account, message):
+    """
+    Tests against a condition where reloading after unlocking
+    would not honor unlocked state.
+    """
+    keyfile_account.unlock(passphrase="a")
+    reloaded_account = accounts.load(keyfile_account.alias)
+
+    # y: yes, sign (note: unlocking makes the key available but is not the same as autosign).
+    with runner.isolation(input="y\n"):
+        signature = reloaded_account.sign_message(message)
+        assert keyfile_account.check_signature(message, signature)
 
 
 def test_custom_num_of_test_accounts_config(test_accounts, temp_config):
