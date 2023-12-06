@@ -32,11 +32,14 @@ class InterfaceCompiler(CompilerAPI):
             )
             source_id = str(source_path)
 
+            # NOTE: Allow empty files to read as empty JSONs.
+            code = path.read_text() or "{}"
+
             try:
                 # NOTE: Always set the source ID to the source of the JSON file
                 #   to avoid manifest corruptions later on.
                 contract_type = self.compile_code(
-                    path.read_text(),
+                    code,
                     base_path=base_path,
                     sourceId=source_id,
                 )
