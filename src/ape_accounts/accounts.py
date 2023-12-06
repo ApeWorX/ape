@@ -168,7 +168,7 @@ class KeyfileAccount(AccountAPI):
 
         else:
             logger.warning(
-                "Signing a hash is dangerous! Please ensure you trust what you are signing."
+                "Signing a raw hash is dangerous! Please ensure you trust what you are signing."
             )
             method = EthAccount.signHash
 
