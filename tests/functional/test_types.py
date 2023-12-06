@@ -4,7 +4,7 @@ import pytest
 from eth_utils import to_hex
 from ethpm_types.abi import EventABI
 
-from ape.types import ContractLog, LogFilter, TransactionSignature
+from ape.types import ContractLog, LogFilter, SignableMessage, TransactionSignature
 from ape.utils import ZERO_ADDRESS
 
 TXN_HASH = "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa222222222222222222222222"
@@ -110,3 +110,24 @@ def test_topic_filter_encoding():
 def test_signature_repr():
     signature = TransactionSignature(v=0, r=b"123", s=b"456")
     assert repr(signature) == "<TransactionSignature v=0 r=0x313233 s=0x343536>"
+
+
+def test_signable_message_repr():
+    version = b"E"
+    header = b"thereum Signed Message:\n32"
+    body = (
+        b"\x86\x05\x99\xc6\xfa\x0f\x05|po(\x1f\xe3\x84\xc0\x0f"
+        b"\x13\xb2\xa6\x91\xa3\xb8\x90\x01\xc0z\xa8\x17\xbe'\xf3\x13"
+    )
+    message = SignableMessage(version=version, header=header, body=body)
+
+    actual = repr(message)
+    expected_version = "E"
+    expected_header = "thereum Signed Message:\n32"
+    expected_body = "0x860599c6fa0f057c706f281fe384c00f13b2a691a3b89001c07aa817be27f313"
+    expected = (
+        f'SignableMessage(version="{expected_version}", header="{expected_header}", '
+        f'body="{expected_body}")'
+    )
+
+    assert actual == expected
