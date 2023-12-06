@@ -1,8 +1,9 @@
-from typing import Iterator, Union
+from typing import Iterator, Optional, Union
 
 from eth_account import Account
 from eth_account.messages import SignableMessage
 from eth_utils import to_bytes, to_hex
+from hexbytes import HexBytes
 from pydantic.dataclasses import dataclass
 
 from ape.types import AddressType
@@ -11,6 +12,41 @@ from ape.types import AddressType
 SignableMessage.__doc__ = (SignableMessage.__doc__ or "").replace(
     "EIP-191_", "`EIP-191 <https://eips.ethereum.org/EIPS/eip-191>`__"
 )
+
+
+# Improve repr to force hexstr for body instead of raw bytes.
+def signable_message_repr(msg: SignableMessage) -> str:
+    name = getattr(SignableMessage, "__name__", "SignableMessage")
+    default_value = "<unknown!>"  # Shouldn't happen
+    version_str = _bytes_to_human_str(msg.version) or default_value
+    header_str = _bytes_to_human_str(msg.header) or default_value
+    body_str = _bytes_to_human_str(msg.body) or default_value
+    return f"{name}(" f'version="{version_str}", header="{header_str}", body="{body_str}")'
+
+
+SignableMessage.__repr__ = signable_message_repr
+
+
+def _bytes_to_human_str(bytes_value: bytes) -> Optional[str]:
+    try:
+        # Try as text
+        return bytes_value.decode("utf8")
+    except Exception:
+        pass
+
+    try:
+        # Try as hex
+        return HexBytes(bytes_value).hex()
+    except Exception:
+        pass
+
+    try:
+        # Try normal str
+        return str(bytes_value)
+    except Exception:
+        pass
+
+    return None
 
 
 def _left_pad_bytes(val: bytes, num_bytes: int) -> bytes:
