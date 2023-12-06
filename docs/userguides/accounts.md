@@ -241,7 +241,6 @@ Get the signed message signature as well as message hash signed by the account
 ```py
 from ape.types.signatures import recover_signer
 
-[...]
 signature = account.sign_message(message)
 
 # signature
