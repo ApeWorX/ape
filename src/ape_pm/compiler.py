@@ -31,9 +31,7 @@ class InterfaceCompiler(CompilerAPI):
                 get_relative_path(path, base_path) if base_path and path.is_absolute() else path
             )
             source_id = str(source_path)
-
-            # NOTE: Allow empty files to read as empty JSONs.
-            code = path.read_text() or "{}"
+            code = path.read_text()
 
             try:
                 # NOTE: Always set the source ID to the source of the JSON file
