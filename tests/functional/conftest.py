@@ -173,6 +173,8 @@ def address():
 @pytest.fixture
 def second_keyfile_account(sender, keyparams, temp_accounts_path, temp_keyfile_account_ctx):
     with temp_keyfile_account_ctx(temp_accounts_path, ALIAS_2, keyparams, sender) as account:
+        # Ensure starts off locked.
+        account.lock()
         yield account
 
 

@@ -752,7 +752,8 @@ class ProjectManager(BaseManager):
 
         if destination.is_file():
             logger.debug("Deployment already tracked. Re-tracking.")
-            destination.unlink()
+            # NOTE: missing_ok=True to handle race condition.
+            destination.unlink(missing_ok=True)
 
         destination.write_text(artifact.json())
 
