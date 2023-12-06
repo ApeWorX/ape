@@ -248,7 +248,6 @@ signature = account.sign_message(message)
 print(signature.encode_vrs())
 # message hash
 print(signature.message_hash)
-
 ```
 
 ## Hardware Wallets
