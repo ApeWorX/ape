@@ -1,7 +1,7 @@
 import json
 from os import environ
 from pathlib import Path
-from typing import Iterator, Optional
+from typing import Dict, Iterator, Optional
 
 import click
 from eth_account import Account as EthAccount
@@ -25,6 +25,8 @@ class InvalidPasswordError(AccountsError):
 
 
 class AccountContainer(AccountContainerAPI):
+    loaded_accounts: Dict[str, "KeyfileAccount"] = {}
+
     @property
     def _keyfiles(self) -> Iterator[Path]:
         return self.data_folder.glob("*.json")
@@ -37,7 +39,11 @@ class AccountContainer(AccountContainerAPI):
     @property
     def accounts(self) -> Iterator[AccountAPI]:
         for keyfile in self._keyfiles:
-            yield KeyfileAccount(keyfile_path=keyfile)
+            if keyfile.stem not in self.loaded_accounts:
+                keyfile_account = KeyfileAccount(keyfile_path=keyfile)
+                self.loaded_accounts[keyfile.stem] = keyfile_account
+
+            yield self.loaded_accounts[keyfile.stem]
 
     def __len__(self) -> int:
         return len([*self._keyfiles])
