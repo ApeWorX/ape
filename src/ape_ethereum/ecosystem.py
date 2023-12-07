@@ -665,8 +665,15 @@ class Ethereum(EcosystemAPI):
             value = kwargs["value"] or 0  # Convert None to 0.
             kwargs["value"] = self.conversion_manager.convert(value, int)
 
-        value_kwargs = {k: v for k, v in kwargs.items() if v is not None}
-        return txn_class(**value_kwargs)
+        # This causes problems in pydantic for some reason.
+        if "gas_price" in kwargs and kwargs["gas_price"] is None:
+            del kwargs["gas_price"]
+
+        # None is not allowed, the user likely means `b""`.
+        if "data" in kwargs and kwargs["data"] is None:
+            kwargs["data"] = b""
+
+        return txn_class(**kwargs)
 
     def decode_logs(self, logs: List[Dict], *events: EventABI) -> Iterator["ContractLog"]:
         if not logs:
