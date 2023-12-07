@@ -639,7 +639,9 @@ class Ethereum(EcosystemAPI):
         if isinstance(kwargs.get("chainId"), str):
             kwargs["chainId"] = int(kwargs["chainId"], 16)
 
-        elif "chainId" not in kwargs and self.network_manager.active_provider is not None:
+        elif (
+            "chainId" not in kwargs or kwargs["chainId"] is None
+        ) and self.network_manager.active_provider is not None:
             kwargs["chainId"] = self.provider.chain_id
 
         if "input" in kwargs:
@@ -660,9 +662,11 @@ class Ethereum(EcosystemAPI):
         kwargs["gas"] = kwargs.pop("gas_limit", kwargs.get("gas"))
 
         if "value" in kwargs and not isinstance(kwargs["value"], int):
-            kwargs["value"] = self.conversion_manager.convert(kwargs["value"], int)
+            value = kwargs["value"] or 0  # Convert None to 0.
+            kwargs["value"] = self.conversion_manager.convert(value, int)
 
-        return txn_class(**kwargs)
+        value_kwargs = {k: v for k, v in kwargs.items() if v is not None}
+        return txn_class(**value_kwargs)
 
     def decode_logs(self, logs: List[Dict], *events: EventABI) -> Iterator["ContractLog"]:
         if not logs:
