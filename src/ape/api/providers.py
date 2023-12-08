@@ -2018,10 +2018,6 @@ class SubprocessProvider(ProviderAPI):
         Subclasses override this method to do provider-specific disconnection tasks.
         """
 
-        # NOTE: Setting it this way mostly because of a mypy issue.
-        default_value = self.model_fields["cached_chain_id"].default
-        self.cached_chain_id = default_value
-
         if self.process:
             self.stop()
 
