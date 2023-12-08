@@ -194,6 +194,7 @@ class BaseModel(EthpmTypesBaseModel):
     model_config = ConfigDict(arbitrary_types_allowed=True)
 
     __getattr_checking__: Set[str] = set()
+    __getattr_errors__: Dict[str, Exception] = {}
 
     def __ape_extra_attributes__(self) -> Iterator[ExtraModelAttributes]:
         """
@@ -215,16 +216,26 @@ class BaseModel(EthpmTypesBaseModel):
 
         private_attrs = self.__pydantic_private__ or {}
         if name in private_attrs:
+            if name in self.__getattr_checking__:
+                # Just in case.
+                self.__getattr_checking__.remove(name)
+
             return private_attrs[name]
 
         elif name in self.__getattr_checking__:
             # Prevent recursive error.
-            raise AttributeError(name)
+            # First, attempt to get real error.
+            message = f"Failed trying to get {name}"
+            if real_error := self.__getattr_errors__.get(name):
+                message = f"{message}. {real_error}"
+
+            raise AttributeError(message)
 
         self.__getattr_checking__.add(name)
         try:
             res = super().__getattribute__(name)
-        except AttributeError:
+        except AttributeError as err:
+            self.__getattr_errors__[name] = err
             extras_checked = set()
             for ape_extra in self.__ape_extra_attributes__():
                 if not ape_extra.include_getattr:
@@ -233,7 +244,12 @@ class BaseModel(EthpmTypesBaseModel):
                 if name in ape_extra:
                     # Attribute was found in one of the supplied
                     # extra attributes mappings.
-                    self.__getattr_checking__.remove(name)
+
+                    # Clear check caches.
+                    if name in self.__getattr_checking__:
+                        self.__getattr_checking__.remove(name)
+                    self.__getattr_errors__.pop(name, "")
+
                     return ape_extra.get(name)
 
                 extras_checked.add(ape_extra.name)
@@ -247,7 +263,11 @@ class BaseModel(EthpmTypesBaseModel):
 
             raise ApeAttributeError(message)
 
-        self.__getattr_checking__.remove(name)
+        # Clear check caches.
+        if name in self.__getattr_checking__:
+            self.__getattr_checking__.remove(name)
+        self.__getattr_errors__.pop(name, "")
+
         return res
 
     def __getitem__(self, name: Any) -> Any:
