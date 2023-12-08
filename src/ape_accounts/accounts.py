@@ -203,6 +203,7 @@ class KeyfileAccount(AccountAPI):
 
         if not user_approves:
             return None
+
         signed_msg = EthAccount.sign_message(msg, self.__key)
         return MessageSignature(
             v=signed_msg.v,

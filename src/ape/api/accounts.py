@@ -67,11 +67,11 @@ class AccountAPI(BaseInterfaceModel, BaseAddress):
             :class:`~ape.types.signatures.SignableMessage`, str, int, and bytes.
             See these
             `docs <https://eth-account.readthedocs.io/en/stable/eth_account.html#eth_account.messages.SignableMessage>`__  # noqa: E501
-            for more type information on this type.
+            for more type information on the ``SignableMessage`` type.
           **signer_options: Additional kwargs given to the signer to modify the signing operation.
 
         Returns:
-            :class:`~ape.types.signatures.MessageSignature` (optional): The signature corresponding to the message.
+          :class:`~ape.types.signatures.MessageSignature` (optional): The signature corresponding to the message.
         """
 
     @abstractmethod
