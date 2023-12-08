@@ -1,10 +1,12 @@
 import json
 from os import environ
 from pathlib import Path
-from typing import Iterator, Optional
+from typing import Any, Dict, Iterator, Optional
 
 import click
+from eip712.messages import EIP712Message
 from eth_account import Account as EthAccount
+from eth_account.messages import encode_defunct
 from eth_keys import keys  # type: ignore
 from eth_utils import to_bytes
 from ethpm_types import HexBytes
@@ -25,6 +27,8 @@ class InvalidPasswordError(AccountsError):
 
 
 class AccountContainer(AccountContainerAPI):
+    loaded_accounts: Dict[str, "KeyfileAccount"] = {}
+
     @property
     def _keyfiles(self) -> Iterator[Path]:
         return self.data_folder.glob("*.json")
@@ -37,7 +41,11 @@ class AccountContainer(AccountContainerAPI):
     @property
     def accounts(self) -> Iterator[AccountAPI]:
         for keyfile in self._keyfiles:
-            yield KeyfileAccount(keyfile_path=keyfile)
+            if keyfile.stem not in self.loaded_accounts:
+                keyfile_account = KeyfileAccount(keyfile_path=keyfile)
+                self.loaded_accounts[keyfile.stem] = keyfile_account
+
+            yield self.loaded_accounts[keyfile.stem]
 
     def __len__(self) -> int:
         return len([*self._keyfiles])
@@ -149,8 +157,50 @@ class KeyfileAccount(AccountAPI):
         self.__decrypt_keyfile(passphrase)
         self.keyfile_path.unlink()
 
-    def sign_message(self, msg: SignableMessage) -> Optional[MessageSignature]:
-        user_approves = self.__autosign or click.confirm(f"{msg}\n\nSign: ")
+    def sign_message(self, msg: Any, **signer_options) -> Optional[MessageSignature]:
+        user_approves = False
+
+        if isinstance(msg, str):
+            user_approves = self.__autosign or click.confirm(f"Message: {msg}\n\nSign: ")
+            msg = encode_defunct(text=msg)
+        elif isinstance(msg, int):
+            user_approves = self.__autosign or click.confirm(f"Message: {msg}\n\nSign: ")
+            msg = encode_defunct(hexstr=HexBytes(msg).hex())
+        elif isinstance(msg, bytes):
+            user_approves = self.__autosign or click.confirm(f"Message: {msg.hex()}\n\nSign: ")
+            msg = encode_defunct(primitive=msg)
+        elif isinstance(msg, EIP712Message):
+            # Display message data to user
+            display_msg = "Signing EIP712 Message\n"
+
+            # Domain Data
+            display_msg += "Domain\n"
+            if msg._name_:
+                display_msg += f"\tName: {msg._name_}\n"
+            if msg._version_:
+                display_msg += f"\tVersion: {msg._version_}\n"
+            if msg._chainId_:
+                display_msg += f"\tChain ID: {msg._chainId_}\n"
+            if msg._verifyingContract_:
+                display_msg += f"\tContract: {msg._verifyingContract_}\n"
+            if msg._salt_:
+                display_msg += f"\tSalt: 0x{msg._salt_.hex()}\n"
+
+            # Message Data
+            display_msg += "Message\n"
+            for field, value in msg._body_["message"].items():
+                display_msg += f"\t{field}: {value}\n"
+
+            user_approves = self.__autosign or click.confirm(f"{display_msg}\nSign: ")
+
+            # Convert EIP712Message to SignableMessage for handling below
+            msg = msg.signable_message
+        elif isinstance(msg, SignableMessage):
+            user_approves = self.__autosign or click.confirm(f"{msg}\n\nSign: ")
+        else:
+            logger.warning("Unsupported message type, (type=%r, msg=%r)", type(msg), msg)
+            return None
+
         if not user_approves:
             return None
 

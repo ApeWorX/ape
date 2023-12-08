@@ -6,6 +6,7 @@ from eth_typing import HexStr
 from eth_utils import ValidationError
 from web3.exceptions import ContractPanicError
 
+from ape.api.providers import _sanitize_web3_url
 from ape.exceptions import BlockNotFoundError, ContractLogicError, TransactionNotFoundError
 from ape.types import LogFilter
 from ape.utils import DEFAULT_TEST_CHAIN_ID
@@ -262,3 +263,10 @@ def test_prepare_tx_with_max_gas(tx_type, eth_tester_provider, ethereum, owner):
 
     actual = eth_tester_provider.prepare_transaction(tx)
     assert actual.gas_limit == eth_tester_provider.max_gas
+
+
+def test_no_comma_in_rpc_url():
+    test_url = "URI: http://127.0.0.1:8545,"
+    sanitised_url = _sanitize_web3_url(test_url)
+
+    assert "," not in sanitised_url

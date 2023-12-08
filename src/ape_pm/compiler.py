@@ -31,12 +31,15 @@ class InterfaceCompiler(CompilerAPI):
                 get_relative_path(path, base_path) if base_path and path.is_absolute() else path
             )
             source_id = str(source_path)
+            code = path.read_text()
+            if not code:
+                continue
 
             try:
                 # NOTE: Always set the source ID to the source of the JSON file
                 #   to avoid manifest corruptions later on.
                 contract_type = self.compile_code(
-                    path.read_text(),
+                    code,
                     base_path=base_path,
                     sourceId=source_id,
                 )

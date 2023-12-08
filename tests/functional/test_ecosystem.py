@@ -10,7 +10,7 @@ from ape.exceptions import DecodingError, NetworkNotFoundError
 from ape.types import AddressType
 from ape.utils import DEFAULT_LOCAL_TRANSACTION_ACCEPTANCE_TIMEOUT
 from ape_ethereum.ecosystem import BLUEPRINT_HEADER, Block
-from ape_ethereum.transactions import TransactionType
+from ape_ethereum.transactions import DynamicFeeTransaction, StaticFeeTransaction, TransactionType
 
 LOG = {
     "removed": False,
@@ -376,6 +376,38 @@ def test_create_transaction_uses_network_gas_limit(tx_type, ethereum, eth_tester
     tx = ethereum.create_transaction(type=tx_type.value, sender=owner.address)
     assert tx.type == tx_type.value
     assert tx.gas_limit == eth_tester_provider.max_gas
+
+
+def test_create_transaction_with_none_values(ethereum, eth_tester_provider):
+    """
+    Tests against None being in place of values in kwargs,
+    causing their actual defaults not to get used and ValidationErrors
+    to occur.
+    """
+    static = ethereum.create_transaction(
+        value=None, data=None, chain_id=None, gas_price=None, nonce=None, receiver=None
+    )
+    dynamic = ethereum.create_transaction(
+        value=None,
+        data=None,
+        chain_id=None,
+        max_fee=None,
+        max_prioriy_fee=None,
+        nonce=None,
+        receiver=None,
+    )
+    assert isinstance(static, StaticFeeTransaction)  # Because used gas_price
+    assert isinstance(dynamic, DynamicFeeTransaction)  # Because used max_fee
+
+    for tx in (static, dynamic):
+        assert tx.data == b""  # None is not allowed.
+        assert tx.value == 0  # None is same as 0.
+        assert tx.chain_id == eth_tester_provider.chain_id
+        assert tx.nonce is None
+
+    assert static.gas_price is None
+    assert dynamic.max_fee is None
+    assert dynamic.max_priority_fee is None
 
 
 @pytest.mark.parametrize("tx_type", TransactionType)

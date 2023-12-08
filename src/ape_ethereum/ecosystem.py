@@ -639,7 +639,9 @@ class Ethereum(EcosystemAPI):
         if isinstance(kwargs.get("chainId"), str):
             kwargs["chainId"] = int(kwargs["chainId"], 16)
 
-        elif "chainId" not in kwargs and self.network_manager.active_provider is not None:
+        elif (
+            "chainId" not in kwargs or kwargs["chainId"] is None
+        ) and self.network_manager.active_provider is not None:
             kwargs["chainId"] = self.provider.chain_id
 
         if "input" in kwargs:
@@ -660,7 +662,16 @@ class Ethereum(EcosystemAPI):
         kwargs["gas"] = kwargs.pop("gas_limit", kwargs.get("gas"))
 
         if "value" in kwargs and not isinstance(kwargs["value"], int):
-            kwargs["value"] = self.conversion_manager.convert(kwargs["value"], int)
+            value = kwargs["value"] or 0  # Convert None to 0.
+            kwargs["value"] = self.conversion_manager.convert(value, int)
+
+        # This causes problems in pydantic for some reason.
+        if "gas_price" in kwargs and kwargs["gas_price"] is None:
+            del kwargs["gas_price"]
+
+        # None is not allowed, the user likely means `b""`.
+        if "data" in kwargs and kwargs["data"] is None:
+            kwargs["data"] = b""
 
         return txn_class(**kwargs)
 
