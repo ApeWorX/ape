@@ -463,9 +463,10 @@ class AccountContainerAPI(BaseInterfaceModel):
     def _verify_account_type(self, account):
         if not isinstance(account, self.account_type):
             container_type_name = getattr(type(account), "__name__", "<CustomContainerType>")
+            account_type_name = getattr(self.account_type, "__name__", "<UnknownAccount>")
             message = (
                 f"Container '{container_type_name}' is an incorrect "
-                f"type for container '{type(self.account_type).__name__}'."
+                f"type for container '{account_type_name}'."
             )
 
             raise AccountsError(message)

@@ -70,7 +70,8 @@ class BaseAddress(BaseInterface):
         return self._base_dir_values
 
     def __repr__(self) -> str:
-        return f"<{BaseAddress.__name__} {self.address}>"
+        cls_name = getattr(type(self), "__name__", BaseAddress.__name__)
+        return f"<{cls_name} {self.address}>"
 
     def __str__(self) -> str:
         """

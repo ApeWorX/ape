@@ -66,7 +66,8 @@ class _Signature:
         yield self.s
 
     def __repr__(self) -> str:
-        return f"<{_Signature.__name__} v={self.v} r={to_hex(self.r)} s={to_hex(self.s)}>"
+        class_name = getattr(type(self), "__name__", "_Signature")
+        return f"<{class_name} v={self.v} r={to_hex(self.r)} s={to_hex(self.s)}>"
 
     def encode_vrs(self) -> bytes:
         return to_bytes(self.v) + _left_pad_bytes(self.r, 32) + _left_pad_bytes(self.s, 32)
