@@ -63,8 +63,8 @@ class AccountAPI(BaseInterfaceModel, BaseAddress):
 
         Args:
           msg (Any): The message to sign. Account plugins can handle various types of messages.
-            For example, :class:`~ape.accounts.LocalAccount` can handle
-            :class:`~ape.types.signatures.SignableMessage`
+            For example, :class:`~ape_accounts.accouns.KeyfileAccount` can handle
+            :class:`~ape.types.signatures.SignableMessage`, str, int, and bytes.
             See these
             `docs <https://eth-account.readthedocs.io/en/stable/eth_account.html#eth_account.messages.SignableMessage>`__  # noqa: E501
             for more type information on this type.
