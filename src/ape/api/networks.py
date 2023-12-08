@@ -268,7 +268,6 @@ class EcosystemAPI(BaseInterfaceModel):
         Returns:
             str
         """
-
         if network := self._default_network:
             # Was set programatically.
             return network

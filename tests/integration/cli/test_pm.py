@@ -27,7 +27,7 @@ def test_install_path_to_local_config_file(ape_cli, runner):
     project = "with-contracts"
     path = Path(__file__).parent / "projects" / project / "ape-config.yaml"
     result = runner.invoke(ape_cli, ["pm", "install", path.as_posix(), "--name", project])
-    assert result.exit_code == 0
+    assert result.exit_code == 0, result.output
     assert f"Package '{path.parent.as_posix()}' installed."
 
 
