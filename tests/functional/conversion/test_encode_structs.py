@@ -81,7 +81,7 @@ def test_encode_structs_as_dict_with_unconverted(sender, ethereum):
 
 def test_encode_structs_as_object_with_unconverted(sender, ethereum):
     normal_data: Struct = DATA_BY_TYPE_KEY["object"]  # type: ignore[assignment]
-    data = normal_data.copy()
+    data = normal_data.model_copy()
     data.d = sender
     actual = ethereum.encode_calldata(ABI, normal_data)
     assert actual == EXPECTED
