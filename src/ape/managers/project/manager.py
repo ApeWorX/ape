@@ -523,7 +523,8 @@ class ProjectManager(BaseManager):
         return None
 
     def _handle_attr_or_contract_not_found(self, attr_name: str):
-        message = f"{ProjectManager.__name__} has no attribute or contract named '{attr_name}'."
+        cls_name = getattr(type(self), "__name__", ProjectManager.__name__)
+        message = f"{cls_name} has no attribute or contract named '{attr_name}'."
 
         file_check_appended = False
         for file in self.contracts_folder.glob("**/*"):

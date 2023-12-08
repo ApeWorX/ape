@@ -238,7 +238,8 @@ class GithubDependency(DependencyAPI):
         return HttpUrl(_uri)
 
     def __repr__(self):
-        return f"<{GithubDependency.__name__} github={self.github}>"
+        cls_name = getattr(type(self), "__name__", GithubDependency.__name__)
+        return f"<{cls_name} github={self.github}>"
 
     def extract_manifest(self, use_cache: bool = True) -> PackageManifest:
         if use_cache and self.cached_manifest:

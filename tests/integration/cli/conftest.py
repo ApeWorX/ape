@@ -22,7 +22,11 @@ class IntegrationTestModule:
     def __init__(self, path: Path):
         self._path = path
         module = import_module(f"tests.integration.cli.{path.stem}")
-        test_methods = [getattr(module, t) for t in dir(module) if t.startswith("test_")]
+        test_methods = [
+            getattr(module, t)
+            for t in dir(module)
+            if t.startswith("test_") and hasattr(t, "__name__") and hasattr(t, "__module__")
+        ]
         self.tests = [NodeId(t) for t in test_methods]
 
     def __iter__(self):
@@ -55,7 +59,10 @@ def pytest_collection_modifyitems(session, config, items):
         item_name_parts = item.name.split("[")
         item_name_parts = [p.strip("[]") for p in item_name_parts]
 
-        module_full_name = item.module.__name__
+        module_full_name = getattr(item.module, "__name__", None)
+        if not module_full_name:
+            continue
+
         module_name = module_full_name.split(".")[-1]
         test_name = item_name_parts[0]
 

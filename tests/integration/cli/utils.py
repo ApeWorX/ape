@@ -71,6 +71,7 @@ class ProjectSkipper:
         The ``skip_project`` decorator calls this method
         on the test method they are wrapped around.
         """
+        assert hasattr(method, "__name__") and hasattr(method, "__module__")
         node = NodeId(method)
         for project in projects:
             self._raise_if_not_exists(project, node.node_id)
@@ -85,6 +86,7 @@ class ProjectSkipper:
         in the given list. The ``skip_project_except`` decorator calls
         this method on the test method they are wrapped around.
         """
+        assert hasattr(method, "__name__") and hasattr(method, "__module__")
         node = NodeId(method)
 
         # Verify projects to run for exist
