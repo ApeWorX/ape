@@ -1160,7 +1160,8 @@ class ContractInstance(BaseAddress, ContractTypeWrapper):
         ):
             # ABI should not contain a mix of events, mutable and view methods that match
             # NOTE: `__getattr__` *must* raise `AttributeError`
-            raise ApeAttributeError(f"{ContractInstance.__name__} has corrupted ABI.")
+            cls_name = getattr(type(self), "__name__", ContractInstance.__name__)
+            raise ApeAttributeError(f"{cls_name} has corrupted ABI.")
 
         if attr_name in self._view_methods_:
             return self._view_methods_[attr_name]
