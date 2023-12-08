@@ -12,10 +12,10 @@ from ape.utils import GeneratedDevAccount, generate_dev_accounts
 
 class TestAccountContainer(TestAccountContainerAPI):
     num_generated: int = 0
-    _cached_accounts: List["TestAccount"] = []
     mnemonic: str = ""
     num_of_accounts: int = 0
     hd_path: str = ""
+    _accounts: List["TestAccount"] = []
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -25,10 +25,10 @@ class TestAccountContainer(TestAccountContainerAPI):
         self.mnemonic = self.config["mnemonic"]
         self.num_of_accounts = self.config["number_of_accounts"]
         self.hd_path = self.config["hd_path"]
-        self._cached_accounts = []
+        self._accounts = []
 
         for index, account in enumerate(self._dev_accounts):
-            self._cached_accounts.append(
+            self._accounts.append(
                 TestAccount(
                     index=index, address_str=account.address, private_key=account.private_key
                 )
@@ -70,7 +70,7 @@ class TestAccountContainer(TestAccountContainerAPI):
         # As TestAccountManager only uses accounts property this works!
         if self._is_config_changed:
             self.init()
-        for account in self._cached_accounts:
+        for account in self._accounts:
             yield account
 
     def generate_account(self) -> "TestAccountAPI":

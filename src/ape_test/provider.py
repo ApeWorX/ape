@@ -35,10 +35,10 @@ class EthTesterProviderConfig(PluginConfig):
 
 class LocalProvider(TestProviderAPI, Web3Provider):
     _evm_backend: Optional[PyEVMBackend] = None
-    CANNOT_AFFORD_GAS_PATTERN: Pattern = re.compile(
+    _CANNOT_AFFORD_GAS_PATTERN: Pattern = re.compile(
         r"Sender b'[\\*|\w]*' cannot afford txn gas (\d+) with account balance (\d+)"
     )
-    INVALID_NONCE_PATTERN: Pattern = re.compile(
+    _INVALID_NONCE_PATTERN: Pattern = re.compile(
         r"Invalid transaction nonce: Expected (\d+), but got (\d+)"
     )
 
@@ -96,7 +96,7 @@ class LocalProvider(TestProviderAPI, Web3Provider):
             return estimate_gas(txn_data, block_identifier=block_id)
         except (ValidationError, TransactionFailed) as err:
             ape_err = self.get_virtual_machine_error(err, txn=txn)
-            gas_match = self.INVALID_NONCE_PATTERN.match(str(ape_err))
+            gas_match = self._INVALID_NONCE_PATTERN.match(str(ape_err))
             if gas_match:
                 # Sometimes, EthTester is confused about the sender nonce
                 # during gas estimation. Retry using the "expected" gas
@@ -239,7 +239,7 @@ class LocalProvider(TestProviderAPI, Web3Provider):
 
     def get_virtual_machine_error(self, exception: Exception, **kwargs) -> VirtualMachineError:
         if isinstance(exception, ValidationError):
-            match = self.CANNOT_AFFORD_GAS_PATTERN.match(str(exception))
+            match = self._CANNOT_AFFORD_GAS_PATTERN.match(str(exception))
             if match:
                 txn_gas, bal = match.groups()
                 sender = getattr(kwargs["txn"], "sender")

@@ -64,7 +64,6 @@ class _ProjectSources:
             needs_compile.update(reference_paths)
 
         needs_compile.update(all_referenced_paths)
-
         return list(needs_compile)
 
     @cached_property
