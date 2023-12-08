@@ -77,8 +77,19 @@ def get_package_version(obj: Any) -> str:
         return obj.__version__
 
     # NOTE: In case where don't pass a module name
-    if not isinstance(obj, str):
+    if not isinstance(obj, str) and hasattr(obj, "__name__"):
         obj = obj.__name__
+
+    elif not isinstance(obj, str):
+        try:
+            str_value = f"{obj}"
+        except Exception:
+            str_value = "<obj>"
+
+        logger.warning(f"Type issue: Unknown if properly handled {str_value}")
+
+        # Treat as no version found.
+        return ""
 
     # Reduce module string to base package
     # NOTE: Assumed that string input is module name e.g. `__name__`

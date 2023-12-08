@@ -249,7 +249,7 @@ class ConversionManager(BaseManager):
     """
 
     def __repr__(self):
-        return f"<{self.__class__.__name__}>"
+        return f"<{ConversionManager.__name__}>"
 
     @cached_property
     def _converters(self) -> Dict[Type, List[ConverterAPI]]:
@@ -358,7 +358,10 @@ class ConversionManager(BaseManager):
                 except Exception:
                     error_value = " "
 
-                message = f"Failed to convert{error_value}using '{converter.__class__.__name__}'."
+                message = f"Failed to convert{error_value}"
+                if converter_type_name := getattr(type(converter), "__name__", None):
+                    message = f"{message}using '{converter_type_name}'."
+
                 raise ConversionError(message) from err
 
         raise ConversionError(f"No conversion registered to handle '{value}'.")
@@ -429,4 +432,17 @@ def _get_type_name_from_type(var_type: Type) -> str:
     elif var_type is ChecksumAddress:
         return "AddressType"  # Use our alias
 
-    return var_type.__name__
+    elif hasattr(var_type, "__name__"):
+        return var_type.__name__
+
+    else:
+        message = "Unable to deduce type name"
+        try:
+            str_value = f"{var_type}"
+        except Exception:
+            str_value = ""
+
+        if str_value:
+            message = f"{message} for {str_value}"
+
+        raise TypeError(f"{message}.")

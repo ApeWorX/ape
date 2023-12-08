@@ -232,7 +232,7 @@ class ConfigManager(BaseInterfaceModel):
         return configs
 
     def __repr__(self):
-        return f"<{self.__class__.__name__} project={self.PROJECT_FOLDER.name}>"
+        return f"<{ConfigManager.__name__} project={self.PROJECT_FOLDER.name}>"
 
     def load(self, force_reload: bool = False) -> "ConfigManager":
         """

@@ -50,7 +50,7 @@ class ProjectAPI(BaseInterfaceModel):
     _contracts: Optional[Dict[str, ContractType]] = None
 
     def __repr__(self):
-        return f"<{self.__class__.__name__} {self.path.name}>"
+        return f"<{ProjectAPI.__name__} {self.path.name}>"
 
     @property
     @abstractmethod
@@ -261,7 +261,7 @@ class DependencyAPI(BaseInterfaceModel):
     _cached_manifest: Optional[PackageManifest] = None
 
     def __repr__(self):
-        return f"<{self.__class__.__name__} name='{self.name}'>"
+        return f"<{DependencyAPI.__name__} name='{self.name}'>"
 
     def __ape_extra_attributes__(self) -> Iterator[ExtraModelAttributes]:
         yield ExtraModelAttributes(

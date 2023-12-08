@@ -184,14 +184,25 @@ class QueryManager(ManagerAccessMixin):
                 raise QueryEngineError("No query engines are available.") from e
 
         # Go fetch the result from the engine
-        logger.debug(f"{sel_engine.__class__.__name__}: {query.__class__.__name__}({query})")
+        sel_engine_name = getattr(type(sel_engine), "__name__", None)
+        query_type_name = getattr(type(query), "__name__", None)
+        if not sel_engine_name:
+            logger.error("Engine type unknown")
+        if not query_type_name:
+            logger.error("Query type unknown")
+
+        if sel_engine_name and query_type_name:
+            logger.debug(f"{sel_engine_name}: {query_type_name}({query})")
+
         start_time = time.time_ns()
         result = sel_engine.perform_query(query)
         exec_time = (time.time_ns() - start_time) // 1000
-        logger.debug(
-            f"{sel_engine.__class__.__name__}: {query.__class__.__name__}"
-            f" executed in {exec_time} ms (expected: {est_time} ms)"
-        )
+
+        if sel_engine_name and query_type_name:
+            logger.debug(
+                f"{sel_engine_name}: {query_type_name}"
+                f" executed in {exec_time} ms (expected: {est_time} ms)"
+            )
 
         # Update any caches
         for engine in self.engines.values():

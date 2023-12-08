@@ -30,7 +30,7 @@ class NetworkManager(BaseManager):
 
     def __repr__(self):
         provider = self.active_provider
-        class_name = self.__class__.__name__
+        class_name = NetworkManager.__name__
         content = f"{class_name} active_provider={repr(provider)}" if provider else class_name
         return f"<{content}>"
 
@@ -234,7 +234,7 @@ class NetworkManager(BaseManager):
             if attr_name_fix in self.ecosystems:
                 return self.ecosystems[attr_name_fix]
 
-            raise ApeAttributeError(f"{self.__class__.__name__} has no attribute '{attr_name}'.")
+            raise ApeAttributeError(f"{NetworkManager.__name__} has no attribute '{attr_name}'.")
 
         return self.ecosystems[attr_name]
 

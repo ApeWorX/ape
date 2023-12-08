@@ -948,7 +948,7 @@ class ContractInstance(BaseAddress, ContractTypeWrapper):
 
         else:
             # Didn't find anything that matches
-            name = self.contract_type.name or self.__class__.__name__
+            name = self.contract_type.name or ContractType.__name__
             raise ApeAttributeError(f"'{name}' has no attribute '{method_name}'.")
 
     def invoke_transaction(self, method_name: str, *args, **kwargs) -> ReceiptAPI:
@@ -983,7 +983,7 @@ class ContractInstance(BaseAddress, ContractTypeWrapper):
 
         else:
             # Didn't find anything that matches
-            name = self.contract_type.name or self.__class__.__name__
+            name = self.contract_type.name or ContractType.__name__
             raise ApeAttributeError(f"'{name}' has no attribute '{method_name}'.")
 
     def get_event_by_signature(self, signature: str) -> ContractEvent:
@@ -1148,7 +1148,7 @@ class ContractInstance(BaseAddress, ContractTypeWrapper):
         }:
             # Didn't find anything that matches
             # NOTE: `__getattr__` *must* raise `AttributeError`
-            name = self.contract_type.name or self.__class__.__name__
+            name = self.contract_type.name or ContractType.__name__
             raise ApeAttributeError(f"'{name}' has no attribute '{attr_name}'.")
 
         elif (
@@ -1160,7 +1160,7 @@ class ContractInstance(BaseAddress, ContractTypeWrapper):
         ):
             # ABI should not contain a mix of events, mutable and view methods that match
             # NOTE: `__getattr__` *must* raise `AttributeError`
-            raise ApeAttributeError(f"{self.__class__.__name__} has corrupted ABI.")
+            raise ApeAttributeError(f"{ContractInstance.__name__} has corrupted ABI.")
 
         if attr_name in self._view_methods_:
             return self._view_methods_[attr_name]

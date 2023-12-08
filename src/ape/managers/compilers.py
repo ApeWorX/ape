@@ -29,7 +29,7 @@ class CompilerManager(BaseManager):
 
     def __repr__(self):
         num_compilers = len(self.registered_compilers)
-        return f"<{self.__class__.__name__} len(registered_compilers)={num_compilers}>"
+        return f"<{CompilerManager.__name__} len(registered_compilers)={num_compilers}>"
 
     def __getattr__(self, name: str) -> Any:
         try:

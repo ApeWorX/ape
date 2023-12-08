@@ -158,7 +158,7 @@ class CompilerAPI(BaseInterfaceModel):
         """
 
     def __repr__(self) -> str:
-        return f"<{self.__class__.__name__} {self.name}>"
+        return f"<{CompilerAPI.__name__} {self.name}>"
 
     def __str__(self) -> str:
         return self.name

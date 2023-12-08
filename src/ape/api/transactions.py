@@ -171,7 +171,7 @@ class TransactionAPI(BaseInterfaceModel):
     def __repr__(self) -> str:
         data = self.model_dump(mode="json")
         params = ", ".join(f"{k}={v}" for k, v in data.items())
-        return f"<{self.__class__.__name__} {params}>"
+        return f"<{TransactionAPI.__name__} {params}>"
 
     def __str__(self) -> str:
         data = self.model_dump(mode="json")
@@ -194,7 +194,7 @@ class TransactionAPI(BaseInterfaceModel):
             else:
                 data["data"] = "0x" + bytes(data["data"]).hex()
         params = "\n  ".join(f"{k}: {v}" for k, v in data.items())
-        return f"{self.__class__.__name__}:\n  {params}"
+        return f"{TransactionAPI.__name__}:\n  {params}"
 
 
 class ConfirmationsProgressBar:
@@ -264,7 +264,7 @@ class ReceiptAPI(BaseInterfaceModel):
     transaction: TransactionAPI
 
     def __repr__(self) -> str:
-        return f"<{self.__class__.__name__} {self.txn_hash}>"
+        return f"<{ReceiptAPI.__name__} {self.txn_hash}>"
 
     def __ape_extra_attributes__(self) -> Iterator[ExtraModelAttributes]:
         yield ExtraModelAttributes(name="transaction", attributes=vars(self.transaction))

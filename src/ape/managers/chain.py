@@ -1501,7 +1501,7 @@ class ChainManager(BaseManager):
 
     def __repr__(self) -> str:
         props = f"id={self.chain_id}" if self.network_manager.active_provider else "disconnected"
-        return f"<{self.__class__.__name__} ({props})>"
+        return f"<{ChainManager.__name__} ({props})>"
 
     def snapshot(self) -> SnapshotID:
         """

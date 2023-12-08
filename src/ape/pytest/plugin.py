@@ -119,7 +119,8 @@ def pytest_load_initial_conftests(early_config):
             if logger.level > LogLevel.DEBUG:
                 message = f"{message}Use `-v DEBUG` to see more info.\n"
 
-            message = f"{message}Failure reason: ({type(err).__name__}) {err}"
+            err_type_name = getattr(type(err), "__name__", "Exception")
+            message = f"{message}Failure reason: ({err_type_name}) {err}"
             raise pytest.UsageError(message)
 
         finally:
