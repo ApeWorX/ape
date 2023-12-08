@@ -216,25 +216,32 @@ class BaseProject(ProjectAPI):
             # Figure out what contracts have changed and delete them from the cache
             # so they can be compiled.
             exising_contract_types = (
-                self.cached_manifest.contract_types if self.cached_manifest is not None else {}
+                (self.cached_manifest.contract_types or {})
+                if self.cached_manifest is not None
+                else {}
             )
             contracts_to_remove = [
                 ct
                 for ct in exising_contract_types.values()
-                if contracts_folder / ct.source_id in srcs_to_compile
+                if ct.source_id and (contracts_folder / ct.source_id) in srcs_to_compile
             ]
 
             for contract in contracts_to_remove:
                 path = self._cache_folder / f"{contract.name}.json"
                 path.unlink(missing_ok=True)
 
-            if self.cached_manifest:
+            if cached_manifest := self.cached_manifest:
                 source_ids_to_remove = [ct.source_id for ct in contracts_to_remove]
                 filtered_contract_types = {
                     n: ct
-                    for n, ct in self.cached_manifest.contract_types.items()
+                    for n, ct in (cached_manifest.contract_types or {}).items()
                     if ct.source_id not in source_ids_to_remove
                 }
+
+                if self._cached_manifest is None:
+                    # Shouldn't happen, but type-safety's sake.
+                    self._cached_manifest = PackageManifest.model_validate({})
+
                 self._cached_manifest.contract_types = filtered_contract_types
                 self._contracts = filtered_contract_types
 
@@ -246,7 +253,7 @@ class BaseProject(ProjectAPI):
                 self.path, contracts_folder=self.contracts_folder
             ):
                 self.project_manager.load_dependencies()
-                _compile_sources(project_sources)
+                return _compile_sources(project_sources)
         else:
             # Already in project
             return _compile_sources(project_sources)

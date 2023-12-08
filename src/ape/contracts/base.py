@@ -388,7 +388,7 @@ class ContractEvent(BaseInterfaceModel):
 
         return self.abi.name
 
-    def __iter__(self) -> Iterator[ContractLog]:
+    def __iter__(self) -> Iterator[ContractLog]:  # type: ignore[override]
         """
         Get all logs that have occurred for this event.
         """
@@ -398,11 +398,12 @@ class ContractEvent(BaseInterfaceModel):
     @property
     def log_filter(self) -> LogFilter:
         # NOTE: This shouldn't really be called when given contract containers.
-        addresses = [] if not hasattr(self.contract, "address") else [self.contract.address]
+        address = getattr(self.contract, "address", None)
+        addresses = [] if not address else [address]
         return LogFilter.from_event(event=self.abi, addresses=addresses, start_block=0)
 
     @singledispatchmethod
-    def __getitem__(self, value) -> Union[ContractLog, List[ContractLog]]:
+    def __getitem__(self, value) -> Union[ContractLog, List[ContractLog]]:  # type: ignore[override]
         raise NotImplementedError(f"Cannot use '{type(value)}' to access logs.")
 
     @__getitem__.register
@@ -510,7 +511,7 @@ class ContractEvent(BaseInterfaceModel):
 
     def query(
         self,
-        *columns: List[str],
+        *columns: str,
         start_block: int = 0,
         stop_block: Optional[int] = None,
         step: int = 1,
@@ -520,9 +521,10 @@ class ContractEvent(BaseInterfaceModel):
         Iterate through blocks for log events
 
         Args:
-            columns (List[str]): columns in the DataFrame to return
+            *columns (str): ``*``-based argument for columns in the DataFrame to
+              return.
             start_block (int): The first block, by number, to include in the
-              query. Defaults to 0.
+              query. Defaults to ``0``.
             stop_block (Optional[int]): The last block, by number, to include
               in the query. Defaults to the latest block.
             step (int): The number of blocks to iterate between block numbers.
@@ -563,9 +565,9 @@ class ContractEvent(BaseInterfaceModel):
         contract_events = self.query_manager.query(
             contract_event_query, engine_to_use=engine_to_use
         )
-        columns = validate_and_expand_columns(columns, ContractLog)
-        data = map(partial(extract_fields, columns=columns), contract_events)
-        return pd.DataFrame(columns=columns, data=data)
+        columns_ls = validate_and_expand_columns(columns, ContractLog)
+        data = map(partial(extract_fields, columns=columns_ls), contract_events)
+        return pd.DataFrame(columns=columns_ls, data=data)
 
     def range(
         self,

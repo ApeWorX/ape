@@ -89,7 +89,7 @@ def _unrecognized_columns(selected_columns: Set[str], all_columns: Set[str]) -> 
     return f"Unrecognized field(s) '{unrecognized}', must be one of '{all_cols}'."
 
 
-def extract_fields(item, columns: Sequence[str]) -> List[Any]:
+def extract_fields(item: BaseInterfaceModel, columns: Sequence[str]) -> List[Any]:
     return [getattr(item, col, None) for col in columns]
 
 

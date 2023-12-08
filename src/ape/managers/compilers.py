@@ -115,9 +115,13 @@ class CompilerManager(BaseManager):
         cached_manifest = self.project_manager.local_project.cached_manifest
 
         # Load past compiled contracts for verifying type-collision and other things.
-        already_compiled_contracts = cached_manifest.contract_types if cached_manifest else {}
+        already_compiled_contracts = (
+            (cached_manifest.contract_types or {}) if cached_manifest else {}
+        )
         already_compiled_paths = [
-            contracts_folder / x.source_id for x in already_compiled_contracts.values()
+            contracts_folder / x.source_id
+            for x in already_compiled_contracts.values()
+            if x.source_id
         ]
 
         for extension in extensions:

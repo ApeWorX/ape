@@ -272,7 +272,8 @@ class ConversionManager(BaseManager):
         for plugin_name, (conversion_type, converter_class) in self.plugin_manager.converters:
             converter = converter_class()
             if conversion_type is ChecksumAddress:
-                return converters[AddressType].append(converter)
+                converters[AddressType].append(converter)
+                return converters
 
             elif conversion_type not in converters:
                 options = ", ".join([_get_type_name_from_type(t) for t in converters])

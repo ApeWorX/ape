@@ -984,7 +984,7 @@ class NetworkAPI(BaseInterfaceModel):
         provider = self.get_provider(provider_name=provider_name, provider_settings=settings)
         return ProviderContextManager(provider=provider, disconnect_after=disconnect_after)
 
-    @computed_field()
+    @computed_field()  # type: ignore[misc]
     @property
     def default_provider(self) -> Optional[str]:
         """

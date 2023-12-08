@@ -103,7 +103,7 @@ class BlockAPI(BaseInterfaceModel):
         data["parentHash"] = parent_hash
         return data
 
-    @computed_field()
+    @computed_field()  # type: ignore[misc]
     @cached_property
     def transactions(self) -> List[TransactionAPI]:
         query = BlockTransactionQuery(columns=["*"], block_id=self.hash)
@@ -1462,10 +1462,9 @@ class Web3Provider(ProviderAPI, ABC):
 
         # Pretend we _did_ yield the last confirmed item, for logic's sake.
         fake_last_block = self.get_block(self.web3.eth.block_number - required_confirmations)
-        # NOTE: type warning ignored due to pydantic compat issue
-        last = YieldAction(
-            number=fake_last_block.number, hash=fake_last_block.hash, time=time.time()
-        )  # type: ignore
+        last_num = fake_last_block.number or 0
+        last_hash = fake_last_block.hash or HexBytes(0)
+        last = YieldAction(number=last_num, hash=last_hash, time=time.time())
 
         # A helper method for various points of ensuring we didn't timeout.
         def assert_chain_activity():
@@ -1556,14 +1555,8 @@ class Web3Provider(ProviderAPI, ABC):
         for block in self.poll_blocks(stop_block, required_confirmations, new_block_timeout):
             if block.number is None:
                 raise ValueError("Block number cannot be None")
-            log_params: Dict[
-                str,
-                int
-                | AddressType
-                | List[EventABI]
-                | List[AddressType]
-                | List[Union[str, EventABI, AddressType, List[str]]],
-            ] = {
+
+            log_params: Dict[str, Any] = {
                 "start_block": block.number,
                 "stop_block": block.number,
                 "events": events,
@@ -1572,7 +1565,9 @@ class Web3Provider(ProviderAPI, ABC):
                 log_params["addresses"] = [address]
             if topics is not None:
                 log_params["topics"] = topics
-            yield from self.get_contract_logs(LogFilter(**log_params))
+
+            log_filter = LogFilter(**log_params)
+            yield from self.get_contract_logs(log_filter)
 
     def block_ranges(self, start=0, stop=None, page=None):
         if stop is None:

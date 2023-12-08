@@ -167,8 +167,9 @@ class BlockContainer(BaseManager):
         columns: List[str] = validate_and_expand_columns(  # type: ignore
             columns, self.head.__class__
         )
-        blocks = map(partial(extract_fields, columns=columns), blocks)
-        return pd.DataFrame(columns=columns, data=blocks)
+        extraction = partial(extract_fields, columns=columns)
+        data = map(lambda b: extraction(b), blocks)
+        return pd.DataFrame(columns=columns, data=data)
 
     def range(
         self,
@@ -389,8 +390,9 @@ class AccountHistory(BaseInterfaceModel):
 
         txns = self.query_manager.query(query, engine_to_use=engine_to_use)
         columns = validate_and_expand_columns(columns, ReceiptAPI)  # type: ignore
-        txns = map(partial(extract_fields, columns=columns), txns)
-        return pd.DataFrame(columns=columns, data=txns)
+        extraction = partial(extract_fields, columns=columns)
+        data = map(lambda tx: extraction(tx), txns)
+        return pd.DataFrame(columns=columns, data=data)
 
     def __iter__(self) -> Iterator[ReceiptAPI]:  # type: ignore[override]
         yield from self.outgoing
