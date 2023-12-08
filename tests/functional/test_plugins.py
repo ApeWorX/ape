@@ -70,7 +70,7 @@ class TestPluginMetadata:
         assert metadata.package_name == "ape-foo-bar"
         assert metadata.module_name == "ape_foo_bar"
 
-    def test_model_when_version_included_with_name(self):
+    def test_model_validator_when_version_included_with_name(self):
         # This allows parsing requirements files easier
         metadata = PluginMetadata(name="ape-foo-bar==0.5.0")
         assert metadata.name == "foo-bar"

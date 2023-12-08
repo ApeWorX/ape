@@ -221,7 +221,7 @@ class BlockContainer(BaseManager):
         # Note: the range `stop_block` is a non-inclusive stop, while the
         #       `.query` method uses an inclusive stop, so we must adjust downwards.
         query = BlockQuery(
-            columns=list(self.head.__fields__),  # TODO: fetch the block fields from EcosystemAPI
+            columns=list(self.head.model_fields),  # TODO: fetch the block fields from EcosystemAPI
             start_block=start,
             stop_block=stop - 1,
             step=step,
@@ -417,7 +417,7 @@ class AccountHistory(BaseInterfaceModel):
                 next(
                     self.query_manager.query(
                         AccountTransactionQuery(
-                            columns=list(ReceiptAPI.__fields__),
+                            columns=list(ReceiptAPI.model_fields),
                             account=self.address,
                             start_nonce=index,
                             stop_nonce=index,
@@ -455,7 +455,7 @@ class AccountHistory(BaseInterfaceModel):
             list(
                 self.query_manager.query(
                     AccountTransactionQuery(
-                        columns=list(ReceiptAPI.__fields__),
+                        columns=list(ReceiptAPI.model_fields),
                         account=self.address,
                         start_nonce=start,
                         stop_nonce=stop - 1,
@@ -1236,21 +1236,21 @@ class ContractCache(BaseManager):
         if not address_file.is_file():
             return None
 
-        return ContractType.parse_file(address_file)
+        return ContractType.model_validate_json(address_file.read_text())
 
     def _get_proxy_info_from_disk(self, address: AddressType) -> Optional[ProxyInfoAPI]:
         address_file = self._proxy_info_cache / f"{address}.json"
         if not address_file.is_file():
             return None
 
-        return ProxyInfoAPI.parse_file(address_file)
+        return ProxyInfoAPI.model_validate_json(address_file.read_text())
 
     def _get_blueprint_from_disk(self, blueprint_id: str) -> Optional[ContractType]:
         contract_file = self._blueprint_cache / f"{blueprint_id}.json"
         if not contract_file.is_file():
             return None
 
-        return ContractType.parse_file(contract_file)
+        return ContractType.model_validate_json(contract_file.read_text())
 
     def _get_contract_type_from_explorer(self, address: AddressType) -> Optional[ContractType]:
         if not self._network.explorer:
@@ -1271,17 +1271,17 @@ class ContractCache(BaseManager):
     def _cache_contract_to_disk(self, address: AddressType, contract_type: ContractType):
         self._contract_types_cache.mkdir(exist_ok=True, parents=True)
         address_file = self._contract_types_cache / f"{address}.json"
-        address_file.write_text(contract_type.json())
+        address_file.write_text(contract_type.model_dump_json())
 
     def _cache_proxy_info_to_disk(self, address: AddressType, proxy_info: ProxyInfoAPI):
         self._proxy_info_cache.mkdir(exist_ok=True, parents=True)
         address_file = self._proxy_info_cache / f"{address}.json"
-        address_file.write_text(proxy_info.json())
+        address_file.write_text(proxy_info.model_dump_json())
 
     def _cache_blueprint_to_disk(self, blueprint_id: str, contract_type: ContractType):
         self._blueprint_cache.mkdir(exist_ok=True, parents=True)
         blueprint_file = self._blueprint_cache / f"{blueprint_id}.json"
-        blueprint_file.write_text(contract_type.json())
+        blueprint_file.write_text(contract_type.model_dump_json())
 
     def _load_deployments_cache(self) -> Dict:
         return (
@@ -1312,29 +1312,23 @@ class ContractCache(BaseManager):
         if stop_block is None:
             stop_block = self.chain_manager.blocks.height
 
-        # TODO: Refactor the name of this somehow to be clearer
-        creation_receipts = cast(
-            Iterator[ReceiptAPI],
-            self.query_manager.query(
-                ContractCreationQuery(
-                    columns=["*"],
-                    contract=address,
-                    start_block=start_block,
-                    stop_block=stop_block,
-                )
-            ),
+        query = ContractCreationQuery(
+            columns=["*"],
+            contract=address,
+            start_block=start_block,
+            stop_block=stop_block,
         )
+        creation_receipts = cast(Iterator[ReceiptAPI], self.query_manager.query(query))
 
-        try:
-            # Get the first contract receipt, which is the first time it appears
-            return next(creation_receipts)
-        except StopIteration:
-            raise ChainError(
-                f"Failed to find a contract-creation receipt for '{address}'. "
-                "Note that it may be the case that the backend used cannot detect contracts "
-                "deployed by other contracts, and you may receive better results by installing "
-                "a plugin that supports it, like Etherscan."
-            )
+        if tx := next(creation_receipts, None):
+            return tx
+
+        raise ChainError(
+            f"Failed to find a contract-creation receipt for '{address}'. "
+            "Note that it may be the case that the backend used cannot detect contracts "
+            "deployed by other contracts, and you may receive better results by installing "
+            "a plugin that supports it, like Etherscan."
+        )
 
 
 class ReportManager(BaseManager):

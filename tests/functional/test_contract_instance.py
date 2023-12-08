@@ -2,11 +2,11 @@ import re
 from typing import List, Tuple
 
 import pytest
+from eth_pydantic_types import HexBytes
 from eth_utils import is_checksum_address, to_hex
-from ethpm_types import ContractType, HexBytes
+from ethpm_types import BaseModel, ContractType
 
 from ape import Contract
-from ape._pydantic_compat import BaseModel
 from ape.api import TransactionAPI
 from ape.contracts import ContractInstance
 from ape.exceptions import (
@@ -255,6 +255,7 @@ def test_nested_structs(contract_instance, owner, chain):
         == chain.blocks[-2].hash
     )
     assert isinstance(actual_1.t.b, bytes)
+    assert isinstance(actual_1.t.b, HexBytes)
     assert (
         actual_2.t.b
         == actual_2.t["b"]
@@ -263,6 +264,7 @@ def test_nested_structs(contract_instance, owner, chain):
         == chain.blocks[-2].hash
     )
     assert isinstance(actual_2.t.b, bytes)
+    assert isinstance(actual_2.t.b, HexBytes)
 
 
 def test_nested_structs_in_tuples(contract_instance, owner, chain):
@@ -754,13 +756,13 @@ def test_value_to_non_payable_fallback_and_no_receive(
     and you try to send a value, it fails.
     """
     # Hack to set fallback as non-payable.
-    contract_type_data = vyper_fallback_contract_type.dict()
+    contract_type_data = vyper_fallback_contract_type.model_dump(mode="json")
     for abi in contract_type_data["abi"]:
         if abi.get("type") == "fallback":
             abi["stateMutability"] = "non-payable"
             break
 
-    new_contract_type = ContractType.parse_obj(contract_type_data)
+    new_contract_type = ContractType.model_validate(contract_type_data)
     contract = owner.chain_manager.contracts.instance_at(
         vyper_fallback_contract.address, contract_type=new_contract_type
     )

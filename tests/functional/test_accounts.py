@@ -3,7 +3,7 @@ from os import environ
 import pytest
 from eip712.messages import EIP712Message
 from eth_account.messages import encode_defunct
-from hexbytes import HexBytes
+from eth_pydantic_types import HexBytes
 
 import ape
 from ape.api import ImpersonatedAccount

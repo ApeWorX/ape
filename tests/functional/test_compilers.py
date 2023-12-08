@@ -92,17 +92,20 @@ def test_flatten_contract(compilers, project_with_contract):
 def test_contract_type_collision(compilers, project_with_contract, mock_compiler):
     existing_compilers = compilers._registered_compilers_cache[project_with_contract.path]
     all_compilers = {**existing_compilers, mock_compiler.ext: mock_compiler}
+    contracts_folder = project_with_contract.contracts_folder
 
     try:
         compilers._registered_compilers_cache[project_with_contract.path] = all_compilers
 
         # Make contracts of type .__mock__ with the same names.
-        contract_name = next(iter(project_with_contract.contracts))
-        new_contract = project_with_contract.path / f"{contract_name}{mock_compiler.ext}"
+        existing_contract = next(iter(project_with_contract.contracts.values()))
+        existing_path = contracts_folder / existing_contract.source_id
+        new_contract = contracts_folder / f"{existing_contract.name}{mock_compiler.ext}"
         new_contract.write_text("foobar")
 
         with pytest.raises(CompilerError, match="ContractType collision.*"):
-            compilers.compile([new_contract])
+            # Must include existing contract in case not yet compiled.
+            compilers.compile([existing_path, new_contract])
 
     finally:
         compilers._registered_compilers_cache[project_with_contract.path] = existing_compilers

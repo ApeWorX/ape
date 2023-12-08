@@ -1,7 +1,8 @@
 from typing import List
 
 import pytest
-from ethpm_types import ContractType, HexBytes
+from eth_pydantic_types import HexBytes
+from ethpm_types import ContractType
 
 from ape.exceptions import APINotImplementedError
 from ape_ethereum.multicall import Call
@@ -27,7 +28,7 @@ def undeployed_multicall(chain):
     # NOTE: Still has the ability to decode/encode inputs.
     return chain.contracts.instance_at(
         MULTICALL3_ADDRESS,
-        contract_type=ContractType.parse_obj(MULTICALL3_CONTRACT_TYPE),
+        contract_type=ContractType.model_validate(MULTICALL3_CONTRACT_TYPE),
     )
 
 

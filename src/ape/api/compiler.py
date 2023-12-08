@@ -2,7 +2,8 @@ from functools import cached_property
 from pathlib import Path
 from typing import Dict, Iterator, List, Optional, Set, Tuple
 
-from ethpm_types import ContractType, HexBytes
+from eth_pydantic_types import HexBytes
+from ethpm_types import ContractType
 from ethpm_types.source import Content, ContractSource
 from evm_trace.geth import TraceFrame as EvmTraceFrame
 from evm_trace.geth import create_call_node_data
@@ -49,8 +50,8 @@ class CompilerAPI(BaseInterfaceModel):
         The combination of settings from ``ape-config.yaml`` and ``.compiler_settings``.
         """
         CustomConfig = self.config.__class__
-        data = {**self.config.dict(), **self.compiler_settings}
-        return CustomConfig.parse_obj(data)
+        data = {**self.config.model_dump(mode="json", by_alias=True), **self.compiler_settings}
+        return CustomConfig.model_validate(data)
 
     @abstractmethod
     def get_versions(self, all_paths: List[Path]) -> Set[str]:

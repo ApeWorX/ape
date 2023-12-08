@@ -74,7 +74,7 @@ If you include a function named `ape_init_extras`, it will be executed with the 
 
 ```python
 def ape_init_extras(chain):
-    return {"web3": chain.provider._web3}
+    return {"web3": chain.provider.web3}
 ```
 
 Then `web3` will be available to use immediately.

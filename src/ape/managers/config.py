@@ -3,7 +3,9 @@ from contextlib import contextmanager
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Dict, Generator, List, Optional, Union
 
-from ape._pydantic_compat import root_validator
+from ethpm_types import PackageMeta
+from pydantic import RootModel, model_validator
+
 from ape.api import ConfigDict, DependencyAPI, PluginConfig
 from ape.exceptions import ConfigError
 from ape.logging import logger
@@ -12,7 +14,6 @@ from ape.utils import BaseInterfaceModel, load_config
 if TYPE_CHECKING:
     from .project import ProjectManager
 
-from ethpm_types import BaseModel, PackageMeta
 
 CONFIG_FILE_NAME = "ape-config.yaml"
 
@@ -27,16 +28,13 @@ class CompilerConfig(PluginConfig):
     """List of globular files to ignore"""
 
 
-class DeploymentConfigCollection(BaseModel):
-    __root__: Dict
-
-    @root_validator(pre=True)
-    def validate_deployments(cls, data: Dict):
-        root_data = data.get("__root__", data)
-        valid_ecosystems = root_data.pop("valid_ecosystems", {})
-        valid_networks = root_data.pop("valid_networks", {})
+class DeploymentConfigCollection(RootModel[dict]):
+    @model_validator(mode="before")
+    def validate_deployments(cls, data: Dict, info):
+        valid_ecosystems = data.pop("valid_ecosystems", {})
+        valid_networks = data.pop("valid_networks", {})
         valid_data: Dict = {}
-        for ecosystem_name, networks in root_data.items():
+        for ecosystem_name, networks in data.items():
             if ecosystem_name not in valid_ecosystems:
                 logger.warning(f"Invalid ecosystem '{ecosystem_name}' in deployments config.")
                 continue
@@ -69,7 +67,7 @@ class DeploymentConfigCollection(BaseModel):
                     network_name: valid_deployments,
                 }
 
-        return {"__root__": valid_data}
+        return valid_data
 
 
 class ConfigManager(BaseInterfaceModel):
@@ -126,11 +124,11 @@ class ConfigManager(BaseInterfaceModel):
     default_ecosystem: str = "ethereum"
     """The default ecosystem to use. Defaults to ``"ethereum"``."""
 
-    _cached_configs: Dict[str, Dict[str, Any]] = {}
+    cached_configs: Dict[str, Dict[str, Any]] = {}
 
-    @root_validator(pre=True)
+    @model_validator(mode="before")
     def check_config_for_extra_fields(cls, values: Dict[str, Any]) -> Dict[str, Any]:
-        extra = [key for key in values.keys() if key not in cls.__fields__]
+        extra = [key for key in values.keys() if key not in cls.model_fields]
         if extra:
             logger.warning(f"Unprocessed extra config fields not set '{extra}'.")
 
@@ -144,16 +142,16 @@ class ConfigManager(BaseInterfaceModel):
     @property
     def _plugin_configs(self) -> Dict[str, PluginConfig]:
         project_name = self.PROJECT_FOLDER.stem
-        if project_name in self._cached_configs:
-            cache = self._cached_configs[project_name]
+        if project_name in self.cached_configs:
+            cache = self.cached_configs[project_name]
             self.name = cache.get("name", "")
             self.version = cache.get("version", "")
             self.default_ecosystem = cache.get("default_ecosystem", "ethereum")
-            self.meta = PackageMeta.parse_obj(cache.get("meta", {}))
+            self.meta = PackageMeta.model_validate(cache.get("meta", {}))
             self.dependencies = cache.get("dependencies", [])
             self.deployments = cache.get("deployments", {})
             self.contracts_folder = cache.get("contracts_folder", self.PROJECT_FOLDER / "contracts")
-            self.compiler = CompilerConfig.parse_obj(cache.get("compiler", {}))
+            self.compiler = CompilerConfig.model_validate(cache.get("compiler", {}))
             return cache
 
         # First, load top-level configs. Then, load all the plugin configs.
@@ -172,13 +170,13 @@ class ConfigManager(BaseInterfaceModel):
         self.name = configs["name"] = user_config.pop("name", "")
         self.version = configs["version"] = user_config.pop("version", "")
         meta_dict = user_config.pop("meta", {})
-        meta_obj = PackageMeta.parse_obj(meta_dict)
+        meta_obj = PackageMeta.model_validate(meta_dict)
         configs["meta"] = meta_dict
         self.meta = meta_obj
         self.default_ecosystem = configs["default_ecosystem"] = user_config.pop(
             "default_ecosystem", "ethereum"
         )
-        compiler_dict = user_config.pop("compiler", CompilerConfig().dict())
+        compiler_dict = user_config.pop("compiler", CompilerConfig().model_dump(mode="json"))
         configs["compiler"] = compiler_dict
         self.compiler = CompilerConfig(**compiler_dict)
 
@@ -203,7 +201,7 @@ class ConfigManager(BaseInterfaceModel):
         valid_ecosystems = dict(self.plugin_manager.ecosystems)
         valid_network_names = [n[1] for n in [e[1] for e in self.plugin_manager.networks]]
         self.deployments = configs["deployments"] = DeploymentConfigCollection(
-            __root__={
+            root={
                 **deployments,
                 "valid_ecosystems": valid_ecosystems,
                 "valid_networks": valid_network_names,
@@ -230,7 +228,7 @@ class ConfigManager(BaseInterfaceModel):
                 "Plugins may not be installed yet or keys may be mis-spelled."
             )
 
-        self._cached_configs[project_name] = configs
+        self.cached_configs[project_name] = configs
         return configs
 
     def __repr__(self):
@@ -242,7 +240,7 @@ class ConfigManager(BaseInterfaceModel):
         """
 
         if force_reload:
-            self._cached_configs = {}
+            self.cached_configs = {}
 
         _ = self._plugin_configs
         return self

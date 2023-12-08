@@ -3,8 +3,9 @@ from queue import Queue
 from typing import Optional
 
 import pytest
+from eth_pydantic_types import HexBytes
 from eth_utils import to_hex
-from ethpm_types import ContractType, HexBytes
+from ethpm_types import ContractType
 
 from ape.api import ReceiptAPI
 from ape.exceptions import ProviderError
@@ -246,8 +247,8 @@ def test_contract_two_events_with_same_name(
 ):
     interface_path = contracts_folder / "Interface.json"
     impl_path = contracts_folder / "InterfaceImplementation.json"
-    interface_contract_type = ContractType.parse_raw(interface_path.read_text())
-    impl_contract_type = ContractType.parse_raw(impl_path.read_text())
+    interface_contract_type = ContractType.model_validate_json(interface_path.read_text())
+    impl_contract_type = ContractType.model_validate_json(impl_path.read_text())
     event_name = "FooEvent"
 
     # Ensure test is setup correctly in case scenario-data changed on accident

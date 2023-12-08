@@ -11,7 +11,7 @@ with open(here / "src" / "ape" / "__modules__.py", encoding="utf8") as modules_f
 
 extras_require = {
     "test": [  # `test` GitHub Action jobs uses this
-        "pytest-xdist",  # multi-process runner
+        "pytest-xdist",  # Multi-process runner
         "pytest-cov>=4.0.0,<5",  # Coverage analyzer plugin
         "pytest-mock",  # For creating mocks
         "hypothesis>=6.2.0,<7.0",  # Strategy-based fuzzer
@@ -19,21 +19,20 @@ extras_require = {
     ],
     "lint": [
         "black>=23.11.0,<24",  # Auto-formatter and linter
-        "mypy>=1.7.0,<2",  # Static type analyzer
+        "mypy>=1.7.1,<2",  # Static type analyzer
         "types-PyYAML",  # Needed due to mypy typeshed
         "types-requests",  # Needed due to mypy typeshed
         "types-setuptools",  # Needed due to mypy typeshed
         "pandas-stubs==1.2.0.62",  # Needed due to mypy typeshed
         "types-SQLAlchemy>=1.4.49",  # Needed due to mypy typeshed
         "flake8>=6.1.0,<7",  # Style linter
-        "flake8-breakpoint>=1.1.0,<2",  # detect breakpoints left in code
-        "flake8-print>=4.0.1,<5",  # detect print statements left in code
+        "flake8-breakpoint>=1.1.0,<2",  # Detect breakpoints left in code
+        "flake8-print>=4.0.1,<5",  # Detect print statements left in code
         "isort>=5.10.1,<6",  # Import sorting linter
         "mdformat>=0.7.17",  # Auto-formatter for markdown
         "mdformat-gfm>=0.3.5",  # Needed for formatting GitHub-flavored markdown
         "mdformat-frontmatter>=0.4.1",  # Needed for frontmatters-style headers in issue templates
         "mdformat-pyproject>=0.0.1",  # Allows configuring in pyproject.toml
-        "pydantic<2.0",  # Needed for successful type check. TODO: Remove after full v2 support.
     ],
     "doc": [
         "myst-parser>=1.0.0,<2",  # Parse markdown docs
@@ -102,7 +101,8 @@ setup(
         "packaging>=23.0,<24",
         "pandas>=1.3.0,<2",
         "pluggy>=1.3,<2",
-        "pydantic>=1.10.8,<3",
+        "pydantic>=2.4.0,<3",
+        "pydantic-settings>=2.0.3,<3",
         "PyGithub>=1.59,<2",
         "pytest>=6.0,<8.0",
         "python-dateutil>=2.8.2,<3",
@@ -119,13 +119,13 @@ setup(
         "eth-account>=0.8,<0.9",
         "eth-typing>=3.4,<4",
         "eth-utils>=2.2.0,<3",
-        "hexbytes>=0.2.3,<1",
         "py-geth>=3.13.0,<4",
         "web3[tester]>=6.7.0,<7",
         # ** Dependencies maintained by ApeWorX **
-        "eip712>=0.2.1,<0.3",
-        "ethpm-types>=0.5.10,<0.6",
-        "evm-trace>=0.1.0a23",
+        "eip712>=0.2.2,<0.3",
+        "ethpm-types>=0.6.0,<0.7",
+        "eth_pydantic_types>=0.1.0a4,<0.2",
+        "evm-trace>=0.1.0",
     ],
     entry_points={
         "console_scripts": ["ape=ape._cli:cli"],

@@ -20,11 +20,12 @@ from eth_account._utils.legacy_transactions import (
     encode_transaction,
     serializable_unsigned_transaction_from_dict,
 )
+from eth_pydantic_types import HexBytes
 from eth_utils import keccak, to_int
-from ethpm_types import ContractType, HexBytes
+from ethpm_types import BaseModel, ContractType
 from ethpm_types.abi import ABIType, ConstructorABI, EventABI, MethodABI
+from pydantic import computed_field
 
-from ape._pydantic_compat import BaseModel
 from ape.exceptions import (
     NetworkError,
     NetworkMismatchError,
@@ -88,6 +89,7 @@ class EcosystemAPI(BaseInterfaceModel):
     """The number of the decimals the fee token has."""
 
     _default_network: Optional[str] = None
+    """The default network of the ecosystem, such as ``local``."""
 
     def __repr__(self) -> str:
         return f"<{self.name}>"
@@ -152,8 +154,7 @@ class EcosystemAPI(BaseInterfaceModel):
         if not self.signature:
             raise SignatureError("The transaction is not signed.")
 
-        txn_data = self.dict(exclude={"sender"})
-
+        txn_data = self.model_dump(exclude={"sender"})
         unsigned_txn = serializable_unsigned_transaction_from_dict(txn_data)
         signature = (
             self.signature.v,
@@ -285,7 +286,7 @@ class EcosystemAPI(BaseInterfaceModel):
             return self.networks[0]
 
         # Very unlikely scenario.
-        raise ValueError("No networks found.")
+        raise NetworkError("No networks found.")
 
     def set_default_network(self, network_name: str):
         """
@@ -506,7 +507,7 @@ class EcosystemAPI(BaseInterfaceModel):
         Override example::
 
             from ape.api import EcosystemAPI
-            from ethpm_types import HexBytes
+            from eth_pydantic_types import HexBytes
 
             class MyEcosystem(EcosystemAPI):
                 def get_method_selector(self, abi: MethodABI) -> HexBytes:
@@ -700,6 +701,7 @@ class NetworkAPI(BaseInterfaceModel):
     request_header: Dict
     """A shareable network HTTP header."""
 
+    # See ``.default_provider`` which is the proper field.
     _default_provider: str = ""
 
     @classmethod
@@ -982,6 +984,7 @@ class NetworkAPI(BaseInterfaceModel):
         provider = self.get_provider(provider_name=provider_name, provider_settings=settings)
         return ProviderContextManager(provider=provider, disconnect_after=disconnect_after)
 
+    @computed_field()
     @property
     def default_provider(self) -> Optional[str]:
         """

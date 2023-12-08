@@ -352,7 +352,7 @@ class CacheQueryProvider(QueryAPI):
                 # NOTE: Should be unreachable if estimated correctly
                 raise QueryEngineError(f"Could not perform query:\n{query}")
 
-            yield from map(lambda row: ContractLog.parse_obj(dict(row.items())), result)
+            yield from map(lambda row: ContractLog.model_validate(dict(row.items())), result)
 
     @singledispatchmethod
     def _cache_update_clause(self, query: QueryType) -> Insert:
@@ -407,7 +407,7 @@ class CacheQueryProvider(QueryAPI):
     def _get_block_cache_data(
         self, query: BlockQuery, result: Iterator[BaseInterfaceModel]
     ) -> Optional[List[Dict[str, Any]]]:
-        return [m.dict(by_alias=False) for m in result]
+        return [m.model_dump(mode="json", by_alias=False) for m in result]
 
     @_get_cache_data.register
     def _get_block_txns_data(
@@ -416,7 +416,11 @@ class CacheQueryProvider(QueryAPI):
         new_result = []
         table_columns = [c.key for c in Transactions.__table__.columns]  # type: ignore
         for val in [m for m in result]:
-            new_dict = {k: v for k, v in val.dict(by_alias=False).items() if k in table_columns}
+            new_dict = {
+                k: v
+                for k, v in val.model_dump(mode="json", by_alias=False).items()
+                if k in table_columns
+            }
             for col in table_columns:
                 if col == "txn_hash":
                     new_dict["txn_hash"] = val.txn_hash
@@ -439,7 +443,7 @@ class CacheQueryProvider(QueryAPI):
     def _get_cache_events_data(
         self, query: ContractEventQuery, result: Iterator[BaseInterfaceModel]
     ) -> Optional[List[Dict[str, Any]]]:
-        return [m.dict(by_alias=False) for m in result]
+        return [m.model_dump(mode="json", by_alias=False) for m in result]
 
     def update_cache(self, query: QueryType, result: Iterator[BaseInterfaceModel]):
         try:

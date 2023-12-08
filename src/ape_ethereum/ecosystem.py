@@ -4,6 +4,7 @@ from typing import Any, Dict, Iterator, List, Optional, Tuple, Type, Union, cast
 
 from eth_abi import decode, encode
 from eth_abi.exceptions import InsufficientDataBytes, NonEmptyPaddingBytes
+from eth_pydantic_types import HexBytes
 from eth_typing import Hash32, HexStr
 from eth_utils import (
     encode_hex,
@@ -14,10 +15,10 @@ from eth_utils import (
     keccak,
     to_checksum_address,
 )
-from ethpm_types import ContractType, HexBytes
+from ethpm_types import ContractType
 from ethpm_types.abi import ABIType, ConstructorABI, EventABI, MethodABI
+from pydantic import Field, field_validator
 
-from ape._pydantic_compat import Field, validator
 from ape.api import BlockAPI, EcosystemAPI, PluginConfig, ReceiptAPI, TransactionAPI
 from ape.api.networks import LOCAL_NETWORK_NAME
 from ape.contracts.base import ContractCall
@@ -105,13 +106,10 @@ class NetworkConfig(PluginConfig):
     base_fee_multiplier: float = 1.0
     """A multiplier to apply to a transaction base fee."""
 
-    class Config:
-        smart_union = True
-
-    @validator("gas_limit", pre=True, allow_reuse=True)
+    @field_validator("gas_limit", mode="before")
     def validate_gas_limit(cls, value):
         if isinstance(value, dict) and "auto" in value:
-            return AutoGasLimit.parse_obj(value["auto"])
+            return AutoGasLimit.model_validate(value["auto"])
 
         elif value in ("auto", "max") or isinstance(value, AutoGasLimit):
             return value
@@ -191,7 +189,7 @@ class Block(BlockAPI):
         EMPTY_BYTES32, alias="parentHash"
     )  # NOTE: genesis block has no parent hash
 
-    @validator(
+    @field_validator(
         "base_fee",
         "difficulty",
         "gas_limit",
@@ -200,7 +198,7 @@ class Block(BlockAPI):
         "size",
         "timestamp",
         "total_difficulty",
-        pre=True,
+        mode="before",
     )
     def validate_ints(cls, value):
         return to_int(value) if value else 0
@@ -404,7 +402,7 @@ class Ethereum(EcosystemAPI):
         if "transactions" in data:
             data["num_transactions"] = len(data["transactions"])
 
-        return Block.parse_obj(data)
+        return Block.model_validate(data)
 
     def _python_type_for_abi_type(self, abi_type: ABIType) -> Union[Type, Tuple, List]:
         # NOTE: An array can be an array of tuples, so we start with an array check
@@ -412,7 +410,7 @@ class Ethereum(EcosystemAPI):
             # remove one layer of the potential onion of array
             new_type = "[".join(str(abi_type.type).split("[")[:-1])
             # create a new type with the inner type of array
-            new_abi_type = ABIType(type=new_type, **abi_type.dict(exclude={"type"}))
+            new_abi_type = ABIType(type=new_type, **abi_type.model_dump(exclude={"type"}))
             # NOTE: type for static and dynamic array is a single item list
             # containing the type of the array
             return [self._python_type_for_abi_type(new_abi_type)]
@@ -451,7 +449,7 @@ class Ethereum(EcosystemAPI):
 
     def decode_calldata(self, abi: Union[ConstructorABI, MethodABI], calldata: bytes) -> Dict:
         raw_input_types = [i.canonical_type for i in abi.inputs]
-        input_types = [parse_type(i.dict()) for i in abi.inputs]
+        input_types = [parse_type(i.model_dump(mode="json")) for i in abi.inputs]
 
         try:
             raw_input_values = decode(raw_input_types, calldata)
@@ -484,7 +482,7 @@ class Ethereum(EcosystemAPI):
         elif not isinstance(vm_return_values, (tuple, list)):
             vm_return_values = (vm_return_values,)
 
-        output_types = [parse_type(o.dict()) for o in abi.outputs]
+        output_types = [parse_type(o.model_dump(mode="json")) for o in abi.outputs]
         output_values = [
             self.decode_primitive_value(v, t) for v, t in zip(vm_return_values, output_types)
         ]

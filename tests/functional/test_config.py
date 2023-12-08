@@ -16,9 +16,9 @@ def test_integer_deployment_addresses(networks):
         "valid_ecosystems": {"ethereum": networks.ethereum},
         "valid_networks": [LOCAL_NETWORK_NAME],
     }
-    config = DeploymentConfigCollection(__root__=data)
+    config = DeploymentConfigCollection(root=data)
     assert (
-        config.__root__["ethereum"]["local"][0]["address"]
+        config.root["ethereum"]["local"][0]["address"]
         == "0x0c25212c557d00024b7Ca3df3238683A35541354"
     )
 
@@ -35,7 +35,7 @@ def test_bad_value_in_deployments(
     ecosystem_dict = {e: all_ecosystems[e] for e in ecosystem_names if e in all_ecosystems}
     data = {**deployments, "valid_ecosystems": ecosystem_dict, "valid_networks": network_names}
     ape_caplog.assert_last_log_with_retries(
-        lambda: DeploymentConfigCollection(__root__=data),
+        lambda: DeploymentConfigCollection(root=data),
         f"Invalid {err_part}",
     )
 

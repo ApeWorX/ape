@@ -4,7 +4,7 @@ from typing import List
 from eth_account import Account
 from eth_account.hdaccount import HDPath
 from eth_account.hdaccount.mnemonic import Mnemonic
-from ethpm_types import HexBytes
+from eth_pydantic_types import HexBytes
 
 DEFAULT_NUMBER_OF_TEST_ACCOUNTS = 10
 DEFAULT_TEST_MNEMONIC = "test test test test test test test test test test test junk"

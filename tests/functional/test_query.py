@@ -77,7 +77,7 @@ class Model(BaseInterfaceModel):
 
 def test_column_expansion():
     columns = validate_and_expand_columns(["*"], Model)
-    assert columns == list(Model.__fields__)
+    assert columns == list(Model.model_fields)
 
 
 def test_column_validation(eth_tester_provider, ape_caplog):

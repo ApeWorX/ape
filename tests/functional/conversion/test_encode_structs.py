@@ -1,13 +1,13 @@
 from typing import Dict, Tuple, cast
 
 import pytest
-from ethpm_types import HexBytes
+from eth_pydantic_types import HexBytes
+from ethpm_types import BaseModel
 from ethpm_types.abi import MethodABI
 
-from ape._pydantic_compat import BaseModel
 from ape.types import AddressType
 
-ABI = MethodABI.parse_obj(
+ABI = MethodABI.model_validate(
     {
         "type": "function",
         "name": "test",

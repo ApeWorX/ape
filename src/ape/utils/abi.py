@@ -4,8 +4,8 @@ from typing import Any, Dict, List, Optional, Sequence, Tuple, Union
 
 from eth_abi import decode, grammar
 from eth_abi.exceptions import DecodingError, InsufficientDataBytes
+from eth_pydantic_types import HexBytes
 from eth_utils import decode_hex
-from ethpm_types import HexBytes
 from ethpm_types.abi import ABIType, ConstructorABI, EventABI, EventABIType, MethodABI
 
 from ape.logging import logger
@@ -106,7 +106,7 @@ class StructParser:
             and isinstance(value, (list, tuple))
             and len(_type.components or []) > 0
         ):
-            non_array_type_data = _type.dict()
+            non_array_type_data = _type.model_dump(mode="json")
             non_array_type_data["type"] = "tuple"
             non_array_type = ABIType(**non_array_type_data)
             return [self._encode(non_array_type, v) for v in value]
@@ -151,8 +151,12 @@ class StructParser:
 
         elif has_array_of_tuples_return:
             item_type_str = str(_types[0].type).split("[")[0]
-            data = {**_types[0].dict(), "type": item_type_str, "internalType": item_type_str}
-            output_type = ABIType.parse_obj(data)
+            data = {
+                **_types[0].model_dump(mode="json"),
+                "type": item_type_str,
+                "internalType": item_type_str,
+            }
+            output_type = ABIType.model_validate(data)
 
             if isinstance(values, (list, tuple)) and not values[0]:
                 # Only returned an empty list.
@@ -170,11 +174,11 @@ class StructParser:
                     if item_type_str == "tuple":
                         # Either an array of structs or nested structs.
                         item_type_data = {
-                            **output_type.dict(),
+                            **output_type.model_dump(mode="json"),
                             "type": item_type_str,
                             "internalType": item_type_str,
                         }
-                        item_type = ABIType.parse_obj(item_type_data)
+                        item_type = ABIType.model_validate(item_type_data)
 
                         if is_struct(output_type):
                             parsed_item = self._decode([item_type], [value])
@@ -206,7 +210,7 @@ class StructParser:
             # Likely an empty tuple or not a struct.
             return None
 
-        internal_type = out_abi.internalType
+        internal_type = out_abi.internal_type
         if out_abi.name == "" and internal_type and "struct " in internal_type:
             name = internal_type.replace("struct ", "").split(".")[-1]
         else:

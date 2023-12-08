@@ -1,9 +1,9 @@
 from functools import lru_cache
 from typing import Any, Dict, Iterator, List, Optional, Sequence, Set, Type, Union
 
-from ethpm_types.abi import EventABI, MethodABI
+from ethpm_types.abi import BaseModel, EventABI, MethodABI
+from pydantic import NonNegativeInt, PositiveInt, model_validator
 
-from ape._pydantic_compat import BaseModel, NonNegativeInt, PositiveInt, root_validator
 from ape.api.transactions import ReceiptAPI, TransactionAPI
 from ape.logging import logger
 from ape.types import AddressType
@@ -22,7 +22,7 @@ QueryType = Union[
 # TODO: Replace with `functools.cache` when Py3.8 dropped
 @lru_cache(maxsize=None)
 def _basic_columns(Model: Type[BaseInterfaceModel]) -> Set[str]:
-    columns = set(Model.__fields__)
+    columns = set(Model.model_fields)
 
     # TODO: Remove once `ReceiptAPI` fields cleaned up for better processing
     if Model == ReceiptAPI:
@@ -89,8 +89,8 @@ def _unrecognized_columns(selected_columns: Set[str], all_columns: Set[str]) -> 
     return f"Unrecognized field(s) '{unrecognized}', must be one of '{all_cols}'."
 
 
-def extract_fields(item, columns):
-    return [getattr(item, col) for col in columns]
+def extract_fields(item, columns: Sequence[str]) -> List[Any]:
+    return [getattr(item, col, None) for col in columns]
 
 
 class _BaseQuery(BaseModel):
@@ -104,7 +104,7 @@ class _BaseBlockQuery(_BaseQuery):
     stop_block: NonNegativeInt
     step: PositiveInt = 1
 
-    @root_validator(pre=True)
+    @model_validator(mode="before")
     def check_start_block_before_stop_block(cls, values):
         if values["stop_block"] < values["start_block"]:
             raise ValueError(
@@ -141,7 +141,7 @@ class AccountTransactionQuery(_BaseQuery):
     start_nonce: NonNegativeInt = 0
     stop_nonce: NonNegativeInt
 
-    @root_validator(pre=True)
+    @model_validator(mode="before")
     def check_start_nonce_before_stop_nonce(cls, values: Dict) -> Dict:
         if values["stop_nonce"] < values["start_nonce"]:
             raise ValueError(
@@ -162,7 +162,7 @@ class ContractEventQuery(_BaseBlockQuery):
     logs emitted by ``contract`` between ``start_block`` and ``stop_block``.
     """
 
-    contract: Union[AddressType, List[AddressType]]
+    contract: Union[List[AddressType], AddressType]
     event: EventABI
     search_topics: Optional[Dict[str, Any]] = None
 

@@ -7,12 +7,13 @@ from typing import Any, Callable, Dict, Iterator, List, Optional, Tuple, Type, U
 
 import click
 import pandas as pd
-from ethpm_types import ContractType, HexBytes
+from eth_pydantic_types import HexBytes
+from ethpm_types import ContractType
 from ethpm_types.abi import ConstructorABI, ErrorABI, EventABI, MethodABI
 
 from ape.api import AccountAPI, Address, ReceiptAPI, TransactionAPI
 from ape.api.address import BaseAddress
-from ape.api.query import ContractEventQuery, extract_fields
+from ape.api.query import ContractEventQuery, extract_fields, validate_and_expand_columns
 from ape.exceptions import (
     ApeAttributeError,
     ArgumentsLengthError,
@@ -25,7 +26,7 @@ from ape.exceptions import (
 )
 from ape.logging import logger
 from ape.types import AddressType, ContractLog, LogFilter, MockContractLog
-from ape.utils import ManagerAccessMixin, cached_property, singledispatchmethod
+from ape.utils import BaseInterfaceModel, ManagerAccessMixin, cached_property, singledispatchmethod
 from ape.utils.abi import StructParser
 
 
@@ -361,7 +362,7 @@ class ContractTransactionHandler(ContractMethodHandler):
         )
 
 
-class ContractEvent(ManagerAccessMixin):
+class ContractEvent(BaseInterfaceModel):
     """
     The types of events on a :class:`~ape.contracts.base.ContractInstance`.
     Use the event types via ``.`` access on the contract instances.
@@ -372,16 +373,9 @@ class ContractEvent(ManagerAccessMixin):
          my_event_type = my_contract.MyEvent
     """
 
-    def __init__(
-        self,
-        contract: Union["ContractInstance", "ContractContainer"],
-        abi: EventABI,
-        cached_logs: Optional[List[ContractLog]] = None,
-    ) -> None:
-        super().__init__()
-        self.contract = contract
-        self.abi = abi
-        self.cached_logs = cached_logs or []
+    contract: "ContractTypeWrapper"
+    abi: EventABI
+    _logs: Optional[List[ContractLog]] = None
 
     def __repr__(self):
         return self.abi.signature
@@ -554,12 +548,8 @@ class ContractEvent(ManagerAccessMixin):
                 f"'stop={stop_block}' cannot be greater than "
                 f"the chain length ({self.chain_manager.blocks.height})."
             )
-
-        if columns[0] == "*":
-            columns = list(ContractLog.__fields__)  # type: ignore
-
         query: Dict = {
-            "columns": columns,
+            "columns": list(ContractLog.model_fields) if columns[0] == "*" else columns,
             "event": self.abi,
             "start_block": start_block,
             "stop_block": stop_block,
@@ -573,6 +563,7 @@ class ContractEvent(ManagerAccessMixin):
         contract_events = self.query_manager.query(
             contract_event_query, engine_to_use=engine_to_use
         )
+        columns = validate_and_expand_columns(columns, ContractLog)
         data = map(partial(extract_fields, columns=columns), contract_events)
         return pd.DataFrame(columns=columns, data=data)
 
@@ -631,7 +622,7 @@ class ContractEvent(ManagerAccessMixin):
 
         addresses = list(set([contract_address] + (extra_addresses or [])))
         contract_event_query = ContractEventQuery(
-            columns=list(ContractLog.__fields__.keys()),
+            columns=list(ContractLog.model_fields.keys()),
             contract=addresses,
             event=self.abi,
             search_topics=search_topics,
@@ -697,14 +688,15 @@ class ContractEvent(ManagerAccessMixin):
             yield from self.range(start_block, height)
             start_block = height + 1
 
-        # NOTE: Now we process the rest
-        yield from self.provider.poll_logs(
-            stop_block=stop_block,
-            address=self.contract.address,
-            required_confirmations=required_confirmations,
-            new_block_timeout=new_block_timeout,
-            events=[self.abi],
-        )
+        if address := getattr(self.contract, "address", None):
+            # NOTE: Now we process the rest
+            yield from self.provider.poll_logs(
+                stop_block=stop_block,
+                address=address,
+                required_confirmations=required_confirmations,
+                new_block_timeout=new_block_timeout,
+                events=[self.abi],
+            )
 
 
 class ContractTypeWrapper(ManagerAccessMixin):

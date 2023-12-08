@@ -8,8 +8,8 @@ from eip712.messages import EIP712Message
 from eth_account import Account as EthAccount
 from eth_account.messages import encode_defunct
 from eth_keys import keys  # type: ignore
+from eth_pydantic_types import HexBytes
 from eth_utils import to_bytes
-from ethpm_types import HexBytes
 
 from ape.api import AccountAPI, AccountContainerAPI, TransactionAPI
 from ape.exceptions import AccountsError
@@ -217,7 +217,7 @@ class KeyfileAccount(AccountAPI):
             return None
 
         signature = EthAccount.sign_transaction(
-            txn.dict(exclude_none=True, by_alias=True), self.__key
+            txn.model_dump(exclude_none=True, by_alias=True), self.__key
         )
         txn.signature = TransactionSignature(
             v=signature.v,

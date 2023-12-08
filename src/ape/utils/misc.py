@@ -9,8 +9,8 @@ from typing import TYPE_CHECKING, Any, Callable, Coroutine, Dict, List, Mapping,
 
 import requests
 import yaml
+from eth_pydantic_types import HexBytes
 from eth_utils import is_0x_prefixed
-from ethpm_types import HexBytes
 from importlib_metadata import PackageNotFoundError, distributions, packages_distributions
 from importlib_metadata import version as version_metadata
 from tqdm.auto import tqdm  # type: ignore

@@ -36,7 +36,7 @@ def plugins_argument():
         if file_path.is_file():
             config = load_config(file_path)
             if plugins := config.get("plugins"):
-                return [PluginMetadata.parse_obj(d) for d in plugins]
+                return [PluginMetadata.model_validate(d) for d in plugins]
 
         ctx.obj.logger.warning(f"No plugins found at '{file_path}'.")
         return []

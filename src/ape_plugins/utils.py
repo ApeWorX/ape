@@ -4,8 +4,9 @@ from enum import Enum
 from functools import cached_property
 from typing import Iterator, List, Optional, Sequence, Set, Tuple
 
+from pydantic import field_validator, model_validator
+
 from ape.__modules__ import __modules__
-from ape._pydantic_compat import root_validator, validator
 from ape.logging import logger
 from ape.plugins import clean_plugin_name
 from ape.utils import BaseInterfaceModel, get_package_version, github_client
@@ -86,7 +87,7 @@ class PluginMetadataList(BaseModel):
 
     @classmethod
     def from_package_names(cls, packages: Sequence[str]) -> "PluginMetadataList":
-        PluginMetadataList.update_forward_refs()
+        PluginMetadataList.model_rebuild()
         core = PluginGroup(plugin_type=PluginType.CORE)
         available = PluginGroup(plugin_type=PluginType.AVAILABLE)
         installed = PluginGroup(plugin_type=PluginType.INSTALLED)
@@ -136,7 +137,7 @@ class PluginMetadata(BaseInterfaceModel):
     version: Optional[str] = None
     """The version requested, if there is one."""
 
-    @root_validator(pre=True)
+    @model_validator(mode="before")
     def validate_name(cls, values):
         if "name" not in values:
             raise ValueError("'name' required.")
@@ -383,7 +384,7 @@ class PluginGroup(BaseModel):
     def __str__(self) -> str:
         return self.to_str()
 
-    @validator("plugin_type")
+    @field_validator("plugin_type", mode="before")
     def validate_plugin_type(cls, value):
         return PluginType(value) if isinstance(value, str) else value
 

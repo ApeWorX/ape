@@ -5,12 +5,11 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Any, Dict, Iterator, List, Optional, Union
 
 from ethpm_types import Checksum, Compiler, ContractType, PackageManifest, Source
-from ethpm_types.manifest import PackageName
 from ethpm_types.source import Content
-from ethpm_types.utils import Algorithm, AnyUrl, compute_checksum
+from ethpm_types.utils import Algorithm, compute_checksum
 from packaging.version import InvalidVersion, Version
+from pydantic import AnyUrl, ValidationError
 
-from ape._pydantic_compat import ValidationError
 from ape.exceptions import ProjectError
 from ape.logging import logger
 from ape.utils import (
@@ -112,7 +111,7 @@ class ProjectAPI(BaseInterfaceModel):
                     continue
 
                 path = self._cache_folder / f"{contract_type.name}.json"
-                path.write_text(contract_type.json())
+                path.write_text(contract_type.model_dump_json())
 
             # Rely on individual cache files.
             self._contracts = manifest.contract_types
@@ -147,10 +146,8 @@ class ProjectAPI(BaseInterfaceModel):
                 continue
 
             contract_name = p.stem
-            contract_type = ContractType.parse_file(p)
-            if contract_type.name is None:
-                contract_type.name = contract_name
-
+            contract_type = ContractType.model_validate_json(p.read_text())
+            contract_type.name = contract_name if contract_type.name is None else contract_type.name
             contracts[contract_type.name] = contract_type
 
         self._contracts = contracts
@@ -183,7 +180,7 @@ class ProjectAPI(BaseInterfaceModel):
         compiler_data: Optional[List[Compiler]] = None,
     ) -> PackageManifest:
         manifest = initial_manifest or PackageManifest()
-        manifest.name = PackageName(__root__=name.lower()) if name is not None else manifest.name
+        manifest.name = name.lower() if name is not None else manifest.name
         manifest.version = version or manifest.version
         manifest.sources = cls._create_source_dict(source_paths, contracts_path)
         manifest.contract_types = contract_types
@@ -221,7 +218,7 @@ class ProjectAPI(BaseInterfaceModel):
                     hash=compute_checksum(source_path.read_bytes()),
                 ),
                 urls=[],
-                content=Content(__root__={i + 1: x for i, x in enumerate(text.splitlines())}),
+                content=Content(root={i + 1: x for i, x in enumerate(text.splitlines())}),
                 imports=source_imports.get(key, []),
                 references=source_references.get(key, []),
             )
@@ -410,7 +407,7 @@ class DependencyAPI(BaseInterfaceModel):
 
         if project_path.is_file() and project_path.suffix == ".json":
             try:
-                manifest = PackageManifest.parse_file(project_path)
+                manifest = PackageManifest.model_validate_json(project_path.read_text())
 
             except ValueError as err:
                 if project_path.parent.is_dir():
@@ -472,7 +469,7 @@ class DependencyAPI(BaseInterfaceModel):
     def _write_manifest_to_cache(self, manifest: PackageManifest):
         self._target_manifest_cache_file.unlink(missing_ok=True)
         self._target_manifest_cache_file.parent.mkdir(exist_ok=True, parents=True)
-        self._target_manifest_cache_file.write_text(manifest.json())
+        self._target_manifest_cache_file.write_text(manifest.model_dump_json())
         self._cached_manifest = manifest
 
 
@@ -481,7 +478,7 @@ def _load_manifest_from_file(file_path: Path) -> Optional[PackageManifest]:
         return None
 
     try:
-        return PackageManifest.parse_file(file_path)
+        return PackageManifest.model_validate_json(file_path.read_text())
     except ValidationError as err:
         logger.warning(f"Existing manifest file '{file_path}' corrupted. Re-building.")
         logger.debug(str(err))

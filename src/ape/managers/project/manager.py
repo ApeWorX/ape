@@ -2,12 +2,12 @@ import shutil
 from pathlib import Path
 from typing import Any, Dict, Iterable, List, Optional, Type, Union, cast
 
+from eth_pydantic_types import Bip122Uri, HexStr
 from ethpm_types import ContractInstance as EthPMContractInstance
 from ethpm_types import ContractType, PackageManifest, PackageMeta, Source
-from ethpm_types.contract_type import BIP122_URI
 from ethpm_types.manifest import PackageName
 from ethpm_types.source import Compiler, ContractSource
-from ethpm_types.utils import AnyUrl, Hex
+from pydantic import AnyUrl
 
 from ape.api import DependencyAPI, ProjectAPI
 from ape.contracts import ContractContainer, ContractInstance, ContractNamespace
@@ -230,7 +230,7 @@ class ProjectManager(BaseManager):
         return self.config_manager.meta
 
     @property
-    def tracked_deployments(self) -> Dict[BIP122_URI, Dict[str, EthPMContractInstance]]:
+    def tracked_deployments(self) -> Dict[Bip122Uri, Dict[str, EthPMContractInstance]]:
         """
         Deployments that have been explicitly tracked via
         :meth:`~ape.managers.project.manager.ProjectManager.track_deployment`.
@@ -238,17 +238,18 @@ class ProjectManager(BaseManager):
         of this package.
         """
 
-        deployments: Dict[BIP122_URI, Dict[str, EthPMContractInstance]] = {}
+        deployments: Dict[Bip122Uri, Dict[str, EthPMContractInstance]] = {}
         if not self._package_deployments_folder.is_dir():
             return deployments
 
         for ecosystem_path in [x for x in self._package_deployments_folder.iterdir() if x.is_dir()]:
             for deployment_path in [x for x in ecosystem_path.iterdir() if x.suffix == ".json"]:
-                ethpm_instance = EthPMContractInstance.parse_file(deployment_path)
+                text = deployment_path.read_text()
+                ethpm_instance = EthPMContractInstance.model_validate_json(text)
                 if not ethpm_instance:
                     continue
 
-                uri = BIP122_URI(f"blockchain://{ecosystem_path.name}/block/{ethpm_instance.block}")
+                uri = Bip122Uri(f"blockchain://{ecosystem_path.name}/block/{ethpm_instance.block}")
                 deployments[uri] = {deployment_path.stem: ethpm_instance}
 
         return deployments
@@ -470,7 +471,7 @@ class ProjectManager(BaseManager):
 
             # We know if we get here that the path does not exist.
             path = self.local_project._cache_folder / f"{ct.name}.json"
-            path.write_text(ct.json())
+            path.write_text(ct.model_dump_json())
             if self.local_project._contracts is None:
                 self.local_project._contracts = {ct.name: ct}
             else:
@@ -734,10 +735,10 @@ class ProjectManager(BaseManager):
 
         block_hash = block_hash_bytes.hex()
         artifact = EthPMContractInstance(
-            address=cast(Hex, contract.address),
+            address=contract.address,
             block=block_hash,
             contractType=contract_name,
-            transaction=cast(Hex, contract.txn_hash),
+            transaction=cast(HexStr, contract.txn_hash),
             runtimeBytecode=contract.contract_type.runtime_bytecode,
         )
 
@@ -755,7 +756,7 @@ class ProjectManager(BaseManager):
             # NOTE: missing_ok=True to handle race condition.
             destination.unlink(missing_ok=True)
 
-        destination.write_text(artifact.json())
+        destination.write_text(artifact.model_dump_json())
 
     def _create_contract_source(self, contract_type: ContractType) -> Optional[ContractSource]:
         if not (source_id := contract_type.source_id):
@@ -786,7 +787,7 @@ class ProjectManager(BaseManager):
         return None
 
     # def publish_manifest(self):
-    #     manifest = self.manifest.dict()
+    #     manifest = self.manifest.model_dump(mode="json")
     #     if not manifest["name"]:
     #         raise ProjectError("Need name to release manifest")
     #     if not manifest["version"]:

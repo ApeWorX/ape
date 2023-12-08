@@ -8,8 +8,8 @@ from xml.etree.ElementTree import Element, SubElement, tostring
 
 import requests
 from ethpm_types.source import ContractSource, SourceLocation
+from pydantic import NonNegativeInt, field_validator
 
-from ape._pydantic_compat import NonNegativeInt, validator
 from ape.logging import logger
 from ape.utils.basemodel import BaseModel
 from ape.utils.misc import get_current_timestamp_ms
@@ -211,8 +211,8 @@ class FunctionCoverage(BaseModel):
         # This function has hittable statements.
         return self.lines_covered / self.lines_valid if self.lines_valid > 0 else 0
 
-    def dict(self, *args, **kwargs) -> dict:
-        attribs = super().dict(*args, **kwargs)
+    def model_dump(self, *args, **kwargs) -> dict:
+        attribs = super().model_dump(*args, **kwargs)
 
         # Add coverage stats.
         attribs["lines_covered"] = self.lines_covered
@@ -335,8 +335,8 @@ class ContractCoverage(BaseModel):
 
         raise IndexError(f"Function '{function_name}' not found.")
 
-    def dict(self, *args, **kwargs) -> dict:
-        attribs = super().dict(*args, **kwargs)
+    def model_dump(self, *args, **kwargs) -> dict:
+        attribs = super().model_dump(*args, **kwargs)
 
         # Add coverage stats.
         attribs["lines_covered"] = self.lines_covered
@@ -436,8 +436,8 @@ class ContractSourceCoverage(BaseModel):
         """
         return self.function_hits / self.total_functions if self.total_functions > 0 else 0
 
-    def dict(self, *args, **kwargs) -> dict:
-        attribs = super().dict(*args, **kwargs)
+    def model_dump(self, *args, **kwargs) -> dict:
+        attribs = super().model_dump(*args, **kwargs)
 
         # Add coverage stats.
         attribs["lines_covered"] = self.lines_covered
@@ -535,8 +535,8 @@ class CoverageProject(BaseModel):
         """
         return self.function_hits / self.total_functions if self.total_functions > 0 else 0
 
-    def dict(self, *args, **kwargs) -> dict:
-        attribs = super().dict(*args, **kwargs)
+    def model_dump(self, *args, **kwargs) -> dict:
+        attribs = super().model_dump(*args, **kwargs)
 
         # Add coverage stats.
         attribs["lines_covered"] = self.lines_covered
@@ -575,7 +575,7 @@ class CoverageReport(BaseModel):
     Each project with individual coverage tracked.
     """
 
-    @validator("timestamp", pre=True)
+    @field_validator("timestamp", mode="before")
     def validate_timestamp(cls, value):
         # Default to current UTC timestamp (ms).
         return value or get_current_timestamp_ms()
@@ -998,8 +998,8 @@ class CoverageReport(BaseModel):
         stmt_cov_td = SubElement(tbody_tr, "td", {}, **{"class": "column4"})
         stmt_cov_td.text = f"{round(src_or_fn.line_rate * 100, 2)}%"
 
-    def dict(self, *args, **kwargs) -> dict:
-        attribs = super().dict(*args, **kwargs)
+    def model_dump(self, *args, **kwargs) -> dict:
+        attribs = super().model_dump(*args, **kwargs)
 
         # Add coverage stats.
         attribs["lines_covered"] = self.lines_covered

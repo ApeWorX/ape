@@ -6,10 +6,9 @@ from pathlib import Path
 from typing import Dict, Iterable, List, Optional, Type
 
 from ethpm_types import PackageManifest
-from ethpm_types.utils import AnyUrl
+from pydantic import AnyUrl, FileUrl, HttpUrl, model_validator
 from semantic_version import NpmSpec, Version  # type: ignore
 
-from ape._pydantic_compat import FileUrl, HttpUrl, root_validator
 from ape.api import DependencyAPI
 from ape.exceptions import ProjectError, UnknownVersionError
 from ape.logging import logger
@@ -236,7 +235,7 @@ class GithubDependency(DependencyAPI):
         elif self._reference:
             _uri = f"{_uri}/tree/{self._reference}"
 
-        return HttpUrl(_uri, scheme="https")
+        return HttpUrl(_uri)
 
     def __repr__(self):
         return f"<{self.__class__.__name__} github={self.github}>"
@@ -289,7 +288,7 @@ class LocalDependency(DependencyAPI):
     local: str
     version: str = "local"
 
-    @root_validator()
+    @model_validator(mode="before")
     def validate_contracts_folder(cls, value):
         if value.get("contracts_folder") not in (None, "contracts"):
             return value
@@ -320,7 +319,7 @@ class LocalDependency(DependencyAPI):
 
     @property
     def uri(self) -> AnyUrl:
-        return FileUrl(self.path.as_uri(), scheme="file")
+        return FileUrl(self.path.as_uri())
 
     def extract_manifest(self, use_cache: bool = True) -> PackageManifest:
         return self._extract_local_manifest(self.path, use_cache=use_cache)
@@ -405,7 +404,7 @@ class NpmDependency(DependencyAPI):
     @property
     def uri(self) -> AnyUrl:
         _uri = f"https://www.npmjs.com/package/{self.npm}/v/{self.version}"
-        return HttpUrl(_uri, scheme="https")
+        return HttpUrl(_uri)
 
     def extract_manifest(self, use_cache: bool = True) -> PackageManifest:
         if use_cache and self.cached_manifest:

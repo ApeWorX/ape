@@ -11,9 +11,9 @@ from typing import Any, Dict, Iterator, List, Optional, Tuple, Union
 
 import ijson  # type: ignore
 import requests
+from eth_pydantic_types import HexBytes
 from eth_typing import HexStr
 from eth_utils import add_0x_prefix, to_hex, to_wei
-from ethpm_types import HexBytes
 from evm_trace import CallType, ParityTraceList
 from evm_trace import TraceFrame as EvmTraceFrame
 from evm_trace import (
@@ -26,6 +26,7 @@ from geth.accounts import ensure_account_exists  # type: ignore
 from geth.chain import initialize_chain  # type: ignore
 from geth.process import BaseGethProcess  # type: ignore
 from geth.wrapper import construct_test_chain_kwargs  # type: ignore
+from pydantic_settings import SettingsConfigDict
 from requests.exceptions import ConnectionError
 from web3 import HTTPProvider, Web3
 from web3.exceptions import ExtraDataLengthError
@@ -36,7 +37,6 @@ from web3.providers import AutoProvider, IPCProvider
 from web3.providers.auto import load_provider_from_environment
 from yarl import URL
 
-from ape._pydantic_compat import Extra
 from ape.api import (
     PluginConfig,
     ReceiptAPI,
@@ -233,9 +233,7 @@ class GethConfig(PluginConfig):
     ipc_path: Optional[Path] = None
     data_dir: Optional[Path] = None
 
-    class Config:
-        # For allowing all other EVM-based ecosystem plugins
-        extra = Extra.allow
+    model_config = SettingsConfigDict(extra="allow")
 
 
 class GethNotInstalledError(ConnectionError):
@@ -250,8 +248,6 @@ class GethNotInstalledError(ConnectionError):
 
 
 class BaseGethProvider(Web3Provider, ABC):
-    _client_version: Optional[str] = None
-
     # optimal values for geth
     block_page_size: int = 5000
     concurrency: int = 16
@@ -259,7 +255,7 @@ class BaseGethProvider(Web3Provider, ABC):
     name: str = "geth"
 
     """Is ``None`` until known."""
-    _can_use_parity_traces: Optional[bool] = None
+    can_use_parity_traces: Optional[bool] = None
 
     @property
     def uri(self) -> str:
@@ -267,7 +263,7 @@ class BaseGethProvider(Web3Provider, ABC):
             # Use adhoc, scripted value
             return self.provider_settings["uri"]
 
-        config = self.settings.dict().get(self.network.ecosystem.name, None)
+        config = self.config.model_dump(mode="json").get(self.network.ecosystem.name, None)
         if config is None:
             return DEFAULT_SETTINGS["uri"]
 
@@ -311,7 +307,8 @@ class BaseGethProvider(Web3Provider, ABC):
         return None
 
     def _set_web3(self):
-        self._client_version = None  # Clear cached version when connecting to another URI.
+        # Clear cached version when connecting to another URI.
+        self._client_version = None  # type: ignore
         self._web3 = _create_web3(self.uri, ipc_path=self.ipc_path)
 
     def _complete_connect(self):
@@ -361,9 +358,9 @@ class BaseGethProvider(Web3Provider, ABC):
         self.network.verify_chain_id(chain_id)
 
     def disconnect(self):
-        self._can_use_parity_traces = None
-        self._web3 = None
-        self._client_version = None
+        self.can_use_parity_traces = None
+        self._web3 = None  # type: ignore
+        self._client_version = None  # type: ignore
 
     def get_transaction_trace(self, txn_hash: str) -> Iterator[TraceFrame]:
         frames = self._stream_request(
@@ -378,26 +375,26 @@ class BaseGethProvider(Web3Provider, ABC):
         )
 
     def get_call_tree(self, txn_hash: str) -> CallTreeNode:
-        if self._can_use_parity_traces is True:
+        if self.can_use_parity_traces is True:
             return self._get_parity_call_tree(txn_hash)
 
-        elif self._can_use_parity_traces is False:
+        elif self.can_use_parity_traces is False:
             return self._get_geth_call_tree(txn_hash)
 
         elif "erigon" in self.client_version.lower():
             tree = self._get_parity_call_tree(txn_hash)
-            self._can_use_parity_traces = True
+            self.can_use_parity_traces = True
             return tree
 
         try:
             # Try the Parity traces first, in case node client supports it.
             tree = self._get_parity_call_tree(txn_hash)
         except (ValueError, APINotImplementedError, ProviderError):
-            self._can_use_parity_traces = False
+            self.can_use_parity_traces = False
             return self._get_geth_call_tree(txn_hash)
 
         # Parity style works.
-        self._can_use_parity_traces = True
+        self.can_use_parity_traces = True
         return tree
 
     def _get_parity_call_tree(self, txn_hash: str) -> CallTreeNode:
@@ -405,7 +402,7 @@ class BaseGethProvider(Web3Provider, ABC):
         if not result:
             raise ProviderError(f"Failed to get trace for '{txn_hash}'.")
 
-        traces = ParityTraceList.parse_obj(result)
+        traces = ParityTraceList.model_validate(result)
         evm_call = get_calltree_from_parity_trace(traces)
         return self._create_call_tree_node(evm_call, txn_hash=txn_hash)
 
@@ -470,7 +467,7 @@ class BaseGethProvider(Web3Provider, ABC):
 class GethDev(BaseGethProvider, TestProviderAPI, SubprocessProvider):
     _process: Optional[GethDevProcess] = None
     name: str = "geth"
-    _can_use_parity_traces = False
+    can_use_parity_traces: Optional[bool] = False
 
     @property
     def process_name(self) -> str:
@@ -499,7 +496,7 @@ class GethDev(BaseGethProvider, TestProviderAPI, SubprocessProvider):
             self.start()
 
     def start(self, timeout: int = 20):
-        test_config = self.config_manager.get_config("test").dict()
+        test_config = self.config_manager.get_config("test").model_dump(mode="json")
 
         # Allow configuring a custom executable besides your $PATH geth.
         if self.settings.executable is not None:

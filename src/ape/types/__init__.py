@@ -17,6 +17,7 @@ from typing import (
 
 from eth_abi.abi import encode
 from eth_abi.packed import encode_packed
+from eth_pydantic_types import HexBytes
 from eth_typing import Hash32, HexStr
 from eth_utils import encode_hex, keccak, to_hex
 from ethpm_types import (
@@ -25,16 +26,15 @@ from ethpm_types import (
     Checksum,
     Compiler,
     ContractType,
-    HexBytes,
     PackageManifest,
     PackageMeta,
     Source,
 )
 from ethpm_types.abi import EventABI
 from ethpm_types.source import Closure
+from pydantic import BaseModel, field_validator, model_validator
 from web3.types import FilterParams
 
-from ape._pydantic_compat import BaseModel, root_validator, validator
 from ape.types.address import AddressType, RawAddress
 from ape.types.coverage import (
     ContractCoverage,
@@ -84,7 +84,7 @@ class AutoGasLimit(BaseModel):
     A multiplier to estimated gas.
     """
 
-    @validator("multiplier", pre=True)
+    @field_validator("multiplier", mode="before")
     def validate_multiplier(cls, value):
         if isinstance(value, str):
             return float(value)
@@ -136,7 +136,7 @@ class LogFilter(BaseModel):
     stop_block: Optional[int] = None  # Use block height
     selectors: Dict[str, EventABI] = {}
 
-    @root_validator()
+    @model_validator(mode="before")
     def compute_selectors(cls, values):
         values["selectors"] = {
             encode_hex(keccak(text=event.selector)): event for event in values.get("events", [])
@@ -144,17 +144,11 @@ class LogFilter(BaseModel):
 
         return values
 
-    @validator("start_block", pre=True)
+    @field_validator("start_block", mode="before")
     def validate_start_block(cls, value):
         return value or 0
 
-    @validator("addresses", pre=True, each_item=True)
-    def validate_addresses(cls, value):
-        from ape import convert
-
-        return convert(value, AddressType)
-
-    def dict(self, client=None):
+    def model_dump(self, *args, **kwargs):
         _Hash32 = Union[Hash32, HexBytes, HexStr]
         topics = cast(Sequence[Optional[Union[_Hash32, Sequence[_Hash32]]]], self.topic_filter)
         return FilterParams(
@@ -236,7 +230,7 @@ class BaseContractLog(BaseInterfaceModel):
     event_arguments: Dict[str, Any] = {}
     """The arguments to the event, including both indexed and non-indexed data."""
 
-    @validator("contract_address", pre=True)
+    @field_validator("contract_address", mode="before")
     def validate_address(cls, value):
         return cls.conversion_manager.convert(value, AddressType)
 
@@ -275,7 +269,7 @@ class ContractLog(BaseContractLog):
     Is `None` when from the pending block.
     """
 
-    @validator("block_number", "log_index", "transaction_index", pre=True)
+    @field_validator("block_number", "log_index", "transaction_index", mode="before")
     def validate_hex_ints(cls, value):
         if value is None:
             # Should only happen for optionals.
@@ -286,7 +280,7 @@ class ContractLog(BaseContractLog):
 
         return value
 
-    @validator("contract_address", pre=True)
+    @field_validator("contract_address", mode="before")
     def validate_address(cls, value):
         return cls.conversion_manager.convert(value, AddressType)
 

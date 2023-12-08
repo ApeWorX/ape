@@ -1,5 +1,5 @@
 import pytest
-from ethpm_types import HexBytes
+from eth_pydantic_types import HexBytes
 from ethpm_types.abi import EventABI, EventABIType
 
 from ape.utils.abi import LogInputABICollection

@@ -15,7 +15,8 @@ def test_contract_from_abi(contract_instance):
 
 def test_contract_from_abi_list(contract_instance):
     contract = Contract(
-        contract_instance.address, abi=[abi.dict() for abi in contract_instance.contract_type.abi]
+        contract_instance.address,
+        abi=[abi.model_dump(mode="json") for abi in contract_instance.contract_type.abi],
     )
 
     assert isinstance(contract, ContractInstance)
@@ -26,7 +27,9 @@ def test_contract_from_abi_list(contract_instance):
 def test_contract_from_json_str(contract_instance):
     contract = Contract(
         contract_instance.address,
-        abi=json.dumps([abi.dict() for abi in contract_instance.contract_type.abi]),
+        abi=json.dumps(
+            [abi.model_dump(mode="json") for abi in contract_instance.contract_type.abi]
+        ),
     )
 
     assert isinstance(contract, ContractInstance)

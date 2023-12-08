@@ -1,8 +1,8 @@
 from typing import Any, Dict
 
 import pytest
+from eth_pydantic_types import HexBytes
 from eth_typing import HexAddress, HexStr
-from ethpm_types import HexBytes
 from ethpm_types.abi import ABIType, EventABI, MethodABI
 
 from ape.api.networks import LOCAL_NETWORK_NAME
@@ -91,10 +91,10 @@ def test_block_handles_snake_case_parent_hash(eth_tester_provider, sender, recei
 
     # Replace 'parentHash' key with 'parent_hash'
     latest_block = eth_tester_provider.get_block("latest")
-    latest_block_dict = eth_tester_provider.get_block("latest").dict()
+    latest_block_dict = eth_tester_provider.get_block("latest").model_dump(mode="json")
     latest_block_dict["parent_hash"] = latest_block_dict.pop("parentHash")
 
-    redefined_block = Block.parse_obj(latest_block_dict)
+    redefined_block = Block.model_validate(latest_block_dict)
     assert redefined_block.parent_hash == latest_block.parent_hash
 
 
@@ -139,7 +139,7 @@ def test_decode_logs_empty_list(ethereum, event_abi):
 
 
 def test_decode_logs_with_struct_from_interface(ethereum):
-    abi = EventABI.parse_obj(
+    abi = EventABI.model_validate(
         {
             "type": "event",
             "name": "ConditionalOrderCreated",
@@ -312,11 +312,13 @@ def test_decode_receipt(eth_tester_provider, ethereum):
 
 
 def test_configure_default_txn_type(temp_config, ethereum):
-    config_dict = {"ethereum": {"mainnet_fork": {"default_transaction_type": 0}}}
+    value = TransactionType.STATIC.value
+    config_dict = {"ethereum": {"mainnet_fork": {"default_transaction_type": value}}}
     assert ethereum.default_transaction_type == TransactionType.DYNAMIC
 
     with temp_config(config_dict):
         ethereum._default_network = "mainnet-fork"
+        assert ethereum.default_network == "mainnet-fork"
         assert ethereum.default_transaction_type == TransactionType.STATIC
         ethereum._default_network = LOCAL_NETWORK_NAME
 
@@ -355,7 +357,7 @@ def test_decode_return_data_non_empty_padding_bytes(ethereum):
         "000000000000000000000000000000000000000000000000000000000000012696e73756666"
         "696369656e742066756e64730000000000000000000000000000"
     )
-    abi = MethodABI.parse_obj(
+    abi = MethodABI.model_validate(
         {
             "type": "function",
             "name": "transfer",
