@@ -53,6 +53,24 @@ def test_sign_message(signer, message):
     assert signer.check_signature(message, signature)
 
 
+def test_sign_string(signer):
+    message = "Hello Apes!"
+    signature = signer.sign_message(message)
+    assert signer.check_signature(message, signature)
+
+
+def test_sign_int(signer):
+    message = 4
+    signature = signer.sign_message(message)
+    assert signer.check_signature(message, signature)
+
+
+def test_sign_message_unsupported_type_returns_none(signer):
+    message = 1234.123
+    signature = signer.sign_message(message)
+    assert signature is None
+
+
 def test_recover_signer(signer, message):
     signature = signer.sign_message(message)
     assert recover_signer(message, signature) == signer

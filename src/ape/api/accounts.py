@@ -1,9 +1,12 @@
 from pathlib import Path
-from typing import TYPE_CHECKING, Iterator, List, Optional, Type, Union
+from typing import TYPE_CHECKING, Any, Iterator, List, Optional, Type, Union
 
 import click
+from eip712.messages import EIP712Message
 from eip712.messages import SignableMessage as EIP712SignableMessage
 from eth_account import Account
+from eth_account.messages import encode_defunct
+from hexbytes import HexBytes
 
 from ape.api.address import BaseAddress
 from ape.api.transactions import ReceiptAPI, TransactionAPI
@@ -54,18 +57,21 @@ class AccountAPI(BaseInterfaceModel, BaseAddress):
         return None
 
     @abstractmethod
-    def sign_message(self, msg: SignableMessage) -> Optional[MessageSignature]:
+    def sign_message(self, msg: Any, **signer_options) -> Optional[MessageSignature]:
         """
         Sign a message.
 
         Args:
-          msg (:class:`~ape.types.signatures.SignableMessage`): The message to sign.
+          msg (Any): The message to sign. Account plugins can handle various types of messages.
+            For example, :class:`~ape_accounts.accouns.KeyfileAccount` can handle
+            :class:`~ape.types.signatures.SignableMessage`, str, int, and bytes.
             See these
             `docs <https://eth-account.readthedocs.io/en/stable/eth_account.html#eth_account.messages.SignableMessage>`__  # noqa: E501
-            for more type information on this type.
+            for more type information on the ``SignableMessage`` type.
+          **signer_options: Additional kwargs given to the signer to modify the signing operation.
 
         Returns:
-          :class:`~ape.types.signatures.MessageSignature` (optional): The signed message.
+          :class:`~ape.types.signatures.MessageSignature` (optional): The signature corresponding to the message.
         """
 
     @abstractmethod
@@ -258,7 +264,7 @@ class AccountAPI(BaseInterfaceModel, BaseAddress):
 
     def check_signature(
         self,
-        data: Union[SignableMessage, TransactionAPI],
+        data: Union[SignableMessage, TransactionAPI, str, EIP712Message, int],
         signature: Optional[MessageSignature] = None,  # TransactionAPI doesn't need it
     ) -> bool:
         """
@@ -273,6 +279,12 @@ class AccountAPI(BaseInterfaceModel, BaseAddress):
         Returns:
             bool: ``True`` if the data was signed by this account. ``False`` otherwise.
         """
+        if isinstance(data, str):
+            data = encode_defunct(text=data)
+        elif isinstance(data, int):
+            data = encode_defunct(hexstr=HexBytes(data).hex())
+        elif isinstance(data, EIP712Message):
+            data = data.signable_message
         if isinstance(data, (SignableMessage, EIP712SignableMessage)):
             if signature:
                 return self.address == Account.recover_message(data, vrs=signature)
@@ -494,7 +506,7 @@ class ImpersonatedAccount(AccountAPI):
     def address(self) -> AddressType:
         return self.raw_address
 
-    def sign_message(self, msg: SignableMessage) -> Optional[MessageSignature]:
+    def sign_message(self, msg: Any, **signer_options) -> Optional[MessageSignature]:
         raise NotImplementedError("This account cannot sign messages")
 
     def sign_transaction(self, txn: TransactionAPI, **kwargs) -> Optional[TransactionAPI]:
