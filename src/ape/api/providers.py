@@ -19,6 +19,7 @@ from typing import Any, Dict, Iterator, List, Optional, Union, cast
 from eth_typing import BlockNumber, HexStr
 from eth_utils import add_0x_prefix, to_hex
 from ethpm_types import HexBytes
+from ethpm_types.abi import EventABI
 from evm_trace import CallTreeNode as EvmCallTreeNode
 from evm_trace import TraceFrame as EvmTraceFrame
 from web3 import Web3
@@ -26,7 +27,7 @@ from web3.exceptions import ContractLogicError as Web3ContractLogicError
 from web3.exceptions import MethodUnavailable, TimeExhausted, TransactionNotFound
 from web3.types import RPCEndpoint, TxParams
 
-from ape._pydantic_compat import Field, root_validator, validator
+from ape._pydantic_compat import Field, dataclass, root_validator, validator
 from ape.api.config import PluginConfig
 from ape.api.networks import LOCAL_NETWORK_NAME, NetworkAPI
 from ape.api.query import BlockTransactionQuery
@@ -627,6 +628,77 @@ class ProviderAPI(BaseInterfaceModel):
 
         Returns:
             Iterator(:class:`~ape.type.trace.TraceFrame`): Transaction execution trace.
+        """
+
+    @raises_not_implemented
+    def poll_blocks(  # type: ignore[empty-body]
+        self,
+        stop_block: Optional[int] = None,
+        required_confirmations: Optional[int] = None,
+        new_block_timeout: Optional[int] = None,
+    ) -> Iterator[BlockAPI]:
+        """
+        Poll new blocks.
+
+        **NOTE**: When a chain reorganization occurs, this method logs an error and
+        yields the missed blocks, even if they were previously yielded with different
+        block numbers.
+
+        **NOTE**: This is a daemon method; it does not terminate unless an exception occurs
+        or a ``stop_block`` is given.
+
+        Args:
+            start_block (Optional[int]): The block number to start with. Defaults to the pending
+              block number.
+            stop_block (Optional[int]): Optionally set a future block number to stop at.
+              Defaults to never-ending.
+            required_confirmations (Optional[int]): The amount of confirmations to wait
+              before yielding the block. The more confirmations, the less likely a reorg will occur.
+              Defaults to the network's configured required confirmations.
+            new_block_timeout (Optional[float]): The amount of time to wait for a new block before
+              timing out. Defaults to 10 seconds for local networks or ``50 * block_time`` for live
+              networks.
+
+        Returns:
+            Iterator[:class:`~ape.api.providers.BlockAPI`]
+        """
+
+    @raises_not_implemented
+    def poll_logs(  # type: ignore[empty-body]
+        self,
+        stop_block: Optional[int] = None,
+        address: Optional[AddressType] = None,
+        topics: Optional[List[Union[str, List[str]]]] = None,
+        required_confirmations: Optional[int] = None,
+        new_block_timeout: Optional[int] = None,
+        events: List[EventABI] = [],
+    ) -> Iterator[ContractLog]:
+        """
+        Poll new blocks. Optionally set a start block to include historical blocks.
+
+        **NOTE**: This is a daemon method; it does not terminate unless an exception occurrs.
+
+        Usage example::
+
+            for new_log in contract.MyEvent.poll_logs():
+                print(f"New event log found: block_number={new_log.block_number}")
+
+        Args:
+            stop_block (Optional[int]): Optionally set a future block number to stop at.
+              Defaults to never-ending.
+            address (Optional[str]): The address of the contract to filter logs by.
+              Defaults to all addresses.
+            topics (Optional[List[Union[str, List[str]]]]): The topics to filter logs by.
+              Defaults to all topics.
+            required_confirmations (Optional[int]): The amount of confirmations to wait
+              before yielding the block. The more confirmations, the less likely a reorg will occur.
+              Defaults to the network's configured required confirmations.
+            new_block_timeout (Optional[int]): The amount of time to wait for a new block before
+              quitting. Defaults to 10 seconds for local networks or ``50 * block_time`` for live
+              networks.
+
+        Returns:
+            Iterator[:class:`~ape.types.ContractLog`]
         """
 
     @raises_not_implemented
@@ -1306,7 +1378,7 @@ class Web3Provider(ProviderAPI, ABC):
         if start_nonce > stop_nonce:
             raise ValueError("Starting nonce cannot be greater than stop nonce for search")
 
-        if self.network.name != LOCAL_NETWORK_NAME and (stop_nonce - start_nonce) > 2:
+        if not self.network.is_local and (stop_nonce - start_nonce) > 2:
             # NOTE: RPC usage might be acceptable to find 1 or 2 transactions reasonably quickly
             logger.warning(
                 "Performing this action is likely to be very slow and may "
@@ -1365,6 +1437,149 @@ class Web3Provider(ProviderAPI, ABC):
                     block_number,
                     stop_block,
                 )
+
+    def poll_blocks(
+        self,
+        stop_block: Optional[int] = None,
+        required_confirmations: Optional[int] = None,
+        new_block_timeout: Optional[int] = None,
+    ) -> Iterator[BlockAPI]:
+        # Wait half the time as the block time
+        # to get data faster.
+        block_time = self.network.block_time
+        wait_time = block_time / 2
+
+        # The timeout occurs when there is no chain activity
+        # after a certain time.
+        timeout = (
+            (10.0 if self.network.is_dev else 50 * block_time)
+            if new_block_timeout is None
+            else new_block_timeout
+        )
+
+        # Only yield confirmed blocks.
+        if required_confirmations is None:
+            required_confirmations = self.network.required_confirmations
+
+        @dataclass
+        class YieldAction:
+            hash: bytes
+            number: int
+            time: float
+
+        # Pretend we _did_ yield the last confirmed item, for logic's sake.
+        fake_last_block = self.get_block(self.web3.eth.block_number - required_confirmations)
+        # NOTE: type warning ignored due to pydantic compat issue
+        last = YieldAction(
+            number=fake_last_block.number, hash=fake_last_block.hash, time=time.time()
+        )  # type: ignore
+
+        # A helper method for various points of ensuring we didn't timeout.
+        def assert_chain_activity():
+            time_waiting = time.time() - last.time
+            if time_waiting > timeout:
+                raise ProviderError("Timed out waiting for next block.")
+
+        # Begin the daemon.
+        while True:
+            # The next block we want is simply 1 after the last.
+            next_block = last.number + 1
+
+            head = self.get_block("latest")
+
+            try:
+                if head.number is None or head.hash is None:
+                    raise ProviderError("Head block has no number or hash.")
+                # Use an "adjused" head, based on the required confirmations.
+                adjusted_head = self.get_block(head.number - required_confirmations)
+                if adjusted_head.number is None or adjusted_head.hash is None:
+                    raise ProviderError("Adjusted head block has no number or hash.")
+            except Exception:
+                # TODO: I did encounter this sometimes in a re-org, needs better handling
+                # and maybe bubbling up the block number/hash exceptions above.
+                assert_chain_activity()
+                continue
+
+            if adjusted_head.number == last.number and adjusted_head.hash == last.hash:
+                # The chain has not moved! Verify we have activity.
+                assert_chain_activity()
+                time.sleep(wait_time)
+                continue
+
+            elif adjusted_head.number < last.number or (
+                adjusted_head.number == last.number and adjusted_head.hash != last.hash
+            ):
+                # Re-org detected! Error and catch up the chain.
+                logger.error(
+                    "Chain has reorganized since returning the last block. "
+                    "Try adjusting the required network confirmations."
+                )
+                # Catch up the chain by setting the "next" to this tiny head.
+                next_block = adjusted_head.number
+
+                # NOTE: Drop down to code outside of switch-of-ifs
+
+            elif adjusted_head.number < next_block:
+                # Wait for the next block.
+                # But first, let's make sure the chain is still active.
+                assert_chain_activity()
+                time.sleep(wait_time)
+                continue
+
+            # NOTE: Should only get here if yielding blocks!
+            #  Either because it is finally time or because a re-org allows us.
+            for block_idx in range(next_block, adjusted_head.number + 1):
+                block = self.get_block(block_idx)
+                if block.number is None or block.hash is None:
+                    raise ProviderError("Block has no number or hash.")
+                yield block
+
+                # This is the point at which the daemon will end,
+                # provider the user passes in a `stop_block` arg.
+                if stop_block is not None and block.number >= stop_block:
+                    return
+
+                # Set the last action, used for checking timeouts and re-orgs.
+                last = YieldAction(
+                    number=block.number, hash=block.hash, time=time.time()
+                )  # type: ignore
+
+    def poll_logs(
+        self,
+        stop_block: Optional[int] = None,
+        address: Optional[AddressType] = None,
+        topics: Optional[List[Union[str, List[str]]]] = None,
+        required_confirmations: Optional[int] = None,
+        new_block_timeout: Optional[int] = None,
+        events: List[EventABI] = [],
+    ) -> Iterator[ContractLog]:
+        if required_confirmations is None:
+            required_confirmations = self.network.required_confirmations
+
+        if stop_block is not None:
+            if stop_block <= (self.provider.get_block("latest").number or 0):
+                raise ValueError("'stop' argument must be in the future.")
+
+        for block in self.poll_blocks(stop_block, required_confirmations, new_block_timeout):
+            if block.number is None:
+                raise ValueError("Block number cannot be None")
+            log_params: Dict[
+                str,
+                int
+                | AddressType
+                | List[EventABI]
+                | List[AddressType]
+                | List[Union[str, EventABI, AddressType, List[str]]],
+            ] = {
+                "start_block": block.number,
+                "stop_block": block.number,
+                "events": events,
+            }
+            if address is not None:
+                log_params["addresses"] = [address]
+            if topics is not None:
+                log_params["topics"] = topics
+            yield from self.get_contract_logs(LogFilter(**log_params))
 
     def block_ranges(self, start=0, stop=None, page=None):
         if stop is None:
@@ -1438,7 +1653,8 @@ class Web3Provider(ProviderAPI, ABC):
             # eth-tester expects a different format, let web3 handle the conversions for it
             raw = "EthereumTester" not in self.client_version
             logs = self._get_logs(page_filter.dict(), raw)
-            return self.network.ecosystem.decode_logs(logs, *log_filter.events)
+            decoded_logs = list(self.network.ecosystem.decode_logs(logs, *log_filter.events))
+            return decoded_logs
 
         with ThreadPoolExecutor(self.concurrency) as pool:
             for page in pool.map(fetch_log_page, block_ranges):

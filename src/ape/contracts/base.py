@@ -374,7 +374,7 @@ class ContractEvent(ManagerAccessMixin):
 
     def __init__(
         self,
-        contract: "ContractTypeWrapper",
+        contract: Union["ContractInstance", "ContractContainer"],
         abi: EventABI,
         cached_logs: Optional[List[ContractLog]] = None,
     ) -> None:
@@ -688,9 +688,8 @@ class ContractEvent(ManagerAccessMixin):
             Iterator[:class:`~ape.types.ContractLog`]
         """
 
-        required_confirmations = (
-            required_confirmations or self.provider.network.required_confirmations
-        )
+        if required_confirmations is None:
+            required_confirmations = self.provider.network.required_confirmations
 
         # NOTE: We process historical blocks separately here to minimize rpc calls
         height = max(self.chain_manager.blocks.height - required_confirmations, 0)
@@ -699,17 +698,13 @@ class ContractEvent(ManagerAccessMixin):
             start_block = height + 1
 
         # NOTE: Now we process the rest
-        for new_block in self.chain_manager.blocks.poll_blocks(
-            start_block=start_block,
+        yield from self.provider.poll_logs(
             stop_block=stop_block,
+            address=self.contract.address,
             required_confirmations=required_confirmations,
             new_block_timeout=new_block_timeout,
-        ):
-            if new_block.number is None:
-                continue
-
-            # Get all events in the new block.
-            yield from self.range(new_block.number, stop=new_block.number + 1)
+            events=[self.abi],
+        )
 
 
 class ContractTypeWrapper(ManagerAccessMixin):
