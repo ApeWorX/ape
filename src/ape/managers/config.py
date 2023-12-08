@@ -124,7 +124,7 @@ class ConfigManager(BaseInterfaceModel):
     default_ecosystem: str = "ethereum"
     """The default ecosystem to use. Defaults to ``"ethereum"``."""
 
-    cached_configs: Dict[str, Dict[str, Any]] = {}
+    _cached_configs: Dict[str, Dict[str, Any]] = {}
 
     @model_validator(mode="before")
     def check_config_for_extra_fields(cls, values: Dict[str, Any]) -> Dict[str, Any]:
@@ -142,8 +142,8 @@ class ConfigManager(BaseInterfaceModel):
     @property
     def _plugin_configs(self) -> Dict[str, PluginConfig]:
         project_name = self.PROJECT_FOLDER.stem
-        if project_name in self.cached_configs:
-            cache = self.cached_configs[project_name]
+        if project_name in self._cached_configs:
+            cache = self._cached_configs[project_name]
             self.name = cache.get("name", "")
             self.version = cache.get("version", "")
             self.default_ecosystem = cache.get("default_ecosystem", "ethereum")
@@ -228,7 +228,7 @@ class ConfigManager(BaseInterfaceModel):
                 "Plugins may not be installed yet or keys may be mis-spelled."
             )
 
-        self.cached_configs[project_name] = configs
+        self._cached_configs[project_name] = configs
         return configs
 
     def __repr__(self):
@@ -240,7 +240,7 @@ class ConfigManager(BaseInterfaceModel):
         """
 
         if force_reload:
-            self.cached_configs = {}
+            self._cached_configs = {}
 
         _ = self._plugin_configs
         return self
