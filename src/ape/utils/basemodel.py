@@ -213,10 +213,11 @@ class BaseModel(EthpmTypesBaseModel):
         account :meth:`~ape.utils.basemodel.BaseModel.__ape_extra_attributes__`.
         """
 
-        if name in self.__private_attributes__:
-            return super().__getattr__(name)
+        if name in self.__pydantic_private__:
+            # Is a private attribute.
+            return self.__pydantic_private__[name]
 
-        if name in self.__getattr_checking__:
+        elif name in self.__getattr_checking__:
             # Prevent recursive error.
             raise AttributeError(name)
 
