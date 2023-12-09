@@ -29,7 +29,7 @@ def test_bad_type(convert):
 
     expected = (
         "Type '<class 'float'>' must be one of "
-        "[AddressType, bytes, int, Decimal, list, tuple, bool, str]."
+        "[AddressType, bytes, int, Decimal, bool, str]."
     )
     assert str(err.value) == expected
 
@@ -39,7 +39,3 @@ def test_no_registered_converter(convert):
         convert(value="something", type=ChecksumAddress)
 
     assert str(err.value) == "No conversion registered to handle 'something'."
-
-
-def test_lists(convert):
-    assert convert(["1 ether"], list) == [int(1e18)]
