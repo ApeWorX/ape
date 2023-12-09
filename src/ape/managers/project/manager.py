@@ -602,9 +602,7 @@ class ProjectManager(BaseManager):
 
         # Filter out extensions that have associated compilers.
         extensions_found = {
-            x
-            for x in extensions_found
-            if x not in self.compiler_manager.registered_compilers
+            x for x in extensions_found if x not in self.compiler_manager.registered_compilers
         }
 
         # Filer by the given extensions.

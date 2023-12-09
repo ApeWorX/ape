@@ -425,9 +425,10 @@ class Web3Provider(ProviderAPI, ABC):
         txn_dict.pop("maxFeePerGas", None)
         txn_dict.pop("maxPriorityFeePerGas", None)
 
-        block_identifier = kwargs.pop("block_identifier", kwargs.pop("block_id", "latest"))
+        # NOTE: Block ID is required so if given None, default to `"latest"`.
+        block_identifier = kwargs.pop("block_identifier", kwargs.pop("block_id", None)) or "latest"
         if isinstance(block_identifier, int):
-            block_identifier = to_hex(block_identifier)
+            block_identifier = to_hex(primitive=block_identifier)
 
         arguments = [txn_dict, block_identifier]
         if "state_override" in kwargs:
