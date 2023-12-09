@@ -224,7 +224,7 @@ In the example above, the bytes value returned contains the method ID selector p
 Alternatively, you can decode input:
 
 ```python
-from ethpm_types import HexBytes
+from eth_pydantic_types import HexBytes
 from ape import Contract
 
 contract = Contract("0x...")
