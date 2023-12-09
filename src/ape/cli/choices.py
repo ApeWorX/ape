@@ -17,25 +17,25 @@ _ACCOUNT_TYPE_FILTER = Union[
 ]
 
 
-def _get_accounts(account_type: _ACCOUNT_TYPE_FILTER) -> List[AccountAPI]:
+def _get_accounts(key: _ACCOUNT_TYPE_FILTER) -> List[AccountAPI]:
     add_test_accounts = False
-    if account_type is None:
+    if key is None:
         account_list = list(accounts)
 
         # Include test accounts at end.
         add_test_accounts = True
 
-    elif isinstance(account_type, type):
+    elif isinstance(key, type):
         # Filtering by type.
-        account_list = accounts.get_accounts_by_type(account_type)
+        account_list = accounts.get_accounts_by_type(key)
 
-    elif isinstance(account_type, (list, tuple, set)):
+    elif isinstance(key, (list, tuple, set)):
         # Given an account list.
-        account_list = account_type  # type: ignore
+        account_list = key  # type: ignore
 
     else:
         # Filtering by callable.
-        account_list = [a for a in accounts if account_type(a)]  # type: ignore
+        account_list = [a for a in accounts if key(a)]  # type: ignore
 
     sorted_accounts = sorted(account_list, key=lambda a: a.alias or "")
     if add_test_accounts:
@@ -54,15 +54,15 @@ class Alias(click.Choice):
 
     name = "alias"
 
-    def __init__(self, account_type: _ACCOUNT_TYPE_FILTER = None):
+    def __init__(self, key: _ACCOUNT_TYPE_FILTER = None):
         # NOTE: we purposely skip the constructor of `Choice`
         self.case_sensitive = False
-        self._account_type = account_type
+        self._key_filter = key
         self.choices = _LazySequence(self._choices_iterator)
 
     @property
     def _choices_iterator(self) -> Iterator[str]:
-        for acct in _get_accounts(account_type=self._account_type):
+        for acct in _get_accounts(key=self._key_filter):
             if acct.alias is None:
                 continue
 
@@ -161,7 +161,7 @@ def select_account(
     if key and isinstance(key, type) and not issubclass(key, AccountAPI):
         raise AccountsError(f"Cannot return accounts with type '{key}'.")
 
-    prompt = AccountAliasPromptChoice(prompt_message=prompt_message, account_type=key)
+    prompt = AccountAliasPromptChoice(prompt_message=prompt_message, key=key)
     return prompt.select_account()
 
 
@@ -173,12 +173,12 @@ class AccountAliasPromptChoice(PromptChoice):
 
     def __init__(
         self,
-        account_type: _ACCOUNT_TYPE_FILTER = None,
+        key: _ACCOUNT_TYPE_FILTER = None,
         prompt_message: Optional[str] = None,
         name: str = "account",
     ):
         # NOTE: we purposely skip the constructor of `PromptChoice`
-        self._account_type = account_type
+        self._key_filter = key
         self._prompt_message = prompt_message or "Select an account"
         self.name = name
         self.choices = _LazySequence(self._choices_iterator)
@@ -232,12 +232,12 @@ class AccountAliasPromptChoice(PromptChoice):
     @property
     def _choices_iterator(self) -> Iterator[str]:
         # Yield real accounts.
-        for account in _get_accounts(account_type=self._account_type):
+        for account in _get_accounts(key=self._key_filter):
             if account and (alias := account.alias):
                 yield alias
 
         # Yield test accounts.
-        if self._account_type is None:
+        if self._key_filter is None:
             for idx, _ in enumerate(accounts.test_accounts):
                 yield f"TEST::{idx}"
 

@@ -190,7 +190,7 @@ def account_option(account_type: _ACCOUNT_TYPE_FILTER = None):
 
     return click.option(
         "--account",
-        type=AccountAliasPromptChoice(account_type=account_type),
+        type=AccountAliasPromptChoice(key=account_type),
         callback=_account_callback,
     )
 
