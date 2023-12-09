@@ -28,8 +28,7 @@ def test_bad_type(convert):
         convert(value="something", type=float)
 
     expected = (
-        "Type '<class 'float'>' must be one of "
-        "[AddressType, bytes, int, Decimal, bool, str]."
+        "Type '<class 'float'>' must be one of " "[AddressType, bytes, int, Decimal, bool, str]."
     )
     assert str(err.value) == expected
 

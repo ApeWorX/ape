@@ -599,6 +599,15 @@ class ProjectManager(BaseManager):
                     extensions_found.add(file.suffix)
 
         _append_extensions_in_dir(self.contracts_folder)
+
+        # Filter out extensions that have associated compilers.
+        extensions_found = {
+            x
+            for x in extensions_found
+            if x not in self.compiler_manager.registered_compilers
+        }
+
+        # Filer by the given extensions.
         if extensions:
             extensions_found = {e for e in extensions_found if e in extensions}
 
