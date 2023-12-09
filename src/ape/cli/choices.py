@@ -231,15 +231,10 @@ class AccountAliasPromptChoice(PromptChoice):
 
     @property
     def _choices_iterator(self) -> Iterator[str]:
-        # Yield real accounts.
+        # NOTE: Includes test accounts unless filtered out by key.
         for account in _get_accounts(key=self._key_filter):
             if account and (alias := account.alias):
                 yield alias
-
-        # Yield test accounts.
-        if self._key_filter is None:
-            for idx, _ in enumerate(accounts.test_accounts):
-                yield f"TEST::{idx}"
 
     def select_account(self) -> AccountAPI:
         """
@@ -249,7 +244,7 @@ class AccountAliasPromptChoice(PromptChoice):
             :class:`~ape.api.accounts.AccountAPI`
         """
 
-        if not self.choices:
+        if not self.choices or len(self.choices) == 0:
             raise AccountsError("No accounts found.")
         elif len(self.choices) == 1 and self.choices[0].startswith("TEST::"):
             return accounts.test_accounts[int(self.choices[0].replace("TEST::", ""))]

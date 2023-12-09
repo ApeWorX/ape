@@ -110,9 +110,7 @@ def test_select_account_no_accounts_found(no_accounts):
 
 def test_select_account_one_account(runner, one_account):
     # No input needed when only one account
-    with runner.isolation():
-        account = select_account()
-
+    account = select_account()
     assert account == one_account
 
 
