@@ -158,7 +158,6 @@ class LocalProvider(TestProviderAPI, Web3Provider):
         **kwargs,
     ) -> HexBytes:
         data = txn.model_dump(mode="json", exclude_none=True)
-        block_id = kwargs.pop("block_identifier", kwargs.pop("block_id", None))
         state = kwargs.pop("state_override", None)
         call_kwargs: Dict = {"block_identifier": block_id, "state_override": state}
 

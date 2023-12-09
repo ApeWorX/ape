@@ -105,15 +105,11 @@ def test_call_view_method(owner, contract_instance):
     assert contract_instance.myNumber() == 2
 
 
-def test_call_use_block_identifier(contract_instance, owner, chain):
+def test_call_use_block_id(contract_instance, owner, chain):
     expected = 2
     contract_instance.setNumber(expected, sender=owner)
     block_id = chain.blocks.height  # int
     contract_instance.setNumber(3, sender=owner)  # latest
-    actual = contract_instance.myNumber(block_id=block_id)
-    assert actual == expected
-
-    # Ensure alias "block_id" works
     actual = contract_instance.myNumber(block_id=block_id)
     assert actual == expected
 
@@ -184,16 +180,13 @@ def test_revert_custom_exception(not_owner, error_contract):
     assert custom_err.inputs == {"addr": addr, "counter": 123}  # type: ignore
 
 
-def test_call_using_block_identifier(
-    vyper_contract_instance, owner, chain, networks_connected_to_tester
-):
+def test_call_using_block_id(vyper_contract_instance, owner, chain, networks_connected_to_tester):
     contract = vyper_contract_instance
     contract.setNumber(1, sender=owner)
     height = chain.blocks.height
     contract.setNumber(33, sender=owner)
-    actual_0 = contract.myNumber(block_id=height)
-    actual_1 = contract.myNumber(block_id=height)
-    assert actual_0 == actual_1 == 1
+    actual = contract.myNumber(block_id=height)
+    assert actual == 1
 
 
 def test_repr(vyper_contract_instance):
