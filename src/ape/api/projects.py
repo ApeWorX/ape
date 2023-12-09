@@ -8,7 +8,7 @@ from ethpm_types import Checksum, Compiler, ContractType, PackageManifest, Sourc
 from ethpm_types.source import Content
 from ethpm_types.utils import Algorithm, compute_checksum
 from packaging.version import InvalidVersion, Version
-from pydantic import AnyUrl, ValidationError
+from pydantic import AnyUrl
 
 from ape.exceptions import ProjectError
 from ape.logging import logger
@@ -481,7 +481,7 @@ def _load_manifest_from_file(file_path: Path) -> Optional[PackageManifest]:
 
     try:
         return PackageManifest.model_validate_json(file_path.read_text())
-    except ValidationError as err:
+    except Exception as err:
         logger.warning(f"Existing manifest file '{file_path}' corrupted. Re-building.")
         logger.debug(str(err))
         return None
