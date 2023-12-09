@@ -5,7 +5,7 @@ from ape.utils import BaseInterfaceModel, abstractmethod
 ConvertedType = TypeVar("ConvertedType")
 
 
-class ConverterAPI(Generic[ConvertedType], BaseInterfaceModel):
+class ConverterAPI(BaseInterfaceModel, Generic[ConvertedType]):
     @abstractmethod
     def is_convertible(self, value: Any) -> bool:
         """

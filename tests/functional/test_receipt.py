@@ -196,5 +196,5 @@ def test_track_coverage(deploy_receipt, mocker):
 
 
 def test_access_from_tx(deploy_receipt):
-    actual = deploy_receipt.receiver
-    assert actual == ""
+    actual = deploy_receipt.transaction.receipt
+    assert actual == deploy_receipt

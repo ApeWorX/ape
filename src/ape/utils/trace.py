@@ -3,8 +3,8 @@ from fnmatch import fnmatch
 from statistics import mean, median
 from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple, Union
 
+from eth_pydantic_types import HexBytes
 from eth_utils import is_0x_prefixed
-from ethpm_types import HexBytes
 from rich.box import SIMPLE
 from rich.table import Table
 from rich.tree import Tree

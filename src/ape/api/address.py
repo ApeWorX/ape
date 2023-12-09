@@ -1,6 +1,6 @@
 from typing import TYPE_CHECKING, Any, List
 
-from ethpm_types import HexBytes
+from eth_pydantic_types import HexBytes
 
 from ape.exceptions import ConversionError
 from ape.types import AddressType, ContractCode
@@ -70,7 +70,8 @@ class BaseAddress(BaseInterface):
         return self._base_dir_values
 
     def __repr__(self) -> str:
-        return f"<{self.__class__.__name__} {self.address}>"
+        cls_name = getattr(type(self), "__name__", BaseAddress.__name__)
+        return f"<{cls_name} {self.address}>"
 
     def __str__(self) -> str:
         """

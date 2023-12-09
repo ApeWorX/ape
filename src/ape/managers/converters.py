@@ -3,6 +3,8 @@ from decimal import Decimal
 from typing import Any, Dict, List, Sequence, Tuple, Type, Union
 
 from dateutil.parser import parse  # type: ignore
+from eth_pydantic_types import HexBytes
+from eth_typing.evm import ChecksumAddress
 from eth_utils import (
     is_0x_prefixed,
     is_checksum_address,
@@ -12,7 +14,7 @@ from eth_utils import (
     to_hex,
     to_int,
 )
-from ethpm_types import ConstructorABI, EventABI, HexBytes, MethodABI
+from ethpm_types import ConstructorABI, EventABI, MethodABI
 
 from ape.api import ConverterAPI, TransactionAPI
 from ape.api.address import BaseAddress
@@ -116,7 +118,7 @@ class HexAddressConverter(ConverterAPI):
             ``AddressType``
         """
 
-        return to_checksum_address(value)
+        return AddressType(to_checksum_address(value))
 
 
 class BytesAddressConverter(ConverterAPI):
@@ -247,7 +249,7 @@ class ConversionManager(BaseManager):
     """
 
     def __repr__(self):
-        return f"<{self.__class__.__name__}>"
+        return f"<{ConversionManager.__name__}>"
 
     @cached_property
     def _converters(self) -> Dict[Type, List[ConverterAPI]]:
@@ -269,8 +271,12 @@ class ConversionManager(BaseManager):
 
         for plugin_name, (conversion_type, converter_class) in self.plugin_manager.converters:
             converter = converter_class()
-            if conversion_type not in converters:
-                options = ", ".join([t.__name__ for t in converters])
+            if conversion_type is ChecksumAddress:
+                converters[AddressType].append(converter)
+                return converters
+
+            elif conversion_type not in converters:
+                options = ", ".join([_get_type_name_from_type(t) for t in converters])
                 raise ConversionError(f"Type '{conversion_type}' must be one of [{options}].")
 
             converters[conversion_type].append(converter)
@@ -328,8 +334,12 @@ class ConversionManager(BaseManager):
                 f"Value '{value}' must be a list or tuple when given multiple types."
             )
 
+        elif type is ChecksumAddress:
+            # Use our Annotated alias.
+            return self.convert(value, AddressType)
+
         elif type not in self._converters:
-            options = ", ".join([t.__name__ for t in self._converters])
+            options = ", ".join([_get_type_name_from_type(t) for t in self._converters])
             raise ConversionError(f"Type '{type}' must be one of [{options}].")
 
         elif self.is_type(value, type) and not isinstance(value, (list, tuple)):
@@ -348,7 +358,10 @@ class ConversionManager(BaseManager):
                 except Exception:
                     error_value = " "
 
-                message = f"Failed to convert{error_value}using '{converter.__class__.__name__}'."
+                message = f"Failed to convert{error_value}"
+                if converter_type_name := getattr(type(converter), "__name__", None):
+                    message = f"{message}using '{converter_type_name}'."
+
                 raise ConversionError(message) from err
 
         raise ConversionError(f"No conversion registered to handle '{value}'.")
@@ -372,11 +385,64 @@ class ConversionManager(BaseManager):
         return self.convert(pre_processed_args, tuple)
 
     def convert_method_kwargs(self, kwargs) -> Dict:
-        fields = TransactionAPI.__fields__
+        fields = TransactionAPI.model_fields
 
+        def get_real_type(type_):
+            all_types = getattr(type_, "_typevar_types", [])
+            if not all_types or not isinstance(all_types, (list, tuple)):
+                return type_
+
+            # Filter out None
+            valid_types = [t for t in all_types if t is not None]
+            if len(valid_types) == 1:
+                # This is something like Optional[int],
+                # however, if the user provides a value,
+                # we want to convert to the non-optional type.
+                return valid_types[0]
+
+            # Not sure if this is possible; the converter may fail.
+            return valid_types
+
+        annotations = {name: get_real_type(f.annotation) for name, f in fields.items()}
         kwargs_to_convert = {k: v for k, v in kwargs.items() if k == "sender" or k in fields}
-        converted_fields = {
-            k: self.convert(v, AddressType if k == "sender" else fields[k].type_)
-            for k, v in kwargs_to_convert.items()
-        }
+        converted_fields = {}
+        for field_name, value in kwargs_to_convert.items():
+            type_ = AddressType if field_name == "sender" else annotations.get(field_name)
+            if type_:
+                try:
+                    converted_value = self.convert(value, type_)
+                except ConversionError:
+                    # Ignore conversion errors and use the values as-is.
+                    converted_value = value
+
+            else:
+                converted_value = value
+
+            converted_fields[field_name] = converted_value
+
         return {**kwargs, **converted_fields}
+
+
+def _get_type_name_from_type(var_type: Type) -> str:
+    if hasattr(var_type, "__args__") and var_type.__args__:
+        # Is Annotated
+        real_type = var_type.__args__[0]
+        return _get_type_name_from_type(real_type)
+
+    elif var_type is ChecksumAddress:
+        return "AddressType"  # Use our alias
+
+    elif hasattr(var_type, "__name__"):
+        return var_type.__name__
+
+    else:
+        message = "Unable to deduce type name"
+        try:
+            str_value = f"{var_type}"
+        except Exception:
+            str_value = ""
+
+        if str_value:
+            message = f"{message} for {str_value}"
+
+        raise TypeError(f"{message}.")

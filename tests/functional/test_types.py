@@ -50,7 +50,7 @@ def log():
 
 
 def test_contract_log_serialization(log, zero_address):
-    obj = ContractLog.parse_obj(log.dict())
+    obj = ContractLog.model_validate(log.model_dump(mode="json"))
     assert obj.contract_address == zero_address
     assert obj.block_hash == BLOCK_HASH
     assert obj.block_number == BLOCK_NUMBER
@@ -61,7 +61,7 @@ def test_contract_log_serialization(log, zero_address):
 
 
 def test_contract_log_serialization_with_hex_strings_and_non_checksum_addresses(log, zero_address):
-    data = log.dict()
+    data = log.model_dump(mode="json")
     data["log_index"] = to_hex(log.log_index)
     data["transaction_index"] = to_hex(log.transaction_index)
     data["block_number"] = to_hex(log.block_number)
@@ -79,12 +79,12 @@ def test_contract_log_serialization_with_hex_strings_and_non_checksum_addresses(
 
 
 def test_contract_log_str(log):
-    obj = ContractLog.parse_obj(log.dict())
+    obj = ContractLog.model_validate(log.model_dump(mode="json"))
     assert str(obj) == "MyEvent(foo=0 bar=1)"
 
 
 def test_contract_log_repr(log):
-    obj = ContractLog.parse_obj(log.dict())
+    obj = ContractLog.model_validate(log.model_dump(mode="json"))
     assert repr(obj) == "<MyEvent foo=0 bar=1>"
 
 
@@ -96,7 +96,7 @@ def test_contract_log_access(log):
 
 
 def test_topic_filter_encoding():
-    event_abi = EventABI.parse_raw(RAW_EVENT_ABI)
+    event_abi = EventABI.model_validate_json(RAW_EVENT_ABI)
     log_filter = LogFilter.from_event(
         event=event_abi, search_topics={"newVersion": "0x8c44Cc5c0f5CD2f7f17B9Aca85d456df25a61Ae8"}
     )

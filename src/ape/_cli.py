@@ -23,7 +23,7 @@ def display_config(ctx, param, value):
     from ape import project
 
     click.echo("# Current configuration")
-    click.echo(yaml.dump(project.config_manager.dict()))
+    click.echo(yaml.dump(project.config_manager.model_dump(mode="json")))
 
     ctx.exit()  # NOTE: Must exit to bypass running ApeCLI
 

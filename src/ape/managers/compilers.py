@@ -29,7 +29,8 @@ class CompilerManager(BaseManager):
 
     def __repr__(self):
         num_compilers = len(self.registered_compilers)
-        return f"<{self.__class__.__name__} len(registered_compilers)={num_compilers}>"
+        cls_name = getattr(type(self), "__name__", CompilerManager.__name__)
+        return f"<{cls_name} len(registered_compilers)={num_compilers}>"
 
     def __getattr__(self, name: str) -> Any:
         try:
@@ -62,7 +63,7 @@ class CompilerManager(BaseManager):
         for plugin_name, (extensions, compiler_class) in self.plugin_manager.register_compiler:
             # TODO: Investigate side effects of loading compiler plugins.
             #       See if this needs to be refactored.
-            self.config_manager.get_config(plugin_name=plugin_name)
+            self.config_manager.get_config(plugin_name)
 
             compiler = compiler_class()
 
@@ -80,7 +81,7 @@ class CompilerManager(BaseManager):
 
             if settings is not None and settings != compiler.compiler_settings:
                 # Use a new instance to support multiple compilers of same type.
-                return compiler.copy(update={"compiler_settings": settings})
+                return compiler.model_copy(update={"compiler_settings": settings})
 
             return compiler
 
@@ -112,8 +113,17 @@ class CompilerManager(BaseManager):
         extensions = self._get_contract_extensions(contract_file_paths)
         contracts_folder = self.config_manager.contracts_folder
         contract_types_dict: Dict[str, ContractType] = {}
-        built_paths = [p for p in self.project_manager.local_project._cache_folder.glob("*.json")]
-        built_names = [p.stem for p in built_paths if p.stem != "__local__"]
+        cached_manifest = self.project_manager.local_project.cached_manifest
+
+        # Load past compiled contracts for verifying type-collision and other things.
+        already_compiled_contracts = (
+            (cached_manifest.contract_types or {}) if cached_manifest else {}
+        )
+        already_compiled_paths = [
+            contracts_folder / x.source_id
+            for x in already_compiled_contracts.values()
+            if x.source_id
+        ]
 
         for extension in extensions:
             path_patterns_to_ignore = self.config_manager.compiler.ignore_files
@@ -130,10 +140,13 @@ class CompilerManager(BaseManager):
                 for path in contract_file_paths
                 if path.is_file()
                 and path not in paths_to_ignore
-                and path not in built_paths
+                and path not in already_compiled_paths
                 and path.suffix == extension
                 and not any(x in [p.name for p in path.parents] for x in (".cache", ".build"))
             ]
+
+            if not paths_to_compile:
+                continue
 
             source_ids = [get_relative_path(p, contracts_folder) for p in paths_to_compile]
             for source_id in source_ids:
@@ -147,6 +160,7 @@ class CompilerManager(BaseManager):
 
             compiled_contracts = compiler.compile(paths_to_compile, base_path=contracts_folder)
 
+            # Validate some things about the compile contracts.
             for contract_type in compiled_contracts:
                 contract_name = contract_type.name
                 if not contract_name:
@@ -163,38 +177,15 @@ class CompilerManager(BaseManager):
                             f"Was compiler plugin for '{extension} implemented correctly?"
                         )
 
-                if contract_name in contract_types_dict:
-                    already_added_contract_type = contract_types_dict[contract_name]
+                full_ct_dict = {**contract_types_dict, **already_compiled_contracts}
+                if contract_name in full_ct_dict:
+                    already_added_contract_type = full_ct_dict[contract_name]
                     error_message = (
                         f"{ContractType.__name__} collision between sources "
                         f"'{contract_type.source_id}' and "
                         f"'{already_added_contract_type.source_id}'."
                     )
                     raise CompilerError(error_message)
-
-                elif contract_name in built_names:
-                    # Ensure we are not colliding.
-                    existing_artifact = (
-                        self.project_manager.local_project._cache_folder / f"{contract_name}.json"
-                    )
-
-                    try:
-                        existing_contract = ContractType.parse_file(existing_artifact)
-                    except Exception:
-                        existing_artifact.unlink()
-
-                    else:
-                        if existing_contract.source_id:
-                            path = self.project_manager.lookup_path(existing_contract.source_id)
-                            if path and existing_contract.source_id != contract_type.source_id:
-                                error_message = (
-                                    f"{ContractType.__name__} collision '{contract_name}'."
-                                )
-                                raise CompilerError(error_message)
-
-                            elif not path:
-                                # Artifact remaining from deleted contract, can delete.
-                                existing_artifact.unlink()
 
                 contract_types_dict[contract_name] = contract_type
 

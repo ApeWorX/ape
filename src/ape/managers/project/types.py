@@ -19,11 +19,16 @@ class _ProjectSources:
     # running `ape compile`.
 
     def __init__(
-        self, cached_manifest: PackageManifest, active_sources: List[Path], contracts_folder: Path
+        self,
+        cached_manifest: PackageManifest,
+        active_sources: List[Path],
+        contracts_folder: Path,
+        cache_folder: Path,
     ):
         self.cached_manifest = cached_manifest
         self.active_sources = active_sources
         self.contracts_folder = contracts_folder
+        self.cache_folder = cache_folder
 
     @cached_property
     def cached_sources(self) -> Dict[str, Source]:
@@ -83,8 +88,6 @@ class _ProjectSources:
         # We need to do the same here for to prevent the endless recompiling bug.
         content = f"{source_file.read_text('utf8').rstrip()}\n"
         checksum = compute_checksum(content.encode("utf8"), algorithm=cached_checksum.algorithm)
-
-        # NOTE: Filter by checksum to only update what's needed
         return checksum != cached_checksum.hash  # Contents changed
 
     def get_source_reference_paths(self, source_id: str) -> List[Path]:
@@ -174,7 +177,9 @@ class BaseProject(ProjectAPI):
                 ]
             )
         )
-        project_sources = _ProjectSources(manifest, source_paths, self.contracts_folder)
+        project_sources = _ProjectSources(
+            manifest, source_paths, self.contracts_folder, self._cache_folder
+        )
         contract_types = project_sources.remaining_cached_contract_types
         compiled_contract_types = self._compile(project_sources)
         contract_types.update(compiled_contract_types)
@@ -191,28 +196,66 @@ class BaseProject(ProjectAPI):
             compiler_data=compiler_data,
         )
         # Cache the updated manifest so `self.cached_manifest` reads it next time
-        self.manifest_cachefile.write_text(manifest.json())
+        self.manifest_cachefile.write_text(manifest.model_dump_json())
         self._cached_manifest = manifest
         if compiled_contract_types:
             for name, contract_type in compiled_contract_types.items():
                 file = self.project_manager.local_project._cache_folder / f"{name}.json"
-                file.write_text(contract_type.json())
+                file.write_text(contract_type.model_dump_json())
                 self._contracts = self._contracts or {}
                 self._contracts[name] = contract_type
 
         return manifest
 
     def _compile(self, project_sources: _ProjectSources) -> Dict[str, ContractType]:
-        # Set the context in case compiling a dependency (or anything outside the root project).
+        def _compile_sources(proj_srcs: _ProjectSources) -> Dict[str, ContractType]:
+            contracts_folder = self.contracts_folder
+            srcs_to_compile = proj_srcs.sources_needing_compilation
+
+            # Figure out what contracts have changed and delete them from the cache
+            # so they can be compiled.
+            exising_contract_types = (
+                (self.cached_manifest.contract_types or {})
+                if self.cached_manifest is not None
+                else {}
+            )
+            contracts_to_remove = [
+                ct
+                for ct in exising_contract_types.values()
+                if ct.source_id and (contracts_folder / ct.source_id) in srcs_to_compile
+            ]
+
+            for contract in contracts_to_remove:
+                path = self._cache_folder / f"{contract.name}.json"
+                path.unlink(missing_ok=True)
+
+            if cached_manifest := self.cached_manifest:
+                source_ids_to_remove = [ct.source_id for ct in contracts_to_remove]
+                filtered_contract_types = {
+                    n: ct
+                    for n, ct in (cached_manifest.contract_types or {}).items()
+                    if ct.source_id not in source_ids_to_remove
+                }
+
+                if self._cached_manifest is None:
+                    # Shouldn't happen, but type-safety's sake.
+                    self._cached_manifest = PackageManifest.model_validate({})
+
+                self._cached_manifest.contract_types = filtered_contract_types
+                self._contracts = filtered_contract_types
+
+            return self.compiler_manager.compile(srcs_to_compile)
+
         if self.project_manager.path.absolute() != self.path.absolute():
+            # In case compiling a dependency (or anything outside the root project).
             with self.config_manager.using_project(
                 self.path, contracts_folder=self.contracts_folder
             ):
                 self.project_manager.load_dependencies()
-                return self.compiler_manager.compile(project_sources.sources_needing_compilation)
+                return _compile_sources(project_sources)
         else:
             # Already in project
-            return self.compiler_manager.compile(project_sources.sources_needing_compilation)
+            return _compile_sources(project_sources)
 
     def _get_base_manifest(self, use_cache: bool = True) -> PackageManifest:
         if self.cached_manifest and use_cache:

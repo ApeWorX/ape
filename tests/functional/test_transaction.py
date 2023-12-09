@@ -1,5 +1,5 @@
 import pytest
-from ethpm_types import HexBytes
+from eth_pydantic_types import HexBytes
 
 from ape_ethereum.transactions import DynamicFeeTransaction, StaticFeeTransaction, TransactionType
 
@@ -64,17 +64,17 @@ def test_txn_hash_and_receipt(owner, eth_tester_provider, ethereum):
 def test_whitespace_in_transaction_data():
     data = b"Should not clip whitespace\t\n"
     txn_dict = {"data": data}
-    txn = StaticFeeTransaction.parse_obj(txn_dict)
+    txn = StaticFeeTransaction.model_validate(txn_dict)
     assert txn.data == data, "Whitespace should not be removed from data"
 
 
 def test_transaction_dict_excludes_none_values():
     txn = StaticFeeTransaction()
     txn.value = 1000000
-    actual = txn.dict()
+    actual = txn.model_dump(mode="json")
     assert "value" in actual
     txn.value = None  # type: ignore
-    actual = txn.dict()
+    actual = txn.model_dump(mode="json")
     assert "value" not in actual
 
 

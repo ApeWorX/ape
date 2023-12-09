@@ -124,7 +124,7 @@ class PluginManager:
         self.__registered = False
 
     def __repr__(self):
-        return f"<{self.__class__.__name__}>"
+        return f"<{PluginManager.__name__}>"
 
     def __getattr__(self, attr_name: str) -> Iterator[Tuple[str, Tuple]]:
         # NOTE: The first time this method is called, the actual
@@ -132,7 +132,7 @@ class PluginManager:
         self._register_plugins()
 
         if not hasattr(plugin_manager.hook, attr_name):
-            raise ApeAttributeError(f"{self.__class__.__name__} has no attribute '{attr_name}'.")
+            raise ApeAttributeError(f"{PluginManager.__name__} has no attribute '{attr_name}'.")
 
         # Do this to get access to the package name
         hook_fn = getattr(plugin_manager.hook, attr_name)
@@ -214,7 +214,7 @@ class PluginManager:
             classes = [p for p in results if hasattr(p, "__name__")]
             if classes:
                 # Likely only ever a single class in a registration, but just in case.
-                api_name = " - ".join([p.__name__ for p in classes])
+                api_name = " - ".join([p.__name__ for p in classes if hasattr(p, "__name__")])
                 for api_cls in classes:
                     if (
                         abstract_methods := getattr(api_cls, "__abstractmethods__", None)

@@ -1,14 +1,16 @@
 import re
 from ast import literal_eval
+from functools import cached_property
+from re import Pattern
 from typing import Dict, Optional, cast
 
 from eth.exceptions import HeaderNotFound
+from eth_pydantic_types import HexBytes
 from eth_tester.backends import PyEVMBackend  # type: ignore
 from eth_tester.exceptions import TransactionFailed  # type: ignore
 from eth_utils import is_0x_prefixed
 from eth_utils.exceptions import ValidationError
 from eth_utils.toolz import merge
-from ethpm_types import HexBytes
 from web3 import EthereumTesterProvider, Web3
 from web3.exceptions import ContractPanicError
 from web3.providers.eth_tester.defaults import API_ENDPOINTS, static_return
@@ -33,10 +35,12 @@ class EthTesterProviderConfig(PluginConfig):
 
 class LocalProvider(TestProviderAPI, Web3Provider):
     _evm_backend: Optional[PyEVMBackend] = None
-    _CANNOT_AFFORD_GAS_PATTERN = re.compile(
+    _CANNOT_AFFORD_GAS_PATTERN: Pattern = re.compile(
         r"Sender b'[\\*|\w]*' cannot afford txn gas (\d+) with account balance (\d+)"
     )
-    _INVALID_NONCE_PATTERN = re.compile(r"Invalid transaction nonce: Expected (\d+), but got (\d+)")
+    _INVALID_NONCE_PATTERN: Pattern = re.compile(
+        r"Invalid transaction nonce: Expected (\d+), but got (\d+)"
+    )
 
     @property
     def evm_backend(self) -> PyEVMBackend:
@@ -63,13 +67,13 @@ class LocalProvider(TestProviderAPI, Web3Provider):
         self._web3 = Web3(tester)
 
     def disconnect(self):
-        self.cached_chain_id = None
-        self._web3 = None
-        self._evm_backend = None
+        # NOTE: This type ignore seems like a bug in pydantic.
+        self._web3 = None  # type: ignore
+        self._evm_backend = None  # type: ignore
         self.provider_settings = {}
 
     def update_settings(self, new_settings: Dict):
-        self.cached_chain_id = None
+        self._cached_chain_id = None  # type: ignore[assignment]
         self.provider_settings = {**self.provider_settings, **new_settings}
         self.disconnect()
         self.connect()
@@ -84,10 +88,10 @@ class LocalProvider(TestProviderAPI, Web3Provider):
 
         block_id = kwargs.pop("block_identifier", kwargs.pop("block_id", None))
         estimate_gas = self.web3.eth.estimate_gas
-        txn_dict = txn.dict()
+        txn_dict = txn.model_dump(mode="json")
         txn_dict.pop("gas", None)
-
         txn_data = cast(TxParams, txn_dict)
+
         try:
             return estimate_gas(txn_data, block_identifier=block_id)
         except (ValidationError, TransactionFailed) as err:
@@ -99,7 +103,8 @@ class LocalProvider(TestProviderAPI, Web3Provider):
                 # and then set it back.
                 expected_nonce, actual_nonce = gas_match.groups()
                 txn.nonce = int(expected_nonce)
-                value = estimate_gas(txn.dict(), block_identifier=block_id)  # type: ignore
+                txn_params: TxParams = cast(TxParams, txn.model_dump(mode="json"))
+                value = estimate_gas(txn_params, block_identifier=block_id)
                 txn.nonce = int(actual_nonce)
                 return value
 
@@ -113,21 +118,17 @@ class LocalProvider(TestProviderAPI, Web3Provider):
 
     @property
     def settings(self) -> EthTesterProviderConfig:
-        return EthTesterProviderConfig.parse_obj(
-            {**self.config.provider.dict(), **self.provider_settings}
+        return EthTesterProviderConfig.model_validate(
+            {**self.config.provider.model_dump(mode="json"), **self.provider_settings}
         )
 
-    @property
+    @cached_property
     def chain_id(self) -> int:
-        if self.cached_chain_id:
-            return self.cached_chain_id
-
         try:
             result = self._make_request("eth_chainId")
         except ProviderNotConnectedError:
             result = self.settings.chain_id
 
-        self.cached_chain_id = result
         return result
 
     @property
@@ -148,7 +149,7 @@ class LocalProvider(TestProviderAPI, Web3Provider):
         return self._get_last_base_fee()
 
     def send_call(self, txn: TransactionAPI, **kwargs) -> bytes:
-        data = txn.dict(exclude_none=True)
+        data = txn.model_dump(mode="json", exclude_none=True)
         block_id = kwargs.pop("block_identifier", kwargs.pop("block_id", None))
         state = kwargs.pop("state_override", None)
         call_kwargs = {"block_identifier": block_id, "state_override": state}
@@ -186,7 +187,7 @@ class LocalProvider(TestProviderAPI, Web3Provider):
         self.chain_manager.history.append(receipt)
 
         if receipt.failed:
-            txn_dict = txn.dict()
+            txn_dict = txn.model_dump(mode="json")
             txn_dict["nonce"] += 1
             txn_params = cast(TxParams, txn_dict)
 

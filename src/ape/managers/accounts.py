@@ -126,10 +126,7 @@ class TestAccountManager(list, ManagerAccessMixin):
         return self.containers[container_name].generate_account()
 
     def use_sender(self, account_id: Union[TestAccountAPI, AddressType, int]) -> ContextManager:
-        if not isinstance(account_id, TestAccountAPI):
-            account = self[account_id]
-        else:
-            account = account_id
+        account = account_id if isinstance(account_id, TestAccountAPI) else self[account_id]
         return _use_sender(account)
 
 

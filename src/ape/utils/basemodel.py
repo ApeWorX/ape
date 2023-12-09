@@ -1,11 +1,12 @@
 from abc import ABC
-from typing import TYPE_CHECKING, Any, ClassVar, Dict, Iterator, List, Optional, Union, cast
+from typing import TYPE_CHECKING, Any, ClassVar, Dict, Iterator, List, Optional, Set, Union, cast
 
-from ethpm_types import BaseModel as _BaseModel
+from ethpm_types import BaseModel as EthpmTypesBaseModel
+from pydantic import BaseModel as RootBaseModel
+from pydantic import ConfigDict
 
 from ape.exceptions import ApeAttributeError, ApeIndexError, ProviderNotConnectedError
 from ape.logging import logger
-from ape.utils.misc import cached_property, singledispatchmethod
 
 if TYPE_CHECKING:
     from ape.api.providers import ProviderAPI
@@ -112,10 +113,12 @@ def _get_alt(name: str) -> Optional[str]:
     return alt
 
 
-class ExtraModelAttributes(_BaseModel):
+class ExtraModelAttributes(EthpmTypesBaseModel):
     """
     A class for defining extra model attributes.
     """
+
+    model_config = ConfigDict(arbitrary_types_allowed=True)
 
     name: str
     """
@@ -124,7 +127,7 @@ class ExtraModelAttributes(_BaseModel):
     we can show a more accurate exception message.
     """
 
-    attributes: Union[Dict[str, Any], "BaseModel"]
+    attributes: Union[Dict[str, Any], RootBaseModel]
     """The attributes."""
 
     include_getattr: bool = True
@@ -140,7 +143,11 @@ class ExtraModelAttributes(_BaseModel):
     """
 
     def __contains__(self, name: str) -> bool:
-        attr_dict = self.attributes if isinstance(self.attributes, dict) else self.attributes.dict()
+        attr_dict = (
+            self.attributes
+            if isinstance(self.attributes, dict)
+            else self.attributes.model_dump(by_alias=False)
+        )
         if name in attr_dict:
             return True
 
@@ -179,10 +186,15 @@ class ExtraModelAttributes(_BaseModel):
         )
 
 
-class BaseModel(_BaseModel):
+class BaseModel(EthpmTypesBaseModel):
     """
     An ape-pydantic BaseModel.
     """
+
+    model_config = ConfigDict(arbitrary_types_allowed=True)
+
+    __getattr_checking__: Set[str] = set()
+    __getattr_errors__: Dict[str, Exception] = {}
 
     def __ape_extra_attributes__(self) -> Iterator[ExtraModelAttributes]:
         """
@@ -202,9 +214,28 @@ class BaseModel(_BaseModel):
         account :meth:`~ape.utils.basemodel.BaseModel.__ape_extra_attributes__`.
         """
 
+        private_attrs = self.__pydantic_private__ or {}
+        if name in private_attrs:
+            if name in self.__getattr_checking__:
+                # Just in case.
+                self.__getattr_checking__.remove(name)
+
+            return private_attrs[name]
+
+        elif name in self.__getattr_checking__:
+            # Prevent recursive error.
+            # First, attempt to get real error.
+            message = f"Failed trying to get {name}"
+            if real_error := self.__getattr_errors__.get(name):
+                message = f"{message}. {real_error}"
+
+            raise AttributeError(message)
+
+        self.__getattr_checking__.add(name)
         try:
-            return super().__getattribute__(name)
-        except AttributeError:
+            res = super().__getattribute__(name)
+        except AttributeError as err:
+            self.__getattr_errors__[name] = err
             extras_checked = set()
             for ape_extra in self.__ape_extra_attributes__():
                 if not ape_extra.include_getattr:
@@ -213,6 +244,12 @@ class BaseModel(_BaseModel):
                 if name in ape_extra:
                     # Attribute was found in one of the supplied
                     # extra attributes mappings.
+
+                    # Clear check caches.
+                    if name in self.__getattr_checking__:
+                        self.__getattr_checking__.remove(name)
+                    self.__getattr_errors__.pop(name, "")
+
                     return ape_extra.get(name)
 
                 extras_checked.add(ape_extra.name)
@@ -225,6 +262,13 @@ class BaseModel(_BaseModel):
                 message = f"{message}. Also checked '{extras_str}'"
 
             raise ApeAttributeError(message)
+
+        # Clear check caches.
+        if name in self.__getattr_checking__:
+            self.__getattr_checking__.remove(name)
+        self.__getattr_errors__.pop(name, "")
+
+        return res
 
     def __getitem__(self, name: Any) -> Any:
         # For __getitem__, we first try the extra (unlike `__getattr__`).
@@ -263,7 +307,7 @@ class BaseModel(_BaseModel):
 
         # The user did not supply any extra __getitem__ attributes.
         # Do what you would have normally done.
-        return super().__getitem__(name)
+        return super().__getitem__(name)  # type: ignore
 
 
 class BaseInterfaceModel(BaseInterface, BaseModel):
@@ -271,17 +315,7 @@ class BaseInterfaceModel(BaseInterface, BaseModel):
     An abstract base-class with manager access on a pydantic base model.
     """
 
-    class Config:
-        # NOTE: Due to https://github.com/samuelcolvin/pydantic/issues/1241 we have
-        # to add this cached property workaround in order to avoid this error:
-
-        #    TypeError: cannot pickle '_thread.RLock' object
-
-        keep_untouched = (cached_property, singledispatchmethod)
-        arbitrary_types_allowed = True
-        underscore_attrs_are_private = True
-        copy_on_model_validation = "none"
-        use_enum_values = False
+    model_config = ConfigDict(arbitrary_types_allowed=True)
 
     def __dir__(self) -> List[str]:
         """

@@ -3,7 +3,7 @@ from queue import Queue
 from typing import List
 
 import pytest
-from ethpm_types import HexBytes
+from eth_pydantic_types import HexBytes
 
 from ape.exceptions import ChainError, ProviderError
 
@@ -61,7 +61,7 @@ def test_block_range_negative_start(chain_that_mined_5):
     with pytest.raises(ValueError) as err:
         _ = [b for b in chain_that_mined_5.blocks.range(-1, 3, step=2)]
 
-    assert "ensure this value is greater than or equal to 0" in str(err.value)
+    assert "Input should be greater than or equal to 0" in str(err.value)
 
 
 def test_block_range_out_of_order(chain_that_mined_5):

@@ -1,5 +1,5 @@
 import pytest
-from ethpm_types import HexBytes
+from eth_pydantic_types import HexBytes
 from packaging.version import Version
 from web3.types import Wei
 

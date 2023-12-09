@@ -5,7 +5,8 @@ from pathlib import Path
 from typing import Optional, cast
 
 import pytest
-from ethpm_types import ContractType, HexBytes, MethodABI
+from eth_pydantic_types import HexBytes
+from ethpm_types import ContractType, MethodABI
 
 import ape
 from ape.api import TransactionAPI
@@ -24,7 +25,8 @@ CONTRACTS_FOLDER = PROJECT_PATH / "data" / "contracts" / "ethereum" / "local"
 @pytest.fixture(scope="session")
 def get_contract_type():
     def fn(name: str) -> ContractType:
-        return ContractType.parse_file(CONTRACTS_FOLDER / f"{name}.json")
+        content = (CONTRACTS_FOLDER / f"{name}.json").read_text()
+        return ContractType.model_validate_json(content)
 
     return fn
 
@@ -36,7 +38,7 @@ PROJECT_WITH_LONG_CONTRACTS_FOLDER = BASE_PROJECTS_DIRECTORY / "LongContractsFol
 APE_PROJECT_FOLDER = BASE_PROJECTS_DIRECTORY / "ApeProject"
 BASE_SOURCES_DIRECTORY = (Path(__file__).parent / "data/sources").absolute()
 
-CALL_WITH_STRUCT_INPUT = MethodABI.parse_obj(
+CALL_WITH_STRUCT_INPUT = MethodABI.model_validate(
     {
         "type": "function",
         "name": "getTradeableOrderWithSignature",
@@ -84,7 +86,7 @@ CALL_WITH_STRUCT_INPUT = MethodABI.parse_obj(
         ],
     }
 )
-METHOD_WITH_STRUCT_INPUT = MethodABI.parse_obj(
+METHOD_WITH_STRUCT_INPUT = MethodABI.model_validate(
     {
         "type": "function",
         "name": "getTradeableOrderWithSignature",
@@ -356,7 +358,7 @@ def mainnet_contract(chain):
             / "mainnet"
             / f"{address}.json"
         )
-        contract = ContractType.parse_file(path)
+        contract = ContractType.model_validate_json(path.read_text())
         chain.contracts._local_contract_types[address] = contract
         return contract
 
@@ -673,7 +675,9 @@ def mock_compiler(mocker):
             if path.suffix == mock.ext:
                 name = path.stem
                 code = HexBytes(123).hex()
-                contract_type = ContractType(contractName=name, abi=[], deploymentBytecode=code)
+                contract_type = ContractType(
+                    contractName=name, abi=[], deploymentBytecode=code, sourceId=path.name
+                )
                 result.append(contract_type)
 
         return result

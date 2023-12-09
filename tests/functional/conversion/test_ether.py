@@ -29,7 +29,7 @@ def test_bad_type(convert):
 
     expected = (
         "Type '<class 'float'>' must be one of "
-        "[ChecksumAddress, bytes, int, Decimal, list, tuple, bool, str]."
+        "[AddressType, bytes, int, Decimal, list, tuple, bool, str]."
     )
     assert str(err.value) == expected
 

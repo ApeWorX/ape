@@ -122,6 +122,7 @@ class RevertsContextManager(ManagerAccessMixin):
             # NOTE: This is the check that ensures the error class is coming from
             # the expected contract instance (e.g. from the same address).
             # If not address is being compared, this check is skipped.
+
             raise AssertionError(
                 f"Expected error '{expected_error_cls.__name__}' "
                 f"but was '{type(exception).__name__}'"

@@ -1,5 +1,6 @@
 import sys
 from enum import Enum, IntEnum
+from functools import cached_property
 from typing import IO, Dict, List, Optional, Union
 
 from eth_abi import decode
@@ -8,16 +9,17 @@ from eth_account._utils.legacy_transactions import (
     encode_transaction,
     serializable_unsigned_transaction_from_dict,
 )
+from eth_pydantic_types import HexBytes
 from eth_utils import decode_hex, encode_hex, keccak, to_hex, to_int
-from ethpm_types import ContractType, HexBytes
+from ethpm_types import ContractType
 from ethpm_types.abi import EventABI, MethodABI
+from pydantic import BaseModel, Field, field_validator, model_validator
 
-from ape._pydantic_compat import BaseModel, Field, root_validator, validator
 from ape.api import ReceiptAPI, TransactionAPI
 from ape.contracts import ContractEvent
 from ape.exceptions import OutOfGasError, SignatureError, TransactionError
 from ape.types import CallTreeNode, ContractLog, ContractLogContainer, SourceTraceback
-from ape.utils import cached_property
+from ape.utils import ZERO_ADDRESS
 
 
 class TransactionStatusEnum(IntEnum):
@@ -56,18 +58,24 @@ class BaseTransaction(TransactionAPI):
         if not self.signature:
             raise SignatureError("The transaction is not signed.")
 
-        txn_data = self.dict(exclude={"sender"})
+        txn_data = self.model_dump(by_alias=True, exclude={"sender", "type"})
+
+        # This messes up the signature
+        if txn_data.get("to") == ZERO_ADDRESS:
+            del txn_data["to"]
+
         unsigned_txn = serializable_unsigned_transaction_from_dict(txn_data)
         signature = (self.signature.v, to_int(self.signature.r), to_int(self.signature.s))
         signed_txn = encode_transaction(unsigned_txn, signature)
+        impersonated_accounts = self.account_manager.test_accounts._impersonated_accounts
 
         # If this is a real sender (not impersonated), verify its signature.
-        if (
-            self.sender
-            and self.sender not in self.account_manager.test_accounts._impersonated_accounts
-            and EthAccount.recover_transaction(signed_txn) != self.sender
-        ):
-            raise SignatureError("Recovered signer doesn't match sender!")
+        if self.sender and self.sender not in impersonated_accounts:
+            recovered_signer = EthAccount.recover_transaction(signed_txn)
+            if recovered_signer != self.sender:
+                raise SignatureError(
+                    f"Recovered signer '{recovered_signer}' doesn't match sender {self.sender}!"
+                )
 
         return signed_txn
 
@@ -83,11 +91,11 @@ class StaticFeeTransaction(BaseTransaction):
     """
 
     gas_price: Optional[int] = Field(None, alias="gasPrice")
-    max_priority_fee: Optional[int] = Field(None, exclude=True)
+    max_priority_fee: Optional[int] = Field(None, exclude=True)  # type: ignore
     type: int = Field(TransactionType.STATIC.value, exclude=True)
-    max_fee: Optional[int] = Field(None, exclude=True)
+    max_fee: Optional[int] = Field(None, exclude=True)  # type: ignore
 
-    @root_validator(pre=True, allow_reuse=True)
+    @model_validator(mode="before")
     def calculate_read_only_max_fee(cls, values) -> Dict:
         # NOTE: Work-around, Pydantic doesn't handle calculated fields well.
         values["max_fee"] = values.get("gas_limit", 0) * values.get("gas_price", 0)
@@ -100,12 +108,12 @@ class DynamicFeeTransaction(BaseTransaction):
     and ``maxPriorityFeePerGas`` fields.
     """
 
-    max_priority_fee: Optional[int] = Field(None, alias="maxPriorityFeePerGas")
-    max_fee: Optional[int] = Field(None, alias="maxFeePerGas")
+    max_priority_fee: Optional[int] = Field(None, alias="maxPriorityFeePerGas")  # type: ignore
+    max_fee: Optional[int] = Field(None, alias="maxFeePerGas")  # type: ignore
     type: int = Field(TransactionType.DYNAMIC.value)
     access_list: List[AccessList] = Field(default_factory=list, alias="accessList")
 
-    @validator("type", allow_reuse=True)
+    @field_validator("type")
     def check_type(cls, value):
         return value.value if isinstance(value, TransactionType) else value
 
@@ -119,7 +127,7 @@ class AccessListTransaction(BaseTransaction):
     type: int = Field(TransactionType.ACCESS_LIST.value)
     access_list: List[AccessList] = Field(default_factory=list, alias="accessList")
 
-    @validator("type", allow_reuse=True)
+    @field_validator("type")
     def check_type(cls, value):
         return value.value if isinstance(value, TransactionType) else value
 
@@ -173,7 +181,7 @@ class Receipt(ReceiptAPI):
         if contract_type := self.contract_type:
             return SourceTraceback.create(contract_type, self.trace, HexBytes(self.data))
 
-        return SourceTraceback.parse_obj([])
+        return SourceTraceback.model_validate([])
 
     def raise_for_status(self):
         if self.gas_limit is not None and self.ran_out_of_gas:
@@ -276,7 +284,7 @@ class Receipt(ReceiptAPI):
                 return ContractLog(
                     block_hash=self.block.hash,
                     block_number=self.block_number,
-                    event_arguments={"__root__": _log["data"]},
+                    event_arguments={"root": _log["data"]},
                     event_name=f"<{name}>",
                     log_index=logs[-1].log_index + 1 if logs else 0,
                     transaction_hash=self.txn_hash,

@@ -7,12 +7,13 @@ from typing import Any, Callable, Dict, Iterator, List, Optional, Tuple, Type, U
 
 import click
 import pandas as pd
-from ethpm_types import ContractType, HexBytes
+from eth_pydantic_types import HexBytes
+from ethpm_types import ContractType
 from ethpm_types.abi import ConstructorABI, ErrorABI, EventABI, MethodABI
 
 from ape.api import AccountAPI, Address, ReceiptAPI, TransactionAPI
 from ape.api.address import BaseAddress
-from ape.api.query import ContractEventQuery, extract_fields
+from ape.api.query import ContractEventQuery, extract_fields, validate_and_expand_columns
 from ape.exceptions import (
     ApeAttributeError,
     ArgumentsLengthError,
@@ -25,7 +26,7 @@ from ape.exceptions import (
 )
 from ape.logging import logger
 from ape.types import AddressType, ContractLog, LogFilter, MockContractLog
-from ape.utils import ManagerAccessMixin, cached_property, singledispatchmethod
+from ape.utils import BaseInterfaceModel, ManagerAccessMixin, cached_property, singledispatchmethod
 from ape.utils.abi import StructParser
 
 
@@ -361,7 +362,7 @@ class ContractTransactionHandler(ContractMethodHandler):
         )
 
 
-class ContractEvent(ManagerAccessMixin):
+class ContractEvent(BaseInterfaceModel):
     """
     The types of events on a :class:`~ape.contracts.base.ContractInstance`.
     Use the event types via ``.`` access on the contract instances.
@@ -372,16 +373,9 @@ class ContractEvent(ManagerAccessMixin):
          my_event_type = my_contract.MyEvent
     """
 
-    def __init__(
-        self,
-        contract: Union["ContractInstance", "ContractContainer"],
-        abi: EventABI,
-        cached_logs: Optional[List[ContractLog]] = None,
-    ) -> None:
-        super().__init__()
-        self.contract = contract
-        self.abi = abi
-        self.cached_logs = cached_logs or []
+    contract: "ContractTypeWrapper"
+    abi: EventABI
+    _logs: Optional[List[ContractLog]] = None
 
     def __repr__(self):
         return self.abi.signature
@@ -394,7 +388,7 @@ class ContractEvent(ManagerAccessMixin):
 
         return self.abi.name
 
-    def __iter__(self) -> Iterator[ContractLog]:
+    def __iter__(self) -> Iterator[ContractLog]:  # type: ignore[override]
         """
         Get all logs that have occurred for this event.
         """
@@ -404,11 +398,12 @@ class ContractEvent(ManagerAccessMixin):
     @property
     def log_filter(self) -> LogFilter:
         # NOTE: This shouldn't really be called when given contract containers.
-        addresses = [] if not hasattr(self.contract, "address") else [self.contract.address]
+        address = getattr(self.contract, "address", None)
+        addresses = [] if not address else [address]
         return LogFilter.from_event(event=self.abi, addresses=addresses, start_block=0)
 
     @singledispatchmethod
-    def __getitem__(self, value) -> Union[ContractLog, List[ContractLog]]:
+    def __getitem__(self, value) -> Union[ContractLog, List[ContractLog]]:  # type: ignore[override]
         raise NotImplementedError(f"Cannot use '{type(value)}' to access logs.")
 
     @__getitem__.register
@@ -516,7 +511,7 @@ class ContractEvent(ManagerAccessMixin):
 
     def query(
         self,
-        *columns: List[str],
+        *columns: str,
         start_block: int = 0,
         stop_block: Optional[int] = None,
         step: int = 1,
@@ -526,9 +521,10 @@ class ContractEvent(ManagerAccessMixin):
         Iterate through blocks for log events
 
         Args:
-            columns (List[str]): columns in the DataFrame to return
+            *columns (str): ``*``-based argument for columns in the DataFrame to
+              return.
             start_block (int): The first block, by number, to include in the
-              query. Defaults to 0.
+              query. Defaults to ``0``.
             stop_block (Optional[int]): The last block, by number, to include
               in the query. Defaults to the latest block.
             step (int): The number of blocks to iterate between block numbers.
@@ -554,12 +550,8 @@ class ContractEvent(ManagerAccessMixin):
                 f"'stop={stop_block}' cannot be greater than "
                 f"the chain length ({self.chain_manager.blocks.height})."
             )
-
-        if columns[0] == "*":
-            columns = list(ContractLog.__fields__)  # type: ignore
-
         query: Dict = {
-            "columns": columns,
+            "columns": list(ContractLog.model_fields) if columns[0] == "*" else columns,
             "event": self.abi,
             "start_block": start_block,
             "stop_block": stop_block,
@@ -573,8 +565,9 @@ class ContractEvent(ManagerAccessMixin):
         contract_events = self.query_manager.query(
             contract_event_query, engine_to_use=engine_to_use
         )
-        data = map(partial(extract_fields, columns=columns), contract_events)
-        return pd.DataFrame(columns=columns, data=data)
+        columns_ls = validate_and_expand_columns(columns, ContractLog)
+        data = map(partial(extract_fields, columns=columns_ls), contract_events)
+        return pd.DataFrame(columns=columns_ls, data=data)
 
     def range(
         self,
@@ -631,7 +624,7 @@ class ContractEvent(ManagerAccessMixin):
 
         addresses = list(set([contract_address] + (extra_addresses or [])))
         contract_event_query = ContractEventQuery(
-            columns=list(ContractLog.__fields__.keys()),
+            columns=list(ContractLog.model_fields.keys()),
             contract=addresses,
             event=self.abi,
             search_topics=search_topics,
@@ -697,14 +690,15 @@ class ContractEvent(ManagerAccessMixin):
             yield from self.range(start_block, height)
             start_block = height + 1
 
-        # NOTE: Now we process the rest
-        yield from self.provider.poll_logs(
-            stop_block=stop_block,
-            address=self.contract.address,
-            required_confirmations=required_confirmations,
-            new_block_timeout=new_block_timeout,
-            events=[self.abi],
-        )
+        if address := getattr(self.contract, "address", None):
+            # NOTE: Now we process the rest
+            yield from self.provider.poll_logs(
+                stop_block=stop_block,
+                address=address,
+                required_confirmations=required_confirmations,
+                new_block_timeout=new_block_timeout,
+                events=[self.abi],
+            )
 
 
 class ContractTypeWrapper(ManagerAccessMixin):
@@ -954,7 +948,7 @@ class ContractInstance(BaseAddress, ContractTypeWrapper):
 
         else:
             # Didn't find anything that matches
-            name = self.contract_type.name or self.__class__.__name__
+            name = self.contract_type.name or ContractType.__name__
             raise ApeAttributeError(f"'{name}' has no attribute '{method_name}'.")
 
     def invoke_transaction(self, method_name: str, *args, **kwargs) -> ReceiptAPI:
@@ -989,7 +983,7 @@ class ContractInstance(BaseAddress, ContractTypeWrapper):
 
         else:
             # Didn't find anything that matches
-            name = self.contract_type.name or self.__class__.__name__
+            name = self.contract_type.name or ContractType.__name__
             raise ApeAttributeError(f"'{name}' has no attribute '{method_name}'.")
 
     def get_event_by_signature(self, signature: str) -> ContractEvent:
@@ -1154,7 +1148,7 @@ class ContractInstance(BaseAddress, ContractTypeWrapper):
         }:
             # Didn't find anything that matches
             # NOTE: `__getattr__` *must* raise `AttributeError`
-            name = self.contract_type.name or self.__class__.__name__
+            name = self.contract_type.name or ContractType.__name__
             raise ApeAttributeError(f"'{name}' has no attribute '{attr_name}'.")
 
         elif (
@@ -1166,7 +1160,8 @@ class ContractInstance(BaseAddress, ContractTypeWrapper):
         ):
             # ABI should not contain a mix of events, mutable and view methods that match
             # NOTE: `__getattr__` *must* raise `AttributeError`
-            raise ApeAttributeError(f"{self.__class__.__name__} has corrupted ABI.")
+            cls_name = getattr(type(self), "__name__", ContractInstance.__name__)
+            raise ApeAttributeError(f"{cls_name} has corrupted ABI.")
 
         if attr_name in self._view_methods_:
             return self._view_methods_[attr_name]

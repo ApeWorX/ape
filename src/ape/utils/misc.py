@@ -9,8 +9,8 @@ from typing import TYPE_CHECKING, Any, Callable, Coroutine, Dict, List, Mapping,
 
 import requests
 import yaml
+from eth_pydantic_types import HexBytes
 from eth_utils import is_0x_prefixed
-from ethpm_types import HexBytes
 from importlib_metadata import PackageNotFoundError, distributions, packages_distributions
 from importlib_metadata import version as version_metadata
 from tqdm.auto import tqdm  # type: ignore
@@ -77,8 +77,19 @@ def get_package_version(obj: Any) -> str:
         return obj.__version__
 
     # NOTE: In case where don't pass a module name
-    if not isinstance(obj, str):
+    if not isinstance(obj, str) and hasattr(obj, "__name__"):
         obj = obj.__name__
+
+    elif not isinstance(obj, str):
+        try:
+            str_value = f"{obj}"
+        except Exception:
+            str_value = "<obj>"
+
+        logger.warning(f"Type issue: Unknown if properly handled {str_value}")
+
+        # Treat as no version found.
+        return ""
 
     # Reduce module string to base package
     # NOTE: Assumed that string input is module name e.g. `__name__`

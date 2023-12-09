@@ -1,7 +1,6 @@
 import os
 import shutil
 from pathlib import Path
-from urllib.parse import urlparse
 
 import pytest
 import yaml
@@ -72,7 +71,7 @@ def contract_type_1(vyper_contract_type):
 def existing_source_path(vyper_contract_type, contract_type_0, contracts_folder):
     source_path = contracts_folder / "NewContract_0.json"
     source_path.touch()
-    source_path.write_text(contract_type_0.json())
+    source_path.write_text(contract_type_0.model_dump_json())
     yield source_path
     if source_path.is_file():
         source_path.unlink()
@@ -82,14 +81,14 @@ def existing_source_path(vyper_contract_type, contract_type_0, contracts_folder)
 def manifest_with_non_existent_sources(
     existing_manifest, existing_source_path, contract_type_0, contract_type_1
 ):
-    manifest = existing_manifest.copy()
+    manifest = existing_manifest.model_copy()
     manifest.contract_types["NewContract_0"] = contract_type_0
     manifest.contract_types["NewContract_1"] = contract_type_1
     # Previous refs shouldn't interfere (bugfix related)
     manifest.sources["NewContract_0.json"] = Source(
-        content=contract_type_0.json(), references=["NewContract_1.json"]
+        content=contract_type_0.model_dump_json(), references=["NewContract_1.json"]
     )
-    manifest.sources["NewContract_1.json"] = Source(content=contract_type_1.json())
+    manifest.sources["NewContract_1.json"] = Source(content=contract_type_1.model_dump_json())
     return manifest
 
 
@@ -102,10 +101,10 @@ def project_without_deployments(project):
 
 
 def _make_new_contract(existing_contract: ContractType, name: str):
-    source_text = existing_contract.json()
+    source_text = existing_contract.model_dump_json()
     source_text = source_text.replace(f"{existing_contract.name}.vy", f"{name}.json")
     source_text = source_text.replace(existing_contract.name or "", name)
-    return ContractType.parse_raw(source_text)
+    return ContractType.model_validate_json(source_text)
 
 
 def test_extract_manifest(project_with_dependency_config):
@@ -132,10 +131,12 @@ def test_cached_manifest_when_sources_missing(
     cache_location.touch()
     name = "NOTEXISTS"
     source_id = f"{name}.json"
-    contract_type = ContractType.parse_obj({"contractName": name, "abi": [], "sourceId": source_id})
+    contract_type = ContractType.model_validate(
+        {"contractName": name, "abi": [], "sourceId": source_id}
+    )
     path = ape_project._cache_folder / source_id
-    path.write_text(contract_type.json())
-    cache_location.write_text(manifest_with_non_existent_sources.json())
+    path.write_text(contract_type.model_dump_json())
+    cache_location.write_text(manifest_with_non_existent_sources.model_dump_json())
 
     manifest = ape_project.cached_manifest
 
@@ -158,7 +159,7 @@ def test_create_manifest_when_file_changed_with_cached_references_that_no_longer
 
     ape_project._cache_folder.mkdir(exist_ok=True)
     cache_location.touch()
-    cache_location.write_text(manifest_with_non_existent_sources.json())
+    cache_location.write_text(manifest_with_non_existent_sources.model_dump_json())
 
     # Change content
     source_text = existing_source_path.read_text()
@@ -186,9 +187,9 @@ def test_meta(temp_config, project):
         assert project.meta.description == "test"
         assert project.meta.keywords == ["testing"]
 
-        actual_url = urlparse(project.meta.links["apeworx.io"])
-        assert actual_url.hostname == "apeworx.io"
-        assert actual_url.scheme == "https"
+        link = project.meta.links["apeworx.io"]
+        assert link.host == "apeworx.io"
+        assert link.scheme == "https"
 
 
 def test_brownie_project_configure(config, base_projects_directory):
@@ -241,7 +242,7 @@ def test_track_deployment(
     expected_uri = f"blockchain://{bip122_chain_id}/block/{expected_block_hash}"
     expected_name = contract.contract_type.name
     expected_code = contract.contract_type.runtime_bytecode
-    actual_from_file = EthPMContractInstance.parse_raw(deployment_path.read_text())
+    actual_from_file = EthPMContractInstance.model_validate_json(deployment_path.read_text())
     actual_from_class = project_without_deployments.tracked_deployments[expected_uri][name]
 
     assert actual_from_file.address == actual_from_class.address == address
@@ -278,7 +279,7 @@ def test_track_deployment_from_previously_deployed_contract(
     expected_uri = f"blockchain://{bip122_chain_id}/block/{expected_block_hash}"
     expected_name = contract.contract_type.name
     expected_code = contract.contract_type.runtime_bytecode
-    actual_from_file = EthPMContractInstance.parse_raw(path.read_text())
+    actual_from_file = EthPMContractInstance.model_validate_json(path.read_text())
     actual_from_class = project_without_deployments.tracked_deployments[expected_uri][name]
     assert actual_from_file.address == actual_from_class.address == address
     assert actual_from_file.contract_type == actual_from_class.contract_type == expected_name
@@ -321,7 +322,7 @@ def test_track_deployment_from_unknown_contract_given_txn_hash(
     contract = Contract(address, txn_hash=txn_hash)
     project.track_deployment(contract)
     path = base_deployments_path / f"{contract.contract_type.name}.json"
-    actual = EthPMContractInstance.parse_raw(path.read_text())
+    actual = EthPMContractInstance.model_validate_json(path.read_text())
     assert actual.address == address
     assert actual.contract_type == contract.contract_type.name
     assert actual.transaction == txn_hash

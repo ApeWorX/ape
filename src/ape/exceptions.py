@@ -679,7 +679,8 @@ class Abort(click.ClickException):
         else:
             err_message = str(exc)
 
-        return Abort(f"({type(exc).__name__}) {err_message}")
+        err_type_name = getattr(type(exc), "__name__", "Exception")
+        return Abort(f"({err_type_name}) {err_message}")
 
     def show(self, file=None):
         """

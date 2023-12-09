@@ -2,8 +2,9 @@ import json
 from pathlib import Path
 from typing import List, Optional, Set
 
+from eth_pydantic_types import HexBytes
 from eth_utils import is_0x_prefixed
-from ethpm_types import ContractType, HexBytes
+from ethpm_types import ContractType
 
 from ape.api import CompilerAPI
 from ape.exceptions import CompilerError, ContractLogicError

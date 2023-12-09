@@ -170,7 +170,10 @@ def install(cli_ctx, package, name, version, ref, force):
 
     if not package or package == ".":
         # `ape pm install`: Load all dependencies from current package.
-        cli_ctx.project_manager.load_dependencies(use_cache=not force)
+        try:
+            cli_ctx.project_manager.load_dependencies(use_cache=not force)
+        except Exception as err:
+            cli_ctx.abort(f"Failed loading dependencies: {err}")
 
     elif name:
         # `ape pm install <package>`: Is a specific package.
@@ -180,9 +183,27 @@ def install(cli_ctx, package, name, version, ref, force):
         if ref is not None:
             data["ref"] = ref
 
-        dependency_obj = cli_ctx.dependency_manager.decode_dependency(data)
-        dependency_obj.extract_manifest(use_cache=not force)
-        log_name = f"{dependency_obj.name}@{dependency_obj.version_id}"
+        try:
+            dependency_obj = cli_ctx.dependency_manager.decode_dependency(data)
+        except Exception as err:
+            try:
+                data_str = ", ".join([f"{k}={v}" for k, v in data.items()])
+            except Exception:
+                try:
+                    data_str = f"{data}"
+                except Exception:
+                    data_str = ""
+
+            message = "Issue with dependency data"
+            if data_str:
+                message = f"{message}: {data_str}"
+
+            message = f"{message}. Err={err}"
+            cli_ctx.abort(message)
+
+        else:
+            dependency_obj.extract_manifest(use_cache=not force)
+            log_name = f"{dependency_obj.name}@{dependency_obj.version_id}"
 
     else:
         # This is **not** the local project, but no --name was given.

@@ -285,7 +285,6 @@ def temp_config(config):
             config_file = temp_dir / CONFIG_FILE_NAME
             config_file.touch()
             config_file.write_text(yaml.dump(data))
-            config.load(force_reload=True)
 
             with config.using_project(temp_dir) as temp_project:
                 yield temp_project

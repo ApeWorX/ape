@@ -21,8 +21,8 @@ def test_transaction_error_when_receipt_is_subclass(vyper_contract_instance, own
         pass
 
     receipt = vyper_contract_instance.setNumber(123, sender=owner)
-    receipt_data = {**receipt.dict(), "transaction": receipt.transaction}
-    sub_receipt = SubclassReceipt.parse_obj(receipt_data)
+    receipt_data = {**receipt.model_dump(), "transaction": receipt.transaction}
+    sub_receipt = SubclassReceipt.model_validate(receipt_data)
 
     err = TransactionError(txn=sub_receipt)
     assert isinstance(err.txn, ReceiptAPI)  # Same check used.

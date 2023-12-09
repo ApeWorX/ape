@@ -207,7 +207,8 @@ class ApeLogger:
         self.log_debug_stack_trace()
 
     def _create_message_from_error(self, err: Exception, message: str):
-        err_output = f"{type(err).__name__}: {err}"
+        err_type_name = getattr(type(err), "__name__", "Exception")
+        err_output = f"{err_type_name}: {err}"
         message = f"{message}\n\t{err_output}"
         if not self._mentioned_verbosity_option:
             message += "\n\t(Use `--verbosity DEBUG` to see full stack-trace)"

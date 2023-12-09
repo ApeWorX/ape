@@ -3,12 +3,13 @@ import time
 from datetime import datetime
 from typing import IO, TYPE_CHECKING, Any, Iterator, List, Optional, Union
 
+from eth_pydantic_types import HexBytes
 from eth_utils import is_0x_prefixed, is_hex, to_int
-from ethpm_types import HexBytes
 from ethpm_types.abi import EventABI, MethodABI
+from pydantic import ConfigDict, field_validator
+from pydantic.fields import Field
 from tqdm import tqdm  # type: ignore
 
-from ape._pydantic_compat import Field, validator
 from ape.api.explorers import ExplorerAPI
 from ape.exceptions import (
     NetworkError,
@@ -53,7 +54,7 @@ class TransactionAPI(BaseInterfaceModel):
     gas_limit: Optional[int] = Field(None, alias="gas")
     nonce: Optional[int] = None  # NOTE: `Optional` only to denote using default behavior
     value: int = 0
-    data: bytes = b""
+    data: HexBytes = HexBytes("")
     type: int
     max_fee: Optional[int] = None
     max_priority_fee: Optional[int] = None
@@ -63,10 +64,9 @@ class TransactionAPI(BaseInterfaceModel):
 
     signature: Optional[TransactionSignature] = Field(None, exclude=True)
 
-    class Config:
-        allow_population_by_field_name = True
+    model_config = ConfigDict(populate_by_name=True)
 
-    @validator("gas_limit", pre=True, allow_reuse=True)
+    @field_validator("gas_limit", mode="before")
     def validate_gas_limit(cls, value):
         if value is None:
             if not cls.network_manager.active_provider:
@@ -91,21 +91,21 @@ class TransactionAPI(BaseInterfaceModel):
 
         return value
 
-    @validator("max_fee", "max_priority_fee", pre=True, allow_reuse=True)
+    @field_validator("max_fee", "max_priority_fee", mode="before")
     def convert_fees(cls, value):
         if isinstance(value, str):
             return cls.conversion_manager.convert(value, int)
 
         return value
 
-    @validator("data", pre=True)
+    @field_validator("data", mode="before")
     def validate_data(cls, value):
         if isinstance(value, str):
             return HexBytes(value)
 
         return value
 
-    @validator("value", pre=True)
+    @field_validator("value", mode="before")
     def validate_value(cls, value):
         if isinstance(value, int):
             return value
@@ -169,12 +169,13 @@ class TransactionAPI(BaseInterfaceModel):
         """
 
     def __repr__(self) -> str:
-        data = self.dict()
+        data = self.model_dump(mode="json")
         params = ", ".join(f"{k}={v}" for k, v in data.items())
-        return f"<{self.__class__.__name__} {params}>"
+        cls_name = getattr(type(self), "__name__", TransactionAPI.__name__)
+        return f"<{cls_name} {params}>"
 
     def __str__(self) -> str:
-        data = self.dict()
+        data = self.model_dump(mode="json")
         if len(data["data"]) > 9:
             # only want to specify encoding if data["data"] is a string
             if isinstance(data["data"], str):
@@ -194,7 +195,8 @@ class TransactionAPI(BaseInterfaceModel):
             else:
                 data["data"] = "0x" + bytes(data["data"]).hex()
         params = "\n  ".join(f"{k}: {v}" for k, v in data.items())
-        return f"{self.__class__.__name__}:\n  {params}"
+        cls_name = getattr(type(self), "__name__", TransactionAPI.__name__)
+        return f"{cls_name}:\n  {params}"
 
 
 class ConfirmationsProgressBar:
@@ -264,19 +266,20 @@ class ReceiptAPI(BaseInterfaceModel):
     transaction: TransactionAPI
 
     def __repr__(self) -> str:
-        return f"<{self.__class__.__name__} {self.txn_hash}>"
+        cls_name = getattr(self.__class__, "__name__", ReceiptAPI.__name__)
+        return f"<{cls_name} {self.txn_hash}>"
 
     def __ape_extra_attributes__(self) -> Iterator[ExtraModelAttributes]:
-        yield ExtraModelAttributes(name="transaction", attributes=self.transaction)
+        yield ExtraModelAttributes(name="transaction", attributes=vars(self.transaction))
 
-    @validator("transaction", pre=True)
+    @field_validator("transaction", mode="before")
     def confirm_transaction(cls, value):
         if isinstance(value, dict):
-            value = TransactionAPI.parse_obj(value)
+            value = TransactionAPI.model_validate(value)
 
         return value
 
-    @validator("txn_hash", pre=True)
+    @field_validator("txn_hash", mode="before")
     def validate_txn_hash(cls, value):
         return HexBytes(value).hex()
 
@@ -472,7 +475,7 @@ class ReceiptAPI(BaseInterfaceModel):
     @raises_not_implemented
     def source_traceback(self) -> SourceTraceback:  # type: ignore[empty-body]
         """
-        A pythonic style traceback for both failing and non-failing receipts.
+        A Pythonic style traceback for both failing and non-failing receipts.
         Requires a provider that implements
         :meth:~ape.api.providers.ProviderAPI.get_transaction_trace`.
         """

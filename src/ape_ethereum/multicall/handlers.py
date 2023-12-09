@@ -73,7 +73,7 @@ class BaseMulticall(ManagerAccessMixin):
             # else use our backend (with less methods)
             contract = self.chain_manager.contracts.instance_at(
                 MULTICALL3_ADDRESS,
-                contract_type=ContractType.parse_obj(MULTICALL3_CONTRACT_TYPE),
+                contract_type=ContractType.model_validate(MULTICALL3_CONTRACT_TYPE),
             )
 
         if self.provider.chain_id not in self.supported_chains and contract.code != MULTICALL3_CODE:

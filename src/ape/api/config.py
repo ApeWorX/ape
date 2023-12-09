@@ -1,7 +1,8 @@
 from enum import Enum
 from typing import Any, Dict, Optional, TypeVar
 
-from ape._pydantic_compat import BaseModel, BaseSettings
+from pydantic import ConfigDict
+from pydantic_settings import BaseSettings
 
 T = TypeVar("T")
 
@@ -14,10 +15,6 @@ class ConfigEnum(str, Enum):
     """
 
 
-class ConfigDict(BaseModel):
-    __root__: dict = {}
-
-
 class PluginConfig(BaseSettings):
     """
     A base plugin configuration class. Each plugin that includes
@@ -26,7 +23,7 @@ class PluginConfig(BaseSettings):
 
     @classmethod
     def from_overrides(cls, overrides: Dict) -> "PluginConfig":
-        default_values = cls().dict()
+        default_values = cls().model_dump()
 
         def update(root: Dict, value_map: Dict):
             for key, val in value_map.items():
@@ -54,9 +51,7 @@ class PluginConfig(BaseSettings):
         return self.__dict__.get(key, default)
 
 
-class GenericConfig(PluginConfig):
+class GenericConfig(ConfigDict):
     """
     The default class used when no specialized class is used.
     """
-
-    __root__: dict = {}

@@ -1,5 +1,5 @@
 import pytest
-from ethpm_types import HexBytes
+from eth_pydantic_types import HexBytes
 
 from ape.exceptions import ConversionError
 from ape.managers.converters import HexConverter, HexIntConverter

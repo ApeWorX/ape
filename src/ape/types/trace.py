@@ -2,14 +2,15 @@ from itertools import chain, tee
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Dict, Iterator, List, Optional, Set, Union
 
-from ethpm_types import ASTNode, BaseModel, ContractType, HexBytes
+from eth_pydantic_types import HexBytes
+from ethpm_types import ASTNode, BaseModel, ContractType
 from ethpm_types.ast import SourceLocation
 from ethpm_types.source import Closure, Content, Function, SourceStatement, Statement
 from evm_trace.gas import merge_reports
+from pydantic import Field, RootModel
 from rich.table import Table
 from rich.tree import Tree
 
-from ape._pydantic_compat import Field
 from ape.types.address import AddressType
 from ape.utils.basemodel import BaseInterfaceModel
 from ape.utils.misc import is_evm_precompile, is_zero_hex
@@ -323,9 +324,9 @@ class ControlFlow(BaseModel):
     def content(self) -> Content:
         result: Dict[int, str] = {}
         for node in self.source_statements:
-            result = {**result, **node.content.__root__}
+            result = {**result, **node.content.root}
 
-        return Content(__root__=result)
+        return Content(root=result)
 
     @property
     def source_header(self) -> str:
@@ -409,7 +410,7 @@ class ControlFlow(BaseModel):
         new_lines = {no: ln.rstrip() for no, ln in content.items() if no >= content_start}
         if new_lines:
             # Add the next statement in this sequence.
-            content = Content(__root__=new_lines)
+            content = Content(root=new_lines)
             statement = SourceStatement(asts=asts, content=content, pcs=pcs)
             self.statements.append(statement)
 
@@ -471,22 +472,20 @@ class ControlFlow(BaseModel):
         content_dict = {}
         for ast in next_stmt_asts:
             sub_content = function.get_content(ast.line_numbers)
-            content_dict = {**sub_content.__root__}
+            content_dict = {**sub_content.root}
 
         if not content_dict:
             return None
 
         sorted_dict = {k: content_dict[k] for k in sorted(content_dict)}
-        content = Content(__root__=sorted_dict)
+        content = Content(root=sorted_dict)
         return SourceStatement(asts=next_stmt_asts, content=content)
 
 
-class SourceTraceback(BaseModel):
+class SourceTraceback(RootModel[List[ControlFlow]]):
     """
     A full execution traceback including source code.
     """
-
-    __root__: List[ControlFlow]
 
     @classmethod
     def create(
@@ -497,41 +496,41 @@ class SourceTraceback(BaseModel):
     ):
         trace, second_trace = tee(trace)
         if not second_trace or not (accessor := next(second_trace, None)):
-            return cls.parse_obj([])
+            return cls.model_validate([])
 
         if not (source_id := contract_type.source_id):
-            return cls.parse_obj([])
+            return cls.model_validate([])
 
         ext = f".{source_id.split('.')[-1]}"
         if ext not in accessor.compiler_manager.registered_compilers:
-            return cls.parse_obj([])
+            return cls.model_validate([])
 
         compiler = accessor.compiler_manager.registered_compilers[ext]
         try:
             return compiler.trace_source(contract_type, trace, HexBytes(data))
         except NotImplementedError:
-            return cls.parse_obj([])
+            return cls.model_validate([])
 
     def __str__(self) -> str:
         return self.format()
 
     def __repr__(self) -> str:
-        return f"<ape.types.SourceTraceback control_paths={len(self.__root__)}>"
+        return f"<ape.types.SourceTraceback control_paths={len(self.root)}>"
 
     def __len__(self) -> int:
-        return len(self.__root__)
+        return len(self.root)
 
     def __iter__(self) -> Iterator[ControlFlow]:  # type: ignore[override]
-        yield from self.__root__
+        yield from self.root
 
     def __getitem__(self, idx: int) -> ControlFlow:
         try:
-            return self.__root__[idx]
+            return self.root[idx]
         except IndexError as err:
             raise IndexError(f"Control flow index '{idx}' out of range.") from err
 
     def __setitem__(self, key, value):
-        return self.__root__.__setitem__(key, value)
+        return self.root.__setitem__(key, value)
 
     @property
     def revert_type(self) -> Optional[str]:
@@ -546,7 +545,7 @@ class SourceTraceback(BaseModel):
         """
         Append the given control flow to this one.
         """
-        self.__root__.append(__object)
+        self.root.append(__object)
 
     def extend(self, __iterable) -> None:
         """
@@ -555,14 +554,14 @@ class SourceTraceback(BaseModel):
         if not isinstance(__iterable, SourceTraceback):
             raise TypeError("Can only extend another traceback object.")
 
-        self.__root__.extend(__iterable.__root__)
+        self.root.extend(__iterable.root)
 
     @property
     def last(self) -> Optional[ControlFlow]:
         """
         The last control flow in the traceback, if there is one.
         """
-        return self.__root__[-1] if len(self.__root__) else None
+        return self.root[-1] if len(self.root) else None
 
     @property
     def execution(self) -> List[ControlFlow]:
@@ -570,27 +569,27 @@ class SourceTraceback(BaseModel):
         All the control flows in order. Each set of statements in
         a control flow is separated by a jump.
         """
-        return list(self.__root__)
+        return list(self.root)
 
     @property
     def statements(self) -> List[Statement]:
         """
         All statements from each control flow.
         """
-        return list(chain(*[x.statements for x in self.__root__]))
+        return list(chain(*[x.statements for x in self.root]))
 
     @property
     def source_statements(self) -> List[SourceStatement]:
         """
         All source statements from each control flow.
         """
-        return list(chain(*[x.source_statements for x in self.__root__]))
+        return list(chain(*[x.source_statements for x in self.root]))
 
     def format(self) -> str:
         """
         Get a formatted traceback string for displaying to users.
         """
-        if not len(self.__root__):
+        if not len(self.root):
             # No calls.
             return ""
 
@@ -598,7 +597,7 @@ class SourceTraceback(BaseModel):
         indent = "  "
         last_depth = None
         segments: List[str] = []
-        for control_flow in reversed(self.__root__):
+        for control_flow in reversed(self.root):
             if last_depth is None or control_flow.depth == last_depth - 1:
                 if control_flow.depth == 0 and len(segments) >= 1:
                     # Ignore 0-layer segments if source code was hit
@@ -668,8 +667,8 @@ class SourceTraceback(BaseModel):
             return
 
         pcs = pcs or set()
-        Statement.update_forward_refs()
-        ControlFlow.update_forward_refs()
+        Statement.model_rebuild()
+        ControlFlow.model_rebuild()
         self._add(asts, content, pcs, function, depth, source_path=source_path)
 
     def extend_last(self, location: SourceLocation, pcs: Optional[Set[int]] = None):

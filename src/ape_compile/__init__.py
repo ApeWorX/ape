@@ -1,7 +1,8 @@
 from typing import Any, List, Optional
 
+from pydantic import Field, field_validator
+
 from ape import plugins
-from ape._pydantic_compat import Field, validator
 from ape.api import PluginConfig
 from ape.logging import logger
 
@@ -26,7 +27,7 @@ class Config(PluginConfig):
     Source exclusion globs across all file types.
     """
 
-    @validator("evm_version")
+    @field_validator("evm_version")
     def warn_deprecate(cls, value):
         if value:
             logger.warning(
@@ -36,7 +37,7 @@ class Config(PluginConfig):
 
         return None
 
-    @validator("exclude", pre=True)
+    @field_validator("exclude", mode="before")
     def validate_exclude(cls, value):
         return value or []
 

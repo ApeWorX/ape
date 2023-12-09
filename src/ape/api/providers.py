@@ -16,18 +16,19 @@ from signal import SIGINT, SIGTERM, signal
 from subprocess import DEVNULL, PIPE, Popen
 from typing import Any, Dict, Iterator, List, Optional, Union, cast
 
+from eth_pydantic_types import HexBytes
 from eth_typing import BlockNumber, HexStr
 from eth_utils import add_0x_prefix, to_hex
-from ethpm_types import HexBytes
 from ethpm_types.abi import EventABI
 from evm_trace import CallTreeNode as EvmCallTreeNode
 from evm_trace import TraceFrame as EvmTraceFrame
+from pydantic import Field, computed_field, model_validator
+from pydantic.dataclasses import dataclass
 from web3 import Web3
 from web3.exceptions import ContractLogicError as Web3ContractLogicError
 from web3.exceptions import MethodUnavailable, TimeExhausted, TransactionNotFound
 from web3.types import RPCEndpoint, TxParams
 
-from ape._pydantic_compat import Field, dataclass, root_validator, validator
 from ape.api.config import PluginConfig
 from ape.api.networks import LOCAL_NETWORK_NAME, NetworkAPI
 from ape.api.query import BlockTransactionQuery
@@ -96,20 +97,13 @@ class BlockAPI(BaseInterfaceModel):
     def datetime(self) -> datetime.datetime:
         return datetime.datetime.fromtimestamp(self.timestamp, tz=datetime.timezone.utc)
 
-    @root_validator(pre=True)
+    @model_validator(mode="before")
     def convert_parent_hash(cls, data):
         parent_hash = data.get("parent_hash", data.get("parentHash")) or EMPTY_BYTES32
         data["parentHash"] = parent_hash
         return data
 
-    @validator("hash", "parent_hash", pre=True)
-    def validate_hexbytes(cls, value):
-        # NOTE: pydantic treats these values as bytes and throws an error
-        if value and not isinstance(value, bytes):
-            return HexBytes(value)
-
-        return value
-
+    @computed_field()  # type: ignore[misc]
     @cached_property
     def transactions(self) -> List[TransactionAPI]:
         query = BlockTransactionQuery(columns=["*"], block_id=self.hash)
@@ -135,11 +129,8 @@ class ProviderAPI(BaseInterfaceModel):
     data_folder: Path
     """The path to the  ``.ape`` directory."""
 
-    request_header: dict
+    request_header: Dict
     """A header to set on HTTP/RPC requests."""
-
-    cached_chain_id: Optional[int] = None
-    """Implementation providers may use this to cache and re-use chain ID."""
 
     block_page_size: int = 100
     """
@@ -191,8 +182,8 @@ class ProviderAPI(BaseInterfaceModel):
         The combination of settings from ``ape-config.yaml`` and ``.provider_settings``.
         """
         CustomConfig = self.config.__class__
-        data = {**self.config.dict(), **self.provider_settings}
-        return CustomConfig.parse_obj(data)
+        data = {**self.config.model_dump(), **self.provider_settings}
+        return CustomConfig.model_validate(data)
 
     @property
     def connection_id(self) -> Optional[str]:
@@ -985,7 +976,7 @@ class Web3Provider(ProviderAPI, ABC):
             return the block maximum gas limit.
         """
 
-        txn_dict = txn.dict()
+        txn_dict = txn.model_dump(mode="json")
 
         # Force the use of hex values to support a wider range of nodes.
         if isinstance(txn_dict.get("type"), int):
@@ -1271,7 +1262,7 @@ class Web3Provider(ProviderAPI, ABC):
         return HexBytes(result)
 
     def _prepare_call(self, txn: TransactionAPI, **kwargs) -> List:
-        txn_dict = txn.dict()
+        txn_dict = txn.model_dump(mode="json")
         fields_to_convert = ("data", "chainId", "value")
         for field in fields_to_convert:
             value = txn_dict.get(field)
@@ -1334,7 +1325,9 @@ class Web3Provider(ProviderAPI, ABC):
         except TimeExhausted as err:
             raise TransactionNotFoundError(txn_hash, error_messsage=str(err)) from err
 
-        network_config: Dict = self.network.config.dict().get(self.network.name, {})
+        network_config: Dict = self.network.config.model_dump(mode="json").get(
+            self.network.name, {}
+        )
         max_retries = network_config.get("max_get_transaction_retries", DEFAULT_MAX_RETRIES_TX)
         txn = {}
         for attempt in range(max_retries):
@@ -1469,10 +1462,9 @@ class Web3Provider(ProviderAPI, ABC):
 
         # Pretend we _did_ yield the last confirmed item, for logic's sake.
         fake_last_block = self.get_block(self.web3.eth.block_number - required_confirmations)
-        # NOTE: type warning ignored due to pydantic compat issue
-        last = YieldAction(
-            number=fake_last_block.number, hash=fake_last_block.hash, time=time.time()
-        )  # type: ignore
+        last_num = fake_last_block.number or 0
+        last_hash = fake_last_block.hash or HexBytes(0)
+        last = YieldAction(number=last_num, hash=last_hash, time=time.time())
 
         # A helper method for various points of ensuring we didn't timeout.
         def assert_chain_activity():
@@ -1563,14 +1555,8 @@ class Web3Provider(ProviderAPI, ABC):
         for block in self.poll_blocks(stop_block, required_confirmations, new_block_timeout):
             if block.number is None:
                 raise ValueError("Block number cannot be None")
-            log_params: Dict[
-                str,
-                int
-                | AddressType
-                | List[EventABI]
-                | List[AddressType]
-                | List[Union[str, EventABI, AddressType, List[str]]],
-            ] = {
+
+            log_params: Dict[str, Any] = {
                 "start_block": block.number,
                 "stop_block": block.number,
                 "events": events,
@@ -1579,7 +1565,9 @@ class Web3Provider(ProviderAPI, ABC):
                 log_params["addresses"] = [address]
             if topics is not None:
                 log_params["topics"] = topics
-            yield from self.get_contract_logs(LogFilter(**log_params))
+
+            log_filter = LogFilter(**log_params)
+            yield from self.get_contract_logs(log_filter)
 
     def block_ranges(self, start=0, stop=None, page=None):
         if stop is None:
@@ -1649,12 +1637,11 @@ class Web3Provider(ProviderAPI, ABC):
 
         def fetch_log_page(block_range):
             start, stop = block_range
-            page_filter = log_filter.copy(update=dict(start_block=start, stop_block=stop))
+            page_filter = log_filter.model_copy(update=dict(start_block=start, stop_block=stop))
             # eth-tester expects a different format, let web3 handle the conversions for it
             raw = "EthereumTester" not in self.client_version
-            logs = self._get_logs(page_filter.dict(), raw)
-            decoded_logs = list(self.network.ecosystem.decode_logs(logs, *log_filter.events))
-            return decoded_logs
+            logs = self._get_logs(page_filter.model_dump(mode="json"), raw)
+            return self.network.ecosystem.decode_logs(logs, *log_filter.events)
 
         with ThreadPoolExecutor(self.concurrency) as pool:
             for page in pool.map(fetch_log_page, block_ranges):
@@ -1723,7 +1710,8 @@ class Web3Provider(ProviderAPI, ABC):
                 if txn.sender not in self.web3.eth.accounts:
                     self.chain_manager.provider.unlock_account(txn.sender)
 
-                txn_hash = self.web3.eth.send_transaction(cast(TxParams, txn.dict()))
+                txn_data = cast(TxParams, txn.model_dump(mode="json"))
+                txn_hash = self.web3.eth.send_transaction(cast(TxParams, txn_data))
 
         except (ValueError, Web3ContractLogicError) as err:
             vm_err = self.get_virtual_machine_error(err, txn=txn)
@@ -1742,7 +1730,7 @@ class Web3Provider(ProviderAPI, ABC):
         self.chain_manager.history.append(receipt)
 
         if receipt.failed:
-            txn_dict = receipt.transaction.dict()
+            txn_dict = receipt.transaction.model_dump(mode="json")
             txn_params = cast(TxParams, txn_dict)
 
             # Replay txn to get revert reason
@@ -1777,7 +1765,7 @@ class Web3Provider(ProviderAPI, ABC):
             inputs=input_data,
             method_id=evm_call.calldata[:4].hex(),
             outputs=evm_call.returndata.hex(),
-            raw=evm_call.dict(),
+            raw=evm_call.model_dump(by_alias=True, mode="json"),
             txn_hash=txn_hash,
         )
 
@@ -1800,7 +1788,7 @@ class Web3Provider(ProviderAPI, ABC):
             gas_cost=evm_frame.gas_cost,
             depth=evm_frame.depth,
             contract_address=address,
-            raw=evm_frame.dict(),
+            raw=evm_frame.model_dump(by_alias=True, mode="json"),
         )
 
     def _make_request(self, endpoint: str, parameters: Optional[List] = None) -> Any:
@@ -2030,7 +2018,6 @@ class SubprocessProvider(ProviderAPI):
         Subclasses override this method to do provider-specific disconnection tasks.
         """
 
-        self.cached_chain_id = None
         if self.process:
             self.stop()
 

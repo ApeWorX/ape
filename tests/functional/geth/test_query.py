@@ -9,7 +9,9 @@ def test_get_contract_creation_receipts(mock_geth, geth_contract, chain, network
     geth_provider.__dict__["explorer"] = None
     provider = networks.active_provider
     networks.active_provider = mock_geth
-    mock_geth._web3.eth.get_block.side_effect = geth_provider.get_block
+    mock_geth._web3.eth.get_block.side_effect = (
+        lambda bid, *args, **kwargs: geth_provider.get_block(bid)
+    )
 
     try:
         mock_geth._web3.eth.get_code.return_value = b"123"
