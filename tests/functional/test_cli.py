@@ -136,27 +136,27 @@ def test_select_account_custom_prompt(runner, keyfile_account, second_keyfile_ac
 
 def test_select_account_specify_type(runner, one_keyfile_account):
     with runner.isolation():
-        account = select_account(account_type=type(one_keyfile_account))
+        account = select_account(key=type(one_keyfile_account))
 
     assert account == one_keyfile_account
 
 
 def test_select_account_unknown_type(runner, keyfile_account):
     with pytest.raises(AccountsError) as err:
-        select_account(account_type=str)  # type: ignore
+        select_account(key=str)  # type: ignore
 
     assert "Cannot return accounts with type '<class 'str'>'" in str(err.value)
 
 
 def test_select_account_with_account_list(runner, keyfile_account, second_keyfile_account):
-    account = select_account(account_type=[keyfile_account])
+    account = select_account(key=[keyfile_account])
     assert account == keyfile_account
 
-    account = select_account(account_type=[second_keyfile_account])
+    account = select_account(key=[second_keyfile_account])
     assert account == second_keyfile_account
 
     with runner.isolation(input="1\n"):
-        account = select_account(account_type=[keyfile_account, second_keyfile_account])
+        account = select_account(key=[keyfile_account, second_keyfile_account])
         assert account == second_keyfile_account
 
 

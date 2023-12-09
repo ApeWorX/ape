@@ -139,7 +139,7 @@ class PromptChoice(click.ParamType):
 
 
 def select_account(
-    prompt_message: Optional[str] = None, account_type: _ACCOUNT_TYPE_FILTER = None
+    prompt_message: Optional[str] = None, key: _ACCOUNT_TYPE_FILTER = None
 ) -> AccountAPI:
     """
     Prompt the user to pick from their accounts and return that account.
@@ -149,7 +149,7 @@ def select_account(
 
     Args:
         prompt_message (Optional[str]): Customize the prompt message.
-        account_type (Union[None, Type[AccountAPI], Callable[[AccountAPI], bool]]):
+        key (Union[None, Type[AccountAPI], Callable[[AccountAPI], bool]]):
           If given, the user may only select a matching account. You can provide
           a list of accounts, an account class type, or a callable for filtering
           the accounts.
@@ -158,10 +158,10 @@ def select_account(
         :class:`~ape.api.accounts.AccountAPI`
     """
 
-    if account_type and isinstance(account_type, type) and not issubclass(account_type, AccountAPI):
-        raise AccountsError(f"Cannot return accounts with type '{account_type}'.")
+    if key and isinstance(key, type) and not issubclass(key, AccountAPI):
+        raise AccountsError(f"Cannot return accounts with type '{key}'.")
 
-    prompt = AccountAliasPromptChoice(prompt_message=prompt_message, account_type=account_type)
+    prompt = AccountAliasPromptChoice(prompt_message=prompt_message, account_type=key)
     return prompt.select_account()
 
 
