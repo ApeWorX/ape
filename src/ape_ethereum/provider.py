@@ -455,7 +455,8 @@ class Web3Provider(ProviderAPI, ABC):
         except TimeExhausted as err:
             raise TransactionNotFoundError(txn_hash, error_messsage=str(err)) from err
 
-        network_config: Dict = self.network.config.dict().get(self.network.name, {})
+        ecosystem_config = self.network.config.model_dump(by_alias=True, mode="json")
+        network_config: Dict = ecosystem_config.get(self.network.name, {})
         max_retries = network_config.get("max_get_transaction_retries", DEFAULT_MAX_RETRIES_TX)
         txn = {}
         for attempt in range(max_retries):
