@@ -14,7 +14,7 @@ from IPython.terminal.ipapp import Config as IPythonConfig
 
 from ape import config
 from ape import project as default_project
-from ape.cli import NetworkBoundCommand, ape_cli_context, network_option
+from ape.cli import ConnectedProviderCommand, ape_cli_context
 from ape.utils.misc import _python_version
 from ape.version import version as ape_version
 from ape_console.config import ConsoleConfig
@@ -23,13 +23,12 @@ CONSOLE_EXTRAS_FILENAME = "ape_console_extras.py"
 
 
 @click.command(
-    cls=NetworkBoundCommand,
+    cls=ConnectedProviderCommand,
     short_help="Load the console",
     context_settings=dict(ignore_unknown_options=True),
 )
-@network_option()
 @ape_cli_context()
-def cli(cli_ctx, network):
+def cli(cli_ctx):
     """Opens a console for the local project."""
     verbose = cli_ctx.logger.level == logging.DEBUG
     return console(verbose=verbose)

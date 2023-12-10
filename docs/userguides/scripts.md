@@ -33,17 +33,25 @@ ape run hello helloworld
 ```
 
 Note that by default, `cli` scripts do not have [`ape.cli.network_option`](../methoddocs/cli.html?highlight=options#ape.cli.options.network_option) installed, giving you more flexibility in how you define your scripts.
-However, you can add the `network_option` to your scripts by importing both the `NetworkBoundCommand` and the `network_option` from the `ape.cli` namespace:
+However, you can add the `network_option` or `ConnectedProviderCommand` to your scripts by importing them from the `ape.cli` namespace:
 
 ```python
 import click
-from ape.cli import network_option, NetworkBoundCommand
+from ape.cli import network_option, ConnectedProviderCommand
 
 
-@click.command(cls=NetworkBoundCommand)
-@network_option()
-def cli(network):
-    click.echo(f"You are connected to network '{network}'.")
+@click.command(cls=ConnectedProviderCommand)
+def cli(ecosystem, network):
+    click(f"You selected a provider on ecosystem '{ecosystem.name}' and {network.name}.")
+
+@click.command(cls=ConnectedProviderCommand)
+def cli(network, provider):
+    click.echo(f"You are connected to network '{network.name}'.")
+    click.echo(provider.chain_id)
+
+@click.command(cls=ConnectedProviderCommand)
+def cli_2():
+    click.echo(f"Using any network-based argument is completely optional.")
 ```
 
 Assume we saved this script as `shownet.py` and have the [ape-alchemy](https://github.com/ApeWorX/ape-alchemy) plugin installed.

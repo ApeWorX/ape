@@ -1,6 +1,10 @@
-from typing import Callable, Dict, List, NoReturn, Optional, Type, Union
+import inspect
+import sys
+from functools import partial
+from typing import Callable, Dict, List, NoReturn, Optional, Sequence, Type, Union
 
 import click
+from click import Option
 from ethpm_types import ContractType
 
 from ape import networks, project
@@ -101,6 +105,54 @@ def ape_cli_context(
     return decorator
 
 
+class NetworkOption(Option):
+    """
+    The class used in `:meth:~ape.cli.options.network_option`.
+    """
+
+    # NOTE: Has to be kwargs only to avoid multiple-values for arg error.
+    def __init__(self, *args, **kwargs) -> None:
+        ecosystem = kwargs.pop("ecosystem", None)
+        network = kwargs.pop("network", None)
+        provider = kwargs.pop("provider", None)
+        default = kwargs.pop("default", "auto")
+
+        # NOTE: If using network_option, this part is skipped
+        #  because parsing happens earlier to handle advanced usage.
+        if "type" not in kwargs:
+            kwargs["type"] = NetworkChoice(
+                case_sensitive=False, ecosystem=ecosystem, network=network, provider=provider
+            )
+        auto = default == "auto"
+        required = kwargs.get("required", False)
+
+        if auto and not required:
+            if ecosystem:
+                default = ecosystem[0] if isinstance(ecosystem, (list, tuple)) else ecosystem
+
+            else:
+                # NOTE: Use a function as the default so it is calculated lazily
+                def fn():
+                    return networks.default_ecosystem.name
+
+                default = fn
+
+        elif auto:
+            default = None
+
+        help_msg = (
+            "Override the default network and provider. (see `ape networks list` for options)"
+        )
+        kwargs = {
+            "param_decls": ("--network",),
+            "help": help_msg,
+            "default": default,
+            "required": required,
+            **kwargs,
+        }
+        super().__init__(**kwargs)
+
+
 def network_option(
     default: Optional[Union[str, Callable]] = "auto",
     ecosystem: Optional[Union[List[str], str]] = None,
@@ -127,34 +179,88 @@ def network_option(
         kwargs: Additional overrides to ``click.option``.
     """
 
-    auto = default == "auto"
+    def decorator(f):
+        # When using network_option, handle parsing now so we can pass to
+        # callback outside of command context.
+        kwargs["type"] = kwargs.pop("type", None) or NetworkChoice(
+            case_sensitive=False, ecosystem=ecosystem, network=network, provider=provider
+        )
 
-    if auto and not required:
-        if ecosystem:
-            default = ecosystem[0] if isinstance(ecosystem, (list, tuple)) else ecosystem
+        # Find passed --network value
+        network_choice = None
+        arguments = _get_sys_argv()
+        for idx, val in enumerate(arguments):
+            if val == "--network":
+                next_idx = idx + 1
+                if next_idx < len(arguments):
+                    network_choice = arguments[next_idx]
+                    break
+
+        if network_choice in ("None", "none"):
+            # Specified None in cmd line- ignore.
+            # Or is an adhoc value.
+            choice_classes = None
+
+        elif network_choice is None:
+            # Unspecified.
+            ecosystem_obj = networks.default_ecosystem
+            network_obj = ecosystem_obj.default_network
+            choice_classes = {
+                "ecosystem": networks.default_ecosystem,
+                "network": ecosystem_obj.default_network,
+                "provider": network_obj.default_provider,
+            }
 
         else:
-            # NOTE: Use a function as the default so it is calculated lazily
-            def fn():
-                return networks.default_ecosystem.name
+            network_ctx = networks.parse_network_choice(network_choice)
+            provider_obj = network_ctx._provider
+            network_obj = provider_obj.network
+            ecosystem_obj = network_obj.ecosystem
+            choice_classes = {
+                "ecosystem": ecosystem_obj,
+                "network": network_obj,
+                "provider": provider_obj,
+            }
 
-            default = fn
+        # Create the callback using values from the parsed network choice.
+        # Only pass in values requested. Exposure is optional!
+        if choice_classes is None:
+            # Was told to use None explicitly.
+            partial_f = f
 
-    elif auto:
-        default = None
+        else:
+            partial_kwargs = {}
+            signature = inspect.signature(f)
+            requested_data = [x.name for x in signature.parameters.values()]
+            for arg_type in ("ecosystem", "network", "provider"):
+                if arg_type in requested_data:
+                    partial_kwargs[arg_type] = choice_classes[arg_type]
 
-    return click.option(
-        "--network",
-        type=NetworkChoice(
-            case_sensitive=False, ecosystem=ecosystem, network=network, provider=provider
-        ),
-        default=default,
-        help="Override the default network and provider. (see `ape networks list` for options)",
-        show_default=True,
-        show_choices=False,
-        required=required,
-        **kwargs,
-    )
+            partial_f = partial(f, **partial_kwargs)
+            partial_f.__name__ = f.__name__  # type: ignore[attr-defined]
+
+            # Skip NetworkChoice parsing since we did it already here.
+            kwargs["type"] = None
+
+            # Set this to false to avoid click passing in a str value for network.
+            # This happens with `kwargs["type"] = None` and we are already handling
+            # `network` via the partial.
+            kwargs["expose_value"] = False
+
+        # Create the actual option.
+        option = click.option(
+            default=default,
+            ecosystem=ecosystem,
+            network=network,
+            provider=provider,
+            required=required,
+            cls=NetworkOption,
+            **kwargs,
+        )(partial_f)
+
+        return option
+
+    return decorator
 
 
 def skip_confirmation_option(help=""):
@@ -284,3 +390,8 @@ def incompatible_with(incompatible_opts):
             return super().handle_parse_result(ctx, opts, args)
 
     return IncompatibleOption
+
+
+def _get_sys_argv() -> Sequence[str]:
+    # Is separate fn so can be mocked in tests.
+    return sys.argv

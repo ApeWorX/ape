@@ -12,7 +12,7 @@ from ape.cli.choices import (
     output_format_choice,
     select_account,
 )
-from ape.cli.commands import NetworkBoundCommand
+from ape.cli.commands import ConnectedProviderCommand
 from ape.cli.options import (
     ApeCliContextObject,
     account_option,
@@ -39,7 +39,7 @@ __all__ = [
     "select_account",
     "incompatible_with",
     "network_option",
-    "NetworkBoundCommand",
+    "ConnectedProviderCommand",
     "NetworkChoice",
     "non_existing_alias_argument",
     "output_format_choice",

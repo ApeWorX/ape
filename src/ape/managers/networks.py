@@ -175,13 +175,14 @@ class NetworkManager(BaseManager):
         if geth_class is None:
             raise NetworkError("Core Geth plugin missing.")
 
-        network = NetworkAPI.create_adhoc_network()
-        return geth_class(
+        network = self.ethereum.adhoc_network
+        provider = geth_class(
             network=network,
             provider_settings={"uri": uri},
             data_folder=network.data_folder,
             request_header=network.request_header,
         )
+        return provider
 
     def __iter__(self) -> Iterator[str]:
         """
@@ -301,14 +302,14 @@ class NetworkManager(BaseManager):
                 for provider_name in providers:
                     if (
                         ecosystem_name == self.default_ecosystem.name
-                        and network_name == ecosystem.default_network
+                        and network_name == ecosystem.default_network_name
                     ):
                         yield f"::{provider_name}"
 
                     if ecosystem_name == self.default_ecosystem.name:
                         yield f":{network_name}:{provider_name}"
 
-                    if network_name == ecosystem.default_network:
+                    if network_name == ecosystem.default_network_name:
                         yield f"{ecosystem_name}::{provider_name}"
 
                     # Always include the full path as an option.
@@ -370,9 +371,7 @@ class NetworkManager(BaseManager):
 
         if network_choice is None:
             default_network = self.default_ecosystem.default_network
-            return self.default_ecosystem[default_network].get_provider(
-                provider_settings=provider_settings
-            )
+            return default_network.get_provider(provider_settings=provider_settings)
 
         elif network_choice.startswith("http://") or network_choice.startswith("https://"):
             return self.create_adhoc_geth_provider(network_choice)
@@ -381,8 +380,13 @@ class NetworkManager(BaseManager):
 
         # NOTE: Handle case when URI is passed e.g. "http://..."
         if len(selections) > 3:
-            selections[2] = ":".join(selections[2:])
+            provider_value = ":".join(selections[2:])
+            selections[2] = provider_value
             selections = selections[:3]
+
+            if provider_value.startswith("https://") or provider_value.startswith("https://"):
+                # Network must be adhoc when using a URI.
+                selections[1] = "adhoc"
 
         if selections == network_choice or len(selections) == 1:
             # Either split didn't work (in which case it matches the start)
@@ -391,20 +395,20 @@ class NetworkManager(BaseManager):
             # By default, the "local" network should be specified for
             # any ecosystem (this should not correspond to a production chain)
             default_network = ecosystem.default_network
-            return ecosystem[default_network].get_provider(provider_settings=provider_settings)
+            return default_network.get_provider(provider_settings=provider_settings)
 
         elif len(selections) == 2:
             # Only ecosystem and network were specified, not provider
             ecosystem_name, network_name = selections
             ecosystem = self.get_ecosystem(ecosystem_name or self.default_ecosystem.name)
-            network = ecosystem.get_network(network_name or ecosystem.default_network)
+            network = ecosystem.get_network(network_name or ecosystem.default_network_name)
             return network.get_provider(provider_settings=provider_settings)
 
         elif len(selections) == 3:
             # Everything is specified, use specified provider for ecosystem and network
             ecosystem_name, network_name, provider_name = selections
             ecosystem = self.get_ecosystem(ecosystem_name or self.default_ecosystem.name)
-            network = ecosystem.get_network(network_name or ecosystem.default_network)
+            network = ecosystem.get_network(network_name or ecosystem.default_network_name)
             return network.get_provider(
                 provider_name=provider_name, provider_settings=provider_settings
             )
@@ -438,6 +442,8 @@ class NetworkManager(BaseManager):
             disconnect_after (bool): Set to True to terminate the connection completely
               at the end of context. NOTE: May only work if the network was also started
               from this session.
+            disconnect_on_exit (bool): Whether to disconnect on the exit of the python
+              session. Defaults to ``True``.
 
         Returns:
             :class:`~api.api.networks.ProviderContextManager`

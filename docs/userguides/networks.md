@@ -12,7 +12,7 @@ ape test --network ethereum:local:foundry
 ape console --network arbitrum:testnet:alchemy
 ```
 
-You can also use the `--network` option on scripts that use the `main()` method approach or scripts that implement that `NetworkBoundCommand` command type.
+You can also use the `--network` option on scripts that use the `main()` method approach or scripts that implement that `ConnectedProviderCommand` command type.
 See [the scripting guide](./scripts.html) to learn more about scripts and how to add the network option.
 
 **NOTE**: You can omit values to use defaults.

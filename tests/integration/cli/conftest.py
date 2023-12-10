@@ -1,5 +1,3 @@
-import subprocess
-import sys
 from contextlib import contextmanager
 from distutils.dir_util import copy_tree
 from importlib import import_module
@@ -10,6 +8,7 @@ import pytest
 
 from ape.managers.config import CONFIG_FILE_NAME
 
+from ...conftest import ApeSubprocessRunner
 from .test_plugins import ListResult
 from .utils import NodeId, __project_names__, __projects_directory__, project_skipper
 
@@ -147,43 +146,6 @@ def clean_cache(project):
         cache_file.unlink()
 
 
-class ApeSubprocessRunner:
-    """
-    Same CLI commands are better tested using a python subprocess,
-    such as `ape test` commands because duplicate pytest main methods
-    do not run well together, or `ape plugins` commands, which may
-    modify installed plugins.
-    """
-
-    def __init__(self, root_cmd: Optional[List[str]] = None):
-        ape_path = Path(sys.executable).parent / "ape"
-        self.root_cmd = [str(ape_path), *(root_cmd or [])]
-
-    def invoke(self, subcommand: Optional[List[str]] = None):
-        subcommand = subcommand or []
-        cmd_ls = [*self.root_cmd, *subcommand]
-        completed_process = subprocess.run(cmd_ls, capture_output=True, text=True)
-        return SubprocessResult(completed_process)
-
-
-class SubprocessResult:
-    def __init__(self, completed_process: subprocess.CompletedProcess):
-        self._completed_process = completed_process
-
-    @property
-    def exit_code(self) -> int:
-        return self._completed_process.returncode
-
-    @property
-    def output(self) -> str:
-        return self._completed_process.stdout
-
-
-@pytest.fixture(scope="session")
-def subprocess_runner(subprocess_runner_cls):
-    return subprocess_runner_cls()
-
-
 @pytest.fixture
 def switch_config(config):
     """
@@ -222,7 +184,7 @@ def switch_config(config):
     return switch
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture(scope="session")
 def ape_plugins_runner():
     """
     Use subprocess runner so can manipulate site packages and see results.

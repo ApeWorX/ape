@@ -1,11 +1,12 @@
 import shutil
+from typing import Optional, Sequence
 
 import click
 import pytest
 
 from ape.cli import (
     AccountAliasPromptChoice,
-    NetworkBoundCommand,
+    ConnectedProviderCommand,
     PromptChoice,
     account_option,
     contract_file_paths_argument,
@@ -15,10 +16,11 @@ from ape.cli import (
     select_account,
     verbosity_option,
 )
-from ape.exceptions import AccountsError
+from ape.exceptions import AccountsError, EcosystemNotFoundError
 from ape.logging import logger
+from tests.conftest import geth_process_test
 
-OUTPUT_FORMAT = "__TEST__{}__"
+OUTPUT_FORMAT = "__TEST__{0}:{1}:{2}_"
 
 
 @pytest.fixture
@@ -55,13 +57,20 @@ def one_keyfile_account(keyfile_swap_paths, keyfile_account, temp_config):
 
 
 @pytest.fixture
-def network_cmd():
-    @click.command()
-    @network_option()
-    def cmd(network):
-        click.echo(OUTPUT_FORMAT.format(network))
+def network_cmd(mock_sys_argv):
+    def fn(cli_args: Optional[Sequence[str]] = None):
+        if cli_args is not None:
+            mock_sys_argv.return_value = cli_args
 
-    return cmd
+        @click.command()
+        @network_option()
+        def cmd(ecosystem, network, provider):
+            output = OUTPUT_FORMAT.format(ecosystem.name, network.name, provider.name)
+            click.echo(output)
+
+        return cmd
+
+    return fn
 
 
 def _setup_temp_acct_number_change(accounts, num_accounts: int):
@@ -97,6 +106,11 @@ def one_account(accounts, empty_data_folder, temp_config, test_accounts):
         yield test_accounts[0]
 
     _teardown_numb_acct_change(accounts)
+
+
+@pytest.fixture
+def mock_sys_argv(mocker):
+    return mocker.patch("ape.cli.options._get_sys_argv")
 
 
 def get_expected_account_str(acct):
@@ -159,41 +173,46 @@ def test_select_account_with_account_list(runner, keyfile_account, second_keyfil
 
 
 def test_network_option_default(runner, network_cmd):
-    result = runner.invoke(network_cmd)
+    cmd = network_cmd()
+    result = runner.invoke(cmd)
     assert result.exit_code == 0, result.output
-    assert OUTPUT_FORMAT.format("ethereum") in result.output
+    assert OUTPUT_FORMAT.format("ethereum", "local", "test") in result.output
 
 
 def test_network_option_specified(runner, network_cmd):
-    result = runner.invoke(network_cmd, ["--network", "ethereum:local:test"])
+    network_part = ("--network", "ethereum:local:test")
+    cmd = network_cmd(network_part)
+    result = runner.invoke(cmd, network_part)
     assert result.exit_code == 0, result.output
-    assert OUTPUT_FORMAT.format("ethereum:local:test") in result.output
+    assert OUTPUT_FORMAT.format("ethereum", "local", "test") in result.output
 
 
-def test_network_option_unknown(runner, network_cmd):
-    result = runner.invoke(network_cmd, ["--network", "UNKNOWN"])
-    assert result.exit_code != 0, result.output
-    assert "No ecosystem named 'UNKNOWN'" in str(result.exception)
+def test_network_option_unknown(network_cmd):
+    network_part = ("--network", "UNKNOWN")
+    with pytest.raises(EcosystemNotFoundError):
+        network_cmd(network_part)
 
 
 @pytest.mark.parametrize(
     "network_input",
     (
-        "something:else:https://127.0.0.1:4545",
-        "something:else:https://127.0.0.1",
-        "something:else:http://127.0.0.1:4545",
-        "something:else:http://127.0.0.1",
-        "something:else:http://foo.bar",
-        "something:else:https://foo.bar:8000",
-        ":else:https://foo.bar:8000",
+        "ethereum:adhoc:https://127.0.0.1:4545",
+        "ethereum:adhoc:https://127.0.0.1",
+        "ethereum:adhoc:http://127.0.0.1:4545",
+        "ethereum:adhoc:http://127.0.0.1",
+        "ethereum:adhoc:http://foo.bar",
+        "ethereum:adhoc:https://foo.bar:8000",
+        ":adhoc:https://foo.bar:8000",
         "::https://foo.bar:8000",
         "https://foo.bar:8000",
     ),
 )
 def test_network_option_adhoc(runner, network_cmd, network_input):
-    result = runner.invoke(network_cmd, ["--network", network_input])
+    network_part = ("--network", network_input)
+    cmd = network_cmd(network_part)
+    result = runner.invoke(cmd, network_part)
     assert result.exit_code == 0, result.output
-    assert OUTPUT_FORMAT.format(network_input) in result.output
+    assert "adhoc" in result.output
 
 
 def test_network_option_make_required(runner):
@@ -207,23 +226,17 @@ def test_network_option_make_required(runner):
     assert "Error: Missing option '--network'." in result.output
 
 
-def test_network_option_can_be_none(runner):
+def test_network_option_can_be_none(runner, mock_sys_argv):
+    network_part = ("--network", "None")
+    mock_sys_argv.return_value = ("cmd", *network_part)
+
     @click.command()
     @network_option(default=None)
     def cmd(network):
         click.echo(f"Value is '{network}'")
 
-    result = runner.invoke(cmd, [])
+    result = runner.invoke(cmd, network_part)
     assert "Value is 'None'" in result.output
-
-
-def test_network_option_not_needed_on_network_bound_command(runner):
-    @click.command(cls=NetworkBoundCommand)
-    def cmd():
-        click.echo("Success!")
-
-    result = runner.invoke(cmd, [])
-    assert "Success" in result.output
 
 
 def test_account_option(runner, keyfile_account):
@@ -396,3 +409,55 @@ def test_non_existing_alias_option_custom_callback(runner):
 
     result = runner.invoke(cmd, ["non-exists"])
     assert magic_value in result.output
+
+
+def test_connected_provider_command_no_args_or_network_specified(runner):
+    @click.command(cls=ConnectedProviderCommand)
+    def cmd():
+        from ape import chain
+
+        click.echo(chain.provider.is_connected)
+
+    result = runner.invoke(cmd)
+    assert result.exit_code == 0
+    assert "True" in result.output, result.output
+
+
+def test_connected_provider_command_no_args_with_network_specified(runner):
+    @click.command(cls=ConnectedProviderCommand)
+    def cmd():
+        pass
+
+    with pytest.raises(EcosystemNotFoundError):
+        runner.invoke(cmd, ["--network", "OOGA_BOOGA"], catch_exceptions=False)
+
+
+def test_connected_provider_use_provider(runner):
+    @click.command(cls=ConnectedProviderCommand)
+    def cmd(provider):
+        click.echo(provider.is_connected)
+
+    result = runner.invoke(cmd)
+    assert result.exit_code == 0
+    assert "True" in result.output, result.output
+
+
+def test_connected_provider_use_ecosystem_network_and_provider(runner):
+    @click.command(cls=ConnectedProviderCommand)
+    def cmd(ecosystem, network, provider):
+        click.echo(f"{ecosystem.name}:{network.name}:{provider.name}")
+
+    result = runner.invoke(cmd)
+    assert result.exit_code == 0
+    assert "ethereum:local:test" in result.output, result.output
+
+
+@geth_process_test
+def test_connected_provider_use_ecosystem_network_and_provider_with_network_specified(runner):
+    @click.command(cls=ConnectedProviderCommand)
+    def cmd(ecosystem, network, provider):
+        click.echo(f"{ecosystem.name}:{network.name}:{provider.name}")
+
+    result = runner.invoke(cmd, ["--network", "ethereum:local:geth"])
+    assert result.exit_code == 0
+    assert "ethereum:local:geth" in result.output, result.output

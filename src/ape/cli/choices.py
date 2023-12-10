@@ -11,7 +11,6 @@ from ape.api.accounts import AccountAPI
 from ape.exceptions import AccountsError
 from ape.types import _LazySequence
 
-ADHOC_NETWORK_PATTERN = re.compile(r"\w*:\w*:https?://\w*.*")
 _ACCOUNT_TYPE_FILTER = Union[
     None, Sequence[AccountAPI], Type[AccountAPI], Callable[[AccountAPI], bool]
 ]
@@ -315,6 +314,8 @@ class NetworkChoice(click.Choice):
     This is used in :meth:`~ape.cli.options.network_option`.
     """
 
+    ADHOC_NETWORK_PATTERN = re.compile(r"\w*:\w*:https?://\w*.*")
+
     def __init__(
         self,
         case_sensitive=True,
@@ -330,26 +331,35 @@ class NetworkChoice(click.Choice):
         return "[ecosystem-name][:[network-name][:[provider-name]]]"
 
     def convert(self, value: Any, param: Optional[Parameter], ctx: Optional[Context]) -> Any:
-        if (
-            ADHOC_NETWORK_PATTERN.match(value)
-            or str(value).startswith("http://")
-            or str(value).startswith("https://")
-        ):
+        if not value or value in ("None", "none"):
+            return None
+
+        if self.is_adhoc_value(value):
             # By-pass choice constraints when using adhoc network
             return value
 
+        provider = networks.get_provider_from_choice(network_choice=value)
         try:
-            return super().convert(value, param, ctx)
+            # Validate result.
+            super().convert(value, param, ctx)
         except BadParameter as err:
-            # Find out actual bad parts of the value to show better error.
-            # The following line should raise a nicer error.
-            networks.get_provider_from_choice(network_choice=value)
-
             # If an error was not raised for some reason, raise a simpler error.
             # NOTE: Still avoid showing the massive network options list.
             raise click.BadParameter(
                 "Invalid network choice. Use `ape networks list` to see options."
             ) from err
+
+        return provider
+
+    @classmethod
+    def is_adhoc_value(cls, value) -> bool:
+        return (
+            value is not None
+            and isinstance(value, str)
+            and cls.ADHOC_NETWORK_PATTERN.match(value) is not None
+            or str(value).startswith("http://")
+            or str(value).startswith("https://")
+        )
 
 
 class OutputFormat(Enum):

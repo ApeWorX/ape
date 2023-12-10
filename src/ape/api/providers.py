@@ -233,6 +233,9 @@ class ProviderAPI(BaseInterfaceModel):
         """
         The connected network choice string.
         """
+        if self.network.name == "adhoc" and hasattr(self, "uri"):
+            return self.uri
+
         return f"{self.network.choice}:{self.name}"
 
     @raises_not_implemented

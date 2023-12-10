@@ -1,11 +1,13 @@
 import json
 import shutil
+import subprocess
+import sys
 import tempfile
 import time
 from contextlib import contextmanager
 from pathlib import Path
 from tempfile import mkdtemp
-from typing import Any, Callable, Dict, Optional
+from typing import Any, Callable, Dict, Optional, Sequence
 
 import pytest
 import yaml
@@ -468,3 +470,44 @@ def mock_home_directory(tmp_path):
     Path.home = lambda: tmp_path  # type: ignore[method-assign]
     yield tmp_path
     Path.home = lambda: original_home  # type: ignore[method-assign]
+
+
+class SubprocessRunner:
+    """
+    Same CLI commands are better tested using a python subprocess,
+    such as `ape test` commands because duplicate pytest main methods
+    do not run well together, or `ape plugins` commands, which may
+    modify installed plugins.
+    """
+
+    def __init__(self, root_cmd: Optional[Sequence[str]] = None):
+        self.root_cmd = root_cmd or []
+
+    def invoke(self, subcommand: Optional[Sequence[str]] = None):
+        subcommand = subcommand or []
+        cmd_ls = [*self.root_cmd, *subcommand]
+        completed_process = subprocess.run(cmd_ls, capture_output=True, text=True)
+        return SubprocessResult(completed_process)
+
+
+class ApeSubprocessRunner(SubprocessRunner):
+    """
+    Subprocess runner for Ape-specific commands.
+    """
+
+    def __init__(self, root_cmd: Optional[Sequence[str]] = None):
+        ape_path = Path(sys.executable).parent / "ape"
+        super().__init__([str(ape_path), *(root_cmd or [])])
+
+
+class SubprocessResult:
+    def __init__(self, completed_process: subprocess.CompletedProcess):
+        self._completed_process = completed_process
+
+    @property
+    def exit_code(self) -> int:
+        return self._completed_process.returncode
+
+    @property
+    def output(self) -> str:
+        return self._completed_process.stdout
