@@ -152,7 +152,7 @@ def test_get_provider_from_choice_adhoc_provider(networks_connected_to_tester):
     assert uri in provider.connection_id
     assert provider.name == "geth"
     assert provider.uri == uri
-    assert provider.network.name == "local"
+    assert provider.network.name == "adhoc"
     assert provider.network.ecosystem.name == "ethereum"
 
 
