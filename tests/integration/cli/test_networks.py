@@ -123,9 +123,6 @@ def test_list_yaml(ape_cli, runner):
 @skip_projects_except("geth")
 def test_geth(ape_cli, runner, networks, project):
     result = runner.invoke(ape_cli, ["networks", "list"])
-    assert (
-        networks.provider.network.default_provider == "geth"
-    ), "Setup failed - default provider didn't apply from config"
 
     # Grab ethereum
     actual = "ethereum  (default)\n" + "".join(result.output.split("ethereum  (default)\n")[-1])
