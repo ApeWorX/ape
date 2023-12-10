@@ -173,8 +173,8 @@
 <li class="toctree-l2"><a class="reference internal" href="#module-ape.cli.choices">Choices</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#ape.cli.choices.AccountAliasPromptChoice"><code class="docutils literal notranslate"><span class="pre">AccountAliasPromptChoice</span></code></a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#ape.cli.choices.AccountAliasPromptChoice.convert"><code class="docutils literal notranslate"><span class="pre">AccountAliasPromptChoice.convert()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#ape.cli.choices.AccountAliasPromptChoice.get_user_selected_account"><code class="docutils literal notranslate"><span class="pre">AccountAliasPromptChoice.get_user_selected_account()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.cli.choices.AccountAliasPromptChoice.print_choices"><code class="docutils literal notranslate"><span class="pre">AccountAliasPromptChoice.print_choices()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ape.cli.choices.AccountAliasPromptChoice.select_account"><code class="docutils literal notranslate"><span class="pre">AccountAliasPromptChoice.select_account()</span></code></a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="#ape.cli.choices.Alias"><code class="docutils literal notranslate"><span class="pre">Alias</span></code></a><ul>
@@ -196,8 +196,8 @@
 <li class="toctree-l4"><a class="reference internal" href="#ape.cli.choices.PromptChoice.print_choices"><code class="docutils literal notranslate"><span class="pre">PromptChoice.print_choices()</span></code></a></li>
 </ul>
 </li>
-<li class="toctree-l3"><a class="reference internal" href="#ape.cli.choices.get_user_selected_account"><code class="docutils literal notranslate"><span class="pre">get_user_selected_account()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ape.cli.choices.output_format_choice"><code class="docutils literal notranslate"><span class="pre">output_format_choice()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#ape.cli.choices.select_account"><code class="docutils literal notranslate"><span class="pre">select_account()</span></code></a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="#module-ape.cli.commands">Commands</a><ul>
@@ -230,13 +230,7 @@
 <li class="toctree-l3"><a class="reference internal" href="#ape.cli.paramtype.Path"><code class="docutils literal notranslate"><span class="pre">Path</span></code></a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="#module-ape.cli.utils">Utilities</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#ape.cli.utils.Abort"><code class="docutils literal notranslate"><span class="pre">Abort</span></code></a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#ape.cli.utils.Abort.show"><code class="docutils literal notranslate"><span class="pre">Abort.show()</span></code></a></li>
-</ul>
-</li>
-</ul>
-</li>
+<li class="toctree-l2"><a class="reference internal" href="#module-ape.cli.utils">Utilities</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="contracts.html">ape.contracts</a></li>
@@ -317,7 +311,7 @@ source file-paths.</p>
 <span id="choices"></span><h2>Choices<a class="headerlink" href="#module-ape.cli.choices" title="Permalink to this heading"></a></h2>
 <dl class="py class">
 <dt class="sig sig-object py" id="ape.cli.choices.AccountAliasPromptChoice">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ape.cli.choices.</span></span><span class="sig-name descname"><span class="pre">AccountAliasPromptChoice</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">account_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">None</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Sequence</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="api.html#ape.api.accounts.AccountAPI" title="ape.api.accounts.AccountAPI"><span class="pre">AccountAPI</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Type</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="api.html#ape.api.accounts.AccountAPI" title="ape.api.accounts.AccountAPI"><span class="pre">AccountAPI</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="api.html#ape.api.accounts.AccountAPI" title="ape.api.accounts.AccountAPI"><span class="pre">AccountAPI</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">bool</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prompt_message</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'account'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.cli.choices.AccountAliasPromptChoice" title="Permalink to this definition"></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ape.cli.choices.</span></span><span class="sig-name descname"><span class="pre">AccountAliasPromptChoice</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">key</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">None</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Sequence</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="api.html#ape.api.accounts.AccountAPI" title="ape.api.accounts.AccountAPI"><span class="pre">AccountAPI</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Type</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="api.html#ape.api.accounts.AccountAPI" title="ape.api.accounts.AccountAPI"><span class="pre">AccountAPI</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="api.html#ape.api.accounts.AccountAPI" title="ape.api.accounts.AccountAPI"><span class="pre">AccountAPI</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">bool</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prompt_message</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'account'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.cli.choices.AccountAliasPromptChoice" title="Permalink to this definition"></a></dt>
 <dd><p>Bases: <a class="reference internal" href="#ape.cli.choices.PromptChoice" title="ape.cli.choices.PromptChoice"><code class="xref py py-class docutils literal notranslate"><span class="pre">PromptChoice</span></code></a></p>
 <p>Prompts the user to select an alias from their accounts.
 Useful for adhoc scripts to lessen the need to hard-code aliases.</p>
@@ -347,8 +341,14 @@ be <code class="docutils literal notranslate"><span class="pre">None</span></cod
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ape.cli.choices.AccountAliasPromptChoice.get_user_selected_account">
-<span class="sig-name descname"><span class="pre">get_user_selected_account</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="api.html#ape.api.accounts.AccountAPI" title="ape.api.accounts.AccountAPI"><span class="pre">AccountAPI</span></a></span></span><a class="headerlink" href="#ape.cli.choices.AccountAliasPromptChoice.get_user_selected_account" title="Permalink to this definition"></a></dt>
+<dt class="sig sig-object py" id="ape.cli.choices.AccountAliasPromptChoice.print_choices">
+<span class="sig-name descname"><span class="pre">print_choices</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ape.cli.choices.AccountAliasPromptChoice.print_choices" title="Permalink to this definition"></a></dt>
+<dd><p>Echo the choices to the terminal.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ape.cli.choices.AccountAliasPromptChoice.select_account">
+<span class="sig-name descname"><span class="pre">select_account</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="api.html#ape.api.accounts.AccountAPI" title="ape.api.accounts.AccountAPI"><span class="pre">AccountAPI</span></a></span></span><a class="headerlink" href="#ape.cli.choices.AccountAliasPromptChoice.select_account" title="Permalink to this definition"></a></dt>
 <dd><p>Returns the selected account.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
@@ -357,17 +357,11 @@ be <code class="docutils literal notranslate"><span class="pre">None</span></cod
 </dl>
 </dd></dl>
 
-<dl class="py method">
-<dt class="sig sig-object py" id="ape.cli.choices.AccountAliasPromptChoice.print_choices">
-<span class="sig-name descname"><span class="pre">print_choices</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ape.cli.choices.AccountAliasPromptChoice.print_choices" title="Permalink to this definition"></a></dt>
-<dd><p>Echo the choices to the terminal.</p>
-</dd></dl>
-
 </dd></dl>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="ape.cli.choices.Alias">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ape.cli.choices.</span></span><span class="sig-name descname"><span class="pre">Alias</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">account_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">None</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Sequence</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="api.html#ape.api.accounts.AccountAPI" title="ape.api.accounts.AccountAPI"><span class="pre">AccountAPI</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Type</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="api.html#ape.api.accounts.AccountAPI" title="ape.api.accounts.AccountAPI"><span class="pre">AccountAPI</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="api.html#ape.api.accounts.AccountAPI" title="ape.api.accounts.AccountAPI"><span class="pre">AccountAPI</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">bool</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.cli.choices.Alias" title="Permalink to this definition"></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ape.cli.choices.</span></span><span class="sig-name descname"><span class="pre">Alias</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">key</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">None</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Sequence</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="api.html#ape.api.accounts.AccountAPI" title="ape.api.accounts.AccountAPI"><span class="pre">AccountAPI</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Type</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="api.html#ape.api.accounts.AccountAPI" title="ape.api.accounts.AccountAPI"><span class="pre">AccountAPI</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="api.html#ape.api.accounts.AccountAPI" title="ape.api.accounts.AccountAPI"><span class="pre">AccountAPI</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">bool</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.cli.choices.Alias" title="Permalink to this definition"></a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Choice</span></code></p>
 <p>A <code class="docutils literal notranslate"><span class="pre">click.Choice</span></code> for loading account aliases for the active project at runtime.</p>
 <p>Provide an <code class="docutils literal notranslate"><span class="pre">account_type</span></code> to limit the type of account to choose from.
@@ -495,28 +489,6 @@ be <code class="docutils literal notranslate"><span class="pre">None</span></cod
 </dd></dl>
 
 <dl class="py function">
-<dt class="sig sig-object py" id="ape.cli.choices.get_user_selected_account">
-<span class="sig-prename descclassname"><span class="pre">ape.cli.choices.</span></span><span class="sig-name descname"><span class="pre">get_user_selected_account</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">prompt_message</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">account_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">None</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Sequence</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="api.html#ape.api.accounts.AccountAPI" title="ape.api.accounts.AccountAPI"><span class="pre">AccountAPI</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Type</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="api.html#ape.api.accounts.AccountAPI" title="ape.api.accounts.AccountAPI"><span class="pre">AccountAPI</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="api.html#ape.api.accounts.AccountAPI" title="ape.api.accounts.AccountAPI"><span class="pre">AccountAPI</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">bool</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="api.html#ape.api.accounts.AccountAPI" title="ape.api.accounts.AccountAPI"><span class="pre">AccountAPI</span></a></span></span><a class="headerlink" href="#ape.cli.choices.get_user_selected_account" title="Permalink to this definition"></a></dt>
-<dd><p>Prompt the user to pick from their accounts and return that account.
-Use this method if you want to prompt users to select accounts _outside_
-of CLI options. For CLI options, use
-<a class="reference internal" href="#ape.cli.options.account_option" title="ape.cli.options.account_option"><code class="xref py py-meth docutils literal notranslate"><span class="pre">account_option()</span></code></a>.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>prompt_message</strong> (<em>Optional</em><em>[</em><em>str</em><em>]</em>) – Customize the prompt message.</p></li>
-<li><p><strong>account_type</strong> (<em>Union</em><em>[</em><em>None</em><em>, </em><em>Type</em><em>[</em><a class="reference internal" href="api.html#ape.api.accounts.AccountAPI" title="ape.api.accounts.AccountAPI"><em>AccountAPI</em></a><em>]</em><em>, </em><em>Callable</em><em>[</em><em>[</em><a class="reference internal" href="api.html#ape.api.accounts.AccountAPI" title="ape.api.accounts.AccountAPI"><em>AccountAPI</em></a><em>]</em><em>, </em><em>bool</em><em>]</em><em>]</em>) – If given, the user may only select a matching account. You can provide
-a list of accounts, an account class type, or a callable for filtering
-the accounts.</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference internal" href="api.html#ape.api.accounts.AccountAPI" title="ape.api.accounts.AccountAPI"><code class="xref py py-class docutils literal notranslate"><span class="pre">AccountAPI</span></code></a></p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py function">
 <dt class="sig sig-object py" id="ape.cli.choices.output_format_choice">
 <span class="sig-prename descclassname"><span class="pre">ape.cli.choices.</span></span><span class="sig-name descname"><span class="pre">output_format_choice</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">options</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#ape.cli.choices.OutputFormat" title="ape.cli.choices.OutputFormat"><span class="pre">OutputFormat</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Choice</span></span></span><a class="headerlink" href="#ape.cli.choices.output_format_choice" title="Permalink to this definition"></a></dt>
 <dd><p>Returns a <code class="docutils literal notranslate"><span class="pre">click.Choice()</span></code> type for the given options.</p>
@@ -526,6 +498,28 @@ the accounts.</p></li>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">click.Choice</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ape.cli.choices.select_account">
+<span class="sig-prename descclassname"><span class="pre">ape.cli.choices.</span></span><span class="sig-name descname"><span class="pre">select_account</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">prompt_message</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">key</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">None</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Sequence</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="api.html#ape.api.accounts.AccountAPI" title="ape.api.accounts.AccountAPI"><span class="pre">AccountAPI</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Type</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="api.html#ape.api.accounts.AccountAPI" title="ape.api.accounts.AccountAPI"><span class="pre">AccountAPI</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="api.html#ape.api.accounts.AccountAPI" title="ape.api.accounts.AccountAPI"><span class="pre">AccountAPI</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">bool</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="api.html#ape.api.accounts.AccountAPI" title="ape.api.accounts.AccountAPI"><span class="pre">AccountAPI</span></a></span></span><a class="headerlink" href="#ape.cli.choices.select_account" title="Permalink to this definition"></a></dt>
+<dd><p>Prompt the user to pick from their accounts and return that account.
+Use this method if you want to prompt users to select accounts _outside_
+of CLI options. For CLI options, use
+<a class="reference internal" href="#ape.cli.options.account_option" title="ape.cli.options.account_option"><code class="xref py py-meth docutils literal notranslate"><span class="pre">account_option()</span></code></a>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>prompt_message</strong> (<em>Optional</em><em>[</em><em>str</em><em>]</em>) – Customize the prompt message.</p></li>
+<li><p><strong>key</strong> (<em>Union</em><em>[</em><em>None</em><em>, </em><em>Type</em><em>[</em><a class="reference internal" href="api.html#ape.api.accounts.AccountAPI" title="ape.api.accounts.AccountAPI"><em>AccountAPI</em></a><em>]</em><em>, </em><em>Callable</em><em>[</em><em>[</em><a class="reference internal" href="api.html#ape.api.accounts.AccountAPI" title="ape.api.accounts.AccountAPI"><em>AccountAPI</em></a><em>]</em><em>, </em><em>bool</em><em>]</em><em>]</em>) – If given, the user may only select a matching account. You can provide
+a list of accounts, an account class type, or a callable for filtering
+the accounts.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference internal" href="api.html#ape.api.accounts.AccountAPI" title="ape.api.accounts.AccountAPI"><code class="xref py py-class docutils literal notranslate"><span class="pre">AccountAPI</span></code></a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -610,7 +604,7 @@ to the context.</p></li>
 If you pass <code class="docutils literal notranslate"><span class="pre">multiple=True</span></code>, you will get a list of contract types from the callback.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Raises<span class="colon">:</span></dt>
-<dd class="field-odd"><p><a class="reference internal" href="exceptions.html#ape.exceptions.ContractError" title="ape.exceptions.ContractError"><strong>ContractError</strong></a> – In the callback when it fails to load the contracts.</p>
+<dd class="field-odd"><p><strong>ContractError</strong> – In the callback when it fails to load the contracts.</p>
 </dd>
 </dl>
 </dd></dl>
@@ -731,21 +725,6 @@ of <code class="docutils literal notranslate"><span class="pre">pathlib.Path</sp
 </section>
 <section id="module-ape.cli.utils">
 <span id="utilities"></span><h2>Utilities<a class="headerlink" href="#module-ape.cli.utils" title="Permalink to this heading"></a></h2>
-<dl class="py exception">
-<dt class="sig sig-object py" id="ape.cli.utils.Abort">
-<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ape.cli.utils.</span></span><span class="sig-name descname"><span class="pre">Abort</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">message</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.cli.utils.Abort" title="Permalink to this definition"></a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">ClickException</span></code></p>
-<p>A wrapper around a CLI exception. When you raise this error,
-the error is nicely printed to the terminal. This is
-useful for all user-facing errors.</p>
-<dl class="py method">
-<dt class="sig sig-object py" id="ape.cli.utils.Abort.show">
-<span class="sig-name descname"><span class="pre">show</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">file</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.cli.utils.Abort.show" title="Permalink to this definition"></a></dt>
-<dd><p>Override default <code class="docutils literal notranslate"><span class="pre">show</span></code> to print CLI errors in red text.</p>
-</dd></dl>
-
-</dd></dl>
-
 </section>
 </section>
 

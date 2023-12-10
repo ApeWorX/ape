@@ -316,13 +316,13 @@ Here is an example:</p>
 </div>
 <p>Alternatively, you can call the <a class="reference external" href="../methoddocs/cli.html#ape.cli.choices.get_user_selected_account">get_user_selected_account()</a> directly to have more control of when the account gets selected:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">click</span>
-<span class="kn">from</span> <span class="nn">ape.cli</span> <span class="kn">import</span> <span class="n">get_user_selected_account</span>
+<span class="kn">from</span> <span class="nn">ape.cli</span> <span class="kn">import</span> <span class="n">select_account</span>
 
 
 <span class="nd">@click</span><span class="o">.</span><span class="n">command</span><span class="p">()</span>
 <span class="k">def</span> <span class="nf">cmd</span><span class="p">():</span>
-    <span class="n">account</span> <span class="o">=</span> <span class="n">get_user_selected_account</span><span class="p">(</span><span class="s2">&quot;Select an account to use&quot;</span><span class="p">)</span>
-    <span class="n">click</span><span class="o">.</span><span class="n">echo</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;You selected </span><span class="si">{</span><span class="n">account</span><span class="o">.</span><span class="n">address</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
+   <span class="n">account</span> <span class="o">=</span> <span class="n">select_account</span><span class="p">(</span><span class="s2">&quot;Select an account to use&quot;</span><span class="p">)</span>
+   <span class="n">click</span><span class="o">.</span><span class="n">echo</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;You selected </span><span class="si">{</span><span class="n">account</span><span class="o">.</span><span class="n">address</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>Similarly, there are a couple custom arguments for aliases alone that are useful when making CLIs for account creation.
