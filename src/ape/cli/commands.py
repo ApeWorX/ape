@@ -70,7 +70,7 @@ class ConnectedProviderCommand(click.Command):
                     provider = param
                 elif isinstance(param, str):
                     # Is a choice str
-                    provider = provider = networks.parse_network_choice(provider)._provider
+                    provider = networks.parse_network_choice(param)._provider
                 else:
                     raise TypeError(f"Can't handle type of parameter '{param}'.")
 
