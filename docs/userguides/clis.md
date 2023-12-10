@@ -63,14 +63,18 @@ def cli(cli_ctx):
 
 ## Network Tools
 
-The [@network_option()](../methoddocs/cli.html#ape.cli.options.network_option) allows you to select an ecosystem, network, and provider combination.
+The [@network_option()](../methoddocs/cli.html#ape.cli.options.network_option) allows you to select an ecosystem, network, and provider.
 To specify the network option, use values like:
 
 ```shell
---network ethereu
+--network ethereum
 --network ethereum:sepolia
 --network ethereum:mainnet:alchemy
+--network ::alchemy
 ```
+
+When omitting values, leave the semi-colons in the network choice for parsing.
+And omitted values means to use the defaul value, so if you omit the ecosystem out-of-the-box, it will default to Ethereum (unless you have configured a different default ecosystem).
 
 Use `ecosystem`, `network`, and  `provider` argument names in your command implementation to have access to the parsed network option:
 
@@ -95,7 +99,7 @@ def cmd_2(ecosystem, network, provider):
 
 The [ConnectedProviderCommand](../methoddocs/cli.html#ape.cli.commands.ConnectedProviderCommand) automatically uses the `--network` option and connects to the network before any of your code executes and disconnected after.
 This is useful if your script or command requires a provider connection in order for it to run.
-Additionally, specify `ecosystem`, `network`, or `provider` in your command function if you need any of those instances in your ``ConnectedProviderCommand`.
+Additionally, specify `ecosystem`, `network`, or `provider` in your command function if you need any of those instances in your `ConnectedProviderCommand`.
 
 ```python
 import click
