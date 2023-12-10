@@ -18,6 +18,7 @@ from pydantic import BaseModel, Field, field_validator, model_validator
 from ape.api import ReceiptAPI, TransactionAPI
 from ape.contracts import ContractEvent
 from ape.exceptions import OutOfGasError, SignatureError, TransactionError
+from ape.logging import logger
 from ape.types import CallTreeNode, ContractLog, ContractLogContainer, SourceTraceback
 from ape.utils import ZERO_ADDRESS
 
@@ -179,7 +180,13 @@ class Receipt(ReceiptAPI):
     @cached_property
     def source_traceback(self) -> SourceTraceback:
         if contract_type := self.contract_type:
-            return SourceTraceback.create(contract_type, self.trace, HexBytes(self.data))
+            try:
+                return SourceTraceback.create(contract_type, self.trace, HexBytes(self.data))
+            except Exception as err:
+                # Failing to get a traceback should not halt an Ape application.
+                # Sometimes, a node crashes and we are left with nothing.
+                logger.error(f"Problem retrieving traceback: {err}")
+                pass
 
         return SourceTraceback.model_validate([])
 

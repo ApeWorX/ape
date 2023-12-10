@@ -454,7 +454,6 @@ class BaseGethProvider(Web3Provider, ABC):
         payload = {"jsonrpc": "2.0", "id": 1, "method": method, "params": params}
         results = ijson.sendable_list()
         coroutine = ijson.items_coro(results, iter_path)
-
         resp = requests.post(self.uri, json=payload, stream=True)
         resp.raise_for_status()
 

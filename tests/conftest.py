@@ -511,3 +511,8 @@ class SubprocessResult:
     @property
     def output(self) -> str:
         return self._completed_process.stdout
+
+
+@pytest.fixture
+def mock_sys_argv(mocker):
+    return mocker.patch("ape.cli.options._get_sys_argv")

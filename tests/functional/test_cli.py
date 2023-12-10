@@ -18,7 +18,6 @@ from ape.cli import (
 )
 from ape.exceptions import AccountsError, EcosystemNotFoundError
 from ape.logging import logger
-from tests.conftest import geth_process_test
 
 OUTPUT_FORMAT = "__TEST__{0}:{1}:{2}_"
 
@@ -106,11 +105,6 @@ def one_account(accounts, empty_data_folder, temp_config, test_accounts):
         yield test_accounts[0]
 
     _teardown_numb_acct_change(accounts)
-
-
-@pytest.fixture
-def mock_sys_argv(mocker):
-    return mocker.patch("ape.cli.options._get_sys_argv")
 
 
 def get_expected_account_str(acct):
@@ -452,12 +446,11 @@ def test_connected_provider_use_ecosystem_network_and_provider(runner):
     assert "ethereum:local:test" in result.output, result.output
 
 
-@geth_process_test
 def test_connected_provider_use_ecosystem_network_and_provider_with_network_specified(runner):
     @click.command(cls=ConnectedProviderCommand)
     def cmd(ecosystem, network, provider):
         click.echo(f"{ecosystem.name}:{network.name}:{provider.name}")
 
-    result = runner.invoke(cmd, ["--network", "ethereum:local:geth"])
+    result = runner.invoke(cmd, ["--network", "ethereum:local:test"])
     assert result.exit_code == 0
-    assert "ethereum:local:geth" in result.output, result.output
+    assert "ethereum:local:test" in result.output, result.output

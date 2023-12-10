@@ -994,7 +994,12 @@ class Web3Provider(ProviderAPI, ABC):
                 elif txn:
                     err_trace = self.provider.get_transaction_trace(txn.txn_hash.hex())
 
-                trace_ls: List[TraceFrame] = list(err_trace) if err_trace else []
+                try:
+                    trace_ls: List[TraceFrame] = list(err_trace) if err_trace else []
+                except Exception as err:
+                    logger.error(f"Failed getting traceback: {err}")
+                    trace_ls = []
+
                 data = trace_ls[-1].raw if len(trace_ls) > 0 else {}
                 memory = data.get("memory", [])
                 return_value = "".join([x[2:] for x in memory[4:]])
