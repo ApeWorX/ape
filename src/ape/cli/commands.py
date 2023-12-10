@@ -65,7 +65,14 @@ class ConnectedProviderCommand(click.Command):
                 callback_args = [x.name for x in signature.parameters.values()]
 
                 opt_name = "network"
-                provider = ctx.params.pop(opt_name)
+                param = ctx.params.pop(opt_name)
+                if isinstance(param, ProviderAPI):
+                    provider = param
+                elif isinstance(param, str):
+                    # Is a choice str
+                    provider = provider = networks.parse_network_choice(provider)._provider
+                else:
+                    raise TypeError(f"Can't handle type of parameter '{param}'.")
 
                 if "ecosystem" in callback_args:
                     ctx.params["ecosystem"] = provider.network.ecosystem
