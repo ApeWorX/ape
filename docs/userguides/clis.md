@@ -70,11 +70,11 @@ To specify the network option, use values like:
 --network ethereum
 --network ethereum:sepolia
 --network ethereum:mainnet:alchemy
---network ::alchemy
+--network ::foundry
 ```
 
-When omitting values, leave the semi-colons in the network choice for parsing.
-And omitted values means to use the defaul value, so if you omit the ecosystem out-of-the-box, it will default to Ethereum (unless you have configured a different default ecosystem).
+To use default values automatically, omit sections of the choice, but leave the semi-colons for parsing.
+For example, `::test` means to use the value ecosystem and network and the `test` provider.
 
 Use `ecosystem`, `network`, and  `provider` argument names in your command implementation to have access to the parsed network option:
 
