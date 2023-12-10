@@ -44,7 +44,6 @@ from ape.api import (
     TestProviderAPI,
     TransactionAPI,
     UpstreamProvider,
-    Web3Provider,
 )
 from ape.exceptions import (
     ApeException,
@@ -53,7 +52,7 @@ from ape.exceptions import (
     ProviderError,
 )
 from ape.logging import LogLevel, logger, sanitize_url
-from ape.types import AddressType, CallTreeNode, SnapshotID, SourceTraceback, TraceFrame
+from ape.types import AddressType, BlockID, CallTreeNode, SnapshotID, SourceTraceback, TraceFrame
 from ape.utils import (
     DEFAULT_NUMBER_OF_TEST_ACCOUNTS,
     DEFAULT_TEST_CHAIN_ID,
@@ -63,6 +62,7 @@ from ape.utils import (
     raises_not_implemented,
     spawn,
 )
+from ape_ethereum.provider import Web3Provider
 
 DEFAULT_PORT = 8545
 DEFAULT_HOSTNAME = "localhost"
@@ -580,7 +580,19 @@ class GethDev(BaseGethProvider, TestProviderAPI, SubprocessProvider):
     def mine(self, num_blocks: int = 1):
         pass
 
-    def send_call(self, txn: TransactionAPI, **kwargs: Any) -> bytes:
+    def send_call(
+        self,
+        txn: TransactionAPI,
+        block_id: Optional[BlockID] = None,
+        state: Optional[Dict] = None,
+        **kwargs: Any,
+    ) -> HexBytes:
+        if block_id is not None:
+            kwargs["block_identifier"] = block_id
+
+        if state is not None:
+            kwargs["state_override"] = state
+
         skip_trace = kwargs.pop("skip_trace", False)
         arguments = self._prepare_call(txn, **kwargs)
         if skip_trace:
@@ -662,7 +674,7 @@ class GethDev(BaseGethProvider, TestProviderAPI, SubprocessProvider):
         trace_data = result.get("structLogs", [])
         return result, create_trace_frames(trace_data)
 
-    def _eth_call(self, arguments: List) -> bytes:
+    def _eth_call(self, arguments: List) -> HexBytes:
         try:
             result = self._make_request("eth_call", arguments)
         except Exception as err:

@@ -10,9 +10,9 @@ from ape.cli import (
     account_option,
     contract_file_paths_argument,
     existing_alias_argument,
-    get_user_selected_account,
     network_option,
     non_existing_alias_argument,
+    select_account,
     verbosity_option,
 )
 from ape.exceptions import AccountsError
@@ -103,60 +103,58 @@ def get_expected_account_str(acct):
     return f"__expected_output__: {acct.address}"
 
 
-def test_get_user_selected_account_no_accounts_found(no_accounts):
+def test_select_account_no_accounts_found(no_accounts):
     with pytest.raises(AccountsError, match="No accounts found."):
-        assert not get_user_selected_account()
+        assert not select_account()
 
 
-def test_get_user_selected_account_one_account(runner, one_account):
+def test_select_account_one_account(runner, one_account):
     # No input needed when only one account
-    with runner.isolation("0\n"):
-        account = get_user_selected_account()
-
+    account = select_account()
     assert account == one_account
 
 
-def test_get_user_selected_account_multiple_accounts_requires_input(
+def test_select_account_multiple_accounts_requires_input(
     runner, keyfile_account, second_keyfile_account
 ):
     with runner.isolation(input="0\n"):
-        account = get_user_selected_account()
+        account = select_account()
 
     assert account == keyfile_account
 
 
-def test_get_user_selected_account_custom_prompt(runner, keyfile_account, second_keyfile_account):
+def test_select_account_custom_prompt(runner, keyfile_account, second_keyfile_account):
     prompt = "THIS_IS_A_CUSTOM_PROMPT"
     with runner.isolation(input="0\n") as out_streams:
-        get_user_selected_account(prompt)
+        select_account(prompt)
         output = out_streams[0].getvalue().decode()
 
     assert prompt in output
 
 
-def test_get_user_selected_account_specify_type(runner, one_keyfile_account):
-    account = get_user_selected_account(account_type=type(one_keyfile_account))
+def test_select_account_specify_type(runner, one_keyfile_account):
+    with runner.isolation():
+        account = select_account(key=type(one_keyfile_account))
+
     assert account == one_keyfile_account
 
 
-def test_get_user_selected_account_unknown_type(runner, keyfile_account):
+def test_select_account_unknown_type(runner, keyfile_account):
     with pytest.raises(AccountsError) as err:
-        get_user_selected_account(account_type=str)  # type: ignore
+        select_account(key=str)  # type: ignore
 
     assert "Cannot return accounts with type '<class 'str'>'" in str(err.value)
 
 
-def test_get_user_selected_account_with_account_list(
-    runner, keyfile_account, second_keyfile_account
-):
-    account = get_user_selected_account(account_type=[keyfile_account])
+def test_select_account_with_account_list(runner, keyfile_account, second_keyfile_account):
+    account = select_account(key=[keyfile_account])
     assert account == keyfile_account
 
-    account = get_user_selected_account(account_type=[second_keyfile_account])
+    account = select_account(key=[second_keyfile_account])
     assert account == second_keyfile_account
 
     with runner.isolation(input="1\n"):
-        account = get_user_selected_account(account_type=[keyfile_account, second_keyfile_account])
+        account = select_account(key=[keyfile_account, second_keyfile_account])
         assert account == second_keyfile_account
 
 
@@ -297,7 +295,7 @@ def test_prompt_choice(runner, opt):
     """
 
     def choice_callback(ctx, param, value):
-        return param.type.get_user_selected_choice()
+        return param.type.select()
 
     choice = PromptChoice(["foo", "bar"])
     assert hasattr(choice, "name")

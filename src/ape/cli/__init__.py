@@ -9,8 +9,8 @@ from ape.cli.choices import (
     NetworkChoice,
     OutputFormat,
     PromptChoice,
-    get_user_selected_account,
     output_format_choice,
+    select_account,
 )
 from ape.cli.commands import NetworkBoundCommand
 from ape.cli.options import (
@@ -25,10 +25,8 @@ from ape.cli.options import (
     verbosity_option,
 )
 from ape.cli.paramtype import AllFilePaths, Path
-from ape.cli.utils import Abort
 
 __all__ = [
-    "Abort",
     "account_option",
     "AccountAliasPromptChoice",
     "Alias",
@@ -38,7 +36,7 @@ __all__ = [
     "contract_file_paths_argument",
     "contract_option",
     "existing_alias_argument",
-    "get_user_selected_account",
+    "select_account",
     "incompatible_with",
     "network_option",
     "NetworkBoundCommand",

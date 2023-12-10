@@ -34,7 +34,7 @@ def existing_alias_argument(account_type: _ACCOUNT_TYPE_FILTER = None, **kwargs)
         **kwargs: click.argument overrides.
     """
 
-    type_ = kwargs.pop("type", Alias(account_type=account_type))
+    type_ = kwargs.pop("type", Alias(key=account_type))
     return click.argument("alias", type=type_, **kwargs)
 
 

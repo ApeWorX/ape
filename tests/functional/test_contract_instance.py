@@ -13,7 +13,7 @@ from ape.exceptions import (
     APINotImplementedError,
     ArgumentsLengthError,
     ChainError,
-    ContractError,
+    ContractDataError,
     ContractLogicError,
     CustomError,
     MethodNonPayableError,
@@ -105,21 +105,17 @@ def test_call_view_method(owner, contract_instance):
     assert contract_instance.myNumber() == 2
 
 
-def test_call_use_block_identifier(contract_instance, owner, chain):
+def test_call_use_block_id(contract_instance, owner, chain):
     expected = 2
     contract_instance.setNumber(expected, sender=owner)
     block_id = chain.blocks.height  # int
     contract_instance.setNumber(3, sender=owner)  # latest
-    actual = contract_instance.myNumber(block_identifier=block_id)
-    assert actual == expected
-
-    # Ensure alias "block_id" works
     actual = contract_instance.myNumber(block_id=block_id)
     assert actual == expected
 
     # Ensure works with hex
     block_id = to_hex(block_id)
-    actual = contract_instance.myNumber(block_identifier=block_id)
+    actual = contract_instance.myNumber(block_id=block_id)
     assert actual == expected
 
     # Ensure alias "block_id" works.
@@ -127,7 +123,7 @@ def test_call_use_block_identifier(contract_instance, owner, chain):
     assert actual == expected
 
     # Ensure works keywords like "latest"
-    actual = contract_instance.myNumber(block_identifier="latest")
+    actual = contract_instance.myNumber(block_id="latest")
     assert actual == 3
 
 
@@ -184,16 +180,13 @@ def test_revert_custom_exception(not_owner, error_contract):
     assert custom_err.inputs == {"addr": addr, "counter": 123}  # type: ignore
 
 
-def test_call_using_block_identifier(
-    vyper_contract_instance, owner, chain, networks_connected_to_tester
-):
+def test_call_using_block_id(vyper_contract_instance, owner, chain, networks_connected_to_tester):
     contract = vyper_contract_instance
     contract.setNumber(1, sender=owner)
     height = chain.blocks.height
     contract.setNumber(33, sender=owner)
-    actual_0 = contract.myNumber(block_identifier=height)
-    actual_1 = contract.myNumber(block_id=height)
-    assert actual_0 == actual_1 == 1
+    actual = contract.myNumber(block_id=height)
+    assert actual == 1
 
 
 def test_repr(vyper_contract_instance):
@@ -552,7 +545,7 @@ def test_from_receipt_when_receipt_not_deploy(contract_instance, owner):
         "Receipt missing 'contract_address' field. "
         "Was this from a deploy transaction (e.g. `project.MyContract.deploy()`)?"
     )
-    with pytest.raises(ContractError, match=expected_err):
+    with pytest.raises(ChainError, match=expected_err):
         ContractInstance.from_receipt(receipt, contract_instance.contract_type)
 
 
@@ -667,7 +660,7 @@ def test_decode_ambiguous_input(solidity_contract_instance, calldata_with_addres
         f"Unable to find matching method ABI for calldata '{anonymous_calldata.hex()}'. "
         "Try prepending a method ID to the beginning of the calldata."
     )
-    with pytest.raises(ContractError, match=expected):
+    with pytest.raises(ContractDataError, match=expected):
         method.decode_input(anonymous_calldata)
 
 
@@ -769,7 +762,7 @@ def test_value_to_non_payable_fallback_and_no_receive(
     expected = (
         r"Contract's fallback is non-payable and there is no receive ABI\. Unable to send value\."
     )
-    with pytest.raises(ContractError, match=expected):
+    with pytest.raises(MethodNonPayableError, match=expected):
         contract(sender=owner, value=1)
 
     # Show can bypass by using `as_transaction()` and `owner.call()`.
@@ -789,7 +782,7 @@ def test_fallback_with_data_and_value_and_receive(solidity_fallback_contract, ow
     is non-payable.
     """
     expected = "Sending both value= and data= but fallback is non-payable."
-    with pytest.raises(ContractError, match=expected):
+    with pytest.raises(MethodNonPayableError, match=expected):
         solidity_fallback_contract(sender=owner, data="0x123", value=1)
 
     # Show can bypass by using `as_transaction()` and `owner.call()`.

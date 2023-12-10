@@ -191,12 +191,6 @@ class GithubDependency(DependencyAPI):
     such as ``dapphub/erc20``.
     """
 
-    # TODO: Remove at >= 0.7
-    branch: Optional[str] = None
-    """
-    **DEPRECATED**: Use ``ref:``.
-    """
-
     ref: Optional[str] = None
     """
     The branch or tag to use.
@@ -205,20 +199,9 @@ class GithubDependency(DependencyAPI):
     """
 
     @cached_property
-    def _reference(self) -> Optional[str]:
+    def version_id(self) -> str:
         if self.ref:
             return self.ref
-
-        elif self.branch:
-            logger.warning("'branch:' config is deprecated. Use 'ref:' instead.")
-            return self.branch
-
-        return None
-
-    @cached_property
-    def version_id(self) -> str:
-        if self._reference:
-            return self._reference
 
         elif self.version and self.version != "latest":
             return self.version
@@ -232,8 +215,8 @@ class GithubDependency(DependencyAPI):
         if self.version:
             version = f"v{self.version}" if not self.version.startswith("v") else self.version
             _uri = f"{_uri}/releases/tag/{version}"
-        elif self._reference:
-            _uri = f"{_uri}/tree/{self._reference}"
+        elif self.ref:
+            _uri = f"{_uri}/tree/{self.ref}"
 
         return HttpUrl(_uri)
 
@@ -250,8 +233,8 @@ class GithubDependency(DependencyAPI):
             temp_project_path = (Path(temp_dir) / self.name).resolve()
             temp_project_path.mkdir(exist_ok=True, parents=True)
 
-            if self._reference:
-                github_client.clone_repo(self.github, temp_project_path, branch=self._reference)
+            if self.ref:
+                github_client.clone_repo(self.github, temp_project_path, branch=self.ref)
 
             else:
                 try:

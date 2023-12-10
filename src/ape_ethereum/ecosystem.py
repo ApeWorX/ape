@@ -22,13 +22,7 @@ from pydantic import Field, field_validator
 from ape.api import BlockAPI, EcosystemAPI, PluginConfig, ReceiptAPI, TransactionAPI
 from ape.api.networks import LOCAL_NETWORK_NAME
 from ape.contracts.base import ContractCall
-from ape.exceptions import (
-    ApeException,
-    APINotImplementedError,
-    ContractError,
-    ConversionError,
-    DecodingError,
-)
+from ape.exceptions import ApeException, APINotImplementedError, ConversionError, DecodingError
 from ape.types import (
     AddressType,
     AutoGasLimit,
@@ -280,7 +274,7 @@ class Ethereum(EcosystemAPI):
         sequence_pattern = r"363d3d373d3d3d363d30545af43d82803e903d91601857fd5bf3"
         if re.match(sequence_pattern, code):
             # the implementation is stored in the slot matching proxy address
-            slot = self.provider.get_storage_at(address, address)
+            slot = self.provider.get_storage(address, address)
             target = self.conversion_manager.convert(slot[-20:], AddressType)
             return ProxyInfo(type=ProxyType.Sequence, target=target)
 
@@ -296,7 +290,7 @@ class Ethereum(EcosystemAPI):
         for _type, slot in slots.items():
             try:
                 # TODO perf: use a batch call here when ape adds support
-                storage = self.provider.get_storage_at(address, slot)
+                storage = self.provider.get_storage(address, slot)
             except APINotImplementedError:
                 continue
 
@@ -316,7 +310,7 @@ class Ethereum(EcosystemAPI):
         if safe_pattern.hex() in code:
             try:
                 singleton = ContractCall(MASTER_COPY_ABI, address)(skip_trace=True)
-                slot_0 = self.provider.get_storage_at(address, 0)
+                slot_0 = self.provider.get_storage(address, 0)
                 target = self.conversion_manager.convert(slot_0[-20:], AddressType)
                 # NOTE: `target` is set in initialized proxies
                 if target != ZERO_ADDRESS and target == singleton:
@@ -843,7 +837,7 @@ class Ethereum(EcosystemAPI):
 
             try:
                 symbol = contract.symbol(skip_trace=True)
-            except ContractError:
+            except ApeException:
                 symbol = None
 
             if isinstance(symbol, str):

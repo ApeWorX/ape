@@ -11,8 +11,7 @@ from ape.cli.choices import (
     OutputFormat,
     output_format_choice,
 )
-from ape.cli.utils import Abort
-from ape.exceptions import ContractError
+from ape.exceptions import Abort, ProjectError
 from ape.logging import DEFAULT_LOG_LEVEL, ApeLogger, LogLevel, logger
 from ape.managers.base import ManagerAccessMixin
 
@@ -178,7 +177,7 @@ def skip_confirmation_option(help=""):
 
 def _account_callback(ctx, param, value):
     if param and not value:
-        return param.type.get_user_selected_account()
+        return param.type.select_account()
 
     return value
 
@@ -191,7 +190,7 @@ def account_option(account_type: _ACCOUNT_TYPE_FILTER = None):
 
     return click.option(
         "--account",
-        type=AccountAliasPromptChoice(account_type=account_type),
+        type=AccountAliasPromptChoice(key=account_type),
         callback=_account_callback,
     )
 
@@ -201,7 +200,7 @@ def _load_contracts(ctx, param, value) -> Optional[Union[ContractType, List[Cont
         return None
 
     if len(project.contracts) == 0:
-        raise ContractError("Project has no contracts.")
+        raise ProjectError("Project has no contracts.")
 
     # If the user passed in `multiple=True`, then `value` is a list,
     # and therefore we should also return a list.
@@ -209,7 +208,7 @@ def _load_contracts(ctx, param, value) -> Optional[Union[ContractType, List[Cont
 
     def get_contract(contract_name: str) -> ContractType:
         if contract_name not in project.contracts:
-            raise ContractError(f"No contract named '{value}'")
+            raise ProjectError(f"No contract named '{value}'")
 
         return project.contracts[contract_name]
 

@@ -1,0 +1,1019 @@
+import time
+from abc import ABC
+from concurrent.futures import ThreadPoolExecutor
+from copy import copy
+from functools import cached_property
+from itertools import tee
+from typing import Any, Dict, Iterator, List, Optional, Union, cast
+
+from eth_pydantic_types import HexBytes
+from eth_typing import BlockNumber, HexStr
+from eth_utils import add_0x_prefix, to_hex
+from ethpm_types import EventABI
+from evm_trace import CallTreeNode as EvmCallTreeNode
+from evm_trace import TraceFrame as EvmTraceFrame
+from pydantic.dataclasses import dataclass
+from web3 import Web3
+from web3.exceptions import ContractLogicError as Web3ContractLogicError
+from web3.exceptions import MethodUnavailable, TimeExhausted, TransactionNotFound
+from web3.types import RPCEndpoint, TxParams
+
+from ape.api import BlockAPI, ProviderAPI, ReceiptAPI, TransactionAPI
+from ape.api.networks import LOCAL_NETWORK_NAME
+from ape.exceptions import (
+    ApeException,
+    APINotImplementedError,
+    BlockNotFoundError,
+    ContractLogicError,
+    OutOfGasError,
+    ProviderError,
+    ProviderNotConnectedError,
+    TransactionError,
+    TransactionNotFoundError,
+    VirtualMachineError,
+)
+from ape.logging import logger, sanitize_url
+from ape.types import (
+    AddressType,
+    AutoGasLimit,
+    BlockID,
+    CallTreeNode,
+    ContractCode,
+    ContractLog,
+    LogFilter,
+    SourceTraceback,
+    TraceFrame,
+)
+from ape.utils import gas_estimation_error_message, run_until_complete, to_int
+from ape.utils.misc import DEFAULT_MAX_RETRIES_TX
+
+
+def _sanitize_web3_url(msg: str) -> str:
+    if "URI: " not in msg:
+        return msg
+
+    parts = msg.split("URI: ")
+    prefix = parts[0].strip()
+    rest = parts[1].split(" ")
+
+    # * To remove the `,` from the url http://127.0.0.1:8545,
+    if "," in rest[0]:
+        rest[0] = rest[0].rstrip(",")
+    sanitized_url = sanitize_url(rest[0])
+    return f"{prefix} URI: {sanitized_url} {' '.join(rest[1:])}"
+
+
+class Web3Provider(ProviderAPI, ABC):
+    """
+    A base provider mixin class that uses the
+    `web3.py <https://web3py.readthedocs.io/en/stable/>`__ python package.
+    """
+
+    _web3: Optional[Web3] = None
+    _client_version: Optional[str] = None
+
+    def __init__(self, *args, **kwargs):
+        logger.create_logger("web3.RequestManager", handlers=(_sanitize_web3_url,))
+        logger.create_logger("web3.providers.HTTPProvider", handlers=(_sanitize_web3_url,))
+        super().__init__(*args, **kwargs)
+
+    @property
+    def web3(self) -> Web3:
+        """
+        Access to the ``web3`` object as if you did ``Web3(HTTPProvider(uri))``.
+        """
+
+        if web3 := self._web3:
+            return web3
+
+        raise ProviderNotConnectedError()
+
+    @property
+    def http_uri(self) -> Optional[str]:
+        if (
+            hasattr(self.web3.provider, "endpoint_uri")
+            and isinstance(self.web3.provider.endpoint_uri, str)
+            and self.web3.provider.endpoint_uri.startswith("http")
+        ):
+            return self.web3.provider.endpoint_uri
+
+        elif uri := getattr(self, "uri", None):
+            # NOTE: Some providers define this
+            return uri
+
+        return None
+
+    @property
+    def ws_uri(self) -> Optional[str]:
+        if (
+            hasattr(self.web3.provider, "endpoint_uri")
+            and isinstance(self.web3.provider.endpoint_uri, str)
+            and self.web3.provider.endpoint_uri.startswith("ws")
+        ):
+            return self.web3.provider.endpoint_uri
+
+        return None
+
+    @property
+    def client_version(self) -> str:
+        if not self._web3:
+            return ""
+
+        # NOTE: Gets reset to `None` on `connect()` and `disconnect()`.
+        if self._client_version is None:
+            self._client_version = self.web3.client_version
+
+        return self._client_version
+
+    @property
+    def base_fee(self) -> int:
+        latest_block_number = self.get_block("latest").number
+        if latest_block_number is None:
+            # Possibly no blocks yet.
+            logger.debug("Latest block has no number. Using base fee of '0'.")
+            return 0
+
+        try:
+            fee_history = self.web3.eth.fee_history(1, BlockNumber(latest_block_number))
+        except ValueError as exc:
+            # Use the less-accurate approach (OK for testing).
+            logger.debug(
+                "Failed using `web3.eth.fee_history` for network "
+                f"'{self.network_choice}'. Error: {exc}"
+            )
+            return self._get_last_base_fee()
+
+        if len(fee_history["baseFeePerGas"]) < 2:
+            logger.debug("Not enough fee_history. Defaulting less-accurate approach.")
+            return self._get_last_base_fee()
+
+        pending_base_fee = fee_history["baseFeePerGas"][1]
+        if pending_base_fee is None:
+            # Non-EIP-1559 chains or we time-travelled pre-London fork.
+            return self._get_last_base_fee()
+
+        return pending_base_fee
+
+    def _get_last_base_fee(self) -> int:
+        block = self.get_block("latest")
+        base_fee = getattr(block, "base_fee", None)
+        if base_fee is not None:
+            return base_fee
+
+        raise APINotImplementedError("No base fee found in block.")
+
+    @property
+    def is_connected(self) -> bool:
+        if self._web3 is None:
+            return False
+
+        return run_until_complete(self._web3.is_connected())
+
+    @property
+    def max_gas(self) -> int:
+        block = self.web3.eth.get_block("latest")
+        return block["gasLimit"]
+
+    @cached_property
+    def supports_tracing(self) -> bool:
+        try:
+            # NOTE: Txn hash is purposely not a real hash.
+            # If we get any exception besides not implemented error,
+            # then we support tracing on this provider.
+            self.get_call_tree("__CHECK_IF_SUPPORTS_TRACING__")
+        except APINotImplementedError:
+            return False
+        except Exception:
+            return True
+
+        return True
+
+    def update_settings(self, new_settings: dict):
+        self.disconnect()
+        self.provider_settings.update(new_settings)
+        self.connect()
+
+    def estimate_gas_cost(self, txn: TransactionAPI, block_id: Optional[BlockID] = None) -> int:
+        txn_dict = txn.model_dump(by_alias=True, mode="json")
+
+        # Force the use of hex values to support a wider range of nodes.
+        if isinstance(txn_dict.get("type"), int):
+            txn_dict["type"] = HexBytes(txn_dict["type"]).hex()
+
+        # NOTE: "auto" means to enter this method, so remove it from dict
+        if "gas" in txn_dict and (
+            txn_dict["gas"] == "auto" or isinstance(txn_dict["gas"], AutoGasLimit)
+        ):
+            txn_dict.pop("gas")
+            # Also pop these, they are overridden by "auto"
+            txn_dict.pop("maxFeePerGas", None)
+            txn_dict.pop("maxPriorityFeePerGas", None)
+
+        txn_params = cast(TxParams, txn_dict)
+        try:
+            return self.web3.eth.estimate_gas(txn_params, block_identifier=block_id)
+        except (ValueError, Web3ContractLogicError) as err:
+            tx_error = self.get_virtual_machine_error(err, txn=txn)
+
+            # If this is the cause of a would-be revert,
+            # raise ContractLogicError so that we can confirm tx-reverts.
+            if isinstance(tx_error, ContractLogicError):
+                raise tx_error from err
+
+            message = gas_estimation_error_message(tx_error)
+            raise TransactionError(
+                message, base_err=tx_error, txn=txn, source_traceback=tx_error.source_traceback
+            ) from err
+
+    @cached_property
+    def chain_id(self) -> int:
+        default_chain_id = None
+        if (
+            self.network.name
+            not in (
+                "adhoc",
+                LOCAL_NETWORK_NAME,
+            )
+            and not self.network.is_fork
+        ):
+            # If using a live network, the chain ID is hardcoded.
+            default_chain_id = self.network.chain_id
+
+        try:
+            if hasattr(self.web3, "eth"):
+                return self.web3.eth.chain_id
+
+        except ProviderNotConnectedError:
+            if default_chain_id is not None:
+                return default_chain_id
+
+            raise  # Original error
+
+        if default_chain_id is not None:
+            return default_chain_id
+
+        raise ProviderNotConnectedError()
+
+    @property
+    def gas_price(self) -> int:
+        price = self.web3.eth.generate_gas_price() or 0
+        return to_int(price)
+
+    @property
+    def priority_fee(self) -> int:
+        try:
+            return self.web3.eth.max_priority_fee
+        except MethodUnavailable as err:
+            # The user likely should be using a more-catered plugin.
+            raise APINotImplementedError(
+                "eth_maxPriorityFeePerGas not supported in this RPC. Please specify manually."
+            ) from err
+
+    def get_block(self, block_id: BlockID) -> BlockAPI:
+        if isinstance(block_id, str) and block_id.isnumeric():
+            block_id = int(block_id)
+
+        try:
+            block_data = dict(self.web3.eth.get_block(block_id))
+        except Exception as err:
+            raise BlockNotFoundError(block_id, reason=str(err)) from err
+
+        # Some nodes (like anvil) will not have a base fee if set to 0.
+        if "baseFeePerGas" in block_data and block_data.get("baseFeePerGas") is None:
+            block_data["baseFeePerGas"] = 0
+
+        return self.network.ecosystem.decode_block(block_data)
+
+    def get_nonce(self, address: AddressType, block_id: Optional[BlockID] = None) -> int:
+        return self.web3.eth.get_transaction_count(address, block_identifier=block_id)
+
+    def get_balance(self, address: AddressType, block_id: Optional[BlockID] = None) -> int:
+        return self.web3.eth.get_balance(address, block_identifier=block_id)
+
+    def get_code(self, address: AddressType, block_id: Optional[BlockID] = None) -> ContractCode:
+        return self.web3.eth.get_code(address, block_identifier=block_id)
+
+    def get_storage(
+        self, address: AddressType, slot: int, block_id: Optional[BlockID] = None
+    ) -> HexBytes:
+        try:
+            return HexBytes(self.web3.eth.get_storage_at(address, slot, block_identifier=block_id))
+        except ValueError as err:
+            if "RPC Endpoint has not been implemented" in str(err):
+                raise APINotImplementedError(str(err)) from err
+
+            raise  # Raise original error
+
+    def send_call(
+        self,
+        txn: TransactionAPI,
+        block_id: Optional[BlockID] = None,
+        state: Optional[Dict] = None,
+        **kwargs,
+    ) -> HexBytes:
+        if kwargs.pop("skip_trace", False):
+            return self._send_call(txn, **kwargs)
+        elif self._test_runner is not None:
+            track_gas = self._test_runner.gas_tracker.enabled
+            track_coverage = self._test_runner.coverage_tracker.enabled
+        else:
+            track_gas = False
+            track_coverage = False
+
+        show_trace = kwargs.pop("show_trace", False)
+        show_gas = kwargs.pop("show_gas_report", False)
+        needs_trace = track_gas or track_coverage or show_trace or show_gas
+        if not needs_trace or not self.provider.supports_tracing or not txn.receiver:
+            return self._send_call(txn, **kwargs)
+
+        # The user is requesting information related to a call's trace,
+        # such as gas usage data.
+        try:
+            with self.chain_manager.isolate():
+                return self._send_call_as_txn(
+                    txn,
+                    track_gas=track_gas,
+                    track_coverage=track_coverage,
+                    show_trace=show_trace,
+                    show_gas=show_gas,
+                    **kwargs,
+                )
+
+        except APINotImplementedError:
+            return self._send_call(txn, **kwargs)
+
+    def _send_call_as_txn(
+        self,
+        txn: TransactionAPI,
+        track_gas: bool = False,
+        track_coverage: bool = False,
+        show_trace: bool = False,
+        show_gas: bool = False,
+        **kwargs,
+    ) -> HexBytes:
+        account = self.account_manager.test_accounts[0]
+        receipt = account.call(txn, **kwargs)
+        if not (call_tree := receipt.call_tree):
+            return self._send_call(txn, **kwargs)
+
+        # Grab raw returndata before enrichment
+        returndata = call_tree.outputs
+
+        if (track_gas or track_coverage) and show_gas and not show_trace:
+            # Optimization to enrich early and in_place=True.
+            call_tree.enrich()
+
+        if track_gas:
+            # in_place=False in case show_trace is True
+            receipt.track_gas()
+
+        if track_coverage:
+            receipt.track_coverage()
+
+        if show_gas:
+            # in_place=False in case show_trace is True
+            self.chain_manager._reports.show_gas(call_tree.enrich(in_place=False))
+
+        if show_trace:
+            call_tree = call_tree.enrich(use_symbol_for_tokens=True)
+            self.chain_manager._reports.show_trace(call_tree)
+
+        return HexBytes(returndata)
+
+    def _send_call(self, txn: TransactionAPI, **kwargs) -> HexBytes:
+        arguments = self._prepare_call(txn, **kwargs)
+        try:
+            return self._eth_call(arguments)
+        except TransactionError as err:
+            if not err.txn:
+                err.txn = txn
+
+            raise  # The tx error
+
+    def _eth_call(self, arguments: List) -> HexBytes:
+        # Force the usage of hex-type to support a wider-range of nodes.
+        txn_dict = copy(arguments[0])
+        if isinstance(txn_dict.get("type"), int):
+            txn_dict["type"] = HexBytes(txn_dict["type"]).hex()
+
+        # Remove unnecessary values to support a wider-range of nodes.
+        txn_dict.pop("chainId", None)
+
+        arguments[0] = txn_dict
+        try:
+            result = self._make_request("eth_call", arguments)
+        except Exception as err:
+            receiver = txn_dict["to"]
+            raise self.get_virtual_machine_error(err, contract_address=receiver) from err
+
+        if "error" in result:
+            raise ProviderError(result["error"]["message"])
+
+        return HexBytes(result)
+
+    def _prepare_call(self, txn: TransactionAPI, **kwargs) -> List:
+        txn_dict = txn.model_dump(by_alias=True, mode="json")
+        fields_to_convert = ("data", "chainId", "value")
+        for field in fields_to_convert:
+            value = txn_dict.get(field)
+            if value is not None and not isinstance(value, str):
+                txn_dict[field] = to_hex(value)
+
+        # Remove unneeded properties
+        txn_dict.pop("gas", None)
+        txn_dict.pop("gasLimit", None)
+        txn_dict.pop("maxFeePerGas", None)
+        txn_dict.pop("maxPriorityFeePerGas", None)
+
+        # NOTE: Block ID is required so if given None, default to `"latest"`.
+        block_identifier = kwargs.pop("block_identifier", kwargs.pop("block_id", None)) or "latest"
+        if isinstance(block_identifier, int):
+            block_identifier = to_hex(primitive=block_identifier)
+
+        arguments = [txn_dict, block_identifier]
+        if "state_override" in kwargs:
+            arguments.append(kwargs["state_override"])
+
+        return arguments
+
+    def get_receipt(
+        self,
+        txn_hash: str,
+        required_confirmations: int = 0,
+        timeout: Optional[int] = None,
+        **kwargs,
+    ) -> ReceiptAPI:
+        if required_confirmations < 0:
+            raise TransactionError("Required confirmations cannot be negative.")
+
+        timeout = (
+            timeout if timeout is not None else self.provider.network.transaction_acceptance_timeout
+        )
+
+        hex_hash = HexBytes(txn_hash)
+        try:
+            receipt_data = self.web3.eth.wait_for_transaction_receipt(hex_hash, timeout=timeout)
+        except TimeExhausted as err:
+            raise TransactionNotFoundError(txn_hash, error_messsage=str(err)) from err
+
+        ecosystem_config = self.network.config.model_dump(by_alias=True, mode="json")
+        network_config: Dict = ecosystem_config.get(self.network.name, {})
+        max_retries = network_config.get("max_get_transaction_retries", DEFAULT_MAX_RETRIES_TX)
+        txn = {}
+        for attempt in range(max_retries):
+            try:
+                txn = dict(self.web3.eth.get_transaction(HexStr(txn_hash)))
+                break
+            except TransactionNotFound:
+                if attempt < max_retries - 1:  # if this wasn't the last attempt
+                    time.sleep(1)  # Wait for 1 second before retrying.
+                    continue  # Continue to the next iteration, effectively retrying the operation.
+                else:  # if it was the last attempt
+                    raise  # Re-raise the last exception.
+
+        receipt = self.network.ecosystem.decode_receipt(
+            {
+                "provider": self,
+                "required_confirmations": required_confirmations,
+                **txn,
+                **receipt_data,
+            }
+        )
+        return receipt.await_confirmations()
+
+    def get_transactions_by_block(self, block_id: BlockID) -> Iterator[TransactionAPI]:
+        if isinstance(block_id, str):
+            block_id = HexStr(block_id)
+
+            if block_id.isnumeric():
+                block_id = add_0x_prefix(block_id)
+
+        block = cast(Dict, self.web3.eth.get_block(block_id, full_transactions=True))
+        for transaction in block.get("transactions", []):
+            yield self.network.ecosystem.create_transaction(**transaction)
+
+    def get_transactions_by_account_nonce(
+        self,
+        account: AddressType,
+        start_nonce: int = 0,
+        stop_nonce: int = -1,
+    ) -> Iterator[ReceiptAPI]:
+        if start_nonce > stop_nonce:
+            raise ValueError("Starting nonce cannot be greater than stop nonce for search")
+
+        if not self.network.is_local and (stop_nonce - start_nonce) > 2:
+            # NOTE: RPC usage might be acceptable to find 1 or 2 transactions reasonably quickly
+            logger.warning(
+                "Performing this action is likely to be very slow and may "
+                f"use {20 * (stop_nonce - start_nonce)} or more RPC calls. "
+                "Consider installing an alternative data query provider plugin."
+            )
+
+        yield from self._find_txn_by_account_and_nonce(
+            account,
+            start_nonce,
+            stop_nonce,
+            0,  # first block
+            self.chain_manager.blocks.head.number or 0,  # last block (or 0 if genesis-only chain)
+        )
+
+    def _find_txn_by_account_and_nonce(
+        self,
+        account: AddressType,
+        start_nonce: int,
+        stop_nonce: int,
+        start_block: int,
+        stop_block: int,
+    ) -> Iterator[ReceiptAPI]:
+        # binary search between `start_block` and `stop_block` to yield txns from account,
+        # ordered from `start_nonce` to `stop_nonce`
+
+        if start_block == stop_block:
+            # Honed in on one block where there's a delta in nonce, so must be the right block
+            for txn in self.get_transactions_by_block(stop_block):
+                assert isinstance(txn.nonce, int)  # NOTE: just satisfying mypy here
+                if txn.sender == account and txn.nonce >= start_nonce:
+                    yield self.get_receipt(txn.txn_hash.hex())
+
+            # Nothing else to search for
+
+        else:
+            # Break up into smaller chunks
+            # NOTE: biased to `stop_block`
+            block_number = start_block + (stop_block - start_block) // 2 + 1
+            txn_count_prev_to_block = self.web3.eth.get_transaction_count(account, block_number - 1)
+
+            if start_nonce < txn_count_prev_to_block:
+                yield from self._find_txn_by_account_and_nonce(
+                    account,
+                    start_nonce,
+                    min(txn_count_prev_to_block - 1, stop_nonce),  # NOTE: In case >1 txn in block
+                    start_block,
+                    block_number - 1,
+                )
+
+            if txn_count_prev_to_block <= stop_nonce:
+                yield from self._find_txn_by_account_and_nonce(
+                    account,
+                    max(start_nonce, txn_count_prev_to_block),  # NOTE: In case >1 txn in block
+                    stop_nonce,
+                    block_number,
+                    stop_block,
+                )
+
+    def poll_blocks(
+        self,
+        stop_block: Optional[int] = None,
+        required_confirmations: Optional[int] = None,
+        new_block_timeout: Optional[int] = None,
+    ) -> Iterator[BlockAPI]:
+        # Wait half the time as the block time
+        # to get data faster.
+        block_time = self.network.block_time
+        wait_time = block_time / 2
+
+        # The timeout occurs when there is no chain activity
+        # after a certain time.
+        timeout = (
+            (10.0 if self.network.is_dev else 50 * block_time)
+            if new_block_timeout is None
+            else new_block_timeout
+        )
+
+        # Only yield confirmed blocks.
+        if required_confirmations is None:
+            required_confirmations = self.network.required_confirmations
+
+        @dataclass
+        class YieldAction:
+            hash: bytes
+            number: int
+            time: float
+
+        # Pretend we _did_ yield the last confirmed item, for logic's sake.
+        fake_last_block = self.get_block(self.web3.eth.block_number - required_confirmations)
+        last_num = fake_last_block.number or 0
+        last_hash = fake_last_block.hash or HexBytes(0)
+        last = YieldAction(number=last_num, hash=last_hash, time=time.time())
+
+        # A helper method for various points of ensuring we didn't timeout.
+        def assert_chain_activity():
+            time_waiting = time.time() - last.time
+            if time_waiting > timeout:
+                raise ProviderError("Timed out waiting for next block.")
+
+        # Begin the daemon.
+        while True:
+            # The next block we want is simply 1 after the last.
+            next_block = last.number + 1
+
+            head = self.get_block("latest")
+
+            try:
+                if head.number is None or head.hash is None:
+                    raise ProviderError("Head block has no number or hash.")
+                # Use an "adjused" head, based on the required confirmations.
+                adjusted_head = self.get_block(head.number - required_confirmations)
+                if adjusted_head.number is None or adjusted_head.hash is None:
+                    raise ProviderError("Adjusted head block has no number or hash.")
+            except Exception:
+                # TODO: I did encounter this sometimes in a re-org, needs better handling
+                # and maybe bubbling up the block number/hash exceptions above.
+                assert_chain_activity()
+                continue
+
+            if adjusted_head.number == last.number and adjusted_head.hash == last.hash:
+                # The chain has not moved! Verify we have activity.
+                assert_chain_activity()
+                time.sleep(wait_time)
+                continue
+
+            elif adjusted_head.number < last.number or (
+                adjusted_head.number == last.number and adjusted_head.hash != last.hash
+            ):
+                # Re-org detected! Error and catch up the chain.
+                logger.error(
+                    "Chain has reorganized since returning the last block. "
+                    "Try adjusting the required network confirmations."
+                )
+                # Catch up the chain by setting the "next" to this tiny head.
+                next_block = adjusted_head.number
+
+                # NOTE: Drop down to code outside of switch-of-ifs
+
+            elif adjusted_head.number < next_block:
+                # Wait for the next block.
+                # But first, let's make sure the chain is still active.
+                assert_chain_activity()
+                time.sleep(wait_time)
+                continue
+
+            # NOTE: Should only get here if yielding blocks!
+            #  Either because it is finally time or because a re-org allows us.
+            for block_idx in range(next_block, adjusted_head.number + 1):
+                block = self.get_block(block_idx)
+                if block.number is None or block.hash is None:
+                    raise ProviderError("Block has no number or hash.")
+                yield block
+
+                # This is the point at which the daemon will end,
+                # provider the user passes in a `stop_block` arg.
+                if stop_block is not None and block.number >= stop_block:
+                    return
+
+                # Set the last action, used for checking timeouts and re-orgs.
+                last = YieldAction(
+                    number=block.number, hash=block.hash, time=time.time()
+                )  # type: ignore
+
+    def poll_logs(
+        self,
+        stop_block: Optional[int] = None,
+        address: Optional[AddressType] = None,
+        topics: Optional[List[Union[str, List[str]]]] = None,
+        required_confirmations: Optional[int] = None,
+        new_block_timeout: Optional[int] = None,
+        events: List[EventABI] = [],
+    ) -> Iterator[ContractLog]:
+        if required_confirmations is None:
+            required_confirmations = self.network.required_confirmations
+
+        if stop_block is not None:
+            if stop_block <= (self.provider.get_block("latest").number or 0):
+                raise ValueError("'stop' argument must be in the future.")
+
+        for block in self.poll_blocks(stop_block, required_confirmations, new_block_timeout):
+            if block.number is None:
+                raise ValueError("Block number cannot be None")
+
+            log_params: Dict[str, Any] = {
+                "start_block": block.number,
+                "stop_block": block.number,
+                "events": events,
+            }
+            if address is not None:
+                log_params["addresses"] = [address]
+            if topics is not None:
+                log_params["topics"] = topics
+
+            log_filter = LogFilter(**log_params)
+            yield from self.get_contract_logs(log_filter)
+
+    def block_ranges(self, start: int = 0, stop: Optional[int] = None, page: Optional[int] = None):
+        if stop is None:
+            stop = self.chain_manager.blocks.height
+        if page is None:
+            page = self.block_page_size
+
+        for start_block in range(start, stop + 1, page):
+            stop_block = min(stop, start_block + page - 1)
+            yield start_block, stop_block
+
+    def get_contract_creation_receipts(
+        self,
+        address: AddressType,
+        start_block: int = 0,
+        stop_block: Optional[int] = None,
+        contract_code: Optional[HexBytes] = None,
+    ) -> Iterator[ReceiptAPI]:
+        if stop_block is None:
+            stop_block = self.chain_manager.blocks.height
+
+        if contract_code is None:
+            contract_code = HexBytes(self.get_code(address))
+
+        mid_block = (stop_block - start_block) // 2 + start_block
+        # NOTE: biased towards mid_block == start_block
+
+        if start_block == mid_block:
+            for tx in self.chain_manager.blocks[mid_block].transactions:
+                if (receipt := tx.receipt) and receipt.contract_address == address:
+                    yield receipt
+
+            if mid_block + 1 <= stop_block:
+                yield from self.get_contract_creation_receipts(
+                    address,
+                    start_block=mid_block + 1,
+                    stop_block=stop_block,
+                    contract_code=contract_code,
+                )
+
+        # TODO: Handle when code is nonzero but doesn't match
+        # TODO: Handle when code is empty after it's not (re-init)
+        elif HexBytes(self.get_code(address, block_id=mid_block)) == contract_code:
+            # If the code exists, we need to look backwards.
+            yield from self.get_contract_creation_receipts(
+                address,
+                start_block=start_block,
+                stop_block=mid_block,
+                contract_code=contract_code,
+            )
+
+        elif mid_block + 1 <= stop_block:
+            # The code does not exist yet, we need to look ahead.
+            yield from self.get_contract_creation_receipts(
+                address,
+                start_block=mid_block + 1,
+                stop_block=stop_block,
+                contract_code=contract_code,
+            )
+
+    def get_contract_logs(self, log_filter: LogFilter) -> Iterator[ContractLog]:
+        height = self.chain_manager.blocks.height
+        start_block = log_filter.start_block
+        stop_block_arg = log_filter.stop_block if log_filter.stop_block is not None else height
+        stop_block = min(stop_block_arg, height)
+        block_ranges = self.block_ranges(start_block, stop_block, self.block_page_size)
+
+        def fetch_log_page(block_range):
+            start, stop = block_range
+            update = {"start_block": start, "stop_block": stop}
+            page_filter = log_filter.model_copy(update=update)
+            # eth-tester expects a different format, let web3 handle the conversions for it.
+            raw = "EthereumTester" not in self.client_version
+            logs = self._get_logs(page_filter.model_dump(mode="json"), raw)
+            return self.network.ecosystem.decode_logs(logs, *log_filter.events)
+
+        with ThreadPoolExecutor(self.concurrency) as pool:
+            for page in pool.map(fetch_log_page, block_ranges):
+                yield from page
+
+    def _get_logs(self, filter_params, raw=True) -> List[Dict]:
+        if not raw:
+            return [vars(d) for d in self.web3.eth.get_logs(filter_params)]
+
+        return self._make_request("eth_getLogs", [filter_params])
+
+    def prepare_transaction(self, txn: TransactionAPI) -> TransactionAPI:
+        # NOTE: Use "expected value" for Chain ID, so if it doesn't match actual, we raise
+        txn.chain_id = self.network.chain_id
+
+        from ape_ethereum.transactions import StaticFeeTransaction, TransactionType
+
+        txn_type = TransactionType(txn.type)
+        if (
+            txn_type == TransactionType.STATIC
+            and isinstance(txn, StaticFeeTransaction)
+            and txn.gas_price is None
+        ):
+            txn.gas_price = self.gas_price
+        elif txn_type == TransactionType.DYNAMIC:
+            if txn.max_priority_fee is None:
+                txn.max_priority_fee = self.priority_fee
+
+            if txn.max_fee is None:
+                multiplier = self.network.base_fee_multiplier
+                txn.max_fee = int(self.base_fee * multiplier + txn.max_priority_fee)
+            # else: Assume user specified the correct amount or txn will fail and waste gas
+
+        gas_limit = self.network.gas_limit if txn.gas_limit is None else txn.gas_limit
+        if gas_limit in (None, "auto") or isinstance(gas_limit, AutoGasLimit):
+            multiplier = (
+                gas_limit.multiplier
+                if isinstance(gas_limit, AutoGasLimit)
+                else self.network.auto_gas_multiplier
+            )
+            if multiplier != 1.0:
+                gas = min(int(self.estimate_gas_cost(txn) * multiplier), self.max_gas)
+            else:
+                gas = self.estimate_gas_cost(txn)
+
+            txn.gas_limit = gas
+
+        elif gas_limit == "max":
+            txn.gas_limit = self.max_gas
+
+        elif gas_limit is not None and isinstance(gas_limit, int):
+            txn.gas_limit = gas_limit
+
+        if txn.required_confirmations is None:
+            txn.required_confirmations = self.network.required_confirmations
+        elif not isinstance(txn.required_confirmations, int) or txn.required_confirmations < 0:
+            raise TransactionError("'required_confirmations' must be a positive integer.")
+
+        return txn
+
+    def send_transaction(self, txn: TransactionAPI) -> ReceiptAPI:
+        try:
+            if txn.signature or not txn.sender:
+                txn_hash = self.web3.eth.send_raw_transaction(txn.serialize_transaction())
+            else:
+                if txn.sender not in self.web3.eth.accounts:
+                    self.chain_manager.provider.unlock_account(txn.sender)
+
+                txn_data = cast(TxParams, txn.model_dump(by_alias=True, mode="json"))
+                txn_hash = self.web3.eth.send_transaction(txn_data)
+
+        except (ValueError, Web3ContractLogicError) as err:
+            vm_err = self.get_virtual_machine_error(err, txn=txn)
+            raise vm_err from err
+
+        receipt = self.get_receipt(
+            txn_hash.hex(),
+            required_confirmations=(
+                txn.required_confirmations
+                if txn.required_confirmations is not None
+                else self.network.required_confirmations
+            ),
+        )
+
+        # NOTE: Ensure to cache even the failed receipts.
+        self.chain_manager.history.append(receipt)
+
+        if receipt.failed:
+            txn_dict = receipt.transaction.model_dump(by_alias=True, mode="json")
+            txn_params = cast(TxParams, txn_dict)
+
+            # Replay txn to get revert reason
+            try:
+                self.web3.eth.call(txn_params)
+            except Exception as err:
+                vm_err = self.get_virtual_machine_error(err, txn=txn)
+                raise vm_err from err
+
+        logger.info(f"Confirmed {receipt.txn_hash} (total fees paid = {receipt.total_fees_paid})")
+        return receipt
+
+    def _create_call_tree_node(
+        self, evm_call: EvmCallTreeNode, txn_hash: Optional[str] = None
+    ) -> CallTreeNode:
+        address = evm_call.address
+        try:
+            contract_id = str(self.provider.network.ecosystem.decode_address(address))
+        except ValueError:
+            # Use raw value since it is not a real address.
+            contract_id = address.hex()
+
+        call_type = evm_call.call_type.value
+        return CallTreeNode(
+            calls=[self._create_call_tree_node(x, txn_hash=txn_hash) for x in evm_call.calls],
+            call_type=call_type,
+            contract_id=contract_id,
+            failed=evm_call.failed,
+            gas_cost=evm_call.gas_cost,
+            inputs=evm_call.calldata if "CREATE" in call_type else evm_call.calldata[4:].hex(),
+            method_id=evm_call.calldata[:4].hex(),
+            outputs=evm_call.returndata.hex(),
+            raw=evm_call.model_dump(by_alias=True, mode="json"),
+            txn_hash=txn_hash,
+        )
+
+    def _create_trace_frame(self, evm_frame: EvmTraceFrame) -> TraceFrame:
+        address_bytes = evm_frame.address
+        try:
+            address = (
+                self.network.ecosystem.decode_address(address_bytes.hex())
+                if address_bytes
+                else None
+            )
+        except ValueError:
+            # Might not be a real address.
+            address = cast(AddressType, address_bytes.hex()) if address_bytes else None
+
+        return TraceFrame(
+            pc=evm_frame.pc,
+            op=evm_frame.op,
+            gas=evm_frame.gas,
+            gas_cost=evm_frame.gas_cost,
+            depth=evm_frame.depth,
+            contract_address=address,
+            raw=evm_frame.model_dump(by_alias=True, mode="json"),
+        )
+
+    def _make_request(self, endpoint: str, parameters: Optional[List] = None) -> Any:
+        parameters = parameters or []
+        coroutine = self.web3.provider.make_request(RPCEndpoint(endpoint), parameters)
+        result = run_until_complete(coroutine)
+
+        if "error" in result:
+            error = result["error"]
+            message = (
+                error["message"] if isinstance(error, dict) and "message" in error else str(error)
+            )
+            raise ProviderError(message)
+
+        elif "result" in result:
+            return result.get("result", {})
+
+        return result
+
+    def get_virtual_machine_error(self, exception: Exception, **kwargs) -> VirtualMachineError:
+        txn = kwargs.get("txn")
+        if isinstance(exception, Web3ContractLogicError):
+            # This happens from `assert` or `require` statements.
+            return self._handle_execution_reverted(exception, **kwargs)
+
+        if not len(exception.args):
+            return VirtualMachineError(base_err=exception, **kwargs)
+
+        err_data = exception.args[0] if (hasattr(exception, "args") and exception.args) else None
+        if isinstance(err_data, str) and "execution reverted" in err_data:
+            return self._handle_execution_reverted(exception, **kwargs)
+
+        elif not isinstance(err_data, dict):
+            return VirtualMachineError(base_err=exception, **kwargs)
+
+        elif not (err_msg := err_data.get("message")):
+            return VirtualMachineError(base_err=exception, **kwargs)
+
+        elif txn is not None and "nonce too low" in str(err_msg):
+            txn = cast(TransactionAPI, txn)
+            new_err_msg = f"Nonce '{txn.nonce}' is too low"
+            return VirtualMachineError(
+                new_err_msg, base_err=exception, code=err_data.get("code"), **kwargs
+            )
+
+        elif "out of gas" in str(err_msg):
+            return OutOfGasError(code=err_data.get("code"), base_err=exception, **kwargs)
+
+        return VirtualMachineError(str(err_msg), code=(err_data or {}).get("code"), **kwargs)
+
+    def _handle_execution_reverted(
+        self,
+        exception: Union[Exception, str],
+        txn: Optional[TransactionAPI] = None,
+        trace: Optional[Iterator[TraceFrame]] = None,
+        contract_address: Optional[AddressType] = None,
+        source_traceback: Optional[SourceTraceback] = None,
+    ) -> ContractLogicError:
+        message = str(exception).split(":")[-1].strip()
+        params: Dict = {
+            "trace": trace,
+            "contract_address": contract_address,
+            "source_traceback": source_traceback,
+        }
+        no_reason = message == "execution reverted"
+
+        if isinstance(exception, Web3ContractLogicError) and no_reason:
+            # Check for custom exception data and use that as the message instead.
+            # This allows compiler exception enrichment to function.
+            err_trace = None
+            try:
+                if trace:
+                    trace, err_trace = tee(trace)
+                elif txn:
+                    err_trace = self.provider.get_transaction_trace(txn.txn_hash.hex())
+
+                trace_ls: List[TraceFrame] = list(err_trace) if err_trace else []
+                data = trace_ls[-1].raw if len(trace_ls) > 0 else {}
+                memory = data.get("memory", [])
+                return_value = "".join([x[2:] for x in memory[4:]])
+                if return_value:
+                    message = f"0x{return_value}"
+                    no_reason = False
+
+            except (ApeException, NotImplementedError):
+                # Either provider does not support or isn't a custom exception.
+                pass
+
+        result = (
+            ContractLogicError(txn=txn, **params)
+            if no_reason
+            else ContractLogicError(
+                base_err=exception if isinstance(exception, Exception) else None,
+                revert_message=message,
+                txn=txn,
+                **params,
+            )
+        )
+        return self.compiler_manager.enrich_error(result)

@@ -697,7 +697,6 @@ class SourceTraceback(RootModel[List[ControlFlow]]):
         self,
         name: str,
         _type: str,
-        compiler_name: str,
         full_name: Optional[str] = None,
         source_path: Optional[Path] = None,
         pcs: Optional[Set[int]] = None,
@@ -710,12 +709,10 @@ class SourceTraceback(RootModel[List[ControlFlow]]):
         Args:
             name (str): The name of the compiler built-in.
             _type (str): A str describing the type of check.
-            compiler_name (str): The name of the compiler.
             full_name (Optional[str]): A full-name ID.
             source_path (Optional[Path]): The source file related, if there is one.
             pcs (Optional[Set[int]]): Program counter values mapping to this check.
         """
-        # TODO: Assess if compiler_name is needed or get rid of in v0.7.
         pcs = pcs or set()
         closure = Closure(name=name, full_name=full_name or name)
         depth = self.last.depth - 1 if self.last else 0
