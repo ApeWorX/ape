@@ -74,9 +74,9 @@ To specify the network option, use values like:
 ```
 
 To use default values automatically, omit sections of the choice, but leave the semi-colons for parsing.
-For example, `::test` means to use the value ecosystem and network and the `test` provider.
+For example, `::test` means use the default ecosystem and network and the `test` provider.
 
-Use `ecosystem`, `network`, and  `provider` argument names in your command implementation to have access to the parsed network option:
+Use `ecosystem`, `network`, and `provider` argument names in your command implementation to access their corresponding class instances:
 
 ```python
 import click
@@ -97,9 +97,9 @@ def cmd_2(ecosystem, network, provider):
    click.echo(provider.name)
 ```
 
-The [ConnectedProviderCommand](../methoddocs/cli.html#ape.cli.commands.ConnectedProviderCommand) automatically uses the `--network` option and connects to the network before any of your code executes and disconnected after.
+The [ConnectedProviderCommand](../methoddocs/cli.html#ape.cli.commands.ConnectedProviderCommand) automatically uses the `--network` option and connects to the network before any of your code executes and then disconnects afterward.
 This is useful if your script or command requires a provider connection in order for it to run.
-Additionally, specify `ecosystem`, `network`, or `provider` in your command function if you need any of those instances in your `ConnectedProviderCommand`.
+Additionally, specify `ecosystem`, `network`, or `provider` in your command function if you need any of those instances in your `ConnectedProviderCommand`, just like when using `network_option`.
 
 ```python
 import click
