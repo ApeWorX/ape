@@ -6,6 +6,7 @@ from click import Context
 
 from ape import networks
 from ape.api import ProviderAPI
+from ape.exceptions import NetworkError
 
 
 def check_parents_for_interactive(ctx: Context) -> bool:
@@ -39,11 +40,26 @@ class ConnectedProviderCommand(click.Command):
         return super().parse_args(ctx, args)
 
     def invoke(self, ctx: Context) -> Any:
-        default = networks.default_ecosystem.default_network.default_provider
-        param = ctx.params.get("network")
-        provider: ProviderAPI = param or default  # type: ignore
         interactive = check_parents_for_interactive(ctx)
-        with provider.network.use_provider(provider.name, disconnect_on_exit=not interactive):
+        param = ctx.params.get("network")
+        if param is not None and isinstance(param, ProviderAPI):
+            provider = param
+            network_context = provider.network.use_provider(
+                provider.name, disconnect_on_exit=not interactive
+            )
+        elif param is not None and isinstance(param, str):
+            network_context = networks.parse_network_choice(param)
+        elif param is None:
+            ecosystem = networks.default_ecosystem
+            network = ecosystem.default_network
+            if provider_name := network.default_provider_name:
+                network_context = network.use_provider(provider_name)
+            else:
+                raise NetworkError(f"Network {network.name} has no providers.")
+        else:
+            raise TypeError(f"Unknown type for network choice: '{param}'.")
+
+        with network_context:
             if self.callback is not None:
                 signature = inspect.signature(self.callback)
                 callback_args = [x.name for x in signature.parameters.values()]

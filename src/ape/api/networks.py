@@ -488,7 +488,7 @@ class EcosystemAPI(BaseInterfaceModel):
         data: Dict[str, Any] = {"name": str(network_name)}
 
         # Only add isDefault key when True
-        if network_name == self.default_network.name:
+        if network_name == self.default_network_name:
             data["isDefault"] = True
 
         data["providers"] = []
@@ -504,7 +504,7 @@ class EcosystemAPI(BaseInterfaceModel):
             provider_data: Dict = {"name": str(provider_name)}
 
             # Only add isDefault key when True
-            if provider_name == network.default_provider:
+            if provider_name == network.default_provider_name:
                 provider_data["isDefault"] = True
 
             data["providers"].append(provider_data)
@@ -1023,7 +1023,7 @@ class NetworkAPI(BaseInterfaceModel):
 
     @property
     def default_provider(self) -> Optional["ProviderAPI"]:
-        if name := self.default_provider_name:
+        if (name := self.default_provider_name) and name in self.providers:
             return self.get_provider(name)
 
         return None
