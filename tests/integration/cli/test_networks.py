@@ -158,7 +158,8 @@ def test_filter_providers(ape_cli, runner, networks):
 
 @run_once
 def test_node_not_subprocess_provider(ape_cli, runner):
-    result = runner.invoke(ape_cli, ["networks", "run", "--network", "ethereum:local:test"])
+    cmd = ("networks", "run", "--network", "ethereum:local:test")
+    result = runner.invoke(ape_cli, ["networks", "run", "--network", cmd])
     assert result.exit_code != 0
     assert (
         result.output
