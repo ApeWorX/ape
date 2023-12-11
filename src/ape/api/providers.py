@@ -6,6 +6,7 @@ import platform
 import shutil
 import sys
 import time
+import warnings
 from logging import FileHandler, Formatter, Logger, getLogger
 from pathlib import Path
 from signal import SIGINT, SIGTERM, signal
@@ -234,6 +235,13 @@ class ProviderAPI(BaseInterfaceModel):
         The connected network choice string.
         """
         return f"{self.network.choice}:{self.name}"
+
+    def get_storage_at(self, *args, **kwargs) -> HexBytes:
+        warnings.warn(
+            "'provider.get_storage_at()' is deprecated. Use 'provider.get_storage()'.",
+            DeprecationWarning,
+        )
+        return self.get_storage(*args, **kwargs)
 
     @raises_not_implemented
     def get_storage(  # type: ignore[empty-body]
