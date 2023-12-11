@@ -407,8 +407,7 @@ class NetworkManager(BaseManager):
             selections = selections[:3]
 
             if provider_value.startswith("https://") or provider_value.startswith("https://"):
-                # Network must be 'custom' when using a URI.
-                selections[1] = "custom"
+                selections[1] = selections[1] or "custom"
 
         if selections == network_choice or len(selections) == 1:
             # Either split didn't work (in which case it matches the start)
