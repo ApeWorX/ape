@@ -202,12 +202,20 @@ def test_network_option_unknown(network_cmd):
         "https://foo.bar:8000",
     ),
 )
-def test_network_option_uri(runner, network_cmd, network_input):
+def test_network_option_custom_uri(runner, network_cmd, network_input):
     network_part = ("--network", network_input)
     cmd = network_cmd(network_part)
     result = runner.invoke(cmd, network_part)
     assert result.exit_code == 0, result.output
     assert "custom" in result.output
+
+
+def test_network_option_existing_network_with_custom_uri(runner, network_cmd):
+    network_part = ("--network", "ethereum:sepolia:https://foo.bar:8000")
+    cmd = network_cmd(network_part)
+    result = runner.invoke(cmd, network_part)
+    assert result.exit_code == 0, result.output
+    assert "sepolia" in result.output
 
 
 def test_network_option_make_required(runner):
