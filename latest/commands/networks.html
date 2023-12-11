@@ -246,7 +246,7 @@
 <dd><p>Filter the results by network</p>
 <dl class="field-list simple">
 <dt class="field-odd">Options<span class="colon">:</span></dt>
-<dd class="field-odd"><p>goerli-fork | goerli | sepolia-fork | local | mainnet-fork | sepolia | mainnet</p>
+<dd class="field-odd"><p>mainnet-fork | goerli-fork | mainnet | sepolia | goerli | sepolia-fork | local</p>
 </dd>
 </dl>
 </dd></dl>
@@ -265,7 +265,8 @@
 </section>
 <section id="networks-run">
 <h2>run<a class="headerlink" href="#networks-run" title="Permalink to this heading"></a></h2>
-<p>Start a node process</p>
+<p>partial(func, <a href="#id1"><span class="problematic" id="id2">*</span></a>args, <a href="#id3"><span class="problematic" id="id4">**</span></a>keywords) - new function with partial application
+of the given arguments and keywords.</p>
 <div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>networks<span class="w"> </span>run<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span>
 </pre></div>
 </div>
@@ -280,14 +281,6 @@
 <dt class="sig sig-object std" id="cmdoption-networks-run-network">
 <span class="sig-name descname"><span class="pre">--network</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;network&gt;</span></span><a class="headerlink" href="#cmdoption-networks-run-network" title="Permalink to this definition"></a></dt>
 <dd><p>Override the default network and provider. (see <cite>ape networks list</cite> for options)</p>
-<dl class="field-list simple">
-<dt class="field-odd">Default<span class="colon">:</span></dt>
-<dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">ethereum:local:geth</span></code></p>
-</dd>
-<dt class="field-even">Options<span class="colon">:</span></dt>
-<dd class="field-even"><p>:mainnet:geth | ethereum:mainnet:geth | :mainnet | ethereum:mainnet | :goerli:geth | ethereum:goerli:geth | :goerli | ethereum:goerli | :sepolia:geth | ethereum:sepolia:geth | :sepolia | ethereum:sepolia | ::test | :local:test | ethereum::test | ethereum:local:test | ::geth | :local:geth | ethereum::geth | ethereum:local:geth | :local | ethereum:local | ethereum</p>
-</dd>
-</dl>
 </dd></dl>
 
 </section>

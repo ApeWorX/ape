@@ -290,7 +290,7 @@
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.networks.EcosystemAPI.decode_logs"><code class="docutils literal notranslate"><span class="pre">EcosystemAPI.decode_logs()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.networks.EcosystemAPI.decode_receipt"><code class="docutils literal notranslate"><span class="pre">EcosystemAPI.decode_receipt()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.networks.EcosystemAPI.decode_returndata"><code class="docutils literal notranslate"><span class="pre">EcosystemAPI.decode_returndata()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#ape.api.networks.EcosystemAPI.default_network"><code class="docutils literal notranslate"><span class="pre">EcosystemAPI.default_network</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ape.api.networks.EcosystemAPI.default_network_name"><code class="docutils literal notranslate"><span class="pre">EcosystemAPI.default_network_name</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.networks.EcosystemAPI.encode_address"><code class="docutils literal notranslate"><span class="pre">EcosystemAPI.encode_address()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.networks.EcosystemAPI.encode_calldata"><code class="docutils literal notranslate"><span class="pre">EcosystemAPI.encode_calldata()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.networks.EcosystemAPI.encode_deployment"><code class="docutils literal notranslate"><span class="pre">EcosystemAPI.encode_deployment()</span></code></a></li>
@@ -328,7 +328,7 @@
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.networks.NetworkAPI.chain_id"><code class="docutils literal notranslate"><span class="pre">NetworkAPI.chain_id</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.networks.NetworkAPI.config"><code class="docutils literal notranslate"><span class="pre">NetworkAPI.config</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.networks.NetworkAPI.data_folder"><code class="docutils literal notranslate"><span class="pre">NetworkAPI.data_folder</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#ape.api.networks.NetworkAPI.default_provider"><code class="docutils literal notranslate"><span class="pre">NetworkAPI.default_provider</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ape.api.networks.NetworkAPI.default_provider_name"><code class="docutils literal notranslate"><span class="pre">NetworkAPI.default_provider_name</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.networks.NetworkAPI.ecosystem"><code class="docutils literal notranslate"><span class="pre">NetworkAPI.ecosystem</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.networks.NetworkAPI.explorer"><code class="docutils literal notranslate"><span class="pre">NetworkAPI.explorer</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.networks.NetworkAPI.get_provider"><code class="docutils literal notranslate"><span class="pre">NetworkAPI.get_provider()</span></code></a></li>
@@ -1617,8 +1617,8 @@ raw_data (bytes): Raw returned data.</p>
 </dd></dl>
 
 <dl class="py property">
-<dt class="sig sig-object py" id="ape.api.networks.EcosystemAPI.default_network">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">default_network</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#ape.api.networks.EcosystemAPI.default_network" title="Permalink to this definition"></a></dt>
+<dt class="sig sig-object py" id="ape.api.networks.EcosystemAPI.default_network_name">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">default_network_name</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#ape.api.networks.EcosystemAPI.default_network_name" title="Permalink to this definition"></a></dt>
 <dd><p>The name of the default network in this ecosystem.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
@@ -2009,8 +2009,8 @@ for more information on plugin configurations.</p>
 </dd></dl>
 
 <dl class="py property">
-<dt class="sig sig-object py" id="ape.api.networks.NetworkAPI.default_provider">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">default_provider</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#ape.api.networks.NetworkAPI.default_provider" title="Permalink to this definition"></a></dt>
+<dt class="sig sig-object py" id="ape.api.networks.NetworkAPI.default_provider_name">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">default_provider_name</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#ape.api.networks.NetworkAPI.default_provider_name" title="Permalink to this definition"></a></dt>
 <dd><p>The name of the default provider or <code class="docutils literal notranslate"><span class="pre">None</span></code>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
@@ -2209,7 +2209,7 @@ same network, such as in a multi-chain testing scenario.</p></li>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="ape.api.networks.NetworkAPI.use_provider">
-<span class="sig-name descname"><span class="pre">use_provider</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">provider_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">provider_settings</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">disconnect_after</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#ape.api.networks.ProviderContextManager" title="ape.api.networks.ProviderContextManager"><span class="pre">ProviderContextManager</span></a></span></span><a class="headerlink" href="#ape.api.networks.NetworkAPI.use_provider" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">use_provider</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">provider</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="#ape.api.providers.ProviderAPI" title="ape.api.providers.ProviderAPI"><span class="pre">ProviderAPI</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">provider_settings</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">disconnect_after</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">disconnect_on_exit</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#ape.api.networks.ProviderContextManager" title="ape.api.networks.ProviderContextManager"><span class="pre">ProviderContextManager</span></a></span></span><a class="headerlink" href="#ape.api.networks.NetworkAPI.use_provider" title="Permalink to this definition"></a></dt>
 <dd><p>Use and connect to a provider in a temporary context. When entering the context, it calls
 method <a class="reference internal" href="#ape.api.providers.ProviderAPI.connect" title="ape.api.providers.ProviderAPI.connect"><code class="xref py py-meth docutils literal notranslate"><span class="pre">ape.api.providers.ProviderAPI.connect()</span></code></a> and when exiting, it calls
 method <a class="reference internal" href="#ape.api.providers.ProviderAPI.disconnect" title="ape.api.providers.ProviderAPI.disconnect"><code class="xref py py-meth docutils literal notranslate"><span class="pre">ape.api.providers.ProviderAPI.disconnect()</span></code></a>.</p>
@@ -2224,12 +2224,14 @@ method <a class="reference internal" href="#ape.api.providers.ProviderAPI.discon
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>provider_name</strong> (<em>str</em>) – The name of the provider to use.</p></li>
+<li><p><strong>provider</strong> (<em>str</em>) – The provider instance or the name of the provider to use.</p></li>
+<li><p><strong>provider_settings</strong> (<em>dict</em><em>, </em><em>optional</em>) – Settings to apply to the provider.
+Defaults to <code class="docutils literal notranslate"><span class="pre">None</span></code>.</p></li>
 <li><p><strong>disconnect_after</strong> (<em>bool</em>) – Set to <code class="docutils literal notranslate"><span class="pre">True</span></code> to force a disconnect after ending
 the context. This defaults to <code class="docutils literal notranslate"><span class="pre">False</span></code> so you can re-connect to the
 same network, such as in a multi-chain testing scenario.</p></li>
-<li><p><strong>provider_settings</strong> (<em>dict</em><em>, </em><em>optional</em>) – Settings to apply to the provider.
-Defaults to <code class="docutils literal notranslate"><span class="pre">None</span></code>.</p></li>
+<li><p><strong>disconnect_on_exit</strong> (<em>bool</em>) – Whether to disconnect on the exit of the python
+session. Defaults to <code class="docutils literal notranslate"><span class="pre">True</span></code>.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>

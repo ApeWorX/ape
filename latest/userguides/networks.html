@@ -140,7 +140,7 @@
 <li class="toctree-l2"><a class="reference internal" href="#configuring-networks">Configuring Networks</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#local-network">Local Network</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#live-networks">Live Networks</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#ad-hoc-network-connection">Ad-hoc Network Connection</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#custom-network-connection">Custom Network Connection</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#running-a-network-process">Running a Network Process</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#provider-interaction">Provider Interaction</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#provider-context-manager">Provider Context Manager</a><ul>
@@ -220,7 +220,7 @@ The following is a list of common Ape commands that can use the <code class="doc
 ape<span class="w"> </span>console<span class="w"> </span>--network<span class="w"> </span>arbitrum:testnet:alchemy
 </pre></div>
 </div>
-<p>You can also use the <code class="docutils literal notranslate"><span class="pre">--network</span></code> option on scripts that use the <code class="docutils literal notranslate"><span class="pre">main()</span></code> method approach or scripts that implement that <code class="docutils literal notranslate"><span class="pre">NetworkBoundCommand</span></code> command type.
+<p>You can also use the <code class="docutils literal notranslate"><span class="pre">--network</span></code> option on scripts that use the <code class="docutils literal notranslate"><span class="pre">main()</span></code> method approach or scripts that implement that <code class="docutils literal notranslate"><span class="pre">ConnectedProviderCommand</span></code> command type.
 See <a class="reference external" href="./scripts.html">the scripting guide</a> to learn more about scripts and how to add the network option.</p>
 <p><strong>NOTE</strong>: You can omit values to use defaults.
 For example, the default ecosystem is <code class="docutils literal notranslate"><span class="pre">ethereum</span></code> and the default network is <code class="docutils literal notranslate"><span class="pre">local</span></code>, so you can do:</p>
@@ -284,9 +284,9 @@ To configure network URIs in geth, you can use the <code class="docutils literal
 </pre></div>
 </div>
 </section>
-<section id="ad-hoc-network-connection">
-<h2>Ad-hoc Network Connection<a class="headerlink" href="#ad-hoc-network-connection" title="Permalink to this heading"></a></h2>
-<p>If you would like to connect to a URI using the <code class="docutils literal notranslate"><span class="pre">geth</span></code> provider, you can specify a URI for the provider name in the <code class="docutils literal notranslate"><span class="pre">--network</span></code> option:</p>
+<section id="custom-network-connection">
+<h2>Custom Network Connection<a class="headerlink" href="#custom-network-connection" title="Permalink to this heading"></a></h2>
+<p>If you would like to connect to a URI using the default Ethereum node provider, you can specify a URI for the provider name in the <code class="docutils literal notranslate"><span class="pre">--network</span></code> option:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>ape<span class="w"> </span>run<span class="w"> </span>script<span class="w"> </span>--network<span class="w"> </span>ethereum:mainnet:https://foo.bar
 </pre></div>
 </div>

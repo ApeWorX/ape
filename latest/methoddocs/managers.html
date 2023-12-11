@@ -370,7 +370,7 @@
 <li class="toctree-l2"><a class="reference internal" href="#module-ape.managers.networks">Networks</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#ape.managers.networks.NetworkManager"><code class="docutils literal notranslate"><span class="pre">NetworkManager</span></code></a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#ape.managers.networks.NetworkManager.active_provider"><code class="docutils literal notranslate"><span class="pre">NetworkManager.active_provider</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#ape.managers.networks.NetworkManager.create_adhoc_geth_provider"><code class="docutils literal notranslate"><span class="pre">NetworkManager.create_adhoc_geth_provider()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ape.managers.networks.NetworkManager.create_custom_provider"><code class="docutils literal notranslate"><span class="pre">NetworkManager.create_custom_provider()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.managers.networks.NetworkManager.default_ecosystem"><code class="docutils literal notranslate"><span class="pre">NetworkManager.default_ecosystem</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.managers.networks.NetworkManager.ecosystem"><code class="docutils literal notranslate"><span class="pre">NetworkManager.ecosystem</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.managers.networks.NetworkManager.ecosystem_names"><code class="docutils literal notranslate"><span class="pre">NetworkManager.ecosystem_names</span></code></a></li>
@@ -2298,14 +2298,20 @@ However, use this singleton for more granular access to networks.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ape.managers.networks.NetworkManager.create_adhoc_geth_provider">
-<span class="sig-name descname"><span class="pre">create_adhoc_geth_provider</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">uri</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="api.html#ape.api.providers.ProviderAPI" title="ape.api.providers.ProviderAPI"><span class="pre">ProviderAPI</span></a></span></span><a class="headerlink" href="#ape.managers.networks.NetworkManager.create_adhoc_geth_provider" title="Permalink to this definition"></a></dt>
-<dd><p>Create an ad-hoc connection to a URI using the GethProvider core plugin.
+<dt class="sig sig-object py" id="ape.managers.networks.NetworkManager.create_custom_provider">
+<span class="sig-name descname"><span class="pre">create_custom_provider</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">connection_str:</span> <span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">provider_cls:</span> <span class="pre">~typing.Type[~ape.api.providers.ProviderAPI]</span> <span class="pre">=</span> <span class="pre">&lt;class</span> <span class="pre">'ape_ethereum.provider.EthereumNodeProvider'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">provider_name:</span> <span class="pre">str</span> <span class="pre">|</span> <span class="pre">None</span> <span class="pre">=</span> <span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="api.html#ape.api.providers.ProviderAPI" title="ape.api.providers.ProviderAPI"><span class="pre">ProviderAPI</span></a></span></span><a class="headerlink" href="#ape.managers.networks.NetworkManager.create_custom_provider" title="Permalink to this definition"></a></dt>
+<dd><p>Create a custom connection to a URI using the EthereumNodeProvider provider.
 <strong>NOTE</strong>: This provider will assume EVM-like behavior and this is generally not recommended.
 Use plugins when possible!</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>uri</strong> (<em>str</em>) – The URI of the node.</p>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>connection_str</strong> (<em>str</em>) – The connection string of the node, such as its URI
+when using HTTP.</p></li>
+<li><p><strong>provider_cls</strong> (Type[<a class="reference internal" href="api.html#ape.api.providers.ProviderAPI" title="ape.api.providers.ProviderAPI"><code class="xref py py-class docutils literal notranslate"><span class="pre">ProviderAPI</span></code></a>]) – Defaults to
+<code class="xref py py-class docutils literal notranslate"><span class="pre">EthereumNodeProvider</span></code>.</p></li>
+<li><p><strong>provider_name</strong> (<em>Optional</em><em>[</em><em>str</em><em>]</em>) – The name of the provider. Defaults to best guess.</p></li>
+</ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p><dl class="simple">
@@ -2520,6 +2526,8 @@ Defaults to the default ecosystem, network, and provider combination.</p></li>
 <li><p><strong>disconnect_after</strong> (<em>bool</em>) – Set to True to terminate the connection completely
 at the end of context. NOTE: May only work if the network was also started
 from this session.</p></li>
+<li><p><strong>disconnect_on_exit</strong> (<em>bool</em>) – Whether to disconnect on the exit of the python
+session. Defaults to <code class="docutils literal notranslate"><span class="pre">True</span></code>.</p></li>
 </ul>
 </dd>
 <dt class="field-odd">Returns<span class="colon">:</span></dt>

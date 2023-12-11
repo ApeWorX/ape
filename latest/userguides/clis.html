@@ -259,26 +259,53 @@ Here is an example using all of those features from the <code class="docutils li
 </section>
 <section id="network-tools">
 <h2>Network Tools<a class="headerlink" href="#network-tools" title="Permalink to this heading"></a></h2>
-<p>The <a class="reference external" href="../methoddocs/cli.html#ape.cli.options.network_option">&#64;network_option()</a> allows you to select an ecosystem / network / provider combination.
-When using with the <a class="reference external" href="../methoddocs/cli.html#ape.cli.commands.NetworkBoundCommand">NetworkBoundCommand</a> class, you can cause your CLI to connect before any of your code executes.
-This is useful if your script or command requires a provider connection in order for it to run.</p>
+<p>The <a class="reference external" href="../methoddocs/cli.html#ape.cli.options.network_option">&#64;network_option()</a> allows you to select an ecosystem, network, and provider.
+To specify the network option, use values like:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>--network<span class="w"> </span>ethereum
+--network<span class="w"> </span>ethereum:sepolia
+--network<span class="w"> </span>ethereum:mainnet:alchemy
+--network<span class="w"> </span>::foundry
+</pre></div>
+</div>
+<p>To use default values automatically, omit sections of the choice, but leave the semi-colons for parsing.
+For example, <code class="docutils literal notranslate"><span class="pre">::test</span></code> means use the default ecosystem and network and the <code class="docutils literal notranslate"><span class="pre">test</span></code> provider.</p>
+<p>Use <code class="docutils literal notranslate"><span class="pre">ecosystem</span></code>, <code class="docutils literal notranslate"><span class="pre">network</span></code>, and <code class="docutils literal notranslate"><span class="pre">provider</span></code> argument names in your command implementation to access their corresponding class instances:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">click</span>
-<span class="kn">from</span> <span class="nn">ape</span> <span class="kn">import</span> <span class="n">networks</span>
-<span class="kn">from</span> <span class="nn">ape.cli</span> <span class="kn">import</span> <span class="n">network_option</span><span class="p">,</span> <span class="n">NetworkBoundCommand</span>
-
+<span class="kn">from</span> <span class="nn">ape.cli</span> <span class="kn">import</span> <span class="n">network_option</span>
 
 <span class="nd">@click</span><span class="o">.</span><span class="n">command</span><span class="p">()</span>
 <span class="nd">@network_option</span><span class="p">()</span>
-<span class="k">def</span> <span class="nf">cmd</span><span class="p">(</span><span class="n">network</span><span class="p">):</span>
-    <span class="c1"># Choices like &quot;ethereum&quot; or &quot;polygon:local:test&quot;.</span>
-    <span class="n">click</span><span class="o">.</span><span class="n">echo</span><span class="p">(</span><span class="n">network</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">cmd</span><span class="p">(</span><span class="n">provider</span><span class="p">):</span>
+   <span class="c1"># This command only needs the provider.</span>
+   <span class="n">click</span><span class="o">.</span><span class="n">echo</span><span class="p">(</span><span class="n">provider</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
 
-
-<span class="nd">@click</span><span class="o">.</span><span class="n">command</span><span class="p">(</span><span class="bp">cls</span><span class="o">=</span><span class="n">NetworkBoundCommand</span><span class="p">)</span>
+<span class="nd">@click</span><span class="o">.</span><span class="n">command</span><span class="p">()</span>
 <span class="nd">@network_option</span><span class="p">()</span>
-<span class="k">def</span> <span class="nf">cmd</span><span class="p">(</span><span class="n">network</span><span class="p">):</span>
-    <span class="c1"># Fails if we are not connected.</span>
-    <span class="n">click</span><span class="o">.</span><span class="n">echo</span><span class="p">(</span><span class="n">networks</span><span class="o">.</span><span class="n">provider</span><span class="o">.</span><span class="n">network</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">cmd_2</span><span class="p">(</span><span class="n">ecosystem</span><span class="p">,</span> <span class="n">network</span><span class="p">,</span> <span class="n">provider</span><span class="p">):</span>
+   <span class="c1"># This command uses all parts of the parsed network choice.</span>
+   <span class="n">click</span><span class="o">.</span><span class="n">echo</span><span class="p">(</span><span class="n">ecosystem</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+   <span class="n">click</span><span class="o">.</span><span class="n">echo</span><span class="p">(</span><span class="n">network</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+   <span class="n">click</span><span class="o">.</span><span class="n">echo</span><span class="p">(</span><span class="n">provider</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The <a class="reference external" href="../methoddocs/cli.html#ape.cli.commands.ConnectedProviderCommand">ConnectedProviderCommand</a> automatically uses the <code class="docutils literal notranslate"><span class="pre">--network</span></code> option and connects to the network before any of your code executes and then disconnects afterward.
+This is useful if your script or command requires a provider connection in order for it to run.
+Additionally, specify <code class="docutils literal notranslate"><span class="pre">ecosystem</span></code>, <code class="docutils literal notranslate"><span class="pre">network</span></code>, or <code class="docutils literal notranslate"><span class="pre">provider</span></code> in your command function if you need any of those instances in your <code class="docutils literal notranslate"><span class="pre">ConnectedProviderCommand</span></code>, just like when using <code class="docutils literal notranslate"><span class="pre">network_option</span></code>.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">click</span>
+<span class="kn">from</span> <span class="nn">ape.cli</span> <span class="kn">import</span> <span class="n">ConnectedProviderCommand</span>
+
+<span class="nd">@click</span><span class="o">.</span><span class="n">command</span><span class="p">(</span><span class="bp">cls</span><span class="o">=</span><span class="n">ConnectedProviderCommand</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">cmd</span><span class="p">(</span><span class="n">network</span><span class="p">,</span> <span class="n">provider</span><span class="p">):</span>
+   <span class="n">click</span><span class="o">.</span><span class="n">echo</span><span class="p">(</span><span class="n">network</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+   <span class="n">click</span><span class="o">.</span><span class="n">echo</span><span class="p">(</span><span class="n">provider</span><span class="o">.</span><span class="n">is_connected</span><span class="p">)</span>  <span class="c1"># True</span>
+
+<span class="nd">@click</span><span class="o">.</span><span class="n">command</span><span class="p">(</span><span class="bp">cls</span><span class="o">=</span><span class="n">ConnectedProviderCommand</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">cmd</span><span class="p">(</span><span class="n">provider</span><span class="p">):</span>
+   <span class="n">click</span><span class="o">.</span><span class="n">echo</span><span class="p">(</span><span class="n">provider</span><span class="o">.</span><span class="n">is_connected</span><span class="p">)</span>  <span class="c1"># True</span>
+
+<span class="nd">@click</span><span class="o">.</span><span class="n">command</span><span class="p">(</span><span class="bp">cls</span><span class="o">=</span><span class="n">ConnectedProviderCommand</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">cmd</span><span class="p">():</span>
+   <span class="n">click</span><span class="o">.</span><span class="n">echo</span><span class="p">(</span><span class="s2">&quot;Using params is from ConnectedProviderCommand is optional&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
 </section>

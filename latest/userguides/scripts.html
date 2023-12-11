@@ -228,15 +228,23 @@ For example, assuming we have script <code class="docutils literal notranslate">
 </pre></div>
 </div>
 <p>Note that by default, <code class="docutils literal notranslate"><span class="pre">cli</span></code> scripts do not have <a class="reference external" href="../methoddocs/cli.html?highlight=options#ape.cli.options.network_option"><code class="docutils literal notranslate"><span class="pre">ape.cli.network_option</span></code></a> installed, giving you more flexibility in how you define your scripts.
-However, you can add the <code class="docutils literal notranslate"><span class="pre">network_option</span></code> to your scripts by importing both the <code class="docutils literal notranslate"><span class="pre">NetworkBoundCommand</span></code> and the <code class="docutils literal notranslate"><span class="pre">network_option</span></code> from the <code class="docutils literal notranslate"><span class="pre">ape.cli</span></code> namespace:</p>
+However, you can add the <code class="docutils literal notranslate"><span class="pre">network_option</span></code> or <code class="docutils literal notranslate"><span class="pre">ConnectedProviderCommand</span></code> to your scripts by importing them from the <code class="docutils literal notranslate"><span class="pre">ape.cli</span></code> namespace:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">click</span>
-<span class="kn">from</span> <span class="nn">ape.cli</span> <span class="kn">import</span> <span class="n">network_option</span><span class="p">,</span> <span class="n">NetworkBoundCommand</span>
+<span class="kn">from</span> <span class="nn">ape.cli</span> <span class="kn">import</span> <span class="n">network_option</span><span class="p">,</span> <span class="n">ConnectedProviderCommand</span>
 
 
-<span class="nd">@click</span><span class="o">.</span><span class="n">command</span><span class="p">(</span><span class="bp">cls</span><span class="o">=</span><span class="n">NetworkBoundCommand</span><span class="p">)</span>
-<span class="nd">@network_option</span><span class="p">()</span>
-<span class="k">def</span> <span class="nf">cli</span><span class="p">(</span><span class="n">network</span><span class="p">):</span>
-    <span class="n">click</span><span class="o">.</span><span class="n">echo</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;You are connected to network &#39;</span><span class="si">{</span><span class="n">network</span><span class="si">}</span><span class="s2">&#39;.&quot;</span><span class="p">)</span>
+<span class="nd">@click</span><span class="o">.</span><span class="n">command</span><span class="p">(</span><span class="bp">cls</span><span class="o">=</span><span class="n">ConnectedProviderCommand</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">cli</span><span class="p">(</span><span class="n">ecosystem</span><span class="p">,</span> <span class="n">network</span><span class="p">):</span>
+    <span class="n">click</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;You selected a provider on ecosystem &#39;</span><span class="si">{</span><span class="n">ecosystem</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&#39; and </span><span class="si">{</span><span class="n">network</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
+
+<span class="nd">@click</span><span class="o">.</span><span class="n">command</span><span class="p">(</span><span class="bp">cls</span><span class="o">=</span><span class="n">ConnectedProviderCommand</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">cli</span><span class="p">(</span><span class="n">network</span><span class="p">,</span> <span class="n">provider</span><span class="p">):</span>
+    <span class="n">click</span><span class="o">.</span><span class="n">echo</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;You are connected to network &#39;</span><span class="si">{</span><span class="n">network</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&#39;.&quot;</span><span class="p">)</span>
+    <span class="n">click</span><span class="o">.</span><span class="n">echo</span><span class="p">(</span><span class="n">provider</span><span class="o">.</span><span class="n">chain_id</span><span class="p">)</span>
+
+<span class="nd">@click</span><span class="o">.</span><span class="n">command</span><span class="p">(</span><span class="bp">cls</span><span class="o">=</span><span class="n">ConnectedProviderCommand</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">cli_2</span><span class="p">():</span>
+    <span class="n">click</span><span class="o">.</span><span class="n">echo</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Using any network-based argument is completely optional.&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>Assume we saved this script as <code class="docutils literal notranslate"><span class="pre">shownet.py</span></code> and have the <a class="reference external" href="https://github.com/ApeWorX/ape-alchemy">ape-alchemy</a> plugin installed.

@@ -310,8 +310,6 @@
     --network
 
       <ul>
-        <li><a href="commands/console.html#cmdoption-console-network">console command line option</a>
-</li>
         <li><a href="commands/networks.html#cmdoption-networks-list-network">networks-list command line option</a>
 </li>
         <li><a href="commands/networks.html#cmdoption-networks-run-network">networks-run command line option</a>
@@ -1285,6 +1283,8 @@
       </ul></li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="methoddocs/cli.html#ape.cli.commands.ConnectedProviderCommand">ConnectedProviderCommand (class in ape.cli.commands)</a>
+</li>
       <li><a href="methoddocs/api.html#ape.api.providers.ProviderAPI.connection_id">connection_id (ape.api.providers.ProviderAPI property)</a>
 
       <ul>
@@ -1297,8 +1297,6 @@
     console command line option
 
       <ul>
-        <li><a href="commands/console.html#cmdoption-console-network">--network</a>
-</li>
         <li><a href="commands/console.html#cmdoption-console-v">--verbosity</a>
 </li>
         <li><a href="commands/console.html#cmdoption-console-v">-v</a>
@@ -1398,7 +1396,7 @@
 </li>
       <li><a href="methoddocs/plugins.html#ape.plugins.converter.ConversionPlugin.converters">converters() (ape.plugins.converter.ConversionPlugin method)</a>
 </li>
-      <li><a href="methoddocs/managers.html#ape.managers.networks.NetworkManager.create_adhoc_geth_provider">create_adhoc_geth_provider() (ape.managers.networks.NetworkManager method)</a>
+      <li><a href="methoddocs/managers.html#ape.managers.networks.NetworkManager.create_custom_provider">create_custom_provider() (ape.managers.networks.NetworkManager method)</a>
 </li>
       <li><a href="methoddocs/api.html#ape.api.projects.ProjectAPI.create_manifest">create_manifest() (ape.api.projects.ProjectAPI method)</a>
 
@@ -1460,9 +1458,9 @@
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="methoddocs/api.html#ape.api.networks.EcosystemAPI.default_network">default_network (ape.api.networks.EcosystemAPI property)</a>
+      <li><a href="methoddocs/api.html#ape.api.networks.EcosystemAPI.default_network_name">default_network_name (ape.api.networks.EcosystemAPI property)</a>
 </li>
-      <li><a href="methoddocs/api.html#ape.api.networks.NetworkAPI.default_provider">default_provider (ape.api.networks.NetworkAPI property)</a>
+      <li><a href="methoddocs/api.html#ape.api.networks.NetworkAPI.default_provider_name">default_provider_name (ape.api.networks.NetworkAPI property)</a>
 </li>
       <li><a href="methoddocs/managers.html#ape.managers.query.DefaultQueryProvider">DefaultQueryProvider (class in ape.managers.query)</a>
 </li>
@@ -1743,6 +1741,8 @@
 </li>
       <li><a href="methoddocs/api.html#ape.api.providers.ProviderAPI.get_transactions_by_block">get_transactions_by_block() (ape.api.providers.ProviderAPI method)</a>
 </li>
+      <li><a href="methoddocs/cli.html#ape.cli.choices.get_user_selected_account">get_user_selected_account() (in module ape.cli.choices)</a>
+</li>
       <li><a href="methoddocs/api.html#ape.api.compiler.CompilerAPI.get_versions">get_versions() (ape.api.compiler.CompilerAPI method)</a>
 </li>
       <li><a href="methoddocs/api.html#ape.api.providers.ProviderAPI.get_virtual_machine_error">get_virtual_machine_error() (ape.api.providers.ProviderAPI method)</a>
@@ -1822,7 +1822,7 @@
 </li>
       <li><a href="methoddocs/managers.html#ape.managers.project.manager.ProjectManager.interfaces_folder">interfaces_folder (ape.managers.project.manager.ProjectManager property)</a>
 </li>
-      <li><a href="methoddocs/cli.html#ape.cli.commands.NetworkBoundCommand.invoke">invoke() (ape.cli.commands.NetworkBoundCommand method)</a>
+      <li><a href="methoddocs/cli.html#ape.cli.commands.ConnectedProviderCommand.invoke">invoke() (ape.cli.commands.ConnectedProviderCommand method)</a>
 </li>
       <li><a href="methoddocs/contracts.html#ape.contracts.base.ContractInstance.invoke_transaction">invoke_transaction() (ape.contracts.base.ContractInstance method)</a>
 </li>
@@ -2330,6 +2330,8 @@
 </li>
       <li><a href="methoddocs/exceptions.html#ape.exceptions.NetworkNotFoundError">NetworkNotFoundError</a>
 </li>
+      <li><a href="methoddocs/cli.html#ape.cli.options.NetworkOption">NetworkOption (class in ape.cli.options)</a>
+</li>
       <li><a href="methoddocs/plugins.html#ape.plugins.network.NetworkPlugin">NetworkPlugin (class in ape.plugins.network)</a>
 </li>
       <li><a href="methoddocs/api.html#ape.api.networks.EcosystemAPI.networks">networks (ape.api.networks.EcosystemAPI property)</a>
@@ -2413,6 +2415,8 @@
         <li><a href="commands/pm.html#cmdoption-pm-remove-arg-PACKAGE">pm-remove command line option</a>
 </li>
       </ul></li>
+      <li><a href="methoddocs/cli.html#ape.cli.commands.ConnectedProviderCommand.parse_args">parse_args() (ape.cli.commands.ConnectedProviderCommand method)</a>
+</li>
       <li><a href="methoddocs/managers.html#ape.managers.networks.NetworkManager.parse_network_choice">parse_network_choice() (ape.managers.networks.NetworkManager method)</a>
 </li>
       <li><a href="methoddocs/api.html#ape.api.projects.ProjectAPI.path">path (ape.api.projects.ProjectAPI attribute)</a>
