@@ -7,8 +7,8 @@ from typing import Dict, List, Optional
 import pytest
 
 from ape.managers.config import CONFIG_FILE_NAME
+from tests.conftest import ApeSubprocessRunner
 
-from ...conftest import ApeSubprocessRunner
 from .test_plugins import ListResult
 from .utils import NodeId, __project_names__, __projects_directory__, project_skipper
 
