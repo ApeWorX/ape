@@ -49,6 +49,22 @@ def log():
     return ContractLog(**RAW_LOG)
 
 
+@pytest.fixture
+def signable_message():
+    version = b"E"
+    header = b"thereum Signed Message:\n32"
+    body = (
+        b"\x86\x05\x99\xc6\xfa\x0f\x05|po(\x1f\xe3\x84\xc0\x0f"
+        b"\x13\xb2\xa6\x91\xa3\xb8\x90\x01\xc0z\xa8\x17\xbe'\xf3\x13"
+    )
+    return SignableMessage(version=version, header=header, body=body)
+
+
+@pytest.fixture
+def signature(owner, signable_message):
+    return owner.sign_message(signable_message)
+
+
 def test_contract_log_serialization(log, zero_address):
     obj = ContractLog.model_validate(log.model_dump(mode="json"))
     assert obj.contract_address == zero_address
@@ -112,16 +128,8 @@ def test_signature_repr():
     assert repr(signature) == "<TransactionSignature v=0 r=0x313233 s=0x343536>"
 
 
-def test_signable_message_repr():
-    version = b"E"
-    header = b"thereum Signed Message:\n32"
-    body = (
-        b"\x86\x05\x99\xc6\xfa\x0f\x05|po(\x1f\xe3\x84\xc0\x0f"
-        b"\x13\xb2\xa6\x91\xa3\xb8\x90\x01\xc0z\xa8\x17\xbe'\xf3\x13"
-    )
-    message = SignableMessage(version=version, header=header, body=body)
-
-    actual = repr(message)
+def test_signable_message_repr(signable_message):
+    actual = repr(signable_message)
     expected_version = "E"
     expected_header = "thereum Signed Message:\n32"
     expected_body = "0x860599c6fa0f057c706f281fe384c00f13b2a691a3b89001c07aa817be27f313"
@@ -131,3 +139,11 @@ def test_signable_message_repr():
     )
 
     assert actual == expected
+
+
+def test_signature_from_rsv_and_vrs(signature):
+    rsv = signature.encode_rsv()
+    vrs = signature.encode_vrs()
+    from_rsv = signature.from_rsv(rsv)
+    from_vrs = signature.from_vrs(vrs)
+    assert from_rsv == from_vrs == signature

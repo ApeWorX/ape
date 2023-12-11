@@ -65,6 +65,22 @@ class _Signature:
         yield self.r
         yield self.s
 
+    @classmethod
+    def from_rsv(cls, rsv: HexBytes) -> "_Signature":
+        # NOTE: Values may be padded.
+        if len(rsv) != 65:
+            raise ValueError("Length of RSV bytes must be 65.")
+
+        return cls(r=HexBytes(rsv[:32]), s=HexBytes(rsv[32:64]), v=rsv[64])
+
+    @classmethod
+    def from_vrs(cls, vrs: HexBytes) -> "_Signature":
+        # NOTE: Values may be padded.
+        if len(vrs) != 65:
+            raise ValueError("Length of VRS bytes must be 65.")
+
+        return cls(v=vrs[0], r=HexBytes(vrs[1:33]), s=HexBytes(vrs[33:]))
+
     def __repr__(self) -> str:
         class_name = getattr(type(self), "__name__", "_Signature")
         return f"<{class_name} v={self.v} r={to_hex(self.r)} s={to_hex(self.s)}>"
