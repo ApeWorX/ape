@@ -1,6 +1,6 @@
 import json
 from functools import cached_property
-from typing import Collection, Dict, Iterator, List, Optional, Set, Union
+from typing import Collection, Dict, Iterator, List, Optional, Set, Type, Union
 
 import yaml
 
@@ -8,6 +8,7 @@ from ape.api import EcosystemAPI, ProviderAPI, ProviderContextManager
 from ape.api.networks import NetworkAPI
 from ape.exceptions import ApeAttributeError, EcosystemNotFoundError, NetworkError
 from ape.managers.base import BaseManager
+from ape_ethereum.provider import EthereumNodeProvider
 
 
 class NetworkManager(BaseManager):
@@ -152,37 +153,58 @@ class NetworkManager(BaseManager):
         ecosystems = self.plugin_manager.ecosystems
         return {n: cls(**to_kwargs(n)) for n, cls in ecosystems}  # type: ignore
 
-    def create_adhoc_geth_provider(self, uri: str) -> ProviderAPI:
+    def create_custom_provider(
+        self,
+        connection_str: str,
+        provider_cls: Type[ProviderAPI] = EthereumNodeProvider,
+        provider_name: Optional[str] = None,
+    ) -> ProviderAPI:
         """
         Create an ad-hoc connection to a URI using the GethProvider core plugin.
         **NOTE**: This provider will assume EVM-like behavior and this is generally not recommended.
         Use plugins when possible!
 
         Args:
-            uri (str): The URI of the node.
+            connection_str (str): The connection string of the node, such as its URI
+              when using HTTP.
+            provider_cls (Type[:class:`~ape.api.providers.ProviderAPI`]): Defaults to
+              :class:`~ape_ethereum.providers.EthereumNodeProvider`.
+            provider_name (Optional[str]): The name of the provider. Defaults to best guess.
 
         Returns:
             :class:`~ape.api.providers.ProviderAPI`: The Geth provider
               implementation that comes with Ape.
         """
 
-        geth_class = None
-        for plugin_name, (_, _, provider_class) in self.plugin_manager.providers:
-            if plugin_name == "geth":
-                geth_class = provider_class
-                break
-
-        if geth_class is None:
-            raise NetworkError("Core Geth plugin missing.")
-
         network = self.ethereum.adhoc_network
-        provider = geth_class(
+
+        if provider_name is None:
+            if issubclass(provider_cls, EthereumNodeProvider):
+                name = "geth"
+
+            elif cls_name := getattr(provider_cls, "name", None):
+                name = cls_name
+
+            elif cls_name := getattr(provider_cls, "__name__"):
+                name = cls_name.lower()
+
+            else:
+                # Would be unusual for this to happen though.
+                name = "provider"
+
+        else:
+            name = provider_name
+
+        if not connection_str.startswith("http"):
+            raise ValueError("Currently, only HTTP-based custom nodes are supported.")
+
+        return (provider_cls or EthereumNodeProvider)(
+            name=name,
             network=network,
-            provider_settings={"uri": uri},
+            provider_settings={"uri": connection_str},
             data_folder=network.data_folder,
             request_header=network.request_header,
         )
-        return provider
 
     def __iter__(self) -> Iterator[str]:
         """
@@ -374,7 +396,7 @@ class NetworkManager(BaseManager):
             return default_network.get_provider(provider_settings=provider_settings)
 
         elif network_choice.startswith("http://") or network_choice.startswith("https://"):
-            return self.create_adhoc_geth_provider(network_choice)
+            return self.create_custom_provider(network_choice)
 
         selections = network_choice.split(":")
 

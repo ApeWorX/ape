@@ -1,58 +1,29 @@
 import atexit
-import os
 import shutil
-import sys
-from abc import ABC
-from functools import cached_property
 from itertools import tee
 from pathlib import Path
 from subprocess import DEVNULL, PIPE, Popen
 from typing import Any, Dict, Iterator, List, Optional, Tuple, Union
 
-import ijson  # type: ignore
-import requests
 from eth_pydantic_types import HexBytes
 from eth_typing import HexStr
 from eth_utils import add_0x_prefix, to_hex, to_wei
-from evm_trace import CallType, ParityTraceList
+from evm_trace import CallType
 from evm_trace import TraceFrame as EvmTraceFrame
-from evm_trace import (
-    create_trace_frames,
-    get_calltree_from_geth_call_trace,
-    get_calltree_from_geth_trace,
-    get_calltree_from_parity_trace,
-)
+from evm_trace import create_trace_frames, get_calltree_from_geth_trace
 from geth.accounts import ensure_account_exists  # type: ignore
 from geth.chain import initialize_chain  # type: ignore
 from geth.process import BaseGethProcess  # type: ignore
 from geth.wrapper import construct_test_chain_kwargs  # type: ignore
 from pydantic_settings import SettingsConfigDict
 from requests.exceptions import ConnectionError
-from web3 import HTTPProvider, Web3
-from web3.exceptions import ExtraDataLengthError
-from web3.gas_strategies.rpc import rpc_gas_price_strategy
 from web3.middleware import geth_poa_middleware
-from web3.middleware.validation import MAX_EXTRADATA_LENGTH
-from web3.providers import AutoProvider, IPCProvider
-from web3.providers.auto import load_provider_from_environment
 from yarl import URL
 
-from ape.api import (
-    PluginConfig,
-    ReceiptAPI,
-    SubprocessProvider,
-    TestProviderAPI,
-    TransactionAPI,
-    UpstreamProvider,
-)
-from ape.exceptions import (
-    ApeException,
-    APINotImplementedError,
-    ContractNotFoundError,
-    ProviderError,
-)
-from ape.logging import LogLevel, logger, sanitize_url
-from ape.types import AddressType, BlockID, CallTreeNode, SnapshotID, SourceTraceback, TraceFrame
+from ape.api import PluginConfig, SubprocessProvider, TestProviderAPI, TransactionAPI
+from ape.exceptions import ProviderError
+from ape.logging import LogLevel, logger
+from ape.types import BlockID, CallTreeNode, SnapshotID, SourceTraceback
 from ape.utils import (
     DEFAULT_NUMBER_OF_TEST_ACCOUNTS,
     DEFAULT_TEST_CHAIN_ID,
@@ -62,11 +33,12 @@ from ape.utils import (
     raises_not_implemented,
     spawn,
 )
-from ape_ethereum.provider import Web3Provider
-
-DEFAULT_PORT = 8545
-DEFAULT_HOSTNAME = "localhost"
-DEFAULT_SETTINGS = {"uri": f"http://{DEFAULT_HOSTNAME}:{DEFAULT_PORT}"}
+from ape_ethereum.provider import (
+    DEFAULT_HOSTNAME,
+    DEFAULT_PORT,
+    DEFAULT_SETTINGS,
+    EthereumNodeProvider,
+)
 
 
 class GethDevProcess(BaseGethProcess):
@@ -247,223 +219,8 @@ class GethNotInstalledError(ConnectionError):
         )
 
 
-class BaseGethProvider(Web3Provider, ABC):
-    # optimal values for geth
-    block_page_size: int = 5000
-    concurrency: int = 16
-
-    name: str = "geth"
-
-    """Is ``None`` until known."""
-    can_use_parity_traces: Optional[bool] = None
-
-    @property
-    def uri(self) -> str:
-        if "uri" in self.provider_settings:
-            # Use adhoc, scripted value
-            return self.provider_settings["uri"]
-
-        config = self.config.model_dump(mode="json").get(self.network.ecosystem.name, None)
-        if config is None:
-            return DEFAULT_SETTINGS["uri"]
-
-        # Use value from config file
-        network_config = config.get(self.network.name) or DEFAULT_SETTINGS
-        return network_config.get("uri", DEFAULT_SETTINGS["uri"])
-
-    @property
-    def connection_id(self) -> Optional[str]:
-        return f"{self.network_choice}:{self.uri}"
-
-    @property
-    def _clean_uri(self) -> str:
-        return sanitize_url(self.uri)
-
-    @property
-    def ipc_path(self) -> Path:
-        return self.settings.ipc_path or self.data_dir / "geth.ipc"
-
-    @property
-    def data_dir(self) -> Path:
-        if self.settings.data_dir:
-            return self.settings.data_dir.expanduser()
-
-        return _get_default_data_dir()
-
-    @cached_property
-    def _ots_api_level(self) -> Optional[int]:
-        # NOTE: Returns None when OTS namespace is not enabled.
-        try:
-            result = self._make_request("ots_getApiLevel")
-        except (NotImplementedError, ApeException, ValueError):
-            return None
-
-        if isinstance(result, int):
-            return result
-
-        elif isinstance(result, str) and result.isnumeric():
-            return int(result)
-
-        return None
-
-    def _set_web3(self):
-        # Clear cached version when connecting to another URI.
-        self._client_version = None  # type: ignore
-        self._web3 = _create_web3(self.uri, ipc_path=self.ipc_path)
-
-    def _complete_connect(self):
-        client_version = self.client_version.lower()
-        if "geth" in client_version:
-            self._log_connection("Geth")
-        elif "reth" in client_version:
-            self._log_connection("Reth")
-        elif "erigon" in client_version:
-            self._log_connection("Erigon")
-            self.concurrency = 8
-            self.block_page_size = 40_000
-        elif "nethermind" in client_version:
-            self._log_connection("Nethermind")
-            self.concurrency = 32
-            self.block_page_size = 50_000
-        else:
-            client_name = client_version.split("/")[0]
-            logger.warning(f"Connecting Geth plugin to non-Geth client '{client_name}'.")
-            logger.warning(f"Connecting Geth plugin to non-Geth client '{client_name}'.")
-
-        self.web3.eth.set_gas_price_strategy(rpc_gas_price_strategy)
-
-        # Check for chain errors, including syncing
-        try:
-            chain_id = self.web3.eth.chain_id
-        except ValueError as err:
-            raise ProviderError(
-                err.args[0].get("message")
-                if all((hasattr(err, "args"), err.args, isinstance(err.args[0], dict)))
-                else "Error getting chain id."
-            )
-
-        try:
-            block = self.web3.eth.get_block("latest")
-        except ExtraDataLengthError:
-            is_likely_poa = True
-        else:
-            is_likely_poa = (
-                "proofOfAuthorityData" in block
-                or len(block.get("extraData", "")) > MAX_EXTRADATA_LENGTH
-            )
-
-        if is_likely_poa and geth_poa_middleware not in self.web3.middleware_onion:
-            self.web3.middleware_onion.inject(geth_poa_middleware, layer=0)
-
-        self.network.verify_chain_id(chain_id)
-
-    def disconnect(self):
-        self.can_use_parity_traces = None
-        self._web3 = None  # type: ignore
-        self._client_version = None  # type: ignore
-
-    def get_transaction_trace(self, txn_hash: str) -> Iterator[TraceFrame]:
-        frames = self._stream_request(
-            "debug_traceTransaction", [txn_hash, {"enableMemory": True}], "result.structLogs.item"
-        )
-        for frame in create_trace_frames(frames):
-            yield self._create_trace_frame(frame)
-
-    def _get_transaction_trace_using_call_tracer(self, txn_hash: str) -> Dict:
-        return self._make_request(
-            "debug_traceTransaction", [txn_hash, {"enableMemory": True, "tracer": "callTracer"}]
-        )
-
-    def get_call_tree(self, txn_hash: str) -> CallTreeNode:
-        if self.can_use_parity_traces is True:
-            return self._get_parity_call_tree(txn_hash)
-
-        elif self.can_use_parity_traces is False:
-            return self._get_geth_call_tree(txn_hash)
-
-        elif "erigon" in self.client_version.lower():
-            tree = self._get_parity_call_tree(txn_hash)
-            self.can_use_parity_traces = True
-            return tree
-
-        try:
-            # Try the Parity traces first, in case node client supports it.
-            tree = self._get_parity_call_tree(txn_hash)
-        except (ValueError, APINotImplementedError, ProviderError):
-            self.can_use_parity_traces = False
-            return self._get_geth_call_tree(txn_hash)
-
-        # Parity style works.
-        self.can_use_parity_traces = True
-        return tree
-
-    def _get_parity_call_tree(self, txn_hash: str) -> CallTreeNode:
-        result = self._make_request("trace_transaction", [txn_hash])
-        if not result:
-            raise ProviderError(f"Failed to get trace for '{txn_hash}'.")
-
-        traces = ParityTraceList.model_validate(result)
-        evm_call = get_calltree_from_parity_trace(traces)
-        return self._create_call_tree_node(evm_call, txn_hash=txn_hash)
-
-    def _get_geth_call_tree(self, txn_hash: str) -> CallTreeNode:
-        calls = self._get_transaction_trace_using_call_tracer(txn_hash)
-        evm_call = get_calltree_from_geth_call_trace(calls)
-        return self._create_call_tree_node(evm_call, txn_hash=txn_hash)
-
-    def _log_connection(self, client_name: str):
-        msg = f"Connecting to existing {client_name.strip()} node at"
-        suffix = (
-            self.ipc_path.as_posix().replace(Path.home().as_posix(), "$HOME")
-            if self.ipc_path.exists()
-            else self._clean_uri
-        )
-        logger.info(f"{msg} {suffix}.")
-
-    def ots_get_contract_creator(self, address: AddressType) -> Optional[Dict]:
-        if self._ots_api_level is None:
-            return None
-
-        result = self._make_request("ots_getContractCreator", [address])
-        if result is None:
-            # NOTE: Skip the explorer part of the error message via `has_explorer=True`.
-            raise ContractNotFoundError(address, has_explorer=True, provider_name=self.name)
-
-        return result
-
-    def _get_contract_creation_receipt(self, address: AddressType) -> Optional[ReceiptAPI]:
-        if result := self.ots_get_contract_creator(address):
-            tx_hash = result["hash"]
-            return self.get_receipt(tx_hash)
-
-        return None
-
-    def _make_request(self, endpoint: str, parameters: Optional[List] = None) -> Any:
-        parameters = parameters or []
-        try:
-            return super()._make_request(endpoint, parameters)
-        except ProviderError as err:
-            if "does not exist/is not available" in str(err):
-                raise APINotImplementedError(
-                    f"RPC method '{endpoint}' is not implemented by this node instance."
-                ) from err
-
-            raise  # Original error
-
-    def _stream_request(self, method: str, params: List, iter_path="result.item"):
-        payload = {"jsonrpc": "2.0", "id": 1, "method": method, "params": params}
-        results = ijson.sendable_list()
-        coroutine = ijson.items_coro(results, iter_path)
-        resp = requests.post(self.uri, json=payload, stream=True)
-        resp.raise_for_status()
-
-        for chunk in resp.iter_content(chunk_size=2**17):
-            coroutine.send(chunk)
-            yield from results
-            del results[:]
-
-
-class GethDev(BaseGethProvider, TestProviderAPI, SubprocessProvider):
+# NOTE: Using EthereumNodeProvider because of it's geth-derived default behavior.
+class GethDev(EthereumNodeProvider, TestProviderAPI, SubprocessProvider):
     _process: Optional[GethDevProcess] = None
     name: str = "geth"
     can_use_parity_traces: Optional[bool] = False
@@ -702,55 +459,6 @@ class GethDev(BaseGethProvider, TestProviderAPI, SubprocessProvider):
         return self._process.command if self._process else []
 
 
-class Geth(BaseGethProvider, UpstreamProvider):
-    @property
-    def connection_str(self) -> str:
-        return self.uri
-
-    def connect(self):
-        self._set_web3()
-        if not self.is_connected:
-            raise ProviderError(f"No node found on '{self._clean_uri}'.")
-
-        self._complete_connect()
-
-
-def _create_web3(uri: str, ipc_path: Optional[Path] = None):
-    # Separated into helper method for testing purposes.
-    def http_provider():
-        return HTTPProvider(uri, request_kwargs={"timeout": 30 * 60})
-
-    def ipc_provider():
-        # NOTE: This mypy complaint seems incorrect.
-        if not (path := ipc_path):
-            raise ValueError("IPC Path required.")
-
-        return IPCProvider(ipc_path=path)
-
-    # NOTE: This tuple is ordered by try-attempt.
-    # Try ENV, then IPC, and then HTTP last.
-    providers = (
-        load_provider_from_environment,
-        ipc_provider,
-        http_provider,
-    )
-    provider = AutoProvider(potential_providers=providers)
-    return Web3(provider)
-
-
-def _get_default_data_dir() -> Path:
-    # Modified from web3.py package to always return IPC even when none exist.
-    if sys.platform == "darwin":
-        return Path.home() / "Library" / "Ethereum"
-
-    elif sys.platform.startswith("linux") or sys.platform.startswith("freebsd"):
-        return Path.home() / "ethereum"
-
-    elif sys.platform == "win32":
-        return Path(os.path.join("\\\\", ".", "pipe"))
-
-    else:
-        raise ValueError(
-            f"Unsupported platform '{sys.platform}'.  Only darwin/linux/win32/"
-            "freebsd are supported.  You must specify the data_dir."
-        )
+# NOTE: The default behavior of EthereumNodeBehavior assumes geth.
+class Geth(EthereumNodeProvider):
+    pass
