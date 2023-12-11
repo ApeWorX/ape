@@ -88,7 +88,7 @@ def test_connect_wrong_chain_id(mocker, ethereum, geth_provider):
         geth_provider.network = ethereum.get_network("goerli")
 
         # Ensure when reconnecting, it does not use HTTP
-        factory = mocker.patch("ape_geth.provider._create_web3")
+        factory = mocker.patch("ape_ethereum.provider._create_web3")
         factory.return_value = geth_provider._web3
         expected_error_message = (
             f"Provider connected to chain ID '{geth_provider._web3.eth.chain_id}', "

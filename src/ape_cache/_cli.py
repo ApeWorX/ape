@@ -1,8 +1,7 @@
 import click
 import pandas as pd
 
-from ape import networks
-from ape.cli import NetworkBoundCommand, network_option
+from ape.cli import ConnectedProviderCommand, network_option
 from ape.logging import logger
 from ape.utils import ManagerAccessMixin
 
@@ -20,7 +19,7 @@ def cli():
 
 @cli.command(short_help="Initialize a new cache database")
 @network_option(required=True)
-def init(network):
+def init(ecosystem, network):
     """
     Initializes an SQLite database and creates a file to store data
     from the provider.
@@ -29,21 +28,16 @@ def init(network):
     give an ecosystem name and a network name to initialize the database.
     """
 
-    provider = networks.get_provider_from_choice(network)
-    ecosystem_name = provider.network.ecosystem.name
-    network_name = provider.network.name
-
-    get_engine().init_database(ecosystem_name, network_name)
-    logger.success(f"Caching database initialized for {ecosystem_name}:{network_name}.")
+    get_engine().init_database(ecosystem.name, network.name)
+    logger.success(f"Caching database initialized for {ecosystem.name}:{network.name}.")
 
 
 @cli.command(
-    cls=NetworkBoundCommand,
+    cls=ConnectedProviderCommand,
     short_help="Call and print SQL statement to the cache database",
 )
-@network_option()
 @click.argument("query_str")
-def query(query_str, network):
+def query(query_str):
     """
     Allows for a query of the database from an SQL statement.
 
@@ -62,7 +56,7 @@ def query(query_str, network):
 
 @cli.command(short_help="Purges entire database")
 @network_option(required=True)
-def purge(network):
+def purge(ecosystem, network):
     """
     Purges data from the selected database instance.
 
@@ -74,9 +68,7 @@ def purge(network):
     purge the database of choice.
     """
 
-    provider = networks.get_provider_from_choice(network)
-    ecosystem_name = provider.network.ecosystem.name
-    network_name = provider.network.name
-
+    ecosystem_name = network.ecosystem.name
+    network_name = network.name
     get_engine().purge_database(ecosystem_name, network_name)
     logger.success(f"Caching database purged for {ecosystem_name}:{network_name}.")

@@ -318,7 +318,7 @@ def test_configure_default_txn_type(temp_config, ethereum):
 
     with temp_config(config_dict):
         ethereum._default_network = "mainnet-fork"
-        assert ethereum.default_network == "mainnet-fork"
+        assert ethereum.default_network_name == "mainnet-fork"
         assert ethereum.default_transaction_type == TransactionType.STATIC
         ethereum._default_network = LOCAL_NETWORK_NAME
 

@@ -24,7 +24,6 @@ from eth_pydantic_types import HexBytes
 from eth_utils import keccak, to_int
 from ethpm_types import BaseModel, ContractType
 from ethpm_types.abi import ABIType, ConstructorABI, EventABI, MethodABI
-from pydantic import computed_field
 
 from ape.exceptions import (
     NetworkError,
@@ -93,6 +92,29 @@ class EcosystemAPI(BaseInterfaceModel):
 
     def __repr__(self) -> str:
         return f"<{self.name}>"
+
+    @cached_property
+    def custom_network(self) -> "NetworkAPI":
+        ethereum_class = None
+        for plugin_name, ecosystem_class in self.plugin_manager.ecosystems:
+            if plugin_name == "ethereum":
+                ethereum_class = ecosystem_class
+                break
+
+        if ethereum_class is None:
+            raise NetworkError("Core Ethereum plugin missing.")
+
+        data_folder = mkdtemp()
+        request_header = self.config_manager.REQUEST_HEADER
+        init_kwargs = {"data_folder": data_folder, "request_header": request_header}
+        ethereum = ethereum_class(**init_kwargs)  # type: ignore
+        return NetworkAPI(
+            name="custom",
+            ecosystem=ethereum,
+            data_folder=Path(data_folder),
+            request_header=request_header,
+            _default_provider="geth",
+        )
 
     @classmethod
     @abstractmethod
@@ -258,7 +280,7 @@ class EcosystemAPI(BaseInterfaceModel):
             self.networks[network_name] = network
 
     @property
-    def default_network(self) -> str:
+    def default_network_name(self) -> str:
         """
         The name of the default network in this ecosystem.
 
@@ -283,6 +305,10 @@ class EcosystemAPI(BaseInterfaceModel):
 
         # Very unlikely scenario.
         raise NetworkError("No networks found.")
+
+    @property
+    def default_network(self) -> "NetworkAPI":
+        return self.get_network(self.default_network_name)
 
     def set_default_network(self, network_name: str):
         """
@@ -424,18 +450,21 @@ class EcosystemAPI(BaseInterfaceModel):
         Get the network for the given name.
 
         Args:
-              network_name (str): The name of the network to get.
+          network_name (str): The name of the network to get.
 
         Raises:
-              :class:`~ape.exceptions.NetworkNotFoundError`: When the network is not present.
+          :class:`~ape.exceptions.NetworkNotFoundError`: When the network is not present.
 
         Returns:
-              :class:`~ape.api.networks.NetworkAPI`
+          :class:`~ape.api.networks.NetworkAPI`
         """
 
         name = network_name.replace("_", "-")
         if name in self.networks:
             return self.networks[name]
+
+        elif name == "custom":
+            return self.custom_network
 
         raise NetworkNotFoundError(network_name, ecosystem=self.name, options=self.networks)
 
@@ -459,7 +488,7 @@ class EcosystemAPI(BaseInterfaceModel):
         data: Dict[str, Any] = {"name": str(network_name)}
 
         # Only add isDefault key when True
-        if network_name == self.default_network:
+        if network_name == self.default_network_name:
             data["isDefault"] = True
 
         data["providers"] = []
@@ -475,7 +504,7 @@ class EcosystemAPI(BaseInterfaceModel):
             provider_data: Dict = {"name": str(provider_name)}
 
             # Only add isDefault key when True
-            if provider_name == network.default_provider:
+            if provider_name == network.default_provider_name:
                 provider_data["isDefault"] = True
 
             data["providers"].append(provider_data)
@@ -605,6 +634,7 @@ class ProviderContextManager(ManagerAccessMixin):
             # set inner var to the recycled provider for use in push_provider()
             self._provider = self._recycled_provider
             ProviderContextManager._recycled_provider = None
+
         return self.push_provider()
 
     def __exit__(self, exception, *args, **kwargs):
@@ -699,29 +729,6 @@ class NetworkAPI(BaseInterfaceModel):
 
     # See ``.default_provider`` which is the proper field.
     _default_provider: str = ""
-
-    @classmethod
-    def create_adhoc_network(cls) -> "NetworkAPI":
-        ethereum_class = None
-        for plugin_name, ecosystem_class in cls.plugin_manager.ecosystems:
-            if plugin_name == "ethereum":
-                ethereum_class = ecosystem_class
-                break
-
-        if ethereum_class is None:
-            raise NetworkError("Core Ethereum plugin missing.")
-
-        data_folder = mkdtemp()
-        request_header = cls.config_manager.REQUEST_HEADER
-        init_kwargs = {"data_folder": data_folder, "request_header": request_header}
-        ethereum = ethereum_class(**init_kwargs)  # type: ignore
-        return cls(
-            name="adhoc",
-            ecosystem=ethereum,
-            data_folder=Path(data_folder),
-            request_header=request_header,
-            _default_provider="geth",
-        )
 
     def __repr__(self) -> str:
         try:
@@ -879,7 +886,10 @@ class NetworkAPI(BaseInterfaceModel):
             ecosystem_name, network_name, provider_class = plugin_tuple
             provider_name = clean_plugin_name(provider_class.__module__.split(".")[0])
 
-            if self.ecosystem.name == ecosystem_name and self.name == network_name:
+            # NOTE: Custom networks work with any provider.
+            if self.name == "custom" or (
+                self.ecosystem.name == ecosystem_name and self.name == network_name
+            ):
                 # NOTE: Lazily load provider config
                 providers[provider_name] = partial(
                     provider_class,
@@ -910,7 +920,7 @@ class NetworkAPI(BaseInterfaceModel):
             :class:`~ape.api.providers.ProviderAPI`
         """
 
-        provider_name = provider_name or self.default_provider
+        provider_name = provider_name or self.default_provider_name
         if not provider_name:
             from ape.managers.config import CONFIG_FILE_NAME
 
@@ -947,9 +957,10 @@ class NetworkAPI(BaseInterfaceModel):
 
     def use_provider(
         self,
-        provider_name: str,
+        provider: Union[str, "ProviderAPI"],
         provider_settings: Optional[Dict] = None,
         disconnect_after: bool = False,
+        disconnect_on_exit: bool = True,
     ) -> ProviderContextManager:
         """
         Use and connect to a provider in a temporary context. When entering the context, it calls
@@ -965,24 +976,37 @@ class NetworkAPI(BaseInterfaceModel):
                 ...
 
         Args:
-            provider_name (str): The name of the provider to use.
+            provider (str): The provider instance or the name of the provider to use.
+            provider_settings (dict, optional): Settings to apply to the provider.
+              Defaults to ``None``.
             disconnect_after (bool): Set to ``True`` to force a disconnect after ending
               the context. This defaults to ``False`` so you can re-connect to the
               same network, such as in a multi-chain testing scenario.
-            provider_settings (dict, optional): Settings to apply to the provider.
-              Defaults to ``None``.
+            disconnect_on_exit (bool): Whether to disconnect on the exit of the python
+              session. Defaults to ``True``.
 
         Returns:
             :class:`~ape.api.networks.ProviderContextManager`
         """
 
         settings = provider_settings or {}
-        provider = self.get_provider(provider_name=provider_name, provider_settings=settings)
-        return ProviderContextManager(provider=provider, disconnect_after=disconnect_after)
 
-    @computed_field()  # type: ignore[misc]
+        # NOTE: The main reason we allow a provider instance here is to avoid unnecessarily
+        #   re-initializing the class.
+        provider_obj = (
+            self.get_provider(provider_name=provider, provider_settings=settings)
+            if isinstance(provider, str)
+            else provider
+        )
+
+        return ProviderContextManager(
+            provider=provider_obj,
+            disconnect_after=disconnect_after,
+            disconnect_on_exit=disconnect_on_exit,
+        )
+
     @property
-    def default_provider(self) -> Optional[str]:
+    def default_provider_name(self) -> Optional[str]:
         """
         The name of the default provider or ``None``.
 
@@ -1003,6 +1027,13 @@ class NetworkAPI(BaseInterfaceModel):
             return list(self.providers)[0]
 
         # There are no providers at all for this network.
+        return None
+
+    @property
+    def default_provider(self) -> Optional["ProviderAPI"]:
+        if (name := self.default_provider_name) and name in self.providers:
+            return self.get_provider(name)
+
         return None
 
     @property
@@ -1056,7 +1087,9 @@ class NetworkAPI(BaseInterfaceModel):
         if self.default_provider:
             settings = provider_settings or {}
             return self.use_provider(
-                self.default_provider, provider_settings=settings, disconnect_after=disconnect_after
+                self.default_provider.name,
+                provider_settings=settings,
+                disconnect_after=disconnect_after,
             )
 
         raise NetworkError(f"No providers for network '{self.name}'.")
@@ -1089,7 +1122,7 @@ class NetworkAPI(BaseInterfaceModel):
               not local or adhoc and has a different hardcoded chain ID than
               the given one.
         """
-        if self.name not in ("adhoc", LOCAL_NETWORK_NAME) and self.chain_id != chain_id:
+        if self.name not in ("custom", LOCAL_NETWORK_NAME) and self.chain_id != chain_id:
             raise NetworkMismatchError(chain_id, self)
 
 
@@ -1112,7 +1145,7 @@ class ForkedNetworkAPI(NetworkAPI):
         """
 
         config_choice = self._network_config.get("upstream_provider")
-        if provider_name := config_choice or self.upstream_network.default_provider:
+        if provider_name := config_choice or self.upstream_network.default_provider_name:
             return self.upstream_network.get_provider(provider_name)
 
         raise NetworkError(f"Upstream network '{self.upstream_network}' has no providers.")
@@ -1135,7 +1168,7 @@ class ForkedNetworkAPI(NetworkAPI):
         Returns:
             :class:`~ape.api.networks.ProviderContextManager`
         """
-        return self.upstream_network.use_provider(self.upstream_provider.name)
+        return self.upstream_network.use_provider(self.upstream_provider)
 
 
 def create_network_type(chain_id: int, network_id: int) -> Type[NetworkAPI]:

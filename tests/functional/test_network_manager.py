@@ -146,22 +146,22 @@ def test_repr_disconnected(networks_disconnected):
     assert repr(networks_disconnected.ethereum.goerli) == "<ethereum:goerli chain_id=5>"
 
 
-def test_get_provider_from_choice_adhoc_provider(networks_connected_to_tester):
+def test_get_provider_from_choice_custom_provider(networks_connected_to_tester):
     uri = "https://geth:1234567890abcdef@geth.foo.bar/"
     provider = networks_connected_to_tester.get_provider_from_choice(f"ethereum:local:{uri}")
     assert uri in provider.connection_id
     assert provider.name == "geth"
     assert provider.uri == uri
-    assert provider.network.name == "local"
+    assert provider.network.name == "local"  # Network was specified to be local!
     assert provider.network.ecosystem.name == "ethereum"
 
 
-def test_get_provider_from_choice_adhoc_ecosystem(networks_connected_to_tester):
+def test_get_provider_from_choice_custom_ecosystem(networks_connected_to_tester):
     uri = "https://geth:1234567890abcdef@geth.foo.bar/"
     provider = networks_connected_to_tester.get_provider_from_choice(uri)
     assert provider.name == "geth"
     assert provider.uri == uri
-    assert provider.network.name == "adhoc"
+    assert provider.network.name == "custom"
     assert provider.network.ecosystem.name == "ethereum"
 
 

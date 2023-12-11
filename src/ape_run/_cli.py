@@ -11,7 +11,7 @@ import click
 from click import Command, Context, Option
 
 from ape import networks, project
-from ape.cli import NetworkBoundCommand, network_option, verbosity_option
+from ape.cli import ConnectedProviderCommand, verbosity_option
 from ape.cli.options import _VERBOSITY_VALUES, _create_verbosity_kwargs
 from ape.exceptions import ApeException, handle_ape_exception
 from ape.logging import logger
@@ -134,11 +134,10 @@ class ScriptCommand(click.MultiCommand):
             logger.debug(f"Found 'main' method in script: {relative_filepath}")
 
             @click.command(
-                cls=NetworkBoundCommand,
+                cls=ConnectedProviderCommand,
                 short_help=f"Run '{relative_filepath}:main'",
                 name=relative_filepath.stem,
             )
-            @network_option()
             @verbosity_option()
             def call(network):
                 _ = network  # Downstream might use this
@@ -154,13 +153,11 @@ class ScriptCommand(click.MultiCommand):
             logger.warning(f"No 'main' method or 'cli' command in script: {relative_filepath}")
 
             @click.command(
-                cls=NetworkBoundCommand,
+                cls=ConnectedProviderCommand,
                 short_help=f"Run '{relative_filepath}:main'",
                 name=relative_filepath.stem,
             )
-            @network_option()
-            def call(network):
-                _ = network  # Downstream might use this
+            def call():
                 with use_scripts_sys_path(filepath.parent.parent):
                     empty_ns = run_script_module(filepath)
 

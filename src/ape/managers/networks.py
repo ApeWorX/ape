@@ -1,6 +1,6 @@
 import json
 from functools import cached_property
-from typing import Collection, Dict, Iterator, List, Optional, Set, Union
+from typing import Collection, Dict, Iterator, List, Optional, Set, Type, Union
 
 import yaml
 
@@ -8,6 +8,7 @@ from ape.api import EcosystemAPI, ProviderAPI, ProviderContextManager
 from ape.api.networks import NetworkAPI
 from ape.exceptions import ApeAttributeError, EcosystemNotFoundError, NetworkError
 from ape.managers.base import BaseManager
+from ape_ethereum.provider import EthereumNodeProvider
 
 
 class NetworkManager(BaseManager):
@@ -152,33 +153,55 @@ class NetworkManager(BaseManager):
         ecosystems = self.plugin_manager.ecosystems
         return {n: cls(**to_kwargs(n)) for n, cls in ecosystems}  # type: ignore
 
-    def create_adhoc_geth_provider(self, uri: str) -> ProviderAPI:
+    def create_custom_provider(
+        self,
+        connection_str: str,
+        provider_cls: Type[ProviderAPI] = EthereumNodeProvider,
+        provider_name: Optional[str] = None,
+    ) -> ProviderAPI:
         """
-        Create an ad-hoc connection to a URI using the GethProvider core plugin.
+        Create a custom connection to a URI using the EthereumNodeProvider provider.
         **NOTE**: This provider will assume EVM-like behavior and this is generally not recommended.
         Use plugins when possible!
 
         Args:
-            uri (str): The URI of the node.
+            connection_str (str): The connection string of the node, such as its URI
+              when using HTTP.
+            provider_cls (Type[:class:`~ape.api.providers.ProviderAPI`]): Defaults to
+              :class:`~ape_ethereum.providers.EthereumNodeProvider`.
+            provider_name (Optional[str]): The name of the provider. Defaults to best guess.
 
         Returns:
             :class:`~ape.api.providers.ProviderAPI`: The Geth provider
               implementation that comes with Ape.
         """
 
-        geth_class = None
-        for plugin_name, (_, _, provider_class) in self.plugin_manager.providers:
-            if plugin_name == "geth":
-                geth_class = provider_class
-                break
+        network = self.ethereum.custom_network
 
-        if geth_class is None:
-            raise NetworkError("Core Geth plugin missing.")
+        if provider_name is None:
+            if issubclass(provider_cls, EthereumNodeProvider):
+                name = "geth"
 
-        network = NetworkAPI.create_adhoc_network()
-        return geth_class(
+            elif cls_name := getattr(provider_cls, "name", None):
+                name = cls_name
+
+            elif cls_name := getattr(provider_cls, "__name__"):
+                name = cls_name.lower()
+
+            else:
+                # Would be unusual for this to happen though.
+                name = "provider"
+
+        else:
+            name = provider_name
+
+        if not connection_str.startswith("http"):
+            raise ValueError("Currently, only HTTP-based custom nodes are supported.")
+
+        return (provider_cls or EthereumNodeProvider)(
+            name=name,
             network=network,
-            provider_settings={"uri": uri},
+            provider_settings={"uri": connection_str},
             data_folder=network.data_folder,
             request_header=network.request_header,
         )
@@ -301,14 +324,14 @@ class NetworkManager(BaseManager):
                 for provider_name in providers:
                     if (
                         ecosystem_name == self.default_ecosystem.name
-                        and network_name == ecosystem.default_network
+                        and network_name == ecosystem.default_network_name
                     ):
                         yield f"::{provider_name}"
 
                     if ecosystem_name == self.default_ecosystem.name:
                         yield f":{network_name}:{provider_name}"
 
-                    if network_name == ecosystem.default_network:
+                    if network_name == ecosystem.default_network_name:
                         yield f"{ecosystem_name}::{provider_name}"
 
                     # Always include the full path as an option.
@@ -370,19 +393,21 @@ class NetworkManager(BaseManager):
 
         if network_choice is None:
             default_network = self.default_ecosystem.default_network
-            return self.default_ecosystem[default_network].get_provider(
-                provider_settings=provider_settings
-            )
+            return default_network.get_provider(provider_settings=provider_settings)
 
         elif network_choice.startswith("http://") or network_choice.startswith("https://"):
-            return self.create_adhoc_geth_provider(network_choice)
+            return self.create_custom_provider(network_choice)
 
         selections = network_choice.split(":")
 
         # NOTE: Handle case when URI is passed e.g. "http://..."
         if len(selections) > 3:
-            selections[2] = ":".join(selections[2:])
+            provider_value = ":".join(selections[2:])
+            selections[2] = provider_value
             selections = selections[:3]
+
+            if provider_value.startswith("https://") or provider_value.startswith("https://"):
+                selections[1] = selections[1] or "custom"
 
         if selections == network_choice or len(selections) == 1:
             # Either split didn't work (in which case it matches the start)
@@ -391,20 +416,20 @@ class NetworkManager(BaseManager):
             # By default, the "local" network should be specified for
             # any ecosystem (this should not correspond to a production chain)
             default_network = ecosystem.default_network
-            return ecosystem[default_network].get_provider(provider_settings=provider_settings)
+            return default_network.get_provider(provider_settings=provider_settings)
 
         elif len(selections) == 2:
             # Only ecosystem and network were specified, not provider
             ecosystem_name, network_name = selections
             ecosystem = self.get_ecosystem(ecosystem_name or self.default_ecosystem.name)
-            network = ecosystem.get_network(network_name or ecosystem.default_network)
+            network = ecosystem.get_network(network_name or ecosystem.default_network_name)
             return network.get_provider(provider_settings=provider_settings)
 
         elif len(selections) == 3:
             # Everything is specified, use specified provider for ecosystem and network
             ecosystem_name, network_name, provider_name = selections
             ecosystem = self.get_ecosystem(ecosystem_name or self.default_ecosystem.name)
-            network = ecosystem.get_network(network_name or ecosystem.default_network)
+            network = ecosystem.get_network(network_name or ecosystem.default_network_name)
             return network.get_provider(
                 provider_name=provider_name, provider_settings=provider_settings
             )
@@ -438,6 +463,8 @@ class NetworkManager(BaseManager):
             disconnect_after (bool): Set to True to terminate the connection completely
               at the end of context. NOTE: May only work if the network was also started
               from this session.
+            disconnect_on_exit (bool): Whether to disconnect on the exit of the python
+              session. Defaults to ``True``.
 
         Returns:
             :class:`~api.api.networks.ProviderContextManager`

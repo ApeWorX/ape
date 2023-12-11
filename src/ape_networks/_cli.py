@@ -105,16 +105,13 @@ def _list(cli_ctx, output_format, ecosystem_filter, network_filter, provider_fil
 @cli.command()
 @ape_cli_context()
 @network_option(default="ethereum:local:geth")
-def run(cli_ctx, network):
+def run(cli_ctx, provider):
     """
     Start a node process
     """
-
     # Ignore extra loggers, such as web3 loggers.
     cli_ctx.logger._extra_loggers = {}
 
-    network_ctx = cli_ctx.network_manager.parse_network_choice(network)
-    provider = network_ctx._provider
     if not isinstance(provider, SubprocessProvider):
         cli_ctx.abort(
             f"`ape networks run` requires a provider that manages a process, not '{provider.name}'."

@@ -1,11 +1,13 @@
 import json
 import shutil
+import subprocess
+import sys
 import tempfile
 import time
 from contextlib import contextmanager
 from pathlib import Path
 from tempfile import mkdtemp
-from typing import Any, Callable, Dict, Optional
+from typing import Any, Callable, Dict, Optional, Sequence
 
 import pytest
 import yaml
@@ -181,9 +183,18 @@ def temp_accounts_path(config):
         shutil.rmtree(path)
 
 
-@pytest.fixture(scope="session")
-def runner():
-    yield CliRunner()
+@pytest.fixture
+def runner(mock_sys_argv):
+    class ApeRunner(CliRunner):
+        def invoke(self, *args, **kwargs):
+            # Also make the command appear in sys.argv
+            mock_sys_argv.return_value = ("ape", *(args[1] if len(args) > 1 else []))
+            try:
+                return super().invoke(*args, **kwargs)
+            finally:
+                mock_sys_argv.return_value = sys.argv
+
+    yield ApeRunner()
 
 
 @pytest.fixture
@@ -468,3 +479,49 @@ def mock_home_directory(tmp_path):
     Path.home = lambda: tmp_path  # type: ignore[method-assign]
     yield tmp_path
     Path.home = lambda: original_home  # type: ignore[method-assign]
+
+
+class SubprocessRunner:
+    """
+    Same CLI commands are better tested using a python subprocess,
+    such as `ape test` commands because duplicate pytest main methods
+    do not run well together, or `ape plugins` commands, which may
+    modify installed plugins.
+    """
+
+    def __init__(self, root_cmd: Optional[Sequence[str]] = None):
+        self.root_cmd = root_cmd or []
+
+    def invoke(self, subcommand: Optional[Sequence[str]] = None):
+        subcommand = subcommand or []
+        cmd_ls = [*self.root_cmd, *subcommand]
+        completed_process = subprocess.run(cmd_ls, capture_output=True, text=True)
+        return SubprocessResult(completed_process)
+
+
+class ApeSubprocessRunner(SubprocessRunner):
+    """
+    Subprocess runner for Ape-specific commands.
+    """
+
+    def __init__(self, root_cmd: Optional[Sequence[str]] = None):
+        ape_path = Path(sys.executable).parent / "ape"
+        super().__init__([str(ape_path), *(root_cmd or [])])
+
+
+class SubprocessResult:
+    def __init__(self, completed_process: subprocess.CompletedProcess):
+        self._completed_process = completed_process
+
+    @property
+    def exit_code(self) -> int:
+        return self._completed_process.returncode
+
+    @property
+    def output(self) -> str:
+        return self._completed_process.stdout
+
+
+@pytest.fixture
+def mock_sys_argv(mocker):
+    return mocker.patch("ape.cli.options._get_sys_argv")

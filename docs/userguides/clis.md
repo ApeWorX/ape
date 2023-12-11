@@ -63,28 +63,60 @@ def cli(cli_ctx):
 
 ## Network Tools
 
-The [@network_option()](../methoddocs/cli.html#ape.cli.options.network_option) allows you to select an ecosystem / network / provider combination.
-When using with the [NetworkBoundCommand](../methoddocs/cli.html#ape.cli.commands.NetworkBoundCommand) class, you can cause your CLI to connect before any of your code executes.
-This is useful if your script or command requires a provider connection in order for it to run.
+The [@network_option()](../methoddocs/cli.html#ape.cli.options.network_option) allows you to select an ecosystem, network, and provider.
+To specify the network option, use values like:
+
+```shell
+--network ethereum
+--network ethereum:sepolia
+--network ethereum:mainnet:alchemy
+--network ::foundry
+```
+
+To use default values automatically, omit sections of the choice, but leave the semi-colons for parsing.
+For example, `::test` means use the default ecosystem and network and the `test` provider.
+
+Use `ecosystem`, `network`, and `provider` argument names in your command implementation to access their corresponding class instances:
 
 ```python
 import click
-from ape import networks
-from ape.cli import network_option, NetworkBoundCommand
-
+from ape.cli import network_option
 
 @click.command()
 @network_option()
-def cmd(network):
-    # Choices like "ethereum" or "polygon:local:test".
-    click.echo(network)
+def cmd(provider):
+   # This command only needs the provider.
+   click.echo(provider.name)
 
-
-@click.command(cls=NetworkBoundCommand)
+@click.command()
 @network_option()
-def cmd(network):
-    # Fails if we are not connected.
-    click.echo(networks.provider.network.name)
+def cmd_2(ecosystem, network, provider):
+   # This command uses all parts of the parsed network choice.
+   click.echo(ecosystem.name)
+   click.echo(network.name)
+   click.echo(provider.name)
+```
+
+The [ConnectedProviderCommand](../methoddocs/cli.html#ape.cli.commands.ConnectedProviderCommand) automatically uses the `--network` option and connects to the network before any of your code executes and then disconnects afterward.
+This is useful if your script or command requires a provider connection in order for it to run.
+Additionally, specify `ecosystem`, `network`, or `provider` in your command function if you need any of those instances in your `ConnectedProviderCommand`, just like when using `network_option`.
+
+```python
+import click
+from ape.cli import ConnectedProviderCommand
+
+@click.command(cls=ConnectedProviderCommand)
+def cmd(network, provider):
+   click.echo(network.name)
+   click.echo(provider.is_connected)  # True
+
+@click.command(cls=ConnectedProviderCommand)
+def cmd(provider):
+   click.echo(provider.is_connected)  # True
+
+@click.command(cls=ConnectedProviderCommand)
+def cmd():
+   click.echo("Using params is from ConnectedProviderCommand is optional")
 ```
 
 ## Account Tools

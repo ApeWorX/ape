@@ -270,3 +270,9 @@ def test_no_comma_in_rpc_url():
     sanitised_url = _sanitize_web3_url(test_url)
 
     assert "," not in sanitised_url
+
+
+def test_use_provider_using_provider_instance(eth_tester_provider):
+    network = eth_tester_provider.network
+    with network.use_provider(eth_tester_provider) as provider:
+        assert id(provider) == id(eth_tester_provider)

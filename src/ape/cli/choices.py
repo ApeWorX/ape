@@ -1,4 +1,5 @@
 import re
+import warnings
 from enum import Enum
 from functools import lru_cache
 from typing import Any, Callable, Iterator, List, Optional, Sequence, Type, Union
@@ -8,10 +9,10 @@ from click import BadParameter, Choice, Context, Parameter
 
 from ape import accounts, networks
 from ape.api.accounts import AccountAPI
+from ape.api.providers import ProviderAPI
 from ape.exceptions import AccountsError
 from ape.types import _LazySequence
 
-ADHOC_NETWORK_PATTERN = re.compile(r"\w*:\w*:https?://\w*.*")
 _ACCOUNT_TYPE_FILTER = Union[
     None, Sequence[AccountAPI], Type[AccountAPI], Callable[[AccountAPI], bool]
 ]
@@ -136,6 +137,18 @@ class PromptChoice(click.ParamType):
             return self.choices[choice_idx]
 
         raise IndexError(f"Choice index '{choice_idx}' out of range.")
+
+
+def get_user_selected_account(
+    prompt_message: Optional[str] = None, account_type: _ACCOUNT_TYPE_FILTER = None
+) -> AccountAPI:
+    """
+    **DEPRECATED**: Use :meth:`~ape.cli.choices.select_account` instead.
+    """
+    warnings.warn(
+        "'get_user_selected_account' is deprecated. Use 'select_account'.", DeprecationWarning
+    )
+    return select_account(prompt_message=prompt_message, key=account_type)
 
 
 def select_account(
@@ -315,13 +328,17 @@ class NetworkChoice(click.Choice):
     This is used in :meth:`~ape.cli.options.network_option`.
     """
 
+    CUSTOM_NETWORK_PATTERN = re.compile(r"\w*:\w*:https?://\w*.*")
+
     def __init__(
         self,
         case_sensitive=True,
         ecosystem: _NETWORK_FILTER = None,
         network: _NETWORK_FILTER = None,
         provider: _NETWORK_FILTER = None,
+        base_type: Type = ProviderAPI,
     ):
+        self.base_type = base_type
         super().__init__(
             get_networks(ecosystem=ecosystem, network=network, provider=provider), case_sensitive
         )
@@ -330,26 +347,44 @@ class NetworkChoice(click.Choice):
         return "[ecosystem-name][:[network-name][:[provider-name]]]"
 
     def convert(self, value: Any, param: Optional[Parameter], ctx: Optional[Context]) -> Any:
-        if (
-            ADHOC_NETWORK_PATTERN.match(value)
+        if not value or value in ("None", "none"):
+            return None
+
+        if not self.is_custom_value(value):
+            try:
+                # Validate result.
+                choice = super().convert(value, param, ctx)
+            except BadParameter as err:
+                # If an error was not raised for some reason, raise a simpler error.
+                # NOTE: Still avoid showing the massive network options list.
+                raise click.BadParameter(
+                    "Invalid network choice. Use `ape networks list` to see options."
+                ) from err
+
+        else:
+            # By-pass choice constraints when using custom network.
+            choice = value
+
+        if issubclass(self.base_type, ProviderAPI):
+            # Return the provider.
+            return networks.get_provider_from_choice(network_choice=value)
+
+        elif isinstance(self.base_type, str):
+            # The user wants the regular choice back.
+            return choice
+
+        else:
+            raise TypeError(f"Unhandled type '{self.base_type}' for NetworkChoice.")
+
+    @classmethod
+    def is_custom_value(cls, value) -> bool:
+        return (
+            value is not None
+            and isinstance(value, str)
+            and cls.CUSTOM_NETWORK_PATTERN.match(value) is not None
             or str(value).startswith("http://")
             or str(value).startswith("https://")
-        ):
-            # By-pass choice constraints when using adhoc network
-            return value
-
-        try:
-            return super().convert(value, param, ctx)
-        except BadParameter as err:
-            # Find out actual bad parts of the value to show better error.
-            # The following line should raise a nicer error.
-            networks.get_provider_from_choice(network_choice=value)
-
-            # If an error was not raised for some reason, raise a simpler error.
-            # NOTE: Still avoid showing the massive network options list.
-            raise click.BadParameter(
-                "Invalid network choice. Use `ape networks list` to see options."
-            ) from err
+        )
 
 
 class OutputFormat(Enum):
