@@ -118,6 +118,7 @@ class NetworkOption(Option):
         provider = kwargs.pop("provider", None)
         default = kwargs.pop("default", "auto")
         base_type = kwargs.pop("base_type", ProviderAPI)
+        callback = kwargs.pop("callback", None)
 
         # NOTE: If using network_option, this part is skipped
         #  because parsing happens earlier to handle advanced usage.
@@ -128,6 +129,7 @@ class NetworkOption(Option):
                 network=network,
                 provider=provider,
                 base_type=base_type,
+                callback=callback,
             )
         auto = default == "auto"
         required = kwargs.get("required", False)
@@ -253,6 +255,8 @@ def network_option(
             # `network` via the partial.
             kwargs["expose_value"] = False
 
+        user_cb = kwargs.pop("callback", None)
+
         # Create the actual option.
         option = click.option(
             default=default,
@@ -261,6 +265,7 @@ def network_option(
             provider=provider,
             required=required,
             cls=NetworkOption,
+            callback=user_cb,
             **kwargs,
         )(partial_f)
 

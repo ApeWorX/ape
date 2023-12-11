@@ -337,8 +337,13 @@ class NetworkChoice(click.Choice):
         network: _NETWORK_FILTER = None,
         provider: _NETWORK_FILTER = None,
         base_type: Type = ProviderAPI,
+        callback: Optional[Callable] = None,
     ):
+        if not isinstance(base_type, (ProviderAPI, str)):
+            raise TypeError(f"Unhandled type '{base_type}' for NetworkChoice.")
+
         self.base_type = base_type
+        self.callback = callback
         super().__init__(
             get_networks(ecosystem=ecosystem, network=network, provider=provider), case_sensitive
         )
@@ -348,9 +353,9 @@ class NetworkChoice(click.Choice):
 
     def convert(self, value: Any, param: Optional[Parameter], ctx: Optional[Context]) -> Any:
         if not value or value in ("None", "none"):
-            return None
+            choice = None
 
-        if not self.is_custom_value(value):
+        elif not self.is_custom_value(value):
             try:
                 # Validate result.
                 choice = super().convert(value, param, ctx)
@@ -365,16 +370,11 @@ class NetworkChoice(click.Choice):
             # By-pass choice constraints when using custom network.
             choice = value
 
-        if issubclass(self.base_type, ProviderAPI):
+        if choice is not None and issubclass(self.base_type, ProviderAPI):
             # Return the provider.
-            return networks.get_provider_from_choice(network_choice=value)
+            choice = networks.get_provider_from_choice(network_choice=value)
 
-        elif isinstance(self.base_type, str):
-            # The user wants the regular choice back.
-            return choice
-
-        else:
-            raise TypeError(f"Unhandled type '{self.base_type}' for NetworkChoice.")
+        return self.callback(choice) if self.callback else choice
 
     @classmethod
     def is_custom_value(cls, value) -> bool:

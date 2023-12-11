@@ -30,6 +30,7 @@ class ConnectedProviderCommand(click.Command):
 
     def __init__(self, *args, **kwargs):
         self._use_cls_types = kwargs.pop("use_cls_types", True)
+        self._callback = kwargs.pop("callback", None)
         super().__init__(*args, **kwargs)
 
     def parse_args(self, ctx: Context, args: List[str]) -> List[str]:
@@ -40,7 +41,7 @@ class ConnectedProviderCommand(click.Command):
             from ape.cli.options import NetworkOption
 
             base_type = ProviderAPI if self._use_cls_types else str
-            option = NetworkOption(base_type=base_type)
+            option = NetworkOption(base_type=base_type, callback=self._callback)
             self.params.append(option)
 
         return super().parse_args(ctx, args)
