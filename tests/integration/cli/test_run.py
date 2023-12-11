@@ -111,7 +111,7 @@ def test_run_interactive(ape_cli, runner, project):
 
 
 @skip_projects_except("script")
-def test_run_adhoc_provider(ape_cli, runner, project):
+def test_run_custom_provider(ape_cli, runner, project):
     result = runner.invoke(
         ape_cli,
         ["run", "deploy", "--network", "ethereum:mainnet:http://127.0.0.1:9545"],
@@ -124,7 +124,7 @@ def test_run_adhoc_provider(ape_cli, runner, project):
 
 
 @skip_projects_except("script")
-def test_run_adhoc_network(ape_cli, runner, project):
+def test_run_custom_network(ape_cli, runner, project):
     result = runner.invoke(ape_cli, ["run", "deploy", "--network", "http://127.0.0.1:9545"])
 
     # Show that it attempts to connect

@@ -204,7 +204,7 @@ def network_option(
 
         if network_choice in ("None", "none"):
             # Specified None in cmd line- ignore.
-            # Or is an adhoc value.
+            # Or is a custom value.
             choice_classes = None
 
         elif network_choice is None:

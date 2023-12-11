@@ -160,7 +160,7 @@ class NetworkManager(BaseManager):
         provider_name: Optional[str] = None,
     ) -> ProviderAPI:
         """
-        Create an ad-hoc connection to a URI using the GethProvider core plugin.
+        Create a custom connection to a URI using the EthereumNodeProvider provider.
         **NOTE**: This provider will assume EVM-like behavior and this is generally not recommended.
         Use plugins when possible!
 
@@ -176,7 +176,7 @@ class NetworkManager(BaseManager):
               implementation that comes with Ape.
         """
 
-        network = self.ethereum.adhoc_network
+        network = self.ethereum.custom_network
 
         if provider_name is None:
             if issubclass(provider_cls, EthereumNodeProvider):
@@ -407,8 +407,8 @@ class NetworkManager(BaseManager):
             selections = selections[:3]
 
             if provider_value.startswith("https://") or provider_value.startswith("https://"):
-                # Network must be adhoc when using a URI.
-                selections[1] = "adhoc"
+                # Network must be 'custom' when using a URI.
+                selections[1] = "custom"
 
         if selections == network_choice or len(selections) == 1:
             # Either split didn't work (in which case it matches the start)

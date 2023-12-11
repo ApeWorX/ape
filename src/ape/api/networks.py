@@ -94,7 +94,7 @@ class EcosystemAPI(BaseInterfaceModel):
         return f"<{self.name}>"
 
     @cached_property
-    def adhoc_network(self) -> "NetworkAPI":
+    def custom_network(self) -> "NetworkAPI":
         ethereum_class = None
         for plugin_name, ecosystem_class in self.plugin_manager.ecosystems:
             if plugin_name == "ethereum":
@@ -109,7 +109,7 @@ class EcosystemAPI(BaseInterfaceModel):
         init_kwargs = {"data_folder": data_folder, "request_header": request_header}
         ethereum = ethereum_class(**init_kwargs)  # type: ignore
         return NetworkAPI(
-            name="adhoc",
+            name="custom",
             ecosystem=ethereum,
             data_folder=Path(data_folder),
             request_header=request_header,
@@ -463,8 +463,8 @@ class EcosystemAPI(BaseInterfaceModel):
         if name in self.networks:
             return self.networks[name]
 
-        elif name == "adhoc":
-            return self.adhoc_network
+        elif name == "custom":
+            return self.custom_network
 
         raise NetworkNotFoundError(network_name, ecosystem=self.name, options=self.networks)
 
@@ -886,8 +886,8 @@ class NetworkAPI(BaseInterfaceModel):
             ecosystem_name, network_name, provider_class = plugin_tuple
             provider_name = clean_plugin_name(provider_class.__module__.split(".")[0])
 
-            # NOTE: Adhoc networks work with any provider.
-            if self.name == "adhoc" or (
+            # NOTE: Custom networks work with any provider.
+            if self.name == "custom" or (
                 self.ecosystem.name == ecosystem_name and self.name == network_name
             ):
                 # NOTE: Lazily load provider config
@@ -1122,7 +1122,7 @@ class NetworkAPI(BaseInterfaceModel):
               not local or adhoc and has a different hardcoded chain ID than
               the given one.
         """
-        if self.name not in ("adhoc", LOCAL_NETWORK_NAME) and self.chain_id != chain_id:
+        if self.name not in ("custom", LOCAL_NETWORK_NAME) and self.chain_id != chain_id:
             raise NetworkMismatchError(chain_id, self)
 
 

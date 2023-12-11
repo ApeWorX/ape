@@ -85,9 +85,9 @@ geth:
       uri: https://foo.node.bar
 ```
 
-## Ad-hoc Network Connection
+## Custom Network Connection
 
-If you would like to connect to a URI using the `geth` provider, you can specify a URI for the provider name in the `--network` option:
+If you would like to connect to a URI using the default Ethereum node provider, you can specify a URI for the provider name in the `--network` option:
 
 ```bash
 ape run script --network ethereum:mainnet:https://foo.bar

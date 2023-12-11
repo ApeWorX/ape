@@ -191,23 +191,23 @@ def test_network_option_unknown(network_cmd):
 @pytest.mark.parametrize(
     "network_input",
     (
-        "ethereum:adhoc:https://127.0.0.1:4545",
-        "ethereum:adhoc:https://127.0.0.1",
-        "ethereum:adhoc:http://127.0.0.1:4545",
-        "ethereum:adhoc:http://127.0.0.1",
-        "ethereum:adhoc:http://foo.bar",
-        "ethereum:adhoc:https://foo.bar:8000",
-        ":adhoc:https://foo.bar:8000",
+        "ethereum:custom:https://127.0.0.1:4545",
+        "ethereum:custom:https://127.0.0.1",
+        "ethereum:custom:http://127.0.0.1:4545",
+        "ethereum:custom:http://127.0.0.1",
+        "ethereum:custom:http://foo.bar",
+        "ethereum:custom:https://foo.bar:8000",
+        ":custom:https://foo.bar:8000",
         "::https://foo.bar:8000",
         "https://foo.bar:8000",
     ),
 )
-def test_network_option_adhoc(runner, network_cmd, network_input):
+def test_network_option_uri(runner, network_cmd, network_input):
     network_part = ("--network", network_input)
     cmd = network_cmd(network_part)
     result = runner.invoke(cmd, network_part)
     assert result.exit_code == 0, result.output
-    assert "adhoc" in result.output
+    assert "custom" in result.output
 
 
 def test_network_option_make_required(runner):

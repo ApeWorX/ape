@@ -328,7 +328,7 @@ class NetworkChoice(click.Choice):
     This is used in :meth:`~ape.cli.options.network_option`.
     """
 
-    ADHOC_NETWORK_PATTERN = re.compile(r"\w*:\w*:https?://\w*.*")
+    CUSTOM_NETWORK_PATTERN = re.compile(r"\w*:\w*:https?://\w*.*")
 
     def __init__(
         self,
@@ -350,19 +350,20 @@ class NetworkChoice(click.Choice):
         if not value or value in ("None", "none"):
             return None
 
-        if self.is_adhoc_value(value):
-            # By-pass choice constraints when using adhoc network
-            return value
+        if not self.is_custom_value(value):
+            try:
+                # Validate result.
+                choice = super().convert(value, param, ctx)
+            except BadParameter as err:
+                # If an error was not raised for some reason, raise a simpler error.
+                # NOTE: Still avoid showing the massive network options list.
+                raise click.BadParameter(
+                    "Invalid network choice. Use `ape networks list` to see options."
+                ) from err
 
-        try:
-            # Validate result.
-            choice = super().convert(value, param, ctx)
-        except BadParameter as err:
-            # If an error was not raised for some reason, raise a simpler error.
-            # NOTE: Still avoid showing the massive network options list.
-            raise click.BadParameter(
-                "Invalid network choice. Use `ape networks list` to see options."
-            ) from err
+        else:
+            # By-pass choice constraints when using custom network.
+            choice = value
 
         if issubclass(self.base_type, ProviderAPI):
             # Return the provider.
@@ -376,11 +377,11 @@ class NetworkChoice(click.Choice):
             raise TypeError(f"Unhandled type '{self.base_type}' for NetworkChoice.")
 
     @classmethod
-    def is_adhoc_value(cls, value) -> bool:
+    def is_custom_value(cls, value) -> bool:
         return (
             value is not None
             and isinstance(value, str)
-            and cls.ADHOC_NETWORK_PATTERN.match(value) is not None
+            and cls.CUSTOM_NETWORK_PATTERN.match(value) is not None
             or str(value).startswith("http://")
             or str(value).startswith("https://")
         )

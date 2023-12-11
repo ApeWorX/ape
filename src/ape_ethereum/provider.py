@@ -257,7 +257,7 @@ class Web3Provider(ProviderAPI, ABC):
         if (
             self.network.name
             not in (
-                "adhoc",
+                "custom",
                 LOCAL_NETWORK_NAME,
             )
             and not self.network.is_fork
