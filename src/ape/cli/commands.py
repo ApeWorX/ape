@@ -7,6 +7,7 @@ from click import Context
 
 from ape import networks
 from ape.api import ProviderAPI
+from ape.cli.choices import NetworkChoice
 from ape.exceptions import NetworkError
 
 
@@ -30,18 +31,29 @@ class ConnectedProviderCommand(click.Command):
 
     def __init__(self, *args, **kwargs):
         self._use_cls_types = kwargs.pop("use_cls_types", True)
-        self._callback = kwargs.pop("callback", None)
+        self._network_callback = kwargs.pop("network_callback", None)
         super().__init__(*args, **kwargs)
 
     def parse_args(self, ctx: Context, args: List[str]) -> List[str]:
-        if not any(
-            isinstance(param, click.core.Option) and param.name == "network"
-            for param in self.params
+        base_type = ProviderAPI if self._use_cls_types else str
+        if existing_option := next(
+            iter(
+                x
+                for x in self.params
+                if isinstance(x, click.core.Option)
+                and x.name == "network"
+                and isinstance(x.type, NetworkChoice)
+            ),
+            None,
         ):
+            # Checking instance above, not sure why mypy still made
+            existing_option.type.base_type = base_type  # type: ignore
+
+        else:
+            # Add the option autmatically.
             from ape.cli.options import NetworkOption
 
-            base_type = ProviderAPI if self._use_cls_types else str
-            option = NetworkOption(base_type=base_type, callback=self._callback)
+            option = NetworkOption(base_type=base_type, callback=self._network_callback)
             self.params.append(option)
 
         return super().parse_args(ctx, args)
@@ -68,9 +80,6 @@ class ConnectedProviderCommand(click.Command):
 
         with network_context:
             if self.callback is not None:
-                signature = inspect.signature(self.callback)
-                callback_args = [x.name for x in signature.parameters.values()]
-
                 opt_name = "network"
                 param = ctx.params.pop(opt_name, None)
                 if param is None:
@@ -95,17 +104,25 @@ class ConnectedProviderCommand(click.Command):
                 else:
                     raise TypeError(f"Can't handle type of parameter '{param}'.")
 
-                if self._use_cls_types:
-                    if "ecosystem" in callback_args:
-                        ctx.params["ecosystem"] = provider.network.ecosystem
-                    if "network" in callback_args:
-                        ctx.params["network"] = provider.network
-                    if "provider" in callback_args:
-                        ctx.params["provider"] = provider
+                valid_fields = ("ecosystem", "network", "provider")
+                requested_fields = [
+                    x for x in inspect.signature(self.callback).parameters if x in valid_fields
+                ]
+                if self._use_cls_types and requested_fields:
+                    options = {
+                        "ecosystem": provider.network.ecosystem,
+                        "network": provider.network,
+                        "provider": provider,
+                    }
+                    for name in requested_fields:
+                        if (
+                            name not in ctx.params
+                            or ctx.params[name] is None
+                            or isinstance(ctx.params[name], str)
+                        ):
+                            ctx.params[name] = options[name]
 
-                    # If none of the above, the user doesn't use any network value.
-
-                else:
+                elif not self._use_cls_types:
                     # Legacy behavior, but may have a purpose.
                     ctx.params[opt_name] = provider.network_choice
 

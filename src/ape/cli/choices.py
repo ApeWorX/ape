@@ -339,7 +339,7 @@ class NetworkChoice(click.Choice):
         base_type: Type = ProviderAPI,
         callback: Optional[Callable] = None,
     ):
-        if not isinstance(base_type, (ProviderAPI, str)):
+        if not issubclass(base_type, (ProviderAPI, str)):
             raise TypeError(f"Unhandled type '{base_type}' for NetworkChoice.")
 
         self.base_type = base_type
@@ -374,7 +374,7 @@ class NetworkChoice(click.Choice):
             # Return the provider.
             choice = networks.get_provider_from_choice(network_choice=value)
 
-        return self.callback(choice) if self.callback else choice
+        return self.callback(ctx, param, choice) if self.callback else choice
 
     @classmethod
     def is_custom_value(cls, value) -> bool:
