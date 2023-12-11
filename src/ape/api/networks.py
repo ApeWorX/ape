@@ -957,7 +957,7 @@ class NetworkAPI(BaseInterfaceModel):
 
     def use_provider(
         self,
-        provider_name: str,
+        provider: Union[str, "ProviderAPI"],
         provider_settings: Optional[Dict] = None,
         disconnect_after: bool = False,
         disconnect_on_exit: bool = True,
@@ -976,7 +976,7 @@ class NetworkAPI(BaseInterfaceModel):
                 ...
 
         Args:
-            provider_name (str): The name of the provider to use.
+            provider (str): The provider instance or the name of the provider to use.
             provider_settings (dict, optional): Settings to apply to the provider.
               Defaults to ``None``.
             disconnect_after (bool): Set to ``True`` to force a disconnect after ending
@@ -990,9 +990,17 @@ class NetworkAPI(BaseInterfaceModel):
         """
 
         settings = provider_settings or {}
-        provider = self.get_provider(provider_name=provider_name, provider_settings=settings)
+
+        # NOTE: The main reason we allow a provider instance here is to avoid unnecessarily
+        #   re-initializing the class.
+        provider_obj = (
+            self.get_provider(provider_name=provider, provider_settings=settings)
+            if isinstance(provider, str)
+            else provider
+        )
+
         return ProviderContextManager(
-            provider=provider,
+            provider=provider_obj,
             disconnect_after=disconnect_after,
             disconnect_on_exit=disconnect_on_exit,
         )
@@ -1160,7 +1168,7 @@ class ForkedNetworkAPI(NetworkAPI):
         Returns:
             :class:`~ape.api.networks.ProviderContextManager`
         """
-        return self.upstream_network.use_provider(self.upstream_provider.name)
+        return self.upstream_network.use_provider(self.upstream_provider)
 
 
 def create_network_type(chain_id: int, network_id: int) -> Type[NetworkAPI]:

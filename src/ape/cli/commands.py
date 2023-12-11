@@ -51,7 +51,7 @@ class ConnectedProviderCommand(click.Command):
         if param is not None and isinstance(param, ProviderAPI):
             provider = param
             network_context = provider.network.use_provider(
-                provider.name, disconnect_on_exit=not interactive
+                provider, disconnect_on_exit=not interactive
             )
         elif param is not None and isinstance(param, str):
             network_context = networks.parse_network_choice(param)
@@ -87,6 +87,7 @@ class ConnectedProviderCommand(click.Command):
 
                 elif isinstance(param, ProviderAPI):
                     provider = param
+
                 elif isinstance(param, str):
                     # Is a choice str
                     provider = networks.parse_network_choice(param)._provider
