@@ -8,6 +8,7 @@ from click import Option
 from ethpm_types import ContractType
 
 from ape import networks, project
+from ape.api import ProviderAPI
 from ape.cli.choices import (
     _ACCOUNT_TYPE_FILTER,
     AccountAliasPromptChoice,
@@ -116,12 +117,17 @@ class NetworkOption(Option):
         network = kwargs.pop("network", None)
         provider = kwargs.pop("provider", None)
         default = kwargs.pop("default", "auto")
+        base_type = kwargs.pop("base_type", ProviderAPI)
 
         # NOTE: If using network_option, this part is skipped
         #  because parsing happens earlier to handle advanced usage.
         if "type" not in kwargs:
             kwargs["type"] = NetworkChoice(
-                case_sensitive=False, ecosystem=ecosystem, network=network, provider=provider
+                case_sensitive=False,
+                ecosystem=ecosystem,
+                network=network,
+                provider=provider,
+                base_type=base_type,
             )
         auto = default == "auto"
         required = kwargs.get("required", False)

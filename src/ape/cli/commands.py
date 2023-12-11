@@ -1,4 +1,5 @@
 import inspect
+import warnings
 from typing import Any, List
 
 import click
@@ -27,6 +28,10 @@ class ConnectedProviderCommand(click.Command):
     It will automatically set the network for the duration of the command execution.
     """
 
+    def __init__(self, *args, **kwargs):
+        self._use_cls_types = kwargs.pop("use_cls_types", True)
+        super().__init__(*args, **kwargs)
+
     def parse_args(self, ctx: Context, args: List[str]) -> List[str]:
         if not any(
             isinstance(param, click.core.Option) and param.name == "network"
@@ -34,7 +39,8 @@ class ConnectedProviderCommand(click.Command):
         ):
             from ape.cli.options import NetworkOption
 
-            option = NetworkOption()
+            base_type = ProviderAPI if self._use_cls_types else str
+            option = NetworkOption(base_type=base_type)
             self.params.append(option)
 
         return super().parse_args(ctx, args)
@@ -65,8 +71,21 @@ class ConnectedProviderCommand(click.Command):
                 callback_args = [x.name for x in signature.parameters.values()]
 
                 opt_name = "network"
-                param = ctx.params.pop(opt_name)
-                if isinstance(param, ProviderAPI):
+                param = ctx.params.pop(opt_name, None)
+                if param is None:
+                    ecosystem = networks.default_ecosystem
+                    network = ecosystem.default_network
+                    # Use default
+                    if default_provider := network.default_provider:
+                        provider = default_provider
+                    else:
+                        # Unlikely to get here.
+                        raise ValueError(
+                            f"Missing default provider for network '{network.choice}'. "
+                            f"Using 'ethereum:local:test'."
+                        )
+
+                elif isinstance(param, ProviderAPI):
                     provider = param
                 elif isinstance(param, str):
                     # Is a choice str
@@ -74,13 +93,32 @@ class ConnectedProviderCommand(click.Command):
                 else:
                     raise TypeError(f"Can't handle type of parameter '{param}'.")
 
-                if "ecosystem" in callback_args:
-                    ctx.params["ecosystem"] = provider.network.ecosystem
-                if "network" in callback_args:
-                    ctx.params["network"] = provider.network
-                if "provider" in callback_args:
-                    ctx.params["provider"] = provider
+                if self._use_cls_types:
+                    if "ecosystem" in callback_args:
+                        ctx.params["ecosystem"] = provider.network.ecosystem
+                    if "network" in callback_args:
+                        ctx.params["network"] = provider.network
+                    if "provider" in callback_args:
+                        ctx.params["provider"] = provider
 
-                # If none of he above, the user doesn't use any network value.
+                    # If none of the above, the user doesn't use any network value.
+
+                else:
+                    # Legacy behavior, but may have a purpose.
+                    ctx.params[opt_name] = provider.network_choice
 
                 return ctx.invoke(self.callback, **ctx.params)
+
+
+# TODO: 0.8 delete
+class NetworkBoundCommand(ConnectedProviderCommand):
+    def __init__(self, *args, **kwargs):
+        warnings.warn(
+            "'NetworkBoundCommand' is deprecated. Use 'ConnectedProviderCommand'.",
+            DeprecationWarning,
+        )
+
+        # Disable the advanced network class types so it behaves legacy.
+        kwargs["use_cls_types"] = False
+
+        super().__init__(*args, **kwargs)

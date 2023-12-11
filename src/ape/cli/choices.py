@@ -8,6 +8,7 @@ from click import BadParameter, Choice, Context, Parameter
 
 from ape import accounts, networks
 from ape.api.accounts import AccountAPI
+from ape.api.providers import ProviderAPI
 from ape.exceptions import AccountsError
 from ape.types import _LazySequence
 
@@ -322,7 +323,9 @@ class NetworkChoice(click.Choice):
         ecosystem: _NETWORK_FILTER = None,
         network: _NETWORK_FILTER = None,
         provider: _NETWORK_FILTER = None,
+        base_type: Type = ProviderAPI,
     ):
+        self.base_type = base_type
         super().__init__(
             get_networks(ecosystem=ecosystem, network=network, provider=provider), case_sensitive
         )
@@ -338,10 +341,9 @@ class NetworkChoice(click.Choice):
             # By-pass choice constraints when using adhoc network
             return value
 
-        provider = networks.get_provider_from_choice(network_choice=value)
         try:
             # Validate result.
-            super().convert(value, param, ctx)
+            choice = super().convert(value, param, ctx)
         except BadParameter as err:
             # If an error was not raised for some reason, raise a simpler error.
             # NOTE: Still avoid showing the massive network options list.
@@ -349,7 +351,16 @@ class NetworkChoice(click.Choice):
                 "Invalid network choice. Use `ape networks list` to see options."
             ) from err
 
-        return provider
+        if issubclass(self.base_type, ProviderAPI):
+            # Return the provider.
+            return networks.get_provider_from_choice(network_choice=value)
+
+        elif isinstance(self.base_type, str):
+            # The user wants the regular choice back.
+            return choice
+
+        else:
+            raise TypeError(f"Unhandled type '{self.base_type}' for NetworkChoice.")
 
     @classmethod
     def is_adhoc_value(cls, value) -> bool:

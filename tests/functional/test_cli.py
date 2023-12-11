@@ -7,6 +7,7 @@ import pytest
 from ape.cli import (
     AccountAliasPromptChoice,
     ConnectedProviderCommand,
+    NetworkBoundCommand,
     PromptChoice,
     account_option,
     contract_file_paths_argument,
@@ -417,13 +418,14 @@ def test_connected_provider_command_no_args_or_network_specified(runner):
     assert "True" in result.output, result.output
 
 
-def test_connected_provider_command_no_args_with_network_specified(runner):
+def test_connected_provider_command_invalid_value(runner):
     @click.command(cls=ConnectedProviderCommand)
     def cmd():
         pass
 
-    with pytest.raises(EcosystemNotFoundError):
-        runner.invoke(cmd, ["--network", "OOGA_BOOGA"], catch_exceptions=False)
+    result = runner.invoke(cmd, ["--network", "OOGA_BOOGA"], catch_exceptions=False)
+    assert result.exit_code != 0
+    assert "Invalid value for '--network'" in result.output
 
 
 def test_connected_provider_use_provider(runner):
@@ -453,4 +455,20 @@ def test_connected_provider_use_ecosystem_network_and_provider_with_network_spec
 
     result = runner.invoke(cmd, ["--network", "ethereum:local:test"])
     assert result.exit_code == 0
+    assert "ethereum:local:test" in result.output, result.output
+
+
+def test_deprecated_network_bound_command(runner):
+    with pytest.warns(
+        DeprecationWarning,
+        match=r"'NetworkBoundCommand' is deprecated\. Use 'ConnectedProviderCommand'\.",
+    ):
+
+        @click.command(cls=NetworkBoundCommand)
+        @network_option()
+        def cmd(network):
+            click.echo(network)
+
+    result = runner.invoke(cmd, ["--network", "ethereum:local:test"])
+    assert result.exit_code == 0, result.output
     assert "ethereum:local:test" in result.output, result.output
