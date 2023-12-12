@@ -428,7 +428,9 @@ class NetworkManager(BaseManager):
         elif len(selections) == 3:
             # Everything is specified, use specified provider for ecosystem and network
             ecosystem_name, network_name, provider_name = selections
-            ecosystem = self.get_ecosystem(ecosystem_name or self.default_ecosystem.name)
+            ecosystem = (
+                self.get_ecosystem(ecosystem_name) if ecosystem_name else self.default_ecosystem
+            )
             network = ecosystem.get_network(network_name or ecosystem.default_network_name)
             return network.get_provider(
                 provider_name=provider_name, provider_settings=provider_settings

@@ -214,12 +214,14 @@ class BaseModel(EthpmTypesBaseModel):
         account :meth:`~ape.utils.basemodel.BaseModel.__ape_extra_attributes__`.
         """
 
+        def _clear_from_caches(n):
+            if n in self.__getattr_checking__:
+                self.__getattr_checking__.remove(n)
+            self.__getattr_errors__.pop(n, "")
+
         private_attrs = self.__pydantic_private__ or {}
         if name in private_attrs:
-            if name in self.__getattr_checking__:
-                # Just in case.
-                self.__getattr_checking__.remove(name)
-
+            _clear_from_caches(name)
             return private_attrs[name]
 
         elif name in self.__getattr_checking__:
@@ -229,6 +231,7 @@ class BaseModel(EthpmTypesBaseModel):
             if real_error := self.__getattr_errors__.get(name):
                 message = f"{message}. {real_error}"
 
+            _clear_from_caches(name)
             raise AttributeError(message)
 
         self.__getattr_checking__.add(name)
@@ -244,30 +247,33 @@ class BaseModel(EthpmTypesBaseModel):
                 if name in ape_extra:
                     # Attribute was found in one of the supplied
                     # extra attributes mappings.
-
-                    # Clear check caches.
-                    if name in self.__getattr_checking__:
-                        self.__getattr_checking__.remove(name)
-                    self.__getattr_errors__.pop(name, "")
-
+                    _clear_from_caches(name)
                     return ape_extra.get(name)
 
                 extras_checked.add(ape_extra.name)
 
             # The error message mentions the alternative mappings,
             # such as a contract-type map.
-            message = f"'{repr(self)}' has no attribute '{name}'"
-            if extras_checked:
-                extras_str = ", ".join(extras_checked)
-                message = f"{message}. Also checked '{extras_str}'"
+            base_err = None
+            if name in self.__getattr_errors__:
+                # There was an error getting the value. Show that.
+                base_err = self.__getattr_errors__[name]
+                message = str(base_err)
 
-            raise ApeAttributeError(message)
+            else:
+                message = f"'{repr(self)}' has no attribute '{name}'"
+                if extras_checked:
+                    extras_str = ", ".join(extras_checked)
+                    message = f"{message}. Also checked '{extras_str}'"
 
-        # Clear check caches.
-        if name in self.__getattr_checking__:
-            self.__getattr_checking__.remove(name)
-        self.__getattr_errors__.pop(name, "")
+            _clear_from_caches(name)
+            attr_err = ApeAttributeError(message)
+            if base_err:
+                raise attr_err from base_err
+            else:
+                raise attr_err
 
+        _clear_from_caches(name)
         return res
 
     def __getitem__(self, name: Any) -> Any:

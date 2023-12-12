@@ -39,16 +39,28 @@ class PluginConfig(BaseSettings):
     def __getattr__(self, attr_name: str) -> Any:
         # Allow hyphens in plugin config files.
         attr_name = attr_name.replace("-", "_")
+        extra = self.__pydantic_extra__ or {}
+        if attr_name in extra:
+            return extra[attr_name]
+
         return super().__getattribute__(attr_name)
 
     def __getitem__(self, item: str) -> Any:
-        return self.__dict__[item]
+        extra = self.__pydantic_extra__ or {}
+        if item in self.__dict__:
+            return self.__dict__[item]
+
+        elif item in extra:
+            return extra[item]
+
+        raise KeyError(f"'{item}' not in config.")
 
     def __contains__(self, key: str) -> bool:
-        return key in self.__dict__
+        return key in self.__dict__ or key in (self.__pydantic_extra__ or {})
 
     def get(self, key: str, default: Optional[T] = None) -> T:
-        return self.__dict__.get(key, default)
+        extra: Dict = self.__pydantic_extra__ or {}
+        return self.__dict__.get(key, extra.get(default, default))
 
 
 class GenericConfig(ConfigDict):

@@ -226,10 +226,11 @@ def test_plugin_config_getattr_and_getitem(config):
     assert config.mainnet == config["mainnet"]
 
 
-def test_custom_plugin_config_with_allow_extra_getattr_and_getitem():
+def test_custom_plugin_config_extras():
     class CustomConfig(PluginConfig):
         model_config = SettingsConfigDict(extra="allow")
 
     config = CustomConfig(foo="123")
+    assert "foo" in config
     assert config.foo == "123"
     assert config["foo"] == "123"
