@@ -184,17 +184,8 @@ def temp_accounts_path(config):
 
 
 @pytest.fixture
-def runner(mock_sys_argv):
-    class ApeRunner(CliRunner):
-        def invoke(self, *args, **kwargs):
-            # Also make the command appear in sys.argv
-            mock_sys_argv.return_value = ("ape", *(args[1] if len(args) > 1 else []))
-            try:
-                return super().invoke(*args, **kwargs)
-            finally:
-                mock_sys_argv.return_value = sys.argv
-
-    yield ApeRunner()
+def runner():
+    return CliRunner()
 
 
 @pytest.fixture
@@ -520,8 +511,3 @@ class SubprocessResult:
     @property
     def output(self) -> str:
         return self._completed_process.stdout
-
-
-@pytest.fixture
-def mock_sys_argv(mocker):
-    return mocker.patch("ape.cli.options._get_sys_argv")

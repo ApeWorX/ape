@@ -1,7 +1,6 @@
 import inspect
-import sys
 from functools import partial
-from typing import Callable, Dict, List, NoReturn, Optional, Sequence, Type, Union
+from typing import Callable, Dict, List, NoReturn, Optional, Type, Union
 
 import click
 from click import Option
@@ -118,17 +117,23 @@ class NetworkOption(Option):
         provider = kwargs.pop("provider", None)
         default = kwargs.pop("default", "auto")
         base_type = kwargs.pop("base_type", ProviderAPI)
+        callback = kwargs.pop("callback", None)
 
         # NOTE: If using network_option, this part is skipped
         #  because parsing happens earlier to handle advanced usage.
-        if "type" not in kwargs:
+        if not kwargs.get("type"):
             kwargs["type"] = NetworkChoice(
                 case_sensitive=False,
                 ecosystem=ecosystem,
                 network=network,
                 provider=provider,
                 base_type=base_type,
+                callback=callback,
             )
+        elif callback is not None:
+            # Make sure these are the same.
+            kwargs["type"].callback = callback
+
         auto = default == "auto"
         required = kwargs.get("required", False)
 
@@ -188,70 +193,65 @@ def network_option(
     def decorator(f):
         # When using network_option, handle parsing now so we can pass to
         # callback outside of command context.
-        kwargs["type"] = kwargs.pop("type", None) or NetworkChoice(
-            case_sensitive=False, ecosystem=ecosystem, network=network, provider=provider
-        )
+        user_cb = kwargs.pop("callback", None)
+        signature = inspect.signature(f)
+        network_args = ("ecosystem", "network", "provider")
+        requested_data = [x.name for x in signature.parameters.values() if x.name in network_args]
 
-        # Find passed --network value
-        network_choice = None
-        arguments = _get_sys_argv()
-        for idx, val in enumerate(arguments):
-            if val == "--network":
-                next_idx = idx + 1
-                if next_idx < len(arguments):
-                    network_choice = arguments[next_idx]
-                    break
+        def callback(ctx, param, value):
+            is_legacy = param.type.base_type is str
+            is_none = value in ("None", "none", None)
+            use_default = default == "auto"
 
-        if network_choice in ("None", "none"):
-            # Specified None in cmd line- ignore.
-            # Or is a custom value.
-            choice_classes = None
+            if not is_legacy and is_none and use_default:
+                provider_obj = networks.default_ecosystem.default_network.default_provider
 
-        elif network_choice is None:
-            # Unspecified.
-            ecosystem_obj = networks.default_ecosystem
-            network_obj = ecosystem_obj.default_network
-            choice_classes = {
-                "ecosystem": networks.default_ecosystem,
-                "network": ecosystem_obj.default_network,
-                "provider": network_obj.default_provider,
-            }
+            elif is_none or is_legacy:
+                provider_obj = None
 
-        else:
-            network_ctx = networks.parse_network_choice(network_choice)
-            provider_obj = network_ctx._provider
-            network_obj = provider_obj.network
-            ecosystem_obj = network_obj.ecosystem
-            choice_classes = {
-                "ecosystem": ecosystem_obj,
-                "network": network_obj,
-                "provider": provider_obj,
-            }
+            elif isinstance(value, ProviderAPI):
+                provider_obj = value
 
-        # Create the callback using values from the parsed network choice.
-        # Only pass in values requested. Exposure is optional!
-        if choice_classes is None:
-            # Was told to use None explicitly.
-            partial_f = f
+            else:
+                network_ctx = networks.parse_network_choice(value)
+                provider_obj = network_ctx._provider
 
-        else:
-            partial_kwargs = {}
-            signature = inspect.signature(f)
-            requested_data = [x.name for x in signature.parameters.values()]
-            for arg_type in ("ecosystem", "network", "provider"):
-                if arg_type in requested_data:
-                    partial_kwargs[arg_type] = choice_classes[arg_type]
+            if provider_obj:
+                choice_classes = {
+                    "ecosystem": provider_obj.network.ecosystem,
+                    "network": provider_obj.network,
+                    "provider": provider_obj,
+                }
 
-            partial_f = partial(f, **partial_kwargs)
-            partial_f.__name__ = f.__name__  # type: ignore[attr-defined]
+                # Set the actual values.
+                for item in requested_data:
+                    instance = choice_classes[item]
+                    ctx.params[item] = instance
 
-            # Skip NetworkChoice parsing since we did it already here.
-            kwargs["type"] = None
+            # else: provider is None, meaning not connected intentionally.
 
-            # Set this to false to avoid click passing in a str value for network.
-            # This happens with `kwargs["type"] = None` and we are already handling
-            # `network` via the partial.
-            kwargs["expose_value"] = False
+            return value if user_cb is None else user_cb(ctx, param, value)
+
+        # Prevent argument errors but initializing callback to use None placeholders.
+        partial_kwargs: Dict = {}
+        for arg_type in network_args:
+            if arg_type in requested_data:
+                partial_kwargs[arg_type] = None
+
+        # Set this property for click framework to function properly.
+        partial_f = partial(f, **partial_kwargs)
+        partial_f.__name__ = f.__name__  # type: ignore[attr-defined]
+
+        # Use NetworkChoice option.    Raises:
+        kwargs["type"] = None
+
+        # Set this to false to avoid click passing in a str value for network.
+        # This happens with `kwargs["type"] = None` and we are already handling
+        # `network` via the partial.
+        kwargs["expose_value"] = False
+
+        # The callback will set any requests values in the command.
+        kwargs["callback"] = callback
 
         # Create the actual option.
         option = click.option(
@@ -332,7 +332,7 @@ def contract_option(help=None, required=False, multiple=False):
     Contract(s) from the current project.
     If you pass ``multiple=True``, you will get a list of contract types from the callback.
 
-    Raises:
+
         :class:`~ape.exceptions.ContractError`: In the callback when it fails to load the contracts.
     """
 
@@ -396,8 +396,3 @@ def incompatible_with(incompatible_opts):
             return super().handle_parse_result(ctx, opts, args)
 
     return IncompatibleOption
-
-
-def _get_sys_argv() -> Sequence[str]:
-    # Is separate fn so can be mocked in tests.
-    return sys.argv

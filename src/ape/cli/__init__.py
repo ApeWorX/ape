@@ -9,6 +9,7 @@ from ape.cli.choices import (
     NetworkChoice,
     OutputFormat,
     PromptChoice,
+    get_user_selected_account,
     output_format_choice,
     select_account,
 )
@@ -38,6 +39,7 @@ __all__ = [
     "contract_file_paths_argument",
     "contract_option",
     "existing_alias_argument",
+    "get_user_selected_account",
     "incompatible_with",
     "network_option",
     "NetworkBoundCommand",
