@@ -380,7 +380,7 @@ class ProviderAPI(BaseInterfaceModel):
             txn: :class:`~ape.api.transactions.TransactionAPI`
             block_id (Optional[:class:`~ape.types.BlockID`]): The block ID
                 to use to send a call at a historical point of a contract.
-                checking a past estimation cost of a transaction.
+                Useful for checking a past estimation cost of a transaction.
             state (Optional[Dict]): Modify the state of the blockchain
                 prior to sending the call, for testing purposes.
             **kwargs: Provider-specific extra kwargs.
