@@ -101,6 +101,7 @@ class NetworkConfig(PluginConfig):
     """A multiplier to apply to a transaction base fee."""
 
     @field_validator("gas_limit", mode="before")
+    @classmethod
     def validate_gas_limit(cls, value):
         if isinstance(value, dict) and "auto" in value:
             return AutoGasLimit.model_validate(value["auto"])
@@ -194,6 +195,7 @@ class Block(BlockAPI):
         "total_difficulty",
         mode="before",
     )
+    @classmethod
     def validate_ints(cls, value):
         return to_int(value) if value else 0
 

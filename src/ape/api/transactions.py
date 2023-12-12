@@ -67,6 +67,7 @@ class TransactionAPI(BaseInterfaceModel):
     model_config = ConfigDict(populate_by_name=True)
 
     @field_validator("gas_limit", mode="before")
+    @classmethod
     def validate_gas_limit(cls, value):
         if value is None:
             if not cls.network_manager.active_provider:
@@ -92,6 +93,7 @@ class TransactionAPI(BaseInterfaceModel):
         return value
 
     @field_validator("max_fee", "max_priority_fee", mode="before")
+    @classmethod
     def convert_fees(cls, value):
         if isinstance(value, str):
             return cls.conversion_manager.convert(value, int)
@@ -99,6 +101,7 @@ class TransactionAPI(BaseInterfaceModel):
         return value
 
     @field_validator("data", mode="before")
+    @classmethod
     def validate_data(cls, value):
         if isinstance(value, str):
             return HexBytes(value)
@@ -106,6 +109,7 @@ class TransactionAPI(BaseInterfaceModel):
         return value
 
     @field_validator("value", mode="before")
+    @classmethod
     def validate_value(cls, value):
         if isinstance(value, int):
             return value
@@ -273,6 +277,7 @@ class ReceiptAPI(BaseInterfaceModel):
         yield ExtraModelAttributes(name="transaction", attributes=vars(self.transaction))
 
     @field_validator("transaction", mode="before")
+    @classmethod
     def confirm_transaction(cls, value):
         if isinstance(value, dict):
             value = TransactionAPI.model_validate(value)
@@ -280,6 +285,7 @@ class ReceiptAPI(BaseInterfaceModel):
         return value
 
     @field_validator("txn_hash", mode="before")
+    @classmethod
     def validate_txn_hash(cls, value):
         return HexBytes(value).hex()
 

@@ -24,6 +24,7 @@ class Config(PluginConfig):
     """
 
     @field_validator("exclude", mode="before")
+    @classmethod
     def validate_exclude(cls, value):
         return value or []
 

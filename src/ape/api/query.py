@@ -105,6 +105,7 @@ class _BaseBlockQuery(_BaseQuery):
     step: PositiveInt = 1
 
     @model_validator(mode="before")
+    @classmethod
     def check_start_block_before_stop_block(cls, values):
         if values["stop_block"] < values["start_block"]:
             raise ValueError(
@@ -142,6 +143,7 @@ class AccountTransactionQuery(_BaseQuery):
     stop_nonce: NonNegativeInt
 
     @model_validator(mode="before")
+    @classmethod
     def check_start_nonce_before_stop_nonce(cls, values: Dict) -> Dict:
         if values["stop_nonce"] < values["start_nonce"]:
             raise ValueError(
