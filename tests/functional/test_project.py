@@ -414,3 +414,25 @@ def test_build_file_only_modified_once(project_with_contract):
     _ = project.contracts
     time_after = os.path.getmtime(artifact)
     assert time_before == time_after
+
+
+def test_source_paths_excludes_cached_dependencies(project_with_contract):
+    """
+    Dependencies are ignored from the project's sources.
+    Their used sources are imported and part of the final output,
+    but just not the input.
+    """
+    contracts_folder = project_with_contract.contracts_folder
+    cache_dir = contracts_folder / ".cache"
+    cache_dir.mkdir(exist_ok=True)
+    cache_dep_folder = cache_dir / "dep" / "1.0.0"
+    cache_dep_folder.mkdir(parents=True, exist_ok=True)
+    contract = next(
+        x
+        for x in contracts_folder.iterdir()
+        if x.is_file() and x.suffix == ".json" and not x.stem.startswith("_")
+    )
+    dep_contract = cache_dep_folder / "contract.json"
+    shutil.copy(contract, dep_contract)
+    actual = project_with_contract.source_paths
+    assert dep_contract not in actual
