@@ -60,7 +60,7 @@ class PluginConfig(BaseSettings):
 
     def get(self, key: str, default: Optional[T] = None) -> T:
         extra: Dict = self.__pydantic_extra__ or {}
-        return self.__dict__.get(key, extra.get(default, default))
+        return self.__dict__.get(key, extra.get(key, default))
 
 
 class GenericConfig(ConfigDict):
