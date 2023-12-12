@@ -1,6 +1,7 @@
 from typing import Dict, Union
 
 import pytest
+from pydantic_settings import SettingsConfigDict
 
 from ape.api import PluginConfig
 from ape.api.networks import LOCAL_NETWORK_NAME
@@ -217,3 +218,18 @@ def test_merge_configs_short_circuits():
     ex = {"test": "foo"}
     assert merge_configs({}, {}) == {}
     assert merge_configs(ex, {}) == merge_configs({}, ex) == ex
+
+
+def test_plugin_config_getattr_and_getitem(config):
+    config = config.get_config("ethereum")
+    assert config.mainnet is not None
+    assert config.mainnet == config["mainnet"]
+
+
+def test_custom_plugin_config_with_allow_extra_getattr_and_getitem():
+    class CustomConfig(PluginConfig):
+        model_config = SettingsConfigDict(extra="allow")
+
+    config = CustomConfig(foo="123")
+    assert config.foo == "123"
+    assert config["foo"] == "123"
