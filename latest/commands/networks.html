@@ -246,7 +246,7 @@
 <dd><p>Filter the results by network</p>
 <dl class="field-list simple">
 <dt class="field-odd">Options<span class="colon">:</span></dt>
-<dd class="field-odd"><p>mainnet-fork | goerli-fork | mainnet | sepolia | goerli | sepolia-fork | local</p>
+<dd class="field-odd"><p>goerli-fork | mainnet-fork | goerli | sepolia-fork | mainnet | sepolia | local</p>
 </dd>
 </dl>
 </dd></dl>
@@ -257,7 +257,7 @@
 <dd><p>Filter the results by provider</p>
 <dl class="field-list simple">
 <dt class="field-odd">Options<span class="colon">:</span></dt>
-<dd class="field-odd"><p>test | geth</p>
+<dd class="field-odd"><p>geth | test</p>
 </dd>
 </dl>
 </dd></dl>
@@ -281,6 +281,11 @@ of the given arguments and keywords.</p>
 <dt class="sig sig-object std" id="cmdoption-networks-run-network">
 <span class="sig-name descname"><span class="pre">--network</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;network&gt;</span></span><a class="headerlink" href="#cmdoption-networks-run-network" title="Permalink to this definition"></a></dt>
 <dd><p>Override the default network and provider. (see <cite>ape networks list</cite> for options)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Options<span class="colon">:</span></dt>
+<dd class="field-odd"><p>:mainnet:geth | ethereum:mainnet:geth | :mainnet | ethereum:mainnet | :goerli:geth | ethereum:goerli:geth | :goerli | ethereum:goerli | :sepolia:geth | ethereum:sepolia:geth | :sepolia | ethereum:sepolia | ::geth | :local:geth | ethereum::geth | ethereum:local:geth | ::test | :local:test | ethereum::test | ethereum:local:test | :local | ethereum:local | ethereum</p>
+</dd>
+</dl>
 </dd></dl>
 
 </section>
