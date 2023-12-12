@@ -103,12 +103,24 @@ class ProjectManager(BaseManager):
         Returns:
             List[pathlib.Path]: A list of a source file paths in the project.
         """
+        contracts_folder = self.contracts_folder
+        if not contracts_folder or not self.contracts_folder.is_dir():
+            return []
+
         files: List[Path] = []
-        if not self.contracts_folder.is_dir():
-            return files
+
+        # Dependency sources should be ignored, as they are pulled in
+        # independently to compiler via import.
+        in_contracts_cache_dir = contracts_folder / ".cache"
 
         for extension in self.compiler_manager.registered_compilers:
-            files.extend((x for x in self.contracts_folder.rglob(f"*{extension}") if x.is_file()))
+            files.extend(
+                (
+                    x
+                    for x in contracts_folder.rglob(f"*{extension}")
+                    if x.is_file() and in_contracts_cache_dir not in x.parents
+                )
+            )
 
         return files
 
