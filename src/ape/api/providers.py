@@ -74,6 +74,7 @@ class BlockAPI(BaseInterfaceModel):
         return datetime.datetime.fromtimestamp(self.timestamp, tz=datetime.timezone.utc)
 
     @model_validator(mode="before")
+    @classmethod
     def convert_parent_hash(cls, data):
         parent_hash = data.get("parent_hash", data.get("parentHash")) or EMPTY_BYTES32
         data["parentHash"] = parent_hash

@@ -576,6 +576,7 @@ class CoverageReport(BaseModel):
     """
 
     @field_validator("timestamp", mode="before")
+    @classmethod
     def validate_timestamp(cls, value):
         # Default to current UTC timestamp (ms).
         return value or get_current_timestamp_ms()

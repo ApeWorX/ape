@@ -97,6 +97,7 @@ class StaticFeeTransaction(BaseTransaction):
     max_fee: Optional[int] = Field(None, exclude=True)  # type: ignore
 
     @model_validator(mode="before")
+    @classmethod
     def calculate_read_only_max_fee(cls, values) -> Dict:
         # NOTE: Work-around, Pydantic doesn't handle calculated fields well.
         values["max_fee"] = values.get("gas_limit", 0) * values.get("gas_price", 0)
@@ -115,6 +116,7 @@ class DynamicFeeTransaction(BaseTransaction):
     access_list: List[AccessList] = Field(default_factory=list, alias="accessList")
 
     @field_validator("type")
+    @classmethod
     def check_type(cls, value):
         return value.value if isinstance(value, TransactionType) else value
 
@@ -129,6 +131,7 @@ class AccessListTransaction(BaseTransaction):
     access_list: List[AccessList] = Field(default_factory=list, alias="accessList")
 
     @field_validator("type")
+    @classmethod
     def check_type(cls, value):
         return value.value if isinstance(value, TransactionType) else value
 

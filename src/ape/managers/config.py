@@ -30,6 +30,7 @@ class CompilerConfig(PluginConfig):
 
 class DeploymentConfigCollection(RootModel[dict]):
     @model_validator(mode="before")
+    @classmethod
     def validate_deployments(cls, data: Dict, info):
         valid_ecosystems = data.pop("valid_ecosystems", {})
         valid_networks = data.pop("valid_networks", {})
@@ -127,6 +128,7 @@ class ConfigManager(BaseInterfaceModel):
     _cached_configs: Dict[str, Dict[str, Any]] = {}
 
     @model_validator(mode="before")
+    @classmethod
     def check_config_for_extra_fields(cls, values: Dict[str, Any]) -> Dict[str, Any]:
         extra = [key for key in values.keys() if key not in cls.model_fields]
         if extra:

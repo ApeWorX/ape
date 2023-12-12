@@ -138,6 +138,7 @@ class PluginMetadata(BaseInterfaceModel):
     """The version requested, if there is one."""
 
     @model_validator(mode="before")
+    @classmethod
     def validate_name(cls, values):
         if "name" not in values:
             raise ValueError("'name' required.")
@@ -385,6 +386,7 @@ class PluginGroup(BaseModel):
         return self.to_str()
 
     @field_validator("plugin_type", mode="before")
+    @classmethod
     def validate_plugin_type(cls, value):
         return PluginType(value) if isinstance(value, str) else value
 

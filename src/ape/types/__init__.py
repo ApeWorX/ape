@@ -85,6 +85,7 @@ class AutoGasLimit(BaseModel):
     """
 
     @field_validator("multiplier", mode="before")
+    @classmethod
     def validate_multiplier(cls, value):
         if isinstance(value, str):
             return float(value)
@@ -137,6 +138,7 @@ class LogFilter(BaseModel):
     selectors: Dict[str, EventABI] = {}
 
     @model_validator(mode="before")
+    @classmethod
     def compute_selectors(cls, values):
         values["selectors"] = {
             encode_hex(keccak(text=event.selector)): event for event in values.get("events", [])
@@ -145,6 +147,7 @@ class LogFilter(BaseModel):
         return values
 
     @field_validator("start_block", mode="before")
+    @classmethod
     def validate_start_block(cls, value):
         return value or 0
 
@@ -231,6 +234,7 @@ class BaseContractLog(BaseInterfaceModel):
     """The arguments to the event, including both indexed and non-indexed data."""
 
     @field_validator("contract_address", mode="before")
+    @classmethod
     def validate_address(cls, value):
         return cls.conversion_manager.convert(value, AddressType)
 
@@ -270,6 +274,7 @@ class ContractLog(BaseContractLog):
     """
 
     @field_validator("block_number", "log_index", "transaction_index", mode="before")
+    @classmethod
     def validate_hex_ints(cls, value):
         if value is None:
             # Should only happen for optionals.
@@ -281,6 +286,7 @@ class ContractLog(BaseContractLog):
         return value
 
     @field_validator("contract_address", mode="before")
+    @classmethod
     def validate_address(cls, value):
         return cls.conversion_manager.convert(value, AddressType)
 

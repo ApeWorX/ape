@@ -273,6 +273,7 @@ class LocalDependency(DependencyAPI):
     version: str = "local"
 
     @model_validator(mode="before")
+    @classmethod
     def validate_contracts_folder(cls, value):
         if value.get("contracts_folder") not in (None, "contracts"):
             return value
