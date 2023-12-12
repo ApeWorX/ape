@@ -595,8 +595,9 @@ class ProjectManager(BaseManager):
             for file in directory.iterdir():
                 if file.is_dir():
                     _append_extensions_in_dir(file)
-                else:
-                    extensions_found.add(file.suffix)
+                elif ext := file.suffix:
+                    # NOTE: Also ignores files without extensions for simplicity.
+                    extensions_found.add(ext)
 
         _append_extensions_in_dir(self.contracts_folder)
 
