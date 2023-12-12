@@ -46,7 +46,7 @@ class ConnectedProviderCommand(click.Command):
             ),
             None,
         ):
-            # Checking instance above, not sure why mypy still made
+            # Checking instance above, not sure why mypy still mad.
             existing_option.type.base_type = base_type  # type: ignore
 
         else:
