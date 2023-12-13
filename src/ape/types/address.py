@@ -30,9 +30,7 @@ class _AddressValidator(_Address, ManagerAccessMixin):
     @classmethod
     def __eth_pydantic_validate__(cls, value: Any, info: Optional[ValidationInfo] = None) -> str:
         if type(value) in (list, tuple):
-            return cls.conversion_manager.convert(
-                value, List[AddressType]
-            )  # type: ignore[valid-type]
+            return cls.conversion_manager.convert(value, List[AddressType])
 
         return (
             cls.conversion_manager.convert(value, AddressType)

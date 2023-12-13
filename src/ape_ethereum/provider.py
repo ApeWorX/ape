@@ -688,9 +688,7 @@ class Web3Provider(ProviderAPI, ABC):
                     return
 
                 # Set the last action, used for checking timeouts and re-orgs.
-                last = YieldAction(
-                    number=block.number, hash=block.hash, time=time.time()
-                )  # type: ignore
+                last = YieldAction(number=block.number, hash=block.hash, time=time.time())
 
     def poll_logs(
         self,
@@ -1115,7 +1113,7 @@ class EthereumNodeProvider(Web3Provider, ABC):
 
     def _set_web3(self):
         # Clear cached version when connecting to another URI.
-        self._client_version = None  # type: ignore
+        self._client_version = None
         self._web3 = _create_web3(self.uri, ipc_path=self.ipc_path)
 
     def _complete_connect(self):
@@ -1166,8 +1164,8 @@ class EthereumNodeProvider(Web3Provider, ABC):
 
     def disconnect(self):
         self.can_use_parity_traces = None
-        self._web3 = None  # type: ignore
-        self._client_version = None  # type: ignore
+        self._web3 = None
+        self._client_version = None
 
     def get_transaction_trace(self, txn_hash: str) -> Iterator[TraceFrame]:
         frames = self._stream_request(
