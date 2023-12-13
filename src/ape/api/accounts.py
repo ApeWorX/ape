@@ -512,7 +512,7 @@ class ImpersonatedAccount(AccountAPI):
     def sign_message(self, msg: Any, **signer_options) -> Optional[MessageSignature]:
         raise NotImplementedError("This account cannot sign messages")
 
-    def sign_transaction(self, txn: TransactionAPI, **kwargs) -> Optional[TransactionAPI]:
+    def sign_transaction(self, txn: TransactionAPI, **signer_options) -> Optional[TransactionAPI]:
         # Returns input transaction unsigned (since it doesn't have access to the key)
         return txn
 
