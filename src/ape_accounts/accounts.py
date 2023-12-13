@@ -158,8 +158,6 @@ class KeyfileAccount(AccountAPI):
         self.keyfile_path.unlink()
 
     def sign_message(self, msg: Any, **signer_options) -> Optional[MessageSignature]:
-        user_approves = False
-
         if isinstance(msg, str):
             user_approves = self.__autosign or click.confirm(f"Message: {msg}\n\nSign: ")
             msg = encode_defunct(text=msg)
