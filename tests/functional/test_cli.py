@@ -205,8 +205,8 @@ def test_network_option_with_other_option(runner):
         click.echo(other)
 
     def run(cmd, fail_msg=None):
-        res = runner.invoke(cmd, [])
-        fail_msg = fail_msg or res.output
+        res = runner.invoke(cmd, [], catch_exceptions=False)
+        fail_msg = f"{fail_msg}\n{res.output}" if fail_msg else res.output
         assert res.exit_code == 0, fail_msg
         assert OTHER_OPTION_VALUE in res.output, fail_msg
         return res

@@ -191,12 +191,19 @@ def network_option(
     """
 
     def decorator(f):
+        # These are the available network object names you can request.
+        network_object_names = ("ecosystem", "network", "provider")
+
+        # All kwargs in the defined @click.commmand().
+        command_signature = inspect.signature(f)
+        command_kwargs = [x.name for x in command_signature.parameters.values()]
+
+        # Any combinaiton of ["ecosystem", "network", "provider"]
+        requested_network_objects = [x for x in command_kwargs if x in network_object_names]
+
         # When using network_option, handle parsing now so we can pass to
         # callback outside of command context.
-        user_cb = kwargs.pop("callback", None)
-        signature = inspect.signature(f)
-        network_args = ("ecosystem", "network", "provider")
-        requested_data = [x.name for x in signature.parameters.values() if x.name in network_args]
+        user_callback = kwargs.pop("callback", None)
 
         def callback(ctx, param, value):
             is_legacy = param.type.base_type is str
@@ -224,26 +231,31 @@ def network_option(
                 }
 
                 # Set the actual values.
-                for item in requested_data:
+                for item in requested_network_objects:
                     instance = choice_classes[item]
                     ctx.params[item] = instance
 
             # else: provider is None, meaning not connected intentionally.
 
-            return value if user_cb is None else user_cb(ctx, param, value)
+            return value if user_callback is None else user_callback(ctx, param, value)
 
         # Prevent argument errors but initializing callback to use None placeholders.
         partial_kwargs: Dict = {}
-        for arg_type in network_args:
-            if arg_type in requested_data:
+        for arg_type in network_object_names:
+            if arg_type in requested_network_objects:
                 partial_kwargs[arg_type] = None
 
         if partial_kwargs:
             wrapped_f = partial(f, **partial_kwargs)
-            # NOTE: __name__ needed for click internals.
+
+            # NOTE: The following is needed for click internals.
             wrapped_f.__name__ = f.__name__  # type: ignore[attr-defined]
+
+            # Add other click parameters.
+            if hasattr(f, "__click_params__"):
+                wrapped_f.__click_params__ = f.__click_params__  # type: ignore[attr-defined]
         else:
-            # No network kwargs are used... No need for partial wrapper.
+            # No network kwargs are used. No need for partial wrapper.
             wrapped_f = f
 
         # Use NetworkChoice option.    Raises:
@@ -258,7 +270,7 @@ def network_option(
         kwargs["callback"] = callback
 
         # Create the actual option.
-        option = click.option(
+        return click.option(
             default=default,
             ecosystem=ecosystem,
             network=network,
@@ -267,8 +279,6 @@ def network_option(
             cls=NetworkOption,
             **kwargs,
         )(wrapped_f)
-
-        return option
 
     return decorator
 
