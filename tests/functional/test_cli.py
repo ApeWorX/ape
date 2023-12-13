@@ -20,6 +20,8 @@ from ape.exceptions import AccountsError
 from ape.logging import logger
 
 OUTPUT_FORMAT = "__TEST__{0}:{1}:{2}_"
+OTHER_OPTION_VALUE = "TEST_OTHER_OPTION"
+other_option = click.option("--other", default=OTHER_OPTION_VALUE)
 
 
 @pytest.fixture
@@ -177,6 +179,41 @@ def test_network_option_unknown(runner, network_cmd):
     network_part = ("--network", "UNKNOWN")
     result = runner.invoke(network_cmd, network_part)
     assert result.exit_code != 0
+
+
+def test_network_option_with_other_option(runner):
+    """
+    To prove can use the `@network_option` with other options
+    in the same command (was issue during production where could not!).
+    """
+
+    # Scenario: Using network_option but not using the value in the command callback.
+    #  (Potentially handling independently).
+    @click.command()
+    @network_option()
+    @other_option
+    def solo_option(other):
+        click.echo(other)
+
+    # Scenario: Using the network option with another option.
+    # This use-case is way more common than the one above.
+    @click.command()
+    @network_option()
+    @other_option
+    def with_net(network, other):
+        click.echo(network.name)
+        click.echo(other)
+
+    def run(cmd, fail_msg=None):
+        res = runner.invoke(cmd, [], catch_exceptions=False)
+        fail_msg = f"{fail_msg}\n{res.output}" if fail_msg else res.output
+        assert res.exit_code == 0, fail_msg
+        assert OTHER_OPTION_VALUE in res.output, fail_msg
+        return res
+
+    run(solo_option, fail_msg="Failed when used without network kwargs")
+    result = run(with_net, fail_msg="Failed when used with network kwargs")
+    assert "local" in result.output
 
 
 @pytest.mark.parametrize(
@@ -454,6 +491,64 @@ def test_connected_provider_use_ecosystem_network_and_provider_with_network_spec
     assert "ethereum:local:test" in result.output, result.output
 
 
+def test_connected_provider_command_use_custom_options(runner):
+    """
+    Ensure custom options work when using `ConnectedProviderCommand`.
+    (There was an issue during development where we could not).
+    """
+
+    # Scenario: Custom option and using network object.
+    @click.command(cls=ConnectedProviderCommand)
+    @other_option
+    def use_net(network, other):
+        click.echo(network.name)
+        click.echo(other)
+
+    # Scenario: Only using custom option.
+    @click.command(cls=ConnectedProviderCommand)
+    @other_option
+    def solo_other(other):
+        click.echo(other)
+
+    # Scenario: Option explicit (shouldn't matter)
+    @click.command(cls=ConnectedProviderCommand)
+    @network_option()
+    @other_option
+    def explicit_option(other):
+        click.echo(other)
+
+    @click.command(cls=ConnectedProviderCommand)
+    @network_option()
+    @click.argument("other_arg")
+    @other_option
+    def with_arg(other_arg, other, provider):
+        click.echo(other)
+        click.echo(provider.name)
+        click.echo(other_arg)
+
+    spec = ("--network", "ethereum:local:test")
+
+    def run(cmd, extra_args=None):
+        arguments = [*spec, *(extra_args or [])]
+        res = runner.invoke(cmd, arguments, catch_exceptions=False)
+        assert res.exit_code == 0, res.output
+        assert OTHER_OPTION_VALUE in res.output
+        return res
+
+    result = run(use_net)
+    assert "local" in result.output, result.output  # Echos network object
+
+    result = run(solo_other)
+    assert "local" not in result.output, result.output
+
+    run(explicit_option)
+
+    argument = "_extra_"
+    result = run(with_arg, extra_args=[argument])
+    assert "test" in result.output
+    assert argument in result.output
+
+
 # TODO: Delete for 0.8.
 def test_deprecated_network_bound_command(runner):
     with pytest.warns(
@@ -463,9 +558,14 @@ def test_deprecated_network_bound_command(runner):
 
         @click.command(cls=NetworkBoundCommand)
         @network_option()
-        def cmd(network):
+        # NOTE: Must also make sure can use other options with this combo!
+        #   (was issue where could not).
+        @click.option("--other", default=OTHER_OPTION_VALUE)
+        def cmd(network, other):
             click.echo(network)
+            click.echo(other)
 
     result = runner.invoke(cmd, ["--network", "ethereum:local:test"], catch_exceptions=False)
     assert result.exit_code == 0, result.output
     assert "ethereum:local:test" in result.output, result.output
+    assert OTHER_OPTION_VALUE in result.output
