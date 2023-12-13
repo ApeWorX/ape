@@ -69,12 +69,12 @@ class LocalProvider(TestProviderAPI, Web3Provider):
 
     def disconnect(self):
         # NOTE: This type ignore seems like a bug in pydantic.
-        self._web3 = None  # type: ignore
-        self._evm_backend = None  # type: ignore
+        self._web3 = None
+        self._evm_backend = None
         self.provider_settings = {}
 
     def update_settings(self, new_settings: Dict):
-        self._cached_chain_id = None  # type: ignore[assignment]
+        self._cached_chain_id = None
         self.provider_settings = {**self.provider_settings, **new_settings}
         self.disconnect()
         self.connect()
