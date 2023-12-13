@@ -517,10 +517,20 @@ def test_connected_provider_command_use_custom_options(runner):
     def explicit_option(other):
         click.echo(other)
 
+    @click.command(cls=ConnectedProviderCommand)
+    @network_option()
+    @click.argument("other_arg")
+    @other_option
+    def with_arg(other_arg, other, provider):
+        click.echo(other)
+        click.echo(provider.name)
+        click.echo(other_arg)
+
     spec = ("--network", "ethereum:local:test")
 
-    def run(cmd):
-        res = runner.invoke(cmd, spec, catch_exceptions=False)
+    def run(cmd, extra_args=None):
+        arguments = [*spec, *(extra_args or [])]
+        res = runner.invoke(cmd, arguments, catch_exceptions=False)
         assert res.exit_code == 0, res.output
         assert OTHER_OPTION_VALUE in res.output
         return res
@@ -532,6 +542,11 @@ def test_connected_provider_command_use_custom_options(runner):
     assert "local" not in result.output, result.output
 
     run(explicit_option)
+
+    argument = "_extra_"
+    result = run(with_arg, extra_args=[argument])
+    assert "test" in result.output
+    assert argument in result.output
 
 
 # TODO: Delete for 0.8.
