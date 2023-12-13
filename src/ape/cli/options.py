@@ -238,9 +238,13 @@ def network_option(
             if arg_type in requested_data:
                 partial_kwargs[arg_type] = None
 
-        # Set this property for click framework to function properly.
-        partial_f = partial(f, **partial_kwargs)
-        partial_f.__name__ = f.__name__  # type: ignore[attr-defined]
+        if partial_kwargs:
+            wrapped_f = partial(f, **partial_kwargs)
+            # NOTE: __name__ needed for click internals.
+            wrapped_f.__name__ = f.__name__  # type: ignore[attr-defined]
+        else:
+            # No network kwargs are used... No need for partial wrapper.
+            wrapped_f = f
 
         # Use NetworkChoice option.    Raises:
         kwargs["type"] = None
@@ -262,7 +266,7 @@ def network_option(
             required=required,
             cls=NetworkOption,
             **kwargs,
-        )(partial_f)
+        )(wrapped_f)
 
         return option
 
