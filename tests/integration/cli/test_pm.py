@@ -102,7 +102,7 @@ def test_compile(ape_cli, runner, project):
     assert result.exit_code == 0, result.output
 
     if project.path.as_posix().endswith("with-contracts"):
-        assert "Package '__FooDep__' compiled." in result.output
+        assert "Package 'foodep' compiled." in result.output
     else:
         # Tests against a bug where we couldn't have hyphens in
         # dependency project contracts.
@@ -111,7 +111,7 @@ def test_compile(ape_cli, runner, project):
 
 @skip_projects_except("with-contracts")
 def test_compile_dependency(ape_cli, runner, project):
-    name = "__FooDep__"
+    name = "foodep"
     result = runner.invoke(ape_cli, ["pm", "compile", name])
     assert result.exit_code == 0, result.output
     assert f"Package '{name}' compiled." in result.output

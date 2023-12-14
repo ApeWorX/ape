@@ -1,7 +1,7 @@
 name: withcontracts
 
 dependencies:
-  - name: __FooDep__
+  - name: foodep
     local: ./dep
 
 test:
