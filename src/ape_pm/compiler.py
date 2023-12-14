@@ -1,6 +1,6 @@
 import json
 from pathlib import Path
-from typing import List, Optional, Set
+from typing import List, Optional, Sequence, Set
 
 from eth_pydantic_types import HexBytes
 from eth_utils import is_0x_prefixed
@@ -17,13 +17,13 @@ class InterfaceCompiler(CompilerAPI):
     def name(self) -> str:
         return "ethpm"
 
-    def get_versions(self, all_paths: List[Path]) -> Set[str]:
+    def get_versions(self, all_paths: Sequence[Path]) -> Set[str]:
         # NOTE: This bypasses the serialization of this compiler into the package manifest's
         #       ``compilers`` field. You should not do this with a real compiler plugin.
         return set()
 
     def compile(
-        self, filepaths: List[Path], base_path: Optional[Path] = None
+        self, filepaths: Sequence[Path], base_path: Optional[Path] = None
     ) -> List[ContractType]:
         filepaths.sort()  # Sort to assist in reproducing consistent results.
         contract_types: List[ContractType] = []

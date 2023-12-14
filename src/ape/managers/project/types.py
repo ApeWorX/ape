@@ -1,6 +1,6 @@
 import os
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Sequence
 
 from ethpm_types import ContractType, PackageManifest, Source
 from ethpm_types.utils import compute_checksum
@@ -160,7 +160,7 @@ class BaseProject(ProjectAPI):
         return True
 
     def create_manifest(
-        self, file_paths: Optional[List[Path]] = None, use_cache: bool = True
+        self, file_paths: Optional[Sequence[Path]] = None, use_cache: bool = True
     ) -> PackageManifest:
         # Read the project config and migrate project-settings to Ape settings if needed.
         compile_config = self.config_manager.get_config("compile")
