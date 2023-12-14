@@ -2,7 +2,7 @@ import os.path
 import re
 import tempfile
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Dict, Iterator, List, Optional, Union
+from typing import TYPE_CHECKING, Any, Dict, Iterator, List, Optional, Sequence, Union
 
 from ethpm_types import Checksum, Compiler, ContractType, PackageManifest, Source
 from ethpm_types.source import Content
@@ -180,6 +180,24 @@ class ProjectAPI(BaseInterfaceModel):
         """
 
         return False
+
+    def add_compiler_data(self, compiler_data: Sequence[Compiler]):
+        """
+        Add compiler data to the existing cached manifest.
+
+        Args:
+            compiler_data (List[``ethpm_types.Compiler``]): Compilers to add.
+        """
+        # Merge given compilers with existing compilers.
+        existing_compilers = self.manifest.compilers or []
+
+        # Use Compiler.__hash__ to remove duplicated.
+        # Also, sort for consistency.
+        compilers = sorted(
+            list(set([*existing_compilers, *compiler_data])), key=lambda x: f"{x.name}@{x.version}"
+        )
+
+        self.update_manifest(compilers=compilers)
 
     def update_manifest_sources(
         self,

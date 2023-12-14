@@ -441,7 +441,7 @@ def test_source_paths_excludes_cached_dependencies(project_with_contract):
     assert dep_contract not in actual
 
 
-def test_update_manifest(project):
+def test_update_manifest_compilers(project):
     compiler = Compiler(name="comp", version="1.0.0", contractTypes=["foo.txt"])
     project.local_project.update_manifest(compilers=[compiler])
     actual = project.local_project.manifest.compilers
@@ -450,12 +450,41 @@ def test_update_manifest(project):
     project.local_project.update_manifest(name="test", version="1.0.0")
     assert project.local_project.manifest.name == "test"
     assert project.local_project.manifest.version == "1.0.0"
+
     # The compilers should not have changed.
     actual = project.local_project.manifest.compilers
     assert actual == [compiler]
+
+    # Add a new one.
+    # NOTE: `update_cache()` will override the fields entirely.
+    #   You must include existing fields if you want to merge.
+    compiler_2 = Compiler(name="test", version="2.0.0", contractTypes=["bar.txt"])
+    project.local_project.update_manifest(compilers=[compiler_2])
+    actual = project.local_project.manifest.compilers
+    assert actual == [compiler_2]
 
 
 def test_load_contracts(project_with_contract):
     contracts = project_with_contract.load_contracts()
     assert len(contracts) > 0
     assert contracts == project_with_contract.contracts
+
+
+def test_add_compiler_data(project):
+    compiler = Compiler(name="comp", version="1.0.0", contractTypes=["foo.txt"])
+    project.local_project.add_compiler_data([compiler])
+    actual = project.local_project.manifest.compilers
+    assert actual == [compiler]
+
+    # Attempt to add again. There should be no change.
+    project.local_project.add_compiler_data([compiler])
+    actual = project.local_project.manifest.compilers
+    assert actual == [compiler]
+
+    # Add a new one.
+    # NOTE: `add_compiler_data()` will not override existing compilers.
+    #   Use `update_cache()` for that.
+    compiler_2 = Compiler(name="test", version="2.0.0", contractTypes=["bar.txt"])
+    project.local_project.add_compiler_data([compiler_2])
+    actual = project.local_project.manifest.compilers
+    assert actual == [compiler, compiler_2]
