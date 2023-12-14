@@ -469,6 +469,8 @@ class DependencyAPI(BaseInterfaceModel):
                 **extras,
             )
 
+        # Replace the dependency's manifest with the temp project's.
+        self.replace_manifest(project.manifest)
         return project.manifest
 
     def _get_sources(self, project: ProjectAPI) -> List[Path]:
