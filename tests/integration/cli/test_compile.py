@@ -51,8 +51,8 @@ def test_skip_contracts_and_missing_compilers(ape_cli, runner, project, switch_c
 
     # Simulate configuring Ape to not ignore tsconfig.json for some reason.
     content = """
-    compiler:
-      ignore_files:
+    compile:
+      exclude:
         - "*package.json"
     """
     with switch_config(project, content):

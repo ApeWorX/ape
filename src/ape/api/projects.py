@@ -6,9 +6,8 @@ from typing import TYPE_CHECKING, Any, Dict, Iterator, List, Optional, Union
 
 from ethpm_types import Checksum, Compiler, ContractType, PackageManifest, Source
 from ethpm_types.source import Content
-from ethpm_types.utils import Algorithm, compute_checksum
 from packaging.version import InvalidVersion, Version
-from pydantic import AnyUrl
+from pydantic import AnyUrl, ValidationError
 
 from ape.exceptions import ProjectError
 from ape.logging import logger
@@ -60,6 +59,10 @@ class ProjectAPI(BaseInterfaceModel):
         ``True`` if the project at the given path matches this project type.
         Useful for figuring out the best ``ProjectAPI`` to use when compiling a project.
         """
+
+    @property
+    def manifest(self) -> PackageManifest:
+        return self.cached_manifest or PackageManifest()
 
     @abstractmethod
     def create_manifest(
@@ -115,11 +118,7 @@ class ProjectAPI(BaseInterfaceModel):
             # This scenario happens if changing branches and you have some contracts on
             # one branch and others on the next.
             for name, contract in self.contracts.items():
-                source_id = contract.source_id
-                if not contract.source_id:
-                    continue
-
-                if source_id in (manifest.sources or {}):
+                if (source_id := contract.source_id) and source_id in (manifest.sources or {}):
                     contracts[name] = contract
 
             manifest.contract_types = contracts
@@ -151,6 +150,28 @@ class ProjectAPI(BaseInterfaceModel):
         folder.mkdir(exist_ok=True, parents=True)
         return folder
 
+    def update_manifest(self, **kwargs):
+        """
+        Add additional package manifest parts to the cache.
+
+        Args:
+            **kwargs: Fields from ``ethpm_types.manifest.PackageManifest``.
+        """
+        new_manifest = self.manifest.model_copy(update=kwargs)
+        self.replace_manifest(new_manifest)
+
+    def replace_manifest(self, manifest: PackageManifest):
+        """
+        Replace the entire cached manifest.
+
+        Args:
+            manifest (``ethpm_types.manifest.PackageManifest``): The manifest
+              to use.
+        """
+        self.manifest_cachefile.unlink(missing_ok=True)
+        self.manifest_cachefile.write_text(manifest.model_dump_json())
+        self._cached_manifest = manifest
+
     def process_config_file(self, **kwargs) -> bool:
         """
         Process the project's config file.
@@ -159,24 +180,28 @@ class ProjectAPI(BaseInterfaceModel):
 
         return False
 
-    @classmethod
-    def _create_manifest(
-        cls,
+    def update_manifest_sources(
+        self,
         source_paths: List[Path],
         contracts_path: Path,
         contract_types: Dict[str, ContractType],
         name: Optional[str] = None,
         version: Optional[str] = None,
-        initial_manifest: Optional[PackageManifest] = None,
         compiler_data: Optional[List[Compiler]] = None,
+        **kwargs: Any,
     ) -> PackageManifest:
-        manifest = initial_manifest or PackageManifest()
-        manifest.name = name.lower() if name is not None else manifest.name
-        manifest.version = version or manifest.version
-        manifest.sources = cls._create_source_dict(source_paths, contracts_path)
-        manifest.contract_types = contract_types
-        manifest.compilers = compiler_data or []
-        return manifest
+        items: Dict = {
+            "contract_types": contract_types,
+            "sources": self._create_source_dict(source_paths, contracts_path),
+            "compilers": compiler_data or [],
+        }
+        if name is not None:
+            items["name"] = name.lower()
+        if version:
+            items["version"] = version
+
+        self.update_manifest(**{**items, **kwargs})
+        return self.manifest
 
     @classmethod
     def _create_source_dict(
@@ -204,10 +229,7 @@ class ProjectAPI(BaseInterfaceModel):
                 text = source_path.read_text()
 
             source_dict[key] = Source(
-                checksum=Checksum(
-                    algorithm=Algorithm.MD5,
-                    hash=compute_checksum(source_path.read_bytes()),
-                ),
+                checksum=Checksum.from_file(source_path),
                 urls=[],
                 content=Content(root={i + 1: x for i, x in enumerate(text.splitlines())}),
                 imports=source_imports.get(key, []),
@@ -383,7 +405,7 @@ class DependencyAPI(BaseInterfaceModel):
                     )
                     return compiled_manifest
 
-                self._write_manifest_to_cache(compiled_manifest)
+                self.replace_manifest(compiled_manifest)
                 return compiled_manifest
 
     def _extract_local_manifest(
@@ -410,7 +432,7 @@ class DependencyAPI(BaseInterfaceModel):
 
             else:
                 # Was given a path to a manifest JSON.
-                self._write_manifest_to_cache(manifest)
+                self.replace_manifest(manifest)
                 return manifest
 
         elif (project_path.parent / project_path.name.replace("-", "_")).is_dir():
@@ -433,18 +455,21 @@ class DependencyAPI(BaseInterfaceModel):
             project = pm.local_project
             sources = self._get_sources(project)
             dependencies = self.project_manager._extract_manifest_dependencies()
-            project_manifest = project._create_manifest(
-                sources, project.contracts_folder, {}, name=project.name, version=project.version
+
+            extras = {}
+            if dependencies:
+                extras["dependencies"] = dependencies
+
+            project.update_manifest_sources(
+                sources,
+                project.contracts_folder,
+                {},
+                name=project.name,
+                version=project.version,
+                **extras,
             )
-            compiler_data = self.project_manager.get_compiler_data(compile_if_needed=False)
 
-        if dependencies:
-            project_manifest.dependencies = dependencies
-        if compiler_data:
-            project_manifest.compilers = compiler_data
-
-        self._write_manifest_to_cache(project_manifest)
-        return project_manifest
+        return project.manifest
 
     def _get_sources(self, project: ProjectAPI) -> List[Path]:
         escaped_extensions = [re.escape(ext) for ext in self.compiler_manager.registered_compilers]
@@ -458,7 +483,7 @@ class DependencyAPI(BaseInterfaceModel):
 
         return [s for s in all_sources if s not in excluded_files]
 
-    def _write_manifest_to_cache(self, manifest: PackageManifest):
+    def replace_manifest(self, manifest: PackageManifest):
         self._target_manifest_cache_file.unlink(missing_ok=True)
         self._target_manifest_cache_file.parent.mkdir(exist_ok=True, parents=True)
         self._target_manifest_cache_file.write_text(manifest.model_dump_json())
@@ -471,9 +496,10 @@ def _load_manifest_from_file(file_path: Path) -> Optional[PackageManifest]:
 
     try:
         return PackageManifest.model_validate_json(file_path.read_text())
-    except Exception as err:
-        logger.warning(f"Existing manifest file '{file_path}' corrupted. Re-building.")
-        logger.debug(str(err))
+    except ValidationError as err:
+        logger.warning(
+            f"Existing manifest file '{file_path}' corrupted (problem={err}). Re-building."
+        )
         return None
 
 

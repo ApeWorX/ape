@@ -54,8 +54,8 @@ By default, Ape ignores files `package.json`, `package-lock.json`, `tsconfig.jso
 To override this list, edit your `ape-config.yaml` similarly:
 
 ```yaml
-compiler:
-  ignore_files:
+compile:
+  exclude:
     - "*package.json"
     - "*package-lock.json"
     - "*tsconfig.json"

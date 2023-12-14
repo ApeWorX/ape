@@ -18,7 +18,7 @@ class Config(PluginConfig):
     should configure ``include_dependencies`` to be ``True``.
     """
 
-    exclude: List[str] = []
+    exclude: List[str] = ["*package.json", "*package-lock.json", "*tsconfig.json"]
     """
     Source exclusion globs across all file types.
     """

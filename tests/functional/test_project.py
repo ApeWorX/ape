@@ -4,6 +4,7 @@ from pathlib import Path
 
 import pytest
 import yaml
+from ethpm_types import Compiler
 from ethpm_types import ContractInstance as EthPMContractInstance
 from ethpm_types import ContractType, Source
 from ethpm_types.manifest import PackageManifest
@@ -329,10 +330,12 @@ def test_track_deployment_from_unknown_contract_given_txn_hash(
     assert actual.runtime_bytecode == contract.contract_type.runtime_bytecode
 
 
-def test_compiler_data(config, project_path, contracts_folder):
-    # See ape-solidity / ape-vyper for better tests
+def test_compiler_data_and_update_cache(config, project_path, contracts_folder):
     with config.using_project(project_path, contracts_folder=contracts_folder) as project:
-        assert not project.compiler_data
+        compiler = Compiler(name="comp", version="1.0.0")
+        project.local_project.update_manifest(compilers=[compiler])
+        assert project.local_project.manifest.compilers == [compiler]
+        assert project.compiler_data == [compiler]
 
 
 def test_get_project_without_contracts_path(project):
@@ -436,3 +439,23 @@ def test_source_paths_excludes_cached_dependencies(project_with_contract):
     shutil.copy(contract, dep_contract)
     actual = project_with_contract.source_paths
     assert dep_contract not in actual
+
+
+def test_update_manifest(project):
+    compiler = Compiler(name="comp", version="1.0.0", contractTypes=["foo.txt"])
+    project.local_project.update_manifest(compilers=[compiler])
+    actual = project.local_project.manifest.compilers
+    assert actual == [compiler]
+
+    project.local_project.update_manifest(name="test", version="1.0.0")
+    assert project.local_project.manifest.name == "test"
+    assert project.local_project.manifest.version == "1.0.0"
+    # The compilers should not have changed.
+    actual = project.local_project.manifest.compilers
+    assert actual == [compiler]
+
+
+def test_load_contracts(project_with_contract):
+    contracts = project_with_contract.load_contracts()
+    assert len(contracts) > 0
+    assert contracts == project_with_contract.contracts

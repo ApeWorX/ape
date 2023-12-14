@@ -23,11 +23,6 @@ class DeploymentConfig(PluginConfig):
     contract_type: str
 
 
-class CompilerConfig(PluginConfig):
-    ignore_files: List[str] = ["*package.json", "*package-lock.json", "*tsconfig.json"]
-    """List of globular files to ignore"""
-
-
 class DeploymentConfigCollection(RootModel[dict]):
     @model_validator(mode="before")
     @classmethod
@@ -107,9 +102,6 @@ class ConfigManager(BaseInterfaceModel):
     meta: PackageMeta = PackageMeta()
     """Metadata about the project."""
 
-    compiler: CompilerConfig = CompilerConfig()
-    """Global compiler information."""
-
     contracts_folder: Path = None  # type: ignore
     """
     The path to the project's ``contracts/`` directory
@@ -153,7 +145,6 @@ class ConfigManager(BaseInterfaceModel):
             self.dependencies = cache.get("dependencies", [])
             self.deployments = cache.get("deployments", {})
             self.contracts_folder = cache.get("contracts_folder", self.PROJECT_FOLDER / "contracts")
-            self.compiler = CompilerConfig.model_validate(cache.get("compiler", {}))
             return cache
 
         # First, load top-level configs. Then, load all the plugin configs.
@@ -178,9 +169,6 @@ class ConfigManager(BaseInterfaceModel):
         self.default_ecosystem = configs["default_ecosystem"] = user_config.pop(
             "default_ecosystem", "ethereum"
         )
-        compiler_dict = user_config.pop("compiler", CompilerConfig().model_dump(mode="json"))
-        configs["compiler"] = compiler_dict
-        self.compiler = CompilerConfig(**compiler_dict)
 
         dependencies = user_config.pop("dependencies", []) or []
         if not isinstance(dependencies, list):
