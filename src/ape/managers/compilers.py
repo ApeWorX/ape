@@ -125,9 +125,9 @@ class CompilerManager(BaseManager):
             if x.source_id
         ]
 
+        exclusions = self.config_manager.get_config("compile").exclude
         for extension in extensions:
-            path_patterns_to_ignore = self.config_manager.get_config("compile").exclude
-            ignore_path_lists = [contracts_folder.rglob(p) for p in path_patterns_to_ignore]
+            ignore_path_lists = [contracts_folder.rglob(p) for p in exclusions]
             paths_to_ignore = [
                 contracts_folder / get_relative_path(p, contracts_folder)
                 for files in ignore_path_lists

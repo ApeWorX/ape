@@ -134,10 +134,16 @@ class ConfigManager(BaseInterfaceModel):
         return self.dependency_manager.packages_folder
 
     @property
+    def _project_key(self) -> str:
+        return self.PROJECT_FOLDER.stem
+
+    @property
+    def _project_configs(self) -> Dict[str, Any]:
+        return self._cached_configs.get(self._project_key, {})
+
+    @property
     def _plugin_configs(self) -> Dict[str, PluginConfig]:
-        project_name = self.PROJECT_FOLDER.stem
-        if project_name in self._cached_configs:
-            cache = self._cached_configs[project_name]
+        if cache := self._cached_configs.get(self._project_key):
             self.name = cache.get("name", "")
             self.version = cache.get("version", "")
             self.default_ecosystem = cache.get("default_ecosystem", "ethereum")
@@ -218,7 +224,7 @@ class ConfigManager(BaseInterfaceModel):
                 "Plugins may not be installed yet or keys may be mis-spelled."
             )
 
-        self._cached_configs[project_name] = configs
+        self._cached_configs[self._project_key] = configs
         return configs
 
     def __repr__(self):
