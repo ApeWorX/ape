@@ -1,6 +1,6 @@
 from functools import cached_property
 from pathlib import Path
-from typing import Dict, Iterator, List, Optional, Set, Tuple
+from typing import Dict, Iterator, List, Optional, Sequence, Set, Tuple
 
 from eth_pydantic_types import HexBytes
 from ethpm_types import ContractType
@@ -122,7 +122,7 @@ class CompilerAPI(BaseInterfaceModel):
 
     @raises_not_implemented
     def get_imports(  # type: ignore[empty-body]
-        self, contract_filepaths: List[Path], base_path: Optional[Path]
+        self, contract_filepaths: Sequence[Path], base_path: Optional[Path]
     ) -> Dict[str, List[str]]:
         """
         Returns a list of imports as source_ids for each contract's source_id in a given
