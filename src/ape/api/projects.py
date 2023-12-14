@@ -150,7 +150,7 @@ class ProjectAPI(BaseInterfaceModel):
         folder.mkdir(exist_ok=True, parents=True)
         return folder
 
-    def update_manifest(self, **kwargs):
+    def update_manifest(self, **kwargs) -> PackageManifest:
         """
         Add additional package manifest parts to the cache.
 
@@ -158,9 +158,9 @@ class ProjectAPI(BaseInterfaceModel):
             **kwargs: Fields from ``ethpm_types.manifest.PackageManifest``.
         """
         new_manifest = self.manifest.model_copy(update=kwargs)
-        self.replace_manifest(new_manifest)
+        return self.replace_manifest(new_manifest)
 
-    def replace_manifest(self, manifest: PackageManifest):
+    def replace_manifest(self, manifest: PackageManifest) -> PackageManifest:
         """
         Replace the entire cached manifest.
 
@@ -171,6 +171,7 @@ class ProjectAPI(BaseInterfaceModel):
         self.manifest_cachefile.unlink(missing_ok=True)
         self.manifest_cachefile.write_text(manifest.model_dump_json())
         self._cached_manifest = manifest
+        return manifest
 
     def process_config_file(self, **kwargs) -> bool:
         """
@@ -200,8 +201,7 @@ class ProjectAPI(BaseInterfaceModel):
         if version:
             items["version"] = version
 
-        self.update_manifest(**{**items, **kwargs})
-        return self.manifest
+        return self.update_manifest(**{**items, **kwargs})
 
     @classmethod
     def _create_source_dict(
@@ -456,7 +456,7 @@ class DependencyAPI(BaseInterfaceModel):
             sources = self._get_sources(project)
             dependencies = self.project_manager._extract_manifest_dependencies()
 
-            extras = {}
+            extras: Dict = {}
             if dependencies:
                 extras["dependencies"] = dependencies
 
