@@ -181,12 +181,15 @@ class ProjectAPI(BaseInterfaceModel):
 
         return False
 
-    def add_compiler_data(self, compiler_data: Sequence[Compiler]):
+    def add_compiler_data(self, compiler_data: Sequence[Compiler]) -> List[Compiler]:
         """
         Add compiler data to the existing cached manifest.
 
         Args:
             compiler_data (List[``ethpm_types.Compiler``]): Compilers to add.
+
+        Returns:
+            List[``ethpm_types.source.Compiler``]: The full list of compilers.
         """
         # Merge given compilers with existing compilers.
         existing_compilers = self.manifest.compilers or []
@@ -197,7 +200,12 @@ class ProjectAPI(BaseInterfaceModel):
             list(set([*existing_compilers, *compiler_data])), key=lambda x: f"{x.name}@{x.version}"
         )
 
-        self.update_manifest(compilers=compilers)
+        if compilers == existing_compilers:
+            # No updates.
+            return
+
+        manifest = self.update_manifest(compilers=compilers)
+        return manifest.compilers or compilers  # Or for mypy.
 
     def update_manifest_sources(
         self,

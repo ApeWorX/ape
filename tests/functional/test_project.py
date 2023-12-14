@@ -470,21 +470,25 @@ def test_load_contracts(project_with_contract):
     assert contracts == project_with_contract.contracts
 
 
-def test_add_compiler_data(project):
+def test_add_compiler_data(project_with_dependency_config):
+    # NOTE: Using different project than default to lessen
+    #   chance of race-conditions from multi-process test runners.
+    project = project_with_dependency_config
+
+    # NOTE: Pre-defining things to lessen chance of race condition.
     compiler = Compiler(name="comp", version="1.0.0", contractTypes=["foo.txt"])
-    project.local_project.add_compiler_data([compiler])
-    actual = project.local_project.manifest.compilers
-    assert actual == [compiler]
+    compiler_2 = Compiler(name="test", version="2.0.0", contractTypes=["bar.txt"])
+    proj = project.local_project
+    argument = [compiler]
+    second_arg = [compiler_2]
+    final_exp = [compiler, compiler_2]
 
-    # Attempt to add again. There should be no change.
-    project.local_project.add_compiler_data([compiler])
-    actual = project.local_project.manifest.compilers
-    assert actual == [compiler]
+    # Add twice to show it's only added once.
+    proj.add_compiler_data(argument)
+    proj.add_compiler_data(argument)
+    assert proj.manifest.compilers == argument
 
-    # Add a new one.
     # NOTE: `add_compiler_data()` will not override existing compilers.
     #   Use `update_cache()` for that.
-    compiler_2 = Compiler(name="test", version="2.0.0", contractTypes=["bar.txt"])
-    project.local_project.add_compiler_data([compiler_2])
-    actual = project.local_project.manifest.compilers
-    assert actual == [compiler, compiler_2]
+    proj.add_compiler_data(second_arg)
+    assert proj.manifest.compilers == final_exp
