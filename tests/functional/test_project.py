@@ -475,18 +475,23 @@ def test_add_compiler_data(project_with_dependency_config):
     #   chance of race-conditions from multi-process test runners.
     project = project_with_dependency_config
 
+    # Load contracts so that any compilers that may exist are present.
+    project.load_contracts()
+    start_compilers = project.local_project.manifest.compilers or []
+
     # NOTE: Pre-defining things to lessen chance of race condition.
     compiler = Compiler(name="comp", version="1.0.0", contractTypes=["foo.txt"])
     compiler_2 = Compiler(name="test", version="2.0.0", contractTypes=["bar.txt"])
     proj = project.local_project
     argument = [compiler]
     second_arg = [compiler_2]
-    final_exp = [compiler, compiler_2]
+    first_exp = [*start_compilers, compiler]
+    final_exp = [*first_exp, compiler_2]
 
     # Add twice to show it's only added once.
     proj.add_compiler_data(argument)
     proj.add_compiler_data(argument)
-    assert proj.manifest.compilers == argument
+    assert proj.manifest.compilers == first_exp
 
     # NOTE: `add_compiler_data()` will not override existing compilers.
     #   Use `update_cache()` for that.
