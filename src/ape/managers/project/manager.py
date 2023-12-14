@@ -236,7 +236,7 @@ class ProjectManager(BaseManager):
                 contract_type_names = [ct.name for ct in filtered_contract_types if ct.name]
                 compiler_list.append(
                     Compiler(
-                        name=compiler.name,
+                        name=compiler.name.lower(),
                         version=str(version),
                         settings=version_settings,
                         contractTypes=contract_type_names,
