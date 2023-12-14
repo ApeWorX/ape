@@ -202,7 +202,7 @@ class ProjectAPI(BaseInterfaceModel):
 
         if compilers == existing_compilers:
             # No updates.
-            return
+            return compilers
 
         manifest = self.update_manifest(compilers=compilers)
         return manifest.compilers or compilers  # Or for mypy.
