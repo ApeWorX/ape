@@ -194,16 +194,47 @@ class ProjectAPI(BaseInterfaceModel):
         # Merge given compilers with existing compilers.
         existing_compilers = self.manifest.compilers or []
 
+        # Handle contract type duplication by removing previous.
+        new_types = [ct for c in compiler_data for ct in (c.contractTypes or [])]
+
+        # Existing compilers remaining after processing new compilers.
+        remaining_existing_compilers: List[Compiler] = []
+
+        for existing_compiler in existing_compilers:
+            if given_compiler := next(
+                iter(x for x in compiler_data if x == existing_compiler), None
+            ):
+                # Compiler already exists in the system, possibly with different contract types.
+                # Merge contract types.
+                given_compiler.contractTypes = list(
+                    {
+                        *(existing_compiler.contractTypes or []),
+                        *(given_compiler.contractTypes or []),
+                    }
+                )
+                # NOTE: Purposely we don't add the exising compiler back,
+                #   as it is the same as the given compiler, (meaning same
+                #   name, version, and settings), and we have
+                #   merged their contract types.
+
+                continue
+
+            else:
+                # Filter out contract types added now under a different compiler.
+                existing_compiler.contractTypes = [
+                    c for c in (existing_compiler.contractTypes or []) if c not in new_types
+                ]
+
+                # Remove compilers without contract types.
+                if existing_compiler.contractTypes:
+                    remaining_existing_compilers.append(existing_compiler)
+
         # Use Compiler.__hash__ to remove duplicated.
         # Also, sort for consistency.
         compilers = sorted(
-            list(set([*existing_compilers, *compiler_data])), key=lambda x: f"{x.name}@{x.version}"
+            list({*remaining_existing_compilers, *compiler_data}),
+            key=lambda x: f"{x.name}@{x.version}",
         )
-
-        if compilers == existing_compilers:
-            # No updates.
-            return compilers
-
         manifest = self.update_manifest(compilers=compilers)
         return manifest.compilers or compilers  # Or for mypy.
 

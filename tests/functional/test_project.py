@@ -480,11 +480,16 @@ def test_add_compiler_data(project_with_dependency_config):
     start_compilers = project.local_project.manifest.compilers or []
 
     # NOTE: Pre-defining things to lessen chance of race condition.
-    compiler = Compiler(name="comp", version="1.0.0", contractTypes=["foo.txt"])
-    compiler_2 = Compiler(name="test", version="2.0.0", contractTypes=["bar.txt"])
+    compiler = Compiler(name="comp", version="1.0.0", contractTypes=["foo"])
+    compiler_2 = Compiler(name="test", version="2.0.0", contractTypes=["bar", "stay"])
+
+    # NOTE: Has same contract as compiler 2 and thus replaces the contract.
+    compiler_3 = Compiler(name="test", version="3.0.0", contractTypes=["bar"])
+
     proj = project.local_project
     argument = [compiler]
     second_arg = [compiler_2]
+    third_arg = [compiler_3]
     first_exp = [*start_compilers, compiler]
     final_exp = [*first_exp, compiler_2]
 
@@ -497,3 +502,13 @@ def test_add_compiler_data(project_with_dependency_config):
     #   Use `update_cache()` for that.
     proj.add_compiler_data(second_arg)
     assert proj.manifest.compilers == final_exp
+
+    proj.add_compiler_data(third_arg)
+    comp = [c for c in proj.manifest.compilers if c.name == "test" and c.version == "2.0.0"][0]
+    assert "bar" not in comp.contractTypes
+
+    # Show that compilers without contract types go away.
+    (compiler_3.contractTypes or []).append("stay")
+    proj.add_compiler_data(third_arg)
+    comp_check = [c for c in proj.manifest.compilers if c.name == "test" and c.version == "2.0.0"]
+    assert not comp_check
