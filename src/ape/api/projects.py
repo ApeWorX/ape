@@ -191,25 +191,53 @@ class ProjectAPI(BaseInterfaceModel):
         Returns:
             List[``ethpm_types.source.Compiler``]: The full list of compilers.
         """
+        # Validate given data.
+        given_compilers = set(compiler_data)
+        if len(given_compilers) != len(compiler_data):
+            raise ProjectError(
+                f"`{self.add_compiler_data.__name__}()` was given multiple of the same compiler. "
+                "Please filter inputs."
+            )
+
+        # Filter out given compilers without contract types.
+        given_compilers = {c for c in given_compilers if c.contractTypes}
+        if len(given_compilers) != len(compiler_data):
+            logger.warning(
+                f"`{self.add_compiler_data.__name__}()` given compilers without contract types. "
+                "Ignoring these inputs."
+            )
+
+        for given_compiler in given_compilers:
+            other_given_compilers = [c for c in given_compilers if c != given_compiler]
+            contract_types_from_others = [
+                n for c in other_given_compilers for n in (c.contractTypes or [])
+            ]
+
+            collisions = {
+                n for n in (given_compiler.contractTypes or []) if n in contract_types_from_others
+            }
+            if collisions:
+                collide_str = ", ".join(collisions)
+                raise ProjectError(f"Contract type(s) '{collide_str}' collision across compilers.")
+
+        new_types = [n for c in given_compilers for n in (c.contractTypes or [])]
+
         # Merge given compilers with existing compilers.
         existing_compilers = self.manifest.compilers or []
-
-        # Handle contract type duplication by removing previous.
-        new_types = [ct for c in compiler_data for ct in (c.contractTypes or [])]
 
         # Existing compilers remaining after processing new compilers.
         remaining_existing_compilers: List[Compiler] = []
 
         for existing_compiler in existing_compilers:
-            if given_compiler := next(
-                iter(x for x in compiler_data if x == existing_compiler), None
-            ):
+            find_iter = iter(x for x in compiler_data if x == existing_compiler)
+
+            if matching_given_compiler := next(find_iter, None):
                 # Compiler already exists in the system, possibly with different contract types.
                 # Merge contract types.
-                given_compiler.contractTypes = list(
+                matching_given_compiler.contractTypes = list(
                     {
                         *(existing_compiler.contractTypes or []),
-                        *(given_compiler.contractTypes or []),
+                        *(matching_given_compiler.contractTypes or []),
                     }
                 )
                 # NOTE: Purposely we don't add the exising compiler back,

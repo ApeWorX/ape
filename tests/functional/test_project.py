@@ -512,3 +512,15 @@ def test_add_compiler_data(project_with_dependency_config):
     proj.add_compiler_data(third_arg)
     comp_check = [c for c in proj.manifest.compilers if c.name == "test" and c.version == "2.0.0"]
     assert not comp_check
+
+    # Show error on multiple of same compiler.
+    compiler_4 = Compiler(name="test123", version="3.0.0", contractTypes=["bar"])
+    compiler_5 = Compiler(name="test123", version="3.0.0", contractTypes=["baz"])
+    with pytest.raises(ProjectError, match=r".*was given multiple of the same compiler.*"):
+        proj.add_compiler_data([compiler_4, compiler_5])
+
+    # Show error when contract type collision (only happens with inputs, else latter replaces).
+    compiler_4 = Compiler(name="test321", version="3.0.0", contractTypes=["bar"])
+    compiler_5 = Compiler(name="test456", version="9.0.0", contractTypes=["bar"])
+    with pytest.raises(ProjectError, match=r".*'bar' collision across compilers.*"):
+        proj.add_compiler_data([compiler_4, compiler_5])
