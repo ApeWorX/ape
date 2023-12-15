@@ -25,7 +25,6 @@ class InterfaceCompiler(CompilerAPI):
     def compile(
         self, filepaths: Sequence[Path], base_path: Optional[Path] = None
     ) -> List[ContractType]:
-        filepaths.sort()  # Sort to assist in reproducing consistent results.
         contract_types: List[ContractType] = []
         for path in filepaths:
             source_path = (
