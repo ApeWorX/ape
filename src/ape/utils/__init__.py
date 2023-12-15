@@ -50,9 +50,9 @@ from ape.utils.os import (
 )
 from ape.utils.process import JoinableQueue, spawn
 from ape.utils.testing import (
-    DEFAULT_HD_PATH,
     DEFAULT_NUMBER_OF_TEST_ACCOUNTS,
     DEFAULT_TEST_CHAIN_ID,
+    DEFAULT_TEST_HD_PATH,
     DEFAULT_TEST_MNEMONIC,
     GeneratedDevAccount,
     generate_dev_accounts,
@@ -71,7 +71,7 @@ __all__ = [
     "DEFAULT_NUMBER_OF_TEST_ACCOUNTS",
     "DEFAULT_TEST_CHAIN_ID",
     "DEFAULT_TEST_MNEMONIC",
-    "DEFAULT_HD_PATH",
+    "DEFAULT_TEST_HD_PATH",
     "DEFAULT_TRANSACTION_ACCEPTANCE_TIMEOUT",
     "EMPTY_BYTES32",
     "expand_environment_variables",

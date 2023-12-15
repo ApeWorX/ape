@@ -152,22 +152,22 @@ def dependency_manager(project):
 def keyparams():
     # NOTE: password is 'a'
     return {
-        "address": "7e5f4552091a69125d5dfcb7b8c2659029395bdf",
+        "address": "f39fd6e51aad88f6f4ce6ab8827279cfffb92266",
         "crypto": {
             "cipher": "aes-128-ctr",
-            "cipherparams": {"iv": "7bc492fb5dca4fe80fd47645b2aad0ff"},
-            "ciphertext": "43beb65018a35c31494f642ec535315897634b021d7ec5bb8e0e2172387e2812",
+            "cipherparams": {"iv": "fe11b8a2576bacd917b02c065f764369"},
+            "ciphertext": "80a7a3a901cbfd4720ca77b81b14e4db87da84e0de9d2257dfd7427108c0f573",
             "kdf": "scrypt",
             "kdfparams": {
                 "dklen": 32,
                 "n": 262144,
                 "r": 1,
                 "p": 8,
-                "salt": "4b127cb5ddbc0b3bd0cc0d2ef9a89bec",
+                "salt": "62c6413db938987b0be436335e38b4ae",
             },
-            "mac": "6a1d520975a031e11fc16cff610f5ae7476bcae4f2f598bc59ccffeae33b1caa",
+            "mac": "43935d1a983e13c083e724ebc9d02d5467e0accfa6df8db1fc41f9870f5e776e",
         },
-        "id": "ee424db9-da20-405d-bd75-e609d3e2b4ad",
+        "id": "87c9b6e3-5ce4-4758-ab5b-444074e594fe",
         "version": 3,
     }
 

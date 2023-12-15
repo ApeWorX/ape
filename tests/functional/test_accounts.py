@@ -496,7 +496,7 @@ def test_is_not_contract(owner, keyfile_account):
 def test_using_different_hd_path(test_accounts, temp_config):
     test_config = {
         "test": {
-            "hd_path": "m/44'/60'/0'/0/{}",
+            "hd_path": "m/44'/60'/0'/{}",
         }
     }
 
@@ -609,7 +609,7 @@ def test_load_public_key_from_keyfile(runner, keyfile_account):
 
         assert (
             keyfile_account.public_key.hex()
-            == "0x79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798483ada7726a3c4655da4fbfc0e1108a8fd17b448a68554199c47d08ffb10d4b8"  # noqa: 501
+            == "0x8318535b54105d4a7aae60c08fc45f9687181b4fdfc625bd1a753fa7397fed753547f11ca8696646f2f3acb08e31016afac23e630c5d11f59f61fef57b0d2aa5"  # noqa: 501
         )
         # no need for password when loading from the keyfile
         assert keyfile_account.public_key

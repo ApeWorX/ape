@@ -171,8 +171,7 @@ def test_import_mnemonic_custom_hdpath(
 
 
 @run_once
-def test_export(ape_cli, runner, temp_keyfile):
-    address = json.loads(temp_keyfile.read_text())["address"]
+def test_export(ape_cli, runner, temp_keyfile, keyfile_account, test_accounts):
     # export key
     result = runner.invoke(
         ape_cli,
@@ -180,8 +179,11 @@ def test_export(ape_cli, runner, temp_keyfile):
         input="\n".join([PASSWORD, PASSWORD]),
     )
     assert result.exit_code == 0, result.output
-    assert f"0x{PRIVATE_KEY}" in result.output
-    assert address in result.output
+    # NOTE: temp_keyfile uses the as the keyfile account.
+    assert keyfile_account.address in result.output
+    # NOTE: Both of these accounts are the same as the first
+    #   test account.
+    assert test_accounts[0].private_key in result.output
 
 
 @run_once

@@ -5,7 +5,7 @@ from pydantic import NonNegativeInt
 from ape import plugins
 from ape.api import PluginConfig
 from ape.api.networks import LOCAL_NETWORK_NAME
-from ape.utils import DEFAULT_HD_PATH, DEFAULT_NUMBER_OF_TEST_ACCOUNTS, DEFAULT_TEST_MNEMONIC
+from ape.utils import DEFAULT_NUMBER_OF_TEST_ACCOUNTS, DEFAULT_TEST_HD_PATH, DEFAULT_TEST_MNEMONIC
 from ape_test.accounts import TestAccount, TestAccountContainer
 from ape_test.provider import EthTesterProviderConfig, LocalProvider
 
@@ -93,7 +93,7 @@ class CoverageConfig(PluginConfig):
     """
 
 
-class Config(PluginConfig):
+class ApeTestConfig(PluginConfig):
     mnemonic: str = DEFAULT_TEST_MNEMONIC
     """
     The mnemonic to use when generating the test accounts.
@@ -119,7 +119,7 @@ class Config(PluginConfig):
     Set to ``False`` to keep providers connected at the end of the test run.
     """
 
-    hd_path: str = DEFAULT_HD_PATH
+    hd_path: str = DEFAULT_TEST_HD_PATH
     """
     The hd_path to use when generating the test accounts.
     """
@@ -132,7 +132,7 @@ class Config(PluginConfig):
 
 @plugins.register(plugins.Config)
 def config_class():
-    return Config
+    return ApeTestConfig
 
 
 @plugins.register(plugins.AccountPlugin)
