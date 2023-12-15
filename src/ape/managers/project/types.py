@@ -164,7 +164,7 @@ class BaseProject(ProjectAPI):
     ) -> PackageManifest:
         # Read the project config and migrate project-settings to Ape settings if needed.
         compile_config = self.config_manager.get_config("compile")
-        self.project_manager.load_dependencies(use_cache=use_cache)
+        self.project_manager.load_dependencies()
         source_paths: List[Path] = list(
             set(
                 [p for p in self.source_paths if p in file_paths]
@@ -177,9 +177,11 @@ class BaseProject(ProjectAPI):
             )
         )
 
+        manifest = self.manifest if use_cache else PackageManifest()
+
         # Generate sources and contract types.
         project_sources = _ProjectSources(
-            self.manifest, source_paths, self.contracts_folder, self._cache_folder
+            manifest, source_paths, self.contracts_folder, self._cache_folder
         )
         contract_types = project_sources.remaining_cached_contract_types
         compiled_contract_types = self._compile(project_sources)
