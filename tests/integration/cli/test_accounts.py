@@ -179,7 +179,7 @@ def test_export(ape_cli, runner, temp_keyfile, keyfile_account, test_accounts):
         input="\n".join([PASSWORD, PASSWORD]),
     )
     assert result.exit_code == 0, result.output
-    # NOTE: temp_keyfile uses the as the keyfile account.
+    # NOTE: temp_keyfile uses the same address as the keyfile account.
     assert keyfile_account.address in result.output
     # NOTE: Both of these accounts are the same as the first
     #   test account.
