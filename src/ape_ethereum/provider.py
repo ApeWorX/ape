@@ -697,8 +697,9 @@ class Web3Provider(ProviderAPI, ABC):
         topics: Optional[List[Union[str, List[str]]]] = None,
         required_confirmations: Optional[int] = None,
         new_block_timeout: Optional[int] = None,
-        events: List[EventABI] = [],
+        events: Optional[List[EventABI]] = None,
     ) -> Iterator[ContractLog]:
+        events = events or []
         if required_confirmations is None:
             required_confirmations = self.network.required_confirmations
 

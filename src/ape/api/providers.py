@@ -648,8 +648,6 @@ class ProviderAPI(BaseInterfaceModel):
         or a ``stop_block`` is given.
 
         Args:
-            start_block (Optional[int]): The block number to start with. Defaults to the pending
-              block number.
             stop_block (Optional[int]): Optionally set a future block number to stop at.
               Defaults to never-ending.
             required_confirmations (Optional[int]): The amount of confirmations to wait
@@ -671,12 +669,12 @@ class ProviderAPI(BaseInterfaceModel):
         topics: Optional[List[Union[str, List[str]]]] = None,
         required_confirmations: Optional[int] = None,
         new_block_timeout: Optional[int] = None,
-        events: List[EventABI] = [],
+        events: Optional[List[EventABI]] = None,
     ) -> Iterator[ContractLog]:
         """
         Poll new blocks. Optionally set a start block to include historical blocks.
 
-        **NOTE**: This is a daemon method; it does not terminate unless an exception occurrs.
+        **NOTE**: This is a daemon method; it does not terminate unless an exception occurs.
 
         Usage example::
 
@@ -696,6 +694,7 @@ class ProviderAPI(BaseInterfaceModel):
             new_block_timeout (Optional[int]): The amount of time to wait for a new block before
               quitting. Defaults to 10 seconds for local networks or ``50 * block_time`` for live
               networks.
+            events (Optional[List[``EventABI``]]): An optional list of events to listen on.
 
         Returns:
             Iterator[:class:`~ape.types.ContractLog`]

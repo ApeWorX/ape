@@ -171,8 +171,7 @@ def test_import_mnemonic_custom_hdpath(
 
 
 @run_once
-def test_export(ape_cli, runner, temp_keyfile):
-    address = json.loads(temp_keyfile.read_text())["address"]
+def test_export(ape_cli, runner, temp_keyfile, keyfile_account, test_accounts):
     # export key
     result = runner.invoke(
         ape_cli,
@@ -180,8 +179,11 @@ def test_export(ape_cli, runner, temp_keyfile):
         input="\n".join([PASSWORD, PASSWORD]),
     )
     assert result.exit_code == 0, result.output
-    assert f"0x{PRIVATE_KEY}" in result.output
-    assert address in result.output
+    # NOTE: temp_keyfile uses the same address as the keyfile account.
+    assert keyfile_account.address in result.output
+    # NOTE: Both of these accounts are the same as the first
+    #   test account.
+    assert test_accounts[0].private_key in result.output
 
 
 @run_once
@@ -328,23 +330,17 @@ def test_generate_alias_already_in_use(ape_cli, runner):
 
 
 @run_once
-def test_list(ape_cli, runner, temp_keyfile):
-    # Check availability
-    assert temp_keyfile.is_file()
+def test_list(ape_cli, runner, keyfile_account):
     result = runner.invoke(ape_cli, ["accounts", "list"], catch_exceptions=False)
-    assert ALIAS in result.output
-
-    # NOTE: the un-checksummed version of this address is found in the temp_keyfile fixture.
-    expected_address = "0x7E5F4552091A69125d5DfCb7b8C2659029395Bdf"
-    assert expected_address in result.output
+    assert keyfile_account.alias in result.output
+    assert keyfile_account.address in result.output
 
 
 @run_once
-def test_list_all(ape_cli, runner, temp_keyfile):
-    # Check availability
-    assert temp_keyfile.is_file()
-    result = runner.invoke(ape_cli, ["accounts", "list", "--all"])
-    assert ALIAS in result.output
+def test_list_all(ape_cli, runner, keyfile_account):
+    result = runner.invoke(ape_cli, ["accounts", "list", "--all"], catch_exceptions=False)
+    assert keyfile_account.alias in result.output
+    assert keyfile_account.address in result.output
 
 
 @run_once
