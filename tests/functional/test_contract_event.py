@@ -145,7 +145,7 @@ def test_contract_logs_range_by_address(
             "toBlock": height_arg,
             "topics": [
                 "0x7ff7bacc6cd661809ed1ddce28d4ad2c5b37779b61b9e3235f8262be529101a9",
-                "0x000000000000000000000000c89d42189f0450c2b2c3c61f58ec5d628176a1e7",
+                "0x00000000000000000000000070997970c51812dc3a010c7d01b50e0d17dc79c8",
             ],
         }
     )
