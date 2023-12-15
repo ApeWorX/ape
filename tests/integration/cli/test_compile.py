@@ -206,6 +206,16 @@ def test_compile_specified_contracts(ape_cli, runner, project, contract_path, cl
     assert result.exit_code == 0, result.output
     assert "Compiling 'Interface.json'" in result.output
 
+    # Already compiled.
+    result = runner.invoke(ape_cli, ["compile", contract_path], catch_exceptions=False)
+    assert result.exit_code == 0, result.output
+    assert "Compiling 'Interface.json'" not in result.output
+
+    # Force recompile.
+    result = runner.invoke(ape_cli, ["compile", contract_path, "--force"], catch_exceptions=False)
+    assert result.exit_code == 0, result.output
+    assert "Compiling 'Interface.json'" in result.output
+
 
 @skip_projects_except("multiple-interfaces")
 def test_compile_unknown_extension_does_not_compile(ape_cli, runner, project, clean_cache):
