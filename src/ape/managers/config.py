@@ -23,11 +23,6 @@ class DeploymentConfig(PluginConfig):
     contract_type: str
 
 
-class CompilerConfig(PluginConfig):
-    ignore_files: List[str] = ["*package.json", "*package-lock.json", "*tsconfig.json"]
-    """List of globular files to ignore"""
-
-
 class DeploymentConfigCollection(RootModel[dict]):
     @model_validator(mode="before")
     @classmethod
@@ -107,9 +102,6 @@ class ConfigManager(BaseInterfaceModel):
     meta: PackageMeta = PackageMeta()
     """Metadata about the project."""
 
-    compiler: CompilerConfig = CompilerConfig()
-    """Global compiler information."""
-
     contracts_folder: Path = None  # type: ignore
     """
     The path to the project's ``contracts/`` directory
@@ -142,10 +134,16 @@ class ConfigManager(BaseInterfaceModel):
         return self.dependency_manager.packages_folder
 
     @property
+    def _project_key(self) -> str:
+        return self.PROJECT_FOLDER.stem
+
+    @property
+    def _project_configs(self) -> Dict[str, Any]:
+        return self._cached_configs.get(self._project_key, {})
+
+    @property
     def _plugin_configs(self) -> Dict[str, PluginConfig]:
-        project_name = self.PROJECT_FOLDER.stem
-        if project_name in self._cached_configs:
-            cache = self._cached_configs[project_name]
+        if cache := self._cached_configs.get(self._project_key):
             self.name = cache.get("name", "")
             self.version = cache.get("version", "")
             self.default_ecosystem = cache.get("default_ecosystem", "ethereum")
@@ -153,7 +151,6 @@ class ConfigManager(BaseInterfaceModel):
             self.dependencies = cache.get("dependencies", [])
             self.deployments = cache.get("deployments", {})
             self.contracts_folder = cache.get("contracts_folder", self.PROJECT_FOLDER / "contracts")
-            self.compiler = CompilerConfig.model_validate(cache.get("compiler", {}))
             return cache
 
         # First, load top-level configs. Then, load all the plugin configs.
@@ -178,9 +175,6 @@ class ConfigManager(BaseInterfaceModel):
         self.default_ecosystem = configs["default_ecosystem"] = user_config.pop(
             "default_ecosystem", "ethereum"
         )
-        compiler_dict = user_config.pop("compiler", CompilerConfig().model_dump(mode="json"))
-        configs["compiler"] = compiler_dict
-        self.compiler = CompilerConfig(**compiler_dict)
 
         dependencies = user_config.pop("dependencies", []) or []
         if not isinstance(dependencies, list):
@@ -230,7 +224,7 @@ class ConfigManager(BaseInterfaceModel):
                 "Plugins may not be installed yet or keys may be mis-spelled."
             )
 
-        self._cached_configs[project_name] = configs
+        self._cached_configs[self._project_key] = configs
         return configs
 
     def __repr__(self):

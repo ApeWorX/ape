@@ -1,6 +1,6 @@
 from functools import cached_property
 from pathlib import Path
-from typing import Dict, Iterator, List, Optional, Set, Tuple
+from typing import Dict, Iterator, List, Optional, Sequence, Set, Tuple
 
 from eth_pydantic_types import HexBytes
 from ethpm_types import ContractType
@@ -54,12 +54,12 @@ class CompilerAPI(BaseInterfaceModel):
         return CustomConfig.model_validate(data)
 
     @abstractmethod
-    def get_versions(self, all_paths: List[Path]) -> Set[str]:
+    def get_versions(self, all_paths: Sequence[Path]) -> Set[str]:
         """
         Retrieve the set of available compiler versions for this plugin to compile ``all_paths``.
 
         Args:
-            all_paths (List[pathlib.Path]): The list of paths.
+            all_paths (Sequence[pathlib.Path]): The list of paths.
 
         Returns:
             Set[str]: A set of available compiler versions.
@@ -67,14 +67,14 @@ class CompilerAPI(BaseInterfaceModel):
 
     @raises_not_implemented
     def get_compiler_settings(  # type: ignore[empty-body]
-        self, contract_filepaths: List[Path], base_path: Optional[Path] = None
+        self, contract_filepaths: Sequence[Path], base_path: Optional[Path] = None
     ) -> Dict[Version, Dict]:
         """
         Get a mapping of the settings that would be used to compile each of the sources
         by the compiler version number.
 
         Args:
-            contract_filepaths (List[pathlib.Path]): The list of paths.
+            contract_filepaths (Sequence[pathlib.Path]): The list of paths.
             base_path (Optional[pathlib.Path]): The contracts folder base path.
 
         Returns:
@@ -83,13 +83,13 @@ class CompilerAPI(BaseInterfaceModel):
 
     @abstractmethod
     def compile(
-        self, contract_filepaths: List[Path], base_path: Optional[Path]
+        self, contract_filepaths: Sequence[Path], base_path: Optional[Path]
     ) -> List[ContractType]:
         """
         Compile the given source files. All compiler plugins must implement this function.
 
         Args:
-            contract_filepaths (List[pathlib.Path]): A list of source file paths to compile.
+            contract_filepaths (Sequence[pathlib.Path]): A list of source file paths to compile.
             base_path (Optional[pathlib.Path]): Optionally provide the base path, such as the
               project ``contracts/`` directory. Defaults to ``None``. When using in a project
               via ``ape compile``, gets set to the project's ``contracts/`` directory.
@@ -122,14 +122,14 @@ class CompilerAPI(BaseInterfaceModel):
 
     @raises_not_implemented
     def get_imports(  # type: ignore[empty-body]
-        self, contract_filepaths: List[Path], base_path: Optional[Path]
+        self, contract_filepaths: Sequence[Path], base_path: Optional[Path]
     ) -> Dict[str, List[str]]:
         """
         Returns a list of imports as source_ids for each contract's source_id in a given
         compiler.
 
         Args:
-            contract_filepaths (List[pathlib.Path]): A list of source file paths to compile.
+            contract_filepaths (Sequence[pathlib.Path]): A list of source file paths to compile.
             base_path (Optional[pathlib.Path]): Optionally provide the base path, such as the
               project ``contracts/`` directory. Defaults to ``None``. When using in a project
               via ``ape compile``, gets set to the project's ``contracts/`` directory.
@@ -141,14 +141,14 @@ class CompilerAPI(BaseInterfaceModel):
     @raises_not_implemented
     def get_version_map(  # type: ignore[empty-body]
         self,
-        contract_filepaths: List[Path],
+        contract_filepaths: Sequence[Path],
         base_path: Optional[Path] = None,
     ) -> Dict[Version, Set[Path]]:
         """
         Get a map of versions to source paths.
 
         Args:
-            contract_filepaths (List[Path]): Input source paths. Defaults to all source paths
+            contract_filepaths (Sequence[Path]): Input source paths. Defaults to all source paths
               per compiler.
             base_path (Path): The base path of sources. Defaults to the project's
               ``contracts_folder``.

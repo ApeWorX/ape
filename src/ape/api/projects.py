@@ -2,13 +2,12 @@ import os.path
 import re
 import tempfile
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Dict, Iterator, List, Optional, Union
+from typing import TYPE_CHECKING, Any, Dict, Iterator, List, Optional, Sequence, Union
 
 from ethpm_types import Checksum, Compiler, ContractType, PackageManifest, Source
 from ethpm_types.source import Content
-from ethpm_types.utils import Algorithm, compute_checksum
 from packaging.version import InvalidVersion, Version
-from pydantic import AnyUrl
+from pydantic import AnyUrl, ValidationError
 
 from ape.exceptions import ProjectError
 from ape.logging import logger
@@ -61,15 +60,19 @@ class ProjectAPI(BaseInterfaceModel):
         Useful for figuring out the best ``ProjectAPI`` to use when compiling a project.
         """
 
+    @property
+    def manifest(self) -> PackageManifest:
+        return self.cached_manifest or PackageManifest()
+
     @abstractmethod
     def create_manifest(
-        self, file_paths: Optional[List[Path]] = None, use_cache: bool = True
+        self, file_paths: Optional[Sequence[Path]] = None, use_cache: bool = True
     ) -> PackageManifest:
         """
         Create a manifest from the project.
 
         Args:
-            file_paths (Optional[List[Path]]): An optional list of paths to compile
+            file_paths (Optional[Sequence[Path]]): An optional list of paths to compile
               from this project.
             use_cache (bool): Set to ``False`` to clear caches and force a re-compile.
 
@@ -115,11 +118,7 @@ class ProjectAPI(BaseInterfaceModel):
             # This scenario happens if changing branches and you have some contracts on
             # one branch and others on the next.
             for name, contract in self.contracts.items():
-                source_id = contract.source_id
-                if not contract.source_id:
-                    continue
-
-                if source_id in (manifest.sources or {}):
+                if (source_id := contract.source_id) and source_id in (manifest.sources or {}):
                     contracts[name] = contract
 
             manifest.contract_types = contracts
@@ -151,6 +150,29 @@ class ProjectAPI(BaseInterfaceModel):
         folder.mkdir(exist_ok=True, parents=True)
         return folder
 
+    def update_manifest(self, **kwargs) -> PackageManifest:
+        """
+        Add additional package manifest parts to the cache.
+
+        Args:
+            **kwargs: Fields from ``ethpm_types.manifest.PackageManifest``.
+        """
+        new_manifest = self.manifest.model_copy(update=kwargs)
+        return self.replace_manifest(new_manifest)
+
+    def replace_manifest(self, manifest: PackageManifest) -> PackageManifest:
+        """
+        Replace the entire cached manifest.
+
+        Args:
+            manifest (``ethpm_types.manifest.PackageManifest``): The manifest
+              to use.
+        """
+        self.manifest_cachefile.unlink(missing_ok=True)
+        self.manifest_cachefile.write_text(manifest.model_dump_json())
+        self._cached_manifest = manifest
+        return manifest
+
     def process_config_file(self, **kwargs) -> bool:
         """
         Process the project's config file.
@@ -159,24 +181,112 @@ class ProjectAPI(BaseInterfaceModel):
 
         return False
 
-    @classmethod
-    def _create_manifest(
-        cls,
+    def add_compiler_data(self, compiler_data: Sequence[Compiler]) -> List[Compiler]:
+        """
+        Add compiler data to the existing cached manifest.
+
+        Args:
+            compiler_data (List[``ethpm_types.Compiler``]): Compilers to add.
+
+        Returns:
+            List[``ethpm_types.source.Compiler``]: The full list of compilers.
+        """
+        # Validate given data.
+        given_compilers = set(compiler_data)
+        if len(given_compilers) != len(compiler_data):
+            raise ProjectError(
+                f"`{self.add_compiler_data.__name__}()` was given multiple of the same compiler. "
+                "Please filter inputs."
+            )
+
+        # Filter out given compilers without contract types.
+        given_compilers = {c for c in given_compilers if c.contractTypes}
+        if len(given_compilers) != len(compiler_data):
+            logger.warning(
+                f"`{self.add_compiler_data.__name__}()` given compilers without contract types. "
+                "Ignoring these inputs."
+            )
+
+        for given_compiler in given_compilers:
+            other_given_compilers = [c for c in given_compilers if c != given_compiler]
+            contract_types_from_others = [
+                n for c in other_given_compilers for n in (c.contractTypes or [])
+            ]
+
+            collisions = {
+                n for n in (given_compiler.contractTypes or []) if n in contract_types_from_others
+            }
+            if collisions:
+                collide_str = ", ".join(collisions)
+                raise ProjectError(f"Contract type(s) '{collide_str}' collision across compilers.")
+
+        new_types = [n for c in given_compilers for n in (c.contractTypes or [])]
+
+        # Merge given compilers with existing compilers.
+        existing_compilers = self.manifest.compilers or []
+
+        # Existing compilers remaining after processing new compilers.
+        remaining_existing_compilers: List[Compiler] = []
+
+        for existing_compiler in existing_compilers:
+            find_iter = iter(x for x in compiler_data if x == existing_compiler)
+
+            if matching_given_compiler := next(find_iter, None):
+                # Compiler already exists in the system, possibly with different contract types.
+                # Merge contract types.
+                matching_given_compiler.contractTypes = list(
+                    {
+                        *(existing_compiler.contractTypes or []),
+                        *(matching_given_compiler.contractTypes or []),
+                    }
+                )
+                # NOTE: Purposely we don't add the exising compiler back,
+                #   as it is the same as the given compiler, (meaning same
+                #   name, version, and settings), and we have
+                #   merged their contract types.
+
+                continue
+
+            else:
+                # Filter out contract types added now under a different compiler.
+                existing_compiler.contractTypes = [
+                    c for c in (existing_compiler.contractTypes or []) if c not in new_types
+                ]
+
+                # Remove compilers without contract types.
+                if existing_compiler.contractTypes:
+                    remaining_existing_compilers.append(existing_compiler)
+
+        # Use Compiler.__hash__ to remove duplicated.
+        # Also, sort for consistency.
+        compilers = sorted(
+            list({*remaining_existing_compilers, *compiler_data}),
+            key=lambda x: f"{x.name}@{x.version}",
+        )
+        manifest = self.update_manifest(compilers=compilers)
+        return manifest.compilers or compilers  # Or for mypy.
+
+    def update_manifest_sources(
+        self,
         source_paths: List[Path],
         contracts_path: Path,
         contract_types: Dict[str, ContractType],
         name: Optional[str] = None,
         version: Optional[str] = None,
-        initial_manifest: Optional[PackageManifest] = None,
         compiler_data: Optional[List[Compiler]] = None,
+        **kwargs: Any,
     ) -> PackageManifest:
-        manifest = initial_manifest or PackageManifest()
-        manifest.name = name.lower() if name is not None else manifest.name
-        manifest.version = version or manifest.version
-        manifest.sources = cls._create_source_dict(source_paths, contracts_path)
-        manifest.contract_types = contract_types
-        manifest.compilers = compiler_data or []
-        return manifest
+        items: Dict = {
+            "contract_types": contract_types,
+            "sources": self._create_source_dict(source_paths, contracts_path),
+            "compilers": compiler_data or [],
+        }
+        if name is not None:
+            items["name"] = name.lower()
+        if version:
+            items["version"] = version
+
+        return self.update_manifest(**{**items, **kwargs})
 
     @classmethod
     def _create_source_dict(
@@ -204,10 +314,7 @@ class ProjectAPI(BaseInterfaceModel):
                 text = source_path.read_text()
 
             source_dict[key] = Source(
-                checksum=Checksum(
-                    algorithm=Algorithm.MD5,
-                    hash=compute_checksum(source_path.read_bytes()),
-                ),
+                checksum=Checksum.from_file(source_path),
                 urls=[],
                 content=Content(root={i + 1: x for i, x in enumerate(text.splitlines())}),
                 imports=source_imports.get(key, []),
@@ -383,7 +490,7 @@ class DependencyAPI(BaseInterfaceModel):
                     )
                     return compiled_manifest
 
-                self._write_manifest_to_cache(compiled_manifest)
+                self.replace_manifest(compiled_manifest)
                 return compiled_manifest
 
     def _extract_local_manifest(
@@ -410,7 +517,7 @@ class DependencyAPI(BaseInterfaceModel):
 
             else:
                 # Was given a path to a manifest JSON.
-                self._write_manifest_to_cache(manifest)
+                self.replace_manifest(manifest)
                 return manifest
 
         elif (project_path.parent / project_path.name.replace("-", "_")).is_dir():
@@ -433,18 +540,23 @@ class DependencyAPI(BaseInterfaceModel):
             project = pm.local_project
             sources = self._get_sources(project)
             dependencies = self.project_manager._extract_manifest_dependencies()
-            project_manifest = project._create_manifest(
-                sources, project.contracts_folder, {}, name=project.name, version=project.version
+
+            extras: Dict = {}
+            if dependencies:
+                extras["dependencies"] = dependencies
+
+            project.update_manifest_sources(
+                sources,
+                project.contracts_folder,
+                {},
+                name=project.name,
+                version=project.version,
+                **extras,
             )
-            compiler_data = self.project_manager.get_compiler_data(compile_if_needed=False)
 
-        if dependencies:
-            project_manifest.dependencies = dependencies
-        if compiler_data:
-            project_manifest.compilers = compiler_data
-
-        self._write_manifest_to_cache(project_manifest)
-        return project_manifest
+        # Replace the dependency's manifest with the temp project's.
+        self.replace_manifest(project.manifest)
+        return project.manifest
 
     def _get_sources(self, project: ProjectAPI) -> List[Path]:
         escaped_extensions = [re.escape(ext) for ext in self.compiler_manager.registered_compilers]
@@ -458,7 +570,7 @@ class DependencyAPI(BaseInterfaceModel):
 
         return [s for s in all_sources if s not in excluded_files]
 
-    def _write_manifest_to_cache(self, manifest: PackageManifest):
+    def replace_manifest(self, manifest: PackageManifest):
         self._target_manifest_cache_file.unlink(missing_ok=True)
         self._target_manifest_cache_file.parent.mkdir(exist_ok=True, parents=True)
         self._target_manifest_cache_file.write_text(manifest.model_dump_json())
@@ -471,9 +583,10 @@ def _load_manifest_from_file(file_path: Path) -> Optional[PackageManifest]:
 
     try:
         return PackageManifest.model_validate_json(file_path.read_text())
-    except Exception as err:
-        logger.warning(f"Existing manifest file '{file_path}' corrupted. Re-building.")
-        logger.debug(str(err))
+    except ValidationError as err:
+        logger.warning(
+            f"Existing manifest file '{file_path}' corrupted (problem={err}). Re-building."
+        )
         return None
 
 

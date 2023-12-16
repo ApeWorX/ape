@@ -1,5 +1,5 @@
 from abc import ABC
-from typing import TYPE_CHECKING, Any, ClassVar, Dict, Iterator, List, Optional, Set, Union, cast
+from typing import TYPE_CHECKING, Any, ClassVar, Dict, Iterator, List, Optional, Union, cast
 
 from ethpm_types import BaseModel as EthpmTypesBaseModel
 from pydantic import BaseModel as RootBaseModel
@@ -20,6 +20,31 @@ if TYPE_CHECKING:
     from ape.managers.query import QueryManager
     from ape.plugins import PluginManager
     from ape.pytest.runners import PytestApeRunner
+
+
+class _RecursionChecker:
+    # A helper for preventing the recursion errors
+    # that happen in custom __getattr__ methods.
+
+    THRESHOLD: int = 10
+    getattr_checking: Dict[str, int] = {}
+    getattr_errors: Dict[str, Exception] = {}
+
+    def check(self, name: str) -> bool:
+        return (self.getattr_checking.get(name, 0) or 0) >= self.THRESHOLD
+
+    def add(self, name: str):
+        if name in self.getattr_errors:
+            self.getattr_checking[name] += 1
+        else:
+            self.getattr_checking[name] = 1
+
+    def reset(self):
+        self.getattr_checking = {}
+        self.getattr_errors = {}
+
+
+_recursion_checker = _RecursionChecker()
 
 
 class injected_before_use(property):
@@ -193,9 +218,6 @@ class BaseModel(EthpmTypesBaseModel):
 
     model_config = ConfigDict(arbitrary_types_allowed=True)
 
-    __getattr_checking__: Set[str] = set()
-    __getattr_errors__: Dict[str, Exception] = {}
-
     def __ape_extra_attributes__(self) -> Iterator[ExtraModelAttributes]:
         """
         Override this method to supply extra attributes
@@ -214,31 +236,27 @@ class BaseModel(EthpmTypesBaseModel):
         account :meth:`~ape.utils.basemodel.BaseModel.__ape_extra_attributes__`.
         """
 
-        def _clear_from_caches(n):
-            if n in self.__getattr_checking__:
-                self.__getattr_checking__.remove(n)
-            self.__getattr_errors__.pop(n, "")
-
         private_attrs = self.__pydantic_private__ or {}
         if name in private_attrs:
-            _clear_from_caches(name)
+            _recursion_checker.reset()
             return private_attrs[name]
 
-        elif name in self.__getattr_checking__:
+        elif _recursion_checker.check(name):
             # Prevent recursive error.
             # First, attempt to get real error.
             message = f"Failed trying to get {name}"
-            if real_error := self.__getattr_errors__.get(name):
+            if real_error := _recursion_checker.getattr_errors.get(name):
                 message = f"{message}. {real_error}"
 
-            _clear_from_caches(name)
+            _recursion_checker.reset()
             raise AttributeError(message)
 
-        self.__getattr_checking__.add(name)
+        _recursion_checker.add(name)
+
         try:
             res = super().__getattribute__(name)
         except AttributeError as err:
-            self.__getattr_errors__[name] = err
+            _recursion_checker.getattr_errors[name] = err
             extras_checked = set()
             for ape_extra in self.__ape_extra_attributes__():
                 if not ape_extra.include_getattr:
@@ -247,7 +265,7 @@ class BaseModel(EthpmTypesBaseModel):
                 if name in ape_extra:
                     # Attribute was found in one of the supplied
                     # extra attributes mappings.
-                    _clear_from_caches(name)
+                    _recursion_checker.reset()
                     return ape_extra.get(name)
 
                 extras_checked.add(ape_extra.name)
@@ -255,9 +273,9 @@ class BaseModel(EthpmTypesBaseModel):
             # The error message mentions the alternative mappings,
             # such as a contract-type map.
             base_err = None
-            if name in self.__getattr_errors__:
+            if name in _recursion_checker.getattr_errors:
                 # There was an error getting the value. Show that.
-                base_err = self.__getattr_errors__[name]
+                base_err = _recursion_checker.getattr_errors[name]
                 message = str(base_err)
 
             else:
@@ -266,14 +284,14 @@ class BaseModel(EthpmTypesBaseModel):
                     extras_str = ", ".join(extras_checked)
                     message = f"{message}. Also checked '{extras_str}'"
 
-            _clear_from_caches(name)
+            _recursion_checker.reset()
             attr_err = ApeAttributeError(message)
             if base_err:
                 raise attr_err from base_err
             else:
                 raise attr_err
 
-        _clear_from_caches(name)
+        _recursion_checker.reset()
         return res
 
     def __getitem__(self, name: Any) -> Any:

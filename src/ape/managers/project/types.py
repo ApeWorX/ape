@@ -1,6 +1,6 @@
 import os
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Sequence
 
 from ethpm_types import ContractType, PackageManifest, Source
 from ethpm_types.utils import compute_checksum
@@ -160,12 +160,11 @@ class BaseProject(ProjectAPI):
         return True
 
     def create_manifest(
-        self, file_paths: Optional[List[Path]] = None, use_cache: bool = True
+        self, file_paths: Optional[Sequence[Path]] = None, use_cache: bool = True
     ) -> PackageManifest:
         # Read the project config and migrate project-settings to Ape settings if needed.
         compile_config = self.config_manager.get_config("compile")
         self.project_manager.load_dependencies()
-        manifest = self._get_base_manifest(use_cache=use_cache)
         source_paths: List[Path] = list(
             set(
                 [p for p in self.source_paths if p in file_paths]
@@ -177,27 +176,31 @@ class BaseProject(ProjectAPI):
                 ]
             )
         )
+
+        manifest = self.manifest if use_cache else PackageManifest()
+
+        # Generate sources and contract types.
         project_sources = _ProjectSources(
             manifest, source_paths, self.contracts_folder, self._cache_folder
         )
         contract_types = project_sources.remaining_cached_contract_types
         compiled_contract_types = self._compile(project_sources)
         contract_types.update(compiled_contract_types)
+
         # NOTE: We need to prevent compilation or else we get an endless loop, because
         # compilation results in creating a manifest, which triggers compilation, etc.
         compiler_data = self.project_manager.get_compiler_data(compile_if_needed=False)
-        manifest = self._create_manifest(
+
+        # Apply source and contracts to manifest.
+        self.update_manifest_sources(
             source_paths,
             self.contracts_folder,
             contract_types,
-            initial_manifest=manifest,
             name=self.name,
             version=self.version,
             compiler_data=compiler_data,
         )
-        # Cache the updated manifest so `self.cached_manifest` reads it next time
-        self.manifest_cachefile.write_text(manifest.model_dump_json())
-        self._cached_manifest = manifest
+
         if compiled_contract_types:
             for name, contract_type in compiled_contract_types.items():
                 file = self.project_manager.local_project._cache_folder / f"{name}.json"
@@ -205,7 +208,8 @@ class BaseProject(ProjectAPI):
                 self._contracts = self._contracts or {}
                 self._contracts[name] = contract_type
 
-        return manifest
+        # Is cached.
+        return self.manifest
 
     def _compile(self, project_sources: _ProjectSources) -> Dict[str, ContractType]:
         def _compile_sources(proj_srcs: _ProjectSources) -> Dict[str, ContractType]:
@@ -256,16 +260,6 @@ class BaseProject(ProjectAPI):
         else:
             # Already in project
             return _compile_sources(project_sources)
-
-    def _get_base_manifest(self, use_cache: bool = True) -> PackageManifest:
-        if self.cached_manifest and use_cache:
-            return self.cached_manifest
-
-        manifest = PackageManifest()
-        if self.manifest_cachefile.is_file():
-            self.manifest_cachefile.unlink()
-
-        return manifest
 
 
 class ApeProject(BaseProject):

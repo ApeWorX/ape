@@ -131,7 +131,7 @@ class ProjectManager(BaseManager):
         in the project. ``False`` otherwise.
         """
 
-        return not self.contracts_folder.is_dir() or not self.contracts_folder.iterdir()
+        return len(self.source_paths) <= 0
 
     @property
     def interfaces_folder(self) -> Path:
@@ -171,7 +171,7 @@ class ProjectManager(BaseManager):
         """
         A list of ``Compiler`` objects representing the raw-data specifics of a compiler.
         """
-        return self._get_compiler_data()
+        return self.get_compiler_data()
 
     def get_compiler_data(self, compile_if_needed: bool = True) -> List[Compiler]:
         """
@@ -184,14 +184,27 @@ class ProjectManager(BaseManager):
         Returns:
             List[Compiler]
         """
-        return self._get_compiler_data(compile_if_needed=compile_if_needed)
+        if compilers := self._get_cached_compiler_data():
+            # Compiler data was already in manifest
+            # (from compiler plugins).
+            return compilers
 
-    def _get_compiler_data(self, compile_if_needed: bool = True):
-        contract_types: Iterable[ContractType] = (
-            self.contracts.values()
-            if compile_if_needed
-            else self._get_cached_contract_types().values()
-        )
+        elif compile_if_needed:
+            return self._derive_settings()
+
+        return []
+
+    def _get_cached_compiler_data(self) -> List[Compiler]:
+        if not (cached_manifest := self.local_project.cached_manifest):
+            return []
+
+        elif not (compilers := cached_manifest.compilers):
+            return []
+
+        return compilers
+
+    def _derive_settings(self) -> List[Compiler]:
+        contract_types: Iterable[ContractType] = self.load_contracts().values()
         compiler_list: List[Compiler] = []
         contracts_folder = self.config_manager.contracts_folder
         for ext, compiler in self.compiler_manager.registered_compilers.items():
@@ -223,7 +236,7 @@ class ProjectManager(BaseManager):
                 contract_type_names = [ct.name for ct in filtered_contract_types if ct.name]
                 compiler_list.append(
                     Compiler(
-                        name=compiler.name,
+                        name=compiler.name.lower(),
                         version=str(version),
                         settings=version_settings,
                         contractTypes=contract_type_names,
@@ -363,12 +376,14 @@ class ProjectManager(BaseManager):
         )
         if not contracts_folder.is_dir():
             extensions = list(self.compiler_manager.registered_compilers.keys())
-            path_patterns_to_ignore = self.config_manager.compiler.ignore_files
 
-            def find_contracts_folder(sub_dir: Path) -> Optional[Path]:
+            def find_contracts_folder(
+                sub_dir: Path, exclusions: Optional[List[str]] = None
+            ) -> Optional[Path]:
                 # Check if config file exists
+                exclusions = exclusions or []
                 files_to_ignore = []
-                for pattern in path_patterns_to_ignore:
+                for pattern in exclusions:
                     files_to_ignore.extend(list(sub_dir.glob(pattern)))
 
                 next_subs = []
@@ -385,13 +400,17 @@ class ProjectManager(BaseManager):
 
                 # No source was found. Search next level of dirs.
                 for next_sub in next_subs:
-                    found = find_contracts_folder(next_sub)
-                    if found:
+                    if found := find_contracts_folder(next_sub, exclusions=exclusions):
                         return found
 
                 return None
 
-            contracts_folder = find_contracts_folder(path) or contracts_folder
+            if cfg := self.config_manager._project_configs.get("compile"):
+                excls = cfg.model_dump().get("exclude", [])
+            else:
+                excls = []
+
+            contracts_folder = find_contracts_folder(path, exclusions=excls) or contracts_folder
 
         def _try_create_project(proj_cls: Type[ProjectAPI]) -> Optional[ProjectAPI]:
             with self.config_manager.using_project(
@@ -410,8 +429,7 @@ class ProjectManager(BaseManager):
 
         project_plugin_types = [pt for pt in self.project_types if not issubclass(pt, ApeProject)]
         for project_cls in project_plugin_types:
-            project = _try_create_project(project_cls)
-            if project:
+            if project := _try_create_project(project_cls):
                 self._cached_projects[path.name] = project
                 return project
 
@@ -698,12 +716,6 @@ class ProjectManager(BaseManager):
             file_paths=file_path_list, use_cache=use_cache
         )
         return manifest.contract_types or {}
-
-    def _get_cached_contract_types(self) -> Dict[str, ContractType]:
-        if not self.local_project.cached_manifest:
-            return {}
-
-        return self.local_project.cached_manifest.contract_types or {}
 
     def load_dependencies(self, use_cache: bool = True) -> Dict[str, Dict[str, DependencyAPI]]:
         return self.dependency_manager.load_dependencies(self.path.as_posix(), use_cache=use_cache)
