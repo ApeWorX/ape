@@ -12,7 +12,7 @@ plugins = ["pydantic.mypy"]
 # This version is purposely set to really high minor so that it should always work
 # with newer, stricter plugin releases.
 # NOTE: This should be bumped with every minor release!
-fallback_version = "0.6.999"
+fallback_version = "0.7.999"
 write_to = "src/ape/version.py"
 
 # NOTE: you have to use single-quoted strings in TOML for regular expressions.

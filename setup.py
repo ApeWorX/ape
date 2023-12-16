@@ -123,9 +123,9 @@ setup(
         "web3[tester]>=6.12.0,<7",
         # ** Dependencies maintained by ApeWorX **
         "eip712>=0.2.3,<0.4",
-        "ethpm-types>=0.6.3,<0.7",
-        "eth_pydantic_types>=0.1.0a4,<0.2",
-        "evm-trace>=0.1.0",
+        "ethpm-types>=0.6.4,<0.7",
+        "eth_pydantic_types>=0.1.0a5,<0.2",
+        "evm-trace>=0.1.2",
     ],
     entry_points={
         "console_scripts": ["ape=ape._cli:cli"],
