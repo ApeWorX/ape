@@ -46,7 +46,7 @@ class TestAccountContainer(TestAccountContainerAPI):
         return generate_dev_accounts(
             self.mnemonic,
             number_of_accounts=self.num_of_accounts,
-            hd_path_format=self.hd_path,
+            hd_path=self.hd_path,
         )
 
     @property
@@ -77,7 +77,7 @@ class TestAccountContainer(TestAccountContainerAPI):
         new_index = self.num_of_accounts + self.num_generated
         self.num_generated += 1
         generated_account = generate_dev_accounts(
-            self.mnemonic, 1, hd_path_format=self.hd_path, start_index=new_index
+            self.mnemonic, 1, hd_path=self.hd_path, start_index=new_index
         )[0]
         acc = TestAccount(
             index=new_index,

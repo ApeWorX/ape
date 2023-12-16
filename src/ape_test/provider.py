@@ -26,7 +26,7 @@ from ape.exceptions import (
     VirtualMachineError,
 )
 from ape.types import BlockID, SnapshotID
-from ape.utils import DEFAULT_TEST_CHAIN_ID, gas_estimation_error_message
+from ape.utils import DEFAULT_TEST_CHAIN_ID, DEFAULT_TEST_HD_PATH, gas_estimation_error_message
 from ape_ethereum.provider import Web3Provider
 
 
@@ -58,9 +58,11 @@ class LocalProvider(TestProviderAPI, Web3Provider):
                 # Is already connected and settings have not changed.
                 return
 
+        hd_path = (self.config.hd_path or DEFAULT_TEST_HD_PATH).rstrip("/")
         self._evm_backend = PyEVMBackend.from_mnemonic(
             mnemonic=self.config.mnemonic,
             num_accounts=self.config.number_of_accounts,
+            hd_path=hd_path,
         )
         endpoints = {**API_ENDPOINTS}
         endpoints["eth"] = merge(endpoints["eth"], {"chainId": static_return(chain_id)})

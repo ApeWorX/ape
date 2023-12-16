@@ -3,7 +3,7 @@ import json
 import click
 from eth_account import Account as EthAccount
 from eth_account.hdaccount import ETHEREUM_DEFAULT_PATH
-from eth_utils import to_bytes
+from eth_utils import to_bytes, to_checksum_address
 
 from ape import accounts
 from ape.cli import ape_cli_context, existing_alias_argument, non_existing_alias_argument
@@ -162,8 +162,9 @@ def export(cli_ctx, alias):
     account = json.loads(path.read_text())
     password = click.prompt("Enter password to decrypt account", hide_input=True)
     private_key = EthAccount.decrypt(account, password)
+    address = to_checksum_address(account["address"])
     cli_ctx.logger.success(
-        f"Account 0x{account['address']} private key: {click.style(private_key.hex(), bold=True)})"
+        f"Account {address} private key: {click.style(private_key.hex(), bold=True)})"
     )
 
 

@@ -27,6 +27,7 @@ from ape.types import BlockID, CallTreeNode, SnapshotID, SourceTraceback
 from ape.utils import (
     DEFAULT_NUMBER_OF_TEST_ACCOUNTS,
     DEFAULT_TEST_CHAIN_ID,
+    DEFAULT_TEST_HD_PATH,
     DEFAULT_TEST_MNEMONIC,
     JoinableQueue,
     generate_dev_accounts,
@@ -58,6 +59,7 @@ class GethDevProcess(BaseGethProcess):
         executable: Optional[str] = None,
         auto_disconnect: bool = True,
         extra_funded_accounts: Optional[List[str]] = None,
+        hd_path: Optional[str] = DEFAULT_TEST_HD_PATH,
     ):
         executable = executable or "geth"
         if not shutil.which(executable):
@@ -88,7 +90,9 @@ class GethDevProcess(BaseGethProcess):
 
         sealer = ensure_account_exists(**geth_kwargs).decode().replace("0x", "")
         geth_kwargs["miner_etherbase"] = sealer
-        accounts = generate_dev_accounts(mnemonic, number_of_accounts=number_of_accounts)
+        accounts = generate_dev_accounts(
+            mnemonic, number_of_accounts=number_of_accounts, hd_path=hd_path or DEFAULT_TEST_HD_PATH
+        )
         addresses = [a.address for a in accounts]
         addresses.extend(extra_funded_accounts or [])
         bal_dict = {"balance": str(initial_balance)}
@@ -146,6 +150,7 @@ class GethDevProcess(BaseGethProcess):
             executable=kwargs.get("executable"),
             auto_disconnect=kwargs.get("auto_disconnect", True),
             extra_funded_accounts=extra_accounts,
+            hd_path=kwargs.get("hd_path", DEFAULT_TEST_HD_PATH),
         )
 
     def connect(self, timeout: int = 60):
