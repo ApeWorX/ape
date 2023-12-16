@@ -10,6 +10,7 @@ from typing import (
     Iterator,
     List,
     Optional,
+    Sequence,
     Tuple,
     Type,
     Union,
@@ -362,12 +363,12 @@ class EcosystemAPI(BaseInterfaceModel):
         """
 
     @abstractmethod
-    def decode_logs(self, logs: List[Dict], *events: EventABI) -> Iterator["ContractLog"]:
+    def decode_logs(self, logs: Sequence[Dict], *events: EventABI) -> Iterator["ContractLog"]:
         """
         Decode any contract logs that match the given event ABI from the raw log data.
 
         Args:
-            logs (List[Dict]): A list of raw log data from the chain.
+            logs (Sequence[Dict]): A list of raw log data from the chain.
             *events (EventABI): Event definitions to decode.
 
         Returns:

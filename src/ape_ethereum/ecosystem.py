@@ -1,6 +1,6 @@
 import re
 from copy import deepcopy
-from typing import Any, Dict, Iterator, List, Optional, Tuple, Type, Union, cast
+from typing import Any, Dict, Iterator, List, Optional, Sequence, Tuple, Type, Union, cast
 
 from eth_abi import decode, encode
 from eth_abi.exceptions import InsufficientDataBytes, NonEmptyPaddingBytes
@@ -669,7 +669,7 @@ class Ethereum(EcosystemAPI):
 
         return txn_class(**kwargs)
 
-    def decode_logs(self, logs: List[Dict], *events: EventABI) -> Iterator["ContractLog"]:
+    def decode_logs(self, logs: Sequence[Dict], *events: EventABI) -> Iterator["ContractLog"]:
         if not logs:
             return
 

@@ -4,6 +4,7 @@ from pathlib import Path
 
 import pytest
 import yaml
+from ethpm_types import Compiler
 from ethpm_types import ContractInstance as EthPMContractInstance
 from ethpm_types import ContractType, Source
 from ethpm_types.manifest import PackageManifest
@@ -329,10 +330,12 @@ def test_track_deployment_from_unknown_contract_given_txn_hash(
     assert actual.runtime_bytecode == contract.contract_type.runtime_bytecode
 
 
-def test_compiler_data(config, project_path, contracts_folder):
-    # See ape-solidity / ape-vyper for better tests
+def test_compiler_data_and_update_cache(config, project_path, contracts_folder):
     with config.using_project(project_path, contracts_folder=contracts_folder) as project:
-        assert not project.compiler_data
+        compiler = Compiler(name="comp", version="1.0.0")
+        project.local_project.update_manifest(compilers=[compiler])
+        assert project.local_project.manifest.compilers == [compiler]
+        assert project.compiler_data == [compiler]
 
 
 def test_get_project_without_contracts_path(project):
@@ -436,3 +439,88 @@ def test_source_paths_excludes_cached_dependencies(project_with_contract):
     shutil.copy(contract, dep_contract)
     actual = project_with_contract.source_paths
     assert dep_contract not in actual
+
+
+def test_update_manifest_compilers(project):
+    compiler = Compiler(name="comp", version="1.0.0", contractTypes=["foo.txt"])
+    project.local_project.update_manifest(compilers=[compiler])
+    actual = project.local_project.manifest.compilers
+    assert actual == [compiler]
+
+    project.local_project.update_manifest(name="test", version="1.0.0")
+    assert project.local_project.manifest.name == "test"
+    assert project.local_project.manifest.version == "1.0.0"
+
+    # The compilers should not have changed.
+    actual = project.local_project.manifest.compilers
+    assert actual == [compiler]
+
+    # Add a new one.
+    # NOTE: `update_cache()` will override the fields entirely.
+    #   You must include existing fields if you want to merge.
+    compiler_2 = Compiler(name="test", version="2.0.0", contractTypes=["bar.txt"])
+    project.local_project.update_manifest(compilers=[compiler_2])
+    actual = project.local_project.manifest.compilers
+    assert actual == [compiler_2]
+
+
+def test_load_contracts(project_with_contract):
+    contracts = project_with_contract.load_contracts()
+    assert len(contracts) > 0
+    assert contracts == project_with_contract.contracts
+
+
+def test_add_compiler_data(project_with_dependency_config):
+    # NOTE: Using different project than default to lessen
+    #   chance of race-conditions from multi-process test runners.
+    project = project_with_dependency_config
+
+    # Load contracts so that any compilers that may exist are present.
+    project.load_contracts()
+    start_compilers = project.local_project.manifest.compilers or []
+
+    # NOTE: Pre-defining things to lessen chance of race condition.
+    compiler = Compiler(name="comp", version="1.0.0", contractTypes=["foo"])
+    compiler_2 = Compiler(name="test", version="2.0.0", contractTypes=["bar", "stay"])
+
+    # NOTE: Has same contract as compiler 2 and thus replaces the contract.
+    compiler_3 = Compiler(name="test", version="3.0.0", contractTypes=["bar"])
+
+    proj = project.local_project
+    argument = [compiler]
+    second_arg = [compiler_2]
+    third_arg = [compiler_3]
+    first_exp = [*start_compilers, compiler]
+    final_exp = [*first_exp, compiler_2]
+
+    # Add twice to show it's only added once.
+    proj.add_compiler_data(argument)
+    proj.add_compiler_data(argument)
+    assert proj.manifest.compilers == first_exp
+
+    # NOTE: `add_compiler_data()` will not override existing compilers.
+    #   Use `update_cache()` for that.
+    proj.add_compiler_data(second_arg)
+    assert proj.manifest.compilers == final_exp
+
+    proj.add_compiler_data(third_arg)
+    comp = [c for c in proj.manifest.compilers if c.name == "test" and c.version == "2.0.0"][0]
+    assert "bar" not in comp.contractTypes
+
+    # Show that compilers without contract types go away.
+    (compiler_3.contractTypes or []).append("stay")
+    proj.add_compiler_data(third_arg)
+    comp_check = [c for c in proj.manifest.compilers if c.name == "test" and c.version == "2.0.0"]
+    assert not comp_check
+
+    # Show error on multiple of same compiler.
+    compiler_4 = Compiler(name="test123", version="3.0.0", contractTypes=["bar"])
+    compiler_5 = Compiler(name="test123", version="3.0.0", contractTypes=["baz"])
+    with pytest.raises(ProjectError, match=r".*was given multiple of the same compiler.*"):
+        proj.add_compiler_data([compiler_4, compiler_5])
+
+    # Show error when contract type collision (only happens with inputs, else latter replaces).
+    compiler_4 = Compiler(name="test321", version="3.0.0", contractTypes=["bar"])
+    compiler_5 = Compiler(name="test456", version="9.0.0", contractTypes=["bar"])
+    with pytest.raises(ProjectError, match=r".*'bar' collision across compilers.*"):
+        proj.add_compiler_data([compiler_4, compiler_5])

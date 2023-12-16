@@ -51,8 +51,8 @@ def test_skip_contracts_and_missing_compilers(ape_cli, runner, project, switch_c
 
     # Simulate configuring Ape to not ignore tsconfig.json for some reason.
     content = """
-    compiler:
-      ignore_files:
+    compile:
+      exclude:
         - "*package.json"
     """
     with switch_config(project, content):
@@ -203,6 +203,16 @@ def test_can_access_contracts(project, clean_cache):
 )
 def test_compile_specified_contracts(ape_cli, runner, project, contract_path, clean_cache):
     result = runner.invoke(ape_cli, ["compile", contract_path], catch_exceptions=False)
+    assert result.exit_code == 0, result.output
+    assert "Compiling 'Interface.json'" in result.output
+
+    # Already compiled.
+    result = runner.invoke(ape_cli, ["compile", contract_path], catch_exceptions=False)
+    assert result.exit_code == 0, result.output
+    assert "Compiling 'Interface.json'" not in result.output
+
+    # Force recompile.
+    result = runner.invoke(ape_cli, ["compile", contract_path, "--force"], catch_exceptions=False)
     assert result.exit_code == 0, result.output
     assert "Compiling 'Interface.json'" in result.output
 

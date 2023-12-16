@@ -14,12 +14,16 @@ def test_install_path_not_exists(ape_cli, runner):
 
 
 @run_once
-def test_install_path_to_local_package(ape_cli, runner):
-    project = "with-contracts"
-    path = Path(__file__).parent / "projects" / project
-    result = runner.invoke(ape_cli, ["pm", "install", path.as_posix(), "--name", project])
+def test_install_path_to_local_package(ape_cli, runner, project):
+    project_name = "with-contracts"
+    path = Path(__file__).parent / "projects" / project_name
+    name = path.stem
+    result = runner.invoke(ape_cli, ["pm", "install", path.as_posix(), "--name", project_name])
     assert result.exit_code == 0, result.output
     assert f"Package '{path.as_posix()}' installed."
+
+    # Ensure was installed correctly.
+    assert (project.dependency_manager.DATA_FOLDER / "packages" / name).is_dir()
 
 
 @run_once
@@ -98,7 +102,7 @@ def test_compile(ape_cli, runner, project):
     assert result.exit_code == 0, result.output
 
     if project.path.as_posix().endswith("with-contracts"):
-        assert "Package '__FooDep__' compiled." in result.output
+        assert "Package 'foodep' compiled." in result.output
     else:
         # Tests against a bug where we couldn't have hyphens in
         # dependency project contracts.
@@ -107,7 +111,7 @@ def test_compile(ape_cli, runner, project):
 
 @skip_projects_except("with-contracts")
 def test_compile_dependency(ape_cli, runner, project):
-    name = "__FooDep__"
+    name = "foodep"
     result = runner.invoke(ape_cli, ["pm", "compile", name])
     assert result.exit_code == 0, result.output
     assert f"Package '{name}' compiled." in result.output
@@ -188,11 +192,16 @@ def test_remove_cancel(ape_cli, runner):
 
 
 @skip_projects_except("only-dependencies")
-def test_remove_invalid_version(ape_cli, runner):
+def test_remove_invalid_version(ape_cli, runner, project):
+    package_name = "dependency-in-project-only"
+
     # Install packages
     runner.invoke(ape_cli, ["pm", "install", ".", "--force"])
 
-    package_name = "dependency-in-project-only"
+    # Ensure was installed correctly.
+    assert package_name in project.dependencies
+    assert (project.dependency_manager.DATA_FOLDER / "packages" / package_name).is_dir()
+
     invalid_version = "0.0.0"
     result = runner.invoke(ape_cli, ["pm", "remove", package_name, invalid_version])
 
