@@ -380,6 +380,7 @@
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="#ape.api.projects.ProjectAPI"><code class="docutils literal notranslate"><span class="pre">ProjectAPI</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#ape.api.projects.ProjectAPI.add_compiler_data"><code class="docutils literal notranslate"><span class="pre">ProjectAPI.add_compiler_data()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.projects.ProjectAPI.cached_manifest"><code class="docutils literal notranslate"><span class="pre">ProjectAPI.cached_manifest</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.projects.ProjectAPI.contracts_folder"><code class="docutils literal notranslate"><span class="pre">ProjectAPI.contracts_folder</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.projects.ProjectAPI.create_manifest"><code class="docutils literal notranslate"><span class="pre">ProjectAPI.create_manifest()</span></code></a></li>
@@ -391,6 +392,8 @@
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.projects.ProjectAPI.name"><code class="docutils literal notranslate"><span class="pre">ProjectAPI.name</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.projects.ProjectAPI.path"><code class="docutils literal notranslate"><span class="pre">ProjectAPI.path</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.projects.ProjectAPI.process_config_file"><code class="docutils literal notranslate"><span class="pre">ProjectAPI.process_config_file()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ape.api.projects.ProjectAPI.replace_manifest"><code class="docutils literal notranslate"><span class="pre">ProjectAPI.replace_manifest()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ape.api.projects.ProjectAPI.update_manifest"><code class="docutils literal notranslate"><span class="pre">ProjectAPI.update_manifest()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.projects.ProjectAPI.version"><code class="docutils literal notranslate"><span class="pre">ProjectAPI.version</span></code></a></li>
 </ul>
 </li>
@@ -1174,12 +1177,12 @@ the <a class="reference external" href="https://github.com/ApeWorX/ape-vyper">ap
 this API.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="ape.api.compiler.CompilerAPI.compile">
-<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">compile</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">contract_filepaths</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Path</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">base_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Path</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">ContractType</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#ape.api.compiler.CompilerAPI.compile" title="Permalink to this definition"></a></dt>
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">compile</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">contract_filepaths</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Sequence</span><span class="p"><span class="pre">[</span></span><span class="pre">Path</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">base_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Path</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">ContractType</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#ape.api.compiler.CompilerAPI.compile" title="Permalink to this definition"></a></dt>
 <dd><p>Compile the given source files. All compiler plugins must implement this function.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>contract_filepaths</strong> (<em>List</em><em>[</em><em>pathlib.Path</em><em>]</em>) – A list of source file paths to compile.</p></li>
+<li><p><strong>contract_filepaths</strong> (<em>Sequence</em><em>[</em><em>pathlib.Path</em><em>]</em>) – A list of source file paths to compile.</p></li>
 <li><p><strong>base_path</strong> (<em>Optional</em><em>[</em><em>pathlib.Path</em><em>]</em>) – Optionally provide the base path, such as the
 project <code class="docutils literal notranslate"><span class="pre">contracts/</span></code> directory. Defaults to <code class="docutils literal notranslate"><span class="pre">None</span></code>. When using in a project
 via <code class="docutils literal notranslate"><span class="pre">ape</span> <span class="pre">compile</span></code>, gets set to the project’s <code class="docutils literal notranslate"><span class="pre">contracts/</span></code> directory.</p></li>
@@ -1224,11 +1227,11 @@ to enrich.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="ape.api.compiler.CompilerAPI.get_versions">
-<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_versions</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">all_paths</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Path</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Set</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#ape.api.compiler.CompilerAPI.get_versions" title="Permalink to this definition"></a></dt>
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_versions</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">all_paths</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Sequence</span><span class="p"><span class="pre">[</span></span><span class="pre">Path</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Set</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#ape.api.compiler.CompilerAPI.get_versions" title="Permalink to this definition"></a></dt>
 <dd><p>Retrieve the set of available compiler versions for this plugin to compile <code class="docutils literal notranslate"><span class="pre">all_paths</span></code>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>all_paths</strong> (<em>List</em><em>[</em><em>pathlib.Path</em><em>]</em>) – The list of paths.</p>
+<dd class="field-odd"><p><strong>all_paths</strong> (<em>Sequence</em><em>[</em><em>pathlib.Path</em><em>]</em>) – The list of paths.</p>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>A set of available compiler versions.</p>
@@ -1568,12 +1571,12 @@ index of the input as the key.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="ape.api.networks.EcosystemAPI.decode_logs">
-<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">decode_logs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">logs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Dict</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">events</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">EventABI</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Iterator</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="types.html#ape.types.ContractLog" title="ape.types.ContractLog"><span class="pre">ContractLog</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#ape.api.networks.EcosystemAPI.decode_logs" title="Permalink to this definition"></a></dt>
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">decode_logs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">logs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Sequence</span><span class="p"><span class="pre">[</span></span><span class="pre">Dict</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">events</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">EventABI</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Iterator</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="types.html#ape.types.ContractLog" title="ape.types.ContractLog"><span class="pre">ContractLog</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#ape.api.networks.EcosystemAPI.decode_logs" title="Permalink to this definition"></a></dt>
 <dd><p>Decode any contract logs that match the given event ABI from the raw log data.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>logs</strong> (<em>List</em><em>[</em><em>Dict</em><em>]</em>) – A list of raw log data from the chain.</p></li>
+<li><p><strong>logs</strong> (<em>Sequence</em><em>[</em><em>Dict</em><em>]</em>) – A list of raw log data from the chain.</p></li>
 <li><p><strong>*events</strong> (<em>EventABI</em>) – Event definitions to decode.</p></li>
 </ul>
 </dd>
@@ -2455,6 +2458,23 @@ Most often, this is either a version number or a branch name.</p>
 <dd><p>Bases: <a class="reference internal" href="utils.html#ape.utils.BaseInterfaceModel" title="ape.utils.basemodel.BaseInterfaceModel"><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseInterfaceModel</span></code></a></p>
 <p>An abstract base-class for working with projects.
 This class can also be extended to a plugin for supporting non-ape projects.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="ape.api.projects.ProjectAPI.add_compiler_data">
+<span class="sig-name descname"><span class="pre">add_compiler_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">compiler_data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Sequence</span><span class="p"><span class="pre">[</span></span><span class="pre">Compiler</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Compiler</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#ape.api.projects.ProjectAPI.add_compiler_data" title="Permalink to this definition"></a></dt>
+<dd><p>Add compiler data to the existing cached manifest.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>compiler_data</strong> (List[<code class="docutils literal notranslate"><span class="pre">ethpm_types.Compiler</span></code>]) – Compilers to add.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The full list of compilers.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>List[<code class="docutils literal notranslate"><span class="pre">ethpm_types.source.Compiler</span></code>]</p>
+</dd>
+</dl>
+</dd></dl>
+
 <dl class="py property">
 <dt class="sig sig-object py" id="ape.api.projects.ProjectAPI.cached_manifest">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">cached_manifest</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">PackageManifest</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#ape.api.projects.ProjectAPI.cached_manifest" title="Permalink to this definition"></a></dt>
@@ -2470,12 +2490,12 @@ if it exists and is valid.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="ape.api.projects.ProjectAPI.create_manifest">
-<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">create_manifest</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">file_paths</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Path</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_cache</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">PackageManifest</span></span></span><a class="headerlink" href="#ape.api.projects.ProjectAPI.create_manifest" title="Permalink to this definition"></a></dt>
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">create_manifest</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">file_paths</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Sequence</span><span class="p"><span class="pre">[</span></span><span class="pre">Path</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_cache</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">PackageManifest</span></span></span><a class="headerlink" href="#ape.api.projects.ProjectAPI.create_manifest" title="Permalink to this definition"></a></dt>
 <dd><p>Create a manifest from the project.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>file_paths</strong> (<em>Optional</em><em>[</em><em>List</em><em>[</em><a class="reference internal" href="cli.html#ape.cli.paramtype.Path" title="ape.cli.paramtype.Path"><em>Path</em></a><em>]</em><em>]</em>) – An optional list of paths to compile
+<li><p><strong>file_paths</strong> (<em>Optional</em><em>[</em><em>Sequence</em><em>[</em><a class="reference internal" href="cli.html#ape.cli.paramtype.Path" title="ape.cli.paramtype.Path"><em>Path</em></a><em>]</em><em>]</em>) – An optional list of paths to compile
 from this project.</p></li>
 <li><p><strong>use_cache</strong> (<em>bool</em>) – Set to <code class="docutils literal notranslate"><span class="pre">False</span></code> to clear caches and force a re-compile.</p></li>
 </ul>
@@ -2552,6 +2572,29 @@ mapping of field names to [<cite>FieldInfo</cite>][pydantic.fields.FieldInfo].</
 <span class="sig-name descname"><span class="pre">process_config_file</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="headerlink" href="#ape.api.projects.ProjectAPI.process_config_file" title="Permalink to this definition"></a></dt>
 <dd><p>Process the project’s config file.
 Returns <code class="docutils literal notranslate"><span class="pre">True</span></code> if had to create a temporary <code class="docutils literal notranslate"><span class="pre">ape-config.yaml</span></code> file.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ape.api.projects.ProjectAPI.replace_manifest">
+<span class="sig-name descname"><span class="pre">replace_manifest</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">manifest</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">PackageManifest</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">PackageManifest</span></span></span><a class="headerlink" href="#ape.api.projects.ProjectAPI.replace_manifest" title="Permalink to this definition"></a></dt>
+<dd><p>Replace the entire cached manifest.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>manifest</strong> (<code class="docutils literal notranslate"><span class="pre">ethpm_types.manifest.PackageManifest</span></code>) – The manifest
+to use.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ape.api.projects.ProjectAPI.update_manifest">
+<span class="sig-name descname"><span class="pre">update_manifest</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">PackageManifest</span></span></span><a class="headerlink" href="#ape.api.projects.ProjectAPI.update_manifest" title="Permalink to this definition"></a></dt>
+<dd><p>Add additional package manifest parts to the cache.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>**kwargs</strong> – Fields from <code class="docutils literal notranslate"><span class="pre">ethpm_types.manifest.PackageManifest</span></code>.</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py attribute">

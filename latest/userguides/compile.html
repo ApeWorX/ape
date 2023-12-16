@@ -253,8 +253,8 @@ For information on how to configure plugins in your project, follow <a class="re
 <p>You can configure files to be ignored from compilation.
 By default, Ape ignores files <code class="docutils literal notranslate"><span class="pre">package.json</span></code>, <code class="docutils literal notranslate"><span class="pre">package-lock.json</span></code>, <code class="docutils literal notranslate"><span class="pre">tsconfig.json</span></code>.
 To override this list, edit your <code class="docutils literal notranslate"><span class="pre">ape-config.yaml</span></code> similarly:</p>
-<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">compiler</span><span class="p">:</span>
-<span class="w">  </span><span class="nt">ignore_files</span><span class="p">:</span>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">compile</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">exclude</span><span class="p">:</span>
 <span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&quot;*package.json&quot;</span>
 <span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&quot;*package-lock.json&quot;</span>
 <span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&quot;*tsconfig.json&quot;</span>
