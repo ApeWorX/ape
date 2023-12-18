@@ -16,6 +16,7 @@ from ape.cli import (
     select_account,
     verbosity_option,
 )
+from ape.cli.commands import get_param_from_ctx, parse_network
 from ape.exceptions import AccountsError
 from ape.logging import logger
 
@@ -569,3 +570,37 @@ def test_deprecated_network_bound_command(runner):
     assert result.exit_code == 0, result.output
     assert "ethereum:local:test" in result.output, result.output
     assert OTHER_OPTION_VALUE in result.output
+
+
+def test_get_param_from_ctx(mocker):
+    mock_ctx = mocker.MagicMock()
+    mock_ctx.params = {"foo": "bar"}
+    mock_ctx.parent = mocker.MagicMock()
+    mock_ctx.parent.params = {"interactive": True}
+    actual = get_param_from_ctx(mock_ctx, "interactive")
+    assert actual is True
+
+
+def test_parse_network_when_interactive_and_no_param(mocker):
+    ctx = mocker.MagicMock()
+    ctx.params = {"interactive": True}
+    ctx.parent = None
+    network_ctx = parse_network(ctx)
+    assert network_ctx.provider.name == "test"
+    assert network_ctx._disconnect_on_exit is False  # Because of interactive: True
+
+
+def test_parse_network_when_interactive_and_str_param(mocker):
+    ctx = mocker.MagicMock()
+    ctx.params = {"interactive": True, "network": "ethereum:local:test"}
+    network_ctx = parse_network(ctx)
+    assert network_ctx.provider.name == "test"
+    assert network_ctx._disconnect_on_exit is False  # Because of interactive: True
+
+
+def test_parse_network_when_interactive_and_class_param(mocker, eth_tester_provider):
+    ctx = mocker.MagicMock()
+    ctx.params = {"interactive": True, "network": eth_tester_provider}
+    network_ctx = parse_network(ctx)
+    assert network_ctx.provider.name == "test"
+    assert network_ctx._disconnect_on_exit is False  # Because of interactive: True
