@@ -15,9 +15,9 @@ from ape.logging import logger
 from ape.utils import (
     ManagerAccessMixin,
     cached_property,
-    get_npm_version_from_spec,
     github_client,
     load_config,
+    pragma_str_to_specifier_set,
 )
 
 
@@ -344,13 +344,13 @@ class NpmDependency(DependencyAPI):
                 if not other_version:
                     continue
 
-                semver = get_npm_version_from_spec(other_version)
-                if other_version and not semver == Version(version_from_config):
-                    raise ProjectError(
-                        f"Version mismatch for {self.npm}. Is {self.version} in ape config "
-                        f"but {other_version} in package.json. "
-                        f"Try aligning versions and/or running `npm install`."
-                    )
+                if semver := pragma_str_to_specifier_set(other_version):
+                    if other_version and not semver == Version(version_from_config):
+                        raise ProjectError(
+                            f"Version mismatch for {self.npm}. Is {self.version} in ape config "
+                            f"but {other_version} in package.json. "
+                            f"Try aligning versions and/or running `npm install`."
+                        )
 
         if version_from_config:
             return version_from_config

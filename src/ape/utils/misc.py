@@ -63,25 +63,66 @@ def _get_distributions(pkg_name: str) -> List:
     return distros
 
 
-def get_npm_version_from_spec(spec: str) -> SpecifierSet:
+def pragma_str_to_specifier_set(pragma_str: str) -> Optional[SpecifierSet]:
     """
-    Parse an NPM version specifier object from a str.
+    Convert the given pragma str to a ``packaging.version.SpecifierSet``
+    if possible.
 
     Args:
-        spec (str): A string version specifier.
+        pragma_str (str): The str to convert.
 
     Returns:
-        SpecifierSet: The NPM version specifier.
+        ``Optional[packaging.version.SpecifierSet]``
     """
-    pragma_str = " ".join(spec.split()).replace("^", "~=")
 
-    if pragma_str[0].isnumeric():
-        pragma_str = f"=={pragma_str}"
+    pragma_parts = iter([x.strip(" ,") for x in pragma_str.split(" ")])
 
-    elif pragma_str[0] == "=" and pragma_str[1] != "=":
-        pragma_str = f"={pragma_str}"
+    def _to_spec(item: str) -> str:
+        item = item.replace("^", "~=")
+        if item and item[0].isnumeric():
+            return f"=={item}"
+        elif item and len(item) >= 2 and item[0] == "=" and item[1] != "=":
+            return f"={item}"
 
-    return SpecifierSet(pragma_str)
+        return item
+
+    pragma_parts_fixed = []
+    builder = ""
+    for sub_part in pragma_parts:
+        parts_to_handle: List[str] = []
+        if "," in sub_part:
+            sub_sub_parts = [x.strip() for x in sub_part.split(",")]
+            if len(sub_sub_parts) > 2:
+                # Very rare case.
+                raise ValueError(f"Cannot handle pragma '{pragma_str}'.")
+
+            if next_part := next(pragma_parts, None):
+                parts_to_handle.extend((sub_sub_parts[0], f"{sub_sub_parts[-1]}{next_part}"))
+            else:
+                # Very rare case.
+                raise ValueError(f"Cannot handle pragma '{pragma_str}'.")
+        else:
+            parts_to_handle.append(sub_part)
+
+        for part in parts_to_handle:
+            if not any(c.isnumeric() for c in part):
+                # Handle pragma with spaces between constraint and values
+                # like `>= 0.6.0`.
+                builder += part
+                continue
+            elif builder:
+                spec = _to_spec(f"{builder}{part}")
+                builder = ""
+            else:
+                spec = _to_spec(part)
+
+            pragma_parts_fixed.append(spec)
+
+    try:
+        return SpecifierSet(",".join(pragma_parts_fixed))
+    except ValueError as err:
+        logger.error(str(err))
+        return None
 
 
 def get_package_version(obj: Any) -> str:
@@ -454,7 +495,7 @@ __all__ = [
     "extract_nested_value",
     "gas_estimation_error_message",
     "get_current_timestamp_ms",
-    "get_npm_version_from_spec",
+    "pragma_str_to_specifier_set",
     "get_package_version",
     "is_evm_precompile",
     "is_zero_hex",

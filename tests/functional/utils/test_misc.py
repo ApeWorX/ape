@@ -8,10 +8,10 @@ from ape.utils.misc import (
     ZERO_ADDRESS,
     add_padding_to_strings,
     extract_nested_value,
-    get_npm_version_from_spec,
     get_package_version,
     is_evm_precompile,
     is_zero_hex,
+    pragma_str_to_specifier_set,
     raises_not_implemented,
     run_until_complete,
     to_int,
@@ -115,23 +115,28 @@ def test_to_int(val):
     assert to_int(val) == 5
 
 
-def test_get_npm_version_from_spec():
-    assert get_npm_version_from_spec("1.0") == "==1.0.0"
-    assert get_npm_version_from_spec("1") == "==1.0.0"
-    assert get_npm_version_from_spec("1.0.0-beta") == "==1.0.0-beta"
-    assert get_npm_version_from_spec("1.0-beta") == "==1.0.0-beta"
-    assert get_npm_version_from_spec("1-beta") == "==1.0.0-beta"
-    assert get_npm_version_from_spec("1.0.0-beta.1") == "==1.0.0-beta.1"
-    assert get_npm_version_from_spec("1.0-beta.1") == "==1.0.0-beta.1"
-    assert get_npm_version_from_spec("1-beta.1") == "==1.0.0-beta.1"
-
-    assert get_npm_version_from_spec("~=1.0") == "~=1.0"
-    assert get_npm_version_from_spec(">=1") == ">=1.0"
-    assert get_npm_version_from_spec("<=1.0.0-beta") == "<=1.0.0-beta"
-    assert get_npm_version_from_spec(">1.0-beta") == ">1.0.0-beta"
-    assert get_npm_version_from_spec("<1-beta") == "<1.0.0-beta"
-
-    assert get_npm_version_from_spec("1.0.0") == "==1.0.0"
-    assert get_npm_version_from_spec(" 1.0.0") == "==1.0.0"
-    assert get_npm_version_from_spec(" == 1.0.0") == "==1.0.0"
-    assert get_npm_version_from_spec(" = 1.0.0") == "==1.0.0"
+@pytest.mark.parametrize(
+    "spec,expected",
+    [
+        ("1.0", "==1.0.0"),
+        ("1.0.0-beta", "==1.0.0-beta"),
+        ("1.0-beta", "==1.0.0-beta"),
+        ("1-beta", "==1.0.0-beta"),
+        ("1.0.0-beta.1", "==1.0.0-beta.1"),
+        ("1.0-beta.1", "==1.0.0-beta.1"),
+        ("1-beta.1", "==1.0.0-beta.1"),
+        ("~=1.0", "~=1.0"),
+        (">=1", ">=1.0"),
+        ("<=1.0.0-beta", "<=1.0.0-beta"),
+        (">1.0-beta", ">1.0.0-beta"),
+        ("1.0.0", "==1.0.0"),
+        (" 1.0.0", "==1.0.0"),
+        (" == 1.0.0", "==1.0.0"),
+        (" = 1.0.0", "==1.0.0"),
+        (">= 0.4.19 < 0.5.0", ">=0.4.19,<0.5.0"),
+        (">=0.4.19,< 0.5.0", ">=0.4.19,<0.5.0"),
+        (">=0.4.19 <0.5.0", ">=0.4.19,<0.5.0"),
+    ],
+)
+def test_pragma_str_to_specifier_set(spec, expected):
+    assert pragma_str_to_specifier_set(spec) == expected
