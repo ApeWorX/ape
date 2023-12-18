@@ -339,7 +339,7 @@ class Ethereum(EcosystemAPI):
 
         return None
 
-    def decode_receipt(self, data: dict) -> ReceiptAPI:
+    def decode_receipt(self, data: Dict) -> ReceiptAPI:
         status = data.get("status")
         if status:
             status = self.conversion_manager.convert(status, int)
@@ -400,7 +400,7 @@ class Ethereum(EcosystemAPI):
 
         return Block.model_validate(data)
 
-    def _python_type_for_abi_type(self, abi_type: ABIType) -> Union[Type, Tuple, List]:
+    def _python_type_for_abi_type(self, abi_type: ABIType) -> Union[Type, Sequence]:
         # NOTE: An array can be an array of tuples, so we start with an array check
         if str(abi_type.type).endswith("]"):
             # remove one layer of the potential onion of array
@@ -944,7 +944,7 @@ class Ethereum(EcosystemAPI):
         call.outputs = output_val
         return call
 
-    def get_python_types(self, abi_type: ABIType) -> Union[Type, Tuple, List]:
+    def get_python_types(self, abi_type: ABIType) -> Union[Type, Sequence]:
         return self._python_type_for_abi_type(abi_type)
 
 

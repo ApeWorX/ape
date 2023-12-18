@@ -50,7 +50,9 @@ class ApeCliContextObject(ManagerAccessMixin):
         raise Abort(msg)
 
 
-def verbosity_option(cli_logger: Optional[ApeLogger] = None, default: str = DEFAULT_LOG_LEVEL):
+def verbosity_option(
+    cli_logger: Optional[ApeLogger] = None, default: str = DEFAULT_LOG_LEVEL
+) -> Callable:
     """A decorator that adds a `--verbosity, -v` option to the decorated
     command.
     """
@@ -81,7 +83,7 @@ def _create_verbosity_kwargs(
 
 def ape_cli_context(
     default_log_level: str = DEFAULT_LOG_LEVEL, obj_type: Type = ApeCliContextObject
-):
+) -> Callable:
     """
     A ``click`` context object with helpful utilities.
     Use in your commands to get access to common utility features,
@@ -171,7 +173,7 @@ def network_option(
     provider: Optional[Union[List[str], str]] = None,
     required: bool = False,
     **kwargs,
-):
+) -> Callable:
     """
     A ``click.option`` for specifying a network.
 
@@ -194,11 +196,11 @@ def network_option(
         # These are the available network object names you can request.
         network_object_names = ("ecosystem", "network", "provider")
 
-        # All kwargs in the defined @click.commmand().
+        # All kwargs in the defined @click.command().
         command_signature = inspect.signature(f)
         command_kwargs = [x.name for x in command_signature.parameters.values()]
 
-        # Any combinaiton of ["ecosystem", "network", "provider"]
+        # Any combination of ["ecosystem", "network", "provider"]
         requested_network_objects = [x for x in command_kwargs if x in network_object_names]
 
         # When using network_option, handle parsing now so we can pass to
@@ -251,6 +253,9 @@ def network_option(
             # NOTE: The following is needed for click internals.
             wrapped_f.__name__ = f.__name__  # type: ignore[attr-defined]
 
+            # NOTE: The following is needed for sphinx internals.
+            wrapped_f.__doc__ = f.__doc__
+
             # Add other click parameters.
             if hasattr(f, "__click_params__"):
                 wrapped_f.__click_params__ = f.__click_params__  # type: ignore[attr-defined]
@@ -283,7 +288,7 @@ def network_option(
     return decorator
 
 
-def skip_confirmation_option(help=""):
+def skip_confirmation_option(help="") -> Callable:
     """
     A ``click.option`` for skipping confirmation (``--yes``).
 
@@ -308,7 +313,7 @@ def _account_callback(ctx, param, value):
     return value
 
 
-def account_option(account_type: _ACCOUNT_TYPE_FILTER = None):
+def account_option(account_type: _ACCOUNT_TYPE_FILTER = None) -> Callable:
     """
     A CLI option that accepts either the account alias or the account number.
     If not given anything, it will prompt the user to select an account.
@@ -341,7 +346,7 @@ def _load_contracts(ctx, param, value) -> Optional[Union[ContractType, List[Cont
     return [get_contract(c) for c in value] if is_multiple else get_contract(value)
 
 
-def contract_option(help=None, required=False, multiple=False):
+def contract_option(help=None, required=False, multiple=False) -> Callable:
     """
     Contract(s) from the current project.
     If you pass ``multiple=True``, you will get a list of contract types from the callback.
@@ -356,7 +361,7 @@ def contract_option(help=None, required=False, multiple=False):
     )
 
 
-def output_format_option(default: OutputFormat = OutputFormat.TREE):
+def output_format_option(default: OutputFormat = OutputFormat.TREE) -> Callable:
     """
     A ``click.option`` for specifying a format to use when outputting data.
 
@@ -373,7 +378,7 @@ def output_format_option(default: OutputFormat = OutputFormat.TREE):
     )
 
 
-def incompatible_with(incompatible_opts):
+def incompatible_with(incompatible_opts) -> Type[click.Option]:
     """
     Factory for creating custom ``click.Option`` subclasses that
     enforce incompatibility with the option strings passed to this function.

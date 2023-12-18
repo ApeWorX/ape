@@ -21,7 +21,7 @@ class _ProjectSources:
     def __init__(
         self,
         cached_manifest: PackageManifest,
-        active_sources: List[Path],
+        active_sources: Sequence[Path],
         contracts_folder: Path,
         cache_folder: Path,
     ):

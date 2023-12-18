@@ -40,7 +40,9 @@ class _AddressValidator(_Address, ManagerAccessMixin):
 
 
 AddressType = Annotated[ChecksumAddress, _AddressValidator]
-AddressType.__name__ = "AddressType"
+"""
+"A checksum address in Ape."
+"""
 
 
 __all__ = [

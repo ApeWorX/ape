@@ -116,7 +116,7 @@ def cmd(provider):
 
 @click.command(cls=ConnectedProviderCommand)
 def cmd():
-   click.echo("Using params is from ConnectedProviderCommand is optional")
+   click.echo("Using params from ConnectedProviderCommand is optional")
 ```
 
 ## Account Tools

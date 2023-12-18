@@ -1,10 +1,10 @@
 # ape.types
 
-## Miscellaneous
+## Address
 
 ```{eval-rst}
-.. automodule:: ape.types
-    :members: BlockID, AddressType, BaseContractLog, ContractLog, MockContractLog
+.. automodule:: ape.types.address
+    :members: AddressType, RawAddress
 ```
 
 ## Signatures
@@ -13,4 +13,11 @@
 .. automodule:: ape.types.signatures
     :members:
     :show-inheritance:
+```
+
+## Miscellaneous
+
+```{eval-rst}
+.. automodule:: ape.types
+    :members: BlockID, BaseContractLog, ContractLog, MockContractLog
 ```

@@ -45,7 +45,8 @@ class BaseAddress(BaseInterface):
 
     def __eq__(self, other: object) -> bool:
         """
-        Compares :class:`~ape.api.BaseAddress` / ``str`` objects by converting to ``AddressType``.
+        Compares :class:`~ape.api.BaseAddress` or ``str`` objects by converting to
+        :class:`~ape.types.address.AddressType`.
 
         Returns:
             bool: comparison result
@@ -84,7 +85,8 @@ class BaseAddress(BaseInterface):
 
     def __call__(self, **kwargs) -> "ReceiptAPI":
         """
-        Call this address directly.
+        Call this address directly. For contracts, this may mean invoking their
+        default handler.
 
         Args:
             **kwargs: Transaction arguments, such as ``sender`` or ``data``.
@@ -194,7 +196,7 @@ class Address(BaseAddress):
         The raw address type.
 
         Returns:
-            ``AddressType``: An alias to
+            :class:`~ape.types.address.AddressType`: An alias to
             `ChecksumAddress <https://eth-typing.readthedocs.io/en/latest/types.html#checksumaddress>`__.  # noqa: E501
         """
 

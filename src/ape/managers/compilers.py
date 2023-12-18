@@ -97,12 +97,11 @@ class CompilerManager(BaseManager):
 
         Raises:
             :class:`~ape.exceptions.CompilerError`: When there is no compiler found for the given
-              extension as well as when there is a contract-type collision across compilers.
+              file-extension as well as when there are contract-type collisions across compilers.
 
         Args:
-            contract_filepaths (Sequence[Union[pathlib.Path], str]): The list of files to compile,
-              as ``pathlib.Path`` objects. You can also pass a list of `str` that will
-              automatically get turned to ``pathlib.Path`` objects.
+            contract_filepaths (Sequence[Union[pathlib.Path], str]): The files to compile,
+              as ``pathlib.Path`` objects or path-strs.
             settings (Optional[Dict]): Adhoc compiler settings. Defaults to None.
               Ensure the compiler name key is present in the dict for it to work.
 
@@ -214,7 +213,7 @@ class CompilerManager(BaseManager):
             compiler_name (str): The name of the compiler to use.
             code (str): The source code to compile.
             settings (Optional[Dict]): Compiler settings.
-            **kwargs: Additional overrides for the ``ethpm_types.ContractType`` model.
+            **kwargs (Any): Additional overrides for the ``ethpm_types.ContractType`` model.
 
         Returns:
             ``ContractContainer``: A contract container ready to be deployed.
@@ -297,7 +296,7 @@ class CompilerManager(BaseManager):
     def enrich_error(self, err: ContractLogicError) -> ContractLogicError:
         """
         Enrich a contract logic error using compiler information, such
-        known PC locations for compiler runtime errors, such as math errors.
+        known PC locations for compiler runtime errors.
 
         Args:
             err (:class:`~ape.exceptions.ContractLogicError`): The exception
@@ -359,7 +358,7 @@ class CompilerManager(BaseManager):
             filename (str): The file to check.
 
         Returns:
-            bool
+            bool: ``True`` when the source is traceable.
         """
         path = Path(filename)
         if not path.is_file():

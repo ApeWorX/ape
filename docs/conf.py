@@ -109,6 +109,14 @@ def get_versions() -> List[str]:
     return [f"v{x}" for x in sorted_version_objs]
 
 
+def setup(app):
+    from ape import project
+
+    # Disable accessing contracts via __getattr__
+    # For ease of sphinx.
+    project._getattr_contracts = False
+
+
 html_context = {
     "fixpath": fixpath,
     "get_versions": get_versions,

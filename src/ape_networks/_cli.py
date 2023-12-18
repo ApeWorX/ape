@@ -48,6 +48,9 @@ def _lazy_get(name: str) -> _LazySequence:
 @_filter_option("network", _lazy_get("network"))
 @_filter_option("provider", _lazy_get("provider"))
 def _list(cli_ctx, output_format, ecosystem_filter, network_filter, provider_filter):
+    """
+    List all the registered ecosystems, networks, and providers.
+    """
     network_data = cli_ctx.network_manager.get_network_data(
         ecosystem_filter=ecosystem_filter,
         network_filter=network_filter,
@@ -102,12 +105,13 @@ def _list(cli_ctx, output_format, ecosystem_filter, network_filter, provider_fil
             ) from err
 
 
-@cli.command()
+@cli.command(short_help="Start a node process")
 @ape_cli_context()
 @network_option(default="ethereum:local:geth")
 def run(cli_ctx, provider):
     """
-    Start a node process
+    Start a subprocess node as if running independently
+    and stream stdout and stderr.
     """
     # Ignore extra loggers, such as web3 loggers.
     cli_ctx.logger._extra_loggers = {}
