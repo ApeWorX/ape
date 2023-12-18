@@ -1,26 +1,43 @@
 import inspect
 import warnings
-from typing import Any, List
+from typing import Any, List, Optional
 
 import click
 from click import Context
 
 from ape import networks
-from ape.api import ProviderAPI
+from ape.api import ProviderAPI, ProviderContextManager
 from ape.cli.choices import NetworkChoice
 from ape.exceptions import NetworkError
 
 
-def check_parents_for_interactive(ctx: Context) -> bool:
-    interactive: bool = ctx.params.get("interactive", False)
-    if interactive:
-        return True
+def get_param_from_ctx(ctx: Context, param: str) -> Optional[Any]:
+    if value := ctx.params.get(param):
+        return value
 
     # If not found, check the parent context.
-    if interactive is None and ctx.parent:
-        return check_parents_for_interactive(ctx.parent)
+    elif parent := ctx.parent:
+        return get_param_from_ctx(parent, param)
 
-    return False
+    return None
+
+
+def parse_network(ctx: Context) -> ProviderContextManager:
+    interactive = get_param_from_ctx(ctx, "interactive")
+    provider = get_param_from_ctx(ctx, "network")
+    if provider is not None and isinstance(provider, ProviderAPI):
+        return provider.network.use_provider(provider, disconnect_on_exit=not interactive)
+    elif provider is not None and isinstance(provider, str):
+        return networks.parse_network_choice(provider, disconnect_on_exit=not interactive)
+    elif provider is None:
+        ecosystem = networks.default_ecosystem
+        network = ecosystem.default_network
+        if provider_name := network.default_provider_name:
+            return network.use_provider(provider_name, disconnect_on_exit=not interactive)
+        else:
+            raise NetworkError(f"Network {network.name} has no providers.")
+    else:
+        raise TypeError(f"Unknown type for network choice: '{provider}'.")
 
 
 class ConnectedProviderCommand(click.Command):
@@ -50,7 +67,7 @@ class ConnectedProviderCommand(click.Command):
             existing_option.type.base_type = base_type  # type: ignore
 
         else:
-            # Add the option autmatically.
+            # Add the option automatically.
             from ape.cli.options import NetworkOption
 
             option = NetworkOption(base_type=base_type, callback=self._network_callback)
@@ -59,26 +76,7 @@ class ConnectedProviderCommand(click.Command):
         return super().parse_args(ctx, args)
 
     def invoke(self, ctx: Context) -> Any:
-        interactive = check_parents_for_interactive(ctx)
-        param = ctx.params.get("network")
-        if param is not None and isinstance(param, ProviderAPI):
-            provider = param
-            network_context = provider.network.use_provider(
-                provider, disconnect_on_exit=not interactive
-            )
-        elif param is not None and isinstance(param, str):
-            network_context = networks.parse_network_choice(param)
-        elif param is None:
-            ecosystem = networks.default_ecosystem
-            network = ecosystem.default_network
-            if provider_name := network.default_provider_name:
-                network_context = network.use_provider(provider_name)
-            else:
-                raise NetworkError(f"Network {network.name} has no providers.")
-        else:
-            raise TypeError(f"Unknown type for network choice: '{param}'.")
-
-        with network_context:
+        with parse_network(ctx):
             if self.callback is not None:
                 opt_name = "network"
                 param = ctx.params.pop(opt_name, None)
