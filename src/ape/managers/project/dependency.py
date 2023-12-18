@@ -6,13 +6,19 @@ from pathlib import Path
 from typing import Dict, Iterable, List, Optional, Type
 
 from ethpm_types import PackageManifest
+from packaging.version import Version
 from pydantic import AnyUrl, FileUrl, HttpUrl, model_validator
-from semantic_version import NpmSpec, Version  # type: ignore
 
 from ape.api import DependencyAPI
 from ape.exceptions import ProjectError, UnknownVersionError
 from ape.logging import logger
-from ape.utils import ManagerAccessMixin, cached_property, github_client, load_config
+from ape.utils import (
+    ManagerAccessMixin,
+    cached_property,
+    get_npm_version_from_spec,
+    github_client,
+    load_config,
+)
 
 
 class DependencyManager(ManagerAccessMixin):
@@ -338,7 +344,7 @@ class NpmDependency(DependencyAPI):
                 if not other_version:
                     continue
 
-                semver = NpmSpec(other_version)
+                semver = get_npm_version_from_spec(other_version)
                 if other_version and not semver.match(Version(version_from_config)):
                     raise ProjectError(
                         f"Version mismatch for {self.npm}. Is {self.version} in ape config "

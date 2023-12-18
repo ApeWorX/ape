@@ -13,6 +13,7 @@ from eth_pydantic_types import HexBytes
 from eth_utils import is_0x_prefixed
 from importlib_metadata import PackageNotFoundError, distributions, packages_distributions
 from importlib_metadata import version as version_metadata
+from packaging.specifiers import SpecifierSet
 from tqdm.auto import tqdm  # type: ignore
 
 from ape.exceptions import APINotImplementedError, ProviderNotConnectedError
@@ -60,6 +61,23 @@ def _get_distributions(pkg_name: str) -> List:
                 distros.append(dist)
 
     return distros
+
+
+def get_npm_version_from_spec(spec: str) -> SpecifierSet:
+    """
+    Get the version from a NPM version specifier.
+
+    Args:
+        spec (str): A string version specifier.
+
+    Returns:
+        SpecifierSet: The NPM version specifier.
+    """
+    pragma_str = " ".join(spec.split()).replace("^", "~=")
+    if pragma_str and pragma_str[0].isnumeric():
+        pragma_str = f"=={pragma_str}"
+
+    return SpecifierSet(pragma_str)
 
 
 def get_package_version(obj: Any) -> str:
@@ -432,6 +450,7 @@ __all__ = [
     "extract_nested_value",
     "gas_estimation_error_message",
     "get_current_timestamp_ms",
+    "get_npm_version_from_spec",
     "get_package_version",
     "is_evm_precompile",
     "is_zero_hex",
