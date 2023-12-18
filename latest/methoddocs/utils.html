@@ -241,6 +241,7 @@
 <li class="toctree-l2"><a class="reference internal" href="#ape.utils.is_struct"><code class="docutils literal notranslate"><span class="pre">is_struct()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#ape.utils.is_zero_hex"><code class="docutils literal notranslate"><span class="pre">is_zero_hex()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#ape.utils.load_config"><code class="docutils literal notranslate"><span class="pre">load_config()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#ape.utils.pragma_str_to_specifier_set"><code class="docutils literal notranslate"><span class="pre">pragma_str_to_specifier_set()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#ape.utils.raises_not_implemented"><code class="docutils literal notranslate"><span class="pre">raises_not_implemented()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#ape.utils.returns_array"><code class="docutils literal notranslate"><span class="pre">returns_array()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#ape.utils.run_until_complete"><code class="docutils literal notranslate"><span class="pre">run_until_complete()</span></code></a></li>
@@ -931,6 +932,21 @@ and is able to be load.</p></li>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>Dict (dict)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ape.utils.pragma_str_to_specifier_set">
+<span class="sig-prename descclassname"><span class="pre">ape.utils.</span></span><span class="sig-name descname"><span class="pre">pragma_str_to_specifier_set</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pragma_str</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">SpecifierSet</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></span><a class="headerlink" href="#ape.utils.pragma_str_to_specifier_set" title="Permalink to this definition"></a></dt>
+<dd><p>Convert the given pragma str to a <code class="docutils literal notranslate"><span class="pre">packaging.version.SpecifierSet</span></code>
+if possible.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>pragma_str</strong> (<em>str</em>) – The str to convert.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">Optional[packaging.version.SpecifierSet]</span></code></p>
 </dd>
 </dl>
 </dd></dl>
