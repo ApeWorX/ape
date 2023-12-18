@@ -532,7 +532,7 @@ and are treated as singletons.</p>
 <dd><p>Determine if the given address matches an account in <code class="docutils literal notranslate"><span class="pre">ape</span></code>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>address</strong> (<code class="docutils literal notranslate"><span class="pre">AddressType</span></code>) – The address to check.</p>
+<dd class="field-odd"><p><strong>address</strong> (<a class="reference internal" href="types.html#ape.types.address.AddressType" title="ape.types.address.AddressType"><code class="xref py py-class docutils literal notranslate"><span class="pre">AddressType</span></code></a>) – The address to check.</p>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">True</span></code> when the given address is found.</p>
@@ -693,7 +693,10 @@ the <code class="xref py py-meth docutils literal notranslate"><span class="pre"
 <dd class="field-odd"><p><strong>filename</strong> (<em>str</em>) – The file to check.</p>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>bool</p>
+<dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">True</span></code> when the source is traceable.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>bool</p>
 </dd>
 </dl>
 </dd></dl>
@@ -707,13 +710,12 @@ to compile <code class="docutils literal notranslate"><span class="pre">'.sol'</
 <dl class="field-list simple">
 <dt class="field-odd">Raises<span class="colon">:</span></dt>
 <dd class="field-odd"><p><a class="reference internal" href="exceptions.html#ape.exceptions.CompilerError" title="ape.exceptions.CompilerError"><strong>CompilerError</strong></a> – When there is no compiler found for the given
-    extension as well as when there is a contract-type collision across compilers.</p>
+    file-extension as well as when there are contract-type collisions across compilers.</p>
 </dd>
 <dt class="field-even">Parameters<span class="colon">:</span></dt>
 <dd class="field-even"><ul class="simple">
-<li><p><strong>contract_filepaths</strong> (<em>Sequence</em><em>[</em><em>Union</em><em>[</em><em>pathlib.Path</em><em>]</em><em>, </em><em>str</em><em>]</em>) – The list of files to compile,
-as <code class="docutils literal notranslate"><span class="pre">pathlib.Path</span></code> objects. You can also pass a list of <cite>str</cite> that will
-automatically get turned to <code class="docutils literal notranslate"><span class="pre">pathlib.Path</span></code> objects.</p></li>
+<li><p><strong>contract_filepaths</strong> (<em>Sequence</em><em>[</em><em>Union</em><em>[</em><em>pathlib.Path</em><em>]</em><em>, </em><em>str</em><em>]</em>) – The files to compile,
+as <code class="docutils literal notranslate"><span class="pre">pathlib.Path</span></code> objects or path-strs.</p></li>
 <li><p><strong>settings</strong> (<em>Optional</em><em>[</em><em>Dict</em><em>]</em>) – Adhoc compiler settings. Defaults to None.
 Ensure the compiler name key is present in the dict for it to work.</p></li>
 </ul>
@@ -746,7 +748,7 @@ Ensure the compiler name key is present in the dict for it to work.</p></li>
 <li><p><strong>compiler_name</strong> (<em>str</em>) – The name of the compiler to use.</p></li>
 <li><p><strong>code</strong> (<em>str</em>) – The source code to compile.</p></li>
 <li><p><strong>settings</strong> (<em>Optional</em><em>[</em><em>Dict</em><em>]</em>) – Compiler settings.</p></li>
-<li><p><strong>**kwargs</strong> – Additional overrides for the <code class="docutils literal notranslate"><span class="pre">ethpm_types.ContractType</span></code> model.</p></li>
+<li><p><strong>**kwargs</strong> (<em>Any</em>) – Additional overrides for the <code class="docutils literal notranslate"><span class="pre">ethpm_types.ContractType</span></code> model.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
@@ -762,7 +764,7 @@ Ensure the compiler name key is present in the dict for it to work.</p></li>
 <dt class="sig sig-object py" id="ape.managers.compilers.CompilerManager.enrich_error">
 <span class="sig-name descname"><span class="pre">enrich_error</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">err</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="exceptions.html#ape.exceptions.ContractLogicError" title="ape.exceptions.ContractLogicError"><span class="pre">ContractLogicError</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="exceptions.html#ape.exceptions.ContractLogicError" title="ape.exceptions.ContractLogicError"><span class="pre">ContractLogicError</span></a></span></span><a class="headerlink" href="#ape.managers.compilers.CompilerManager.enrich_error" title="Permalink to this definition"></a></dt>
 <dd><p>Enrich a contract logic error using compiler information, such
-known PC locations for compiler runtime errors, such as math errors.</p>
+known PC locations for compiler runtime errors.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>err</strong> (<a class="reference internal" href="exceptions.html#ape.exceptions.ContractLogicError" title="ape.exceptions.ContractLogicError"><code class="xref py py-class docutils literal notranslate"><span class="pre">ContractLogicError</span></code></a>) – The exception
@@ -1147,7 +1149,7 @@ the blueprint.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>address</strong> (<code class="docutils literal notranslate"><span class="pre">AddressType</span></code>) – The address of the contract.</p></li>
+<li><p><strong>address</strong> (<a class="reference internal" href="types.html#ape.types.address.AddressType" title="ape.types.address.AddressType"><code class="xref py py-class docutils literal notranslate"><span class="pre">AddressType</span></code></a>) – The address of the contract.</p></li>
 <li><p><strong>start_block</strong> (<em>int</em>) – The block to start looking from.</p></li>
 <li><p><strong>stop_block</strong> (<em>Optional</em><em>[</em><em>int</em><em>]</em>) – The block to stop looking at.</p></li>
 </ul>
@@ -1785,11 +1787,12 @@ mapping of field names to [<cite>FieldInfo</cite>][pydantic.fields.FieldInfo].</
 <dl class="py class">
 <dt class="sig sig-object py" id="ape.managers.converters.AddressAPIConverter">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ape.managers.converters.</span></span><span class="sig-name descname"><span class="pre">AddressAPIConverter</span></span><a class="headerlink" href="#ape.managers.converters.AddressAPIConverter" title="Permalink to this definition"></a></dt>
-<dd><p>A converter that converts an <a class="reference internal" href="api.html#ape.api.address.BaseAddress" title="ape.api.address.BaseAddress"><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseAddress</span></code></a> to a <code class="docutils literal notranslate"><span class="pre">AddressType</span></code>.</p>
+<dd><p>A converter that converts an <a class="reference internal" href="api.html#ape.api.address.BaseAddress" title="ape.api.address.BaseAddress"><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseAddress</span></code></a>
+to a :class`~ape.types.address.AddressType`.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="ape.managers.converters.AddressAPIConverter.convert">
 <span class="sig-name descname"><span class="pre">convert</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="api.html#ape.api.address.BaseAddress" title="ape.api.address.BaseAddress"><span class="pre">BaseAddress</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ChecksumAddress</span></span></span><a class="headerlink" href="#ape.managers.converters.AddressAPIConverter.convert" title="Permalink to this definition"></a></dt>
-<dd><p>Convert the given value to <code class="docutils literal notranslate"><span class="pre">AddressType</span></code>.</p>
+<dd><p>Convert the given value to <a class="reference internal" href="types.html#ape.types.address.AddressType" title="ape.types.address.AddressType"><code class="xref py py-class docutils literal notranslate"><span class="pre">AddressType</span></code></a>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>value</strong> (<em>str</em>) – The value to convert.</p>
@@ -1799,7 +1802,7 @@ mapping of field names to [<cite>FieldInfo</cite>][pydantic.fields.FieldInfo].</
 <a class="reference external" href="https://eth-typing.readthedocs.io/en/latest/types.html#checksumaddress">ChecksumAddress</a>.  # noqa: E501</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">AddressType</span></code></p>
+<dd class="field-odd"><p><a class="reference internal" href="types.html#ape.types.address.AddressType" title="ape.types.address.AddressType"><code class="xref py py-class docutils literal notranslate"><span class="pre">AddressType</span></code></a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -1811,7 +1814,7 @@ mapping of field names to [<cite>FieldInfo</cite>][pydantic.fields.FieldInfo].</
 <a class="reference internal" href="api.html#ape.api.convert.ConverterAPI.convert" title="ape.api.convert.ConverterAPI.convert"><code class="xref py py-meth docutils literal notranslate"><span class="pre">ape.api.convert.ConverterAPI.convert()</span></code></a>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>value</strong> (<em>str</em>) – The value to check.</p>
+<dd class="field-odd"><p><strong>value</strong> (<em>Any</em>) – The value to check.</p>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">True</span></code> when the given value can be converted.</p>
@@ -1841,7 +1844,7 @@ mapping of field names to [<cite>FieldInfo</cite>][pydantic.fields.FieldInfo].</
 <dl class="py class">
 <dt class="sig sig-object py" id="ape.managers.converters.BytesAddressConverter">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ape.managers.converters.</span></span><span class="sig-name descname"><span class="pre">BytesAddressConverter</span></span><a class="headerlink" href="#ape.managers.converters.BytesAddressConverter" title="Permalink to this definition"></a></dt>
-<dd><p>A converter that converts a raw bytes address to an <code class="docutils literal notranslate"><span class="pre">AddressType</span></code>.</p>
+<dd><p>A converter that converts a raw bytes address to an <a class="reference internal" href="types.html#ape.types.address.AddressType" title="ape.types.address.AddressType"><code class="xref py py-class docutils literal notranslate"><span class="pre">AddressType</span></code></a>.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="ape.managers.converters.BytesAddressConverter.convert">
 <span class="sig-name descname"><span class="pre">convert</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bytes</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ChecksumAddress</span></span></span><a class="headerlink" href="#ape.managers.converters.BytesAddressConverter.convert" title="Permalink to this definition"></a></dt>
@@ -1857,7 +1860,7 @@ when the item fails to convert properly.</p>
 <a class="reference internal" href="api.html#ape.api.convert.ConverterAPI.convert" title="ape.api.convert.ConverterAPI.convert"><code class="xref py py-meth docutils literal notranslate"><span class="pre">ape.api.convert.ConverterAPI.convert()</span></code></a>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>value</strong> (<em>str</em>) – The value to check.</p>
+<dd class="field-odd"><p><strong>value</strong> (<em>Any</em>) – The value to check.</p>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">True</span></code> when the given value can be converted.</p>
@@ -1927,7 +1930,7 @@ all <a class="reference internal" href="api.html#ape.api.convert.ConverterAPI" t
 <dt class="sig sig-object py" id="ape.managers.converters.ConversionManager.is_type">
 <span class="sig-name descname"><span class="pre">is_type</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Type</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="headerlink" href="#ape.managers.converters.ConversionManager.is_type" title="Permalink to this definition"></a></dt>
 <dd><p>Check if the value is the given type.
-If given an <code class="docutils literal notranslate"><span class="pre">AddressType</span></code>, will also check
+If given an <a class="reference internal" href="types.html#ape.types.address.AddressType" title="ape.types.address.AddressType"><code class="xref py py-class docutils literal notranslate"><span class="pre">AddressType</span></code></a>, will also check
 that it is checksummed.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -1950,17 +1953,18 @@ that it is checksummed.</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="ape.managers.converters.HexAddressConverter">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ape.managers.converters.</span></span><span class="sig-name descname"><span class="pre">HexAddressConverter</span></span><a class="headerlink" href="#ape.managers.converters.HexAddressConverter" title="Permalink to this definition"></a></dt>
-<dd><p>A converter that converts a checksummed address <code class="docutils literal notranslate"><span class="pre">str</span></code> to a <code class="docutils literal notranslate"><span class="pre">AddressType</span></code>.</p>
+<dd><p>A converter that converts a checksummed address <code class="docutils literal notranslate"><span class="pre">str</span></code> to a
+<a class="reference internal" href="types.html#ape.types.address.AddressType" title="ape.types.address.AddressType"><code class="xref py py-class docutils literal notranslate"><span class="pre">AddressType</span></code></a>.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="ape.managers.converters.HexAddressConverter.convert">
 <span class="sig-name descname"><span class="pre">convert</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ChecksumAddress</span></span></span><a class="headerlink" href="#ape.managers.converters.HexAddressConverter.convert" title="Permalink to this definition"></a></dt>
-<dd><p>Convert the given value to a <code class="docutils literal notranslate"><span class="pre">AddressType</span></code>.</p>
+<dd><p>Convert the given value to a <a class="reference internal" href="types.html#ape.types.address.AddressType" title="ape.types.address.AddressType"><code class="xref py py-class docutils literal notranslate"><span class="pre">AddressType</span></code></a>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>value</strong> (<em>str</em>) – The address <code class="docutils literal notranslate"><span class="pre">str</span></code> to convert.</p>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">AddressType</span></code></p>
+<dd class="field-even"><p><a class="reference internal" href="types.html#ape.types.address.AddressType" title="ape.types.address.AddressType"><code class="xref py py-class docutils literal notranslate"><span class="pre">AddressType</span></code></a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -1972,7 +1976,7 @@ that it is checksummed.</p>
 <a class="reference internal" href="api.html#ape.api.convert.ConverterAPI.convert" title="ape.api.convert.ConverterAPI.convert"><code class="xref py py-meth docutils literal notranslate"><span class="pre">ape.api.convert.ConverterAPI.convert()</span></code></a>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>value</strong> (<em>str</em>) – The value to check.</p>
+<dd class="field-odd"><p><strong>value</strong> (<em>Any</em>) – The value to check.</p>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">True</span></code> when the given value can be converted.</p>
@@ -2024,7 +2028,7 @@ mapping of field names to [<cite>FieldInfo</cite>][pydantic.fields.FieldInfo].</
 <a class="reference internal" href="api.html#ape.api.convert.ConverterAPI.convert" title="ape.api.convert.ConverterAPI.convert"><code class="xref py py-meth docutils literal notranslate"><span class="pre">ape.api.convert.ConverterAPI.convert()</span></code></a>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>value</strong> (<em>str</em>) – The value to check.</p>
+<dd class="field-odd"><p><strong>value</strong> (<em>Any</em>) – The value to check.</p>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">True</span></code> when the given value can be converted.</p>
@@ -2071,7 +2075,7 @@ when the item fails to convert properly.</p>
 <a class="reference internal" href="api.html#ape.api.convert.ConverterAPI.convert" title="ape.api.convert.ConverterAPI.convert"><code class="xref py py-meth docutils literal notranslate"><span class="pre">ape.api.convert.ConverterAPI.convert()</span></code></a>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>value</strong> (<em>str</em>) – The value to check.</p>
+<dd class="field-odd"><p><strong>value</strong> (<em>Any</em>) – The value to check.</p>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">True</span></code> when the given value can be converted.</p>
@@ -2101,7 +2105,7 @@ mapping of field names to [<cite>FieldInfo</cite>][pydantic.fields.FieldInfo].</
 <dl class="py class">
 <dt class="sig sig-object py" id="ape.managers.converters.IntAddressConverter">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ape.managers.converters.</span></span><span class="sig-name descname"><span class="pre">IntAddressConverter</span></span><a class="headerlink" href="#ape.managers.converters.IntAddressConverter" title="Permalink to this definition"></a></dt>
-<dd><p>A converter that converts an integer address to an <code class="docutils literal notranslate"><span class="pre">AddressType</span></code>.</p>
+<dd><p>A converter that converts an integer address to an <a class="reference internal" href="types.html#ape.types.address.AddressType" title="ape.types.address.AddressType"><code class="xref py py-class docutils literal notranslate"><span class="pre">AddressType</span></code></a>.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="ape.managers.converters.IntAddressConverter.convert">
 <span class="sig-name descname"><span class="pre">convert</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ChecksumAddress</span></span></span><a class="headerlink" href="#ape.managers.converters.IntAddressConverter.convert" title="Permalink to this definition"></a></dt>
@@ -2117,7 +2121,7 @@ when the item fails to convert properly.</p>
 <a class="reference internal" href="api.html#ape.api.convert.ConverterAPI.convert" title="ape.api.convert.ConverterAPI.convert"><code class="xref py py-meth docutils literal notranslate"><span class="pre">ape.api.convert.ConverterAPI.convert()</span></code></a>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>value</strong> (<em>str</em>) – The value to check.</p>
+<dd class="field-odd"><p><strong>value</strong> (<em>Any</em>) – The value to check.</p>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">True</span></code> when the given value can be converted.</p>
@@ -2162,7 +2166,7 @@ when the item fails to convert properly.</p>
 <a class="reference internal" href="api.html#ape.api.convert.ConverterAPI.convert" title="ape.api.convert.ConverterAPI.convert"><code class="xref py py-meth docutils literal notranslate"><span class="pre">ape.api.convert.ConverterAPI.convert()</span></code></a>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>value</strong> (<em>str</em>) – The value to check.</p>
+<dd class="field-odd"><p><strong>value</strong> (<em>Any</em>) – The value to check.</p>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">True</span></code> when the given value can be converted.</p>
@@ -2209,7 +2213,7 @@ when the item fails to convert properly.</p>
 <a class="reference internal" href="api.html#ape.api.convert.ConverterAPI.convert" title="ape.api.convert.ConverterAPI.convert"><code class="xref py py-meth docutils literal notranslate"><span class="pre">ape.api.convert.ConverterAPI.convert()</span></code></a>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>value</strong> (<em>str</em>) – The value to check.</p>
+<dd class="field-odd"><p><strong>value</strong> (<em>Any</em>) – The value to check.</p>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">True</span></code> when the given value can be converted.</p>
@@ -2725,7 +2729,7 @@ scripts or tests in <code class="docutils literal notranslate"><span class="pre"
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>file_paths</strong> (<em>Optional</em><em>[</em><em>Union</em><em>[</em><em>List</em><em>[</em><a class="reference internal" href="cli.html#ape.cli.paramtype.Path" title="ape.cli.paramtype.Path"><em>Path</em></a><em>]</em><em>, </em><a class="reference internal" href="cli.html#ape.cli.paramtype.Path" title="ape.cli.paramtype.Path"><em>Path</em></a><em>]</em><em>]</em>) – Provide one or more contract file-paths to load. If excluded,
+<li><p><strong>file_paths</strong> (<em>Optional</em><em>[</em><em>Union</em><em>[</em><em>Iterable</em><em>[</em><a class="reference internal" href="cli.html#ape.cli.paramtype.Path" title="ape.cli.paramtype.Path"><em>Path</em></a><em>]</em><em>, </em><a class="reference internal" href="cli.html#ape.cli.paramtype.Path" title="ape.cli.paramtype.Path"><em>Path</em></a><em>]</em><em>]</em>) – Provide one or more contract file-paths to load. If excluded,
 will load all the contracts.</p></li>
 <li><p><strong>use_cache</strong> (<em>Optional</em><em>[</em><em>bool</em><em>]</em>) – Set to <code class="docutils literal notranslate"><span class="pre">False</span></code> to force a re-compile.
 Defaults to <code class="docutils literal notranslate"><span class="pre">True</span></code>.</p></li>

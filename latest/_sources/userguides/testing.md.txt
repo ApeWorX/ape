@@ -32,6 +32,8 @@ If the sender of the transaction is not the owner, the transaction will fail to 
 This is an example of how that test may look:
 
 ```python
+import ape
+
 def test_authorization(my_contract, owner, not_owner):
     my_contract.set_owner(sender=owner)
     assert owner == my_contract.owner()

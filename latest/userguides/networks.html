@@ -232,7 +232,7 @@ For example, the default ecosystem is <code class="docutils literal notranslate"
 <section id="configuring-networks">
 <h2>Configuring Networks<a class="headerlink" href="#configuring-networks" title="Permalink to this heading"></a></h2>
 <p>Change network defaults using your project’s <code class="docutils literal notranslate"><span class="pre">ape-config.yaml</span></code> file.
-The following configuration changes the default ecosystem, network, and provider such that if you omitted the <code class="docutils literal notranslate"><span class="pre">--network</span></code> option on network-bound commands, it would use the value <code class="docutils literal notranslate"><span class="pre">&lt;ecosystem-name&gt;:&lt;network-name&gt;:&lt;provider-name&gt;</span></code>.</p>
+The following configuration changes the default ecosystem, network, and provider such that if you omitted the <code class="docutils literal notranslate"><span class="pre">--network</span></code> option on connected-provider commands, it would use the value <code class="docutils literal notranslate"><span class="pre">&lt;ecosystem-name&gt;:&lt;network-name&gt;:&lt;provider-name&gt;</span></code>.</p>
 <div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">default_ecosystem</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">&lt;ecosystem-name&gt;</span>
 
 <span class="nt">&lt;ecosystem-name&gt;</span><span class="p">:</span>
@@ -254,7 +254,7 @@ The following configuration changes the default ecosystem, network, and provider
 <li><p><code class="docutils literal notranslate"><span class="pre">&quot;max&quot;</span></code> - the maximum block gas limit is used</p></li>
 <li><p>A number or numeric string, base 10 or 16 (e.g. <code class="docutils literal notranslate"><span class="pre">1234</span></code>, <code class="docutils literal notranslate"><span class="pre">&quot;1234&quot;</span></code>, <code class="docutils literal notranslate"><span class="pre">0x1234</span></code>, <code class="docutils literal notranslate"><span class="pre">&quot;0x1234&quot;</span></code>)</p></li>
 </ul>
-<p>For the local network configuration, the default is <code class="docutils literal notranslate"><span class="pre">&quot;max&quot;</span></code>. Otherwise it is <code class="docutils literal notranslate"><span class="pre">&quot;auto&quot;</span></code>.</p>
+<p>For the local network configuration, the default is <code class="docutils literal notranslate"><span class="pre">&quot;max&quot;</span></code>. Otherwise, it is <code class="docutils literal notranslate"><span class="pre">&quot;auto&quot;</span></code>.</p>
 </section>
 <section id="local-network">
 <h2>Local Network<a class="headerlink" href="#local-network" title="Permalink to this heading"></a></h2>

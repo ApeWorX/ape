@@ -169,6 +169,22 @@
 <li class="toctree-l1"><a class="reference internal" href="managers.html">ape.managers</a></li>
 <li class="toctree-l1"><a class="reference internal" href="plugins.html">ape.plugins</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">ape.types</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#module-ape.types.address">Address</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#ape.types.address.AddressType"><code class="docutils literal notranslate"><span class="pre">AddressType</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#ape.types.address.RawAddress"><code class="docutils literal notranslate"><span class="pre">RawAddress</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#module-ape.types.signatures">Signatures</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#ape.types.signatures.MessageSignature"><code class="docutils literal notranslate"><span class="pre">MessageSignature</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#ape.types.signatures.SignableMessage"><code class="docutils literal notranslate"><span class="pre">SignableMessage</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#ape.types.signatures.SignableMessage.body"><code class="docutils literal notranslate"><span class="pre">SignableMessage.body</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ape.types.signatures.SignableMessage.header"><code class="docutils literal notranslate"><span class="pre">SignableMessage.header</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ape.types.signatures.SignableMessage.version"><code class="docutils literal notranslate"><span class="pre">SignableMessage.version</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#ape.types.signatures.TransactionSignature"><code class="docutils literal notranslate"><span class="pre">TransactionSignature</span></code></a></li>
+</ul>
+</li>
 <li class="toctree-l2"><a class="reference internal" href="#module-ape.types">Miscellaneous</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#ape.types.BaseContractLog"><code class="docutils literal notranslate"><span class="pre">BaseContractLog</span></code></a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#ape.types.BaseContractLog.contract_address"><code class="docutils literal notranslate"><span class="pre">BaseContractLog.contract_address</span></code></a></li>
@@ -195,17 +211,6 @@
 <li class="toctree-l4"><a class="reference internal" href="#ape.types.MockContractLog.model_fields"><code class="docutils literal notranslate"><span class="pre">MockContractLog.model_fields</span></code></a></li>
 </ul>
 </li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="#module-ape.types.signatures">Signatures</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#ape.types.signatures.MessageSignature"><code class="docutils literal notranslate"><span class="pre">MessageSignature</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="#ape.types.signatures.SignableMessage"><code class="docutils literal notranslate"><span class="pre">SignableMessage</span></code></a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#ape.types.signatures.SignableMessage.body"><code class="docutils literal notranslate"><span class="pre">SignableMessage.body</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#ape.types.signatures.SignableMessage.header"><code class="docutils literal notranslate"><span class="pre">SignableMessage.header</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#ape.types.signatures.SignableMessage.version"><code class="docutils literal notranslate"><span class="pre">SignableMessage.version</span></code></a></li>
-</ul>
-</li>
-<li class="toctree-l3"><a class="reference internal" href="#ape.types.signatures.TransactionSignature"><code class="docutils literal notranslate"><span class="pre">TransactionSignature</span></code></a></li>
 </ul>
 </li>
 </ul>
@@ -239,6 +244,78 @@
              
   <section id="ape-types">
 <h1>ape.types<a class="headerlink" href="#ape-types" title="Permalink to this heading"></a></h1>
+<section id="module-ape.types.address">
+<span id="address"></span><h2>Address<a class="headerlink" href="#module-ape.types.address" title="Permalink to this heading"></a></h2>
+<dl class="py data">
+<dt class="sig sig-object py" id="ape.types.address.AddressType">
+<span class="sig-prename descclassname"><span class="pre">ape.types.address.</span></span><span class="sig-name descname"><span class="pre">AddressType</span></span><a class="headerlink" href="#ape.types.address.AddressType" title="Permalink to this definition"></a></dt>
+<dd><p>“A checksum address in Ape.”</p>
+<p>alias of <code class="xref py py-class docutils literal notranslate"><span class="pre">ChecksumAddress</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">ChecksumAddress</span></code>]</p>
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="ape.types.address.RawAddress">
+<span class="sig-prename descclassname"><span class="pre">ape.types.address.</span></span><span class="sig-name descname"><span class="pre">RawAddress</span></span><a class="headerlink" href="#ape.types.address.RawAddress" title="Permalink to this definition"></a></dt>
+<dd><p>A raw data-type representation of an address.</p>
+<p>alias of <code class="xref py py-obj docutils literal notranslate"><span class="pre">Union</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">HashStr20</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">HashBytes20</span></code>]</p>
+</dd></dl>
+
+</section>
+<section id="module-ape.types.signatures">
+<span id="signatures"></span><h2>Signatures<a class="headerlink" href="#module-ape.types.signatures" title="Permalink to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="ape.types.signatures.MessageSignature">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ape.types.signatures.</span></span><span class="sig-name descname"><span class="pre">MessageSignature</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">v</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">r</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bytes</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">s</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bytes</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.types.signatures.MessageSignature" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">_Signature</span></code></p>
+<p>A ECDSA signature (vrs) of a message.</p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ape.types.signatures.SignableMessage">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ape.types.signatures.</span></span><span class="sig-name descname"><span class="pre">SignableMessage</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">version</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bytes</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">header</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bytes</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">body</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bytes</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.types.signatures.SignableMessage" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">NamedTuple</span></code></p>
+<p>A message compatible with <a class="reference external" href="https://eips.ethereum.org/EIPS/eip-191">EIP-191</a> that is ready to be signed.</p>
+<p>The properties are components of an <a class="reference external" href="https://eips.ethereum.org/EIPS/eip-191">EIP-191</a> signable message. Other message formats
+can be encoded into this format for easy signing. This data structure doesn’t need
+to know about the original message format. For example, you can think of
+EIP-712 as compiling down to an EIP-191 message.</p>
+<p>In typical usage, you should never need to create these by hand. Instead, use
+one of the available encode_* methods in this module, like:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p><code class="xref py py-meth docutils literal notranslate"><span class="pre">encode_structured_data()</span></code></p></li>
+<li><p><code class="xref py py-meth docutils literal notranslate"><span class="pre">encode_intended_validator()</span></code></p></li>
+<li><p><code class="xref py py-meth docutils literal notranslate"><span class="pre">encode_defunct()</span></code></p></li>
+</ul>
+</div></blockquote>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ape.types.signatures.SignableMessage.body">
+<span class="sig-name descname"><span class="pre">body</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bytes</span></em><a class="headerlink" href="#ape.types.signatures.SignableMessage.body" title="Permalink to this definition"></a></dt>
+<dd><p>Alias for field number 2</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ape.types.signatures.SignableMessage.header">
+<span class="sig-name descname"><span class="pre">header</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bytes</span></em><a class="headerlink" href="#ape.types.signatures.SignableMessage.header" title="Permalink to this definition"></a></dt>
+<dd><p>Alias for field number 1</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ape.types.signatures.SignableMessage.version">
+<span class="sig-name descname"><span class="pre">version</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bytes</span></em><a class="headerlink" href="#ape.types.signatures.SignableMessage.version" title="Permalink to this definition"></a></dt>
+<dd><p>Alias for field number 0</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ape.types.signatures.TransactionSignature">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ape.types.signatures.</span></span><span class="sig-name descname"><span class="pre">TransactionSignature</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">v</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">r</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bytes</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">s</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bytes</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.types.signatures.TransactionSignature" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">_Signature</span></code></p>
+<p>A ECDSA signature (vrs) of a transaction.</p>
+</dd></dl>
+
+</section>
 <section id="module-ape.types">
 <span id="miscellaneous"></span><h2>Miscellaneous<a class="headerlink" href="#module-ape.types" title="Permalink to this heading"></a></h2>
 <dl class="py class">
@@ -368,61 +445,6 @@ mapping of field names to [<cite>FieldInfo</cite>][pydantic.fields.FieldInfo].</
 <p>This replaces <cite>Model.__fields__</cite> from Pydantic V1.</p>
 </dd></dl>
 
-</dd></dl>
-
-</section>
-<section id="module-ape.types.signatures">
-<span id="signatures"></span><h2>Signatures<a class="headerlink" href="#module-ape.types.signatures" title="Permalink to this heading"></a></h2>
-<dl class="py class">
-<dt class="sig sig-object py" id="ape.types.signatures.MessageSignature">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ape.types.signatures.</span></span><span class="sig-name descname"><span class="pre">MessageSignature</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">v</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">r</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bytes</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">s</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bytes</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.types.signatures.MessageSignature" title="Permalink to this definition"></a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">_Signature</span></code></p>
-<p>A ECDSA signature (vrs) of a message.</p>
-</dd></dl>
-
-<dl class="py class">
-<dt class="sig sig-object py" id="ape.types.signatures.SignableMessage">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ape.types.signatures.</span></span><span class="sig-name descname"><span class="pre">SignableMessage</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">version</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bytes</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">header</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bytes</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">body</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bytes</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.types.signatures.SignableMessage" title="Permalink to this definition"></a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">NamedTuple</span></code></p>
-<p>A message compatible with <a class="reference external" href="https://eips.ethereum.org/EIPS/eip-191">EIP-191</a> that is ready to be signed.</p>
-<p>The properties are components of an <a class="reference external" href="https://eips.ethereum.org/EIPS/eip-191">EIP-191</a> signable message. Other message formats
-can be encoded into this format for easy signing. This data structure doesn’t need
-to know about the original message format. For example, you can think of
-EIP-712 as compiling down to an EIP-191 message.</p>
-<p>In typical usage, you should never need to create these by hand. Instead, use
-one of the available encode_* methods in this module, like:</p>
-<blockquote>
-<div><ul class="simple">
-<li><p><code class="xref py py-meth docutils literal notranslate"><span class="pre">encode_structured_data()</span></code></p></li>
-<li><p><code class="xref py py-meth docutils literal notranslate"><span class="pre">encode_intended_validator()</span></code></p></li>
-<li><p><code class="xref py py-meth docutils literal notranslate"><span class="pre">encode_defunct()</span></code></p></li>
-</ul>
-</div></blockquote>
-<dl class="py attribute">
-<dt class="sig sig-object py" id="ape.types.signatures.SignableMessage.body">
-<span class="sig-name descname"><span class="pre">body</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bytes</span></em><a class="headerlink" href="#ape.types.signatures.SignableMessage.body" title="Permalink to this definition"></a></dt>
-<dd><p>Alias for field number 2</p>
-</dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="ape.types.signatures.SignableMessage.header">
-<span class="sig-name descname"><span class="pre">header</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bytes</span></em><a class="headerlink" href="#ape.types.signatures.SignableMessage.header" title="Permalink to this definition"></a></dt>
-<dd><p>Alias for field number 1</p>
-</dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="ape.types.signatures.SignableMessage.version">
-<span class="sig-name descname"><span class="pre">version</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bytes</span></em><a class="headerlink" href="#ape.types.signatures.SignableMessage.version" title="Permalink to this definition"></a></dt>
-<dd><p>Alias for field number 0</p>
-</dd></dl>
-
-</dd></dl>
-
-<dl class="py class">
-<dt class="sig sig-object py" id="ape.types.signatures.TransactionSignature">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ape.types.signatures.</span></span><span class="sig-name descname"><span class="pre">TransactionSignature</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">v</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">r</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bytes</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">s</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bytes</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.types.signatures.TransactionSignature" title="Permalink to this definition"></a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">_Signature</span></code></p>
-<p>A ECDSA signature (vrs) of a transaction.</p>
 </dd></dl>
 
 </section>

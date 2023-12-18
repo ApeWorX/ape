@@ -130,6 +130,9 @@
 <li class="toctree-l1"><a class="reference internal" href="quickstart.html">Overview</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Accounts</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#test-accounts">Test Accounts</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#use-test-accounts-in-tests">Use test accounts in tests</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#use-test-accounts-outside-of-tests">Use test accounts outside of tests</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#creating-new-test-accounts">Creating new test accounts</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#default-sender-support">Default Sender Support</a></li>
 </ul>
 </li>
@@ -138,7 +141,6 @@
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="#automation">Automation</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#keyfile-passphrase-environment-variable-more-secure">Keyfile Passphrase Environment Variable (more secure)</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#hardware-wallets">Hardware Wallets</a></li>
 </ul>
 </li>
@@ -222,13 +224,18 @@ Live network accounts are for interacting with live blockchains and should be se
 <p>To learn more about Ethereum accounts, see <a class="reference external" href="https://ethereum.org/en/developers/docs/accounts/">the Ethereum documentation</a>.</p>
 <section id="test-accounts">
 <h2>Test Accounts<a class="headerlink" href="#test-accounts" title="Permalink to this heading"></a></h2>
-<p>Ape ships with pytest fixtures to assist in writing your tests.
-Pre-funded test accounts are accessible via the <a class="reference external" href="./testing.html#accounts-fixture">accounts fixture</a>.</p>
+<p>Ape ships with pytest fixtures to assist in writing your tests.</p>
+<section id="use-test-accounts-in-tests">
+<h3>Use test accounts in tests<a class="headerlink" href="#use-test-accounts-in-tests" title="Permalink to this heading"></a></h3>
+<p>Pre-funded test accounts are accessible via the <a class="reference external" href="./testing.html#accounts-fixture">accounts fixture</a>.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">test_my_contract_method</span><span class="p">(</span><span class="n">accounts</span><span class="p">):</span>
     <span class="n">sender</span> <span class="o">=</span> <span class="n">accounts</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
     <span class="o">...</span>
 </pre></div>
 </div>
+</section>
+<section id="use-test-accounts-outside-of-tests">
+<h3>Use test accounts outside of tests<a class="headerlink" href="#use-test-accounts-outside-of-tests" title="Permalink to this heading"></a></h3>
 <p>To access the same prefunded accounts in your scripts or console, use the root <code class="docutils literal notranslate"><span class="pre">accounts</span></code> object and the <a class="reference external" href="../methoddocs/managers.html#ape.managers.accounts.AccountManager.test_accounts">test_accounts</a> property:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">ape</span> <span class="kn">import</span> <span class="n">accounts</span>
 
@@ -243,8 +250,13 @@ Pre-funded test accounts are accessible via the <a class="reference external" hr
 </div>
 <p><strong>WARN</strong>: NEVER put a seed phrase with real funds here.
 The accounts generated from this seed are solely for testing and debugging purposes.</p>
+</section>
+<section id="creating-new-test-accounts">
+<h3>Creating new test accounts<a class="headerlink" href="#creating-new-test-accounts" title="Permalink to this heading"></a></h3>
 <p>You can create a new test account by doing the following:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">account</span> <span class="o">=</span> <span class="n">accounts</span><span class="o">.</span><span class="n">test_accounts</span><span class="o">.</span><span class="n">generate_test_account</span><span class="p">()</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">ape</span> <span class="kn">import</span> <span class="n">accounts</span>
+
+<span class="n">account</span> <span class="o">=</span> <span class="n">accounts</span><span class="o">.</span><span class="n">test_accounts</span><span class="o">.</span><span class="n">generate_test_account</span><span class="p">()</span>
 </pre></div>
 </div>
 <p><strong>NOTE</strong>: Creating a new test account means it will be unfunded by default.</p>
@@ -253,6 +265,7 @@ The accounts generated from this seed are solely for testing and debugging purpo
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">account</span><span class="o">.</span><span class="n">balance</span> <span class="o">+=</span> <span class="nb">int</span><span class="p">(</span><span class="mf">1e18</span><span class="p">)</span>  <span class="c1"># Gives `account` 1 Ether</span>
 </pre></div>
 </div>
+</section>
 <section id="default-sender-support">
 <h3>Default Sender Support<a class="headerlink" href="#default-sender-support" title="Permalink to this heading"></a></h3>
 <p>In order to eliminate the usage of sender in contract calls, you can use <code class="docutils literal notranslate"><span class="pre">use_sender</span></code> context manager.</p>
@@ -272,60 +285,60 @@ The accounts generated from this seed are solely for testing and debugging purpo
 <h2>Live Network Accounts<a class="headerlink" href="#live-network-accounts" title="Permalink to this heading"></a></h2>
 <p>When using live networks, you need to get your accounts into Ape.
 Ape ships with a keyfile accounts plugin to assist with this.
-All the available CLI commands for this accounts plugin can be found <a class="reference external" href="../commands/accounts.html">here</a>.</p>
+All the available CLI commands for this account’s plugin can be found <a class="reference external" href="../commands/accounts.html">here</a>.</p>
 <p>For example, you can <a class="reference external" href="../commands/accounts.html#accounts-generate">generate</a> an account:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>ape<span class="w"> </span>accounts<span class="w"> </span>generate<span class="w"> </span>&lt;ALIAS&gt;
 </pre></div>
 </div>
-<p>Ape will prompt you for entropy which is used to increase randomness when creating your account.</p>
-<p>Ape will then prompt you whether you want to show your mnemonic.</p>
-<p>If you do not want to see your mnemonic you can select <code class="docutils literal notranslate"><span class="pre">n</span></code>.</p>
-<p>Alternatively you can use the <code class="docutils literal notranslate"><span class="pre">--hide-mnemonic</span></code> option to skip the prompt.</p>
+<p>Ape will prompt you for entropy which is used to increase randomness when creating your account.
+Ape will then prompt you whether you want to show your mnemonic.
+If you do not want to see your mnemonic you can select <code class="docutils literal notranslate"><span class="pre">n</span></code>.
+Alternatively, you can use the <code class="docutils literal notranslate"><span class="pre">--hide-mnemonic</span></code> option to skip the prompt.</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>ape<span class="w"> </span>accounts<span class="w"> </span>generate<span class="w"> </span>&lt;ALIAS&gt;<span class="w"> </span>--hide-mnemonic
 </pre></div>
 </div>
-<p>If you elected to show your mnemonic Ape will then show you your newly generated mnemonic.</p>
-<p>Ape will then prompt you for a passphrase which you will need to enter twice to confirm.</p>
-<p>This passphrase is used to encrypt your account on disk, for extra security.</p>
-<p>You will be prompted for it each time you load your account, so make sure to remember it.</p>
-<p>After entering the passphrase Ape will then show you your new account address, HDPath, and account alias.</p>
-<p>If you want to use a custom HDPath, use the <code class="docutils literal notranslate"><span class="pre">--hd-path</span></code> option:</p>
+<p>If you elected to show your mnemonic Ape will then show you your newly generated mnemonic.
+Ape will then prompt you for a passphrase which you will need to enter twice to confirm.
+This passphrase is used to encrypt your account on disk, for extra security.
+You will be prompted for it each time you load your account, so make sure to remember it.
+After entering the passphrase Ape will then show you your new account address, HDPath, and account alias.
+If you want to use a custom HDPath, use the <code class="docutils literal notranslate"><span class="pre">--hd-path</span></code> option:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>ape<span class="w"> </span>accounts<span class="w"> </span>generate<span class="w"> </span>&lt;ALIAS&gt;<span class="w"> </span>--hd-path<span class="w"> </span>&lt;HDPATH&gt;
 </pre></div>
 </div>
-<p>If you do not use the <code class="docutils literal notranslate"><span class="pre">--hd-path</span></code> option, Ape will use the default HDPath of (Ethereum network, first account).</p>
-<p>If you want to use a custom mnemonic phrase word length, use the <code class="docutils literal notranslate"><span class="pre">--word-count</span></code> option:</p>
+<p>If you do not use the <code class="docutils literal notranslate"><span class="pre">--hd-path</span></code> option, Ape will use the default HDPath of (Ethereum network, first account).
+If you want to use a custom mnemonic phrase word length, use the <code class="docutils literal notranslate"><span class="pre">--word-count</span></code> option:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>ape<span class="w"> </span>accounts<span class="w"> </span>generate<span class="w"> </span>&lt;ALIAS&gt;<span class="w"> </span>--word-count<span class="w"> </span>&lt;WORDCOUNT&gt;
 </pre></div>
 </div>
-<p>If you do not use the <code class="docutils literal notranslate"><span class="pre">--word-count</span></code> option, Ape will use the default word count of 12.</p>
-<p>You can use all of these together or separately to control the way Ape creates and displays your account information.</p>
-<p>If you already have an account and you wish to import it into Ape (say, from Metamask), you can use the <a class="reference external" href="../commands/accounts.html#accounts-import">import command</a>:</p>
+<p>If you do not use the <code class="docutils literal notranslate"><span class="pre">--word-count</span></code> option, Ape will use the default word count of 12.
+You can use all of these together or separately to control the way Ape creates and displays your account information.
+If you already have an account and wish to import it into Ape (say, from Metamask), you can use the <a class="reference external" href="../commands/accounts.html#accounts-import">import command</a>:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>ape<span class="w"> </span>accounts<span class="w"> </span>import<span class="w"> </span>&lt;ALIAS&gt;
 </pre></div>
 </div>
-<p>It will prompt you for the private key.</p>
-<p>If you need help exporting your private key from Metamask, see <a class="reference external" href="https://metamask.zendesk.com/hc/en-us/articles/360015289632-How-to-export-an-account-s-private-key">this guide</a>.</p>
-<p>You can also import accounts from mnemonic seed by using the <code class="docutils literal notranslate"><span class="pre">--use-mnemonic</span></code> flag:</p>
+<p>It will prompt you for the private key.
+If you need help exporting your private key from Metamask, see <a class="reference external" href="https://metamask.zendesk.com/hc/en-us/articles/360015289632-How-to-export-an-account-s-private-key">this guide</a>.
+You can also import accounts from mnemonic seed by using the <code class="docutils literal notranslate"><span class="pre">--use-mnemonic</span></code> flag:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>ape<span class="w"> </span>accounts<span class="w"> </span>import<span class="w"> </span>&lt;ALIAS&gt;<span class="w"> </span>--use-mnemonic
 </pre></div>
 </div>
-<p>It will then prompt you for the <a class="reference external" href="https://en.bitcoin.it/wiki/Seed_phrase">mnemonic seed</a>.</p>
-<p>If you need help finding your mnemonic seed (Secret Recovery Phrase) in Metamask, see <a class="reference external" href="https://metamask.zendesk.com/hc/en-us/articles/360015290032-How-to-reveal-your-Secret-Recovery-Phrase">this guide</a>.</p>
-<p>In addition, you can also use a custom HDPath by using the <code class="docutils literal notranslate"><span class="pre">--hd-path</span></code> option:</p>
+<p>It will then prompt you for the <a class="reference external" href="https://en.bitcoin.it/wiki/Seed_phrase">mnemonic seed</a>.
+If you need help finding your mnemonic seed (Secret Recovery Phrase) in Metamask, see <a class="reference external" href="https://metamask.zendesk.com/hc/en-us/articles/360015290032-How-to-reveal-your-Secret-Recovery-Phrase">this guide</a>.
+In addition, you can also use a custom HDPath by using the <code class="docutils literal notranslate"><span class="pre">--hd-path</span></code> option:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>ape<span class="w"> </span>accounts<span class="w"> </span>import<span class="w"> </span>&lt;ALIAS&gt;<span class="w"> </span>--use-mnemonic<span class="w"> </span>--hd-path<span class="w"> </span>&lt;HDPATH&gt;
 </pre></div>
 </div>
-<p>If you use the <code class="docutils literal notranslate"><span class="pre">--hd-path</span></code> option, you will need to pass the <a class="reference external" href="https://help.myetherwallet.com/en/articles/5867305-hd-wallets-and-derivation-paths">HDPath</a> you’d like to use as an argument in the command.</p>
-<p>If you do not use the <code class="docutils literal notranslate"><span class="pre">--hd-path</span></code> option, Ape will use the default HDPath of (Ethereum network, first account).</p>
-<p>You can also <a class="reference external" href="../commands/accounts.html#accounts-export">export</a> the private key of an account:</p>
+<p>If you use the <code class="docutils literal notranslate"><span class="pre">--hd-path</span></code> option, you will need to pass the <a class="reference external" href="https://help.myetherwallet.com/en/articles/5867305-hd-wallets-and-derivation-paths">HDPath</a> you’d like to use as an argument in the command.
+If you do not use the <code class="docutils literal notranslate"><span class="pre">--hd-path</span></code> option, Ape will use the default HDPath of (Ethereum network, first account).
+You can also <a class="reference external" href="../commands/accounts.html#accounts-export">export</a> the private key of an account:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>ape<span class="w"> </span>accounts<span class="w"> </span><span class="nb">export</span><span class="w"> </span>&lt;ALIAS&gt;
 </pre></div>
 </div>
-<p>Ape will ask you for the password to the account and then give you the private key of that account.</p>
-<p>You can then use that private key with <a class="reference external" href="../commands/accounts.html#accounts-import">import</a>.</p>
-<p>You can alternatively load the private key into <a class="reference external" href="https://metamask.zendesk.com/hc/en-us/articles/360015489331-How-to-import-an-account#h_01G01W07NV7Q94M7P1EBD5BYM4">Metamask wallet</a>.</p>
-<p>Then, in your scripts, you can <a class="reference external" href="../methoddocs/managers.html#ape.managers.accounts.AccountManager.load">load</a> an account:</p>
+<p>Ape will ask you for the password to the account and then give you the private key of that account.
+You can then use that private key with <a class="reference external" href="../commands/accounts.html#accounts-import">import</a>.
+You can alternatively load the private key into <a class="reference external" href="https://metamask.zendesk.com/hc/en-us/articles/360015489331-How-to-import-an-account#h_01G01W07NV7Q94M7P1EBD5BYM4">Metamask wallet</a>.
+Then, in your scripts, you can <a class="reference external" href="../methoddocs/managers.html#ape.managers.accounts.AccountManager.load">load</a> an account:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">ape</span> <span class="kn">import</span> <span class="n">accounts</span>
 
 <span class="n">account</span> <span class="o">=</span> <span class="n">accounts</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;&lt;ALIAS&gt;&quot;</span><span class="p">)</span>
@@ -351,25 +364,8 @@ All the available CLI commands for this accounts plugin can be found <a class="r
 </section>
 <section id="automation">
 <h2>Automation<a class="headerlink" href="#automation" title="Permalink to this heading"></a></h2>
-<p>If you use your keyfile accounts in automation, such as CI/CD, you may need to programmatically unlock them and enable autosign.
-<strong>WARNING</strong>: We don’t recommend using this approach but it is possible due to sometimes being needed.
-Ensure you are using a secure environment and are aware of what you are doing.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">ape</span> <span class="kn">import</span> <span class="n">accounts</span>
-<span class="kn">from</span> <span class="nn">eth_account.messages</span> <span class="kn">import</span> <span class="n">encode_defunct</span>
-
-<span class="n">account</span> <span class="o">=</span> <span class="n">accounts</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;&lt;ALIAS&gt;&quot;</span><span class="p">)</span>
-<span class="n">account</span><span class="o">.</span><span class="n">set_autosign</span><span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="n">passphrase</span><span class="o">=</span><span class="s2">&quot;&lt;PASSPHRASE&gt;&quot;</span><span class="p">)</span>
-
-<span class="c1"># Now, you will not be prompted to sign messages or transactions</span>
-<span class="n">message</span> <span class="o">=</span> <span class="n">encode_defunct</span><span class="p">(</span><span class="n">text</span><span class="o">=</span><span class="s2">&quot;Hello Apes!&quot;</span><span class="p">)</span>
-<span class="n">signature</span> <span class="o">=</span> <span class="n">account</span><span class="o">.</span><span class="n">sign_message</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
-</pre></div>
-</div>
-</section>
-<section id="keyfile-passphrase-environment-variable-more-secure">
-<h2>Keyfile Passphrase Environment Variable (more secure)<a class="headerlink" href="#keyfile-passphrase-environment-variable-more-secure" title="Permalink to this heading"></a></h2>
-<p>Another, more secure approach is to use an environment variable.
-Set your passphrase in an environment variable by following this template:</p>
+<p>If you use your keyfile accounts in automation, such as CI/CD, you may need to programmatically unlock them and enable auto-sign.
+To do this, use a special environment variable for the account’s passphrase:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">export</span><span class="w"> </span>APE_ACCOUNTS_&lt;alias&gt;_PASSPHRASE<span class="o">=</span><span class="s2">&quot;a&quot;</span>
 </pre></div>
 </div>
@@ -386,6 +382,7 @@ Now, you can use your account to make any transactions without subsequently prov
 <span class="n">signature</span> <span class="o">=</span> <span class="n">account</span><span class="o">.</span><span class="n">sign_message</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
 </pre></div>
 </div>
+<p><strong>NOTE</strong>: Alternatively, you may use the <code class="docutils literal notranslate"><span class="pre">passphrase=</span></code> kwarg on methods <code class="docutils literal notranslate"><span class="pre">account.set_autosign()</span></code> and <code class="docutils literal notranslate"><span class="pre">account.unlock()</span></code>, but we highly recommend using the environment variable approach to avoid accidentally leaking your passphrase.</p>
 </section>
 <section id="hardware-wallets">
 <h2>Hardware Wallets<a class="headerlink" href="#hardware-wallets" title="Permalink to this heading"></a></h2>

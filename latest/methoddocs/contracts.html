@@ -290,7 +290,8 @@ you get back a contract instance.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="ape.contracts.base.ContractInstance.__call__">
 <span class="sig-name descname"><span class="pre">__call__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="api.html#ape.api.transactions.ReceiptAPI" title="ape.api.transactions.ReceiptAPI"><span class="pre">ReceiptAPI</span></a></span></span><a class="headerlink" href="#ape.contracts.base.ContractInstance.__call__" title="Permalink to this definition"></a></dt>
-<dd><p>Call this address directly.</p>
+<dd><p>Call this address directly. For contracts, this may mean invoking their
+default handler.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>**kwargs</strong> – Transaction arguments, such as <code class="docutils literal notranslate"><span class="pre">sender</span></code> or <code class="docutils literal notranslate"><span class="pre">data</span></code>.</p>
@@ -339,7 +340,7 @@ you get back a contract instance.</p>
 <dd><p>The address of the contract.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">AddressType</span></code></p>
+<dd class="field-odd"><p><a class="reference internal" href="types.html#ape.types.address.AddressType" title="ape.types.address.AddressType"><code class="xref py py-class docutils literal notranslate"><span class="pre">AddressType</span></code></a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -643,9 +644,8 @@ Otherwise, it is the total amount of blocks to get starting from <code class="do
 desired log set. Defaults to delegating to provider.</p></li>
 <li><p><strong>search_topics</strong> (<em>Optional</em><em>[</em><em>Dict</em><em>]</em>) – Search topics, such as indexed event inputs,
 to query by. Defaults to getting all events.</p></li>
-<li><p><strong>extra_addresses</strong> (Optional[List[<code class="docutils literal notranslate"><span class="pre">AddressType</span></code>]]) – Additional contract
-addresses containing the same event type. Defaults to only looking at
-the contract instance where this event is defined.</p></li>
+<li><p><strong>extra_addresses</strong> (Optional[List[<a class="reference internal" href="types.html#ape.types.address.AddressType" title="ape.types.address.AddressType"><code class="xref py py-class docutils literal notranslate"><span class="pre">AddressType</span></code></a>]]) – Additional contract addresses containing the same event type. Defaults to
+only looking at the contract instance where this event is defined.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>

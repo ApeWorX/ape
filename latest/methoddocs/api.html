@@ -169,6 +169,7 @@
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.accounts.AccountAPI.alias"><code class="docutils literal notranslate"><span class="pre">AccountAPI.alias</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.accounts.AccountAPI.call"><code class="docutils literal notranslate"><span class="pre">AccountAPI.call()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.accounts.AccountAPI.check_signature"><code class="docutils literal notranslate"><span class="pre">AccountAPI.check_signature()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ape.api.accounts.AccountAPI.declare"><code class="docutils literal notranslate"><span class="pre">AccountAPI.declare()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.accounts.AccountAPI.deploy"><code class="docutils literal notranslate"><span class="pre">AccountAPI.deploy()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.accounts.AccountAPI.model_config"><code class="docutils literal notranslate"><span class="pre">AccountAPI.model_config</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.accounts.AccountAPI.model_fields"><code class="docutils literal notranslate"><span class="pre">AccountAPI.model_fields</span></code></a></li>
@@ -239,6 +240,7 @@
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.compiler.CompilerAPI.get_versions"><code class="docutils literal notranslate"><span class="pre">CompilerAPI.get_versions()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.compiler.CompilerAPI.model_config"><code class="docutils literal notranslate"><span class="pre">CompilerAPI.model_config</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.compiler.CompilerAPI.model_fields"><code class="docutils literal notranslate"><span class="pre">CompilerAPI.model_fields</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ape.api.compiler.CompilerAPI.name"><code class="docutils literal notranslate"><span class="pre">CompilerAPI.name</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.compiler.CompilerAPI.settings"><code class="docutils literal notranslate"><span class="pre">CompilerAPI.settings</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.compiler.CompilerAPI.supports_source_tracing"><code class="docutils literal notranslate"><span class="pre">CompilerAPI.supports_source_tracing</span></code></a></li>
 </ul>
@@ -283,6 +285,7 @@
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.networks.EcosystemAPI.add_network"><code class="docutils literal notranslate"><span class="pre">EcosystemAPI.add_network()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.networks.EcosystemAPI.config"><code class="docutils literal notranslate"><span class="pre">EcosystemAPI.config</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.networks.EcosystemAPI.create_transaction"><code class="docutils literal notranslate"><span class="pre">EcosystemAPI.create_transaction()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ape.api.networks.EcosystemAPI.custom_network"><code class="docutils literal notranslate"><span class="pre">EcosystemAPI.custom_network</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.networks.EcosystemAPI.data_folder"><code class="docutils literal notranslate"><span class="pre">EcosystemAPI.data_folder</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.networks.EcosystemAPI.decode_address"><code class="docutils literal notranslate"><span class="pre">EcosystemAPI.decode_address()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.networks.EcosystemAPI.decode_block"><code class="docutils literal notranslate"><span class="pre">EcosystemAPI.decode_block()</span></code></a></li>
@@ -351,7 +354,10 @@
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.networks.NetworkAPI.verify_chain_id"><code class="docutils literal notranslate"><span class="pre">NetworkAPI.verify_chain_id()</span></code></a></li>
 </ul>
 </li>
-<li class="toctree-l3"><a class="reference internal" href="#ape.api.networks.ProviderContextManager"><code class="docutils literal notranslate"><span class="pre">ProviderContextManager</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#ape.api.networks.ProviderContextManager"><code class="docutils literal notranslate"><span class="pre">ProviderContextManager</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#ape.api.networks.ProviderContextManager.empty"><code class="docutils literal notranslate"><span class="pre">ProviderContextManager.empty</span></code></a></li>
+</ul>
+</li>
 <li class="toctree-l3"><a class="reference internal" href="#ape.api.networks.ProxyInfoAPI"><code class="docutils literal notranslate"><span class="pre">ProxyInfoAPI</span></code></a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.networks.ProxyInfoAPI.model_config"><code class="docutils literal notranslate"><span class="pre">ProxyInfoAPI.model_config</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.networks.ProxyInfoAPI.model_fields"><code class="docutils literal notranslate"><span class="pre">ProxyInfoAPI.model_fields</span></code></a></li>
@@ -628,7 +634,7 @@
 <li><p><strong>txn</strong> (<a class="reference internal" href="#ape.api.transactions.TransactionAPI" title="ape.api.transactions.TransactionAPI"><code class="xref py py-class docutils literal notranslate"><span class="pre">TransactionAPI</span></code></a>) – An invoke-transaction.</p></li>
 <li><p><strong>send_everything</strong> (<em>bool</em>) – <code class="docutils literal notranslate"><span class="pre">True</span></code> will send the difference from balance and fee.
 Defaults to <code class="docutils literal notranslate"><span class="pre">False</span></code>.</p></li>
-<li><p><strong>private</strong> (<em>bool</em>) – <code class="docutils literal notranslate"><span class="pre">True</span></code> with use the
+<li><p><strong>private</strong> (<em>bool</em>) – <code class="docutils literal notranslate"><span class="pre">True</span></code> will use the
 <a class="reference internal" href="#ape.api.providers.ProviderAPI.send_private_transaction" title="ape.api.providers.ProviderAPI.send_private_transaction"><code class="xref py py-meth docutils literal notranslate"><span class="pre">send_private_transaction()</span></code></a> method.</p></li>
 <li><p><strong>**signer_options</strong> – Additional kwargs given to the signer to modify the signing operation.</p></li>
 </ul>
@@ -648,7 +654,8 @@ Defaults to <code class="docutils literal notranslate"><span class="pre">False</
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>data</strong> (Union[<a class="reference internal" href="types.html#ape.types.signatures.SignableMessage" title="ape.types.signatures.SignableMessage"><code class="xref py py-class docutils literal notranslate"><span class="pre">SignableMessage</span></code></a>, <a class="reference internal" href="#ape.api.transactions.TransactionAPI" title="ape.api.transactions.TransactionAPI"><code class="xref py py-class docutils literal notranslate"><span class="pre">TransactionAPI</span></code></a>]) – # noqa: E501
 The message or transaction to verify.</p></li>
-<li><p><strong>signature</strong> (Optional[<a class="reference internal" href="types.html#ape.types.signatures.MessageSignature" title="ape.types.signatures.MessageSignature"><code class="xref py py-class docutils literal notranslate"><span class="pre">MessageSignature</span></code></a>]) – The signature to check.</p></li>
+<li><p><strong>signature</strong> (Optional[<a class="reference internal" href="types.html#ape.types.signatures.MessageSignature" title="ape.types.signatures.MessageSignature"><code class="xref py py-class docutils literal notranslate"><span class="pre">MessageSignature</span></code></a>]) – The signature to check. Defaults to <code class="docutils literal notranslate"><span class="pre">None</span></code> and is not needed when the first
+argument is a transaction class.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
@@ -661,6 +668,26 @@ The message or transaction to verify.</p></li>
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="ape.api.accounts.AccountAPI.declare">
+<span class="sig-name descname"><span class="pre">declare</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">contract</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="contracts.html#ape.contracts.base.ContractContainer" title="ape.contracts.base.ContractContainer"><span class="pre">ContractContainer</span></a></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#ape.api.transactions.ReceiptAPI" title="ape.api.transactions.ReceiptAPI"><span class="pre">ReceiptAPI</span></a></span></span><a class="headerlink" href="#ape.api.accounts.AccountAPI.declare" title="Permalink to this definition"></a></dt>
+<dd><p>Deploy the “blueprint” of a contract type. For EVM providers, this likely means
+using <a class="reference external" href="https://eips.ethereum.org/EIPS/eip-5202">EIP-5202</a>, which is implemented
+in the core <code class="docutils literal notranslate"><span class="pre">ape-ethereum</span></code> plugin.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>contract</strong> (<a class="reference internal" href="contracts.html#ape.contracts.base.ContractContainer" title="ape.contracts.base.ContractContainer"><code class="xref py py-class docutils literal notranslate"><span class="pre">ContractContainer</span></code></a>) – The contract container
+to declare.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The receipt of the declare transaction.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="#ape.api.transactions.ReceiptAPI" title="ape.api.transactions.ReceiptAPI"><code class="xref py py-class docutils literal notranslate"><span class="pre">ReceiptAPI</span></code></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="ape.api.accounts.AccountAPI.deploy">
 <span class="sig-name descname"><span class="pre">deploy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">contract</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="contracts.html#ape.contracts.base.ContractContainer" title="ape.contracts.base.ContractContainer"><span class="pre">ContractContainer</span></a></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">publish</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="contracts.html#ape.contracts.base.ContractInstance" title="ape.contracts.base.ContractInstance"><span class="pre">ContractInstance</span></a></span></span><a class="headerlink" href="#ape.api.accounts.AccountAPI.deploy" title="Permalink to this definition"></a></dt>
 <dd><p>Create a smart contract on the blockchain. The smart contract must compile before
@@ -668,7 +695,8 @@ deploying and a provider must be active.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>contract</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">ContractContainer</span></code>) – The type of contract to deploy.</p></li>
+<li><p><strong>contract</strong> (<a class="reference internal" href="contracts.html#ape.contracts.base.ContractContainer" title="ape.contracts.base.ContractContainer"><code class="xref py py-class docutils literal notranslate"><span class="pre">ContractContainer</span></code></a>) – The type of contract to
+deploy.</p></li>
 <li><p><strong>publish</strong> (<em>bool</em>) – Set to <code class="docutils literal notranslate"><span class="pre">True</span></code> to attempt explorer contract verification.
 Defaults to <code class="docutils literal notranslate"><span class="pre">False</span></code>.</p></li>
 </ul>
@@ -755,9 +783,9 @@ for more type information on the <code class="docutils literal notranslate"><spa
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p><dl class="simple">
-<dt>A signed transaction.</dt><dd><p>The <cite>TransactionAPI</cite> returned by this method may not correspond to <cite>txn</cite> given as input,
-however returning a properly-formatted transaction here is meant to be executed.
-Returns <cite>None</cite> if the account does not have a transaction it wishes to execute.</p>
+<dt>A signed transaction.</dt><dd><p>The <code class="docutils literal notranslate"><span class="pre">TransactionAPI</span></code> returned by this method may not correspond to <code class="docutils literal notranslate"><span class="pre">txn</span></code> given as
+input, however returning a properly-formatted transaction here is meant to be executed.
+Returns <code class="docutils literal notranslate"><span class="pre">None</span></code> if the account does not have a transaction it wishes to execute.</p>
 </dd>
 </dl>
 </p>
@@ -779,12 +807,13 @@ Returns <cite>None</cite> if the account does not have a transaction it wishes t
 </dd>
 <dt class="field-even">Parameters<span class="colon">:</span></dt>
 <dd class="field-even"><ul class="simple">
-<li><p><strong>account</strong> (<em>str</em>) – The account to send funds to.</p></li>
-<li><p><strong>value</strong> (<em>str</em>) – The amount to send.</p></li>
-<li><p><strong>data</strong> (<em>str</em>) – Extra data to include in the transaction.</p></li>
+<li><p><strong>account</strong> (<em>Union</em><em>[</em><em>str</em><em>, </em><em>AddressType</em><em>, </em><a class="reference internal" href="#ape.api.address.BaseAddress" title="ape.api.address.BaseAddress"><em>BaseAddress</em></a><em>]</em>) – The receiver of the funds.</p></li>
+<li><p><strong>value</strong> (<em>Optional</em><em>[</em><em>Union</em><em>[</em><em>str</em><em>, </em><em>int</em><em>]</em><em>]</em>) – The amount to send.</p></li>
+<li><p><strong>data</strong> (<em>Optional</em><em>[</em><em>Union</em><em>[</em><em>bytes</em><em>, </em><em>str</em><em>]</em><em>]</em>) – Extra data to include in the transaction.</p></li>
 <li><p><strong>private</strong> (<em>bool</em>) – <code class="docutils literal notranslate"><span class="pre">True</span></code> asks the provider to make the transaction
-private. For example, EVM providers uses the RPC <code class="docutils literal notranslate"><span class="pre">eth_sendPrivateTransaction</span></code>
-to achieve this. Local providers may ignore this value.</p></li>
+private. For example, EVM providers typically use the RPC
+<code class="docutils literal notranslate"><span class="pre">eth_sendPrivateTransaction</span></code> to achieve this. Local providers may ignore
+this value.</p></li>
 </ul>
 </dd>
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
@@ -810,7 +839,7 @@ instances.</p>
 <dd class="field-odd"><p><strong>IndexError</strong> – When the given account address is not in this container.</p>
 </dd>
 <dt class="field-even">Parameters<span class="colon">:</span></dt>
-<dd class="field-even"><p><strong>address</strong> (<code class="docutils literal notranslate"><span class="pre">AddressType</span></code>) – An account address.</p>
+<dd class="field-even"><p><strong>address</strong> (<a class="reference internal" href="types.html#ape.types.address.AddressType" title="ape.types.address.AddressType"><code class="xref py py-class docutils literal notranslate"><span class="pre">AddressType</span></code></a>) – An account address.</p>
 </dd>
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
 <dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">True</span></code> if <code class="docutils literal notranslate"><span class="pre">ape</span></code> manages the account with the given address.</p>
@@ -830,7 +859,7 @@ instances.</p>
 <dd class="field-odd"><p><strong>NotImplementError</strong> – When not overridden within a plugin.</p>
 </dd>
 <dt class="field-even">Parameters<span class="colon">:</span></dt>
-<dd class="field-even"><p><strong>address</strong> (<code class="docutils literal notranslate"><span class="pre">AddressType</span></code>) – The address of the account to delete.</p>
+<dd class="field-even"><p><strong>address</strong> (<a class="reference internal" href="types.html#ape.types.address.AddressType" title="ape.types.address.AddressType"><code class="xref py py-class docutils literal notranslate"><span class="pre">AddressType</span></code></a>) – The address of the account to delete.</p>
 </dd>
 </dl>
 </dd></dl>
@@ -841,7 +870,7 @@ instances.</p>
 <dd><p>Get an account by address.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>address</strong> (<code class="docutils literal notranslate"><span class="pre">AddressType</span></code>) – The address to get. The type is an alias to
+<dd class="field-odd"><p><strong>address</strong> (<a class="reference internal" href="types.html#ape.types.address.AddressType" title="ape.types.address.AddressType"><code class="xref py py-class docutils literal notranslate"><span class="pre">AddressType</span></code></a>) – The address to get. The type is an alias to
 <a class="reference external" href="https://eth-typing.readthedocs.io/en/latest/types.html#checksumaddress">ChecksumAddress</a>.  # noqa: E501</p>
 </dd>
 <dt class="field-even">Raises<span class="colon">:</span></dt>
@@ -956,7 +985,7 @@ mapping of field names to [<cite>FieldInfo</cite>][pydantic.fields.FieldInfo].</
 <li><p><strong>txn</strong> (<a class="reference internal" href="#ape.api.transactions.TransactionAPI" title="ape.api.transactions.TransactionAPI"><code class="xref py py-class docutils literal notranslate"><span class="pre">TransactionAPI</span></code></a>) – An invoke-transaction.</p></li>
 <li><p><strong>send_everything</strong> (<em>bool</em>) – <code class="docutils literal notranslate"><span class="pre">True</span></code> will send the difference from balance and fee.
 Defaults to <code class="docutils literal notranslate"><span class="pre">False</span></code>.</p></li>
-<li><p><strong>private</strong> (<em>bool</em>) – <code class="docutils literal notranslate"><span class="pre">True</span></code> with use the
+<li><p><strong>private</strong> (<em>bool</em>) – <code class="docutils literal notranslate"><span class="pre">True</span></code> will use the
 <a class="reference internal" href="#ape.api.providers.ProviderAPI.send_private_transaction" title="ape.api.providers.ProviderAPI.send_private_transaction"><code class="xref py py-meth docutils literal notranslate"><span class="pre">send_private_transaction()</span></code></a> method.</p></li>
 <li><p><strong>**signer_options</strong> – Additional kwargs given to the signer to modify the signing operation.</p></li>
 </ul>
@@ -1019,9 +1048,9 @@ for more type information on the <code class="docutils literal notranslate"><spa
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p><dl class="simple">
-<dt>A signed transaction.</dt><dd><p>The <cite>TransactionAPI</cite> returned by this method may not correspond to <cite>txn</cite> given as input,
-however returning a properly-formatted transaction here is meant to be executed.
-Returns <cite>None</cite> if the account does not have a transaction it wishes to execute.</p>
+<dt>A signed transaction.</dt><dd><p>The <code class="docutils literal notranslate"><span class="pre">TransactionAPI</span></code> returned by this method may not correspond to <code class="docutils literal notranslate"><span class="pre">txn</span></code> given as
+input, however returning a properly-formatted transaction here is meant to be executed.
+Returns <code class="docutils literal notranslate"><span class="pre">None</span></code> if the account does not have a transaction it wishes to execute.</p>
 </dd>
 </dl>
 </p>
@@ -1106,7 +1135,7 @@ or to refer to an EOA the user doesn’t personally control.</p>
 <a class="reference external" href="https://eth-typing.readthedocs.io/en/latest/types.html#checksumaddress">ChecksumAddress</a>.  # noqa: E501</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">AddressType</span></code></p>
+<dd class="field-even"><p><a class="reference internal" href="types.html#ape.types.address.AddressType" title="ape.types.address.AddressType"><code class="xref py py-class docutils literal notranslate"><span class="pre">AddressType</span></code></a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -1209,8 +1238,8 @@ via <code class="docutils literal notranslate"><span class="pre">ape</span> <spa
 <dl class="py method">
 <dt class="sig sig-object py" id="ape.api.compiler.CompilerAPI.enrich_error">
 <span class="sig-name descname"><span class="pre">enrich_error</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">err</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="exceptions.html#ape.exceptions.ContractLogicError" title="ape.exceptions.ContractLogicError"><span class="pre">ContractLogicError</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="exceptions.html#ape.exceptions.ContractLogicError" title="ape.exceptions.ContractLogicError"><span class="pre">ContractLogicError</span></a></span></span><a class="headerlink" href="#ape.api.compiler.CompilerAPI.enrich_error" title="Permalink to this definition"></a></dt>
-<dd><p>Enrich a contract logic error using compiler information, such
-known PC locations for compiler runtime errors, such as math errors.</p>
+<dd><p>Enrich a contract logic error using compiler information, such as
+known PC locations for compiler runtime errors.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>err</strong> (<a class="reference internal" href="exceptions.html#ape.exceptions.ContractLogicError" title="ape.exceptions.ContractLogicError"><code class="xref py py-class docutils literal notranslate"><span class="pre">ContractLogicError</span></code></a>) – The exception
@@ -1257,6 +1286,12 @@ mapping of field names to [<cite>FieldInfo</cite>][pydantic.fields.FieldInfo].</
 </dd></dl>
 
 <dl class="py property">
+<dt class="sig sig-object py" id="ape.api.compiler.CompilerAPI.name">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">name</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#ape.api.compiler.CompilerAPI.name" title="Permalink to this definition"></a></dt>
+<dd><p>The name of the compiler.</p>
+</dd></dl>
+
+<dl class="py property">
 <dt class="sig sig-object py" id="ape.api.compiler.CompilerAPI.settings">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">settings</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#ape.api.config.PluginConfig" title="ape.api.config.PluginConfig"><span class="pre">PluginConfig</span></a></em><a class="headerlink" href="#ape.api.compiler.CompilerAPI.settings" title="Permalink to this definition"></a></dt>
 <dd><p>The combination of settings from <code class="docutils literal notranslate"><span class="pre">ape-config.yaml</span></code> and <code class="docutils literal notranslate"><span class="pre">.compiler_settings</span></code>.</p>
@@ -1281,6 +1316,17 @@ traceback for a given trace.</p>
 <p>A configuration <a class="reference external" href="https://docs.python.org/3/library/enum.html">Enum</a> type.
 Use this to limit the values of a config item, such as colors <code class="docutils literal notranslate"><span class="pre">&quot;RED&quot;</span></code>, <code class="docutils literal notranslate"><span class="pre">&quot;BLUE&quot;</span></code>,
 <code class="docutils literal notranslate"><span class="pre">&quot;GREEN&quot;</span></code>, rather than any arbitrary <code class="docutils literal notranslate"><span class="pre">str</span></code>.</p>
+<p>Usage example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">MyEnum</span><span class="p">(</span><span class="n">ConfigEnum</span><span class="p">):</span>
+    <span class="n">FOO</span> <span class="o">=</span> <span class="s2">&quot;FOO&quot;</span>
+    <span class="n">BAR</span> <span class="o">=</span> <span class="s2">&quot;BAR&quot;</span>
+
+<span class="k">class</span> <span class="nc">MyConfig</span><span class="p">(</span><span class="n">PluginConfig</span><span class="p">):</span>
+    <span class="n">my_enum</span><span class="p">:</span> <span class="n">MyEnum</span>
+
+<span class="n">model</span> <span class="o">=</span> <span class="n">MyConfig</span><span class="p">(</span><span class="n">my_enum</span><span class="o">=</span><span class="s2">&quot;FOO&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
 </dd></dl>
 
 <dl class="py class">
@@ -1334,7 +1380,7 @@ when the item fails to convert properly.</p>
 <a class="reference internal" href="#ape.api.convert.ConverterAPI.convert" title="ape.api.convert.ConverterAPI.convert"><code class="xref py py-meth docutils literal notranslate"><span class="pre">ape.api.convert.ConverterAPI.convert()</span></code></a>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>value</strong> (<em>str</em>) – The value to check.</p>
+<dd class="field-odd"><p><strong>value</strong> (<em>Any</em>) – The value to check.</p>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">True</span></code> when the given value can be converted.</p>
@@ -1376,10 +1422,13 @@ in a particular ecosystem.</p>
 <dd><p>Get an address URL, such as for a transaction.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>address</strong> (<code class="docutils literal notranslate"><span class="pre">AddressType</span></code>) – The address to get the URL for.</p>
+<dd class="field-odd"><p><strong>address</strong> (<a class="reference internal" href="types.html#ape.types.address.AddressType" title="ape.types.address.AddressType"><code class="xref py py-class docutils literal notranslate"><span class="pre">AddressType</span></code></a>) – The address.</p>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>str</p>
+<dd class="field-even"><p>The URL.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>str</p>
 </dd>
 </dl>
 </dd></dl>
@@ -1387,10 +1436,10 @@ in a particular ecosystem.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="ape.api.explorers.ExplorerAPI.get_contract_type">
 <em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_contract_type</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">address</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ChecksumAddress</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ContractType</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></span><a class="headerlink" href="#ape.api.explorers.ExplorerAPI.get_contract_type" title="Permalink to this definition"></a></dt>
-<dd><p>Get the contract type for a given address if it has been published in an explorer.</p>
+<dd><p>Get the contract type for a given address if it has been published to this explorer.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>address</strong> (<code class="docutils literal notranslate"><span class="pre">AddressType</span></code>) – The contract address.</p>
+<dd class="field-odd"><p><strong>address</strong> (<a class="reference internal" href="types.html#ape.types.address.AddressType" title="ape.types.address.AddressType"><code class="xref py py-class docutils literal notranslate"><span class="pre">AddressType</span></code></a>) – The contract address.</p>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>If not published, returns <code class="docutils literal notranslate"><span class="pre">None</span></code>.</p>
@@ -1410,7 +1459,10 @@ in a particular ecosystem.</p>
 <dd class="field-odd"><p><strong>transaction_hash</strong> (<em>str</em>) – The transaction hash.</p>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>str</p>
+<dd class="field-even"><p>The URL.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>str</p>
 </dd>
 </dl>
 </dd></dl>
@@ -1435,7 +1487,7 @@ mapping of field names to [<cite>FieldInfo</cite>][pydantic.fields.FieldInfo].</
 <dd><p>Publish a contract to the explorer.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>address</strong> (<code class="docutils literal notranslate"><span class="pre">AddressType</span></code>) – The address of the deployed contract.</p>
+<dd class="field-odd"><p><strong>address</strong> (<a class="reference internal" href="types.html#ape.types.address.AddressType" title="ape.types.address.AddressType"><code class="xref py py-class docutils literal notranslate"><span class="pre">AddressType</span></code></a>) – The address of the deployed contract.</p>
 </dd>
 </dl>
 </dd></dl>
@@ -1447,7 +1499,7 @@ mapping of field names to [<cite>FieldInfo</cite>][pydantic.fields.FieldInfo].</
 <span id="networks"></span><h2>Networks<a class="headerlink" href="#module-ape.api.networks" title="Permalink to this heading"></a></h2>
 <dl class="py class">
 <dt class="sig sig-object py" id="ape.api.networks.EcosystemAPI">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ape.api.networks.</span></span><span class="sig-name descname"><span class="pre">EcosystemAPI</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_folder</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">request_header</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fee_token_symbol</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fee_token_decimals</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">18</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.api.networks.EcosystemAPI" title="Permalink to this definition"></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ape.api.networks.</span></span><span class="sig-name descname"><span class="pre">EcosystemAPI</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_folder</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">request_header</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fee_token_symbol</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fee_token_decimals</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">18</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.api.networks.EcosystemAPI" title="Permalink to this definition"></a></dt>
 <dd><p>Bases: <a class="reference internal" href="utils.html#ape.utils.BaseInterfaceModel" title="ape.utils.basemodel.BaseInterfaceModel"><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseInterfaceModel</span></code></a></p>
 <p>A set of related networks, such as Ethereum.</p>
 <dl class="py method">
@@ -1513,6 +1565,13 @@ for more information on plugin configurations.</p>
 </dl>
 </dd></dl>
 
+<dl class="py property">
+<dt class="sig sig-object py" id="ape.api.networks.EcosystemAPI.custom_network">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">custom_network</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#ape.api.networks.NetworkAPI" title="ape.api.networks.NetworkAPI"><span class="pre">NetworkAPI</span></a></em><a class="headerlink" href="#ape.api.networks.EcosystemAPI.custom_network" title="Permalink to this definition"></a></dt>
+<dd><p>A <a class="reference internal" href="#ape.api.networks.NetworkAPI" title="ape.api.networks.NetworkAPI"><code class="xref py py-class docutils literal notranslate"><span class="pre">NetworkAPI</span></code></a> for custom networks where the
+network is either not known, unspecified, or does not have an Ape plugin.</p>
+</dd></dl>
+
 <dl class="py attribute">
 <dt class="sig sig-object py" id="ape.api.networks.EcosystemAPI.data_folder">
 <span class="sig-name descname"><span class="pre">data_folder</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Path</span></em><a class="headerlink" href="#ape.api.networks.EcosystemAPI.data_folder" title="Permalink to this definition"></a></dt>
@@ -1525,21 +1584,22 @@ for more information on plugin configurations.</p>
 <dd><p>Convert a raw address to the ecosystem’s native address type.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>raw_address</strong> (<em>Union</em><em>[</em><em>str</em><em>, </em><em>int</em><em>]</em>) – The address to convert.</p>
+<dd class="field-odd"><p><strong>raw_address</strong> (<a class="reference internal" href="types.html#ape.types.address.RawAddress" title="ape.types.address.RawAddress"><code class="xref py py-class docutils literal notranslate"><span class="pre">RawAddress</span></code></a>) – The address to
+convert.</p>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">AddressType</span></code></p>
+<dd class="field-even"><p><a class="reference internal" href="types.html#ape.types.address.AddressType" title="ape.types.address.AddressType"><code class="xref py py-class docutils literal notranslate"><span class="pre">AddressType</span></code></a></p>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="ape.api.networks.EcosystemAPI.decode_block">
-<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">decode_block</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#ape.api.providers.BlockAPI" title="ape.api.providers.BlockAPI"><span class="pre">BlockAPI</span></a></span></span><a class="headerlink" href="#ape.api.networks.EcosystemAPI.decode_block" title="Permalink to this definition"></a></dt>
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">decode_block</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#ape.api.providers.BlockAPI" title="ape.api.providers.BlockAPI"><span class="pre">BlockAPI</span></a></span></span><a class="headerlink" href="#ape.api.networks.EcosystemAPI.decode_block" title="Permalink to this definition"></a></dt>
 <dd><p>Decode data to a <a class="reference internal" href="#ape.api.providers.BlockAPI" title="ape.api.providers.BlockAPI"><code class="xref py py-class docutils literal notranslate"><span class="pre">BlockAPI</span></code></a>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>data</strong> (<em>dict</em>) – A dictionary of data to decode.</p>
+<dd class="field-odd"><p><strong>data</strong> (<em>Dict</em>) – A dictionary of data to decode.</p>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p><a class="reference internal" href="#ape.api.providers.BlockAPI" title="ape.api.providers.BlockAPI"><code class="xref py py-class docutils literal notranslate"><span class="pre">BlockAPI</span></code></a></p>
@@ -1554,7 +1614,7 @@ for more information on plugin configurations.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>abi</strong> (<em>MethodABI</em>) – The method called.</p></li>
+<li><p><strong>abi</strong> (<em>Union</em><em>[</em><em>ConstructorABI</em><em>, </em><em>MethodABI</em><em>]</em>) – The method called.</p></li>
 <li><p><strong>calldata</strong> (<em>bytes</em>) – The raw calldata bytes.</p></li>
 </ul>
 </dd>
@@ -1588,11 +1648,11 @@ index of the input as the key.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="ape.api.networks.EcosystemAPI.decode_receipt">
-<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">decode_receipt</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#ape.api.transactions.ReceiptAPI" title="ape.api.transactions.ReceiptAPI"><span class="pre">ReceiptAPI</span></a></span></span><a class="headerlink" href="#ape.api.networks.EcosystemAPI.decode_receipt" title="Permalink to this definition"></a></dt>
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">decode_receipt</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#ape.api.transactions.ReceiptAPI" title="ape.api.transactions.ReceiptAPI"><span class="pre">ReceiptAPI</span></a></span></span><a class="headerlink" href="#ape.api.networks.EcosystemAPI.decode_receipt" title="Permalink to this definition"></a></dt>
 <dd><p>Convert data to <a class="reference internal" href="#ape.api.transactions.ReceiptAPI" title="ape.api.transactions.ReceiptAPI"><code class="xref py py-class docutils literal notranslate"><span class="pre">ReceiptAPI</span></code></a>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>data</strong> (<em>dict</em>) – A dictionary of Receipt properties.</p>
+<dd class="field-odd"><p><strong>data</strong> (<em>Dict</em>) – A dictionary of Receipt properties.</p>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p><a class="reference internal" href="#ape.api.transactions.ReceiptAPI" title="ape.api.transactions.ReceiptAPI"><code class="xref py py-class docutils literal notranslate"><span class="pre">ReceiptAPI</span></code></a></p>
@@ -1636,10 +1696,10 @@ raw_data (bytes): Raw returned data.</p>
 <dd><p>Convert the ecosystem’s native address type to a raw integer or str address.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>address</strong> (<em>Union</em><em>[</em><em>str</em><em>, </em><em>int</em><em>]</em>) – The address to convert.</p>
+<dd class="field-odd"><p><strong>address</strong> (<a class="reference internal" href="types.html#ape.types.address.AddressType" title="ape.types.address.AddressType"><code class="xref py py-class docutils literal notranslate"><span class="pre">AddressType</span></code></a>) – The address to convert.</p>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>Union[str, int]</p>
+<dd class="field-even"><p><a class="reference internal" href="types.html#ape.types.address.RawAddress" title="ape.types.address.RawAddress"><code class="xref py py-class docutils literal notranslate"><span class="pre">RawAddress</span></code></a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -1674,8 +1734,8 @@ This may require connecting to other networks.</p>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>deployment_bytecode</strong> (<em>HexBytes</em>) – The bytecode to deploy.</p></li>
 <li><p><strong>abi</strong> (<em>ConstructorABI</em>) – The constructor interface of the contract.</p></li>
-<li><p><strong>*args</strong> – Constructor arguments.</p></li>
-<li><p><strong>**kwargs</strong> – Transaction arguments.</p></li>
+<li><p><strong>*args</strong> (<em>Any</em>) – Constructor arguments.</p></li>
+<li><p><strong>**kwargs</strong> (<em>Any</em>) – Transaction arguments.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
@@ -1690,15 +1750,15 @@ This may require connecting to other networks.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="ape.api.networks.EcosystemAPI.encode_transaction">
 <em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">encode_transaction</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">address</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ChecksumAddress</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">abi</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">MethodABI</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#ape.api.transactions.TransactionAPI" title="ape.api.transactions.TransactionAPI"><span class="pre">TransactionAPI</span></a></span></span><a class="headerlink" href="#ape.api.networks.EcosystemAPI.encode_transaction" title="Permalink to this definition"></a></dt>
-<dd><p>Encode a transaction object from a contract function’s abi and call arguments.
-Update the transaction arguments with the overrides in <code class="docutils literal notranslate"><span class="pre">kwargs</span></code> as well.</p>
+<dd><p>Encode a transaction object from a contract function’s ABI and call arguments.
+Additionally, update the transaction arguments with the overrides in <code class="docutils literal notranslate"><span class="pre">kwargs</span></code>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>address</strong> (<em>AddressType</em>) – The address of the contract.</p></li>
-<li><p><strong>abi</strong> (<em>MethodABI</em>) – The function to call on the contract.</p></li>
-<li><p><strong>*args</strong> – Function arguments.</p></li>
-<li><p><strong>**kwargs</strong> – Transaction arguments.</p></li>
+<li><p><strong>address</strong> (<a class="reference internal" href="types.html#ape.types.address.AddressType" title="ape.types.address.AddressType"><code class="xref py py-class docutils literal notranslate"><span class="pre">AddressType</span></code></a>) – The address of the contract.</p></li>
+<li><p><strong>abi</strong> (<code class="docutils literal notranslate"><span class="pre">MethodABI</span></code>) – The function to call on the contract.</p></li>
+<li><p><strong>*args</strong> (<em>Any</em>) – Function arguments.</p></li>
+<li><p><strong>**kwargs</strong> (<em>Any</em>) – Transaction arguments.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
@@ -1813,7 +1873,7 @@ by name.</p></li>
 <dd><p>Information about a proxy contract such as proxy type and implementation address.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>address</strong> (<em>str</em>) – The address of the contract.</p>
+<dd class="field-odd"><p><strong>address</strong> (<a class="reference internal" href="types.html#ape.types.address.AddressType" title="ape.types.address.AddressType"><code class="xref py py-class docutils literal notranslate"><span class="pre">AddressType</span></code></a>) – The address of the contract.</p>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>Returns <code class="docutils literal notranslate"><span class="pre">None</span></code> if the contract
@@ -1833,7 +1893,7 @@ does not use any known proxy pattern.</p>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="ape.api.networks.EcosystemAPI.model_fields">
-<span class="sig-name descname"><span class="pre">model_fields</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ClassVar</span><span class="p"><span class="pre">[</span></span><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">FieldInfo</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'data_folder':</span> <span class="pre">FieldInfo(annotation=Path,</span> <span class="pre">required=True),</span> <span class="pre">'fee_token_decimals':</span> <span class="pre">FieldInfo(annotation=int,</span> <span class="pre">required=False,</span> <span class="pre">default=18),</span> <span class="pre">'fee_token_symbol':</span> <span class="pre">FieldInfo(annotation=str,</span> <span class="pre">required=True),</span> <span class="pre">'name':</span> <span class="pre">FieldInfo(annotation=str,</span> <span class="pre">required=True),</span> <span class="pre">'request_header':</span> <span class="pre">FieldInfo(annotation=dict,</span> <span class="pre">required=True)}</span></em><a class="headerlink" href="#ape.api.networks.EcosystemAPI.model_fields" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">model_fields</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ClassVar</span><span class="p"><span class="pre">[</span></span><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">FieldInfo</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'data_folder':</span> <span class="pre">FieldInfo(annotation=Path,</span> <span class="pre">required=True),</span> <span class="pre">'fee_token_decimals':</span> <span class="pre">FieldInfo(annotation=int,</span> <span class="pre">required=False,</span> <span class="pre">default=18),</span> <span class="pre">'fee_token_symbol':</span> <span class="pre">FieldInfo(annotation=str,</span> <span class="pre">required=True),</span> <span class="pre">'name':</span> <span class="pre">FieldInfo(annotation=str,</span> <span class="pre">required=True),</span> <span class="pre">'request_header':</span> <span class="pre">FieldInfo(annotation=Dict,</span> <span class="pre">required=True)}</span></em><a class="headerlink" href="#ape.api.networks.EcosystemAPI.model_fields" title="Permalink to this definition"></a></dt>
 <dd><p>Metadata about the fields defined on the model,
 mapping of field names to [<cite>FieldInfo</cite>][pydantic.fields.FieldInfo].</p>
 <p>This replaces <cite>Model.__fields__</cite> from Pydantic V1.</p>
@@ -1873,7 +1933,7 @@ mapping of field names to [<cite>FieldInfo</cite>][pydantic.fields.FieldInfo].</
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="ape.api.networks.EcosystemAPI.request_header">
-<span class="sig-name descname"><span class="pre">request_header</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">dict</span></em><a class="headerlink" href="#ape.api.networks.EcosystemAPI.request_header" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">request_header</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span></em><a class="headerlink" href="#ape.api.networks.EcosystemAPI.request_header" title="Permalink to this definition"></a></dt>
 <dd><p>A shareable HTTP header for network requests.</p>
 </dd></dl>
 
@@ -2139,7 +2199,7 @@ mapping of field names to [<cite>FieldInfo</cite>][pydantic.fields.FieldInfo].</
 <dd class="field-odd"><p><a class="reference internal" href="exceptions.html#ape.exceptions.NetworkError" title="ape.exceptions.NetworkError"><strong>NetworkError</strong></a> – When there is no explorer for this network.</p>
 </dd>
 <dt class="field-even">Parameters<span class="colon">:</span></dt>
-<dd class="field-even"><p><strong>address</strong> (<code class="docutils literal notranslate"><span class="pre">AddressType</span></code>) – The address of the contract.</p>
+<dd class="field-even"><p><strong>address</strong> (<a class="reference internal" href="types.html#ape.types.address.AddressType" title="ape.types.address.AddressType"><code class="xref py py-class docutils literal notranslate"><span class="pre">AddressType</span></code></a>) – The address of the contract.</p>
 </dd>
 </dl>
 </dd></dl>
@@ -2227,7 +2287,8 @@ method <a class="reference internal" href="#ape.api.providers.ProviderAPI.discon
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>provider</strong> (<em>str</em>) – The provider instance or the name of the provider to use.</p></li>
+<li><p><strong>provider</strong> (Union[str, <a class="reference internal" href="#ape.api.providers.ProviderAPI" title="ape.api.providers.ProviderAPI"><code class="xref py py-class docutils literal notranslate"><span class="pre">ProviderAPI</span></code></a>]) – The provider
+instance or the name of the provider to use.</p></li>
 <li><p><strong>provider_settings</strong> (<em>dict</em><em>, </em><em>optional</em>) – Settings to apply to the provider.
 Defaults to <code class="docutils literal notranslate"><span class="pre">None</span></code>.</p></li>
 <li><p><strong>disconnect_after</strong> (<em>bool</em>) – Set to <code class="docutils literal notranslate"><span class="pre">True</span></code> to force a disconnect after ending
@@ -2268,7 +2329,8 @@ session. Defaults to <code class="docutils literal notranslate"><span class="pre
 <p>A context manager for temporarily connecting to a network.
 When entering the context, calls the <a class="reference internal" href="#ape.api.providers.ProviderAPI.connect" title="ape.api.providers.ProviderAPI.connect"><code class="xref py py-meth docutils literal notranslate"><span class="pre">ape.api.providers.ProviderAPI.connect()</span></code></a> method.
 And conversely, when exiting, calls the <code class="xref py py-meth docutils literal notranslate"><span class="pre">ape.api.providers.ProviderPAI.disconnect()</span></code>
-method.</p>
+method, unless in a multi-chain context, in which case it disconnects all providers at
+the very end of the Python session.</p>
 <p>The method <a class="reference internal" href="#ape.api.networks.NetworkAPI.use_provider" title="ape.api.networks.NetworkAPI.use_provider"><code class="xref py py-meth docutils literal notranslate"><span class="pre">ape.api.networks.NetworkAPI.use_provider()</span></code></a> returns
 an instance of this context manager.</p>
 <p>Usage example:</p>
@@ -2284,6 +2346,12 @@ an instance of this context manager.</p>
     <span class="o">...</span>
 </pre></div>
 </div>
+<dl class="py property">
+<dt class="sig sig-object py" id="ape.api.networks.ProviderContextManager.empty">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">empty</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><a class="headerlink" href="#ape.api.networks.ProviderContextManager.empty" title="Permalink to this definition"></a></dt>
+<dd><p><code class="docutils literal notranslate"><span class="pre">True</span></code> when there are no providers in the context.</p>
+</dd></dl>
+
 </dd></dl>
 
 <dl class="py class">
@@ -2742,7 +2810,7 @@ return the block maximum gas limit.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>address</strong> (<code class="docutils literal notranslate"><span class="pre">AddressType</span></code>) – The address of the account.</p></li>
+<li><p><strong>address</strong> (<a class="reference internal" href="types.html#ape.types.address.AddressType" title="ape.types.address.AddressType"><code class="xref py py-class docutils literal notranslate"><span class="pre">AddressType</span></code></a>) – The address of the account.</p></li>
 <li><p><strong>block_id</strong> (<a class="reference internal" href="types.html#ape.types.BlockID" title="ape.types.BlockID"><code class="xref py py-class docutils literal notranslate"><span class="pre">BlockID</span></code></a>) – Optionally specify a block
 ID. Defaults to using the latest block.</p></li>
 </ul>
@@ -2785,7 +2853,7 @@ Can be <code class="docutils literal notranslate"><span class="pre">&quot;latest
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>address</strong> (<code class="docutils literal notranslate"><span class="pre">AddressType</span></code>) – The address of the contract.</p></li>
+<li><p><strong>address</strong> (<a class="reference internal" href="types.html#ape.types.address.AddressType" title="ape.types.address.AddressType"><code class="xref py py-class docutils literal notranslate"><span class="pre">AddressType</span></code></a>) – The address of the contract.</p></li>
 <li><p><strong>block_id</strong> (Optional[<a class="reference internal" href="types.html#ape.types.BlockID" title="ape.types.BlockID"><code class="xref py py-class docutils literal notranslate"><span class="pre">BlockID</span></code></a>]) – The block ID
 for checking a previous account nonce.</p></li>
 </ul>
@@ -3057,12 +3125,12 @@ to privately publish.</p></li>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="ape.api.providers.ProviderAPI.update_settings">
-<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">update_settings</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">new_settings</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.api.providers.ProviderAPI.update_settings" title="Permalink to this definition"></a></dt>
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">update_settings</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">new_settings</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.api.providers.ProviderAPI.update_settings" title="Permalink to this definition"></a></dt>
 <dd><p>Change a provider’s setting, such as configure a new port to run on.
 May require a reconnect.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>new_settings</strong> (<em>dict</em>) – The new provider settings.</p>
+<dd class="field-odd"><p><strong>new_settings</strong> (<em>Dict</em>) – The new provider settings.</p>
 </dd>
 </dl>
 </dd></dl>
