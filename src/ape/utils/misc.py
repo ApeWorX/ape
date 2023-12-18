@@ -75,11 +75,11 @@ def get_npm_version_from_spec(spec: str) -> SpecifierSet:
     """
     pragma_str = " ".join(spec.split()).replace("^", "~=")
 
-    if (pragma_str.startswith("=") and not pragma_str.startswith("==")) or (
-        pragma_str[0].isnumeric()
-    ):
-        pragma_str.replace("=", "")
+    if pragma_str[0].isnumeric():
         pragma_str = f"=={pragma_str}"
+
+    elif pragma_str[0] == "=" and pragma_str[1] != "=":
+        pragma_str = f"={pragma_str}"
 
     return SpecifierSet(pragma_str)
 

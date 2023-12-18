@@ -8,6 +8,7 @@ from ape.utils.misc import (
     ZERO_ADDRESS,
     add_padding_to_strings,
     extract_nested_value,
+    get_npm_version_from_spec,
     get_package_version,
     is_evm_precompile,
     is_zero_hex,
@@ -112,3 +113,25 @@ def test_is_not_zero_address(owner):
 @pytest.mark.parametrize("val", (5, "0x5", "0x05", "0x0005", HexBytes(5), Wei(5)))
 def test_to_int(val):
     assert to_int(val) == 5
+
+
+def test_get_npm_version_from_spec():
+    assert get_npm_version_from_spec("1.0") == "==1.0.0"
+    assert get_npm_version_from_spec("1") == "==1.0.0"
+    assert get_npm_version_from_spec("1.0.0-beta") == "==1.0.0-beta"
+    assert get_npm_version_from_spec("1.0-beta") == "==1.0.0-beta"
+    assert get_npm_version_from_spec("1-beta") == "==1.0.0-beta"
+    assert get_npm_version_from_spec("1.0.0-beta.1") == "==1.0.0-beta.1"
+    assert get_npm_version_from_spec("1.0-beta.1") == "==1.0.0-beta.1"
+    assert get_npm_version_from_spec("1-beta.1") == "==1.0.0-beta.1"
+
+    assert get_npm_version_from_spec("~=1.0") == "~=1.0"
+    assert get_npm_version_from_spec(">=1") == ">=1.0"
+    assert get_npm_version_from_spec("<=1.0.0-beta") == "<=1.0.0-beta"
+    assert get_npm_version_from_spec(">1.0-beta") == ">1.0.0-beta"
+    assert get_npm_version_from_spec("<1-beta") == "<1.0.0-beta"
+
+    assert get_npm_version_from_spec("1.0.0") == "==1.0.0"
+    assert get_npm_version_from_spec(" 1.0.0") == "==1.0.0"
+    assert get_npm_version_from_spec(" == 1.0.0") == "==1.0.0"
+    assert get_npm_version_from_spec(" = 1.0.0") == "==1.0.0"
