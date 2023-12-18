@@ -65,7 +65,7 @@ def _get_distributions(pkg_name: str) -> List:
 
 def get_npm_version_from_spec(spec: str) -> SpecifierSet:
     """
-    Get the version from a NPM version specifier.
+    Parse an NPM version specifier object from a str.
 
     Args:
         spec (str): A string version specifier.
