@@ -345,7 +345,9 @@ class NpmDependency(DependencyAPI):
                     continue
 
                 if semver := pragma_str_to_specifier_set(other_version):
-                    if other_version and not semver == Version(version_from_config):
+                    if other_version and not next(
+                        semver.filter([Version(version_from_config)]), None
+                    ):
                         raise ProjectError(
                             f"Version mismatch for {self.npm}. Is {self.version} in ape config "
                             f"but {other_version} in package.json. "
