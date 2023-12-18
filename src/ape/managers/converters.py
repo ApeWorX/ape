@@ -78,7 +78,8 @@ class StringIntConverter(ConverterAPI):
 
 class AddressAPIConverter(ConverterAPI):
     """
-    A converter that converts an :class:`~ape.api.address.BaseAddress` to a ``AddressType``.
+    A converter that converts an :class:`~ape.api.address.BaseAddress`
+    to a :class`~ape.types.address.AddressType`.
     """
 
     def is_convertible(self, value: Any) -> bool:
@@ -86,13 +87,13 @@ class AddressAPIConverter(ConverterAPI):
 
     def convert(self, value: BaseAddress) -> AddressType:
         """
-        Convert the given value to ``AddressType``.
+        Convert the given value to :class:`~ape.types.address.AddressType`.
 
         Args:
             value (str): The value to convert.
 
         Returns:
-            ``AddressType``: An alias to
+            :class:`~ape.types.address.AddressType`: An alias to
             `ChecksumAddress <https://eth-typing.readthedocs.io/en/latest/types.html#checksumaddress>`__.  # noqa: E501
         """
 
@@ -101,7 +102,8 @@ class AddressAPIConverter(ConverterAPI):
 
 class HexAddressConverter(ConverterAPI):
     """
-    A converter that converts a checksummed address ``str`` to a ``AddressType``.
+    A converter that converts a checksummed address ``str`` to a
+    :class:`~ape.types.address.AddressType`.
     """
 
     def is_convertible(self, value: Any) -> bool:
@@ -109,13 +111,13 @@ class HexAddressConverter(ConverterAPI):
 
     def convert(self, value: str) -> AddressType:
         """
-        Convert the given value to a ``AddressType``.
+        Convert the given value to a :class:`~ape.types.address.AddressType`.
 
         Args:
             value (str): The address ``str`` to convert.
 
         Returns:
-            ``AddressType``
+            :class:`~ape.types.address.AddressType`
         """
 
         return AddressType(to_checksum_address(value))
@@ -123,7 +125,7 @@ class HexAddressConverter(ConverterAPI):
 
 class BytesAddressConverter(ConverterAPI):
     """
-    A converter that converts a raw bytes address to an ``AddressType``.
+    A converter that converts a raw bytes address to an :class:`~ape.types.address.AddressType`.
     """
 
     def is_convertible(self, value: Any) -> bool:
@@ -135,7 +137,7 @@ class BytesAddressConverter(ConverterAPI):
 
 class IntAddressConverter(ConverterAPI):
     """
-    A converter that converts an integer address to an ``AddressType``.
+    A converter that converts an integer address to an :class:`~ape.types.address.AddressType`.
     """
 
     def is_convertible(self, value: Any) -> bool:
@@ -226,7 +228,7 @@ class ConversionManager(BaseManager):
     def is_type(self, value: Any, type: Type) -> bool:
         """
         Check if the value is the given type.
-        If given an ``AddressType``, will also check
+        If given an :class:`~ape.types.address.AddressType`, will also check
         that it is checksummed.
 
         Args:

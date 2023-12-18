@@ -185,13 +185,13 @@ class ProviderAPI(BaseInterfaceModel):
         return f"{self.network_choice}:{chain_id}"
 
     @abstractmethod
-    def update_settings(self, new_settings: dict):
+    def update_settings(self, new_settings: Dict):
         """
         Change a provider's setting, such as configure a new port to run on.
         May require a reconnect.
 
         Args:
-            new_settings (dict): The new provider settings.
+            new_settings (Dict): The new provider settings.
         """
 
     @property
@@ -208,7 +208,7 @@ class ProviderAPI(BaseInterfaceModel):
         Get the balance of an account.
 
         Args:
-            address (``AddressType``): The address of the account.
+            address (:class:`~ape.types.address.AddressType`): The address of the account.
             block_id (:class:`~ape.types.BlockID`): Optionally specify a block
               ID. Defaults to using the latest block.
 
@@ -222,7 +222,7 @@ class ProviderAPI(BaseInterfaceModel):
         Get the bytes a contract.
 
         Args:
-            address (``AddressType``): The address of the contract.
+            address (:class:`~ape.types.address.AddressType`): The address of the contract.
             block_id (Optional[:class:`~ape.types.BlockID`]): The block ID
                   for checking a previous account nonce.
 
@@ -427,7 +427,7 @@ class ProviderAPI(BaseInterfaceModel):
         Get account history for the given account.
 
         Args:
-            account (``AddressType``): The address of the account.
+            account (:class:`~ape.types.address.AddressType`): The address of the account.
             start_nonce (int): The nonce of the account to start the search with.
             stop_nonce (int): The nonce of the account to stop the search with.
 
@@ -447,7 +447,7 @@ class ProviderAPI(BaseInterfaceModel):
         Get all receipts where a contract address was created or re-created.
 
         Args:
-            address (``AddressType``): The address of the account.
+            address (:class:`~ape.types.address.AddressType`): The address of the account.
             start_block (int): The block number to start the search with.
             stop_block (int): The block number to stop the search with.
             contract_code (Optional[bytes]): The code of the contract at the stop block.
@@ -610,7 +610,7 @@ class ProviderAPI(BaseInterfaceModel):
             NotImplementedError: When this provider does not support unlocking an account.
 
         Args:
-            address (``AddressType``): The address to unlock.
+            address (:class:`~ape.types.address.AddressType`): The address to unlock.
 
         Returns:
             bool: ``True`` if successfully unlocked account and ``False`` otherwise.

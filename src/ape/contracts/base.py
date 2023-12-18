@@ -594,9 +594,9 @@ class ContractEvent(BaseInterfaceModel):
               desired log set. Defaults to delegating to provider.
             search_topics (Optional[Dict]): Search topics, such as indexed event inputs,
               to query by. Defaults to getting all events.
-            extra_addresses (Optional[List[``AddressType``]]): Additional contract
-              addresses containing the same event type. Defaults to only looking at
-              the contract instance where this event is defined.
+            extra_addresses (Optional[List[:class:`~ape.types.address.AddressType`]]):
+              Additional contract addresses containing the same event type. Defaults to
+              only looking at the contract instance where this event is defined.
 
         Returns:
             Iterator[:class:`~ape.contracts.base.ContractLog`]
@@ -884,7 +884,7 @@ class ContractInstance(BaseAddress, ContractTypeWrapper):
         The address of the contract.
 
         Returns:
-            ``AddressType``
+            :class:`~ape.types.address.AddressType`
         """
 
         return self._address

@@ -22,10 +22,10 @@ class ExplorerAPI(BaseInterfaceModel):
         Get an address URL, such as for a transaction.
 
         Args:
-            address (``AddressType``): The address to get the URL for.
+            address (:class:`~ape.types.address.AddressType`): The address.
 
         Returns:
-            str
+            str: The URL.
         """
 
     @abstractmethod
@@ -37,16 +37,16 @@ class ExplorerAPI(BaseInterfaceModel):
             transaction_hash (str): The transaction hash.
 
         Returns:
-            str
+            str: The URL.
         """
 
     @abstractmethod
     def get_contract_type(self, address: AddressType) -> Optional[ContractType]:
         """
-        Get the contract type for a given address if it has been published in an explorer.
+        Get the contract type for a given address if it has been published to this explorer.
 
         Args:
-            address (``AddressType``): The contract address.
+            address (:class:`~ape.types.address.AddressType`): The contract address.
 
         Returns:
             Optional[``ContractType``]: If not published, returns ``None``.
@@ -58,5 +58,5 @@ class ExplorerAPI(BaseInterfaceModel):
         Publish a contract to the explorer.
 
         Args:
-            address (``AddressType``): The address of the deployed contract.
+            address (:class:`~ape.types.address.AddressType`): The address of the deployed contract.
         """

@@ -343,7 +343,7 @@ class AccountManager(BaseManager):
         Determine if the given address matches an account in ``ape``.
 
         Args:
-            address (``AddressType``): The address to check.
+            address (:class:`~ape.types.address.AddressType`): The address to check.
 
         Returns:
             bool: ``True`` when the given address is found.

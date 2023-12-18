@@ -79,7 +79,7 @@ class EcosystemAPI(BaseInterfaceModel):
     data_folder: Path
     """The path to the ``.ape`` directory."""
 
-    request_header: dict
+    request_header: Dict
     """A shareable HTTP header for network requests."""
 
     fee_token_symbol: str
@@ -96,6 +96,11 @@ class EcosystemAPI(BaseInterfaceModel):
 
     @cached_property
     def custom_network(self) -> "NetworkAPI":
+        """
+        A :class:`~ape.api.networks.NetworkAPI` for custom networks where the
+        network is either not known, unspecified, or does not have an Ape plugin.
+        """
+
         ethereum_class = None
         for plugin_name, ecosystem_class in self.plugin_manager.ecosystems:
             if plugin_name == "ethereum":
@@ -124,10 +129,11 @@ class EcosystemAPI(BaseInterfaceModel):
         Convert a raw address to the ecosystem's native address type.
 
         Args:
-            raw_address (Union[str, int]): The address to convert.
+            raw_address (:class:`~ape.types.address.RawAddress`): The address to
+              convert.
 
         Returns:
-            ``AddressType``
+            :class:`~ape.types.address.AddressType`
         """
 
     @classmethod
@@ -137,10 +143,10 @@ class EcosystemAPI(BaseInterfaceModel):
         Convert the ecosystem's native address type to a raw integer or str address.
 
         Args:
-            address (Union[str, int]): The address to convert.
+            address (:class:`~ape.types.address.AddressType`): The address to convert.
 
         Returns:
-            Union[str, int]
+            :class:`~ape.types.address.RawAddress`
         """
 
     @raises_not_implemented
@@ -156,8 +162,8 @@ class EcosystemAPI(BaseInterfaceModel):
         Args:
             contract_type (``ContractType``): The type of contract to create a blueprint for.
               This is the type of contract that will get created by factory contracts.
-            *args: Calldata, if applicable.
-            **kwargs: Transaction specifications, such as ``value``.
+            *args (Any): Calldata, if applicable.
+            **kwargs (Any): Transaction specifications, such as ``value``.
 
         Returns:
             :class:`~ape.ape.transactions.TransactionAPI`
@@ -190,24 +196,24 @@ class EcosystemAPI(BaseInterfaceModel):
         return signed_txn
 
     @abstractmethod
-    def decode_receipt(self, data: dict) -> "ReceiptAPI":
+    def decode_receipt(self, data: Dict) -> "ReceiptAPI":
         """
         Convert data to :class:`~ape.api.transactions.ReceiptAPI`.
 
         Args:
-            data (dict): A dictionary of Receipt properties.
+            data (Dict): A dictionary of Receipt properties.
 
         Returns:
             :class:`~ape.api.transactions.ReceiptAPI`
         """
 
     @abstractmethod
-    def decode_block(self, data: dict) -> "BlockAPI":
+    def decode_block(self, data: Dict) -> "BlockAPI":
         """
         Decode data to a :class:`~ape.api.providers.BlockAPI`.
 
         Args:
-            data (dict): A dictionary of data to decode.
+            data (Dict): A dictionary of data to decode.
 
         Returns:
             :class:`~ape.api.providers.BlockAPI`
@@ -337,8 +343,8 @@ class EcosystemAPI(BaseInterfaceModel):
         Args:
             deployment_bytecode (HexBytes): The bytecode to deploy.
             abi (ConstructorABI): The constructor interface of the contract.
-            *args: Constructor arguments.
-            **kwargs: Transaction arguments.
+            *args (Any): Constructor arguments.
+            **kwargs (Any): Transaction arguments.
 
         Returns:
             class:`~ape.api.transactions.TransactionAPI`
@@ -349,14 +355,14 @@ class EcosystemAPI(BaseInterfaceModel):
         self, address: AddressType, abi: MethodABI, *args, **kwargs
     ) -> "TransactionAPI":
         """
-        Encode a transaction object from a contract function's abi and call arguments.
-        Update the transaction arguments with the overrides in ``kwargs`` as well.
+        Encode a transaction object from a contract function's ABI and call arguments.
+        Additionally, update the transaction arguments with the overrides in ``kwargs``.
 
         Args:
-            address (AddressType): The address of the contract.
-            abi (MethodABI): The function to call on the contract.
-            *args: Function arguments.
-            **kwargs: Transaction arguments.
+            address (:class:`~ape.types.address.AddressType`): The address of the contract.
+            abi (``MethodABI``): The function to call on the contract.
+            *args (Any): Function arguments.
+            **kwargs (Any): Transaction arguments.
 
         Returns:
             class:`~ape.api.transactions.TransactionAPI`
@@ -411,7 +417,7 @@ class EcosystemAPI(BaseInterfaceModel):
         Decode method calldata.
 
         Args:
-            abi (MethodABI): The method called.
+            abi (Union[ConstructorABI, MethodABI]): The method called.
             calldata (bytes): The raw calldata bytes.
 
         Returns:
@@ -517,7 +523,7 @@ class EcosystemAPI(BaseInterfaceModel):
         Information about a proxy contract such as proxy type and implementation address.
 
         Args:
-            address (str): The address of the contract.
+            address (:class:`~ape.types.address.AddressType`): The address of the contract.
 
         Returns:
             Optional[:class:`~ape.api.networks.ProxyInfoAPI`]: Returns ``None`` if the contract
@@ -565,15 +571,15 @@ class EcosystemAPI(BaseInterfaceModel):
     @raises_not_implemented
     def get_python_types(  # type: ignore[empty-body]
         self, abi_type: ABIType
-    ) -> Union[Type, Tuple, List]:
+    ) -> Union[Type, Sequence]:
         """
         Get the Python types for a given ABI type.
 
         Args:
-            abi_type (str): The ABI type to get the Python types for.
+            abi_type (``ABIType``): The ABI type to get the Python types for.
 
         Returns:
-            List[Type]: The Python types for the given ABI type.
+            Union[Type, Sequence]: The Python types for the given ABI type.
         """
 
 
@@ -582,7 +588,8 @@ class ProviderContextManager(ManagerAccessMixin):
     A context manager for temporarily connecting to a network.
     When entering the context, calls the :meth:`ape.api.providers.ProviderAPI.connect` method.
     And conversely, when exiting, calls the :meth:`ape.api.providers.ProviderPAI.disconnect`
-    method.
+    method, unless in a multi-chain context, in which case it disconnects all providers at
+    the very end of the Python session.
 
     The method :meth:`ape.api.networks.NetworkAPI.use_provider` returns
     an instance of this context manager.
@@ -624,6 +631,10 @@ class ProviderContextManager(ManagerAccessMixin):
 
     @property
     def empty(self) -> bool:
+        """
+        ``True`` when there are no providers in the context.
+        """
+
         return not self.connected_providers or not self.provider_stack
 
     def __enter__(self, *args, **kwargs):
@@ -977,7 +988,8 @@ class NetworkAPI(BaseInterfaceModel):
                 ...
 
         Args:
-            provider (str): The provider instance or the name of the provider to use.
+            provider (Union[str, :class:`~ape.api.providers.ProviderAPI`]): The provider
+              instance or the name of the provider to use.
             provider_settings (dict, optional): Settings to apply to the provider.
               Defaults to ``None``.
             disconnect_after (bool): Set to ``True`` to force a disconnect after ending
@@ -1103,7 +1115,7 @@ class NetworkAPI(BaseInterfaceModel):
             :class:`~ape.exceptions.NetworkError`: When there is no explorer for this network.
 
         Args:
-            address (``AddressType``): The address of the contract.
+            address (:class:`~ape.types.address.AddressType`): The address of the contract.
         """
         if not self.explorer:
             raise NetworkError("Unable to publish contract - no explorer plugin installed.")

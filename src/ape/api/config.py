@@ -12,6 +12,18 @@ class ConfigEnum(str, Enum):
     A configuration `Enum <https://docs.python.org/3/library/enum.html>`__ type.
     Use this to limit the values of a config item, such as colors ``"RED"``, ``"BLUE"``,
     ``"GREEN"``, rather than any arbitrary ``str``.
+
+    Usage example::
+
+            class MyEnum(ConfigEnum):
+                FOO = "FOO"
+                BAR = "BAR"
+
+            class MyConfig(PluginConfig):
+                my_enum: MyEnum
+
+            model = MyConfig(my_enum="FOO")
+
     """
 
 

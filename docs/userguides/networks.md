@@ -27,7 +27,7 @@ as a short-cut for `ethereum:local:foundry`.
 ## Configuring Networks
 
 Change network defaults using your project's `ape-config.yaml` file.
-The following configuration changes the default ecosystem, network, and provider such that if you omitted the `--network` option on network-bound commands, it would use the value `<ecosystem-name>:<network-name>:<provider-name>`.
+The following configuration changes the default ecosystem, network, and provider such that if you omitted the `--network` option on connected-provider commands, it would use the value `<ecosystem-name>:<network-name>:<provider-name>`.
 
 ```yaml
 default_ecosystem: <ecosystem-name>
@@ -53,7 +53,7 @@ You may use one of:
 - `"max"` - the maximum block gas limit is used
 - A number or numeric string, base 10 or 16 (e.g. `1234`, `"1234"`, `0x1234`, `"0x1234"`)
 
-For the local network configuration, the default is `"max"`. Otherwise it is `"auto"`.
+For the local network configuration, the default is `"max"`. Otherwise, it is `"auto"`.
 
 ## Local Network
 

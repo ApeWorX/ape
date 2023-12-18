@@ -63,7 +63,7 @@ class AccountAPI(BaseInterfaceModel, BaseAddress):
 
         Args:
           msg (Any): The message to sign. Account plugins can handle various types of messages.
-            For example, :class:`~ape_accounts.accouns.KeyfileAccount` can handle
+            For example, :class:`~ape_accounts.accounts.KeyfileAccount` can handle
             :class:`~ape.types.signatures.SignableMessage`, str, int, and bytes.
             See these
             `docs <https://eth-account.readthedocs.io/en/stable/eth_account.html#eth_account.messages.SignableMessage>`__  # noqa: E501
@@ -85,9 +85,9 @@ class AccountAPI(BaseInterfaceModel, BaseAddress):
 
         Returns:
           :class:`~ape.api.transactions.TransactionAPI` (optional): A signed transaction.
-            The `TransactionAPI` returned by this method may not correspond to `txn` given as input,
-            however returning a properly-formatted transaction here is meant to be executed.
-            Returns `None` if the account does not have a transaction it wishes to execute.
+            The ``TransactionAPI`` returned by this method may not correspond to ``txn`` given as
+            input, however returning a properly-formatted transaction here is meant to be executed.
+            Returns ``None`` if the account does not have a transaction it wishes to execute.
 
         """
 
@@ -113,7 +113,7 @@ class AccountAPI(BaseInterfaceModel, BaseAddress):
             txn (:class:`~ape.api.transactions.TransactionAPI`): An invoke-transaction.
             send_everything (bool): ``True`` will send the difference from balance and fee.
               Defaults to ``False``.
-            private (bool): ``True`` with use the
+            private (bool): ``True`` will use the
               :meth:`~ape.api.providers.ProviderAPI.send_private_transaction` method.
             **signer_options: Additional kwargs given to the signer to modify the signing operation.
 
@@ -165,8 +165,8 @@ class AccountAPI(BaseInterfaceModel, BaseAddress):
     def transfer(
         self,
         account: Union[str, AddressType, BaseAddress],
-        value: Union[str, int, None] = None,
-        data: Union[bytes, str, None] = None,
+        value: Optional[Union[str, int]] = None,
+        data: Optional[Union[bytes, str]] = None,
         private: bool = False,
         **kwargs,
     ) -> ReceiptAPI:
@@ -178,12 +178,13 @@ class AccountAPI(BaseInterfaceModel, BaseAddress):
               and using a provider that does not support private transactions.
 
         Args:
-            account (str): The account to send funds to.
-            value (str): The amount to send.
-            data (str): Extra data to include in the transaction.
+            account (Union[str, AddressType, BaseAddress]): The receiver of the funds.
+            value (Optional[Union[str, int]]): The amount to send.
+            data (Optional[Union[bytes, str]]): Extra data to include in the transaction.
             private (bool): ``True`` asks the provider to make the transaction
-              private. For example, EVM providers uses the RPC ``eth_sendPrivateTransaction``
-              to achieve this. Local providers may ignore this value.
+              private. For example, EVM providers typically use the RPC
+              ``eth_sendPrivateTransaction`` to achieve this. Local providers may ignore
+              this value.
 
         Returns:
             :class:`~ape.api.transactions.ReceiptAPI`
@@ -218,8 +219,8 @@ class AccountAPI(BaseInterfaceModel, BaseAddress):
         deploying and a provider must be active.
 
         Args:
-            contract (:class:`~ape.contracts.ContractContainer`):
-              The type of contract to deploy.
+            contract (:class:`~ape.contracts.base.ContractContainer`): The type of contract to
+              deploy.
             publish (bool): Set to ``True`` to attempt explorer contract verification.
               Defaults to ``False``.
 
@@ -249,6 +250,19 @@ class AccountAPI(BaseInterfaceModel, BaseAddress):
         return instance
 
     def declare(self, contract: "ContractContainer", *args, **kwargs) -> ReceiptAPI:
+        """
+        Deploy the "blueprint" of a contract type. For EVM providers, this likely means
+        using `EIP-5202 <https://eips.ethereum.org/EIPS/eip-5202>`__, which is implemented
+        in the core ``ape-ethereum`` plugin.
+
+        Args:
+            contract (:class:`~ape.contracts.base.ContractContainer`): The contract container
+              to declare.
+
+        Returns:
+            :class:`~ape.api.transactions.ReceiptAPI`: The receipt of the declare transaction.
+        """
+
         transaction = self.provider.network.ecosystem.encode_contract_blueprint(
             contract.contract_type, *args, **kwargs
         )
@@ -274,7 +288,8 @@ class AccountAPI(BaseInterfaceModel, BaseAddress):
             data (Union[:class:`~ape.types.signatures.SignableMessage`, :class:`~ape.api.transactions.TransactionAPI`]):  # noqa: E501
               The message or transaction to verify.
             signature (Optional[:class:`~ape.types.signatures.MessageSignature`]):
-              The signature to check.
+              The signature to check. Defaults to ``None`` and is not needed when the first
+              argument is a transaction class.
 
         Returns:
             bool: ``True`` if the data was signed by this account. ``False`` otherwise.
@@ -341,6 +356,7 @@ class AccountContainerAPI(BaseInterfaceModel):
     """
 
     data_folder: Path
+
     account_type: Type[AccountAPI]
 
     @property
@@ -374,7 +390,7 @@ class AccountContainerAPI(BaseInterfaceModel):
         Get an account by address.
 
         Args:
-            address (``AddressType``): The address to get. The type is an alias to
+            address (:class:`~ape.types.address.AddressType`): The address to get. The type is an alias to
               `ChecksumAddress <https://eth-typing.readthedocs.io/en/latest/types.html#checksumaddress>`__.  # noqa: E501
 
         Raises:
@@ -436,7 +452,7 @@ class AccountContainerAPI(BaseInterfaceModel):
             NotImplementError: When not overridden within a plugin.
 
         Args:
-            address (``AddressType``): The address of the account to delete.
+            address (:class:`~ape.types.address.AddressType`): The address of the account to delete.
         """
         raise NotImplementedError("Must define this method to use `container.remove(acct)`.")
 
@@ -448,7 +464,7 @@ class AccountContainerAPI(BaseInterfaceModel):
             IndexError: When the given account address is not in this container.
 
         Args:
-            address (``AddressType``): An account address.
+            address (:class:`~ape.types.address.AddressType`): An account address.
 
         Returns:
             bool: ``True`` if ``ape`` manages the account with the given address.

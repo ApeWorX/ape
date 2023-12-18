@@ -13,7 +13,7 @@ class ConverterAPI(BaseInterfaceModel, Generic[ConvertedType]):
         :meth:`ape.api.convert.ConverterAPI.convert`.
 
         Args:
-            value (str): The value to check.
+            value (Any): The value to check.
 
         Returns:
             bool: ``True`` when the given value can be converted.
