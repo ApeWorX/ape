@@ -7,7 +7,7 @@ from ethpm_types import ContractType
 from ethpm_types.source import Content, ContractSource
 from evm_trace.geth import TraceFrame as EvmTraceFrame
 from evm_trace.geth import create_call_node_data
-from semantic_version import Version  # type: ignore
+from packaging.version import Version
 
 from ape.api.config import PluginConfig
 from ape.exceptions import APINotImplementedError, ContractLogicError

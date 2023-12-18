@@ -17,7 +17,7 @@ from pathlib import Path
 from typing import List
 
 import requests
-from semantic_version import Version  # type: ignore
+from packaging.version import Version
 
 sys.path.insert(0, os.path.abspath(".."))
 

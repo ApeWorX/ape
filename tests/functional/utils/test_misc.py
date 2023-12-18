@@ -11,6 +11,7 @@ from ape.utils.misc import (
     get_package_version,
     is_evm_precompile,
     is_zero_hex,
+    pragma_str_to_specifier_set,
     raises_not_implemented,
     run_until_complete,
     to_int,
@@ -112,3 +113,30 @@ def test_is_not_zero_address(owner):
 @pytest.mark.parametrize("val", (5, "0x5", "0x05", "0x0005", HexBytes(5), Wei(5)))
 def test_to_int(val):
     assert to_int(val) == 5
+
+
+@pytest.mark.parametrize(
+    "spec,expected",
+    [
+        ("1.0", "==1.0.0"),
+        ("1.0.0-beta", "==1.0.0-beta"),
+        ("1.0-beta", "==1.0.0-beta"),
+        ("1-beta", "==1.0.0-beta"),
+        ("1.0.0-beta.1", "==1.0.0-beta.1"),
+        ("1.0-beta.1", "==1.0.0-beta.1"),
+        ("1-beta.1", "==1.0.0-beta.1"),
+        ("~=1.0", "~=1.0"),
+        (">=1", ">=1.0"),
+        ("<=1.0.0-beta", "<=1.0.0-beta"),
+        (">1.0-beta", ">1.0.0-beta"),
+        ("1.0.0", "==1.0.0"),
+        (" 1.0.0", "==1.0.0"),
+        (" == 1.0.0", "==1.0.0"),
+        (" = 1.0.0", "==1.0.0"),
+        (">= 0.4.19 < 0.5.0", ">=0.4.19,<0.5.0"),
+        (">=0.4.19,< 0.5.0", ">=0.4.19,<0.5.0"),
+        (">=0.4.19 <0.5.0", ">=0.4.19,<0.5.0"),
+    ],
+)
+def test_pragma_str_to_specifier_set(spec, expected):
+    assert pragma_str_to_specifier_set(spec) == expected
