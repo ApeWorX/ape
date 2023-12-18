@@ -35,7 +35,9 @@ class CompilerAPI(BaseInterfaceModel):
     @property
     @abstractmethod
     def name(self) -> str:
-        ...
+        """
+        The name of the compiler.
+        """
 
     @property
     def config(self) -> PluginConfig:
@@ -182,8 +184,8 @@ class CompilerAPI(BaseInterfaceModel):
 
     def enrich_error(self, err: ContractLogicError) -> ContractLogicError:
         """
-        Enrich a contract logic error using compiler information, such
-        known PC locations for compiler runtime errors, such as math errors.
+        Enrich a contract logic error using compiler information, such as
+        known PC locations for compiler runtime errors.
 
         Args:
             err (:class:`~ape.exceptions.ContractLogicError`): The exception
@@ -223,7 +225,7 @@ class CompilerAPI(BaseInterfaceModel):
 
         Args:
             path (``pathlib.Path``): The source path of the contract.
-            **kwargs: Additional compiler-specific settings. See specific
+            **kwargs (Any): Additional compiler-specific settings. See specific
               compiler plugins when applicable.
 
         Returns:

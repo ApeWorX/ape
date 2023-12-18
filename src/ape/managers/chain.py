@@ -1304,7 +1304,7 @@ class ContractCache(BaseManager):
         Get the receipt responsible for the initial creation of the contract.
 
         Args:
-            address (``AddressType``): The address of the contract.
+            address (:class:`~ape.types.address.AddressType`): The address of the contract.
             start_block (int): The block to start looking from.
             stop_block (Optional[int]): The block to stop looking at.
 

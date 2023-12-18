@@ -3,7 +3,7 @@ from typing import Dict, Union
 import pytest
 from pydantic_settings import SettingsConfigDict
 
-from ape.api import PluginConfig
+from ape.api import ConfigEnum, PluginConfig
 from ape.api.networks import LOCAL_NETWORK_NAME
 from ape.managers.config import CONFIG_FILE_NAME, DeploymentConfigCollection, merge_configs
 from ape.types import GasLimit
@@ -234,3 +234,15 @@ def test_custom_plugin_config_extras():
     assert "foo" in config
     assert config.foo == "123"
     assert config["foo"] == "123"
+
+
+def test_config_enum():
+    class MyEnum(ConfigEnum):
+        FOO = "FOO"
+        BAR = "BAR"
+
+    class MyConfig(PluginConfig):
+        my_enum: MyEnum
+
+    actual = MyConfig(my_enum="FOO")
+    assert actual.my_enum == MyEnum.FOO

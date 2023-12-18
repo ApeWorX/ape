@@ -43,6 +43,7 @@ class ProjectManager(BaseManager):
     """The project path."""
 
     _cached_projects: Dict[str, ProjectAPI] = {}
+    _getattr_contracts: bool = True
 
     def __init__(
         self,
@@ -519,14 +520,15 @@ class ProjectManager(BaseManager):
 
         return result
 
-    def _get_attr(self, attr_name: str):
+    def _get_attr(self, attr_name: str) -> Any:
         # Fixes anomaly when accessing non-ContractType attributes.
         # Returns normal attribute if exists. Raises 'AttributeError' otherwise.
         try:
             return self.__getattribute__(attr_name)
         except AttributeError:
-            # Check if a contract.
-            pass
+            if not self._getattr_contracts:
+                # Raise the attribute error as if this method didn't exist.
+                raise
 
         try:
             # NOTE: Will compile project (if needed)
@@ -690,7 +692,7 @@ class ProjectManager(BaseManager):
         scripts or tests in ``ape``, such as from ``ape run`` or ``ape test``.
 
         Args:
-            file_paths (Optional[Union[List[Path], Path]]):
+            file_paths (Optional[Union[Iterable[Path], Path]]):
               Provide one or more contract file-paths to load. If excluded,
               will load all the contracts.
             use_cache (Optional[bool]): Set to ``False`` to force a re-compile.

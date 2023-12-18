@@ -107,7 +107,7 @@ def recover_signer(msg: SignableMessage, sig: MessageSignature) -> AddressType:
         :class:`~ape.types.MessageSignature`MessageSignature: Signature of the message.
 
     Returns:
-        ``AddressType``: address of message signer.
+        :class:`~ape.types.address.AddressType`: address of message signer.
     """
     return Account.recover_message(msg, sig)
 
