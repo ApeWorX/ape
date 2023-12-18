@@ -74,7 +74,11 @@ def get_npm_version_from_spec(spec: str) -> SpecifierSet:
         SpecifierSet: The NPM version specifier.
     """
     pragma_str = " ".join(spec.split()).replace("^", "~=")
-    if pragma_str and pragma_str[0].isnumeric():
+
+    if (pragma_str.startswith("=") and not pragma_str.startswith("==")) or (
+        pragma_str[0].isnumeric()
+    ):
+        pragma_str.replace("=", "")
         pragma_str = f"=={pragma_str}"
 
     return SpecifierSet(pragma_str)
