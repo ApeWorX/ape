@@ -217,8 +217,9 @@ def test_pip_freeze_includes_version_when_available():
     assert actual == expected
 
 
-def test_handle_upgrade_result_when_upgrading_to_same_version(caplog):
+def test_handle_upgrade_result_when_upgrading_to_same_version(caplog, logger):
     # NOTE: pip freeze mock also returns version 0.7.0 (so upgrade to same).
+    logger.set_level("INFO")  # Required for test.
     plugin = PluginMetadata(name=THIRD_PARTY[0])
     handler = ModifyPluginResultHandler(plugin)
     handler.handle_upgrade_result(0, "0.7.0")
