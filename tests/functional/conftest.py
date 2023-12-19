@@ -9,7 +9,6 @@ from eth_pydantic_types import HexBytes
 from ethpm_types import ContractType, MethodABI
 
 import ape
-from ape.api import TransactionAPI
 from ape.contracts import ContractContainer, ContractInstance
 from ape.contracts.base import ContractCallHandler
 from ape.exceptions import ChainError, ContractLogicError, ProviderError
@@ -154,7 +153,9 @@ def mock_web3(mocker):
 
 @pytest.fixture
 def mock_transaction(mocker):
-    return mocker.MagicMock(spec=TransactionAPI)
+    tx = mocker.MagicMock()
+    tx.required_confirmations = 0
+    return tx
 
 
 @pytest.fixture(scope="session")

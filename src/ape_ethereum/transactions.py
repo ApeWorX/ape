@@ -262,7 +262,11 @@ class Receipt(ReceiptAPI):
             Union[List[Union[EventABI, "ContractEvent"]], Union[EventABI, "ContractEvent"]]
         ] = None,
     ) -> ContractLogContainer:
-        if abi is not None:
+        if not self.logs:
+            # Short circuit.
+            return ContractLogContainer([])
+
+        elif abi is not None:
             if not isinstance(abi, (list, tuple)):
                 abi = [abi]
 
@@ -282,21 +286,19 @@ class Receipt(ReceiptAPI):
             }
 
             def get_default_log(
-                _log: Dict, logs: ContractLogContainer, name: Optional[str] = None
+                _log: Dict, logs: ContractLogContainer, evt_name: Optional[str] = None
             ) -> ContractLog:
-                # For when we fail to decode.
-                if not name:
-                    name = "UnknownLog"
-                    index = _log.get("logIndex")
-                    if index is not None:
-                        name = f"{name}_WithIndex_{index}"
+                log_index = _log.get("logIndex", logs[-1].log_index + 1 if logs else 0)
+
+                # NOTE: Happens when decoding fails.
+                evt_name = evt_name or f"UnknownLog_WithIndex_{log_index}"
 
                 return ContractLog(
                     block_hash=self.block.hash,
                     block_number=self.block_number,
                     event_arguments={"root": _log["data"]},
-                    event_name=f"<{name}>",
-                    log_index=logs[-1].log_index + 1 if logs else 0,
+                    event_name=f"<{evt_name}>",
+                    log_index=log_index,
                     transaction_hash=self.txn_hash,
                     transaction_index=logs[-1].transaction_index if logs else None,
                 )
@@ -318,7 +320,7 @@ class Receipt(ReceiptAPI):
                         else:
                             # Search for selector in other spots:
                             name = f"UnknownLogWithSelector_{selector}"
-                            obj = get_default_log(log, decoded_logs, name=name)
+                            obj = get_default_log(log, decoded_logs, evt_name=name)
                             decoded_logs.append(obj)
 
                     elif library_log := self._decode_ds_note(log):
@@ -330,7 +332,7 @@ class Receipt(ReceiptAPI):
                         if index is not None:
                             name = f"{name}_AndLogIndex_{index}"
 
-                        obj = get_default_log(log, decoded_logs, name=name)
+                        obj = get_default_log(log, decoded_logs, evt_name=name)
                         decoded_logs.append(obj)
 
                 elif library_log := self._decode_ds_note(log):

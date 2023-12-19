@@ -497,14 +497,13 @@ class Web3Provider(ProviderAPI, ABC):
                 else:  # if it was the last attempt
                     raise  # Re-raise the last exception.
 
-        receipt = self.network.ecosystem.decode_receipt(
-            {
-                "provider": self,
-                "required_confirmations": required_confirmations,
-                **txn,
-                **receipt_data,
-            }
-        )
+        data = {
+            "provider": self,
+            "required_confirmations": required_confirmations,
+            **txn,
+            **receipt_data,
+        }
+        receipt = self.network.ecosystem.decode_receipt(data)
         return receipt.await_confirmations()
 
     def get_transactions_by_block(self, block_id: BlockID) -> Iterator[TransactionAPI]:
@@ -895,6 +894,10 @@ class Web3Provider(ProviderAPI, ABC):
             except Exception as err:
                 vm_err = self.get_virtual_machine_error(err, txn=txn)
                 raise vm_err from err
+
+            # If we get here, for some reason the tx-replay did not produce
+            # a VM error.
+            receipt.raise_for_status()
 
         logger.info(f"Confirmed {receipt.txn_hash} (total fees paid = {receipt.total_fees_paid})")
         return receipt

@@ -362,7 +362,7 @@ class Ethereum(EcosystemAPI):
         elif "input" in data and isinstance(data["input"], str):
             data["input"] = HexBytes(data["input"])
 
-        block_number = data.get("block_number") or data.get("blockNumber")
+        block_number = data.get("block_number", data.get("blockNumber"))
         if block_number is None:
             raise ValueError("Missing block number.")
 

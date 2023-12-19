@@ -1,16 +1,23 @@
 from unittest import mock
 
 import pytest
+from eth_pydantic_types import HashBytes32
 from eth_tester.exceptions import TransactionFailed  # type: ignore
 from eth_typing import HexStr
 from eth_utils import ValidationError
+from hexbytes import HexBytes
 from web3.exceptions import ContractPanicError
 
-from ape.exceptions import BlockNotFoundError, ContractLogicError, TransactionNotFoundError
+from ape.exceptions import (
+    BlockNotFoundError,
+    ContractLogicError,
+    TransactionError,
+    TransactionNotFoundError,
+)
 from ape.types import LogFilter
 from ape.utils import DEFAULT_TEST_CHAIN_ID
 from ape_ethereum.provider import _sanitize_web3_url
-from ape_ethereum.transactions import TransactionType
+from ape_ethereum.transactions import TransactionStatusEnum, TransactionType
 
 
 def test_uri(eth_tester_provider):
@@ -276,3 +283,41 @@ def test_use_provider_using_provider_instance(eth_tester_provider):
     network = eth_tester_provider.network
     with network.use_provider(eth_tester_provider) as provider:
         assert id(provider) == id(eth_tester_provider)
+
+
+def test_send_transaction_when_no_error_and_receipt_fails(
+    mock_transaction, mock_web3, eth_tester_provider, owner, vyper_contract_instance
+):
+    start_web3 = eth_tester_provider._web3
+    eth_tester_provider._web3 = mock_web3
+
+    try:
+        # NOTE: Value is meaningless.
+        tx_hash = HashBytes32.__eth_pydantic_validate__(123**36)
+
+        # Sending tx "works" meaning no vm error.
+        mock_web3.eth.send_raw_transaction.return_value = tx_hash
+
+        # Getting a receipt "works", but you get a failed one.
+        receipt_data = {
+            "failed": True,
+            "blockNumber": 0,
+            "txnHash": tx_hash.hex(),
+            "status": TransactionStatusEnum.FAILING.value,
+            "sender": owner.address,
+            "receiver": vyper_contract_instance.address,
+            "input": b"",
+            "gasUsed": 123,
+            "gasLimit": 100,
+        }
+        mock_web3.eth.wait_for_transaction_receipt.return_value = receipt_data
+
+        # Attempting to replay the tx does not produce any error.
+        mock_web3.eth.call.return_value = HexBytes("")
+
+        # Execute test.
+        with pytest.raises(TransactionError):
+            eth_tester_provider.send_transaction(mock_transaction)
+
+    finally:
+        eth_tester_provider._web3 = start_web3
