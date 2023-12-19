@@ -18,11 +18,24 @@ AVAILABLE_PLUGINS = ("available", "installed")
 INSTALLED_PLUGINS = ("installed", "thirdparty")
 THIRD_PARTY = ("thirdparty",)
 VERSION = "0.7.0"
-PIP_FREEZE_OUTPUT = f"FOOFOO==1.1.1\n-e git+ssh://git@github.com/ApeWorX/ape-{INSTALLED_PLUGINS[0]}.git@aaaaaaaabbbbbb3343#egg=ape-{INSTALLED_PLUGINS[0]}\naiohttp==3.8.5\nape-{THIRD_PARTY[0]}==0.7.0\n"  # noqa: E501
+
+
+def get_pip_freeze_output(version: str):
+    return f"FOOFOO==1.1.1\n-e git+ssh://git@github.com/ApeWorX/ape-{INSTALLED_PLUGINS[0]}.git@aaaaaaaabbbbbb3343#egg=ape-{INSTALLED_PLUGINS[0]}\naiohttp==3.8.5\nape-{THIRD_PARTY[0]}=={version}\n"  # noqa: E501
 
 
 @pytest.fixture(autouse=True)
-def plugin_test_env(mocker):
+def mock_pip_freeze(mocker):
+    def fn(version: str):
+        patch = mocker.patch("ape_plugins.utils._check_pip_freeze")
+        patch.return_value = get_pip_freeze_output(version)
+        return patch
+
+    return fn
+
+
+@pytest.fixture(autouse=True)
+def plugin_test_env(mocker, mock_pip_freeze):
     root = "ape_plugins.utils"
 
     # Prevent calling out to GitHub
@@ -31,8 +44,7 @@ def plugin_test_env(mocker):
 
     # Used when testing PipFreeze object itself but also extra avoids
     # actually calling out pip ever in tests.
-    patch = mocker.patch("ape_plugins.utils._check_pip_freeze")
-    patch.return_value = PIP_FREEZE_OUTPUT
+    mock_pip_freeze(VERSION)
 
     # Prevent requiring plugins to be installed.
     installed_mock = mocker.patch(f"{root}._pip_freeze_plugins")
@@ -210,11 +222,19 @@ def test_handle_upgrade_result_when_upgrading_to_same_version(caplog):
     plugin = PluginMetadata(name=THIRD_PARTY[0])
     handler = ModifyPluginResultHandler(plugin)
     handler.handle_upgrade_result(0, "0.7.0")
-    assert f"'{THIRD_PARTY[0]}' already has version '0.7.0'" in caplog.records[-1].message
+    if records := caplog.records:
+        assert f"'{THIRD_PARTY[0]}' already has version '0.7.0'" in records[-1].message
+    else:
+        version_at_end = plugin.pip_freeze_version
+        pytest.fail(
+            "Missing logs when upgrading to same version 0.7.0. "
+            f"pip_freeze_version={version_at_end}"
+        )
 
 
 def test_handle_upgrade_result_when_no_pip_freeze_version_does_not_log(caplog):
-    plugin = PluginMetadata(name=INSTALLED_PLUGINS[0])  # Doesn't have version.
+    plugin_no_version = INSTALLED_PLUGINS[0]  # Version not in pip-freeze
+    plugin = PluginMetadata(name=plugin_no_version)
     handler = ModifyPluginResultHandler(plugin)
     handler.handle_upgrade_result(0, "0.7.0")
 
