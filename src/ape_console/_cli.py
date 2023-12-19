@@ -47,7 +47,7 @@ def import_extras_file(file_path) -> ModuleType:
     return module
 
 
-def load_console_extras(namespace: Dict[str, Any]) -> Dict[str, Any]:
+def load_console_extras(**namespace: Any) -> Dict[str, Any]:
     """load and return namespace updates from ape_console_extras.py  files if
     they exist"""
     global_extras = config.DATA_FOLDER.joinpath(CONSOLE_EXTRAS_FILENAME)
@@ -116,11 +116,14 @@ def console(project=None, verbose=None, extra_locals=None, embed=False):
     namespace = {component: getattr(ape, component) for component in ape.__all__}
     namespace["ape"] = ape
 
+    # NOTE: `ape_console_extras` only is meant to work with default namespace.
+    #  Load extras before local namespace to avoid console extras receiving
+    #  the wrong values for its arguments.
+    sys.path.insert(0, getcwd())
+    console_extras = load_console_extras(**namespace)
+
     if extra_locals:
         namespace.update(extra_locals)
-
-    sys.path.insert(0, getcwd())
-    console_extras = load_console_extras(namespace)
 
     if console_extras:
         namespace.update(console_extras)
@@ -133,13 +136,17 @@ def console(project=None, verbose=None, extra_locals=None, embed=False):
         # Required for click.testing.CliRunner support.
         embed = True
 
+    _launch_console(namespace, ipy_config, embed, banner)
+
+
+def _launch_console(namespace: Dict, ipy_config: IPythonConfig, embed: bool, banner: str):
     ipython_kwargs = {"user_ns": namespace, "config": ipy_config}
     if embed:
         IPython.embed(**ipython_kwargs, colors="Neutral", banner1=banner)
     else:
         ipy_config.TerminalInteractiveShell.colors = "Neutral"
         ipy_config.TerminalInteractiveShell.banner1 = banner
-        console_config = cast(ConsoleConfig, ape.config.get_config("console"))
+        console_config = cast(ConsoleConfig, namespace["ape"].config.get_config("console"))
         ipy_config.InteractiveShellApp.extensions.append("ape_console.plugin")
         if console_config.plugins:
             ipy_config.InteractiveShellApp.extensions.extend(console_config.plugins)
