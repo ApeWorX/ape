@@ -1,10 +1,18 @@
 from typing import cast
 
 import pytest
+from eth_pydantic_types import HashBytes32
 from eth_typing import HexStr
+from hexbytes import HexBytes
 
-from ape.exceptions import BlockNotFoundError, NetworkMismatchError, TransactionNotFoundError
+from ape.exceptions import (
+    BlockNotFoundError,
+    NetworkMismatchError,
+    TransactionError,
+    TransactionNotFoundError,
+)
 from ape_ethereum.ecosystem import Block
+from ape_ethereum.transactions import TransactionStatusEnum
 from tests.conftest import GETH_URI, geth_process_test
 
 
@@ -237,3 +245,46 @@ def test_isolate(chain, geth_contract, geth_account):
 def test_gas_price(geth_provider):
     actual = geth_provider.gas_price
     assert isinstance(actual, int)
+
+
+@geth_process_test
+def test_send_transaction_when_no_error_and_receipt_fails(
+    mock_transaction,
+    mock_web3,
+    geth_provider,
+    owner,
+    geth_contract,
+):
+    start_web3 = geth_provider._web3
+    geth_provider._web3 = mock_web3
+
+    try:
+        # NOTE: Value is meaningless.
+        tx_hash = HashBytes32.__eth_pydantic_validate__(123**36)
+
+        # Sending tx "works" meaning no vm error.
+        mock_web3.eth.send_raw_transaction.return_value = tx_hash
+
+        # Getting a receipt "works", but you get a failed one.
+        receipt_data = {
+            "failed": True,
+            "blockNumber": 0,
+            "txnHash": tx_hash.hex(),
+            "status": TransactionStatusEnum.FAILING.value,
+            "sender": owner.address,
+            "receiver": geth_contract.address,
+            "input": b"",
+            "gasUsed": 123,
+            "gasLimit": 100,
+        }
+        mock_web3.eth.wait_for_transaction_receipt.return_value = receipt_data
+
+        # Attempting to replay the tx does not produce any error.
+        mock_web3.eth.call.return_value = HexBytes("")
+
+        # Execute test.
+        with pytest.raises(TransactionError):
+            geth_provider.send_transaction(mock_transaction)
+
+    finally:
+        geth_provider._web3 = start_web3
