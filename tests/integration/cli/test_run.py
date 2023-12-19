@@ -120,7 +120,7 @@ def test_run_custom_provider(ape_cli, runner, project):
 
     # Show that it attempts to connect
     assert result.exit_code == 1, result.output
-    assert "No node found on 'http://127.0.0.1:9545" in result.output
+    assert "No (supported) node found on 'http://127.0.0.1:9545" in result.output
 
 
 @skip_projects_except("script")
@@ -129,7 +129,7 @@ def test_run_custom_network(ape_cli, runner, project):
 
     # Show that it attempts to connect
     assert result.exit_code == 1, result.output
-    assert "No node found on 'http://127.0.0.1:9545" in result.output
+    assert "No (supported) node found on 'http://127.0.0.1:9545" in result.output
 
 
 @skip_projects_except("script")
