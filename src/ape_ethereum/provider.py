@@ -1071,7 +1071,17 @@ class EthereumNodeProvider(Web3Provider, ABC):
 
         # Use value from config file
         network_config = config.get(self.network.name) or DEFAULT_SETTINGS
-        return network_config.get("uri", DEFAULT_SETTINGS["uri"])
+        settings_uri = network_config.get("uri", DEFAULT_SETTINGS["uri"])
+        if (
+            settings_uri.startswith("http://")
+            or settings_uri.startswith("https://")
+            or settings_uri.startswith("wss://")
+            or settings_uri.startswith("ws://")
+        ):
+            return settings_uri
+
+        # Likely was an IPC Path and will connect that way.
+        return ""
 
     @property
     def connection_str(self) -> str:
@@ -1083,7 +1093,14 @@ class EthereumNodeProvider(Web3Provider, ABC):
 
     @property
     def _clean_uri(self) -> str:
-        return sanitize_url(self.uri)
+        return (
+            sanitize_url(self.uri)
+            if self.uri.startswith("https://")
+            or self.uri.startswith("http://")
+            or self.uri.startswith("wss://")
+            or self.uri.startswith("ws://")
+            else self.uri
+        )
 
     @property
     def ipc_path(self) -> Path:
@@ -1271,7 +1288,9 @@ class EthereumNodeProvider(Web3Provider, ABC):
     def connect(self):
         self._set_web3()
         if not self.is_connected:
-            raise ProviderError(f"No node found on '{self._clean_uri}'.")
+            uri = self._clean_uri
+            message = f"No (supported) node found on '{uri}'."
+            raise ProviderError(message)
 
         self._complete_connect()
 
@@ -1288,13 +1307,14 @@ def _create_web3(uri: str, ipc_path: Optional[Path] = None):
 
         return IPCProvider(ipc_path=path)
 
-    # NOTE: This tuple is ordered by try-attempt.
+    # NOTE: This list is ordered by try-attempt.
     # Try ENV, then IPC, and then HTTP last.
-    providers = (
-        load_provider_from_environment,
-        ipc_provider,
-        http_provider,
-    )
+    providers = [load_provider_from_environment]
+    if ipc_path:
+        providers.append(ipc_provider)
+    if uri:
+        providers.append(http_provider)
+
     provider = AutoProvider(potential_providers=providers)
     return Web3(provider)
 
