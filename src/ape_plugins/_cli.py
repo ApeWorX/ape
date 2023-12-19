@@ -170,7 +170,7 @@ def install(cli_ctx, plugins, skip_confirmation, upgrade):
 
         else:
             cli_ctx.logger.warning(
-                f"'{plugin.name}' is already installed. " f"Did you mean to include '--upgrade'."
+                f"'{plugin.name}' is already installed. Did you mean to include '--upgrade'."
             )
 
     if failures_occurred:
