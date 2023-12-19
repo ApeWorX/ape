@@ -38,6 +38,11 @@ class PluginType(Enum):
     """
 
 
+def _check_pip_freeze() -> str:
+    result = subprocess.check_output([sys.executable, "-m", "pip", "freeze"])
+    return result.decode("utf8")
+
+
 class _PipFreeze:
     cache: Optional[Set[str]] = None
 
@@ -45,25 +50,27 @@ class _PipFreeze:
         if use_cache and self.cache is not None:
             return self.cache
 
-        output = subprocess.check_output([sys.executable, "-m", "pip", "freeze"])
+        output = _check_pip_freeze()
         lines = [
             p
-            for p in output.decode().splitlines()
+            for p in output.splitlines()
             if p.startswith("ape-") or (p.startswith("-e") and "ape-" in p)
         ]
 
-        new_lines = []
+        # NOTE: Package IDs should look like "name==version"
+        #  if version is available.
+        package_ids = []
         for package in lines:
             if "-e" in package:
-                new_lines.append(package.split(".git")[0].split("/")[-1])
+                package_ids.append(package.split(".git")[0].split("/")[-1])
             elif "@" in package:
-                new_lines.append(package.split("@")[0].strip())
+                package_ids.append(package.split("@")[0].strip())
             elif "==" in package:
-                new_lines.append(package.split("==")[0].strip())
+                package_ids.append(package)
             else:
-                new_lines.append(package)
+                package_ids.append(package)
 
-        self.cache = {x for x in new_lines}
+        self.cache = set(x for x in package_ids)
         return self.cache
 
 
@@ -296,7 +303,7 @@ class ModifyPluginResultHandler:
     def __init__(self, plugin: PluginMetadata):
         self._plugin = plugin
 
-    def handle_install_result(self, result) -> bool:
+    def handle_install_result(self, result: int) -> bool:
         if not self._plugin.check_installed(use_cache=False):
             self._log_modify_failed("install")
             return False
@@ -318,19 +325,21 @@ class ModifyPluginResultHandler:
             self._log_errors_occurred("upgrading")
             return False
 
-        pip_freeze_version = self._plugin.pip_freeze_version
-        if version_before == pip_freeze_version or not pip_freeze_version:
-            if self._plugin.version:
-                logger.info(f"'{self._plugin.name}' already has version '{self._plugin.version}'.")
-            else:
-                logger.info(f"'{self._plugin.name}' already up to date.")
-
+        version_now = self._plugin.pip_freeze_version
+        if version_now is not None and version_before == version_now:
+            logger.info(f"'{self._plugin.name}' already has version '{version_now}'.")
             return True
-        else:
+
+        elif self._plugin.pip_freeze_version:
             logger.success(
                 f"Plugin '{self._plugin.name}' has been "
                 f"upgraded to version {self._plugin.pip_freeze_version}."
             )
+            return True
+
+        else:
+            # The process was successful but there is still no pip freeze version.
+            # This may happen when installing things from GitHub.
             return True
 
     def handle_uninstall_result(self, result) -> bool:
