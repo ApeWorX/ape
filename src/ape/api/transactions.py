@@ -1,7 +1,7 @@
 import sys
 import time
 from datetime import datetime
-from typing import IO, TYPE_CHECKING, Any, Iterator, List, Optional, Union
+from typing import IO, TYPE_CHECKING, Any, Iterator, List, NoReturn, Optional, Union
 
 from eth_pydantic_types import HexBytes
 from eth_utils import is_0x_prefixed, is_hex, to_int
@@ -382,7 +382,7 @@ class ReceiptAPI(BaseInterfaceModel):
             List[:class:`~ape.types.ContractLog`]
         """
 
-    def raise_for_status(self):
+    def raise_for_status(self) -> Optional[NoReturn]:
         """
         Handle provider-specific errors regarding a non-successful
         :class:`~api.providers.TransactionStatusEnum`.

@@ -207,6 +207,10 @@ class LocalProvider(TestProviderAPI, Web3Provider):
                 vm_err = self.get_virtual_machine_error(err, txn=receipt)
                 raise vm_err from err
 
+            # If we get here, for some reason the tx-replay did not produce
+            # a VM error.
+            receipt.raise_for_status()
+
         return receipt
 
     def snapshot(self) -> SnapshotID:
