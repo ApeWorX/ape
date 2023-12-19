@@ -931,7 +931,6 @@ class NetworkAPI(BaseInterfaceModel):
         Returns:
             :class:`~ape.api.providers.ProviderAPI`
         """
-
         provider_name = provider_name or self.default_provider_name
         if not provider_name:
             from ape.managers.config import CONFIG_FILE_NAME
@@ -949,6 +948,10 @@ class NetworkAPI(BaseInterfaceModel):
         if ":" in provider_name:
             # NOTE: Shortcut that allows `--network ecosystem:network:http://...` to work
             provider_settings["uri"] = provider_name
+            provider_name = "geth"
+
+        elif provider_name.endswith(".ipc"):
+            provider_settings["ipc_path"] = provider_name
             provider_name = "geth"
 
         if provider_name in self.providers:

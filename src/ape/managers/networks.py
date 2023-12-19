@@ -410,7 +410,6 @@ class NetworkManager(BaseManager):
             provider_value = ":".join(selections[2:])
             selections[2] = provider_value
             selections = selections[:3]
-
             if _is_custom_network(provider_value):
                 selections[1] = selections[1] or "custom"
 
@@ -638,5 +637,5 @@ def _is_custom_network(value: str) -> bool:
         or value.startswith("https://")
         or value.startswith("ws://")
         or value.startswith("wss://")
-        or value.endswith(".ipc")
+        or (value.endswith(".ipc") and ":" not in value)
     )
