@@ -195,13 +195,18 @@ class NetworkManager(BaseManager):
         else:
             name = provider_name
 
-        if not connection_str.startswith("http"):
-            raise ValueError("Currently, only HTTP-based custom nodes are supported.")
+        provider_settings: Dict = {}
+        if connection_str.startswith("https://") or connection_str.startswith("http://"):
+            provider_settings["uri"] = connection_str
+        elif connection_str.endswith(".ipc"):
+            provider_settings["ipc_path"] = connection_str
+        else:
+            raise NetworkError(f"Scheme for '{connection_str}' not yet supported.")
 
         return (provider_cls or EthereumNodeProvider)(
             name=name,
             network=network,
-            provider_settings={"uri": connection_str},
+            provider_settings=provider_settings,
             data_folder=network.data_folder,
             request_header=network.request_header,
         )
@@ -395,7 +400,7 @@ class NetworkManager(BaseManager):
             default_network = self.default_ecosystem.default_network
             return default_network.get_provider(provider_settings=provider_settings)
 
-        elif network_choice.startswith("http://") or network_choice.startswith("https://"):
+        elif _is_custom_network(network_choice):
             return self.create_custom_provider(network_choice)
 
         selections = network_choice.split(":")
@@ -405,8 +410,7 @@ class NetworkManager(BaseManager):
             provider_value = ":".join(selections[2:])
             selections[2] = provider_value
             selections = selections[:3]
-
-            if provider_value.startswith("https://") or provider_value.startswith("https://"):
+            if _is_custom_network(provider_value):
                 selections[1] = selections[1] or "custom"
 
         if selections == network_choice or len(selections) == 1:
@@ -625,3 +629,13 @@ def _validate_filter(arg: Optional[Union[List[str], str]], options: Set[str]):
             raise NetworkError(f"Unknown option '{_filter}'.")
 
     return filters
+
+
+def _is_custom_network(value: str) -> bool:
+    return (
+        value.startswith("http://")
+        or value.startswith("https://")
+        or value.startswith("ws://")
+        or value.startswith("wss://")
+        or (value.endswith(".ipc") and ":" not in value)
+    )

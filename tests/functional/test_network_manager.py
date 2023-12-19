@@ -1,3 +1,5 @@
+from pathlib import Path
+
 import pytest
 
 from ape.exceptions import NetworkError
@@ -239,3 +241,24 @@ def test_getattr_ecosystem_with_hyphenated_name(networks, ethereum):
     networks.ecosystems["hyphen-in-name"] = networks.ecosystems["ethereum"]
     assert networks.hyphen_in_name  # Make sure does not raise AttributeError
     del networks.ecosystems["hyphen-in-name"]
+
+
+@pytest.mark.parametrize("scheme", ("http", "https"))
+def test_create_custom_provider_http(networks, scheme):
+    provider = networks.create_custom_provider(f"{scheme}://example.com")
+    assert provider.uri == f"{scheme}://example.com"
+
+
+@pytest.mark.parametrize("scheme", ("ws", "wss"))
+def test_create_custom_provider_ws(networks, scheme):
+    with pytest.raises(NetworkError):
+        networks.create_custom_provider(f"{scheme}://example.com")
+
+
+def test_create_custom_provider_ipc(networks):
+    provider = networks.create_custom_provider("path/to/geth.ipc")
+    assert provider.ipc_path == Path("path/to/geth.ipc")
+
+    # The IPC path should not be in URI field, different parts
+    # of codebase may expect an actual URI.
+    assert provider.uri != provider.ipc_path

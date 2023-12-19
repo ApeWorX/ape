@@ -27,10 +27,11 @@ def test_uri(geth_provider):
 def test_uri_uses_value_from_config(geth_provider, temp_config):
     settings = geth_provider.provider_settings
     geth_provider.provider_settings = {}
-    config = {"geth": {"ethereum": {"local": {"uri": "value/from/config"}}}}
+    value = "https://value/from/config"
+    config = {"geth": {"ethereum": {"local": {"uri": value}}}}
     try:
         with temp_config(config):
-            assert geth_provider.uri == "value/from/config"
+            assert geth_provider.uri == value
     finally:
         geth_provider.provider_settings = settings
 

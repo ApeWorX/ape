@@ -1,3 +1,5 @@
+from pathlib import Path
+
 import pytest
 
 from ape.exceptions import NetworkError, ProviderNotFoundError
@@ -11,11 +13,28 @@ def test_get_provider_when_not_found(ethereum):
         network.get_provider("test")
 
 
+@pytest.mark.parametrize("scheme", ("http", "https", "ws", "wss"))
+def test_get_provider_http(ethereum, scheme):
+    uri = f"{scheme}://example.com"
+    network = ethereum.get_network("goerli")
+    actual = network.get_provider(uri)
+    assert actual.uri == uri
+    assert actual.network.name == "goerli"
+
+
+def test_get_provider_ipc(ethereum):
+    path = "path/to/geth.ipc"
+    network = ethereum.get_network("goerli")
+    actual = network.get_provider(path)
+    assert actual.ipc_path == Path(path)
+    assert actual.network.name == "goerli"
+
+
 def test_block_times(ethereum):
     assert ethereum.goerli.block_time == 15
 
 
-def test_set_defaul_provider_not_exists(temp_config, ape_caplog, networks):
+def test_set_default_provider_not_exists(temp_config, ape_caplog, networks):
     bad_provider = "NOT_EXISTS"
     expected = f"Provider '{bad_provider}' not found in network 'ethereum:goerli'."
     with pytest.raises(NetworkError, match=expected):

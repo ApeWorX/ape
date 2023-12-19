@@ -1074,11 +1074,16 @@ class EthereumNodeProvider(Web3Provider, ABC):
 
         # Use value from config file
         network_config = config.get(self.network.name) or DEFAULT_SETTINGS
-        return network_config.get("uri", DEFAULT_SETTINGS["uri"])
+        settings_uri = network_config.get("uri", DEFAULT_SETTINGS["uri"])
+        if _is_url(settings_uri):
+            return settings_uri
+
+        # Likely was an IPC Path and will connect that way.
+        return ""
 
     @property
     def connection_str(self) -> str:
-        return self.uri
+        return self.uri or f"{self.ipc_path}"
 
     @property
     def connection_id(self) -> Optional[str]:
@@ -1086,7 +1091,7 @@ class EthereumNodeProvider(Web3Provider, ABC):
 
     @property
     def _clean_uri(self) -> str:
-        return sanitize_url(self.uri)
+        return sanitize_url(self.uri) if _is_url(self.uri) else self.uri
 
     @property
     def ipc_path(self) -> Path:
@@ -1274,7 +1279,9 @@ class EthereumNodeProvider(Web3Provider, ABC):
     def connect(self):
         self._set_web3()
         if not self.is_connected:
-            raise ProviderError(f"No node found on '{self._clean_uri}'.")
+            uri = self._clean_uri
+            message = f"No (supported) node found on '{uri}'."
+            raise ProviderError(message)
 
         self._complete_connect()
 
@@ -1291,13 +1298,14 @@ def _create_web3(uri: str, ipc_path: Optional[Path] = None):
 
         return IPCProvider(ipc_path=path)
 
-    # NOTE: This tuple is ordered by try-attempt.
+    # NOTE: This list is ordered by try-attempt.
     # Try ENV, then IPC, and then HTTP last.
-    providers = (
-        load_provider_from_environment,
-        ipc_provider,
-        http_provider,
-    )
+    providers = [load_provider_from_environment]
+    if ipc_path:
+        providers.append(ipc_provider)
+    if uri:
+        providers.append(http_provider)
+
     provider = AutoProvider(potential_providers=providers)
     return Web3(provider)
 
@@ -1318,3 +1326,12 @@ def _get_default_data_dir() -> Path:
             f"Unsupported platform '{sys.platform}'.  Only darwin/linux/win32/"
             "freebsd are supported.  You must specify the data_dir."
         )
+
+
+def _is_url(val: str) -> bool:
+    return (
+        val.startswith("https://")
+        or val.startswith("http://")
+        or val.startswith("wss://")
+        or val.startswith("ws://")
+    )

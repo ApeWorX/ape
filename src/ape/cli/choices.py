@@ -328,7 +328,7 @@ class NetworkChoice(click.Choice):
     This is used in :meth:`~ape.cli.options.network_option`.
     """
 
-    CUSTOM_NETWORK_PATTERN = re.compile(r"\w*:\w*:https?://\w*.*")
+    CUSTOM_NETWORK_PATTERN = re.compile(r"\w*:\w*:(https?|wss?)://\w*.*|.*\.ipc")
 
     def __init__(
         self,
