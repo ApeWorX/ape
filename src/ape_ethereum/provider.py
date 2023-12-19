@@ -1072,12 +1072,7 @@ class EthereumNodeProvider(Web3Provider, ABC):
         # Use value from config file
         network_config = config.get(self.network.name) or DEFAULT_SETTINGS
         settings_uri = network_config.get("uri", DEFAULT_SETTINGS["uri"])
-        if (
-            settings_uri.startswith("http://")
-            or settings_uri.startswith("https://")
-            or settings_uri.startswith("wss://")
-            or settings_uri.startswith("ws://")
-        ):
+        if _is_url(settings_uri):
             return settings_uri
 
         # Likely was an IPC Path and will connect that way.
@@ -1085,7 +1080,7 @@ class EthereumNodeProvider(Web3Provider, ABC):
 
     @property
     def connection_str(self) -> str:
-        return self.uri
+        return self.uri or f"{self.ipc_path}"
 
     @property
     def connection_id(self) -> Optional[str]:
@@ -1093,14 +1088,7 @@ class EthereumNodeProvider(Web3Provider, ABC):
 
     @property
     def _clean_uri(self) -> str:
-        return (
-            sanitize_url(self.uri)
-            if self.uri.startswith("https://")
-            or self.uri.startswith("http://")
-            or self.uri.startswith("wss://")
-            or self.uri.startswith("ws://")
-            else self.uri
-        )
+        return sanitize_url(self.uri) if _is_url(self.uri) else self.uri
 
     @property
     def ipc_path(self) -> Path:
@@ -1335,3 +1323,12 @@ def _get_default_data_dir() -> Path:
             f"Unsupported platform '{sys.platform}'.  Only darwin/linux/win32/"
             "freebsd are supported.  You must specify the data_dir."
         )
+
+
+def _is_url(val: str) -> bool:
+    return (
+        val.startswith("https://")
+        or val.startswith("http://")
+        or val.startswith("wss://")
+        or val.startswith("ws://")
+    )
