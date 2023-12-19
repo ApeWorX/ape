@@ -167,6 +167,6 @@ def test_address_type(owner):
     instance_bytes = MyModel(addr=bytes.fromhex(owner.address[2:]))
     assert instance_bytes.addr == owner.address
 
-    # Show int work.
+    # Show int works.
     instance_bytes = MyModel(addr=int(owner.address, 16))
     assert instance_bytes.addr == owner.address
