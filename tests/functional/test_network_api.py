@@ -19,6 +19,7 @@ def test_get_provider_http(ethereum, scheme):
     network = ethereum.get_network("goerli")
     actual = network.get_provider(uri)
     assert actual.uri == uri
+    assert actual.network.name == "goerli"
 
 
 def test_get_provider_ipc(ethereum):
@@ -26,6 +27,7 @@ def test_get_provider_ipc(ethereum):
     network = ethereum.get_network("goerli")
     actual = network.get_provider(path)
     assert actual.ipc_path == Path(path)
+    assert actual.network.name == "goerli"
 
 
 def test_block_times(ethereum):
