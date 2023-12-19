@@ -5,17 +5,20 @@ import pytest
 
 from ape_plugins.utils import (
     ApePluginsRepr,
+    ModifyPluginResultHandler,
     PluginGroup,
     PluginMetadata,
     PluginMetadataList,
     PluginType,
+    _PipFreeze,
 )
 
 CORE_PLUGINS = ("run",)
 AVAILABLE_PLUGINS = ("available", "installed")
 INSTALLED_PLUGINS = ("installed", "thirdparty")
 THIRD_PARTY = ("thirdparty",)
-VERSION = "0.6.2"
+VERSION = "0.7.0"
+PIP_FREEZE_OUTPUT = f"FOOFOO==1.1.1\n-e git+ssh://git@github.com/ApeWorX/ape-{INSTALLED_PLUGINS[0]}.git@aaaaaaaabbbbbb3343#egg=ape-{INSTALLED_PLUGINS[0]}\naiohttp==3.8.5\nape-{THIRD_PARTY[0]}==0.7.0\n"  # noqa: E501
 
 
 @pytest.fixture(autouse=True)
@@ -26,9 +29,17 @@ def plugin_test_env(mocker):
     gh_mock = mocker.patch(f"{root}._get_available_plugins")
     gh_mock.return_value = {f"ape_{x}" for x in AVAILABLE_PLUGINS}
 
+    # Used when testing PipFreeze object itself but also extra avoids
+    # actually calling out pip ever in tests.
+    patch = mocker.patch("ape_plugins.utils._check_pip_freeze")
+    patch.return_value = PIP_FREEZE_OUTPUT
+
     # Prevent requiring plugins to be installed.
     installed_mock = mocker.patch(f"{root}._pip_freeze_plugins")
-    installed_mock.return_value = {f"ape-{x}" for x in INSTALLED_PLUGINS}
+    installed_mock.return_value = {
+        f"ape-{INSTALLED_PLUGINS[0]}",
+        f"ape-{INSTALLED_PLUGINS[1]}=={VERSION}",
+    }
 
     # Prevent version lookups.
     version_mock = mocker.patch(f"{root}.get_package_version")
@@ -72,11 +83,11 @@ class TestPluginMetadata:
 
     def test_model_validator_when_version_included_with_name(self):
         # This allows parsing requirements files easier
-        metadata = PluginMetadata(name="ape-foo-bar==0.5.0")
+        metadata = PluginMetadata(name="ape-foo-bar==0.7.0")
         assert metadata.name == "foo-bar"
-        assert metadata.version == "==0.5.0"
+        assert metadata.version == "==0.7.0"
 
-    @pytest.mark.parametrize("version", ("0.5.0", "v0.5.0", "0.5.0a123"))
+    @pytest.mark.parametrize("version", ("0.7.0", "v0.7.0", "0.7.0a123"))
     def test_version(self, version):
         metadata = PluginMetadata(name="foo", version=version)
         assert metadata.version == version
@@ -87,19 +98,19 @@ class TestPluginMetadata:
         assert actual == "ape-foo-bar"
 
     def test_install_str_with_version(self):
-        metadata = PluginMetadata(name="foo-bar", version="0.5.0")
+        metadata = PluginMetadata(name="foo-bar", version="0.7.0")
         actual = metadata.install_str
-        assert actual == "ape-foo-bar==0.5.0"
+        assert actual == "ape-foo-bar==0.7.0"
 
     def test_install_str_with_complex_constraint(self):
-        metadata = PluginMetadata(name="foo", version=">=0.5.0,<0.6.0")
+        metadata = PluginMetadata(name="foo", version=">=0.7.0,<0.8.0")
         actual = metadata.install_str
-        assert actual == "ape-foo>=0.5.0,<0.6.0"
+        assert actual == "ape-foo>=0.7.0,<0.8.0"
 
     def test_install_str_with_complex_constraint_in_name(self):
-        metadata = PluginMetadata(name="foo>=0.5.0,<0.6.0")
+        metadata = PluginMetadata(name="foo>=0.7.0,<0.8.0")
         actual = metadata.install_str
-        assert actual == "ape-foo>=0.5.0,<0.6.0"
+        assert actual == "ape-foo>=0.7.0,<0.8.0"
 
     def test_install_str_when_using_git_remote(self):
         url = "git+https://example.com/ape-foo/branch"
@@ -185,3 +196,30 @@ class TestPluginGroup:
         group = PluginGroup(plugin_type=PluginType.INSTALLED)
 
         assert repr(group) == "<PluginGroup>"
+
+
+def test_pip_freeze_includes_version_when_available():
+    pip_freeze = _PipFreeze()
+    actual = pip_freeze.get_plugins()
+    expected = {f"ape-{INSTALLED_PLUGINS[0]}", f"ape-{THIRD_PARTY[0]}==0.7.0"}
+    assert actual == expected
+
+
+def test_handle_upgrade_result_when_upgrading_to_same_version(caplog):
+    # NOTE: pip freeze mock also returns version 0.7.0 (so upgrade to same).
+    plugin = PluginMetadata(name=THIRD_PARTY[0])
+    handler = ModifyPluginResultHandler(plugin)
+    handler.handle_upgrade_result(0, "0.7.0")
+    assert f"'{THIRD_PARTY[0]}' already has version '0.7.0'" in caplog.records[-1].message
+
+
+def test_handle_upgrade_result_when_no_pip_freeze_version_does_not_log(caplog):
+    plugin = PluginMetadata(name=INSTALLED_PLUGINS[0])  # Doesn't have version.
+    handler = ModifyPluginResultHandler(plugin)
+    handler.handle_upgrade_result(0, "0.7.0")
+
+    log_parts = ("already has version", "already up to date")
+    messages = [x.message for x in caplog.records]
+    for message in messages:
+        for pt in log_parts:
+            assert pt not in message
