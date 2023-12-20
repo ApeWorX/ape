@@ -6,6 +6,12 @@ from eth_utils import to_bytes, to_hex
 from hexbytes import HexBytes
 from pydantic.dataclasses import dataclass
 
+try:
+    # Only on Python 3.11
+    from typing import Self  # type: ignore
+except ImportError:
+    from typing_extensions import Self  # type: ignore
+
 from ape.types import AddressType
 
 # Fix 404 in doc link.
@@ -66,7 +72,7 @@ class _Signature:
         yield self.s
 
     @classmethod
-    def from_rsv(cls, rsv: HexBytes) -> "_Signature":
+    def from_rsv(cls, rsv: HexBytes) -> Self:
         # NOTE: Values may be padded.
         if len(rsv) != 65:
             raise ValueError("Length of RSV bytes must be 65.")
@@ -74,7 +80,7 @@ class _Signature:
         return cls(r=HexBytes(rsv[:32]), s=HexBytes(rsv[32:64]), v=rsv[64])
 
     @classmethod
-    def from_vrs(cls, vrs: HexBytes) -> "_Signature":
+    def from_vrs(cls, vrs: HexBytes) -> Self:
         # NOTE: Values may be padded.
         if len(vrs) != 65:
             raise ValueError("Length of VRS bytes must be 65.")
