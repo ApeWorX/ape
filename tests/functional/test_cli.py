@@ -21,6 +21,7 @@ from ape.cli import (
 from ape.cli.commands import get_param_from_ctx, parse_network
 from ape.exceptions import AccountsError
 from ape.logging import logger
+from tests.conftest import geth_process_test
 
 OUTPUT_FORMAT = "__TEST__{0}:{1}:{2}_"
 OTHER_OPTION_VALUE = "TEST_OTHER_OPTION"
@@ -513,15 +514,7 @@ def test_connected_provider_command_use_custom_options(runner):
     def solo_other(other):
         click.echo(other)
 
-    # Scenario: Option explicit (shouldn't matter)
     @click.command(cls=ConnectedProviderCommand)
-    @network_option()
-    @other_option
-    def explicit_option(other):
-        click.echo(other)
-
-    @click.command(cls=ConnectedProviderCommand)
-    @network_option()
     @click.argument("other_arg")
     @other_option
     def with_arg(other_arg, other, provider):
@@ -544,12 +537,24 @@ def test_connected_provider_command_use_custom_options(runner):
     result = run(solo_other)
     assert "local" not in result.output, result.output
 
-    run(explicit_option)
-
     argument = "_extra_"
     result = run(with_arg, extra_args=[argument])
     assert "test" in result.output
     assert argument in result.output
+
+
+@geth_process_test
+def test_network_option_with_connected_provider_command(runner):
+    @click.command(cls=ConnectedProviderCommand)
+    @network_option()
+    def cmd(provider):
+        click.echo(provider.name)
+
+    # NOTE: Must use a network that is not the default.
+    spec = ("--network", "ethereum:local:geth")
+    res = runner.invoke(cmd, spec, catch_exceptions=False)
+    assert res.exit_code == 0, res.output
+    assert "geth" in res.output
 
 
 # TODO: Delete for 0.8.
