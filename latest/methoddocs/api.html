@@ -420,6 +420,7 @@
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.providers.ProviderAPI.config"><code class="docutils literal notranslate"><span class="pre">ProviderAPI.config</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.providers.ProviderAPI.connect"><code class="docutils literal notranslate"><span class="pre">ProviderAPI.connect()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.providers.ProviderAPI.connection_id"><code class="docutils literal notranslate"><span class="pre">ProviderAPI.connection_id</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ape.api.providers.ProviderAPI.connection_str"><code class="docutils literal notranslate"><span class="pre">ProviderAPI.connection_str</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.providers.ProviderAPI.data_folder"><code class="docutils literal notranslate"><span class="pre">ProviderAPI.data_folder</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.providers.ProviderAPI.disconnect"><code class="docutils literal notranslate"><span class="pre">ProviderAPI.disconnect()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.providers.ProviderAPI.estimate_gas_cost"><code class="docutils literal notranslate"><span class="pre">ProviderAPI.estimate_gas_cost()</span></code></a></li>
@@ -475,7 +476,6 @@
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="#ape.api.providers.UpstreamProvider"><code class="docutils literal notranslate"><span class="pre">UpstreamProvider</span></code></a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#ape.api.providers.UpstreamProvider.connection_str"><code class="docutils literal notranslate"><span class="pre">UpstreamProvider.connection_str</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.providers.UpstreamProvider.model_config"><code class="docutils literal notranslate"><span class="pre">UpstreamProvider.model_config</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.providers.UpstreamProvider.model_fields"><code class="docutils literal notranslate"><span class="pre">UpstreamProvider.model_fields</span></code></a></li>
 </ul>
@@ -2759,6 +2759,14 @@ connections to providers, especially when working with multiple
 providers of the same type, like multiple Geth –dev nodes.</p>
 </dd></dl>
 
+<dl class="py property">
+<dt class="sig sig-object py" id="ape.api.providers.ProviderAPI.connection_str">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">connection_str</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#ape.api.providers.ProviderAPI.connection_str" title="Permalink to this definition"></a></dt>
+<dd><p>The str representing how to connect
+to the node, such as an HTTP URL
+or an IPC path.</p>
+</dd></dl>
+
 <dl class="py attribute">
 <dt class="sig sig-object py" id="ape.api.providers.ProviderAPI.data_folder">
 <span class="sig-name descname"><span class="pre">data_folder</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Path</span></em><a class="headerlink" href="#ape.api.providers.ProviderAPI.data_folder" title="Permalink to this definition"></a></dt>
@@ -3302,13 +3310,6 @@ to go back to this point. This method is for local networks only.</p>
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ape.api.providers.</span></span><span class="sig-name descname"><span class="pre">UpstreamProvider</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">network</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#ape.api.networks.NetworkAPI" title="ape.api.networks.NetworkAPI"><span class="pre">NetworkAPI</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">provider_settings</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_folder</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">request_header</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">block_page_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">100</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">concurrency</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">4</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.api.providers.UpstreamProvider" title="Permalink to this definition"></a></dt>
 <dd><p>Bases: <a class="reference internal" href="#ape.api.providers.ProviderAPI" title="ape.api.providers.ProviderAPI"><code class="xref py py-class docutils literal notranslate"><span class="pre">ProviderAPI</span></code></a></p>
 <p>A provider that can also be set as another provider’s upstream.</p>
-<dl class="py property">
-<dt class="sig sig-object py" id="ape.api.providers.UpstreamProvider.connection_str">
-<em class="property"><span class="pre">abstract</span><span class="w"> </span><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">connection_str</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#ape.api.providers.UpstreamProvider.connection_str" title="Permalink to this definition"></a></dt>
-<dd><p>The str used by downstream providers to connect to this one.
-For example, the URL for HTTP-based providers.</p>
-</dd></dl>
-
 <dl class="py attribute">
 <dt class="sig sig-object py" id="ape.api.providers.UpstreamProvider.model_config">
 <span class="sig-name descname"><span class="pre">model_config</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ClassVar</span><span class="p"><span class="pre">[</span></span><span class="pre">ConfigDict</span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'arbitrary_types_allowed':</span> <span class="pre">True}</span></em><a class="headerlink" href="#ape.api.providers.UpstreamProvider.model_config" title="Permalink to this definition"></a></dt>
