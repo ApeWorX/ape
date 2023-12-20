@@ -6,7 +6,14 @@ from ethpm_types.abi import EventABI
 from hexbytes import HexBytes
 from pydantic import BaseModel
 
-from ape.types import AddressType, ContractLog, LogFilter, SignableMessage, TransactionSignature
+from ape.types import (
+    AddressType,
+    ContractLog,
+    LogFilter,
+    MessageSignature,
+    SignableMessage,
+    TransactionSignature,
+)
 from ape.utils import ZERO_ADDRESS
 
 TXN_HASH = "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa222222222222222222222222"
@@ -146,8 +153,12 @@ def test_signable_message_repr(signable_message):
 def test_signature_from_rsv_and_vrs(signature):
     rsv = signature.encode_rsv()
     vrs = signature.encode_vrs()
-    from_rsv = signature.from_rsv(rsv)
-    from_vrs = signature.from_vrs(vrs)
+
+    # NOTE: Type declaring for sake of ensuring
+    #   type-checking works since class-method is
+    #   defined in base-class.
+    from_rsv: MessageSignature = signature.from_rsv(rsv)
+    from_vrs: MessageSignature = signature.from_vrs(vrs)
     assert from_rsv == from_vrs == signature
 
 
