@@ -198,13 +198,13 @@ class AccountAPI(BaseInterfaceModel, BaseAddress):
         if data:
             txn.data = self.conversion_manager.convert(data, bytes)
 
-        if not value and not kwargs.get("send_everything"):
+        if value is None and not kwargs.get("send_everything"):
             raise AccountsError("Must provide 'VALUE' or use 'send_everything=True'")
 
-        elif value and kwargs.get("send_everything"):
+        elif value is not None and kwargs.get("send_everything"):
             raise AccountsError("Cannot use 'send_everything=True' with 'VALUE'.")
 
-        elif value:
+        elif value is not None:
             txn.value = self.conversion_manager.convert(value, int)
             if txn.value < 0:
                 raise AccountsError("Value cannot be negative.")
