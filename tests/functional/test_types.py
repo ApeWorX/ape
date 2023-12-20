@@ -3,8 +3,10 @@ from typing import Dict
 import pytest
 from eth_utils import to_hex
 from ethpm_types.abi import EventABI
+from hexbytes import HexBytes
+from pydantic import BaseModel
 
-from ape.types import ContractLog, LogFilter, SignableMessage, TransactionSignature
+from ape.types import AddressType, ContractLog, LogFilter, SignableMessage, TransactionSignature
 from ape.utils import ZERO_ADDRESS
 
 TXN_HASH = "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa222222222222222222222222"
@@ -147,3 +149,24 @@ def test_signature_from_rsv_and_vrs(signature):
     from_rsv = signature.from_rsv(rsv)
     from_vrs = signature.from_vrs(vrs)
     assert from_rsv == from_vrs == signature
+
+
+def test_address_type(owner):
+    class MyModel(BaseModel):
+        addr: AddressType
+
+    # Show str works.
+    instance_str = MyModel(addr=owner.address)
+    assert instance_str.addr == owner.address
+
+    # Show hex bytes work.
+    instance_hex_bytes = MyModel(addr=HexBytes(owner.address))
+    assert instance_hex_bytes.addr == owner.address
+
+    # Show raw bytes work.
+    instance_bytes = MyModel(addr=bytes.fromhex(owner.address[2:]))
+    assert instance_bytes.addr == owner.address
+
+    # Show int works.
+    instance_bytes = MyModel(addr=int(owner.address, 16))
+    assert instance_bytes.addr == owner.address
