@@ -5,7 +5,7 @@ from functools import lru_cache
 from typing import Any, Callable, Iterator, List, Optional, Sequence, Type, Union
 
 import click
-from click import BadParameter, Choice, Context, Parameter
+from click import BadOptionUsage, BadParameter, Choice, Context, Parameter
 
 from ape import accounts, networks
 from ape.api.accounts import AccountAPI
@@ -355,7 +355,19 @@ class NetworkChoice(click.Choice):
         if not value or value in ("None", "none"):
             choice = None
 
-        elif not self.is_custom_value(value):
+        elif self.is_custom_value(value):
+            # By-pass choice constraints when using custom network.
+            choice = value
+
+        elif "custom" in value:
+            raise BadOptionUsage(
+                "--network",
+                "Custom network options must include connection str as well, "
+                "such as the URI. Check `provider.network_choice` (if possible).",
+            )
+
+        else:
+            # Regular conditions.
             try:
                 # Validate result.
                 choice = super().convert(value, param, ctx)
@@ -365,10 +377,6 @@ class NetworkChoice(click.Choice):
                 raise click.BadParameter(
                     "Invalid network choice. Use `ape networks list` to see options."
                 ) from err
-
-        else:
-            # By-pass choice constraints when using custom network.
-            choice = value
 
         if choice is not None and issubclass(self.base_type, ProviderAPI):
             # Return the provider.

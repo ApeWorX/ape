@@ -11,6 +11,7 @@ from web3.exceptions import ContractPanicError
 from ape.exceptions import (
     BlockNotFoundError,
     ContractLogicError,
+    ProviderError,
     TransactionError,
     TransactionNotFoundError,
 )
@@ -321,3 +322,23 @@ def test_send_transaction_when_no_error_and_receipt_fails(
 
     finally:
         eth_tester_provider._web3 = start_web3
+
+
+def test_network_choice(eth_tester_provider):
+    actual = eth_tester_provider.network_choice
+    expected = "ethereum:local:test"
+    assert actual == expected
+
+
+def test_network_choice_when_custom(eth_tester_provider):
+    name = eth_tester_provider.network.name
+    eth_tester_provider.network.name = "custom"
+    try:
+        # NOTE: Raises this error because EthTester does not support custom
+        #   connections.
+        with pytest.raises(
+            ProviderError, match=".*Custom network provider missing `connection_str`.*"
+        ):
+            _ = eth_tester_provider.network_choice
+    finally:
+        eth_tester_provider.network.name = name
