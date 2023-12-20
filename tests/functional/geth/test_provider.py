@@ -289,3 +289,22 @@ def test_send_transaction_when_no_error_and_receipt_fails(
 
     finally:
         geth_provider._web3 = start_web3
+
+
+@geth_process_test
+def test_network_choice(geth_provider):
+    actual = geth_provider.network_choice
+    expected = "ethereum:local:geth"
+    assert actual == expected
+
+
+@geth_process_test
+def test_network_choice_when_custom(geth_provider):
+    name = geth_provider.network.name
+    geth_provider.network.name = "custom"
+    try:
+        actual = geth_provider.network_choice
+    finally:
+        geth_provider.network.name = name
+
+    assert actual == "http://127.0.0.1:5550"

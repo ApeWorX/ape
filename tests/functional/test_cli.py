@@ -2,11 +2,13 @@ import shutil
 
 import click
 import pytest
+from click import BadOptionUsage
 
 from ape.cli import (
     AccountAliasPromptChoice,
     ConnectedProviderCommand,
     NetworkBoundCommand,
+    NetworkChoice,
     PromptChoice,
     account_option,
     contract_file_paths_argument,
@@ -604,3 +606,37 @@ def test_parse_network_when_interactive_and_class_param(mocker, eth_tester_provi
     network_ctx = parse_network(ctx)
     assert network_ctx.provider.name == "test"
     assert network_ctx._disconnect_on_exit is False  # Because of interactive: True
+
+
+def test_network_choice():
+    network_choice = NetworkChoice()
+    actual = network_choice.convert("ethereum:local:test", None, None)
+    assert actual.name == "test"
+    assert actual.network.name == "local"
+
+
+@pytest.mark.parametrize("prefix", ("", "ethereum:custom:"))
+def test_network_choice_when_custom_network(prefix):
+    network_choice = NetworkChoice()
+    uri = "https://example.com"
+    actual = network_choice.convert(f"{prefix}{uri}", None, None)
+    assert actual.uri == uri
+    assert actual.network.name == "custom"
+
+
+def test_network_choice_when_custom_local_network():
+    network_choice = NetworkChoice()
+    uri = "https://example.com"
+    actual = network_choice.convert(f"ethereum:local:{uri}", None, None)
+    assert actual.uri == uri
+    assert actual.network.name == "local"
+
+
+def test_network_choice_when_custom_and_missing_provider():
+    network_choice = NetworkChoice()
+    expected = (
+        r"Custom network options must include connection str as well, such as the URI\. "
+        r"Check `provider.network_choice` \(if possible\).*"
+    )
+    with pytest.raises(BadOptionUsage, match=expected):
+        network_choice.convert("ethereum:custom", None, None)

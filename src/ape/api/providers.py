@@ -127,6 +127,15 @@ class ProviderAPI(BaseInterfaceModel):
         ``True`` if currently connected to the provider. ``False`` otherwise.
         """
 
+    @property
+    def connection_str(self) -> str:
+        """
+        The str representing how to connect
+        to the node, such as an HTTP URL
+        or an IPC path.
+        """
+        return ""
+
     @abstractmethod
     def connect(self):
         """
@@ -235,6 +244,14 @@ class ProviderAPI(BaseInterfaceModel):
         """
         The connected network choice string.
         """
+        if self.network.name == "custom" and self.connection_str:
+            # `custom` is not a real network and is same
+            # as using raw connection str
+            return self.connection_str
+
+        elif self.network.name == "custom":
+            raise ProviderError("Custom network provider missing `connection_str`.")
+
         return f"{self.network.choice}:{self.name}"
 
     def get_storage_at(self, *args, **kwargs) -> HexBytes:
@@ -820,14 +837,6 @@ class UpstreamProvider(ProviderAPI):
     """
     A provider that can also be set as another provider's upstream.
     """
-
-    @property
-    @abstractmethod
-    def connection_str(self) -> str:
-        """
-        The str used by downstream providers to connect to this one.
-        For example, the URL for HTTP-based providers.
-        """
 
 
 class SubprocessProvider(ProviderAPI):
