@@ -76,6 +76,14 @@ class StringIntConverter(ConverterAPI):
         return int(value)
 
 
+class AccountIntConverter(ConverterAPI):
+    def is_convertible(self, value: Any) -> bool:
+        return isinstance(value, BaseAddress)
+
+    def convert(self, value: BaseAddress) -> int:
+        return self.conversion_manager.convert(value.address, int)
+
+
 class AddressAPIConverter(ConverterAPI):
     """
     A converter that converts an :class:`~ape.api.address.BaseAddress`
@@ -205,7 +213,12 @@ class ConversionManager(BaseManager):
                 IntAddressConverter(),
             ],
             bytes: [HexConverter()],
-            int: [TimestampConverter(), HexIntConverter(), StringIntConverter()],
+            int: [
+                TimestampConverter(),
+                HexIntConverter(),
+                StringIntConverter(),
+                AccountIntConverter(),
+            ],
             Decimal: [],
             bool: [],
             str: [],
