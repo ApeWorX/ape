@@ -5,7 +5,12 @@ from eth_account.messages import SignableMessage
 from eth_utils import to_bytes, to_hex
 from hexbytes import HexBytes
 from pydantic.dataclasses import dataclass
-from typing_extensions import Self
+
+try:
+    # Only on Python 3.11
+    from typing import Self  # type: ignore
+except ImportError:
+    from typing_extensions import Self  # type: ignore
 
 from ape.types import AddressType
 
