@@ -196,6 +196,15 @@ def test_transfer_using_type_0(sender, receiver, convert):
     assert receiver.balance == expected
 
 
+def test_transfer_value_of_0(sender, receiver):
+    """
+    There was a bug where this failed, thinking there was no value.
+    """
+    initial_balance = receiver.balance
+    sender.transfer(receiver, 0)
+    assert receiver.balance == initial_balance
+
+
 def test_deploy(owner, contract_container, chain, clean_contracts_cache):
     contract = owner.deploy(contract_container, 0)
     assert contract.address
