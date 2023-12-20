@@ -544,7 +544,9 @@ def test_connected_provider_command_use_custom_options(runner):
 
 
 @geth_process_test
-def test_network_option_with_connected_provider_command(runner):
+def test_network_option_with_connected_provider_command(runner, geth_provider):
+    _ = geth_provider  # Ensure already running, to avoid clashing later on.
+
     @click.command(cls=ConnectedProviderCommand)
     @network_option()
     def cmd(provider):
