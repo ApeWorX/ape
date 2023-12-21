@@ -10,10 +10,10 @@ from ape.api.accounts import (
     TestAccountAPI,
     TestAccountContainerAPI,
 )
+from ape.exceptions import ConversionError
+from ape.managers.base import BaseManager
 from ape.types import AddressType
 from ape.utils import ManagerAccessMixin, cached_property, singledispatchmethod
-
-from .base import BaseManager
 
 _DEFAULT_SENDERS: List[AccountAPI] = []
 
@@ -93,14 +93,19 @@ class TestAccountManager(list, ManagerAccessMixin):
 
     @__getitem__.register
     def __getitem_str(self, account_str: str):
-        account_id = self.conversion_manager.convert(account_str, AddressType)
+        message_fmt = "No account with {} '{}'."
+        try:
+            account_id = self.conversion_manager.convert(account_str, AddressType)
+        except ConversionError as err:
+            message = message_fmt.format("ID", account_str)
+            raise IndexError(message) from err
 
         for account in self.accounts:
             if account.address == account_id:
                 return account
 
         can_impersonate = False
-        err_message = f"No account with address '{account_id}'."
+        err_message = message_fmt.format("address", account_id)
         try:
             if self.network_manager.active_provider:
                 can_impersonate = self.provider.unlock_account(account_id)
@@ -329,7 +334,16 @@ class AccountManager(BaseManager):
             :class:`~ape.api.accounts.AccountAPI`
         """
 
-        account_id = self.conversion_manager.convert(account_str, AddressType)
+        try:
+            account_id = self.conversion_manager.convert(account_str, AddressType)
+        except ConversionError as err:
+            prefix = f"No account with ID '{account_str}'"
+            if account_str.endswith(".ens"):
+                suffix = "Do you have `ape-ens` installed?"
+            else:
+                suffix = "Do you have the necessary conversion plugins installed?"
+
+            raise IndexError(f"{prefix}. {suffix}") from err
 
         for container in self.containers.values():
             if account_id in container.accounts:

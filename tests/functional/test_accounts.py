@@ -299,6 +299,34 @@ def test_accounts_address_access(owner, accounts):
     assert accounts[owner.address] == owner
 
 
+def test_accounts_address_access_conversion_fail(accounts):
+    with pytest.raises(
+        IndexError,
+        match=(
+            r"No account with ID 'FAILS'\. "
+            r"Do you have the necessary conversion plugins installed?"
+        ),
+    ):
+        _ = accounts["FAILS"]
+
+
+def test_accounts_address_access_not_found(accounts):
+    address = "0x1222262222222922222222222222222222222222"
+    with pytest.raises(IndexError, match=rf"No account with address '{address}'\."):
+        _ = accounts[address]
+
+
+def test_test_accounts_address_access_conversion_fail(test_accounts):
+    with pytest.raises(IndexError, match=r"No account with ID 'FAILS'"):
+        _ = test_accounts["FAILS"]
+
+
+def test_test_accounts_address_access_not_found(test_accounts):
+    address = "0x1222262222222922222222222222222222222222"
+    with pytest.raises(IndexError, match=rf"No account with address '{address}'\."):
+        _ = test_accounts[address]
+
+
 def test_accounts_contains(accounts, owner):
     assert owner.address in accounts
 
