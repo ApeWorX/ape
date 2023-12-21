@@ -24,6 +24,12 @@ def get_param_from_ctx(ctx: Context, param: str) -> Optional[Any]:
 
 def parse_network(ctx: Context) -> ProviderContextManager:
     interactive = get_param_from_ctx(ctx, "interactive")
+
+    # Handle if already parsed (as when using network-option)
+    if ctx.obj and "provider" in ctx.obj:
+        provider = ctx.obj["provider"]
+        return provider.network.use_provider(provider, disconnect_on_exit=not interactive)
+
     provider = get_param_from_ctx(ctx, "network")
     if provider is not None and isinstance(provider, ProviderAPI):
         return provider.network.use_provider(provider, disconnect_on_exit=not interactive)
@@ -76,55 +82,37 @@ class ConnectedProviderCommand(click.Command):
         return super().parse_args(ctx, args)
 
     def invoke(self, ctx: Context) -> Any:
-        with parse_network(ctx):
-            if self.callback is not None:
-                opt_name = "network"
-                param = ctx.params.pop(opt_name, None)
-                if param is None:
-                    ecosystem = networks.default_ecosystem
-                    network = ecosystem.default_network
-                    # Use default
-                    if default_provider := network.default_provider:
-                        provider = default_provider
-                    else:
-                        # Unlikely to get here.
-                        raise ValueError(
-                            f"Missing default provider for network '{network.choice}'. "
-                            f"Using 'ethereum:local:test'."
-                        )
+        with parse_network(ctx) as provider:
+            if self.callback is None:
+                return
 
-                elif isinstance(param, ProviderAPI):
-                    provider = param
+            # Will be put back with correct value if needed.
+            # Else, causes issues.
+            ctx.params.pop("network", None)
 
-                elif isinstance(param, str):
-                    # Is a choice str
-                    provider = networks.parse_network_choice(param)._provider
-                else:
-                    raise TypeError(f"Can't handle type of parameter '{param}'.")
+            valid_fields = ("ecosystem", "network", "provider")
+            requested_fields = [
+                x for x in inspect.signature(self.callback).parameters if x in valid_fields
+            ]
+            if self._use_cls_types and requested_fields:
+                options = {
+                    "ecosystem": provider.network.ecosystem,
+                    "network": provider.network,
+                    "provider": provider,
+                }
+                for name in requested_fields:
+                    if (
+                        name not in ctx.params
+                        or ctx.params[name] is None
+                        or isinstance(ctx.params[name], str)
+                    ):
+                        ctx.params[name] = options[name]
 
-                valid_fields = ("ecosystem", "network", "provider")
-                requested_fields = [
-                    x for x in inspect.signature(self.callback).parameters if x in valid_fields
-                ]
-                if self._use_cls_types and requested_fields:
-                    options = {
-                        "ecosystem": provider.network.ecosystem,
-                        "network": provider.network,
-                        "provider": provider,
-                    }
-                    for name in requested_fields:
-                        if (
-                            name not in ctx.params
-                            or ctx.params[name] is None
-                            or isinstance(ctx.params[name], str)
-                        ):
-                            ctx.params[name] = options[name]
+            elif not self._use_cls_types:
+                # Legacy behavior, but may have a purpose.
+                ctx.params["network"] = provider.network_choice
 
-                elif not self._use_cls_types:
-                    # Legacy behavior, but may have a purpose.
-                    ctx.params[opt_name] = provider.network_choice
-
-                return ctx.invoke(self.callback, **ctx.params)
+            return ctx.invoke(self.callback, **ctx.params)
 
 
 # TODO: 0.8 delete

@@ -8,6 +8,7 @@ from ethpm_types import ContractType
 
 from ape import networks, project
 from ape.api import ProviderAPI
+from ape.cli import ConnectedProviderCommand
 from ape.cli.choices import (
     _ACCOUNT_TYPE_FILTER,
     AccountAliasPromptChoice,
@@ -22,7 +23,7 @@ from ape.managers.base import ManagerAccessMixin
 _VERBOSITY_VALUES = ("--verbosity", "-v")
 
 
-class ApeCliContextObject(ManagerAccessMixin):
+class ApeCliContextObject(ManagerAccessMixin, dict):
     """
     A ``click`` context object class. Use via :meth:`~ape.cli.options.ape_cli_context()`.
     It provides common CLI utilities for ape, such as logging or
@@ -31,6 +32,7 @@ class ApeCliContextObject(ManagerAccessMixin):
 
     def __init__(self):
         self.logger = logger
+        super().__init__({})
 
     @staticmethod
     def abort(msg: str, base_error: Optional[Exception] = None) -> NoReturn:
@@ -232,10 +234,28 @@ def network_option(
                     "provider": provider_obj,
                 }
 
-                # Set the actual values.
+                # Set the actual values in the callback.
                 for item in requested_network_objects:
                     instance = choice_classes[item]
                     ctx.params[item] = instance
+
+                if isinstance(ctx.command, ConnectedProviderCommand):
+                    # Place all values, regardless of request in
+                    # the context. This helps the Ape CLI backend.
+                    if ctx.obj is None:
+                        # Happens when using commands that don't use the
+                        # Ape context or any context.
+                        ctx.obj = {}
+
+                    for choice, obj in choice_classes.items():
+                        try:
+                            ctx.obj[choice] = obj
+                        except Exception:
+                            # This would only happen if using an unusual context object.
+                            raise Abort(
+                                "Cannot use connected-provider command type(s) "
+                                "with non key-settable context object."
+                            )
 
             # else: provider is None, meaning not connected intentionally.
 
