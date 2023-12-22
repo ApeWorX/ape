@@ -338,7 +338,7 @@ class AccountManager(BaseManager):
             account_id = self.conversion_manager.convert(account_str, AddressType)
         except ConversionError as err:
             prefix = f"No account with ID '{account_str}'"
-            if account_str.endswith(".ens"):
+            if account_str.endswith(".eth"):
                 suffix = "Do you have `ape-ens` installed?"
             else:
                 suffix = "Do you have the necessary conversion plugins installed?"
