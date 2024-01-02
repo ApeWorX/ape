@@ -80,7 +80,7 @@ class PytestApeRunner(ManagerAccessMixin):
             )
 
         if self.config_wrapper.interactive and report.failed:
-            traceback = call.excinfo.traceback[0]
+            traceback = call.excinfo.traceback[-1]
 
             # Suspend capsys to ignore our own output.
             capman = self.config_wrapper.get_pytest_plugin("capturemanager")
