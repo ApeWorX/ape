@@ -6,6 +6,7 @@ from eth_typing import HexStr
 from hexbytes import HexBytes
 
 from ape.exceptions import (
+    APINotImplementedError,
     BlockNotFoundError,
     NetworkMismatchError,
     TransactionError,
@@ -308,3 +309,11 @@ def test_network_choice_when_custom(geth_provider):
         geth_provider.network.name = name
 
     assert actual == "http://127.0.0.1:5550"
+
+
+def test_make_request_not_exists(geth_provider):
+    with pytest.raises(
+        APINotImplementedError,
+        match="RPC method 'ape_thisDoesNotExist' is not implemented by this node instance.",
+    ):
+        geth_provider._make_request("ape_thisDoesNotExist")
