@@ -1,4 +1,5 @@
 import os
+import re
 import sys
 import time
 from abc import ABC
@@ -958,6 +959,16 @@ class Web3Provider(ProviderAPI, ABC):
             message = (
                 error["message"] if isinstance(error, dict) and "message" in error else str(error)
             )
+
+            if (
+                "does not exist/is not available" in str(message)
+                or re.match(r"Method .*?not found", message)
+                or message.startswith("Unknown RPC Endpoint")
+            ):
+                raise APINotImplementedError(
+                    f"RPC method '{endpoint}' is not implemented by this node instance."
+                )
+
             raise ProviderError(message)
 
         elif "result" in result:
@@ -1251,18 +1262,6 @@ class EthereumNodeProvider(Web3Provider, ABC):
             return self.get_receipt(tx_hash)
 
         return None
-
-    def _make_request(self, endpoint: str, parameters: Optional[List] = None) -> Any:
-        parameters = parameters or []
-        try:
-            return super()._make_request(endpoint, parameters)
-        except ProviderError as err:
-            if "does not exist/is not available" in str(err):
-                raise APINotImplementedError(
-                    f"RPC method '{endpoint}' is not implemented by this node instance."
-                ) from err
-
-            raise  # Original error
 
     def _stream_request(self, method: str, params: List, iter_path="result.item"):
         payload = {"jsonrpc": "2.0", "id": 1, "method": method, "params": params}

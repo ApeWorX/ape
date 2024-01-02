@@ -9,6 +9,7 @@ from hexbytes import HexBytes
 from web3.exceptions import ContractPanicError
 
 from ape.exceptions import (
+    APINotImplementedError,
     BlockNotFoundError,
     ContractLogicError,
     ProviderError,
@@ -342,3 +343,34 @@ def test_network_choice_when_custom(eth_tester_provider):
             _ = eth_tester_provider.network_choice
     finally:
         eth_tester_provider.network.name = name
+
+
+def test_make_request_not_exists(eth_tester_provider):
+    with pytest.raises(
+        APINotImplementedError,
+        match="RPC method 'ape_thisDoesNotExist' is not implemented by this node instance.",
+    ):
+        eth_tester_provider._make_request("ape_thisDoesNotExist")
+
+
+@pytest.mark.parametrize("msg", ("Method not found", "Method ape_thisDoesNotExist not found"))
+def test_make_request_not_exists_dev_nodes(eth_tester_provider, mock_web3, msg):
+    """
+    Simulate what *most* of the dev providers do, like hardhat, anvil, and ganache.
+    """
+    real_web3 = eth_tester_provider._web3
+    mock_web3.eth = real_web3.eth
+    eth_tester_provider._web3 = mock_web3
+
+    def custom_make_request(rpc, params):
+        if rpc == "ape_thisDoesNotExist":
+            return {"error": {"message": msg}}
+
+        return real_web3.make_request(rpc, params)
+
+    mock_web3.provider.make_request.side_effect = custom_make_request
+    with pytest.raises(
+        APINotImplementedError,
+        match="RPC method 'ape_thisDoesNotExist' is not implemented by this node instance.",
+    ):
+        eth_tester_provider._make_request("ape_thisDoesNotExist")
