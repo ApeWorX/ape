@@ -1,3 +1,4 @@
+import io
 import re
 from pathlib import Path
 from typing import Optional
@@ -312,3 +313,21 @@ def test_coverage(geth_provider, setup_pytester, project, pytester):
     passed, failed = setup_pytester(project.path.name)
     result = pytester.runpytest("--coverage", "--showinternal")
     result.assert_outcomes(passed=passed, failed=failed)
+
+
+@skip_projects_except("with-contracts")
+def test_interactive(eth_tester_provider, project, pytester, monkeypatch):
+    secret = "__ 123 super secret 123 __"
+    test = f"""
+def test_fails():
+    foo = "{secret}"
+    raise Exception("__FAIL__")
+"""
+    pytester.makepyfile(test)
+    stdin = "print(foo)\nexit\n"
+    monkeypatch.setattr("sys.stdin", io.StringIO(stdin))
+    result = pytester.runpytest_subprocess("--interactive", "-s")
+    result.assert_outcomes(failed=1)
+    actual = str(result.stdout)
+    assert secret in actual
+    assert "__FAIL__" in actual
