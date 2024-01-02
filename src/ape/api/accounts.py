@@ -227,6 +227,18 @@ class AccountAPI(BaseInterfaceModel, BaseAddress):
         Returns:
             :class:`~ape.contracts.ContractInstance`: An instance of the deployed contract.
         """
+        from ape.contracts import ContractContainer
+
+        # NOTE: It is important to type check here to prevent cases where user
+        #    may accidentally pass in a ContractInstance, which has a very
+        #    different implementation for __call__ than ContractContainer.
+        if not isinstance(contract, ContractContainer):
+            raise TypeError(
+                "contract argument must be a ContractContainer type, "
+                "such as 'project.MyContract' where 'MyContract' is the name of "
+                "a contract in your project."
+            )
+
         txn = contract(*args, **kwargs)
         if kwargs.get("value") and not contract.contract_type.constructor.is_payable:
             raise MethodNonPayableError("Sending funds to a non-payable constructor.")
