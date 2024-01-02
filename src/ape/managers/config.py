@@ -128,6 +128,11 @@ class ConfigManager(BaseInterfaceModel):
 
         return values
 
+    @model_validator(mode="after")
+    @classmethod
+    def load_configs(cls, cm):
+        return cm.load()
+
     @property
     def packages_folder(self) -> Path:
         self.dependency_manager.packages_folder.mkdir(parents=True, exist_ok=True)

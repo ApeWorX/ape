@@ -173,6 +173,7 @@ def install(cli_ctx, package, name, version, ref, force):
         try:
             cli_ctx.project_manager.load_dependencies(use_cache=not force)
         except Exception as err:
+            cli_ctx.logger.log_debug_stack_trace()
             cli_ctx.abort(f"Failed loading dependencies: {err}")
 
     elif name:

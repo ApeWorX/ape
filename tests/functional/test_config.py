@@ -1,3 +1,5 @@
+import tempfile
+from pathlib import Path
 from typing import Dict, Union
 
 import pytest
@@ -5,7 +7,12 @@ from pydantic_settings import SettingsConfigDict
 
 from ape.api import ConfigEnum, PluginConfig
 from ape.api.networks import LOCAL_NETWORK_NAME
-from ape.managers.config import CONFIG_FILE_NAME, DeploymentConfigCollection, merge_configs
+from ape.managers.config import (
+    CONFIG_FILE_NAME,
+    ConfigManager,
+    DeploymentConfigCollection,
+    merge_configs,
+)
 from ape.types import GasLimit
 from ape_ethereum.ecosystem import NetworkConfig
 from tests.functional.conftest import PROJECT_WITH_LONG_CONTRACTS_FOLDER
@@ -246,3 +253,18 @@ def test_config_enum():
 
     actual = MyConfig(my_enum="FOO")
     assert actual.my_enum == MyEnum.FOO
+
+
+def test_config_manager_loads_on_init(config):
+    """
+    This is needed or else tools may interact with the config manager
+    before it has processed the config file.
+    """
+    name = "nametestvalidate"
+
+    with tempfile.TemporaryDirectory() as temp_dir:
+        config = f"name: {name}"
+        path = Path(temp_dir)
+        (path / "ape-config.yaml").write_text(config)
+        manager = ConfigManager(REQUEST_HEADER={}, DATA_FOLDER=Path.cwd(), PROJECT_FOLDER=path)
+        assert manager.name == name
