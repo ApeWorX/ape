@@ -267,6 +267,22 @@ def test_deploy_proxy(owner, vyper_contract_instance, proxy_contract_container, 
     assert implementation.contract_type == vyper_contract_instance.contract_type
 
 
+def test_deploy_instance(owner, vyper_contract_instance, chain, clean_contracts_cache):
+    """
+    Tests against a confusing scenario where you would get a SignatureError when
+    trying to deploy a ContractInstance because Ape would attempt to create a tx
+    by calling the contract's default handler.
+    """
+
+    expected = (
+        r"contract argument must be a ContractContainer type, "
+        r"such as 'project\.MyContract' where 'MyContract' is the "
+        r"name of a contract in your project\."
+    )
+    with pytest.raises(TypeError, match=expected):
+        owner.deploy(vyper_contract_instance)
+
+
 def test_send_transaction_with_bad_nonce(sender, receiver):
     # Bump the nonce so we can set one that is too low.
     sender.transfer(receiver, "1 gwei", type=0)
