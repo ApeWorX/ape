@@ -5,8 +5,9 @@ from pathlib import Path
 from typing import Dict
 
 import pytest
+from pydantic import ValidationError
 
-from ape.managers.project.dependency import NpmDependency
+from ape.managers.project.dependency import GithubDependency, NpmDependency
 
 
 @pytest.fixture
@@ -141,3 +142,9 @@ def test_compile_with_extra_settings(dependency_manager, project):
     data = {"name": "FooBar", "local": path, "config_override": settings}
     dependency = dependency_manager.decode_dependency(data)
     assert dependency.config_override == settings
+
+
+def test_github_dependency_ref_or_version_is_required():
+    expected = r"GitHub dependency must have either ref or version specified"
+    with pytest.raises(ValidationError, match=expected):
+        _ = GithubDependency(name="foo", github="asdf")

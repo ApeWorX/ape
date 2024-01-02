@@ -204,6 +204,14 @@ class GithubDependency(DependencyAPI):
     **NOTE**: Will be ignored if given a version.
     """
 
+    @model_validator(mode="after")
+    @classmethod
+    def ensure_ref_or_version(cls, dep):
+        if dep.ref is None and dep.version is None:
+            raise ValueError("GitHub dependency must have either ref or version specified.")
+
+        return dep
+
     @cached_property
     def version_id(self) -> str:
         if self.ref:
