@@ -1,7 +1,7 @@
 from typing import Any, Dict
 
 import pytest
-from eth_pydantic_types import HexBytes
+from eth_pydantic_types import HashBytes32, HexBytes
 from eth_typing import HexAddress, HexStr
 from ethpm_types.abi import ABIType, EventABI, MethodABI
 
@@ -351,7 +351,22 @@ def test_encode_blueprint_contract(ethereum, vyper_contract_type):
     assert actual.data == HexBytes(expected)
 
 
-def test_decode_return_data_non_empty_padding_bytes(ethereum):
+def test_decode_returndata(ethereum):
+    abi = MethodABI.model_validate(
+        {
+            "type": "function",
+            "name": "doThing",
+            "stateMutability": "nonpayable",
+            "inputs": [],
+            "outputs": [{"name": "", "type": "bool"}],
+        }
+    )
+    data = HashBytes32.__eth_pydantic_validate__(0)
+    actual = ethereum.decode_returndata(abi, data)
+    assert actual == (False,)
+
+
+def test_decode_returndata_non_empty_padding_bytes(ethereum):
     raw_data = HexBytes(
         "0x08c379a000000000000000000000000000000000000000000000000000000000000000200"
         "000000000000000000000000000000000000000000000000000000000000012696e73756666"
@@ -371,6 +386,20 @@ def test_decode_return_data_non_empty_padding_bytes(ethereum):
     )
     with pytest.raises(DecodingError):
         ethereum.decode_returndata(abi, raw_data)
+
+
+def test_decode_returndata_no_bytes_returns_zero(ethereum):
+    abi = MethodABI.model_validate(
+        {
+            "type": "function",
+            "name": "doThing",
+            "stateMutability": "nonpayable",
+            "inputs": [],
+            "outputs": [{"name": "", "type": "bool"}],
+        }
+    )
+    actual = ethereum.decode_returndata(abi, b"")
+    assert actual == (0,)
 
 
 @pytest.mark.parametrize("tx_type", TransactionType)
