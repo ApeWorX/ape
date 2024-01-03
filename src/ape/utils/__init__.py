@@ -13,6 +13,7 @@ from ape.utils.abi import (
 from ape.utils.basemodel import (
     BaseInterface,
     BaseInterfaceModel,
+    ExtraAttributesMixin,
     ExtraModelAttributes,
     ManagerAccessMixin,
     injected_before_use,
@@ -75,6 +76,7 @@ __all__ = [
     "DEFAULT_TEST_HD_PATH",
     "DEFAULT_TRANSACTION_ACCEPTANCE_TIMEOUT",
     "EMPTY_BYTES32",
+    "ExtraAttributesMixin",
     "expand_environment_variables",
     "extract_nested_value",
     "ExtraModelAttributes",

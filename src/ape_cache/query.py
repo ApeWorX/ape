@@ -1,12 +1,12 @@
 from pathlib import Path
-from typing import Any, Dict, Iterator, List, Optional
+from typing import Any, Dict, Iterator, List, Optional, cast
 
 from sqlalchemy import create_engine, func
 from sqlalchemy.engine import CursorResult
 from sqlalchemy.sql import column, insert, select
 from sqlalchemy.sql.expression import Insert, Select
 
-from ape.api import BlockAPI, QueryAPI, QueryType
+from ape.api import BlockAPI, QueryAPI, QueryType, TransactionAPI
 from ape.api.networks import LOCAL_NETWORK_NAME
 from ape.api.query import BaseInterfaceModel, BlockQuery, BlockTransactionQuery, ContractEventQuery
 from ape.exceptions import QueryEngineError
@@ -415,7 +415,8 @@ class CacheQueryProvider(QueryAPI):
     ) -> Optional[List[Dict[str, Any]]]:
         new_result = []
         table_columns = [c.key for c in Transactions.__table__.columns]  # type: ignore
-        for val in [m for m in result]:
+        txns: List[TransactionAPI] = cast(List[TransactionAPI], result)
+        for val in [m for m in txns]:
             new_dict = {
                 k: v
                 for k, v in val.model_dump(mode="json", by_alias=False).items()
@@ -432,7 +433,7 @@ class CacheQueryProvider(QueryAPI):
                     new_dict["receiver"] = b""
                 elif col == "block_hash":
                     new_dict["block_hash"] = query.block_id
-                elif col == "signature":
+                elif col == "signature" and val.signature is not None:
                     new_dict["signature"] = val.signature.encode_rsv()
                 elif col not in new_dict:
                     new_dict[col] = None

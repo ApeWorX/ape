@@ -45,7 +45,12 @@ from ape.types.coverage import (
 )
 from ape.types.signatures import MessageSignature, SignableMessage, TransactionSignature
 from ape.types.trace import CallTreeNode, ControlFlow, GasReport, SourceTraceback, TraceFrame
-from ape.utils import BaseInterfaceModel, ExtraModelAttributes, cached_property
+from ape.utils import (
+    BaseInterfaceModel,
+    ExtraAttributesMixin,
+    ExtraModelAttributes,
+    cached_property,
+)
 from ape.utils.misc import ZERO_ADDRESS, to_int
 
 if TYPE_CHECKING:
@@ -250,7 +255,7 @@ class BaseContractLog(BaseInterfaceModel):
         return True
 
 
-class ContractLog(BaseContractLog):
+class ContractLog(ExtraAttributesMixin, BaseContractLog):
     """
     An instance of a log from a contract.
     """

@@ -13,6 +13,7 @@ from ape.exceptions import ProjectError
 from ape.logging import logger
 from ape.utils import (
     BaseInterfaceModel,
+    ExtraAttributesMixin,
     ExtraModelAttributes,
     abstractmethod,
     cached_property,
@@ -324,7 +325,7 @@ class ProjectAPI(BaseInterfaceModel):
         return source_dict  # {source_id: Source}
 
 
-class DependencyAPI(BaseInterfaceModel):
+class DependencyAPI(ExtraAttributesMixin, BaseInterfaceModel):
     """
     A base-class for dependency sources, such as GitHub or IPFS.
     """
