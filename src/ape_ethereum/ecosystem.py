@@ -448,13 +448,13 @@ class Ethereum(EcosystemAPI):
         input_types = [parse_type(i.model_dump(mode="json")) for i in abi.inputs]
 
         try:
-            raw_input_values = decode(raw_input_types, calldata)
-            input_values = [
-                self.decode_primitive_value(v, t) for v, t in zip(raw_input_values, input_types)
-            ]
+            raw_input_values = decode(raw_input_types, calldata, strict=False)
         except InsufficientDataBytes as err:
             raise DecodingError(str(err)) from err
 
+        input_values = [
+            self.decode_primitive_value(v, t) for v, t in zip(raw_input_values, input_types)
+        ]
         arguments = {}
         index = 0
         for i, v in zip(abi.inputs, input_values):
@@ -467,10 +467,14 @@ class Ethereum(EcosystemAPI):
     def decode_returndata(self, abi: MethodABI, raw_data: bytes) -> Tuple[Any, ...]:
         output_types_str_ls = [o.canonical_type for o in abi.outputs]
 
-        try:
-            vm_return_values = decode(output_types_str_ls, raw_data)
-        except (InsufficientDataBytes, NonEmptyPaddingBytes) as err:
-            raise DecodingError(str(err)) from err
+        if raw_data:
+            try:
+                vm_return_values = decode(output_types_str_ls, raw_data, strict=False)
+            except (InsufficientDataBytes, NonEmptyPaddingBytes) as err:
+                raise DecodingError(str(err)) from err
+        else:
+            # Use all zeroes.
+            vm_return_values = tuple([0 for _ in output_types_str_ls])
 
         if not vm_return_values:
             return vm_return_values
