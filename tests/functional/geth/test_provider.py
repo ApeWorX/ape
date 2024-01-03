@@ -1,3 +1,4 @@
+from pathlib import Path
 from typing import cast
 
 import pytest
@@ -14,6 +15,7 @@ from ape.exceptions import (
 )
 from ape_ethereum.ecosystem import Block
 from ape_ethereum.transactions import TransactionStatusEnum
+from ape_geth.provider import GethDevProcess, GethNotInstalledError
 from tests.conftest import GETH_URI, geth_process_test
 
 
@@ -317,3 +319,9 @@ def test_make_request_not_exists(geth_provider):
         match="RPC method 'ape_thisDoesNotExist' is not implemented by this node instance.",
     ):
         geth_provider._make_request("ape_thisDoesNotExist")
+
+
+def test_geth_not_found():
+    bin_name = "__NOT_A_REAL_EXECUTABLE_HOPEFULLY__"
+    with pytest.raises(GethNotInstalledError):
+        _ = GethDevProcess(Path.cwd(), executable=bin_name)

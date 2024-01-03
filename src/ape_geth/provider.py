@@ -216,10 +216,10 @@ class GethConfig(PluginConfig):
 class GethNotInstalledError(ConnectionError):
     def __init__(self):
         super().__init__(
-            "geth is not installed and there is no local provider running.\n"
-            "Things you can do:\n"
-            "\t1. Install geth and try again\n"
-            "\t2. Run geth separately and try again\n"
+            "Trying to start 'geth' process in 'ape-geth' core plugin "
+            "but 'geth' binary not found. Things you can do:\n"
+            "\t1. Install geth or add it to your $PATH variable and then try again\n"
+            "\t2. Run 'geth' process independently and try again\n"
             "\t3. Use a different ape provider plugin"
         )
 
