@@ -29,6 +29,7 @@ from ape.types import (
 )
 from ape.utils import (
     BaseInterfaceModel,
+    ExtraAttributesMixin,
     ExtraModelAttributes,
     abstractmethod,
     cached_property,
@@ -248,7 +249,7 @@ class ConfirmationsProgressBar:
         self._bar.set_description(f"Confirmations ({self._confs}/{self._req_confs})")
 
 
-class ReceiptAPI(BaseInterfaceModel):
+class ReceiptAPI(ExtraAttributesMixin, BaseInterfaceModel):
     """
     An abstract class to represent a transaction receipt. The receipt
     contains information about the transaction, such as the status

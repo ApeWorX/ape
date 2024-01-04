@@ -218,6 +218,13 @@ class BaseModel(EthpmTypesBaseModel):
 
     model_config = ConfigDict(arbitrary_types_allowed=True)
 
+
+class ExtraAttributesMixin:
+    """
+    A mixin to use on models that provide ``ExtraModelAttributes``.
+    **NOTE**: Must come _before_ your base-model class in subclass tuple to function.
+    """
+
     def __ape_extra_attributes__(self) -> Iterator[ExtraModelAttributes]:
         """
         Override this method to supply extra attributes

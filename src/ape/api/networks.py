@@ -39,6 +39,7 @@ from ape.types import AddressType, AutoGasLimit, CallTreeNode, ContractLog, GasL
 from ape.utils import (
     DEFAULT_TRANSACTION_ACCEPTANCE_TIMEOUT,
     BaseInterfaceModel,
+    ExtraAttributesMixin,
     ExtraModelAttributes,
     ManagerAccessMixin,
     abstractmethod,
@@ -66,7 +67,7 @@ class ProxyInfoAPI(BaseModel):
     """The address of the implementation contract."""
 
 
-class EcosystemAPI(BaseInterfaceModel):
+class EcosystemAPI(ExtraAttributesMixin, BaseInterfaceModel):
     """
     A set of related networks, such as Ethereum.
     """
