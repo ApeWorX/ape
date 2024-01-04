@@ -170,7 +170,7 @@ class Web3Provider(ProviderAPI, ABC):
             )
             return self._get_last_base_fee()
 
-        if len(fee_history["baseFeePerGas"]) < 2:
+        if "baseFeePerGas" not in fee_history or len(fee_history["baseFeePerGas"] or []) < 2:
             logger.debug("Not enough fee_history. Defaulting less-accurate approach.")
             return self._get_last_base_fee()
 
