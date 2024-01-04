@@ -192,7 +192,7 @@ class ConfigManager(BaseInterfaceModel):
         # NOTE: It is okay for this directory not to exist at this point.
         contracts_folder = user_config.pop("contracts_folder", None)
         contracts_folder = (
-            (self.project_manager.path / Path(contracts_folder)).expanduser().resolve()
+            (self.PROJECT_FOLDER / Path(contracts_folder)).expanduser().resolve()
             if contracts_folder
             else self.PROJECT_FOLDER / "contracts"
         )
@@ -244,6 +244,7 @@ class ConfigManager(BaseInterfaceModel):
             self._cached_configs = {}
 
         _ = self._plugin_configs
+
         return self
 
     def get_config(self, plugin_name: str) -> PluginConfig:
