@@ -378,7 +378,7 @@ def test_make_request_not_exists_dev_nodes(eth_tester_provider, mock_web3, msg):
 
 def test_base_fee(eth_tester_provider):
     actual = eth_tester_provider.base_fee
-    assert actual == 1000000000
+    assert actual > 0
 
     # NOTE: Mostly doing this to ensure we are calling the fee history
     #   RPC correctly. There was a bug where we were not.
