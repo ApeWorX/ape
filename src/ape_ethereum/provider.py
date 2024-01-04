@@ -38,7 +38,7 @@ from web3.middleware import geth_poa_middleware
 from web3.middleware.validation import MAX_EXTRADATA_LENGTH
 from web3.providers import AutoProvider
 from web3.providers.auto import load_provider_from_environment
-from web3.types import RPCEndpoint, TxParams
+from web3.types import FeeHistory, RPCEndpoint, TxParams
 
 from ape.api import BlockAPI, ProviderAPI, ReceiptAPI, TransactionAPI
 from ape.api.networks import LOCAL_NETWORK_NAME
@@ -161,8 +161,8 @@ class Web3Provider(ProviderAPI, ABC):
             return 0
 
         try:
-            fee_history = self.web3.eth.fee_history(1, BlockNumber(latest_block_number))
-        except ValueError as exc:
+            fee_history = self._get_fee_history(latest_block_number)
+        except Exception as exc:
             # Use the less-accurate approach (OK for testing).
             logger.debug(
                 "Failed using `web3.eth.fee_history` for network "
@@ -180,6 +180,14 @@ class Web3Provider(ProviderAPI, ABC):
             return self._get_last_base_fee()
 
         return pending_base_fee
+
+    def _get_fee_history(self, block_number: int) -> FeeHistory:
+        # NOTE: Have to `reward_percentiles=[]` because of this bug:
+        #   https://github.com/ethereum/web3.py/issues/3184
+        try:
+            return self.web3.eth.fee_history(1, BlockNumber(block_number), reward_percentiles=[])
+        except MethodUnavailable as err:
+            raise APINotImplementedError(str(err)) from err
 
     def _get_last_base_fee(self) -> int:
         block = self.get_block("latest")
