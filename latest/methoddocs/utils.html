@@ -177,6 +177,7 @@
 <li class="toctree-l3"><a class="reference internal" href="#ape.utils.BaseInterfaceModel.model_fields"><code class="docutils literal notranslate"><span class="pre">BaseInterfaceModel.model_fields</span></code></a></li>
 </ul>
 </li>
+<li class="toctree-l2"><a class="reference internal" href="#ape.utils.ExtraAttributesMixin"><code class="docutils literal notranslate"><span class="pre">ExtraAttributesMixin</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#ape.utils.ExtraModelAttributes"><code class="docutils literal notranslate"><span class="pre">ExtraModelAttributes</span></code></a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#ape.utils.ExtraModelAttributes.additional_error_message"><code class="docutils literal notranslate"><span class="pre">ExtraModelAttributes.additional_error_message</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ape.utils.ExtraModelAttributes.attributes"><code class="docutils literal notranslate"><span class="pre">ExtraModelAttributes.attributes</span></code></a></li>
@@ -310,6 +311,14 @@ mapping of field names to [<cite>FieldInfo</cite>][pydantic.fields.FieldInfo].</
 <p>This replaces <cite>Model.__fields__</cite> from Pydantic V1.</p>
 </dd></dl>
 
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ape.utils.ExtraAttributesMixin">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ape.utils.</span></span><span class="sig-name descname"><span class="pre">ExtraAttributesMixin</span></span><a class="headerlink" href="#ape.utils.ExtraAttributesMixin" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>A mixin to use on models that provide <code class="docutils literal notranslate"><span class="pre">ExtraModelAttributes</span></code>.
+<strong>NOTE</strong>: Must come _before_ your base-model class in subclass tuple to function.</p>
 </dd></dl>
 
 <dl class="py class">
