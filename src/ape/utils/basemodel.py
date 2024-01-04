@@ -240,7 +240,7 @@ class ExtraAttributesMixin:
     def __getattr__(self, name: str) -> Any:
         """
         An overridden ``__getattr__`` implementation that takes into
-        account :meth:`~ape.utils.basemodel.BaseModel.__ape_extra_attributes__`.
+        account :meth:`~ape.utils.basemodel.ExtraAttributesMixin.__ape_extra_attributes__`.
         """
 
         private_attrs = self.__pydantic_private__ or {}

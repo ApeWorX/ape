@@ -374,3 +374,13 @@ def test_make_request_not_exists_dev_nodes(eth_tester_provider, mock_web3, msg):
         match="RPC method 'ape_thisDoesNotExist' is not implemented by this node instance.",
     ):
         eth_tester_provider._make_request("ape_thisDoesNotExist")
+
+
+def test_base_fee(eth_tester_provider):
+    actual = eth_tester_provider.base_fee
+    assert actual > 0
+
+    # NOTE: Mostly doing this to ensure we are calling the fee history
+    #   RPC correctly. There was a bug where we were not.
+    with pytest.raises(APINotImplementedError):
+        _ = eth_tester_provider._get_fee_history(0)
