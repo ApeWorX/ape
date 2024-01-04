@@ -268,3 +268,19 @@ def test_config_manager_loads_on_init(config):
         (path / "ape-config.yaml").write_text(config)
         manager = ConfigManager(REQUEST_HEADER={}, DATA_FOLDER=Path.cwd(), PROJECT_FOLDER=path)
         assert manager.name == name
+
+
+def test_load_does_not_call_project_manager(temp_config, config):
+    """
+    It is highly critical that `load()` does not call anything from
+    `project_manager` as it is not loaded yet in the manager access mixin.
+    """
+    orig = config.project_manager.path
+    path = Path("_should_not_be_in_parents_")
+    try:
+        with temp_config({"contracts_folder": "src"}):
+            config.project_manager.path = path
+            assert config.load(force_reload=True)
+            assert path.name not in [x.name for x in config.contracts_folder.parents]
+    finally:
+        config.project_manager.path = orig
