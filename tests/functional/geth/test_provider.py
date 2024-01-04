@@ -327,9 +327,20 @@ def test_geth_not_found():
         _ = GethDevProcess(Path.cwd(), executable=bin_name)
 
 
-def test_base_fee(geth_provider):
-    actual = geth_provider.base_fee
-    expected = geth_provider._get_fee_history(0)["baseFeePerGas"][1]
+def test_base_fee(geth_provider, mocker):
+    # NOTE: Only mocked to guarantee we are in a state
+    #   with history.
+    orig = geth_provider._web3.eth.fee_history
+    mock_fee_history = mocker.MagicMock()
+    expected = 222
+    mock_fee_history.return_value = {"baseFeePerGas": [111, expected]}
+    geth_provider._web3.eth.fee_history = mock_fee_history
+
+    try:
+        actual = geth_provider.base_fee
+    finally:
+        geth_provider._web3.eth.fee_history = orig
+
     assert actual == expected
 
 
@@ -338,11 +349,12 @@ def test_base_fee_no_history(geth_provider, mocker, ret):
     orig = geth_provider._web3.eth.fee_history
     mock_fee_history = mocker.MagicMock()
     mock_fee_history.return_value = ret
+    expected = geth_provider._get_last_base_fee()
     geth_provider._web3.eth.fee_history = mock_fee_history
 
     try:
         actual = geth_provider.base_fee
-        expected = geth_provider._get_last_base_fee()
-        assert actual == expected
     finally:
         geth_provider._web3.eth.fee_history = orig
+
+    assert actual == expected
