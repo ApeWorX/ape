@@ -284,3 +284,8 @@ def test_load_does_not_call_project_manager(temp_config, config):
             assert path.name not in [x.name for x in config.contracts_folder.parents]
     finally:
         config.project_manager.path = orig
+
+
+def test_contracts_folder_with_hyphen(temp_config):
+    with temp_config({"contracts-folder": "src"}) as project:
+        assert project.contracts_folder.name == "src"
