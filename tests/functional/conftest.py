@@ -676,9 +676,19 @@ def mock_compiler(mocker):
             if path.suffix == mock.ext:
                 name = path.stem
                 code = HexBytes(123).hex()
-                contract_type = ContractType(
-                    contractName=name, abi=[], deploymentBytecode=code, sourceId=path.name
-                )
+                data = {
+                    "contractName": name,
+                    "abi": [],
+                    "deploymentBytecode": code,
+                    "sourceId": path.name,
+                }
+
+                # Check for mocked overrides
+                overrides = mock.overrides
+                if isinstance(overrides, dict):
+                    data = {**data, **overrides}
+
+                contract_type = ContractType.model_validate(data)
                 result.append(contract_type)
 
         return result

@@ -1,5 +1,8 @@
 import os
+import random
 import shutil
+import string
+import tempfile
 from pathlib import Path
 
 import pytest
@@ -170,6 +173,42 @@ def test_create_manifest_when_file_changed_with_cached_references_that_no_longer
 
     manifest = ape_project.create_manifest()
     assert manifest
+
+
+def test_create_manifest_empty_files(compilers, mock_compiler, config, caplog):
+    """
+    Tests again a bug where empty contracts would infinitely compile.
+    """
+
+    # Using a random name to prevent async conflicts.
+    letters = string.ascii_letters
+    name = "".join(random.choice(letters) for _ in range(10))
+
+    with tempfile.TemporaryDirectory() as temp_dir:
+        base_dir = Path(temp_dir)
+        contracts = base_dir / "contracts"
+        contracts.mkdir()
+        file_1 = contracts / f"{name}.__mock__"
+        file_1.write_text("")
+
+        with config.using_project(base_dir) as proj:
+            compilers.registered_compilers[".__mock__"] = mock_compiler
+
+            # Run twice to show use_cache=False works.
+            proj.local_project.create_manifest()
+            manifest = proj.local_project.create_manifest(use_cache=False)
+
+            assert name in manifest.contract_types
+            assert f"{name}.__mock__" in manifest.sources
+            assert f"Compiling '{name}.__mock__'." in caplog.records[-1].message
+            caplog.clear()
+
+            # Ensure is not double compiled!
+            proj.local_project.create_manifest()
+            assert (
+                len(caplog.records) < 1
+                or f"Compiling '{name}.__mock__'." not in caplog.records[-1].message
+            )
 
 
 def test_meta(temp_config, project):
@@ -468,6 +507,41 @@ def test_load_contracts(project_with_contract):
     contracts = project_with_contract.load_contracts()
     assert len(contracts) > 0
     assert contracts == project_with_contract.contracts
+
+
+def test_load_contracts_after_deleting_same_named_contract(config, compilers, mock_compiler):
+    """
+    Tests against a scenario where you:
+
+    1. Add and compile a contract
+    2. Delete that contract
+    3. Add a new contract with same name somewhere else
+
+    Test such that we are able to compile successfully and not get a misleading
+    collision error from deleted files.
+    """
+
+    with tempfile.TemporaryDirectory() as temp_dir:
+        path = Path(temp_dir)
+        contracts = path / "contracts"
+        contracts.mkdir()
+        init_contract = contracts / "foo.__mock__"
+        init_contract.write_text("LALA")
+        with config.using_project(path) as proj:
+            compilers.registered_compilers[".__mock__"] = mock_compiler
+            result = proj.load_contracts()
+            assert "foo" in result
+
+            # Delete file
+            init_contract.unlink()
+
+            # Create new contract that yields same name as deleted one.
+            new_contract = contracts / "bar.__mock__"
+            new_contract.write_text("BAZ")
+            mock_compiler.overrides = {"contractName": "foo"}
+
+            result = proj.load_contracts()
+            assert "foo" in result
 
 
 def test_add_compiler_data(project_with_dependency_config):
