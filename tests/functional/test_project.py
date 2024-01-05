@@ -184,7 +184,6 @@ def test_create_manifest_empty_files(compilers, mock_compiler, config, ape_caplo
     # Using a random name to prevent async conflicts.
     letters = string.ascii_letters
     name = "".join(random.choice(letters) for _ in range(10))
-    ape_caplog.set_levels(caplog_level=LogLevel.INFO)
 
     with tempfile.TemporaryDirectory() as temp_dir:
         base_dir = Path(temp_dir)
@@ -195,6 +194,10 @@ def test_create_manifest_empty_files(compilers, mock_compiler, config, ape_caplo
 
         with config.using_project(base_dir) as proj:
             compilers.registered_compilers[".__mock__"] = mock_compiler
+
+            # NOTE: Set levels as close to the operation as possible
+            #  to lessen chance of caplog race conditions.
+            ape_caplog.set_levels(caplog_level=LogLevel.INFO)
 
             # Run twice to show use_cache=False works.
             proj.local_project.create_manifest()
@@ -208,10 +211,7 @@ def test_create_manifest_empty_files(compilers, mock_compiler, config, ape_caplo
 
             # Ensure is not double compiled!
             proj.local_project.create_manifest()
-            assert (
-                len(ape_caplog.records) < 1
-                or f"Compiling '{name}.__mock__'." not in ape_caplog.records[-1].message
-            )
+            assert f"Compiling '{name}.__mock__'." not in ape_caplog.head
 
 
 def test_meta(temp_config, project):
