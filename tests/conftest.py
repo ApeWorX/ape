@@ -402,9 +402,9 @@ def zero_address():
 @pytest.fixture
 def ape_caplog(caplog):
     class ApeCaplog:
-        def __init__(self):
+        def __init__(self, caplog_level: LogLevel = LogLevel.WARNING):
             self.messages_at_start = list(caplog.messages)
-            self.set_levels()
+            self.set_levels(caplog_level=caplog_level)
 
         def __getattr__(self, name: str) -> Any:
             return getattr(caplog, name)
@@ -434,9 +434,9 @@ def ape_caplog(caplog):
             return caplog.messages[-1] if len(caplog.messages) else ""
 
         @classmethod
-        def set_levels(cls):
+        def set_levels(cls, caplog_level: LogLevel = LogLevel.WARNING):
             logger.set_level(LogLevel.INFO)
-            caplog.set_level(LogLevel.WARNING)
+            caplog.set_level(caplog_level)
 
         def assert_last_log(self, message: str):
             assert message in self.head, self.fail_message

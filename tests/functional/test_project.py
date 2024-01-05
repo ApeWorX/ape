@@ -14,6 +14,7 @@ from ethpm_types.manifest import PackageManifest
 
 from ape import Contract
 from ape.exceptions import ProjectError
+from ape.logging import LogLevel
 from ape.managers.project import BrownieProject
 
 WITH_DEPS_PROJECT = (
@@ -122,7 +123,7 @@ def test_extract_manifest(project_with_dependency_config):
 
 
 def test_cached_manifest_when_sources_missing(
-    ape_project, manifest_with_non_existent_sources, existing_source_path, caplog
+    ape_project, manifest_with_non_existent_sources, existing_source_path, ape_caplog
 ):
     """
     Show that if a source is missing, it is OK. This happens when changing branches
@@ -146,7 +147,7 @@ def test_cached_manifest_when_sources_missing(
 
     # Show the contract type does not get added and we don't get the corrupted manifest.
     assert not any(ct.name == name for ct in manifest.contract_types.values())
-    assert not any("corrupted. Re-building" in msg for msg in caplog.messages)
+    assert not any("corrupted. Re-building" in msg for msg in ape_caplog.messages)
 
 
 def test_create_manifest_when_file_changed_with_cached_references_that_no_longer_exist(
@@ -175,7 +176,7 @@ def test_create_manifest_when_file_changed_with_cached_references_that_no_longer
     assert manifest
 
 
-def test_create_manifest_empty_files(compilers, mock_compiler, config, caplog):
+def test_create_manifest_empty_files(compilers, mock_compiler, config, ape_caplog):
     """
     Tests again a bug where empty contracts would infinitely compile.
     """
@@ -183,6 +184,7 @@ def test_create_manifest_empty_files(compilers, mock_compiler, config, caplog):
     # Using a random name to prevent async conflicts.
     letters = string.ascii_letters
     name = "".join(random.choice(letters) for _ in range(10))
+    ape_caplog.set_levels(caplog_level=LogLevel.INFO)
 
     with tempfile.TemporaryDirectory() as temp_dir:
         base_dir = Path(temp_dir)
@@ -200,14 +202,15 @@ def test_create_manifest_empty_files(compilers, mock_compiler, config, caplog):
 
             assert name in manifest.contract_types
             assert f"{name}.__mock__" in manifest.sources
-            assert f"Compiling '{name}.__mock__'." in caplog.records[-1].message
-            caplog.clear()
+
+            ape_caplog.assert_last_log(f"Compiling '{name}.__mock__'.")
+            ape_caplog.clear()
 
             # Ensure is not double compiled!
             proj.local_project.create_manifest()
             assert (
-                len(caplog.records) < 1
-                or f"Compiling '{name}.__mock__'." not in caplog.records[-1].message
+                len(ape_caplog.records) < 1
+                or f"Compiling '{name}.__mock__'." not in ape_caplog.records[-1].message
             )
 
 
