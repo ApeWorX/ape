@@ -86,7 +86,9 @@ class _ProjectSources:
         # ethpm_types strips trailing white space and ensures
         # a newline at the end so content so `splitlines()` works.
         # We need to do the same here for to prevent the endless recompiling bug.
-        content = f"{source_file.read_text('utf8').rstrip()}\n"
+        text = source_file.read_text("utf8").rstrip()
+        content = f"{text}\n" if text else ""
+
         checksum = compute_checksum(content.encode("utf8"), algorithm=cached_checksum.algorithm)
         return checksum != cached_checksum.hash  # Contents changed
 
@@ -177,7 +179,11 @@ class BaseProject(ProjectAPI):
             )
         )
 
-        manifest = self.manifest if use_cache else PackageManifest()
+        if use_cache:
+            manifest = self.manifest
+        else:
+            self._contracts = None
+            manifest = PackageManifest()
 
         # Generate sources and contract types.
         project_sources = _ProjectSources(
@@ -211,7 +217,9 @@ class BaseProject(ProjectAPI):
         # Is cached.
         return self.manifest
 
-    def _compile(self, project_sources: _ProjectSources) -> Dict[str, ContractType]:
+    def _compile(
+        self, project_sources: _ProjectSources, use_cache: bool = True
+    ) -> Dict[str, ContractType]:
         def _compile_sources(proj_srcs: _ProjectSources) -> Dict[str, ContractType]:
             contracts_folder = self.contracts_folder
             srcs_to_compile = proj_srcs.sources_needing_compilation

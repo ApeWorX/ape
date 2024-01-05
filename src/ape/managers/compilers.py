@@ -115,14 +115,18 @@ class CompilerManager(BaseManager):
         cached_manifest = self.project_manager.local_project.cached_manifest
 
         # Load past compiled contracts for verifying type-collision and other things.
-        already_compiled_contracts = (
-            (cached_manifest.contract_types or {}) if cached_manifest else {}
-        )
-        already_compiled_paths = [
-            contracts_folder / x.source_id
-            for x in already_compiled_contracts.values()
-            if x.source_id
-        ]
+        already_compiled_contracts: Dict[str, ContractType] = {}
+        already_compiled_paths: List[Path] = []
+        for name, ct in ((cached_manifest.contract_types or {}) if cached_manifest else {}).items():
+            if not ct.source_id:
+                continue
+
+            _file = contracts_folder / ct.source_id
+            if not _file.is_file():
+                continue
+
+            already_compiled_contracts[name] = ct
+            already_compiled_paths.append(_file)
 
         exclusions = self.config_manager.get_config("compile").exclude
         for extension in extensions:
