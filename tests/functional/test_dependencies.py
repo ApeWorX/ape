@@ -150,7 +150,7 @@ def test_compile_with_config_override(dependency_manager, project):
     override = {"contracts_folder": "src"}
     path = "__test_path__"
     contracts_path = project.path / path / "contracts"
-    contracts_path.mkdir(parents=True)
+    contracts_path.mkdir(exist_ok=True, parents=True)
     (contracts_path / "contract.json").write_text('{"abi": []}')
     data = {"name": "FooBar", "local": path, "config_override": override}
     dependency = dependency_manager.decode_dependency(data)
