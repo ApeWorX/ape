@@ -190,7 +190,9 @@ class ConfigManager(BaseInterfaceModel):
         self.dependencies = configs["dependencies"]
 
         # NOTE: It is okay for this directory not to exist at this point.
-        contracts_folder = user_config.pop("contracts_folder", None)
+        contracts_folder = user_config.pop(
+            "contracts_folder", user_config.pop("contracts-folder", None)
+        )
         contracts_folder = (
             (self.PROJECT_FOLDER / Path(contracts_folder)).expanduser().resolve()
             if contracts_folder
