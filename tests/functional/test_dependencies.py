@@ -123,15 +123,7 @@ def test_npm_dependency(mock_home_directory):
             shutil.rmtree(package_folder)
 
 
-def test_compile(project_with_downloaded_dependencies):
-    name = "OpenZeppelin"
-    oz_442 = project_with_downloaded_dependencies.dependencies[name]["4.4.2"]
-    # NOTE: the test data is pre-compiled because the ape-solidity plugin is required.
-    actual = oz_442.compile()
-    assert len(actual.contract_types) > 0
-
-
-def test_compile_with_extra_settings(dependency_manager, project):
+def test_decode_with_config_override(dependency_manager, project):
     settings = {".json": {"evm_version": "paris"}}
     path = "__test_path__"
     base_path = project.path / path
@@ -142,6 +134,29 @@ def test_compile_with_extra_settings(dependency_manager, project):
     data = {"name": "FooBar", "local": path, "config_override": settings}
     dependency = dependency_manager.decode_dependency(data)
     assert dependency.config_override == settings
+
+
+def test_compile(project_with_downloaded_dependencies):
+    name = "OpenZeppelin"
+    oz_442 = project_with_downloaded_dependencies.dependencies[name]["4.4.2"]
+    # NOTE: the test data is pre-compiled because the ape-solidity plugin is required.
+    actual = oz_442.compile()
+    assert len(actual.contract_types) > 0
+
+
+def test_compile_with_config_override(dependency_manager, project):
+    # NOTE: It is important that `contracts_folder` is present in settings
+    #  for this test to test against a previous bug where we got multiple values.
+    override = {"contracts_folder": "src"}
+    path = "__test_path__"
+    contracts_path = project.path / path / "contracts"
+    contracts_path.mkdir(parents=True)
+    (contracts_path / "contract.json").write_text('{"abi": []}')
+    data = {"name": "FooBar", "local": path, "config_override": override}
+    dependency = dependency_manager.decode_dependency(data)
+
+    actual = dependency.compile()
+    assert len(actual.contract_types) > 0
 
 
 def test_github_dependency_ref_or_version_is_required():
