@@ -477,9 +477,11 @@ class DependencyAPI(ExtraAttributesMixin, BaseInterfaceModel):
         with tempfile.TemporaryDirectory() as temp_dir:
             path = Path(temp_dir)
             contracts_folder = path / config_data.get("contracts_folder", "contracts")
-            with self.config_manager.using_project(
-                path, contracts_folder=contracts_folder, **config_data
-            ) as project:
+
+            if "contracts_folder" not in config_data:
+                config_data["contracts_folder"] = contracts_folder
+
+            with self.config_manager.using_project(path, **config_data) as project:
                 manifest.unpack_sources(contracts_folder)
                 compiled_manifest = project.local_project.create_manifest()
 
