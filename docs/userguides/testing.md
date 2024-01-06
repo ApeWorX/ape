@@ -15,38 +15,6 @@ def test_add():
 
 **NOTE**: `pytest` assumes the *actual* value is on the left and the *expected* value is on the right.
 
-## Test Pattern
-
-Tests are generally divisible into three parts:
-
-1. Set-up
-2. Invocation
-3. Assertion
-
-In the example above, we created a fixture that deploys our smart-contract.
-This is an example of a 'setup' phase.
-Next, we need to call a method on our contract.
-Let's assume there is an `authorized_method()` that requires the owner of the contract to make the transaction.
-If the sender of the transaction is not the owner, the transaction will fail to complete and will revert.
-
-This is an example of how that test may look:
-
-```python
-import ape
-
-def test_authorization(my_contract, owner, not_owner):
-    my_contract.set_owner(sender=owner)
-    assert owner == my_contract.owner()
-
-    with ape.reverts("!authorized"):
-        my_contract.authorized_method(sender=not_owner)
-```
-
-```{note}
-Ape has built-in test and fixture isolation for all pytest scopes.
-To disable isolation add the `--disable-isolation` flag when running `ape test`
-```
-
 ## Fixtures
 
 You can define and use `pytest` fixtures in your Ape tests.
@@ -186,6 +154,40 @@ def my_contract(Contract):
 ```
 
 It has the same interface as the [ChainManager](../methoddocs/managers.html#ape.managers.chain.ChainManager).
+
+## Test Pattern
+
+Tests are generally divisible into three parts:
+
+1. Set-up
+2. Invocation
+3. Assertion
+
+In the example above, we created a fixture that deploys our smart-contract.
+This is an example of a 'setup' phase.
+Next, we need to call a method on our contract.
+Let's assume there is an `authorized_method()` that requires the owner of the contract to make the transaction.
+If the sender of the transaction is not the owner, the transaction will fail to complete and will revert.
+
+This is an example of how that test may look:
+
+```python
+import ape
+
+def test_authorization(my_contract, owner, not_owner):
+    my_contract.set_owner(sender=owner)
+    assert owner == my_contract.owner()
+
+    with ape.reverts("!authorized"):
+        my_contract.authorized_method(sender=not_owner)
+```
+
+```{note}
+Ape has built-in test and fixture isolation for all pytest scopes.
+To disable isolation add the `--disable-isolation` flag when running `ape test`
+```
+
+
 
 ## Ape testing commands
 
