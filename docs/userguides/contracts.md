@@ -8,7 +8,7 @@ The other way is to initialize an already-deployed contract using its address.
 ## From Deploy
 
 Deploy contracts from your project using the `project` root-level object.
-The names of your contracts are properties on the `project` object (e.g. `project.MyContract`) and their types are [ContractContainer](../methoddocs/contracts.html#ape.contracts.base.ContractContainer).
+The names of your contracts are attributes on the `project` object (e.g. `project.MyContract`) and their types are [ContractContainer](../methoddocs/contracts.html#ape.contracts.base.ContractContainer).
 
 **NOTE**: To avoid naming collisions with other properties on the `project` object, you can also use the [get_contract()](../methoddocs/managers.html#ape.managers.project.manager.ProjectManager.get_contract) method to retrieve contract containers.
 
@@ -171,13 +171,33 @@ def set_number(num: uint256):
     self.myNumber = num
 ```
 
-You can call those functions by doing:
+Notice the contract has both an external pure method and an external method that modifies state.
+In EVM languages, methods that modify state require a transaction to execute because they cost money.
+Modifying the storage of a contract requires gas and thus requires a sender with enough funding.
+Contract calls, on the other hand, are read-operations and do no cost anything.
+Thus, calls do no require specifying a `sender=` in Ape.
+
+At the RPC level, Ethereum calls are performed using the `eth_call` RPC and transactions are performed using the `eth_sendTransaction` or `eth_sendRawTransaction` RPCs.
+
+The following examples demonstrate both making a call and invoking a transaction to a deployed version of the contract above.
+First, here is an example of invoking a function (creating a transaction):
 
 ```python
-assert contract.get_static_list() == [1, 2, 3]
+from ape import accounts, Contract
 
-# Mutable calls are transactions and require a sender
-receipt = contract.set_number(sender=dev)
+sender = accounts.load("<ALIAS>")
+contract = Contract("0x...")  # Assume is deployed version of code above
+
+# Invoke the `set_number()` function, which costs Ether
+receipt = contract.set_number(sender=sender)
+assert not receipt.failed
+```
+
+Here is an example of making a call:
+
+```python
+# NOTICE: A sender is required for calls!
+assert contract.get_static_list() == [1, 2, 3]
 ```
 
 ### Default, Fallback, and Direct Calls
