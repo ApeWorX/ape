@@ -79,6 +79,11 @@ html_css_files = ["custom.css"]
 # since not all links are available in the markdown files pre-build.
 myst_all_links_external = True
 
+# Set some default to avoid unnecessary repetitious directives.
+autodoc_default_options = {
+    "exclude-members": "__repr__,__weakref__,__metaclass__,__init__,model_config,model_fields,model_post_init"
+}
+
 
 def fixpath(path: str) -> str:
     """
@@ -120,4 +125,9 @@ def setup(app):
 html_context = {
     "fixpath": fixpath,
     "get_versions": get_versions,
+    "display_github": True,
+    "github_user": "ApeWorX",
+    "github_repo": "ape",
+    "github_version": "main",
+    "conf_py_path": "/docs/",
 }
