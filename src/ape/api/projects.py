@@ -541,21 +541,29 @@ class DependencyAPI(ExtraAttributesMixin, BaseInterfaceModel):
             contracts_folder=(project_path / self.contracts_folder).expanduser().resolve(),
         ) as pm:
             project = pm.local_project
-            sources = self._get_sources(project)
-            dependencies = self.project_manager._extract_manifest_dependencies()
+            if sources := self._get_sources(project):
+                dependencies = self.project_manager._extract_manifest_dependencies()
 
-            extras: Dict = {}
-            if dependencies:
-                extras["dependencies"] = dependencies
+                extras: Dict = {}
+                if dependencies:
+                    extras["dependencies"] = dependencies
 
-            project.update_manifest_sources(
-                sources,
-                project.contracts_folder,
-                {},
-                name=project.name,
-                version=project.version,
-                **extras,
-            )
+                project.update_manifest_sources(
+                    sources,
+                    project.contracts_folder,
+                    {},
+                    name=project.name,
+                    version=project.version,
+                    **extras,
+                )
+            else:
+                raise ProjectError(
+                    f"No source files found in dependency '{self.name}'. "
+                    "Try adjusting its config using `config_override` to "
+                    "get Ape to recognize the project. "
+                    "\nMore information: "
+                    "http://127.0.0.1:1337/ape/latest/userguides/dependencies.html#config-override"
+                )
 
         # Replace the dependency's manifest with the temp project's.
         self.replace_manifest(project.manifest)

@@ -7,7 +7,8 @@ from typing import Dict
 import pytest
 from pydantic import ValidationError
 
-from ape.managers.project.dependency import GithubDependency, NpmDependency
+from ape.exceptions import ProjectError
+from ape.managers.project.dependency import GithubDependency, LocalDependency, NpmDependency
 
 
 @pytest.fixture
@@ -163,3 +164,24 @@ def test_github_dependency_ref_or_version_is_required():
     expected = r"GitHub dependency must have either ref or version specified"
     with pytest.raises(ValidationError, match=expected):
         _ = GithubDependency(name="foo", github="asdf")
+
+
+def test_dependency_missing_sources():
+    """
+    This raises an error because most-likely the dependency
+    was not configured correctly.
+    """
+
+    name = "depmissingsrcs"
+    expected = (
+        rf"No source files found in dependency '{name}'\. "
+        r"Try adjusting its config using `config_override` to get Ape to recognize the project\. "
+        r"\nMore information: "
+        r"http://127.0.0.1:1337/ape/latest/userguides/dependencies\.html#config-override"
+    )
+    with tempfile.TemporaryDirectory() as temp_dir:
+        dependency = LocalDependency(name=name, local=temp_dir)
+
+        # Raises because there are no source files in temp_dir.
+        with pytest.raises(ProjectError, match=expected):
+            dependency.extract_manifest()
