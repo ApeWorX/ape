@@ -227,7 +227,7 @@ assert contract.get_static_list() == [1, 2, 3]
 
 ### Calling Transactions and Transacting Calls
 
-You can treat transactions as calls as visa-versa.
+You can treat transactions as calls and vice-versa.
 
 For example, let's say we have a Solidity function:
 
