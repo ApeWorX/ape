@@ -268,7 +268,7 @@ account = accounts.load("<ALIAS>")
 contract = Contract("0x...")
 
 receipt = contract.getModifiedBalance.transact(sender=account)
-assert not receipt.failed  # do no cost anything.Transactions return `ReceiptAPI` objects.
+assert not receipt.failed  # Transactions return `ReceiptAPI` objects.
 print(receipt.gas_used)  # Analyze receipt gas from calls.
 ```
 
