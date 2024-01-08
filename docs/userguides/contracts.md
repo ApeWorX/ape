@@ -8,7 +8,7 @@ The other way is to initialize an already-deployed contract using its address.
 ## From Deploy
 
 Deploy contracts from your project using the `project` root-level object.
-The names of your contracts are properties on the `project` object (e.g. `project.MyContract`) and their types are [ContractContainer](../methoddocs/contracts.html#ape.contracts.base.ContractContainer).
+The names of your contracts are attributes on the `project` object (e.g. `project.MyContract`) and their types are [ContractContainer](../methoddocs/contracts.html#ape.contracts.base.ContractContainer).
 
 **NOTE**: To avoid naming collisions with other properties on the `project` object, you can also use the [get_contract()](../methoddocs/managers.html#ape.managers.project.manager.ProjectManager.get_contract) method to retrieve contract containers.
 
@@ -171,13 +171,105 @@ def set_number(num: uint256):
     self.myNumber = num
 ```
 
-You can call those functions by doing:
+Notice the contract has both an external pure method and an external method that modifies state.
+In EVM languages, methods that modify state require a transaction to execute because they cost money.
+Modifying the storage of a contract requires gas and thus requires a sender with enough funding.
+Contract calls, on the other hand, are read-operations and do not cost anything.
+Thus, calls do not require specifying a `sender=` in Ape.
+
+At the RPC level, Ethereum calls are performed using the `eth_call` RPC and transactions are performed using the `eth_sendTransaction` or `eth_sendRawTransaction` RPCs.
+
+### Transactions
+
+The following example demonstrates invoking a contract's method in Ape as a transaction.
+However, take note that there is a [separate guide](./transactions.html) which fully covers transactions in Ape.
 
 ```python
-assert contract.get_static_list() == [1, 2, 3]
+from ape import accounts, Contract
 
-# Mutable calls are transactions and require a sender
-receipt = contract.set_number(sender=dev)
+account = accounts.load("<ALIAS>")
+contract = Contract("0x...")  # Assume is deployed version of code above
+
+# Transaction: Invoke the `set_number()` function, which costs Ether
+receipt = contract.set_number(sender=account)
+assert not receipt.failed
+
+# The receipt contains data such as `gas_used`.
+print(receit.gas_used)
+```
+
+Notice that transacting returns a [ReceiptAPI](../methoddocs/api.html#ape.api.transactions.ReceiptAPI) object which contains all the receipt data, such as `gas_used`.
+
+**NOTE**: If you need the `return_value` from a transaction, you have to either treat transaction as a call (see the section below!) or use a provider with tracing-features enabled (such as `ape-foundry` or `ape-geth`) and access the [return_value](../methoddocs/api.html#ape.api.transactions.ReceiptAPI.return_value) property on the receipt.
+
+```python
+assert receipt.return_value == 123
+```
+
+For more general information on transactions in the Ape framework, see [this guide](./transactions.html).
+
+### Calls
+
+In the Vyper code at the beginning of this section, the function `get_static_list()` is decorated as `@pure` indicating that it's read-only.
+(Also in Vyper, `@view` methods are read-only).
+Since `get_static_list()` is read-only, we can successfully call it without a `sender=` kwarg; no funds are required.
+Here is an example of making a call by checking the result of `get_static_list()`:
+
+```python
+from ape import accounts, Contract
+
+account = accounts.load("<ALIAS>")
+contract = Contract("0x...")
+
+# CALL: A sender is not required for calls!
+assert contract.get_static_list() == [1, 2, 3]
+```
+
+### Calling Transactions and Transacting Calls
+
+You can treat transactions as calls and vice-versa.
+
+For example, let's say we have a Solidity function:
+
+```solidity
+function addBalance(uint256 new_bal) external returns(uint256) {
+    balances[msg.sender] = new_bal;
+    return balances[msg.sender];
+}
+```
+
+To simulate the transaction without actually modifying any state, use the `.call` method from the contract transaction handler:
+
+```python
+from ape import Contract
+
+contract = Contract("0x...")
+
+result = contract.addBalance.call(123)
+assert result == "123"  # The return value gets forwarded from the contract.
+```
+
+Similarly, you may want to measure a call as if it were a transaction, in which case you can use the `.transact` attribute on the contract call handler:
+
+Given the Solidity function:
+
+```solidity
+function getModifiedBalance() external view returns(uint256) {
+    return balances[msg.sender] + 123;
+}
+```
+
+You can treat it like a transaction by doing:
+
+```python
+from ape import accounts, Contract
+
+account = accounts.load("<ALIAS>")
+contract = Contract("0x...")
+
+receipt = contract.getModifiedBalance.transact(sender=account)
+assert not receipt.failed  # Transactions return `ReceiptAPI` objects.
+print(receipt.gas_used)  # Analyze receipt gas from calls.
 ```
 
 ### Default, Fallback, and Direct Calls
