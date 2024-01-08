@@ -76,7 +76,7 @@ from ape import project
 contract = project.MyContract.deployments[0]
 ```
 
-**NOTE**: Ape does not add or edit your `ape-config.yaml` file.
+**NOTE**: Ape does not add or edit deployments in your `ape-config.yaml` file.
 
 ## Geth
 
