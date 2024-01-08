@@ -61,7 +61,7 @@ class BaseTransaction(TransactionAPI):
             if not self.sender:
                 message = (
                     f"{message} "
-                    "Did you forget to add the sender argument to the transaction function call?"
+                    "Did you forget to add the `sender=` kwarg to the transaction function call?"
                 )
 
             raise SignatureError(message)

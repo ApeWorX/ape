@@ -115,7 +115,7 @@ def test_serialize_transaction_missing_signature(ethereum, owner):
 def test_serialize_transaction_missing_signature_and_sender(ethereum):
     expected = (
         r"The transaction is not signed. "
-        r"Did you forget to add the sender argument to the transaction function call?"
+        r"Did you forget to add the `sender=` kwarg to the transaction function call?"
     )
     txn = ethereum.create_transaction(data=HexBytes("0x123"))
     with pytest.raises(SignatureError, match=expected):
