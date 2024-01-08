@@ -125,4 +125,9 @@ def setup(app):
 html_context = {
     "fixpath": fixpath,
     "get_versions": get_versions,
+    "display_github": True,
+    "github_user": "ApeWorX",
+    "github_repo": "ape",
+    "github_version": "main",
+    "conf_py_path": "/docs/",
 }
