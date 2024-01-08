@@ -4,9 +4,11 @@ Testing an ape project is important and easy.
 
 ## Pytest
 
-Before learning about how testing works in Ape, you should be familiar with [the pytest framework](https://docs.pytest.org/en/7.4.x/) and its concepts such as fixtures, pytest decorators, and pytest plugins such as x-dist and pytest-mock.
+Before learning how testing works in Ape, you should have an understanding of [the pytest framework](https://docs.pytest.org/en/7.4.x/) and its concepts such as fixtures, mark-decorators, and pytest plugins such as x-dist, pytest-mock, and pytest-cov.
 Once you have learned about pytest, Ape testing becomes intuitive because it is built on top of pytest.
 In fact, `ape-test` is itself a `pytest` plugin!
+
+You write your smart-contracts much like you write regular Python tests.
 
 ## Test Structure
 
