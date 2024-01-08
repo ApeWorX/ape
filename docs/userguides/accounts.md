@@ -93,7 +93,7 @@ Ape ships with a keyfile-based account plugin that lets you import and generate 
 The premise of the plugin is that accounts are stored locally on your computer in the `$HOME/.ape/accounts` directory following the `keyfile` structure.
 Under-the-hood, this structure comes from the [eth-keyfile library](https://github.com/ethereum/eth-keyfile) via the [eth-account](https://eth-account.readthedocs.io/en/stable/eth_account.html) package.
 When Ape creates the keyfile, either from import or account-generation (described below!), it prompts you for a passphrase to use for encrypting the keyfile, similarly to how you would use a password in browser-based wallets.
-The keyfile, then, stores the encrypted private key.
+The keyfile stores the private key in an encrypted-at-rest state, which maximizes security of the locally-stored key material.
 
 The `ape-accounts` plugin lets you use keyfile-based account to sign messages and transactions.
 When signing a message or transaction using an account from `ape-accounts`, you will be prompted to enter the passphrase you specified when importing or generating that account.
