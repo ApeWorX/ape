@@ -148,6 +148,7 @@
 <li class="toctree-l1"><a class="reference internal" href="contracts.html">Contracts</a></li>
 <li class="toctree-l1"><a class="reference internal" href="proxy.html">Proxy Contracts</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Testing</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#pytest">Pytest</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#test-structure">Test Structure</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#test-pattern">Test Pattern</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#fixtures">Fixtures</a><ul>
@@ -235,6 +236,13 @@
   <section id="testing">
 <h1>Testing<a class="headerlink" href="#testing" title="Permalink to this heading"></a></h1>
 <p>Testing an ape project is important and easy.</p>
+<section id="pytest">
+<h2>Pytest<a class="headerlink" href="#pytest" title="Permalink to this heading"></a></h2>
+<p>Before learning how testing works in Ape, you should have an understanding of <a class="reference external" href="https://docs.pytest.org/en/7.4.x/">the pytest framework</a> and its concepts such as fixtures, mark-decorators, and pytest plugins such as x-dist, pytest-mock, and pytest-cov.
+Once you have learned about pytest, Ape testing becomes intuitive because it is built on top of pytest.
+In fact, <code class="docutils literal notranslate"><span class="pre">ape-test</span></code> is itself a <code class="docutils literal notranslate"><span class="pre">pytest</span></code> plugin!</p>
+<p>You write your smart-contracts much like you write regular Python tests.</p>
+</section>
 <section id="test-structure">
 <h2>Test Structure<a class="headerlink" href="#test-structure" title="Permalink to this heading"></a></h2>
 <p>Tests must be located in a project’s <code class="docutils literal notranslate"><span class="pre">tests/</span></code> directory. Each <strong>test file</strong> must start with <code class="docutils literal notranslate"><span class="pre">test_</span></code> and have the <code class="docutils literal notranslate"><span class="pre">.py</span></code> extension, such as <code class="docutils literal notranslate"><span class="pre">test_my_contract.py</span></code>.
@@ -254,18 +262,35 @@ The following is an example test:</p>
 <li><p>Invocation</p></li>
 <li><p>Assertion</p></li>
 </ol>
-<p>In the example above, we created a fixture that deploys our smart-contract.
-This is an example of a ‘setup’ phase.
-Next, we need to call a method on our contract.
+<p>An example of the setup-phase would be creating a <code class="docutils literal notranslate"><span class="pre">pytest.fixture</span></code> that deploys our smart contract.
+(To learn more about pytest fixtures in Ape, see the <code class="docutils literal notranslate"><span class="pre">Fixtures</span></code> section below!)
+For now, what you need to know is that it’s a piece of code that executes before the test runs, and it is decorated with a <code class="docutils literal notranslate"><span class="pre">&#64;pytest.fixture</span></code>.</p>
+<p>The second phase is <code class="docutils literal notranslate"><span class="pre">Invocation</span></code>, which encompasses invoking the function we are testing.
+The last phase, <code class="docutils literal notranslate"><span class="pre">Assertion</span></code>, requires enacting on the expectation about how the code should behave.
 Let’s assume there is an <code class="docutils literal notranslate"><span class="pre">authorized_method()</span></code> that requires the owner of the contract to make the transaction.
-If the sender of the transaction is not the owner, the transaction will fail to complete and will revert.</p>
+If the sender of the transaction is not the owner, the transaction will fail to complete and will revert.
+We use <code class="docutils literal notranslate"><span class="pre">assert</span></code> statements in Ape (and <code class="docutils literal notranslate"><span class="pre">pytest</span></code>) to check that our expectations are correct.
+A test passes if all the <code class="docutils literal notranslate"><span class="pre">assert</span></code> statements are <code class="docutils literal notranslate"><span class="pre">True</span></code> and it fails if any are <code class="docutils literal notranslate"><span class="pre">False</span></code>.</p>
 <p>This is an example of how that test may look:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">ape</span>
+<span class="kn">import</span> <span class="nn">pytest</span>
+
+<span class="c1"># SETUP PHASE</span>
+<span class="c1"># NOTE: More on fixtures is discussed in later sections of this guide!</span>
+<span class="nd">@pytest</span><span class="o">.</span><span class="n">fixture</span>
+<span class="k">def</span> <span class="nf">owner</span><span class="p">(</span><span class="n">accounts</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">accounts</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+<span class="nd">@pytest</span><span class="o">.</span><span class="n">fixture</span>
+<span class="k">def</span> <span class="nf">my_contract</span><span class="p">(</span><span class="n">owner</span><span class="p">,</span> <span class="n">project</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">owner</span><span class="o">.</span><span class="n">deploy</span><span class="p">(</span><span class="n">project</span><span class="o">.</span><span class="n">MyContract</span><span class="p">)</span>
 
 <span class="k">def</span> <span class="nf">test_authorization</span><span class="p">(</span><span class="n">my_contract</span><span class="p">,</span> <span class="n">owner</span><span class="p">,</span> <span class="n">not_owner</span><span class="p">):</span>
+    <span class="c1"># INVOCATION PHASE</span>
     <span class="n">my_contract</span><span class="o">.</span><span class="n">set_owner</span><span class="p">(</span><span class="n">sender</span><span class="o">=</span><span class="n">owner</span><span class="p">)</span>
     <span class="k">assert</span> <span class="n">owner</span> <span class="o">==</span> <span class="n">my_contract</span><span class="o">.</span><span class="n">owner</span><span class="p">()</span>
 
+    <span class="c1"># ASSERTION PHASE</span>
     <span class="k">with</span> <span class="n">ape</span><span class="o">.</span><span class="n">reverts</span><span class="p">(</span><span class="s2">&quot;!authorized&quot;</span><span class="p">):</span>
         <span class="n">my_contract</span><span class="o">.</span><span class="n">authorized_method</span><span class="p">(</span><span class="n">sender</span><span class="o">=</span><span class="n">not_owner</span><span class="p">)</span>
 </pre></div>
@@ -278,6 +303,7 @@ To disable isolation add the <code class="docutils literal notranslate"><span cl
 </section>
 <section id="fixtures">
 <h2>Fixtures<a class="headerlink" href="#fixtures" title="Permalink to this heading"></a></h2>
+<p>Now that we have discussed the full flow of a test, let’s dive deeper into the specific parts, starting with <code class="docutils literal notranslate"><span class="pre">pytest.fixtures</span></code>.</p>
 <p>You can define and use <code class="docutils literal notranslate"><span class="pre">pytest</span></code> fixtures in your Ape tests.
 Learn more about fixtures from <a class="reference external" href="https://docs.pytest.org/en/7.1.x/explanation/fixtures.html">this guide</a>.
 The syntax and functionalities of fixtures work exactly the same in Ape as it does with <code class="docutils literal notranslate"><span class="pre">pytest</span></code>.</p>
