@@ -92,7 +92,7 @@ def generate(cli_ctx, alias, hide_mnemonic, word_count, custom_hd_path):
     # Adding entropy increases os.urandom randomness output
     # Despite not being used in create_with_mnemonic
     click.prompt(
-        "Enhance the security of your key by adding additional random input",
+        "Enhance the security of your account by adding additional random input",
         hide_input=True,
     )
     account, mnemonic = EthAccount.create_with_mnemonic(
