@@ -179,15 +179,99 @@
 <li class="toctree-l3"><a class="reference internal" href="#ape.types.address.RawAddress"><code class="docutils literal notranslate"><span class="pre">RawAddress</span></code></a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="#module-ape.types.signatures">Signatures</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#ape.types.signatures.MessageSignature"><code class="docutils literal notranslate"><span class="pre">MessageSignature</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#signatures">Signatures</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#ape.types.signatures.SignableMessage"><code class="docutils literal notranslate"><span class="pre">SignableMessage</span></code></a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#ape.types.signatures.SignableMessage.body"><code class="docutils literal notranslate"><span class="pre">SignableMessage.body</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.types.signatures.SignableMessage.header"><code class="docutils literal notranslate"><span class="pre">SignableMessage.header</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.types.signatures.SignableMessage.version"><code class="docutils literal notranslate"><span class="pre">SignableMessage.version</span></code></a></li>
 </ul>
 </li>
+<li class="toctree-l3"><a class="reference internal" href="#ape.types.signatures.MessageSignature"><code class="docutils literal notranslate"><span class="pre">MessageSignature</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ape.types.signatures.TransactionSignature"><code class="docutils literal notranslate"><span class="pre">TransactionSignature</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#ape.types.signatures.recover_signer"><code class="docutils literal notranslate"><span class="pre">signatures.recover_signer()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#module-ape.types.coverage">Coverage</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#ape.types.coverage.ContractCoverage"><code class="docutils literal notranslate"><span class="pre">ContractCoverage</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#ape.types.coverage.ContractCoverage.function_hits"><code class="docutils literal notranslate"><span class="pre">ContractCoverage.function_hits</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ape.types.coverage.ContractCoverage.function_rate"><code class="docutils literal notranslate"><span class="pre">ContractCoverage.function_rate</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ape.types.coverage.ContractCoverage.functions"><code class="docutils literal notranslate"><span class="pre">ContractCoverage.functions</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ape.types.coverage.ContractCoverage.line_rate"><code class="docutils literal notranslate"><span class="pre">ContractCoverage.line_rate</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ape.types.coverage.ContractCoverage.lines_covered"><code class="docutils literal notranslate"><span class="pre">ContractCoverage.lines_covered</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ape.types.coverage.ContractCoverage.lines_valid"><code class="docutils literal notranslate"><span class="pre">ContractCoverage.lines_valid</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ape.types.coverage.ContractCoverage.miss_count"><code class="docutils literal notranslate"><span class="pre">ContractCoverage.miss_count</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ape.types.coverage.ContractCoverage.model_dump"><code class="docutils literal notranslate"><span class="pre">ContractCoverage.model_dump()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ape.types.coverage.ContractCoverage.name"><code class="docutils literal notranslate"><span class="pre">ContractCoverage.name</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ape.types.coverage.ContractCoverage.statements"><code class="docutils literal notranslate"><span class="pre">ContractCoverage.statements</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#ape.types.coverage.ContractSourceCoverage"><code class="docutils literal notranslate"><span class="pre">ContractSourceCoverage</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#ape.types.coverage.ContractSourceCoverage.contracts"><code class="docutils literal notranslate"><span class="pre">ContractSourceCoverage.contracts</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ape.types.coverage.ContractSourceCoverage.function_hits"><code class="docutils literal notranslate"><span class="pre">ContractSourceCoverage.function_hits</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ape.types.coverage.ContractSourceCoverage.function_rate"><code class="docutils literal notranslate"><span class="pre">ContractSourceCoverage.function_rate</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ape.types.coverage.ContractSourceCoverage.include"><code class="docutils literal notranslate"><span class="pre">ContractSourceCoverage.include()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ape.types.coverage.ContractSourceCoverage.line_rate"><code class="docutils literal notranslate"><span class="pre">ContractSourceCoverage.line_rate</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ape.types.coverage.ContractSourceCoverage.lines_covered"><code class="docutils literal notranslate"><span class="pre">ContractSourceCoverage.lines_covered</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ape.types.coverage.ContractSourceCoverage.lines_valid"><code class="docutils literal notranslate"><span class="pre">ContractSourceCoverage.lines_valid</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ape.types.coverage.ContractSourceCoverage.miss_count"><code class="docutils literal notranslate"><span class="pre">ContractSourceCoverage.miss_count</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ape.types.coverage.ContractSourceCoverage.model_dump"><code class="docutils literal notranslate"><span class="pre">ContractSourceCoverage.model_dump()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ape.types.coverage.ContractSourceCoverage.source_id"><code class="docutils literal notranslate"><span class="pre">ContractSourceCoverage.source_id</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ape.types.coverage.ContractSourceCoverage.statements"><code class="docutils literal notranslate"><span class="pre">ContractSourceCoverage.statements</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ape.types.coverage.ContractSourceCoverage.total_functions"><code class="docutils literal notranslate"><span class="pre">ContractSourceCoverage.total_functions</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#ape.types.coverage.CoverageProject"><code class="docutils literal notranslate"><span class="pre">CoverageProject</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#ape.types.coverage.CoverageProject.function_hits"><code class="docutils literal notranslate"><span class="pre">CoverageProject.function_hits</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ape.types.coverage.CoverageProject.function_rate"><code class="docutils literal notranslate"><span class="pre">CoverageProject.function_rate</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ape.types.coverage.CoverageProject.line_rate"><code class="docutils literal notranslate"><span class="pre">CoverageProject.line_rate</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ape.types.coverage.CoverageProject.lines_covered"><code class="docutils literal notranslate"><span class="pre">CoverageProject.lines_covered</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ape.types.coverage.CoverageProject.lines_valid"><code class="docutils literal notranslate"><span class="pre">CoverageProject.lines_valid</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ape.types.coverage.CoverageProject.miss_count"><code class="docutils literal notranslate"><span class="pre">CoverageProject.miss_count</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ape.types.coverage.CoverageProject.model_dump"><code class="docutils literal notranslate"><span class="pre">CoverageProject.model_dump()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ape.types.coverage.CoverageProject.name"><code class="docutils literal notranslate"><span class="pre">CoverageProject.name</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ape.types.coverage.CoverageProject.sources"><code class="docutils literal notranslate"><span class="pre">CoverageProject.sources</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ape.types.coverage.CoverageProject.statements"><code class="docutils literal notranslate"><span class="pre">CoverageProject.statements</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ape.types.coverage.CoverageProject.total_functions"><code class="docutils literal notranslate"><span class="pre">CoverageProject.total_functions</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#ape.types.coverage.CoverageReport"><code class="docutils literal notranslate"><span class="pre">CoverageReport</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#ape.types.coverage.CoverageReport.function_hits"><code class="docutils literal notranslate"><span class="pre">CoverageReport.function_hits</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ape.types.coverage.CoverageReport.function_rate"><code class="docutils literal notranslate"><span class="pre">CoverageReport.function_rate</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ape.types.coverage.CoverageReport.get_html"><code class="docutils literal notranslate"><span class="pre">CoverageReport.get_html()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ape.types.coverage.CoverageReport.get_xml"><code class="docutils literal notranslate"><span class="pre">CoverageReport.get_xml()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ape.types.coverage.CoverageReport.line_rate"><code class="docutils literal notranslate"><span class="pre">CoverageReport.line_rate</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ape.types.coverage.CoverageReport.lines_covered"><code class="docutils literal notranslate"><span class="pre">CoverageReport.lines_covered</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ape.types.coverage.CoverageReport.lines_valid"><code class="docutils literal notranslate"><span class="pre">CoverageReport.lines_valid</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ape.types.coverage.CoverageReport.miss_count"><code class="docutils literal notranslate"><span class="pre">CoverageReport.miss_count</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ape.types.coverage.CoverageReport.model_dump"><code class="docutils literal notranslate"><span class="pre">CoverageReport.model_dump()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ape.types.coverage.CoverageReport.projects"><code class="docutils literal notranslate"><span class="pre">CoverageReport.projects</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ape.types.coverage.CoverageReport.source_folders"><code class="docutils literal notranslate"><span class="pre">CoverageReport.source_folders</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ape.types.coverage.CoverageReport.sources"><code class="docutils literal notranslate"><span class="pre">CoverageReport.sources</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ape.types.coverage.CoverageReport.statements"><code class="docutils literal notranslate"><span class="pre">CoverageReport.statements</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ape.types.coverage.CoverageReport.timestamp"><code class="docutils literal notranslate"><span class="pre">CoverageReport.timestamp</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ape.types.coverage.CoverageReport.total_functions"><code class="docutils literal notranslate"><span class="pre">CoverageReport.total_functions</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#ape.types.coverage.CoverageStatement"><code class="docutils literal notranslate"><span class="pre">CoverageStatement</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#ape.types.coverage.CoverageStatement.hit_count"><code class="docutils literal notranslate"><span class="pre">CoverageStatement.hit_count</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ape.types.coverage.CoverageStatement.location"><code class="docutils literal notranslate"><span class="pre">CoverageStatement.location</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ape.types.coverage.CoverageStatement.pcs"><code class="docutils literal notranslate"><span class="pre">CoverageStatement.pcs</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ape.types.coverage.CoverageStatement.tag"><code class="docutils literal notranslate"><span class="pre">CoverageStatement.tag</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#ape.types.coverage.FunctionCoverage"><code class="docutils literal notranslate"><span class="pre">FunctionCoverage</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#ape.types.coverage.FunctionCoverage.full_name"><code class="docutils literal notranslate"><span class="pre">FunctionCoverage.full_name</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ape.types.coverage.FunctionCoverage.hit_count"><code class="docutils literal notranslate"><span class="pre">FunctionCoverage.hit_count</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ape.types.coverage.FunctionCoverage.line_rate"><code class="docutils literal notranslate"><span class="pre">FunctionCoverage.line_rate</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ape.types.coverage.FunctionCoverage.lines_covered"><code class="docutils literal notranslate"><span class="pre">FunctionCoverage.lines_covered</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ape.types.coverage.FunctionCoverage.lines_valid"><code class="docutils literal notranslate"><span class="pre">FunctionCoverage.lines_valid</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ape.types.coverage.FunctionCoverage.miss_count"><code class="docutils literal notranslate"><span class="pre">FunctionCoverage.miss_count</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ape.types.coverage.FunctionCoverage.model_dump"><code class="docutils literal notranslate"><span class="pre">FunctionCoverage.model_dump()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ape.types.coverage.FunctionCoverage.name"><code class="docutils literal notranslate"><span class="pre">FunctionCoverage.name</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ape.types.coverage.FunctionCoverage.profile_statement"><code class="docutils literal notranslate"><span class="pre">FunctionCoverage.profile_statement()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ape.types.coverage.FunctionCoverage.statements"><code class="docutils literal notranslate"><span class="pre">FunctionCoverage.statements</span></code></a></li>
+</ul>
+</li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="#module-ape.types">Miscellaneous</a><ul>
@@ -258,15 +342,8 @@
 </dd></dl>
 
 </section>
-<section id="module-ape.types.signatures">
-<span id="signatures"></span><h2>Signatures<a class="headerlink" href="#module-ape.types.signatures" title="Permalink to this heading"></a></h2>
-<dl class="py class">
-<dt class="sig sig-object py" id="ape.types.signatures.MessageSignature">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ape.types.signatures.</span></span><span class="sig-name descname"><span class="pre">MessageSignature</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">v</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">r</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bytes</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">s</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bytes</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.types.signatures.MessageSignature" title="Permalink to this definition"></a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">_Signature</span></code></p>
-<p>A ECDSA signature (vrs) of a message.</p>
-</dd></dl>
-
+<section id="signatures">
+<h2>Signatures<a class="headerlink" href="#signatures" title="Permalink to this heading"></a></h2>
 <dl class="py class">
 <dt class="sig sig-object py" id="ape.types.signatures.SignableMessage">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ape.types.signatures.</span></span><span class="sig-name descname"><span class="pre">SignableMessage</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">version</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bytes</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">header</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bytes</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">body</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bytes</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.types.signatures.SignableMessage" title="Permalink to this definition"></a></dt>
@@ -306,10 +383,592 @@ one of the available encode_* methods in this module, like:</p>
 </dd></dl>
 
 <dl class="py class">
+<dt class="sig sig-object py" id="ape.types.signatures.MessageSignature">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ape.types.signatures.</span></span><span class="sig-name descname"><span class="pre">MessageSignature</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">v</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">r</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bytes</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">s</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bytes</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.types.signatures.MessageSignature" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">_Signature</span></code></p>
+<p>A ECDSA signature (vrs) of a message.</p>
+</dd></dl>
+
+<dl class="py class">
 <dt class="sig sig-object py" id="ape.types.signatures.TransactionSignature">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ape.types.signatures.</span></span><span class="sig-name descname"><span class="pre">TransactionSignature</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">v</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">r</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bytes</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">s</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bytes</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.types.signatures.TransactionSignature" title="Permalink to this definition"></a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">_Signature</span></code></p>
 <p>A ECDSA signature (vrs) of a transaction.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ape.types.signatures.recover_signer">
+<span class="sig-prename descclassname"><span class="pre">signatures.</span></span><span class="sig-name descname"><span class="pre">recover_signer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sig</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#ape.types.signatures.MessageSignature" title="ape.types.signatures.MessageSignature"><span class="pre">MessageSignature</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ChecksumAddress</span></span></span><a class="headerlink" href="#ape.types.signatures.recover_signer" title="Permalink to this definition"></a></dt>
+<dd><p>Get the address of the signer.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>msg</strong> (<code class="docutils literal notranslate"><span class="pre">SignableMessage</span></code>) – A formatted and signable message.</p></li>
+<li><p><strong>sig</strong> (<a class="reference internal" href="#ape.types.signatures.MessageSignature" title="ape.types.signatures.MessageSignature"><code class="xref py py-class docutils literal notranslate"><span class="pre">MessageSignature</span></code></a>) – Signature of the message.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>address of message signer.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="#ape.types.address.AddressType" title="ape.types.address.AddressType"><code class="xref py py-class docutils literal notranslate"><span class="pre">AddressType</span></code></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="module-ape.types.coverage">
+<span id="coverage"></span><h2>Coverage<a class="headerlink" href="#module-ape.types.coverage" title="Permalink to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="ape.types.coverage.ContractCoverage">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ape.types.coverage.</span></span><span class="sig-name descname"><span class="pre">ContractCoverage</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">functions</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#ape.types.coverage.FunctionCoverage" title="ape.types.coverage.FunctionCoverage"><span class="pre">FunctionCoverage</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">[]</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.types.coverage.ContractCoverage" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">BaseModel</span></code></p>
+<p>An individual contract’s coverage.</p>
+<dl class="py property">
+<dt class="sig sig-object py" id="ape.types.coverage.ContractCoverage.function_hits">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">function_hits</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="headerlink" href="#ape.types.coverage.ContractCoverage.function_hits" title="Permalink to this definition"></a></dt>
+<dd><p>The number of functions with a hit counter greater than zero.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="ape.types.coverage.ContractCoverage.function_rate">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">function_rate</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><a class="headerlink" href="#ape.types.coverage.ContractCoverage.function_rate" title="Permalink to this definition"></a></dt>
+<dd><p>The rate of functions hit versus total functions.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ape.types.coverage.ContractCoverage.functions">
+<span class="sig-name descname"><span class="pre">functions</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#ape.types.coverage.FunctionCoverage" title="ape.types.coverage.FunctionCoverage"><span class="pre">FunctionCoverage</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#ape.types.coverage.ContractCoverage.functions" title="Permalink to this definition"></a></dt>
+<dd><p>The coverage of each function individually.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="ape.types.coverage.ContractCoverage.line_rate">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">line_rate</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><a class="headerlink" href="#ape.types.coverage.ContractCoverage.line_rate" title="Permalink to this definition"></a></dt>
+<dd><p>The number of lines hit divided by number of lines.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="ape.types.coverage.ContractCoverage.lines_covered">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">lines_covered</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="headerlink" href="#ape.types.coverage.ContractCoverage.lines_covered" title="Permalink to this definition"></a></dt>
+<dd><p>All lines that have a hit count greater than zero.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="ape.types.coverage.ContractCoverage.lines_valid">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">lines_valid</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="headerlink" href="#ape.types.coverage.ContractCoverage.lines_valid" title="Permalink to this definition"></a></dt>
+<dd><p>The number of lines valid for coverage.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="ape.types.coverage.ContractCoverage.miss_count">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">miss_count</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="headerlink" href="#ape.types.coverage.ContractCoverage.miss_count" title="Permalink to this definition"></a></dt>
+<dd><p>The number of lines missed.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ape.types.coverage.ContractCoverage.model_dump">
+<span class="sig-name descname"><span class="pre">model_dump</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span></span></span><a class="headerlink" href="#ape.types.coverage.ContractCoverage.model_dump" title="Permalink to this definition"></a></dt>
+<dd><p>Usage docs: <a class="reference external" href="https://docs.pydantic.dev/2.5/concepts/serialization/#modelmodel_dump">https://docs.pydantic.dev/2.5/concepts/serialization/#modelmodel_dump</a></p>
+<p>Generate a dictionary representation of the model, optionally specifying which fields to include or exclude.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>mode</strong> – The mode in which <cite>to_python</cite> should run.
+If mode is ‘json’, the dictionary will only contain JSON serializable types.
+If mode is ‘python’, the dictionary may contain any Python objects.</p></li>
+<li><p><strong>include</strong> – A list of fields to include in the output.</p></li>
+<li><p><strong>exclude</strong> – A list of fields to exclude from the output.</p></li>
+<li><p><strong>by_alias</strong> – Whether to use the field’s alias in the dictionary key if defined.</p></li>
+<li><p><strong>exclude_unset</strong> – Whether to exclude fields that have not been explicitly set.</p></li>
+<li><p><strong>exclude_defaults</strong> – Whether to exclude fields that are set to their default value from the output.</p></li>
+<li><p><strong>exclude_none</strong> – Whether to exclude fields that have a value of <cite>None</cite> from the output.</p></li>
+<li><p><strong>round_trip</strong> – Whether to enable serialization and deserialization round-trip support.</p></li>
+<li><p><strong>warnings</strong> – Whether to log warnings when invalid fields are encountered.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A dictionary representation of the model.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ape.types.coverage.ContractCoverage.name">
+<span class="sig-name descname"><span class="pre">name</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#ape.types.coverage.ContractCoverage.name" title="Permalink to this definition"></a></dt>
+<dd><p>The name of the contract.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="ape.types.coverage.ContractCoverage.statements">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">statements</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#ape.types.coverage.CoverageStatement" title="ape.types.coverage.CoverageStatement"><span class="pre">CoverageStatement</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#ape.types.coverage.ContractCoverage.statements" title="Permalink to this definition"></a></dt>
+<dd><p>All valid coverage lines from every function in this contract.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ape.types.coverage.ContractSourceCoverage">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ape.types.coverage.</span></span><span class="sig-name descname"><span class="pre">ContractSourceCoverage</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">source_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">contracts</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#ape.types.coverage.ContractCoverage" title="ape.types.coverage.ContractCoverage"><span class="pre">ContractCoverage</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">[]</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.types.coverage.ContractSourceCoverage" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">BaseModel</span></code></p>
+<p>An individual source file with coverage collected.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ape.types.coverage.ContractSourceCoverage.contracts">
+<span class="sig-name descname"><span class="pre">contracts</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#ape.types.coverage.ContractCoverage" title="ape.types.coverage.ContractCoverage"><span class="pre">ContractCoverage</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#ape.types.coverage.ContractSourceCoverage.contracts" title="Permalink to this definition"></a></dt>
+<dd><p>Coverage for each contract in the source file.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="ape.types.coverage.ContractSourceCoverage.function_hits">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">function_hits</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="headerlink" href="#ape.types.coverage.ContractSourceCoverage.function_hits" title="Permalink to this definition"></a></dt>
+<dd><p>The number of functions with a hit counter greater than zero.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="ape.types.coverage.ContractSourceCoverage.function_rate">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">function_rate</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><a class="headerlink" href="#ape.types.coverage.ContractSourceCoverage.function_rate" title="Permalink to this definition"></a></dt>
+<dd><p>The rate of functions hit versus total functions.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ape.types.coverage.ContractSourceCoverage.include">
+<span class="sig-name descname"><span class="pre">include</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">contract_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#ape.types.coverage.ContractCoverage" title="ape.types.coverage.ContractCoverage"><span class="pre">ContractCoverage</span></a></span></span><a class="headerlink" href="#ape.types.coverage.ContractSourceCoverage.include" title="Permalink to this definition"></a></dt>
+<dd><p>Ensure a contract is included in the report.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="ape.types.coverage.ContractSourceCoverage.line_rate">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">line_rate</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><a class="headerlink" href="#ape.types.coverage.ContractSourceCoverage.line_rate" title="Permalink to this definition"></a></dt>
+<dd><p>The number of lines hit divided by number of lines.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="ape.types.coverage.ContractSourceCoverage.lines_covered">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">lines_covered</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="headerlink" href="#ape.types.coverage.ContractSourceCoverage.lines_covered" title="Permalink to this definition"></a></dt>
+<dd><p>All lines with a hit count greater than zero from every function
+in every contract in this source.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="ape.types.coverage.ContractSourceCoverage.lines_valid">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">lines_valid</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="headerlink" href="#ape.types.coverage.ContractSourceCoverage.lines_valid" title="Permalink to this definition"></a></dt>
+<dd><p>The number of lines valid for coverage.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="ape.types.coverage.ContractSourceCoverage.miss_count">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">miss_count</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="headerlink" href="#ape.types.coverage.ContractSourceCoverage.miss_count" title="Permalink to this definition"></a></dt>
+<dd><p>The number of lines missed.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ape.types.coverage.ContractSourceCoverage.model_dump">
+<span class="sig-name descname"><span class="pre">model_dump</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span></span></span><a class="headerlink" href="#ape.types.coverage.ContractSourceCoverage.model_dump" title="Permalink to this definition"></a></dt>
+<dd><p>Usage docs: <a class="reference external" href="https://docs.pydantic.dev/2.5/concepts/serialization/#modelmodel_dump">https://docs.pydantic.dev/2.5/concepts/serialization/#modelmodel_dump</a></p>
+<p>Generate a dictionary representation of the model, optionally specifying which fields to include or exclude.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>mode</strong> – The mode in which <cite>to_python</cite> should run.
+If mode is ‘json’, the dictionary will only contain JSON serializable types.
+If mode is ‘python’, the dictionary may contain any Python objects.</p></li>
+<li><p><strong>include</strong> – A list of fields to include in the output.</p></li>
+<li><p><strong>exclude</strong> – A list of fields to exclude from the output.</p></li>
+<li><p><strong>by_alias</strong> – Whether to use the field’s alias in the dictionary key if defined.</p></li>
+<li><p><strong>exclude_unset</strong> – Whether to exclude fields that have not been explicitly set.</p></li>
+<li><p><strong>exclude_defaults</strong> – Whether to exclude fields that are set to their default value from the output.</p></li>
+<li><p><strong>exclude_none</strong> – Whether to exclude fields that have a value of <cite>None</cite> from the output.</p></li>
+<li><p><strong>round_trip</strong> – Whether to enable serialization and deserialization round-trip support.</p></li>
+<li><p><strong>warnings</strong> – Whether to log warnings when invalid fields are encountered.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A dictionary representation of the model.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ape.types.coverage.ContractSourceCoverage.source_id">
+<span class="sig-name descname"><span class="pre">source_id</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#ape.types.coverage.ContractSourceCoverage.source_id" title="Permalink to this definition"></a></dt>
+<dd><p>The ID of the source covered.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="ape.types.coverage.ContractSourceCoverage.statements">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">statements</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#ape.types.coverage.CoverageStatement" title="ape.types.coverage.CoverageStatement"><span class="pre">CoverageStatement</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#ape.types.coverage.ContractSourceCoverage.statements" title="Permalink to this definition"></a></dt>
+<dd><p>All valid coverage lines from every function in every contract in this source.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="ape.types.coverage.ContractSourceCoverage.total_functions">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">total_functions</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="headerlink" href="#ape.types.coverage.ContractSourceCoverage.total_functions" title="Permalink to this definition"></a></dt>
+<dd><p>The total number of functions in this source.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ape.types.coverage.CoverageProject">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ape.types.coverage.</span></span><span class="sig-name descname"><span class="pre">CoverageProject</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sources</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#ape.types.coverage.ContractSourceCoverage" title="ape.types.coverage.ContractSourceCoverage"><span class="pre">ContractSourceCoverage</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">[]</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.types.coverage.CoverageProject" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">BaseModel</span></code></p>
+<p>A project with coverage collected.</p>
+<dl class="py property">
+<dt class="sig sig-object py" id="ape.types.coverage.CoverageProject.function_hits">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">function_hits</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="headerlink" href="#ape.types.coverage.CoverageProject.function_hits" title="Permalink to this definition"></a></dt>
+<dd><p>The number of functions with a hit counter greater than zero.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="ape.types.coverage.CoverageProject.function_rate">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">function_rate</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><a class="headerlink" href="#ape.types.coverage.CoverageProject.function_rate" title="Permalink to this definition"></a></dt>
+<dd><p>The rate of functions hit versus total functions.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="ape.types.coverage.CoverageProject.line_rate">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">line_rate</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><a class="headerlink" href="#ape.types.coverage.CoverageProject.line_rate" title="Permalink to this definition"></a></dt>
+<dd><p>The number of lines hit divided by number of lines.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="ape.types.coverage.CoverageProject.lines_covered">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">lines_covered</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="headerlink" href="#ape.types.coverage.CoverageProject.lines_covered" title="Permalink to this definition"></a></dt>
+<dd><p>The number of lines with a hit count greater than zero from every function
+in every contract in every source in this this project.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="ape.types.coverage.CoverageProject.lines_valid">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">lines_valid</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="headerlink" href="#ape.types.coverage.CoverageProject.lines_valid" title="Permalink to this definition"></a></dt>
+<dd><p>The number of lines valid for coverage.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="ape.types.coverage.CoverageProject.miss_count">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">miss_count</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="headerlink" href="#ape.types.coverage.CoverageProject.miss_count" title="Permalink to this definition"></a></dt>
+<dd><p>The number of lines missed.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ape.types.coverage.CoverageProject.model_dump">
+<span class="sig-name descname"><span class="pre">model_dump</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span></span></span><a class="headerlink" href="#ape.types.coverage.CoverageProject.model_dump" title="Permalink to this definition"></a></dt>
+<dd><p>Usage docs: <a class="reference external" href="https://docs.pydantic.dev/2.5/concepts/serialization/#modelmodel_dump">https://docs.pydantic.dev/2.5/concepts/serialization/#modelmodel_dump</a></p>
+<p>Generate a dictionary representation of the model, optionally specifying which fields to include or exclude.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>mode</strong> – The mode in which <cite>to_python</cite> should run.
+If mode is ‘json’, the dictionary will only contain JSON serializable types.
+If mode is ‘python’, the dictionary may contain any Python objects.</p></li>
+<li><p><strong>include</strong> – A list of fields to include in the output.</p></li>
+<li><p><strong>exclude</strong> – A list of fields to exclude from the output.</p></li>
+<li><p><strong>by_alias</strong> – Whether to use the field’s alias in the dictionary key if defined.</p></li>
+<li><p><strong>exclude_unset</strong> – Whether to exclude fields that have not been explicitly set.</p></li>
+<li><p><strong>exclude_defaults</strong> – Whether to exclude fields that are set to their default value from the output.</p></li>
+<li><p><strong>exclude_none</strong> – Whether to exclude fields that have a value of <cite>None</cite> from the output.</p></li>
+<li><p><strong>round_trip</strong> – Whether to enable serialization and deserialization round-trip support.</p></li>
+<li><p><strong>warnings</strong> – Whether to log warnings when invalid fields are encountered.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A dictionary representation of the model.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ape.types.coverage.CoverageProject.name">
+<span class="sig-name descname"><span class="pre">name</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#ape.types.coverage.CoverageProject.name" title="Permalink to this definition"></a></dt>
+<dd><p>The name of the project being covered.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ape.types.coverage.CoverageProject.sources">
+<span class="sig-name descname"><span class="pre">sources</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#ape.types.coverage.ContractSourceCoverage" title="ape.types.coverage.ContractSourceCoverage"><span class="pre">ContractSourceCoverage</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#ape.types.coverage.CoverageProject.sources" title="Permalink to this definition"></a></dt>
+<dd><p>Coverage for each source in the project.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="ape.types.coverage.CoverageProject.statements">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">statements</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#ape.types.coverage.CoverageStatement" title="ape.types.coverage.CoverageStatement"><span class="pre">CoverageStatement</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#ape.types.coverage.CoverageProject.statements" title="Permalink to this definition"></a></dt>
+<dd><p>All valid coverage lines from every function in every contract in every source
+in this project.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="ape.types.coverage.CoverageProject.total_functions">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">total_functions</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="headerlink" href="#ape.types.coverage.CoverageProject.total_functions" title="Permalink to this definition"></a></dt>
+<dd><p>The total number of functions in this source.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ape.types.coverage.CoverageReport">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ape.types.coverage.</span></span><span class="sig-name descname"><span class="pre">CoverageReport</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">source_folders</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Path</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">timestamp</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">projects</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#ape.types.coverage.CoverageProject" title="ape.types.coverage.CoverageProject"><span class="pre">CoverageProject</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">[]</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.types.coverage.CoverageReport" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">BaseModel</span></code></p>
+<p>Coverage report schema inspired from coverage.py.</p>
+<dl class="py property">
+<dt class="sig sig-object py" id="ape.types.coverage.CoverageReport.function_hits">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">function_hits</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="headerlink" href="#ape.types.coverage.CoverageReport.function_hits" title="Permalink to this definition"></a></dt>
+<dd><p>The number of functions with a hit counter greater than zero.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="ape.types.coverage.CoverageReport.function_rate">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">function_rate</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><a class="headerlink" href="#ape.types.coverage.CoverageReport.function_rate" title="Permalink to this definition"></a></dt>
+<dd><p>The rate of functions hit versus total functions.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ape.types.coverage.CoverageReport.get_html">
+<span class="sig-name descname"><span class="pre">get_html</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="headerlink" href="#ape.types.coverage.CoverageReport.get_html" title="Permalink to this definition"></a></dt>
+<dd><p>The coverage HTML report as a string.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ape.types.coverage.CoverageReport.get_xml">
+<span class="sig-name descname"><span class="pre">get_xml</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="headerlink" href="#ape.types.coverage.CoverageReport.get_xml" title="Permalink to this definition"></a></dt>
+<dd><p>The coverage XML report as a string. The XML coverage data schema is
+meant to be compatible with codecov.io. Thus, some of coverage is modified
+slightly, and some of the naming conventions (based on 90s Java) won’t be
+super relevant to smart-contract projects.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="ape.types.coverage.CoverageReport.line_rate">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">line_rate</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><a class="headerlink" href="#ape.types.coverage.CoverageReport.line_rate" title="Permalink to this definition"></a></dt>
+<dd><p>The number of lines hit divided by number of lines.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="ape.types.coverage.CoverageReport.lines_covered">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">lines_covered</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="headerlink" href="#ape.types.coverage.CoverageReport.lines_covered" title="Permalink to this definition"></a></dt>
+<dd><p>All lines with a hit count greater than zero from every function
+in every contract in every source in every project in this report.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="ape.types.coverage.CoverageReport.lines_valid">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">lines_valid</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="headerlink" href="#ape.types.coverage.CoverageReport.lines_valid" title="Permalink to this definition"></a></dt>
+<dd><p>The number of lines valid for coverage.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="ape.types.coverage.CoverageReport.miss_count">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">miss_count</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="headerlink" href="#ape.types.coverage.CoverageReport.miss_count" title="Permalink to this definition"></a></dt>
+<dd><p>The number of lines missed.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ape.types.coverage.CoverageReport.model_dump">
+<span class="sig-name descname"><span class="pre">model_dump</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span></span></span><a class="headerlink" href="#ape.types.coverage.CoverageReport.model_dump" title="Permalink to this definition"></a></dt>
+<dd><p>Usage docs: <a class="reference external" href="https://docs.pydantic.dev/2.5/concepts/serialization/#modelmodel_dump">https://docs.pydantic.dev/2.5/concepts/serialization/#modelmodel_dump</a></p>
+<p>Generate a dictionary representation of the model, optionally specifying which fields to include or exclude.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>mode</strong> – The mode in which <cite>to_python</cite> should run.
+If mode is ‘json’, the dictionary will only contain JSON serializable types.
+If mode is ‘python’, the dictionary may contain any Python objects.</p></li>
+<li><p><strong>include</strong> – A list of fields to include in the output.</p></li>
+<li><p><strong>exclude</strong> – A list of fields to exclude from the output.</p></li>
+<li><p><strong>by_alias</strong> – Whether to use the field’s alias in the dictionary key if defined.</p></li>
+<li><p><strong>exclude_unset</strong> – Whether to exclude fields that have not been explicitly set.</p></li>
+<li><p><strong>exclude_defaults</strong> – Whether to exclude fields that are set to their default value from the output.</p></li>
+<li><p><strong>exclude_none</strong> – Whether to exclude fields that have a value of <cite>None</cite> from the output.</p></li>
+<li><p><strong>round_trip</strong> – Whether to enable serialization and deserialization round-trip support.</p></li>
+<li><p><strong>warnings</strong> – Whether to log warnings when invalid fields are encountered.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A dictionary representation of the model.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ape.types.coverage.CoverageReport.projects">
+<span class="sig-name descname"><span class="pre">projects</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#ape.types.coverage.CoverageProject" title="ape.types.coverage.CoverageProject"><span class="pre">CoverageProject</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#ape.types.coverage.CoverageReport.projects" title="Permalink to this definition"></a></dt>
+<dd><p>Each project with individual coverage tracked.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ape.types.coverage.CoverageReport.source_folders">
+<span class="sig-name descname"><span class="pre">source_folders</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Path</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#ape.types.coverage.CoverageReport.source_folders" title="Permalink to this definition"></a></dt>
+<dd><p>All source folders to use. This is needed for codecov.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="ape.types.coverage.CoverageReport.sources">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">sources</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#ape.types.coverage.CoverageReport.sources" title="Permalink to this definition"></a></dt>
+<dd><p>Every source ID in the report.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="ape.types.coverage.CoverageReport.statements">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">statements</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#ape.types.coverage.CoverageStatement" title="ape.types.coverage.CoverageStatement"><span class="pre">CoverageStatement</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#ape.types.coverage.CoverageReport.statements" title="Permalink to this definition"></a></dt>
+<dd><p>All valid coverage lines from every function in every contract in every source
+from every project in this report.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ape.types.coverage.CoverageReport.timestamp">
+<span class="sig-name descname"><span class="pre">timestamp</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="headerlink" href="#ape.types.coverage.CoverageReport.timestamp" title="Permalink to this definition"></a></dt>
+<dd><p>The timestamp the report was generated, in milliseconds.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="ape.types.coverage.CoverageReport.total_functions">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">total_functions</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="headerlink" href="#ape.types.coverage.CoverageReport.total_functions" title="Permalink to this definition"></a></dt>
+<dd><p>The total number of functions in this source.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ape.types.coverage.CoverageStatement">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ape.types.coverage.</span></span><span class="sig-name descname"><span class="pre">CoverageStatement</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">location</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pcs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Set</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hit_count</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tag</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.types.coverage.CoverageStatement" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">BaseModel</span></code></p>
+<p>An item that can get hit during coverage. Examples of coverage items are
+line segments, which are generally calculated from groupings of AST nodes
+occupying the same location, that can be tracked by their PC values. During
+a transaction’s trace, we find these values and we find the corresponding
+coverage item and increment the hit count. Another example of a coverage item
+is a compiler-builtin check, also marked by a PC value. If we encounter such
+PC in a trace, its hit count is incremented. Builtin compiler checks may or
+may not correspond to an actual location in the source code, depending on the
+type of check.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ape.types.coverage.CoverageStatement.hit_count">
+<span class="sig-name descname"><span class="pre">hit_count</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="headerlink" href="#ape.types.coverage.CoverageStatement.hit_count" title="Permalink to this definition"></a></dt>
+<dd><p>The times this node was hit.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ape.types.coverage.CoverageStatement.location">
+<span class="sig-name descname"><span class="pre">location</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#ape.types.coverage.CoverageStatement.location" title="Permalink to this definition"></a></dt>
+<dd><p>The location of the item (line, column, endline, endcolumn).
+If multiple PCs share an exact location, it is only tracked as one.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ape.types.coverage.CoverageStatement.pcs">
+<span class="sig-name descname"><span class="pre">pcs</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Set</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#ape.types.coverage.CoverageStatement.pcs" title="Permalink to this definition"></a></dt>
+<dd><p>The PCs for this node.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ape.types.coverage.CoverageStatement.tag">
+<span class="sig-name descname"><span class="pre">tag</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#ape.types.coverage.CoverageStatement.tag" title="Permalink to this definition"></a></dt>
+<dd><p>An additional tag to mark this statement with.
+This is useful if the location field is empty.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ape.types.coverage.FunctionCoverage">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ape.types.coverage.</span></span><span class="sig-name descname"><span class="pre">FunctionCoverage</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">full_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">statements</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#ape.types.coverage.CoverageStatement" title="ape.types.coverage.CoverageStatement"><span class="pre">CoverageStatement</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hit_count</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.types.coverage.FunctionCoverage" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">BaseModel</span></code></p>
+<p>The individual coverage of a function defined in a smart contact.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ape.types.coverage.FunctionCoverage.full_name">
+<span class="sig-name descname"><span class="pre">full_name</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#ape.types.coverage.FunctionCoverage.full_name" title="Permalink to this definition"></a></dt>
+<dd><p>The unique name of the function.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ape.types.coverage.FunctionCoverage.hit_count">
+<span class="sig-name descname"><span class="pre">hit_count</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="headerlink" href="#ape.types.coverage.FunctionCoverage.hit_count" title="Permalink to this definition"></a></dt>
+<dd><p>The times this function was called.
+<strong>NOTE</strong>: This is needed as a separate data point since not all methods may have
+statements (such as auto-getters).</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="ape.types.coverage.FunctionCoverage.line_rate">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">line_rate</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><a class="headerlink" href="#ape.types.coverage.FunctionCoverage.line_rate" title="Permalink to this definition"></a></dt>
+<dd><p>The number of lines hit divided by number of lines.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="ape.types.coverage.FunctionCoverage.lines_covered">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">lines_covered</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="headerlink" href="#ape.types.coverage.FunctionCoverage.lines_covered" title="Permalink to this definition"></a></dt>
+<dd><p>The number of lines with a hit counter greater than zero in this method.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="ape.types.coverage.FunctionCoverage.lines_valid">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">lines_valid</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="headerlink" href="#ape.types.coverage.FunctionCoverage.lines_valid" title="Permalink to this definition"></a></dt>
+<dd><p>All lines valid for coverage in this method.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="ape.types.coverage.FunctionCoverage.miss_count">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">miss_count</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="headerlink" href="#ape.types.coverage.FunctionCoverage.miss_count" title="Permalink to this definition"></a></dt>
+<dd><p>The number of lines missed.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ape.types.coverage.FunctionCoverage.model_dump">
+<span class="sig-name descname"><span class="pre">model_dump</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span></span></span><a class="headerlink" href="#ape.types.coverage.FunctionCoverage.model_dump" title="Permalink to this definition"></a></dt>
+<dd><p>Usage docs: <a class="reference external" href="https://docs.pydantic.dev/2.5/concepts/serialization/#modelmodel_dump">https://docs.pydantic.dev/2.5/concepts/serialization/#modelmodel_dump</a></p>
+<p>Generate a dictionary representation of the model, optionally specifying which fields to include or exclude.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>mode</strong> – The mode in which <cite>to_python</cite> should run.
+If mode is ‘json’, the dictionary will only contain JSON serializable types.
+If mode is ‘python’, the dictionary may contain any Python objects.</p></li>
+<li><p><strong>include</strong> – A list of fields to include in the output.</p></li>
+<li><p><strong>exclude</strong> – A list of fields to exclude from the output.</p></li>
+<li><p><strong>by_alias</strong> – Whether to use the field’s alias in the dictionary key if defined.</p></li>
+<li><p><strong>exclude_unset</strong> – Whether to exclude fields that have not been explicitly set.</p></li>
+<li><p><strong>exclude_defaults</strong> – Whether to exclude fields that are set to their default value from the output.</p></li>
+<li><p><strong>exclude_none</strong> – Whether to exclude fields that have a value of <cite>None</cite> from the output.</p></li>
+<li><p><strong>round_trip</strong> – Whether to enable serialization and deserialization round-trip support.</p></li>
+<li><p><strong>warnings</strong> – Whether to log warnings when invalid fields are encountered.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A dictionary representation of the model.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ape.types.coverage.FunctionCoverage.name">
+<span class="sig-name descname"><span class="pre">name</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#ape.types.coverage.FunctionCoverage.name" title="Permalink to this definition"></a></dt>
+<dd><p>The display name of the function.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ape.types.coverage.FunctionCoverage.profile_statement">
+<span class="sig-name descname"><span class="pre">profile_statement</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pc</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">location</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tag</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.types.coverage.FunctionCoverage.profile_statement" title="Permalink to this definition"></a></dt>
+<dd><p>Initialize a statement in the coverage profile with a hit count starting at zero.
+This statement is ready to accumulate hits as tests execute.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>pc</strong> (<em>int</em>) – The program counter of the statement.</p></li>
+<li><p><strong>location</strong> (<em>Optional</em><em>[</em><em>ethpm_types.source.SourceStatement</em><em>]</em>) – The location of the statement,
+if it exists.</p></li>
+<li><p><strong>tag</strong> (<em>Optional</em><em>[</em><em>str</em><em>]</em>) – Optionally provide more information about the statements being hit.
+This is useful for builtin statements that may be missing context otherwise.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ape.types.coverage.FunctionCoverage.statements">
+<span class="sig-name descname"><span class="pre">statements</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#ape.types.coverage.CoverageStatement" title="ape.types.coverage.CoverageStatement"><span class="pre">CoverageStatement</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#ape.types.coverage.FunctionCoverage.statements" title="Permalink to this definition"></a></dt>
+<dd><p>For statement coverage, these are the individual items.
+See <a class="reference internal" href="#ape.types.coverage.CoverageStatement" title="ape.types.coverage.CoverageStatement"><code class="xref py py-class docutils literal notranslate"><span class="pre">CoverageStatement</span></code></a> for more details.</p>
+</dd></dl>
+
 </dd></dl>
 
 </section>

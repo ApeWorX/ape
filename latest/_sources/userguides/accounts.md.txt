@@ -181,6 +181,83 @@ with accounts.use_sender(a): # a is a `AccountAPI` object
   contract.myFunction(1)
 ```
 
+## Signing Messages
+
+You can sign messages with your accounts in Ape.
+To do this, use the [sign_message](../methoddocs/api.html#ape.api.accounts.AccountAPI.sign_message) API.
+
+```python
+from ape import accounts
+from eth_account.messages import encode_defunct
+
+account = accounts.load("<ALIAS>")
+message = encode_defunct(text="Hello Apes!")
+signature = account.sign_message(message)
+```
+
+**NOTE**: Ape's `sign_message` API intentionally accepts `Any` as the message argument type.
+Account plugins decide what data-types to support.
+Most Ethereum account plugins, such as `ape-account`, are able to sign messages like the example above.
+However, you can also provide other types, such as a `str` directly:
+
+```python
+from ape import accounts
+
+account = accounts.load("<ALIAS>")
+signature = account.sign_message("Hello Apes!")
+```
+
+### EIP-712
+
+Some account plugins are able to sign EIP-712 structured message types by utilizing the `eip712` package.
+Here is an example with custom EIP-712 classes:
+
+```python
+from ape import accounts
+from eip712.messages import EIP712Message, EIP712Type
+
+class Person(EIP712Type):
+    name: "string"
+    wallet: "address"
+
+class Mail(EIP712Message):
+    _chainId_: "uint256" = 1
+    _name_: "string" = "Ether Mail"
+    _verifyingContract_: "address" = "0xCcCCccccCCCCcCCCCCCcCcCccCcCCCcCcccccccC"
+    _version_: "string" = "1"
+
+    sender: Person
+    receiver: Person
+
+alice = Person(name="Alice", wallet="0xCD2a3d9F938E13CD947Ec05AbC7FE734Df8DD826") 
+bob = Person("Bob", "0xB0B0b0b0b0b0B000000000000000000000000000")
+message = Mail(sender=alice, receiver=bob)
+
+account = accounts.load("<ALIAS>")
+account.sign_message(message)
+```
+
+### Verifying Signature
+
+Verify the signatures on your signed messages by using the [recover_signer](../methoddocs/types.html#ape.types.signatures.recover_signer) function or the [check_signature](../methoddocs/api.html#ape.api.accounts.AccountAPI.check_signature) function:
+
+```python
+from ape import accounts
+from ape.types.signatures import recover_signer
+from eth_account.messages import encode_defunct
+
+account = accounts.load("<ALIAS>")
+message = encode_defunct(text="Hello Apes!")
+signature = account.sign_message(message)
+
+# Validate the signature by recovering the signer and asserting it is equal to the sender.
+recovered_signer = recover_signer(message, signature)
+assert recovered_signer == account.address
+
+# NOTE: You can also use the `check_signature` method on an account, which returns a bool.
+assert account.check_signature(message, signature)
+```
+
 ## Automation
 
 If you use your keyfile accounts in automation, such as CI/CD, you may need to programmatically unlock them and enable auto-sign.
