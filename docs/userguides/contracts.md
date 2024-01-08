@@ -249,7 +249,7 @@ result = contract.addBalance.call(123)
 assert result == "123"  # The return value gets forwarded from the contract.
 ```
 
-Oppositely, you may want to measure a call as if it were a transaction, in which case you can use the `.transact` attribute on the contract call handler:
+Similarly, you may want to measure a call as if it were a transaction, in which case you can use the `.transact` attribute on the contract call handler:
 
 Given the Solidity function:
 
