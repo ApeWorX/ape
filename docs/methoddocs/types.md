@@ -13,21 +13,18 @@
 .. autoclass:: ape.types.signatures.SignableMessage
     :members:
     :show-inheritance:
-    :exclude-members: model_fields
 ```
 
 ```{eval-rst}
 .. autoclass:: ape.types.signatures.MessageSignature
     :members:
     :show-inheritance:
-    :exclude-members: model_fields
 ```
 
 ```{eval-rst}
 .. autoclass:: ape.types.signatures.TransactionSignature
     :members:
     :show-inheritance:
-    :exclude-members: model_fields
 ```
 
 ```{eval-rst}
@@ -40,7 +37,6 @@
 .. automodule:: ape.types.coverage
     :members:
     :show-inheritance:
-    :exclude-members: model_fields
 ```
 
 ## Miscellaneous
@@ -48,5 +44,4 @@
 ```{eval-rst}
 .. automodule:: ape.types
     :members: BlockID, BaseContractLog, ContractLog, MockContractLog
-    :exclude-members: model_fields
 ```
