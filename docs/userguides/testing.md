@@ -75,7 +75,7 @@ To disable isolation add the `--disable-isolation` flag when running `ape test`
 
 ## Fixtures
 
-Now that we have discussed the full flow of a test, let's dive deeper into the specific parts, starting with `pytest.fixures`.
+Now that we have discussed the full flow of a test, let's dive deeper into the specific parts, starting with `pytest.fixtures`.
 
 You can define and use `pytest` fixtures in your Ape tests.
 Learn more about fixtures from [this guide](https://docs.pytest.org/en/7.1.x/explanation/fixtures.html).
