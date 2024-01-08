@@ -57,7 +57,14 @@ class AccessList(BaseModel):
 class BaseTransaction(TransactionAPI):
     def serialize_transaction(self) -> bytes:
         if not self.signature:
-            raise SignatureError("The transaction is not signed.")
+            message = "The transaction is not signed."
+            if not self.sender:
+                message = (
+                    f"{message} "
+                    "Did you forget to add the `sender=` kwarg to the transaction function call?"
+                )
+
+            raise SignatureError(message)
 
         txn_data = self.model_dump(by_alias=True, exclude={"sender", "type"})
 
