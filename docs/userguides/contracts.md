@@ -181,7 +181,8 @@ At the RPC level, Ethereum calls are performed using the `eth_call` RPC and tran
 
 ### Transactions
 
-The following example demonstrates invoking a contract's method in Ape as a transaction:
+The following example demonstrates invoking a contract's method in Ape as a transaction.
+However, take note that there is a [separate guide](./transactions.html) which fully covers transactions in Ape.
 
 ```python
 from ape import accounts, Contract
@@ -204,6 +205,8 @@ Notice that transacting returns a [ReceiptAPI](../methoddocs/api.html#ape.api.tr
 ```python
 assert receipt.return_value == 123
 ```
+
+For more general information on transactions in the Ape framework, see [this guide](./transactions.html).
 
 ### Calls
 
