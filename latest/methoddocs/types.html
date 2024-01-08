@@ -195,8 +195,6 @@
 <li class="toctree-l4"><a class="reference internal" href="#ape.types.BaseContractLog.contract_address"><code class="docutils literal notranslate"><span class="pre">BaseContractLog.contract_address</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.types.BaseContractLog.event_arguments"><code class="docutils literal notranslate"><span class="pre">BaseContractLog.event_arguments</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.types.BaseContractLog.event_name"><code class="docutils literal notranslate"><span class="pre">BaseContractLog.event_name</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#ape.types.BaseContractLog.model_config"><code class="docutils literal notranslate"><span class="pre">BaseContractLog.model_config</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#ape.types.BaseContractLog.model_fields"><code class="docutils literal notranslate"><span class="pre">BaseContractLog.model_fields</span></code></a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="#ape.types.BlockID"><code class="docutils literal notranslate"><span class="pre">BlockID</span></code></a></li>
@@ -204,18 +202,12 @@
 <li class="toctree-l4"><a class="reference internal" href="#ape.types.ContractLog.block_hash"><code class="docutils literal notranslate"><span class="pre">ContractLog.block_hash</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.types.ContractLog.block_number"><code class="docutils literal notranslate"><span class="pre">ContractLog.block_number</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.types.ContractLog.log_index"><code class="docutils literal notranslate"><span class="pre">ContractLog.log_index</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#ape.types.ContractLog.model_config"><code class="docutils literal notranslate"><span class="pre">ContractLog.model_config</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#ape.types.ContractLog.model_fields"><code class="docutils literal notranslate"><span class="pre">ContractLog.model_fields</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.types.ContractLog.timestamp"><code class="docutils literal notranslate"><span class="pre">ContractLog.timestamp</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.types.ContractLog.transaction_hash"><code class="docutils literal notranslate"><span class="pre">ContractLog.transaction_hash</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.types.ContractLog.transaction_index"><code class="docutils literal notranslate"><span class="pre">ContractLog.transaction_index</span></code></a></li>
 </ul>
 </li>
-<li class="toctree-l3"><a class="reference internal" href="#ape.types.MockContractLog"><code class="docutils literal notranslate"><span class="pre">MockContractLog</span></code></a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#ape.types.MockContractLog.model_config"><code class="docutils literal notranslate"><span class="pre">MockContractLog.model_config</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#ape.types.MockContractLog.model_fields"><code class="docutils literal notranslate"><span class="pre">MockContractLog.model_fields</span></code></a></li>
-</ul>
-</li>
+<li class="toctree-l3"><a class="reference internal" href="#ape.types.MockContractLog"><code class="docutils literal notranslate"><span class="pre">MockContractLog</span></code></a></li>
 </ul>
 </li>
 </ul>
@@ -345,20 +337,6 @@ one of the available encode_* methods in this module, like:</p>
 <dd><p>The name of the event.</p>
 </dd></dl>
 
-<dl class="py attribute">
-<dt class="sig sig-object py" id="ape.types.BaseContractLog.model_config">
-<span class="sig-name descname"><span class="pre">model_config</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ClassVar</span><span class="p"><span class="pre">[</span></span><span class="pre">ConfigDict</span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'arbitrary_types_allowed':</span> <span class="pre">True}</span></em><a class="headerlink" href="#ape.types.BaseContractLog.model_config" title="Permalink to this definition"></a></dt>
-<dd><p>Configuration for the model, should be a dictionary conforming to [<cite>ConfigDict</cite>][pydantic.config.ConfigDict].</p>
-</dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="ape.types.BaseContractLog.model_fields">
-<span class="sig-name descname"><span class="pre">model_fields</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ClassVar</span><span class="p"><span class="pre">[</span></span><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">FieldInfo</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'contract_address':</span> <span class="pre">FieldInfo(annotation=NewType,</span> <span class="pre">required=False,</span> <span class="pre">default='0x0000000000000000000000000000000000000000',</span> <span class="pre">metadata=[&lt;class</span> <span class="pre">'ape.types.address._AddressValidator'&gt;]),</span> <span class="pre">'event_arguments':</span> <span class="pre">FieldInfo(annotation=Dict[str,</span> <span class="pre">Any],</span> <span class="pre">required=False,</span> <span class="pre">default={}),</span> <span class="pre">'event_name':</span> <span class="pre">FieldInfo(annotation=str,</span> <span class="pre">required=True)}</span></em><a class="headerlink" href="#ape.types.BaseContractLog.model_fields" title="Permalink to this definition"></a></dt>
-<dd><p>Metadata about the fields defined on the model,
-mapping of field names to [<cite>FieldInfo</cite>][pydantic.fields.FieldInfo].</p>
-<p>This replaces <cite>Model.__fields__</cite> from Pydantic V1.</p>
-</dd></dl>
-
 </dd></dl>
 
 <dl class="py data">
@@ -389,20 +367,6 @@ as well as a block number or hash (HexBytes).</p>
 <dt class="sig sig-object py" id="ape.types.ContractLog.log_index">
 <span class="sig-name descname"><span class="pre">log_index</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="headerlink" href="#ape.types.ContractLog.log_index" title="Permalink to this definition"></a></dt>
 <dd><p>The index of the log on the transaction.</p>
-</dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="ape.types.ContractLog.model_config">
-<span class="sig-name descname"><span class="pre">model_config</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ClassVar</span><span class="p"><span class="pre">[</span></span><span class="pre">ConfigDict</span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'arbitrary_types_allowed':</span> <span class="pre">True}</span></em><a class="headerlink" href="#ape.types.ContractLog.model_config" title="Permalink to this definition"></a></dt>
-<dd><p>Configuration for the model, should be a dictionary conforming to [<cite>ConfigDict</cite>][pydantic.config.ConfigDict].</p>
-</dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="ape.types.ContractLog.model_fields">
-<span class="sig-name descname"><span class="pre">model_fields</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ClassVar</span><span class="p"><span class="pre">[</span></span><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">FieldInfo</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'block_hash':</span> <span class="pre">FieldInfo(annotation=Any,</span> <span class="pre">required=True),</span> <span class="pre">'block_number':</span> <span class="pre">FieldInfo(annotation=int,</span> <span class="pre">required=True),</span> <span class="pre">'contract_address':</span> <span class="pre">FieldInfo(annotation=NewType,</span> <span class="pre">required=False,</span> <span class="pre">default='0x0000000000000000000000000000000000000000',</span> <span class="pre">metadata=[&lt;class</span> <span class="pre">'ape.types.address._AddressValidator'&gt;]),</span> <span class="pre">'event_arguments':</span> <span class="pre">FieldInfo(annotation=Dict[str,</span> <span class="pre">Any],</span> <span class="pre">required=False,</span> <span class="pre">default={}),</span> <span class="pre">'event_name':</span> <span class="pre">FieldInfo(annotation=str,</span> <span class="pre">required=True),</span> <span class="pre">'log_index':</span> <span class="pre">FieldInfo(annotation=int,</span> <span class="pre">required=True),</span> <span class="pre">'transaction_hash':</span> <span class="pre">FieldInfo(annotation=Any,</span> <span class="pre">required=True),</span> <span class="pre">'transaction_index':</span> <span class="pre">FieldInfo(annotation=Union[int,</span> <span class="pre">NoneType],</span> <span class="pre">required=False)}</span></em><a class="headerlink" href="#ape.types.ContractLog.model_fields" title="Permalink to this definition"></a></dt>
-<dd><p>Metadata about the fields defined on the model,
-mapping of field names to [<cite>FieldInfo</cite>][pydantic.fields.FieldInfo].</p>
-<p>This replaces <cite>Model.__fields__</cite> from Pydantic V1.</p>
 </dd></dl>
 
 <dl class="py property">
@@ -436,20 +400,6 @@ by only comparing those event arguments that the user explicitly provides.</p>
 <p>Inherits from <a class="reference internal" href="#ape.types.BaseContractLog" title="ape.types.BaseContractLog"><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseContractLog</span></code></a>, and overrides the
 equality method for custom comparison
 of event arguments between a MockContractLog and a ContractLog instance.</p>
-<dl class="py attribute">
-<dt class="sig sig-object py" id="ape.types.MockContractLog.model_config">
-<span class="sig-name descname"><span class="pre">model_config</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ClassVar</span><span class="p"><span class="pre">[</span></span><span class="pre">ConfigDict</span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'arbitrary_types_allowed':</span> <span class="pre">True}</span></em><a class="headerlink" href="#ape.types.MockContractLog.model_config" title="Permalink to this definition"></a></dt>
-<dd><p>Configuration for the model, should be a dictionary conforming to [<cite>ConfigDict</cite>][pydantic.config.ConfigDict].</p>
-</dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="ape.types.MockContractLog.model_fields">
-<span class="sig-name descname"><span class="pre">model_fields</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ClassVar</span><span class="p"><span class="pre">[</span></span><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">FieldInfo</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'contract_address':</span> <span class="pre">FieldInfo(annotation=NewType,</span> <span class="pre">required=False,</span> <span class="pre">default='0x0000000000000000000000000000000000000000',</span> <span class="pre">metadata=[&lt;class</span> <span class="pre">'ape.types.address._AddressValidator'&gt;]),</span> <span class="pre">'event_arguments':</span> <span class="pre">FieldInfo(annotation=Dict[str,</span> <span class="pre">Any],</span> <span class="pre">required=False,</span> <span class="pre">default={}),</span> <span class="pre">'event_name':</span> <span class="pre">FieldInfo(annotation=str,</span> <span class="pre">required=True)}</span></em><a class="headerlink" href="#ape.types.MockContractLog.model_fields" title="Permalink to this definition"></a></dt>
-<dd><p>Metadata about the fields defined on the model,
-mapping of field names to [<cite>FieldInfo</cite>][pydantic.fields.FieldInfo].</p>
-<p>This replaces <cite>Model.__fields__</cite> from Pydantic V1.</p>
-</dd></dl>
-
 </dd></dl>
 
 </section>

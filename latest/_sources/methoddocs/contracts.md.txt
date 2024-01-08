@@ -5,7 +5,6 @@
     :members:
     :show-inheritance:
     :special-members:
-    :exclude-members: __repr__, __weakref__, __metaclass__, __init__
 ```
 
 ```{eval-rst}
@@ -13,7 +12,6 @@
     :members:
     :show-inheritance:
     :special-members:
-    :exclude-members: __repr__, __weakref__, __metaclass__, __init__
 ```
 
 ```{eval-rst}
@@ -21,7 +19,6 @@
     :members:
     :show-inheritance:
     :special-members:
-    :exclude-members: __repr__, __weakref__, __metaclass__, __call__, __init__
 ```
 
 ```{eval-rst}
@@ -29,5 +26,4 @@
     :members:
     :show-inheritance:
     :special-members:
-    :exclude-members: __repr__, __weakref__, __metaclass__, __call__, __init__
 ```

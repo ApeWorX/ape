@@ -188,17 +188,16 @@
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="#ape.contracts.base.ContractContainer"><code class="docutils literal notranslate"><span class="pre">ContractContainer</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#ape.contracts.base.ContractContainer.__call__"><code class="docutils literal notranslate"><span class="pre">ContractContainer.__call__()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ape.contracts.base.ContractContainer.__getattr__"><code class="docutils literal notranslate"><span class="pre">ContractContainer.__getattr__()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ape.contracts.base.ContractContainer.at"><code class="docutils literal notranslate"><span class="pre">ContractContainer.at()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ape.contracts.base.ContractContainer.deployments"><code class="docutils literal notranslate"><span class="pre">ContractContainer.deployments</span></code></a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="#ape.contracts.base.ContractEvent"><code class="docutils literal notranslate"><span class="pre">ContractEvent</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#ape.contracts.base.ContractEvent.__call__"><code class="docutils literal notranslate"><span class="pre">ContractEvent.__call__()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ape.contracts.base.ContractEvent.__iter__"><code class="docutils literal notranslate"><span class="pre">ContractEvent.__iter__()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ape.contracts.base.ContractEvent.from_receipt"><code class="docutils literal notranslate"><span class="pre">ContractEvent.from_receipt()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="#ape.contracts.base.ContractEvent.model_config"><code class="docutils literal notranslate"><span class="pre">ContractEvent.model_config</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="#ape.contracts.base.ContractEvent.model_fields"><code class="docutils literal notranslate"><span class="pre">ContractEvent.model_fields</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="#ape.contracts.base.ContractEvent.model_post_init"><code class="docutils literal notranslate"><span class="pre">ContractEvent.model_post_init()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ape.contracts.base.ContractEvent.name"><code class="docutils literal notranslate"><span class="pre">ContractEvent.name</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ape.contracts.base.ContractEvent.poll_logs"><code class="docutils literal notranslate"><span class="pre">ContractEvent.poll_logs()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ape.contracts.base.ContractEvent.query"><code class="docutils literal notranslate"><span class="pre">ContractEvent.query()</span></code></a></li>
@@ -459,6 +458,12 @@ are using this class.</p>
 </pre></div>
 </div>
 <dl class="py method">
+<dt class="sig sig-object py" id="ape.contracts.base.ContractContainer.__call__">
+<span class="sig-name descname"><span class="pre">__call__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="api.html#ape.api.transactions.TransactionAPI" title="ape.api.transactions.TransactionAPI"><span class="pre">TransactionAPI</span></a></span></span><a class="headerlink" href="#ape.contracts.base.ContractContainer.__call__" title="Permalink to this definition"></a></dt>
+<dd><p>Call self as a function.</p>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="ape.contracts.base.ContractContainer.__getattr__">
 <span class="sig-name descname"><span class="pre">__getattr__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Any</span></span></span><a class="headerlink" href="#ape.contracts.base.ContractContainer.__getattr__" title="Permalink to this definition"></a></dt>
 <dd><p>Access a contract error or event type via its ABI name using <code class="docutils literal notranslate"><span class="pre">.</span></code> access.</p>
@@ -525,6 +530,12 @@ Use the event types via <code class="docutils literal notranslate"><span class="
 </pre></div>
 </div>
 <dl class="py method">
+<dt class="sig sig-object py" id="ape.contracts.base.ContractEvent.__call__">
+<span class="sig-name descname"><span class="pre">__call__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="types.html#ape.types.MockContractLog" title="ape.types.MockContractLog"><span class="pre">MockContractLog</span></a></span></span><a class="headerlink" href="#ape.contracts.base.ContractEvent.__call__" title="Permalink to this definition"></a></dt>
+<dd><p>Call self as a function.</p>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="ape.contracts.base.ContractEvent.__iter__">
 <span class="sig-name descname"><span class="pre">__iter__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Iterator</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="types.html#ape.types.ContractLog" title="ape.types.ContractLog"><span class="pre">ContractLog</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#ape.contracts.base.ContractEvent.__iter__" title="Permalink to this definition"></a></dt>
 <dd><p>Get all logs that have occurred for this event.</p>
@@ -540,35 +551,6 @@ Use the event types via <code class="docutils literal notranslate"><span class="
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>List[<code class="xref py py-class docutils literal notranslate"><span class="pre">ContractLog</span></code>]</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="ape.contracts.base.ContractEvent.model_config">
-<span class="sig-name descname"><span class="pre">model_config</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ClassVar</span><span class="p"><span class="pre">[</span></span><span class="pre">ConfigDict</span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'arbitrary_types_allowed':</span> <span class="pre">True}</span></em><a class="headerlink" href="#ape.contracts.base.ContractEvent.model_config" title="Permalink to this definition"></a></dt>
-<dd><p>Configuration for the model, should be a dictionary conforming to [<cite>ConfigDict</cite>][pydantic.config.ConfigDict].</p>
-</dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="ape.contracts.base.ContractEvent.model_fields">
-<span class="sig-name descname"><span class="pre">model_fields</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ClassVar</span><span class="p"><span class="pre">[</span></span><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">FieldInfo</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'abi':</span> <span class="pre">FieldInfo(annotation=EventABI,</span> <span class="pre">required=True),</span> <span class="pre">'contract':</span> <span class="pre">FieldInfo(annotation=ContractTypeWrapper,</span> <span class="pre">required=True)}</span></em><a class="headerlink" href="#ape.contracts.base.ContractEvent.model_fields" title="Permalink to this definition"></a></dt>
-<dd><p>Metadata about the fields defined on the model,
-mapping of field names to [<cite>FieldInfo</cite>][pydantic.fields.FieldInfo].</p>
-<p>This replaces <cite>Model.__fields__</cite> from Pydantic V1.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="ape.contracts.base.ContractEvent.model_post_init">
-<span class="sig-name descname"><span class="pre">model_post_init</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">__context</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#ape.contracts.base.ContractEvent.model_post_init" title="Permalink to this definition"></a></dt>
-<dd><p>This function is meant to behave like a BaseModel method to initialise private attributes.</p>
-<p>It takes context as an argument since that’s what pydantic-core passes when calling it.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>self</strong> – The BaseModel instance.</p></li>
-<li><p><strong>__context</strong> – The context.</p></li>
-</ul>
 </dd>
 </dl>
 </dd></dl>
