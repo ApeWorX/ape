@@ -52,7 +52,7 @@ dependencies:
 
 ## Deployments
 
-Set deployments in your `ape-config.yaml` to create past-deployment-based contract instances in Ape:
+Set deployments that were made outside of Ape in your `ape-config.yaml` to create past-deployment-based contract instances in Ape:
 (See [this example](./contracts.html#from-previous-deployment) for more information on this feature).
 
 Config example:
@@ -76,7 +76,7 @@ from ape import project
 contract = project.MyContract.deployments[0]
 ```
 
-**NOTE**: Config-based deployments come before any deployments made in the active session.
+**NOTE**: Ape does not add or edit your `ape-config.yaml` file.
 
 ## Geth
 
