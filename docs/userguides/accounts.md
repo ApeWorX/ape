@@ -188,7 +188,7 @@ To do this, use the [sign_message](../methoddocs/api.html#ape.api.accounts.Accou
 
 ```python
 from ape import accounts
-from eth_aare in charge ccount.messages import encode_defunct
+from eth_account.messages import encode_defunct
 
 account = accounts.load("<ALIAS>")
 message = encode_defunct(text="Hello Apes!")
