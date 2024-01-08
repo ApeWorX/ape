@@ -84,9 +84,21 @@ with accounts.use_sender(a): # a is a `TestAccountAPI` object
 ## Live Network Accounts
 
 When using live networks, you need to get your accounts into Ape.
-Ape ships with a keyfile accounts plugin to assist with this.
-All the available CLI commands for this account's plugin can be found [here](../commands/accounts.html).
+To get your accounts in Ape, you must use an `accounts` plugin.
+Ape ships with a keyfile-based account plugin, but you can use any account plugin such as `ape-ledger`, `ape-trezor`, or a third-party plugin.
 
+### Keyfile Accounts
+
+Ape ships with a keyfile-based account plugin that lets you import and generate accounts.
+The premise of the plugin is that accounts are stored locally on your computer in the `$HOME/.ape/accounts` directory following the `keyfile` structure.
+Under-the-hood, this structure comes from the [eth-keyfile library](https://github.com/ethereum/eth-keyfile) via the [eth-account](https://eth-account.readthedocs.io/en/stable/eth_account.html) package.
+When Ape creates the keyfile, either from import or account-generation (described below!), it prompts you for a passphrase to use for encrypting the keyfile, similarly to how you need a password to unlock browser-based wallets.
+The keyfile, then, stores the encrypted private key.
+
+The `ape-accounts` plugin lets you use keyfile-based account to sign messages and transactions.
+When signing a message or transaction using an account from `ape-accounts`, you will be prompted to enter the passphrase you specified when importing or generating that account.
+
+All the available CLI commands for this account's plugin can be found [here](../commands/accounts.html).
 For example, you can [generate](../commands/accounts.html#accounts-generate) an account:
 
 ```bash
