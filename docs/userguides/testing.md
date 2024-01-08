@@ -2,6 +2,14 @@
 
 Testing an ape project is important and easy.
 
+## Pytest
+
+Before learning how testing works in Ape, you should have an understanding of [the pytest framework](https://docs.pytest.org/en/7.4.x/) and its concepts such as fixtures, mark-decorators, and pytest plugins such as x-dist, pytest-mock, and pytest-cov.
+Once you have learned about pytest, Ape testing becomes intuitive because it is built on top of pytest.
+In fact, `ape-test` is itself a `pytest` plugin!
+
+You write your smart-contracts much like you write regular Python tests.
+
 ## Test Structure
 
 Tests must be located in a project's `tests/` directory. Each **test file** must start with `test_` and have the `.py` extension, such as `test_my_contract.py`.
@@ -23,21 +31,39 @@ Tests are generally divisible into three parts:
 2. Invocation
 3. Assertion
 
-In the example above, we created a fixture that deploys our smart-contract.
-This is an example of a 'setup' phase.
-Next, we need to call a method on our contract.
+An example of the setup-phase would be creating a `pytest.fixture` that deploys our smart contract.
+(To learn more about pytest fixtures in Ape, see the `Fixtures` section below!)
+For now, what you need to know is that it's a piece of code that executes before the test runs, and it is decorated with a `@pytest.fixture`.
+
+The second phase is `Invocation`, which encompasses invoking the function we are testing.
+The last phase, `Assertion`, requires enacting on the expectation about how the code should behave.
 Let's assume there is an `authorized_method()` that requires the owner of the contract to make the transaction.
 If the sender of the transaction is not the owner, the transaction will fail to complete and will revert.
+We use `assert` statements in Ape (and `pytest`) to check that our expectations are correct.
+A test passes if all the `assert` statements are `True` and it fails if any are `False`.
 
 This is an example of how that test may look:
 
 ```python
 import ape
+import pytest
+
+# SETUP PHASE
+# NOTE: More on fixtures is discussed in later sections of this guide!
+@pytest.fixture
+def owner(accounts):
+    return accounts[0]
+
+@pytest.fixture
+def my_contract(owner, project):
+    return owner.deploy(project.MyContract)
 
 def test_authorization(my_contract, owner, not_owner):
+    # INVOCATION PHASE
     my_contract.set_owner(sender=owner)
     assert owner == my_contract.owner()
 
+    # ASSERTION PHASE
     with ape.reverts("!authorized"):
         my_contract.authorized_method(sender=not_owner)
 ```
@@ -48,6 +74,8 @@ To disable isolation add the `--disable-isolation` flag when running `ape test`
 ```
 
 ## Fixtures
+
+Now that we have discussed the full flow of a test, let's dive deeper into the specific parts, starting with `pytest.fixtures`.
 
 You can define and use `pytest` fixtures in your Ape tests.
 Learn more about fixtures from [this guide](https://docs.pytest.org/en/7.1.x/explanation/fixtures.html).

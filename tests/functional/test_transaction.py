@@ -1,6 +1,7 @@
 import pytest
 from eth_pydantic_types import HexBytes
 
+from ape.exceptions import SignatureError
 from ape_ethereum.transactions import DynamicFeeTransaction, StaticFeeTransaction, TransactionType
 
 
@@ -91,3 +92,31 @@ def test_txn_str_when_data_is_bytes(ethereum):
 def test_transaction_with_none_receipt(ethereum):
     txn = ethereum.create_transaction(data=HexBytes("0x123"))
     assert txn.receipt is None
+
+
+def test_serialize_transaction(owner, ethereum):
+    txn = ethereum.create_transaction(
+        data=HexBytes("0x123"), max_fee=0, max_priority_fee=0, nonce=0
+    )
+    txn = owner.sign_transaction(txn)
+    assert txn is not None
+
+    actual = txn.serialize_transaction()
+    assert isinstance(actual, bytes)
+
+
+def test_serialize_transaction_missing_signature(ethereum, owner):
+    expected = r"The transaction is not signed."
+    txn = ethereum.create_transaction(data=HexBytes("0x123"), sender=owner.address)
+    with pytest.raises(SignatureError, match=expected):
+        txn.serialize_transaction()
+
+
+def test_serialize_transaction_missing_signature_and_sender(ethereum):
+    expected = (
+        r"The transaction is not signed. "
+        r"Did you forget to add the `sender=` kwarg to the transaction function call?"
+    )
+    txn = ethereum.create_transaction(data=HexBytes("0x123"))
+    with pytest.raises(SignatureError, match=expected):
+        txn.serialize_transaction()

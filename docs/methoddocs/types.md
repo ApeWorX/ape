@@ -10,7 +10,31 @@
 ## Signatures
 
 ```{eval-rst}
-.. automodule:: ape.types.signatures
+.. autoclass:: ape.types.signatures.SignableMessage
+    :members:
+    :show-inheritance:
+```
+
+```{eval-rst}
+.. autoclass:: ape.types.signatures.MessageSignature
+    :members:
+    :show-inheritance:
+```
+
+```{eval-rst}
+.. autoclass:: ape.types.signatures.TransactionSignature
+    :members:
+    :show-inheritance:
+```
+
+```{eval-rst}
+.. automethod:: ape.types.signatures.recover_signer
+```
+
+## Coverage
+
+```{eval-rst}
+.. automodule:: ape.types.coverage
     :members:
     :show-inheritance:
 ```
