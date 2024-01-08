@@ -179,25 +179,94 @@ Thus, calls do no require specifying a `sender=` in Ape.
 
 At the RPC level, Ethereum calls are performed using the `eth_call` RPC and transactions are performed using the `eth_sendTransaction` or `eth_sendRawTransaction` RPCs.
 
-The following examples demonstrate both making a call and invoking a transaction to a deployed version of the contract above.
-First, here is an example of invoking a function (creating a transaction):
+### Transactions
+
+The following examples demonstrates invoking a contract's method in Ape as a transaction:
 
 ```python
 from ape import accounts, Contract
 
-sender = accounts.load("<ALIAS>")
+account = accounts.load("<ALIAS>")
 contract = Contract("0x...")  # Assume is deployed version of code above
 
-# Invoke the `set_number()` function, which costs Ether
-receipt = contract.set_number(sender=sender)
+# Transaction: Invoke the `set_number()` function, which costs Ether
+receipt = contract.set_number(sender=account)
 assert not receipt.failed
+
+# The receipt contains data such as `gas_used`.
+print(receit.gas_used)
 ```
 
-Here is an example of making a call:
+Notice that transacting returns a [ReceiptAPI](../methoddocs/api.html#ape.api.transactions.ReceiptAPI) object which contains all the receipt data, such as `gas_used`.
+
+**NOTE**: If you need the `return_value` from a transaction, you have to either treat transaction as a call (see the section below!) or use a provider with tracing-features enabled (such as `ape-foundry` or `ape-geth`) and access the [return_value](../methoddocs/api.html#ape.api.transactions.ReceiptAPI.return_value) property on the receipt.
 
 ```python
-# NOTICE: A sender is required for calls!
+assert receipt.return_value == 123
+```
+
+### Calls
+
+In the Vyper code at the beginning of this section, the function `get_static_list()` is decorated as `@pure` indicating that it's read-only.
+(Also in Vyper, `@view` methods are read-only).
+Since `get_static_list()` is read-only, we can successfully call it without a `sender=` kwarg; no funds are required.
+Here is an example of making a call by checking the result of `get_static_list()`:
+
+```python
+from ape import accounts, Contract
+
+account = accounts.load("<ALIAS>")
+contract = Contract("0x...")
+
+# CALL: A sender is not required for calls!
 assert contract.get_static_list() == [1, 2, 3]
+```
+
+### Calling Transactions and Transacting Calls
+
+You can treat transactions as calls as visa-versa.
+
+For example, let's say we have a Solidity function:
+
+```solidity
+function addBalance(uint256 new_bal) external returns(uint256) {
+    balances[msg.sender] = new_bal;
+    return balances[msg.sender];
+}
+```
+
+To simulate the transaction without actually modifying any state, use the `.call` method from the contract transaction handler:
+
+```python
+from ape import Contract
+
+contract = Contract("0x...")
+
+result = contract.addBalance.call(123)
+assert result == "123"  # The return value gets forwarded from the contract.
+```
+
+Oppositely, you may want to measure a call as if it were a transaction, in which case you can use the `.transact` attribute on the contract call handler:
+
+Given the Solidity function:
+
+```solidity
+function getModifiedBalance() external view returns(uint256) {
+    return balances[msg.sender] + 123;
+}
+```
+
+You can treat it like a transaction by doing:
+
+```python
+from ape import accounts, Contract
+
+account = accounts.load("<ALIAS>")
+contract = Contract("0x...")
+
+receipt = contract.getModifiedBalance.transact(sender=account)
+assert not receipt.failed  # Transactions return `ReceiptAPI` objects.
+print(receipt.gas_used)  # Analyze receipt gas from calls.
 ```
 
 ### Default, Fallback, and Direct Calls
