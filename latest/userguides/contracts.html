@@ -152,6 +152,9 @@
 <li class="toctree-l2"><a class="reference internal" href="#from-abis">From ABIs</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#from-previous-deployment">From Previous Deployment</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#contract-interaction">Contract Interaction</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#transactions">Transactions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#calls">Calls</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#calling-transactions-and-transacting-calls">Calling Transactions and Transacting Calls</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#default-fallback-and-direct-calls">Default, Fallback, and Direct Calls</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#private-transactions">Private Transactions</a></li>
 </ul>
@@ -224,7 +227,7 @@ The other way is to initialize an already-deployed contract using its address.</
 <section id="from-deploy">
 <h2>From Deploy<a class="headerlink" href="#from-deploy" title="Permalink to this heading"></a></h2>
 <p>Deploy contracts from your project using the <code class="docutils literal notranslate"><span class="pre">project</span></code> root-level object.
-The names of your contracts are properties on the <code class="docutils literal notranslate"><span class="pre">project</span></code> object (e.g. <code class="docutils literal notranslate"><span class="pre">project.MyContract</span></code>) and their types are <a class="reference external" href="../methoddocs/contracts.html#ape.contracts.base.ContractContainer">ContractContainer</a>.</p>
+The names of your contracts are attributes on the <code class="docutils literal notranslate"><span class="pre">project</span></code> object (e.g. <code class="docutils literal notranslate"><span class="pre">project.MyContract</span></code>) and their types are <a class="reference external" href="../methoddocs/contracts.html#ape.contracts.base.ContractContainer">ContractContainer</a>.</p>
 <p><strong>NOTE</strong>: To avoid naming collisions with other properties on the <code class="docutils literal notranslate"><span class="pre">project</span></code> object, you can also use the <a class="reference external" href="../methoddocs/managers.html#ape.managers.project.manager.ProjectManager.get_contract">get_contract()</a> method to retrieve contract containers.</p>
 <p>When you deploy contracts, you get back a <code class="docutils literal notranslate"><span class="pre">ContractInstance</span></code>:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">ape</span> <span class="kn">import</span> <span class="n">accounts</span><span class="p">,</span> <span class="n">project</span>
@@ -357,13 +360,90 @@ For example, let’s say you have a Vyper contract containing some functions:</p
     <span class="bp">self</span><span class="o">.</span><span class="n">myNumber</span> <span class="o">=</span> <span class="n">num</span>
 </pre></div>
 </div>
-<p>You can call those functions by doing:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">assert</span> <span class="n">contract</span><span class="o">.</span><span class="n">get_static_list</span><span class="p">()</span> <span class="o">==</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">]</span>
+<p>Notice the contract has both an external pure method and an external method that modifies state.
+In EVM languages, methods that modify state require a transaction to execute because they cost money.
+Modifying the storage of a contract requires gas and thus requires a sender with enough funding.
+Contract calls, on the other hand, are read-operations and do not cost anything.
+Thus, calls do not require specifying a <code class="docutils literal notranslate"><span class="pre">sender=</span></code> in Ape.</p>
+<p>At the RPC level, Ethereum calls are performed using the <code class="docutils literal notranslate"><span class="pre">eth_call</span></code> RPC and transactions are performed using the <code class="docutils literal notranslate"><span class="pre">eth_sendTransaction</span></code> or <code class="docutils literal notranslate"><span class="pre">eth_sendRawTransaction</span></code> RPCs.</p>
+<section id="transactions">
+<h3>Transactions<a class="headerlink" href="#transactions" title="Permalink to this heading"></a></h3>
+<p>The following example demonstrates invoking a contract’s method in Ape as a transaction.
+However, take note that there is a <a class="reference external" href="./transactions.html">separate guide</a> which fully covers transactions in Ape.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">ape</span> <span class="kn">import</span> <span class="n">accounts</span><span class="p">,</span> <span class="n">Contract</span>
 
-<span class="c1"># Mutable calls are transactions and require a sender</span>
-<span class="n">receipt</span> <span class="o">=</span> <span class="n">contract</span><span class="o">.</span><span class="n">set_number</span><span class="p">(</span><span class="n">sender</span><span class="o">=</span><span class="n">dev</span><span class="p">)</span>
+<span class="n">account</span> <span class="o">=</span> <span class="n">accounts</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;&lt;ALIAS&gt;&quot;</span><span class="p">)</span>
+<span class="n">contract</span> <span class="o">=</span> <span class="n">Contract</span><span class="p">(</span><span class="s2">&quot;0x...&quot;</span><span class="p">)</span>  <span class="c1"># Assume is deployed version of code above</span>
+
+<span class="c1"># Transaction: Invoke the `set_number()` function, which costs Ether</span>
+<span class="n">receipt</span> <span class="o">=</span> <span class="n">contract</span><span class="o">.</span><span class="n">set_number</span><span class="p">(</span><span class="n">sender</span><span class="o">=</span><span class="n">account</span><span class="p">)</span>
+<span class="k">assert</span> <span class="ow">not</span> <span class="n">receipt</span><span class="o">.</span><span class="n">failed</span>
+
+<span class="c1"># The receipt contains data such as `gas_used`.</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">receit</span><span class="o">.</span><span class="n">gas_used</span><span class="p">)</span>
 </pre></div>
 </div>
+<p>Notice that transacting returns a <a class="reference external" href="../methoddocs/api.html#ape.api.transactions.ReceiptAPI">ReceiptAPI</a> object which contains all the receipt data, such as <code class="docutils literal notranslate"><span class="pre">gas_used</span></code>.</p>
+<p><strong>NOTE</strong>: If you need the <code class="docutils literal notranslate"><span class="pre">return_value</span></code> from a transaction, you have to either treat transaction as a call (see the section below!) or use a provider with tracing-features enabled (such as <code class="docutils literal notranslate"><span class="pre">ape-foundry</span></code> or <code class="docutils literal notranslate"><span class="pre">ape-geth</span></code>) and access the <a class="reference external" href="../methoddocs/api.html#ape.api.transactions.ReceiptAPI.return_value">return_value</a> property on the receipt.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">assert</span> <span class="n">receipt</span><span class="o">.</span><span class="n">return_value</span> <span class="o">==</span> <span class="mi">123</span>
+</pre></div>
+</div>
+<p>For more general information on transactions in the Ape framework, see <a class="reference external" href="./transactions.html">this guide</a>.</p>
+</section>
+<section id="calls">
+<h3>Calls<a class="headerlink" href="#calls" title="Permalink to this heading"></a></h3>
+<p>In the Vyper code at the beginning of this section, the function <code class="docutils literal notranslate"><span class="pre">get_static_list()</span></code> is decorated as <code class="docutils literal notranslate"><span class="pre">&#64;pure</span></code> indicating that it’s read-only.
+(Also in Vyper, <code class="docutils literal notranslate"><span class="pre">&#64;view</span></code> methods are read-only).
+Since <code class="docutils literal notranslate"><span class="pre">get_static_list()</span></code> is read-only, we can successfully call it without a <code class="docutils literal notranslate"><span class="pre">sender=</span></code> kwarg; no funds are required.
+Here is an example of making a call by checking the result of <code class="docutils literal notranslate"><span class="pre">get_static_list()</span></code>:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">ape</span> <span class="kn">import</span> <span class="n">accounts</span><span class="p">,</span> <span class="n">Contract</span>
+
+<span class="n">account</span> <span class="o">=</span> <span class="n">accounts</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;&lt;ALIAS&gt;&quot;</span><span class="p">)</span>
+<span class="n">contract</span> <span class="o">=</span> <span class="n">Contract</span><span class="p">(</span><span class="s2">&quot;0x...&quot;</span><span class="p">)</span>
+
+<span class="c1"># CALL: A sender is not required for calls!</span>
+<span class="k">assert</span> <span class="n">contract</span><span class="o">.</span><span class="n">get_static_list</span><span class="p">()</span> <span class="o">==</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">]</span>
+</pre></div>
+</div>
+</section>
+<section id="calling-transactions-and-transacting-calls">
+<h3>Calling Transactions and Transacting Calls<a class="headerlink" href="#calling-transactions-and-transacting-calls" title="Permalink to this heading"></a></h3>
+<p>You can treat transactions as calls and vice-versa.</p>
+<p>For example, let’s say we have a Solidity function:</p>
+<div class="highlight-solidity notranslate"><div class="highlight"><pre><span></span><span class="kt">function</span><span class="w"> </span><span class="nv">addBalance</span><span class="p">(</span><span class="kt">uint256</span><span class="w"> </span><span class="nv">new_bal</span><span class="p">)</span><span class="w"> </span><span class="kt">external</span><span class="w"> </span><span class="kt">returns</span><span class="p">(</span><span class="kt">uint256</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span>balances<span class="p">[</span><span class="k">msg.sender</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span>new_bal<span class="p">;</span>
+<span class="w">    </span><span class="kt">return</span><span class="w"> </span>balances<span class="p">[</span><span class="k">msg.sender</span><span class="p">];</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>To simulate the transaction without actually modifying any state, use the <code class="docutils literal notranslate"><span class="pre">.call</span></code> method from the contract transaction handler:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">ape</span> <span class="kn">import</span> <span class="n">Contract</span>
+
+<span class="n">contract</span> <span class="o">=</span> <span class="n">Contract</span><span class="p">(</span><span class="s2">&quot;0x...&quot;</span><span class="p">)</span>
+
+<span class="n">result</span> <span class="o">=</span> <span class="n">contract</span><span class="o">.</span><span class="n">addBalance</span><span class="o">.</span><span class="n">call</span><span class="p">(</span><span class="mi">123</span><span class="p">)</span>
+<span class="k">assert</span> <span class="n">result</span> <span class="o">==</span> <span class="s2">&quot;123&quot;</span>  <span class="c1"># The return value gets forwarded from the contract.</span>
+</pre></div>
+</div>
+<p>Similarly, you may want to measure a call as if it were a transaction, in which case you can use the <code class="docutils literal notranslate"><span class="pre">.transact</span></code> attribute on the contract call handler:</p>
+<p>Given the Solidity function:</p>
+<div class="highlight-solidity notranslate"><div class="highlight"><pre><span></span><span class="kt">function</span><span class="w"> </span><span class="nv">getModifiedBalance</span><span class="p">()</span><span class="w"> </span><span class="kt">external</span><span class="w"> </span>view<span class="w"> </span><span class="kt">returns</span><span class="p">(</span><span class="kt">uint256</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="kt">return</span><span class="w"> </span>balances<span class="p">[</span><span class="k">msg.sender</span><span class="p">]</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="m m-Decimal">123</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>You can treat it like a transaction by doing:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">ape</span> <span class="kn">import</span> <span class="n">accounts</span><span class="p">,</span> <span class="n">Contract</span>
+
+<span class="n">account</span> <span class="o">=</span> <span class="n">accounts</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;&lt;ALIAS&gt;&quot;</span><span class="p">)</span>
+<span class="n">contract</span> <span class="o">=</span> <span class="n">Contract</span><span class="p">(</span><span class="s2">&quot;0x...&quot;</span><span class="p">)</span>
+
+<span class="n">receipt</span> <span class="o">=</span> <span class="n">contract</span><span class="o">.</span><span class="n">getModifiedBalance</span><span class="o">.</span><span class="n">transact</span><span class="p">(</span><span class="n">sender</span><span class="o">=</span><span class="n">account</span><span class="p">)</span>
+<span class="k">assert</span> <span class="ow">not</span> <span class="n">receipt</span><span class="o">.</span><span class="n">failed</span>  <span class="c1"># Transactions return `ReceiptAPI` objects.</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">receipt</span><span class="o">.</span><span class="n">gas_used</span><span class="p">)</span>  <span class="c1"># Analyze receipt gas from calls.</span>
+</pre></div>
+</div>
+</section>
 <section id="default-fallback-and-direct-calls">
 <h3>Default, Fallback, and Direct Calls<a class="headerlink" href="#default-fallback-and-direct-calls" title="Permalink to this heading"></a></h3>
 <p>To directly call an address, such as invoking a contract’s <code class="docutils literal notranslate"><span class="pre">fallback</span></code> or <code class="docutils literal notranslate"><span class="pre">receive</span></code> method, call a contract instance directly:</p>
