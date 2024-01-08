@@ -6,7 +6,6 @@
 .. automodule:: ape.managers.accounts
     :members:
     :special-members:
-    :exclude-members: __repr__, __weakref__, __metaclass__, __init__
 ```
 
 ## Compilers
@@ -22,35 +21,30 @@
 .. autoclass:: ape.managers.chain.TransactionHistory
     :members:
     :special-members:
-    :exclude-members: __repr__, __weakref__, __metaclass__, __init__
 ```
 
 ```{eval-rst}
 .. autoclass:: ape.managers.chain.AccountHistory
     :members:
     :special-members:
-    :exclude-members: __repr__, __weakref__, __metaclass__, __init__
 ```
 
 ```{eval-rst}
 .. autoclass:: ape.managers.chain.ContractCache
     :members:
     :special-members:
-    :exclude-members: __repr__, __weakref__, __metaclass__, __init__
 ```
 
 ```{eval-rst}
 .. autoclass:: ape.managers.chain.BlockContainer
     :members:
     :special-members:
-    :exclude-members: __repr__, __weakref__, __metaclass__, __init__
 ```
 
 ```{eval-rst}
 .. autoclass:: ape.managers.chain.ChainManager
     :members:
     :special-members:
-    :exclude-members: __repr__, __weakref__, __metaclass__, __init__
 ```
 
 ## Config
@@ -59,7 +53,6 @@
 .. automodule:: ape.managers.config
     :members:
     :special-members:
-    :exclude-members: __repr__, __weakref__, __metaclass__, __init__
 ```
 
 ## Converters
@@ -82,35 +75,30 @@
 .. automodule:: ape.managers.project.manager
     :members:
     :special-members:
-    :exclude-members: __repr__, __weakref__, __metaclass__, __init__
 ```
 
 ```{eval-rst}
 .. automodule:: ape.managers.project.dependency
     :members:
     :special-members:
-    :exclude-members: __repr__, __weakref__, __metaclass__, __init__
 ```
 
 ```{eval-rst}
 .. autoclass:: ape.managers.project.types.BaseProject
     :members:
     :special-members:
-    :exclude-members: __repr__, __weakref__, __metaclass__, __init__
 ```
 
 ```{eval-rst}
 .. autoclass:: ape.managers.project.types.ApeProject
     :members:
     :special-members:
-    :exclude-members: __repr__, __weakref__, __metaclass__, __init__
 ```
 
 ```{eval-rst}
 .. autoclass:: ape.managers.project.types.BrownieProject
     :members:
     :special-members:
-    :exclude-members: __repr__, __weakref__, __metaclass__, __init__
 ```
 
 ## Query
@@ -119,5 +107,4 @@
 .. automodule:: ape.managers.query
     :members:
     :special-members:
-    :exclude-members: __repr__, __weakref__, __metaclass__, __init__
 ```
