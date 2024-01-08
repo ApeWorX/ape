@@ -133,20 +133,18 @@ Let's say you previously deployed a smart contract called `MyContract` on the ri
 You could then refer back to it like so:
 
 ```python
-from ape import project, chain, accounts
+from ape import project, chain
 
 def main():
-  account = accounts.test_accounts[0]
   my_contract = chain.contracts.get_deployments(project.MyContract)[-1]
 ```
 
 or
 
 ```python
-from ape import project, accounts
+from ape import project
 
 def main():
-  account = accounts.test_accounts[0]
   my_contract = project.MyContract.deployments[-1]
 ```
 
@@ -195,7 +193,7 @@ receipt = contract.set_number(sender=account)
 assert not receipt.failed
 
 # The receipt contains data such as `gas_used`.
-print(receit.gas_used)
+print(receipt.gas_used)
 ```
 
 Notice that transacting returns a [ReceiptAPI](../methoddocs/api.html#ape.api.transactions.ReceiptAPI) object which contains all the receipt data, such as `gas_used`.

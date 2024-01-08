@@ -18,9 +18,27 @@ from ape_ethereum.ecosystem import NetworkConfig
 from tests.functional.conftest import PROJECT_WITH_LONG_CONTRACTS_FOLDER
 
 
-def test_integer_deployment_addresses(networks):
+def test_deployments(networks, owner, project_with_contract):
+    # First, obtain a "previously-deployed" contract.
+    instance = project_with_contract.ApeContract0.deploy(sender=owner)
+
+    # Create a config using this new contract for a "later time".
     data = {
-        **_create_deployments(),
+        **_create_deployments(address=instance.address),
+        "valid_ecosystems": {"ethereum": networks.ethereum},
+        "valid_networks": [LOCAL_NETWORK_NAME],
+    }
+    config = DeploymentConfigCollection(root=data)
+    assert config.root["ethereum"]["local"][0]["address"] == instance.address
+
+    # Ensure we can reference the deployment on the project.
+    deployment = project_with_contract.ApeContract0.deployments[0]
+    assert deployment.address == instance.address
+
+
+def test_deployments_integer_type_addresses(networks):
+    data = {
+        **_create_deployments(address=0x0C25212C557D00024B7CA3DF3238683A35541354),
         "valid_ecosystems": {"ethereum": networks.ethereum},
         "valid_networks": [LOCAL_NETWORK_NAME],
     }
@@ -35,7 +53,7 @@ def test_integer_deployment_addresses(networks):
     "ecosystem_names,network_names,err_part",
     [(["ERRORS"], ["mainnet"], "ecosystem"), (["ethereum"], ["ERRORS"], "network")],
 )
-def test_bad_value_in_deployments(
+def test_deployments_bad_value(
     ecosystem_names, network_names, err_part, ape_caplog, plugin_manager
 ):
     deployments = _create_deployments()
@@ -48,12 +66,16 @@ def test_bad_value_in_deployments(
     )
 
 
-def _create_deployments(ecosystem_name: str = "ethereum", network_name: str = "local") -> Dict:
+def _create_deployments(
+    ecosystem_name: str = "ethereum",
+    network_name: str = "local",
+    address: Union[int, str] = "0x0C25212C557D00024B7CA3DF3238683A35541354",
+) -> Dict:
     return {
         ecosystem_name: {
             network_name: [
                 {
-                    "address": 0x0C25212C557D00024B7CA3DF3238683A35541354,
+                    "address": address,
                     "contract_type": "MyContract",
                 }
             ]
