@@ -174,14 +174,14 @@ def set_number(num: uint256):
 Notice the contract has both an external pure method and an external method that modifies state.
 In EVM languages, methods that modify state require a transaction to execute because they cost money.
 Modifying the storage of a contract requires gas and thus requires a sender with enough funding.
-Contract calls, on the other hand, are read-operations and do no cost anything.
-Thus, calls do no require specifying a `sender=` in Ape.
+Contract calls, on the other hand, are read-operations and do not cost anything.
+Thus, calls do not require specifying a `sender=` in Ape.
 
 At the RPC level, Ethereum calls are performed using the `eth_call` RPC and transactions are performed using the `eth_sendTransaction` or `eth_sendRawTransaction` RPCs.
 
 ### Transactions
 
-The following examples demonstrates invoking a contract's method in Ape as a transaction:
+The following example demonstrates invoking a contract's method in Ape as a transaction:
 
 ```python
 from ape import accounts, Contract
@@ -265,7 +265,7 @@ account = accounts.load("<ALIAS>")
 contract = Contract("0x...")
 
 receipt = contract.getModifiedBalance.transact(sender=account)
-assert not receipt.failed  # Transactions return `ReceiptAPI` objects.
+assert not receipt.failed  # do no cost anything.Transactions return `ReceiptAPI` objects.
 print(receipt.gas_used)  # Analyze receipt gas from calls.
 ```
 
