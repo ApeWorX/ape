@@ -23,21 +23,39 @@ Tests are generally divisible into three parts:
 2. Invocation
 3. Assertion
 
-In the example above, we created a fixture that deploys our smart-contract.
-This is an example of a 'setup' phase.
-Next, we need to call a method on our contract.
+An example of the setup-phase would be creating a `pytest.fixture` that deploys our smart contract.
+(To learn more about pytest fixtures in Ape, see the `Fixtures` section below!)
+For now, what you need to know is that it's a piece of code that executes before the test runs, and it is decorated with a `@pytest.fixture`.
+
+The second phase is `Invocation`, which encompasses invoking the function we are testing.
+The last phase, `Assertion`, requires enacting on the expectation about how the code should behave.
 Let's assume there is an `authorized_method()` that requires the owner of the contract to make the transaction.
 If the sender of the transaction is not the owner, the transaction will fail to complete and will revert.
+We use `assert` statements in Ape (and `pytest`) to check that our expectations are correct.
+A test passes if all the `assert` statements are `True` and it fails if any are `False`.
 
 This is an example of how that test may look:
 
 ```python
 import ape
+import pytest
+
+# SETUP PHASE
+# NOTE: More on fixtures is discussed in later sections of this guide!
+@pytest.fixture
+def owner(accounts):
+    return accounts[0]
+
+@pytest.fixture
+def my_contract(owner, project):
+    return owner.deploy(project.MyContract)
 
 def test_authorization(my_contract, owner, not_owner):
+    # INVOCATION PHASE
     my_contract.set_owner(sender=owner)
     assert owner == my_contract.owner()
 
+    # ASSERTION PHASE
     with ape.reverts("!authorized"):
         my_contract.authorized_method(sender=not_owner)
 ```
@@ -48,6 +66,8 @@ To disable isolation add the `--disable-isolation` flag when running `ape test`
 ```
 
 ## Fixtures
+
+Now that we have discussed the full flow of a test, let's dive deeper into the specific parts, starting with `pytest.fixures`.
 
 You can define and use `pytest` fixtures in your Ape tests.
 Learn more about fixtures from [this guide](https://docs.pytest.org/en/7.1.x/explanation/fixtures.html).
