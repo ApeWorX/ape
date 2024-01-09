@@ -76,7 +76,6 @@ class LocalProvider(TestProviderAPI, Web3Provider):
         self.provider_settings = {}
 
     def update_settings(self, new_settings: Dict):
-        self._cached_chain_id = None
         self.provider_settings = {**self.provider_settings, **new_settings}
         self.disconnect()
         self.connect()
@@ -86,10 +85,6 @@ class LocalProvider(TestProviderAPI, Web3Provider):
     ) -> int:
         if isinstance(self.network.gas_limit, int):
             return self.network.gas_limit
-
-        elif self.network.gas_limit == "max":
-            block = self.web3.eth.get_block("latest")
-            return block["gasLimit"]
 
         estimate_gas = self.web3.eth.estimate_gas
         txn_dict = txn.model_dump(mode="json")
