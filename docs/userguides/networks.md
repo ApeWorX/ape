@@ -1,6 +1,6 @@
 # Networks
 
-When interacting with a blockchain, you will have to select an ecosystem (e.g. Ethereum, Arbitrum, or Fantom), a network (e.g. Mainnet or Goelri) and a provider (e.g. Eth-Tester, Geth, or Alchemy).
+When interacting with a blockchain, you will have to select an ecosystem (e.g. Ethereum, Arbitrum, or Fantom), a network (e.g. Mainnet or Goerli) and a provider (e.g. Eth-Tester, Geth, or Alchemy).
 Networks are part of ecosystems and typically defined in plugins.
 For example, the `ape-ethereum` plugin comes with Ape and can be used for handling EVM-like behavior.
 
