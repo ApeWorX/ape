@@ -1,5 +1,6 @@
 from pathlib import Path
 from typing import cast
+from unittest import mock
 
 import pytest
 from eth_pydantic_types import HashBytes32
@@ -358,3 +359,24 @@ def test_base_fee_no_history(geth_provider, mocker, ret):
         geth_provider._web3.eth.fee_history = orig
 
     assert actual == expected
+
+
+def test_estimate_gas(geth_contract, geth_provider, owner):
+    txn = geth_contract.setNumber.as_transaction(900, sender=owner)
+    estimate = geth_provider.estimate_gas_cost(txn)
+    assert estimate > 0
+
+
+def test_estimate_gas_of_static_fee_txn(geth_contract, geth_provider, owner):
+    txn = geth_contract.setNumber.as_transaction(900, sender=owner, type=0)
+    estimate = geth_provider.estimate_gas_cost(txn)
+    assert estimate > 0
+
+
+def test_estimate_gas_with_max_value_from_block(mocker, geth_provider):
+    mock_txn = mocker.patch("ape.api.networks.NetworkAPI.gas_limit", new_callable=mock.PropertyMock)
+    mock_txn.return_value = "max"
+    gas_cost = geth_provider.estimate_gas_cost(mock_txn)
+    latest_block = geth_provider.get_block("latest")
+
+    assert gas_cost == latest_block.gas_limit
