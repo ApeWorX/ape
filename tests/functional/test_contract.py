@@ -4,7 +4,6 @@ from pathlib import Path
 from ape import Contract
 from ape.contracts import ContractInstance
 
-
 """NOTE: This is testing contract with a capital C."""
 
 
