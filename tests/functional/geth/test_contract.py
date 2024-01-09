@@ -5,9 +5,27 @@ from tests.conftest import geth_process_test
 
 
 @geth_process_test
-def test_contract_interaction(geth_account, geth_contract):
-    geth_contract.setNumber(102, sender=geth_account)
+def test_contract_interaction(geth_provider, geth_account, geth_contract, mocker):
+    # Spy on the estimate_gas RPC method.
+    estimate_gas_spy = mocker.spy(geth_provider.web3.eth, "estimate_gas")
+
+    # Check what max gas is before transacting.
+    max_gas = geth_provider.max_gas
+
+    # Invoke a method from a contract via transacting.
+    receipt = geth_contract.setNumber(102, sender=geth_account)
+
+    # Verify values from the receipt.
+    assert not receipt.failed
+    assert receipt.receiver == geth_contract.address
+    assert receipt.gas_used < receipt.gas_limit
+    assert receipt.gas_limit == max_gas
+
+    # Show contract state changed.
     assert geth_contract.myNumber() == 102
+
+    # Verify the estimate gas RPC was not used (since we are using max_gas).
+    assert estimate_gas_spy.call_count == 0
 
 
 @geth_process_test

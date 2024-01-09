@@ -6,7 +6,6 @@ from eth_pydantic_types import HexBytes
 from eth_utils import is_checksum_address, to_hex
 from ethpm_types import BaseModel, ContractType
 
-from ape import Contract
 from ape.api import TransactionAPI
 from ape.contracts import ContractInstance
 from ape.exceptions import (
@@ -34,22 +33,27 @@ def data_object(owner):
     return DataObject()
 
 
-def test_init_at_unknown_address(networks_connected_to_tester, address):
-    _ = networks_connected_to_tester  # Need fixture or else get ProviderNotConnectedError
-    with pytest.raises(ChainError, match=f"Failed to get contract type for address '{address}'."):
-        Contract(address)
+def test_contract_interaction(eth_tester_provider, owner, vyper_contract_instance, mocker):
+    # Spy on the estimate_gas RPC method.
+    estimate_gas_spy = mocker.spy(eth_tester_provider.web3.eth, "estimate_gas")
 
+    # Check what max gas is before transacting.
+    max_gas = eth_tester_provider.max_gas
 
-def test_init_specify_contract_type(
-    solidity_contract_instance, vyper_contract_type, owner, networks_connected_to_tester
-):
-    # Vyper contract type is very close to solidity's.
-    # This test purposely uses the other just to show we are able to specify it externally.
-    contract = Contract(solidity_contract_instance.address, contract_type=vyper_contract_type)
-    assert contract.address == solidity_contract_instance.address
-    assert contract.contract_type == vyper_contract_type
-    assert contract.setNumber(2, sender=owner)
-    assert contract.myNumber() == 2
+    # Invoke a method from a contract via transacting.
+    receipt = vyper_contract_instance.setNumber(102, sender=owner)
+
+    # Verify values from the receipt.
+    assert not receipt.failed
+    assert receipt.receiver == vyper_contract_instance.address
+    assert receipt.gas_used < receipt.gas_limit
+    assert receipt.gas_limit == max_gas
+
+    # Show contract state changed.
+    assert vyper_contract_instance.myNumber() == 102
+
+    # Verify the estimate gas RPC was not used (since we are using max_gas).
+    assert estimate_gas_spy.call_count == 0
 
 
 def test_eq(vyper_contract_instance, chain):

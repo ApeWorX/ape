@@ -63,13 +63,19 @@ def test_estimate_gas_of_static_fee_txn(vyper_contract_instance, eth_tester_prov
     assert estimate > 0
 
 
-def test_estimate_gas_with_max_value_from_block(mocker, eth_tester_provider):
-    mock_txn = mocker.patch("ape.api.networks.NetworkAPI.gas_limit", new_callable=mock.PropertyMock)
-    mock_txn.return_value = "max"
-    gas_cost = eth_tester_provider.estimate_gas_cost(mock_txn)
+def test_estimate_gas_with_max_value_from_block(
+    mocker, eth_tester_provider, vyper_contract_instance
+):
+    mock_limit = mocker.patch(
+        "ape.api.networks.NetworkAPI.gas_limit", new_callable=mock.PropertyMock
+    )
+    mock_limit.return_value = "max"
+    txn = vyper_contract_instance.setNumber.as_transaction(900)
+    gas_cost = eth_tester_provider.estimate_gas_cost(txn)
     latest_block = eth_tester_provider.get_block("latest")
 
-    assert gas_cost == latest_block.gas_limit
+    # NOTE: Gas is estimated if asked, regardless of network defaults.
+    assert gas_cost < latest_block.gas_limit
 
 
 def test_chain_id(eth_tester_provider):

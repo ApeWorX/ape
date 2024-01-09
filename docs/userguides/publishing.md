@@ -50,10 +50,11 @@ from ape import networks
 networks.provider.network.explorer.publish_contract("0x123...")
 ```
 
-If you want to automatically publish the source code upon deployment, you can use the `publish=` kwarg on the deploy methods:
+If you want to automatically publish the source code upon deployment, you can use the `publish=` kwarg on the `deploy` methods:
 
 ```python
 from ape import accounts, project
 
-accounts.deploy(project.MyContract, publish=True)
+account = accounts.load("<ALIAS>")
+account.deploy(project.MyContract, publish=True)
 ```
