@@ -122,7 +122,9 @@ class TestAccount(TestAccountAPI):
 
     def sign_transaction(self, txn: TransactionAPI, **signer_options) -> Optional[TransactionAPI]:
         # Signs anything that's given to it
-        signature = EthAccount.sign_transaction(txn.model_dump(mode="json"), self.private_key)
+        signature = EthAccount.sign_transaction(
+            txn.model_dump(mode="json", by_alias=True), self.private_key
+        )
         txn.signature = TransactionSignature(
             v=signature.v,
             r=to_bytes(signature.r),

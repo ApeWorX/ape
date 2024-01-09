@@ -45,8 +45,12 @@ def test_create_dynamic_fee_kwargs(ethereum, fee_kwargs):
         assert txn.max_fee == int(100e9)
 
 
-def test_txn_hash_and_receipt(owner, eth_tester_provider, ethereum):
-    txn = ethereum.create_transaction()
+@pytest.mark.parametrize(
+    "kwargs",
+    [{"type": 0}, {"type": 1}, {"type": 2, "max_fee": 1_000_000_000}],
+)
+def test_txn_hash_and_receipt(owner, eth_tester_provider, ethereum, kwargs):
+    txn = ethereum.create_transaction(**kwargs)
     txn = owner.prepare_transaction(txn)
     txn = owner.sign_transaction(txn)
     assert txn

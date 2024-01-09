@@ -14,7 +14,7 @@ from ape.exceptions import (
     TransactionNotFoundError,
 )
 from ape_ethereum.ecosystem import Block
-from ape_ethereum.transactions import TransactionStatusEnum
+from ape_ethereum.transactions import TransactionStatusEnum, TransactionType
 from ape_geth.provider import GethDevProcess, GethNotInstalledError
 from tests.conftest import GETH_URI, geth_process_test
 
@@ -358,3 +358,29 @@ def test_base_fee_no_history(geth_provider, mocker, ret):
         geth_provider._web3.eth.fee_history = orig
 
     assert actual == expected
+
+
+@geth_process_test
+def test_estimate_gas(geth_contract, geth_provider, geth_account):
+    txn = geth_contract.setNumber.as_transaction(900, sender=geth_account)
+    estimate = geth_provider.estimate_gas_cost(txn)
+    assert estimate > 0
+
+
+@geth_process_test
+def test_estimate_gas_of_static_fee_txn(geth_contract, geth_provider, geth_account):
+    txn = geth_contract.setNumber.as_transaction(900, sender=geth_account, type=0)
+    estimate = geth_provider.estimate_gas_cost(txn)
+    assert estimate > 0
+
+
+@geth_process_test
+@pytest.mark.parametrize("tx_type", TransactionType)
+def test_prepare_tx_with_max_gas(tx_type, geth_provider, ethereum, geth_account):
+    tx = ethereum.create_transaction(type=tx_type.value, sender=geth_account.address)
+    tx.gas_limit = None  # Undo set from validator
+    assert tx.gas_limit is None, "Test setup failed - couldn't clear tx gas limit."
+
+    # NOTE: The local network by default uses max_gas.
+    actual = geth_provider.prepare_transaction(tx)
+    assert actual.gas_limit == geth_provider.max_gas

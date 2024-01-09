@@ -12,7 +12,10 @@ The names of your contracts are attributes on the `project` object (e.g. `projec
 
 **NOTE**: To avoid naming collisions with other properties on the `project` object, you can also use the [get_contract()](../methoddocs/managers.html#ape.managers.project.manager.ProjectManager.get_contract) method to retrieve contract containers.
 
-When you deploy contracts, you get back a `ContractInstance`:
+When you deploy contracts, you get back a `ContractInstance`.
+
+Here is an example using Python and Ape to deploy a contract.
+(Note: this code be run from anywhere you run Python, such as a script, an [Ape script](./scripts.html), a TTY, or the [ape console](./console.html)).
 
 ```python
 from ape import accounts, project
@@ -67,6 +70,21 @@ To show the arguments that your constructor requires you can use the .constructo
 In [0]: project.MyContract.constructor
 Out[0]: constructor(string argument1, string argument2)
 ```
+
+### Deploy Scripts
+
+Often times, users will create an Ape script if their deployment process is repeatable or called from CI.
+Review the [scripting guide](./scripts.html) for more information on scripting in Ape and how to use scripts to track your deployment logic.
+Once a deploy script is created, it can be invoked like:
+
+```shell
+ape run <script-name>
+```
+
+There is no root `ape` command to deploy contracts; only the scripting-system, the `console`, or merely using Ape as a Python library.
+
+If your deployment process is simple, it is easy to use `ape console` to achieve a deployment.
+More information on how to use `ape console` can be found [here](./console.html).
 
 ## From Project Contract Address
 

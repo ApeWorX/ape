@@ -183,7 +183,7 @@ def second_keyfile_account(sender, keyparams, temp_accounts_path, temp_keyfile_a
 
 @pytest.fixture(scope="session")
 def solidity_contract_type(get_contract_type) -> ContractType:
-    return get_contract_type("solidity_contract")
+    return get_contract_type("SolidityContract")
 
 
 @pytest.fixture(scope="session")
@@ -200,17 +200,17 @@ def solidity_contract_instance(
 
 @pytest.fixture(scope="session")
 def vyper_contract_type(get_contract_type) -> ContractType:
-    return get_contract_type("vyper_contract")
+    return get_contract_type("VyperContract")
 
 
 @pytest.fixture(scope="session")
 def solidity_fallback_contract_type(get_contract_type) -> ContractType:
-    return get_contract_type("sol_fallback_and_receive")
+    return get_contract_type("SolFallbackAndReceive")
 
 
 @pytest.fixture(scope="session")
 def vyper_fallback_contract_type(get_contract_type) -> ContractType:
-    return get_contract_type("vy_default")
+    return get_contract_type("VyDefault")
 
 
 @pytest.fixture(scope="session")
@@ -247,12 +247,12 @@ def vyper_fallback_contract(owner, vyper_fallback_container):
 
 @pytest.fixture(scope="session")
 def reverts_contract_type(get_contract_type) -> ContractType:
-    return get_contract_type("reverts_contract")
+    return get_contract_type("RevertsContract")
 
 
 @pytest.fixture(scope="session")
 def sub_reverts_contract_type(get_contract_type) -> ContractType:
-    return get_contract_type("sub_reverts")
+    return get_contract_type("SubReverts")
 
 
 @pytest.fixture(scope="session")
@@ -297,7 +297,7 @@ def fallback_contract(
 
 @pytest.fixture
 def ds_note_test_contract(eth_tester_provider, vyper_contract_type, owner, get_contract_type):
-    contract_type = get_contract_type("ds_note_test")
+    contract_type = get_contract_type("DsNoteTest")
     contract_container = ContractContainer(contract_type=contract_type)
     return contract_container.deploy(sender=owner)
 
@@ -554,13 +554,13 @@ def unique_calldata():
 
 @pytest.fixture
 def leaf_contract(eth_tester_provider, owner, get_contract_type):
-    ct = get_contract_type("contract_c")
+    ct = get_contract_type("ContractC")
     return owner.deploy(ContractContainer(ct))
 
 
 @pytest.fixture
 def middle_contract(eth_tester_provider, owner, get_contract_type, leaf_contract):
-    ct = get_contract_type("contract_b")
+    ct = get_contract_type("ContractB")
     return owner.deploy(ContractContainer(ct), leaf_contract)
 
 
@@ -568,7 +568,7 @@ def middle_contract(eth_tester_provider, owner, get_contract_type, leaf_contract
 def contract_with_call_depth(
     owner, eth_tester_provider, get_contract_type, leaf_contract, middle_contract
 ):
-    contract = ContractContainer(get_contract_type("contract_a"))
+    contract = ContractContainer(get_contract_type("ContractA"))
     return owner.deploy(contract, middle_contract, leaf_contract)
 
 
@@ -579,7 +579,7 @@ def sub_reverts_contract_instance(owner, sub_reverts_contract_container, eth_tes
 
 @pytest.fixture(scope="session")
 def error_contract_container(get_contract_type):
-    ct = get_contract_type("has_error")
+    ct = get_contract_type("HasError")
     return ContractContainer(ct)
 
 
@@ -591,7 +591,7 @@ def error_contract(owner, error_contract_container, eth_tester_provider):
 
 @pytest.fixture
 def vyper_factory(owner, get_contract_type):
-    return owner.deploy(ContractContainer(get_contract_type("vyper_factory")))
+    return owner.deploy(ContractContainer(get_contract_type("VyperFactory")))
 
 
 @pytest.fixture

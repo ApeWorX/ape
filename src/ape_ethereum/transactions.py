@@ -128,9 +128,10 @@ class DynamicFeeTransaction(BaseTransaction):
         return value.value if isinstance(value, TransactionType) else value
 
 
-class AccessListTransaction(BaseTransaction):
+class AccessListTransaction(StaticFeeTransaction):
     """
-    EIP-2930 transactions are similar to legacy transaction with an added access list functionality.
+    `EIP-2930 <https://eips.ethereum.org/EIPS/eip-2930>`__
+    transactions are similar to legacy transaction with an added access list functionality.
     """
 
     gas_price: Optional[int] = Field(None, alias="gasPrice")

@@ -1,11 +1,18 @@
 import json
 from pathlib import Path
 
+import pytest
+
 from ape import Contract
 from ape.contracts import ContractInstance
+from ape.exceptions import ChainError
+
+"""NOTE: This is testing Contract with a capital C."""
+
+"""NOTE: This is testing contract with a capital C."""
 
 
-def test_contract_from_abi(contract_instance):
+def test_Contract_from_abi(contract_instance):
     contract = Contract(contract_instance.address, abi=contract_instance.contract_type.abi)
     assert isinstance(contract, ContractInstance)
     assert contract.address == contract_instance.address
@@ -13,7 +20,7 @@ def test_contract_from_abi(contract_instance):
     assert contract.balance == 0
 
 
-def test_contract_from_abi_list(contract_instance):
+def test_Contract_from_abi_list(contract_instance):
     contract = Contract(
         contract_instance.address,
         abi=[abi.model_dump(mode="json") for abi in contract_instance.contract_type.abi],
@@ -24,7 +31,7 @@ def test_contract_from_abi_list(contract_instance):
     assert contract.myNumber() == 0
 
 
-def test_contract_from_json_str(contract_instance):
+def test_Contract_from_json_str(contract_instance):
     contract = Contract(
         contract_instance.address,
         abi=json.dumps(
@@ -37,7 +44,7 @@ def test_contract_from_json_str(contract_instance):
     assert contract.myNumber() == 0
 
 
-def test_contract_from_file(contract_instance):
+def test_Contract_from_file(contract_instance):
     """
     need feedback about the json file specifications
     """
@@ -51,3 +58,21 @@ def test_contract_from_file(contract_instance):
     assert isinstance(contract, ContractInstance)
     assert contract.address == address
     assert contract.myNumber() == 0
+
+
+def test_Contract_at_unknown_address(networks_connected_to_tester, address):
+    _ = networks_connected_to_tester  # Need fixture or else get ProviderNotConnectedError
+    with pytest.raises(ChainError, match=f"Failed to get contract type for address '{address}'."):
+        Contract(address)
+
+
+def test_Contract_specify_contract_type(
+    solidity_contract_instance, vyper_contract_type, owner, networks_connected_to_tester
+):
+    # Vyper contract type is very close to solidity's.
+    # This test purposely uses the other just to show we are able to specify it externally.
+    contract = Contract(solidity_contract_instance.address, contract_type=vyper_contract_type)
+    assert contract.address == solidity_contract_instance.address
+    assert contract.contract_type == vyper_contract_type
+    assert contract.setNumber(2, sender=owner)
+    assert contract.myNumber() == 2

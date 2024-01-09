@@ -9,6 +9,15 @@ There are two locations you can place an `ape-config.yaml` file.
 Project settings take precedent, but global settings allow you to configure preferences across all projects, such as your default mainnet provider (e.g. Alchemy versus running your own node).
 
 This guide serves as an index of the settings you can include in any `ape-config.yaml` file.
+This guide is **PURPOSELY** alphabetized to facilitate easier look-up of keys.
+
+Most of the features in this guide are documented more-fully elsewhere in the user-guides.
+
+However, here is a list of common-use cases requiring the `ape-config.yaml` file to help you:
+
+1. Setting up a custom node RPC: See the [geth](#geth) section.
+2. Setting up project dependencies: See the [dependencies](#dependencies) section.
+3. Declaring your project's plugins: See the [plugins](#plugins) section.
 
 ## Contracts Folder
 
@@ -89,6 +98,12 @@ geth:
     mainnet:
       uri: http://localhost:5030
 ```
+
+Now, the `ape-geth` core plugin will use the URL `http://localhost:5030` to connect and make requests.
+
+**WARN**: Instead of using `ape-geth` to connect to an Infura or Alchemy node, use the [ape-infura](https://github.com/ApeWorX/ape-infura) or [ape-alchemy](https://github.com/ApeWorX/ape-alchemy) provider plugins instead, which have their own way of managing API keys via environment variables.
+
+For more information on networking as a whole, see [this guide](./networks.html).
 
 ## Networks
 
