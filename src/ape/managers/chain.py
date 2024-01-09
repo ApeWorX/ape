@@ -1211,7 +1211,20 @@ class ContractCache(BaseManager):
         if not contract_name:
             return []
 
-        deployments = self._deployments.get(contract_name, [])
+        config_deployments = []
+        if self.network_manager.active_provider:
+            ecosystem_name = self.provider.network.ecosystem.name
+            network_name = self.provider.network.name
+            all_config_deployments = (
+                self.config_manager.deployments.root if self.config_manager.deployments else {}
+            )
+            ecosystem_deployments = all_config_deployments.get(ecosystem_name, {})
+            network_deployments = ecosystem_deployments.get(network_name, {})
+            config_deployments = [
+                c for c in network_deployments if c["contract_type"] == contract_name
+            ]
+
+        deployments = [*config_deployments, *self._deployments.get(contract_name, [])]
         if not deployments:
             return []
 

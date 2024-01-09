@@ -61,18 +61,31 @@ dependencies:
 
 ## Deployments
 
-Share import deployments to public networks with your teammates:
+Set deployments that were made outside of Ape in your `ape-config.yaml` to create past-deployment-based contract instances in Ape:
+(See [this example](./contracts.html#from-previous-deployment) for more information on this feature).
+
+Config example:
 
 ```yaml
 deployments:
   ethereum:
     mainnet:
       - contract_type: MyContract
-        address: 0xc123aAacCcbBbaAa444777000111222111222111
-    ropsten:
+        address: 0x5FbDB2315678afecb367f032d93F642f64180aa3
+    goerli:
       - contract_type: MyContract
-        address: 0xc222000cCcbBbaAa444777000111222111222222
+        address: 0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512
 ```
+
+When connected to Ethereum mainnet, reference the deployment by doing:
+
+```python
+from ape import project
+
+contract = project.MyContract.deployments[0]
+```
+
+**NOTE**: Ape does not add or edit deployments in your `ape-config.yaml` file.
 
 ## Geth
 
