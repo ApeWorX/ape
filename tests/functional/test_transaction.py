@@ -128,6 +128,28 @@ def test_create_dynamic_fee_transaction(ethereum, type_kwarg):
     assert txn.type == TransactionType.DYNAMIC.value
 
 
+@pytest.mark.parametrize("key", ("accessList", "access_list"))
+def test_transaction_with_access_lists(ethereum, access_list, key):
+    """
+    If not given type and only given accessList, the assumed type is 1,
+    an "access-list" transaction.
+    """
+    data = {key: access_list}
+    txn = ethereum.create_transaction(**data)
+    assert txn.type == 1
+
+
+@pytest.mark.parametrize("key", ("accessList", "access_list"))
+def test_transaction_with_access_lists_and_max_fee(ethereum, access_list, key):
+    """
+    Dynamic-fee txns also support access lists, so the presence of max_fee
+    with access_list implies a type 2 txn.
+    """
+    data = {"max_fee": 1000000000, key: access_list}
+    txn = ethereum.create_transaction(**data)
+    assert txn.type == 2
+
+
 def test_create_dynamic_fee_transaction_with_access_lists(ethereum, access_list):
     txn = ethereum.create_transaction(type=2, accessList=access_list)
     assert txn.type == TransactionType.DYNAMIC.value
@@ -216,10 +238,19 @@ def test_transaction_with_none_receipt(ethereum):
     assert txn.receipt is None
 
 
-def test_serialize_transaction(owner, ethereum):
-    txn = ethereum.create_transaction(
-        data=HexBytes("0x123"), max_fee=0, max_priority_fee=0, nonce=0
-    )
+# NOTE: Some of these values are needed for signing to work.
+@pytest.mark.parametrize(
+    "tx_kwargs",
+    [
+        {"data": HexBytes("0x123"), "nonce": 0, "gas_price": 0},
+        {"gasLimit": 100, "nonce": 0, "max_fee": 0, "max_priority_fee": 0},
+        {"access_list": ACCESS_LIST, "nonce": 0, "gasPrice": 0},  # NOTE: show camelCase works
+        {"accessList": ACCESS_LIST, "nonce": 0, "max_fee": 0, "max_priority_fee": 0, "type": 2},
+        {"access_list": ACCESS_LIST, "nonce": 0, "max_fee": 0, "max_priority_fee": 0, "type": 2},
+    ],
+)
+def test_serialize_transaction(owner, ethereum, tx_kwargs):
+    txn = ethereum.create_transaction(**tx_kwargs)
     txn = owner.sign_transaction(txn)
     assert txn is not None
 

@@ -6,6 +6,7 @@ from eth_utils import to_bytes
 from hexbytes import HexBytes
 
 from ape.api import TestAccountAPI, TestAccountContainerAPI, TransactionAPI
+from ape.exceptions import SignatureError
 from ape.types import AddressType, MessageSignature, TransactionSignature
 from ape.utils import GeneratedDevAccount, generate_dev_accounts
 
@@ -122,9 +123,14 @@ class TestAccount(TestAccountAPI):
 
     def sign_transaction(self, txn: TransactionAPI, **signer_options) -> Optional[TransactionAPI]:
         # Signs anything that's given to it
-        signature = EthAccount.sign_transaction(
-            txn.model_dump(mode="json", by_alias=True), self.private_key
-        )
+        tx_data = txn.model_dump(mode="json", by_alias=True)
+
+        try:
+            signature = EthAccount.sign_transaction(tx_data, self.private_key)
+        except TypeError as err:
+            # Occurs when missing properties on the txn that are needed to sign.
+            raise SignatureError(str(err)) from err
+
         txn.signature = TransactionSignature(
             v=signature.v,
             r=to_bytes(signature.r),

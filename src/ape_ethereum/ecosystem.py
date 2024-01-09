@@ -600,15 +600,45 @@ class Ethereum(EcosystemAPI):
             :class:`~ape.api.transactions.TransactionAPI`
         """
 
+        # Handle all aliases.
+        tx_data = dict(kwargs)
+        tx_data = _correct_key(
+            "max_priority_fee",
+            tx_data,
+            ("max_priority_fee_per_gas", "maxPriorityFeePerGas", "maxPriorityFee"),
+        )
+        tx_data = _correct_key("max_fee", tx_data, ("max_fee_per_gas", "maxFeePerGas", "maxFee"))
+        tx_data = _correct_key("gas", tx_data, ("gas_limit", "gasLimit"))
+        tx_data = _correct_key("gas_price", tx_data, ("gasPrice",))
+        tx_data = _correct_key(
+            "type",
+            tx_data,
+            ("txType", "tx_type", "txnType", "txn_type", "transactionType", "transaction_type"),
+        )
+
+        # Handle unique value specifications, such as "1 ether".
+        if "value" in tx_data and not isinstance(tx_data["value"], int):
+            value = tx_data["value"] or 0  # Convert None to 0.
+            tx_data["value"] = self.conversion_manager.convert(value, int)
+
+        # This causes problems in pydantic for some reason.
+        if "gas_price" in kwargs and kwargs["gas_price"] is None:
+            del kwargs["gas_price"]
+
+        # None is not allowed, the user likely means `b""`.
+        if "data" in kwargs and kwargs["data"] is None:
+            kwargs["data"] = b""
+
+        # Deduce the transaction type.
         transaction_types: Dict[TransactionType, Type[TransactionAPI]] = {
             TransactionType.STATIC: StaticFeeTransaction,
             TransactionType.DYNAMIC: DynamicFeeTransaction,
             TransactionType.ACCESS_LIST: AccessListTransaction,
         }
-
         if "type" in kwargs:
             if kwargs["type"] is None:
-                version = TransactionType.DYNAMIC
+                # Explicit `None` means used default.
+                version = self.default_transaction_type
             elif isinstance(kwargs["type"], TransactionType):
                 version = kwargs["type"]
             elif isinstance(kwargs["type"], int):
@@ -619,6 +649,10 @@ class Ethereum(EcosystemAPI):
 
         elif "gas_price" in kwargs:
             version = TransactionType.STATIC
+        elif "max_fee" in kwargs or "max_priority_fee" in kwargs:
+            version = TransactionType.DYNAMIC
+        elif "access_list" in kwargs or "accessList" in kwargs:
+            version = TransactionType.ACCESS_LIST
         else:
             version = self.default_transaction_type
 
@@ -652,24 +686,8 @@ class Ethereum(EcosystemAPI):
                 s=bytes(kwargs["s"]),
             )
 
-        if "max_priority_fee_per_gas" in kwargs:
-            kwargs["max_priority_fee"] = kwargs.pop("max_priority_fee_per_gas")
-        if "max_fee_per_gas" in kwargs:
-            kwargs["max_fee"] = kwargs.pop("max_fee_per_gas")
-
-        kwargs["gas"] = kwargs.pop("gas_limit", kwargs.get("gas"))
-
-        if "value" in kwargs and not isinstance(kwargs["value"], int):
-            value = kwargs["value"] or 0  # Convert None to 0.
-            kwargs["value"] = self.conversion_manager.convert(value, int)
-
-        # This causes problems in pydantic for some reason.
-        if "gas_price" in kwargs and kwargs["gas_price"] is None:
-            del kwargs["gas_price"]
-
-        # None is not allowed, the user likely means `b""`.
-        if "data" in kwargs and kwargs["data"] is None:
-            kwargs["data"] = b""
+        if "gas" not in kwargs:
+            kwargs["gas"] = None
 
         return txn_class(**kwargs)
 
@@ -958,3 +976,15 @@ def parse_type(type_: Dict[str, Any]) -> Union[str, Tuple, List]:
 
     result = tuple([parse_type(c) for c in type_["components"]])
     return [result] if is_array(type_["type"]) else result
+
+
+def _correct_key(key: str, data: Dict, alt_keys: Tuple[str, ...]) -> Dict:
+    for possible_key in alt_keys:
+        if possible_key not in data:
+            continue
+
+        new_data = {k: v for k, v in data.items() if k not in alt_keys}
+        new_data[key] = data[possible_key]
+        return new_data
+
+    return data
