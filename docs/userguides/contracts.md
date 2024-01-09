@@ -81,7 +81,7 @@ Once a deploy script is created, it can be invoked like:
 ape run <script-name>
 ```
 
-There is no root `ape` command to deploy contracts; only the scripting-system, the `console`, or merely using Ape as Python library.
+There is no root `ape` command to deploy contracts; only the scripting-system, the `console`, or merely using Ape as a Python library.
 
 If your deployment process is simple, it is easy to use `ape console` to achieve a deployment.
 More information on how to use `ape console` can be found [here](./console.html).
