@@ -181,8 +181,8 @@ def test_run_recompiles_if_needed(ape_cli, runner, project):
     runner.invoke(ape_cli, ["compile", "--force"])
 
     # Make a change to the contract
-    contract = project.contracts_folder / "contract.json"
-    method_name = project.TestContractVy.contract_type.view_methods[0].name
+    contract = project.contracts_folder / "VyperContract.json"
+    method_name = project.VyperContract.contract_type.view_methods[0].name
     new_method_name = f"f__{method_name}__"
     new_contract_text = contract.read_text().replace(method_name, new_method_name)
     contract.write_text(new_contract_text)
