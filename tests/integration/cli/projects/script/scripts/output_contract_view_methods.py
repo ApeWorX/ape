@@ -11,6 +11,6 @@ output.
 
 
 def main():
-    contract = ape.project.TestContractVy
+    contract = ape.project.VyperContract
     for method in contract.contract_type.view_methods:
         click.echo(method.name)

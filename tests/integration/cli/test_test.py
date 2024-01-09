@@ -20,7 +20,7 @@ TOKEN_B_GAS_REPORT = r"""
   transfer +\d +\d+ + \d+ + \d+ + \d+
 """
 EXPECTED_GAS_REPORT = rf"""
- +TestContractVy Gas
+ +VyperContract Gas
 
   Method +Times called +Min. +Max. +Mean +Median
  ─+
@@ -297,7 +297,7 @@ def test_gas_flag_exclusions_set_in_config(
 @skip_projects_except("geth")
 def test_gas_flag_excluding_contracts(geth_provider, setup_pytester, project, pytester):
     passed, failed = setup_pytester(project.path.name)
-    result = pytester.runpytest("--gas", "--gas-exclude", "TestContractVy,TokenA")
+    result = pytester.runpytest("--gas", "--gas-exclude", "VyperContract,TokenA")
     run_gas_test(result, passed, failed, expected_report=TOKEN_B_GAS_REPORT)
 
 
