@@ -121,6 +121,7 @@ class EcosystemAPI(ExtraAttributesMixin, BaseInterfaceModel):
             data_folder=Path(data_folder),
             request_header=request_header,
             _default_provider="geth",
+            _is_custom=True,
         )
 
     @classmethod
@@ -253,11 +254,42 @@ class EcosystemAPI(ExtraAttributesMixin, BaseInterfaceModel):
                     request_header=self.request_header,
                 )
 
-        if len(networks) > 0:
-            return networks
+        # Include configured custom networks.
+        custom_networks = [
+            n
+            for n in self.config_manager.get_config("networks").custom
+            if (n.ecosystem or "ethereum") == self.name
+        ]
 
-        else:
+        for custom_net in custom_networks:
+            if custom_net.name in networks:
+                raise NetworkError(
+                    f"More than one network named '{custom_net.name}' in ecosystem '{self.name}'."
+                )
+
+            if custom_net.chain_id is not None:
+                network_data = custom_net.model_dump(mode="json", by_alias=True, exclude=("default_provider",))
+                if not network_data.get("data_folder"):
+                    network_data["data_folder"] = self.config_manager.DATA_FOLDER
+
+                network_data["ecosystem"] = self
+                network_type = create_network_type(custom_net.chain_id, custom_net.chain_id)
+                network_api = network_type.model_validate(network_data)
+                network_api._default_provider = custom_net.default_provider
+                network_api._is_custom = True
+            else:
+                # NOTE: `geth` represents a default-node.
+                default_provider = custom_net.default_provider or "geth"
+                network_api = self.custom_network.model_copy(
+                    update={"_default_provider": default_provider}
+                )
+
+            networks[custom_net.name] = network_api
+
+        if not networks:
             raise NetworkError("No networks found")
+
+        return networks
 
     def __post_init__(self):
         if len(self.networks) == 0:
@@ -743,6 +775,8 @@ class NetworkAPI(BaseInterfaceModel):
     # See ``.default_provider`` which is the proper field.
     _default_provider: str = ""
 
+    _is_custom: bool = False
+
     def __repr__(self) -> str:
         try:
             chain_id = self.chain_id
@@ -883,6 +917,10 @@ class NetworkAPI(BaseInterfaceModel):
         """
         return self.is_local or self.is_fork
 
+    @property
+    def is_custom(self) -> bool:
+        return self.name == "custom" or self._is_custom
+
     @cached_property
     def providers(self):  # -> Dict[str, Partial[ProviderAPI]]
         """
@@ -900,7 +938,7 @@ class NetworkAPI(BaseInterfaceModel):
             provider_name = clean_plugin_name(provider_class.__module__.split(".")[0])
 
             # NOTE: Custom networks work with any provider.
-            if self.name == "custom" or (
+            if self.is_custom or (
                 self.ecosystem.name == ecosystem_name and self.name == network_name
             ):
                 # NOTE: Lazily load provider config

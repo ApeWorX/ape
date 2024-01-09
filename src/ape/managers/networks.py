@@ -129,13 +129,12 @@ class NetworkManager(BaseManager):
         The set of all provider names in ``ape``.
         """
 
-        names = set()
-        for ecosystem in self.ecosystems.values():
-            for network in ecosystem.networks.values():
-                for provider in network.providers.keys():
-                    names.add(provider)
-
-        return names
+        return set(
+            provider
+            for ecosystem in self.ecosystems.values()
+            for network in ecosystem.networks.values()
+            for provider in network.providers
+        )
 
     @cached_property
     def ecosystems(self) -> Dict[str, EcosystemAPI]:
