@@ -45,6 +45,13 @@ geth:
       uri: https://path.to.node.example.com
 ```
 
+To see proper ecosystem and network names needed for configuration, run the command
+
+```shell
+```shell
+ape networks list
+```
+
 In the remainder of this guide, any example below using Ethereum, you can replace with an L2 ecosystem's name and network combination.
 
 ## Custom Network Connection
@@ -80,6 +87,12 @@ The following is a list of common Ape commands that can use the `--network` opti
 ```bash
 ape test --network ethereum:local:foundry
 ape console --network arbitrum:testnet:alchemy
+```
+
+To see all possible values for `--network`, run the command:
+
+```shell
+ape networks list
 ```
 
 You can also use the `--network` option on scripts that use the `main()` method approach or scripts that implement that `ConnectedProviderCommand` command type.
