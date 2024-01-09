@@ -36,6 +36,15 @@ Here is a list of all L2 network plugins supported by Ape:
 
 **NOTE**: If you are connecting an L2 network or any other network that does not have a plugin, you can use the custom network support, which is described in the [next section](#custom-network-connection).
 
+Once you have the L2 network plugin installed, you can configure its node's URI by setting the values in the `geth` (default node) core plugin via your `ape-config.yaml` file:
+
+```yaml
+geth:
+  <ecosystem-name>:
+    <network-name>:
+      uri: https://path.to.node.example.com
+```
+
 In the remainder of this guide, any example below using Ethereum, you can replace with an L2 ecosystem's name and network combination.
 
 ## Custom Network Connection
