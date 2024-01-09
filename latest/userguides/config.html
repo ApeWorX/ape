@@ -264,17 +264,26 @@ To learn more about dependencies, see <a class="reference external" href="./depe
 </section>
 <section id="deployments">
 <h2>Deployments<a class="headerlink" href="#deployments" title="Permalink to this heading"></a></h2>
-<p>Share import deployments to public networks with your teammates:</p>
+<p>Set deployments that were made outside of Ape in your <code class="docutils literal notranslate"><span class="pre">ape-config.yaml</span></code> to create past-deployment-based contract instances in Ape:
+(See <a class="reference external" href="./contracts.html#from-previous-deployment">this example</a> for more information on this feature).</p>
+<p>Config example:</p>
 <div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">deployments</span><span class="p">:</span>
 <span class="w">  </span><span class="nt">ethereum</span><span class="p">:</span>
 <span class="w">    </span><span class="nt">mainnet</span><span class="p">:</span>
 <span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">contract_type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">MyContract</span>
-<span class="w">        </span><span class="nt">address</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0xc123aAacCcbBbaAa444777000111222111222111</span>
-<span class="w">    </span><span class="nt">ropsten</span><span class="p">:</span>
+<span class="w">        </span><span class="nt">address</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0x5FbDB2315678afecb367f032d93F642f64180aa3</span>
+<span class="w">    </span><span class="nt">goerli</span><span class="p">:</span>
 <span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">contract_type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">MyContract</span>
-<span class="w">        </span><span class="nt">address</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0xc222000cCcbBbaAa444777000111222111222222</span>
+<span class="w">        </span><span class="nt">address</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512</span>
 </pre></div>
 </div>
+<p>When connected to Ethereum mainnet, reference the deployment by doing:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">ape</span> <span class="kn">import</span> <span class="n">project</span>
+
+<span class="n">contract</span> <span class="o">=</span> <span class="n">project</span><span class="o">.</span><span class="n">MyContract</span><span class="o">.</span><span class="n">deployments</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+</pre></div>
+</div>
+<p><strong>NOTE</strong>: Ape does not add or edit deployments in your <code class="docutils literal notranslate"><span class="pre">ape-config.yaml</span></code> file.</p>
 </section>
 <section id="geth">
 <h2>Geth<a class="headerlink" href="#geth" title="Permalink to this heading"></a></h2>

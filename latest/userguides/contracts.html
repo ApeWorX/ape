@@ -343,18 +343,16 @@ More information on how to use <code class="docutils literal notranslate"><span 
 On live networks, this history of deployments is saved; on local networks, this history lasts for the duration of your script.</p>
 <p>Let’s say you previously deployed a smart contract called <code class="docutils literal notranslate"><span class="pre">MyContract</span></code> on the rinkeby test network.
 You could then refer back to it like so:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">ape</span> <span class="kn">import</span> <span class="n">project</span><span class="p">,</span> <span class="n">chain</span><span class="p">,</span> <span class="n">accounts</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">ape</span> <span class="kn">import</span> <span class="n">project</span><span class="p">,</span> <span class="n">chain</span>
 
 <span class="k">def</span> <span class="nf">main</span><span class="p">():</span>
-  <span class="n">account</span> <span class="o">=</span> <span class="n">accounts</span><span class="o">.</span><span class="n">test_accounts</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
   <span class="n">my_contract</span> <span class="o">=</span> <span class="n">chain</span><span class="o">.</span><span class="n">contracts</span><span class="o">.</span><span class="n">get_deployments</span><span class="p">(</span><span class="n">project</span><span class="o">.</span><span class="n">MyContract</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
 </pre></div>
 </div>
 <p>or</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">ape</span> <span class="kn">import</span> <span class="n">project</span><span class="p">,</span> <span class="n">accounts</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">ape</span> <span class="kn">import</span> <span class="n">project</span>
 
 <span class="k">def</span> <span class="nf">main</span><span class="p">():</span>
-  <span class="n">account</span> <span class="o">=</span> <span class="n">accounts</span><span class="o">.</span><span class="n">test_accounts</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
   <span class="n">my_contract</span> <span class="o">=</span> <span class="n">project</span><span class="o">.</span><span class="n">MyContract</span><span class="o">.</span><span class="n">deployments</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
 </pre></div>
 </div>
@@ -397,7 +395,7 @@ However, take note that there is a <a class="reference external" href="./transac
 <span class="k">assert</span> <span class="ow">not</span> <span class="n">receipt</span><span class="o">.</span><span class="n">failed</span>
 
 <span class="c1"># The receipt contains data such as `gas_used`.</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">receit</span><span class="o">.</span><span class="n">gas_used</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">receipt</span><span class="o">.</span><span class="n">gas_used</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>Notice that transacting returns a <a class="reference external" href="../methoddocs/api.html#ape.api.transactions.ReceiptAPI">ReceiptAPI</a> object which contains all the receipt data, such as <code class="docutils literal notranslate"><span class="pre">gas_used</span></code>.</p>
