@@ -5,6 +5,9 @@ from ape import Contract
 from ape.contracts import ContractInstance
 
 
+"""NOTE: This is testing contract with a capital C."""
+
+
 def test_contract_from_abi(contract_instance):
     contract = Contract(contract_instance.address, abi=contract_instance.contract_type.abi)
     assert isinstance(contract, ContractInstance)
