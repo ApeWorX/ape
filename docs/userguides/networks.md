@@ -45,9 +45,8 @@ geth:
       uri: https://path.to.node.example.com
 ```
 
-To see proper ecosystem and network names needed for configuration, run the command
+To see proper ecosystem and network names needed for configuration, run the command:
 
-```shell
 ```shell
 ape networks list
 ```
