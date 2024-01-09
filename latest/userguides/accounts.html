@@ -142,6 +142,7 @@
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="#live-network-accounts">Live Network Accounts</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#keyfile-accounts">Keyfile Accounts</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#id1">Default Sender Support</a></li>
 </ul>
 </li>
@@ -294,9 +295,19 @@ The accounts generated from this seed are solely for testing and debugging purpo
 <section id="live-network-accounts">
 <h2>Live Network Accounts<a class="headerlink" href="#live-network-accounts" title="Permalink to this heading"></a></h2>
 <p>When using live networks, you need to get your accounts into Ape.
-Ape ships with a keyfile accounts plugin to assist with this.
-All the available CLI commands for this account’s plugin can be found <a class="reference external" href="../commands/accounts.html">here</a>.</p>
-<p>For example, you can <a class="reference external" href="../commands/accounts.html#accounts-generate">generate</a> an account:</p>
+To get your accounts in Ape, you must use an <code class="docutils literal notranslate"><span class="pre">accounts</span></code> plugin.
+Ape ships with a keyfile-based account plugin, but you can use any account plugin such as <code class="docutils literal notranslate"><span class="pre">ape-ledger</span></code>, <code class="docutils literal notranslate"><span class="pre">ape-trezor</span></code>, or a third-party plugin.</p>
+<section id="keyfile-accounts">
+<h3>Keyfile Accounts<a class="headerlink" href="#keyfile-accounts" title="Permalink to this heading"></a></h3>
+<p>Ape ships with a keyfile-based account plugin that lets you import and generate accounts.
+The premise of the plugin is that accounts are stored locally on your computer in the <code class="docutils literal notranslate"><span class="pre">$HOME/.ape/accounts</span></code> directory following the <code class="docutils literal notranslate"><span class="pre">keyfile</span></code> structure.
+Under-the-hood, this structure comes from the <a class="reference external" href="https://github.com/ethereum/eth-keyfile">eth-keyfile library</a> via the <a class="reference external" href="https://eth-account.readthedocs.io/en/stable/eth_account.html">eth-account</a> package.
+When Ape creates the keyfile, either from import or account-generation (described below!), it prompts you for a passphrase to use for encrypting the keyfile, similarly to how you would use a password in browser-based wallets.
+The keyfile stores the private key in an encrypted-at-rest state, which maximizes security of the locally-stored key material.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">ape-accounts</span></code> plugin lets you use keyfile-based account to sign messages and transactions.
+When signing a message or transaction using an account from <code class="docutils literal notranslate"><span class="pre">ape-accounts</span></code>, you will be prompted to enter the passphrase you specified when importing or generating that account.</p>
+<p>All the available CLI commands for this account’s plugin can be found <a class="reference external" href="../commands/accounts.html">here</a>.
+For example, you can <a class="reference external" href="../commands/accounts.html#accounts-generate">generate</a> an account:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>ape<span class="w"> </span>accounts<span class="w"> </span>generate<span class="w"> </span>&lt;ALIAS&gt;
 </pre></div>
 </div>
@@ -354,6 +365,7 @@ Then, in your scripts, you can <a class="reference external" href="../methoddocs
 <span class="n">account</span> <span class="o">=</span> <span class="n">accounts</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;&lt;ALIAS&gt;&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
+</section>
 <section id="id1">
 <h3>Default Sender Support<a class="headerlink" href="#id1" title="Permalink to this heading"></a></h3>
 <p>In order to reduce repetition of adding <code class="docutils literal notranslate"><span class="pre">sender</span></code> in your contract calls, you can use <code class="docutils literal notranslate"><span class="pre">use_sender</span></code> context manager.</p>
