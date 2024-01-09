@@ -360,18 +360,21 @@ def test_base_fee_no_history(geth_provider, mocker, ret):
     assert actual == expected
 
 
+@geth_process_test
 def test_estimate_gas(geth_contract, geth_provider, geth_account):
     txn = geth_contract.setNumber.as_transaction(900, sender=geth_account)
     estimate = geth_provider.estimate_gas_cost(txn)
     assert estimate > 0
 
 
+@geth_process_test
 def test_estimate_gas_of_static_fee_txn(geth_contract, geth_provider, geth_account):
     txn = geth_contract.setNumber.as_transaction(900, sender=geth_account, type=0)
     estimate = geth_provider.estimate_gas_cost(txn)
     assert estimate > 0
 
 
+@geth_process_test
 @pytest.mark.parametrize("tx_type", TransactionType)
 def test_prepare_tx_with_max_gas(tx_type, geth_provider, ethereum, geth_account):
     tx = ethereum.create_transaction(type=tx_type.value, sender=geth_account.address)
