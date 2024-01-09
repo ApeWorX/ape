@@ -31,7 +31,7 @@ def contract_with_call_depth_geth(
     and is used for any testing that requires nested calls, such as
     call trees or event-name clashes.
     """
-    contract = ContractContainer(get_contract_type("contract_a"))
+    contract = ContractContainer(get_contract_type("ContractA"))
     return owner.deploy(contract, middle_contract_geth, leaf_contract_geth)
 
 
@@ -46,7 +46,7 @@ def leaf_contract_geth(geth_provider, owner, get_contract_type):
     """
     The last contract called by `contract_with_call_depth`.
     """
-    ct = get_contract_type("contract_c")
+    ct = get_contract_type("ContractC")
     return owner.deploy(ContractContainer(ct))
 
 
@@ -55,7 +55,7 @@ def middle_contract_geth(geth_provider, owner, leaf_contract_geth, get_contract_
     """
     The middle contract called by `contract_with_call_depth`.
     """
-    ct = get_contract_type("contract_b")
+    ct = get_contract_type("ContractB")
     return owner.deploy(ContractContainer(ct), leaf_contract_geth)
 
 

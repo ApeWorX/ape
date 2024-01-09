@@ -195,17 +195,17 @@ def test_call_using_block_id(vyper_contract_instance, owner, chain, networks_con
 
 def test_repr(vyper_contract_instance):
     assert re.match(
-        rf"<TestContract((Sol)|(Vy)) {vyper_contract_instance.address}>",
+        rf"<VyperContract {vyper_contract_instance.address}>",
         repr(vyper_contract_instance),
     )
     assert (
         repr(vyper_contract_instance.setNumber)
-        == f"<TestContractVy {vyper_contract_instance.address}>.setNumber"
+        == f"<VyperContract {vyper_contract_instance.address}>.setNumber"
     )
     assert str(vyper_contract_instance.setNumber) == "setNumber(uint256 num)"
     assert (
         repr(vyper_contract_instance.myNumber)
-        == f"<TestContractVy {vyper_contract_instance.address}>.myNumber"
+        == f"<VyperContract {vyper_contract_instance.address}>.myNumber"
     )
     assert str(vyper_contract_instance.myNumber) == "myNumber() -> uint256"
     assert (
