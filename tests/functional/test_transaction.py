@@ -1,5 +1,6 @@
 import pytest
 from eth_pydantic_types import HexBytes
+from hexbytes import HexBytes as BaseHexBytes
 
 from ape.exceptions import SignatureError
 from ape_ethereum.transactions import (
@@ -9,7 +10,20 @@ from ape_ethereum.transactions import (
     TransactionType,
 )
 
-ACCESS_LIST = [{"address": "0x0000000000000000000000000000000000000004", "storageKeys": []}]
+ACCESS_LIST = [
+    {
+        "address": "0x0000000000000000000000000000000000000004",
+        "storageKeys": [
+            BaseHexBytes("0x0000000000000000000000000000000000000000000000000000000000000000")
+        ],
+    }
+]
+ACCESS_LIST_HEXBYTES = [
+    {"address": "0x0000000000000000000000000000000000000004", "storageKeys": []}
+]
+
+# NOTE: Long access List also uses / tests HexBytes from eth_pydantic_types\
+#   (which shouldn't matter).
 LONG_ACCESS_LIST = [
     {
         "address": "0x5Ab952D45d33ba32DBAA3Da85b0738aC9DF24626",
@@ -187,6 +201,7 @@ def test_create_dynamic_fee_kwargs(ethereum, fee_kwargs):
         {"type": 1, "accessList": LONG_ACCESS_LIST},
         {"type": 2, "max_fee": 1_000_000_000},
         {"type": 2, "accessList": ACCESS_LIST},
+        {"type": 2, "accessList": ACCESS_LIST_HEXBYTES},
     ],
 )
 def test_txn_hash_and_receipt(owner, eth_tester_provider, ethereum, kwargs):
@@ -206,14 +221,14 @@ def test_txn_hash_and_receipt(owner, eth_tester_provider, ethereum, kwargs):
     assert actual == expected
 
 
-def test_whitespace_in_transaction_data():
+def test_data_when_contains_whitespace():
     data = b"Should not clip whitespace\t\n"
     txn_dict = {"data": data}
     txn = StaticFeeTransaction.model_validate(txn_dict)
     assert txn.data == data, "Whitespace should not be removed from data"
 
 
-def test_transaction_dict_excludes_none_values():
+def test_model_dump_excludes_none_values():
     txn = StaticFeeTransaction()
     txn.value = 1000000
     actual = txn.model_dump(mode="json")
@@ -223,7 +238,7 @@ def test_transaction_dict_excludes_none_values():
     assert "value" not in actual
 
 
-def test_txn_str_when_data_is_bytes(ethereum):
+def test_str_when_data_is_bytes(ethereum):
     """
     Tests against a condition that would cause transactions to
     fail with string-encoding errors.
@@ -233,7 +248,7 @@ def test_txn_str_when_data_is_bytes(ethereum):
     assert isinstance(actual, str)
 
 
-def test_transaction_with_none_receipt(ethereum):
+def test_receipt_when_none(ethereum):
     txn = ethereum.create_transaction(data=HexBytes("0x123"))
     assert txn.receipt is None
 
@@ -245,8 +260,20 @@ def test_transaction_with_none_receipt(ethereum):
         {"data": HexBytes("0x123"), "nonce": 0, "gas_price": 0},
         {"gasLimit": 100, "nonce": 0, "max_fee": 0, "max_priority_fee": 0},
         {"access_list": ACCESS_LIST, "nonce": 0, "gasPrice": 0},  # NOTE: show camelCase works
-        {"accessList": ACCESS_LIST, "nonce": 0, "max_fee": 0, "max_priority_fee": 0, "type": 2},
-        {"access_list": ACCESS_LIST, "nonce": 0, "max_fee": 0, "max_priority_fee": 0, "type": 2},
+        {
+            "accessList": ACCESS_LIST_HEXBYTES,
+            "nonce": 0,
+            "max_fee": 0,
+            "max_priority_fee": 0,
+            "type": 2,
+        },
+        {
+            "access_list": LONG_ACCESS_LIST,
+            "nonce": 0,
+            "max_fee": 0,
+            "max_priority_fee": 0,
+            "type": 2,
+        },
     ],
 )
 def test_serialize_transaction(owner, ethereum, tx_kwargs):
