@@ -146,7 +146,10 @@
 <li class="toctree-l1"><a class="reference internal" href="transactions.html">Making Transactions</a></li>
 <li class="toctree-l1"><a class="reference internal" href="console.html">Ape Console</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Contracts</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#from-deploy">From Deploy</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#from-deploy">From Deploy</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#deploy-scripts">Deploy Scripts</a></li>
+</ul>
+</li>
 <li class="toctree-l2"><a class="reference internal" href="#from-project-contract-address">From Project Contract Address</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#from-any-address">From Any Address</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#from-abis">From ABIs</a></li>
@@ -229,7 +232,9 @@ The other way is to initialize an already-deployed contract using its address.</
 <p>Deploy contracts from your project using the <code class="docutils literal notranslate"><span class="pre">project</span></code> root-level object.
 The names of your contracts are attributes on the <code class="docutils literal notranslate"><span class="pre">project</span></code> object (e.g. <code class="docutils literal notranslate"><span class="pre">project.MyContract</span></code>) and their types are <a class="reference external" href="../methoddocs/contracts.html#ape.contracts.base.ContractContainer">ContractContainer</a>.</p>
 <p><strong>NOTE</strong>: To avoid naming collisions with other properties on the <code class="docutils literal notranslate"><span class="pre">project</span></code> object, you can also use the <a class="reference external" href="../methoddocs/managers.html#ape.managers.project.manager.ProjectManager.get_contract">get_contract()</a> method to retrieve contract containers.</p>
-<p>When you deploy contracts, you get back a <code class="docutils literal notranslate"><span class="pre">ContractInstance</span></code>:</p>
+<p>When you deploy contracts, you get back a <code class="docutils literal notranslate"><span class="pre">ContractInstance</span></code>.</p>
+<p>Here is an example using Python and Ape to deploy a contract.
+(Note: this code be run from anywhere you run Python, such as a script, an <a class="reference external" href="./scripts.html">Ape script</a>, a TTY, or the <a class="reference external" href="./console.html">ape console</a>).</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">ape</span> <span class="kn">import</span> <span class="n">accounts</span><span class="p">,</span> <span class="n">project</span>
 
 <span class="n">dev</span> <span class="o">=</span> <span class="n">accounts</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;dev&quot;</span><span class="p">)</span>
@@ -270,6 +275,18 @@ More information on publishing contracts can be found in <a class="reference ext
 <span class="n">Out</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span> <span class="n">constructor</span><span class="p">(</span><span class="n">string</span> <span class="n">argument1</span><span class="p">,</span> <span class="n">string</span> <span class="n">argument2</span><span class="p">)</span>
 </pre></div>
 </div>
+<section id="deploy-scripts">
+<h3>Deploy Scripts<a class="headerlink" href="#deploy-scripts" title="Permalink to this heading"></a></h3>
+<p>Often times, users will create an Ape script if their deployment process is repeatable or called from CI.
+Review the <a class="reference external" href="./scripts.html">scripting guide</a> for more information on scripting in Ape and how to use scripts to track your deployment logic.
+Once a deploy script is created, it can be invoked like:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>ape<span class="w"> </span>run<span class="w"> </span>&lt;script-name&gt;
+</pre></div>
+</div>
+<p>There is no root <code class="docutils literal notranslate"><span class="pre">ape</span></code> command to deploy contracts; only the scripting-system, the <code class="docutils literal notranslate"><span class="pre">console</span></code>, or merely using Ape as a Python library.</p>
+<p>If your deployment process is simple, it is easy to use <code class="docutils literal notranslate"><span class="pre">ape</span> <span class="pre">console</span></code> to achieve a deployment.
+More information on how to use <code class="docutils literal notranslate"><span class="pre">ape</span> <span class="pre">console</span></code> can be found <a class="reference external" href="./console.html">here</a>.</p>
+</section>
 </section>
 <section id="from-project-contract-address">
 <h2>From Project Contract Address<a class="headerlink" href="#from-project-contract-address" title="Permalink to this heading"></a></h2>
