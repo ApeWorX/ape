@@ -1,6 +1,82 @@
 # Networks
 
-When interacting with the blockchain, you will have to select a network.
+When interacting with a blockchain, you will have to select an ecosystem (e.g. Ethereum, Arbitrum, or Fantom), a network (e.g. Mainnet or Goerli) and a provider (e.g. Eth-Tester, Geth, or Alchemy).
+Networks are part of ecosystems and typically defined in plugins.
+For example, the `ape-ethereum` plugin comes with Ape and can be used for handling EVM-like behavior.
+
+## L2 Networks
+
+Common L2 networks, such as Arbitrum, Polygon, Optimism, or Fantom, have ApeWorX-maintained (trusted) plugins that override the Ethereum ecosystem API class and change any defaults that are needed.
+You can install these plugins by doing:
+
+```shell
+ape plugins install arbitrum polygon optimism fantom
+```
+
+Each plugin does different things.
+In general, L2 plugins are very small and override the Ethereum ecosystem class.
+Here are some examples of changes L2 plugins make that allow improved support for these networks:
+
+1. Networks that don't support EIP-1559 transactions use Static-fee transaction types by default whereas `ape-ethereum` will use EIP-1559 transactions by default.
+2. Some networks, such as `ape-arbitrum`, have unique transaction types (and receipt types!) that are handled in the plugin.
+   This logic does not have to live in the base `ape-ethereum` plugin but can live in the network's custom plugin.
+3. Fee token information: When displaying gas reports or other data, network plugins can use the correct fee-token symbols, such as Polygon MATIC.
+
+Here is a list of all L2 network plugins supported by Ape:
+
+| Name              | GitHub Path                                                               |
+| ----------------- | ------------------------------------------------------------------------- |
+| ape-avalanche     | [ApeWorX/ape-avalanche](https://github.com/ApeWorX/ape-avalanche)         |
+| ape-arbitrum      | [ApeWorX/ape-arbitrum](https://github.com/ApeWorX/ape-arbitrum)           |
+| ape-base          | [ApeWorX/ape-base](https://github.com/ApeWorX/ape-base)                   |
+| ape-fantom        | [ApeWorX/ape-fantom](https://github.com/ApeWorX/ape-fantom)               |
+| ape-optmism       | [ApeWorX/ape-optimism](https://github.com/ApeWorX/ape-optimism)           |
+| ape-polygon       | [ApeWorX/ape-polygon](https://github.com/ApeWorX/ape-polygon)             |
+| ape-polygon-zkevm | [ApeWorX/ape-polygon-zkevm](https://github.com/ApeWorX/ape-polygon-zkevm) |
+
+**NOTE**: If you are connecting an L2 network or any other network that does not have a plugin, you can use the custom network support, which is described in the [next section](#custom-network-connection).
+
+Once you have the L2 network plugin installed, you can configure its node's URI by setting the values in the `geth` (default node) core plugin via your `ape-config.yaml` file:
+
+```yaml
+geth:
+  <ecosystem-name>:
+    <network-name>:
+      uri: https://path.to.node.example.com
+```
+
+To see proper ecosystem and network names needed for configuration, run the command:
+
+```shell
+ape networks list
+```
+
+In the remainder of this guide, any example below using Ethereum, you can replace with an L2 ecosystem's name and network combination.
+
+## Custom Network Connection
+
+If you would like to connect to a URI using an existing ecosystem plugin, you can specify a URI in the provider-section for the `--network` option:
+
+```bash
+ape run script --network <ecosysem-name>:<network-name>:https://foo.bar
+```
+
+Additionally, if you want to connect to an unknown ecosystem or network, you can use the URI by itself.
+This uses the default Ethereum ecosystem class.
+
+```bash
+ape run script --network https://foo.bar
+```
+
+**WARNING**: The recommended approach is to use an L2 plugin when one exists, as it will integrate better in the Ape ecosystem.
+
+Here are some general reason why Network plugins are recommended:
+
+1. You may need to integrate with other plugins, such as explorer plugins for getting contract types.
+2. Some chains may not implement EIP-1559 or may have forked from a specific configuration.
+3. Response differences in uncommon blocks, such as the `"pending"` block or the genesis block.
+4. Revert messages and exception-handling differences.
+5. You can handle chain differences such as different transaction types in Arbitrum, non-EVM chains and behaviors like Starknet.
 
 ## Selecting a Network
 
@@ -10,6 +86,12 @@ The following is a list of common Ape commands that can use the `--network` opti
 ```bash
 ape test --network ethereum:local:foundry
 ape console --network arbitrum:testnet:alchemy
+```
+
+To see all possible values for `--network`, run the command:
+
+```shell
+ape networks list
 ```
 
 You can also use the `--network` option on scripts that use the `main()` method approach or scripts that implement that `ConnectedProviderCommand` command type.
@@ -84,30 +166,6 @@ geth:
     mainnet:
       uri: https://foo.node.bar
 ```
-
-## Custom Network Connection
-
-If you would like to connect to a URI using the default Ethereum node provider, you can specify a URI for the provider name in the `--network` option:
-
-```bash
-ape run script --network ethereum:mainnet:https://foo.bar
-```
-
-Additionally, if you want to connect to an unknown ecosystem or network, you can use the URI by itself.
-However, this is not recommended.
-
-```bash
-ape run script --network https://foo.bar
-```
-
-**WARNING**: The recommended approach is to find or build a plugin to have more native support.
-Some reasons for this include:
-
-1. You may need to integrate with other plugins, such as explorer plugins for getting contract types.
-2. Some chains may not implement EIP-1559 or may have forked from a specific configuration.
-3. Response differences in uncommon blocks, such as the `"pending"` block or the genesis block.
-4. Revert messages and exception-handling differences.
-5. You are limited to using `web3.py` and EVM-based chains.
 
 ## Running a Network Process
 

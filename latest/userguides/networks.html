@@ -141,11 +141,12 @@
 <li class="toctree-l1"><a class="reference internal" href="clis.html">CLIs</a></li>
 <li class="toctree-l1"><a class="reference internal" href="data.html">Querying Data</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Networks</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#l2-networks">L2 Networks</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#custom-network-connection">Custom Network Connection</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#selecting-a-network">Selecting a Network</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#configuring-networks">Configuring Networks</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#local-network">Local Network</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#live-networks">Live Networks</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#custom-network-connection">Custom Network Connection</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#running-a-network-process">Running a Network Process</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#provider-interaction">Provider Interaction</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#provider-context-manager">Provider Context Manager</a><ul>
@@ -216,13 +217,101 @@
              
   <section id="networks">
 <h1>Networks<a class="headerlink" href="#networks" title="Permalink to this heading"></a></h1>
-<p>When interacting with the blockchain, you will have to select a network.</p>
+<p>When interacting with a blockchain, you will have to select an ecosystem (e.g. Ethereum, Arbitrum, or Fantom), a network (e.g. Mainnet or Goerli) and a provider (e.g. Eth-Tester, Geth, or Alchemy).
+Networks are part of ecosystems and typically defined in plugins.
+For example, the <code class="docutils literal notranslate"><span class="pre">ape-ethereum</span></code> plugin comes with Ape and can be used for handling EVM-like behavior.</p>
+<section id="l2-networks">
+<h2>L2 Networks<a class="headerlink" href="#l2-networks" title="Permalink to this heading"></a></h2>
+<p>Common L2 networks, such as Arbitrum, Polygon, Optimism, or Fantom, have ApeWorX-maintained (trusted) plugins that override the Ethereum ecosystem API class and change any defaults that are needed.
+You can install these plugins by doing:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>ape<span class="w"> </span>plugins<span class="w"> </span>install<span class="w"> </span>arbitrum<span class="w"> </span>polygon<span class="w"> </span>optimism<span class="w"> </span>fantom
+</pre></div>
+</div>
+<p>Each plugin does different things.
+In general, L2 plugins are very small and override the Ethereum ecosystem class.
+Here are some examples of changes L2 plugins make that allow improved support for these networks:</p>
+<ol class="arabic simple">
+<li><p>Networks that don’t support EIP-1559 transactions use Static-fee transaction types by default whereas <code class="docutils literal notranslate"><span class="pre">ape-ethereum</span></code> will use EIP-1559 transactions by default.</p></li>
+<li><p>Some networks, such as <code class="docutils literal notranslate"><span class="pre">ape-arbitrum</span></code>, have unique transaction types (and receipt types!) that are handled in the plugin.
+This logic does not have to live in the base <code class="docutils literal notranslate"><span class="pre">ape-ethereum</span></code> plugin but can live in the network’s custom plugin.</p></li>
+<li><p>Fee token information: When displaying gas reports or other data, network plugins can use the correct fee-token symbols, such as Polygon MATIC.</p></li>
+</ol>
+<p>Here is a list of all L2 network plugins supported by Ape:</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Name</p></th>
+<th class="head"><p>GitHub Path</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>ape-avalanche</p></td>
+<td><p><a class="reference external" href="https://github.com/ApeWorX/ape-avalanche">ApeWorX/ape-avalanche</a></p></td>
+</tr>
+<tr class="row-odd"><td><p>ape-arbitrum</p></td>
+<td><p><a class="reference external" href="https://github.com/ApeWorX/ape-arbitrum">ApeWorX/ape-arbitrum</a></p></td>
+</tr>
+<tr class="row-even"><td><p>ape-base</p></td>
+<td><p><a class="reference external" href="https://github.com/ApeWorX/ape-base">ApeWorX/ape-base</a></p></td>
+</tr>
+<tr class="row-odd"><td><p>ape-fantom</p></td>
+<td><p><a class="reference external" href="https://github.com/ApeWorX/ape-fantom">ApeWorX/ape-fantom</a></p></td>
+</tr>
+<tr class="row-even"><td><p>ape-optmism</p></td>
+<td><p><a class="reference external" href="https://github.com/ApeWorX/ape-optimism">ApeWorX/ape-optimism</a></p></td>
+</tr>
+<tr class="row-odd"><td><p>ape-polygon</p></td>
+<td><p><a class="reference external" href="https://github.com/ApeWorX/ape-polygon">ApeWorX/ape-polygon</a></p></td>
+</tr>
+<tr class="row-even"><td><p>ape-polygon-zkevm</p></td>
+<td><p><a class="reference external" href="https://github.com/ApeWorX/ape-polygon-zkevm">ApeWorX/ape-polygon-zkevm</a></p></td>
+</tr>
+</tbody>
+</table>
+<p><strong>NOTE</strong>: If you are connecting an L2 network or any other network that does not have a plugin, you can use the custom network support, which is described in the <a class="reference external" href="#custom-network-connection">next section</a>.</p>
+<p>Once you have the L2 network plugin installed, you can configure its node’s URI by setting the values in the <code class="docutils literal notranslate"><span class="pre">geth</span></code> (default node) core plugin via your <code class="docutils literal notranslate"><span class="pre">ape-config.yaml</span></code> file:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">geth</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">&lt;ecosystem-name&gt;</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">&lt;network-name&gt;</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">uri</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">https://path.to.node.example.com</span>
+</pre></div>
+</div>
+<p>To see proper ecosystem and network names needed for configuration, run the command:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>ape<span class="w"> </span>networks<span class="w"> </span>list
+</pre></div>
+</div>
+<p>In the remainder of this guide, any example below using Ethereum, you can replace with an L2 ecosystem’s name and network combination.</p>
+</section>
+<section id="custom-network-connection">
+<h2>Custom Network Connection<a class="headerlink" href="#custom-network-connection" title="Permalink to this heading"></a></h2>
+<p>If you would like to connect to a URI using an existing ecosystem plugin, you can specify a URI in the provider-section for the <code class="docutils literal notranslate"><span class="pre">--network</span></code> option:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>ape<span class="w"> </span>run<span class="w"> </span>script<span class="w"> </span>--network<span class="w"> </span>&lt;ecosysem-name&gt;:&lt;network-name&gt;:https://foo.bar
+</pre></div>
+</div>
+<p>Additionally, if you want to connect to an unknown ecosystem or network, you can use the URI by itself.
+This uses the default Ethereum ecosystem class.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>ape<span class="w"> </span>run<span class="w"> </span>script<span class="w"> </span>--network<span class="w"> </span>https://foo.bar
+</pre></div>
+</div>
+<p><strong>WARNING</strong>: The recommended approach is to use an L2 plugin when one exists, as it will integrate better in the Ape ecosystem.</p>
+<p>Here are some general reason why Network plugins are recommended:</p>
+<ol class="arabic simple">
+<li><p>You may need to integrate with other plugins, such as explorer plugins for getting contract types.</p></li>
+<li><p>Some chains may not implement EIP-1559 or may have forked from a specific configuration.</p></li>
+<li><p>Response differences in uncommon blocks, such as the <code class="docutils literal notranslate"><span class="pre">&quot;pending&quot;</span></code> block or the genesis block.</p></li>
+<li><p>Revert messages and exception-handling differences.</p></li>
+<li><p>You can handle chain differences such as different transaction types in Arbitrum, non-EVM chains and behaviors like Starknet.</p></li>
+</ol>
+</section>
 <section id="selecting-a-network">
 <h2>Selecting a Network<a class="headerlink" href="#selecting-a-network" title="Permalink to this heading"></a></h2>
 <p>Commonly, you will use the <code class="docutils literal notranslate"><span class="pre">--network</span></code> option to configure your network during Ape commands.
 The following is a list of common Ape commands that can use the <code class="docutils literal notranslate"><span class="pre">--network</span></code> option:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>ape<span class="w"> </span><span class="nb">test</span><span class="w"> </span>--network<span class="w"> </span>ethereum:local:foundry
 ape<span class="w"> </span>console<span class="w"> </span>--network<span class="w"> </span>arbitrum:testnet:alchemy
+</pre></div>
+</div>
+<p>To see all possible values for <code class="docutils literal notranslate"><span class="pre">--network</span></code>, run the command:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>ape<span class="w"> </span>networks<span class="w"> </span>list
 </pre></div>
 </div>
 <p>You can also use the <code class="docutils literal notranslate"><span class="pre">--network</span></code> option on scripts that use the <code class="docutils literal notranslate"><span class="pre">main()</span></code> method approach or scripts that implement that <code class="docutils literal notranslate"><span class="pre">ConnectedProviderCommand</span></code> command type.
@@ -288,27 +377,6 @@ To configure network URIs in geth, you can use the <code class="docutils literal
 <span class="w">      </span><span class="nt">uri</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">https://foo.node.bar</span>
 </pre></div>
 </div>
-</section>
-<section id="custom-network-connection">
-<h2>Custom Network Connection<a class="headerlink" href="#custom-network-connection" title="Permalink to this heading"></a></h2>
-<p>If you would like to connect to a URI using the default Ethereum node provider, you can specify a URI for the provider name in the <code class="docutils literal notranslate"><span class="pre">--network</span></code> option:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>ape<span class="w"> </span>run<span class="w"> </span>script<span class="w"> </span>--network<span class="w"> </span>ethereum:mainnet:https://foo.bar
-</pre></div>
-</div>
-<p>Additionally, if you want to connect to an unknown ecosystem or network, you can use the URI by itself.
-However, this is not recommended.</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>ape<span class="w"> </span>run<span class="w"> </span>script<span class="w"> </span>--network<span class="w"> </span>https://foo.bar
-</pre></div>
-</div>
-<p><strong>WARNING</strong>: The recommended approach is to find or build a plugin to have more native support.
-Some reasons for this include:</p>
-<ol class="arabic simple">
-<li><p>You may need to integrate with other plugins, such as explorer plugins for getting contract types.</p></li>
-<li><p>Some chains may not implement EIP-1559 or may have forked from a specific configuration.</p></li>
-<li><p>Response differences in uncommon blocks, such as the <code class="docutils literal notranslate"><span class="pre">&quot;pending&quot;</span></code> block or the genesis block.</p></li>
-<li><p>Revert messages and exception-handling differences.</p></li>
-<li><p>You are limited to using <code class="docutils literal notranslate"><span class="pre">web3.py</span></code> and EVM-based chains.</p></li>
-</ol>
 </section>
 <section id="running-a-network-process">
 <h2>Running a Network Process<a class="headerlink" href="#running-a-network-process" title="Permalink to this heading"></a></h2>
