@@ -15,9 +15,9 @@ Most of the features in this guide are documented more-fully elsewhere in the us
 
 However, here is a list of common-use cases requiring the `ape-config.yaml` file to help you:
 
-1. Setting up a custom node RPC: See the `geth` section.
-2. Setting up project dependencies: See the `dependencies` section.
-3. Declaring your project's plugins: See the `plugins` section.
+1. Setting up a custom node RPC: See the [geth](#geth) section.
+2. Setting up project dependencies: See the [dependencies](#dependencies) section.
+3. Declaring your project's plugins: See the [plugins](#plugins) section.
 
 ## Contracts Folder
 
