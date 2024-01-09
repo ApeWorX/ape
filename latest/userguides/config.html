@@ -220,7 +220,15 @@ There are two locations you can place an <code class="docutils literal notransla
 <li><p>In your <code class="docutils literal notranslate"><span class="pre">$HOME/.ape</span></code> directory (global)</p></li>
 </ol>
 <p>Project settings take precedent, but global settings allow you to configure preferences across all projects, such as your default mainnet provider (e.g. Alchemy versus running your own node).</p>
-<p>This guide serves as an index of the settings you can include in any <code class="docutils literal notranslate"><span class="pre">ape-config.yaml</span></code> file.</p>
+<p>This guide serves as an index of the settings you can include in any <code class="docutils literal notranslate"><span class="pre">ape-config.yaml</span></code> file.
+This guide is <strong>PURPOSELY</strong> alphabetized to facilitate easier look-up of keys.</p>
+<p>Most of the features in this guide are documented more-fully elsewhere in the user-guides.</p>
+<p>However, here is a list of common-use cases requiring the <code class="docutils literal notranslate"><span class="pre">ape-config.yaml</span></code> file to help you:</p>
+<ol class="arabic simple">
+<li><p>Setting up a custom node RPC: See the <code class="docutils literal notranslate"><span class="pre">geth</span></code> section.</p></li>
+<li><p>Setting up project dependencies: See the <code class="docutils literal notranslate"><span class="pre">dependencies</span></code> section.</p></li>
+<li><p>Declaring your project’s plugins: See the <code class="docutils literal notranslate"><span class="pre">plugins</span></code> section.</p></li>
+</ol>
 <section id="contracts-folder">
 <h2>Contracts Folder<a class="headerlink" href="#contracts-folder" title="Permalink to this heading"></a></h2>
 <p>Specify a different path to your <code class="docutils literal notranslate"><span class="pre">contracts/</span></code> directory.
@@ -278,6 +286,9 @@ For example, to change the URI for an Ethereum network, do:</p>
 <span class="w">      </span><span class="nt">uri</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">http://localhost:5030</span>
 </pre></div>
 </div>
+<p>Now, the <code class="docutils literal notranslate"><span class="pre">ape-geth</span></code> core plugin will use the URL <code class="docutils literal notranslate"><span class="pre">http://localhost:5030</span></code> to connect and make requests.</p>
+<p><strong>WARN</strong>: Instead of using <code class="docutils literal notranslate"><span class="pre">ape-geth</span></code> to connect to an Infura or Alchemy node, use the <a class="reference external" href="https://github.com/ApeWorX/ape-infura">ape-infura</a> or <a class="reference external" href="https://github.com/ApeWorX/ape-alchemy">ape-alchemy</a> provider plugins instead, which have their own way of managing API keys via environment variables.</p>
+<p>For more information on networking as a whole, see <a class="reference external" href="./networks.html">this guide</a>.</p>
 </section>
 <section id="networks">
 <h2>Networks<a class="headerlink" href="#networks" title="Permalink to this heading"></a></h2>
