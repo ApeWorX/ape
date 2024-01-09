@@ -825,7 +825,7 @@ class Web3Provider(ProviderAPI, ABC):
 
         txn_type = TransactionType(txn.type)
         if (
-            txn_type == TransactionType.STATIC
+            txn_type in (TransactionType.STATIC, TransactionType.ACCESS_LIST)
             and isinstance(txn, StaticFeeTransaction)
             and txn.gas_price is None
         ):
