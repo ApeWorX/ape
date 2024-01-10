@@ -13,7 +13,7 @@ No matter what type of network you are using in Ape, you specify the network usi
 "<ecosystem-name>:<network-name>:<provider-name>"
 ```
 
-Where `ecosystem-name` refers to the ecosystem, e.g. `ethereum`, `polygon`, `fantom`, or something completely unheard of.
+Where `ecosystem-name` refers to the ecosystem, e.g. `ethereum`, `polygon`, `fantom`, or any valid ecosystem plugin name.
 The `network-name` refers to a network such as `mainnet`, `local`, or something else.
 And `provider-name` refers to the provider plugin in Ape, such as `geth` for a generic node or `foundry` if the network is more Anvil-based, or a different plugin altogether.
 
