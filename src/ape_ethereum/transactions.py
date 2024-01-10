@@ -74,6 +74,21 @@ class BaseTransaction(TransactionAPI):
         if txn_data.get("to") == ZERO_ADDRESS:
             del txn_data["to"]
 
+        # Adjust bytes in the access list if necessary.
+        if "accessList" in txn_data:
+            adjusted_access_list = []
+
+            for item in txn_data["accessList"]:
+                adjusted_item = {**item}
+                storage_keys_corrected = [HexBytes(k).hex() for k in item.get("storageKeys", [])]
+
+                if storage_keys_corrected:
+                    adjusted_item["storageKeys"] = storage_keys_corrected
+
+                adjusted_access_list.append(adjusted_item)
+
+            txn_data["accessList"] = adjusted_access_list
+
         unsigned_txn = serializable_unsigned_transaction_from_dict(txn_data)
         signature = (self.signature.v, to_int(self.signature.r), to_int(self.signature.s))
         signed_txn = encode_transaction(unsigned_txn, signature)

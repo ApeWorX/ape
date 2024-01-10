@@ -10,16 +10,15 @@ from ape_ethereum.transactions import (
     TransactionType,
 )
 
-ACCESS_LIST = [
+ACCESS_LIST = [{"address": "0x0000000000000000000000000000000000000004", "storageKeys": []}]
+
+ACCESS_LIST_HEXBYTES = [
     {
         "address": "0x0000000000000000000000000000000000000004",
         "storageKeys": [
             BaseHexBytes("0x0000000000000000000000000000000000000000000000000000000000000000")
         ],
     }
-]
-ACCESS_LIST_HEXBYTES = [
-    {"address": "0x0000000000000000000000000000000000000004", "storageKeys": []}
 ]
 
 # NOTE: Long access List also uses / tests HexBytes from eth_pydantic_types\
@@ -209,7 +208,6 @@ def test_txn_hash_and_receipt(owner, eth_tester_provider, ethereum, kwargs):
     txn = owner.prepare_transaction(txn)
     txn = owner.sign_transaction(txn)
     assert txn
-
     actual = txn.txn_hash.hex()
     receipt = eth_tester_provider.send_transaction(txn)
 
@@ -219,6 +217,25 @@ def test_txn_hash_and_receipt(owner, eth_tester_provider, ethereum, kwargs):
     expected = receipt.txn_hash
 
     assert actual == expected
+
+
+def test_txn_hash_when_access_list_is_raw(ethereum, owner):
+    """
+    Tests against a condition I was never able to reproduce where
+    a transaction's access list contained bytes-values and that
+    causes the serialization to error.
+    """
+
+    txn = ethereum.create_transaction(accessList=ACCESS_LIST_HEXBYTES, type=2)
+    txn = owner.prepare_transaction(txn)
+    txn = owner.sign_transaction(txn)
+
+    # Hack to make access_list raw. I am not sure how a user would get
+    # to this state, but somehow they have.
+    txn.access_list = ACCESS_LIST_HEXBYTES
+
+    actual = txn.txn_hash.hex()
+    assert actual.startswith("0x")
 
 
 def test_data_when_contains_whitespace():
