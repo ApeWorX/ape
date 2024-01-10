@@ -129,7 +129,7 @@ networks:
   custom:
     - name: chainnet
       chain_id: 95959595959595959  # Required when using custom networks this way.
-      ecosystem: polygon  # Default is Ethereum-like behavior
+      ecosystem: polygon  # the custom network will use this ecosystem plugin for it's operation
       default_provider: geth  # Default is a generic node
 
 # Also, configure your provider to use the right RPC URL for this network!
