@@ -10,7 +10,7 @@ Before discussing how to add custom networks or install L2 network plugins, you 
 No matter what type of network you are using in Ape, you specify the network using a "network choice" triplet value:
 
 ```python
-"<ecosystem-name>:<network-name>:<provider-name"
+"<ecosystem-name>:<network-name>:<provider-name>"
 ```
 
 Where `ecosystem-name` refers to the ecosystem, e.g. `ethereum`, `polygon`, `fantom`, or something completely unheard of.
