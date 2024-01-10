@@ -42,7 +42,7 @@ Here is a basic example of Python code to deploy a contract:
 from ape import accounts, project
 
 # You need an account to deploy, as it requires a transaction.
-account = accounts.load("<ALIAS>")
+account = accounts.load("<ALIAS>")  # NOTE: <ALIAS> refers to your account alias!
 contract = project.MyContract.deploy(1, account, sender=account)
 
 # NOTE: You can also do it this way:
@@ -298,7 +298,7 @@ To directly call an address, such as invoking a contract's `fallback` or `receiv
 ```python
 from ape import Contract, accounts
 
-sender = accounts.load("dev")
+sender = accounts.load("<ALIAS>")  # NOTE: <ALIAS> refers to your account alias!
 contract = Contract("0x123...")
 
 # Call the contract's fallback method.
