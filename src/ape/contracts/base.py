@@ -1316,6 +1316,18 @@ class ContractContainer(ContractTypeWrapper):
         return self.constructor.serialize_transaction(*args, **kwargs)
 
     def deploy(self, *args, publish: bool = False, **kwargs) -> ContractInstance:
+        """
+        Deploy a contract.
+
+        Args:
+            *args (Any): The contract's constructor arguments as Python types.
+            publish (bool): Whether to also perform contract-verification.
+              Defaults to ``False``.
+
+        Returns:
+            :class:`~ape.contracts.base.ContractInstance`
+        """
+
         txn = self(*args, **kwargs)
         private = kwargs.get("private", False)
 
