@@ -837,6 +837,7 @@ class Web3Provider(ProviderAPI, ABC):
             if txn.max_fee is None:
                 multiplier = self.network.base_fee_multiplier
                 txn.max_fee = int(self.base_fee * multiplier + txn.max_priority_fee)
+
             # else: Assume user specified the correct amount or txn will fail and waste gas
 
         gas_limit = self.network.gas_limit if txn.gas_limit is None else txn.gas_limit
