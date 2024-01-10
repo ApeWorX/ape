@@ -621,13 +621,9 @@ class Ethereum(EcosystemAPI):
             value = tx_data["value"] or 0  # Convert None to 0.
             tx_data["value"] = self.conversion_manager.convert(value, int)
 
-        # This causes problems in pydantic for some reason.
-        if "gas_price" in kwargs and kwargs["gas_price"] is None:
-            del kwargs["gas_price"]
-
         # None is not allowed, the user likely means `b""`.
-        if "data" in kwargs and kwargs["data"] is None:
-            kwargs["data"] = b""
+        if "data" in tx_data and tx_data["data"] is None:
+            tx_data["data"] = b""
 
         # Deduce the transaction type.
         transaction_types: Dict[TransactionType, Type[TransactionAPI]] = {
@@ -635,61 +631,67 @@ class Ethereum(EcosystemAPI):
             TransactionType.DYNAMIC: DynamicFeeTransaction,
             TransactionType.ACCESS_LIST: AccessListTransaction,
         }
-        if "type" in kwargs:
-            if kwargs["type"] is None:
+        if "type" in tx_data:
+            if tx_data["type"] is None:
                 # Explicit `None` means used default.
                 version = self.default_transaction_type
-            elif isinstance(kwargs["type"], TransactionType):
-                version = kwargs["type"]
-            elif isinstance(kwargs["type"], int):
-                version = TransactionType(kwargs["type"])
+            elif isinstance(tx_data["type"], TransactionType):
+                version = tx_data["type"]
+            elif isinstance(tx_data["type"], int):
+                version = TransactionType(tx_data["type"])
             else:
                 # Using hex values or alike.
-                version = TransactionType(self.conversion_manager.convert(kwargs["type"], int))
+                version = TransactionType(self.conversion_manager.convert(tx_data["type"], int))
 
-        elif "gas_price" in kwargs:
+        elif "gas_price" in tx_data:
             version = TransactionType.STATIC
-        elif "max_fee" in kwargs or "max_priority_fee" in kwargs:
+        elif "max_fee" in tx_data or "max_priority_fee" in tx_data:
             version = TransactionType.DYNAMIC
-        elif "access_list" in kwargs or "accessList" in kwargs:
+        elif "access_list" in tx_data or "accessList" in tx_data:
             version = TransactionType.ACCESS_LIST
         else:
             version = self.default_transaction_type
 
-        kwargs["type"] = version.value
+        tx_data["type"] = version.value
+
+        # This causes problems in pydantic for some reason.
+        # NOTE: This must happen after deducing the tx type!
+        if "gas_price" in tx_data and tx_data["gas_price"] is None:
+            del tx_data["gas_price"]
+
         txn_class = transaction_types[version]
 
-        if "required_confirmations" not in kwargs or kwargs["required_confirmations"] is None:
+        if "required_confirmations" not in tx_data or tx_data["required_confirmations"] is None:
             # Attempt to use default required-confirmations from `ape-config.yaml`.
             required_confirmations = 0
             active_provider = self.network_manager.active_provider
             if active_provider:
                 required_confirmations = active_provider.network.required_confirmations
 
-            kwargs["required_confirmations"] = required_confirmations
+            tx_data["required_confirmations"] = required_confirmations
 
-        if isinstance(kwargs.get("chainId"), str):
-            kwargs["chainId"] = int(kwargs["chainId"], 16)
+        if isinstance(tx_data.get("chainId"), str):
+            tx_data["chainId"] = int(tx_data["chainId"], 16)
 
         elif (
-            "chainId" not in kwargs or kwargs["chainId"] is None
+            "chainId" not in tx_data or tx_data["chainId"] is None
         ) and self.network_manager.active_provider is not None:
-            kwargs["chainId"] = self.provider.chain_id
+            tx_data["chainId"] = self.provider.chain_id
 
-        if "input" in kwargs:
-            kwargs["data"] = kwargs.pop("input")
+        if "input" in tx_data:
+            tx_data["data"] = tx_data.pop("input")
 
-        if all(field in kwargs for field in ("v", "r", "s")):
-            kwargs["signature"] = TransactionSignature(
-                v=kwargs["v"],
-                r=bytes(kwargs["r"]),
-                s=bytes(kwargs["s"]),
+        if all(field in tx_data for field in ("v", "r", "s")):
+            tx_data["signature"] = TransactionSignature(
+                v=tx_data["v"],
+                r=bytes(tx_data["r"]),
+                s=bytes(tx_data["s"]),
             )
 
-        if "gas" not in kwargs:
-            kwargs["gas"] = None
+        if "gas" not in tx_data:
+            tx_data["gas"] = None
 
-        return txn_class(**kwargs)
+        return txn_class(**tx_data)
 
     def decode_logs(self, logs: Sequence[Dict], *events: EventABI) -> Iterator["ContractLog"]:
         if not logs:
@@ -979,10 +981,15 @@ def parse_type(type_: Dict[str, Any]) -> Union[str, Tuple, List]:
 
 
 def _correct_key(key: str, data: Dict, alt_keys: Tuple[str, ...]) -> Dict:
+    if key in data:
+        return data
+
+    # Check for alternative.
     for possible_key in alt_keys:
         if possible_key not in data:
             continue
 
+        # Alt found: use it.
         new_data = {k: v for k, v in data.items() if k not in alt_keys}
         new_data[key] = data[possible_key]
         return new_data
