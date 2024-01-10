@@ -159,7 +159,7 @@ default_ecosystem: <ecosystem-name>
     default_provider: <provider-name>
 ```
 
-As mentioned \[extensively above\](#L2 Networks), ecosystems and networks typically come from plugins and their names and values are defined in those plugins.
+As mentioned \[above\](#L2 Networks), ecosystems and networks typically come from plugins and their names and values are defined in those plugins.
 The ecosystem name goes in placeholder `<ecosystem-name>` and the network names go in place for `<network-name>`.
 
 **If you are unsure of the values to place here, run the following command**:
