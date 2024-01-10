@@ -316,12 +316,14 @@ ape<span class="w"> </span>console<span class="w"> </span>--network<span class="
 </div>
 <p>You can also use the <code class="docutils literal notranslate"><span class="pre">--network</span></code> option on scripts that use the <code class="docutils literal notranslate"><span class="pre">main()</span></code> method approach or scripts that implement that <code class="docutils literal notranslate"><span class="pre">ConnectedProviderCommand</span></code> command type.
 See <a class="reference external" href="./scripts.html">the scripting guide</a> to learn more about scripts and how to add the network option.</p>
-<p><strong>NOTE</strong>: You can omit values to use defaults.
+<p>Also, you can omit values to use defaults.
 For example, the default ecosystem is <code class="docutils literal notranslate"><span class="pre">ethereum</span></code> and the default network is <code class="docutils literal notranslate"><span class="pre">local</span></code>, so you can do:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>ape<span class="w"> </span>run<span class="w"> </span>--network<span class="w"> </span>::foundry
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>ape<span class="w"> </span>run<span class="w"> </span>&lt;custom-cmd&gt;<span class="w"> </span>--network<span class="w"> </span>::foundry
 </pre></div>
 </div>
-<p>as a short-cut for <code class="docutils literal notranslate"><span class="pre">ethereum:local:foundry</span></code>.</p>
+<p>as a short-cut for <code class="docutils literal notranslate"><span class="pre">ethereum:local:foundry</span></code>.
+(note: <code class="docutils literal notranslate"><span class="pre">&lt;custom-command&gt;</span></code> refers to the name of a script that uses the network option or is a <code class="docutils literal notranslate"><span class="pre">ConnectedProviderCommand</span></code>.
+See the <a class="reference external" href="./scripts.html">scripting guide</a> for more information).</p>
 </section>
 <section id="configuring-networks">
 <h2>Configuring Networks<a class="headerlink" href="#configuring-networks" title="Permalink to this heading"></a></h2>

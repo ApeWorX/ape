@@ -97,14 +97,16 @@ ape networks list
 You can also use the `--network` option on scripts that use the `main()` method approach or scripts that implement that `ConnectedProviderCommand` command type.
 See [the scripting guide](./scripts.html) to learn more about scripts and how to add the network option.
 
-**NOTE**: You can omit values to use defaults.
+Also, you can omit values to use defaults.
 For example, the default ecosystem is `ethereum` and the default network is `local`, so you can do:
 
 ```bash
-ape run --network ::foundry
+ape run <custom-cmd> --network ::foundry
 ```
 
 as a short-cut for `ethereum:local:foundry`.
+(note: `<custom-command>` refers to the name of a script that uses the network option or is a `ConnectedProviderCommand`.
+See the [scripting guide](./scripts.html) for more information).
 
 ## Configuring Networks
 
