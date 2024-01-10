@@ -8,7 +8,7 @@ The other way is to initialize an already-deployed contract using its address.
 ## From Deploy
 
 Deploy contracts from your project using the `project` root-level object.
-You deploy contracts using Python functions such as [AccountAPI.deploy](../methoddocs/api.html#ape.api.accounts.AccountAPI.deploy) or [AccountAPI.deploy](../methoddocs/contracts.html#ape.contracts.base.ContractContainer.deploy).
+You deploy contracts using Python functions such as [AccountAPI.deploy](../methoddocs/api.html#ape.api.accounts.AccountAPI.deploy) or [ContractContainer.deploy](../methoddocs/contracts.html#ape.contracts.base.ContractContainer.deploy).
 
 **NOTE**: You can run Ape's deploy functions from anywhere you run Python!
 
