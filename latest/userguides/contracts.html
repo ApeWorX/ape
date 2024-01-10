@@ -148,6 +148,7 @@
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Contracts</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#from-deploy">From Deploy</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#deploy-scripts">Deploy Scripts</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#publishing">Publishing</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="#from-project-contract-address">From Project Contract Address</a></li>
@@ -230,62 +231,70 @@ The other way is to initialize an already-deployed contract using its address.</
 <section id="from-deploy">
 <h2>From Deploy<a class="headerlink" href="#from-deploy" title="Permalink to this heading"></a></h2>
 <p>Deploy contracts from your project using the <code class="docutils literal notranslate"><span class="pre">project</span></code> root-level object.
-The names of your contracts are attributes on the <code class="docutils literal notranslate"><span class="pre">project</span></code> object (e.g. <code class="docutils literal notranslate"><span class="pre">project.MyContract</span></code>) and their types are <a class="reference external" href="../methoddocs/contracts.html#ape.contracts.base.ContractContainer">ContractContainer</a>.</p>
-<p><strong>NOTE</strong>: To avoid naming collisions with other properties on the <code class="docutils literal notranslate"><span class="pre">project</span></code> object, you can also use the <a class="reference external" href="../methoddocs/managers.html#ape.managers.project.manager.ProjectManager.get_contract">get_contract()</a> method to retrieve contract containers.</p>
-<p>When you deploy contracts, you get back a <code class="docutils literal notranslate"><span class="pre">ContractInstance</span></code>.</p>
-<p>Here is an example using Python and Ape to deploy a contract.
-(Note: this code be run from anywhere you run Python, such as a script, an <a class="reference external" href="./scripts.html">Ape script</a>, a TTY, or the <a class="reference external" href="./console.html">ape console</a>).</p>
+You deploy contracts using Python functions such as <a class="reference external" href="../methoddocs/api.html#ape.api.accounts.AccountAPI.deploy">AccountAPI.deploy</a> or <a class="reference external" href="../methoddocs/contracts.html#ape.contracts.base.ContractContainer.deploy">ContractContainer.deploy</a>.</p>
+<p><strong>NOTE</strong>: You can run Ape’s deploy functions from anywhere you run Python!</p>
+<p>You need both an account and a contract in order to deploy a contract, as the deployment process requires a transaction to submit the contract data to the blockchain.
+To learn about accounts and how to use them, see the <a class="reference external" href="./accounts.html">Accounts Guide</a>.
+You also need the contract.
+You can access contract types from Ape’s root-level <code class="docutils literal notranslate"><span class="pre">project</span></code> object (e.g. <code class="docutils literal notranslate"><span class="pre">project.MyContract</span></code>) and their types are <a class="reference external" href="../methoddocs/contracts.html#ape.contracts.base.ContractContainer">ContractContainer</a>.</p>
+<p>Let’s assume you have a Vyper contract like this:</p>
+<div class="highlight-vyper notranslate"><div class="highlight"><pre><span></span><span class="n">contract</span><span class="w"> </span><span class="nv">MySmartContract:</span>
+<span class="w">    </span><span class="nv">owner:</span><span class="w"> </span><span class="kd">public</span><span class="p">(</span><span class="kt">address</span><span class="p">)</span>
+<span class="w">    </span><span class="nv">balance:</span><span class="w"> </span><span class="kd">public</span><span class="p">(</span><span class="kt">uint256</span><span class="p">)</span>
+
+<span class="w">    </span><span class="nd">@public</span>
+<span class="w">    </span><span class="nd">@payable</span>
+<span class="w">    </span><span class="nd">@public</span>
+<span class="w">    </span><span class="k">def</span><span class="w"> </span><span class="nf">__init__</span><span class="p">(</span><span class="nv">arg1:</span><span class="w"> </span><span class="kt">uint256</span><span class="p">,</span><span class="w"> </span><span class="nv">arg2:</span><span class="w"> </span><span class="kt">address</span><span class="p">):</span>
+<span class="w">        </span><span class="na">self</span><span class="p">.</span><span class="n">owner</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">arg2</span>
+<span class="w">        </span><span class="na">self</span><span class="p">.</span><span class="n">balance</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">arg1</span>
+</pre></div>
+</div>
+<p>Before you can deploy this contract, you must ensure it was compiled.
+To learn about compiling in Ape, please see <a class="reference external" href="./compile.html">this guide</a>.</p>
+<p>After it is compiled, you can deploy it.
+Here is a basic example of Python code to deploy a contract:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">ape</span> <span class="kn">import</span> <span class="n">accounts</span><span class="p">,</span> <span class="n">project</span>
 
-<span class="n">dev</span> <span class="o">=</span> <span class="n">accounts</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;dev&quot;</span><span class="p">)</span>
-<span class="n">contract</span> <span class="o">=</span> <span class="n">project</span><span class="o">.</span><span class="n">MyContract</span><span class="o">.</span><span class="n">deploy</span><span class="p">(</span><span class="n">sender</span><span class="o">=</span><span class="n">dev</span><span class="p">)</span>
-</pre></div>
-</div>
-<p>You can alternatively use this syntax instead:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">ape</span> <span class="kn">import</span> <span class="n">accounts</span><span class="p">,</span> <span class="n">project</span>
+<span class="c1"># You need an account to deploy, as it requires a transaction.</span>
+<span class="n">account</span> <span class="o">=</span> <span class="n">accounts</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;&lt;ALIAS&gt;&quot;</span><span class="p">)</span>  <span class="c1"># NOTE: &lt;ALIAS&gt; refers to your account alias!</span>
+<span class="n">contract</span> <span class="o">=</span> <span class="n">project</span><span class="o">.</span><span class="n">MyContract</span><span class="o">.</span><span class="n">deploy</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">account</span><span class="p">,</span> <span class="n">sender</span><span class="o">=</span><span class="n">account</span><span class="p">)</span>
 
-<span class="n">dev</span> <span class="o">=</span> <span class="n">accounts</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;dev&quot;</span><span class="p">)</span>
-<span class="n">contract</span> <span class="o">=</span> <span class="n">dev</span><span class="o">.</span><span class="n">deploy</span><span class="p">(</span><span class="n">project</span><span class="o">.</span><span class="n">MyContract</span><span class="p">)</span>
+<span class="c1"># NOTE: You can also do it this way:</span>
+<span class="n">contract2</span> <span class="o">=</span> <span class="n">account</span><span class="o">.</span><span class="n">deploy</span><span class="p">(</span><span class="n">project</span><span class="o">.</span><span class="n">MyContract</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">account</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>If your contract requires constructor arguments then you will need to pass them to the contract in the <a class="reference external" href="./transactions.html">args</a> when deploying like this:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">ape</span> <span class="kn">import</span> <span class="n">accounts</span><span class="p">,</span> <span class="n">project</span>
+<p>The arguments to the constructor (<code class="docutils literal notranslate"><span class="pre">1,</span> <span class="pre">account</span></code>) can be in Python form.
+Ape will automatically convert values in your transactions, thus allowing you to provide higher-level objects or abstractions as input types.
+That is why, as you can see, the second argument is an <code class="docutils literal notranslate"><span class="pre">AccountAPI</span></code> object for the type <code class="docutils literal notranslate"><span class="pre">address</span></code> in the contract.</p>
+<p>Notice in the example, we use <code class="docutils literal notranslate"><span class="pre">project.MyContract</span></code> to access the contract type.
+To avoid naming collisions with other properties on the <code class="docutils literal notranslate"><span class="pre">project</span></code> object, you can alternatively use the <a class="reference external" href="../methoddocs/managers.html#ape.managers.project.manager.ProjectManager.get_contract">get_contract()</a> method to retrieve contract containers.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">ape</span> <span class="kn">import</span> <span class="n">project</span>
 
-<span class="n">dev</span> <span class="o">=</span> <span class="n">accounts</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;dev&quot;</span><span class="p">)</span>
-<span class="n">contract</span> <span class="o">=</span> <span class="n">project</span><span class="o">.</span><span class="n">MyContract</span><span class="o">.</span><span class="n">deploy</span><span class="p">(</span><span class="s2">&quot;argument1&quot;</span><span class="p">,</span> <span class="s2">&quot;argument2&quot;</span><span class="p">,</span> <span class="n">sender</span><span class="o">=</span><span class="n">dev</span><span class="p">)</span>
+<span class="n">contract</span> <span class="o">=</span> <span class="nb">property</span><span class="o">.</span><span class="n">get_contract</span><span class="p">(</span><span class="s2">&quot;MyContract&quot;</span><span class="p">)</span>  <span class="c1"># Same as `project.MyContract`.</span>
 </pre></div>
 </div>
-<p>you can alternatively use this syntax instead:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">ape</span> <span class="kn">import</span> <span class="n">accounts</span><span class="p">,</span> <span class="n">project</span>
-
-<span class="n">dev</span> <span class="o">=</span> <span class="n">accounts</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;dev&quot;</span><span class="p">)</span>
-<span class="n">contract</span> <span class="o">=</span> <span class="n">accounts</span><span class="o">.</span><span class="n">dev</span><span class="o">.</span><span class="n">deploy</span><span class="p">(</span><span class="n">project</span><span class="o">.</span><span class="n">MyContract</span><span class="p">,</span> <span class="s2">&quot;argument1&quot;</span><span class="p">,</span> <span class="s2">&quot;argument2&quot;</span><span class="p">)</span>
-</pre></div>
-</div>
-<p>With this technique, you can feed as many constructor arguments as your contract constructor requires.</p>
-<p><strong>NOTE</strong>: You can also publish the contract source code to an explorer upon deployment using the <code class="docutils literal notranslate"><span class="pre">publish=</span></code> kwarg on the deploy methods.
-More information on publishing contracts can be found in <a class="reference external" href="./publishing.html">this guide</a>.</p>
-<p>If you do not pass the correct amount of constructor arguments when deploying, you will get an error showing your arguments don’t match what is in the ABI:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>ArgumentsLengthError:<span class="w"> </span>The<span class="w"> </span>number<span class="w"> </span>of<span class="w"> </span>the<span class="w"> </span>given<span class="w"> </span>arguments<span class="w"> </span><span class="o">(</span><span class="m">0</span><span class="o">)</span><span class="w"> </span><span class="k">do</span><span class="w"> </span>not<span class="w"> </span>match<span class="w"> </span>what<span class="w"> </span>is<span class="w"> </span>defined<span class="w"> </span><span class="k">in</span><span class="w"> </span>the<span class="w"> </span>ABI<span class="w"> </span><span class="o">(</span><span class="m">2</span><span class="o">)</span>.
-</pre></div>
-</div>
-<p>In this case it is saying that you have fed 0 constructor arguments but the contract requires 2 constructor arguments to deploy.</p>
-<p>To show the arguments that your constructor requires you can use the .constructor method to see the constructor arguments that your contract requires:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">In</span> <span class="p">[</span><span class="mi">0</span><span class="p">]:</span> <span class="n">project</span><span class="o">.</span><span class="n">MyContract</span><span class="o">.</span><span class="n">constructor</span>
-<span class="n">Out</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span> <span class="n">constructor</span><span class="p">(</span><span class="n">string</span> <span class="n">argument1</span><span class="p">,</span> <span class="n">string</span> <span class="n">argument2</span><span class="p">)</span>
-</pre></div>
-</div>
+<p>Notice when deploying, we have to specify the <code class="docutils literal notranslate"><span class="pre">sender=</span></code> kwarg because <code class="docutils literal notranslate"><span class="pre">deploy</span></code> operations are transactions.
+To learn more about contract interaction via transactions, see the [Contract Interaction](#Conract Interaction) section below and the <a class="reference external" href="./transactions.html">guide on transactions</a>.</p>
 <section id="deploy-scripts">
 <h3>Deploy Scripts<a class="headerlink" href="#deploy-scripts" title="Permalink to this heading"></a></h3>
-<p>Often times, users will create an Ape script if their deployment process is repeatable or called from CI.
-Review the <a class="reference external" href="./scripts.html">scripting guide</a> for more information on scripting in Ape and how to use scripts to track your deployment logic.
-Once a deploy script is created, it can be invoked like:</p>
-<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>ape<span class="w"> </span>run<span class="w"> </span>&lt;script-name&gt;
+<p>Often time, the deployment process may be unique or complex.
+Or possibly, you need to run the deploy-logic from CI or in a repeatable fashion.
+Or perhaps, you just want to avoid having to invoking Python directly.
+In those cases, you can use Ape’s scripting system to save time and store your deployment logic.
+Simply copy your Python logic into an Ape script and run it via:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>ape<span class="w"> </span>run<span class="w"> </span>&lt;my-deploy-script&gt;
 </pre></div>
 </div>
-<p>There is no root <code class="docutils literal notranslate"><span class="pre">ape</span></code> command to deploy contracts; only the scripting-system, the <code class="docutils literal notranslate"><span class="pre">console</span></code>, or merely using Ape as a Python library.</p>
-<p>If your deployment process is simple, it is easy to use <code class="docutils literal notranslate"><span class="pre">ape</span> <span class="pre">console</span></code> to achieve a deployment.
+<p>Learn how to do this and scripting in its entirity by reviewing <a class="reference external" href="./scripts.html">the scripting user-guide</a>.</p>
+<p><strong>There is no root <code class="docutils literal notranslate"><span class="pre">ape</span></code> command to deploy contracts; only the scripting-system, the <code class="docutils literal notranslate"><span class="pre">console</span></code>, or merely using Ape as a Python library</strong>.</p>
+<p>If your deployment process is simple or only needs to happen once, it is easy to use <code class="docutils literal notranslate"><span class="pre">ape</span> <span class="pre">console</span></code> to achieve a deployment.
 More information on how to use <code class="docutils literal notranslate"><span class="pre">ape</span> <span class="pre">console</span></code> can be found <a class="reference external" href="./console.html">here</a>.</p>
+</section>
+<section id="publishing">
+<h3>Publishing<a class="headerlink" href="#publishing" title="Permalink to this heading"></a></h3>
+<p>You can also publish the contract source code to an explorer upon deployment using the <code class="docutils literal notranslate"><span class="pre">publish=</span></code> kwarg on the deploy methods.
+More information on publishing contracts can be found in <a class="reference external" href="./publishing.html">this guide</a>.</p>
 </section>
 </section>
 <section id="from-project-contract-address">
@@ -464,7 +473,7 @@ Here is an example of making a call by checking the result of <code class="docut
 <p>To directly call an address, such as invoking a contract’s <code class="docutils literal notranslate"><span class="pre">fallback</span></code> or <code class="docutils literal notranslate"><span class="pre">receive</span></code> method, call a contract instance directly:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">ape</span> <span class="kn">import</span> <span class="n">Contract</span><span class="p">,</span> <span class="n">accounts</span>
 
-<span class="n">sender</span> <span class="o">=</span> <span class="n">accounts</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;dev&quot;</span><span class="p">)</span>
+<span class="n">sender</span> <span class="o">=</span> <span class="n">accounts</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;&lt;ALIAS&gt;&quot;</span><span class="p">)</span>  <span class="c1"># NOTE: &lt;ALIAS&gt; refers to your account alias!</span>
 <span class="n">contract</span> <span class="o">=</span> <span class="n">Contract</span><span class="p">(</span><span class="s2">&quot;0x123...&quot;</span><span class="p">)</span>
 
 <span class="c1"># Call the contract&#39;s fallback method.</span>

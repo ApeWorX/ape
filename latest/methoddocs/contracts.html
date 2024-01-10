@@ -191,6 +191,7 @@
 <li class="toctree-l3"><a class="reference internal" href="#ape.contracts.base.ContractContainer.__call__"><code class="docutils literal notranslate"><span class="pre">ContractContainer.__call__()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ape.contracts.base.ContractContainer.__getattr__"><code class="docutils literal notranslate"><span class="pre">ContractContainer.__getattr__()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ape.contracts.base.ContractContainer.at"><code class="docutils literal notranslate"><span class="pre">ContractContainer.at()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#ape.contracts.base.ContractContainer.deploy"><code class="docutils literal notranslate"><span class="pre">ContractContainer.deploy()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ape.contracts.base.ContractContainer.deployments"><code class="docutils literal notranslate"><span class="pre">ContractContainer.deployments</span></code></a></li>
 </ul>
 </li>
@@ -501,6 +502,24 @@ available. Defaults to <code class="docutils literal notranslate"><span class="p
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">ContractInstance</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ape.contracts.base.ContractContainer.deploy">
+<span class="sig-name descname"><span class="pre">deploy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">publish</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#ape.contracts.base.ContractInstance" title="ape.contracts.base.ContractInstance"><span class="pre">ContractInstance</span></a></span></span><a class="headerlink" href="#ape.contracts.base.ContractContainer.deploy" title="Permalink to this definition"></a></dt>
+<dd><p>Deploy a contract.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>*args</strong> (<em>Any</em>) – The contract’s constructor arguments as Python types.</p></li>
+<li><p><strong>publish</strong> (<em>bool</em>) – Whether to also perform contract-verification.
+Defaults to <code class="docutils literal notranslate"><span class="pre">False</span></code>.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference internal" href="#ape.contracts.base.ContractInstance" title="ape.contracts.base.ContractInstance"><code class="xref py py-class docutils literal notranslate"><span class="pre">ContractInstance</span></code></a></p>
 </dd>
 </dl>
 </dd></dl>
