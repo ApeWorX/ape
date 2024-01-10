@@ -12,7 +12,7 @@ from click import Command, Context, Option
 
 from ape import networks, project
 from ape.cli import ConnectedProviderCommand, verbosity_option
-from ape.cli.options import _VERBOSITY_VALUES, _create_verbosity_kwargs
+from ape.cli.options import _VERBOSITY_VALUES, _create_verbosity_kwargs, network_option
 from ape.exceptions import ApeException, handle_ape_exception
 from ape.logging import logger
 from ape.utils import get_relative_path, use_temp_sys_path
@@ -252,6 +252,7 @@ class ScriptCommand(click.MultiCommand):
     default=False,
     help="Drop into interactive console session after running",
 )
+@network_option()
 def cli(interactive):
     """
     Run scripts from the "scripts/" folder of a project. A script must either define a ``main()``

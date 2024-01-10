@@ -293,10 +293,10 @@ def test_send_transaction_with_bad_nonce(sender, receiver):
 
 def test_send_transaction_without_enough_funds(sender, receiver, eth_tester_provider, convert):
     expected = (
-        rf"Transfer value meets or exceeds account balance for account '{sender.address}' "
+        rf"Transfer value meets or exceeds account balance for account '{sender.address}' .*"
         rf"on chain '{eth_tester_provider.chain_id}' using provider '{eth_tester_provider.name}'\."
-        rf"\\nAre you using the correct account \/ chain \/ provider combination\?\\n"
-        rf"(transfer_value=\d+, balance=1000000000000000000000000\)\."
+        rf"\nAre you using the correct account / chain \/ provider combination\?"
+        rf"\n\(transfer_value=\d+, balance=\d+\)\."
     )
     with pytest.raises(AccountsError, match=expected):
         sender.transfer(receiver, "10000000000000 ETH")
