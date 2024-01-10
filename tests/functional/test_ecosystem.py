@@ -441,6 +441,13 @@ def test_create_transaction_with_none_values(ethereum, eth_tester_provider):
     assert dynamic.max_priority_fee is None
 
 
+@pytest.mark.parametrize("kwarg_name", ("max_fee", "max_fee_per_gas", "maxFee", "maxFeePerGas"))
+def test_create_transaction_max_fee_per_gas(kwarg_name, ethereum):
+    fee = 1_000_000_000
+    tx = ethereum.create_transaction(**{kwarg_name: fee})
+    assert tx.max_fee == fee
+
+
 @pytest.mark.parametrize("tx_type", TransactionType)
 def test_encode_transaction(tx_type, ethereum, vyper_contract_instance, owner, eth_tester_provider):
     abi = vyper_contract_instance.contract_type.methods[0]
