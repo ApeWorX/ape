@@ -98,6 +98,78 @@ In the remainder of this guide, any example below using Ethereum, you can replac
 
 ## Custom Network Connection
 
+You can add custom networks to Ape without creating a plugin.
+The two ways to do this are:
+
+1. Create custom network configurations in your `ape-config.yaml` file (typically your global one).
+2. Use the `--network` flag with a raw URI string.
+
+### Custom Networks By Config
+
+The most familiar way to use custom networks (non-plugin-based networks) in Ape is to use the global custom networks config.
+You can add networks to your `ape-config.yaml`.
+Generally, you will want to add networks you use across projects to your global `ape-config.yaml`.
+More information configuring Ape can be found [here](./contracts.html).
+
+To add custom networks to your `ape-config.yaml` file, follow this pattern:
+
+```yaml
+networks:
+  custom:
+     - name: apenet             # Required
+       chain_id: 9867733322210  # Required
+       ecosysem: ethereum       # Defaults to your default ecosystem
+       default_provider: geth   # Default is the generic node provider
+```
+
+The following paragraphs explain the different parameters of the custom network config.
+
+**name**: The `name` of the network is the same identifier you use in the network triplet for the "network" (second) section.
+Read more on the network option \[here\](#Selecting a Network).
+
+**chain_id**: The chain ID is required for config-based custom networks.
+It ensures you are on the correct network when making transactions and is very important!
+
+**ecosystem**: You can optionally change the ecosystem class used for decoding data in this network.
+The default is `ethereum`, which is the base class to many ecosystems.
+However, if you know your ecosystem is much like another L2, use that ecosystem name as your ecosystem in your custom network config.
+For example, take note that the default Ethereum class assumes EIP-1559 exists.
+If your custom network is closer to Fantom, Polygon, Avalanche, or any other L2, you may want to consider using one of those plugins as the ecosystem to your custom network.
+
+**default_provider**: The default provider is the provider class used for making the connecting to your custom network, unless you specify a different provider (hence the `default_`).
+Generally, you won't change this and just use the default EVM node provider.
+Many provider plugins won't work here, such as `ape-infura` or `ape-alchemy`.
+If you are using one of their networks, it is best to edit and use the plugins directly.
+If you are using a developer-node remotely, such as a custom Anvil node, you can specify the default provider to be `foundry` instead or whatever local-provider plugin makes sense.
+However, take care in making sure you set up Foundry to correctly connect to your node.
+Likewise, when using the default Ethereum node provider, you will need to tell it the RPC URL.
+
+#### RPC URL
+
+To configure the RPC URL for a custom network, use the configuration of the provider.
+For example, if the RPC URL is `https://apenet.example.com/rpc`, configure it by doing:
+
+```yaml
+default_ecosystem: ethereum  # Is default, but including for clarity.
+
+networks:
+  custom:
+     - name: apenet
+       chain_id: 9867733322210
+       default_provider: geth  # Is default, but including for clarity.
+
+geth:
+  ethereum:
+    # NOTE: Use your custom network as the key!
+    apenet:
+      url: https://apenet.example.com/rpc
+```
+
+Now, when using `ethereum:apenet:geth`, it will connect to the RPC URL `https://apenet.example.com/rpc`.
+
+### Custom Networks by CLI
+
+Ape also lets you connect to custom networks on-the-fly!
 If you would like to connect to a URI using an existing ecosystem plugin, you can specify a URI in the provider-section for the `--network` option:
 
 ```bash
@@ -120,32 +192,6 @@ Here are some general reason why Network plugins are recommended:
 3. Response differences in uncommon blocks, such as the `"pending"` block or the genesis block.
 4. Revert messages and exception-handling differences.
 5. You can handle chain differences such as different transaction types in Arbitrum, non-EVM chains and behaviors like Starknet.
-
-### Configure Custom Networks
-
-To re-use and save custom network configurations, add them to an `ape-config.yaml` file, likely in your root `$HOME/.ape` directory so networks can be used globally across projects.
-Here is an example of configuring custom networks:
-
-```yaml
-networks:
-  custom:
-    - name: chainnet
-      chain_id: 95959595959595959  # Required when using custom networks this way.
-      ecosystem: polygon  # the custom network will use this ecosystem plugin for it's operation
-      default_provider: geth  # Default is a generic node
-
-# Also, configure your provider to use the right RPC URL for this network!
-geth:
-  polygon:
-    chainnet:
-      uri: https://chainnet.polygon.example.com
-```
-
-After configuring a custom network, connect as you would normally:
-
-```shell
-ape console --network polygon:chainnet:foundry
-```
 
 ## Configuring Networks
 
