@@ -315,6 +315,28 @@ def test_coverage(geth_provider, setup_pytester, project, pytester):
     result.assert_outcomes(passed=passed, failed=failed)
 
 
+@geth_process_test
+@skip_projects_except("geth")
+def test_custom_geth_network(
+    geth_provider, setup_pytester, project, pytester, custom_network_0, custom_network_chain_id_0
+):
+    """
+    Show we can "attempt" to connect to our custom network and run tests,
+    which has the same URL as our local geth node.
+    Note, in this case, it rightfully fails because of the chain ID difference.
+    """
+    setup_pytester(project.path.name)
+    result = pytester.runpytest(
+        "--coverage", "--showinternal", "--network", f"ethereum:{custom_network_0}:geth"
+    )
+    expected = (
+        f"Provider connected to chain ID '{geth_provider.chain_id}', "
+        f"which does not match network chain ID '{custom_network_chain_id_0}'. "
+        f"Are you connected to '{custom_network_0}'?"
+    )
+    assert any(expected in x for x in result.stdout.lines[::-1])
+
+
 @skip_projects_except("with-contracts")
 def test_interactive(eth_tester_provider, project, pytester, monkeypatch):
     secret = "__ 123 super secret 123 __"

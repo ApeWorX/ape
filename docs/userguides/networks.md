@@ -163,7 +163,7 @@ geth:
   ethereum:
     # NOTE: Use your custom network as the key!
     apenet:
-      url: https://apenet.example.com/rpc
+      uri: https://apenet.example.com/rpc
 ```
 
 Now, when using `ethereum:apenet:geth`, it will connect to the RPC URL `https://apenet.example.com/rpc`.
