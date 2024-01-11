@@ -18,6 +18,7 @@ from eth_utils import (
 from ethpm_types import ContractType
 from ethpm_types.abi import ABIType, ConstructorABI, EventABI, MethodABI
 from pydantic import Field, field_validator
+from pydantic_settings import SettingsConfigDict
 
 from ape.api import BlockAPI, EcosystemAPI, PluginConfig, ReceiptAPI, TransactionAPI
 from ape.api.networks import LOCAL_NETWORK_NAME
@@ -166,6 +167,8 @@ class EthereumConfig(PluginConfig):
     local: NetworkConfig = _create_local_config(default_provider="test")
     default_network: str = LOCAL_NETWORK_NAME
 
+    model_config = SettingsConfigDict(extra="allow")
+
 
 class Block(BlockAPI):
     """
@@ -201,23 +204,25 @@ class Block(BlockAPI):
 
 
 class Ethereum(EcosystemAPI):
-    """
-    Default transaction type should be overridden id chain doesn't support EIP-1559
-    """
+    # NOTE: `default_transaction_type` should be overridden
+    #   if the chain doesn't support EIP-1559.
 
     name: str = "ethereum"
     fee_token_symbol: str = "ETH"
 
     @property
     def config(self) -> EthereumConfig:
-        result = self.config_manager.get_config("ethereum")
-        assert isinstance(result, EthereumConfig)  # For mypy
-        return result
+        return cast(EthereumConfig, self.config_manager.get_config("ethereum"))
 
     @property
     def default_transaction_type(self) -> TransactionType:
-        network = self.default_network_name.replace("-", "_")
-        return self.config[network].default_transaction_type
+        if provider := self.network_manager.active_provider:
+            network_name = provider.network.name
+        else:
+            network_name = self.default_network_name
+
+        result = self.networks[network_name]._network_config["default_transaction_type"]
+        return TransactionType(result)
 
     @classmethod
     def decode_address(cls, raw_address: RawAddress) -> AddressType:

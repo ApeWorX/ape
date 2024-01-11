@@ -797,7 +797,22 @@ class NetworkAPI(BaseInterfaceModel):
 
     @property
     def _network_config(self) -> Dict:
-        return self.config.get(self.name.replace("-", "_"), {})
+        name_options = [self.name, self.name.replace("-", "_"), self.name.replace("_", "-")]
+        cfg: Any
+        for opt in name_options:
+            if cfg := self.config.get(opt):
+                if isinstance(cfg, dict):
+                    return cfg
+
+                elif isinstance(cfg, PluginConfig):
+                    return cfg.model_dump(mode="json", by_alias=True)
+
+                else:
+                    raise TypeError(f"Network config must be a dictionary. Received '{type(cfg)}'.")
+
+                return cfg
+
+        return {}
 
     @cached_property
     def gas_limit(self) -> GasLimit:

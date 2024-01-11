@@ -496,3 +496,16 @@ def test_getattr_custom_networks(ethereum, custom_networks_config, custom_networ
     actual = getattr(ethereum, custom_network_0)
     assert actual.name == custom_network_0
     assert isinstance(actual, NetworkAPI)
+
+
+def test_default_transaction_type(ethereum):
+    assert ethereum.default_transaction_type == TransactionType.DYNAMIC
+
+
+def test_default_transaction_type_configured_from_network(
+    eth_tester_provider, ethereum, temp_config
+):
+    _ = eth_tester_provider  # Connection required so 'ethereum' knows the network.
+    config = {"ethereum": {LOCAL_NETWORK_NAME: {"default_transaction_type": 0}}}
+    with temp_config(config):
+        assert ethereum.default_transaction_type == TransactionType.STATIC

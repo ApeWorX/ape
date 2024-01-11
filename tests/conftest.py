@@ -540,9 +540,14 @@ CUSTOM_NETWORKS_CONFIG = {
 
 
 @pytest.fixture(scope="session")
-def custom_networks_config(temp_config):
-    with temp_config(CUSTOM_NETWORKS_CONFIG):
-        yield CUSTOM_NETWORKS_CONFIG
+def custom_networks_config_dict():
+    return CUSTOM_NETWORKS_CONFIG
+
+
+@pytest.fixture(scope="session")
+def custom_networks_config(temp_config, custom_networks_config_dict):
+    with temp_config(custom_networks_config_dict):
+        yield custom_networks_config_dict
 
 
 @pytest.fixture(scope="session")
