@@ -122,7 +122,7 @@ networks:
        default_provider: geth   # Default is the generic node provider
 ```
 
-The following paragraphs explains the different parameters of the custom network config.
+The following paragraphs explain the different parameters of the custom network config.
 
 **name**: The `name` of the network is the same identifier you use in the network triplet for the "network" (second) section.
 Read more on the network option [here](#selecting-a-network).
@@ -130,12 +130,12 @@ Read more on the network option [here](#selecting-a-network).
 **chain_id**: The chain ID is required for config-based custom networks.
 It ensures you are on the correct network when making transactions and is very important!
 
-**ecosystem**: You can optionally change the ecosystem class Ape used.
-The ecosystem system class is largely responsible for decoding and encoding data to and from the blockchain.
-More about what an ecosystem does and its API can be found [here](../methoddocs/api.html#ape.api.networks.EcosystemAPI).
+**ecosystem**: You can optionally change the ecosystem class Ape uses.
+The ecosystem system class is largely responsible for decoding and encoding data to-and-fro the blockchain.
+More information about the EcosystemAPI can be found [here](../methoddocs/api.html#ape.api.networks.EcosystemAPI).
 The default ecosystem is `ethereum`, which is the base class to most other L2 ecosystems and is defined in the core plugin `ape-ethereum`.
-Iff you know your ecosystem is much like another L2 instead of Ethereum, use that ecosystem name as your `ecosystem` in your custom network config.
-For example, take note that the default Ethereum class assumes EIP-1559 exists.
+If your custom network's ecosystem matches closer to another L2 instead of Ethereum, use that ecosystem name as your `ecosystem` in your custom network config.
+For example, take note that `"ethereum"` assumes EIP-1559 exists (unless configured otherwise).
 If your custom network is closer to Fantom, Polygon, Avalanche, or any other L2, you may want to consider using one of those plugins as the `ecosystem` to your custom network.
 Alternatively, you can configure your custom network the same way you configure any other network in the config (see [this section](#block-time-transaction-type-and-more-config)).
 
@@ -323,8 +323,8 @@ ethereum:
     
     # Base-fee multipliers are useful for times when the base fee changes
     # before a transaction is sent but after the base fee was derived,
-    # thus causing rejection. A multiple eliminates the chances of
-    # rejection. The default for live networks is 1.4 times the base fee.
+    # thus causing rejection. A multiplier reduces the chance of
+    # rejection. The default for live networks is `1.4` times the base fee.
     base_fee_multiplier: 1.2
     
     # The block time helps Ape make decisions about
