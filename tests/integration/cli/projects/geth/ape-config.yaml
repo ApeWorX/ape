@@ -17,3 +17,11 @@ geth:
 test:
   # `false` because running pytest within pytest.
   disconnect_providers_after: false
+
+# Also, include custom networks integration testing here.
+networks:
+  custom:
+    - name: apenet
+      chain_id: 944898498948934528628
+    - name: apenet1
+      chain_id: 944898498948934528629

@@ -27,25 +27,6 @@ LOG = {
         "0x9f3d45ac20ccf04b45028b8080bb191eab93e29f7898ed43acf480dd80bba94d",
     ],
 }
-CUSTOM_NETWORK_0 = "apenet"
-CUSTOM_NETWORK_CHAIN_ID_0 = 944898498948934528628
-CUSTOM_NETWORK_1 = "apenet1"
-CUSTOM_NETWORK_CHAIN_ID_1 = 944898498948934528629
-CUSTOM_BLOCK_TIME = 123
-
-
-def _make_net(name: str, chain_id: int) -> Dict:
-    return {"name": name, "chain_id": chain_id, "block_time": CUSTOM_BLOCK_TIME}
-
-
-CUSTOM_NETWORKS_CONFIG = {
-    "networks": {
-        "custom": [
-            _make_net(CUSTOM_NETWORK_0, CUSTOM_NETWORK_CHAIN_ID_0),
-            _make_net(CUSTOM_NETWORK_1, CUSTOM_NETWORK_CHAIN_ID_1),
-        ]
-    }
-}
 
 
 @pytest.fixture
@@ -490,19 +471,20 @@ def test_networks(ethereum):
         assert isinstance(actual[net], NetworkAPI)
 
 
-def test_networks_includes_custom_networks(temp_config, ethereum):
-    with temp_config(CUSTOM_NETWORKS_CONFIG):
-        actual = ethereum.networks
-        for net in (
-            "goerli",
-            "sepolia",
-            "mainnet",
-            LOCAL_NETWORK_NAME,
-            CUSTOM_NETWORK_0,
-            CUSTOM_NETWORK_1,
-        ):
-            assert net in actual
-            assert isinstance(actual[net], NetworkAPI)
+def test_networks_includes_custom_networks(
+    ethereum, custom_networks_config, custom_network_0, custom_network_1
+):
+    actual = ethereum.networks
+    for net in (
+        "goerli",
+        "sepolia",
+        "mainnet",
+        LOCAL_NETWORK_NAME,
+        custom_network_0,
+        custom_network_1,
+    ):
+        assert net in actual
+        assert isinstance(actual[net], NetworkAPI)
 
 
 def test_getattr(ethereum):
@@ -510,8 +492,7 @@ def test_getattr(ethereum):
     assert isinstance(ethereum.mainnet, NetworkAPI)
 
 
-def test_getattr_custom_networks(temp_config, ethereum):
-    with temp_config(CUSTOM_NETWORKS_CONFIG):
-        actual = getattr(ethereum, CUSTOM_NETWORK_0)
-        assert actual.name == CUSTOM_NETWORK_0
-        assert isinstance(actual, NetworkAPI)
+def test_getattr_custom_networks(ethereum, custom_networks_config, custom_network_0):
+    actual = getattr(ethereum, custom_network_0)
+    assert actual.name == custom_network_0
+    assert isinstance(actual, NetworkAPI)
