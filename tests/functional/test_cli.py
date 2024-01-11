@@ -271,6 +271,25 @@ def test_network_option_can_be_none(runner):
     assert "Value is 'None'" in result.output
 
 
+@pytest.mark.parametrize("network_name", ("apenet", "apenet1"))
+def test_network_option_specify_custom_network(runner, custom_networks_config, network_name):
+    network_part = ("--network", f"ethereum:{network_name}:geth")
+
+    # NOTE: Also testing network filter with a custom network
+    #  But this is also required to work around LRU cache
+    #  giving us the wrong networks because click is running
+    #  the tester in-process after re-configuring networks,
+    #  which shouldn't happen IRL.
+
+    @click.command()
+    @network_option(network=network_name)
+    def cmd(network):
+        click.echo(f"Value is '{network.name}'")
+
+    result = runner.invoke(cmd, network_part)
+    assert f"Value is '{network_name}'" in result.output
+
+
 def test_account_option(runner, keyfile_account):
     @click.command()
     @account_option()
@@ -465,7 +484,7 @@ def test_connected_provider_command_invalid_value(runner):
     assert "Invalid value for '--network'" in result.output
 
 
-def test_connected_provider_use_provider(runner):
+def test_connected_provider_command_use_provider(runner):
     @click.command(cls=ConnectedProviderCommand)
     def cmd(provider):
         click.echo(provider.is_connected)
@@ -475,7 +494,7 @@ def test_connected_provider_use_provider(runner):
     assert "True" in result.output, result.output
 
 
-def test_connected_provider_use_ecosystem_network_and_provider(runner):
+def test_connected_provider_command_use_ecosystem_network_and_provider(runner):
     @click.command(cls=ConnectedProviderCommand)
     def cmd(ecosystem, network, provider):
         click.echo(f"{ecosystem.name}:{network.name}:{provider.name}")
@@ -485,7 +504,9 @@ def test_connected_provider_use_ecosystem_network_and_provider(runner):
     assert "ethereum:local:test" in result.output, result.output
 
 
-def test_connected_provider_use_ecosystem_network_and_provider_with_network_specified(runner):
+def test_connected_provider_command_use_ecosystem_network_and_provider_with_network_specified(
+    runner,
+):
     @click.command(cls=ConnectedProviderCommand)
     def cmd(ecosystem, network, provider):
         click.echo(f"{ecosystem.name}:{network.name}:{provider.name}")
@@ -544,7 +565,7 @@ def test_connected_provider_command_use_custom_options(runner):
 
 
 @geth_process_test
-def test_network_option_with_connected_provider_command(runner, geth_provider):
+def test_connected_provider_command_with_network_option(runner, geth_provider):
     _ = geth_provider  # Ensure already running, to avoid clashing later on.
 
     @click.command(cls=ConnectedProviderCommand)
@@ -557,6 +578,22 @@ def test_network_option_with_connected_provider_command(runner, geth_provider):
     res = runner.invoke(cmd, spec, catch_exceptions=False)
     assert res.exit_code == 0, res.output
     assert "geth" in res.output
+
+
+# @geth_process_test
+# def test_connected_provider_command_custom_network(runner, geth_provider, custom_networks_config):
+#     _ = geth_provider  # Ensure already running, to avoid clashing later on.
+#
+#     @click.command(cls=ConnectedProviderCommand)
+#     @network_option()
+#     def cmd(ecosystem, network, provider):
+#         click.echo(f"{ecosystem.name}:{network.name}:{provider.name}")
+#
+#     # NOTE: Must use a network that is not the default.
+#     spec = ("--network", "ethereum:apenet:geth")
+#     res = runner.invoke(cmd, spec, catch_exceptions=False)
+#     assert res.exit_code == 0, res.output
+#     assert "ethereum:apenet:geth" in res.output
 
 
 # TODO: Delete for 0.8.

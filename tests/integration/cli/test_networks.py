@@ -185,3 +185,22 @@ def test_run_not_subprocess_provider(ape_cli, runner):
         result.output
         == "ERROR: `ape networks run` requires a provider that manages a process, not 'test'.\n"
     )
+
+
+@run_once
+def test_run_custom_network(ape_cli, runner):
+    cmd = ("networks", "run", "--network", "ethereum:local:test")
+    result = runner.invoke(ape_cli, cmd)
+    assert result.exit_code != 0
+    assert (
+        result.output
+        == "ERROR: `ape networks run` requires a provider that manages a process, not 'test'.\n"
+    )
+
+
+@skip_projects_except("geth")
+def test_run_already_running(ape_cli, runner, geth_provider):
+    cmd = ("networks", "run", "--network", f"ethereum:{LOCAL_NETWORK_NAME}:geth")
+    result = runner.invoke(ape_cli, cmd)
+    assert result.exit_code != 0
+    assert "ERROR: Process already running." in result.output

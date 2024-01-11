@@ -14,6 +14,10 @@ geth:
       extra_funded_accounts:
         - 0x63c7f11162dBFC374DC6f5C0B3Aa26C618846a85  # Test account 100.
 
+    # Show we can configure custom networks
+    apenet:
+      uri: http://127.0.0.1:5550
+
 test:
   # `false` because running pytest within pytest.
   disconnect_providers_after: false
