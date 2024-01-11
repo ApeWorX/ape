@@ -135,6 +135,7 @@ The default is `ethereum`, which is the base class to many ecosystems.
 However, if you know your ecosystem is much like another L2, use that ecosystem name as your ecosystem in your custom network config.
 For example, take note that the default Ethereum class assumes EIP-1559 exists.
 If your custom network is closer to Fantom, Polygon, Avalanche, or any other L2, you may want to consider using one of those plugins as the ecosystem to your custom network.
+Alternatively, you can configure your custom network the same way you configure any other network in the config (see \[this section\](#Block time, transaction type, and more config)).
 
 **default_provider**: The default provider is the provider class used for making the connecting to your custom network, unless you specify a different provider (hence the `default_`).
 Generally, you won't change this and just use the default EVM node provider.
@@ -166,6 +167,23 @@ geth:
 ```
 
 Now, when using `ethereum:apenet:geth`, it will connect to the RPC URL `https://apenet.example.com/rpc`.
+
+#### Block time, transaction type, and more config
+
+Configuring general network properties in Ape is the same regardless of whether it is custom or not.
+As you saw above, we set the RPC URL of the custom network the same as if a plugin existed for it.
+The same is true for network config like block time, transaction type, `transaction_acceptance_timeout` and more.
+
+For example, let's say I want to change the default transaction type for the `apenet` custom network (defined in examples above).
+I do this the same way as if I were changing the default transaction type on mainnet.
+
+```yaml
+ethereum:
+  apenet:
+    default_transaction_type: 0  # Use static-fee transactions for my custom network!
+```
+
+For a full list of network configurations like this (for both custom and plugin-based networks), [see this sectioConfiguring Live Networksn](#Configuring Live Networks).
 
 ### Custom Networks by CLI
 
@@ -264,6 +282,52 @@ geth:
   ethereum:
     mainnet:
       uri: https://foo.node.bar
+```
+
+## Network Config
+
+There are many ways to configure your networks.
+Most of the time, Ape and its L2 plugins configure the best defaults automatically.
+Thus, you most likely won't need to modify these configurations.
+However, you do need to configure these if you wish to stray from a network's defaults.
+The following example shows how to do this.
+(note: even though this example uses `ethereum:mainnet`, you can use any of the L2 networks mentioned above, as they all have these config properties).
+
+```yaml
+ethereum:
+  mainnet:
+    # Ethereum mainnet in Ape uses EIP-1559 by default,
+    # but we can change that here. Note: most plugins
+    # use type 0 by default already, so you don't need
+    # to change this if using an `ape-<l2>` plugin.
+    default_transaction_type: 0
+
+    # The amount of time to wait for a transaction to be
+    # accepted after sending it before raising an error.
+    # Most networks use 120 seconds (2 minutes).
+    transaction_acceptance_timeout: 60
+
+    # The amount of times to retry fetching a receipt. This is useful 
+    # because decentralized systems may show the transaction accepted 
+    # on some nodes but not on others, and potentially RPC requests 
+    # won't return a receipt immediately after sending its transaction.
+    # This config accounts for such delay. The default is `20`.
+    max_receipt_retries: 10
+
+    # Set a gas limit here, or use the default of "auto" which
+    # estimates gas. Note: local networks tend to use "max" here
+    # by default.
+    gas_limit: auto
+    
+    # Base-fee multipliers are useful for times when the base fee changes
+    # before a transaction is sent but after the base fee was derived,
+    # thus causing rejection. A multiple eliminates the chances of
+    # rejection. The default for live networks is 1.4 times the base fee.
+    base_fee_multiplier: 1.2
+    
+    # The block time helps Ape make decisions about
+    # polling chain data.
+    block_time: 0
 ```
 
 ## Running a Network Process

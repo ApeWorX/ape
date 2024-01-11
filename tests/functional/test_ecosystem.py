@@ -31,11 +31,18 @@ CUSTOM_NETWORK_0 = "apenet"
 CUSTOM_NETWORK_CHAIN_ID_0 = 944898498948934528628
 CUSTOM_NETWORK_1 = "apenet1"
 CUSTOM_NETWORK_CHAIN_ID_1 = 944898498948934528629
+CUSTOM_BLOCK_TIME = 123
+
+
+def _make_net(name: str, chain_id: int) -> Dict:
+    return {"name": name, "chain_id": chain_id, "block_time": CUSTOM_BLOCK_TIME}
+
+
 CUSTOM_NETWORKS_CONFIG = {
     "networks": {
         "custom": [
-            {"name": CUSTOM_NETWORK_0, "chain_id": CUSTOM_NETWORK_CHAIN_ID_0},
-            {"name": CUSTOM_NETWORK_1, "chain_id": CUSTOM_NETWORK_CHAIN_ID_1},
+            _make_net(CUSTOM_NETWORK_0, CUSTOM_NETWORK_CHAIN_ID_0),
+            _make_net(CUSTOM_NETWORK_1, CUSTOM_NETWORK_CHAIN_ID_1),
         ]
     }
 }
@@ -508,4 +515,3 @@ def test_getattr_custom_networks(temp_config, ethereum):
         actual = getattr(ethereum, CUSTOM_NETWORK_0)
         assert actual.name == CUSTOM_NETWORK_0
         assert isinstance(actual, NetworkAPI)
-
