@@ -580,22 +580,6 @@ def test_connected_provider_command_with_network_option(runner, geth_provider):
     assert "geth" in res.output
 
 
-# @geth_process_test
-# def test_connected_provider_command_custom_network(runner, geth_provider, custom_networks_config):
-#     _ = geth_provider  # Ensure already running, to avoid clashing later on.
-#
-#     @click.command(cls=ConnectedProviderCommand)
-#     @network_option()
-#     def cmd(ecosystem, network, provider):
-#         click.echo(f"{ecosystem.name}:{network.name}:{provider.name}")
-#
-#     # NOTE: Must use a network that is not the default.
-#     spec = ("--network", "ethereum:apenet:geth")
-#     res = runner.invoke(cmd, spec, catch_exceptions=False)
-#     assert res.exit_code == 0, res.output
-#     assert "ethereum:apenet:geth" in res.output
-
-
 # TODO: Delete for 0.8.
 def test_deprecated_network_bound_command(runner):
     with pytest.warns(
