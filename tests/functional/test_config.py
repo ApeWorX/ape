@@ -15,6 +15,7 @@ from ape.managers.config import (
 )
 from ape.types import GasLimit
 from ape_ethereum.ecosystem import NetworkConfig
+from ape_networks import CustomNetwork
 from tests.functional.conftest import PROJECT_WITH_LONG_CONTRACTS_FOLDER
 
 
@@ -311,3 +312,16 @@ def test_load_does_not_call_project_manager(temp_config, config):
 def test_contracts_folder_with_hyphen(temp_config):
     with temp_config({"contracts-folder": "src"}) as project:
         assert project.contracts_folder.name == "src"
+
+
+def test_custom_network():
+    chain_id = 11191919191991918223773
+    data = {
+        "name": "mytestnet",
+        "chain_id": 11191919191991918223773,
+        "ecosystem": "ethereum",
+    }
+    network = CustomNetwork.model_validate(data)
+    assert network.name == "mytestnet"
+    assert network.chain_id == chain_id
+    assert network.ecosystem == "ethereum"

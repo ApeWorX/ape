@@ -233,7 +233,7 @@ class EcosystemAPI(ExtraAttributesMixin, BaseInterfaceModel):
 
         return self.config_manager.get_config(self.name)
 
-    @cached_property
+    @property
     def networks(self) -> Dict[str, "NetworkAPI"]:
         """
         A dictionary of network names mapped to their API implementation.
@@ -241,7 +241,41 @@ class EcosystemAPI(ExtraAttributesMixin, BaseInterfaceModel):
         Returns:
             Dict[str, :class:`~ape.api.networks.NetworkAPI`]
         """
+        networks = {**self._networks_from_plugins}
 
+        # Include configured custom networks.
+        custom_networks = [
+            n
+            for n in self.config_manager.get_config("networks").custom
+            if (n.ecosystem or self.network_manager.default_ecosystem.name) == self.name
+        ]
+
+        for custom_net in custom_networks:
+            if custom_net.name in networks:
+                raise NetworkError(
+                    f"More than one network named '{custom_net.name}' in ecosystem '{self.name}'."
+                )
+
+            network_data = custom_net.model_dump(
+                mode="json", by_alias=True, exclude=("default_provider",)
+            )
+            if not network_data.get("data_folder"):
+                network_data["data_folder"] = self.config_manager.DATA_FOLDER
+
+            network_data["ecosystem"] = self
+            network_type = create_network_type(custom_net.chain_id, custom_net.chain_id)
+            network_api = network_type.model_validate(network_data)
+            network_api._default_provider = custom_net.default_provider
+            network_api._is_custom = True
+            networks[custom_net.name] = network_api
+
+        if not networks:
+            raise NetworkError("No networks found")
+
+        return networks
+
+    @cached_property
+    def _networks_from_plugins(self) -> Dict[str, "NetworkAPI"]:
         networks = {}
         for _, (ecosystem_name, network_name, network_class) in self.plugin_manager.networks:
             if ecosystem_name == self.name:
@@ -253,41 +287,6 @@ class EcosystemAPI(ExtraAttributesMixin, BaseInterfaceModel):
                     data_folder=network_folder,
                     request_header=self.request_header,
                 )
-
-        # Include configured custom networks.
-        custom_networks = [
-            n
-            for n in self.config_manager.get_config("networks").custom
-            if (n.ecosystem or "ethereum") == self.name
-        ]
-
-        for custom_net in custom_networks:
-            if custom_net.name in networks:
-                raise NetworkError(
-                    f"More than one network named '{custom_net.name}' in ecosystem '{self.name}'."
-                )
-
-            if custom_net.chain_id is not None:
-                network_data = custom_net.model_dump(mode="json", by_alias=True, exclude=("default_provider",))
-                if not network_data.get("data_folder"):
-                    network_data["data_folder"] = self.config_manager.DATA_FOLDER
-
-                network_data["ecosystem"] = self
-                network_type = create_network_type(custom_net.chain_id, custom_net.chain_id)
-                network_api = network_type.model_validate(network_data)
-                network_api._default_provider = custom_net.default_provider
-                network_api._is_custom = True
-            else:
-                # NOTE: `geth` represents a default-node.
-                default_provider = custom_net.default_provider or "geth"
-                network_api = self.custom_network.model_copy(
-                    update={"_default_provider": default_provider}
-                )
-
-            networks[custom_net.name] = network_api
-
-        if not networks:
-            raise NetworkError("No networks found")
 
         return networks
 

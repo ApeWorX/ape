@@ -7,7 +7,7 @@ from ape.api import PluginConfig
 
 class CustomNetwork(PluginConfig):
     name: str
-    chain_id: Optional[int] = None
+    chain_id: int
     ecosystem: Optional[str] = None
     default_provider: str = "geth"  # Default node.
     data_folder: Optional[Path] = None

@@ -5,7 +5,7 @@ from eth_pydantic_types import HashBytes32, HexBytes
 from eth_typing import HexAddress, HexStr
 from ethpm_types.abi import ABIType, EventABI, MethodABI
 
-from ape.api.networks import LOCAL_NETWORK_NAME
+from ape.api.networks import LOCAL_NETWORK_NAME, NetworkAPI
 from ape.exceptions import DecodingError, NetworkNotFoundError
 from ape.types import AddressType
 from ape.utils import DEFAULT_LOCAL_TRANSACTION_ACCEPTANCE_TIMEOUT
@@ -26,6 +26,18 @@ LOG = {
         "0x0000000000000000000000000000000000000000000000000000000000000006",
         "0x9f3d45ac20ccf04b45028b8080bb191eab93e29f7898ed43acf480dd80bba94d",
     ],
+}
+CUSTOM_NETWORK_0 = "apenet"
+CUSTOM_NETWORK_CHAIN_ID_0 = 944898498948934528628
+CUSTOM_NETWORK_1 = "apenet1"
+CUSTOM_NETWORK_CHAIN_ID_1 = 944898498948934528629
+CUSTOM_NETWORKS_CONFIG = {
+    "networks": {
+        "custom": [
+            {"name": CUSTOM_NETWORK_0, "chain_id": CUSTOM_NETWORK_CHAIN_ID_0},
+            {"name": CUSTOM_NETWORK_1, "chain_id": CUSTOM_NETWORK_CHAIN_ID_1},
+        ]
+    }
 }
 
 
@@ -462,3 +474,38 @@ def test_set_default_network_not_exists(temp_config, ethereum):
     expected = f"No network in 'ethereum' named '{bad_network}'. Options:.*"
     with pytest.raises(NetworkNotFoundError, match=expected):
         ethereum.set_default_network(bad_network)
+
+
+def test_networks(ethereum):
+    actual = ethereum.networks
+    for net in ("goerli", "sepolia", "mainnet", LOCAL_NETWORK_NAME):
+        assert net in actual
+        assert isinstance(actual[net], NetworkAPI)
+
+
+def test_networks_includes_custom_networks(temp_config, ethereum):
+    with temp_config(CUSTOM_NETWORKS_CONFIG):
+        actual = ethereum.networks
+        for net in (
+            "goerli",
+            "sepolia",
+            "mainnet",
+            LOCAL_NETWORK_NAME,
+            CUSTOM_NETWORK_0,
+            CUSTOM_NETWORK_1,
+        ):
+            assert net in actual
+            assert isinstance(actual[net], NetworkAPI)
+
+
+def test_getattr(ethereum):
+    assert ethereum.mainnet.name == "mainnet"
+    assert isinstance(ethereum.mainnet, NetworkAPI)
+
+
+def test_getattr_custom_networks(temp_config, ethereum):
+    with temp_config(CUSTOM_NETWORKS_CONFIG):
+        actual = getattr(ethereum, CUSTOM_NETWORK_0)
+        assert actual.name == CUSTOM_NETWORK_0
+        assert isinstance(actual, NetworkAPI)
+
