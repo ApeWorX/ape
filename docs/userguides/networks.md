@@ -108,7 +108,7 @@ The two ways to do this are:
 
 The most familiar way to use custom networks (non-plugin-based networks) in Ape is to use the global custom networks config.
 You can add networks to your `ape-config.yaml`.
-Generally, you will want to add networks you use across projects to your global `ape-config.yaml`.
+Generally, you want to use your global `ape-config.yaml` to share networks across projects.
 More information configuring Ape can be found [here](./contracts.html).
 
 To add custom networks to your `ape-config.yaml` file, follow this pattern:
@@ -122,7 +122,7 @@ networks:
        default_provider: geth   # Default is the generic node provider
 ```
 
-The following paragraphs explain the different parameters of the custom network config.
+The following paragraphs explains the different parameters of the custom network config.
 
 **name**: The `name` of the network is the same identifier you use in the network triplet for the "network" (second) section.
 Read more on the network option \[here\](#Selecting a Network).
@@ -130,18 +130,20 @@ Read more on the network option \[here\](#Selecting a Network).
 **chain_id**: The chain ID is required for config-based custom networks.
 It ensures you are on the correct network when making transactions and is very important!
 
-**ecosystem**: You can optionally change the ecosystem class used for decoding data in this network.
-The default is `ethereum`, which is the base class to many ecosystems.
-However, if you know your ecosystem is much like another L2, use that ecosystem name as your ecosystem in your custom network config.
+**ecosystem**: You can optionally change the ecosystem class Ape used.
+The ecosystem system class is largely responsible for decoding and encoding data to and from the blockchain.
+Read more about the [EcosystemAPI here](../methoddocs/api.html#ape.api.networks.EcosystemAPI).
+The default ecosystem is `ethereum`, which is the base class to most other L2 ecosystems and is defined in the core plugin `ape-ethereum`.
+Iff you know your ecosystem is much like another L2 instead of Ethereum, use that ecosystem name as your `ecosystem` in your custom network config.
 For example, take note that the default Ethereum class assumes EIP-1559 exists.
-If your custom network is closer to Fantom, Polygon, Avalanche, or any other L2, you may want to consider using one of those plugins as the ecosystem to your custom network.
-Alternatively, you can configure your custom network the same way you configure any other network in the config (see \[this section\](#Block time, transaction type, and more config)).
+If your custom network is closer to Fantom, Polygon, Avalanche, or any other L2, you may want to consider using one of those plugins as the `ecosystem` to your custom network.
+Alternatively, you can configure your custom network the same way you configure any other network in the config (see [this section](#Blocktime)).
 
-**default_provider**: The default provider is the provider class used for making the connecting to your custom network, unless you specify a different provider (hence the `default_`).
-Generally, you won't change this and just use the default EVM node provider.
-Many provider plugins won't work here, such as `ape-infura` or `ape-alchemy`.
+**default_provider**: The default provider is the provider class used for making the connection to your custom network, unless you specify a different provider (hence the `default_`).
+Generally, you won't change this and can use the default EVM node provider.
+Many provider plugins won't function here, such as `ape-infura` or `ape-alchemy`.
 If you are using one of their networks, it is best to edit and use the plugins directly.
-If you are using a developer-node remotely, such as a custom Anvil node, you can specify the default provider to be `foundry` instead or whatever local-provider plugin makes sense.
+If you are using a developer-node remotely, such as a custom Anvil node, you can specify the default provider to be `foundry` instead.
 However, take care in making sure you set up Foundry to correctly connect to your node.
 Likewise, when using the default Ethereum node provider, you will need to tell it the RPC URL.
 
@@ -170,9 +172,9 @@ Now, when using `ethereum:apenet:geth`, it will connect to the RPC URL `https://
 
 #### Block time, transaction type, and more config
 
-Configuring general network properties in Ape is the same regardless of whether it is custom or not.
-As you saw above, we set the RPC URL of the custom network the same as if a plugin existed for it.
-The same is true for network config like block time, transaction type, `transaction_acceptance_timeout` and more.
+Configuring network properties in Ape is the same regardless of whether it is custom or not.
+As you saw above, we set the RPC URL of the custom network the same as if a plugin existed for that network.
+The same is true for network config properties such as `block_time`, `default_transaction_type`, `transaction_acceptance_timeout` and more.
 
 For example, let's say I want to change the default transaction type for the `apenet` custom network (defined in examples above).
 I do this the same way as if I were changing the default transaction type on mainnet.
@@ -183,7 +185,7 @@ ethereum:
     default_transaction_type: 0  # Use static-fee transactions for my custom network!
 ```
 
-For a full list of network configurations like this (for both custom and plugin-based networks), [see this sectioConfiguring Live Networksn](#Configuring Live Networks).
+For a full list of network configurations like this (for both custom and plugin-based networks), [see this section](#ConfiguringLiveNetworks).
 
 ### Custom Networks by CLI
 
