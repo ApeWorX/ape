@@ -8,83 +8,86 @@ The other way is to initialize an already-deployed contract using its address.
 ## From Deploy
 
 Deploy contracts from your project using the `project` root-level object.
-The names of your contracts are attributes on the `project` object (e.g. `project.MyContract`) and their types are [ContractContainer](../methoddocs/contracts.html#ape.contracts.base.ContractContainer).
+You deploy contracts using Python functions such as [AccountAPI.deploy](../methoddocs/api.html#ape.api.accounts.AccountAPI.deploy) or [ContractContainer.deploy](../methoddocs/contracts.html#ape.contracts.base.ContractContainer.deploy).
 
-**NOTE**: To avoid naming collisions with other properties on the `project` object, you can also use the [get_contract()](../methoddocs/managers.html#ape.managers.project.manager.ProjectManager.get_contract) method to retrieve contract containers.
+**NOTE**: You can run Ape's deploy functions from anywhere you run Python!
 
-When you deploy contracts, you get back a `ContractInstance`.
+You need both an account and a contract in order to deploy a contract, as the deployment process requires a transaction to submit the contract data to the blockchain.
+To learn about accounts and how to use them, see the [Accounts Guide](./accounts.html).
+You also need the contract.
+You can access contract types from Ape's root-level `project` object (e.g. `project.MyContract`) and their types are [ContractContainer](../methoddocs/contracts.html#ape.contracts.base.ContractContainer).
 
-Here is an example using Python and Ape to deploy a contract.
-(Note: this code be run from anywhere you run Python, such as a script, an [Ape script](./scripts.html), a TTY, or the [ape console](./console.html)).
+Let's assume you have a Vyper contract like this:
+
+```vyper
+contract MySmartContract:
+    owner: public(address)
+    balance: public(uint256)
+
+    @public
+    @payable
+    @public
+    def __init__(arg1: uint256, arg2: address):
+        self.owner = arg2
+        self.balance = arg1
+```
+
+Before you can deploy this contract, you must ensure it was compiled.
+To learn about compiling in Ape, please see [this guide](./compile.html).
+
+After it is compiled, you can deploy it.
+Here is a basic example of Python code to deploy a contract:
 
 ```python
 from ape import accounts, project
 
-dev = accounts.load("dev")
-contract = project.MyContract.deploy(sender=dev)
+# You need an account to deploy, as it requires a transaction.
+account = accounts.load("<ALIAS>")  # NOTE: <ALIAS> refers to your account alias!
+contract = project.MyContract.deploy(1, account, sender=account)
+
+# NOTE: You can also do it this way:
+contract2 = account.deploy(project.MyContract, 1, account)
 ```
 
-You can alternatively use this syntax instead:
+The arguments to the constructor (`1, account`) can be in Python form.
+Ape will automatically convert values in your transactions, thus allowing you to provide higher-level objects or abstractions as input types.
+That is why, as you can see, the second argument is an `AccountAPI` object for the type `address` in the contract.
+
+Notice in the example, we use `project.MyContract` to access the contract type.
+To avoid naming collisions with other properties on the `project` object, you can alternatively use the [get_contract()](../methoddocs/managers.html#ape.managers.project.manager.ProjectManager.get_contract) method to retrieve contract containers.
 
 ```python
-from ape import accounts, project
+from ape import project
 
-dev = accounts.load("dev")
-contract = dev.deploy(project.MyContract)
+contract = property.get_contract("MyContract")  # Same as `project.MyContract`.
 ```
 
-If your contract requires constructor arguments then you will need to pass them to the contract in the [args](./transactions.html) when deploying like this:
-
-```python
-from ape import accounts, project
-
-dev = accounts.load("dev")
-contract = project.MyContract.deploy("argument1", "argument2", sender=dev)
-```
-
-you can alternatively use this syntax instead:
-
-```python
-from ape import accounts, project
-
-dev = accounts.load("dev")
-contract = accounts.dev.deploy(project.MyContract, "argument1", "argument2")
-```
-
-With this technique, you can feed as many constructor arguments as your contract constructor requires.
-
-**NOTE**: You can also publish the contract source code to an explorer upon deployment using the `publish=` kwarg on the deploy methods.
-More information on publishing contracts can be found in [this guide](./publishing.html).
-
-If you do not pass the correct amount of constructor arguments when deploying, you will get an error showing your arguments don't match what is in the ABI:
-
-```bash
-ArgumentsLengthError: The number of the given arguments (0) do not match what is defined in the ABI (2).
-```
-
-In this case it is saying that you have fed 0 constructor arguments but the contract requires 2 constructor arguments to deploy.
-
-To show the arguments that your constructor requires you can use the .constructor method to see the constructor arguments that your contract requires:
-
-```python
-In [0]: project.MyContract.constructor
-Out[0]: constructor(string argument1, string argument2)
-```
+Notice when deploying, we have to specify the `sender=` kwarg because `deploy` operations are transactions.
+To learn more about contract interaction via transactions, see the \[Contract Interaction\](#Conract Interaction) section below and the [guide on transactions](./transactions.html).
 
 ### Deploy Scripts
 
-Often times, users will create an Ape script if their deployment process is repeatable or called from CI.
-Review the [scripting guide](./scripts.html) for more information on scripting in Ape and how to use scripts to track your deployment logic.
-Once a deploy script is created, it can be invoked like:
+Often time, the deployment process may be unique or complex.
+Or possibly, you need to run the deploy-logic from CI or in a repeatable fashion.
+Or perhaps, you just want to avoid having to invoking Python directly.
+In those cases, you can use Ape's scripting system to save time and store your deployment logic.
+Simply copy your Python logic into an Ape script and run it via:
 
 ```shell
-ape run <script-name>
+ape run <my-deploy-script>
 ```
 
-There is no root `ape` command to deploy contracts; only the scripting-system, the `console`, or merely using Ape as a Python library.
+Learn how to do this and scripting in its entirity by reviewing [the scripting user-guide](./scripts.html).
 
-If your deployment process is simple, it is easy to use `ape console` to achieve a deployment.
+**There is no root `ape` command to deploy contracts; only the scripting-system, the `console`, or merely using Ape as a Python library**.
+
+If your deployment process is simple or only needs to happen once, it is easy to use `ape console` to achieve a deployment.
 More information on how to use `ape console` can be found [here](./console.html).
+
+### Publishing
+
+You can also publish the contract source code to an explorer upon deployment using the `publish=` kwarg on the deploy methods.
+More information on publishing contracts can be found in [this guide](./publishing.html).
 
 ## From Project Contract Address
 
@@ -295,7 +298,7 @@ To directly call an address, such as invoking a contract's `fallback` or `receiv
 ```python
 from ape import Contract, accounts
 
-sender = accounts.load("dev")
+sender = accounts.load("<ALIAS>")  # NOTE: <ALIAS> refers to your account alias!
 contract = Contract("0x123...")
 
 # Call the contract's fallback method.
