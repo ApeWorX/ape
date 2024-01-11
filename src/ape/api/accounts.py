@@ -353,8 +353,10 @@ class AccountAPI(BaseInterfaceModel, BaseAddress):
 
         if txn.total_transfer_value > self.balance:
             raise AccountsError(
-                "Transfer value meets or exceeds account balance.\n"
-                "Are you using the correct provider/account combination?\n"
+                f"Transfer value meets or exceeds account balance "
+                f"for account '{self.address}' on chain '{self.provider.chain_id}' "
+                f"using provider '{self.provider.name}'.\n"
+                "Are you using the correct account / chain / provider combination?\n"
                 f"(transfer_value={txn.total_transfer_value}, balance={self.balance})."
             )
 

@@ -4,6 +4,49 @@ When interacting with a blockchain, you will have to select an ecosystem (e.g. E
 Networks are part of ecosystems and typically defined in plugins.
 For example, the `ape-ethereum` plugin comes with Ape and can be used for handling EVM-like behavior.
 
+## Selecting a Network
+
+Before discussing how to add custom networks or install L2 network plugins, you need to know how to specify the network choice.
+No matter what type of network you are using in Ape, you specify the network using a "network choice" triplet value:
+
+```python
+"<ecosystem-name>:<network-name>:<provider-name>"
+```
+
+Where `ecosystem-name` refers to the ecosystem, e.g. `ethereum`, `polygon`, `fantom`, or any valid ecosystem plugin name.
+The `network-name` refers to a network such as `mainnet`, `local`, or something else defined by your ecosystem or custom network config.
+And `provider-name` refers to the provider plugin in Ape, such as `geth` for a generic node or `foundry` if the network is more Anvil-based, or a different plugin altogether.
+
+Commonly, the network triplet value is specified via the `--network` option in Ape CLI commands.
+The following is a list of common Ape commands that can use the `--network` option:
+
+```bash
+ape test --network ethereum:local:foundry
+ape console --network arbitrum:testnet:alchemy # NOTICE: All networks, even from other ecosystems, use this.
+```
+
+To see all possible values for `--network`, run the command:
+
+```shell
+ape networks list
+```
+
+You can also use the `--network` option on scripts that use the `main()` method approach or scripts that implement that `ConnectedProviderCommand` command type.
+See [the scripting guide](./scripts.html) to learn more about scripts and how to add the network option.
+
+Also, you can omit values to use defaults.
+For example, the default ecosystem is `ethereum` and the default network is `local`, so you can do:
+
+```bash
+ape run <custom-cmd> --network ::foundry
+```
+
+as a short-cut for `ethereum:local:foundry`.
+(note: `<custom-command>` refers to the name of a script that uses the network option or is a `ConnectedProviderCommand`.
+See the [scripting guide](./scripts.html) for more information).
+
+Next, we will talk about how to add additional networks to your Ape environment.
+
 ## L2 Networks
 
 Common L2 networks, such as Arbitrum, Polygon, Optimism, or Fantom, have ApeWorX-maintained (trusted) plugins that override the Ethereum ecosystem API class and change any defaults that are needed.
@@ -78,35 +121,31 @@ Here are some general reason why Network plugins are recommended:
 4. Revert messages and exception-handling differences.
 5. You can handle chain differences such as different transaction types in Arbitrum, non-EVM chains and behaviors like Starknet.
 
-## Selecting a Network
+### Configure Custom Networks
 
-Commonly, you will use the `--network` option to configure your network during Ape commands.
-The following is a list of common Ape commands that can use the `--network` option:
+To re-use and save custom network configurations, add them to an `ape-config.yaml` file, likely in your root `$HOME/.ape` directory so networks can be used globally across projects.
+Here is an example of configuring custom networks:
 
-```bash
-ape test --network ethereum:local:foundry
-ape console --network arbitrum:testnet:alchemy
+```yaml
+networks:
+  custom:
+    - name: chainnet
+      chain_id: 95959595959595959  # Required when using custom networks this way.
+      ecosystem: polygon  # the custom network will use this ecosystem plugin for it's operation
+      default_provider: geth  # Default is a generic node
+
+# Also, configure your provider to use the right RPC URL for this network!
+geth:
+  polygon:
+    chainnet:
+      uri: https://chainnet.polygon.example.com
 ```
 
-To see all possible values for `--network`, run the command:
+After configuring a custom network, connect as you would normally:
 
 ```shell
-ape networks list
+ape console --network polygon:chainnet:foundry
 ```
-
-You can also use the `--network` option on scripts that use the `main()` method approach or scripts that implement that `ConnectedProviderCommand` command type.
-See [the scripting guide](./scripts.html) to learn more about scripts and how to add the network option.
-
-Also, you can omit values to use defaults.
-For example, the default ecosystem is `ethereum` and the default network is `local`, so you can do:
-
-```bash
-ape run <custom-cmd> --network ::foundry
-```
-
-as a short-cut for `ethereum:local:foundry`.
-(note: `<custom-command>` refers to the name of a script that uses the network option or is a `ConnectedProviderCommand`.
-See the [scripting guide](./scripts.html) for more information).
 
 ## Configuring Networks
 
@@ -121,6 +160,18 @@ default_ecosystem: <ecosystem-name>
   <network-name>:
     default_provider: <provider-name>
 ```
+
+As mentioned \[above\](#L2 Networks), ecosystems and networks typically come from plugins and their names and values are defined in those plugins.
+The ecosystem name goes in placeholder `<ecosystem-name>` and the network names go in place for `<network-name>`.
+
+**If you are unsure of the values to place here, run the following command**:
+
+```shell
+ape networks list
+```
+
+This command lists all the ecosystem names and networks names installed currently in Ape.
+Place the identical name in the config to configure that ecosystem or network.
 
 You may also configure a specific gas limit for a given network:
 
