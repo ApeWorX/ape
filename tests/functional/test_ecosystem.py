@@ -311,16 +311,39 @@ def test_decode_receipt(eth_tester_provider, ethereum):
     )
 
 
-def test_configure_default_txn_type(temp_config, ethereum):
+def test_default_transaction_type(ethereum):
+    assert ethereum.default_transaction_type == TransactionType.DYNAMIC
+
+
+def test_default_transaction_type_not_connected_used_default_network(
+    temp_config, ethereum, networks
+):
     value = TransactionType.STATIC.value
     config_dict = {"ethereum": {"mainnet_fork": {"default_transaction_type": value}}}
     assert ethereum.default_transaction_type == TransactionType.DYNAMIC
 
     with temp_config(config_dict):
         ethereum._default_network = "mainnet-fork"
-        assert ethereum.default_network_name == "mainnet-fork"
+        provider = networks.active_provider
+
+        # Disconnect so it uses default.
+        networks.active_provider = None
+        try:
+            assert ethereum.default_network_name == "mainnet-fork"
+            assert ethereum.default_transaction_type == TransactionType.STATIC
+            ethereum._default_network = LOCAL_NETWORK_NAME
+        finally:
+            networks.active_provider = provider
+
+
+def test_default_transaction_type_configured_from_local_network(
+    eth_tester_provider, ethereum, temp_config
+):
+    _ = eth_tester_provider  # Connection required so 'ethereum' knows the network.
+    value = TransactionType.STATIC.value
+    config = {"ethereum": {LOCAL_NETWORK_NAME: {"default_transaction_type": value}}}
+    with temp_config(config):
         assert ethereum.default_transaction_type == TransactionType.STATIC
-        ethereum._default_network = LOCAL_NETWORK_NAME
 
 
 @pytest.mark.parametrize("network_name", (LOCAL_NETWORK_NAME, "mainnet-fork", "mainnet_fork"))
@@ -496,16 +519,3 @@ def test_getattr_custom_networks(ethereum, custom_networks_config, custom_networ
     actual = getattr(ethereum, custom_network_0)
     assert actual.name == custom_network_0
     assert isinstance(actual, NetworkAPI)
-
-
-def test_default_transaction_type(ethereum):
-    assert ethereum.default_transaction_type == TransactionType.DYNAMIC
-
-
-def test_default_transaction_type_configured_from_network(
-    eth_tester_provider, ethereum, temp_config
-):
-    _ = eth_tester_provider  # Connection required so 'ethereum' knows the network.
-    config = {"ethereum": {LOCAL_NETWORK_NAME: {"default_transaction_type": 0}}}
-    with temp_config(config):
-        assert ethereum.default_transaction_type == TransactionType.STATIC

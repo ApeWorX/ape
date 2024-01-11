@@ -607,8 +607,8 @@ def test_prepare_transaction_using_auto_gas(sender, ethereum, tx_type):
     original_limit = ethereum.config.local.gas_limit
 
     try:
-        ethereum.config.local.gas_limit = auto_gas
         clear_network_property_cached()
+        ethereum.config.local.gas_limit = auto_gas
         assert ethereum.local.gas_limit == auto_gas, "Setup failed - auto gas not set."
 
         # NOTE: Must create tx _after_ setting network gas value.

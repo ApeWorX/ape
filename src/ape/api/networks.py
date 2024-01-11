@@ -498,12 +498,13 @@ class EcosystemAPI(ExtraAttributesMixin, BaseInterfaceModel):
           :class:`~ape.api.networks.NetworkAPI`
         """
 
-        name = network_name.replace("_", "-")
-        if name in self.networks:
-            return self.networks[name]
+        names = {network_name, network_name.replace("-", "_"), network_name.replace("_", "-")}
+        for name in names:
+            if name in self.networks:
+                return self.networks[name]
 
-        elif name == "custom":
-            return self.custom_network
+            elif name == "custom":
+                return self.custom_network
 
         raise NetworkNotFoundError(network_name, ecosystem=self.name, options=self.networks)
 
@@ -796,8 +797,8 @@ class NetworkAPI(BaseInterfaceModel):
         return self.config_manager.get_config(self.ecosystem.name)
 
     @property
-    def _network_config(self) -> Dict:
-        name_options = [self.name, self.name.replace("-", "_"), self.name.replace("_", "-")]
+    def _network_config(self) -> PluginConfig:
+        name_options = {self.name, self.name.replace("-", "_"), self.name.replace("_", "-")}
         cfg: Any
         for opt in name_options:
             if cfg := self.config.get(opt):
@@ -805,14 +806,14 @@ class NetworkAPI(BaseInterfaceModel):
                     return cfg
 
                 elif isinstance(cfg, PluginConfig):
-                    return cfg.model_dump(mode="json", by_alias=True)
+                    return cfg
 
                 else:
                     raise TypeError(f"Network config must be a dictionary. Received '{type(cfg)}'.")
 
                 return cfg
 
-        return {}
+        return PluginConfig()
 
     @cached_property
     def gas_limit(self) -> GasLimit:
@@ -1083,6 +1084,7 @@ class NetworkAPI(BaseInterfaceModel):
             Optional[str]
         """
 
+        provider_from_config: str
         if provider := self._default_provider:
             # Was set programatically.
             return provider
@@ -1201,7 +1203,7 @@ class ForkedNetworkAPI(NetworkAPI):
         """
         The network being forked.
         """
-        network_name = self.name.replace("-fork", "")
+        network_name = self.name.replace("-fork", "").replace("_fork", "")
         return self.ecosystem.get_network(network_name)
 
     @property
@@ -1213,7 +1215,7 @@ class ForkedNetworkAPI(NetworkAPI):
         exists.
         """
 
-        config_choice = self._network_config.get("upstream_provider")
+        config_choice: str = self._network_config.get("upstream_provider")
         if provider_name := config_choice or self.upstream_network.default_provider_name:
             return self.upstream_network.get_provider(provider_name)
 

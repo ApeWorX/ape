@@ -46,7 +46,7 @@ from ape.utils import (
     returns_array,
     to_int,
 )
-from ape.utils.misc import DEFAULT_MAX_RETRIES_TX
+from ape.utils.misc import DEFAULT_MAX_RETRIES_TX, DEFAULT_TRANSACTION_TYPE
 from ape_ethereum.proxies import (
     IMPLEMENTATION_ABI,
     MASTER_COPY_ABI,
@@ -217,12 +217,18 @@ class Ethereum(EcosystemAPI):
     @property
     def default_transaction_type(self) -> TransactionType:
         if provider := self.network_manager.active_provider:
-            network_name = provider.network.name
+            # Check connected network first.
+            networks_to_check = [provider.network.name, self.default_network_name]
         else:
-            network_name = self.default_network_name
+            networks_to_check = [self.default_network_name]
 
-        result = self.networks[network_name]._network_config["default_transaction_type"]
-        return TransactionType(result)
+        for name in networks_to_check:
+            network = self.get_network(name)
+            result: Optional[int] = network._network_config.get("default_transaction_type")
+            if result is not None:
+                return TransactionType(result)
+
+        return TransactionType(DEFAULT_TRANSACTION_TYPE)
 
     @classmethod
     def decode_address(cls, raw_address: RawAddress) -> AddressType:
