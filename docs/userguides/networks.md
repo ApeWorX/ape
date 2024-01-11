@@ -125,19 +125,19 @@ networks:
 The following paragraphs explains the different parameters of the custom network config.
 
 **name**: The `name` of the network is the same identifier you use in the network triplet for the "network" (second) section.
-Read more on the network option \[here\](#Selecting a Network).
+Read more on the network option [here](#selecting-a-network).
 
 **chain_id**: The chain ID is required for config-based custom networks.
 It ensures you are on the correct network when making transactions and is very important!
 
 **ecosystem**: You can optionally change the ecosystem class Ape used.
 The ecosystem system class is largely responsible for decoding and encoding data to and from the blockchain.
-Read more about the [EcosystemAPI here](../methoddocs/api.html#ape.api.networks.EcosystemAPI).
+More about what an ecosystem does and its API can be found [here](../methoddocs/api.html#ape.api.networks.EcosystemAPI).
 The default ecosystem is `ethereum`, which is the base class to most other L2 ecosystems and is defined in the core plugin `ape-ethereum`.
 Iff you know your ecosystem is much like another L2 instead of Ethereum, use that ecosystem name as your `ecosystem` in your custom network config.
 For example, take note that the default Ethereum class assumes EIP-1559 exists.
 If your custom network is closer to Fantom, Polygon, Avalanche, or any other L2, you may want to consider using one of those plugins as the `ecosystem` to your custom network.
-Alternatively, you can configure your custom network the same way you configure any other network in the config (see [this section](#Blocktime)).
+Alternatively, you can configure your custom network the same way you configure any other network in the config (see [this section](#block-time-transaction-type-and-more-config)).
 
 **default_provider**: The default provider is the provider class used for making the connection to your custom network, unless you specify a different provider (hence the `default_`).
 Generally, you won't change this and can use the default EVM node provider.
@@ -185,7 +185,7 @@ ethereum:
     default_transaction_type: 0  # Use static-fee transactions for my custom network!
 ```
 
-For a full list of network configurations like this (for both custom and plugin-based networks), [see this section](#ConfiguringLiveNetworks).
+For a full list of network configurations like this (for both custom and plugin-based networks), [see this section](#configuring-networks).
 
 ### Custom Networks by CLI
 
@@ -227,7 +227,7 @@ default_ecosystem: <ecosystem-name>
     default_provider: <provider-name>
 ```
 
-As mentioned \[above\](#L2 Networks), ecosystems and networks typically come from plugins and their names and values are defined in those plugins.
+As mentioned [above](#l2-networks), ecosystems and networks typically come from plugins and their names and values are defined in those plugins.
 The ecosystem name goes in placeholder `<ecosystem-name>` and the network names go in place for `<network-name>`.
 
 **If you are unsure of the values to place here, run the following command**:
