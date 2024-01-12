@@ -329,7 +329,7 @@ ethereum:
     
     # The block time helps Ape make decisions about
     # polling chain data.
-    block_time: 0
+    block_time: 10
 ```
 
 ## Running a Network Process
