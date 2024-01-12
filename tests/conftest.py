@@ -551,12 +551,12 @@ def custom_networks_config(temp_config, custom_networks_config_dict):
 
 
 @pytest.fixture(scope="session")
-def custom_network_0():
+def custom_network_name_0():
     return CUSTOM_NETWORK_0
 
 
 @pytest.fixture(scope="session")
-def custom_network_1():
+def custom_network_name_1():
     return CUSTOM_NETWORK_1
 
 
@@ -568,3 +568,8 @@ def custom_network_chain_id_0():
 @pytest.fixture(scope="session")
 def custom_network_chain_id_1():
     return CUSTOM_NETWORK_CHAIN_ID_1
+
+
+@pytest.fixture
+def custom_network(ethereum, custom_networks_config):
+    return ethereum.apenet

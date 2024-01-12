@@ -206,7 +206,7 @@ class NetworkManager(BaseManager):
             name=name,
             network=network,
             provider_settings=provider_settings,
-            data_folder=network.data_folder,
+            data_folder=self.ethereum.data_folder / name,
             request_header=network.request_header,
         )
 

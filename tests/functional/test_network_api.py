@@ -61,3 +61,9 @@ def test_forked_networks(ethereum):
     assert mainnet_fork.upstream_chain_id == 1
     # Just make sure it doesn't fail when trying to access.
     assert mainnet_fork.upstream_provider
+
+
+def test_data_folder_custom_network(custom_network, ethereum, custom_network_name_0):
+    actual = custom_network.data_folder
+    expected = ethereum.data_folder / custom_network_name_0
+    assert actual == expected

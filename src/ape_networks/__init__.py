@@ -1,4 +1,3 @@
-from pathlib import Path
 from typing import Dict, List, Optional
 
 from ape import plugins
@@ -10,7 +9,6 @@ class CustomNetwork(PluginConfig):
     chain_id: int
     ecosystem: Optional[str] = None
     default_provider: str = "geth"  # Default node.
-    data_folder: Optional[Path] = None
     request_header: Dict = {}
 
 

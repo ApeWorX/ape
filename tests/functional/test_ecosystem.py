@@ -495,7 +495,7 @@ def test_networks(ethereum):
 
 
 def test_networks_includes_custom_networks(
-    ethereum, custom_networks_config, custom_network_0, custom_network_1
+    ethereum, custom_networks_config, custom_network_name_0, custom_network_name_1
 ):
     actual = ethereum.networks
     for net in (
@@ -503,8 +503,8 @@ def test_networks_includes_custom_networks(
         "sepolia",
         "mainnet",
         LOCAL_NETWORK_NAME,
-        custom_network_0,
-        custom_network_1,
+        custom_network_name_0,
+        custom_network_name_1,
     ):
         assert net in actual
         assert isinstance(actual[net], NetworkAPI)
@@ -515,7 +515,7 @@ def test_getattr(ethereum):
     assert isinstance(ethereum.mainnet, NetworkAPI)
 
 
-def test_getattr_custom_networks(ethereum, custom_networks_config, custom_network_0):
-    actual = getattr(ethereum, custom_network_0)
-    assert actual.name == custom_network_0
+def test_getattr_custom_networks(ethereum, custom_networks_config, custom_network_name_0):
+    actual = getattr(ethereum, custom_network_name_0)
+    assert actual.name == custom_network_name_0
     assert isinstance(actual, NetworkAPI)

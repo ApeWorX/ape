@@ -1,6 +1,5 @@
 from functools import partial
 from pathlib import Path
-from tempfile import mkdtemp
 from typing import (
     TYPE_CHECKING,
     Any,
@@ -111,14 +110,13 @@ class EcosystemAPI(ExtraAttributesMixin, BaseInterfaceModel):
         if ethereum_class is None:
             raise NetworkError("Core Ethereum plugin missing.")
 
-        data_folder = mkdtemp()
         request_header = self.config_manager.REQUEST_HEADER
-        init_kwargs = {"data_folder": data_folder, "request_header": request_header}
+        init_kwargs = {"data_folder": self.data_folder, "request_header": request_header}
         ethereum = ethereum_class(**init_kwargs)  # type: ignore
         return NetworkAPI(
             name="custom",
             ecosystem=ethereum,
-            data_folder=Path(data_folder),
+            data_folder=self.data_folder / "custom",
             request_header=request_header,
             _default_provider="geth",
             _is_custom=True,
@@ -259,9 +257,7 @@ class EcosystemAPI(ExtraAttributesMixin, BaseInterfaceModel):
             network_data = custom_net.model_dump(
                 mode="json", by_alias=True, exclude=("default_provider",)
             )
-            if not network_data.get("data_folder"):
-                network_data["data_folder"] = self.config_manager.DATA_FOLDER
-
+            network_data["data_folder"] = self.data_folder / custom_net.name
             network_data["ecosystem"] = self
             network_type = create_network_type(custom_net.chain_id, custom_net.chain_id)
             network_api = network_type.model_validate(network_data)

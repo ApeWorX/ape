@@ -86,14 +86,21 @@ def geth_vyper_receipt(geth_vyper_contract, owner):
 
 @pytest.fixture
 def custom_network_connection(
-    geth_provider, ethereum, temp_config, custom_network_0, custom_networks_config_dict, networks
+    geth_provider,
+    ethereum,
+    temp_config,
+    custom_network_name_0,
+    custom_networks_config_dict,
+    networks,
 ):
     orig_chain_id = custom_networks_config_dict["networks"]["custom"][0]["chain_id"]
     try:
         custom_networks_config_dict["networks"]["custom"][0]["chain_id"] = geth_provider.chain_id
         config = {
-            ethereum.name: {custom_network_0: {"default_transaction_type": 0}},
-            geth_provider.name: {ethereum.name: {custom_network_0: {"uri": geth_provider.uri}}},
+            ethereum.name: {custom_network_name_0: {"default_transaction_type": 0}},
+            geth_provider.name: {
+                ethereum.name: {custom_network_name_0: {"uri": geth_provider.uri}}
+            },
             **custom_networks_config_dict,
         }
         actual = geth_provider.network
