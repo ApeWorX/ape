@@ -898,7 +898,17 @@ class NetworkAPI(BaseInterfaceModel):
         for plugin_name, plugin_tuple in self.plugin_manager.explorers:
             ecosystem_name, network_name, explorer_class = plugin_tuple
 
-            if self.ecosystem.name == ecosystem_name and self.name == network_name:
+            # Check for explicitly configured custom networks
+            plugin_config = self.config_manager.get_config(plugin_name)
+            has_explorer_config = (
+                plugin_config
+                and self.ecosystem.name in plugin_config
+                and self.name in plugin_config[self.ecosystem.name]
+            )
+
+            if self.ecosystem.name == ecosystem_name and (
+                self.name == network_name or has_explorer_config
+            ):
                 # Return the first registered explorer (skipping any others)
                 return explorer_class(
                     name=plugin_name,
