@@ -106,10 +106,10 @@ The two ways to do this are:
 
 ### Custom Networks By Config
 
-The most familiar way to use custom networks (non-plugin-based networks) in Ape is to use the global custom networks config.
-You can add networks to your `ape-config.yaml`.
-Generally, you want to use your global `ape-config.yaml` to share networks across projects.
-More information configuring Ape can be found [here](./contracts.html).
+The most familiar way to use custom networks (non-plugin-based networks) in Ape is to use the `networks: custom` configuration.
+Generally, you want to use the global `ape-config.yaml`, which is located in your `$HOME/.ape/` directory.
+By configuring networks globally, you can share them across all your projects.
+More information about configuring Ape (in general) can be found [here](./contracts.html).
 
 To add custom networks to your `ape-config.yaml` file, follow this pattern:
 
