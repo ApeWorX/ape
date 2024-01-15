@@ -6,7 +6,7 @@ from eth_typing import HexAddress, HexStr
 from ethpm_types.abi import ABIType, EventABI, MethodABI
 
 from ape.api.networks import LOCAL_NETWORK_NAME, NetworkAPI
-from ape.exceptions import DecodingError, NetworkNotFoundError
+from ape.exceptions import DecodingError, NetworkError, NetworkNotFoundError
 from ape.types import AddressType
 from ape.utils import DEFAULT_LOCAL_TRANSACTION_ACCEPTANCE_TIMEOUT
 from ape_ethereum.ecosystem import BLUEPRINT_HEADER, Block
@@ -508,6 +508,17 @@ def test_networks_includes_custom_networks(
     ):
         assert net in actual
         assert isinstance(actual[net], NetworkAPI)
+
+
+def test_networks_multiple_networks_with_same_name(
+    temp_config, custom_networks_config_dict, ethereum
+):
+    data = {**custom_networks_config_dict}
+    data["networks"]["custom"][0]["name"] = "mainnet"  # There already is a mainnet in "ethereum".
+    expected = ".*More than one network named 'mainnet' in ecosystem 'ethereum'.*"
+    with temp_config(data):
+        with pytest.raises(NetworkError, match=expected):
+            _ = ethereum.networks
 
 
 def test_getattr(ethereum):
