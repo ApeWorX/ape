@@ -1,6 +1,5 @@
 from functools import partial
 from pathlib import Path
-from tempfile import mkdtemp
 from typing import (
     TYPE_CHECKING,
     Any,
@@ -111,16 +110,16 @@ class EcosystemAPI(ExtraAttributesMixin, BaseInterfaceModel):
         if ethereum_class is None:
             raise NetworkError("Core Ethereum plugin missing.")
 
-        data_folder = mkdtemp()
         request_header = self.config_manager.REQUEST_HEADER
-        init_kwargs = {"data_folder": data_folder, "request_header": request_header}
+        init_kwargs = {"data_folder": self.data_folder, "request_header": request_header}
         ethereum = ethereum_class(**init_kwargs)  # type: ignore
         return NetworkAPI(
             name="custom",
             ecosystem=ethereum,
-            data_folder=Path(data_folder),
+            data_folder=self.data_folder / "custom",
             request_header=request_header,
             _default_provider="geth",
+            _is_custom=True,
         )
 
     @classmethod
@@ -232,7 +231,7 @@ class EcosystemAPI(ExtraAttributesMixin, BaseInterfaceModel):
 
         return self.config_manager.get_config(self.name)
 
-    @cached_property
+    @property
     def networks(self) -> Dict[str, "NetworkAPI"]:
         """
         A dictionary of network names mapped to their API implementation.
@@ -240,7 +239,39 @@ class EcosystemAPI(ExtraAttributesMixin, BaseInterfaceModel):
         Returns:
             Dict[str, :class:`~ape.api.networks.NetworkAPI`]
         """
+        networks = {**self._networks_from_plugins}
 
+        # Include configured custom networks.
+        custom_networks = [
+            n
+            for n in self.config_manager.get_config("networks").custom
+            if (n.ecosystem or self.network_manager.default_ecosystem.name) == self.name
+        ]
+
+        for custom_net in custom_networks:
+            if custom_net.name in networks:
+                raise NetworkError(
+                    f"More than one network named '{custom_net.name}' in ecosystem '{self.name}'."
+                )
+
+            network_data = custom_net.model_dump(
+                mode="json", by_alias=True, exclude=("default_provider",)
+            )
+            network_data["data_folder"] = self.data_folder / custom_net.name
+            network_data["ecosystem"] = self
+            network_type = create_network_type(custom_net.chain_id, custom_net.chain_id)
+            network_api = network_type.model_validate(network_data)
+            network_api._default_provider = custom_net.default_provider
+            network_api._is_custom = True
+            networks[custom_net.name] = network_api
+
+        if not networks:
+            raise NetworkError("No networks found")
+
+        return networks
+
+    @cached_property
+    def _networks_from_plugins(self) -> Dict[str, "NetworkAPI"]:
         networks = {}
         for _, (ecosystem_name, network_name, network_class) in self.plugin_manager.networks:
             if ecosystem_name == self.name:
@@ -253,11 +284,7 @@ class EcosystemAPI(ExtraAttributesMixin, BaseInterfaceModel):
                     request_header=self.request_header,
                 )
 
-        if len(networks) > 0:
-            return networks
-
-        else:
-            raise NetworkError("No networks found")
+        return networks
 
     def __post_init__(self):
         if len(self.networks) == 0:
@@ -467,12 +494,13 @@ class EcosystemAPI(ExtraAttributesMixin, BaseInterfaceModel):
           :class:`~ape.api.networks.NetworkAPI`
         """
 
-        name = network_name.replace("_", "-")
-        if name in self.networks:
-            return self.networks[name]
+        names = {network_name, network_name.replace("-", "_"), network_name.replace("_", "-")}
+        for name in names:
+            if name in self.networks:
+                return self.networks[name]
 
-        elif name == "custom":
-            return self.custom_network
+            elif name == "custom":
+                return self.custom_network
 
         raise NetworkNotFoundError(network_name, ecosystem=self.name, options=self.networks)
 
@@ -743,6 +771,8 @@ class NetworkAPI(BaseInterfaceModel):
     # See ``.default_provider`` which is the proper field.
     _default_provider: str = ""
 
+    _is_custom: bool = False
+
     def __repr__(self) -> str:
         try:
             chain_id = self.chain_id
@@ -763,8 +793,23 @@ class NetworkAPI(BaseInterfaceModel):
         return self.config_manager.get_config(self.ecosystem.name)
 
     @property
-    def _network_config(self) -> Dict:
-        return self.config.get(self.name.replace("-", "_"), {})
+    def _network_config(self) -> PluginConfig:
+        name_options = {self.name, self.name.replace("-", "_"), self.name.replace("_", "-")}
+        cfg: Any
+        for opt in name_options:
+            if cfg := self.config.get(opt):
+                if isinstance(cfg, dict):
+                    return cfg
+
+                elif isinstance(cfg, PluginConfig):
+                    return cfg
+
+                else:
+                    raise TypeError(f"Network config must be a dictionary. Received '{type(cfg)}'.")
+
+                return cfg
+
+        return PluginConfig()
 
     @cached_property
     def gas_limit(self) -> GasLimit:
@@ -853,7 +898,17 @@ class NetworkAPI(BaseInterfaceModel):
         for plugin_name, plugin_tuple in self.plugin_manager.explorers:
             ecosystem_name, network_name, explorer_class = plugin_tuple
 
-            if self.ecosystem.name == ecosystem_name and self.name == network_name:
+            # Check for explicitly configured custom networks
+            plugin_config = self.config_manager.get_config(plugin_name)
+            has_explorer_config = (
+                plugin_config
+                and self.ecosystem.name in plugin_config
+                and self.name in plugin_config[self.ecosystem.name]
+            )
+
+            if self.ecosystem.name == ecosystem_name and (
+                self.name == network_name or has_explorer_config
+            ):
                 # Return the first registered explorer (skipping any others)
                 return explorer_class(
                     name=plugin_name,
@@ -883,6 +938,10 @@ class NetworkAPI(BaseInterfaceModel):
         """
         return self.is_local or self.is_fork
 
+    @property
+    def is_custom(self) -> bool:
+        return self.name == "custom" or self._is_custom
+
     @cached_property
     def providers(self):  # -> Dict[str, Partial[ProviderAPI]]
         """
@@ -900,7 +959,7 @@ class NetworkAPI(BaseInterfaceModel):
             provider_name = clean_plugin_name(provider_class.__module__.split(".")[0])
 
             # NOTE: Custom networks work with any provider.
-            if self.name == "custom" or (
+            if self.is_custom or (
                 self.ecosystem.name == ecosystem_name and self.name == network_name
             ):
                 # NOTE: Lazily load provider config
@@ -1031,6 +1090,7 @@ class NetworkAPI(BaseInterfaceModel):
             Optional[str]
         """
 
+        provider_from_config: str
         if provider := self._default_provider:
             # Was set programatically.
             return provider
@@ -1149,7 +1209,7 @@ class ForkedNetworkAPI(NetworkAPI):
         """
         The network being forked.
         """
-        network_name = self.name.replace("-fork", "")
+        network_name = self.name.replace("-fork", "").replace("_fork", "")
         return self.ecosystem.get_network(network_name)
 
     @property
@@ -1161,7 +1221,7 @@ class ForkedNetworkAPI(NetworkAPI):
         exists.
         """
 
-        config_choice = self._network_config.get("upstream_provider")
+        config_choice: str = self._network_config.get("upstream_provider")
         if provider_name := config_choice or self.upstream_network.default_provider_name:
             return self.upstream_network.get_provider(provider_name)
 

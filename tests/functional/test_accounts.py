@@ -291,8 +291,14 @@ def test_send_transaction_with_bad_nonce(sender, receiver):
         sender.transfer(receiver, "1 gwei", type=0, nonce=0)
 
 
-def test_send_transaction_without_enough_funds(sender, receiver):
-    with pytest.raises(AccountsError, match="Transfer value meets or exceeds account balance"):
+def test_send_transaction_without_enough_funds(sender, receiver, eth_tester_provider, convert):
+    expected = (
+        rf"Transfer value meets or exceeds account balance for account '{sender.address}' .*"
+        rf"on chain '{eth_tester_provider.chain_id}' using provider '{eth_tester_provider.name}'\."
+        rf"\nAre you using the correct account / chain \/ provider combination\?"
+        rf"\n\(transfer_value=\d+, balance=\d+\)\."
+    )
+    with pytest.raises(AccountsError, match=expected):
         sender.transfer(receiver, "10000000000000 ETH")
 
 
@@ -601,8 +607,8 @@ def test_prepare_transaction_using_auto_gas(sender, ethereum, tx_type):
     original_limit = ethereum.config.local.gas_limit
 
     try:
-        ethereum.config.local.gas_limit = auto_gas
         clear_network_property_cached()
+        ethereum.config.local.gas_limit = auto_gas
         assert ethereum.local.gas_limit == auto_gas, "Setup failed - auto gas not set."
 
         # NOTE: Must create tx _after_ setting network gas value.

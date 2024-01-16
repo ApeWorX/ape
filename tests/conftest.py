@@ -516,3 +516,60 @@ class SubprocessResult:
     @property
     def output(self) -> str:
         return self._completed_process.stdout
+
+
+CUSTOM_NETWORK_0 = "apenet"
+CUSTOM_NETWORK_CHAIN_ID_0 = 944898498948934528628
+CUSTOM_NETWORK_1 = "apenet1"
+CUSTOM_NETWORK_CHAIN_ID_1 = 944898498948934528629
+CUSTOM_BLOCK_TIME = 123
+
+
+def _make_net(name: str, chain_id: int) -> Dict:
+    return {"name": name, "chain_id": chain_id}
+
+
+CUSTOM_NETWORKS_CONFIG = {
+    "networks": {
+        "custom": [
+            _make_net(CUSTOM_NETWORK_0, CUSTOM_NETWORK_CHAIN_ID_0),
+            _make_net(CUSTOM_NETWORK_1, CUSTOM_NETWORK_CHAIN_ID_1),
+        ]
+    }
+}
+
+
+@pytest.fixture(scope="session")
+def custom_networks_config_dict():
+    return CUSTOM_NETWORKS_CONFIG
+
+
+@pytest.fixture(scope="session")
+def custom_networks_config(temp_config, custom_networks_config_dict):
+    with temp_config(custom_networks_config_dict):
+        yield custom_networks_config_dict
+
+
+@pytest.fixture(scope="session")
+def custom_network_name_0():
+    return CUSTOM_NETWORK_0
+
+
+@pytest.fixture(scope="session")
+def custom_network_name_1():
+    return CUSTOM_NETWORK_1
+
+
+@pytest.fixture(scope="session")
+def custom_network_chain_id_0():
+    return CUSTOM_NETWORK_CHAIN_ID_0
+
+
+@pytest.fixture(scope="session")
+def custom_network_chain_id_1():
+    return CUSTOM_NETWORK_CHAIN_ID_1
+
+
+@pytest.fixture
+def custom_network(ethereum, custom_networks_config):
+    return ethereum.apenet

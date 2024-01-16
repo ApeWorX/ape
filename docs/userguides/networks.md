@@ -4,6 +4,49 @@ When interacting with a blockchain, you will have to select an ecosystem (e.g. E
 Networks are part of ecosystems and typically defined in plugins.
 For example, the `ape-ethereum` plugin comes with Ape and can be used for handling EVM-like behavior.
 
+## Selecting a Network
+
+Before discussing how to add custom networks or install L2 network plugins, you need to know how to specify the network choice.
+No matter what type of network you are using in Ape, you specify the network using a "network choice" triplet value:
+
+```python
+"<ecosystem-name>:<network-name>:<provider-name>"
+```
+
+Where `ecosystem-name` refers to the ecosystem, e.g. `ethereum`, `polygon`, `fantom`, or any valid ecosystem plugin name.
+The `network-name` refers to a network such as `mainnet`, `local`, or something else defined by your ecosystem or custom network config.
+And `provider-name` refers to the provider plugin in Ape, such as `geth` for a generic node or `foundry` if the network is more Anvil-based, or a different plugin altogether.
+
+Commonly, the network triplet value is specified via the `--network` option in Ape CLI commands.
+The following is a list of common Ape commands that can use the `--network` option:
+
+```bash
+ape test --network ethereum:local:foundry
+ape console --network arbitrum:testnet:alchemy # NOTICE: All networks, even from other ecosystems, use this.
+```
+
+To see all possible values for `--network`, run the command:
+
+```shell
+ape networks list
+```
+
+You can also use the `--network` option on scripts that use the `main()` method approach or scripts that implement that `ConnectedProviderCommand` command type.
+See [the scripting guide](./scripts.html) to learn more about scripts and how to add the network option.
+
+Also, you can omit values to use defaults.
+For example, the default ecosystem is `ethereum` and the default network is `local`, so you can do:
+
+```bash
+ape run <custom-cmd> --network ::foundry
+```
+
+as a short-cut for `ethereum:local:foundry`.
+(note: `<custom-command>` refers to the name of a script that uses the network option or is a `ConnectedProviderCommand`.
+See the [scripting guide](./scripts.html) for more information).
+
+Next, we will talk about how to add additional networks to your Ape environment.
+
 ## L2 Networks
 
 Common L2 networks, such as Arbitrum, Polygon, Optimism, or Fantom, have ApeWorX-maintained (trusted) plugins that override the Ethereum ecosystem API class and change any defaults that are needed.
@@ -55,6 +98,98 @@ In the remainder of this guide, any example below using Ethereum, you can replac
 
 ## Custom Network Connection
 
+You can add custom networks to Ape without creating a plugin.
+The two ways to do this are:
+
+1. Create custom network configurations in your `ape-config.yaml` file (typically your global one).
+2. Use the `--network` flag with a raw URI string.
+
+### Custom Networks By Config
+
+The most familiar way to use custom networks (non-plugin-based networks) in Ape is to use the `networks: custom` configuration.
+Generally, you want to use the global `ape-config.yaml`, which is located in your `$HOME/.ape/` directory.
+By configuring networks globally, you can share them across all your projects.
+More information about configuring Ape (in general) can be found [here](./contracts.html).
+
+To add custom networks to your `ape-config.yaml` file, follow this pattern:
+
+```yaml
+networks:
+  custom:
+     - name: apenet             # Required
+       chain_id: 9867733322210  # Required
+       ecosysem: ethereum       # Defaults to your default ecosystem
+       default_provider: geth   # Default is the generic node provider
+```
+
+The following paragraphs explain the different parameters of the custom network config.
+
+**name**: The `name` of the network is the same identifier you use in the network triplet for the "network" (second) section.
+Read more on the network option [here](#selecting-a-network).
+
+**chain_id**: The chain ID is required for config-based custom networks.
+It ensures you are on the correct network when making transactions and is very important!
+
+**ecosystem**: You can optionally change the ecosystem class Ape uses.
+The ecosystem system class is largely responsible for decoding and encoding data to-and-fro the blockchain.
+More information about the EcosystemAPI can be found [here](../methoddocs/api.html#ape.api.networks.EcosystemAPI).
+The default ecosystem is `ethereum`, which is the base class to most other L2 ecosystems and is defined in the core plugin `ape-ethereum`.
+If your custom network's ecosystem matches closer to another L2 instead of Ethereum, use that ecosystem name as your `ecosystem` in your custom network config.
+For example, take note that `"ethereum"` assumes EIP-1559 exists (unless configured otherwise).
+If your custom network is closer to Fantom, Polygon, Avalanche, or any other L2, you may want to consider using one of those plugins as the `ecosystem` to your custom network.
+Alternatively, you can configure your custom network the same way you configure any other network in the config (see [this section](#block-time-transaction-type-and-more-config)).
+
+**default_provider**: The default provider is the provider class used for making the connection to your custom network, unless you specify a different provider (hence the `default_`).
+Generally, you won't change this and can use the default EVM node provider.
+Many provider plugins won't function here, such as `ape-infura` or `ape-alchemy`.
+If you are using one of their networks, it is best to edit and use the plugins directly.
+If you are using a developer-node remotely, such as a custom Anvil node, you can specify the default provider to be `foundry` instead.
+However, take care in making sure you set up Foundry to correctly connect to your node.
+Likewise, when using the default Ethereum node provider, you will need to tell it the RPC URL.
+
+#### RPC URL
+
+To configure the RPC URL for a custom network, use the configuration of the provider.
+For example, if the RPC URL is `https://apenet.example.com/rpc`, configure it by doing:
+
+```yaml
+default_ecosystem: ethereum  # Is default, but including for clarity.
+
+networks:
+  custom:
+     - name: apenet
+       chain_id: 9867733322210
+       default_provider: geth  # Is default, but including for clarity.
+
+geth:
+  ethereum:
+    # NOTE: Use your custom network as the key!
+    apenet:
+      uri: https://apenet.example.com/rpc
+```
+
+Now, when using `ethereum:apenet:geth`, it will connect to the RPC URL `https://apenet.example.com/rpc`.
+
+#### Block time, transaction type, and more config
+
+Configuring network properties in Ape is the same regardless of whether it is custom or not.
+As you saw above, we set the RPC URL of the custom network the same as if a plugin existed for that network.
+The same is true for network config properties such as `block_time`, `default_transaction_type`, `transaction_acceptance_timeout` and more.
+
+For example, let's say I want to change the default transaction type for the `apenet` custom network (defined in examples above).
+I do this the same way as if I were changing the default transaction type on mainnet.
+
+```yaml
+ethereum:
+  apenet:
+    default_transaction_type: 0  # Use static-fee transactions for my custom network!
+```
+
+For a full list of network configurations like this (for both custom and plugin-based networks), [see this section](#configuring-networks).
+
+### Custom Networks by CLI
+
+Ape also lets you connect to custom networks on-the-fly!
 If you would like to connect to a URI using an existing ecosystem plugin, you can specify a URI in the provider-section for the `--network` option:
 
 ```bash
@@ -78,36 +213,6 @@ Here are some general reason why Network plugins are recommended:
 4. Revert messages and exception-handling differences.
 5. You can handle chain differences such as different transaction types in Arbitrum, non-EVM chains and behaviors like Starknet.
 
-## Selecting a Network
-
-Commonly, you will use the `--network` option to configure your network during Ape commands.
-The following is a list of common Ape commands that can use the `--network` option:
-
-```bash
-ape test --network ethereum:local:foundry
-ape console --network arbitrum:testnet:alchemy
-```
-
-To see all possible values for `--network`, run the command:
-
-```shell
-ape networks list
-```
-
-You can also use the `--network` option on scripts that use the `main()` method approach or scripts that implement that `ConnectedProviderCommand` command type.
-See [the scripting guide](./scripts.html) to learn more about scripts and how to add the network option.
-
-Also, you can omit values to use defaults.
-For example, the default ecosystem is `ethereum` and the default network is `local`, so you can do:
-
-```bash
-ape run <custom-cmd> --network ::foundry
-```
-
-as a short-cut for `ethereum:local:foundry`.
-(note: `<custom-command>` refers to the name of a script that uses the network option or is a `ConnectedProviderCommand`.
-See the [scripting guide](./scripts.html) for more information).
-
 ## Configuring Networks
 
 Change network defaults using your project's `ape-config.yaml` file.
@@ -121,6 +226,18 @@ default_ecosystem: <ecosystem-name>
   <network-name>:
     default_provider: <provider-name>
 ```
+
+As mentioned [above](#l2-networks), ecosystems and networks typically come from plugins and their names and values are defined in those plugins.
+The ecosystem name goes in placeholder `<ecosystem-name>` and the network names go in place for `<network-name>`.
+
+**If you are unsure of the values to place here, run the following command**:
+
+```shell
+ape networks list
+```
+
+This command lists all the ecosystem names and networks names installed currently in Ape.
+Place the identical name in the config to configure that ecosystem or network.
 
 You may also configure a specific gas limit for a given network:
 
@@ -167,6 +284,52 @@ geth:
   ethereum:
     mainnet:
       uri: https://foo.node.bar
+```
+
+## Network Config
+
+There are many ways to configure your networks.
+Most of the time, Ape and its L2 plugins configure the best defaults automatically.
+Thus, you most likely won't need to modify these configurations.
+However, you do need to configure these if you wish to stray from a network's defaults.
+The following example shows how to do this.
+(note: even though this example uses `ethereum:mainnet`, you can use any of the L2 networks mentioned above, as they all have these config properties).
+
+```yaml
+ethereum:
+  mainnet:
+    # Ethereum mainnet in Ape uses EIP-1559 by default,
+    # but we can change that here. Note: most plugins
+    # use type 0 by default already, so you don't need
+    # to change this if using an `ape-<l2>` plugin.
+    default_transaction_type: 0
+
+    # The amount of time to wait for a transaction to be
+    # accepted after sending it before raising an error.
+    # Most networks use 120 seconds (2 minutes).
+    transaction_acceptance_timeout: 60
+
+    # The amount of times to retry fetching a receipt. This is useful 
+    # because decentralized systems may show the transaction accepted 
+    # on some nodes but not on others, and potentially RPC requests 
+    # won't return a receipt immediately after sending its transaction.
+    # This config accounts for such delay. The default is `20`.
+    max_receipt_retries: 10
+
+    # Set a gas limit here, or use the default of "auto" which
+    # estimates gas. Note: local networks tend to use "max" here
+    # by default.
+    gas_limit: auto
+    
+    # Base-fee multipliers are useful for times when the base fee changes
+    # before a transaction is sent but after the base fee was derived,
+    # thus causing rejection. A multiplier reduces the chance of
+    # rejection. The default for live networks is `1.4` times the base fee.
+    base_fee_multiplier: 1.2
+    
+    # The block time helps Ape make decisions about
+    # polling chain data.
+    block_time: 10
 ```
 
 ## Running a Network Process

@@ -1,3 +1,4 @@
+import copy
 from typing import Any, Dict
 
 import pytest
@@ -5,8 +6,8 @@ from eth_pydantic_types import HashBytes32, HexBytes
 from eth_typing import HexAddress, HexStr
 from ethpm_types.abi import ABIType, EventABI, MethodABI
 
-from ape.api.networks import LOCAL_NETWORK_NAME
-from ape.exceptions import DecodingError, NetworkNotFoundError
+from ape.api.networks import LOCAL_NETWORK_NAME, NetworkAPI
+from ape.exceptions import DecodingError, NetworkError, NetworkNotFoundError
 from ape.types import AddressType
 from ape.utils import DEFAULT_LOCAL_TRANSACTION_ACCEPTANCE_TIMEOUT
 from ape_ethereum.ecosystem import BLUEPRINT_HEADER, Block
@@ -311,16 +312,39 @@ def test_decode_receipt(eth_tester_provider, ethereum):
     )
 
 
-def test_configure_default_txn_type(temp_config, ethereum):
+def test_default_transaction_type(ethereum):
+    assert ethereum.default_transaction_type == TransactionType.DYNAMIC
+
+
+def test_default_transaction_type_not_connected_used_default_network(
+    temp_config, ethereum, networks
+):
     value = TransactionType.STATIC.value
     config_dict = {"ethereum": {"mainnet_fork": {"default_transaction_type": value}}}
     assert ethereum.default_transaction_type == TransactionType.DYNAMIC
 
     with temp_config(config_dict):
         ethereum._default_network = "mainnet-fork"
-        assert ethereum.default_network_name == "mainnet-fork"
+        provider = networks.active_provider
+
+        # Disconnect so it uses default.
+        networks.active_provider = None
+        try:
+            assert ethereum.default_network_name == "mainnet-fork"
+            assert ethereum.default_transaction_type == TransactionType.STATIC
+            ethereum._default_network = LOCAL_NETWORK_NAME
+        finally:
+            networks.active_provider = provider
+
+
+def test_default_transaction_type_configured_from_local_network(
+    eth_tester_provider, ethereum, temp_config
+):
+    _ = eth_tester_provider  # Connection required so 'ethereum' knows the network.
+    value = TransactionType.STATIC.value
+    config = {"ethereum": {LOCAL_NETWORK_NAME: {"default_transaction_type": value}}}
+    with temp_config(config):
         assert ethereum.default_transaction_type == TransactionType.STATIC
-        ethereum._default_network = LOCAL_NETWORK_NAME
 
 
 @pytest.mark.parametrize("network_name", (LOCAL_NETWORK_NAME, "mainnet-fork", "mainnet_fork"))
@@ -462,3 +486,48 @@ def test_set_default_network_not_exists(temp_config, ethereum):
     expected = f"No network in 'ethereum' named '{bad_network}'. Options:.*"
     with pytest.raises(NetworkNotFoundError, match=expected):
         ethereum.set_default_network(bad_network)
+
+
+def test_networks(ethereum):
+    actual = ethereum.networks
+    for net in ("goerli", "sepolia", "mainnet", LOCAL_NETWORK_NAME):
+        assert net in actual
+        assert isinstance(actual[net], NetworkAPI)
+
+
+def test_networks_includes_custom_networks(
+    ethereum, custom_networks_config, custom_network_name_0, custom_network_name_1
+):
+    actual = ethereum.networks
+    for net in (
+        "goerli",
+        "sepolia",
+        "mainnet",
+        LOCAL_NETWORK_NAME,
+        custom_network_name_0,
+        custom_network_name_1,
+    ):
+        assert net in actual
+        assert isinstance(actual[net], NetworkAPI)
+
+
+def test_networks_multiple_networks_with_same_name(
+    temp_config, custom_networks_config_dict, ethereum
+):
+    data = copy.deepcopy(custom_networks_config_dict)
+    data["networks"]["custom"][0]["name"] = "mainnet"  # There already is a mainnet in "ethereum".
+    expected = ".*More than one network named 'mainnet' in ecosystem 'ethereum'.*"
+    with temp_config(data):
+        with pytest.raises(NetworkError, match=expected):
+            _ = ethereum.networks
+
+
+def test_getattr(ethereum):
+    assert ethereum.mainnet.name == "mainnet"
+    assert isinstance(ethereum.mainnet, NetworkAPI)
+
+
+def test_getattr_custom_networks(ethereum, custom_networks_config, custom_network_name_0):
+    actual = getattr(ethereum, custom_network_name_0)
+    assert actual.name == custom_network_name_0
+    assert isinstance(actual, NetworkAPI)

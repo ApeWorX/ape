@@ -1,3 +1,4 @@
+import copy
 from pathlib import Path
 
 import pytest
@@ -82,3 +83,30 @@ def geth_receipt(contract_with_call_depth_geth, owner, geth_provider):
 @pytest.fixture
 def geth_vyper_receipt(geth_vyper_contract, owner):
     return geth_vyper_contract.setNumber(44, sender=owner)
+
+
+@pytest.fixture
+def custom_network_connection(
+    geth_provider,
+    ethereum,
+    temp_config,
+    custom_network_name_0,
+    custom_networks_config_dict,
+    networks,
+):
+    data = copy.deepcopy(custom_networks_config_dict)
+    data["networks"]["custom"][0]["chain_id"] = geth_provider.chain_id
+    config = {
+        ethereum.name: {custom_network_name_0: {"default_transaction_type": 0}},
+        geth_provider.name: {ethereum.name: {custom_network_name_0: {"uri": geth_provider.uri}}},
+        **data,
+    }
+    actual = geth_provider.network
+    with temp_config(config):
+        geth_provider.network = ethereum.apenet
+        try:
+            with networks.ethereum.apenet.use_provider("geth"):
+                yield
+
+        finally:
+            geth_provider.network = actual

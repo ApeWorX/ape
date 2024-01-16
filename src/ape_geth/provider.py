@@ -205,6 +205,8 @@ class GethNetworkConfig(PluginConfig):
     # Make sure to run via `geth --dev` (or similar)
     local: Dict = {**DEFAULT_SETTINGS.copy(), "chain_id": DEFAULT_TEST_CHAIN_ID}
 
+    model_config = SettingsConfigDict(extra="allow")
+
 
 class GethConfig(PluginConfig):
     ethereum: GethNetworkConfig = GethNetworkConfig()
@@ -215,14 +217,15 @@ class GethConfig(PluginConfig):
     model_config = SettingsConfigDict(extra="allow")
 
 
+# TODO: 0.8 rename exception.
 class GethNotInstalledError(ConnectionError):
     def __init__(self):
         super().__init__(
-            "Trying to start 'geth' process in 'ape-geth' core plugin "
-            "but 'geth' binary not found. Things you can do:\n"
-            "\t1. Install geth or add it to your $PATH variable and then try again\n"
-            "\t2. Run 'geth' process independently and try again\n"
-            "\t3. Use a different ape provider plugin"
+            "No node found and 'ape-geth' is unable to start one.\n"
+            "Things you can do:\n"
+            "\t1. Check your connection URL, if trying to connect remotely.\n"
+            "\t2. Install node software (geth), if trying to run a local node.\n"
+            "\t3. Use and configure a different provider plugin, such as 'ape-foundry'."
         )
 
 

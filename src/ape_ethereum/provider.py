@@ -46,6 +46,7 @@ from ape.exceptions import (
     ApeException,
     APINotImplementedError,
     BlockNotFoundError,
+    ConfigError,
     ContractLogicError,
     ContractNotFoundError,
     OutOfGasError,
@@ -1084,7 +1085,10 @@ class EthereumNodeProvider(Web3Provider, ABC):
 
     @property
     def uri(self) -> str:
-        if "uri" in self.provider_settings:
+        if "url" in self.provider_settings:
+            raise ConfigError("Unknown provider setting 'url'. Did you mean 'uri'?")
+
+        elif "uri" in self.provider_settings:
             # Use adhoc, scripted value
             return self.provider_settings["uri"]
 
@@ -1094,6 +1098,10 @@ class EthereumNodeProvider(Web3Provider, ABC):
 
         # Use value from config file
         network_config = config.get(self.network.name) or DEFAULT_SETTINGS
+
+        if "url" in network_config:
+            raise ConfigError("Unknown provider setting 'url'. Did you mean 'uri'?")
+
         settings_uri = network_config.get("uri", DEFAULT_SETTINGS["uri"])
         if _is_url(settings_uri):
             return settings_uri
@@ -1161,7 +1169,6 @@ class EthereumNodeProvider(Web3Provider, ABC):
             self.block_page_size = 50_000
         else:
             client_name = client_version.split("/")[0]
-            logger.warning(f"Connecting Geth plugin to non-Geth client '{client_name}'.")
             logger.warning(f"Connecting Geth plugin to non-Geth client '{client_name}'.")
 
         self.web3.eth.set_gas_price_strategy(rpc_gas_price_strategy)
