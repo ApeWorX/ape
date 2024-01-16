@@ -1,3 +1,4 @@
+import copy
 from pathlib import Path
 
 import pytest
@@ -93,25 +94,19 @@ def custom_network_connection(
     custom_networks_config_dict,
     networks,
 ):
-    orig_chain_id = custom_networks_config_dict["networks"]["custom"][0]["chain_id"]
-    try:
-        custom_networks_config_dict["networks"]["custom"][0]["chain_id"] = geth_provider.chain_id
-        config = {
-            ethereum.name: {custom_network_name_0: {"default_transaction_type": 0}},
-            geth_provider.name: {
-                ethereum.name: {custom_network_name_0: {"uri": geth_provider.uri}}
-            },
-            **custom_networks_config_dict,
-        }
-        actual = geth_provider.network
-        with temp_config(config):
-            geth_provider.network = ethereum.apenet
-            try:
-                with networks.ethereum.apenet.use_provider("geth"):
-                    yield
+    data = copy.deepcopy(custom_networks_config_dict)
+    data["networks"]["custom"][0]["chain_id"] = geth_provider.chain_id
+    config = {
+        ethereum.name: {custom_network_name_0: {"default_transaction_type": 0}},
+        geth_provider.name: {ethereum.name: {custom_network_name_0: {"uri": geth_provider.uri}}},
+        **data,
+    }
+    actual = geth_provider.network
+    with temp_config(config):
+        geth_provider.network = ethereum.apenet
+        try:
+            with networks.ethereum.apenet.use_provider("geth"):
+                yield
 
-            finally:
-                geth_provider.network = actual
-
-    finally:
-        custom_networks_config_dict["networks"]["custom"][0]["chain_id"] = orig_chain_id
+        finally:
+            geth_provider.network = actual

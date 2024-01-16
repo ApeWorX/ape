@@ -1,3 +1,4 @@
+import copy
 from typing import Any, Dict
 
 import pytest
@@ -513,7 +514,7 @@ def test_networks_includes_custom_networks(
 def test_networks_multiple_networks_with_same_name(
     temp_config, custom_networks_config_dict, ethereum
 ):
-    data = {**custom_networks_config_dict}
+    data = copy.deepcopy(custom_networks_config_dict)
     data["networks"]["custom"][0]["name"] = "mainnet"  # There already is a mainnet in "ethereum".
     expected = ".*More than one network named 'mainnet' in ecosystem 'ethereum'.*"
     with temp_config(data):
