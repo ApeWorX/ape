@@ -1,4 +1,5 @@
 import atexit
+import random
 import shutil
 from itertools import tee
 from pathlib import Path
@@ -40,6 +41,7 @@ from ape_ethereum.provider import (
     DEFAULT_SETTINGS,
     EthereumNodeProvider,
 )
+from ape_geth.chains import PUBLIC_CHAIN_RPCS
 
 
 class GethDevProcess(BaseGethProcess):
@@ -197,9 +199,9 @@ class GethDevProcess(BaseGethProcess):
 
 class GethNetworkConfig(PluginConfig):
     # Make sure you are running the right networks when you try for these
-    mainnet: Dict = DEFAULT_SETTINGS.copy()
-    goerli: Dict = DEFAULT_SETTINGS.copy()
-    sepolia: Dict = DEFAULT_SETTINGS.copy()
+    mainnet: Dict = {"uri": random.choice(PUBLIC_CHAIN_RPCS["ethereum"]["mainnet"])}
+    goerli: Dict = {"uri": random.choice(PUBLIC_CHAIN_RPCS["ethereum"]["goerli"])}
+    sepolia: Dict = {"uri": random.choice(PUBLIC_CHAIN_RPCS["ethereum"]["sepolia"])}
     # Make sure to run via `geth --dev` (or similar)
     local: Dict = {**DEFAULT_SETTINGS.copy(), "chain_id": DEFAULT_TEST_CHAIN_ID}
 
