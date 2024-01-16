@@ -203,6 +203,8 @@ class GethNetworkConfig(PluginConfig):
     # Make sure to run via `geth --dev` (or similar)
     local: Dict = {**DEFAULT_SETTINGS.copy(), "chain_id": DEFAULT_TEST_CHAIN_ID}
 
+    model_config = SettingsConfigDict(extra="allow")
+
 
 class GethConfig(PluginConfig):
     ethereum: GethNetworkConfig = GethNetworkConfig()

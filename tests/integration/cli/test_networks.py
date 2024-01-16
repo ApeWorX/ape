@@ -64,6 +64,19 @@ ethereum  (default)
 └── goerli
     └── geth  (default)
 """
+_CUSTOM_NETWORKS_TREE = """
+ethereum  (default)
+├── apenet
+│   └── geth  (default)
+├── apenet1
+│   └── geth  (default)
+├── goerli
+│   └── geth  (default)
+├── local  (default)
+│   └── geth  (default)
+└── mainnet
+    └── geth  (default)
+"""
 
 
 def assert_rich_text(actual: str, expected: str):
@@ -121,7 +134,7 @@ def test_list_yaml(ape_cli, runner):
 
 
 @skip_projects_except("geth")
-def test_geth(ape_cli, runner, networks, project):
+def test_list_geth(ape_cli, runner, networks, project):
     result = runner.invoke(ape_cli, ["networks", "list"])
 
     # Grab ethereum
@@ -137,7 +150,7 @@ def test_geth(ape_cli, runner, networks, project):
 
 
 @run_once
-def test_filter_networks(ape_cli, runner, networks):
+def test_list_filter_networks(ape_cli, runner, networks):
     result = runner.invoke(ape_cli, ["networks", "list", "--network", "goerli"])
 
     # Grab ethereum
@@ -147,7 +160,7 @@ def test_filter_networks(ape_cli, runner, networks):
 
 
 @run_once
-def test_filter_providers(ape_cli, runner, networks):
+def test_list_filter_providers(ape_cli, runner, networks):
     result = runner.invoke(ape_cli, ["networks", "list", "--provider", "test"])
 
     # Grab ethereum
@@ -156,8 +169,15 @@ def test_filter_providers(ape_cli, runner, networks):
     assert_rich_text(actual, _TEST_PROVIDER_TREE_OUTPUT)
 
 
+@skip_projects_except("geth")
+def test_list_custom_networks(ape_cli, runner):
+    result = runner.invoke(ape_cli, ["networks", "list"])
+    actual = "ethereum  (default)\n" + "".join(result.output.split("ethereum  (default)\n")[-1])
+    assert_rich_text(actual, _CUSTOM_NETWORKS_TREE)
+
+
 @run_once
-def test_node_not_subprocess_provider(ape_cli, runner):
+def test_run_not_subprocess_provider(ape_cli, runner):
     cmd = ("networks", "run", "--network", "ethereum:local:test")
     result = runner.invoke(ape_cli, cmd)
     assert result.exit_code != 0
@@ -165,3 +185,22 @@ def test_node_not_subprocess_provider(ape_cli, runner):
         result.output
         == "ERROR: `ape networks run` requires a provider that manages a process, not 'test'.\n"
     )
+
+
+@run_once
+def test_run_custom_network(ape_cli, runner):
+    cmd = ("networks", "run", "--network", "ethereum:local:test")
+    result = runner.invoke(ape_cli, cmd)
+    assert result.exit_code != 0
+    assert (
+        result.output
+        == "ERROR: `ape networks run` requires a provider that manages a process, not 'test'.\n"
+    )
+
+
+@skip_projects_except("geth")
+def test_run_already_running(ape_cli, runner, geth_provider):
+    cmd = ("networks", "run", "--network", f"ethereum:{LOCAL_NETWORK_NAME}:geth")
+    result = runner.invoke(ape_cli, cmd)
+    assert result.exit_code != 0
+    assert "ERROR: Process already running." in result.output

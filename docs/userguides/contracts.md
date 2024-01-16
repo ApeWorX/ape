@@ -63,7 +63,7 @@ contract = property.get_contract("MyContract")  # Same as `project.MyContract`.
 ```
 
 Notice when deploying, we have to specify the `sender=` kwarg because `deploy` operations are transactions.
-To learn more about contract interaction via transactions, see the \[Contract Interaction\](#Conract Interaction) section below and the [guide on transactions](./transactions.html).
+To learn more about contract interaction via transactions, see the [Contract Interaction](#contract-interaction) section below and the [guide on transactions](./transactions.html).
 
 ### Deploy Scripts
 
