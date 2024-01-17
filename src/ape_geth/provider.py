@@ -471,4 +471,23 @@ class GethDev(EthereumNodeProvider, TestProviderAPI, SubprocessProvider):
 
 # NOTE: The default behavior of EthereumNodeBehavior assumes geth.
 class Geth(EthereumNodeProvider):
-    pass
+    @property
+    def uri(self) -> str:
+        uri = super().uri
+        ecosystem = self.network.ecosystem.name
+        network = self.network.name
+
+        # If we didn't find one in config, look for a public RPC.
+        if not uri or uri == DEFAULT_SETTINGS["uri"]:
+            # Do not override explicit configuration
+            if hasattr(self.config, ecosystem):
+                # Shape of this is odd.  Pydantic model containing dicts
+                if network_config := self.config[ecosystem].get(network):
+                    if "uri" in network_config:
+                        return network_config["uri"]
+
+            # Use public RPC if available
+            if ecosystem in PUBLIC_CHAIN_RPCS and network in PUBLIC_CHAIN_RPCS[ecosystem]:
+                uri = random.choice(PUBLIC_CHAIN_RPCS[ecosystem][network])
+
+        return uri
