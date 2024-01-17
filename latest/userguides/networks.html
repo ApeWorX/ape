@@ -146,6 +146,7 @@
 <li class="toctree-l2"><a class="reference internal" href="#custom-network-connection">Custom Network Connection</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#custom-networks-by-config">Custom Networks By Config</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#rpc-url">RPC URL</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#explorer-url">Explorer URL</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#block-time-transaction-type-and-more-config">Block time, transaction type, and more config</a></li>
 </ul>
 </li>
@@ -385,6 +386,31 @@ For example, if the RPC URL is <code class="docutils literal notranslate"><span 
 </pre></div>
 </div>
 <p>Now, when using <code class="docutils literal notranslate"><span class="pre">ethereum:apenet:geth</span></code>, it will connect to the RPC URL <code class="docutils literal notranslate"><span class="pre">https://apenet.example.com/rpc</span></code>.</p>
+</section>
+<section id="explorer-url">
+<h4>Explorer URL<a class="headerlink" href="#explorer-url" title="Permalink to this heading"></a></h4>
+<p>To configure explorer URLs for your custom network, use the explorer’s plugin config.
+For example, let’s say you added the following network:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">networks</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">custom</span><span class="p">:</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">customnetwork</span>
+<span class="w">      </span><span class="nt">chain_id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">31337</span>
+<span class="w">      </span><span class="nt">default_provider</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">geth</span>
+</pre></div>
+</div>
+<p>To add a corresponding entry in <code class="docutils literal notranslate"><span class="pre">ape-etherscan</span></code> (assuming you are using <code class="docutils literal notranslate"><span class="pre">ape-etherscan</span></code> as your explorer plugin), add the following to your <code class="docutils literal notranslate"><span class="pre">ape-config.yaml</span></code> file:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">etherscan</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">ethereum</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">rate_limit</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">15</span><span class="w">  </span><span class="c1"># Configure a rate limit that makes sense for retry logic.</span>
+<span class="w">    </span>
+<span class="w">    </span><span class="c1"># The name of the entry is the same as your custom network!</span>
+<span class="w">    </span><span class="nt">customnetwork</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">uri</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">https://custom.scan</span><span class="w">              </span><span class="c1"># URL used for showing transactions</span>
+<span class="w">      </span><span class="nt">api_uri</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">https://api.custom.scan/api</span><span class="w">  </span><span class="c1"># URL used for making API requests.</span>
+</pre></div>
+</div>
+<p><strong>NOTE</strong>: Every explorer plugin may be different in how you configure custom networks.
+Consult the plugin’s README to clarify.</p>
 </section>
 <section id="block-time-transaction-type-and-more-config">
 <h4>Block time, transaction type, and more config<a class="headerlink" href="#block-time-transaction-type-and-more-config" title="Permalink to this heading"></a></h4>
