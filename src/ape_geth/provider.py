@@ -480,7 +480,7 @@ class Geth(EthereumNodeProvider):
         # If we didn't find one in config, look for a public RPC.
         if not uri or uri == DEFAULT_SETTINGS["uri"]:
             # Do not override explicit configuration
-            if hasattr(self.config, ecosystem):
+            if ecosystem in self.config:
                 # Shape of this is odd.  Pydantic model containing dicts
                 if network_config := self.config[ecosystem].get(network):
                     if "uri" in network_config:
