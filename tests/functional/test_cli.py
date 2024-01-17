@@ -1,8 +1,8 @@
+import copy
 import shutil
 
 import click
 import pytest
-from click import BadOptionUsage
 
 from ape.cli import (
     AccountAliasPromptChoice,
@@ -18,6 +18,7 @@ from ape.cli import (
     select_account,
     verbosity_option,
 )
+from ape.cli.choices import _get_networks_sequence_from_cache
 from ape.cli.commands import get_param_from_ctx, parse_network
 from ape.exceptions import AccountsError
 from ape.logging import logger
@@ -644,11 +645,26 @@ def test_network_choice():
 
 
 @pytest.mark.parametrize("prefix", ("", "ethereum:custom:"))
-def test_network_choice_when_custom_network(prefix):
+def test_network_choice_custom_adhoc_network(prefix):
     network_choice = NetworkChoice()
     uri = "https://example.com"
     actual = network_choice.convert(f"{prefix}{uri}", None, None)
     assert actual.uri == uri
+    assert actual.network.name == "custom"
+
+
+def test_network_choice_custom_config_network(custom_networks_config_dict, temp_config):
+    data = copy.deepcopy(custom_networks_config_dict)
+
+    # Was a bug where couldn't have this name.
+    data["networks"]["custom"][0]["name"] = "custom"
+
+    _get_networks_sequence_from_cache.cache_clear()
+
+    network_choice = NetworkChoice()
+    with temp_config(data):
+        actual = network_choice.convert("ethereum:custom", None, None)
+
     assert actual.network.name == "custom"
 
 
@@ -658,13 +674,3 @@ def test_network_choice_when_custom_local_network():
     actual = network_choice.convert(f"ethereum:local:{uri}", None, None)
     assert actual.uri == uri
     assert actual.network.name == "local"
-
-
-def test_network_choice_when_custom_and_missing_provider():
-    network_choice = NetworkChoice()
-    expected = (
-        r"Custom network options must include connection str as well, such as the URI\. "
-        r"Check `provider.network_choice` \(if possible\).*"
-    )
-    with pytest.raises(BadOptionUsage, match=expected):
-        network_choice.convert("ethereum:custom", None, None)
