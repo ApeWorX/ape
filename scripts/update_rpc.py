@@ -76,9 +76,7 @@ def fetch_chain(chain_id: int) -> Chain:
 
     logger.info(f"GET {url}")
     r = requests.get(url)
-
-    if r.status_code != 200:
-        raise Exception(f"Failed to fetch {url}")
+    r.raise_for_status()
 
     chain = Chain.model_validate_json(r.text)
 
