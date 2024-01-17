@@ -28,6 +28,11 @@ CHAIN_IDS = {
     "gnosis": {
         "mainnet": 100,
     },
+    "optimism": {
+        "mainnet": 10,
+        "goerli": 420,
+        "sepolia": 11155420,
+    },
     "polygon": {
         "mainnet": 137,
         "mumbai": 80001,
