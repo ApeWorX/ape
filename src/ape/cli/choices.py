@@ -5,7 +5,7 @@ from functools import lru_cache
 from typing import Any, Callable, Iterator, List, Optional, Sequence, Type, Union
 
 import click
-from click import BadOptionUsage, BadParameter, Choice, Context, Parameter
+from click import BadParameter, Choice, Context, Parameter
 
 from ape import accounts, networks
 from ape.api.accounts import AccountAPI
@@ -358,13 +358,6 @@ class NetworkChoice(click.Choice):
         elif self.is_custom_value(value):
             # By-pass choice constraints when using custom network.
             choice = value
-
-        elif "custom" in value:
-            raise BadOptionUsage(
-                "--network",
-                "Custom network options must include connection str as well, "
-                "such as the URI. Check `provider.network_choice` (if possible).",
-            )
 
         else:
             # Regular conditions.
