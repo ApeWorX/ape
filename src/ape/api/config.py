@@ -55,7 +55,7 @@ class PluginConfig(BaseSettings):
         if attr_name in extra:
             return extra[attr_name]
 
-        return super().__getattr__(attr_name)  # type: ignore
+        return super().__getattribute__(attr_name)
 
     def __getitem__(self, item: str) -> Any:
         extra = self.__pydantic_extra__ or {}
