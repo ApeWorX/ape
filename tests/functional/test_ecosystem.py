@@ -28,11 +28,35 @@ LOG = {
         "0x9f3d45ac20ccf04b45028b8080bb191eab93e29f7898ed43acf480dd80bba94d",
     ],
 }
+CUSTOM_ECOSYSTEM_NAME = "custom-ecosystem"
 
 
 @pytest.fixture
 def event_abi(vyper_contract_instance):
     return vyper_contract_instance.NumberChange.abi
+
+
+@pytest.fixture
+def custom_ecosystem_config(custom_networks_config_dict, temp_config, networks):
+    data = copy.deepcopy(custom_networks_config_dict)
+    data["networks"]["custom"][0]["ecosystem"] = CUSTOM_ECOSYSTEM_NAME
+    with temp_config(data):
+        yield
+
+    # Remove cached ecosystem.
+    if "_plugin_ecosystems" in networks.__dict__:
+        del networks.__dict__["_plugin_ecosystems"]
+
+
+def test_name(ethereum):
+    assert ethereum.name == "ethereum"
+
+
+def test_name_when_custom(custom_ecosystem_config, networks):
+    ecosystem = networks.get_ecosystem(CUSTOM_ECOSYSTEM_NAME)
+    actual = ecosystem.name
+    expected = CUSTOM_ECOSYSTEM_NAME
+    assert actual == expected
 
 
 @pytest.mark.parametrize(
@@ -509,6 +533,14 @@ def test_networks_includes_custom_networks(
     ):
         assert net in actual
         assert isinstance(actual[net], NetworkAPI)
+
+
+def test_networks_when_custom_ecosystem(custom_ecosystem_config, networks, custom_network_name_0):
+    obj = networks.custom_ecosystem
+    actual = obj.networks
+    assert obj.name == CUSTOM_ECOSYSTEM_NAME
+    assert custom_network_name_0 in actual
+    assert "mainnet" not in actual
 
 
 def test_networks_multiple_networks_with_same_name(

@@ -116,10 +116,11 @@ To add custom networks to your `ape-config.yaml` file, follow this pattern:
 ```yaml
 networks:
   custom:
-     - name: apenet             # Required
-       chain_id: 9867733322210  # Required
-       ecosysem: ethereum       # Defaults to your default ecosystem
-       default_provider: geth   # Default is the generic node provider
+     - name: apenet                    # Required
+       chain_id: 9867733322210         # Required
+       ecosystem: shibarium            # Defaults to your default ecosystem
+       base_ecosystem_plugin: polygon  # Change the base-class
+       default_provider: geth          # Default is the generic node provider
 ```
 
 The following paragraphs explain the different parameters of the custom network config.
@@ -130,13 +131,19 @@ Read more on the network option [here](#selecting-a-network).
 **chain_id**: The chain ID is required for config-based custom networks.
 It ensures you are on the correct network when making transactions and is very important!
 
-**ecosystem**: You can optionally change the ecosystem class Ape uses.
+**ecosystem**: You can optionally tell Ape what ecosystem a custom network is part of.
+Without specifying, custom networks appear in the `"ethereum"` ecosystem.
+Recall, you refer to your network via the network-triplet `ecosystem:network:provider`.
 The ecosystem system class is largely responsible for decoding and encoding data to-and-fro the blockchain.
 More information about the EcosystemAPI can be found [here](../methoddocs/api.html#ape.api.networks.EcosystemAPI).
 The default ecosystem is `ethereum`, which is the base class to most other L2 ecosystems and is defined in the core plugin `ape-ethereum`.
-If your custom network's ecosystem matches closer to another L2 instead of Ethereum, use that ecosystem name as your `ecosystem` in your custom network config.
+If your custom network is part of a new ecosystem, such as Shibarium, use a new name as your ecosystem, e.g. `"shibarium"`.
+However, if your ecosystem is not an existing plugin-based ecosystem, you may want to also adjust the `base_ecosystem_plugin` config to change the base-class used.
+
+**base_ecosystem_plugin**: The plugin that defines the base-class to your custom ecosystem containing your custom network(s).
+If your custom network's ecosystem matches closer to another L2 instead of Ethereum, use that ecosystem name as your `base_ecosystem_plugin` in your custom network config.
 For example, take note that `"ethereum"` assumes EIP-1559 exists (unless configured otherwise).
-If your custom network is closer to Fantom, Polygon, Avalanche, or any other L2, you may want to consider using one of those plugins as the `ecosystem` to your custom network.
+If your custom network is closer to Fantom, Polygon, Avalanche, or any other L2, you may want to consider using one of those plugins as the `base_ecosystem_plugin` to your custom network.
 Alternatively, you can configure your custom network the same way you configure any other network in the config (see [this section](#block-time-transaction-type-and-more-config)).
 
 **default_provider**: The default provider is the provider class used for making the connection to your custom network, unless you specify a different provider (hence the `default_`).
@@ -222,7 +229,7 @@ Ape also lets you connect to custom networks on-the-fly!
 If you would like to connect to a URI using an existing ecosystem plugin, you can specify a URI in the provider-section for the `--network` option:
 
 ```bash
-ape run script --network <ecosysem-name>:<network-name>:https://foo.bar
+ape run script --network <ecosystem-name>:<network-name>:https://foo.bar
 ```
 
 Additionally, if you want to connect to an unknown ecosystem or network, you can use the URI by itself.

@@ -525,8 +525,8 @@ CUSTOM_NETWORK_CHAIN_ID_1 = 944898498948934528629
 CUSTOM_BLOCK_TIME = 123
 
 
-def _make_net(name: str, chain_id: int) -> Dict:
-    return {"name": name, "chain_id": chain_id}
+def _make_net(name: str, chain_id: int, **kwargs) -> Dict:
+    return {"name": name, "chain_id": chain_id, **kwargs}
 
 
 CUSTOM_NETWORKS_CONFIG = {

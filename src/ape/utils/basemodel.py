@@ -1,5 +1,16 @@
 from abc import ABC
-from typing import TYPE_CHECKING, Any, ClassVar, Dict, Iterator, List, Optional, Union, cast
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    ClassVar,
+    Dict,
+    Iterator,
+    List,
+    Optional,
+    Sequence,
+    Union,
+    cast,
+)
 
 from ethpm_types import BaseModel as EthpmTypesBaseModel
 from pydantic import BaseModel as RootBaseModel
@@ -9,6 +20,8 @@ from ape.exceptions import ApeAttributeError, ApeIndexError, ProviderNotConnecte
 from ape.logging import logger
 
 if TYPE_CHECKING:
+    from pydantic.main import Model
+
     from ape.api.providers import ProviderAPI
     from ape.managers.accounts import AccountManager
     from ape.managers.chain import ChainManager
@@ -217,6 +230,22 @@ class BaseModel(EthpmTypesBaseModel):
     """
 
     model_config = ConfigDict(arbitrary_types_allowed=True)
+
+    def model_copy(
+        self: "Model",
+        *,
+        update: dict[str, Any] | None = None,
+        deep: bool = False,
+        cache_clear: Optional[Sequence[str]] = None,
+    ) -> "Model":
+        result = super().model_copy(update=update, deep=deep)
+
+        # Clear @cached_properties
+        for cached_item in cache_clear or []:
+            if cached_item in result.__dict__:
+                del result.__dict__[cached_item]
+
+        return result
 
 
 class ExtraAttributesMixin:

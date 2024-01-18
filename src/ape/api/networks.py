@@ -111,7 +111,11 @@ class EcosystemAPI(ExtraAttributesMixin, BaseInterfaceModel):
             raise NetworkError("Core Ethereum plugin missing.")
 
         request_header = self.config_manager.REQUEST_HEADER
-        init_kwargs = {"data_folder": self.data_folder, "request_header": request_header}
+        init_kwargs = {
+            "name": "ethereum",
+            "data_folder": self.data_folder,
+            "request_header": request_header,
+        }
         ethereum = ethereum_class(**init_kwargs)  # type: ignore
         return NetworkAPI(
             name="custom",
@@ -247,7 +251,6 @@ class EcosystemAPI(ExtraAttributesMixin, BaseInterfaceModel):
             for n in self.config_manager.get_config("networks").custom
             if (n.ecosystem or self.network_manager.default_ecosystem.name) == self.name
         ]
-
         for custom_net in custom_networks:
             if custom_net.name in networks:
                 raise NetworkError(
@@ -272,19 +275,16 @@ class EcosystemAPI(ExtraAttributesMixin, BaseInterfaceModel):
 
     @cached_property
     def _networks_from_plugins(self) -> Dict[str, "NetworkAPI"]:
-        networks = {}
-        for _, (ecosystem_name, network_name, network_class) in self.plugin_manager.networks:
-            if ecosystem_name == self.name:
-                network_folder = self.data_folder / network_name
-
-                networks[network_name] = network_class(
-                    name=network_name,
-                    ecosystem=self,
-                    data_folder=network_folder,
-                    request_header=self.request_header,
-                )
-
-        return networks
+        return {
+            network_name: network_class(
+                name=network_name,
+                ecosystem=self,
+                data_folder=self.data_folder / network_name,
+                request_header=self.request_header,
+            )
+            for _, (ecosystem_name, network_name, network_class) in self.plugin_manager.networks
+            if ecosystem_name == self.name
+        }
 
     def __post_init__(self):
         if len(self.networks) == 0:
@@ -500,6 +500,7 @@ class EcosystemAPI(ExtraAttributesMixin, BaseInterfaceModel):
                 return self.networks[name]
 
             elif name == "custom":
+                # Is an adhoc-custom network NOT from config.
                 return self.custom_network
 
         raise NetworkNotFoundError(network_name, ecosystem=self.name, options=self.networks)
@@ -780,8 +781,19 @@ class NetworkAPI(BaseInterfaceModel):
             # Only happens on local networks
             chain_id = None
 
-        content = f"{self.choice} chain_id={self.chain_id}" if chain_id is not None else self.choice
-        return f"<{content}>"
+        try:
+            content = (
+                f"{self.choice} chain_id={self.chain_id}" if chain_id is not None else self.choice
+            )
+            return f"<{content}>"
+        except Exception:
+            # Don't allow repr to fail.
+            try:
+                name = self.name
+            except Exception:
+                name = None
+
+            return f"<{name}>" if name else f"{type(self)}"
 
     @property
     def config(self) -> PluginConfig:
@@ -939,8 +951,12 @@ class NetworkAPI(BaseInterfaceModel):
         return self.is_local or self.is_fork
 
     @property
-    def is_custom(self) -> bool:
-        return self.name == "custom" or self._is_custom
+    def is_adhoc(self) -> bool:
+        """
+        Is a custom network from CLI only, e.g. was not configured
+        in any CLI value and is mostly an "unknown" network.
+        """
+        return self.name == "custom" and not self._is_custom
 
     @cached_property
     def providers(self):  # -> Dict[str, Partial[ProviderAPI]]
@@ -958,9 +974,12 @@ class NetworkAPI(BaseInterfaceModel):
             ecosystem_name, network_name, provider_class = plugin_tuple
             provider_name = clean_plugin_name(provider_class.__module__.split(".")[0])
 
-            # NOTE: Custom networks work with any provider.
-            if self.is_custom or (
-                self.ecosystem.name == ecosystem_name and self.name == network_name
+            # NOTE: Custom networks that are NOT from config must work with any provider.
+            if (
+                self.is_adhoc
+                or (self.ecosystem.name == ecosystem_name and self.name == network_name)
+                or self._is_custom
+                and self.default_provider_name == provider_name
             ):
                 # NOTE: Lazily load provider config
                 providers[provider_name] = partial(
