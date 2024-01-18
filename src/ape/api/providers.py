@@ -244,12 +244,12 @@ class ProviderAPI(BaseInterfaceModel):
         """
         The connected network choice string.
         """
-        if self.network.name == "custom" and self.connection_str:
+        if self.network.is_adhoc and self.connection_str:
             # `custom` is not a real network and is same
             # as using raw connection str
             return self.connection_str
 
-        elif self.network.name == "custom":
+        elif self.network.is_adhoc:
             raise ProviderError("Custom network provider missing `connection_str`.")
 
         return f"{self.network.choice}:{self.name}"

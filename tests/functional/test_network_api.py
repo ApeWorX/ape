@@ -2,6 +2,7 @@ from pathlib import Path
 
 import pytest
 
+from ape.api import ProviderAPI
 from ape.exceptions import NetworkError, ProviderNotFoundError
 
 
@@ -28,6 +29,13 @@ def test_get_provider_ipc(ethereum):
     actual = network.get_provider(path)
     assert actual.ipc_path == Path(path)
     assert actual.network.name == "goerli"
+
+
+def test_get_provider_custom_network(custom_networks_config, ethereum):
+    network = ethereum.apenet
+    actual = network.get_provider("geth")
+    assert isinstance(actual, ProviderAPI)
+    assert actual.name == "geth"
 
 
 def test_block_times(ethereum):

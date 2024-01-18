@@ -27,7 +27,7 @@ class NetworkManager(BaseManager):
     """
 
     _active_provider: Optional[ProviderAPI] = None
-    _default: Optional[str] = None
+    _default_ecosystem_name: Optional[str] = None
 
     def __repr__(self):
         provider = self.active_provider
@@ -108,7 +108,7 @@ class NetworkManager(BaseManager):
         The set of all ecosystem names in ``ape``.
         """
 
-        return {e[0] for e in self.plugin_manager.ecosystems}
+        return set(self.ecosystems)
 
     @property
     def network_names(self) -> Set[str]:
@@ -116,12 +116,7 @@ class NetworkManager(BaseManager):
         The set of all network names in ``ape``.
         """
 
-        names = set()
-        for ecosystem in self.ecosystems.values():
-            for network in ecosystem.networks.keys():
-                names.add(network)
-
-        return names
+        return {n for e in self.ecosystems.values() for n in e.networks}
 
     @property
     def provider_names(self) -> Set[str]:
@@ -136,12 +131,34 @@ class NetworkManager(BaseManager):
             for provider in network.providers
         )
 
-    @cached_property
+    @property
     def ecosystems(self) -> Dict[str, EcosystemAPI]:
         """
         All the registered ecosystems in ``ape``, such as ``ethereum``.
         """
+        ecosystem_objs = self._plugin_ecosystems
 
+        # Load config.
+        custom_networks: List = self.config_manager.get_config("networks").get("custom", [])
+        for custom_network in custom_networks:
+            ecosystem_name = custom_network.ecosystem
+            if ecosystem_name in ecosystem_objs:
+                # Already included in previous network.
+                continue
+
+            base_ecosystem_name = (
+                custom_network.get("base_ecosystem_plugin") or self.default_ecosystem_name
+            )
+            existing_cls = ecosystem_objs[base_ecosystem_name]
+            ecosystem_cls = existing_cls.model_copy(
+                update={"name": ecosystem_name}, cache_clear=("_networks_from_plugins",)
+            )
+            ecosystem_objs[ecosystem_name] = ecosystem_cls
+
+        return ecosystem_objs
+
+    @cached_property
+    def _plugin_ecosystems(self) -> Dict[str, EcosystemAPI]:
         def to_kwargs(name: str) -> Dict:
             return {
                 "name": name,
@@ -149,8 +166,9 @@ class NetworkManager(BaseManager):
                 "request_header": self.config_manager.REQUEST_HEADER,
             }
 
-        ecosystems = self.plugin_manager.ecosystems
-        return {n: cls(**to_kwargs(n)) for n, cls in ecosystems}  # type: ignore
+        # Load plugins.
+        plugins = self.plugin_manager.ecosystems
+        return {n: cls(**to_kwargs(n)) for n, cls in plugins}  # type: ignore[operator]
 
     def create_custom_provider(
         self,
@@ -253,17 +271,13 @@ class NetworkManager(BaseManager):
             eth = networks.ethereum
         """
 
-        if attr_name not in self.ecosystems:
-            # First try alternating the hyphen and underscores.
-            attr_name_fix = (
-                attr_name.replace("_", "-") if "_" in attr_name else attr_name.replace("-", "_")
-            )
-            if attr_name_fix in self.ecosystems:
-                return self.ecosystems[attr_name_fix]
+        options = {attr_name, attr_name.replace("-", "_"), attr_name.replace("_", "-")}
+        ecosystems = self.ecosystems
+        for opt in options:
+            if opt in ecosystems:
+                return ecosystems[opt]
 
-            raise ApeAttributeError(f"{NetworkManager.__name__} has no attribute '{attr_name}'.")
-
-        return self.ecosystems[attr_name]
+        raise ApeAttributeError(f"{NetworkManager.__name__} has no attribute '{attr_name}'.")
 
     def get_network_choices(
         self,
@@ -485,6 +499,13 @@ class NetworkManager(BaseManager):
         )
 
     @property
+    def default_ecosystem_name(self) -> str:
+        if name := self._default_ecosystem_name:
+            return name
+
+        return self.config_manager.default_ecosystem or "ethereum"
+
+    @property
     def default_ecosystem(self) -> EcosystemAPI:
         """
         The default ecosystem. Call
@@ -494,20 +515,7 @@ class NetworkManager(BaseManager):
         that ecosystem.
         """
 
-        ecosystems = self.ecosystems  # NOTE: Also will load defaults
-
-        if self._default:
-            return ecosystems[self._default]
-
-        elif self.config_manager.default_ecosystem:
-            return ecosystems[self.config_manager.default_ecosystem]
-
-        # If explicit default is not set, use first registered ecosystem
-        elif len(ecosystems) > 0:
-            return list(ecosystems.values())[0]
-
-        else:
-            raise NetworkError("No ecosystems installed.")
+        return self.ecosystems[self.default_ecosystem_name]
 
     def set_default_ecosystem(self, ecosystem_name: str):
         """
@@ -522,7 +530,7 @@ class NetworkManager(BaseManager):
         """
 
         if ecosystem_name in self.ecosystem_names:
-            self._default = ecosystem_name
+            self._default_ecosystem_name = ecosystem_name
 
         else:
             raise EcosystemNotFoundError(ecosystem_name, options=self.ecosystem_names)
@@ -573,8 +581,9 @@ class NetworkManager(BaseManager):
             ecosystem_data["isDefault"] = True
 
         ecosystem_data["networks"] = []
+        networks = getattr(self, ecosystem_name).networks
 
-        for network_name in getattr(self, ecosystem_name).networks:
+        for network_name in networks:
             if network_filter and network_name not in network_filter:
                 continue
 

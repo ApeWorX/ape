@@ -1169,7 +1169,7 @@ class EthereumNodeProvider(Web3Provider, ABC):
             self.block_page_size = 50_000
         else:
             client_name = client_version.split("/")[0]
-            logger.warning(f"Connecting Geth plugin to non-Geth client '{client_name}'.")
+            logger.info(f"Connecting to a '{client_name}' node.")
 
         self.web3.eth.set_gas_price_strategy(rpc_gas_price_strategy)
 
