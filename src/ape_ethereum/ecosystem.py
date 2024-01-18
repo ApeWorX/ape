@@ -17,7 +17,7 @@ from eth_utils import (
 )
 from ethpm_types import ContractType
 from ethpm_types.abi import ABIType, ConstructorABI, EventABI, MethodABI
-from pydantic import Field, field_validator
+from pydantic import Field, field_validator, model_validator
 from pydantic_settings import SettingsConfigDict
 
 from ape.api import BlockAPI, EcosystemAPI, PluginConfig, ReceiptAPI, TransactionAPI
@@ -132,8 +132,10 @@ class ForkedNetworkConfig(NetworkConfig):
     """
 
 
-def _create_local_config(default_provider: Optional[str] = None, use_fork: bool = False, **kwargs):
-    return _create_config(
+def create_local_network_config(
+    default_provider: Optional[str] = None, use_fork: bool = False, **kwargs
+):
+    return create_network_config(
         base_fee_multiplier=1.0,
         default_provider=default_provider,
         gas_limit="max",
@@ -144,7 +146,7 @@ def _create_local_config(default_provider: Optional[str] = None, use_fork: bool 
     )
 
 
-def _create_config(
+def create_network_config(
     required_confirmations: int = 2,
     base_fee_multiplier: float = DEFAULT_LIVE_NETWORK_BASE_FEE_MULTIPLIER,
     cls: Type = NetworkConfig,
@@ -157,17 +159,71 @@ def _create_config(
     )
 
 
-class EthereumConfig(PluginConfig):
-    mainnet: NetworkConfig = _create_config(block_time=13)
-    mainnet_fork: ForkedNetworkConfig = _create_local_config(use_fork=True)
-    goerli: NetworkConfig = _create_config(block_time=15)
-    goerli_fork: ForkedNetworkConfig = _create_local_config(use_fork=True)
-    sepolia: NetworkConfig = _create_config(block_time=15)
-    sepolia_fork: ForkedNetworkConfig = _create_local_config(use_fork=True)
-    local: NetworkConfig = _create_local_config(default_provider="test")
+class BaseEthereumConfig(PluginConfig):
+    """
+    L2 plugins should use this as their config base-class.
+    """
+
+    local: NetworkConfig = create_local_network_config(default_provider="test")
     default_network: str = LOCAL_NETWORK_NAME
+    _forked_configs: Dict[str, ForkedNetworkConfig] = {}
 
     model_config = SettingsConfigDict(extra="allow")
+
+    @model_validator(mode="before")
+    @classmethod
+    def load_forks(cls, values):
+        cfg_forks: Dict[str, ForkedNetworkConfig] = {}
+        for name, obj in values.items():
+            net_name = name.replace("-", "_")
+            if net_name.endswith("_fork"):
+                key = net_name.replace("_fork", "")
+                cfg_forks[key] = ForkedNetworkConfig.model_validate(obj)
+
+        values["_forked_configs"] = {**cfg_forks, **values.get("_forked_configs", {})}
+        return values
+
+    def __getattr__(self, key: str) -> Any:
+        net_key = key.replace("-", "_")
+        if net_key.endswith("_fork"):
+            return self._get_forked_config(net_key)
+
+        return super().__getattr__(key)
+
+    def __contains__(self, key: str) -> bool:
+        net_key = key.replace("-", "_")
+        if net_key.endswith("_fork"):
+            return self._get_forked_config(net_key) is not None
+
+        return super().__contains__(key)
+
+    def get(self, key: str, default: Optional[Any] = None) -> Any:
+        net_key = key.replace("-", "_")
+        if net_key.endswith("_fork"):
+            if cfg := self._get_forked_config(net_key):
+                return cfg
+
+        return super().get(key, default=default)
+
+    def _get_forked_config(self, name: str) -> Optional[ForkedNetworkConfig]:
+        live_key: str = name.replace("_fork", "")
+        if live_key in self._forked_configs:
+            return self._forked_configs[live_key]
+
+        live_cfg: Any
+        if live_cfg := self.get(live_key):
+            if isinstance(live_cfg, NetworkConfig):
+                fork_cfg = create_local_network_config(use_fork=True)
+                self._forked_configs[live_key] = fork_cfg
+                return fork_cfg
+
+        return None
+
+
+class EthereumConfig(BaseEthereumConfig):
+    mainnet: NetworkConfig = create_network_config(block_time=13)
+    goerli: NetworkConfig = create_network_config(block_time=15)
+    sepolia: NetworkConfig = create_network_config(block_time=15)
 
 
 class Block(BlockAPI):
