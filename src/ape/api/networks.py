@@ -975,8 +975,7 @@ class NetworkAPI(BaseInterfaceModel):
             if (
                 self.is_adhoc
                 or (self.ecosystem.name == ecosystem_name and self.name == network_name)
-                or self._is_custom
-                and self.default_provider_name == provider_name
+                or (self._is_custom and self.default_provider_name == provider_name)
             ):
                 # NOTE: Lazily load provider config
                 providers[provider_name] = partial(
