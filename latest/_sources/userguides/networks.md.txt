@@ -116,10 +116,11 @@ To add custom networks to your `ape-config.yaml` file, follow this pattern:
 ```yaml
 networks:
   custom:
-     - name: apenet             # Required
-       chain_id: 9867733322210  # Required
-       ecosysem: ethereum       # Defaults to your default ecosystem
-       default_provider: geth   # Default is the generic node provider
+     - name: mainnet                   # Required
+       chain_id: 109                   # Required
+       ecosystem: shibarium            # The ecosystem name, can either be new or an existing
+       base_ecosystem_plugin: polygon  # The ecosystem base-class, defaults to the default ecosystem
+       default_provider: geth          # Default is the generic node provider
 ```
 
 The following paragraphs explain the different parameters of the custom network config.
@@ -130,13 +131,18 @@ Read more on the network option [here](#selecting-a-network).
 **chain_id**: The chain ID is required for config-based custom networks.
 It ensures you are on the correct network when making transactions and is very important!
 
-**ecosystem**: You can optionally change the ecosystem class Ape uses.
-The ecosystem system class is largely responsible for decoding and encoding data to-and-fro the blockchain.
+**ecosystem**: Specify your custom network's ecosystem.
+This can either be an existing ecosystem or a new name entirely.
+Recall, you refer to your network via the network-triplet `ecosystem:network:provider` option-str.
+The ecosystem class is largely responsible for decoding and encoding data to-and-fro the blockchain but also contains all the networks.
 More information about the EcosystemAPI can be found [here](../methoddocs/api.html#ape.api.networks.EcosystemAPI).
-The default ecosystem is `ethereum`, which is the base class to most other L2 ecosystems and is defined in the core plugin `ape-ethereum`.
-If your custom network's ecosystem matches closer to another L2 instead of Ethereum, use that ecosystem name as your `ecosystem` in your custom network config.
+If your custom network is part of a new ecosystem, such as Shibarium, use the name of the new ecosystem, e.g. `"shibarium"`.
+You may want to also adjust the `base_ecosystem_plugin` config to change the base-class used.
+
+**base_ecosystem_plugin**: The plugin that defines the base-class to your custom ecosystem containing your custom network(s).
+If your custom network's ecosystem matches closer to another L2 instead of Ethereum, use that ecosystem name as your `base_ecosystem_plugin` in your custom network config.
 For example, take note that `"ethereum"` assumes EIP-1559 exists (unless configured otherwise).
-If your custom network is closer to Fantom, Polygon, Avalanche, or any other L2, you may want to consider using one of those plugins as the `ecosystem` to your custom network.
+If your custom network is closer to Fantom, Polygon, Avalanche, or any other L2, you may want to consider using one of those plugins as the `base_ecosystem_plugin` to your custom network.
 Alternatively, you can configure your custom network the same way you configure any other network in the config (see [this section](#block-time-transaction-type-and-more-config)).
 
 **default_provider**: The default provider is the provider class used for making the connection to your custom network, unless you specify a different provider (hence the `default_`).
@@ -153,19 +159,19 @@ To configure the RPC URL for a custom network, use the configuration of the prov
 For example, if the RPC URL is `https://apenet.example.com/rpc`, configure it by doing:
 
 ```yaml
-default_ecosystem: ethereum  # Is default, but including for clarity.
+default_ecosystem: shibarium
 
 networks:
   custom:
-     - name: apenet
-       chain_id: 9867733322210
-       default_provider: geth  # Is default, but including for clarity.
+    - name: mainnet
+      ecosystem: shibarium
+      base_ecosystem_plugin: polygon  # Closest base class.
+      chain_id: 109  # This must be correct or txns will fail.
 
 geth:
-  ethereum:
-    # NOTE: Use your custom network as the key!
-    apenet:
-      uri: https://apenet.example.com/rpc
+  shibarium:
+    mainnet:
+      uri: https://www.shibrpc.com
 ```
 
 Now, when using `ethereum:apenet:geth`, it will connect to the RPC URL `https://apenet.example.com/rpc`.
@@ -222,7 +228,7 @@ Ape also lets you connect to custom networks on-the-fly!
 If you would like to connect to a URI using an existing ecosystem plugin, you can specify a URI in the provider-section for the `--network` option:
 
 ```bash
-ape run script --network <ecosysem-name>:<network-name>:https://foo.bar
+ape run script --network <ecosystem-name>:<network-name>:https://foo.bar
 ```
 
 Additionally, if you want to connect to an unknown ecosystem or network, you can use the URI by itself.
