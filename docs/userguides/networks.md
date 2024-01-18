@@ -131,13 +131,13 @@ Read more on the network option [here](#selecting-a-network).
 **chain_id**: The chain ID is required for config-based custom networks.
 It ensures you are on the correct network when making transactions and is very important!
 
-**ecosystem**: You can optionally tell Ape what ecosystem a custom network is part of.
-Without specifying, custom networks appear in the `"ethereum"` ecosystem.
-Recall, you refer to your network via the network-triplet `ecosystem:network:provider`.
-The ecosystem system class is largely responsible for decoding and encoding data to-and-fro the blockchain.
+**ecosystem**: Configure your custom network's ecosystem.
+By default, custom networks appear in the `"ethereum"` ecosystem.
+Recall, you refer to your network via the network-triplet `ecosystem:network:provider` option-str.
+The ecosystem class is largely responsible for decoding and encoding data to-and-fro the blockchain.
 More information about the EcosystemAPI can be found [here](../methoddocs/api.html#ape.api.networks.EcosystemAPI).
-The default ecosystem is `ethereum`, which is the base class to most other L2 ecosystems and is defined in the core plugin `ape-ethereum`.
-If your custom network is part of a new ecosystem, such as Shibarium, use a new name as your ecosystem, e.g. `"shibarium"`.
+The default ecosystem is `ethereum`, which is the base class to most other L2 ecosystems and is defined in the Ape core plugin `ape-ethereum`.
+If your custom network is part of a new ecosystem, such as Shibarium, use the name of the new ecosystem, e.g. `"shibarium"`.
 However, if your ecosystem is not an existing plugin-based ecosystem, you may want to also adjust the `base_ecosystem_plugin` config to change the base-class used.
 
 **base_ecosystem_plugin**: The plugin that defines the base-class to your custom ecosystem containing your custom network(s).
