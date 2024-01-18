@@ -170,6 +170,35 @@ geth:
 
 Now, when using `ethereum:apenet:geth`, it will connect to the RPC URL `https://apenet.example.com/rpc`.
 
+#### Explorer URL
+
+To configure explorer URLs for your custom network, use the explorer's plugin config.
+For example, let's say you added the following network:
+
+```yaml
+networks:
+  custom:
+    - name: customnetwork
+      chain_id: 31337
+      default_provider: geth
+```
+
+To add a corresponding entry in `ape-etherscan` (assuming you are using `ape-etherscan` as your explorer plugin), add the following to your `ape-config.yaml` file:
+
+```yaml
+etherscan:
+  ethereum:
+    rate_limit: 15  # Configure a rate limit that makes sense for retry logic.
+    
+    # The name of the entry is the same as your custom network!
+    customnetwork:
+      uri: https://custom.scan              # URL used for showing transactions
+      api_uri: https://api.custom.scan/api  # URL used for making API requests.
+```
+
+**NOTE**: Every explorer plugin may be different in how you configure custom networks.
+Consult the plugin's README to clarify.
+
 #### Block time, transaction type, and more config
 
 Configuring network properties in Ape is the same regardless of whether it is custom or not.
