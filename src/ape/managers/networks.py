@@ -27,7 +27,7 @@ class NetworkManager(BaseManager):
     """
 
     _active_provider: Optional[ProviderAPI] = None
-    _default: Optional[str] = None
+    _default_ecosystem_name: Optional[str] = None
 
     def __repr__(self):
         provider = self.active_provider
@@ -141,12 +141,14 @@ class NetworkManager(BaseManager):
         # Load config.
         custom_networks: List = self.config_manager.get_config("networks").get("custom", [])
         for custom_network in custom_networks:
-            ecosystem_name = custom_network.ecosystem or "ethereum"
+            ecosystem_name = custom_network.ecosystem
             if ecosystem_name in ecosystem_objs:
                 # Already included in previous network.
                 continue
 
-            base_ecosystem_name = custom_network.get("base_ecosystem_plugin") or "ethereum"
+            base_ecosystem_name = (
+                custom_network.get("base_ecosystem_plugin") or self.default_ecosystem_name
+            )
             existing_cls = ecosystem_objs[base_ecosystem_name]
             ecosystem_cls = existing_cls.model_copy(
                 update={"name": ecosystem_name}, cache_clear=("_networks_from_plugins",)
@@ -497,6 +499,13 @@ class NetworkManager(BaseManager):
         )
 
     @property
+    def default_ecosystem_name(self) -> str:
+        if name := self._default_ecosystem_name:
+            return name
+
+        return self.config_manager.default_ecosystem or "ethereum"
+
+    @property
     def default_ecosystem(self) -> EcosystemAPI:
         """
         The default ecosystem. Call
@@ -506,20 +515,7 @@ class NetworkManager(BaseManager):
         that ecosystem.
         """
 
-        ecosystems = self.ecosystems  # NOTE: Also will load defaults
-
-        if self._default:
-            return ecosystems[self._default]
-
-        elif self.config_manager.default_ecosystem:
-            return ecosystems[self.config_manager.default_ecosystem]
-
-        # If explicit default is not set, use first registered ecosystem
-        elif len(ecosystems) > 0:
-            return list(ecosystems.values())[0]
-
-        else:
-            raise NetworkError("No ecosystems installed.")
+        return self.ecosystems[self.default_ecosystem_name]
 
     def set_default_ecosystem(self, ecosystem_name: str):
         """
@@ -534,7 +530,7 @@ class NetworkManager(BaseManager):
         """
 
         if ecosystem_name in self.ecosystem_names:
-            self._default = ecosystem_name
+            self._default_ecosystem_name = ecosystem_name
 
         else:
             raise EcosystemNotFoundError(ecosystem_name, options=self.ecosystem_names)

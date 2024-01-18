@@ -27,5 +27,7 @@ networks:
   custom:
     - name: apenet
       chain_id: 944898498948934528628
+      ecosystem: ethereum
     - name: apenet1
       chain_id: 944898498948934528629
+      ecosystem: ethereum

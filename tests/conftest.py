@@ -526,7 +526,7 @@ CUSTOM_BLOCK_TIME = 123
 
 
 def _make_net(name: str, chain_id: int, **kwargs) -> Dict:
-    return {"name": name, "chain_id": chain_id, **kwargs}
+    return {"name": name, "chain_id": chain_id, "ecosystem": "ethereum", **kwargs}
 
 
 CUSTOM_NETWORKS_CONFIG = {
