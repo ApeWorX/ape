@@ -268,9 +268,6 @@ class EcosystemAPI(ExtraAttributesMixin, BaseInterfaceModel):
             network_api._is_custom = True
             networks[custom_net.name] = network_api
 
-        if not networks:
-            raise NetworkError("No networks found")
-
         return networks
 
     @cached_property

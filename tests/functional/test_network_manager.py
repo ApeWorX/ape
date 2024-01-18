@@ -161,7 +161,7 @@ def test_get_provider_from_choice_custom_provider(networks_connected_to_tester):
     assert provider.network.ecosystem.name == "ethereum"
 
 
-def test_get_provider_from_choice_custom_ecosystem(networks_connected_to_tester):
+def test_get_provider_from_choice_custom_adhoc_ecosystem(networks_connected_to_tester):
     uri = "https://geth:1234567890abcdef@geth.foo.bar/"
     provider = networks_connected_to_tester.get_provider_from_choice(uri)
     assert provider.name == "geth"

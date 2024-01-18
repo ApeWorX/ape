@@ -43,10 +43,6 @@ def custom_ecosystem_config(custom_networks_config_dict, temp_config, networks):
     with temp_config(data):
         yield
 
-    # Remove cached ecosystem.
-    if "_plugin_ecosystems" in networks.__dict__:
-        del networks.__dict__["_plugin_ecosystems"]
-
 
 def test_name(ethereum):
     assert ethereum.name == "ethereum"

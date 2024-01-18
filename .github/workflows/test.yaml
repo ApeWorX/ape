@@ -86,7 +86,7 @@ jobs:
         - name: Install Geth
           uses: gacts/install-geth-tools@v1
           with:
-            version: 1.12.2
+            version: 1.13.10
 
         - name: Install Dependencies
           run: |

@@ -585,8 +585,9 @@ class NetworkManager(BaseManager):
             ecosystem_data["isDefault"] = True
 
         ecosystem_data["networks"] = []
+        networks = getattr(self, ecosystem_name).networks
 
-        for network_name in getattr(self, ecosystem_name).networks:
+        for network_name in networks:
             if network_filter and network_name not in network_filter:
                 continue
 
