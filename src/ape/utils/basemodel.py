@@ -234,7 +234,7 @@ class BaseModel(EthpmTypesBaseModel):
     def model_copy(
         self: "Model",
         *,
-        update: dict[str, Any] | None = None,
+        update: Optional[Dict[str, Any]] = None,
         deep: bool = False,
         cache_clear: Optional[Sequence[str]] = None,
     ) -> "Model":
