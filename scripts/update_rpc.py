@@ -16,14 +16,31 @@ from pydantic import BaseModel
 from ape.logging import logger
 
 CHAIN_IDS = {
+    "arbitrum": {
+        "mainnet": 42161,
+        "goerli": 421613,
+        "sepolia": 421614,
+    },
+    "avalanche": {
+        "mainnet": 43114,
+        "fuji": 43113,
+    },
     "base": {
         "mainnet": 8453,
         "sepolia": 84532,
+    },
+    "bsc": {
+        "mainnet": 56,
+        "testnet": 97,
     },
     "ethereum": {
         "mainnet": 1,
         "goerli": 5,
         "sepolia": 11155111,
+    },
+    "fantom": {
+        "mainnet": 250,
+        "testnet": 4002,
     },
     "gnosis": {
         "mainnet": 100,
