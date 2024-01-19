@@ -15,6 +15,7 @@ from ape.exceptions import (
 )
 from ape_ethereum.ecosystem import Block
 from ape_ethereum.transactions import TransactionStatusEnum, TransactionType
+from ape_geth.chains import PUBLIC_CHAIN_RPCS
 from ape_geth.provider import GethDevProcess, GethNotInstalledError
 from tests.conftest import GETH_URI, geth_process_test
 
@@ -24,6 +25,15 @@ def test_uri(geth_provider):
     assert geth_provider.http_uri == GETH_URI
     assert not geth_provider.ws_uri
     assert geth_provider.uri == GETH_URI
+
+
+@geth_process_test
+def test_default_public_uri(networks):
+    with networks.ethereum.mainnet.use_provider("geth") as provider:
+        assert provider.uri in PUBLIC_CHAIN_RPCS["ethereum"]["mainnet"]
+
+    with networks.ethereum.sepolia.use_provider("geth") as provider:
+        assert provider.uri in PUBLIC_CHAIN_RPCS["ethereum"]["sepolia"]
 
 
 @geth_process_test
