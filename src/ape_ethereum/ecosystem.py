@@ -1,6 +1,6 @@
 import re
 from copy import deepcopy
-from typing import Any, Dict, Iterator, List, Optional, Sequence, Tuple, Type, Union, cast
+from typing import Any, Dict, Iterator, List, Optional, Sequence, Tuple, Type, Union, cast, ClassVar
 
 from eth_abi import decode, encode
 from eth_abi.exceptions import InsufficientDataBytes, NonEmptyPaddingBytes
@@ -164,7 +164,11 @@ class BaseEthereumConfig(PluginConfig):
     L2 plugins should use this as their config base-class.
     """
 
-    local: NetworkConfig = create_local_network_config(default_provider="test")
+    DEFAULT_TRANSACTION_TYPE: ClassVar[TransactionType] = TransactionType.DYNAMIC
+
+    local: NetworkConfig = create_local_network_config(
+        default_provider="test", default_transaction_type=DEFAULT_TRANSACTION_TYPE
+    )
     default_network: str = LOCAL_NETWORK_NAME
     _forked_configs: Dict[str, ForkedNetworkConfig] = {}
     _custom_networks: Dict[str, NetworkConfig] = {}
@@ -184,9 +188,9 @@ class BaseEthereumConfig(PluginConfig):
             key = net_name.replace("_fork", "")
             if net_name.endswith("_fork"):
                 key = net_name.replace("_fork", "")
-                default_fork_model = create_local_network_config(use_fork=True).model_dump(
-                    mode="json", by_alias=True
-                )
+                default_fork_model = create_local_network_config(
+                    use_fork=True, default_transaction_type=cls.DEFAULT_TRANSACTION_TYPE
+                ).model_dump(mode="json", by_alias=True)
                 cfg_forks[key] = ForkedNetworkConfig.model_validate({**default_fork_model, **obj})
 
             elif key != LOCAL_NETWORK_NAME and key not in NETWORKS and isinstance(obj, dict):
