@@ -1,6 +1,6 @@
 import re
 from copy import deepcopy
-from typing import Any, Dict, Iterator, List, Optional, Sequence, Tuple, Type, Union, cast, ClassVar
+from typing import Any, ClassVar, Dict, Iterator, List, Optional, Sequence, Tuple, Type, Union, cast
 
 from eth_abi import decode, encode
 from eth_abi.exceptions import InsufficientDataBytes, NonEmptyPaddingBytes
