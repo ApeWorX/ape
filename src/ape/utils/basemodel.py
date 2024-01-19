@@ -115,8 +115,9 @@ class ManagerAccessMixin:
 
     _test_runner: ClassVar[Optional["PytestApeRunner"]] = None
 
+    @classmethod
     @property
-    def provider(self) -> "ProviderAPI":
+    def provider(cls) -> "ProviderAPI":
         """
         The current active provider if connected to one.
 
@@ -127,7 +128,7 @@ class ManagerAccessMixin:
         Returns:
             :class:`~ape.api.providers.ProviderAPI`
         """
-        if provider := self.network_manager.active_provider:
+        if provider := cls.network_manager.active_provider:
             return provider
 
         raise ProviderNotConnectedError()
