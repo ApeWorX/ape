@@ -1012,7 +1012,7 @@ class Web3Provider(ProviderAPI, ABC):
                 new_err_msg, base_err=exception, code=err_data.get("code"), **kwargs
             )
 
-        elif "out of gas" in str(err_msg) or "intrinsic gas too low":
+        elif "out of gas" in str(err_msg) or "intrinsic gas too low" in str(err_msg):
             return OutOfGasError(code=err_data.get("code"), base_err=exception, **kwargs)
 
         return VirtualMachineError(str(err_msg), code=(err_data or {}).get("code"), **kwargs)
