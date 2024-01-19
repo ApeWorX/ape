@@ -4,7 +4,7 @@ from typing import Any, Dict, Optional, TypeVar
 from pydantic import ConfigDict
 from pydantic_settings import BaseSettings
 
-T = TypeVar("T")
+ConfigItemType = TypeVar("ConfigItemType")
 
 
 class ConfigEnum(str, Enum):
@@ -70,7 +70,7 @@ class PluginConfig(BaseSettings):
     def __contains__(self, key: str) -> bool:
         return key in self.__dict__ or key in (self.__pydantic_extra__ or {})
 
-    def get(self, key: str, default: Optional[T] = None) -> T:
+    def get(self, key: str, default: Optional[ConfigItemType] = None) -> ConfigItemType:
         extra: Dict = self.__pydantic_extra__ or {}
         return self.__dict__.get(key, extra.get(key, default))
 

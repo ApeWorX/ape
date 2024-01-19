@@ -1,3 +1,5 @@
+import warnings
+
 import pytest
 from eth_pydantic_types import HexBytes
 from hexbytes import HexBytes as BaseHexBytes
@@ -234,7 +236,10 @@ def test_txn_hash_when_access_list_is_raw(ethereum, owner):
     # to this state, but somehow they have.
     txn.access_list = ACCESS_LIST_HEXBYTES
 
-    actual = txn.txn_hash.hex()
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        actual = txn.txn_hash.hex()
+
     assert actual.startswith("0x")
 
 

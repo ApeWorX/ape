@@ -80,9 +80,7 @@ def test_out_of_gas_error(geth_contract, geth_account, geth_provider):
     Attempt to transact with not quite enough gas. We should get an error saying
     we ran out of gas.
     """
-    txn = geth_contract.setNumber.as_transaction(333, sender=geth_account)
-    gas = geth_provider.estimate_gas_cost(txn)
-    txn.gas_limit = gas - 1
+    txn = geth_contract.setNumber.as_transaction(333, sender=geth_account, gas_limit=1)
     with pytest.raises(OutOfGasError) as err:
         geth_account.call(txn)
 
