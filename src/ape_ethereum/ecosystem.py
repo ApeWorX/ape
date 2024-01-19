@@ -1,6 +1,6 @@
 import re
 from copy import deepcopy
-from typing import Any, Dict, Iterator, List, Optional, Sequence, Tuple, Type, Union, cast
+from typing import Any, ClassVar, Dict, Iterator, List, Optional, Sequence, Tuple, Type, Union, cast
 
 from eth_abi import decode, encode
 from eth_abi.exceptions import InsufficientDataBytes, NonEmptyPaddingBytes
@@ -164,31 +164,51 @@ class BaseEthereumConfig(PluginConfig):
     L2 plugins should use this as their config base-class.
     """
 
-    local: NetworkConfig = create_local_network_config(default_provider="test")
+    DEFAULT_TRANSACTION_TYPE: ClassVar[TransactionType] = TransactionType.DYNAMIC
+
+    local: NetworkConfig = create_local_network_config(
+        default_provider="test", default_transaction_type=DEFAULT_TRANSACTION_TYPE
+    )
     default_network: str = LOCAL_NETWORK_NAME
     _forked_configs: Dict[str, ForkedNetworkConfig] = {}
+    _custom_networks: Dict[str, NetworkConfig] = {}
 
     model_config = SettingsConfigDict(extra="allow")
 
     @model_validator(mode="before")
     @classmethod
-    def load_forks(cls, values):
+    def load_network_configs(cls, values):
         cfg_forks: Dict[str, ForkedNetworkConfig] = {}
+        custom_networks = {}
         for name, obj in values.items():
+            if name.startswith("_"):
+                continue
+
             net_name = name.replace("-", "_")
+            key = net_name.replace("_fork", "")
             if net_name.endswith("_fork"):
                 key = net_name.replace("_fork", "")
-                cfg_forks[key] = ForkedNetworkConfig.model_validate(obj)
+                default_fork_model = create_local_network_config(
+                    use_fork=True, default_transaction_type=cls.DEFAULT_TRANSACTION_TYPE
+                ).model_dump(mode="json", by_alias=True)
+                cfg_forks[key] = ForkedNetworkConfig.model_validate({**default_fork_model, **obj})
+
+            elif key != LOCAL_NETWORK_NAME and key not in NETWORKS and isinstance(obj, dict):
+                # Custom network.
+                custom_networks[name] = NetworkConfig.model_validate(obj)
 
         values["_forked_configs"] = {**cfg_forks, **values.get("_forked_configs", {})}
-        return values
+        return {**values, **custom_networks}
 
     def __getattr__(self, key: str) -> Any:
         net_key = key.replace("-", "_")
         if net_key.endswith("_fork"):
             return self._get_forked_config(net_key)
 
-        return super().__getattr__(key)
+        try:
+            return super().__getattr__(key)
+        except AttributeError:
+            return NetworkConfig()
 
     def __contains__(self, key: str) -> bool:
         net_key = key.replace("-", "_")
@@ -218,6 +238,9 @@ class BaseEthereumConfig(PluginConfig):
                 return fork_cfg
 
         return None
+
+    def _get_custom_network(self, name: str) -> NetworkConfig:
+        return self._custom_networks.get(name, NetworkConfig())
 
 
 class EthereumConfig(BaseEthereumConfig):
@@ -293,6 +316,22 @@ class Ethereum(EcosystemAPI):
     @classmethod
     def encode_address(cls, address: AddressType) -> RawAddress:
         return str(address)
+
+    def decode_transaction_type(self, transaction_type_id: Any) -> Type[TransactionAPI]:
+        if isinstance(transaction_type_id, TransactionType):
+            tx_type = transaction_type_id
+        elif isinstance(transaction_type_id, int):
+            tx_type = TransactionType(transaction_type_id)
+        else:
+            # Using hex or alike.
+            tx_type = self.conversion_manager.convert(transaction_type_id, int)
+
+        if tx_type is TransactionType.STATIC:
+            return StaticFeeTransaction
+        elif tx_type is TransactionType.ACCESS_LIST:
+            return AccessListTransaction
+
+        return DynamicFeeTransaction
 
     def encode_contract_blueprint(
         self, contract_type: ContractType, *args, **kwargs
@@ -699,6 +738,7 @@ class Ethereum(EcosystemAPI):
             TransactionType.ACCESS_LIST: AccessListTransaction,
         }
         if "type" in tx_data:
+            # May be None in data.
             if tx_data["type"] is None:
                 # Explicit `None` means used default.
                 version = self.default_transaction_type
