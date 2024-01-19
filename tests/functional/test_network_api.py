@@ -1,3 +1,4 @@
+import copy
 from pathlib import Path
 
 import pytest
@@ -75,6 +76,23 @@ def test_forked_networks(ethereum):
     assert cfg.default_transaction_type == TransactionType.DYNAMIC
     assert cfg.block_time == 0
     assert cfg.default_provider is None
+    assert cfg.base_fee_multiplier == 1.0
+    assert cfg.transaction_acceptance_timeout == 20
+    assert cfg.max_receipt_retries == 20
+
+
+def test_forked_network_with_config(temp_config, ethereum):
+    data = {
+        "ethereum": {"mainnet_fork": {"default_transaction_type": TransactionType.STATIC.value}}
+    }
+    with temp_config(data):
+        cfg = ethereum.mainnet_fork.config.mainnet_fork
+        assert cfg.default_transaction_type == TransactionType.STATIC
+        assert cfg.block_time == 0
+        assert cfg.default_provider is None
+        assert cfg.base_fee_multiplier == 1.0
+        assert cfg.transaction_acceptance_timeout == 20
+        assert cfg.max_receipt_retries == 20
 
 
 def test_data_folder_custom_network(custom_network, ethereum, custom_network_name_0):
@@ -83,4 +101,30 @@ def test_data_folder_custom_network(custom_network, ethereum, custom_network_nam
     assert actual == expected
 
 
-#def test_configuring_forked_networks(temp_config)
+def test_config_custom_networks_default(ethereum, custom_networks_config):
+    """
+    Shows you don't get AttributeError when custom network config is not
+    present.
+    """
+    network = ethereum.apenet
+    cfg = network.config.apenet
+    assert cfg.default_transaction_type == TransactionType.DYNAMIC
+
+
+def test_config_custom_networks(
+    ethereum, custom_networks_config_dict, temp_config, custom_network_name_0
+):
+    data = copy.deepcopy(custom_networks_config_dict)
+    data["ethereum"] = {
+        custom_network_name_0: {"default_transaction_type": TransactionType.STATIC.value}
+    }
+    with temp_config(data):
+        network = ethereum.apenet
+        ethereum_config = network.config
+        cfg_by_attr = ethereum_config.apenet
+        assert cfg_by_attr.default_transaction_type == TransactionType.STATIC
+
+        assert "apenet" in ethereum_config
+        cfg_by_get = ethereum_config.get("apenet")
+        assert cfg_by_get is not None
+        assert cfg_by_get.default_transaction_type == TransactionType.STATIC
