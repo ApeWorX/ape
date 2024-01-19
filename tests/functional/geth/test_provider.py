@@ -28,12 +28,11 @@ def test_uri(geth_provider):
 
 
 @geth_process_test
-def test_default_public_uri(networks):
-    with networks.ethereum.mainnet.use_provider("geth") as provider:
-        assert provider.uri in PUBLIC_CHAIN_RPCS["ethereum"]["mainnet"]
-
-    with networks.ethereum.sepolia.use_provider("geth") as provider:
-        assert provider.uri in PUBLIC_CHAIN_RPCS["ethereum"]["sepolia"]
+def test_default_public_uri(config):
+    cfg = config.get_config("geth").ethereum.mainnet
+    assert cfg["uri"] in PUBLIC_CHAIN_RPCS["ethereum"]["mainnet"]
+    cfg = config.get_config("geth").ethereum.sepolia
+    assert cfg["uri"] in PUBLIC_CHAIN_RPCS["ethereum"]["sepolia"]
 
 
 @geth_process_test
