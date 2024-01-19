@@ -4,6 +4,7 @@ import pytest
 
 from ape.api import ProviderAPI
 from ape.exceptions import NetworkError, ProviderNotFoundError
+from ape_ethereum.transactions import TransactionType
 
 
 def test_get_provider_when_not_found(ethereum):
@@ -69,9 +70,17 @@ def test_forked_networks(ethereum):
     assert mainnet_fork.upstream_chain_id == 1
     # Just make sure it doesn't fail when trying to access.
     assert mainnet_fork.upstream_provider
+    # Ensure has default configurations.
+    cfg = mainnet_fork.config.mainnet_fork
+    assert cfg.default_transaction_type == TransactionType.DYNAMIC
+    assert cfg.block_time == 0
+    assert cfg.default_provider is None
 
 
 def test_data_folder_custom_network(custom_network, ethereum, custom_network_name_0):
     actual = custom_network.data_folder
     expected = ethereum.data_folder / custom_network_name_0
     assert actual == expected
+
+
+#def test_configuring_forked_networks(temp_config)

@@ -294,6 +294,22 @@ class Ethereum(EcosystemAPI):
     def encode_address(cls, address: AddressType) -> RawAddress:
         return str(address)
 
+    def decode_transaction_type(self, transaction_type_id: Any) -> Type[TransactionAPI]:
+        if isinstance(transaction_type_id, TransactionType):
+            tx_type = transaction_type_id
+        elif isinstance(transaction_type_id, int):
+            tx_type = TransactionType(transaction_type_id)
+        else:
+            # Using hex or alike.
+            tx_type = self.conversion_manager.convert(transaction_type_id, int)
+
+        if tx_type is TransactionType.STATIC:
+            return StaticFeeTransaction
+        elif tx_type is TransactionType.ACCESS_LIST:
+            return AccessListTransaction
+
+        return DynamicFeeTransaction
+
     def encode_contract_blueprint(
         self, contract_type: ContractType, *args, **kwargs
     ) -> TransactionAPI:
@@ -699,6 +715,8 @@ class Ethereum(EcosystemAPI):
             TransactionType.ACCESS_LIST: AccessListTransaction,
         }
         if "type" in tx_data:
+            # May be None in data.
+            tx_type = tx_data["type"] or self.default_transaction_type
             if tx_data["type"] is None:
                 # Explicit `None` means used default.
                 version = self.default_transaction_type
