@@ -1,7 +1,9 @@
+import copy
 from pathlib import Path
 
 import pytest
 
+from ape.api import EcosystemAPI
 from ape.exceptions import NetworkError
 from ape.utils import DEFAULT_TEST_CHAIN_ID
 
@@ -87,6 +89,7 @@ def network_with_no_providers(ethereum):
 def test_get_network_choices(networks, ethereum, mocker):
     # Simulate having a provider like foundry installed.
     mock_provider = mocker.MagicMock()
+    mock_provider.name = "mock"
     ethereum.networks["mainnet-fork"].providers["mock"] = mock_provider
     ethereum.networks["local"].providers["mock"] = mock_provider
 
@@ -158,7 +161,7 @@ def test_get_provider_from_choice_custom_provider(networks_connected_to_tester):
     assert provider.network.ecosystem.name == "ethereum"
 
 
-def test_get_provider_from_choice_custom_ecosystem(networks_connected_to_tester):
+def test_get_provider_from_choice_custom_adhoc_ecosystem(networks_connected_to_tester):
     uri = "https://geth:1234567890abcdef@geth.foo.bar/"
     provider = networks_connected_to_tester.get_provider_from_choice(uri)
     assert provider.name == "geth"
@@ -205,7 +208,7 @@ def test_parse_network_choice_new_chain_id(get_provider_with_unused_chain_id, ge
 
 
 @pytest.mark.xdist_group(name="multiple-eth-testers")
-def test_disconnect_after(get_provider_with_unused_chain_id):
+def test_parse_network_choice_disconnect_after(get_provider_with_unused_chain_id):
     context = get_provider_with_unused_chain_id()
     with context as provider:
         connection_id = provider.connection_id
@@ -243,6 +246,15 @@ def test_getattr_ecosystem_with_hyphenated_name(networks, ethereum):
     del networks.ecosystems["hyphen-in-name"]
 
 
+def test_getattr_custom_ecosystem(networks, custom_networks_config_dict, temp_config):
+    data = copy.deepcopy(custom_networks_config_dict)
+    data["networks"]["custom"][0]["ecosystem"] = "custom-ecosystem"
+
+    with temp_config(data):
+        actual = getattr(networks, "custom_ecosystem")
+        assert isinstance(actual, EcosystemAPI)
+
+
 @pytest.mark.parametrize("scheme", ("http", "https"))
 def test_create_custom_provider_http(networks, scheme):
     provider = networks.create_custom_provider(f"{scheme}://example.com")
@@ -262,3 +274,18 @@ def test_create_custom_provider_ipc(networks):
     # The IPC path should not be in URI field, different parts
     # of codebase may expect an actual URI.
     assert provider.uri != provider.ipc_path
+
+
+def test_ecosystems(networks):
+    actual = networks.ecosystems
+    assert "ethereum" in actual
+    assert actual["ethereum"].name == "ethereum"
+
+
+def test_ecosystems_include_custom(networks, custom_networks_config_dict, temp_config):
+    data = copy.deepcopy(custom_networks_config_dict)
+    data["networks"]["custom"][0]["ecosystem"] = "custom-ecosystem"
+    with temp_config(data):
+        actual = networks.ecosystems
+
+    assert "custom-ecosystem" in actual

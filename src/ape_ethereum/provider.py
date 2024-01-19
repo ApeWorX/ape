@@ -1012,7 +1012,7 @@ class Web3Provider(ProviderAPI, ABC):
                 new_err_msg, base_err=exception, code=err_data.get("code"), **kwargs
             )
 
-        elif "out of gas" in str(err_msg):
+        elif "out of gas" in str(err_msg) or "intrinsic gas too low" in str(err_msg):
             return OutOfGasError(code=err_data.get("code"), base_err=exception, **kwargs)
 
         return VirtualMachineError(str(err_msg), code=(err_data or {}).get("code"), **kwargs)
@@ -1169,7 +1169,7 @@ class EthereumNodeProvider(Web3Provider, ABC):
             self.block_page_size = 50_000
         else:
             client_name = client_version.split("/")[0]
-            logger.warning(f"Connecting Geth plugin to non-Geth client '{client_name}'.")
+            logger.info(f"Connecting to a '{client_name}' node.")
 
         self.web3.eth.set_gas_price_strategy(rpc_gas_price_strategy)
 
