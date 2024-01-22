@@ -308,9 +308,43 @@ def create_struct(name: str, types: Sequence[ABIType], output_values: Sequence) 
             field_to_set = struct_values[key]
             setattr(struct, field_to_set, value)
 
+    def contains(struct, key):
+        return key in struct.__dataclass_fields__
+
     def is_equal(struct, other) -> bool:
         _len = len(other)
-        return _len == len(struct) and all([struct[i] == other[i] for i in range(_len)])
+        if not hasattr(other, "__len__"):
+            return NotImplemented
+
+        elif _len != len(struct):
+            return False
+
+        if hasattr(other, "items"):
+            # Struct or dictionary.
+            for key, value in other.items():
+                if key not in struct:
+                    # Different object.
+                    return False
+
+                if struct[key] != value:
+                    # Mismatched properties.
+                    return False
+
+            # Both objects represent the same struct.
+            return True
+
+        elif isinstance(other, (list, tuple)):
+            # Allows comparing structs with sequence types.
+            # NOTE: The order of the expected sequence matters!
+
+            for itm1, itm2 in zip(struct.values(), other):
+                if itm1 != itm2:
+                    return False
+
+            return True
+
+        else:
+            return NotImplemented
 
     def length(struct) -> int:
         return len(struct.__dataclass_fields__)
@@ -318,14 +352,19 @@ def create_struct(name: str, types: Sequence[ABIType], output_values: Sequence) 
     def items(struct) -> List[Tuple]:
         return [(k, struct[k]) for k, v in struct.__dataclass_fields__.items()]
 
+    def values(struct) -> List[Any]:
+        return [x[1] for x in struct.items()]
+
     # NOTE: Should never be "_{i}", but mypy complains and we need a unique value
     properties = [m.name or f"_{i}" for i, m in enumerate(types)]
     methods = {
         "__eq__": is_equal,
         "__getitem__": get_item,
         "__setitem__": set_item,
+        "__contains__": contains,
         "__len__": length,
         "items": items,
+        "values": values,
     }
 
     struct_def = make_dataclass(

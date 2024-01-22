@@ -26,6 +26,7 @@ class BaseAddress(BaseInterface):
 
         # NOTE: mypy is confused by properties.
         #  https://github.com/python/typing/issues/1112
+
         return [
             str(BaseAddress.address.fget.__name__),  # type: ignore[attr-defined]
             str(BaseAddress.balance.fget.__name__),  # type: ignore[attr-defined]
@@ -33,7 +34,7 @@ class BaseAddress(BaseInterface):
             str(BaseAddress.codesize.fget.__name__),  # type: ignore[attr-defined]
             str(BaseAddress.nonce.fget.__name__),  # type: ignore[attr-defined]
             str(BaseAddress.is_contract.fget.__name__),  # type: ignore[attr-defined]
-            str(BaseAddress.provider.fget.__name__),  # type: ignore[attr-defined]
+            "provider",  # Is a class property
         ]
 
     @property

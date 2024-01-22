@@ -217,14 +217,27 @@ def test_repr(vyper_contract_instance):
 def test_structs(contract_instance, owner, chain):
     actual = contract_instance.getStruct()
     actual_sender, actual_prev_block = actual
+    tx_hash = chain.blocks[-2].hash
 
     # Expected: a == msg.sender
     assert actual.a == actual["a"] == actual[0] == actual_sender == owner
     assert is_checksum_address(actual.a)
 
     # Expected: b == block.prevhash.
-    assert actual.b == actual["b"] == actual[1] == actual_prev_block == chain.blocks[-2].hash
+    assert actual.b == actual["b"] == actual[1] == actual_prev_block == tx_hash
     assert isinstance(actual.b, bytes)
+
+    expected_dict = {"a": owner, "b": tx_hash}
+    assert actual == expected_dict
+
+    expected_tuple = (owner, tx_hash)
+    assert actual == expected_tuple
+
+    expected_list = [owner, tx_hash]
+    assert actual == expected_list
+
+    expected_struct = contract_instance.getStruct()
+    assert actual == expected_struct
 
 
 def test_nested_structs(contract_instance, owner, chain):
@@ -723,6 +736,28 @@ def test_get_error_by_signature(error_contract):
     actual = error_contract.get_error_by_signature(signature)
     expected = error_contract.Unauthorized
     assert actual == expected
+
+
+def test_selector_identifiers(vyper_contract_instance):
+    assert len(vyper_contract_instance.selector_identifiers.keys()) == 52
+    assert vyper_contract_instance.selector_identifiers["balances(address)"] == "0x27e235e3"
+    assert vyper_contract_instance.selector_identifiers["owner()"] == "0x8da5cb5b"
+    assert (
+        vyper_contract_instance.selector_identifiers["FooHappened(uint256)"]
+        == "0x1a7c56fae0af54ebae73bc4699b9de9835e7bb86b050dff7e80695b633f17abd"
+    )
+
+
+def test_identifier_lookup(vyper_contract_instance):
+    assert len(vyper_contract_instance.identifier_lookup.keys()) == 52
+    assert vyper_contract_instance.identifier_lookup["0x27e235e3"].selector == "balances(address)"
+    assert vyper_contract_instance.identifier_lookup["0x8da5cb5b"].selector == "owner()"
+    assert (
+        vyper_contract_instance.identifier_lookup[
+            "0x1a7c56fae0af54ebae73bc4699b9de9835e7bb86b050dff7e80695b633f17abd"
+        ].selector
+        == "FooHappened(uint256)"
+    )
 
 
 def test_source_path(project_with_contract, owner):
