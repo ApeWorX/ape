@@ -332,6 +332,37 @@ def test_decode_receipt(eth_tester_provider, ethereum):
     )
 
 
+def test_decode_etherscan_receipt(eth_tester_provider, ethereum):
+    receipt = ethereum.decode_receipt(
+        {
+            "blockNumber": "11291970",
+            "timeStamp": "1661846925",
+            "hash": "0x5780b43d819035ed1fa079171bdce7f0bbeaa6b01f201f8985d279a66cfc6844",
+            "nonce": "0",
+            "blockHash": "0x3175f953c1da4bf3d15b853dae4a150ae44e2e71380936463e89142c12961968",
+            "transactionIndex": "31",
+            "from": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
+            "to": "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512",
+            "value": "0",
+            "gas": "4712388",
+            "gasPrice": "1499999989",
+            "isError": "0",
+            "input": "0x608060405234801561000f575f80fd5b506101248061001d5f395ff3fe6080604052348015600e575f80fd5b50600436106026575f3560e01c8063f207564e14602a575b5f80fd5b6039603536600460b4565b603b565b005b6040516390b5561d60e01b81526004810182905273274b028b03a250ca03644e6c578d81f019ee1323906390b5561d90602401602060405180830381865af41580156088573d5f803e3d5ffd5b505050506040513d601f19601f8201168201806040525081019060aa919060ca565b60b1575f80fd5b50565b5f6020828403121560c3575f80fd5b5035919050565b5f6020828403121560d9575f80fd5b8151801515811460e7575f80fd5b939250505056fea2646970667358221220050eefcb4ae3417fbe131ccad8d577d9488919884d4c4a4d0bf8b9c46ce640f664736f6c63430008150033",  # noqa: E501
+            "contractAddress": "",
+            "cumulativeGasUsed": "8978461",
+            "gasUsed": "257131",
+            "methodId": "0xf926657e",
+            "functionName": "setup(address _reputationOracle, address _recordingOracle, uint256 _reputationOracleStake, uint256 _recordingOracleStake, string _url, string _hash)",  # noqa: E501
+            "required_confirmations": "13703",
+            "status": "1",
+            "chainId": 1,
+        }
+    )
+    assert receipt.type == 0
+    assert receipt.max_fee == 0
+    assert receipt.gas_price == 1499999989
+
+
 def test_default_transaction_type(ethereum):
     assert ethereum.default_transaction_type == TransactionType.DYNAMIC
 

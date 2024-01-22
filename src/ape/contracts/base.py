@@ -8,8 +8,8 @@ from typing import Any, Callable, Dict, Iterator, List, Optional, Tuple, Type, U
 import click
 import pandas as pd
 from eth_pydantic_types import HexBytes
-from ethpm_types import ContractType
 from ethpm_types.abi import ConstructorABI, ErrorABI, EventABI, MethodABI
+from ethpm_types.contract_type import ABI_W_SELECTOR_T, ContractType
 
 from ape.api import AccountAPI, Address, ReceiptAPI, TransactionAPI
 from ape.api.address import BaseAddress
@@ -710,6 +710,22 @@ class ContractEvent(BaseInterfaceModel):
 
 class ContractTypeWrapper(ManagerAccessMixin):
     contract_type: ContractType
+
+    @property
+    def selector_identifiers(self) -> Dict[str, str]:
+        """
+        Provides a mapping of function signatures (pre-hashed selectors) to
+        selector identifiers.
+        """
+        return self.contract_type.selector_identifiers
+
+    @property
+    def identifier_lookup(self) -> Dict[str, ABI_W_SELECTOR_T]:
+        """
+        Provides a mapping of method, error, and event selector identifiers to
+        ABI Types.
+        """
+        return self.contract_type.identifier_lookup
 
     @cached_property
     def source_path(self) -> Optional[Path]:

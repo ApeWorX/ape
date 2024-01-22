@@ -738,6 +738,28 @@ def test_get_error_by_signature(error_contract):
     assert actual == expected
 
 
+def test_selector_identifiers(vyper_contract_instance):
+    assert len(vyper_contract_instance.selector_identifiers.keys()) == 52
+    assert vyper_contract_instance.selector_identifiers["balances(address)"] == "0x27e235e3"
+    assert vyper_contract_instance.selector_identifiers["owner()"] == "0x8da5cb5b"
+    assert (
+        vyper_contract_instance.selector_identifiers["FooHappened(uint256)"]
+        == "0x1a7c56fae0af54ebae73bc4699b9de9835e7bb86b050dff7e80695b633f17abd"
+    )
+
+
+def test_identifier_lookup(vyper_contract_instance):
+    assert len(vyper_contract_instance.identifier_lookup.keys()) == 52
+    assert vyper_contract_instance.identifier_lookup["0x27e235e3"].selector == "balances(address)"
+    assert vyper_contract_instance.identifier_lookup["0x8da5cb5b"].selector == "owner()"
+    assert (
+        vyper_contract_instance.identifier_lookup[
+            "0x1a7c56fae0af54ebae73bc4699b9de9835e7bb86b050dff7e80695b633f17abd"
+        ].selector
+        == "FooHappened(uint256)"
+    )
+
+
 def test_source_path(project_with_contract, owner):
     contracts_folder = project_with_contract.contracts_folder
     contract = project_with_contract.contracts["Contract"]

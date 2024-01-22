@@ -124,7 +124,9 @@ class StaticFeeTransaction(BaseTransaction):
     @classmethod
     def calculate_read_only_max_fee(cls, values) -> Dict:
         # NOTE: Work-around, Pydantic doesn't handle calculated fields well.
-        values["max_fee"] = values.get("gas_limit", 0) * values.get("gas_price", 0)
+        values["max_fee"] = cls.conversion_manager.convert(
+            values.get("gas_limit", 0), int
+        ) * cls.conversion_manager.convert(values.get("gas_price", 0), int)
         return values
 
 
