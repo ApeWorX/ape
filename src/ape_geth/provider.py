@@ -1,4 +1,5 @@
 import atexit
+import random
 import shutil
 from itertools import tee
 from pathlib import Path
@@ -40,6 +41,7 @@ from ape_ethereum.provider import (
     DEFAULT_SETTINGS,
     EthereumNodeProvider,
 )
+from ape_geth.chains import PUBLIC_CHAIN_RPCS
 
 
 class GethDevProcess(BaseGethProcess):
@@ -197,9 +199,9 @@ class GethDevProcess(BaseGethProcess):
 
 class GethNetworkConfig(PluginConfig):
     # Make sure you are running the right networks when you try for these
-    mainnet: Dict = DEFAULT_SETTINGS.copy()
-    goerli: Dict = DEFAULT_SETTINGS.copy()
-    sepolia: Dict = DEFAULT_SETTINGS.copy()
+    mainnet: Dict = {"uri": random.choice(PUBLIC_CHAIN_RPCS["ethereum"]["mainnet"])}
+    goerli: Dict = {"uri": random.choice(PUBLIC_CHAIN_RPCS["ethereum"]["goerli"])}
+    sepolia: Dict = {"uri": random.choice(PUBLIC_CHAIN_RPCS["ethereum"]["sepolia"])}
     # Make sure to run via `geth --dev` (or similar)
     local: Dict = {**DEFAULT_SETTINGS.copy(), "chain_id": DEFAULT_TEST_CHAIN_ID}
 
@@ -469,4 +471,23 @@ class GethDev(EthereumNodeProvider, TestProviderAPI, SubprocessProvider):
 
 # NOTE: The default behavior of EthereumNodeBehavior assumes geth.
 class Geth(EthereumNodeProvider):
-    pass
+    @property
+    def uri(self) -> str:
+        uri = super().uri
+        ecosystem = self.network.ecosystem.name
+        network = self.network.name
+
+        # If we didn't find one in config, look for a public RPC.
+        if not uri or uri == DEFAULT_SETTINGS["uri"]:
+            # Do not override explicit configuration
+            if ecosystem in self.config:
+                # Shape of this is odd.  Pydantic model containing dicts
+                if network_config := self.config[ecosystem].get(network):
+                    if "uri" in network_config:
+                        return network_config["uri"]
+
+            # Use public RPC if available
+            if ecosystem in PUBLIC_CHAIN_RPCS and network in PUBLIC_CHAIN_RPCS[ecosystem]:
+                uri = random.choice(PUBLIC_CHAIN_RPCS[ecosystem][network])
+
+        return uri
