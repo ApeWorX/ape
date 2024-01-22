@@ -333,7 +333,7 @@ def test_decode_receipt(eth_tester_provider, ethereum):
 
 
 def test_decode_etherscan_receipt(eth_tester_provider, ethereum):
-    ethereum.decode_receipt(
+    receipt = ethereum.decode_receipt(
         {
             "blockNumber": "11291970",
             "timeStamp": "1661846925",
@@ -358,6 +358,9 @@ def test_decode_etherscan_receipt(eth_tester_provider, ethereum):
             "chainId": 1,
         }
     )
+    assert receipt.type == 0
+    assert receipt.max_fee == 0
+    assert receipt.gas_price == 1499999989
 
 
 def test_default_transaction_type(ethereum):
