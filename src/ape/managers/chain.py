@@ -548,11 +548,11 @@ class TransactionHistory(BaseManager):
         return history
 
     def _get_receipt(self, txn_hash: str) -> ReceiptAPI:
-        receipt = self._hash_to_receipt_map.get(txn_hash)
-        if not receipt:
-            receipt = self.provider.get_receipt(txn_hash, timeout=0)
-            self.append(receipt)
+        if cached_receipt := self._hash_to_receipt_map.get(txn_hash):
+            return cached_receipt
 
+        receipt = self.provider.get_receipt(txn_hash, timeout=0)
+        self.append(receipt)
         return receipt
 
     def append(self, txn_receipt: ReceiptAPI):

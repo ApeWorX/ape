@@ -2,6 +2,7 @@ from abc import ABC
 from typing import (
     TYPE_CHECKING,
     Any,
+    Callable,
     ClassVar,
     Dict,
     Iterator,
@@ -33,6 +34,14 @@ if TYPE_CHECKING:
     from ape.managers.query import QueryManager
     from ape.plugins import PluginManager
     from ape.pytest.runners import PytestApeRunner
+
+
+class classproperty(object):
+    def __init__(self, fn: Callable):
+        self.fn = fn
+
+    def __get__(self, obj, owner):
+        return self.fn(owner)
 
 
 class _RecursionChecker:
@@ -115,7 +124,7 @@ class ManagerAccessMixin:
 
     _test_runner: ClassVar[Optional["PytestApeRunner"]] = None
 
-    @property
+    @classproperty
     def provider(self) -> "ProviderAPI":
         """
         The current active provider if connected to one.
