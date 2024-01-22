@@ -150,7 +150,10 @@
 <li class="toctree-l1"><a class="reference internal" href="proxy.html">Proxy Contracts</a></li>
 <li class="toctree-l1"><a class="reference internal" href="testing.html">Testing</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Scripting</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#cli-scripts">CLI Scripts</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#cli-scripts">CLI Scripts</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#multi-network-scripting">Multi-network Scripting</a></li>
+</ul>
+</li>
 <li class="toctree-l2"><a class="reference internal" href="#main-method-scripts">Main Method Scripts</a></li>
 </ul>
 </li>
@@ -233,10 +236,10 @@ For example, assuming we have script <code class="docutils literal notranslate">
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>ape<span class="w"> </span>run<span class="w"> </span>hello<span class="w"> </span>helloworld
 </pre></div>
 </div>
-<p>Note that by default, <code class="docutils literal notranslate"><span class="pre">cli</span></code> scripts do not have <a class="reference external" href="../methoddocs/cli.html?highlight=options#ape.cli.options.network_option"><code class="docutils literal notranslate"><span class="pre">ape.cli.network_option</span></code></a> installed, giving you more flexibility in how you define your scripts.
+<p><strong>Note</strong>: By default, <code class="docutils literal notranslate"><span class="pre">cli</span></code> scripts do not have <a class="reference external" href="../methoddocs/cli.html?highlight=options#ape.cli.options.network_option"><code class="docutils literal notranslate"><span class="pre">ape.cli.network_option</span></code></a> installed, giving you more flexibility in how you define your scripts.
 However, you can add the <code class="docutils literal notranslate"><span class="pre">network_option</span></code> or <code class="docutils literal notranslate"><span class="pre">ConnectedProviderCommand</span></code> to your scripts by importing them from the <code class="docutils literal notranslate"><span class="pre">ape.cli</span></code> namespace:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">click</span>
-<span class="kn">from</span> <span class="nn">ape.cli</span> <span class="kn">import</span> <span class="n">network_option</span><span class="p">,</span> <span class="n">ConnectedProviderCommand</span>
+<span class="kn">from</span> <span class="nn">ape.cli</span> <span class="kn">import</span> <span class="n">ConnectedProviderCommand</span>
 
 
 <span class="nd">@click</span><span class="o">.</span><span class="n">command</span><span class="p">(</span><span class="bp">cls</span><span class="o">=</span><span class="n">ConnectedProviderCommand</span><span class="p">)</span>
@@ -258,6 +261,43 @@ Try changing the network using the <code class="docutils literal notranslate"><s
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>ape<span class="w"> </span>run<span class="w"> </span>shownet<span class="w"> </span>--network<span class="w"> </span>ethereum:mainnet:alchemy
 </pre></div>
 </div>
+<section id="multi-network-scripting">
+<h3>Multi-network Scripting<a class="headerlink" href="#multi-network-scripting" title="Permalink to this heading"></a></h3>
+<p>Because CLI-based scripts do not automatically connect to the provider before executing, they are ideal for multi-chain use-cases because they allow you to delay and manage the connection(s).
+To learn more about how to control the network-context in Ape Pythonically, see <a class="reference external" href="https://docs.apeworx.io/ape/stable/userguides/networks.html#provider-context-manager">this guide</a>.</p>
+<p>Here is an example of a multi-chain script:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">click</span>
+<span class="kn">from</span> <span class="nn">ape.cli</span> <span class="kn">import</span> <span class="n">ape_cli_context</span>
+
+<span class="nd">@click</span><span class="o">.</span><span class="n">command</span><span class="p">()</span>
+<span class="nd">@ape_cli_context</span><span class="p">()</span>
+<span class="k">def</span> <span class="nf">cli</span><span class="p">(</span><span class="n">cli_ctx</span><span class="p">):</span>        
+    <span class="c1"># There is no connection yet at this point.</span>
+    <span class="n">testnets</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">&quot;ethereum&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;sepolia&quot;</span><span class="p">,</span> <span class="s2">&quot;goerli&quot;</span><span class="p">],</span>
+        <span class="s2">&quot;polygon&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;mumbai&quot;</span><span class="p">]</span>
+    <span class="p">}</span>
+    <span class="n">nm</span> <span class="o">=</span> <span class="n">cli_ctx</span><span class="o">.</span><span class="n">network_manager</span>
+
+    <span class="k">for</span> <span class="n">ecosystem_name</span><span class="p">,</span> <span class="n">networks</span> <span class="ow">in</span> <span class="n">testnets</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="n">ecosystem</span> <span class="o">=</span> <span class="n">nm</span><span class="o">.</span><span class="n">ecosystems</span><span class="p">[</span><span class="n">ecosystem_name</span><span class="p">]</span>
+
+        <span class="k">for</span> <span class="n">network_name</span> <span class="ow">in</span> <span class="n">networks</span><span class="p">:</span>
+            <span class="c1"># Start making connections.</span>
+            <span class="n">network</span> <span class="o">=</span> <span class="n">ecosystem</span><span class="o">.</span><span class="n">get_network</span><span class="p">(</span><span class="n">network_name</span><span class="p">)</span>
+
+            <span class="k">with</span> <span class="n">network</span><span class="o">.</span><span class="n">use_provider</span><span class="p">(</span><span class="s2">&quot;alchemy&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">provider</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Connected to </span><span class="si">{</span><span class="n">provider</span><span class="o">.</span><span class="n">network_choice</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Things to notice:</p>
+<ol class="arabic simple">
+<li><p>It uses the CLI approach <em>without</em> <code class="docutils literal notranslate"><span class="pre">cls=ConnectedProviderCommand</span></code>; thus it is not connected before it makes the first call to <code class="docutils literal notranslate"><span class="pre">.use_provider(&quot;alchemy&quot;)</span></code>.</p></li>
+<li><p>It uses the <code class="docutils literal notranslate"><span class="pre">&#64;ape_cli_context()</span></code> decorator to get access to Ape instances such as the <code class="docutils literal notranslate"><span class="pre">network_manager</span></code>.</p></li>
+<li><p>Each network is only active during the context, thus allowing you to switch contexts and control chain-hopping in scripts.</p></li>
+<li><p><strong>You do not need to call <code class="docutils literal notranslate"><span class="pre">.connect()</span></code> on the provider yourself!</strong></p></li>
+</ol>
+</section>
 </section>
 <section id="main-method-scripts">
 <h2>Main Method Scripts<a class="headerlink" href="#main-method-scripts" title="Permalink to this heading"></a></h2>
@@ -267,11 +307,12 @@ To do this, define a method named <code class="docutils literal notranslate"><sp
     <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Hello world!&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
-<p><strong>NOTE</strong>: main-method scripts will always provide a network option to the call and thus will always connect to a network.</p>
+<p><strong>NOTE</strong>: main-method scripts will always provide a <code class="docutils literal notranslate"><span class="pre">--network</span></code> option and run in a connected-context.
+Therefore, they are not ideal for multi-chain scripts.
+<code class="docutils literal notranslate"><span class="pre">main</span></code>-method scripts work best for quick, single-network, connection-based workflows.</p>
 <p>To demonstrate, use the following script:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">ape</span> <span class="kn">import</span> <span class="n">networks</span>
 <span class="kn">import</span> <span class="nn">click</span>
-
 
 <span class="k">def</span> <span class="nf">main</span><span class="p">():</span>
     <span class="n">ecosystem_name</span> <span class="o">=</span> <span class="n">networks</span><span class="o">.</span><span class="n">provider</span><span class="o">.</span><span class="n">network</span><span class="o">.</span><span class="n">ecosystem</span><span class="o">.</span><span class="n">name</span>
@@ -280,6 +321,17 @@ To do this, define a method named <code class="docutils literal notranslate"><sp
     <span class="n">click</span><span class="o">.</span><span class="n">echo</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;You are connected to network &#39;</span><span class="si">{</span><span class="n">ecosystem_name</span><span class="si">}</span><span class="s2">:</span><span class="si">{</span><span class="n">network_name</span><span class="si">}</span><span class="s2">:</span><span class="si">{</span><span class="n">provider_name</span><span class="si">}</span><span class="s2">&#39;.&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
+<p>Suppose the name of the script is <code class="docutils literal notranslate"><span class="pre">foobar</span></code>, you can run it via:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>ape<span class="w"> </span>run<span class="w"> </span>foobar
+</pre></div>
+</div>
+<p>Without specifying <code class="docutils literal notranslate"><span class="pre">--network</span></code>, the script with connect to your default network.
+Else, specify the network using the <code class="docutils literal notranslate"><span class="pre">--network</span></code> flag:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>ape<span class="w"> </span>run<span class="w"> </span>foobar<span class="w"> </span>--network<span class="w"> </span>polygon:mumbai:alchemy
+</pre></div>
+</div>
+<p>You can also change networks within the script using the <code class="docutils literal notranslate"><span class="pre">ProviderContextManager</span></code> (see examples in the CLI-script section above).
+For multi-chain use-cases, we recommend sticking to the CLI based scripts to avoid the initial connection <code class="docutils literal notranslate"><span class="pre">main</span></code>-method scripts make.</p>
 </section>
 </section>
 
