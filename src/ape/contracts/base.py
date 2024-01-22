@@ -713,10 +713,18 @@ class ContractTypeWrapper(ManagerAccessMixin):
 
     @property
     def selector_identifiers(self) -> Dict[str, str]:
+        """
+        Provides a mapping of function signatures (pre-hashed selectors) to
+        selector identifiers.
+        """
         return self.contract_type.selector_identifiers
 
     @property
     def identifier_lookup(self) -> Dict[str, ABI_W_SELECTOR_T]:
+        """
+        Provides a mapping of method, error, and event selector identifiers to
+        ABI Types.
+        """
         return self.contract_type.identifier_lookup
 
     @cached_property
