@@ -362,6 +362,32 @@ bytes_value = contract.encode_input(0, 1, 2, 4, 5)
 method_id, input_dict = contract.decode_input(bytes_value)
 ```
 
+## Contract Interface Introspection
+
+There may be times you need to figure out ABI selectors and method or event identifiers for a contract.
+A contract instance provides properties to make this easy.
+For instance, if you have a 4-byte hex method ID, you can return the ABI type for that method:
+
+```python
+import ape
+
+usdc = ape.Contract("0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48")
+
+# ABI type for a hex method ID
+assert usdc.identifier_lookup['0x70a08231'].selector == 'balanceOf(address)'
+
+# Also, selectors from method and event signatures
+assert usdc.selector_identifiers["balances(address)"] == "0x27e235e3"
+
+# Or dump all selectors and IDs
+for identifier, abi_type in usdc.identifier_lookup.items():
+    print(identifier, abi_type)
+    # 0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef type='event' name='Transfer' inputs=...
+    # ...
+```
+
+These include methods and error IDs, as well as event topics.
+
 ## Multi-Call and Multi-Transaction
 
 The `ape_ethereum` core plugin comes with a `multicall` module containing tools for interacting with the [multicall3 smart contract](https://github.com/mds1/multicall).
