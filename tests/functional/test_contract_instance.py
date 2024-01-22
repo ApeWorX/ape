@@ -217,14 +217,27 @@ def test_repr(vyper_contract_instance):
 def test_structs(contract_instance, owner, chain):
     actual = contract_instance.getStruct()
     actual_sender, actual_prev_block = actual
+    tx_hash = chain.blocks[-2].hash
 
     # Expected: a == msg.sender
     assert actual.a == actual["a"] == actual[0] == actual_sender == owner
     assert is_checksum_address(actual.a)
 
     # Expected: b == block.prevhash.
-    assert actual.b == actual["b"] == actual[1] == actual_prev_block == chain.blocks[-2].hash
+    assert actual.b == actual["b"] == actual[1] == actual_prev_block == tx_hash
     assert isinstance(actual.b, bytes)
+
+    expected_dict = {"a": owner, "b": tx_hash}
+    assert actual == expected_dict
+
+    expected_tuple = (owner, tx_hash)
+    assert actual == expected_tuple
+
+    expected_list = [owner, tx_hash]
+    assert actual == expected_list
+
+    expected_struct = contract_instance.getStruct()
+    assert actual == expected_struct
 
 
 def test_nested_structs(contract_instance, owner, chain):
