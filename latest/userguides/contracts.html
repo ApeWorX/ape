@@ -165,6 +165,7 @@
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="#decoding-and-encoding-inputs">Decoding and Encoding Inputs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#contract-interface-introspection">Contract Interface Introspection</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#multi-call-and-multi-transaction">Multi-Call and Multi-Transaction</a></li>
 </ul>
 </li>
@@ -530,6 +531,30 @@ If an input does not have a name, its key is its stringified input index.</p>
 <span class="n">method_id</span><span class="p">,</span> <span class="n">input_dict</span> <span class="o">=</span> <span class="n">contract</span><span class="o">.</span><span class="n">decode_input</span><span class="p">(</span><span class="n">bytes_value</span><span class="p">)</span>
 </pre></div>
 </div>
+</section>
+<section id="contract-interface-introspection">
+<h2>Contract Interface Introspection<a class="headerlink" href="#contract-interface-introspection" title="Permalink to this heading"></a></h2>
+<p>There may be times you need to figure out ABI selectors and method or event identifiers for a contract.
+A contract instance provides properties to make this easy.
+For instance, if you have a 4-byte hex method ID, you can return the ABI type for that method:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">ape</span>
+
+<span class="n">usdc</span> <span class="o">=</span> <span class="n">ape</span><span class="o">.</span><span class="n">Contract</span><span class="p">(</span><span class="s2">&quot;0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48&quot;</span><span class="p">)</span>
+
+<span class="c1"># ABI type for a hex method ID</span>
+<span class="k">assert</span> <span class="n">usdc</span><span class="o">.</span><span class="n">identifier_lookup</span><span class="p">[</span><span class="s1">&#39;0x70a08231&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">selector</span> <span class="o">==</span> <span class="s1">&#39;balanceOf(address)&#39;</span>
+
+<span class="c1"># Also, selectors from method and event signatures</span>
+<span class="k">assert</span> <span class="n">usdc</span><span class="o">.</span><span class="n">selector_identifiers</span><span class="p">[</span><span class="s2">&quot;balances(address)&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;0x27e235e3&quot;</span>
+
+<span class="c1"># Or dump all selectors and IDs</span>
+<span class="k">for</span> <span class="n">identifier</span><span class="p">,</span> <span class="n">abi_type</span> <span class="ow">in</span> <span class="n">usdc</span><span class="o">.</span><span class="n">identifier_lookup</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">identifier</span><span class="p">,</span> <span class="n">abi_type</span><span class="p">)</span>
+    <span class="c1"># 0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef type=&#39;event&#39; name=&#39;Transfer&#39; inputs=...</span>
+    <span class="c1"># ...</span>
+</pre></div>
+</div>
+<p>These include methods and error IDs, as well as event topics.</p>
 </section>
 <section id="multi-call-and-multi-transaction">
 <h2>Multi-Call and Multi-Transaction<a class="headerlink" href="#multi-call-and-multi-transaction" title="Permalink to this heading"></a></h2>
