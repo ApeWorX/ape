@@ -1,5 +1,6 @@
 import re
 from copy import deepcopy
+from functools import cached_property
 from typing import Any, ClassVar, Dict, Iterator, List, Optional, Sequence, Tuple, Type, Union, cast
 
 from eth_abi import decode, encode
@@ -205,7 +206,7 @@ class BaseEthereumConfig(PluginConfig):
         return {**values, **custom_networks}
 
     @computed_field  # type: ignore[misc]
-    @property
+    @cached_property
     def local(self) -> NetworkConfig:
         return create_local_network_config(
             default_provider="test", default_transaction_type=self.DEFAULT_TRANSACTION_TYPE
