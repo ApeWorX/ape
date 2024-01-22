@@ -1,5 +1,5 @@
 import copy
-from typing import Any, Dict
+from typing import Any, ClassVar, Dict
 
 import pytest
 from eth_pydantic_types import HashBytes32, HexBytes
@@ -10,7 +10,7 @@ from ape.api.networks import LOCAL_NETWORK_NAME, NetworkAPI
 from ape.exceptions import DecodingError, NetworkError, NetworkNotFoundError
 from ape.types import AddressType
 from ape.utils import DEFAULT_LOCAL_TRANSACTION_ACCEPTANCE_TIMEOUT
-from ape_ethereum.ecosystem import BLUEPRINT_HEADER, Block
+from ape_ethereum.ecosystem import BLUEPRINT_HEADER, BaseEthereumConfig, Block
 from ape_ethereum.transactions import DynamicFeeTransaction, StaticFeeTransaction, TransactionType
 
 LOG = {
@@ -365,6 +365,20 @@ def test_default_transaction_type_configured_from_local_network(
     config = {"ethereum": {LOCAL_NETWORK_NAME: {"default_transaction_type": value}}}
     with temp_config(config):
         assert ethereum.default_transaction_type == TransactionType.STATIC
+
+
+def test_default_transaction_type_changed_at_class_level(ethereum):
+    """
+    Simulates an L2 plugin changing the default at the definition-level.
+    """
+
+    class Subconfig(BaseEthereumConfig):
+        DEFAULT_TRANSACTION_TYPE: ClassVar[int] = TransactionType.STATIC.value
+
+    config = Subconfig()
+    assert config.local.default_transaction_type.value == 0
+    assert config.mainnet.default_transaction_type.value == 0
+    assert config.mainnet_fork.default_transaction_type.value == 0
 
 
 @pytest.mark.parametrize("network_name", (LOCAL_NETWORK_NAME, "mainnet-fork", "mainnet_fork"))
