@@ -1,5 +1,6 @@
 import re
 from copy import deepcopy
+from functools import cached_property
 from typing import Any, ClassVar, Dict, Iterator, List, Optional, Sequence, Tuple, Type, Union, cast
 
 from eth_abi import decode, encode
@@ -17,13 +18,14 @@ from eth_utils import (
 )
 from ethpm_types import ContractType
 from ethpm_types.abi import ABIType, ConstructorABI, EventABI, MethodABI
-from pydantic import Field, field_validator, model_validator
+from pydantic import Field, computed_field, field_validator, model_validator
 from pydantic_settings import SettingsConfigDict
 
 from ape.api import BlockAPI, EcosystemAPI, PluginConfig, ReceiptAPI, TransactionAPI
 from ape.api.networks import LOCAL_NETWORK_NAME
 from ape.contracts.base import ContractCall
 from ape.exceptions import ApeException, APINotImplementedError, ConversionError, DecodingError
+from ape.managers.config import merge_configs
 from ape.types import (
     AddressType,
     AutoGasLimit,
@@ -164,11 +166,9 @@ class BaseEthereumConfig(PluginConfig):
     L2 plugins should use this as their config base-class.
     """
 
-    DEFAULT_TRANSACTION_TYPE: ClassVar[TransactionType] = TransactionType.DYNAMIC
+    DEFAULT_TRANSACTION_TYPE: ClassVar[int] = TransactionType.DYNAMIC.value
+    NETWORKS: ClassVar[Dict[str, Tuple[int, int]]] = NETWORKS
 
-    local: NetworkConfig = create_local_network_config(
-        default_provider="test", default_transaction_type=DEFAULT_TRANSACTION_TYPE
-    )
     default_network: str = LOCAL_NETWORK_NAME
     _forked_configs: Dict[str, ForkedNetworkConfig] = {}
     _custom_networks: Dict[str, NetworkConfig] = {}
@@ -191,14 +191,26 @@ class BaseEthereumConfig(PluginConfig):
                 default_fork_model = create_local_network_config(
                     use_fork=True, default_transaction_type=cls.DEFAULT_TRANSACTION_TYPE
                 ).model_dump(mode="json", by_alias=True)
-                cfg_forks[key] = ForkedNetworkConfig.model_validate({**default_fork_model, **obj})
+                data = merge_configs(default_fork_model, obj)
+                cfg_forks[key] = ForkedNetworkConfig.model_validate(data)
 
-            elif key != LOCAL_NETWORK_NAME and key not in NETWORKS and isinstance(obj, dict):
+            elif key != LOCAL_NETWORK_NAME and key not in cls.NETWORKS and isinstance(obj, dict):
                 # Custom network.
-                custom_networks[name] = NetworkConfig.model_validate(obj)
+                default_network_model = create_network_config(
+                    default_transaction_type=cls.DEFAULT_TRANSACTION_TYPE
+                ).model_dump(mode="json", by_alias=True)
+                data = merge_configs(default_network_model, obj)
+                custom_networks[name] = NetworkConfig.model_validate(data)
 
         values["_forked_configs"] = {**cfg_forks, **values.get("_forked_configs", {})}
         return {**values, **custom_networks}
+
+    @computed_field  # type: ignore[misc]
+    @cached_property
+    def local(self) -> NetworkConfig:
+        return create_local_network_config(
+            default_provider="test", default_transaction_type=self.DEFAULT_TRANSACTION_TYPE
+        )
 
     def __getattr__(self, key: str) -> Any:
         net_key = key.replace("-", "_")
@@ -208,7 +220,7 @@ class BaseEthereumConfig(PluginConfig):
         try:
             return super().__getattr__(key)
         except AttributeError:
-            return NetworkConfig()
+            return NetworkConfig(default_transaction_type=self.DEFAULT_TRANSACTION_TYPE)
 
     def __contains__(self, key: str) -> bool:
         net_key = key.replace("-", "_")
@@ -223,17 +235,27 @@ class BaseEthereumConfig(PluginConfig):
             if cfg := self._get_forked_config(net_key):
                 return cfg
 
-        return super().get(key, default=default)
+        result: Any
+        if result := super().get(key, default=default):
+            return result
+
+        # Handle weird base-class differences.
+        try:
+            return self.__getattr__(key)
+        except AttributeError:
+            return default
 
     def _get_forked_config(self, name: str) -> Optional[ForkedNetworkConfig]:
         live_key: str = name.replace("_fork", "")
-        if live_key in self._forked_configs:
+        if live_key in self._forked_configs and self._forked_configs[live_key]:
             return self._forked_configs[live_key]
 
         live_cfg: Any
         if live_cfg := self.get(live_key):
             if isinstance(live_cfg, NetworkConfig):
-                fork_cfg = create_local_network_config(use_fork=True)
+                fork_cfg = create_local_network_config(
+                    use_fork=True, default_transaction_type=self.DEFAULT_TRANSACTION_TYPE
+                )
                 self._forked_configs[live_key] = fork_cfg
                 return fork_cfg
 
@@ -303,9 +325,9 @@ class Ethereum(EcosystemAPI):
 
         for name in networks_to_check:
             network = self.get_network(name)
-            result: Optional[int] = network._network_config.get("default_transaction_type")
-            if result is not None:
-                return TransactionType(result)
+            ecosystem_default = network.config.DEFAULT_TRANSACTION_TYPE
+            result: int = network._network_config.get("default_transaction_type", ecosystem_default)
+            return TransactionType(result)
 
         return TransactionType(DEFAULT_TRANSACTION_TYPE)
 
