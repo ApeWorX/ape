@@ -93,6 +93,7 @@ def test_forked_network_with_config(temp_config, ethereum):
         assert cfg.base_fee_multiplier == 1.0
         assert cfg.transaction_acceptance_timeout == 20
         assert cfg.max_receipt_retries == 20
+        assert cfg.gas_limit == "max"
 
 
 def test_data_folder_custom_network(custom_network, ethereum, custom_network_name_0):
