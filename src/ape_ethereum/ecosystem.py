@@ -137,10 +137,12 @@ class ForkedNetworkConfig(NetworkConfig):
 def create_local_network_config(
     default_provider: Optional[str] = None, use_fork: bool = False, **kwargs
 ):
+    if "gas_limit" not in kwargs:
+        kwargs["gas_limit"] = "max"
+
     return create_network_config(
         base_fee_multiplier=1.0,
         default_provider=default_provider,
-        gas_limit="max",
         required_confirmations=0,
         transaction_acceptance_timeout=DEFAULT_LOCAL_TRANSACTION_ACCEPTANCE_TIMEOUT,
         cls=ForkedNetworkConfig if use_fork else NetworkConfig,
@@ -167,6 +169,7 @@ class BaseEthereumConfig(PluginConfig):
     """
 
     DEFAULT_TRANSACTION_TYPE: ClassVar[int] = TransactionType.DYNAMIC.value
+    DEFAULT_LOCAL_GAS_LIMIT: ClassVar[GasLimit] = "max"
     NETWORKS: ClassVar[Dict[str, Tuple[int, int]]] = NETWORKS
 
     default_network: str = LOCAL_NETWORK_NAME
@@ -189,7 +192,9 @@ class BaseEthereumConfig(PluginConfig):
             if net_name.endswith("_fork"):
                 key = net_name.replace("_fork", "")
                 default_fork_model = create_local_network_config(
-                    use_fork=True, default_transaction_type=cls.DEFAULT_TRANSACTION_TYPE
+                    use_fork=True,
+                    default_transaction_type=cls.DEFAULT_TRANSACTION_TYPE,
+                    gas_limit=cls.DEFAULT_LOCAL_GAS_LIMIT,
                 ).model_dump(mode="json", by_alias=True)
                 data = merge_configs(default_fork_model, obj)
                 cfg_forks[key] = ForkedNetworkConfig.model_validate(data)
@@ -209,7 +214,9 @@ class BaseEthereumConfig(PluginConfig):
     @cached_property
     def local(self) -> NetworkConfig:
         return create_local_network_config(
-            default_provider="test", default_transaction_type=self.DEFAULT_TRANSACTION_TYPE
+            default_provider="test",
+            default_transaction_type=self.DEFAULT_TRANSACTION_TYPE,
+            gas_limit=self.DEFAULT_LOCAL_GAS_LIMIT,
         )
 
     def __getattr__(self, key: str) -> Any:
@@ -254,7 +261,9 @@ class BaseEthereumConfig(PluginConfig):
         if live_cfg := self.get(live_key):
             if isinstance(live_cfg, NetworkConfig):
                 fork_cfg = create_local_network_config(
-                    use_fork=True, default_transaction_type=self.DEFAULT_TRANSACTION_TYPE
+                    use_fork=True,
+                    default_transaction_type=self.DEFAULT_TRANSACTION_TYPE,
+                    gas_limit=self.DEFAULT_LOCAL_GAS_LIMIT,
                 )
                 self._forked_configs[live_key] = fork_cfg
                 return fork_cfg
