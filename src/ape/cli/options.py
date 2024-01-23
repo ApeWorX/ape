@@ -11,6 +11,7 @@ from ape.api import ProviderAPI
 from ape.cli import ConnectedProviderCommand
 from ape.cli.choices import (
     _ACCOUNT_TYPE_FILTER,
+    _NONE_NETWORK,
     AccountAliasPromptChoice,
     NetworkChoice,
     OutputFormat,
@@ -211,17 +212,19 @@ def network_option(
 
         def callback(ctx, param, value):
             is_legacy = param.type.base_type is str
-            is_none = value in ("None", "none", None)
             use_default = default == "auto"
 
-            if not is_legacy and is_none and use_default:
+            if not is_legacy and value is None and use_default:
                 provider_obj = networks.default_ecosystem.default_network.default_provider
 
-            elif is_none or is_legacy:
+            elif value is None or is_legacy:
                 provider_obj = None
 
             elif isinstance(value, ProviderAPI):
                 provider_obj = value
+
+            elif value == _NONE_NETWORK:
+                provider_obj = None
 
             else:
                 network_ctx = networks.parse_network_choice(value)

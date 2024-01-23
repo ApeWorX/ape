@@ -272,6 +272,7 @@ class AccountAliasPromptChoice(PromptChoice):
 
 
 _NETWORK_FILTER = Optional[Union[List[str], str]]
+_NONE_NETWORK = "__NONE_NETWORK__"
 
 
 def get_networks(
@@ -352,8 +353,12 @@ class NetworkChoice(click.Choice):
         return "[ecosystem-name][:[network-name][:[provider-name]]]"
 
     def convert(self, value: Any, param: Optional[Parameter], ctx: Optional[Context]) -> Any:
-        if not value or value in ("None", "none"):
+        choice: Optional[Union[str, ProviderAPI]]
+        if not value:
             choice = None
+
+        elif value.lower() in ("none", "null"):
+            choice = _NONE_NETWORK
 
         elif self.is_custom_value(value):
             # By-pass choice constraints when using custom network.
@@ -371,9 +376,13 @@ class NetworkChoice(click.Choice):
                     "Invalid network choice. Use `ape networks list` to see options."
                 ) from err
 
-        if choice is not None and issubclass(self.base_type, ProviderAPI):
+        if (
+            choice not in (None, _NONE_NETWORK)
+            and isinstance(choice, str)
+            and issubclass(self.base_type, ProviderAPI)
+        ):
             # Return the provider.
-            choice = networks.get_provider_from_choice(network_choice=value)
+            choice = networks.get_provider_from_choice(network_choice=choice)
 
         return self.callback(ctx, param, choice) if self.callback else choice
 
