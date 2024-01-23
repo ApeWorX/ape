@@ -1,5 +1,4 @@
 import atexit
-import random
 import shutil
 from itertools import tee
 from pathlib import Path
@@ -12,6 +11,7 @@ from eth_utils import add_0x_prefix, to_hex, to_wei
 from evm_trace import CallType
 from evm_trace import TraceFrame as EvmTraceFrame
 from evm_trace import create_trace_frames, get_calltree_from_geth_trace
+from evmchains import get_random_rpc
 from geth.accounts import ensure_account_exists  # type: ignore
 from geth.chain import initialize_chain  # type: ignore
 from geth.process import BaseGethProcess  # type: ignore
@@ -41,7 +41,6 @@ from ape_ethereum.provider import (
     DEFAULT_SETTINGS,
     EthereumNodeProvider,
 )
-from ape_geth.chains import PUBLIC_CHAIN_RPCS
 
 
 class GethDevProcess(BaseGethProcess):
@@ -199,9 +198,9 @@ class GethDevProcess(BaseGethProcess):
 
 class GethNetworkConfig(PluginConfig):
     # Make sure you are running the right networks when you try for these
-    mainnet: Dict = {"uri": random.choice(PUBLIC_CHAIN_RPCS["ethereum"]["mainnet"])}
-    goerli: Dict = {"uri": random.choice(PUBLIC_CHAIN_RPCS["ethereum"]["goerli"])}
-    sepolia: Dict = {"uri": random.choice(PUBLIC_CHAIN_RPCS["ethereum"]["sepolia"])}
+    mainnet: Dict = {"uri": get_random_rpc("ethereum", "mainnet")}
+    goerli: Dict = {"uri": get_random_rpc("ethereum", "goerli")}
+    sepolia: Dict = {"uri": get_random_rpc("ethereum", "sepolia")}
     # Make sure to run via `geth --dev` (or similar)
     local: Dict = {**DEFAULT_SETTINGS.copy(), "chain_id": DEFAULT_TEST_CHAIN_ID}
 
@@ -487,7 +486,9 @@ class Geth(EthereumNodeProvider):
                         return network_config["uri"]
 
             # Use public RPC if available
-            if ecosystem in PUBLIC_CHAIN_RPCS and network in PUBLIC_CHAIN_RPCS[ecosystem]:
-                uri = random.choice(PUBLIC_CHAIN_RPCS[ecosystem][network])
+            try:
+                uri = get_random_rpc(ecosystem, network)
+            except KeyError:
+                pass
 
         return uri
