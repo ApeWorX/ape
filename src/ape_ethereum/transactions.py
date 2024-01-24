@@ -51,9 +51,7 @@ class TransactionType(Enum):
 
 class AccessList(BaseModel):
     address: AddressType
-    storage_keys: List[Union[HexBytes, bytes, str, int]] = Field(
-        default_factory=list, alias="storageKeys"
-    )
+    storage_keys: List[HexBytes] = Field(default_factory=list, alias="storageKeys")
 
 
 class BaseTransaction(TransactionAPI):

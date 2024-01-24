@@ -262,7 +262,18 @@ def test_model_dump_excludes_none_values():
 
 
 def test_model_dump_access_list():
-    txn = AccessListTransaction()
+    # Data directly from eth_createAccessList RPC
+    access_list = [
+        {
+            "address": "0x7ef8e99980da5bcedcf7c10f41e55f759f6a174b",
+            "storageKeys": [
+                "0x0000000000000000000000000000000000000000000000000000000000000000",
+                "0x0000000000000000000000000000000000000000000000000000000000000001",
+                "0x0000000000000000000000000000000000000000000000000000000000000002",
+            ],
+        }
+    ]
+    txn = AccessListTransaction(access_list=access_list)
     actual = txn.model_dump(exclude_none=True, by_alias=True)
     assert actual is not None
 
