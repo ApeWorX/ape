@@ -357,4 +357,4 @@ class TestAccessList:
     @pytest.mark.parametrize("storage_key", (123, HexBytes(123), "0x0123"))
     def test_storage_keys(self, storage_key, zero_address):
         actual = AccessList(address=zero_address, storageKeys=[storage_key])
-        assert actual.storage_keys == [storage_key]
+        assert actual.storage_keys == [HexBytes(storage_key)]
