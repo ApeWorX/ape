@@ -125,6 +125,7 @@ setup(
         "eip712>=0.2.3,<0.4",
         "ethpm-types>=0.6.7,<0.7",
         "eth_pydantic_types>=0.1.0a5,<0.2",
+        "evmchains>=0.0.2,<0.1",
         "evm-trace>=0.1.2",
     ],
     entry_points={
