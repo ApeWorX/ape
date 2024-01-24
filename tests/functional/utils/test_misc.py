@@ -7,6 +7,8 @@ from ape.exceptions import APINotImplementedError
 from ape.utils.misc import (
     ZERO_ADDRESS,
     add_padding_to_strings,
+    dict_defaults,
+    dict_overlay,
     extract_nested_value,
     get_package_version,
     is_evm_precompile,
@@ -140,3 +142,36 @@ def test_to_int(val):
 )
 def test_pragma_str_to_specifier_set(spec, expected):
     assert pragma_str_to_specifier_set(spec) == expected
+
+
+def test_dict_defaults():
+    mapping = {
+        "a": 1,
+    }
+    dict_defaults(mapping, {"a": 2, "b": {"one": 1, "two": None}})
+
+    assert mapping["a"] == 1
+    assert "b" in mapping
+    assert isinstance(mapping["b"], dict)
+    assert "one" in mapping["b"]
+    assert mapping["b"]["one"] == 1
+    assert "two" in mapping["b"]
+    assert mapping["b"]["two"] is None
+
+
+def test_dict_overlay():
+    mapping = {"a": 1, "b": {"one": 1, "two": 1}}
+    dict_overlay(mapping, {"a": 2, "b": {"two": 2, "three": None}, "c": {"four": 4}})
+
+    assert mapping["a"] == 2
+    assert "b" in mapping
+    assert isinstance(mapping["b"], dict)
+    assert "one" in mapping["b"]
+    assert mapping["b"]["one"] == 1
+    assert "two" in mapping["b"]
+    assert mapping["b"]["two"] == 2
+    assert "three" in mapping["b"]
+    assert mapping["b"]["three"] is None
+    assert "c" in mapping
+    assert isinstance(mapping["c"], dict)
+    assert "four" in mapping["c"]
