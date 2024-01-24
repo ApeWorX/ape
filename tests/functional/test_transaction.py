@@ -7,6 +7,7 @@ from hexbytes import HexBytes as BaseHexBytes
 from ape.exceptions import SignatureError
 from ape_ethereum.transactions import (
     AccessList,
+    AccessListTransaction,
     DynamicFeeTransaction,
     StaticFeeTransaction,
     TransactionType,
@@ -260,6 +261,12 @@ def test_model_dump_excludes_none_values():
     assert "value" not in actual
 
 
+def test_model_dump_access_list():
+    txn = AccessListTransaction()
+    actual = txn.model_dump(exclude_none=True, by_alias=True)
+    assert actual is not None
+
+
 def test_str_when_data_is_bytes(ethereum):
     """
     Tests against a condition that would cause transactions to
@@ -322,3 +329,21 @@ def test_serialize_transaction_missing_signature_and_sender(ethereum):
     txn = ethereum.create_transaction(data=HexBytes("0x123"))
     with pytest.raises(SignatureError, match=expected):
         txn.serialize_transaction()
+
+
+class TestAccessList:
+    @pytest.mark.parametrize(
+        "address",
+        (
+            "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
+            HexBytes("0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266"),
+        ),
+    )
+    def test_address(self, address):
+        actual = AccessList(address=address, storageKeys=[])
+        assert actual.address == "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266"
+
+    @pytest.mark.parametrize("storage_key", (123, HexBytes(123), "0x0123"))
+    def test_storage_keys(self, storage_key, zero_address):
+        actual = AccessList(address=zero_address, storageKeys=[storage_key])
+        assert actual.storage_keys == [storage_key]
