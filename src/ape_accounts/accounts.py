@@ -1,19 +1,21 @@
 import json
 from os import environ
 from pathlib import Path
-from typing import Any, Dict, Iterator, Optional
+from typing import Any, Dict, Iterator, Optional, Tuple
 
 import click
 from eip712.messages import EIP712Message
 from eth_account import Account as EthAccount
+from eth_account.hdaccount import ETHEREUM_DEFAULT_PATH
 from eth_account.messages import encode_defunct
 from eth_keys import keys  # type: ignore
 from eth_pydantic_types import HexBytes
-from eth_utils import to_bytes
+from eth_utils import is_hex, to_bytes
 
 from ape.api import AccountAPI, AccountContainerAPI, TransactionAPI
-from ape.exceptions import AccountsError
+from ape.exceptions import AccountsError, AliasAlreadyInUseError
 from ape.logging import logger
+from ape.managers import AccountManager
 from ape.types import AddressType, MessageSignature, SignableMessage, TransactionSignature
 
 
@@ -257,3 +259,39 @@ class KeyfileAccount(AccountAPI):
             return EthAccount.decrypt(self.keyfile, passphrase)
         except ValueError as err:
             raise InvalidPasswordError() from err
+
+
+def generate_account(
+    alias: str, passphrase: str, hd_path: str = ETHEREUM_DEFAULT_PATH, word_count: int = 12
+) -> Tuple[AccountAPI, str]:
+    """
+    Generate a new account.
+
+    Args:
+        extra_entropy (str): Extra entropy to use when generating the account.
+
+    Returns:
+        Tuple of AccountAPI and mnemonic for the generated account.
+    """
+    EthAccount.enable_unaudited_hdwallet_features()
+    accounts = AccountManager()
+
+    if alias in accounts.aliases:
+        raise AliasAlreadyInUseError(alias)
+    elif not isinstance(alias, str):
+        raise AccountsError(f"Alias must be a str, not '{type(alias)}'.")
+    elif is_hex(alias) and len(alias) >= 42:
+        # Prevents private keys from accidentally being stored in plaintext
+        # Ref: https://github.com/ApeWorX/ape/issues/1525
+        raise AccountsError("Longer aliases cannot be hex strings.")
+
+    if not passphrase or not isinstance(passphrase, str):
+        raise AccountsError("Account file encryption passphrase must be provided.")
+
+    account, mnemonic = EthAccount.create_with_mnemonic(num_words=word_count, account_path=hd_path)
+
+    # Write the encrypted account file
+    path = accounts.containers["accounts"].data_folder.joinpath(f"{alias}.json")
+    path.write_text(json.dumps(EthAccount.encrypt(account.key, passphrase)))
+
+    return KeyfileAccount(keyfile_path=path), mnemonic

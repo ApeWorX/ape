@@ -7,10 +7,17 @@ from eth_pydantic_types import HexBytes
 
 import ape
 from ape.api import ImpersonatedAccount
-from ape.exceptions import AccountsError, NetworkError, ProjectError, SignatureError
+from ape.exceptions import (
+    AccountsError,
+    AliasAlreadyInUseError,
+    NetworkError,
+    ProjectError,
+    SignatureError,
+)
 from ape.types import AutoGasLimit
 from ape.types.signatures import recover_signer
 from ape.utils.testing import DEFAULT_NUMBER_OF_TEST_ACCOUNTS
+from ape_accounts import KeyfileAccount, generate_account
 from ape_ethereum.ecosystem import ProxyType
 from ape_ethereum.transactions import TransactionType
 from ape_test.accounts import TestAccount
@@ -676,3 +683,38 @@ def test_load_public_key_from_keyfile(runner, keyfile_account):
         )
         # no need for password when loading from the keyfile
         assert keyfile_account.public_key
+
+
+def test_generate_account():
+    alias = "tester"
+    passphrase = "asdf1234"
+    account, mnemonic = generate_account(alias, passphrase)
+    assert len(mnemonic.split(" ")) == 12
+    assert isinstance(account, KeyfileAccount)
+    assert account.alias == alias
+    assert account.locked is True
+    account.unlock(passphrase)
+    assert account.locked is False
+
+
+def test_generate_account_invalid_alias():
+    with pytest.raises(AccountsError, match="Longer aliases cannot be hex strings."):
+        generate_account(
+            "3fbc0ce3e71421b94f7ff4e753849c540dec9ade57bad60ebbc521adcbcbc024", "asdf1234"
+        )
+
+    with pytest.raises(AccountsError, match="Alias must be a str"):
+        # Testing an invalid type as arg, so ignoring
+        generate_account(b"imma-bytestr", "asdf1234")  # type: ignore
+
+    generate_account("used", "qwerty")
+    with pytest.raises(AliasAlreadyInUseError):
+        generate_account("used", "asdf1234")
+
+
+def test_generate_account_invalid_passphrase():
+    with pytest.raises(AccountsError, match="Account file encryption passphrase must be provided."):
+        generate_account("invalid-passphrase", "")
+
+    with pytest.raises(AccountsError, match="Account file encryption passphrase must be provided."):
+        generate_account("invalid-passphrase", b"bytestring")  # type: ignore

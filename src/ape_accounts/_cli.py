@@ -7,7 +7,7 @@ from eth_utils import to_bytes, to_checksum_address
 
 from ape import accounts
 from ape.cli import ape_cli_context, existing_alias_argument, non_existing_alias_argument
-from ape_accounts import AccountContainer, KeyfileAccount
+from ape_accounts import AccountContainer, KeyfileAccount, generate_account
 
 
 def _get_container() -> AccountContainer:
@@ -86,26 +86,20 @@ def _list(cli_ctx, show_all_plugins):
 @non_existing_alias_argument()
 @ape_cli_context()
 def generate(cli_ctx, alias, hide_mnemonic, word_count, custom_hd_path):
-    path = _get_container().data_folder.joinpath(f"{alias}.json")
-    EthAccount.enable_unaudited_hdwallet_features()
-    # os.urandom (used internally for this method) requires a certain amount of entropy.
-    # Adding entropy increases os.urandom randomness output
-    # Despite not being used in create_with_mnemonic
     click.prompt(
         "Enhance the security of your account by adding additional random input",
         hide_input=True,
     )
-    account, mnemonic = EthAccount.create_with_mnemonic(
-        num_words=word_count, account_path=custom_hd_path
-    )
-    if not hide_mnemonic and click.confirm("Show mnemonic?", default=True):
-        cli_ctx.logger.info(f"Newly generated mnemonic is: {click.style(mnemonic, bold=True)}")
     passphrase = click.prompt(
         "Create Passphrase to encrypt account",
         hide_input=True,
         confirmation_prompt=True,
     )
-    path.write_text(json.dumps(EthAccount.encrypt(account.key, passphrase)))
+
+    account, mnemonic = generate_account(alias, passphrase, custom_hd_path, word_count)
+
+    if not hide_mnemonic and click.confirm("Show mnemonic?", default=True):
+        cli_ctx.logger.info(f"Newly generated mnemonic is: {click.style(mnemonic, bold=True)}")
     cli_ctx.logger.success(
         f"A new account '{account.address}' with "
         + f"HDPath {custom_hd_path} has been added with the id '{alias}'"
