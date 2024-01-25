@@ -409,8 +409,8 @@ def test_prepare_transaction_access_list_from_rpc(geth_provider, geth_contract, 
     prepared_tx = geth_provider.prepare_transaction(tx)
     assert isinstance(prepared_tx, AccessListTransaction)
     actual = prepared_tx.access_list
-    assert isinstance(actual, AccessList)
     assert len(actual) > 0
+    assert isinstance(actual[0], AccessList)
     assert len(actual[0].storage_keys) > 0
 
 
