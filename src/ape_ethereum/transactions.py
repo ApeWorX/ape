@@ -19,7 +19,7 @@ from ape.api import ReceiptAPI, TransactionAPI
 from ape.contracts import ContractEvent
 from ape.exceptions import OutOfGasError, SignatureError, TransactionError
 from ape.logging import logger
-from ape.types import CallTreeNode, ContractLog, ContractLogContainer, SourceTraceback
+from ape.types import AddressType, CallTreeNode, ContractLog, ContractLogContainer, SourceTraceback
 from ape.utils import ZERO_ADDRESS
 
 
@@ -50,10 +50,8 @@ class TransactionType(Enum):
 
 
 class AccessList(BaseModel):
-    address: str
-    storage_keys: List[Union[HexBytes, bytes, str, int]] = Field(
-        default_factory=list, alias="storageKeys"
-    )
+    address: AddressType
+    storage_keys: List[HexBytes] = Field(default_factory=list, alias="storageKeys")
 
 
 class BaseTransaction(TransactionAPI):
