@@ -239,3 +239,10 @@ def test_uncaught_txn_err(ape_cli, runner, mocker):
     )
     err = handler.call_args[0][0]
     assert str(err) == "Transaction failed."
+
+
+def test_console_none_network(ape_cli, runner):
+    result = runner.invoke(
+        ape_cli, ["console", "--network", "None"], input="exit\n", catch_exceptions=False
+    )
+    assert result.exit_code == 0
