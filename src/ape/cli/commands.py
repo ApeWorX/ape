@@ -5,10 +5,10 @@ from typing import Any, List, Optional
 import click
 from click import Context
 
-from ape import networks
 from ape.api import ProviderAPI, ProviderContextManager
 from ape.cli.choices import _NONE_NETWORK, NetworkChoice
 from ape.exceptions import NetworkError
+from ape.utils.basemodel import ManagerAccessMixin
 
 
 def get_param_from_ctx(ctx: Context, param: str) -> Optional[Any]:
@@ -33,10 +33,13 @@ def parse_network(ctx: Context) -> Optional[ProviderContextManager]:
     provider = get_param_from_ctx(ctx, "network")
     if provider is not None and isinstance(provider, ProviderAPI):
         return provider.network.use_provider(provider, disconnect_on_exit=not interactive)
+
     elif provider not in (None, _NONE_NETWORK) and isinstance(provider, str):
-        return networks.parse_network_choice(provider, disconnect_on_exit=not interactive)
+        return ManagerAccessMixin.network_manager.parse_network_choice(
+            provider, disconnect_on_exit=not interactive
+        )
     elif provider is None:
-        ecosystem = networks.default_ecosystem
+        ecosystem = ManagerAccessMixin.network_manager.default_ecosystem
         network = ecosystem.default_network
         if provider_name := network.default_provider_name:
             return network.use_provider(provider_name, disconnect_on_exit=not interactive)

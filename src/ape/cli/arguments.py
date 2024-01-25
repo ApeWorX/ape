@@ -3,16 +3,16 @@ from itertools import chain
 import click
 from eth_utils import is_hex
 
-from ape import accounts, project
 from ape.cli.choices import _ACCOUNT_TYPE_FILTER, Alias
 from ape.cli.paramtype import AllFilePaths
 from ape.exceptions import AccountsError, AliasAlreadyInUseError
+from ape.utils.basemodel import ManagerAccessMixin
 
 _flatten = chain.from_iterable
 
 
 def _alias_callback(ctx, param, value):
-    if value in accounts.aliases:
+    if value in ManagerAccessMixin.account_manager.aliases:
         # Alias cannot be used.
         raise AliasAlreadyInUseError(value)
 
@@ -59,7 +59,7 @@ def _create_contracts_paths(ctx, param, value):
     resolved_contract_paths = set()
     for contract_path in contract_paths:
         # Adds missing absolute path as well as extension.
-        if resolved_contract_path := project.lookup_path(contract_path):
+        if resolved_contract_path := ManagerAccessMixin.project_manager.lookup_path(contract_path):
             resolved_contract_paths.add(resolved_contract_path)
         else:
             _raise_bad_arg(contract_path.name)
