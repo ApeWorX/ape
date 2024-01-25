@@ -70,7 +70,7 @@ from ape.types import (
 )
 from ape.utils import gas_estimation_error_message, run_until_complete, to_int
 from ape.utils.misc import DEFAULT_MAX_RETRIES_TX
-from ape_ethereum.transactions import AccessList
+from ape_ethereum.transactions import AccessList, AccessListTransaction
 
 DEFAULT_PORT = 8545
 DEFAULT_HOSTNAME = "localhost"
@@ -832,7 +832,7 @@ class Web3Provider(ProviderAPI, ABC):
             and txn.gas_price is None
         ):
             txn.gas_price = self.gas_price
-        elif txn_type == TransactionType.DYNAMIC:
+        elif txn_type is TransactionType.DYNAMIC:
             if txn.max_priority_fee is None:
                 txn.max_priority_fee = self.priority_fee
 
@@ -841,6 +841,13 @@ class Web3Provider(ProviderAPI, ABC):
                 txn.max_fee = int(self.base_fee * multiplier + txn.max_priority_fee)
 
             # else: Assume user specified the correct amount or txn will fail and waste gas
+
+        if txn_type is TransactionType.ACCESS_LIST and isinstance(txn, AccessListTransaction):
+            if not txn.access_list:
+                try:
+                    txn.access_list = self.create_access_list(txn)
+                except APINotImplementedError:
+                    pass
 
         gas_limit = self.network.gas_limit if txn.gas_limit is None else txn.gas_limit
         if gas_limit in (None, "auto") or isinstance(gas_limit, AutoGasLimit):
@@ -975,6 +982,7 @@ class Web3Provider(ProviderAPI, ABC):
                 "does not exist/is not available" in str(message)
                 or re.match(r"Method .*?not found", message)
                 or message.startswith("Unknown RPC Endpoint")
+                or "RPC Endpoint has not been implemented" in message
             ):
                 raise APINotImplementedError(
                     f"RPC method '{endpoint}' is not implemented by this node instance."
@@ -987,9 +995,9 @@ class Web3Provider(ProviderAPI, ABC):
 
         return result
 
-    def get_access_list(
+    def create_access_list(
         self, transaction: TransactionAPI, block_id: Optional[BlockID] = None
-    ) -> AccessList:
+    ) -> List[AccessList]:
         """
         Get the access list for a transaction use ``eth_createAccessList``.
 
@@ -1000,7 +1008,7 @@ class Web3Provider(ProviderAPI, ABC):
               ID. Defaults to using the latest block.
 
         Returns:
-            :class:`~ape_ethereum.transactions.AccessList`
+            List[:class:`~ape_ethereum.transactions.AccessList`]
         """
         tx_dict = transaction.model_dump(by_alias=True, mode="json", exclude=("chain_id",))
         tx_dict_converted = {}
@@ -1019,7 +1027,7 @@ class Web3Provider(ProviderAPI, ABC):
             arguments.append(block_id)
 
         result = self._make_request("eth_createAccessList", arguments)
-        return AccessList.model_validate(result.get("accessList", []))
+        return [AccessList.model_validate(x) for x in result.get("accessList", [])]
 
     def get_virtual_machine_error(self, exception: Exception, **kwargs) -> VirtualMachineError:
         txn = kwargs.get("txn")

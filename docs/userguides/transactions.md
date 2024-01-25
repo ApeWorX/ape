@@ -106,6 +106,27 @@ contract.fundMyContract(value="1 gwei", type="0x0", sender=sender)
 
 When declaring `type="0x0"` and _not_ specifying a `gas_price`, the `gas_price` gets set using the provider's estimation.
 
+## Access List Transactions
+
+Utilizing [EIP-2930](https://eips.ethereum.org/EIPS/eip-2930), you can also make access-list transactions using Ape.
+Access-list transactions are static-fee transactions except you can optionally specify an access list.
+Access-lists make contract-interaction more predictable and optimized.
+You can also use Access-lists in Dynamic-fee transactions.
+
+To automatically use access-list (type 1) transactions in Ape, specify `type=1` in your call:
+
+```python
+contract.fundMyContract(value="1 gwei", type=1, sender=sender)
+```
+
+When specifying `type=1`, Ape uses `eth_createAccessList` RPC to attach an access list to the transaction automatically.
+
+You can also specify the access-list directly:
+
+```python
+contract.fundMyContract(value="1 gwei", type=1, sender=sender, access_list=MY_ACCESS_LIST)
+```
+
 ## Transaction Logs
 
 In Ape, you can easily get all the events on a receipt.

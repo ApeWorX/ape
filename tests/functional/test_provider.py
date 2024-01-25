@@ -19,7 +19,7 @@ from ape.exceptions import (
 from ape.types import LogFilter
 from ape.utils import DEFAULT_TEST_CHAIN_ID
 from ape_ethereum.provider import _sanitize_web3_url
-from ape_ethereum.transactions import AccessListTransaction, TransactionStatusEnum, TransactionType
+from ape_ethereum.transactions import TransactionStatusEnum, TransactionType
 
 
 def test_uri(eth_tester_provider):
@@ -280,14 +280,6 @@ def test_prepare_transaction_with_max_gas(tx_type, eth_tester_provider, ethereum
     assert actual.gas_limit == eth_tester_provider.max_gas
 
 
-def test_prepare_transaction_access_list_from_rpc(eth_tester_provider, ethereum, owner):
-    tx = ethereum.create_transaction(type=TransactionType.ACCESS_LIST, sender=owner.address)
-    prepared_tx = eth_tester_provider.prepare_transaction(tx)
-    assert isinstance(prepared_tx, AccessListTransaction)
-    actual = prepared_tx.access_list
-    assert actual == [1]
-
-
 def test_no_comma_in_rpc_url():
     test_url = "URI: http://127.0.0.1:8545,"
     sanitised_url = _sanitize_web3_url(test_url)
@@ -400,7 +392,7 @@ def test_base_fee(eth_tester_provider):
         _ = eth_tester_provider._get_fee_history(0)
 
 
-def test_get_access_list(eth_tester_provider, vyper_contract_instance, owner):
+def test_create_access_list(eth_tester_provider, vyper_contract_instance, owner):
     tx = vyper_contract_instance.setNumber.as_transaction(123, sender=owner)
     with pytest.raises(APINotImplementedError):
-        eth_tester_provider.get_access_list(tx)
+        eth_tester_provider.create_access_list(tx)

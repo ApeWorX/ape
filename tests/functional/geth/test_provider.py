@@ -15,7 +15,12 @@ from ape.exceptions import (
     TransactionNotFoundError,
 )
 from ape_ethereum.ecosystem import Block
-from ape_ethereum.transactions import AccessList, TransactionStatusEnum, TransactionType
+from ape_ethereum.transactions import (
+    AccessList,
+    AccessListTransaction,
+    TransactionStatusEnum,
+    TransactionType,
+)
 from ape_geth.provider import GethDevProcess, GethNotInstalledError
 from tests.conftest import GETH_URI, geth_process_test
 
@@ -385,7 +390,7 @@ def test_estimate_gas_of_static_fee_txn(geth_contract, geth_provider, geth_accou
 
 @geth_process_test
 @pytest.mark.parametrize("tx_type", TransactionType)
-def test_prepare_tx_with_max_gas(tx_type, geth_provider, ethereum, geth_account):
+def test_prepare_transaction_with_max_gas(tx_type, geth_provider, ethereum, geth_account):
     tx = ethereum.create_transaction(type=tx_type.value, sender=geth_account.address)
     tx.gas_limit = None  # Undo set from validator
     assert tx.gas_limit is None, "Test setup failed - couldn't clear tx gas limit."
@@ -395,8 +400,24 @@ def test_prepare_tx_with_max_gas(tx_type, geth_provider, ethereum, geth_account)
     assert actual.gas_limit == geth_provider.max_gas
 
 
-def test_get_access_list(geth_provider, geth_contract, geth_account):
-    tx = geth_contract.setNumber.as_transaction(123, sender=geth_account, type=1)
-    actual = geth_provider.get_access_list(tx)
+@geth_process_test
+def test_prepare_transaction_access_list_from_rpc(geth_provider, geth_contract, geth_account):
+    tx = geth_contract.setNumber.as_transaction(
+        123, type=TransactionType.ACCESS_LIST, sender=geth_account.address
+    )
+    assert isinstance(tx, AccessListTransaction), "Setup failed - should be AccessListTx"
+    prepared_tx = geth_provider.prepare_transaction(tx)
+    assert isinstance(prepared_tx, AccessListTransaction)
+    actual = prepared_tx.access_list
     assert isinstance(actual, AccessList)
-    assert len(actual.storage_keys) > 0
+    assert len(actual) > 0
+    assert len(actual[0].storage_keys) > 0
+
+
+@geth_process_test
+def test_create_access_list(geth_provider, geth_contract, geth_account):
+    tx = geth_contract.setNumber.as_transaction(123, sender=geth_account, type=1)
+    actual = geth_provider.create_access_list(tx)
+    assert len(actual) > 0
+    assert isinstance(actual[0], AccessList)
+    assert len(actual[0].storage_keys) > 0
