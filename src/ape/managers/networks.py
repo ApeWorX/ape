@@ -98,7 +98,7 @@ class NetworkManager(BaseManager):
         provider_settings = provider_settings or {}
 
         if block_number is not None:
-            # Negateive block_number means relative to HEAD
+            # Negative block_number means relative to HEAD
             if block_number < 0:
                 block_number = self.provider.get_block("latest").number + block_number
 
