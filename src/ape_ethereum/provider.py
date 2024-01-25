@@ -70,6 +70,7 @@ from ape.types import (
 )
 from ape.utils import gas_estimation_error_message, run_until_complete, to_int
 from ape.utils.misc import DEFAULT_MAX_RETRIES_TX
+from ape_ethereum.transactions import AccessList
 
 DEFAULT_PORT = 8545
 DEFAULT_HOSTNAME = "localhost"
@@ -985,6 +986,40 @@ class Web3Provider(ProviderAPI, ABC):
             return result.get("result", {})
 
         return result
+
+    def get_access_list(
+        self, transaction: TransactionAPI, block_id: Optional[BlockID] = None
+    ) -> AccessList:
+        """
+        Get the access list for a transaction use ``eth_createAccessList``.
+
+        Args:
+            transaction (:class:`~ape.api.transactions.TransactionAPI`): The
+              transaction to check.
+            block_id (:class:`~ape.types.BlockID`): Optionally specify a block
+              ID. Defaults to using the latest block.
+
+        Returns:
+            :class:`~ape_ethereum.transactions.AccessList`
+        """
+        tx_dict = transaction.model_dump(by_alias=True, mode="json", exclude=("chain_id",))
+        tx_dict_converted = {}
+        for key, val in tx_dict.items():
+            if isinstance(val, int):
+                # This RPC requires hex-str values.
+                if val > 0:
+                    tx_dict_converted[key] = to_hex(val)
+                # else: 0-values cause problems.
+
+            else:
+                tx_dict_converted[key] = val
+
+        arguments: list = [tx_dict_converted]
+        if block_id is not None:
+            arguments.append(block_id)
+
+        result = self._make_request("eth_createAccessList", arguments)
+        return AccessList.model_validate(result.get("accessList", []))
 
     def get_virtual_machine_error(self, exception: Exception, **kwargs) -> VirtualMachineError:
         txn = kwargs.get("txn")

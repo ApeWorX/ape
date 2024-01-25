@@ -19,7 +19,7 @@ from ape.exceptions import (
 from ape.types import LogFilter
 from ape.utils import DEFAULT_TEST_CHAIN_ID
 from ape_ethereum.provider import _sanitize_web3_url
-from ape_ethereum.transactions import TransactionStatusEnum, TransactionType
+from ape_ethereum.transactions import AccessListTransaction, TransactionStatusEnum, TransactionType
 
 
 def test_uri(eth_tester_provider):
@@ -271,13 +271,21 @@ def test_get_code(eth_tester_provider, vyper_contract_instance):
 
 
 @pytest.mark.parametrize("tx_type", TransactionType)
-def test_prepare_tx_with_max_gas(tx_type, eth_tester_provider, ethereum, owner):
+def test_prepare_transaction_with_max_gas(tx_type, eth_tester_provider, ethereum, owner):
     tx = ethereum.create_transaction(type=tx_type.value, sender=owner.address)
     tx.gas_limit = None  # Undo set from validator
     assert tx.gas_limit is None, "Test setup failed - couldn't clear tx gas limit."
 
     actual = eth_tester_provider.prepare_transaction(tx)
     assert actual.gas_limit == eth_tester_provider.max_gas
+
+
+def test_prepare_transaction_access_list_from_rpc(eth_tester_provider, ethereum, owner):
+    tx = ethereum.create_transaction(type=TransactionType.ACCESS_LIST, sender=owner.address)
+    prepared_tx = eth_tester_provider.prepare_transaction(tx)
+    assert isinstance(prepared_tx, AccessListTransaction)
+    actual = prepared_tx.access_list
+    assert actual == [1]
 
 
 def test_no_comma_in_rpc_url():
@@ -390,3 +398,9 @@ def test_base_fee(eth_tester_provider):
     #   RPC correctly. There was a bug where we were not.
     with pytest.raises(APINotImplementedError):
         _ = eth_tester_provider._get_fee_history(0)
+
+
+def test_get_access_list(eth_tester_provider, vyper_contract_instance, owner):
+    tx = vyper_contract_instance.setNumber.as_transaction(123, sender=owner)
+    with pytest.raises(APINotImplementedError):
+        eth_tester_provider.get_access_list(tx)

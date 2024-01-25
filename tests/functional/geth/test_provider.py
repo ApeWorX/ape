@@ -15,7 +15,7 @@ from ape.exceptions import (
     TransactionNotFoundError,
 )
 from ape_ethereum.ecosystem import Block
-from ape_ethereum.transactions import TransactionStatusEnum, TransactionType
+from ape_ethereum.transactions import AccessList, TransactionStatusEnum, TransactionType
 from ape_geth.provider import GethDevProcess, GethNotInstalledError
 from tests.conftest import GETH_URI, geth_process_test
 
@@ -393,3 +393,10 @@ def test_prepare_tx_with_max_gas(tx_type, geth_provider, ethereum, geth_account)
     # NOTE: The local network by default uses max_gas.
     actual = geth_provider.prepare_transaction(tx)
     assert actual.gas_limit == geth_provider.max_gas
+
+
+def test_get_access_list(geth_provider, geth_contract, geth_account):
+    tx = geth_contract.setNumber.as_transaction(123, sender=geth_account, type=1)
+    actual = geth_provider.get_access_list(tx)
+    assert isinstance(actual, AccessList)
+    assert len(actual.storage_keys) > 0
