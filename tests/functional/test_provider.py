@@ -372,7 +372,7 @@ def test_make_request_not_exists_dev_nodes(eth_tester_provider, mock_web3, msg):
         if rpc == "ape_thisDoesNotExist":
             return {"error": {"message": msg}}
 
-        return real_web3.make_request(rpc, params)
+        return real_web3.provider.make_request(rpc, params)
 
     mock_web3.provider.make_request.side_effect = custom_make_request
     with pytest.raises(
