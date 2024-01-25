@@ -500,7 +500,7 @@ def dict_defaults(mapping: Dict[str, Any], defaults: Dict[str, Any], depth=0):
     return mapping
 
 
-def dict_overlay(mapping: Dict[str, Any], overlay: Dict[str, Any], depth=0):
+def dict_overlay(mapping: Dict[str, Any], overlay: Dict[str, Any], depth: int=0):
     """Overlay given overlay structure on a dict"""
     for key, value in overlay.items():
         if isinstance(value, dict):
