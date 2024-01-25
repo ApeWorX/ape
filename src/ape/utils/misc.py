@@ -490,23 +490,13 @@ def is_zero_hex(address: str) -> bool:
         return False
 
 
-def dict_defaults(mapping: Dict[str, Any], defaults: Dict[str, Any], depth=0):
-    """Conditionally overlay given default on a dict if no value is set"""
-    for key, value in defaults.items():
-        if key not in mapping:
-            mapping[key] = value
-        elif isinstance(value, dict):
-            dict_defaults(mapping[key], value, depth + 1)
-    return mapping
-
-
-def dict_overlay(mapping: Dict[str, Any], overlay: Dict[str, Any], depth: int=0):
+def _dict_overlay(mapping: Dict[str, Any], overlay: Dict[str, Any], depth: int = 0):
     """Overlay given overlay structure on a dict"""
     for key, value in overlay.items():
         if isinstance(value, dict):
             if key not in mapping:
                 mapping[key] = dict()
-            dict_overlay(mapping[key], value, depth + 1)
+            _dict_overlay(mapping[key], value, depth + 1)
         else:
             mapping[key] = value
     return mapping
@@ -515,8 +505,7 @@ def dict_overlay(mapping: Dict[str, Any], overlay: Dict[str, Any], depth: int=0)
 __all__ = [
     "allow_disconnected",
     "cached_property",
-    "dict_defaults",
-    "dict_overlay",
+    "_dict_overlay",
     "extract_nested_value",
     "gas_estimation_error_message",
     "get_current_timestamp_ms",

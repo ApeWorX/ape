@@ -8,7 +8,7 @@ from ape.api import EcosystemAPI, ProviderAPI, ProviderContextManager
 from ape.api.networks import NetworkAPI
 from ape.exceptions import ApeAttributeError, EcosystemNotFoundError, NetworkError
 from ape.managers.base import BaseManager
-from ape.utils.misc import dict_overlay
+from ape.utils.misc import _dict_overlay
 from ape_ethereum.provider import EthereumNodeProvider
 
 
@@ -103,7 +103,7 @@ class NetworkManager(BaseManager):
                 block_number = self.provider.get_block("latest").number + block_number
 
             # Ensure block_number is set in config for this network
-            dict_overlay(
+            _dict_overlay(
                 provider_settings,
                 {
                     "fork": {
