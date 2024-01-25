@@ -18,7 +18,7 @@ from ape.cli import (
     select_account,
     verbosity_option,
 )
-from ape.cli.choices import _get_networks_sequence_from_cache
+from ape.cli.choices import _NONE_NETWORK, _get_networks_sequence_from_cache
 from ape.cli.commands import get_param_from_ctx, parse_network
 from ape.exceptions import AccountsError
 from ape.logging import logger
@@ -260,15 +260,23 @@ def test_network_option_make_required(runner):
     assert "Error: Missing option '--network'." in result.output
 
 
-def test_network_option_can_be_none(runner):
-    network_part = ("--network", "None")
-
+def test_network_option_default_none(runner):
     @click.command()
     @network_option(default=None)
     def cmd(network):
         click.echo(f"Value is '{network}'")
 
-    result = runner.invoke(cmd, network_part)
+    result = runner.invoke(cmd)
+    assert "Value is 'None'" in result.output
+
+
+def test_network_option_specified_none(runner):
+    @click.command()
+    @network_option()
+    def cmd(network):
+        click.echo(f"Value is '{network}'")
+
+    result = runner.invoke(cmd, ("--network", "None"))
     assert "Value is 'None'" in result.output
 
 
@@ -581,6 +589,17 @@ def test_connected_provider_command_with_network_option(runner, geth_provider):
     assert "geth" in res.output
 
 
+def test_connected_provider_command_none_network(runner):
+    @click.command(cls=ConnectedProviderCommand)
+    def cmd(network, provider):
+        click.echo(network)
+        click.echo(provider)
+
+    spec = ("--network", "None")
+    res = runner.invoke(cmd, spec, catch_exceptions=False)
+    assert res.exit_code == 0, res.output
+
+
 # TODO: Delete for 0.8.
 def test_deprecated_network_bound_command(runner):
     with pytest.warns(
@@ -617,6 +636,7 @@ def test_parse_network_when_interactive_and_no_param(mocker):
     ctx.params = {"interactive": True}
     ctx.parent = None
     network_ctx = parse_network(ctx)
+    assert network_ctx is not None
     assert network_ctx.provider.name == "test"
     assert network_ctx._disconnect_on_exit is False  # Because of interactive: True
 
@@ -625,6 +645,7 @@ def test_parse_network_when_interactive_and_str_param(mocker):
     ctx = mocker.MagicMock()
     ctx.params = {"interactive": True, "network": "ethereum:local:test"}
     network_ctx = parse_network(ctx)
+    assert network_ctx is not None
     assert network_ctx.provider.name == "test"
     assert network_ctx._disconnect_on_exit is False  # Because of interactive: True
 
@@ -633,8 +654,16 @@ def test_parse_network_when_interactive_and_class_param(mocker, eth_tester_provi
     ctx = mocker.MagicMock()
     ctx.params = {"interactive": True, "network": eth_tester_provider}
     network_ctx = parse_network(ctx)
+    assert network_ctx is not None
     assert network_ctx.provider.name == "test"
     assert network_ctx._disconnect_on_exit is False  # Because of interactive: True
+
+
+def test_parse_network_when_explicit_none(mocker):
+    ctx = mocker.MagicMock()
+    ctx.params = {"network": _NONE_NETWORK}
+    network_ctx = parse_network(ctx)
+    assert network_ctx is None
 
 
 def test_network_choice():
@@ -674,3 +703,9 @@ def test_network_choice_when_custom_local_network():
     actual = network_choice.convert(f"ethereum:local:{uri}", None, None)
     assert actual.uri == uri
     assert actual.network.name == "local"
+
+
+def test_network_choice_explicit_none():
+    network_choice = NetworkChoice()
+    actual = network_choice.convert("None", None, None)
+    assert actual == _NONE_NETWORK

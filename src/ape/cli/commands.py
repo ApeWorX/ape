@@ -7,7 +7,7 @@ from click import Context
 
 from ape import networks
 from ape.api import ProviderAPI, ProviderContextManager
-from ape.cli.choices import NetworkChoice
+from ape.cli.choices import _NONE_NETWORK, NetworkChoice
 from ape.exceptions import NetworkError
 
 
@@ -22,7 +22,7 @@ def get_param_from_ctx(ctx: Context, param: str) -> Optional[Any]:
     return None
 
 
-def parse_network(ctx: Context) -> ProviderContextManager:
+def parse_network(ctx: Context) -> Optional[ProviderContextManager]:
     interactive = get_param_from_ctx(ctx, "interactive")
 
     # Handle if already parsed (as when using network-option)
@@ -33,7 +33,7 @@ def parse_network(ctx: Context) -> ProviderContextManager:
     provider = get_param_from_ctx(ctx, "network")
     if provider is not None and isinstance(provider, ProviderAPI):
         return provider.network.use_provider(provider, disconnect_on_exit=not interactive)
-    elif provider is not None and isinstance(provider, str):
+    elif provider not in (None, _NONE_NETWORK) and isinstance(provider, str):
         return networks.parse_network_choice(provider, disconnect_on_exit=not interactive)
     elif provider is None:
         ecosystem = networks.default_ecosystem
@@ -42,6 +42,9 @@ def parse_network(ctx: Context) -> ProviderContextManager:
             return network.use_provider(provider_name, disconnect_on_exit=not interactive)
         else:
             raise NetworkError(f"Network {network.name} has no providers.")
+    elif provider == _NONE_NETWORK:
+        # Was told to skip connection.
+        return None
     else:
         raise TypeError(f"Unknown type for network choice: '{provider}'.")
 
@@ -82,37 +85,49 @@ class ConnectedProviderCommand(click.Command):
         return super().parse_args(ctx, args)
 
     def invoke(self, ctx: Context) -> Any:
-        with parse_network(ctx) as provider:
-            if self.callback is None:
-                return
+        if self.callback is None:
+            return
 
-            # Will be put back with correct value if needed.
-            # Else, causes issues.
-            ctx.params.pop("network", None)
+        elif network_ctx := parse_network(ctx):
+            with network_ctx as provider:
+                return self._invoke(ctx, provider=provider)
+        else:
+            return self._invoke(ctx)
 
-            valid_fields = ("ecosystem", "network", "provider")
-            requested_fields = [
-                x for x in inspect.signature(self.callback).parameters if x in valid_fields
-            ]
-            if self._use_cls_types and requested_fields:
-                options = {
+    def _invoke(self, ctx: Context, provider: Optional[ProviderAPI] = None):
+        # Will be put back with correct value if needed.
+        # Else, causes issues.
+        ctx.params.pop("network", None)
+
+        valid_fields = ("ecosystem", "network", "provider")
+        requested_fields = (
+            []
+            if self.callback is None
+            else [x for x in inspect.signature(self.callback).parameters if x in valid_fields]
+        )
+        if self._use_cls_types and requested_fields:
+            options = (
+                {}
+                if provider is None
+                else {
                     "ecosystem": provider.network.ecosystem,
                     "network": provider.network,
                     "provider": provider,
                 }
-                for name in requested_fields:
-                    if (
-                        name not in ctx.params
-                        or ctx.params[name] is None
-                        or isinstance(ctx.params[name], str)
-                    ):
-                        ctx.params[name] = options[name]
+            )
+            for name in requested_fields:
+                if (
+                    name not in ctx.params
+                    or ctx.params[name] is None
+                    or isinstance(ctx.params[name], str)
+                ):
+                    ctx.params[name] = options.get(name)
 
-            elif not self._use_cls_types:
-                # Legacy behavior, but may have a purpose.
-                ctx.params["network"] = provider.network_choice
+        elif not self._use_cls_types and provider is not None:
+            # Legacy behavior, but may have a purpose.
+            ctx.params["network"] = provider.network_choice
 
-            return ctx.invoke(self.callback, **ctx.params)
+        return ctx.invoke(self.callback or (lambda: None), **ctx.params)
 
 
 # TODO: 0.8 delete
