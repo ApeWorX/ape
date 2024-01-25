@@ -699,12 +699,15 @@ def mock_compiler(mocker):
 
 
 @pytest.fixture
-def mock_sepolia(ethereum, eth_tester_provider):
+def mock_sepolia(ethereum, eth_tester_provider, vyper_contract_instance):
     """
     Temporarily tricks Ape into thinking the local network
     is Sepolia so we can test features that require a live
     network.
     """
+    # Ensuring contract exists before hack.
+    # This allow the nework to be past genesis which is more realistic.
+    _ = vyper_contract_instance
     eth_tester_provider.network.name = "sepolia"
     yield eth_tester_provider.network
     eth_tester_provider.network.name = LOCAL_NETWORK_NAME

@@ -366,11 +366,21 @@ def test_fork_with_positive_block_number(networks, mock_sepolia, mock_fork_provi
 def test_fork_with_negative_block_number(
     networks, mock_sepolia, mock_fork_provider, eth_tester_provider
 ):
+    # Mine so we are past genesis.
     block_id = -1
     block = eth_tester_provider.get_block("latest")
-    with networks.fork(block_number=block_id) as provider:
-        provider.get_block.return_value = block
+    mock_fork_provider.get_block.return_value = block
+
+    with networks.fork(block_number=block_id):
         call = mock_fork_provider.partial_call
 
     actual = call[1]["provider_settings"]["fork"]["ethereum"]["sepolia"]["block_number"]
-    assert actual == block.number
+    expected = block.number - 1  # Relative to genesis!
+    assert actual == expected
+
+
+def test_fork_past_genesis(networks, mock_sepolia, mock_fork_provider, eth_tester_provider):
+    block_id = -10_000_000_000
+    with pytest.raises(NetworkError, match="Unable to fork past genesis block."):
+        with networks.fork(block_number=block_id):
+            pass
