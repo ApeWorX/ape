@@ -735,7 +735,7 @@ def mock_fork_provider(mocker, ethereum):
     mock_provider.name = "mock"
     mock_provider.network = ethereum.sepolia_fork
 
-    # Have to this because providers are partials.
+    # Have to do this because providers are partials.
     def fake_partial(*args, **kwargs):
         mock_provider.partial_call = (args, kwargs)
         return mock_provider
