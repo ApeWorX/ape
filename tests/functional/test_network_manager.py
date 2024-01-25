@@ -4,7 +4,7 @@ from pathlib import Path
 import pytest
 
 from ape.api import EcosystemAPI
-from ape.exceptions import NetworkError
+from ape.exceptions import NetworkError, ProviderNotFoundError
 from ape.utils import DEFAULT_TEST_CHAIN_ID
 
 
@@ -289,3 +289,88 @@ def test_ecosystems_include_custom(networks, custom_networks_config_dict, temp_c
         actual = networks.ecosystems
 
     assert "custom-ecosystem" in actual
+
+
+def test_fork_network_not_forkable(networks, eth_tester_provider):
+    """
+    Show correct failure when trying to fork the local network.
+    """
+    expected = "Unable to fork network 'local'."
+    with pytest.raises(NetworkError, match=expected):
+        with networks.fork():
+            pass
+
+
+def test_fork_no_providers(networks, mock_sepolia, disable_fork_providers):
+    """
+    Show correct failure when trying to fork without
+    ape-hardhat or ape-foundry installed.
+    """
+    expected = "No providers for network 'sepolia-fork'."
+    with pytest.raises(NetworkError, match=expected):
+        with networks.fork():
+            pass
+
+
+def test_fork_use_non_existing_provider(networks, mock_sepolia):
+    """
+    Show correct failure when specifying a non-existing provider.
+    """
+    expected = "No provider named 'NOT_EXISTS' in network 'sepolia-fork' in ecosystem 'ethereum'.*"
+    with pytest.raises(ProviderNotFoundError, match=expected):
+        with networks.fork(provider_name="NOT_EXISTS"):
+            pass
+
+
+def test_fork(networks, mock_sepolia, mock_fork_provider):
+    """
+    Happy-path fork test.
+    """
+    ctx = networks.fork()
+    assert ctx._disconnect_after is True
+    with ctx as provider:
+        assert provider.name == "mock"
+        assert provider.network.name == "sepolia-fork"
+
+
+def test_fork_specify_provider(networks, mock_sepolia, mock_fork_provider):
+    """
+    Happy-path fork test when specifying the provider.
+    """
+    ctx = networks.fork(provider_name="mock")
+    assert ctx._disconnect_after is True
+    with ctx as provider:
+        assert provider.name == "mock"
+        assert provider.network.name == "sepolia-fork"
+
+
+def test_fork_with_provider_settings(networks, mock_sepolia, mock_fork_provider):
+    """
+    Show it uses the given provider settings.
+    """
+    settings = {"fork": {"ethereum": {"sepolia": {"block_number": 123}}}}
+    with networks.fork(provider_settings=settings):
+        actual = mock_fork_provider.partial_call
+        assert actual[1]["provider_settings"] == settings
+
+
+def test_fork_with_positive_block_number(networks, mock_sepolia, mock_fork_provider):
+    block_id = 123
+    with networks.fork(block_number=block_id):
+        call = mock_fork_provider.partial_call
+
+    actual = call[1]["provider_settings"]["fork"]["ethereum"]["sepolia"]["block_number"]
+    assert actual == block_id
+
+
+def test_fork_with_negative_block_number(
+    networks, mock_sepolia, mock_fork_provider, eth_tester_provider
+):
+    block_id = -1
+    block = eth_tester_provider.get_block("latest")
+    with networks.fork(block_number=block_id) as provider:
+        provider.get_block.return_value = block
+        call = mock_fork_provider.partial_call
+
+    actual = call[1]["provider_settings"]["fork"]["ethereum"]["sepolia"]["block_number"]
+    assert actual == block.number

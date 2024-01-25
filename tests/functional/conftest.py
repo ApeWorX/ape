@@ -9,6 +9,7 @@ from eth_pydantic_types import HexBytes
 from ethpm_types import ContractType, MethodABI
 
 import ape
+from ape.api.networks import LOCAL_NETWORK_NAME
 from ape.contracts import ContractContainer, ContractInstance
 from ape.contracts.base import ContractCallHandler
 from ape.exceptions import ChainError, ContractLogicError, ProviderError
@@ -695,3 +696,53 @@ def mock_compiler(mocker):
 
     mock.compile.side_effect = mock_compile
     return mock
+
+
+@pytest.fixture
+def mock_sepolia(ethereum, eth_tester_provider):
+    """
+    Temporarily tricks Ape into thinking the local network
+    is Sepolia so we can test features that require a live
+    network.
+    """
+    eth_tester_provider.network.name = "sepolia"
+    yield eth_tester_provider.network
+    eth_tester_provider.network.name = LOCAL_NETWORK_NAME
+
+
+@pytest.fixture
+def disable_fork_providers(ethereum):
+    """
+    When ape-hardhat or ape-foundry is installed,
+    this tricks the test into thinking they are not
+    (only uses sepolia-fork).
+    """
+    actual = ethereum.sepolia_fork.__dict__.pop("providers", {})
+    ethereum.sepolia_fork.__dict__["providers"] = {}
+    yield
+    if actual:
+        ethereum.sepolia_fork.__dict__["providers"] = actual
+
+
+@pytest.fixture
+def mock_fork_provider(mocker, ethereum):
+    """
+    A fake provider representing something like ape-foundry
+    that can fork networks (only uses sepolia-fork).
+    """
+    actual = ethereum.sepolia_fork.__dict__.pop("providers", {})
+    mock_provider = mocker.MagicMock()
+    mock_provider.name = "mock"
+    mock_provider.network = ethereum.sepolia_fork
+
+    # Have to this because providers are partials.
+    def fake_partial(*args, **kwargs):
+        mock_provider.partial_call = (args, kwargs)
+        return mock_provider
+
+    ethereum.sepolia_fork.__dict__["providers"] = {"mock": fake_partial}
+
+    yield mock_provider
+
+    if actual:
+        ethereum.sepolia_fork.__dict__["providers"] = actual
