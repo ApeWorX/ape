@@ -6,7 +6,12 @@ import yaml
 
 from ape.api import EcosystemAPI, ProviderAPI, ProviderContextManager
 from ape.api.networks import NetworkAPI
-from ape.exceptions import ApeAttributeError, EcosystemNotFoundError, NetworkError
+from ape.exceptions import (
+    ApeAttributeError,
+    EcosystemNotFoundError,
+    NetworkError,
+    NetworkNotFoundError,
+)
 from ape.managers.base import BaseManager
 from ape.utils.misc import _dict_overlay
 from ape_ethereum.provider import EthereumNodeProvider
@@ -90,17 +95,28 @@ class NetworkManager(BaseManager):
               When ``None``, returns the default provider.
             provider_settings (dict, optional): Settings to apply to the provider. Defaults to
               ``None``.
+            block_number (Optional[int]): Optionally specify the block number you wish to fork.
+              Negative block numbers are relative to HEAD. Defaults to the configured fork
+              block number or HEAD.
 
         Returns:
             :class:`~ape.api.networks.ProviderContextManager`
         """
-        forked_network = self.ecosystem.get_network(f"{self.network.name}-fork")
+        try:
+            forked_network = self.ecosystem.get_network(f"{self.network.name}-fork")
+        except NetworkNotFoundError as err:
+            raise NetworkError(f"Unable to fork network '{self.network.name}'.") from err
+
         provider_settings = provider_settings or {}
 
         if block_number is not None:
             # Negative block_number means relative to HEAD
             if block_number < 0:
-                block_number = self.provider.get_block("latest").number + block_number
+                latest_block_number = self.provider.get_block("latest").number or 0
+                block_number = latest_block_number + block_number
+                if block_number < 0:
+                    # If the block number is still negative, they have forked past genesis.
+                    raise NetworkError("Unable to fork past genesis block.")
 
             # Ensure block_number is set in config for this network
             _dict_overlay(
@@ -112,12 +128,12 @@ class NetworkManager(BaseManager):
                 },
             )
 
-        if provider_name:
-            return forked_network.use_provider(
-                provider_name, provider_settings, disconnect_after=True
-            )
-
-        return forked_network.use_default_provider(provider_settings, disconnect_after=True)
+        shared_kwargs: dict = {"provider_settings": provider_settings, "disconnect_after": True}
+        return (
+            forked_network.use_provider(provider_name, **shared_kwargs)
+            if provider_name
+            else forked_network.use_default_provider(**shared_kwargs)
+        )
 
     @property
     def ecosystem_names(self) -> Set[str]:
