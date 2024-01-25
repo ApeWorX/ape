@@ -112,7 +112,8 @@ class NetworkManager(BaseManager):
         if block_number is not None:
             # Negative block_number means relative to HEAD
             if block_number < 0:
-                block_number = self.provider.get_block("latest").number + block_number
+                latest_block_number = self.provider.get_block("latest").number or 0
+                block_number = latest_block_number + block_number
                 if block_number < 0:
                     # If the block number is still negative, they have forked past genesis.
                     raise NetworkError("Unable to fork past genesis block.")
