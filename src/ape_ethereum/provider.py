@@ -1022,6 +1022,10 @@ class Web3Provider(ProviderAPI, ABC):
             else:
                 tx_dict_converted[key] = val
 
+        if not tx_dict_converted.get("to") and tx_dict.get("data") in (None, "0x"):
+            # Contract creation with no data, can skip.
+            return []
+
         arguments: list = [tx_dict_converted]
         if block_id is not None:
             arguments.append(block_id)
