@@ -4,6 +4,7 @@ from typing import cast
 import pytest
 from eth_pydantic_types import HashBytes32
 from eth_typing import HexStr
+from evmchains import PUBLIC_CHAIN_META
 from hexbytes import HexBytes
 
 from ape.exceptions import (
@@ -15,7 +16,6 @@ from ape.exceptions import (
 )
 from ape_ethereum.ecosystem import Block
 from ape_ethereum.transactions import TransactionStatusEnum, TransactionType
-from ape_geth.chains import PUBLIC_CHAIN_RPCS
 from ape_geth.provider import GethDevProcess, GethNotInstalledError
 from tests.conftest import GETH_URI, geth_process_test
 
@@ -30,9 +30,9 @@ def test_uri(geth_provider):
 @geth_process_test
 def test_default_public_uri(config):
     cfg = config.get_config("geth").ethereum.mainnet
-    assert cfg["uri"] in PUBLIC_CHAIN_RPCS["ethereum"]["mainnet"]
+    assert cfg["uri"] in PUBLIC_CHAIN_META["ethereum"]["mainnet"]["rpc"]
     cfg = config.get_config("geth").ethereum.sepolia
-    assert cfg["uri"] in PUBLIC_CHAIN_RPCS["ethereum"]["sepolia"]
+    assert cfg["uri"] in PUBLIC_CHAIN_META["ethereum"]["sepolia"]["rpc"]
 
 
 @geth_process_test
