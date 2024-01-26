@@ -3,7 +3,6 @@ from pathlib import Path
 
 import pytest
 
-from ape import networks, project
 from ape.exceptions import ConfigError
 from ape.logging import LogLevel, logger
 from ape.pytest.config import ConfigWrapper
@@ -11,7 +10,7 @@ from ape.pytest.coverage import CoverageTracker
 from ape.pytest.fixtures import PytestApeFixtures, ReceiptCapture
 from ape.pytest.gas import GasTracker
 from ape.pytest.runners import PytestApeRunner
-from ape.utils import ManagerAccessMixin
+from ape.utils.basemodel import ManagerAccessMixin
 
 
 def pytest_addoption(parser):
@@ -33,7 +32,7 @@ def pytest_addoption(parser):
     add_option(
         "--network",
         action="store",
-        default=networks.default_ecosystem.name,
+        default=ManagerAccessMixin.network_manager.default_ecosystem.name,
         help="Override the default network and provider (see ``ape networks list`` for options).",
     )
     add_option(
@@ -108,11 +107,11 @@ def pytest_load_initial_conftests(early_config):
     """
     capture_manager = early_config.pluginmanager.get_plugin("capturemanager")
 
-    if not project.sources_missing:
+    if not ManagerAccessMixin.project_manager.sources_missing:
         # Suspend stdout capture to display compilation data
         capture_manager.suspend()
         try:
-            project.load_contracts()
+            ManagerAccessMixin.project_manager.load_contracts()
         except Exception as err:
             logger.log_debug_stack_trace()
             message = "Unable to load project. "
