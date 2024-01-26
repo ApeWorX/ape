@@ -7,7 +7,7 @@ from eth_account.hdaccount import ETHEREUM_DEFAULT_PATH
 from tests.integration.cli.utils import assert_failure, run_once
 
 ALIAS = "test"
-PASSWORD = "a"
+PASSWORD = "asdf1234"
 PRIVATE_KEY = "0000000000000000000000000000000000000000000000000000000000000001"
 MNEMONIC = "test test test test test test test test test test test junk"
 INVALID_MNEMONIC = "test test"
@@ -214,7 +214,7 @@ def test_generate_default(ape_cli, runner, temp_keyfile_path):
     )
     assert result.exit_code == 0, result.output
     assert "Newly generated mnemonic is" in result.output
-    mnemonic_length = len(result.output.split(":")[4].split("\n")[0].split())
+    mnemonic_length = len(result.output.split(":")[6].split("\n")[0].split())
     assert mnemonic_length == 12
     assert ETHEREUM_DEFAULT_PATH in result.output
     assert ALIAS in result.output
@@ -267,7 +267,7 @@ def test_generate_24_words(ape_cli, runner, temp_keyfile_path):
     )
     assert result.exit_code == 0, result.output
     assert "Newly generated mnemonic is" in result.output
-    mnemonic_length = len(result.output.split(":")[4].split("\n")[0].split())
+    mnemonic_length = len(result.output.split(":")[6].split("\n")[0].split())
     assert mnemonic_length == word_count
     assert ETHEREUM_DEFAULT_PATH in result.output
     assert ALIAS in result.output
@@ -286,7 +286,7 @@ def test_generate_custom_hdpath(ape_cli, runner, temp_keyfile_path):
     )
     assert result.exit_code == 0, result.output
     assert "Newly generated mnemonic is" in result.output
-    mnemonic_length = len(result.output.split(":")[4].split("\n")[0].split())
+    mnemonic_length = len(result.output.split(":")[6].split("\n")[0].split())
     assert mnemonic_length == 12
     assert CUSTOM_HDPATH in result.output
     assert ALIAS in result.output
@@ -306,7 +306,7 @@ def test_generate_24_words_and_custom_hdpath(ape_cli, runner, temp_keyfile_path)
     )
     assert result.exit_code == 0, result.output
     assert "Newly generated mnemonic is" in result.output
-    mnemonic_length = len(result.output.split(":")[4].split("\n")[0].split())
+    mnemonic_length = len(result.output.split(":")[6].split("\n")[0].split())
     assert mnemonic_length == word_count
     assert CUSTOM_HDPATH in result.output
     assert ALIAS in result.output
@@ -347,7 +347,7 @@ def test_list_all(ape_cli, runner, keyfile_account):
 def test_change_password(ape_cli, runner, temp_keyfile):
     assert temp_keyfile.is_file()
     # Delete Account (`N` for "Leave unlocked?")
-    valid_input = [PASSWORD, "N", "b", "b"]
+    valid_input = [PASSWORD, "N", "password2", "password2"]
     result = runner.invoke(
         ape_cli,
         ["accounts", "change-password", ALIAS],

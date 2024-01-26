@@ -150,24 +150,24 @@ def dependency_manager(project):
 
 @pytest.fixture(scope="session")
 def keyparams():
-    # NOTE: password is 'a'
+    # NOTE: password is 'asdf1234'
     return {
-        "address": "f39fd6e51aad88f6f4ce6ab8827279cfffb92266",
+        "address": "9F5DA274F428309d77b93884dcc3bB80fbA7adD9",
         "crypto": {
             "cipher": "aes-128-ctr",
-            "cipherparams": {"iv": "fe11b8a2576bacd917b02c065f764369"},
-            "ciphertext": "80a7a3a901cbfd4720ca77b81b14e4db87da84e0de9d2257dfd7427108c0f573",
+            "cipherparams": {"iv": "29b5764de12ec1737e05b861d7c397bb"},
+            "ciphertext": "ae99daad16ae4c099e2af69f2fd9a4d5429c663d8047d77344a959b3805370c8",
             "kdf": "scrypt",
             "kdfparams": {
                 "dklen": 32,
                 "n": 262144,
-                "r": 1,
-                "p": 8,
-                "salt": "62c6413db938987b0be436335e38b4ae",
+                "r": 8,
+                "p": 1,
+                "salt": "cf2f1291636e59e6ed9871c69e2f18d3",
             },
-            "mac": "43935d1a983e13c083e724ebc9d02d5467e0accfa6df8db1fc41f9870f5e776e",
+            "mac": "11531013b11a5e68d83fa80d995f92cc2eff78a3b1d964e42c796c61bc7ef31d",
         },
-        "id": "87c9b6e3-5ce4-4758-ab5b-444074e594fe",
+        "id": "8f590dc2-b1d4-4018-802d-dfdcab1e6be3",
         "version": 3,
     }
 
