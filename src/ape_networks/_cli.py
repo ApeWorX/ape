@@ -6,7 +6,6 @@ import yaml
 from rich import print as echo_rich_text
 from rich.tree import Tree
 
-from ape import networks
 from ape.api import SubprocessProvider
 from ape.cli import ape_cli_context, network_option
 from ape.cli.choices import OutputFormat
@@ -14,6 +13,7 @@ from ape.cli.options import output_format_option
 from ape.exceptions import NetworkError
 from ape.logging import LogLevel
 from ape.types import _LazySequence
+from ape.utils.basemodel import ManagerAccessMixin
 
 
 def _filter_option(name: str, options):
@@ -36,7 +36,7 @@ def cli():
 def _lazy_get(name: str) -> _LazySequence:
     # NOTE: Using fn generator to maintain laziness.
     def gen():
-        yield from getattr(networks, f"{name}_names")
+        yield from getattr(ManagerAccessMixin.network_manager, f"{name}_names")
 
     return _LazySequence(gen)
 

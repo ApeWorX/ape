@@ -12,9 +12,8 @@ import click
 import IPython
 from IPython.terminal.ipapp import Config as IPythonConfig
 
-from ape import config
-from ape import project as default_project
 from ape.cli import ConnectedProviderCommand, ape_cli_context
+from ape.utils.basemodel import ManagerAccessMixin
 from ape.utils.misc import _python_version
 from ape.version import version as ape_version
 from ape_console.config import ConsoleConfig
@@ -50,8 +49,10 @@ def import_extras_file(file_path) -> ModuleType:
 def load_console_extras(**namespace: Any) -> Dict[str, Any]:
     """load and return namespace updates from ape_console_extras.py  files if
     they exist"""
-    global_extras = config.DATA_FOLDER.joinpath(CONSOLE_EXTRAS_FILENAME)
-    project_extras = config.PROJECT_FOLDER.joinpath(CONSOLE_EXTRAS_FILENAME)
+    global_extras = ManagerAccessMixin.config_manager.DATA_FOLDER.joinpath(CONSOLE_EXTRAS_FILENAME)
+    project_extras = ManagerAccessMixin.config_manager.PROJECT_FOLDER.joinpath(
+        CONSOLE_EXTRAS_FILENAME
+    )
 
     for extras_file in [global_extras, project_extras]:
         if not extras_file.is_file():
@@ -92,7 +93,7 @@ def console(project=None, verbose=None, extra_locals=None, embed=False):
 
     if not project:
         # Use default project
-        project = default_project
+        project = ManagerAccessMixin.project_manager
 
     banner = ""
     if verbose:
