@@ -6,7 +6,6 @@ import click
 from click import Option
 from ethpm_types import ContractType
 
-from ape import networks, project
 from ape.api import ProviderAPI
 from ape.cli import ConnectedProviderCommand
 from ape.cli.choices import (
@@ -19,7 +18,7 @@ from ape.cli.choices import (
 )
 from ape.exceptions import Abort, ProjectError
 from ape.logging import DEFAULT_LOG_LEVEL, ApeLogger, LogLevel, logger
-from ape.managers.base import ManagerAccessMixin
+from ape.utils.basemodel import ManagerAccessMixin
 
 _VERBOSITY_VALUES = ("--verbosity", "-v")
 
@@ -149,7 +148,7 @@ class NetworkOption(Option):
             else:
                 # NOTE: Use a function as the default so it is calculated lazily
                 def fn():
-                    return networks.default_ecosystem.name
+                    return ManagerAccessMixin.network_manager.default_ecosystem.name
 
                 default = fn
 
@@ -215,7 +214,8 @@ def network_option(
             use_default = default == "auto"
 
             if not is_legacy and value is None and use_default:
-                provider_obj = networks.default_ecosystem.default_network.default_provider
+                default_ecosystem = ManagerAccessMixin.network_manager.default_ecosystem
+                provider_obj = default_ecosystem.default_network.default_provider
 
             elif value is None or is_legacy:
                 provider_obj = None
@@ -227,7 +227,7 @@ def network_option(
                 provider_obj = None
 
             else:
-                network_ctx = networks.parse_network_choice(value)
+                network_ctx = ManagerAccessMixin.network_manager.parse_network_choice(value)
                 provider_obj = network_ctx._provider
 
             if provider_obj:
@@ -353,7 +353,7 @@ def _load_contracts(ctx, param, value) -> Optional[Union[ContractType, List[Cont
     if not value:
         return None
 
-    if len(project.contracts) == 0:
+    if len(ManagerAccessMixin.project_manager.contracts) == 0:
         raise ProjectError("Project has no contracts.")
 
     # If the user passed in `multiple=True`, then `value` is a list,
@@ -361,10 +361,10 @@ def _load_contracts(ctx, param, value) -> Optional[Union[ContractType, List[Cont
     is_multiple = isinstance(value, (tuple, list))
 
     def get_contract(contract_name: str) -> ContractType:
-        if contract_name not in project.contracts:
+        if contract_name not in ManagerAccessMixin.project_manager.contracts:
             raise ProjectError(f"No contract named '{value}'")
 
-        return project.contracts[contract_name]
+        return ManagerAccessMixin.project_manager.contracts[contract_name]
 
     return [get_contract(c) for c in value] if is_multiple else get_contract(value)
 
