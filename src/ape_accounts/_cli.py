@@ -90,6 +90,9 @@ def generate(cli_ctx, alias, hide_mnemonic, word_count, custom_hd_path):
         "Enhance the security of your account by adding additional random input",
         hide_input=True,
     )
+
+    show_mnemonic = not hide_mnemonic and click.confirm("Show mnemonic?", default=True)
+
     passphrase = click.prompt(
         "Create Passphrase to encrypt account",
         hide_input=True,
@@ -98,8 +101,9 @@ def generate(cli_ctx, alias, hide_mnemonic, word_count, custom_hd_path):
 
     account, mnemonic = generate_account(alias, passphrase, custom_hd_path, word_count)
 
-    if not hide_mnemonic and click.confirm("Show mnemonic?", default=True):
+    if show_mnemonic:
         cli_ctx.logger.info(f"Newly generated mnemonic is: {click.style(mnemonic, bold=True)}")
+
     cli_ctx.logger.success(
         f"A new account '{account.address}' with "
         + f"HDPath {custom_hd_path} has been added with the id '{alias}'"
