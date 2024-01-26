@@ -2,9 +2,9 @@ from itertools import chain
 
 import click
 
-from ape import project
 from ape.cli.choices import _ACCOUNT_TYPE_FILTER, Alias
 from ape.cli.paramtype import AllFilePaths
+from ape.utils.basemodel import ManagerAccessMixin
 from ape.utils.validators import _validate_account_alias
 
 _flatten = chain.from_iterable
@@ -49,7 +49,7 @@ def _create_contracts_paths(ctx, param, value):
     resolved_contract_paths = set()
     for contract_path in contract_paths:
         # Adds missing absolute path as well as extension.
-        if resolved_contract_path := project.lookup_path(contract_path):
+        if resolved_contract_path := ManagerAccessMixin.project_manager.lookup_path(contract_path):
             resolved_contract_paths.add(resolved_contract_path)
         else:
             _raise_bad_arg(contract_path.name)

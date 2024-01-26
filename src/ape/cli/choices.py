@@ -7,11 +7,11 @@ from typing import Any, Callable, Iterator, List, Optional, Sequence, Type, Unio
 import click
 from click import BadParameter, Choice, Context, Parameter
 
-from ape import accounts, networks
 from ape.api.accounts import AccountAPI
 from ape.api.providers import ProviderAPI
 from ape.exceptions import AccountsError
 from ape.types import _LazySequence
+from ape.utils.basemodel import ManagerAccessMixin
 
 _ACCOUNT_TYPE_FILTER = Union[
     None, Sequence[AccountAPI], Type[AccountAPI], Callable[[AccountAPI], bool]
@@ -21,14 +21,14 @@ _ACCOUNT_TYPE_FILTER = Union[
 def _get_accounts(key: _ACCOUNT_TYPE_FILTER) -> List[AccountAPI]:
     add_test_accounts = False
     if key is None:
-        account_list = list(accounts)
+        account_list = list(ManagerAccessMixin.account_manager)
 
         # Include test accounts at end.
         add_test_accounts = True
 
     elif isinstance(key, type):
         # Filtering by type.
-        account_list = accounts.get_accounts_by_type(key)
+        account_list = ManagerAccessMixin.account_manager.get_accounts_by_type(key)
 
     elif isinstance(key, (list, tuple, set)):
         # Given an account list.
@@ -36,11 +36,11 @@ def _get_accounts(key: _ACCOUNT_TYPE_FILTER) -> List[AccountAPI]:
 
     else:
         # Filtering by callable.
-        account_list = [a for a in accounts if key(a)]  # type: ignore
+        account_list = [a for a in ManagerAccessMixin.account_manager if key(a)]  # type: ignore
 
     sorted_accounts = sorted(account_list, key=lambda a: a.alias or "")
     if add_test_accounts:
-        sorted_accounts.extend(accounts.test_accounts)
+        sorted_accounts.extend(ManagerAccessMixin.account_manager.test_accounts)
 
     return sorted_accounts
 
@@ -213,13 +213,13 @@ class AccountAliasPromptChoice(PromptChoice):
                 self.fail(f"Cannot reference test account by '{value}'.", param=param)
 
             account_idx = int(idx_str)
-            if 0 <= account_idx < len(accounts.test_accounts):
-                return accounts.test_accounts[int(idx_str)]
+            if 0 <= account_idx < len(ManagerAccessMixin.account_manager.test_accounts):
+                return ManagerAccessMixin.account_manager.test_accounts[int(idx_str)]
 
             self.fail(f"Index '{idx_str}' is not valid.", param=param)
 
-        elif alias and alias in accounts.aliases:
-            return accounts.load(alias)
+        elif alias and alias in ManagerAccessMixin.account_manager.aliases:
+            return ManagerAccessMixin.account_manager.load(alias)
 
         return None
 
@@ -231,7 +231,7 @@ class AccountAliasPromptChoice(PromptChoice):
                 click.echo(f"{idx}. {choice}")
                 did_print = True
 
-        len_test_accounts = len(accounts.test_accounts) - 1
+        len_test_accounts = len(ManagerAccessMixin.account_manager.test_accounts) - 1
         if len_test_accounts > 0:
             msg = "'TEST::account_idx', where `account_idx` is in [0..{len_test_accounts}]\n"
             if did_print:
@@ -260,9 +260,11 @@ class AccountAliasPromptChoice(PromptChoice):
         if not self.choices or len(self.choices) == 0:
             raise AccountsError("No accounts found.")
         elif len(self.choices) == 1 and self.choices[0].startswith("TEST::"):
-            return accounts.test_accounts[int(self.choices[0].replace("TEST::", ""))]
+            return ManagerAccessMixin.account_manager.test_accounts[
+                int(self.choices[0].replace("TEST::", ""))
+            ]
         elif len(self.choices) == 1:
-            return accounts.load(self.choices[0])
+            return ManagerAccessMixin.account_manager.load(self.choices[0])
 
         self.print_choices()
         return click.prompt(self._prompt_message, type=self)
@@ -291,7 +293,7 @@ def get_networks(
 @lru_cache(maxsize=None)
 def _get_networks_sequence_from_cache(ecosystem_key: str, network_key: str, provider_key: str):
     return _LazySequence(
-        networks.get_network_choices(
+        ManagerAccessMixin.network_manager.get_network_choices(
             ecosystem_filter=_key_to_network_filter(ecosystem_key),
             network_filter=_key_to_network_filter(network_key),
             provider_filter=_key_to_network_filter(provider_key),
@@ -382,7 +384,10 @@ class NetworkChoice(click.Choice):
             and issubclass(self.base_type, ProviderAPI)
         ):
             # Return the provider.
-            choice = networks.get_provider_from_choice(network_choice=choice)
+
+            choice = ManagerAccessMixin.network_manager.get_provider_from_choice(
+                network_choice=value
+            )
 
         return self.callback(ctx, param, choice) if self.callback else choice
 
