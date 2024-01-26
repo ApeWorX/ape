@@ -1,8 +1,21 @@
 """Base non-pydantic validator utils"""
+import re
+from warnings import warn
+
 from eth_utils import is_hex
 
 from ape.exceptions import AccountsError, AliasAlreadyInUseError
 from ape.utils.basemodel import ManagerAccessMixin
+
+MIN_PASSPHRASE_LENGTH = 6
+
+
+def _has_num(val: str):
+    return re.search(r"\d{1}", val) is not None
+
+
+def _has_special(val: str):
+    return re.search(r"[\!@#$%\^&\*\(\)]{1}", val) is not None
 
 
 def _validate_account_alias(alias: str) -> str:
@@ -24,7 +37,11 @@ def _validate_account_passphrase(passphrase: str) -> str:
     if not passphrase or not isinstance(passphrase, str):
         raise AccountsError("Account file encryption passphrase must be provided.")
 
-    # TODO: Implement length and complexity checks?
+    if len(passphrase) < MIN_PASSPHRASE_LENGTH:
+        warn("Passphrase length is extremely short.  Consider using something longer.")
+
+    if not (_has_num(passphrase) or _has_special(passphrase)):
+        warn("Passphrase complexity is simple.  Consider using numbers and special characters.")
 
     return passphrase
 

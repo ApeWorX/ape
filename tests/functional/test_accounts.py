@@ -707,7 +707,7 @@ def test_generate_account_invalid_alias():
         # Testing an invalid type as arg, so ignoring
         generate_account(b"imma-bytestr", "asdf1234")  # type: ignore
 
-    generate_account("used", "qwerty")
+    generate_account("used", "qwerty1")
     with pytest.raises(AliasAlreadyInUseError):
         generate_account("used", "asdf1234")
 
@@ -718,3 +718,11 @@ def test_generate_account_invalid_passphrase():
 
     with pytest.raises(AccountsError, match="Account file encryption passphrase must be provided."):
         generate_account("invalid-passphrase", b"bytestring")  # type: ignore
+
+
+def test_generate_account_insecure_passphrase():
+    with pytest.warns(UserWarning, match="short"):
+        generate_account("shortaccount", "short")
+
+    with pytest.warns(UserWarning, match="simple"):
+        generate_account("simpleaccount", "simple")
