@@ -271,7 +271,7 @@ def test_get_code(eth_tester_provider, vyper_contract_instance):
 
 
 @pytest.mark.parametrize("tx_type", TransactionType)
-def test_prepare_tx_with_max_gas(tx_type, eth_tester_provider, ethereum, owner):
+def test_prepare_transaction_with_max_gas(tx_type, eth_tester_provider, ethereum, owner):
     tx = ethereum.create_transaction(type=tx_type.value, sender=owner.address)
     tx.gas_limit = None  # Undo set from validator
     assert tx.gas_limit is None, "Test setup failed - couldn't clear tx gas limit."
@@ -372,7 +372,7 @@ def test_make_request_not_exists_dev_nodes(eth_tester_provider, mock_web3, msg):
         if rpc == "ape_thisDoesNotExist":
             return {"error": {"message": msg}}
 
-        return real_web3.make_request(rpc, params)
+        return real_web3.provider.make_request(rpc, params)
 
     mock_web3.provider.make_request.side_effect = custom_make_request
     with pytest.raises(
@@ -390,3 +390,9 @@ def test_base_fee(eth_tester_provider):
     #   RPC correctly. There was a bug where we were not.
     with pytest.raises(APINotImplementedError):
         _ = eth_tester_provider._get_fee_history(0)
+
+
+def test_create_access_list(eth_tester_provider, vyper_contract_instance, owner):
+    tx = vyper_contract_instance.setNumber.as_transaction(123, sender=owner)
+    with pytest.raises(APINotImplementedError):
+        eth_tester_provider.create_access_list(tx)
