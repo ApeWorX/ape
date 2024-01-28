@@ -5,14 +5,14 @@ from eth_account import Account as EthAccount
 from eth_account.hdaccount import ETHEREUM_DEFAULT_PATH
 from eth_utils import to_bytes, to_checksum_address
 
-from ape import accounts
 from ape.cli import ape_cli_context, existing_alias_argument, non_existing_alias_argument
+from ape.utils.basemodel import ManagerAccessMixin
 from ape_accounts import AccountContainer, KeyfileAccount, generate_account
 
 
 def _get_container() -> AccountContainer:
     # NOTE: Must used the instantiated version of `AccountsContainer` in `accounts`
-    container = accounts.containers["accounts"]
+    container = ManagerAccessMixin.account_manager.containers["accounts"]
     assert isinstance(container, AccountContainer)
     return container
 
@@ -30,10 +30,12 @@ def cli():
 @click.option("--all", "show_all_plugins", help="Output accounts from all plugins", is_flag=True)
 @ape_cli_context()
 def _list(cli_ctx, show_all_plugins):
-    if "accounts" not in accounts.containers:
+    if "accounts" not in cli_ctx.account_manager.containers:
         cli_ctx.abort("Accounts plugin unexpectedly failed to load.")
 
-    containers = accounts.containers if show_all_plugins else {"accounts": _get_container()}
+    containers = (
+        cli_ctx.account_manager.containers if show_all_plugins else {"accounts": _get_container()}
+    )
     account_map = {n: [a for a in c.accounts] for n, c in containers.items()}
     account_pairs = [
         pair for pair in {n: ls for n, ls in account_map.items() if len(ls) > 0}.items()
@@ -170,7 +172,7 @@ def export(cli_ctx, alias):
 @existing_alias_argument(account_type=KeyfileAccount)
 @ape_cli_context()
 def change_password(cli_ctx, alias):
-    account = accounts.load(alias)
+    account = cli_ctx.account_manager.load(alias)
     assert isinstance(account, KeyfileAccount)
     account.change_password()
     cli_ctx.logger.success(f"Password has been changed for account '{alias}'")
@@ -180,7 +182,7 @@ def change_password(cli_ctx, alias):
 @existing_alias_argument(account_type=KeyfileAccount)
 @ape_cli_context()
 def delete(cli_ctx, alias):
-    account = accounts.load(alias)
+    account = cli_ctx.account_manager.load(alias)
     assert isinstance(account, KeyfileAccount)
     account.delete()
     cli_ctx.logger.success(f"Account '{alias}' has been deleted")

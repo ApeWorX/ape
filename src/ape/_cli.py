@@ -11,6 +11,7 @@ from ape.cli import ape_cli_context
 from ape.exceptions import Abort, ApeException, handle_ape_exception
 from ape.logging import logger
 from ape.plugins import clean_plugin_name
+from ape.utils.basemodel import ManagerAccessMixin
 
 _DIFFLIB_CUT_OFF = 0.6
 
@@ -20,10 +21,8 @@ def display_config(ctx, param, value):
     if not value or ctx.resilient_parsing:
         return
 
-    from ape import project
-
     click.echo("# Current configuration")
-    click.echo(yaml.dump(project.config_manager.model_dump(mode="json")))
+    click.echo(yaml.dump(ManagerAccessMixin.project_manager.config_manager.model_dump(mode="json")))
 
     ctx.exit()  # NOTE: Must exit to bypass running ApeCLI
 
