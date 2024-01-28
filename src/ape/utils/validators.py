@@ -38,10 +38,10 @@ def _validate_account_passphrase(passphrase: str) -> str:
         raise AccountsError("Account file encryption passphrase must be provided.")
 
     if len(passphrase) < MIN_PASSPHRASE_LENGTH:
-        warn("Passphrase length is extremely short.  Consider using something longer.")
+        warn("Passphrase length is extremely short. Consider using something longer.")
 
     if not (_has_num(passphrase) or _has_special(passphrase)):
-        warn("Passphrase complexity is simple.  Consider using numbers and special characters.")
+        warn("Passphrase complexity is simple. Consider using numbers and special characters.")
 
     return passphrase
 
