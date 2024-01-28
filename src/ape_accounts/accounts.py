@@ -332,7 +332,7 @@ def import_account_from_mnemonic(
 
 
 def import_account_from_private_key(
-    alias: str, passphrase: str, private_key: str, hd_path: str = ETHEREUM_DEFAULT_PATH
+    alias: str, passphrase: str, private_key: str
 ) -> KeyfileAccount:
     """
     Import a new account from a mnemonic seed phrase.
@@ -341,7 +341,6 @@ def import_account_from_private_key(
         alias (str): The alias name of the account.
         passphrase (str): Passphrase used to encrypt the account storage file.
         private_key (str): Hex string private key to import.
-        hd_path (str): The hierarchal deterministic path to use when generating the account.
 
     Returns:
         Tuple of AccountAPI and mnemonic for the generated account.
