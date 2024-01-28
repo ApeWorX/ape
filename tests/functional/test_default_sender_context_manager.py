@@ -24,7 +24,7 @@ def test_default_sender_account(
     solidity_contract_container, networks_connected_to_tester, accounts, keyfile_account
 ):
     owner = accounts[0]
-    passphrase = "a"
+    passphrase = "asdf1234"
 
     with accounts.use_sender(owner) as acct:
         acct.set_autosign(True, passphrase)

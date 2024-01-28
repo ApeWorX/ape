@@ -1,4 +1,6 @@
 import json
+import re
+from typing import List, Optional
 
 import pytest
 from eth_account import Account
@@ -12,6 +14,17 @@ PRIVATE_KEY = "0000000000000000000000000000000000000000000000000000000000000001"
 MNEMONIC = "test test test test test test test test test test test junk"
 INVALID_MNEMONIC = "test test"
 CUSTOM_HDPATH = "m/44'/61'/0'/0/0"  # Ethereum Classic ($ETC) HDPath
+
+
+def extract_mnemonic(output: str) -> Optional[List[str]]:
+    found = re.search(r"Newly generated mnemonic is: ([a-z ]+)", output)
+    if found:
+        try:
+            mnemonic_string = found.group(1)
+            return mnemonic_string.split(" ")
+        except IndexError:
+            pass
+    return None
 
 
 @pytest.fixture(autouse=True)
@@ -213,8 +226,9 @@ def test_generate_default(ape_cli, runner, temp_keyfile_path):
         input="\n".join(["random entropy", show_mnemonic, PASSWORD, PASSWORD]),
     )
     assert result.exit_code == 0, result.output
-    assert "Newly generated mnemonic is" in result.output
-    mnemonic_length = len(result.output.split(":")[6].split("\n")[0].split())
+    mnemonic = extract_mnemonic(result.output)
+    assert mnemonic is not None
+    mnemonic_length = len(mnemonic)
     assert mnemonic_length == 12
     assert ETHEREUM_DEFAULT_PATH in result.output
     assert ALIAS in result.output
@@ -266,8 +280,9 @@ def test_generate_24_words(ape_cli, runner, temp_keyfile_path):
         input="\n".join(["random entropy", show_mnemonic, PASSWORD, PASSWORD]),
     )
     assert result.exit_code == 0, result.output
-    assert "Newly generated mnemonic is" in result.output
-    mnemonic_length = len(result.output.split(":")[6].split("\n")[0].split())
+    mnemonic = extract_mnemonic(result.output)
+    assert mnemonic is not None
+    mnemonic_length = len(mnemonic)
     assert mnemonic_length == word_count
     assert ETHEREUM_DEFAULT_PATH in result.output
     assert ALIAS in result.output
@@ -285,8 +300,9 @@ def test_generate_custom_hdpath(ape_cli, runner, temp_keyfile_path):
         input="\n".join(["random entropy", show_mnemonic, PASSWORD, PASSWORD]),
     )
     assert result.exit_code == 0, result.output
-    assert "Newly generated mnemonic is" in result.output
-    mnemonic_length = len(result.output.split(":")[6].split("\n")[0].split())
+    mnemonic = extract_mnemonic(result.output)
+    assert mnemonic is not None
+    mnemonic_length = len(mnemonic)
     assert mnemonic_length == 12
     assert CUSTOM_HDPATH in result.output
     assert ALIAS in result.output
@@ -305,8 +321,9 @@ def test_generate_24_words_and_custom_hdpath(ape_cli, runner, temp_keyfile_path)
         input="\n".join(["random entropy", show_mnemonic, PASSWORD, PASSWORD]),
     )
     assert result.exit_code == 0, result.output
-    assert "Newly generated mnemonic is" in result.output
-    mnemonic_length = len(result.output.split(":")[6].split("\n")[0].split())
+    mnemonic = extract_mnemonic(result.output)
+    assert mnemonic is not None
+    mnemonic_length = len(mnemonic)
     assert mnemonic_length == word_count
     assert CUSTOM_HDPATH in result.output
     assert ALIAS in result.output

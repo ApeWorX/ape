@@ -32,7 +32,7 @@ MISSING_VALUE_TRANSFER_ERR_MSG = "Must provide 'VALUE' or use 'send_everything=T
 APE_TEST_PATH = "ape_test.accounts.TestAccount"
 APE_ACCOUNTS_PATH = "ape_accounts.accounts.KeyfileAccount"
 
-PASSPHRASE = "a"
+PASSPHRASE = "asdf1234"
 INVALID_PASSPHRASE = "incorrect passphrase"
 
 
@@ -93,7 +93,7 @@ def test_sign_eip712_message(signer):
 def test_sign_message_with_prompts(runner, keyfile_account, message):
     # "y\na\ny": yes sign, password, yes keep unlocked
     start_nonce = keyfile_account.nonce
-    with runner.isolation(input="y\na\ny"):
+    with runner.isolation(input=f"y\n{PASSPHRASE}\ny"):
         signature = keyfile_account.sign_message(message)
         assert keyfile_account.check_signature(message, signature)
 
@@ -186,7 +186,7 @@ def test_transfer_with_value_send_everything_true(sender, receiver):
 
 def test_transfer_with_prompts(runner, receiver, keyfile_account):
     # "y\na\ny": yes sign, password, yes keep unlocked
-    with runner.isolation("y\na\ny"):
+    with runner.isolation(f"y\n{PASSPHRASE}\ny"):
         receipt = keyfile_account.transfer(receiver, "1 gwei")
         assert receipt.receiver == receiver
 
@@ -361,24 +361,24 @@ def test_accounts_contains(accounts, owner):
 
 
 def test_autosign_messages(runner, keyfile_account, message):
-    keyfile_account.set_autosign(True, passphrase="a")
+    keyfile_account.set_autosign(True, passphrase=PASSPHRASE)
     signature = keyfile_account.sign_message(message)
     assert keyfile_account.check_signature(message, signature)
 
     # Re-enable prompted signing
     keyfile_account.set_autosign(False)
-    with runner.isolation(input="y\na\n"):
+    with runner.isolation(input=f"y\n{PASSPHRASE}\n"):
         signature = keyfile_account.sign_message(message)
         assert keyfile_account.check_signature(message, signature)
 
 
 def test_autosign_transactions(runner, keyfile_account, receiver):
-    keyfile_account.set_autosign(True, passphrase="a")
+    keyfile_account.set_autosign(True, passphrase=PASSPHRASE)
     assert keyfile_account.transfer(receiver, "1 gwei")
 
     # Re-enable prompted signing
     keyfile_account.set_autosign(False)
-    with runner.isolation(input="y\na\n"):
+    with runner.isolation(input=f"y\n{PASSPHRASE}\n"):
         assert keyfile_account.transfer(receiver, "1 gwei")
 
 
@@ -419,7 +419,7 @@ def test_contract_as_sender_non_fork_network(contract_instance):
 
 
 def test_unlock_with_passphrase_and_sign_message(runner, keyfile_account, message):
-    keyfile_account.unlock(passphrase="a")
+    keyfile_account.unlock(passphrase=PASSPHRASE)
 
     # y: yes, sign (note: unlocking makes the key available but is not the same as autosign).
     with runner.isolation(input="y\n"):
@@ -429,7 +429,7 @@ def test_unlock_with_passphrase_and_sign_message(runner, keyfile_account, messag
 
 def test_unlock_from_prompt_and_sign_message(runner, keyfile_account, message):
     # a = password
-    with runner.isolation(input="a\n"):
+    with runner.isolation(input=f"{PASSPHRASE}\n"):
         keyfile_account.unlock()
 
     # yes, sign the message
@@ -439,7 +439,7 @@ def test_unlock_from_prompt_and_sign_message(runner, keyfile_account, message):
 
 
 def test_unlock_with_passphrase_and_sign_transaction(runner, keyfile_account, receiver):
-    keyfile_account.unlock(passphrase="a")
+    keyfile_account.unlock(passphrase=PASSPHRASE)
     # y: yes, sign (note: unlocking makes the key available but is not the same as autosign).
     with runner.isolation(input="y\n"):
         receipt = keyfile_account.transfer(receiver, "1 gwei")
@@ -448,7 +448,7 @@ def test_unlock_with_passphrase_and_sign_transaction(runner, keyfile_account, re
 
 def test_unlock_from_prompt_and_sign_transaction(runner, keyfile_account, receiver):
     # a = password
-    with runner.isolation(input="a\n"):
+    with runner.isolation(input=f"{PASSPHRASE}\n"):
         keyfile_account.unlock()
 
     # yes, sign the transaction
@@ -494,7 +494,7 @@ def test_unlock_and_reload(runner, accounts, keyfile_account, message):
     Tests against a condition where reloading after unlocking
     would not honor unlocked state.
     """
-    keyfile_account.unlock(passphrase="a")
+    keyfile_account.unlock(passphrase=PASSPHRASE)
     reloaded_account = accounts.load(keyfile_account.alias)
 
     # y: yes, sign (note: unlocking makes the key available but is not the same as autosign).
@@ -669,12 +669,12 @@ def test_prepare_transaction_and_call_using_max_gas(tx_type, ethereum, sender, e
 
 
 def test_public_key(runner, keyfile_account):
-    with runner.isolation(input="a\ny\n"):
+    with runner.isolation(input=f"{PASSPHRASE}\ny\n"):
         assert isinstance(keyfile_account.public_key, HexBytes)
 
 
 def test_load_public_key_from_keyfile(runner, keyfile_account):
-    with runner.isolation(input="a\ny\n"):
+    with runner.isolation(input=f"{PASSPHRASE}\ny\n"):
         assert isinstance(keyfile_account.public_key, HexBytes)
 
         assert (
@@ -687,13 +687,12 @@ def test_load_public_key_from_keyfile(runner, keyfile_account):
 
 def test_generate_account():
     alias = "tester"
-    passphrase = "asdf1234"
-    account, mnemonic = generate_account(alias, passphrase)
+    account, mnemonic = generate_account(alias, PASSPHRASE)
     assert len(mnemonic.split(" ")) == 12
     assert isinstance(account, KeyfileAccount)
     assert account.alias == alias
     assert account.locked is True
-    account.unlock(passphrase)
+    account.unlock(PASSPHRASE)
     assert account.locked is False
 
 
