@@ -8,6 +8,7 @@ from eip712.messages import EIP712Message
 from eth_account import Account as EthAccount
 from eth_account.hdaccount import ETHEREUM_DEFAULT_PATH
 from eth_account.messages import encode_defunct
+from eth_account.signers.local import LocalAccount
 from eth_keys import keys  # type: ignore
 from eth_pydantic_types import HexBytes
 from eth_utils import to_bytes
@@ -262,6 +263,16 @@ class KeyfileAccount(AccountAPI):
             raise InvalidPasswordError() from err
 
 
+def _write_and_return_account(alias: str, passphrase: str, account: LocalAccount) -> KeyfileAccount:
+    """Write an account to disk and return an Ape KeyfileAccount"""
+    path = ManagerAccessMixin.account_manager.containers["accounts"].data_folder.joinpath(
+        f"{alias}.json"
+    )
+    path.write_text(json.dumps(EthAccount.encrypt(account.key, passphrase)))
+
+    return KeyfileAccount(keyfile_path=path)
+
+
 def generate_account(
     alias: str, passphrase: str, hd_path: str = ETHEREUM_DEFAULT_PATH, word_count: int = 12
 ) -> Tuple[KeyfileAccount, str]:
@@ -269,7 +280,10 @@ def generate_account(
     Generate a new account.
 
     Args:
-        extra_entropy (str): Extra entropy to use when generating the account.
+        alias (str): The alias name of the account.
+        passphrase (str): Passphrase used to encrypt the account storage file.
+        hd_path (str): The hierarchal deterministic path to use when generating the account.
+        word_count (int): The amount of words to use in the generated mnemonic.
 
     Returns:
         Tuple of AccountAPI and mnemonic for the generated account.
@@ -281,10 +295,60 @@ def generate_account(
 
     account, mnemonic = EthAccount.create_with_mnemonic(num_words=word_count, account_path=hd_path)
 
-    # Write the encrypted account file
-    path = ManagerAccessMixin.account_manager.containers["accounts"].data_folder.joinpath(
-        f"{alias}.json"
-    )
-    path.write_text(json.dumps(EthAccount.encrypt(account.key, passphrase)))
+    # # Write the encrypted account file
+    # path = ManagerAccessMixin.account_manager.containers["accounts"].data_folder.joinpath(
+    #     f"{alias}.json"
+    # )
+    # path.write_text(json.dumps(EthAccount.encrypt(account.key, passphrase)))
 
-    return KeyfileAccount(keyfile_path=path), mnemonic
+    # return KeyfileAccount(keyfile_path=path), mnemonic
+    ape_account = _write_and_return_account(alias, passphrase, account)
+    return ape_account, mnemonic
+
+
+def import_account_from_mnemonic(
+    alias: str, passphrase: str, mnemonic: str, hd_path: str = ETHEREUM_DEFAULT_PATH
+) -> KeyfileAccount:
+    """
+    Import a new account from a mnemonic seed phrase.
+
+    Args:
+        alias (str): The alias name of the account.
+        passphrase (str): Passphrase used to encrypt the account storage file.
+        mnemonic (str): List of space-separated words representing the mnemonic seed phrase.
+        hd_path (str): The hierarchal deterministic path to use when generating the account.
+
+    Returns:
+        Tuple of AccountAPI and mnemonic for the generated account.
+    """
+    EthAccount.enable_unaudited_hdwallet_features()
+
+    alias = _validate_account_alias(alias)
+    passphrase = _validate_account_passphrase(passphrase)
+
+    account = EthAccount.from_mnemonic(mnemonic, account_path=hd_path)
+
+    return _write_and_return_account(alias, passphrase, account)
+
+
+def import_account_from_private_key(
+    alias: str, passphrase: str, private_key: str, hd_path: str = ETHEREUM_DEFAULT_PATH
+) -> KeyfileAccount:
+    """
+    Import a new account from a mnemonic seed phrase.
+
+    Args:
+        alias (str): The alias name of the account.
+        passphrase (str): Passphrase used to encrypt the account storage file.
+        private_key (str): Hex string private key to import.
+        hd_path (str): The hierarchal deterministic path to use when generating the account.
+
+    Returns:
+        Tuple of AccountAPI and mnemonic for the generated account.
+    """
+    alias = _validate_account_alias(alias)
+    passphrase = _validate_account_passphrase(passphrase)
+
+    account = EthAccount.from_key(to_bytes(hexstr=private_key))
+
+    return _write_and_return_account(alias, passphrase, account)

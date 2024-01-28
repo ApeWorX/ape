@@ -17,7 +17,12 @@ from ape.exceptions import (
 from ape.types import AutoGasLimit
 from ape.types.signatures import recover_signer
 from ape.utils.testing import DEFAULT_NUMBER_OF_TEST_ACCOUNTS
-from ape_accounts import KeyfileAccount, generate_account
+from ape_accounts import (
+    KeyfileAccount,
+    generate_account,
+    import_account_from_mnemonic,
+    import_account_from_private_key,
+)
 from ape_ethereum.ecosystem import ProxyType
 from ape_ethereum.transactions import TransactionType
 from ape_test.accounts import TestAccount
@@ -34,6 +39,8 @@ APE_ACCOUNTS_PATH = "ape_accounts.accounts.KeyfileAccount"
 
 PASSPHRASE = "asdf1234"
 INVALID_PASSPHRASE = "incorrect passphrase"
+MNEMONIC = "test test test test test test test test test test test junk"
+PRIVATE_KEY = "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80"
 
 
 @pytest.fixture(params=(APE_TEST_PATH, APE_ACCOUNTS_PATH))
@@ -725,3 +732,91 @@ def test_generate_account_insecure_passphrase():
 
     with pytest.warns(UserWarning, match="simple"):
         generate_account("simpleaccount", "simple")
+
+
+def test_import_account_from_mnemonic():
+    alias = "iafmtester"
+    account = import_account_from_mnemonic(alias, PASSPHRASE, MNEMONIC)
+    assert isinstance(account, KeyfileAccount)
+    assert account.alias == alias
+    assert account.address == "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266"
+    assert account.locked is True
+    account.unlock(PASSPHRASE)
+    assert account.locked is False
+
+
+def test_import_account_from_mnemonic_invalid_alias():
+    with pytest.raises(AccountsError, match="Longer aliases cannot be hex strings."):
+        import_account_from_mnemonic(
+            "3fbc0ce3e71421b94f7ff4e753849c540dec9ade57bad60ebbc521adcbcbc024", "asdf1234", MNEMONIC
+        )
+
+    with pytest.raises(AccountsError, match="Alias must be a str"):
+        # Testing an invalid type as arg, so ignoring
+        import_account_from_mnemonic(b"imma-bytestr", "asdf1234", MNEMONIC)  # type: ignore
+
+    import_account_from_mnemonic("iafmused", "qwerty1", MNEMONIC)
+    with pytest.raises(AliasAlreadyInUseError):
+        import_account_from_mnemonic("iafmused", "asdf1234", MNEMONIC)
+
+
+def test_import_account_from_mnemonic_invalid_passphrase():
+    with pytest.raises(AccountsError, match="Account file encryption passphrase must be provided."):
+        import_account_from_mnemonic("invalid-passphrase", "", MNEMONIC)
+
+    with pytest.raises(AccountsError, match="Account file encryption passphrase must be provided."):
+        import_account_from_mnemonic("invalid-passphrase", b"bytestring", MNEMONIC)  # type: ignore
+
+
+def test_import_account_from_mnemonic_insecure_passphrase():
+    with pytest.warns(UserWarning, match="short"):
+        import_account_from_mnemonic("iafmshortaccount", "short", MNEMONIC)
+
+    with pytest.warns(UserWarning, match="simple"):
+        import_account_from_mnemonic("iafmsimpleaccount", "simple", MNEMONIC)
+
+
+def test_import_account_from_private_key():
+    alias = "iafpktester"
+    account = import_account_from_private_key(alias, PASSPHRASE, PRIVATE_KEY)
+    assert isinstance(account, KeyfileAccount)
+    assert account.alias == alias
+    assert account.address == "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266"
+    assert account.locked is True
+    account.unlock(PASSPHRASE)
+    assert account.locked is False
+
+
+def test_import_account_from_private_key_invalid_alias():
+    with pytest.raises(AccountsError, match="Longer aliases cannot be hex strings."):
+        import_account_from_private_key(
+            "3fbc0ce3e71421b94f7ff4e753849c540dec9ade57bad60ebbc521adcbcbc024",
+            "asdf1234",
+            PRIVATE_KEY,
+        )
+
+    with pytest.raises(AccountsError, match="Alias must be a str"):
+        # Testing an invalid type as arg, so ignoring
+        import_account_from_private_key(b"imma-bytestr", "asdf1234", PRIVATE_KEY)  # type: ignore
+
+    import_account_from_private_key("iafpkused", "qwerty1", PRIVATE_KEY)
+    with pytest.raises(AliasAlreadyInUseError):
+        import_account_from_private_key("iafpkused", "asdf1234", PRIVATE_KEY)
+
+
+def test_import_account_from_private_key_invalid_passphrase():
+    with pytest.raises(AccountsError, match="Account file encryption passphrase must be provided."):
+        import_account_from_private_key("invalid-passphrase", "", PRIVATE_KEY)
+
+    with pytest.raises(AccountsError, match="Account file encryption passphrase must be provided."):
+        import_account_from_private_key(
+            "invalid-passphrase", b"bytestring", PRIVATE_KEY  # type: ignore
+        )
+
+
+def test_import_account_from_private_key_insecure_passphrase():
+    with pytest.warns(UserWarning, match="short"):
+        import_account_from_private_key("iafpkshortaccount", "short", PRIVATE_KEY)
+
+    with pytest.warns(UserWarning, match="simple"):
+        import_account_from_private_key("iafpksimpleaccount", "simple", PRIVATE_KEY)

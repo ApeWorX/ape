@@ -1,13 +1,20 @@
 import json
+from typing import Optional
 
 import click
 from eth_account import Account as EthAccount
 from eth_account.hdaccount import ETHEREUM_DEFAULT_PATH
-from eth_utils import to_bytes, to_checksum_address
+from eth_utils import to_checksum_address
 
 from ape.cli import ape_cli_context, existing_alias_argument, non_existing_alias_argument
 from ape.utils.basemodel import ManagerAccessMixin
-from ape_accounts import AccountContainer, KeyfileAccount, generate_account
+from ape_accounts import (
+    AccountContainer,
+    KeyfileAccount,
+    generate_account,
+    import_account_from_mnemonic,
+    import_account_from_private_key,
+)
 
 
 def _get_container() -> AccountContainer:
@@ -127,31 +134,36 @@ def generate(cli_ctx, alias, hide_mnemonic, word_count, custom_hd_path):
 @non_existing_alias_argument()
 @ape_cli_context()
 def _import(cli_ctx, alias, import_from_mnemonic, custom_hd_path):
-    path = _get_container().data_folder.joinpath(f"{alias}.json")
+    account: Optional[KeyfileAccount] = None
+
+    def ask_for_passphrase():
+        return click.prompt(
+            "Create Passphrase to encrypt account",
+            hide_input=True,
+            confirmation_prompt=True,
+        )
+
     if import_from_mnemonic:
         mnemonic = click.prompt("Enter mnemonic seed phrase", hide_input=True)
         EthAccount.enable_unaudited_hdwallet_features()
         try:
-            account = EthAccount.from_mnemonic(mnemonic=mnemonic, account_path=custom_hd_path)
+            passphrase = ask_for_passphrase()
+            account = import_account_from_mnemonic(alias, passphrase, mnemonic, custom_hd_path)
         except Exception as error:
             cli_ctx.abort(f"Seed phrase can't be imported: {error}")
 
     else:
         key = click.prompt("Enter Private Key", hide_input=True)
         try:
-            account = EthAccount.from_key(to_bytes(hexstr=key))
+            passphrase = ask_for_passphrase()
+            account = import_account_from_private_key(alias, passphrase, key)
         except Exception as error:
             cli_ctx.abort(f"Key can't be imported: {error}")
 
-    passphrase = click.prompt(
-        "Create Passphrase to encrypt account",
-        hide_input=True,
-        confirmation_prompt=True,
-    )
-    path.write_text(json.dumps(EthAccount.encrypt(account.key, passphrase)))
-    cli_ctx.logger.success(
-        f"A new account '{account.address}' has been added with the id '{alias}'"
-    )
+    if account:
+        cli_ctx.logger.success(
+            f"A new account '{account.address}' has been added with the id '{alias}'"
+        )
 
 
 @cli.command(short_help="Export an account private key")
