@@ -180,6 +180,39 @@ ape accounts import <ALIAS> --use-mnemonic --hd-path <HDPATH>
 
 If you use the `--hd-path` option, you will need to pass the [HDPath](https://help.myetherwallet.com/en/articles/5867305-hd-wallets-and-derivation-paths) you'd like to use as an argument in the command.
 If you do not use the `--hd-path` option, Ape will use the default HDPath of (Ethereum network, first account).
+
+You can script account imports as well with both seed phrase.
+
+```python
+from ape_acounts import generate_account
+
+alias = "my-account"
+passphrase = "mySecurePassphrase"
+mnemonic = "test test test test test test test test test test test junk"
+hd_path = "m/44'/60'/0'/0/0"
+
+account = import_account_from_mnemonic(alias, passphrase, mnemonic, hd_path)
+
+print(f'Your imported account address is: {account.address}')
+```
+
+Or a raw private key:
+
+```python
+import os
+from ape_acounts import generate_account
+
+alias = "my-account"
+passphrase = "mySecurePassphrase"
+private_key = os.urandom(32).hex()
+
+account = import_account_from_private_key(alias, passphrase, private_key)
+
+print(f'Your imported account address is: {account.address}')
+```
+
+#### Exporting Accounts
+
 You can also [export](../commands/accounts.html#accounts-export) the private key of an account:
 
 ```bash
