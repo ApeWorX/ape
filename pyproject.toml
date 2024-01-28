@@ -30,6 +30,7 @@ addopts = "-p no:ape_test"  # NOTE: Prevents the ape plugin from activating on o
 python_files = "test_*.py"
 testpaths = "tests"
 markers = "fuzzing: Run Hypothesis fuzz test suite"
+timeout = 300
 
 [tool.isort]
 line_length = 100
