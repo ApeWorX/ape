@@ -95,11 +95,14 @@ Under-the-hood, this structure comes from the [eth-keyfile library](https://gith
 When Ape creates the keyfile, either from import or account-generation (described below!), it prompts you for a passphrase to use for encrypting the keyfile, similarly to how you would use a password in browser-based wallets.
 The keyfile stores the private key in an encrypted-at-rest state, which maximizes security of the locally-stored key material.
 
-The `ape-accounts` plugin lets you use keyfile-based account to sign messages and transactions.
+The `ape-accounts` core plugin lets you use keyfile-based account to sign messages and transactions.
 When signing a message or transaction using an account from `ape-accounts`, you will be prompted to enter the passphrase you specified when importing or generating that account.
 
 All the available CLI commands for this account's plugin can be found [here](../commands/accounts.html).
-For example, you can [generate](../commands/accounts.html#accounts-generate) an account:
+
+#### Generating New Accounts
+
+You can [generate](../commands/accounts.html#accounts-generate) an account:
 
 ```bash
 ape accounts generate <ALIAS>
@@ -134,6 +137,25 @@ ape accounts generate <ALIAS> --word-count <WORDCOUNT>
 
 If you do not use the `--word-count` option, Ape will use the default word count of 12.
 You can use all of these together or separately to control the way Ape creates and displays your account information.
+
+This same functionality is also scriptable with the same inputs as the `generate` command:
+
+```python
+from ape_acounts import generate_account
+
+alias = "my-account"
+passphrase = "mySecurePassphrase"
+hd_path = "m/44'/60'/0'/0/0"
+word_count = 12
+
+account, mnemonic = generate_account(alias, passphrase, hd_path, word_count)
+
+print(f'Save your mnemonic: {mnemonic}')
+print(f'Your new account address is: {account.address}')
+```
+
+#### Importing Existing Accounts
+
 If you already have an account and wish to import it into Ape (say, from Metamask), you can use the [import command](../commands/accounts.html#accounts-import):
 
 ```bash
