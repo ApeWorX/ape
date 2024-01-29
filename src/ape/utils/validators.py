@@ -15,7 +15,7 @@ def _has_num(val: str):
 
 
 def _has_special(val: str):
-    return re.search(r"[\!@#$%\^&\*\(\)]{1}", val) is not None
+    return re.search(r"[\!@#$%\^&\*\(\) ]{1}", val) is not None
 
 
 def _validate_account_alias(alias: str) -> str:
