@@ -48,6 +48,7 @@
    :maxdepth: 1
 
    methoddocs/ape.md
+   methoddocs/ape_accounts.md
    methoddocs/api.md
    methoddocs/cli.md
    methoddocs/contracts.md

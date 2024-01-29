@@ -1,5 +1,5 @@
 from ape.api.networks import LOCAL_NETWORK_NAME
-from tests.conftest import GETH_URI
+from tests.conftest import GETH_URI, geth_process_test
 
 from .utils import run_once, skip_projects_except
 
@@ -198,6 +198,7 @@ def test_run_custom_network(ape_cli, runner):
     )
 
 
+@geth_process_test
 @skip_projects_except("geth")
 def test_run_already_running(ape_cli, runner, geth_provider):
     cmd = ("networks", "run", "--network", f"ethereum:{LOCAL_NETWORK_NAME}:geth")

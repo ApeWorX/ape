@@ -1,13 +1,20 @@
 import json
+from typing import Optional
 
 import click
 from eth_account import Account as EthAccount
 from eth_account.hdaccount import ETHEREUM_DEFAULT_PATH
-from eth_utils import to_bytes, to_checksum_address
+from eth_utils import to_checksum_address
 
 from ape.cli import ape_cli_context, existing_alias_argument, non_existing_alias_argument
 from ape.utils.basemodel import ManagerAccessMixin
-from ape_accounts import AccountContainer, KeyfileAccount
+from ape_accounts import (
+    AccountContainer,
+    KeyfileAccount,
+    generate_account,
+    import_account_from_mnemonic,
+    import_account_from_private_key,
+)
 
 
 def _get_container() -> AccountContainer:
@@ -88,26 +95,24 @@ def _list(cli_ctx, show_all_plugins):
 @non_existing_alias_argument()
 @ape_cli_context()
 def generate(cli_ctx, alias, hide_mnemonic, word_count, custom_hd_path):
-    path = _get_container().data_folder.joinpath(f"{alias}.json")
-    EthAccount.enable_unaudited_hdwallet_features()
-    # os.urandom (used internally for this method) requires a certain amount of entropy.
-    # Adding entropy increases os.urandom randomness output
-    # Despite not being used in create_with_mnemonic
     click.prompt(
         "Enhance the security of your account by adding additional random input",
         hide_input=True,
     )
-    account, mnemonic = EthAccount.create_with_mnemonic(
-        num_words=word_count, account_path=custom_hd_path
-    )
-    if not hide_mnemonic and click.confirm("Show mnemonic?", default=True):
-        cli_ctx.logger.info(f"Newly generated mnemonic is: {click.style(mnemonic, bold=True)}")
+
+    show_mnemonic = not hide_mnemonic and click.confirm("Show mnemonic?", default=True)
+
     passphrase = click.prompt(
         "Create Passphrase to encrypt account",
         hide_input=True,
         confirmation_prompt=True,
     )
-    path.write_text(json.dumps(EthAccount.encrypt(account.key, passphrase)))
+
+    account, mnemonic = generate_account(alias, passphrase, custom_hd_path, word_count)
+
+    if show_mnemonic:
+        cli_ctx.logger.info(f"Newly generated mnemonic is: {click.style(mnemonic, bold=True)}")
+
     cli_ctx.logger.success(
         f"A new account '{account.address}' with "
         + f"HDPath {custom_hd_path} has been added with the id '{alias}'"
@@ -129,31 +134,36 @@ def generate(cli_ctx, alias, hide_mnemonic, word_count, custom_hd_path):
 @non_existing_alias_argument()
 @ape_cli_context()
 def _import(cli_ctx, alias, import_from_mnemonic, custom_hd_path):
-    path = _get_container().data_folder.joinpath(f"{alias}.json")
+    account: Optional[KeyfileAccount] = None
+
+    def ask_for_passphrase():
+        return click.prompt(
+            "Create Passphrase to encrypt account",
+            hide_input=True,
+            confirmation_prompt=True,
+        )
+
     if import_from_mnemonic:
         mnemonic = click.prompt("Enter mnemonic seed phrase", hide_input=True)
         EthAccount.enable_unaudited_hdwallet_features()
         try:
-            account = EthAccount.from_mnemonic(mnemonic=mnemonic, account_path=custom_hd_path)
+            passphrase = ask_for_passphrase()
+            account = import_account_from_mnemonic(alias, passphrase, mnemonic, custom_hd_path)
         except Exception as error:
             cli_ctx.abort(f"Seed phrase can't be imported: {error}")
 
     else:
         key = click.prompt("Enter Private Key", hide_input=True)
         try:
-            account = EthAccount.from_key(to_bytes(hexstr=key))
+            passphrase = ask_for_passphrase()
+            account = import_account_from_private_key(alias, passphrase, key)
         except Exception as error:
             cli_ctx.abort(f"Key can't be imported: {error}")
 
-    passphrase = click.prompt(
-        "Create Passphrase to encrypt account",
-        hide_input=True,
-        confirmation_prompt=True,
-    )
-    path.write_text(json.dumps(EthAccount.encrypt(account.key, passphrase)))
-    cli_ctx.logger.success(
-        f"A new account '{account.address}' has been added with the id '{alias}'"
-    )
+    if account:
+        cli_ctx.logger.success(
+            f"A new account '{account.address}' has been added with the id '{alias}'"
+        )
 
 
 @cli.command(short_help="Export an account private key")
