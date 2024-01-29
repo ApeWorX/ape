@@ -181,7 +181,7 @@ ape accounts import <ALIAS> --use-mnemonic --hd-path <HDPATH>
 If you use the `--hd-path` option, you will need to pass the [HDPath](https://help.myetherwallet.com/en/articles/5867305-hd-wallets-and-derivation-paths) you'd like to use as an argument in the command.
 If you do not use the `--hd-path` option, Ape will use the default HDPath of (Ethereum network, first account).
 
-You can script account imports as well with both seed phrase.
+You can script account imports using a seed phrase:
 
 ```python
 from ape_acounts import generate_account
