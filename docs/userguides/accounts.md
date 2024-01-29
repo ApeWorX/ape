@@ -143,16 +143,13 @@ This same functionality is also scriptable with the same inputs as the `generate
 ```python
 from ape_accounts import generate_account
 
-alias = "my-account"
-passphrase = "mySecurePassphrase"
-hd_path = "m/44'/60'/0'/0/0"
-word_count = 12
-
-account, mnemonic = generate_account(alias, passphrase, hd_path, word_count)
+account, mnemonic = generate_account("my-account", "mySecureP@ssphrase")
 
 print(f'Save your mnemonic: {mnemonic}')
 print(f'Your new account address is: {account.address}')
 ```
+
+See the [documentation for `generate_account()`](../methoddocs/ape_accounts.html#ape_accounts.generate_account) for more options.
 
 #### Importing Existing Accounts
 
@@ -181,29 +178,28 @@ ape accounts import <ALIAS> --use-mnemonic --hd-path <HDPATH>
 If you use the `--hd-path` option, you will need to pass the [HDPath](https://help.myetherwallet.com/en/articles/5867305-hd-wallets-and-derivation-paths) you'd like to use as an argument in the command.
 If you do not use the `--hd-path` option, Ape will use the default HDPath of (Ethereum network, first account).
 
-You can script account imports using a seed phrase:
+You can script account imports using a seed phrase [using `import_account_from_mnemonic()`](../methoddocs/ape_accounts.html#ape_accounts.import_account_from_mnemonic):
 
 ```python
-from ape_acounts import generate_account
+from ape_acounts import import_account_from_mnemonic
 
 alias = "my-account"
-passphrase = "mySecurePassphrase"
+passphrase = "my$ecurePassphrase"
 mnemonic = "test test test test test test test test test test test junk"
-hd_path = "m/44'/60'/0'/0/0"
 
-account = import_account_from_mnemonic(alias, passphrase, mnemonic, hd_path)
+account = import_account_from_mnemonic(alias, passphrase, mnemonic)
 
 print(f'Your imported account address is: {account.address}')
 ```
 
-Or a raw private key:
+Or a raw private key [using `import_account_from_private_key()`](../methoddocs/ape_accounts.html#ape_accounts.import_account_from_private_key):
 
 ```python
 import os
-from ape_acounts import generate_account
+from ape_acounts import import_account_from_private_key
 
 alias = "my-account"
-passphrase = "mySecurePassphrase"
+passphrase = "my SecurePassphrase"
 private_key = os.urandom(32).hex()
 
 account = import_account_from_private_key(alias, passphrase, private_key)
