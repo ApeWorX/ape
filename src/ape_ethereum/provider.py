@@ -488,10 +488,27 @@ class Web3Provider(ProviderAPI, ABC):
         )
 
         hex_hash = HexBytes(txn_hash)
-        try:
-            receipt_data = self.web3.eth.wait_for_transaction_receipt(hex_hash, timeout=timeout)
-        except TimeExhausted as err:
-            raise TransactionNotFoundError(txn_hash, error_messsage=str(err)) from err
+        time_start = time.time()
+        receipt_data = None
+        while receipt_data is None:
+            try:
+                receipt_data = self.web3.eth.wait_for_transaction_receipt(hex_hash, timeout=timeout)
+            except TimeExhausted as err:
+                raise TransactionNotFoundError(txn_hash, error_messsage=str(err)) from err
+            except ValueError as err:
+                if time.time() - time_start > (timeout or 0):
+                    try:
+                        txn = self.network.ecosystem.create_transaction(
+                            **dict(self.web3.eth.get_transaction(HexStr(txn_hash)))
+                        )
+                    except Exception:
+                        txn = None
+
+                    raise self.get_virtual_machine_error(err, txn=txn) from err
+
+                else:
+                    # Handle uncaught errors from Geth nodes for transaction indexing.
+                    continue
 
         ecosystem_config = self.network.config.model_dump(by_alias=True, mode="json")
         network_config: Dict = ecosystem_config.get(self.network.name, {})
