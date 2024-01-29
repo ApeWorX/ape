@@ -141,7 +141,7 @@ You can use all of these together or separately to control the way Ape creates a
 This same functionality is also scriptable with the same inputs as the `generate` command:
 
 ```python
-from ape_acounts import generate_account
+from ape_accounts import generate_account
 
 alias = "my-account"
 passphrase = "mySecurePassphrase"
