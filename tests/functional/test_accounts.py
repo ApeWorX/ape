@@ -692,18 +692,19 @@ def test_load_public_key_from_keyfile(runner, keyfile_account):
         assert keyfile_account.public_key
 
 
-def test_generate_account():
+def test_generate_account(delete_account_after):
     alias = "gentester"
-    account, mnemonic = generate_account(alias, PASSPHRASE)
-    assert len(mnemonic.split(" ")) == 12
-    assert isinstance(account, KeyfileAccount)
-    assert account.alias == alias
-    assert account.locked is True
-    account.unlock(PASSPHRASE)
-    assert account.locked is False
+    with delete_account_after(alias):
+        account, mnemonic = generate_account(alias, PASSPHRASE)
+        assert len(mnemonic.split(" ")) == 12
+        assert isinstance(account, KeyfileAccount)
+        assert account.alias == alias
+        assert account.locked is True
+        account.unlock(PASSPHRASE)
+        assert account.locked is False
 
 
-def test_generate_account_invalid_alias():
+def test_generate_account_invalid_alias(delete_account_after):
     with pytest.raises(AccountsError, match="Longer aliases cannot be hex strings."):
         generate_account(
             "3fbc0ce3e71421b94f7ff4e753849c540dec9ade57bad60ebbc521adcbcbc024", "asdf1234"
@@ -713,9 +714,11 @@ def test_generate_account_invalid_alias():
         # Testing an invalid type as arg, so ignoring
         generate_account(b"imma-bytestr", "asdf1234")  # type: ignore
 
-    generate_account("used", "qwerty1")
-    with pytest.raises(AliasAlreadyInUseError):
-        generate_account("used", "asdf1234")
+    used_alias = "used"
+    with delete_account_after(used_alias):
+        generate_account(used_alias, "qwerty1")
+        with pytest.raises(AliasAlreadyInUseError):
+            generate_account(used_alias, "asdf1234")
 
 
 def test_generate_account_invalid_passphrase():
@@ -726,26 +729,31 @@ def test_generate_account_invalid_passphrase():
         generate_account("invalid-passphrase", b"bytestring")  # type: ignore
 
 
-def test_generate_account_insecure_passphrase():
-    with pytest.warns(UserWarning, match="short"):
-        generate_account("shortaccount", "short")
+def test_generate_account_insecure_passphrase(delete_account_after):
+    short_alias = "shortaccount"
+    with delete_account_after(short_alias):
+        with pytest.warns(UserWarning, match="short"):
+            generate_account(short_alias, "short")
 
-    with pytest.warns(UserWarning, match="simple"):
-        generate_account("simpleaccount", "simple")
+    simple_alias = "simpleaccount"
+    with delete_account_after(simple_alias):
+        with pytest.warns(UserWarning, match="simple"):
+            generate_account(simple_alias, "simple")
 
 
-def test_import_account_from_mnemonic():
+def test_import_account_from_mnemonic(delete_account_after):
     alias = "iafmtester"
-    account = import_account_from_mnemonic(alias, PASSPHRASE, MNEMONIC)
-    assert isinstance(account, KeyfileAccount)
-    assert account.alias == alias
-    assert account.address == "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266"
-    assert account.locked is True
-    account.unlock(PASSPHRASE)
-    assert account.locked is False
+    with delete_account_after(alias):
+        account = import_account_from_mnemonic(alias, PASSPHRASE, MNEMONIC)
+        assert isinstance(account, KeyfileAccount)
+        assert account.alias == alias
+        assert account.address == "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266"
+        assert account.locked is True
+        account.unlock(PASSPHRASE)
+        assert account.locked is False
 
 
-def test_import_account_from_mnemonic_invalid_alias():
+def test_import_account_from_mnemonic_invalid_alias(delete_account_after):
     with pytest.raises(AccountsError, match="Longer aliases cannot be hex strings."):
         import_account_from_mnemonic(
             "3fbc0ce3e71421b94f7ff4e753849c540dec9ade57bad60ebbc521adcbcbc024", "asdf1234", MNEMONIC
@@ -755,9 +763,11 @@ def test_import_account_from_mnemonic_invalid_alias():
         # Testing an invalid type as arg, so ignoring
         import_account_from_mnemonic(b"imma-bytestr", "asdf1234", MNEMONIC)  # type: ignore
 
-    import_account_from_mnemonic("iafmused", "qwerty1", MNEMONIC)
-    with pytest.raises(AliasAlreadyInUseError):
-        import_account_from_mnemonic("iafmused", "asdf1234", MNEMONIC)
+    used_alias = "iamfused"
+    with delete_account_after(used_alias):
+        import_account_from_mnemonic(used_alias, "qwerty1", MNEMONIC)
+        with pytest.raises(AliasAlreadyInUseError):
+            import_account_from_mnemonic(used_alias, "asdf1234", MNEMONIC)
 
 
 def test_import_account_from_mnemonic_invalid_passphrase():
@@ -768,26 +778,31 @@ def test_import_account_from_mnemonic_invalid_passphrase():
         import_account_from_mnemonic("invalid-passphrase", b"bytestring", MNEMONIC)  # type: ignore
 
 
-def test_import_account_from_mnemonic_insecure_passphrase():
-    with pytest.warns(UserWarning, match="short"):
-        import_account_from_mnemonic("iafmshortaccount", "short", MNEMONIC)
+def test_import_account_from_mnemonic_insecure_passphrase(delete_account_after):
+    short_alias = "iafmshortaccount"
+    with delete_account_after(short_alias):
+        with pytest.warns(UserWarning, match="short"):
+            import_account_from_mnemonic(short_alias, "short", MNEMONIC)
 
-    with pytest.warns(UserWarning, match="simple"):
-        import_account_from_mnemonic("iafmsimpleaccount", "simple", MNEMONIC)
+    simple_alias = "iafmsimpleaccount"
+    with delete_account_after(simple_alias):
+        with pytest.warns(UserWarning, match="simple"):
+            import_account_from_mnemonic(simple_alias, "simple", MNEMONIC)
 
 
-def test_import_account_from_private_key():
+def test_import_account_from_private_key(delete_account_after):
     alias = "iafpktester"
-    account = import_account_from_private_key(alias, PASSPHRASE, PRIVATE_KEY)
-    assert isinstance(account, KeyfileAccount)
-    assert account.alias == alias
-    assert account.address == "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266"
-    assert account.locked is True
-    account.unlock(PASSPHRASE)
-    assert account.locked is False
+    with delete_account_after(alias):
+        account = import_account_from_private_key(alias, PASSPHRASE, PRIVATE_KEY)
+        assert isinstance(account, KeyfileAccount)
+        assert account.alias == alias
+        assert account.address == "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266"
+        assert account.locked is True
+        account.unlock(PASSPHRASE)
+        assert account.locked is False
 
 
-def test_import_account_from_private_key_invalid_alias():
+def test_import_account_from_private_key_invalid_alias(delete_account_after):
     with pytest.raises(AccountsError, match="Longer aliases cannot be hex strings."):
         import_account_from_private_key(
             "3fbc0ce3e71421b94f7ff4e753849c540dec9ade57bad60ebbc521adcbcbc024",
@@ -799,9 +814,11 @@ def test_import_account_from_private_key_invalid_alias():
         # Testing an invalid type as arg, so ignoring
         import_account_from_private_key(b"imma-bytestr", "asdf1234", PRIVATE_KEY)  # type: ignore
 
-    import_account_from_private_key("iafpkused", "qwerty1", PRIVATE_KEY)
-    with pytest.raises(AliasAlreadyInUseError):
-        import_account_from_private_key("iafpkused", "asdf1234", PRIVATE_KEY)
+    used_alias = "iafpkused"
+    with delete_account_after(used_alias):
+        import_account_from_private_key(used_alias, "qwerty1", PRIVATE_KEY)
+        with pytest.raises(AliasAlreadyInUseError):
+            import_account_from_private_key(used_alias, "asdf1234", PRIVATE_KEY)
 
 
 def test_import_account_from_private_key_invalid_passphrase():
@@ -814,9 +831,13 @@ def test_import_account_from_private_key_invalid_passphrase():
         )
 
 
-def test_import_account_from_private_key_insecure_passphrase():
-    with pytest.warns(UserWarning, match="short"):
-        import_account_from_private_key("iafpkshortaccount", "short", PRIVATE_KEY)
+def test_import_account_from_private_key_insecure_passphrase(delete_account_after):
+    short_alias = "iafpkshortaccount"
+    with delete_account_after(short_alias):
+        with pytest.warns(UserWarning, match="short"):
+            import_account_from_private_key(short_alias, "short", PRIVATE_KEY)
 
-    with pytest.warns(UserWarning, match="simple"):
-        import_account_from_private_key("iafpksimpleaccount", "simple", PRIVATE_KEY)
+    simple_alias = "iafpksimpleaccount"
+    with delete_account_after(simple_alias):
+        with pytest.warns(UserWarning, match="simple"):
+            import_account_from_private_key(simple_alias, "simple", PRIVATE_KEY)
