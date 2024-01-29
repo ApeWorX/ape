@@ -11,7 +11,7 @@ with open(here / "src" / "ape" / "__modules__.py", encoding="utf8") as modules_f
 
 extras_require = {
     "test": [  # `test` GitHub Action jobs uses this
-        "pytest-xdist",  # Multi-process runner
+        "pytest-xdist>=3.5.0,<4",  # Multi-process runner
         "pytest-cov>=4.0.0,<5",  # Coverage analyzer plugin
         "pytest-mock",  # For creating mocks
         "hypothesis>=6.2.0,<7.0",  # Strategy-based fuzzer
@@ -119,7 +119,7 @@ setup(
         "eth-account>=0.10.0,<0.11",
         "eth-typing>=3.5.2,<4",
         "eth-utils>=2.3.1,<3",
-        "py-geth>=3.13.0,<4",
+        "py-geth>=4.2.0,<5",
         "web3[tester]>=6.12.0,<7",
         # ** Dependencies maintained by ApeWorX **
         "eip712>=0.2.3,<0.4",

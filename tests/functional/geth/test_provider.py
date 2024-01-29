@@ -327,6 +327,7 @@ def test_network_choice_when_custom(geth_provider):
     assert actual == "http://127.0.0.1:5550"
 
 
+@geth_process_test
 def test_make_request_not_exists(geth_provider):
     with pytest.raises(
         APINotImplementedError,
@@ -341,6 +342,7 @@ def test_geth_not_found():
         _ = GethDevProcess(Path.cwd(), executable=bin_name)
 
 
+@geth_process_test
 def test_base_fee(geth_provider, mocker):
     # NOTE: Only mocked to guarantee we are in a state
     #   with history.
@@ -358,6 +360,7 @@ def test_base_fee(geth_provider, mocker):
     assert actual == expected
 
 
+@geth_process_test
 @pytest.mark.parametrize("ret", [{}, {"baseFeePerGas": None}, {"baseFeePerGas": []}])
 def test_base_fee_no_history(geth_provider, mocker, ret):
     orig = geth_provider._web3.eth.fee_history
