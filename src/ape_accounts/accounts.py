@@ -287,7 +287,8 @@ def generate_account(
         word_count (int): The amount of words to use in the generated mnemonic.
 
     Returns:
-        Tuple of :class:`~ape_accounts.accounts.KeyfileAccount` and mnemonic for the generated account.
+        Tuple of :class:`~ape_accounts.accounts.KeyfileAccount` and mnemonic for the generated
+        account.
     """
     EthAccount.enable_unaudited_hdwallet_features()
 
