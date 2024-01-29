@@ -7,10 +7,22 @@ from eth_pydantic_types import HexBytes
 
 import ape
 from ape.api import ImpersonatedAccount
-from ape.exceptions import AccountsError, NetworkError, ProjectError, SignatureError
+from ape.exceptions import (
+    AccountsError,
+    AliasAlreadyInUseError,
+    NetworkError,
+    ProjectError,
+    SignatureError,
+)
 from ape.types import AutoGasLimit
 from ape.types.signatures import recover_signer
 from ape.utils.testing import DEFAULT_NUMBER_OF_TEST_ACCOUNTS
+from ape_accounts import (
+    KeyfileAccount,
+    generate_account,
+    import_account_from_mnemonic,
+    import_account_from_private_key,
+)
 from ape_ethereum.ecosystem import ProxyType
 from ape_ethereum.transactions import TransactionType
 from ape_test.accounts import TestAccount
@@ -25,8 +37,10 @@ MISSING_VALUE_TRANSFER_ERR_MSG = "Must provide 'VALUE' or use 'send_everything=T
 APE_TEST_PATH = "ape_test.accounts.TestAccount"
 APE_ACCOUNTS_PATH = "ape_accounts.accounts.KeyfileAccount"
 
-PASSPHRASE = "a"
+PASSPHRASE = "asdf1234"
 INVALID_PASSPHRASE = "incorrect passphrase"
+MNEMONIC = "test test test test test test test test test test test junk"
+PRIVATE_KEY = "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80"
 
 
 @pytest.fixture(params=(APE_TEST_PATH, APE_ACCOUNTS_PATH))
@@ -86,7 +100,7 @@ def test_sign_eip712_message(signer):
 def test_sign_message_with_prompts(runner, keyfile_account, message):
     # "y\na\ny": yes sign, password, yes keep unlocked
     start_nonce = keyfile_account.nonce
-    with runner.isolation(input="y\na\ny"):
+    with runner.isolation(input=f"y\n{PASSPHRASE}\ny"):
         signature = keyfile_account.sign_message(message)
         assert keyfile_account.check_signature(message, signature)
 
@@ -179,7 +193,7 @@ def test_transfer_with_value_send_everything_true(sender, receiver):
 
 def test_transfer_with_prompts(runner, receiver, keyfile_account):
     # "y\na\ny": yes sign, password, yes keep unlocked
-    with runner.isolation("y\na\ny"):
+    with runner.isolation(f"y\n{PASSPHRASE}\ny"):
         receipt = keyfile_account.transfer(receiver, "1 gwei")
         assert receipt.receiver == receiver
 
@@ -354,24 +368,24 @@ def test_accounts_contains(accounts, owner):
 
 
 def test_autosign_messages(runner, keyfile_account, message):
-    keyfile_account.set_autosign(True, passphrase="a")
+    keyfile_account.set_autosign(True, passphrase=PASSPHRASE)
     signature = keyfile_account.sign_message(message)
     assert keyfile_account.check_signature(message, signature)
 
     # Re-enable prompted signing
     keyfile_account.set_autosign(False)
-    with runner.isolation(input="y\na\n"):
+    with runner.isolation(input=f"y\n{PASSPHRASE}\n"):
         signature = keyfile_account.sign_message(message)
         assert keyfile_account.check_signature(message, signature)
 
 
 def test_autosign_transactions(runner, keyfile_account, receiver):
-    keyfile_account.set_autosign(True, passphrase="a")
+    keyfile_account.set_autosign(True, passphrase=PASSPHRASE)
     assert keyfile_account.transfer(receiver, "1 gwei")
 
     # Re-enable prompted signing
     keyfile_account.set_autosign(False)
-    with runner.isolation(input="y\na\n"):
+    with runner.isolation(input=f"y\n{PASSPHRASE}\n"):
         assert keyfile_account.transfer(receiver, "1 gwei")
 
 
@@ -412,7 +426,7 @@ def test_contract_as_sender_non_fork_network(contract_instance):
 
 
 def test_unlock_with_passphrase_and_sign_message(runner, keyfile_account, message):
-    keyfile_account.unlock(passphrase="a")
+    keyfile_account.unlock(passphrase=PASSPHRASE)
 
     # y: yes, sign (note: unlocking makes the key available but is not the same as autosign).
     with runner.isolation(input="y\n"):
@@ -422,7 +436,7 @@ def test_unlock_with_passphrase_and_sign_message(runner, keyfile_account, messag
 
 def test_unlock_from_prompt_and_sign_message(runner, keyfile_account, message):
     # a = password
-    with runner.isolation(input="a\n"):
+    with runner.isolation(input=f"{PASSPHRASE}\n"):
         keyfile_account.unlock()
 
     # yes, sign the message
@@ -432,7 +446,7 @@ def test_unlock_from_prompt_and_sign_message(runner, keyfile_account, message):
 
 
 def test_unlock_with_passphrase_and_sign_transaction(runner, keyfile_account, receiver):
-    keyfile_account.unlock(passphrase="a")
+    keyfile_account.unlock(passphrase=PASSPHRASE)
     # y: yes, sign (note: unlocking makes the key available but is not the same as autosign).
     with runner.isolation(input="y\n"):
         receipt = keyfile_account.transfer(receiver, "1 gwei")
@@ -441,7 +455,7 @@ def test_unlock_with_passphrase_and_sign_transaction(runner, keyfile_account, re
 
 def test_unlock_from_prompt_and_sign_transaction(runner, keyfile_account, receiver):
     # a = password
-    with runner.isolation(input="a\n"):
+    with runner.isolation(input=f"{PASSPHRASE}\n"):
         keyfile_account.unlock()
 
     # yes, sign the transaction
@@ -487,7 +501,7 @@ def test_unlock_and_reload(runner, accounts, keyfile_account, message):
     Tests against a condition where reloading after unlocking
     would not honor unlocked state.
     """
-    keyfile_account.unlock(passphrase="a")
+    keyfile_account.unlock(passphrase=PASSPHRASE)
     reloaded_account = accounts.load(keyfile_account.alias)
 
     # y: yes, sign (note: unlocking makes the key available but is not the same as autosign).
@@ -662,12 +676,12 @@ def test_prepare_transaction_and_call_using_max_gas(tx_type, ethereum, sender, e
 
 
 def test_public_key(runner, keyfile_account):
-    with runner.isolation(input="a\ny\n"):
+    with runner.isolation(input=f"{PASSPHRASE}\ny\n"):
         assert isinstance(keyfile_account.public_key, HexBytes)
 
 
 def test_load_public_key_from_keyfile(runner, keyfile_account):
-    with runner.isolation(input="a\ny\n"):
+    with runner.isolation(input=f"{PASSPHRASE}\ny\n"):
         assert isinstance(keyfile_account.public_key, HexBytes)
 
         assert (
@@ -676,3 +690,154 @@ def test_load_public_key_from_keyfile(runner, keyfile_account):
         )
         # no need for password when loading from the keyfile
         assert keyfile_account.public_key
+
+
+def test_generate_account(delete_account_after):
+    alias = "gentester"
+    with delete_account_after(alias):
+        account, mnemonic = generate_account(alias, PASSPHRASE)
+        assert len(mnemonic.split(" ")) == 12
+        assert isinstance(account, KeyfileAccount)
+        assert account.alias == alias
+        assert account.locked is True
+        account.unlock(PASSPHRASE)
+        assert account.locked is False
+
+
+def test_generate_account_invalid_alias(delete_account_after):
+    with pytest.raises(AccountsError, match="Longer aliases cannot be hex strings."):
+        generate_account(
+            "3fbc0ce3e71421b94f7ff4e753849c540dec9ade57bad60ebbc521adcbcbc024", "asdf1234"
+        )
+
+    with pytest.raises(AccountsError, match="Alias must be a str"):
+        # Testing an invalid type as arg, so ignoring
+        generate_account(b"imma-bytestr", "asdf1234")  # type: ignore
+
+    used_alias = "used"
+    with delete_account_after(used_alias):
+        generate_account(used_alias, "qwerty1")
+        with pytest.raises(AliasAlreadyInUseError):
+            generate_account(used_alias, "asdf1234")
+
+
+def test_generate_account_invalid_passphrase():
+    with pytest.raises(AccountsError, match="Account file encryption passphrase must be provided."):
+        generate_account("invalid-passphrase", "")
+
+    with pytest.raises(AccountsError, match="Account file encryption passphrase must be provided."):
+        generate_account("invalid-passphrase", b"bytestring")  # type: ignore
+
+
+def test_generate_account_insecure_passphrase(delete_account_after):
+    short_alias = "shortaccount"
+    with delete_account_after(short_alias):
+        with pytest.warns(UserWarning, match="short"):
+            generate_account(short_alias, "short")
+
+    simple_alias = "simpleaccount"
+    with delete_account_after(simple_alias):
+        with pytest.warns(UserWarning, match="simple"):
+            generate_account(simple_alias, "simple")
+
+
+def test_import_account_from_mnemonic(delete_account_after):
+    alias = "iafmtester"
+    with delete_account_after(alias):
+        account = import_account_from_mnemonic(alias, PASSPHRASE, MNEMONIC)
+        assert isinstance(account, KeyfileAccount)
+        assert account.alias == alias
+        assert account.address == "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266"
+        assert account.locked is True
+        account.unlock(PASSPHRASE)
+        assert account.locked is False
+
+
+def test_import_account_from_mnemonic_invalid_alias(delete_account_after):
+    with pytest.raises(AccountsError, match="Longer aliases cannot be hex strings."):
+        import_account_from_mnemonic(
+            "3fbc0ce3e71421b94f7ff4e753849c540dec9ade57bad60ebbc521adcbcbc024", "asdf1234", MNEMONIC
+        )
+
+    with pytest.raises(AccountsError, match="Alias must be a str"):
+        # Testing an invalid type as arg, so ignoring
+        import_account_from_mnemonic(b"imma-bytestr", "asdf1234", MNEMONIC)  # type: ignore
+
+    used_alias = "iamfused"
+    with delete_account_after(used_alias):
+        import_account_from_mnemonic(used_alias, "qwerty1", MNEMONIC)
+        with pytest.raises(AliasAlreadyInUseError):
+            import_account_from_mnemonic(used_alias, "asdf1234", MNEMONIC)
+
+
+def test_import_account_from_mnemonic_invalid_passphrase():
+    with pytest.raises(AccountsError, match="Account file encryption passphrase must be provided."):
+        import_account_from_mnemonic("invalid-passphrase", "", MNEMONIC)
+
+    with pytest.raises(AccountsError, match="Account file encryption passphrase must be provided."):
+        import_account_from_mnemonic("invalid-passphrase", b"bytestring", MNEMONIC)  # type: ignore
+
+
+def test_import_account_from_mnemonic_insecure_passphrase(delete_account_after):
+    short_alias = "iafmshortaccount"
+    with delete_account_after(short_alias):
+        with pytest.warns(UserWarning, match="short"):
+            import_account_from_mnemonic(short_alias, "short", MNEMONIC)
+
+    simple_alias = "iafmsimpleaccount"
+    with delete_account_after(simple_alias):
+        with pytest.warns(UserWarning, match="simple"):
+            import_account_from_mnemonic(simple_alias, "simple", MNEMONIC)
+
+
+def test_import_account_from_private_key(delete_account_after):
+    alias = "iafpktester"
+    with delete_account_after(alias):
+        account = import_account_from_private_key(alias, PASSPHRASE, PRIVATE_KEY)
+        assert isinstance(account, KeyfileAccount)
+        assert account.alias == alias
+        assert account.address == "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266"
+        assert account.locked is True
+        account.unlock(PASSPHRASE)
+        assert account.locked is False
+
+
+def test_import_account_from_private_key_invalid_alias(delete_account_after):
+    with pytest.raises(AccountsError, match="Longer aliases cannot be hex strings."):
+        import_account_from_private_key(
+            "3fbc0ce3e71421b94f7ff4e753849c540dec9ade57bad60ebbc521adcbcbc024",
+            "asdf1234",
+            PRIVATE_KEY,
+        )
+
+    with pytest.raises(AccountsError, match="Alias must be a str"):
+        # Testing an invalid type as arg, so ignoring
+        import_account_from_private_key(b"imma-bytestr", "asdf1234", PRIVATE_KEY)  # type: ignore
+
+    used_alias = "iafpkused"
+    with delete_account_after(used_alias):
+        import_account_from_private_key(used_alias, "qwerty1", PRIVATE_KEY)
+        with pytest.raises(AliasAlreadyInUseError):
+            import_account_from_private_key(used_alias, "asdf1234", PRIVATE_KEY)
+
+
+def test_import_account_from_private_key_invalid_passphrase():
+    with pytest.raises(AccountsError, match="Account file encryption passphrase must be provided."):
+        import_account_from_private_key("invalid-passphrase", "", PRIVATE_KEY)
+
+    with pytest.raises(AccountsError, match="Account file encryption passphrase must be provided."):
+        import_account_from_private_key(
+            "invalid-passphrase", b"bytestring", PRIVATE_KEY  # type: ignore
+        )
+
+
+def test_import_account_from_private_key_insecure_passphrase(delete_account_after):
+    short_alias = "iafpkshortaccount"
+    with delete_account_after(short_alias):
+        with pytest.warns(UserWarning, match="short"):
+            import_account_from_private_key(short_alias, "short", PRIVATE_KEY)
+
+    simple_alias = "iafpksimpleaccount"
+    with delete_account_after(simple_alias):
+        with pytest.warns(UserWarning, match="simple"):
+            import_account_from_private_key(simple_alias, "simple", PRIVATE_KEY)

@@ -95,11 +95,14 @@ Under-the-hood, this structure comes from the [eth-keyfile library](https://gith
 When Ape creates the keyfile, either from import or account-generation (described below!), it prompts you for a passphrase to use for encrypting the keyfile, similarly to how you would use a password in browser-based wallets.
 The keyfile stores the private key in an encrypted-at-rest state, which maximizes security of the locally-stored key material.
 
-The `ape-accounts` plugin lets you use keyfile-based account to sign messages and transactions.
+The `ape-accounts` core plugin lets you use keyfile-based account to sign messages and transactions.
 When signing a message or transaction using an account from `ape-accounts`, you will be prompted to enter the passphrase you specified when importing or generating that account.
 
 All the available CLI commands for this account's plugin can be found [here](../commands/accounts.html).
-For example, you can [generate](../commands/accounts.html#accounts-generate) an account:
+
+#### Generating New Accounts
+
+You can [generate](../commands/accounts.html#accounts-generate) an account:
 
 ```bash
 ape accounts generate <ALIAS>
@@ -134,6 +137,22 @@ ape accounts generate <ALIAS> --word-count <WORDCOUNT>
 
 If you do not use the `--word-count` option, Ape will use the default word count of 12.
 You can use all of these together or separately to control the way Ape creates and displays your account information.
+
+This same functionality is also scriptable with the same inputs as the `generate` command:
+
+```python
+from ape_accounts import generate_account
+
+account, mnemonic = generate_account("my-account", "mySecureP@ssphrase")
+
+print(f'Save your mnemonic: {mnemonic}')
+print(f'Your new account address is: {account.address}')
+```
+
+See the [documentation for `generate_account()`](../methoddocs/ape_accounts.html#ape_accounts.generate_account) for more options.
+
+#### Importing Existing Accounts
+
 If you already have an account and wish to import it into Ape (say, from Metamask), you can use the [import command](../commands/accounts.html#accounts-import):
 
 ```bash
@@ -158,6 +177,38 @@ ape accounts import <ALIAS> --use-mnemonic --hd-path <HDPATH>
 
 If you use the `--hd-path` option, you will need to pass the [HDPath](https://help.myetherwallet.com/en/articles/5867305-hd-wallets-and-derivation-paths) you'd like to use as an argument in the command.
 If you do not use the `--hd-path` option, Ape will use the default HDPath of (Ethereum network, first account).
+
+You can import an account programatically using a seed phrase [using `import_account_from_mnemonic()`](../methoddocs/ape_accounts.html#ape_accounts.import_account_from_mnemonic):
+
+```python
+from ape_acounts import import_account_from_mnemonic
+
+alias = "my-account"
+passphrase = "my$ecurePassphrase"
+mnemonic = "test test test test test test test test test test test junk"
+
+account = import_account_from_mnemonic(alias, passphrase, mnemonic)
+
+print(f'Your imported account address is: {account.address}')
+```
+
+Or using a raw private key [using `import_account_from_private_key()`](../methoddocs/ape_accounts.html#ape_accounts.import_account_from_private_key):
+
+```python
+import os
+from ape_acounts import import_account_from_private_key
+
+alias = "my-account"
+passphrase = "my SecurePassphrase"
+private_key = os.urandom(32).hex()
+
+account = import_account_from_private_key(alias, passphrase, private_key)
+
+print(f'Your imported account address is: {account.address}')
+```
+
+#### Exporting Accounts
+
 You can also [export](../commands/accounts.html#accounts-export) the private key of an account:
 
 ```bash

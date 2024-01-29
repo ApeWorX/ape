@@ -1,27 +1,17 @@
 from itertools import chain
 
 import click
-from eth_utils import is_hex
 
 from ape.cli.choices import _ACCOUNT_TYPE_FILTER, Alias
 from ape.cli.paramtype import AllFilePaths
-from ape.exceptions import AccountsError, AliasAlreadyInUseError
 from ape.utils.basemodel import ManagerAccessMixin
+from ape.utils.validators import _validate_account_alias
 
 _flatten = chain.from_iterable
 
 
 def _alias_callback(ctx, param, value):
-    if value in ManagerAccessMixin.account_manager.aliases:
-        # Alias cannot be used.
-        raise AliasAlreadyInUseError(value)
-
-    elif not isinstance(value, str):
-        raise AccountsError(f"Alias must be a str, not '{type(value)}'.")
-    elif is_hex(value) and len(value) >= 42:
-        raise AccountsError("Longer aliases cannot be hex strings.")
-
-    return value
+    return _validate_account_alias(value)
 
 
 def existing_alias_argument(account_type: _ACCOUNT_TYPE_FILTER = None, **kwargs):

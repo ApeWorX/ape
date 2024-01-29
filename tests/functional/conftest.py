@@ -1,5 +1,6 @@
 import threading
 import time
+from contextlib import contextmanager
 from distutils.dir_util import copy_tree
 from pathlib import Path
 from typing import Optional, cast
@@ -749,3 +750,15 @@ def mock_fork_provider(mocker, ethereum):
 
     if actual:
         ethereum.sepolia_fork.__dict__["providers"] = actual
+
+
+@pytest.fixture
+def delete_account_after(project_path):
+    @contextmanager
+    def delete_account_context(alias: str):
+        yield
+        account_path = ape.config.DATA_FOLDER / "accounts" / f"{alias}.json"
+        if account_path.exists():
+            account_path.unlink()
+
+    return delete_account_context
