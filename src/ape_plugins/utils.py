@@ -2,8 +2,11 @@ import subprocess
 import sys
 from enum import Enum
 from functools import cached_property
-from typing import Iterator, List, Optional, Sequence, Set, Tuple
+from typing import Any, Dict, Iterator, List, Optional, Sequence, Set, Tuple
 
+import click
+from packaging.specifiers import SpecifierSet
+from packaging.version import Version
 from pydantic import field_validator, model_validator
 
 from ape.__modules__ import __modules__
@@ -11,9 +14,78 @@ from ape.logging import logger
 from ape.plugins import clean_plugin_name
 from ape.utils import BaseInterfaceModel, get_package_version, github_client
 from ape.utils.basemodel import BaseModel
+from ape.version import version as ape_version_str
+from ape_plugins.exceptions import PluginVersionError
 
 # Plugins maintained OSS by ApeWorX (and trusted)
 CORE_PLUGINS = {p for p in __modules__ if p != "ape"}
+
+
+class ApeVersion:
+    def __str__(self) -> str:
+        return str(self.version)
+
+    def __getitem__(self, item):
+        return str(self)[item]
+
+    @cached_property
+    def version(self) -> Version:
+        return Version(ape_version_str.split("dev")[0].rstrip("."))
+
+    @property
+    def major(self) -> int:
+        return self.version.major
+
+    @property
+    def minor(self) -> int:
+        return self.version.minor
+
+    @property
+    def is_pre_one(self) -> bool:
+        return self.major == 0
+
+    @cached_property
+    def version_range(self) -> str:
+        return (
+            f">=0.{self.minor},<0.{self.minor + 1}"
+            if self.major == 0
+            else f">={self.major},<{self.major + 1}"
+        )
+
+    @property
+    def base(self) -> str:
+        return f"0.{self.minor}.0" if self.major == 0 else f"{self.major}.0.0"
+
+    @cached_property
+    def next_version_range(self) -> str:
+        return (
+            f">=0.{self.minor + 1},<0.{self.minor + 2}"
+            if self.version.major == 0
+            else f">={self.major + 1},<{self.major + 2}"
+        )
+
+    @cached_property
+    def previous_version_range(self) -> str:
+        return (
+            f">=0.{self.minor - 2},<0.{self.minor - 1}"
+            if self.version.major == 0
+            else f">={self.major - 2},<{self.major - 1}"
+        )
+
+    def would_get_downgraded(self, plugin_version_str: str) -> bool:
+        spec_set = SpecifierSet(plugin_version_str)
+        for spec in spec_set:
+            spec_version = Version(spec.version)
+            if spec.operator in ("==", "<", "<=") and (
+                (self.is_pre_one and spec_version.major < ape_version.major)
+                or (self.is_pre_one and spec_version.minor < ape_version.minor)
+            ):
+                return True
+
+        return False
+
+
+ape_version = ApeVersion()
 
 
 class PluginType(Enum):
@@ -215,8 +287,21 @@ class PluginMetadata(BaseInterfaceModel):
         # `pip install "ape-plugin>=0.6,<0.7"`
 
         version = self.version
-        if version and ("=" not in version and "<" not in version and ">" not in version):
-            version = f"=={version}"
+        if version:
+            if not any(x in version for x in ("=", "<", ">")):
+                version = f"=={version}"
+
+            # Validate we are not attempting to install a plugin
+            # that would change the core-Ape version.
+            if ape_version.would_get_downgraded(version):
+                raise PluginVersionError(
+                    "install", "Doing so will downgrade Ape's version.", "Downgrade Ape first."
+                )
+
+        elif not version:
+            # When not specifying the version, use a default one that
+            # won't dramatically change Ape's version.
+            version = ape_version.version_range
 
         return f"{self.package_name}{version}" if version else self.package_name
 
@@ -262,7 +347,7 @@ class PluginMetadata(BaseInterfaceModel):
         verify the update.
         """
 
-        for package in _pip_freeze_plugins():
+        for package in _pip_freeze_plugins(use_cache=False):
             parts = package.split("==")
             if len(parts) != 2:
                 continue
@@ -298,6 +383,62 @@ class PluginMetadata(BaseInterfaceModel):
         ]
         return self.package_name in ape_packages
 
+    def _prepare_install(
+        self, upgrade: bool = False, skip_confirmation: bool = False
+    ) -> Optional[Dict[str, Any]]:
+        # NOTE: Internal and only meant to be called by the CLI.
+        if self.in_core:
+            logger.error(f"Cannot install core 'ape' plugin '{self.name}'.")
+            return None
+
+        elif self.version is not None and upgrade:
+            logger.error(
+                f"Cannot use '--upgrade' option when specifying "
+                f"a version for plugin '{self.name}'."
+            )
+            return None
+
+        # if plugin is installed but not trusted. It must be a third party
+        elif self.is_third_party:
+            logger.warning(f"Plugin '{self.name}' is not an trusted plugin.")
+
+        result_handler = ModifyPluginResultHandler(self)
+        pip_arguments = [sys.executable, "-m", "pip", "install"]
+
+        if upgrade:
+            logger.info(f"Upgrading '{self.name}' plugin ...")
+
+            # NOTE: A simple --upgrade flag may upgrade the plugin
+            # to a version outside Core Ape's. Thus, we handle it
+            # with a version-specifier instead.
+            # NOTE: There can issues when --quiet is not at the end.
+            pip_arguments.extend(
+                ("--upgrade", f"{self.package_name}{ape_version.version_range}", "--quiet")
+            )
+            version_before = self.current_version
+            return {
+                "args": pip_arguments,
+                "version_before": version_before,
+                "result_handler": result_handler,
+            }
+
+        elif self.can_install and (
+            self.is_available
+            or skip_confirmation
+            or click.confirm(f"Install the '{self.name}' plugin?")
+        ):
+            logger.info(f"Installing '{self}' plugin ...")
+
+            # NOTE: There can issues when --quiet is not at the end.
+            pip_arguments.extend((self.install_str, "--quiet"))
+            return {"args": pip_arguments, "result_handler": result_handler}
+
+        else:
+            logger.warning(
+                f"'{self.name}' is already installed. Did you mean to include '--upgrade'?"
+            )
+            return None
+
 
 class ModifyPluginResultHandler:
     def __init__(self, plugin: PluginMetadata):
@@ -320,7 +461,7 @@ class ModifyPluginResultHandler:
             logger.success(f"Plugin '{plugin_id}' has been installed.")
             return True
 
-    def handle_upgrade_result(self, result, version_before: str) -> bool:
+    def handle_upgrade_result(self, result: int, version_before: str) -> bool:
         if result != 0:
             self._log_errors_occurred("upgrading")
             return False
