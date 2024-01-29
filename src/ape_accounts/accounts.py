@@ -283,6 +283,7 @@ def generate_account(
         alias (str): The alias name of the account.
         passphrase (str): Passphrase used to encrypt the account storage file.
         hd_path (str): The hierarchal deterministic path to use when generating the account.
+            Defaults to `m/44'/60'/0'/0/0`.
         word_count (int): The amount of words to use in the generated mnemonic.
 
     Returns:
@@ -294,14 +295,6 @@ def generate_account(
     passphrase = _validate_account_passphrase(passphrase)
 
     account, mnemonic = EthAccount.create_with_mnemonic(num_words=word_count, account_path=hd_path)
-
-    # # Write the encrypted account file
-    # path = ManagerAccessMixin.account_manager.containers["accounts"].data_folder.joinpath(
-    #     f"{alias}.json"
-    # )
-    # path.write_text(json.dumps(EthAccount.encrypt(account.key, passphrase)))
-
-    # return KeyfileAccount(keyfile_path=path), mnemonic
     ape_account = _write_and_return_account(alias, passphrase, account)
     return ape_account, mnemonic
 
@@ -317,6 +310,7 @@ def import_account_from_mnemonic(
         passphrase (str): Passphrase used to encrypt the account storage file.
         mnemonic (str): List of space-separated words representing the mnemonic seed phrase.
         hd_path (str): The hierarchal deterministic path to use when generating the account.
+            Defaults to `m/44'/60'/0'/0/0`.
 
     Returns:
         Tuple of AccountAPI and mnemonic for the generated account.
