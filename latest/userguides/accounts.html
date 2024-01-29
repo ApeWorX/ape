@@ -144,7 +144,12 @@
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="#live-network-accounts">Live Network Accounts</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#keyfile-accounts">Keyfile Accounts</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#keyfile-accounts">Keyfile Accounts</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#generating-new-accounts">Generating New Accounts</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#importing-existing-accounts">Importing Existing Accounts</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#exporting-accounts">Exporting Accounts</a></li>
+</ul>
+</li>
 <li class="toctree-l3"><a class="reference internal" href="#id1">Default Sender Support</a></li>
 </ul>
 </li>
@@ -190,6 +195,7 @@
 <p class="caption" role="heading"><span class="caption-text">Python Reference</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../methoddocs/ape.html">ape</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../methoddocs/ape_accounts.html">ape-accounts</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../methoddocs/api.html">ape.api</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../methoddocs/cli.html">ape.cli</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../methoddocs/contracts.html">ape.contracts</a></li>
@@ -306,10 +312,12 @@ The premise of the plugin is that accounts are stored locally on your computer i
 Under-the-hood, this structure comes from the <a class="reference external" href="https://github.com/ethereum/eth-keyfile">eth-keyfile library</a> via the <a class="reference external" href="https://eth-account.readthedocs.io/en/stable/eth_account.html">eth-account</a> package.
 When Ape creates the keyfile, either from import or account-generation (described below!), it prompts you for a passphrase to use for encrypting the keyfile, similarly to how you would use a password in browser-based wallets.
 The keyfile stores the private key in an encrypted-at-rest state, which maximizes security of the locally-stored key material.</p>
-<p>The <code class="docutils literal notranslate"><span class="pre">ape-accounts</span></code> plugin lets you use keyfile-based account to sign messages and transactions.
+<p>The <code class="docutils literal notranslate"><span class="pre">ape-accounts</span></code> core plugin lets you use keyfile-based account to sign messages and transactions.
 When signing a message or transaction using an account from <code class="docutils literal notranslate"><span class="pre">ape-accounts</span></code>, you will be prompted to enter the passphrase you specified when importing or generating that account.</p>
-<p>All the available CLI commands for this account’s plugin can be found <a class="reference external" href="../commands/accounts.html">here</a>.
-For example, you can <a class="reference external" href="../commands/accounts.html#accounts-generate">generate</a> an account:</p>
+<p>All the available CLI commands for this account’s plugin can be found <a class="reference external" href="../commands/accounts.html">here</a>.</p>
+<section id="generating-new-accounts">
+<h4>Generating New Accounts<a class="headerlink" href="#generating-new-accounts" title="Permalink to this heading"></a></h4>
+<p>You can <a class="reference external" href="../commands/accounts.html#accounts-generate">generate</a> an account:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>ape<span class="w"> </span>accounts<span class="w"> </span>generate<span class="w"> </span>&lt;ALIAS&gt;
 </pre></div>
 </div>
@@ -335,8 +343,21 @@ If you want to use a custom mnemonic phrase word length, use the <code class="do
 </pre></div>
 </div>
 <p>If you do not use the <code class="docutils literal notranslate"><span class="pre">--word-count</span></code> option, Ape will use the default word count of 12.
-You can use all of these together or separately to control the way Ape creates and displays your account information.
-If you already have an account and wish to import it into Ape (say, from Metamask), you can use the <a class="reference external" href="../commands/accounts.html#accounts-import">import command</a>:</p>
+You can use all of these together or separately to control the way Ape creates and displays your account information.</p>
+<p>This same functionality is also scriptable with the same inputs as the <code class="docutils literal notranslate"><span class="pre">generate</span></code> command:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">ape_accounts</span> <span class="kn">import</span> <span class="n">generate_account</span>
+
+<span class="n">account</span><span class="p">,</span> <span class="n">mnemonic</span> <span class="o">=</span> <span class="n">generate_account</span><span class="p">(</span><span class="s2">&quot;my-account&quot;</span><span class="p">,</span> <span class="s2">&quot;mySecureP@ssphrase&quot;</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Save your mnemonic: </span><span class="si">{</span><span class="n">mnemonic</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Your new account address is: </span><span class="si">{</span><span class="n">account</span><span class="o">.</span><span class="n">address</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>See the <a class="reference external" href="../methoddocs/ape_accounts.html#ape_accounts.generate_account">documentation for <code class="docutils literal notranslate"><span class="pre">generate_account()</span></code></a> for more options.</p>
+</section>
+<section id="importing-existing-accounts">
+<h4>Importing Existing Accounts<a class="headerlink" href="#importing-existing-accounts" title="Permalink to this heading"></a></h4>
+<p>If you already have an account and wish to import it into Ape (say, from Metamask), you can use the <a class="reference external" href="../commands/accounts.html#accounts-import">import command</a>:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>ape<span class="w"> </span>accounts<span class="w"> </span>import<span class="w"> </span>&lt;ALIAS&gt;
 </pre></div>
 </div>
@@ -353,8 +374,36 @@ In addition, you can also use a custom HDPath by using the <code class="docutils
 </pre></div>
 </div>
 <p>If you use the <code class="docutils literal notranslate"><span class="pre">--hd-path</span></code> option, you will need to pass the <a class="reference external" href="https://help.myetherwallet.com/en/articles/5867305-hd-wallets-and-derivation-paths">HDPath</a> you’d like to use as an argument in the command.
-If you do not use the <code class="docutils literal notranslate"><span class="pre">--hd-path</span></code> option, Ape will use the default HDPath of (Ethereum network, first account).
-You can also <a class="reference external" href="../commands/accounts.html#accounts-export">export</a> the private key of an account:</p>
+If you do not use the <code class="docutils literal notranslate"><span class="pre">--hd-path</span></code> option, Ape will use the default HDPath of (Ethereum network, first account).</p>
+<p>You can import an account programatically using a seed phrase <a class="reference external" href="../methoddocs/ape_accounts.html#ape_accounts.import_account_from_mnemonic">using <code class="docutils literal notranslate"><span class="pre">import_account_from_mnemonic()</span></code></a>:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">ape_acounts</span> <span class="kn">import</span> <span class="n">import_account_from_mnemonic</span>
+
+<span class="n">alias</span> <span class="o">=</span> <span class="s2">&quot;my-account&quot;</span>
+<span class="n">passphrase</span> <span class="o">=</span> <span class="s2">&quot;my$ecurePassphrase&quot;</span>
+<span class="n">mnemonic</span> <span class="o">=</span> <span class="s2">&quot;test test test test test test test test test test test junk&quot;</span>
+
+<span class="n">account</span> <span class="o">=</span> <span class="n">import_account_from_mnemonic</span><span class="p">(</span><span class="n">alias</span><span class="p">,</span> <span class="n">passphrase</span><span class="p">,</span> <span class="n">mnemonic</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Your imported account address is: </span><span class="si">{</span><span class="n">account</span><span class="o">.</span><span class="n">address</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Or using a raw private key <a class="reference external" href="../methoddocs/ape_accounts.html#ape_accounts.import_account_from_private_key">using <code class="docutils literal notranslate"><span class="pre">import_account_from_private_key()</span></code></a>:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">from</span> <span class="nn">ape_acounts</span> <span class="kn">import</span> <span class="n">import_account_from_private_key</span>
+
+<span class="n">alias</span> <span class="o">=</span> <span class="s2">&quot;my-account&quot;</span>
+<span class="n">passphrase</span> <span class="o">=</span> <span class="s2">&quot;my SecurePassphrase&quot;</span>
+<span class="n">private_key</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">urandom</span><span class="p">(</span><span class="mi">32</span><span class="p">)</span><span class="o">.</span><span class="n">hex</span><span class="p">()</span>
+
+<span class="n">account</span> <span class="o">=</span> <span class="n">import_account_from_private_key</span><span class="p">(</span><span class="n">alias</span><span class="p">,</span> <span class="n">passphrase</span><span class="p">,</span> <span class="n">private_key</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Your imported account address is: </span><span class="si">{</span><span class="n">account</span><span class="o">.</span><span class="n">address</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="exporting-accounts">
+<h4>Exporting Accounts<a class="headerlink" href="#exporting-accounts" title="Permalink to this heading"></a></h4>
+<p>You can also <a class="reference external" href="../commands/accounts.html#accounts-export">export</a> the private key of an account:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>ape<span class="w"> </span>accounts<span class="w"> </span><span class="nb">export</span><span class="w"> </span>&lt;ALIAS&gt;
 </pre></div>
 </div>
@@ -367,6 +416,7 @@ Then, in your scripts, you can <a class="reference external" href="../methoddocs
 <span class="n">account</span> <span class="o">=</span> <span class="n">accounts</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;&lt;ALIAS&gt;&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
+</section>
 </section>
 <section id="id1">
 <h3>Default Sender Support<a class="headerlink" href="#id1" title="Permalink to this heading"></a></h3>

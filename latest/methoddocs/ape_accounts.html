@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ape-accounts &mdash; ape  documentation</title>
+      <link rel="stylesheet" href="/ape/latest/_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="/ape/latest/_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="/ape/latest/_static/custom.css" type="text/css" />
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+    <link rel="canonical" href="/ape/methoddocs/ape_accounts.html" />
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/doctools.js"></script>
+        <script src="../_static/sphinx_highlight.js"></script>
+        <script data-domain="docs.apeworx.io" defer="defer" src="https://plausible.io/js/script.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <script src="../_static/custom.js"></script>
+  <script>
+      var PROJECT = "ape";
+  </script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="ape.api" href="api.html" />
+    <link rel="prev" title="ape" href="ape.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            ape
+              <img src="../_static/logo.gif" class="logo" alt="Logo"/>
+          </a>
+
+          <div class="version">
+            <label for="version-picker" id="version-picker-label">Version:</label>
+            <select id="version-picker">
+              <option value="">Select version...</option>
+              <option value="latest">latest</option>
+              <option value="stable">stable</option>
+                <option value="v0.7.6">v0.7.6</option>
+                <option value="v0.7.5">v0.7.5</option>
+                <option value="v0.7.4">v0.7.4</option>
+                <option value="v0.7.3">v0.7.3</option>
+                <option value="v0.7.2">v0.7.2</option>
+                <option value="v0.7.1">v0.7.1</option>
+                <option value="v0.7.0">v0.7.0</option>
+                <option value="v0.6.27">v0.6.27</option>
+                <option value="v0.6.26">v0.6.26</option>
+                <option value="v0.6.25">v0.6.25</option>
+                <option value="v0.6.24">v0.6.24</option>
+                <option value="v0.6.23">v0.6.23</option>
+                <option value="v0.6.22">v0.6.22</option>
+                <option value="v0.6.21">v0.6.21</option>
+                <option value="v0.6.20">v0.6.20</option>
+                <option value="v0.6.19">v0.6.19</option>
+                <option value="v0.6.18">v0.6.18</option>
+                <option value="v0.6.17">v0.6.17</option>
+                <option value="v0.6.16">v0.6.16</option>
+                <option value="v0.6.15">v0.6.15</option>
+                <option value="v0.6.14">v0.6.14</option>
+                <option value="v0.6.13">v0.6.13</option>
+                <option value="v0.6.12">v0.6.12</option>
+                <option value="v0.6.11">v0.6.11</option>
+                <option value="v0.6.10">v0.6.10</option>
+                <option value="v0.6.9">v0.6.9</option>
+                <option value="v0.6.8">v0.6.8</option>
+                <option value="v0.6.7">v0.6.7</option>
+                <option value="v0.6.6">v0.6.6</option>
+                <option value="v0.6.5">v0.6.5</option>
+                <option value="v0.6.4">v0.6.4</option>
+                <option value="v0.6.3">v0.6.3</option>
+                <option value="v0.6.2">v0.6.2</option>
+                <option value="v0.6.1">v0.6.1</option>
+                <option value="v0.6.0">v0.6.0</option>
+                <option value="v0.5.9">v0.5.9</option>
+                <option value="v0.5.8">v0.5.8</option>
+                <option value="v0.5.7">v0.5.7</option>
+                <option value="v0.5.6">v0.5.6</option>
+                <option value="v0.5.5">v0.5.5</option>
+                <option value="v0.5.4">v0.5.4</option>
+                <option value="v0.5.3">v0.5.3</option>
+                <option value="v0.5.2">v0.5.2</option>
+                <option value="v0.5.1">v0.5.1</option>
+                <option value="v0.5.0">v0.5.0</option>
+                <option value="v0.4.5">v0.4.5</option>
+                <option value="v0.4.4">v0.4.4</option>
+                <option value="v0.4.3">v0.4.3</option>
+                <option value="v0.4.2">v0.4.2</option>
+                <option value="v0.4.1">v0.4.1</option>
+                <option value="v0.4.0">v0.4.0</option>
+                <option value="v0.3.5">v0.3.5</option>
+                <option value="v0.3.4">v0.3.4</option>
+                <option value="v0.3.3">v0.3.3</option>
+                <option value="v0.3.2">v0.3.2</option>
+                <option value="v0.3.1">v0.3.1</option>
+                <option value="v0.3.0">v0.3.0</option>
+                <option value="v0.2.8">v0.2.8</option>
+                <option value="v0.2.7">v0.2.7</option>
+                <option value="v0.2.6">v0.2.6</option>
+                <option value="v0.2.5">v0.2.5</option>
+                <option value="v0.2.4">v0.2.4</option>
+                <option value="v0.2.3">v0.2.3</option>
+                <option value="v0.2.2">v0.2.2</option>
+                <option value="v0.2.1">v0.2.1</option>
+                <option value="v0.2.0">v0.2.0</option>
+                <option value="v0.1.6">v0.1.6</option>
+                <option value="v0.1.5">v0.1.5</option>
+                <option value="v0.1.4">v0.1.4</option>
+                <option value="v0.1.3">v0.1.3</option>
+                <option value="v0.1.1">v0.1.1</option>
+                <option value="v0.1.0">v0.1.0</option>
+            </select>
+          </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">User Guides</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../userguides/quickstart.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../userguides/accounts.html">Accounts</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../userguides/installing_plugins.html">Plugins</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../userguides/projects.html">Developing Projects with Ape</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../userguides/dependencies.html">Dependencies</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../userguides/compile.html">Compile</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../userguides/clis.html">CLIs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../userguides/data.html">Querying Data</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../userguides/networks.html">Networks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../userguides/developing_plugins.html">Developing Plugins</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../userguides/config.html">Configure Ape</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../userguides/transactions.html">Making Transactions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../userguides/console.html">Ape Console</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../userguides/contracts.html">Contracts</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../userguides/proxy.html">Proxy Contracts</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../userguides/testing.html">Testing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../userguides/scripts.html">Scripting</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../userguides/publishing.html">Publishing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../userguides/logging.html">Logging</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">CLI Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../commands/accounts.html">accounts</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../commands/compile.html">compile</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../commands/pm.html">pm</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../commands/console.html">console</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../commands/init.html">init</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../commands/networks.html">networks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../commands/plugins.html">plugins</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../commands/run.html">run</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../commands/test.html">test</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Python Reference</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="ape.html">ape</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">ape-accounts</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#ape_accounts.AccountContainer"><code class="docutils literal notranslate"><span class="pre">AccountContainer</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#ape_accounts.AccountContainer.accounts"><code class="docutils literal notranslate"><span class="pre">AccountContainer.accounts</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#ape_accounts.AccountContainer.aliases"><code class="docutils literal notranslate"><span class="pre">AccountContainer.aliases</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#ape_accounts.KeyfileAccount"><code class="docutils literal notranslate"><span class="pre">KeyfileAccount</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#ape_accounts.KeyfileAccount.address"><code class="docutils literal notranslate"><span class="pre">KeyfileAccount.address</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#ape_accounts.KeyfileAccount.alias"><code class="docutils literal notranslate"><span class="pre">KeyfileAccount.alias</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#ape_accounts.KeyfileAccount.set_autosign"><code class="docutils literal notranslate"><span class="pre">KeyfileAccount.set_autosign()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#ape_accounts.KeyfileAccount.sign_message"><code class="docutils literal notranslate"><span class="pre">KeyfileAccount.sign_message()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#ape_accounts.KeyfileAccount.sign_transaction"><code class="docutils literal notranslate"><span class="pre">KeyfileAccount.sign_transaction()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#ape_accounts.generate_account"><code class="docutils literal notranslate"><span class="pre">generate_account()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#ape_accounts.import_account_from_mnemonic"><code class="docutils literal notranslate"><span class="pre">import_account_from_mnemonic()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#ape_accounts.import_account_from_private_key"><code class="docutils literal notranslate"><span class="pre">import_account_from_private_key()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="api.html">ape.api</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cli.html">ape.cli</a></li>
+<li class="toctree-l1"><a class="reference internal" href="contracts.html">ape.contracts</a></li>
+<li class="toctree-l1"><a class="reference internal" href="exceptions.html">ape.exceptions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="managers.html">ape.managers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="plugins.html">ape.plugins</a></li>
+<li class="toctree-l1"><a class="reference internal" href="types.html">ape.types</a></li>
+<li class="toctree-l1"><a class="reference internal" href="utils.html">ape.utils</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">ape</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">ape-accounts</li>
+      <li class="wy-breadcrumbs-aside">
+              <a href="https://github.com/ApeWorX/ape/blob/main/docs/methoddocs/ape_accounts.md" class="fa fa-github"> Edit on GitHub</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-ape_accounts">
+<span id="ape-accounts"></span><h1>ape-accounts<a class="headerlink" href="#module-ape_accounts" title="Permalink to this heading"></a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="ape_accounts.AccountContainer">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ape_accounts.</span></span><span class="sig-name descname"><span class="pre">AccountContainer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_folder</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">account_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Type</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="api.html#ape.api.accounts.AccountAPI" title="ape.api.accounts.AccountAPI"><span class="pre">AccountAPI</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">loaded_accounts</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="#ape_accounts.KeyfileAccount" title="ape_accounts.accounts.KeyfileAccount"><span class="pre">KeyfileAccount</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape_accounts.AccountContainer" title="Permalink to this definition"></a></dt>
+<dd><dl class="py property">
+<dt class="sig sig-object py" id="ape_accounts.AccountContainer.accounts">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">accounts</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Iterator</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="api.html#ape.api.accounts.AccountAPI" title="ape.api.accounts.AccountAPI"><span class="pre">AccountAPI</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#ape_accounts.AccountContainer.accounts" title="Permalink to this definition"></a></dt>
+<dd><p>Iterate over all accounts.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Iterator[<a class="reference internal" href="api.html#ape.api.accounts.AccountAPI" title="ape.api.accounts.AccountAPI"><code class="xref py py-class docutils literal notranslate"><span class="pre">AccountAPI</span></code></a>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="ape_accounts.AccountContainer.aliases">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">aliases</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Iterator</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#ape_accounts.AccountContainer.aliases" title="Permalink to this definition"></a></dt>
+<dd><p>Iterate over all available aliases.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Iterator[str]</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ape_accounts.KeyfileAccount">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ape_accounts.</span></span><span class="sig-name descname"><span class="pre">KeyfileAccount</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">keyfile_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">locked</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape_accounts.KeyfileAccount" title="Permalink to this definition"></a></dt>
+<dd><dl class="py property">
+<dt class="sig sig-object py" id="ape_accounts.KeyfileAccount.address">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">address</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ChecksumAddress</span></em><a class="headerlink" href="#ape_accounts.KeyfileAccount.address" title="Permalink to this definition"></a></dt>
+<dd><p>The address of this account. Subclasses must override and provide this value.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="ape_accounts.KeyfileAccount.alias">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">alias</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#ape_accounts.KeyfileAccount.alias" title="Permalink to this definition"></a></dt>
+<dd><p>A shortened-name for quicker access to the account.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ape_accounts.KeyfileAccount.set_autosign">
+<span class="sig-name descname"><span class="pre">set_autosign</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">enabled</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">passphrase</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape_accounts.KeyfileAccount.set_autosign" title="Permalink to this definition"></a></dt>
+<dd><p>Allow this account to automatically sign messages and transactions.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>enabled</strong> (<em>bool</em>) – <code class="docutils literal notranslate"><span class="pre">True</span></code> to enable, <code class="docutils literal notranslate"><span class="pre">False</span></code> to disable.</p></li>
+<li><p><strong>passphrase</strong> (<em>Optional</em><em>[</em><em>str</em><em>]</em>) – Optionally provide the passphrase.
+If not provided, you will be prompted to enter it.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ape_accounts.KeyfileAccount.sign_message">
+<span class="sig-name descname"><span class="pre">sign_message</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">msg</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">signer_options</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="types.html#ape.types.signatures.MessageSignature" title="ape.types.signatures.MessageSignature"><span class="pre">MessageSignature</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></span><a class="headerlink" href="#ape_accounts.KeyfileAccount.sign_message" title="Permalink to this definition"></a></dt>
+<dd><p>Sign a message.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>msg</strong> (<em>Any</em>) – The message to sign. Account plugins can handle various types of messages.
+For example, <a class="reference internal" href="#ape_accounts.KeyfileAccount" title="ape_accounts.accounts.KeyfileAccount"><code class="xref py py-class docutils literal notranslate"><span class="pre">KeyfileAccount</span></code></a> can handle
+<a class="reference internal" href="types.html#ape.types.signatures.SignableMessage" title="ape.types.signatures.SignableMessage"><code class="xref py py-class docutils literal notranslate"><span class="pre">SignableMessage</span></code></a>, str, int, and bytes.
+See these
+<a class="reference external" href="https://eth-account.readthedocs.io/en/stable/eth_account.html#eth_account.messages.SignableMessage">docs</a>  # noqa: E501
+for more type information on the <code class="docutils literal notranslate"><span class="pre">SignableMessage</span></code> type.</p></li>
+<li><p><strong>**signer_options</strong> – Additional kwargs given to the signer to modify the signing operation.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The signature corresponding to the message.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="types.html#ape.types.signatures.MessageSignature" title="ape.types.signatures.MessageSignature"><code class="xref py py-class docutils literal notranslate"><span class="pre">MessageSignature</span></code></a> (optional)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ape_accounts.KeyfileAccount.sign_transaction">
+<span class="sig-name descname"><span class="pre">sign_transaction</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">txn</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="api.html#ape.api.transactions.TransactionAPI" title="ape.api.transactions.TransactionAPI"><span class="pre">TransactionAPI</span></a></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">signer_options</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="api.html#ape.api.transactions.TransactionAPI" title="ape.api.transactions.TransactionAPI"><span class="pre">TransactionAPI</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></span><a class="headerlink" href="#ape_accounts.KeyfileAccount.sign_transaction" title="Permalink to this definition"></a></dt>
+<dd><p>Sign a transaction.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>txn</strong> (<a class="reference internal" href="api.html#ape.api.transactions.TransactionAPI" title="ape.api.transactions.TransactionAPI"><code class="xref py py-class docutils literal notranslate"><span class="pre">TransactionAPI</span></code></a>) – The transaction to sign.</p></li>
+<li><p><strong>**signer_options</strong> – Additional kwargs given to the signer to modify the signing operation.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><dl class="simple">
+<dt>A signed transaction.</dt><dd><p>The <code class="docutils literal notranslate"><span class="pre">TransactionAPI</span></code> returned by this method may not correspond to <code class="docutils literal notranslate"><span class="pre">txn</span></code> given as
+input, however returning a properly-formatted transaction here is meant to be executed.
+Returns <code class="docutils literal notranslate"><span class="pre">None</span></code> if the account does not have a transaction it wishes to execute.</p>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="api.html#ape.api.transactions.TransactionAPI" title="ape.api.transactions.TransactionAPI"><code class="xref py py-class docutils literal notranslate"><span class="pre">TransactionAPI</span></code></a> (optional)</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ape_accounts.generate_account">
+<span class="sig-prename descclassname"><span class="pre">ape_accounts.</span></span><span class="sig-name descname"><span class="pre">generate_account</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">alias</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">passphrase</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hd_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">&quot;m/44'/60'/0'/0/0&quot;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">word_count</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">12</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#ape_accounts.KeyfileAccount" title="ape_accounts.accounts.KeyfileAccount"><span class="pre">KeyfileAccount</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#ape_accounts.generate_account" title="Permalink to this definition"></a></dt>
+<dd><p>Generate a new account.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>alias</strong> (<em>str</em>) – The alias name of the account.</p></li>
+<li><p><strong>passphrase</strong> (<em>str</em>) – Passphrase used to encrypt the account storage file.</p></li>
+<li><p><strong>hd_path</strong> (<em>str</em>) – The hierarchal deterministic path to use when generating the account.
+Defaults to <cite>m/44’/60’/0’/0/0</cite>.</p></li>
+<li><p><strong>word_count</strong> (<em>int</em>) – The amount of words to use in the generated mnemonic.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Tuple of <a class="reference internal" href="#ape_accounts.KeyfileAccount" title="ape_accounts.accounts.KeyfileAccount"><code class="xref py py-class docutils literal notranslate"><span class="pre">KeyfileAccount</span></code></a> and mnemonic for the generated
+account.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ape_accounts.import_account_from_mnemonic">
+<span class="sig-prename descclassname"><span class="pre">ape_accounts.</span></span><span class="sig-name descname"><span class="pre">import_account_from_mnemonic</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">alias</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">passphrase</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mnemonic</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hd_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">&quot;m/44'/60'/0'/0/0&quot;</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#ape_accounts.KeyfileAccount" title="ape_accounts.accounts.KeyfileAccount"><span class="pre">KeyfileAccount</span></a></span></span><a class="headerlink" href="#ape_accounts.import_account_from_mnemonic" title="Permalink to this definition"></a></dt>
+<dd><p>Import a new account from a mnemonic seed phrase.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>alias</strong> (<em>str</em>) – The alias name of the account.</p></li>
+<li><p><strong>passphrase</strong> (<em>str</em>) – Passphrase used to encrypt the account storage file.</p></li>
+<li><p><strong>mnemonic</strong> (<em>str</em>) – List of space-separated words representing the mnemonic seed phrase.</p></li>
+<li><p><strong>hd_path</strong> (<em>str</em>) – The hierarchal deterministic path to use when generating the account.
+Defaults to <cite>m/44’/60’/0’/0/0</cite>.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Tuple of AccountAPI and mnemonic for the generated account.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ape_accounts.import_account_from_private_key">
+<span class="sig-prename descclassname"><span class="pre">ape_accounts.</span></span><span class="sig-name descname"><span class="pre">import_account_from_private_key</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">alias</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">passphrase</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">private_key</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#ape_accounts.KeyfileAccount" title="ape_accounts.accounts.KeyfileAccount"><span class="pre">KeyfileAccount</span></a></span></span><a class="headerlink" href="#ape_accounts.import_account_from_private_key" title="Permalink to this definition"></a></dt>
+<dd><p>Import a new account from a mnemonic seed phrase.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>alias</strong> (<em>str</em>) – The alias name of the account.</p></li>
+<li><p><strong>passphrase</strong> (<em>str</em>) – Passphrase used to encrypt the account storage file.</p></li>
+<li><p><strong>private_key</strong> (<em>str</em>) – Hex string private key to import.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Tuple of AccountAPI and mnemonic for the generated account.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="ape.html" class="btn btn-neutral float-left" title="ape" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="api.html" class="btn btn-neutral float-right" title="ape.api" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, ApeWorX LTD.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+  
+      <li><a href="https://github.com/ApeWorX/ape
+      /blob/main//docs/methoddocs/ape_accounts.rst">
+      Show on GitHub</a></li>
+  
+
+</body>
+</html>
