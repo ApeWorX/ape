@@ -693,7 +693,7 @@ def test_load_public_key_from_keyfile(runner, keyfile_account):
 
 
 def test_generate_account():
-    alias = "tester"
+    alias = "gentester"
     account, mnemonic = generate_account(alias, PASSPHRASE)
     assert len(mnemonic.split(" ")) == 12
     assert isinstance(account, KeyfileAccount)

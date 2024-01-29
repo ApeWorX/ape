@@ -21,7 +21,6 @@ def test_default_sender_test_account(solidity_contract_instance, owner, test_acc
 
 
 def test_default_sender_account(
-    eth_tester_provider,
     solidity_contract_container,
     networks_connected_to_tester,
     accounts,
