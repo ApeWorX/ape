@@ -277,14 +277,14 @@ class ConversionManager(BaseManager):
             # NOTE: We allow values to be a list, just in case it is a list
             return [self.convert(v, t) for v, t in zip(value, type)]
 
-        elif isinstance(value, list) and isinstance(type, list) and len(type) == 1:
+        elif isinstance(value, (list, tuple)) and isinstance(type, list) and len(type) == 1:
             # We expected to convert an array type(dynamic or static),
             # so convert each item in the list.
             # NOTE: type for static and dynamic array is a single item
             #  list containing the type of the array.
             return [self.convert(v, type[0]) for v in value]
 
-        elif not isinstance(type, (list, tuple)):
+        elif isinstance(type, (list, tuple)):
             raise ConversionError(
                 f"Value '{value}' must be a list or tuple when given multiple types."
             )

@@ -106,6 +106,38 @@ def test_encode_calldata(ethereum, address):
     assert actual == expected
 
 
+@pytest.mark.parametrize(
+    "sequence_type,item_type", [
+        (list, str),
+        (tuple, str),
+        (list, HexBytes),
+        (tuple, HexBytes),
+    ]
+)
+def test_encode_calldata_byte_array(ethereum, sequence_type, item_type):
+    """
+    Tests against a bug where we could not pass a tuple of HexStr
+    for a byte-array.
+    """
+    raw_abi = {
+        "type": "function",
+        "name": "mint",
+        "stateMutability": "nonpayable",
+        "inputs": [{"name": "leaf", "type": "bytes32"}, {"name": "proof", "type": "bytes32[]"}],
+        "outputs": [],
+    }
+    abi = MethodABI.model_validate(raw_abi)
+    hexstr_array = sequence_type(
+        (
+            item_type("0xfadbd3"),
+            item_type("0x9c6b2c"),
+            item_type("0xc5d246"),
+        )
+    )
+    actual = ethereum.encode_calldata(abi, "0x0123", hexstr_array)
+    assert isinstance(actual, bytes)
+
+
 def test_block_handles_snake_case_parent_hash(eth_tester_provider, sender, receiver):
     # Transaction to change parent hash of next block
     sender.transfer(receiver, "1 gwei")
