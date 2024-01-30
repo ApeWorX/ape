@@ -107,12 +107,13 @@ def test_encode_calldata(ethereum, address):
 
 
 @pytest.mark.parametrize(
-    "sequence_type,item_type", [
+    "sequence_type,item_type",
+    [
         (list, str),
         (tuple, str),
         (list, HexBytes),
         (tuple, HexBytes),
-    ]
+    ],
 )
 def test_encode_calldata_byte_array(ethereum, sequence_type, item_type):
     """
