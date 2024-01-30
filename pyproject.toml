@@ -29,7 +29,9 @@ norecursedirs = "projects"
 addopts = "-p no:ape_test"  # NOTE: Prevents the ape plugin from activating on our tests
 python_files = "test_*.py"
 testpaths = "tests"
-markers = "fuzzing: Run Hypothesis fuzz test suite"
+markers = """fuzzing: Run Hypothesis fuzz test suite
+pip: tests that rely on pip install operations"""
+timeout = 300
 
 [tool.isort]
 line_length = 100
