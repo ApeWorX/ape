@@ -129,29 +129,25 @@ def test_list_does_not_repeat(ape_plugins_runner, installed_plugin):
     assert "ethereum" not in result.available_plugins
 
 
-@pytest.mark.skip(reason="Installation may replace local packages with unwanted versions")
-@github_xfail()
+@pytest.mark.pip
 def test_upgrade(ape_plugins_runner, installed_plugin):
     result = ape_plugins_runner.invoke(["install", TEST_PLUGIN_NAME, "--upgrade"])
     assert result.exit_code == 0
 
 
-@pytest.mark.skip(reason="Installation may replace local packages with unwanted versions")
-@github_xfail()
+@pytest.mark.pip
 def test_upgrade_failure(ape_plugins_runner):
     result = ape_plugins_runner.invoke(["install", "NOT_EXISTS", "--upgrade"])
     assert result.exit_code == 1
 
 
-@pytest.mark.skip(reason="Installation may replace local packages with unwanted versions")
-@github_xfail()
+@pytest.mark.pip
 def test_install_multiple_in_one_str(ape_plugins_runner):
     result = ape_plugins_runner.invoke(["install", f"{TEST_PLUGIN_NAME} {TEST_PLUGIN_NAME_2}"])
     assert result.exit_code == 0
 
 
-@pytest.mark.skip(reason="Installation may replace local packages with unwanted versions")
-@github_xfail()
+@pytest.mark.pip
 def test_install_from_config_file(ape_cli, runner, temp_config):
     plugins_config = {"plugins": [{"name": TEST_PLUGIN_NAME}]}
     with temp_config(plugins_config):
@@ -160,8 +156,7 @@ def test_install_from_config_file(ape_cli, runner, temp_config):
         assert TEST_PLUGIN_NAME in result.stdout
 
 
-@pytest.mark.skip(reason="Installation may replace local packages with unwanted versions")
-@github_xfail()
+@pytest.mark.pip
 def test_uninstall(ape_cli, runner, installed_plugin):
     result = runner.invoke(
         ape_cli, ["plugins", "uninstall", TEST_PLUGIN_NAME, "--yes"], catch_exceptions=False

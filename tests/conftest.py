@@ -35,6 +35,17 @@ geth_process_test = pytest.mark.xdist_group(name="geth-tests")
 explorer_test = pytest.mark.xdist_group(name="explorer-tests")
 
 
+def pytest_addoption(parser):
+    parser.addoption(
+        "--includepip", action="store_true", help="run tests that depend on pip install operations"
+    )
+
+
+def pytest_runtest_setup(item):
+    if "pip" in item.keywords and not item.config.getoption("--includepip"):
+        pytest.skip("need --includepip option to run this test")
+
+
 @pytest.fixture(autouse=True)
 def setenviron(monkeypatch):
     """
