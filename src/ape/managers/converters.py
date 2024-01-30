@@ -284,7 +284,7 @@ class ConversionManager(BaseManager):
             #  list containing the type of the array.
             return [self.convert(v, type[0]) for v in value]
 
-        elif isinstance(type, (list, tuple)):
+        elif not isinstance(type, (list, tuple)):
             raise ConversionError(
                 f"Value '{value}' must be a list or tuple when given multiple types."
             )
