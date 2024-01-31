@@ -411,7 +411,6 @@ class PluginMetadata(BaseInterfaceModel):
             # NOTE: A simple --upgrade flag may upgrade the plugin
             # to a version outside Core Ape's. Thus, we handle it
             # with a version-specifier instead.
-            # NOTE: There can issues when --quiet is not at the end.
             pip_arguments.extend(
                 ("--upgrade", f"{self.package_name}{ape_version.version_range}", "--quiet")
             )
@@ -428,8 +427,6 @@ class PluginMetadata(BaseInterfaceModel):
             or click.confirm(f"Install the '{self.name}' plugin?")
         ):
             logger.info(f"Installing '{self}' plugin ...")
-
-            # NOTE: There can issues when --quiet is not at the end.
             pip_arguments.extend((self.install_str, "--quiet"))
             return {"args": pip_arguments, "result_handler": result_handler}
 
