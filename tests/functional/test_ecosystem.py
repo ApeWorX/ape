@@ -596,8 +596,10 @@ def test_decode_returndata_list_with_1_struct(ethereum):
     )
     actual = ethereum.decode_returndata(abi, raw_data)
 
-    # The result should still be a list.
     assert len(actual) == 1
+    # The result should still be a list.
+    # There was also a bug where it was mistakenly a tuple!
+    assert isinstance(actual[0], list)
     assert len(actual[0]) == 1
     assert actual[0][0].a == "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266"
     assert actual[0][0].b == HexBytes(

@@ -637,10 +637,18 @@ class Ethereum(EcosystemAPI):
             # Array of structs or tuples: don't convert to list
             # Array of anything else: convert to single list
             return (
-                ((output_values[0],),)
+                (
+                    [
+                        output_values[0],
+                    ],
+                )
                 if issubclass(type(output_values[0]), Struct)
                 else ([o for o in output_values[0]],)
             )
+
+        elif returns_array(abi):
+            # Tuple with single item as the array.
+            return (output_values,)
 
         return tuple(output_values)
 
