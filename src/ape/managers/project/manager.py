@@ -101,9 +101,9 @@ class ProjectManager(BaseManager):
         The path to the project's compiler source cache folder.
         """
         # NOTE: as long as config has come up properly, this should not be None
-        if self.config_manager.compiler_cache_folder is None:
-            raise ProjectError("Compiler cache folder not set in config.")
-        return self.config_manager.compiler_cache_folder
+        compile_conf = self.config_manager.get_config("compile")
+        assert compile_conf.cache_folder is not None
+        return compile_conf.cache_folder
 
     @property
     def source_paths(self) -> List[Path]:

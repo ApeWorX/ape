@@ -16,7 +16,6 @@ if TYPE_CHECKING:
 
 
 CONFIG_FILE_NAME = "ape-config.yaml"
-DEFAULT_COMPILER_CACHE_FOLDER = ".cache"
 
 
 class DeploymentConfig(PluginConfig):
@@ -109,11 +108,6 @@ class ConfigManager(BaseInterfaceModel):
     (differs by project structure).
     """
 
-    compiler_cache_folder: Optional[Path] = None
-    """
-    Path to contract dependency cache directory (e.g. `contracts/.cache`)
-    """
-
     dependencies: List[DependencyAPI] = []
     """A list of project dependencies."""
 
@@ -162,9 +156,6 @@ class ConfigManager(BaseInterfaceModel):
             self.dependencies = cache.get("dependencies", [])
             self.deployments = cache.get("deployments", {})
             self.contracts_folder = cache.get("contracts_folder", self.PROJECT_FOLDER / "contracts")
-            self.compiler_cache_folder = cache.get(
-                "compiler_cache_folder", self.contracts_folder / DEFAULT_COMPILER_CACHE_FOLDER
-            )
             return cache
 
         # First, load top-level configs. Then, load all the plugin configs.
@@ -209,15 +200,6 @@ class ConfigManager(BaseInterfaceModel):
         )
 
         self.contracts_folder = configs["contracts_folder"] = contracts_folder
-        self.compiler_cache_folder = configs["compiler_cache_folder"] = (
-            Path(
-                user_config.pop(
-                    "compiler_cache_folder", self.contracts_folder / DEFAULT_COMPILER_CACHE_FOLDER
-                )
-            )
-            .expanduser()
-            .resolve()
-        )
 
         deployments = user_config.pop("deployments", {})
         valid_ecosystems = dict(self.plugin_manager.ecosystems)
@@ -235,7 +217,9 @@ class ConfigManager(BaseInterfaceModel):
             user_override = user_config.pop(plugin_name, {}) or {}
             if config_class != ConfigDict:
                 # NOTE: Will raise if improperly provided keys
-                config = config_class.from_overrides(user_override)  # type: ignore
+                config = config_class.from_overrides(  # type: ignore
+                    user_override, config_manager=self
+                )
             else:
                 # NOTE: Just use it directly as a dict if `ConfigDict` is passed
                 config = user_override
