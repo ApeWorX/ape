@@ -96,6 +96,16 @@ class ProjectManager(BaseManager):
         return folder
 
     @property
+    def compiler_cache_folder(self) -> Path:
+        """
+        The path to the project's compiler source cache folder.
+        """
+        # NOTE: as long as config has come up properly, this should not be None
+        if self.config_manager.compiler_cache_folder is None:
+            raise ProjectError("Compiler cache folder not set in config.")
+        return self.config_manager.compiler_cache_folder
+
+    @property
     def source_paths(self) -> List[Path]:
         """
         All the source files in the project.
@@ -112,14 +122,12 @@ class ProjectManager(BaseManager):
 
         # Dependency sources should be ignored, as they are pulled in
         # independently to compiler via import.
-        in_contracts_cache_dir = contracts_folder / ".cache"
-
         for extension in self.compiler_manager.registered_compilers:
             files.extend(
                 (
                     x
                     for x in contracts_folder.rglob(f"*{extension}")
-                    if x.is_file() and in_contracts_cache_dir not in x.parents
+                    if x.is_file() and self.compiler_cache_folder not in x.parents
                 )
             )
 
@@ -703,9 +711,8 @@ class ProjectManager(BaseManager):
             types for each compiled contract.
         """
 
-        in_source_cache = self.contracts_folder / ".cache"
-        if not use_cache and in_source_cache.is_dir():
-            shutil.rmtree(str(in_source_cache))
+        if not use_cache and self.compiler_cache_folder.is_dir():
+            shutil.rmtree(str(self.compiler_cache_folder))
 
         if isinstance(file_paths, Path):
             file_path_list = [file_paths]
