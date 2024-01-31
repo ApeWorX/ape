@@ -478,9 +478,11 @@ We can switch to a forked network by doing this:
 from ape import networks
 
 def main():
-    with networks.fork("foundry"):
+    with networks.fork(provider_name="foundry"):
         ...
         # Do stuff on a local, forked version of mainnet
 
     # Switch back to mainnet.
 ```
+
+Learn more about forking networks in the [forked-networks guide](./forking_networks.html).
