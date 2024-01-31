@@ -1,11 +1,13 @@
 import subprocess
 import sys
 from pathlib import Path
-from typing import List, Tuple
+from typing import Any, Dict, List, Tuple
 
 import click
+from packaging.version import Version
 
 from ape.cli import ape_cli_context, skip_confirmation_option
+from ape.logging import logger
 from ape.managers.config import CONFIG_FILE_NAME
 from ape.utils import github_client, load_config
 from ape_plugins.utils import (
@@ -13,6 +15,8 @@ from ape_plugins.utils import (
     PluginMetadata,
     PluginMetadataList,
     PluginType,
+    _pip_freeze,
+    ape_version,
 )
 
 
@@ -113,65 +117,37 @@ def _list(cli_ctx, to_display):
 @plugins_argument()
 @skip_confirmation_option("Don't ask for confirmation to install the plugins")
 @upgrade_option(help="Upgrade the plugin to the newest available version")
-def install(cli_ctx, plugins, skip_confirmation, upgrade):
+def install(cli_ctx, plugins: List[PluginMetadata], skip_confirmation: bool, upgrade: bool):
     """Install plugins"""
 
     failures_occurred = False
+
+    # Track the operations until the end. This way, if validation
+    # fails on one, we can error-out before installing anything.
+    install_list: List[Dict[str, Any]] = []
+
     for plugin in plugins:
-        if plugin.in_core:
-            cli_ctx.logger.error(f"Cannot install core 'ape' plugin '{plugin.name}'.")
+        result = plugin._prepare_install(upgrade=upgrade, skip_confirmation=skip_confirmation)
+        if result:
+            install_list.append(result)
+        else:
             failures_occurred = True
+
+    # NOTE: Be *extremely careful* with `subprocess.call`, as it modifies the user's
+    #       installed packages, to potentially catastrophic results
+    for op in install_list:
+        if not op:
             continue
 
-        elif plugin.version is not None and upgrade:
-            cli_ctx.logger.error(
-                f"Cannot use '--upgrade' option when specifying "
-                f"a version for plugin '{plugin.name}'."
-            )
-            failures_occurred = True
-            continue
-
-        # if plugin is installed but not trusted. It must be a third party
-        elif plugin.is_third_party:
-            cli_ctx.logger.warning(f"Plugin '{plugin.name}' is not an trusted plugin.")
-
-        result_handler = ModifyPluginResultHandler(plugin)
-        pip_arguments = [sys.executable, "-m", "pip", "install"]
-
-        if upgrade:
-            cli_ctx.logger.info(f"Upgrading '{plugin.name}'...")
-            pip_arguments.extend(("--upgrade", plugin.package_name))
-
-            version_before = plugin.current_version
-
-            # NOTE: There can issues when --quiet is not at the end.
-            pip_arguments.append("--quiet")
-
-            result = subprocess.call(pip_arguments)
-
-            # Returns ``True`` when upgraded successfully
-            failures_occurred = not result_handler.handle_upgrade_result(result, version_before)
-
-        elif plugin.can_install and (
-            plugin.is_available
-            or skip_confirmation
-            or click.confirm(f"Install the '{plugin.name}' plugin?")
-        ):
-            cli_ctx.logger.info(f"Installing {plugin}...")
-
-            # NOTE: There can issues when --quiet is not at the end.
-            pip_arguments.extend((plugin.install_str, "--quiet"))
-
-            # NOTE: Be *extremely careful* with this command, as it modifies the user's
-            #       installed packages, to potentially catastrophic results
-            # NOTE: This is not abstracted into another function *on purpose*
-            result = subprocess.call(pip_arguments)
-            failures_occurred = not result_handler.handle_install_result(result)
+        handler = op["result_handler"]
+        call_result = subprocess.call(op["args"])
+        if "version_before" in op:
+            success = not handler.handle_upgrade_result(call_result, op["version_before"])
+            failures_occurred = not failures_occurred and success
 
         else:
-            cli_ctx.logger.warning(
-                f"'{plugin.name}' is already installed. Did you mean to include '--upgrade'?"
-            )
+            success = not handler.handle_install_result(call_result)
+            failures_occurred = not failures_occurred and success
 
     if failures_occurred:
         sys.exit(1)
@@ -223,3 +199,55 @@ def uninstall(cli_ctx, plugins, skip_confirmation):
 
     if failures_occurred:
         sys.exit(1)
+
+
+@cli.command()
+def update():
+    """
+    Update Ape and all plugins to the next version
+    """
+
+    _change_version(ape_version.next_version_range)
+
+
+def _version_callack(ctx, param, value):
+    obj = Version(value)
+    version_str = f"0.{obj.minor}.0" if obj.major == 0 else f"{obj.major}.0.0"
+    return f"=={version_str}"
+
+
+@cli.command()
+@click.argument("version", callback=_version_callack)
+def change_version(version):
+    """
+    Change ape and all plugins version
+    """
+
+    _change_version(version)
+
+
+def _change_version(spec: str):
+    # Update all the plugins.
+    # This will also update core Ape.
+    # NOTE: It is possible plugins may depend on each other and may update in
+    #   an order causing some error codes to pop-up, so we ignore those for now.
+    for plugin in _pip_freeze.get_plugins():
+        logger.info(f"Updating {plugin} ...")
+        name = plugin.split("=")[0].strip()
+        subprocess.call([sys.executable, "-m", "pip", "install", f"{name}{spec}", "--quiet"])
+
+    # This check is for verifying the update and shouldn't actually do anything.
+    logger.info("Updating Ape core ...")
+    completed_process = subprocess.run(
+        [sys.executable, "-m", "pip", "install", f"eth-ape{spec}", "--quiet"]
+    )
+    if completed_process.returncode != 0:
+        message = "Update failed"
+        if output := completed_process.stdout:
+            message = f"{message}: {output.decode('utf8')}"
+
+        logger.error(message)
+        sys.exit(completed_process.returncode)
+
+    else:
+        logger.success("Ape and all plugins have successfully upgraded.")

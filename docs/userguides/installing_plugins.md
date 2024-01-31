@@ -64,6 +64,25 @@ Or from the CLI like:
 ape plugins install "foobar@git+https://github.com/<owner-of-plugin>/ape-foobar.git@<branch/name>"
 ```
 
+## Plugin Versions
+
+By default, `ape plugins` commands install plugins within your current Ape version specification.
+For example, if you have Ape 0.6.5 installed and you install `ape-tokens` without specifying a version, it defaults to `ape-tokens>=0.6.0,<0.7` so it is compatible does not change your Ape version.
+To upgrade plugins to a new minor version, you have to first update Ape.
+
+We provide an easy way to update your entire Ape ecosystem using the command:
+
+```shell
+ape plugins update
+```
+
+Now, both Ape and all the plugins will maximally update.
+Alternatively, you use the `change-version` command to install a specific version of everything at once:
+
+```shell
+ape plugins change-version 0.6.0
+```
+
 ## Plugin Types
 
 There are many types of plugins available, including compilers, providers, networks, and CLI-based plugins.
