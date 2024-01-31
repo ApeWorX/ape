@@ -17,6 +17,8 @@ import ape
 from ape.exceptions import APINotImplementedError, UnknownSnapshotError
 from ape.logging import LogLevel, logger
 from ape.managers.config import CONFIG_FILE_NAME
+from ape.pytest.config import ConfigWrapper
+from ape.pytest.gas import GasTracker
 from ape.types import AddressType
 from ape.utils import DEFAULT_TEST_CHAIN_ID, ZERO_ADDRESS
 
@@ -584,3 +586,13 @@ def custom_network_chain_id_1():
 @pytest.fixture
 def custom_network(ethereum, custom_networks_config):
     return ethereum.apenet
+
+
+@pytest.fixture
+def config_wrapper(mocker):
+    return ConfigWrapper(mocker.MagicMock())
+
+
+@pytest.fixture
+def gas_tracker(config_wrapper):
+    return GasTracker(config_wrapper)

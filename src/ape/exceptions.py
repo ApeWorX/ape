@@ -6,7 +6,7 @@ import traceback
 from inspect import getframeinfo, stack
 from pathlib import Path
 from types import CodeType, TracebackType
-from typing import TYPE_CHECKING, Any, Collection, Dict, Iterator, List, Optional, Union, cast
+from typing import TYPE_CHECKING, Any, Collection, Dict, List, Optional, Union, cast
 
 import click
 from eth_typing import Hash32
@@ -20,8 +20,9 @@ from ape.logging import LogLevel, logger
 if TYPE_CHECKING:
     from ape.api.networks import NetworkAPI
     from ape.api.providers import SubprocessProvider
+    from ape.api.trace import TraceAPI
     from ape.api.transactions import ReceiptAPI, TransactionAPI
-    from ape.types import AddressType, BlockID, SnapshotID, SourceTraceback, TraceFrame
+    from ape.types import AddressType, BlockID, SnapshotID, SourceTraceback
 
 
 FailedTxn = Union["TransactionAPI", "ReceiptAPI"]
@@ -172,7 +173,7 @@ class TransactionError(ApeException):
         base_err: Optional[Exception] = None,
         code: Optional[int] = None,
         txn: Optional[FailedTxn] = None,
-        trace: Optional[Iterator["TraceFrame"]] = None,
+        trace: Optional["TraceAPI"] = None,
         contract_address: Optional["AddressType"] = None,
         source_traceback: Optional["SourceTraceback"] = None,
     ):
@@ -225,7 +226,7 @@ class ContractLogicError(VirtualMachineError):
         self,
         revert_message: Optional[str] = None,
         txn: Optional[FailedTxn] = None,
-        trace: Optional[Iterator["TraceFrame"]] = None,
+        trace: Optional["TraceAPI"] = None,
         contract_address: Optional["AddressType"] = None,
         source_traceback: Optional["SourceTraceback"] = None,
         base_err: Optional[Exception] = None,
@@ -448,9 +449,13 @@ class TransactionNotFoundError(ProviderError):
     Raised when unable to find a transaction.
     """
 
-    def __init__(self, txn_hash: str, error_messsage: Optional[str] = None):
-        message = f"Transaction '{txn_hash}' not found."
-        suffix = f" Error: {error_messsage}" if error_messsage else ""
+    def __init__(self, transaction_hash: Optional[str] = None, error_message: Optional[str] = None):
+        message = (
+            f"Transaction '{transaction_hash}' not found."
+            if transaction_hash
+            else "Transaction not found"
+        )
+        suffix = f" Error: {error_message}" if error_message else ""
         super().__init__(f"{message}{suffix}")
 
 
@@ -716,7 +721,7 @@ class CustomError(ContractLogicError):
         abi: ErrorABI,
         inputs: Dict[str, Any],
         txn: Optional[FailedTxn] = None,
-        trace: Optional[Iterator["TraceFrame"]] = None,
+        trace: Optional["TraceAPI"] = None,
         contract_address: Optional["AddressType"] = None,
         base_err: Optional[Exception] = None,
         source_traceback: Optional["SourceTraceback"] = None,

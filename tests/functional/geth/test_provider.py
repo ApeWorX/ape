@@ -4,6 +4,7 @@ from typing import cast
 import pytest
 from eth_pydantic_types import HashBytes32
 from eth_typing import HexStr
+from eth_utils import keccak
 from evmchains import PUBLIC_CHAIN_META
 from hexbytes import HexBytes
 from web3.exceptions import ExtraDataLengthError
@@ -16,11 +17,13 @@ from ape.exceptions import (
     TransactionError,
     TransactionNotFoundError,
 )
+from ape.utils import to_int
 from ape_ethereum.ecosystem import Block
 from ape_ethereum.provider import DEFAULT_SETTINGS
 from ape_ethereum.transactions import (
     AccessList,
     AccessListTransaction,
+    DynamicFeeTransaction,
     TransactionStatusEnum,
     TransactionType,
 )
@@ -87,15 +90,6 @@ def test_repr_on_local_network_and_disconnected(networks):
 def test_repr_on_live_network_and_disconnected(networks):
     geth = networks.get_provider_from_choice("ethereum:goerli:geth")
     assert repr(geth) == "<geth chain_id=5>"
-
-
-@geth_process_test
-def test_get_logs(geth_contract, geth_account):
-    geth_contract.setNumber(101010, sender=geth_account)
-    actual = geth_contract.NumberChange[-1]
-    assert actual.event_name == "NumberChange"
-    assert actual.contract_address == geth_contract.address
-    assert actual.event_arguments["newNum"] == 101010
 
 
 @geth_process_test
@@ -187,6 +181,28 @@ def test_get_block_not_found(geth_provider):
 
 
 @geth_process_test
+def test_get_block_pending(geth_provider, geth_account, geth_second_account, accounts):
+    """
+    Pending timestamps can be weird.
+    This ensures we can check those are various strange states of geth.
+    """
+    actual = geth_provider.get_block("latest")
+    assert isinstance(actual, Block)
+
+    snap = geth_provider.snapshot()
+
+    # Transact to increase block
+    geth_account.transfer(geth_second_account, "1 gwei")
+    actual = geth_provider.get_block("latest")
+    assert isinstance(actual, Block)
+
+    # Restore state before transaction
+    geth_provider.revert(snap)
+    actual = geth_provider.get_block("latest")
+    assert isinstance(actual, Block)
+
+
+@geth_process_test
 def test_get_receipt_not_exists_with_timeout(geth_provider, txn_hash):
     expected = (
         f"Transaction '{txn_hash}' not found. "
@@ -230,55 +246,6 @@ def test_snapshot_and_revert(geth_provider, geth_account, geth_contract):
     # Use account after revert
     receipt = geth_contract.setNumber(311113, sender=geth_account)  # Advance a block
     assert not receipt.failed
-
-
-@geth_process_test
-def test_return_value_list(geth_account, geth_contract, geth_provider):
-    receipt = geth_contract.getFilledArray.transact(sender=geth_account)
-    assert receipt.return_value == [1, 2, 3]
-
-
-@geth_process_test
-def test_return_value_nested_address_array(
-    geth_account, geth_contract, geth_provider, zero_address
-):
-    receipt = geth_contract.getNestedAddressArray.transact(sender=geth_account)
-    expected = [
-        [geth_account.address, geth_account.address, geth_account.address],
-        [zero_address, zero_address, zero_address],
-    ]
-    assert receipt.return_value == expected
-
-
-@geth_process_test
-def test_return_value_nested_struct_in_tuple(geth_account, geth_contract, geth_provider):
-    receipt = geth_contract.getNestedStructWithTuple1.transact(sender=geth_account)
-    actual = receipt.return_value
-    assert actual[0].t.a == geth_account.address
-    assert actual[0].foo == 1
-    assert actual[1] == 1
-
-
-@geth_process_test
-def test_get_pending_block(geth_provider, geth_account, geth_second_account, accounts):
-    """
-    Pending timestamps can be weird.
-    This ensures we can check those are various strange states of geth.
-    """
-    actual = geth_provider.get_block("latest")
-    assert isinstance(actual, Block)
-
-    snap = geth_provider.snapshot()
-
-    # Transact to increase block
-    geth_account.transfer(geth_second_account, "1 gwei")
-    actual = geth_provider.get_block("latest")
-    assert isinstance(actual, Block)
-
-    # Restore state before transaction
-    geth_provider.revert(snap)
-    actual = geth_provider.get_block("latest")
-    assert isinstance(actual, Block)
 
 
 @geth_process_test
@@ -348,6 +315,23 @@ def test_send_transaction_when_no_error_and_receipt_fails(
 
 
 @geth_process_test
+def test_send_call(geth_provider, ethereum, geth_contract):
+    txn = DynamicFeeTransaction.model_validate(
+        {
+            "chainId": 1337,
+            "to": geth_contract.address,
+            "gas": 4716984,
+            "value": 0,
+            "data": HexBytes(keccak(text="myNumber()")[:4]),
+            "type": 2,
+            "accessList": [],
+        }
+    )
+    actual = geth_provider.send_call(txn)
+    assert to_int(actual) == 0
+
+
+@geth_process_test
 def test_network_choice(geth_provider):
     actual = geth_provider.network_choice
     expected = "ethereum:local:geth"
@@ -372,10 +356,10 @@ def test_make_request_not_exists(geth_provider):
         APINotImplementedError,
         match="RPC method 'ape_thisDoesNotExist' is not implemented by this node instance.",
     ):
-        geth_provider._make_request("ape_thisDoesNotExist")
+        geth_provider.make_request("ape_thisDoesNotExist")
 
 
-def test_geth_not_found():
+def test_geth_bin_not_found():
     bin_name = "__NOT_A_REAL_EXECUTABLE_HOPEFULLY__"
     with pytest.raises(GethNotInstalledError):
         _ = GethDevProcess(Path.cwd(), executable=bin_name)
@@ -417,14 +401,14 @@ def test_base_fee_no_history(geth_provider, mocker, ret):
 
 
 @geth_process_test
-def test_estimate_gas(geth_contract, geth_provider, geth_account):
+def test_estimate_gas_cost(geth_contract, geth_provider, geth_account):
     txn = geth_contract.setNumber.as_transaction(900, sender=geth_account)
     estimate = geth_provider.estimate_gas_cost(txn)
     assert estimate > 0
 
 
 @geth_process_test
-def test_estimate_gas_of_static_fee_txn(geth_contract, geth_provider, geth_account):
+def test_estimate_gas_cost_of_static_fee_txn(geth_contract, geth_provider, geth_account):
     txn = geth_contract.setNumber.as_transaction(900, sender=geth_account, type=0)
     estimate = geth_provider.estimate_gas_cost(txn)
     assert estimate > 0

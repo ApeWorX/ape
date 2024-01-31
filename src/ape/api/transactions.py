@@ -24,7 +24,6 @@ from ape.types import (
     AutoGasLimit,
     ContractLogContainer,
     SourceTraceback,
-    TraceFrame,
     TransactionSignature,
 )
 from ape.utils import (
@@ -38,6 +37,7 @@ from ape.utils import (
 
 if TYPE_CHECKING:
     from ape.api.providers import BlockAPI
+    from ape.api.trace import TraceAPI
     from ape.contracts import ContractEvent
 
 
@@ -156,7 +156,7 @@ class TransactionAPI(BaseInterfaceModel):
             return None
 
     @property
-    def trace(self) -> Iterator[TraceFrame]:
+    def trace(self) -> "TraceAPI":
         """
         The transaction trace. Only works if this transaction was published
         and you are using a provider that support tracing.
@@ -291,10 +291,6 @@ class ReceiptAPI(ExtraAttributesMixin, BaseInterfaceModel):
         return HexBytes(value).hex()
 
     @property
-    def call_tree(self) -> Optional[Any]:
-        return None
-
-    @property
     def failed(self) -> bool:
         """
         Whether the receipt represents a failing transaction.
@@ -323,11 +319,11 @@ class ReceiptAPI(ExtraAttributesMixin, BaseInterfaceModel):
         """
 
     @property
-    def trace(self) -> Iterator[TraceFrame]:
+    def trace(self) -> "TraceAPI":
         """
-        The trace of the transaction, if available from your provider.
+        The :class:`~ape.api.trace.TraceAPI` of the transaction.
         """
-        return self.provider.get_transaction_trace(txn_hash=self.txn_hash)
+        return self.provider.get_transaction_trace(self.txn_hash)
 
     @property
     def _explorer(self) -> Optional[ExplorerAPI]:
@@ -462,21 +458,11 @@ class ReceiptAPI(ExtraAttributesMixin, BaseInterfaceModel):
         since this is not available from the receipt object.
         """
 
-        if not (call_tree := self.call_tree) or not (method_abi := self.method_called):
-            return None
+        if trace := self.trace:
+            ret_val = trace.return_value
+            return ret_val[0] if isinstance(ret_val, tuple) and len(ret_val) == 1 else ret_val
 
-        if isinstance(call_tree.outputs, (str, HexBytes, int)):
-            output = self.provider.network.ecosystem.decode_returndata(
-                method_abi, HexBytes(call_tree.outputs)
-            )
-        else:
-            # Already enriched.
-            output = call_tree.outputs
-
-        if isinstance(output, tuple) and len(output) < 2:
-            output = output[0] if len(output) == 1 else None
-
-        return output
+        return None
 
     @property
     @raises_not_implemented
@@ -523,9 +509,9 @@ class ReceiptAPI(ExtraAttributesMixin, BaseInterfaceModel):
         if not address or not self._test_runner:
             return
 
-        if self.provider.supports_tracing and (call_tree := self.call_tree):
+        if self.provider.supports_tracing and (trace := self.trace):
             tracker = self._test_runner.gas_tracker
-            tracker.append_gas(call_tree.enrich(in_line=False), address)
+            tracker.append_gas(trace, address)
 
         elif (
             (contract_type := self.chain_manager.contracts.get(address))
