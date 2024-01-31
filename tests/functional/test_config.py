@@ -315,7 +315,9 @@ def test_contracts_folder_with_hyphen(temp_config):
 
 
 def test_compiler_cache_folder(temp_config):
-    with temp_config({"contracts_folder": "smarts", "compiler_cache_folder": ".cash"}) as project:
+    with temp_config(
+        {"contracts_folder": "smarts", "compile": {"cache_folder": ".cash"}}
+    ) as project:
         assert project.contracts_folder.name == "smarts"
         assert project.compiler_cache_folder.name == ".cash"
         assert str(project.contracts_folder) not in str(project.compiler_cache_folder)
