@@ -566,6 +566,45 @@ def test_decode_returndata_no_bytes_returns_zero(ethereum):
     assert actual == (0,)
 
 
+def test_decode_returndata_list_with_1_struct(ethereum):
+    """
+    Tests a condition where an array of a list with 1 struct
+    would be turned into a raw tuple instead of the Struct class.
+    """
+    abi = MethodABI(
+        type="function",
+        name="getArrayOfStructs",
+        stateMutability="view",
+        inputs=[],
+        outputs=[
+            ABIType(
+                name="",
+                type="tuple[]",
+                components=[
+                    ABIType(name="a", type="address", components=None, internal_type=None),
+                    ABIType(name="b", type="bytes32", components=None, internal_type=None),
+                ],
+                internal_type=None,
+            )
+        ],
+    )
+    raw_data = HexBytes(
+        "0x000000000000000000000000000000000000000000000000000000000000002"
+        "00000000000000000000000000000000000000000000000000000000000000001"
+        "000000000000000000000000f39fd6e51aad88f6f4ce6ab8827279cfffb92266f"
+        "d91dc47b758f65fd0f6fe511566770c0ae3f94ff9999ceb23bfec3ac9fdc168"
+    )
+    actual = ethereum.decode_returndata(abi, raw_data)
+
+    # The result should still be a list.
+    assert len(actual) == 1
+    assert len(actual[0]) == 1
+    assert actual[0][0].a == "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266"
+    assert actual[0][0].b == HexBytes(
+        "0xfd91dc47b758f65fd0f6fe511566770c0ae3f94ff9999ceb23bfec3ac9fdc168"
+    )
+
+
 @pytest.mark.parametrize("tx_type", TransactionType)
 def test_create_transaction_uses_network_gas_limit(tx_type, ethereum, eth_tester_provider, owner):
     tx = ethereum.create_transaction(type=tx_type.value, sender=owner.address)
