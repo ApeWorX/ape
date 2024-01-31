@@ -85,7 +85,14 @@ compile:
 ## Settings
 
 Generally, configure compiler plugins using your `ape-config.yaml` file.
-For example, when using the `vyper` plugin, you can configure settings under the `vyper` key:
+One setting that applies to many compiler plugins is `compiler_cache_folder`, which holds dependency source files the compiler uses when compiling your contracts.
+By default, the folder is in your `contracts/.cache` folder but there are times you may want to move this to another location.
+
+```yaml
+compiler_cache_folder: .cache
+```
+
+As another example, when using the `vyper` plugin, you can configure settings under the `vyper` key:
 
 ```yaml
 vyper:
