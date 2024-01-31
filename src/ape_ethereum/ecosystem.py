@@ -862,20 +862,21 @@ class Ethereum(EcosystemAPI):
 
             # Since LogABICollection does not have access to the Ecosystem,
             # the rest of the decoding must happen here.
-            _types = [x.canonical_type for x in abi.abi.inputs]
             converted_arguments: Dict = {}
 
-            for _type, (key, value) in zip(_types, event_arguments.items()):
+            for item in abi.abi.inputs:
+                _type, key, value = item.canonical_type, item.name, event_arguments[item.name]
+
                 if isinstance(value, Struct):
                     struct_types = _type.lstrip("(").rstrip(")").split(",")
                     for struct_type, (struct_key, struct_val) in zip(struct_types, value.items()):
-                        if struct_type == "address":
-                            value[struct_key] = self.decode_address(struct_val)
-                        elif "bytes" in struct_type:
-                            value[struct_key] = HexBytes(struct_val)
-                        else:
-                            value[struct_key] = struct_val
-
+                        value[struct_key] = (
+                            self.decode_address(struct_val)
+                            if struct_type == "address"
+                            else HexBytes(struct_val)
+                            if "bytes" in struct_type
+                            else struct_val
+                        )
                     converted_arguments[key] = value
 
                 elif _type == "address":
@@ -883,10 +884,9 @@ class Ethereum(EcosystemAPI):
 
                 elif is_array(_type):
                     sub_type = "[".join(_type.split("[")[:-1])
-                    if sub_type == "address":
-                        converted_arguments[key] = [self.decode_address(v) for v in value]
-                    else:
-                        converted_arguments[key] = value
+                    converted_arguments[key] = (
+                        [self.decode_address(v) for v in value] if sub_type == "address" else value
+                    )
 
                 else:
                     # No change.

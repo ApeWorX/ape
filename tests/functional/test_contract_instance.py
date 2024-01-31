@@ -707,13 +707,23 @@ def test_dict_as_struct_input(contract_instance, owner):
     assert contract_instance.setStruct(data) is None
 
 
-def test_obj_list_as_struct_array_input(contract_instance, owner, data_object):
-    assert contract_instance.setStructArray([data_object, data_object]) is None
+@pytest.mark.parametrize("sequence_type", (list, tuple))
+def test_obj_list_as_struct_array_input(contract_instance, data_object, sequence_type):
+    parameter = sequence_type([data_object, data_object])
+    actual = contract_instance.setStructArray(parameter)
+    # The function is pure and doesn't return anything.
+    # (only testing input handling).
+    assert actual is None
 
 
-def test_dict_list_as_struct_array_input(contract_instance, owner):
+@pytest.mark.parametrize("sequence_type", (list, tuple))
+def test_dict_list_as_struct_array_input(contract_instance, owner, sequence_type):
     data = {"a": owner, "b": HexBytes(123), "c": "GETS IGNORED"}
-    assert contract_instance.setStructArray([data, data]) is None
+    parameter = sequence_type([data, data])
+    actual = contract_instance.setStructArray(parameter)
+    # The function is pure and doesn't return anything.
+    # (only testing input handling).
+    assert actual is None
 
 
 def test_custom_error(error_contract, not_owner):
