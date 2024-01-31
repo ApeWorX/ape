@@ -140,6 +140,7 @@
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Plugins</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#core-plugins">Core Plugins</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#installing-plugins">Installing Plugins</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#plugin-versions">Plugin Versions</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#plugin-types">Plugin Types</a></li>
 </ul>
 </li>
@@ -261,6 +262,21 @@ Additionally, you may specify a <code class="docutils literal notranslate"><span
 </div>
 <p>Or from the CLI like:</p>
 <div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>ape<span class="w"> </span>plugins<span class="w"> </span>install<span class="w"> </span><span class="s2">&quot;foobar@git+https://github.com/&lt;owner-of-plugin&gt;/ape-foobar.git@&lt;branch/name&gt;&quot;</span>
+</pre></div>
+</div>
+</section>
+<section id="plugin-versions">
+<h2>Plugin Versions<a class="headerlink" href="#plugin-versions" title="Permalink to this heading"></a></h2>
+<p>By default, <code class="docutils literal notranslate"><span class="pre">ape</span> <span class="pre">plugins</span></code> commands install plugins within your current Ape version specification.
+For example, if you have Ape 0.6.5 installed and you install <code class="docutils literal notranslate"><span class="pre">ape-tokens</span></code> without specifying a version, it defaults to <code class="docutils literal notranslate"><span class="pre">ape-tokens&gt;=0.6.0,&lt;0.7</span></code> so it is compatible does not change your Ape version.
+To upgrade plugins to a new minor version, you have to first update Ape.</p>
+<p>We provide an easy way to update your entire Ape ecosystem using the command:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>ape<span class="w"> </span>plugins<span class="w"> </span>update
+</pre></div>
+</div>
+<p>Now, both Ape and all the plugins will maximally update.
+Alternatively, you use the <code class="docutils literal notranslate"><span class="pre">change-version</span></code> command to install a specific version of everything at once:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>ape<span class="w"> </span>plugins<span class="w"> </span>change-version<span class="w"> </span><span class="m">0</span>.6.0
 </pre></div>
 </div>
 </section>
