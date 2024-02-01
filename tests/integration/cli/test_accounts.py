@@ -6,6 +6,7 @@ import pytest
 from eth_account import Account
 from eth_account.hdaccount import ETHEREUM_DEFAULT_PATH
 
+from ape.logging import HIDDEN_MESSAGE
 from tests.integration.cli.utils import assert_failure, run_once
 
 ALIAS = "test"
@@ -158,7 +159,7 @@ def test_import_mnemonic_default_hdpath(
     result = runner.invoke(
         ape_cli,
         ["accounts", "import", "--use-mnemonic", ALIAS],
-        input="\n".join([f"{MNEMONIC}", PASSWORD, PASSWORD]),
+        input="\n".join([MNEMONIC, PASSWORD, PASSWORD]),
     )
     assert result.exit_code == 0, result.output
     assert temp_account_mnemonic_default_hdpath.address in result.output
@@ -175,7 +176,7 @@ def test_import_mnemonic_custom_hdpath(
     result = runner.invoke(
         ape_cli,
         ["accounts", "import", ALIAS, "--use-mnemonic", "--hd-path", CUSTOM_HDPATH],
-        input="\n".join([f"{MNEMONIC}", PASSWORD, PASSWORD]),
+        input="\n".join([MNEMONIC, PASSWORD, PASSWORD]),
     )
     assert result.exit_code == 0, result.output
     assert temp_account_mnemonic_custom_hdpath.address in result.output
@@ -205,14 +206,12 @@ def test_import_invalid_mnemonic(ape_cli, runner):
     result = runner.invoke(
         ape_cli,
         ["accounts", "import", "--use-mnemonic", ALIAS],
-        input="\n".join([f"{INVALID_MNEMONIC}", PASSWORD, PASSWORD]),
+        input="\n".join([INVALID_MNEMONIC, PASSWORD, PASSWORD]),
     )
     assert result.exit_code == 1, result.output
-    assert_failure(
-        result,
-        f"Seed phrase can't be imported: Provided words: '{INVALID_MNEMONIC}'"
-        + ", are not a valid BIP39 mnemonic phrase!",
-    )
+    assert_failure(result, "Seed phrase can't be imported")
+    assert HIDDEN_MESSAGE in result.output
+    assert INVALID_MNEMONIC not in result.output
 
 
 @run_once

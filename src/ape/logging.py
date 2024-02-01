@@ -22,6 +22,7 @@ logging.addLevelName(LogLevel.SUCCESS.value, LogLevel.SUCCESS.name)
 logging.SUCCESS = LogLevel.SUCCESS.value  # type: ignore
 DEFAULT_LOG_LEVEL = LogLevel.INFO.name
 DEFAULT_LOG_FORMAT = "%(levelname)s%(plugin)s: %(message)s"
+HIDDEN_MESSAGE = "[hidden]"
 
 
 def success(self, message, *args, **kws):
@@ -278,7 +279,7 @@ def sanitize_url(url: str) -> str:
 
     # If there is a path, hide it but show that you are hiding it.
     # Use string interpolation to prevent URL-character encoding.
-    return f"{url_obj.with_path('')}/[hidden]" if url_obj.path else f"{url}"
+    return f"{url_obj.with_path('')}/{HIDDEN_MESSAGE}" if url_obj.path else f"{url}"
 
 
 logger = ApeLogger.create()
