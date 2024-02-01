@@ -3,6 +3,7 @@ from unittest import mock
 
 import pytest
 
+from ape_plugins.exceptions import PluginVersionError
 from ape_plugins.utils import (
     ApePluginsRepr,
     ModifyPluginResultHandler,
@@ -11,13 +12,19 @@ from ape_plugins.utils import (
     PluginMetadataList,
     PluginType,
     _PipFreeze,
+    ape_version,
 )
 
 CORE_PLUGINS = ("run",)
 AVAILABLE_PLUGINS = ("available", "installed")
 INSTALLED_PLUGINS = ("installed", "thirdparty")
 THIRD_PARTY = ("thirdparty",)
-VERSION = "0.7.0"
+
+
+mark_specifiers_less_than_ape = pytest.mark.parametrize(
+    "specifier",
+    (f"<{ape_version[0]}", f">0.1,<{ape_version[0]}", f"==0.{int(ape_version[2]) - 1}"),
+)
 
 
 def get_pip_freeze_output(version: str):
@@ -44,18 +51,18 @@ def plugin_test_env(mocker, mock_pip_freeze):
 
     # Used when testing PipFreeze object itself but also extra avoids
     # actually calling out pip ever in tests.
-    mock_pip_freeze(VERSION)
+    mock_pip_freeze(ape_version.base)
 
     # Prevent requiring plugins to be installed.
     installed_mock = mocker.patch(f"{root}._pip_freeze_plugins")
     installed_mock.return_value = {
         f"ape-{INSTALLED_PLUGINS[0]}",
-        f"ape-{INSTALLED_PLUGINS[1]}=={VERSION}",
+        f"ape-{INSTALLED_PLUGINS[1]}=={ape_version.base}",
     }
 
     # Prevent version lookups.
     version_mock = mocker.patch(f"{root}.get_package_version")
-    version_mock.return_value = VERSION
+    version_mock.return_value = ape_version.base
 
 
 @pytest.fixture
@@ -95,11 +102,14 @@ class TestPluginMetadata:
 
     def test_model_validator_when_version_included_with_name(self):
         # This allows parsing requirements files easier
-        metadata = PluginMetadata(name="ape-foo-bar==0.7.0")
+        metadata = PluginMetadata(name=f"ape-foo-bar==0.{ape_version.minor}.0")
         assert metadata.name == "foo-bar"
-        assert metadata.version == "==0.7.0"
+        assert metadata.version == f"==0.{ape_version.minor}.0"
 
-    @pytest.mark.parametrize("version", ("0.7.0", "v0.7.0", "0.7.0a123"))
+    @pytest.mark.parametrize(
+        "version",
+        (f"0.{ape_version.minor}.0", f"v0.{ape_version.minor}.0", f"0.{ape_version.minor}.0a123"),
+    )
     def test_version(self, version):
         metadata = PluginMetadata(name="foo", version=version)
         assert metadata.version == version
@@ -107,22 +117,25 @@ class TestPluginMetadata:
     def test_install_str_without_version(self):
         metadata = PluginMetadata(name="foo-bar")
         actual = metadata.install_str
-        assert actual == "ape-foo-bar"
+        expected_version = f">=0.{ape_version.minor},<0.{ape_version.minor + 1}"
+        assert actual == f"ape-foo-bar{expected_version}"
 
     def test_install_str_with_version(self):
-        metadata = PluginMetadata(name="foo-bar", version="0.7.0")
+        metadata = PluginMetadata(name="foo-bar", version=f"0.{ape_version.minor}.0")
         actual = metadata.install_str
-        assert actual == "ape-foo-bar==0.7.0"
+        assert actual == f"ape-foo-bar==0.{ape_version.minor}.0"
 
     def test_install_str_with_complex_constraint(self):
-        metadata = PluginMetadata(name="foo", version=">=0.7.0,<0.8.0")
+        metadata = PluginMetadata(
+            name="foo", version=f">=0.{ape_version.minor}.0,<0.{ape_version.minor + 1}.0"
+        )
         actual = metadata.install_str
-        assert actual == "ape-foo>=0.7.0,<0.8.0"
+        assert actual == f"ape-foo>=0.{ape_version.minor}.0,<0.{ape_version.minor + 1}.0"
 
     def test_install_str_with_complex_constraint_in_name(self):
-        metadata = PluginMetadata(name="foo>=0.7.0,<0.8.0")
+        metadata = PluginMetadata(name=f"foo>=0.{ape_version.minor}.0,<0.{ape_version.minor + 1}.0")
         actual = metadata.install_str
-        assert actual == "ape-foo>=0.7.0,<0.8.0"
+        assert actual == f"ape-foo>=0.{ape_version.minor}.0,<0.{ape_version.minor + 1}.0"
 
     def test_install_str_when_using_git_remote(self):
         url = "git+https://example.com/ape-foo/branch"
@@ -142,6 +155,48 @@ class TestPluginMetadata:
         metadata = PluginMetadata(name="foobar")
         assert not metadata.is_available
 
+    def test_prepare_install(self):
+        metadata = PluginMetadata(name=list(AVAILABLE_PLUGINS)[0])
+        actual = metadata._prepare_install(skip_confirmation=True)
+        assert actual is not None
+        arguments = actual.get("args", [])
+        expected = [
+            "-m",
+            "pip",
+            "install",
+            f"ape-available>=0.{ape_version.minor},<0.{ape_version.minor + 1}",
+            "--quiet",
+        ]
+        assert arguments[0].endswith("python")
+        assert arguments[1:] == expected
+
+    def test_prepare_install_upgrade(self):
+        metadata = PluginMetadata(name=list(AVAILABLE_PLUGINS)[0])
+        actual = metadata._prepare_install(upgrade=True, skip_confirmation=True)
+        assert actual is not None
+        arguments = actual.get("args", [])
+        expected = [
+            "-m",
+            "pip",
+            "install",
+            "--upgrade",
+            f"ape-available>=0.{ape_version.minor},<0.{ape_version.minor + 1}",
+            "--quiet",
+        ]
+        assert arguments[0].endswith("python")
+        assert arguments[1:] == expected
+
+    @mark_specifiers_less_than_ape
+    def test_prepare_install_version_smaller_than_ape(self, specifier, ape_caplog):
+        metadata = PluginMetadata(name=list(AVAILABLE_PLUGINS)[0], version=specifier)
+        expected = (
+            r"Unable to install plugin\.\n"
+            r"Reason: Doing so will downgrade Ape's version\.\n"
+            r"To resolve: Downgrade Ape first\."
+        )
+        with pytest.raises(PluginVersionError, match=expected):
+            metadata._prepare_install(skip_confirmation=True)
+
 
 class TestApePluginsRepr:
     def test_str(self, plugin_metadata):
@@ -149,10 +204,10 @@ class TestApePluginsRepr:
         actual = str(representation)
         expected = f"""
 Installed Plugins
-  installed     {VERSION}
+  installed     {ape_version.base}
 
 Third-party Plugins
-  thirdparty    {VERSION}
+  thirdparty    {ape_version.base}
         """
         assert actual == expected.strip()
 
@@ -164,10 +219,10 @@ Core Plugins
   run
 
 Installed Plugins
-  installed     {VERSION}
+  installed     {ape_version.base}
 
 Third-party Plugins
-  thirdparty    {VERSION}
+  thirdparty    {ape_version.base}
 
 Available Plugins
   available
@@ -213,22 +268,25 @@ class TestPluginGroup:
 def test_pip_freeze_includes_version_when_available():
     pip_freeze = _PipFreeze()
     actual = pip_freeze.get_plugins()
-    expected = {f"ape-{INSTALLED_PLUGINS[0]}", f"ape-{THIRD_PARTY[0]}==0.7.0"}
+    expected = {f"ape-{INSTALLED_PLUGINS[0]}", f"ape-{THIRD_PARTY[0]}==0.{ape_version.minor}.0"}
     assert actual == expected
 
 
 def test_handle_upgrade_result_when_upgrading_to_same_version(caplog, logger):
-    # NOTE: pip freeze mock also returns version 0.7.0 (so upgrade to same).
+    # NOTE: pip freeze mock also returns version 0.{minor}.0 (so upgrade to same).
     logger.set_level("INFO")  # Required for test.
     plugin = PluginMetadata(name=THIRD_PARTY[0])
     handler = ModifyPluginResultHandler(plugin)
-    handler.handle_upgrade_result(0, "0.7.0")
+    handler.handle_upgrade_result(0, f"0.{ape_version.minor}.0")
     if records := caplog.records:
-        assert f"'{THIRD_PARTY[0]}' already has version '0.7.0'" in records[-1].message
+        assert (
+            f"'{THIRD_PARTY[0]}' already has version '0.{ape_version.minor}.0'"
+            in records[-1].message
+        )
     else:
         version_at_end = plugin.pip_freeze_version
         pytest.fail(
-            "Missing logs when upgrading to same version 0.7.0. "
+            f"Missing logs when upgrading to same version 0.{ape_version.minor}.0. "
             f"pip_freeze_version={version_at_end}"
         )
 
@@ -237,10 +295,31 @@ def test_handle_upgrade_result_when_no_pip_freeze_version_does_not_log(caplog):
     plugin_no_version = INSTALLED_PLUGINS[0]  # Version not in pip-freeze
     plugin = PluginMetadata(name=plugin_no_version)
     handler = ModifyPluginResultHandler(plugin)
-    handler.handle_upgrade_result(0, "0.7.0")
+    handler.handle_upgrade_result(0, f"0.{ape_version.minor}.0")
 
     log_parts = ("already has version", "already up to date")
     messages = [x.message for x in caplog.records]
     for message in messages:
         for pt in log_parts:
             assert pt not in message
+
+
+class TestApeVersion:
+    def test_version_range(self):
+        actual = ape_version.version_range
+        expected = f">=0.{ape_version[2]},<0.{int(ape_version[2]) + 1}"
+        assert actual == expected
+
+    def test_next_version_range(self):
+        actual = ape_version.next_version_range
+        expected = f">=0.{int(ape_version[2]) + 1},<0.{int(ape_version[2]) + 2}"
+        assert actual == expected
+
+    def test_previous_version_range(self):
+        actual = ape_version.previous_version_range
+        expected = f">=0.{int(ape_version[2]) - 2},<0.{int(ape_version[2]) - 1}"
+        assert actual == expected
+
+    @mark_specifiers_less_than_ape
+    def test_would_be_downgraded(self, specifier):
+        assert ape_version.would_get_downgraded(specifier)

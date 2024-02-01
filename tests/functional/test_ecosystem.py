@@ -106,6 +106,39 @@ def test_encode_calldata(ethereum, address):
     assert actual == expected
 
 
+@pytest.mark.parametrize(
+    "sequence_type,item_type",
+    [
+        (list, str),
+        (tuple, str),
+        (list, HexBytes),
+        (tuple, HexBytes),
+    ],
+)
+def test_encode_calldata_byte_array(ethereum, sequence_type, item_type):
+    """
+    Tests against a bug where we could not pass a tuple of HexStr
+    for a byte-array.
+    """
+    raw_abi = {
+        "type": "function",
+        "name": "mint",
+        "stateMutability": "nonpayable",
+        "inputs": [{"name": "leaf", "type": "bytes32"}, {"name": "proof", "type": "bytes32[]"}],
+        "outputs": [],
+    }
+    abi = MethodABI.model_validate(raw_abi)
+    hexstr_array = sequence_type(
+        (
+            item_type("0xfadbd3"),
+            item_type("0x9c6b2c"),
+            item_type("0xc5d246"),
+        )
+    )
+    actual = ethereum.encode_calldata(abi, "0x0123", hexstr_array)
+    assert isinstance(actual, bytes)
+
+
 def test_block_handles_snake_case_parent_hash(eth_tester_provider, sender, receiver):
     # Transaction to change parent hash of next block
     sender.transfer(receiver, "1 gwei")
@@ -286,6 +319,48 @@ def test_decode_block_with_hex_values(ethereum):
     }
     actual = ethereum.decode_block(raw_block)
     assert actual.difficulty == 0
+
+
+def test_decode_logs_topics_not_first(ethereum):
+    """
+    Tests against a condition where we could not decode logs if the
+    topics were not defined first.
+    """
+    abi_dict = {
+        "anonymous": False,
+        "inputs": [
+            {"indexed": False, "internalType": "address", "name": "sender", "type": "address"},
+            {"indexed": True, "internalType": "address", "name": "owner", "type": "address"},
+            {"indexed": True, "internalType": "int24", "name": "tickLower", "type": "int24"},
+            {"indexed": True, "internalType": "int24", "name": "tickUpper", "type": "int24"},
+            {"indexed": False, "internalType": "uint128", "name": "amount", "type": "uint128"},
+            {"indexed": False, "internalType": "uint256", "name": "amount0", "type": "uint256"},
+            {"indexed": False, "internalType": "uint256", "name": "amount1", "type": "uint256"},
+        ],
+        "name": "Mint",
+        "type": "event",
+    }
+    abi = EventABI.model_validate(abi_dict)
+    logs = [
+        {
+            "address": "0x3416cf6c708da44db2624d63ea0aaef7113527c6",
+            "blockHash": "0x488f23ba55f64bf1aac02ee7278b70c3f4bb2fb57b8aaa6ab3b481f1809f18ea",
+            "blockNumber": "0xcfa869",
+            "data": "0x000000000000000000000000c36442b4a4522e871399cd717abdd847ab11fe8800000000000000000000000000000000000000000000000000821d6b102660fb000000000000000000000000000000000000000000000000000009fde8545338000000000000000000000000000000000000000000000000000003548cf35031",  # noqa: E501
+            "logIndex": "0x7a",
+            "removed": False,
+            "topics": [
+                "0x7a53080ba414158be7ec69b987b5fb7d07dee101fe85488f0853ae16239d0bde",
+                "0x000000000000000000000000c36442b4a4522e871399cd717abdd847ab11fe88",
+                "0xfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffc",
+                "0x0000000000000000000000000000000000000000000000000000000000000004",
+            ],
+            "transactionHash": "0xf093a630478562d03e3b2476a5b0551609722747d442a462579fa02e1332a941",
+            "transactionIndex": "0x41",
+        }
+    ]
+    actual = list(ethereum.decode_logs(logs, abi))
+    assert actual
 
 
 def test_decode_receipt(eth_tester_provider, ethereum):
@@ -489,6 +564,47 @@ def test_decode_returndata_no_bytes_returns_zero(ethereum):
     )
     actual = ethereum.decode_returndata(abi, b"")
     assert actual == (0,)
+
+
+def test_decode_returndata_list_with_1_struct(ethereum):
+    """
+    Tests a condition where an array of a list with 1 struct
+    would be turned into a raw tuple instead of the Struct class.
+    """
+    abi = MethodABI(
+        type="function",
+        name="getArrayOfStructs",
+        stateMutability="view",
+        inputs=[],
+        outputs=[
+            ABIType(
+                name="",
+                type="tuple[]",
+                components=[
+                    ABIType(name="a", type="address", components=None, internal_type=None),
+                    ABIType(name="b", type="bytes32", components=None, internal_type=None),
+                ],
+                internal_type=None,
+            )
+        ],
+    )
+    raw_data = HexBytes(
+        "0x000000000000000000000000000000000000000000000000000000000000002"
+        "00000000000000000000000000000000000000000000000000000000000000001"
+        "000000000000000000000000f39fd6e51aad88f6f4ce6ab8827279cfffb92266f"
+        "d91dc47b758f65fd0f6fe511566770c0ae3f94ff9999ceb23bfec3ac9fdc168"
+    )
+    actual = ethereum.decode_returndata(abi, raw_data)
+
+    assert len(actual) == 1
+    # The result should still be a list.
+    # There was also a bug where it was mistakenly a tuple!
+    assert isinstance(actual[0], list)
+    assert len(actual[0]) == 1
+    assert actual[0][0].a == "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266"
+    assert actual[0][0].b == HexBytes(
+        "0xfd91dc47b758f65fd0f6fe511566770c0ae3f94ff9999ceb23bfec3ac9fdc168"
+    )
 
 
 @pytest.mark.parametrize("tx_type", TransactionType)
