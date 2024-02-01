@@ -27,7 +27,7 @@
   </script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="Developing Plugins" href="developing_plugins.html" />
+    <link rel="next" title="Forking Networks" href="forking_networks.html" />
     <link rel="prev" title="Querying Data" href="data.html" /> 
 </head>
 
@@ -168,6 +168,7 @@
 </li>
 </ul>
 </li>
+<li class="toctree-l1"><a class="reference internal" href="forking_networks.html">Forking Networks</a></li>
 <li class="toctree-l1"><a class="reference internal" href="developing_plugins.html">Developing Plugins</a></li>
 <li class="toctree-l1"><a class="reference internal" href="config.html">Configure Ape</a></li>
 <li class="toctree-l1"><a class="reference internal" href="transactions.html">Making Transactions</a></li>
@@ -659,13 +660,14 @@ We can switch to a forked network by doing this:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">ape</span> <span class="kn">import</span> <span class="n">networks</span>
 
 <span class="k">def</span> <span class="nf">main</span><span class="p">():</span>
-    <span class="k">with</span> <span class="n">networks</span><span class="o">.</span><span class="n">fork</span><span class="p">(</span><span class="s2">&quot;foundry&quot;</span><span class="p">):</span>
+    <span class="k">with</span> <span class="n">networks</span><span class="o">.</span><span class="n">fork</span><span class="p">(</span><span class="n">provider_name</span><span class="o">=</span><span class="s2">&quot;foundry&quot;</span><span class="p">):</span>
         <span class="o">...</span>
         <span class="c1"># Do stuff on a local, forked version of mainnet</span>
 
     <span class="c1"># Switch back to mainnet.</span>
 </pre></div>
 </div>
+<p>Learn more about forking networks in the <a class="reference external" href="./forking_networks.html">forked-networks guide</a>.</p>
 </section>
 </section>
 </section>
@@ -675,7 +677,7 @@ We can switch to a forked network by doing this:</p>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
         <a href="data.html" class="btn btn-neutral float-left" title="Querying Data" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="developing_plugins.html" class="btn btn-neutral float-right" title="Developing Plugins" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="forking_networks.html" class="btn btn-neutral float-right" title="Forking Networks" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>
