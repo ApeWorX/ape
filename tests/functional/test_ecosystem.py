@@ -737,4 +737,6 @@ def test_default_network_when_custom_and_set_in_config(
     custom_ecosystem_config, networks, custom_network_name_0
 ):
     ecosystem = networks.get_ecosystem(CUSTOM_ECOSYSTEM_NAME)
+    # Force it to use config value (in case was set from previous test)
+    ecosystem._default_network = None
     assert ecosystem.default_network_name == custom_network_name_0
