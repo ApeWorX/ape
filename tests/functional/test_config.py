@@ -19,9 +19,9 @@ from ape_networks import CustomNetwork
 from tests.functional.conftest import PROJECT_WITH_LONG_CONTRACTS_FOLDER
 
 
-def test_deployments(networks, owner, project_with_contract):
+def test_deployments(networks, owner, vyper_contract_container):
     # First, obtain a "previously-deployed" contract.
-    instance = project_with_contract.ApeContract0.deploy(sender=owner)
+    instance = vyper_contract_container.deploy(1000200000, sender=owner)
 
     # Create a config using this new contract for a "later time".
     data = {
@@ -33,7 +33,7 @@ def test_deployments(networks, owner, project_with_contract):
     assert config.root["ethereum"]["local"][0]["address"] == instance.address
 
     # Ensure we can reference the deployment on the project.
-    deployment = project_with_contract.ApeContract0.deployments[0]
+    deployment = vyper_contract_container.deployments[0]
     assert deployment.address == instance.address
 
 
