@@ -435,6 +435,20 @@ I do this the same way as if I were changing the default transaction type on mai
 </pre></div>
 </div>
 <p>For a full list of network configurations like this (for both custom and plugin-based networks), <a class="reference external" href="#configuring-networks">see this section</a>.</p>
+<p><strong>NOTE</strong>: This also works if configuring a custom ecosystem.
+If using a custom ecosystem, use the custom ecosystem name as the top-level config key instead:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">networks</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">custom</span><span class="p">:</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">mainnet</span>
+<span class="w">      </span><span class="nt">ecosystem</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">shibarium</span>
+<span class="w">      </span><span class="nt">base_ecosystem_plugin</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">polygon</span><span class="w">  </span><span class="c1"># Closest base class.</span>
+<span class="w">      </span><span class="nt">chain_id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">109</span><span class="w">  </span><span class="c1"># This must be correct or txns will fail.</span>
+
+<span class="nt">shibarium</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">mainnet</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">default_transaction_type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0</span><span class="w">  </span><span class="c1"># Use static-fee transactions for Shibarium.</span>
+</pre></div>
+</div>
 </section>
 </section>
 <section id="custom-networks-by-cli">
