@@ -6,6 +6,8 @@ from eth_pydantic_types import HashBytes32
 from eth_typing import HexStr
 from evmchains import PUBLIC_CHAIN_META
 from hexbytes import HexBytes
+from web3.exceptions import ExtraDataLengthError
+from web3.middleware import geth_poa_middleware
 
 from ape.exceptions import (
     APINotImplementedError,
@@ -23,6 +25,11 @@ from ape_ethereum.transactions import (
 )
 from ape_geth.provider import GethDevProcess, GethNotInstalledError
 from tests.conftest import GETH_URI, geth_process_test
+
+
+@pytest.fixture
+def web3_factory(mocker):
+    return mocker.patch("ape_ethereum.provider._create_web3")
 
 
 @geth_process_test
@@ -107,15 +114,14 @@ def test_chain_id_live_network_connected_uses_web3_chain_id(mocker, geth_provide
 
 
 @geth_process_test
-def test_connect_wrong_chain_id(mocker, ethereum, geth_provider):
+def test_connect_wrong_chain_id(ethereum, geth_provider, web3_factory):
     start_network = geth_provider.network
 
     try:
         geth_provider.network = ethereum.get_network("goerli")
 
         # Ensure when reconnecting, it does not use HTTP
-        factory = mocker.patch("ape_ethereum.provider._create_web3")
-        factory.return_value = geth_provider._web3
+        web3_factory.return_value = geth_provider._web3
         expected_error_message = (
             f"Provider connected to chain ID '{geth_provider._web3.eth.chain_id}', "
             "which does not match network chain ID '5'. "
@@ -126,6 +132,27 @@ def test_connect_wrong_chain_id(mocker, ethereum, geth_provider):
             geth_provider.connect()
     finally:
         geth_provider.network = start_network
+
+
+@geth_process_test
+def test_connect_to_chain_that_started_poa(mock_web3, web3_factory, ethereum):
+    """
+    Ensure that when connecting to a chain that
+    started out as PoA, such as Goerli, we include
+    the right middleware. Note: even if the chain
+    is no longer PoA, we still need the middleware
+    to fetch blocks during the PoA portion of the chain.
+    """
+    mock_web3.eth.get_block.side_effect = ExtraDataLengthError
+    mock_web3.eth.chain_id = ethereum.goerli.chain_id
+    web3_factory.return_value = mock_web3
+    provider = ethereum.goerli.get_provider("geth")
+    provider.provider_settings = {"uri": "http://node.example.com"}  # fake
+    provider.connect()
+
+    # Verify PoA middleware was added.
+    assert mock_web3.middleware_onion.inject.call_args[0] == (geth_poa_middleware,)
+    assert mock_web3.middleware_onion.inject.call_args[1] == {"layer": 0}
 
 
 @geth_process_test
