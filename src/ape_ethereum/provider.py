@@ -8,7 +8,7 @@ from copy import copy
 from functools import cached_property
 from itertools import tee
 from pathlib import Path
-from typing import Any, Dict, Iterator, List, Literal, Optional, Union, cast
+from typing import Any, Dict, Iterator, List, Optional, Union, cast
 
 import ijson  # type: ignore
 import requests
