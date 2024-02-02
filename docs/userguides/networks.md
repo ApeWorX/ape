@@ -222,6 +222,22 @@ ethereum:
 
 For a full list of network configurations like this (for both custom and plugin-based networks), [see this section](#configuring-networks).
 
+**NOTE**: This also works if configuring a custom ecosystem.
+If using a custom ecosystem, use the custom ecosystem name as the top-level config key instead:
+
+```yaml
+networks:
+  custom:
+    - name: mainnet
+      ecosystem: shibarium
+      base_ecosystem_plugin: polygon  # Closest base class.
+      chain_id: 109  # This must be correct or txns will fail.
+
+shibarium:
+  mainnet:
+    default_transaction_type: 0  # Use static-fee transactions for Shibarium.
+```
+
 ### Custom Networks by CLI
 
 Ape also lets you connect to custom networks on-the-fly!
