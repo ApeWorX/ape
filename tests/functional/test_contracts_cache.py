@@ -9,13 +9,13 @@ from tests.conftest import explorer_test, skip_if_plugin_installed
 
 
 @pytest.fixture
-def contract_0(project_with_contract):
-    return project_with_contract.ApeContract0
+def contract_0(vyper_contract_container):
+    return vyper_contract_container
 
 
 @pytest.fixture
-def contract_1(project_with_contract):
-    return project_with_contract.ApeContract1
+def contract_1(solidity_contract_container):
+    return solidity_contract_container
 
 
 def test_instance_at(chain, contract_instance):
@@ -173,8 +173,8 @@ def test_get_deployments_local(chain, owner, contract_0, contract_1):
     chain.contracts._local_contract_types = {}
     starting_contracts_list_0 = chain.contracts.get_deployments(contract_0)
     starting_contracts_list_1 = chain.contracts.get_deployments(contract_1)
-    deployed_contract_0 = owner.deploy(contract_0)
-    deployed_contract_1 = owner.deploy(contract_1)
+    deployed_contract_0 = owner.deploy(contract_0, 900000000)
+    deployed_contract_1 = owner.deploy(contract_1, 900000001)
 
     # Act
     contracts_list_0 = chain.contracts.get_deployments(contract_0)
@@ -195,8 +195,8 @@ def test_get_deployments_local(chain, owner, contract_0, contract_1):
 def test_get_deployments_live(
     chain, owner, contract_0, contract_1, remove_disk_writes_deployments, dummy_live_network
 ):
-    deployed_contract_0 = owner.deploy(contract_0, required_confirmations=0)
-    deployed_contract_1 = owner.deploy(contract_1, required_confirmations=0)
+    deployed_contract_0 = owner.deploy(contract_0, 8000000, required_confirmations=0)
+    deployed_contract_1 = owner.deploy(contract_1, 8000001, required_confirmations=0)
 
     # Act
     my_contracts_list_0 = chain.contracts.get_deployments(contract_0)
@@ -214,12 +214,12 @@ def test_get_multiple_deployments_live(
 ):
     starting_contracts_list_0 = chain.contracts.get_deployments(contract_0)
     starting_contracts_list_1 = chain.contracts.get_deployments(contract_1)
-    initial_deployed_contract_0 = owner.deploy(contract_0, required_confirmations=0)
-    initial_deployed_contract_1 = owner.deploy(contract_1, required_confirmations=0)
-    owner.deploy(contract_0, required_confirmations=0)
-    owner.deploy(contract_1, required_confirmations=0)
-    final_deployed_contract_0 = owner.deploy(contract_0, required_confirmations=0)
-    final_deployed_contract_1 = owner.deploy(contract_1, required_confirmations=0)
+    initial_deployed_contract_0 = owner.deploy(contract_0, 700000, required_confirmations=0)
+    initial_deployed_contract_1 = owner.deploy(contract_1, 700001, required_confirmations=0)
+    owner.deploy(contract_0, 700002, required_confirmations=0)
+    owner.deploy(contract_1, 700003, required_confirmations=0)
+    final_deployed_contract_0 = owner.deploy(contract_0, 600000, required_confirmations=0)
+    final_deployed_contract_1 = owner.deploy(contract_1, 600001, required_confirmations=0)
     contracts_list_0 = chain.contracts.get_deployments(contract_0)
     contracts_list_1 = chain.contracts.get_deployments(contract_1)
     contract_type_map = {
@@ -239,11 +239,11 @@ def test_get_multiple_deployments_live(
 def test_cache_updates_per_deploy(owner, chain, contract_0, contract_1):
     # Arrange / Act
     initial_contracts = chain.contracts.get_deployments(contract_0)
-    expected_first_contract = owner.deploy(contract_0)
+    expected_first_contract = owner.deploy(contract_0, 6787678)
 
-    owner.deploy(contract_0)
-    owner.deploy(contract_0)
-    expected_last_contract = owner.deploy(contract_0)
+    owner.deploy(contract_0, 6787679)
+    owner.deploy(contract_0, 6787680)
+    expected_last_contract = owner.deploy(contract_0, 6787681)
 
     actual_contracts = chain.contracts.get_deployments(contract_0)
     first_index = len(initial_contracts)  # next index before deploys from this test
@@ -294,7 +294,8 @@ def test_get_non_contract_address(chain, owner):
 
 def test_get_attempts_to_convert(chain):
     with pytest.raises(ConversionError):
-        chain.contracts.get("test.eth")
+        # NOTE: using eth2 suffix so still works if ape-ens is installed.
+        chain.contracts.get("test.eth2")
 
 
 def test_cache_non_checksum_address(chain, vyper_contract_instance):
