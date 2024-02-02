@@ -1,8 +1,14 @@
 import pytest
+from ethpm_types import ContractType
 
 from ape import Contract
-from ape.contracts import ContractInstance
-from ape.exceptions import ArgumentsLengthError, NetworkError, ProjectError
+from ape.contracts import ContractContainer, ContractInstance
+from ape.exceptions import (
+    ArgumentsLengthError,
+    MissingDeploymentBytecodeError,
+    NetworkError,
+    ProjectError,
+)
 from ape_ethereum.ecosystem import ProxyType
 
 
@@ -73,9 +79,26 @@ def test_deploy_privately(owner, contract_container):
     assert isinstance(deploy_1, ContractInstance)
 
 
-def test_deployment_property(chain, owner, project_with_contract, eth_tester_provider):
-    initial_deployed_contract = project_with_contract.ApeContract0.deploy(sender=owner)
-    actual = project_with_contract.ApeContract0.deployments[-1].address
+@pytest.mark.parametrize("bytecode", (None, {}, {"bytecode": "0x"}))
+def test_deploy_no_deployment_bytecode(owner, bytecode):
+    """
+    https://github.com/ApeWorX/ape/issues/1904
+    """
+    expected = (
+        r"Cannot deploy: contract 'Apes' has no deployment-bytecode\. "
+        r"Are you attempting to deploy an interface\?"
+    )
+    contract_type = ContractType.model_validate(
+        {"abi": [], "contractName": "Apes", "deploymentBytecode": bytecode}
+    )
+    contract = ContractContainer(contract_type)
+    with pytest.raises(MissingDeploymentBytecodeError, match=expected):
+        contract.deploy(sender=owner)
+
+
+def test_deployments(owner, eth_tester_provider, vyper_contract_container):
+    initial_deployed_contract = vyper_contract_container.deploy(10000000, sender=owner)
+    actual = vyper_contract_container.deployments[-1].address
     expected = initial_deployed_contract.address
     assert actual == expected
 

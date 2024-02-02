@@ -4,12 +4,15 @@ import pytest
 from eip712.messages import EIP712Message
 from eth_account.messages import encode_defunct
 from eth_pydantic_types import HexBytes
+from ethpm_types import ContractType
 
 import ape
 from ape.api import ImpersonatedAccount
+from ape.contracts import ContractContainer
 from ape.exceptions import (
     AccountsError,
     AliasAlreadyInUseError,
+    MissingDeploymentBytecodeError,
     NetworkError,
     ProjectError,
     SignatureError,
@@ -281,7 +284,7 @@ def test_deploy_proxy(owner, vyper_contract_instance, proxy_contract_container, 
     assert implementation.contract_type == vyper_contract_instance.contract_type
 
 
-def test_deploy_instance(owner, vyper_contract_instance, chain, clean_contracts_cache):
+def test_deploy_instance(owner, vyper_contract_instance):
     """
     Tests against a confusing scenario where you would get a SignatureError when
     trying to deploy a ContractInstance because Ape would attempt to create a tx
@@ -295,6 +298,23 @@ def test_deploy_instance(owner, vyper_contract_instance, chain, clean_contracts_
     )
     with pytest.raises(TypeError, match=expected):
         owner.deploy(vyper_contract_instance)
+
+
+@pytest.mark.parametrize("bytecode", (None, {}, {"bytecode": "0x"}))
+def test_deploy_no_deployment_bytecode(owner, bytecode):
+    """
+    https://github.com/ApeWorX/ape/issues/1904
+    """
+    expected = (
+        r"Cannot deploy: contract 'Apes' has no deployment-bytecode\. "
+        r"Are you attempting to deploy an interface\?"
+    )
+    contract_type = ContractType.model_validate(
+        {"abi": [], "contractName": "Apes", "deploymentBytecode": bytecode}
+    )
+    contract = ContractContainer(contract_type)
+    with pytest.raises(MissingDeploymentBytecodeError, match=expected):
+        owner.deploy(contract)
 
 
 def test_send_transaction_with_bad_nonce(sender, receiver):

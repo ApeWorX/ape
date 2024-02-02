@@ -11,6 +11,7 @@ from typing import TYPE_CHECKING, Any, Collection, Dict, Iterator, List, Optiona
 import click
 from eth_typing import Hash32
 from eth_utils import humanize_hash
+from ethpm_types import ContractType
 from ethpm_types.abi import ConstructorABI, ErrorABI, MethodABI
 from rich import print as rich_print
 
@@ -75,6 +76,22 @@ class ContractDataError(ApeException):
     contract logic errors; it is more about ABI-related
     issues and alike.
     """
+
+
+class MissingDeploymentBytecodeError(ContractDataError):
+    """
+    Raised when trying to deploy an interface or empty data.
+    """
+
+    def __init__(self, contract_type: ContractType):
+        message = "Cannot deploy: contract"
+        if name := contract_type.name:
+            message = f"{message} '{name}'"
+
+        message = (
+            f"{message} has no deployment-bytecode. Are you attempting to deploy an interface?"
+        )
+        super().__init__(message)
 
 
 class ArgumentsLengthError(ContractDataError):
