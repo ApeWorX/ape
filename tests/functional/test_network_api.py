@@ -129,3 +129,25 @@ def test_config_custom_networks(
         cfg_by_get = ethereum_config.get("apenet")
         assert cfg_by_get is not None
         assert cfg_by_get.default_transaction_type == TransactionType.STATIC
+
+
+def test_config_networks_from_custom_ecosystem(
+    networks, custom_networks_config_dict, temp_config, custom_network_name_0
+):
+    data = copy.deepcopy(custom_networks_config_dict)
+    data["networks"]["custom"][0]["ecosystem"] = "custom-ecosystem"
+    data["networks"]["custom"][1]["ecosystem"] = "custom-ecosystem"
+    data["custom-ecosystem"] = {
+        custom_network_name_0: {"default_transaction_type": TransactionType.STATIC.value}
+    }
+    with temp_config(data):
+        custom_ecosystem = networks.get_ecosystem("custom-ecosystem")
+        network = custom_ecosystem.get_network("apenet")
+        ethereum_config = network.config
+        cfg_by_attr = ethereum_config.apenet
+        assert cfg_by_attr.default_transaction_type == TransactionType.STATIC
+
+        assert "apenet" in ethereum_config
+        cfg_by_get = ethereum_config.get("apenet")
+        assert cfg_by_get is not None
+        assert cfg_by_get.default_transaction_type == TransactionType.STATIC

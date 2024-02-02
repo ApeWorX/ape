@@ -211,9 +211,15 @@ class ConfigManager(BaseInterfaceModel):
             }
         )
 
+        ethereum_config_cls = None
         for plugin_name, config_class in self.plugin_manager.config_class:
             # `or {}` to handle the case when the empty config is `None`.
             user_override = user_config.pop(plugin_name, {}) or {}
+
+            # Store ethereum's class for custom network config loading.
+            if plugin_name == "ethereum":
+                ethereum_config_cls = config_class
+
             if config_class != ConfigDict:
                 # NOTE: Will raise if improperly provided keys
                 config = config_class.from_overrides(user_override)  # type: ignore
@@ -222,6 +228,22 @@ class ConfigManager(BaseInterfaceModel):
                 config = user_override
 
             configs[plugin_name] = config
+
+        # Load custom ecosystem configs.
+        if ethereum_config_cls is not None and user_config:
+            custom_ecosystem_names = {
+                x.get("ecosystem")
+                for x in configs.get("networks", {}).get("custom", [])
+                if x.get("ecosystem") and x["ecosystem"] not in configs
+            }
+            custom_ecosystem_configs = {
+                n: cfg for n, cfg in user_config.items() if n in custom_ecosystem_names
+            }
+
+            for ecosystem_name, cfg in custom_ecosystem_configs.items():
+                config = ethereum_config_cls.from_overrides(cfg)  # type: ignore
+                configs[ecosystem_name] = config
+                del user_config[ecosystem_name]
 
         remaining_keys = user_config.keys()
         if len(remaining_keys) > 0:
