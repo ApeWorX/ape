@@ -322,7 +322,7 @@ class Ethereum(EcosystemAPI):
 
     @property
     def config(self) -> EthereumConfig:
-        return cast(EthereumConfig, self.config_manager.get_config("ethereum"))
+        return cast(EthereumConfig, self.config_manager.get_config(self.name))
 
     @property
     def default_transaction_type(self) -> TransactionType:

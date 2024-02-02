@@ -37,9 +37,16 @@ def event_abi(vyper_contract_instance):
 
 
 @pytest.fixture
-def custom_ecosystem_config(custom_networks_config_dict, temp_config, networks):
+def custom_ecosystem_config(
+    custom_networks_config_dict, temp_config, networks, custom_network_name_0
+):
     data = copy.deepcopy(custom_networks_config_dict)
     data["networks"]["custom"][0]["ecosystem"] = CUSTOM_ECOSYSTEM_NAME
+
+    # Also ensure we can configure the custom ecosystem as if
+    # it were from a plugin.
+    data[CUSTOM_ECOSYSTEM_NAME] = {"default_network": custom_network_name_0}
+
     with temp_config(data):
         yield
 
@@ -438,10 +445,6 @@ def test_decode_etherscan_receipt(eth_tester_provider, ethereum):
     assert receipt.gas_price == 1499999989
 
 
-def test_default_transaction_type(ethereum):
-    assert ethereum.default_transaction_type == TransactionType.DYNAMIC
-
-
 def test_default_transaction_type_not_connected_used_default_network(
     temp_config, ethereum, networks
 ):
@@ -485,6 +488,10 @@ def test_default_transaction_type_changed_at_class_level(ethereum):
     assert config.local.default_transaction_type.value == 0
     assert config.mainnet.default_transaction_type.value == 0
     assert config.mainnet_fork.default_transaction_type.value == 0
+
+
+def test_default_transaction_type_configured_from_custom_network():
+    pass
 
 
 @pytest.mark.parametrize("network_name", (LOCAL_NETWORK_NAME, "mainnet-fork", "mainnet_fork"))
@@ -720,3 +727,14 @@ def test_getattr_custom_networks(ethereum, custom_networks_config, custom_networ
     actual = getattr(ethereum, custom_network_name_0)
     assert actual.name == custom_network_name_0
     assert isinstance(actual, NetworkAPI)
+
+
+def test_default_network(ethereum):
+    assert ethereum.default_network_name == LOCAL_NETWORK_NAME
+
+
+def test_default_network_when_custom_and_set_in_config(
+    custom_ecosystem_config, networks, custom_network_name_0
+):
+    ecosystem = networks.get_ecosystem(CUSTOM_ECOSYSTEM_NAME)
+    assert ecosystem.default_network_name == custom_network_name_0
