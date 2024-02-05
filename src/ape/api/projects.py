@@ -562,7 +562,7 @@ class DependencyAPI(ExtraAttributesMixin, BaseInterfaceModel):
                     "Try adjusting its config using `config_override` to "
                     "get Ape to recognize the project. "
                     "\nMore information: "
-                    "http://127.0.0.1:1337/ape/latest/userguides/dependencies.html#config-override"
+                    "https://docs.apeworx.io/ape/stable/userguides/dependencies.html#config-override"
                 )
 
         # Replace the dependency's manifest with the temp project's.
