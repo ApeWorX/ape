@@ -9,7 +9,8 @@ from packaging.version import Version
 from ape.cli import ape_cli_context, skip_confirmation_option
 from ape.logging import logger
 from ape.managers.config import CONFIG_FILE_NAME
-from ape.utils import github_client, load_config
+from ape.utils import load_config
+from ape.utils._github import github_client
 from ape_plugins.utils import (
     ModifyPluginResultHandler,
     PluginMetadata,
