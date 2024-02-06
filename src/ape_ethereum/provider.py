@@ -184,11 +184,9 @@ class Web3Provider(ProviderAPI, ABC):
         return pending_base_fee
 
     def _get_fee_history(self, block_number: int) -> FeeHistory:
-        # NOTE: Have to `reward_percentiles=[]` because of this bug:
-        #   https://github.com/ethereum/web3.py/issues/3184
         try:
             return self.web3.eth.fee_history(1, BlockNumber(block_number), reward_percentiles=[])
-        except MethodUnavailable as err:
+        except (MethodUnavailable, AttributeError) as err:
             raise APINotImplementedError(str(err)) from err
 
     def _get_last_base_fee(self) -> int:
