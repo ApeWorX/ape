@@ -1,4 +1,5 @@
 """Base non-pydantic validator utils"""
+
 import re
 from warnings import warn
 
