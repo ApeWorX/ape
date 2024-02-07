@@ -7,6 +7,7 @@ from typing import Any, Dict, Iterator, List, Optional, Sequence, Set, Tuple
 import click
 from packaging.specifiers import SpecifierSet
 from packaging.version import Version
+from pkg_resources import working_set
 from pydantic import field_validator, model_validator
 
 from ape.__modules__ import __modules__
@@ -118,14 +119,17 @@ def _check_pip_freeze() -> str:
 class _PipFreeze:
     cache: Optional[Set[str]] = None
 
-    def get_plugins(self, use_cache: bool = True) -> Set[str]:
+    def get_plugins(self, use_cache: bool = True, use_process: bool = False) -> Set[str]:
         if use_cache and self.cache is not None:
             return self.cache
 
-        output = _check_pip_freeze()
         lines = [
             p
-            for p in output.splitlines()
+            for p in (
+                _check_pip_freeze().splitlines()
+                if use_process
+                else [str(x).replace(" ", "==") for x in working_set]
+            )
             if p.startswith("ape-") or (p.startswith("-e") and "ape-" in p)
         ]
 
@@ -149,9 +153,9 @@ class _PipFreeze:
 _pip_freeze = _PipFreeze()
 
 
-def _pip_freeze_plugins(use_cache: bool = True):
+def _pip_freeze_plugins(use_cache: bool = True, use_process: bool = False):
     # NOTE: In a method for mocking purposes in tests.
-    return _pip_freeze.get_plugins(use_cache=use_cache)
+    return _pip_freeze.get_plugins(use_cache=use_cache, use_process=use_process)
 
 
 class PluginMetadataList(BaseModel):
@@ -234,6 +238,11 @@ class PluginMetadata(BaseInterfaceModel):
 
     version: Optional[str] = None
     """The version requested, if there is one."""
+
+    _use_subprocess_pip_freeze: bool = False
+    """
+    Set to True if verifying changes.
+    """
 
     @model_validator(mode="before")
     @classmethod
@@ -366,7 +375,9 @@ class PluginMetadata(BaseInterfaceModel):
         verify the update.
         """
 
-        for package in _pip_freeze_plugins(use_cache=False):
+        for package in _pip_freeze_plugins(
+            use_cache=False, use_process=self._use_subprocess_pip_freeze
+        ):
             parts = package.split("==")
             if len(parts) != 2:
                 continue
@@ -398,7 +409,10 @@ class PluginMetadata(BaseInterfaceModel):
 
     def check_installed(self, use_cache: bool = True):
         ape_packages = [
-            _split_name_and_version(n)[0] for n in _pip_freeze_plugins(use_cache=use_cache)
+            _split_name_and_version(n)[0]
+            for n in _pip_freeze_plugins(
+                use_cache=use_cache, use_process=self._use_subprocess_pip_freeze
+            )
         ]
         return self.package_name in ape_packages
 
