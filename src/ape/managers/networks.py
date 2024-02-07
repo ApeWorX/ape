@@ -447,6 +447,7 @@ class NetworkManager(BaseManager):
             return default_network.get_provider(provider_settings=provider_settings)
 
         elif _is_custom_network(network_choice):
+            # Custom network w/o ecosystem & network spec.
             return self.create_custom_provider(network_choice)
 
         selections = network_choice.split(":")
