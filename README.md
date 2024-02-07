@@ -204,7 +204,7 @@ To learn more about networks in Ape, see [this guide](https://docs.apeworx.io/ap
 [discord-url]: https://discord.gg/apeworx
 [licence-badge]: https://img.shields.io/github/license/ApeWorX/ape?color=blue
 [licence-url]: https://github.com/ApeWorX/ape/blob/main/LICENSE
-[pypi-badge]: https://img.shields.io/badge/pypi.org-orange
+[pypi-badge]: https://img.shields.io/pypi/dm/eth-ape?label=pypi.org
 [pypi-url]: https://pypi.org/project/eth-ape/
 [twitter-badge]: https://img.shields.io/twitter/follow/ApeFramework
 [twitter-url]: https://twitter.com/ApeFramework
