@@ -1,3 +1,9 @@
+[![Pypi.org][pypi-badge]][pypi-url]
+[![Apache licensed][licence-badge]][licence-url]
+[![Build Status][actions-badge]][actions-url]
+[![Discord chat][discord-badge]][discord-url]
+[![Twitter][twitter-badge]][twitter-url]
+
 # Overview
 
 **Ape Framework** is an easy-to-use Web3 development tool.
@@ -6,7 +12,7 @@ With our **modular plugin system**, Ape supports multiple contract languages and
 
 Ape is built by [ApeWorX LTD](https://www.apeworx.io/).
 
-Join our [ApeWorX Discord server](https://discord.gg/apeworx) to stay up to date on new releases, plugins and tutorials.
+Join our [ApeWorX Discord server][discord-url] to stay up to date on new releases, plugins and tutorials.
 
 If you want to just get started, jump down to the [Playing with Ape](#playing-with-ape).
 
@@ -191,3 +197,14 @@ with networks.ethereum.mainnet.use_provider("infura"):
 ```
 
 To learn more about networks in Ape, see [this guide](https://docs.apeworx.io/ape/stable/commands/networks.html).
+
+[actions-badge]: https://github.com/ApeWorX/ape/actions/workflows/test.yaml/badge.svg
+[actions-url]: https://github.com/ApeWorX/ape/actions?query=branch%3Amain+event%3Apush
+[discord-badge]: https://img.shields.io/discord/922917176040640612.svg?logo=discord&style=flat-square
+[discord-url]: https://discord.gg/apeworx
+[licence-badge]: https://img.shields.io/github/license/ApeWorX/ape?color=blue
+[licence-url]: https://github.com/ApeWorX/ape/blob/main/LICENSE
+[pypi-badge]: https://img.shields.io/badge/pypi.org-orange
+[pypi-url]: https://pypi.org/project/eth-ape/
+[twitter-badge]: https://img.shields.io/twitter/follow/ApeFramework
+[twitter-url]: https://twitter.com/ApeFramework
