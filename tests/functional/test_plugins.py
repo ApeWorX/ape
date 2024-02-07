@@ -267,7 +267,7 @@ class TestPluginGroup:
 
 def test_pip_freeze_includes_version_when_available():
     pip_freeze = _PipFreeze()
-    actual = pip_freeze.get_plugins()
+    actual = pip_freeze.get_plugins(use_process=True)
     expected = {f"ape-{INSTALLED_PLUGINS[0]}", f"ape-{THIRD_PARTY[0]}==0.{ape_version.minor}.0"}
     assert actual == expected
 
