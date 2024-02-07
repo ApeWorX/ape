@@ -23,7 +23,7 @@ from ape_ethereum.transactions import (
     TransactionStatusEnum,
     TransactionType,
 )
-from ape_geth.provider import GethDevProcess, GethNotInstalledError
+from ape_geth.provider import GethDevProcess, GethNotInstalledError, _RPCFactory
 from tests.conftest import GETH_URI, geth_process_test
 
 
@@ -40,7 +40,7 @@ def test_uri(geth_provider):
 
 
 @geth_process_test
-def test_default_public_uri(config):
+def test_uri_localhost_not_running_uses_random_default(config):
     cfg = config.get_config("geth").ethereum.mainnet
     assert cfg["uri"] in PUBLIC_CHAIN_META["ethereum"]["mainnet"]["rpc"]
     cfg = config.get_config("geth").ethereum.sepolia

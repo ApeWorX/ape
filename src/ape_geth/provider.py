@@ -472,6 +472,10 @@ class GethDev(EthereumNodeProvider, TestProviderAPI, SubprocessProvider):
 class Geth(EthereumNodeProvider):
     @property
     def uri(self) -> str:
+        if "uri" in self.provider_settings:
+            # If specifying in Python, user no matter what.
+            return self.provider_settings["uri"]
+
         uri = super().uri
         ecosystem = self.network.ecosystem.name
         network = self.network.name
