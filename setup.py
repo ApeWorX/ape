@@ -36,6 +36,7 @@ extras_require = {
         "mdformat-pyproject>=0.0.1",  # Allows configuring in pyproject.toml
     ],
     "doc": [
+        "pygments>=2.17.0,<3",  # Needed for the Vyper lexer
         "myst-parser>=1.0.0,<2",  # Parse markdown docs
         "sphinx-click>=4.4.0,<5",  # For documenting CLI
         "Sphinx>=6.1.3,<7",  # Documentation generator
