@@ -17,6 +17,7 @@ from ape.exceptions import (
     TransactionNotFoundError,
 )
 from ape_ethereum.ecosystem import Block
+from ape_ethereum.provider import DEFAULT_SETTINGS
 from ape_ethereum.transactions import (
     AccessList,
     AccessListTransaction,
@@ -40,7 +41,7 @@ def test_uri(geth_provider):
 
 
 @geth_process_test
-def test_default_public_uri(config):
+def test_uri_localhost_not_running_uses_random_default(config):
     cfg = config.get_config("geth").ethereum.mainnet
     assert cfg["uri"] in PUBLIC_CHAIN_META["ethereum"]["mainnet"]["rpc"]
     cfg = config.get_config("geth").ethereum.sepolia
@@ -48,14 +49,22 @@ def test_default_public_uri(config):
 
 
 @geth_process_test
-def test_uri_uses_value_from_config(geth_provider, temp_config):
+def test_uri_when_configured(geth_provider, temp_config, ethereum):
     settings = geth_provider.provider_settings
     geth_provider.provider_settings = {}
     value = "https://value/from/config"
-    config = {"geth": {"ethereum": {"local": {"uri": value}}}}
+    config = {"geth": {"ethereum": {"local": {"uri": value}, "mainnet": {"uri": value}}}}
     try:
         with temp_config(config):
+            # Assert we use the config value.
             assert geth_provider.uri == value
+
+            # Assert provider settings takes precedence.
+            expected = DEFAULT_SETTINGS["uri"]
+            network = ethereum.get_network("mainnet")
+            provider = network.get_provider("geth", provider_settings={"uri": expected})
+            assert provider.uri == expected
+
     finally:
         geth_provider.provider_settings = settings
 
