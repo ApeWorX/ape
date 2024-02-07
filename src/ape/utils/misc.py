@@ -14,7 +14,6 @@ from eth_utils import is_0x_prefixed
 from importlib_metadata import PackageNotFoundError, distributions, packages_distributions
 from importlib_metadata import version as version_metadata
 from packaging.specifiers import SpecifierSet
-from requests import head
 from tqdm.auto import tqdm  # type: ignore
 
 from ape.exceptions import APINotImplementedError, ProviderNotConnectedError

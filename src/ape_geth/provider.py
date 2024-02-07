@@ -473,7 +473,7 @@ class Geth(EthereumNodeProvider):
     @property
     def uri(self) -> str:
         if "uri" in self.provider_settings:
-            # If specifying in Python, user no matter what.
+            # If specifying in Python, use no matter what.
             return self.provider_settings["uri"]
 
         uri = super().uri
@@ -484,7 +484,7 @@ class Geth(EthereumNodeProvider):
         if not uri or uri == DEFAULT_SETTINGS["uri"]:
             # Do not override explicit configuration
             if ecosystem in self.config:
-                # Shape of this is odd.  Pydantic model containing dicts
+                # Shape of this is odd. Pydantic model containing dicts
                 if network_config := self.config[ecosystem].get(network):
                     if "uri" in network_config:
                         return network_config["uri"]

@@ -17,13 +17,14 @@ from ape.exceptions import (
     TransactionNotFoundError,
 )
 from ape_ethereum.ecosystem import Block
+from ape_ethereum.provider import DEFAULT_SETTINGS
 from ape_ethereum.transactions import (
     AccessList,
     AccessListTransaction,
     TransactionStatusEnum,
     TransactionType,
 )
-from ape_geth.provider import GethDevProcess, GethNotInstalledError, _RPCFactory
+from ape_geth.provider import GethDevProcess, GethNotInstalledError
 from tests.conftest import GETH_URI, geth_process_test
 
 
@@ -48,14 +49,23 @@ def test_uri_localhost_not_running_uses_random_default(config):
 
 
 @geth_process_test
-def test_uri_uses_value_from_config(geth_provider, temp_config):
+def test_uri_when_configured(geth_provider, temp_config, ethereum):
     settings = geth_provider.provider_settings
     geth_provider.provider_settings = {}
     value = "https://value/from/config"
-    config = {"geth": {"ethereum": {"local": {"uri": value}}}}
+    config = {"geth": {"ethereum": {"local": {"uri": value}, "mainnet": {"uri": value}}}}
     try:
         with temp_config(config):
+            # Assert we use the config value.
             assert geth_provider.uri == value
+
+            # Assert provider settings takes precedence.
+            expected = DEFAULT_SETTINGS["uri"]
+            for name in ("local", "mainnet"):
+                network = ethereum.get_network(name)
+                provider = network.get_provider("geth", provider_settings={"uri": expected})
+                assert provider.uri == expected
+
     finally:
         geth_provider.provider_settings = settings
 
