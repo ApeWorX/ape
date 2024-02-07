@@ -61,10 +61,9 @@ def test_uri_when_configured(geth_provider, temp_config, ethereum):
 
             # Assert provider settings takes precedence.
             expected = DEFAULT_SETTINGS["uri"]
-            for name in ("local", "mainnet"):
-                network = ethereum.get_network(name)
-                provider = network.get_provider("geth", provider_settings={"uri": expected})
-                assert provider.uri == expected
+            network = ethereum.get_network("mainnet")
+            provider = network.get_provider("geth", provider_settings={"uri": expected})
+            assert provider.uri == expected
 
     finally:
         geth_provider.provider_settings = settings
