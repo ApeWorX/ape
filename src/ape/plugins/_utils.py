@@ -165,6 +165,12 @@ class PluginMetadataList(BaseModel):
     third_party: "PluginGroup"
 
     @classmethod
+    def load(cls, plugin_manager):
+        registered_plugins = plugin_manager.registered_plugins
+        available_plugins = github_client.available_plugins
+        return cls.from_package_names(registered_plugins.union(available_plugins))
+
+    @classmethod
     def from_package_names(cls, packages: Sequence[str]) -> "PluginMetadataList":
         PluginMetadataList.model_rebuild()
         core = PluginGroup(plugin_type=PluginType.CORE)
@@ -174,13 +180,13 @@ class PluginMetadataList(BaseModel):
         for name in {p for p in packages}:
             plugin = PluginMetadata(name=name.strip())
             if plugin.in_core:
-                core.plugins.append(plugin)
+                core.plugins[name] = plugin
             elif plugin.is_available and not plugin.is_installed:
-                available.plugins.append(plugin)
+                available.plugins[name] = plugin
             elif plugin.is_installed and not plugin.in_core and not plugin.is_available:
-                third_party.plugins.append(plugin)
+                third_party.plugins[name] = plugin
             elif plugin.is_installed:
-                installed.plugins.append(plugin)
+                installed.plugins[name] = plugin
             else:
                 logger.error(f"'{plugin.name}' is not a plugin.")
 
@@ -194,10 +200,23 @@ class PluginMetadataList(BaseModel):
 
     @property
     def all_plugins(self) -> Iterator["PluginMetadata"]:
-        yield from self.core.plugins
-        yield from self.available.plugins
-        yield from self.installed.plugins
-        yield from self.third_party.plugins
+        yield from self.core.plugins.values()
+        yield from self.available.plugins.values()
+        yield from self.installed.plugins.values()
+        yield from self.third_party.plugins.values()
+
+    def get_plugin(self, name: str) -> Optional["PluginMetadata"]:
+        name = name if name.startswith("ape_") else f"ape_{name}"
+        if name in self.core.plugins:
+            return self.core.plugins[name]
+        elif name in self.installed.plugins:
+            return self.installed.plugins[name]
+        elif name in self.third_party.plugins:
+            return self.third_party.plugins[name]
+        elif name in self.available.plugins:
+            return self.available.plugins[name]
+
+        return None
 
 
 def _get_available_plugins():
@@ -516,7 +535,7 @@ class PluginGroup(BaseModel):
     """
 
     plugin_type: PluginType
-    plugins: List[PluginMetadata] = []
+    plugins: Dict[str, PluginMetadata] = {}
 
     def __bool__(self) -> bool:
         return len(self.plugins) > 0
@@ -547,7 +566,7 @@ class PluginGroup(BaseModel):
 
     @property
     def plugin_names(self) -> List[str]:
-        return [x.name for x in self.plugins]
+        return [x.name for x in self.plugins.values()]
 
     def to_str(self, max_length: Optional[int] = None, include_version: bool = True) -> str:
         title = f"{self.name} Plugins"
@@ -556,7 +575,7 @@ class PluginGroup(BaseModel):
 
         lines = [title]
         max_length = self.max_name_length if max_length is None else max_length
-        plugins_sorted = sorted(self.plugins, key=lambda p: p.name)
+        plugins_sorted = sorted(self.plugins.values(), key=lambda p: p.name)
         for plugin in plugins_sorted:
             line = plugin.name
             if include_version:
@@ -574,7 +593,7 @@ class PluginGroup(BaseModel):
         if not self.plugins:
             return 0
 
-        return max(len(x.name) for x in self.plugins)
+        return max(len(x) for x in self.plugin_names)
 
 
 class ApePluginsRepr:

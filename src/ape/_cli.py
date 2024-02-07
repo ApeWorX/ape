@@ -1,7 +1,8 @@
 import difflib
 import re
 import sys
-from typing import Any, Dict, List, Optional
+from gettext import gettext
+from typing import Any, Dict, List, Optional, Tuple
 
 import click
 import importlib_metadata as metadata
@@ -11,6 +12,7 @@ from ape.cli import ape_cli_context
 from ape.exceptions import Abort, ApeException, handle_ape_exception
 from ape.logging import logger
 from ape.plugins import clean_plugin_name
+from ape.plugins._utils import PluginMetadataList
 from ape.utils.basemodel import ManagerAccessMixin
 
 _DIFFLIB_CUT_OFF = 0.6
@@ -30,6 +32,47 @@ def display_config(ctx, param, value):
 class ApeCLI(click.MultiCommand):
     _commands: Optional[Dict] = None
     _CLI_GROUP_NAME = "ape_cli_subcommands"
+
+    def format_commands(self, ctx, formatter) -> None:
+        commands = []
+        for subcommand in self.list_commands(ctx):
+            cmd = self.get_command(ctx, subcommand)
+            if cmd is None or cmd.hidden:
+                continue
+
+            commands.append((subcommand, cmd))
+
+        # Allow for 3 times the default spacing.
+        if len(commands):
+            limit = formatter.width - 6 - max(len(cmd[0]) for cmd in commands)
+
+            # Split the commands into 3 sections.
+            sections: Dict[str, List[Tuple[str, str]]] = {
+                "Core": [],
+                "Plugin": [],
+                "3rd-Party Plugin": [],
+            }
+            metadata = PluginMetadataList.load(ManagerAccessMixin.plugin_manager)
+
+            for cli_name, cmd in commands:
+                help = cmd.get_short_help_str(limit)
+                plugin = metadata.get_plugin(cli_name)
+                if not plugin:
+                    continue
+
+                if plugin.in_core:
+                    sections["Core"].append((cli_name, help))
+                elif plugin.is_installed and not plugin.is_third_party:
+                    sections["Plugin"].append((cli_name, help))
+                else:
+                    sections["3rd-Party Plugin"].append((cli_name, help))
+
+            for title, rows in sections.items():
+                if not rows:
+                    continue
+
+                with formatter.section(gettext(f"{title} Commands")):
+                    formatter.write_dl(rows)
 
     def invoke(self, ctx) -> Any:
         try:

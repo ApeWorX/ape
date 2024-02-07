@@ -13,7 +13,8 @@ from .compiler import CompilerPlugin
 from .config import Config
 from .converter import ConversionPlugin
 from .network import EcosystemPlugin, ExplorerPlugin, NetworkPlugin, ProviderPlugin
-from .pluggy_patch import PluginType, hookimpl, plugin_manager
+from .pluggy_patch import PluginType, hookimpl
+from .pluggy_patch import plugin_manager as pluggy_manager
 from .project import DependencyPlugin, ProjectPlugin
 from .query import QueryPlugin
 
@@ -40,7 +41,7 @@ class AllPluginHooks(
 
 
 # All hookspecs are registered
-plugin_manager.add_hookspecs(AllPluginHooks)
+pluggy_manager.add_hookspecs(AllPluginHooks)
 
 
 def clean_plugin_name(name: str) -> str:
@@ -131,11 +132,11 @@ class PluginManager:
         #  plugin registration occurs. Registration only happens once.
         self._register_plugins()
 
-        if not hasattr(plugin_manager.hook, attr_name):
+        if not hasattr(pluggy_manager.hook, attr_name):
             raise ApeAttributeError(f"{PluginManager.__name__} has no attribute '{attr_name}'.")
 
         # Do this to get access to the package name
-        hook_fn = getattr(plugin_manager.hook, attr_name)
+        hook_fn = getattr(pluggy_manager.hook, attr_name)
         hookimpls = hook_fn.get_hookimpls()
 
         def get_plugin_name_and_hookfn(h):
@@ -157,7 +158,7 @@ class PluginManager:
     @property
     def registered_plugins(self) -> Set[str]:
         self._register_plugins()
-        return {x[0] for x in plugin_manager.list_name_plugin()}
+        return {x[0] for x in pluggy_manager.list_name_plugin()}
 
     @functools.cached_property
     def _plugin_modules(self) -> Tuple[str, ...]:
@@ -185,7 +186,7 @@ class PluginManager:
         for module_name in self._plugin_modules:
             try:
                 module = importlib.import_module(module_name)
-                plugin_manager.register(module)
+                pluggy_manager.register(module)
             except Exception as err:
                 if module_name in __modules__:
                     # Always raise core plugin registration errors.

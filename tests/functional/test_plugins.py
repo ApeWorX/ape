@@ -3,8 +3,7 @@ from unittest import mock
 
 import pytest
 
-from ape_plugins.exceptions import PluginVersionError
-from ape_plugins.utils import (
+from ape.plugins._utils import (
     ApePluginsRepr,
     ModifyPluginResultHandler,
     PluginGroup,
@@ -14,6 +13,7 @@ from ape_plugins.utils import (
     _PipFreeze,
     ape_version,
 )
+from ape_plugins.exceptions import PluginVersionError
 
 CORE_PLUGINS = ("run",)
 AVAILABLE_PLUGINS = ("available", "installed")
@@ -34,7 +34,7 @@ def get_pip_freeze_output(version: str):
 @pytest.fixture(autouse=True)
 def mock_pip_freeze(mocker):
     def fn(version: str):
-        patch = mocker.patch("ape_plugins.utils._check_pip_freeze")
+        patch = mocker.patch("ape.plugins._utils._check_pip_freeze")
         patch.return_value = get_pip_freeze_output(version)
         return patch
 
@@ -43,7 +43,7 @@ def mock_pip_freeze(mocker):
 
 @pytest.fixture(autouse=True)
 def plugin_test_env(mocker, mock_pip_freeze):
-    root = "ape_plugins.utils"
+    root = "ape.plugins._utils"
 
     # Prevent calling out to GitHub
     gh_mock = mocker.patch(f"{root}._get_available_plugins")
@@ -258,7 +258,7 @@ class TestPluginGroup:
         """
         Exceptions CANNOT happen in a repr!
         """
-        patch = mocker.patch("ape_plugins.utils.PluginGroup.name", new_callable=mock.PropertyMock)
+        patch = mocker.patch("ape.plugins._utils.PluginGroup.name", new_callable=mock.PropertyMock)
         patch.side_effect = ValueError("repr fail test")
         group = PluginGroup(plugin_type=PluginType.INSTALLED)
 

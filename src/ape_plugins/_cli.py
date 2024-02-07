@@ -9,8 +9,7 @@ from packaging.version import Version
 from ape.cli import ape_cli_context, skip_confirmation_option
 from ape.logging import logger
 from ape.managers.config import CONFIG_FILE_NAME
-from ape.utils import github_client, load_config
-from ape_plugins.utils import (
+from ape.plugins._utils import (
     ModifyPluginResultHandler,
     PluginMetadata,
     PluginMetadataList,
@@ -18,6 +17,7 @@ from ape_plugins.utils import (
     _pip_freeze,
     ape_version,
 )
+from ape.utils import load_config
 
 
 @click.group(short_help="Manage ape plugins")
@@ -100,9 +100,7 @@ def _display_all_callback(ctx, param, value):
 )
 @ape_cli_context()
 def _list(cli_ctx, to_display):
-    registered_plugins = cli_ctx.plugin_manager.registered_plugins
-    available_plugins = github_client.available_plugins
-    metadata = PluginMetadataList.from_package_names(registered_plugins.union(available_plugins))
+    metadata = PluginMetadataList.load(cli_ctx.plugin_manager)
     if output := metadata.to_str(include=to_display):
         click.echo(output)
         if not metadata.installed and not metadata.third_party:
