@@ -177,7 +177,7 @@ def test_dependency_missing_sources():
         rf"No source files found in dependency '{name}'\. "
         r"Try adjusting its config using `config_override` to get Ape to recognize the project\. "
         r"\nMore information: "
-        r"http://127.0.0.1:1337/ape/latest/userguides/dependencies\.html#config-override"
+        r"https://docs.apeworx.io/ape/stable/userguides/dependencies.html#config-override"
     )
     with tempfile.TemporaryDirectory() as temp_dir:
         dependency = LocalDependency(name=name, local=temp_dir)
