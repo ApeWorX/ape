@@ -4,7 +4,7 @@ from pathlib import Path
 import click
 
 from ape.cli import ape_cli_context
-from ape.utils import github_client
+from ape.utils._github import github_client
 
 
 @click.command(short_help="Initalize an ape project")
@@ -19,7 +19,8 @@ def cli(cli_ctx, github):
     https://docs.apeworx.io/ape/stable/userguides/config.html
     """
     if github:
-        github_client.clone_repo(github, Path.cwd())
+        org_name, repo_name = github.split("/")
+        github_client.clone_repo(org_name, repo_name, Path.cwd())
         shutil.rmtree(Path.cwd() / ".git")
 
     else:
