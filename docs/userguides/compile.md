@@ -85,11 +85,20 @@ compile:
 ## Settings
 
 Generally, configure compiler plugins using your `ape-config.yaml` file.
-One setting that applies to many compiler plugins is `compiler_cache_folder`, which holds dependency source files the compiler uses when compiling your contracts.
+One setting that applies to many compiler plugins is `cache_folder`, which holds dependency source files the compiler uses when compiling your contracts.
 By default, the folder is in your `contracts/.cache` folder but there are times you may want to move this to another location.
+Paths are relative to the project directory.
+For instance, to move the dependency cahce to the root project directory:
 
 ```yaml
-compiler_cache_folder: .cache
+compile:
+   cache_folder: .cache
+```
+
+```{caution}
+Changing the location of the dependency cache folder may alter the the output bytecode of your contracts from some compilers.
+Specifically, the [solc compiler will apend a hash of the input metadata to the contract bytecode](https://docs.soliditylang.org/en/latest/metadata.html#encoding-of-the-metadata-hash-in-the-bytecode) which will change with contract path or compiler settings changes.
+This may impact things like contract verification on existing projects.
 ```
 
 As another example, when using the `vyper` plugin, you can configure settings under the `vyper` key:
