@@ -45,7 +45,7 @@ class Config(PluginConfig):
         if self._config_manager.contracts_folder not in self.cache_folder.parents:
             return self._config_manager.PROJECT_FOLDER
 
-        # Otherwise, we're defaulting to contracts folder for backwards compatibility. Chaning this
+        # Otherwise, we're defaulting to contracts folder for backwards compatibility. Changing this
         # will cause existing projects to compile to different bytecode.
         return self._config_manager.contracts_folder
 
