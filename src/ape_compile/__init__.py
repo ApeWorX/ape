@@ -68,7 +68,7 @@ class Config(PluginConfig):
 
         # Do not allow escape of the project folder for security and functionality reasons. Paths
         # outside the relative compilation root are not portable and will cause bytecode changes.
-        if project_folder not in self.cache_folder.parents:
+        if project_folder not in self.cache_folder.resolve().parents:
             raise ValueError("cache_folder must be a child of the project directory")
 
     @field_validator("exclude", mode="before")
