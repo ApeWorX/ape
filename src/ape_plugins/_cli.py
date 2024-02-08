@@ -9,8 +9,7 @@ from packaging.version import Version
 from ape.cli import ape_cli_context, skip_confirmation_option
 from ape.logging import logger
 from ape.managers.config import CONFIG_FILE_NAME
-from ape.utils import github_client, load_config
-from ape_plugins.utils import (
+from ape.plugins._utils import (
     ModifyPluginResultHandler,
     PluginMetadata,
     PluginMetadataList,
@@ -18,6 +17,7 @@ from ape_plugins.utils import (
     _pip_freeze,
     ape_version,
 )
+from ape.utils import load_config
 
 
 @click.group(short_help="Manage ape plugins")
@@ -40,26 +40,39 @@ def plugins_argument():
         if file_path.is_file():
             config = load_config(file_path)
             if plugins := config.get("plugins"):
-                return [PluginMetadata.model_validate(d) for d in plugins]
+                res = [PluginMetadata.model_validate(d) for d in plugins]
+                for itm in res:
+                    itm._use_subprocess_pip_freeze = True
+
+                return res
 
         ctx.obj.logger.warning(f"No plugins found at '{file_path}'.")
         return []
 
     def callback(ctx, param, value: Tuple[str]):
+        res = []
         if not value:
             ctx.obj.abort("You must give at least one requirement to install.")
 
         elif len(value) == 1:
             # User passed in a path to a file.
             file_path = Path(value[0]).expanduser().resolve()
-            return (
+            res = (
                 load_from_file(ctx, file_path)
                 if file_path.exists()
-                else [PluginMetadata(name=v) for v in value[0].split(" ")]
+                else [
+                    PluginMetadata(name=v, _use_subprocess_pip_freeze=True)
+                    for v in value[0].split(" ")
+                ]
             )
 
         else:
-            return [PluginMetadata(name=v) for v in value]
+            res = [PluginMetadata(name=v, _use_subprocess_pip_freeze=True) for v in value]
+
+        for itm in res:
+            itm._use_subprocess_pip_freeze = True
+
+        return res
 
     return click.argument(
         "plugins",
@@ -100,9 +113,7 @@ def _display_all_callback(ctx, param, value):
 )
 @ape_cli_context()
 def _list(cli_ctx, to_display):
-    registered_plugins = cli_ctx.plugin_manager.registered_plugins
-    available_plugins = github_client.available_plugins
-    metadata = PluginMetadataList.from_package_names(registered_plugins.union(available_plugins))
+    metadata = PluginMetadataList.load(cli_ctx.plugin_manager)
     if output := metadata.to_str(include=to_display):
         click.echo(output)
         if not metadata.installed and not metadata.third_party:
@@ -231,7 +242,7 @@ def _change_version(spec: str):
     # This will also update core Ape.
     # NOTE: It is possible plugins may depend on each other and may update in
     #   an order causing some error codes to pop-up, so we ignore those for now.
-    for plugin in _pip_freeze.get_plugins():
+    for plugin in _pip_freeze.get_plugins(use_process=True):
         logger.info(f"Updating {plugin} ...")
         name = plugin.split("=")[0].strip()
         subprocess.call([sys.executable, "-m", "pip", "install", f"{name}{spec}", "--quiet"])

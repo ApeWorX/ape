@@ -1,6 +1,6 @@
 import tempfile
 from pathlib import Path
-from typing import Dict, Union
+from typing import Dict, Optional, Union
 
 import pytest
 from pydantic_settings import SettingsConfigDict
@@ -19,21 +19,30 @@ from ape_networks import CustomNetwork
 from tests.functional.conftest import PROJECT_WITH_LONG_CONTRACTS_FOLDER
 
 
-def test_deployments(networks, owner, project_with_contract):
+def test_deployments(networks_connected_to_tester, owner, vyper_contract_container, config):
+    networks = networks_connected_to_tester  # Connection needs to lookup config.
+
     # First, obtain a "previously-deployed" contract.
-    instance = project_with_contract.ApeContract0.deploy(sender=owner)
+    instance = vyper_contract_container.deploy(1000200000, sender=owner)
+    address = instance.address
 
     # Create a config using this new contract for a "later time".
     data = {
-        **_create_deployments(address=instance.address),
+        **_create_deployments(address=address, contract_name=instance.contract_type.name),
         "valid_ecosystems": {"ethereum": networks.ethereum},
         "valid_networks": [LOCAL_NETWORK_NAME],
     }
-    config = DeploymentConfigCollection(root=data)
-    assert config.root["ethereum"]["local"][0]["address"] == instance.address
+    deploy_config = DeploymentConfigCollection(root=data)
+    assert deploy_config.root["ethereum"]["local"][0]["address"] == address
 
-    # Ensure we can reference the deployment on the project.
-    deployment = project_with_contract.ApeContract0.deployments[0]
+    orig = config.deployments
+    config.deployments = deploy_config
+    try:
+        # Ensure we can reference the deployment on the contract.
+        deployment = vyper_contract_container.deployments[0]
+    finally:
+        config.deployments = orig
+
     assert deployment.address == instance.address
 
 
@@ -71,13 +80,14 @@ def _create_deployments(
     ecosystem_name: str = "ethereum",
     network_name: str = "local",
     address: Union[int, str] = "0x0C25212C557D00024B7CA3DF3238683A35541354",
+    contract_name: Optional[str] = "MyContract",
 ) -> Dict:
     return {
         ecosystem_name: {
             network_name: [
                 {
                     "address": address,
-                    "contract_type": "MyContract",
+                    "contract_type": contract_name,
                 }
             ]
         }

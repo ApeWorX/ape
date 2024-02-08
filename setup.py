@@ -19,7 +19,7 @@ extras_require = {
         "hypothesis-jsonschema==0.19.0",  # JSON Schema fuzzer extension
     ],
     "lint": [
-        "black>=23.12.1,<24",  # Auto-formatter and linter
+        "black>=24.1.1,<25",  # Auto-formatter and linter
         "mypy>=1.8.0,<2",  # Static type analyzer
         "types-PyYAML",  # Needed due to mypy typeshed
         "types-requests",  # Needed due to mypy typeshed
@@ -36,6 +36,7 @@ extras_require = {
         "mdformat-pyproject>=0.0.1",  # Allows configuring in pyproject.toml
     ],
     "doc": [
+        "pygments>=2.17.0,<3",  # Needed for the Vyper lexer
         "myst-parser>=1.0.0,<2",  # Parse markdown docs
         "sphinx-click>=4.4.0,<5",  # For documenting CLI
         "Sphinx>=6.1.3,<7",  # Documentation generator
@@ -121,7 +122,7 @@ setup(
         "eth-typing>=3.5.2,<4",
         "eth-utils>=2.3.1,<3",
         "py-geth>=4.2.0,<5",
-        "web3[tester]>=6.12.0,<7",
+        "web3[tester]>=6.15.1,<7",
         # ** Dependencies maintained by ApeWorX **
         "eip712>=0.2.3,<0.4",
         "ethpm-types>=0.6.7,<0.7",

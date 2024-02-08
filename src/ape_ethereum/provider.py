@@ -184,11 +184,9 @@ class Web3Provider(ProviderAPI, ABC):
         return pending_base_fee
 
     def _get_fee_history(self, block_number: int) -> FeeHistory:
-        # NOTE: Have to `reward_percentiles=[]` because of this bug:
-        #   https://github.com/ethereum/web3.py/issues/3184
         try:
             return self.web3.eth.fee_history(1, BlockNumber(block_number), reward_percentiles=[])
-        except MethodUnavailable as err:
+        except (MethodUnavailable, AttributeError) as err:
             raise APINotImplementedError(str(err)) from err
 
     def _get_last_base_fee(self) -> int:
@@ -1219,7 +1217,6 @@ class EthereumNodeProvider(Web3Provider, ABC):
             logger.info(f"Connecting to a '{client_name}' node.")
 
         self.web3.eth.set_gas_price_strategy(rpc_gas_price_strategy)
-
         # Check for chain errors, including syncing
         try:
             chain_id = self.web3.eth.chain_id
@@ -1230,15 +1227,24 @@ class EthereumNodeProvider(Web3Provider, ABC):
                 else "Error getting chain id."
             )
 
-        try:
-            block = self.web3.eth.get_block("latest")
-        except ExtraDataLengthError:
-            is_likely_poa = True
-        else:
-            is_likely_poa = (
-                "proofOfAuthorityData" in block
-                or len(block.get("extraData", "")) > MAX_EXTRADATA_LENGTH
-            )
+        is_likely_poa = False
+
+        # NOTE: We have to check both earliest and latest
+        #   because if the chain was _ever_ PoA, we need
+        #   this middleware.
+        for option in ("earliest", "latest"):
+            try:
+                block = self.web3.eth.get_block(option)  # type: ignore[arg-type]
+            except ExtraDataLengthError:
+                is_likely_poa = True
+                break
+            else:
+                is_likely_poa = (
+                    "proofOfAuthorityData" in block
+                    or len(block.get("extraData", "")) > MAX_EXTRADATA_LENGTH
+                )
+                if is_likely_poa:
+                    break
 
         if is_likely_poa and geth_poa_middleware not in self.web3.middleware_onion:
             self.web3.middleware_onion.inject(geth_poa_middleware, layer=0)

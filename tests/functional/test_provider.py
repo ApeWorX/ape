@@ -388,8 +388,8 @@ def test_base_fee(eth_tester_provider):
 
     # NOTE: Mostly doing this to ensure we are calling the fee history
     #   RPC correctly. There was a bug where we were not.
-    with pytest.raises(APINotImplementedError):
-        _ = eth_tester_provider._get_fee_history(0)
+    actual = eth_tester_provider._get_fee_history(0)
+    assert "baseFeePerGas" in actual
 
 
 def test_create_access_list(eth_tester_provider, vyper_contract_instance, owner):

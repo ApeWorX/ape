@@ -322,7 +322,7 @@ class Ethereum(EcosystemAPI):
 
     @property
     def config(self) -> EthereumConfig:
-        return cast(EthereumConfig, self.config_manager.get_config("ethereum"))
+        return cast(EthereumConfig, self.config_manager.get_config(self.name))
 
     @property
     def default_transaction_type(self) -> TransactionType:
@@ -887,9 +887,7 @@ class Ethereum(EcosystemAPI):
                         value[struct_key] = (
                             self.decode_address(struct_val)
                             if struct_type == "address"
-                            else HexBytes(struct_val)
-                            if "bytes" in struct_type
-                            else struct_val
+                            else HexBytes(struct_val) if "bytes" in struct_type else struct_val
                         )
                     converted_arguments[key] = value
 

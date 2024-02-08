@@ -434,12 +434,10 @@ class _LazySequence(Sequence[_T]):
         self.cache: List = []
 
     @overload
-    def __getitem__(self, index: int) -> _T:
-        ...
+    def __getitem__(self, index: int) -> _T: ...
 
     @overload
-    def __getitem__(self, index: slice) -> Sequence[_T]:
-        ...
+    def __getitem__(self, index: slice) -> Sequence[_T]: ...
 
     def __getitem__(self, index: Union[int, slice]) -> Union[_T, Sequence[_T]]:
         if isinstance(index, int):

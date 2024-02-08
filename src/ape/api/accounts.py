@@ -14,6 +14,7 @@ from ape.exceptions import (
     AccountsError,
     AliasAlreadyInUseError,
     MethodNonPayableError,
+    MissingDeploymentBytecodeError,
     SignatureError,
     TransactionError,
 )
@@ -238,6 +239,10 @@ class AccountAPI(BaseInterfaceModel, BaseAddress):
                 "such as 'project.MyContract' where 'MyContract' is the name of "
                 "a contract in your project."
             )
+
+        bytecode = contract.contract_type.deployment_bytecode
+        if not bytecode or bytecode.bytecode in (None, "", "0x"):
+            raise MissingDeploymentBytecodeError(contract.contract_type)
 
         txn = contract(*args, **kwargs)
         if kwargs.get("value") and not contract.contract_type.constructor.is_payable:

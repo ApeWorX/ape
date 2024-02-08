@@ -7,6 +7,7 @@ from eth_account.hdaccount import ETHEREUM_DEFAULT_PATH
 from eth_utils import to_checksum_address
 
 from ape.cli import ape_cli_context, existing_alias_argument, non_existing_alias_argument
+from ape.logging import HIDDEN_MESSAGE
 from ape.utils.basemodel import ManagerAccessMixin
 from ape_accounts import (
     AccountContainer,
@@ -150,7 +151,8 @@ def _import(cli_ctx, alias, import_from_mnemonic, custom_hd_path):
             passphrase = ask_for_passphrase()
             account = import_account_from_mnemonic(alias, passphrase, mnemonic, custom_hd_path)
         except Exception as error:
-            cli_ctx.abort(f"Seed phrase can't be imported: {error}")
+            error_msg = f"{error}".replace(mnemonic, HIDDEN_MESSAGE)
+            cli_ctx.abort(f"Seed phrase can't be imported: {error_msg}")
 
     else:
         key = click.prompt("Enter Private Key", hide_input=True)

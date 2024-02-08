@@ -43,11 +43,3 @@ scripts.
     :members:
     :show-inheritance:
 ```
-
-## Utilities
-
-```{eval-rst}
-.. automodule:: ape.cli.utils
-    :members:
-    :show-inheritance:
-```

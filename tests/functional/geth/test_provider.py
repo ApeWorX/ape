@@ -6,6 +6,8 @@ from eth_pydantic_types import HashBytes32
 from eth_typing import HexStr
 from evmchains import PUBLIC_CHAIN_META
 from hexbytes import HexBytes
+from web3.exceptions import ExtraDataLengthError
+from web3.middleware import geth_poa_middleware
 
 from ape.exceptions import (
     APINotImplementedError,
@@ -15,6 +17,7 @@ from ape.exceptions import (
     TransactionNotFoundError,
 )
 from ape_ethereum.ecosystem import Block
+from ape_ethereum.provider import DEFAULT_SETTINGS
 from ape_ethereum.transactions import (
     AccessList,
     AccessListTransaction,
@@ -25,6 +28,11 @@ from ape_geth.provider import GethDevProcess, GethNotInstalledError
 from tests.conftest import GETH_URI, geth_process_test
 
 
+@pytest.fixture
+def web3_factory(mocker):
+    return mocker.patch("ape_ethereum.provider._create_web3")
+
+
 @geth_process_test
 def test_uri(geth_provider):
     assert geth_provider.http_uri == GETH_URI
@@ -33,7 +41,7 @@ def test_uri(geth_provider):
 
 
 @geth_process_test
-def test_default_public_uri(config):
+def test_uri_localhost_not_running_uses_random_default(config):
     cfg = config.get_config("geth").ethereum.mainnet
     assert cfg["uri"] in PUBLIC_CHAIN_META["ethereum"]["mainnet"]["rpc"]
     cfg = config.get_config("geth").ethereum.sepolia
@@ -41,16 +49,27 @@ def test_default_public_uri(config):
 
 
 @geth_process_test
-def test_uri_uses_value_from_config(geth_provider, temp_config):
+def test_uri_when_configured(geth_provider, temp_config, ethereum):
     settings = geth_provider.provider_settings
     geth_provider.provider_settings = {}
     value = "https://value/from/config"
-    config = {"geth": {"ethereum": {"local": {"uri": value}}}}
+    config = {"geth": {"ethereum": {"local": {"uri": value}, "mainnet": {"uri": value}}}}
+    expected = DEFAULT_SETTINGS["uri"]
+    network = ethereum.get_network("mainnet")
+
     try:
         with temp_config(config):
-            assert geth_provider.uri == value
+            # Assert we use the config value.
+            actual_local_uri = geth_provider.uri
+            # Assert provider settings takes precedence.
+            provider = network.get_provider("geth", provider_settings={"uri": expected})
+            actual_mainnet_uri = provider.uri
+
     finally:
         geth_provider.provider_settings = settings
+
+    assert actual_local_uri == value
+    assert actual_mainnet_uri == expected
 
 
 @geth_process_test
@@ -99,33 +118,53 @@ def test_chain_id_live_network_connected_uses_web3_chain_id(mocker, geth_provide
 
     try:
         geth_provider.network = mock_network
-
-        # Still use the connected chain ID instead network's
-        assert geth_provider.chain_id == 1337
+        actual = geth_provider.chain_id
     finally:
         geth_provider.network = orig_network
 
+    # Still use the connected chain ID instead network's
+    assert actual == 1337
+
 
 @geth_process_test
-def test_connect_wrong_chain_id(mocker, ethereum, geth_provider):
+def test_connect_wrong_chain_id(ethereum, geth_provider, web3_factory):
     start_network = geth_provider.network
+    expected_error_message = (
+        f"Provider connected to chain ID '{geth_provider._web3.eth.chain_id}', "
+        "which does not match network chain ID '5'. "
+        "Are you connected to 'goerli'?"
+    )
 
     try:
         geth_provider.network = ethereum.get_network("goerli")
 
         # Ensure when reconnecting, it does not use HTTP
-        factory = mocker.patch("ape_ethereum.provider._create_web3")
-        factory.return_value = geth_provider._web3
-        expected_error_message = (
-            f"Provider connected to chain ID '{geth_provider._web3.eth.chain_id}', "
-            "which does not match network chain ID '5'. "
-            "Are you connected to 'goerli'?"
-        )
-
+        web3_factory.return_value = geth_provider._web3
         with pytest.raises(NetworkMismatchError, match=expected_error_message):
             geth_provider.connect()
     finally:
         geth_provider.network = start_network
+
+
+@geth_process_test
+def test_connect_to_chain_that_started_poa(mock_web3, web3_factory, ethereum):
+    """
+    Ensure that when connecting to a chain that
+    started out as PoA, such as Goerli, we include
+    the right middleware. Note: even if the chain
+    is no longer PoA, we still need the middleware
+    to fetch blocks during the PoA portion of the chain.
+    """
+    mock_web3.eth.get_block.side_effect = ExtraDataLengthError
+    mock_web3.eth.chain_id = ethereum.goerli.chain_id
+    web3_factory.return_value = mock_web3
+    provider = ethereum.goerli.get_provider("geth")
+    provider.provider_settings = {"uri": "http://node.example.com"}  # fake
+    provider.connect()
+
+    # Verify PoA middleware was added.
+    assert mock_web3.middleware_onion.inject.call_args[0] == (geth_poa_middleware,)
+    assert mock_web3.middleware_onion.inject.call_args[1] == {"layer": 0}
 
 
 @geth_process_test
@@ -250,9 +289,11 @@ def test_isolate(chain, geth_contract, geth_account):
 
     with chain.isolate():
         geth_contract.setNumber(333, sender=geth_account)
-        assert geth_contract.myNumber() == 333
-        assert chain.blocks.height == start_head + 1
+        actual = geth_contract.myNumber()
+        height = chain.blocks.height
 
+    assert actual == 333
+    assert height == start_head + 1
     assert geth_contract.myNumber() == number_at_start
 
     # Allow extra 1 to account for potential parallelism-related discrepancy
@@ -275,26 +316,24 @@ def test_send_transaction_when_no_error_and_receipt_fails(
 ):
     start_web3 = geth_provider._web3
     geth_provider._web3 = mock_web3
+    # Getting a receipt "works", but you get a failed one.
+    # NOTE: Value is meaningless.
+    tx_hash = HashBytes32.__eth_pydantic_validate__(123**36)
+    receipt_data = {
+        "failed": True,
+        "blockNumber": 0,
+        "txnHash": tx_hash.hex(),
+        "status": TransactionStatusEnum.FAILING.value,
+        "sender": owner.address,
+        "receiver": geth_contract.address,
+        "input": b"",
+        "gasUsed": 123,
+        "gasLimit": 100,
+    }
 
     try:
-        # NOTE: Value is meaningless.
-        tx_hash = HashBytes32.__eth_pydantic_validate__(123**36)
-
         # Sending tx "works" meaning no vm error.
         mock_web3.eth.send_raw_transaction.return_value = tx_hash
-
-        # Getting a receipt "works", but you get a failed one.
-        receipt_data = {
-            "failed": True,
-            "blockNumber": 0,
-            "txnHash": tx_hash.hex(),
-            "status": TransactionStatusEnum.FAILING.value,
-            "sender": owner.address,
-            "receiver": geth_contract.address,
-            "input": b"",
-            "gasUsed": 123,
-            "gasLimit": 100,
-        }
         mock_web3.eth.wait_for_transaction_receipt.return_value = receipt_data
 
         # Attempting to replay the tx does not produce any error.

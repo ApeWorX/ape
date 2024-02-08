@@ -23,6 +23,7 @@ from ape.exceptions import (
     ContractNotFoundError,
     CustomError,
     MethodNonPayableError,
+    MissingDeploymentBytecodeError,
     TransactionNotFoundError,
 )
 from ape.logging import logger
@@ -1343,6 +1344,10 @@ class ContractContainer(ContractTypeWrapper):
         Returns:
             :class:`~ape.contracts.base.ContractInstance`
         """
+
+        bytecode = self.contract_type.deployment_bytecode
+        if not bytecode or bytecode.bytecode in (None, "", "0x"):
+            raise MissingDeploymentBytecodeError(self.contract_type)
 
         txn = self(*args, **kwargs)
         private = kwargs.get("private", False)
