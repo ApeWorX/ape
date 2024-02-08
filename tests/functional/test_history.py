@@ -4,7 +4,7 @@ from tests.conftest import explorer_test
 
 def test_history(sender, receiver, chain):
     length_at_start = len(chain.history[sender].sessional)
-    receipt = sender.transfer(receiver, "1 wei")
+    receipt = sender.transfer(receiver, 1)
     transactions_from_cache = list(sender.history)
     assert len(transactions_from_cache) == length_at_start + 1
     assert sender.history[-1] == receipt
