@@ -54,19 +54,22 @@ def test_uri_when_configured(geth_provider, temp_config, ethereum):
     geth_provider.provider_settings = {}
     value = "https://value/from/config"
     config = {"geth": {"ethereum": {"local": {"uri": value}, "mainnet": {"uri": value}}}}
+    expected = DEFAULT_SETTINGS["uri"]
+    network = ethereum.get_network("mainnet")
+
     try:
         with temp_config(config):
             # Assert we use the config value.
-            assert geth_provider.uri == value
-
+            actual_local_uri = geth_provider.uri
             # Assert provider settings takes precedence.
-            expected = DEFAULT_SETTINGS["uri"]
-            network = ethereum.get_network("mainnet")
             provider = network.get_provider("geth", provider_settings={"uri": expected})
-            assert provider.uri == expected
+            actual_mainnet_uri = provider.uri
 
     finally:
         geth_provider.provider_settings = settings
+
+    assert actual_local_uri == value
+    assert actual_mainnet_uri == expected
 
 
 @geth_process_test
@@ -115,28 +118,28 @@ def test_chain_id_live_network_connected_uses_web3_chain_id(mocker, geth_provide
 
     try:
         geth_provider.network = mock_network
-
-        # Still use the connected chain ID instead network's
-        assert geth_provider.chain_id == 1337
+        actual = geth_provider.chain_id
     finally:
         geth_provider.network = orig_network
+
+    # Still use the connected chain ID instead network's
+    assert actual == 1337
 
 
 @geth_process_test
 def test_connect_wrong_chain_id(ethereum, geth_provider, web3_factory):
     start_network = geth_provider.network
+    expected_error_message = (
+        f"Provider connected to chain ID '{geth_provider._web3.eth.chain_id}', "
+        "which does not match network chain ID '5'. "
+        "Are you connected to 'goerli'?"
+    )
 
     try:
         geth_provider.network = ethereum.get_network("goerli")
 
         # Ensure when reconnecting, it does not use HTTP
         web3_factory.return_value = geth_provider._web3
-        expected_error_message = (
-            f"Provider connected to chain ID '{geth_provider._web3.eth.chain_id}', "
-            "which does not match network chain ID '5'. "
-            "Are you connected to 'goerli'?"
-        )
-
         with pytest.raises(NetworkMismatchError, match=expected_error_message):
             geth_provider.connect()
     finally:
@@ -286,9 +289,11 @@ def test_isolate(chain, geth_contract, geth_account):
 
     with chain.isolate():
         geth_contract.setNumber(333, sender=geth_account)
-        assert geth_contract.myNumber() == 333
-        assert chain.blocks.height == start_head + 1
+        actual = geth_contract.myNumber()
+        height = chain.blocks.height
 
+    assert actual == 333
+    assert height == start_head + 1
     assert geth_contract.myNumber() == number_at_start
 
     # Allow extra 1 to account for potential parallelism-related discrepancy
@@ -311,26 +316,24 @@ def test_send_transaction_when_no_error_and_receipt_fails(
 ):
     start_web3 = geth_provider._web3
     geth_provider._web3 = mock_web3
+    # Getting a receipt "works", but you get a failed one.
+    # NOTE: Value is meaningless.
+    tx_hash = HashBytes32.__eth_pydantic_validate__(123**36)
+    receipt_data = {
+        "failed": True,
+        "blockNumber": 0,
+        "txnHash": tx_hash.hex(),
+        "status": TransactionStatusEnum.FAILING.value,
+        "sender": owner.address,
+        "receiver": geth_contract.address,
+        "input": b"",
+        "gasUsed": 123,
+        "gasLimit": 100,
+    }
 
     try:
-        # NOTE: Value is meaningless.
-        tx_hash = HashBytes32.__eth_pydantic_validate__(123**36)
-
         # Sending tx "works" meaning no vm error.
         mock_web3.eth.send_raw_transaction.return_value = tx_hash
-
-        # Getting a receipt "works", but you get a failed one.
-        receipt_data = {
-            "failed": True,
-            "blockNumber": 0,
-            "txnHash": tx_hash.hex(),
-            "status": TransactionStatusEnum.FAILING.value,
-            "sender": owner.address,
-            "receiver": geth_contract.address,
-            "input": b"",
-            "gasUsed": 123,
-            "gasLimit": 100,
-        }
         mock_web3.eth.wait_for_transaction_receipt.return_value = receipt_data
 
         # Attempting to replay the tx does not produce any error.
