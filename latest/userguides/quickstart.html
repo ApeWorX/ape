@@ -139,26 +139,13 @@
 <li class="toctree-l2"><a class="reference internal" href="#documentation">Documentation</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#prerequisite">Prerequisite</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#installation">Installation</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#considerations-for-installing">Considerations for Installing:</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#via-pipx-or-pip">via <code class="docutils literal notranslate"><span class="pre">pipx</span></code> or <code class="docutils literal notranslate"><span class="pre">pip</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="#via-docker">via <code class="docutils literal notranslate"><span class="pre">docker</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#considerations-for-installing">Considerations for Installing</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#installing-with-pipx-or-pip">Installing with <code class="docutils literal notranslate"><span class="pre">pipx</span></code> or <code class="docutils literal notranslate"><span class="pre">pip</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#installing-with-docker">Installing with <code class="docutils literal notranslate"><span class="pre">docker</span></code></a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="#playing-with-ape">Playing with Ape</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#ape-modular-plugin-system"><strong>Ape Modular Plugin System:</strong></a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#accounts">Accounts</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#plugins">Plugins</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="#projects">Projects</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#compiling">Compiling</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#testing">Testing</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#console">Console</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#scripts">Scripts</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#logging">Logging</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#networks">Networks</a></li>
-</ul>
-</li>
+<li class="toctree-l2"><a class="reference internal" href="#quickstart">Quickstart</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#plugin-system">Plugin System</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="accounts.html">Accounts</a></li>
@@ -242,8 +229,8 @@
 Users can compile, test, and interact with smart contracts all in one command line session.
 With our <strong>modular plugin system</strong>, Ape supports multiple contract languages and chains.</p>
 <p>Ape is built by <a class="reference external" href="https://www.apeworx.io/">ApeWorX LTD</a>.</p>
-<p>Join our <a class="reference external" href="https://discord.gg/apeworx">ApeWorX Discord server</a> to stay up to date on new releases, plugins and tutorials.</p>
-<p>If you want to just get started, jump down to the <a class="reference external" href="#playing-with-ape">Playing with Ape</a>.</p>
+<p>Join our <a class="reference external" href="https://discord.gg/apeworx">ApeWorX Discord server</a> to stay up to date on new releases, plugins, and tutorials.</p>
+<p>If you want to get started now, see the <a class="reference external" href="#quickstart">Quickstart</a> section.</p>
 <section id="documentation">
 <h2>Documentation<a class="headerlink" href="#documentation" title="Permalink to this heading"></a></h2>
 <p>Read our <a class="reference external" href="https://docs.apeworx.io/ape/stable/">technical documentation</a> to get a deeper understanding of our open source Framework.</p>
@@ -263,7 +250,7 @@ With our <strong>modular plugin system</strong>, Ape supports multiple contract 
 <h2>Installation<a class="headerlink" href="#installation" title="Permalink to this heading"></a></h2>
 <p>There are three ways to install ape: <code class="docutils literal notranslate"><span class="pre">pipx</span></code>, <code class="docutils literal notranslate"><span class="pre">pip</span></code>, or <code class="docutils literal notranslate"><span class="pre">Docker</span></code>.</p>
 <section id="considerations-for-installing">
-<h3>Considerations for Installing:<a class="headerlink" href="#considerations-for-installing" title="Permalink to this heading"></a></h3>
+<h3>Considerations for Installing<a class="headerlink" href="#considerations-for-installing" title="Permalink to this heading"></a></h3>
 <ul class="simple">
 <li><p>If using <code class="docutils literal notranslate"><span class="pre">pip</span></code>, we advise using the most up-to-date version of <code class="docutils literal notranslate"><span class="pre">pip</span></code> to increase the chance of a successful installation.</p>
 <ul>
@@ -276,130 +263,52 @@ With our <strong>modular plugin system</strong>, Ape supports multiple contract 
 <li><p>We advise for <strong>macOS</strong> users to install virtual env via <a class="reference external" href="https://formulae.brew.sh/formula/virtualenv">homebrew</a>.</p></li>
 </ul>
 </section>
-<section id="via-pipx-or-pip">
-<h3>via <code class="docutils literal notranslate"><span class="pre">pipx</span></code> or <code class="docutils literal notranslate"><span class="pre">pip</span></code><a class="headerlink" href="#via-pipx-or-pip" title="Permalink to this heading"></a></h3>
+<section id="installing-with-pipx-or-pip">
+<h3>Installing with <code class="docutils literal notranslate"><span class="pre">pipx</span></code> or <code class="docutils literal notranslate"><span class="pre">pip</span></code><a class="headerlink" href="#installing-with-pipx-or-pip" title="Permalink to this heading"></a></h3>
 <ol class="arabic simple">
 <li><p>Install <code class="docutils literal notranslate"><span class="pre">pipx</span></code> via their <a class="reference external" href="https://pypa.github.io/pipx/">installation instructions</a> or <code class="docutils literal notranslate"><span class="pre">pip</span></code> via their <a class="reference external" href="https://pip.pypa.io/en/stable/cli/pip_install/">installation instructions</a>.</p></li>
 <li><p>Install <strong><code class="docutils literal notranslate"><span class="pre">ape</span></code></strong> via <code class="docutils literal notranslate"><span class="pre">pipx</span> <span class="pre">install</span> <span class="pre">eth-ape</span></code> or <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">eth-ape</span></code>.</p></li>
 </ol>
 </section>
-<section id="via-docker">
-<h3>via <code class="docutils literal notranslate"><span class="pre">docker</span></code><a class="headerlink" href="#via-docker" title="Permalink to this heading"></a></h3>
+<section id="installing-with-docker">
+<h3>Installing with <code class="docutils literal notranslate"><span class="pre">docker</span></code><a class="headerlink" href="#installing-with-docker" title="Permalink to this heading"></a></h3>
 <p>Ape can also run in a docker container.</p>
 <p>Please visit our <a class="reference external" href="https://hub.docker.com/repository/docker/apeworx/ape">Dockerhub</a> for more details on using Ape with Docker.</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>docker<span class="w"> </span>run<span class="w"> </span><span class="se">\</span>
---volume<span class="w"> </span><span class="nv">$HOME</span>/.ape:/home/harambe/.ape<span class="w"> </span><span class="se">\</span>
---volume<span class="w"> </span><span class="nv">$HOME</span>/.vvm:/home/harambe/.vvm<span class="w"> </span><span class="se">\</span>
---volume<span class="w"> </span><span class="nv">$HOME</span>/.solcx:/home/harambe/.solcx<span class="w"> </span><span class="se">\</span>
---volume<span class="w"> </span><span class="nv">$PWD</span>:/home/harambe/project<span class="w"> </span><span class="se">\</span>
-apeworx/ape<span class="w"> </span>compile
+<span class="w">  </span>--volume<span class="w"> </span><span class="nv">$HOME</span>/.ape:/home/harambe/.ape<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--volume<span class="w"> </span><span class="nv">$HOME</span>/.vvm:/home/harambe/.vvm<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--volume<span class="w"> </span><span class="nv">$HOME</span>/.solcx:/home/harambe/.solcx<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--volume<span class="w"> </span><span class="nv">$PWD</span>:/home/harambe/project<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>apeworx/ape<span class="w"> </span>compile
 </pre></div>
 </div>
 </section>
 </section>
-<section id="playing-with-ape">
-<h2>Playing with Ape<a class="headerlink" href="#playing-with-ape" title="Permalink to this heading"></a></h2>
-<p>After you installed Ape, you can run <code class="docutils literal notranslate"><span class="pre">ape</span> <span class="pre">--version</span></code> to make sure it works and is the latest version.</p>
-<p>There are two ways to interact with Ape:</p>
+<section id="quickstart">
+<h2>Quickstart<a class="headerlink" href="#quickstart" title="Permalink to this heading"></a></h2>
+<p>After you have installed Ape, run <code class="docutils literal notranslate"><span class="pre">ape</span> <span class="pre">--version</span></code> to verify the installation was successful.</p>
+<p>Interact with Ape using either the <a class="reference external" href="https://docs.apeworx.io/ape/latest/index.html">CLI</a> or <a class="reference external" href="https://docs.apeworx.io/ape/latest/index.html">Python code</a>.</p>
+<p>See the following user-guides for more in-depth tutorials:</p>
 <ul class="simple">
-<li><p><a class="reference external" href="https://docs.apeworx.io/ape/latest/index.html">CLI Reference</a></p></li>
-<li><p><a class="reference external" href="https://docs.apeworx.io/ape/latest/index.html">Python Reference</a></p></li>
+<li><p><a class="reference external" href="https://docs.apeworx.io/ape/stable/userguides/accounts.html">Accounts</a></p></li>
+<li><p><a class="reference external" href="https://docs.apeworx.io/ape/stable/userguides/networks.html">Networks</a></p></li>
+<li><p><a class="reference external" href="https://docs.apeworx.io/ape/stable/userguides/projects.html">Projects</a></p></li>
+<li><p><a class="reference external" href="https://docs.apeworx.io/ape/stable/userguides/compile.html">Compiling</a></p></li>
+<li><p><a class="reference external" href="https://docs.apeworx.io/ape/stable/userguides/testing.html">Testing</a></p></li>
+<li><p><a class="reference external" href="https://docs.apeworx.io/ape/stable/userguides/console.html">Console</a></p></li>
+<li><p><a class="reference external" href="https://docs.apeworx.io/ape/stable/userguides/scripts.html">Scripting</a></p></li>
+<li><p><a class="reference external" href="https://docs.apeworx.io/ape/stable/userguides/logging.html">Logging</a></p></li>
 </ul>
-<p>Ape is both a CLI tool and a Python SDK.</p>
-<p>The CLI tool contains all the Ape commands and the Python SDK contains the classes and types needed to compose scripts, console actions, and tests.</p>
 </section>
-<section id="ape-modular-plugin-system">
-<h2><strong>Ape Modular Plugin System:</strong><a class="headerlink" href="#ape-modular-plugin-system" title="Permalink to this heading"></a></h2>
-<p>Our modular plugin system is the best way to have the most interoperable experience with Web3.</p>
-<p><strong>NOTE</strong>: If a plugin does not originate from the <a class="reference external" href="https://github.com/ApeWorX?q=ape&amp;amp;type=all">ApeWorX GitHub Organization</a>, you will get a warning about installing 3rd-party plugins.</p>
-<p>Install 3rd party plugins at your own risk.</p>
-<p>Additionally, plugins that come bundled with <strong><code class="docutils literal notranslate"><span class="pre">ape</span></code></strong> in the core installation cannot be removed and are part of the <strong><code class="docutils literal notranslate"><span class="pre">ape</span></code></strong> core software.</p>
+<section id="plugin-system">
+<h2>Plugin System<a class="headerlink" href="#plugin-system" title="Permalink to this heading"></a></h2>
+<p>Ape’s modular plugin system allows users to have an interoperable experience with Web3.</p>
 <ul class="simple">
-<li><p>Learn more about <strong>installing</strong> plugins from following this <a class="reference external" href="https://docs.apeworx.io/ape/stable/userguides/installing_plugins.html">installing user guide</a>.</p></li>
+<li><p>Learn about <strong>installing</strong> plugins from following this <a class="reference external" href="https://docs.apeworx.io/ape/stable/userguides/installing_plugins.html">installing user guide</a>.</p></li>
 <li><p>Learn more about <strong>developing</strong> your own plugins from this <a class="reference external" href="https://docs.apeworx.io/ape/stable/userguides/developing_plugins.html">developing user guide</a>.</p></li>
 </ul>
-<section id="accounts">
-<h3>Accounts<a class="headerlink" href="#accounts" title="Permalink to this heading"></a></h3>
-<p>In Ape, you will need accounts to make transactions.
-You can import or generate accounts using the core <code class="docutils literal notranslate"><span class="pre">accounts</span></code> plugin:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>ape<span class="w"> </span>accounts<span class="w"> </span>import<span class="w"> </span>acc0<span class="w">   </span><span class="c1"># Will prompt for a private key</span>
-ape<span class="w"> </span>accounts<span class="w"> </span>generate<span class="w"> </span>acc1
-</pre></div>
-</div>
-<p>List all your accounts with the <code class="docutils literal notranslate"><span class="pre">list</span></code> command.</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>ape<span class="w"> </span>accounts<span class="w"> </span>list
-</pre></div>
-</div>
-<p>Learn more about accounts in Ape by following the <a class="reference external" href="https://docs.apeworx.io/ape/stable/userguides/accounts.html">accounts guide</a>.</p>
-</section>
-<section id="plugins">
-<h3>Plugins<a class="headerlink" href="#plugins" title="Permalink to this heading"></a></h3>
-<p>Add any plugins you may need, such as <code class="docutils literal notranslate"><span class="pre">vyper</span></code>.</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>ape<span class="w"> </span>plugins<span class="w"> </span>list<span class="w"> </span>-a
-ape<span class="w"> </span>plugins<span class="w"> </span>install<span class="w"> </span>vyper
-ape<span class="w"> </span>plugins<span class="w"> </span>list<span class="w"> </span>-a
-</pre></div>
-</div>
-</section>
-</section>
-<section id="projects">
-<h2>Projects<a class="headerlink" href="#projects" title="Permalink to this heading"></a></h2>
-<p>When using Ape, you generally will work with a project.</p>
-<p>Learn more about smart-contract <strong>projects</strong> from this <a class="reference external" href="https://docs.apeworx.io/ape/stable/userguides/projects.html">projects guide</a>.</p>
-<section id="compiling">
-<h3>Compiling<a class="headerlink" href="#compiling" title="Permalink to this heading"></a></h3>
-<p>You can compile contracts within the <code class="docutils literal notranslate"><span class="pre">contracts/</span></code> directory of your project.
-The <code class="docutils literal notranslate"><span class="pre">--size</span></code> option will display you the size of the contract.</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>ape<span class="w"> </span>compile<span class="w"> </span>--size
-</pre></div>
-</div>
-<p>Learn more about compiling in Ape by following the <a class="reference external" href="https://docs.apeworx.io/ape/stable/userguides/compile.html">compile guide</a>.</p>
-</section>
-<section id="testing">
-<h3>Testing<a class="headerlink" href="#testing" title="Permalink to this heading"></a></h3>
-<p>Use Ape to test your smart-contract projects.
-Provide the same arguments to <code class="docutils literal notranslate"><span class="pre">pytest</span></code> as you would to the <code class="docutils literal notranslate"><span class="pre">ape</span> <span class="pre">test</span></code> command.</p>
-<p>For example:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>ape<span class="w"> </span><span class="nb">test</span><span class="w"> </span>-k<span class="w"> </span>test_only_one_thing
-</pre></div>
-</div>
-<p>Visit the <a class="reference external" href="https://docs.apeworx.io/ape/stable/userguides/testing.html">testing guide</a> to learn more about testing using Ape.</p>
-</section>
-<section id="console">
-<h3>Console<a class="headerlink" href="#console" title="Permalink to this heading"></a></h3>
-<p>Ape provides an <code class="docutils literal notranslate"><span class="pre">IPython</span></code> interactive console with useful pre-defined locals to interact with your project.
-To interact with a deployed contract in a local environment, start by opening the console:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>ape<span class="w"> </span>console<span class="w"> </span>--network<span class="w"> </span>ethereum:mainnet:infura
-</pre></div>
-</div>
-<p>Visit <a class="reference external" href="https://docs.apeworx.io/ape/stable/commands/console.html">Ape Console</a> to learn how to use Ape Console.</p>
-</section>
-<section id="scripts">
-<h3>Scripts<a class="headerlink" href="#scripts" title="Permalink to this heading"></a></h3>
-<p>If you want to run specific files in a <code class="docutils literal notranslate"><span class="pre">scripts/</span></code> directory, you can do it using the <code class="docutils literal notranslate"><span class="pre">ape</span> <span class="pre">run</span></code> command.</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># This command will run a file named deploy in the scripts/ directory</span>
-$<span class="w"> </span>ape<span class="w"> </span>run<span class="w"> </span>deploy
-</pre></div>
-</div>
-<p>Learn more about scripting using Ape by following the <a class="reference external" href="https://docs.apeworx.io/ape/stable/userguides/scripts.html">scripting guide</a>.</p>
-</section>
-<section id="logging">
-<h3>Logging<a class="headerlink" href="#logging" title="Permalink to this heading"></a></h3>
-<p>To enable debug logging, run your command with the <code class="docutils literal notranslate"><span class="pre">--verbosity</span></code> flag using <code class="docutils literal notranslate"><span class="pre">DEBUG</span></code> as the value:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>ape<span class="w"> </span>--verbosity<span class="w"> </span>DEBUG<span class="w"> </span>run
-</pre></div>
-</div>
-</section>
-<section id="networks">
-<h3>Networks<a class="headerlink" href="#networks" title="Permalink to this heading"></a></h3>
-<p>You can work with registered networks, providers, and blockchain ecosystems (like Ethereum):</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">ape</span> <span class="kn">import</span> <span class="n">networks</span>
-<span class="k">with</span> <span class="n">networks</span><span class="o">.</span><span class="n">ethereum</span><span class="o">.</span><span class="n">mainnet</span><span class="o">.</span><span class="n">use_provider</span><span class="p">(</span><span class="s2">&quot;infura&quot;</span><span class="p">):</span>
-    <span class="o">...</span>  <span class="c1"># Work with the infura provider here</span>
-</pre></div>
-</div>
-<p>To learn more about networks in Ape, see <a class="reference external" href="https://docs.apeworx.io/ape/stable/commands/networks.html">this guide</a>.</p>
-</section>
+<p><strong>NOTE</strong>: If a plugin does not originate from the <a class="reference external" href="https://github.com/ApeWorX?q=ape&amp;amp;type=all">ApeWorX GitHub Organization</a>, you will get a warning about installing 3rd-party plugins.
+Install 3rd party plugins at your own risk.</p>
 </section>
 </section>
 
