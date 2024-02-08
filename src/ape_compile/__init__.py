@@ -32,7 +32,7 @@ class Config(PluginConfig):
     """
 
     @property
-    def base_dir(self) -> Path:
+    def base_path(self) -> Path:
         """The base directory for compilation file path references"""
 
         # These should be initialized by plugin config loading and pydantic validators before the
