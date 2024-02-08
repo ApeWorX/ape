@@ -72,7 +72,7 @@ class Config(PluginConfig):
         cache_resolved = self.cache_folder.resolve()
         if project_resolved not in cache_resolved.parents:
             raise ValueError(
-                f"cache_folder must be a child of the project directory. "
+                "cache_folder must be a child of the project directory. "
                 f"{project_resolved} not in {cache_resolved}"
             )
 
