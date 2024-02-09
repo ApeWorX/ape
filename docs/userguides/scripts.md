@@ -42,7 +42,7 @@ from ape.cli import ConnectedProviderCommand
 
 @click.command(cls=ConnectedProviderCommand)
 def cli(ecosystem, network):
-    click(f"You selected a provider on ecosystem '{ecosystem.name}' and {network.name}.")
+    click.echo(f"You selected a provider on ecosystem '{ecosystem.name}' and {network.name}.")
 
 @click.command(cls=ConnectedProviderCommand)
 def cli(network, provider):
