@@ -277,7 +277,7 @@ That is why, as you can see, the second argument is an <code class="docutils lit
 To avoid naming collisions with other properties on the <code class="docutils literal notranslate"><span class="pre">project</span></code> object, you can alternatively use the <a class="reference external" href="../methoddocs/managers.html#ape.managers.project.manager.ProjectManager.get_contract">get_contract()</a> method to retrieve contract containers.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">ape</span> <span class="kn">import</span> <span class="n">project</span>
 
-<span class="n">contract</span> <span class="o">=</span> <span class="nb">property</span><span class="o">.</span><span class="n">get_contract</span><span class="p">(</span><span class="s2">&quot;MyContract&quot;</span><span class="p">)</span>  <span class="c1"># Same as `project.MyContract`.</span>
+<span class="n">contract</span> <span class="o">=</span> <span class="n">project</span><span class="o">.</span><span class="n">get_contract</span><span class="p">(</span><span class="s2">&quot;MyContract&quot;</span><span class="p">)</span>  <span class="c1"># Same as `project.MyContract`.</span>
 </pre></div>
 </div>
 <p>Notice when deploying, we have to specify the <code class="docutils literal notranslate"><span class="pre">sender=</span></code> kwarg because <code class="docutils literal notranslate"><span class="pre">deploy</span></code> operations are transactions.
