@@ -58,7 +58,13 @@ class ProjectManager(BaseManager):
         return f'Project("{self.path}")'
 
     def __repr__(self):
-        return "<ProjectManager>"
+        try:
+            path = f" {self.path}"
+        except Exception:
+            # Disallow exceptions in __repr__
+            path = ""
+
+        return f"<ProjectManager{path}>"
 
     @property
     def dependencies(self) -> Dict[str, Dict[str, DependencyAPI]]:

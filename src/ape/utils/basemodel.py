@@ -231,13 +231,11 @@ class ExtraModelAttributes(EthpmTypesBaseModel):
         if isinstance(self.attributes, dict):
             return self.attributes
         elif isinstance(self.attributes, RootBaseModel):
-            self.attributes = self.attributes.model_dump(by_alias=False)
-            return self.attributes
+            return self.attributes.model_dump(by_alias=False)
 
         # Lazy extras.
-        attrs = self.attributes()
-        self.attributes = attrs if isinstance(attrs, dict) else attrs.model_dump(by_alias=False)
-        return self.attributes
+        result = self.attributes()
+        return result if isinstance(result, dict) else result.model_dump(by_alias=False)
 
 
 class BaseModel(EthpmTypesBaseModel):
