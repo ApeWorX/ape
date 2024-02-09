@@ -7,6 +7,7 @@ from typing import Any, Callable, Generator, Iterator, List, Optional, Set, Tupl
 from ape.__modules__ import __modules__
 from ape.exceptions import ApeAttributeError
 from ape.logging import logger
+from ape.utils.basemodel import _assert_not_ipython_check
 
 from .account import AccountPlugin
 from .compiler import CompilerPlugin
@@ -128,6 +129,8 @@ class PluginManager:
         return f"<{PluginManager.__name__}>"
 
     def __getattr__(self, attr_name: str) -> Iterator[Tuple[str, Tuple]]:
+        _assert_not_ipython_check(attr_name)
+
         # NOTE: The first time this method is called, the actual
         #  plugin registration occurs. Registration only happens once.
         self._register_plugins()
