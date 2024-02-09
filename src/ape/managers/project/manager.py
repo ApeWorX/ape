@@ -540,7 +540,7 @@ class ProjectManager(BaseManager):
             if not self._getattr_contracts:
                 # Raise the attribute error as if this method didn't exist.
                 raise
-        breakpoint()
+
         try:
             # NOTE: Will compile project (if needed)
             if contract := self._get_contract(attr_name):
