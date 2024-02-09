@@ -536,7 +536,12 @@ class ProjectManager(BaseManager):
         try:
             return self.__getattribute__(attr_name)
         except AttributeError:
-            if not self._getattr_contracts:
+            # NOTE: Also handles IPython attributes such as _ipython_display_
+            if (
+                not self._getattr_contracts
+                or attr_name.startswith("_ipython_")
+                or attr_name.startswith("_repr_")
+            ):
                 # Raise the attribute error as if this method didn't exist.
                 raise
 
