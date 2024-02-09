@@ -160,6 +160,9 @@ def _get_alt(name: str) -> Optional[str]:
     return alt
 
 
+_ATTR_TYPE = Union[Dict[str, Any], RootBaseModel]
+
+
 class ExtraModelAttributes(EthpmTypesBaseModel):
     """
     A class for defining extra model attributes.
@@ -174,7 +177,7 @@ class ExtraModelAttributes(EthpmTypesBaseModel):
     we can show a more accurate exception message.
     """
 
-    attributes: Union[Dict[str, Any], RootBaseModel]
+    attributes: Union[_ATTR_TYPE, Callable[[], _ATTR_TYPE]]
     """The attributes."""
 
     include_getattr: bool = True
@@ -190,16 +193,12 @@ class ExtraModelAttributes(EthpmTypesBaseModel):
     """
 
     def __contains__(self, name: str) -> bool:
-        attr_dict = (
-            self.attributes
-            if isinstance(self.attributes, dict)
-            else self.attributes.model_dump(by_alias=False)
-        )
-        if name in attr_dict:
+        attrs = self._attrs()
+        if name in attrs:
             return True
 
         elif alt := _get_alt(name):
-            return alt in attr_dict
+            return alt in attrs
 
         return False
 
@@ -226,11 +225,19 @@ class ExtraModelAttributes(EthpmTypesBaseModel):
         return None
 
     def _get(self, name: str) -> Optional[Any]:
-        return (
-            self.attributes.get(name)
-            if isinstance(self.attributes, dict)
-            else getattr(self.attributes, name, None)
-        )
+        return self._attrs().get(name)
+
+    def _attrs(self) -> dict:
+        if isinstance(self.attributes, dict):
+            return self.attributes
+        elif isinstance(self.attributes, RootBaseModel):
+            self.attributes = self.attributes.model_dump(by_alias=False)
+            return self.attributes
+
+        # Lazy extras.
+        attrs = self.attributes()
+        self.attributes = attrs if isinstance(attrs, dict) else attrs.model_dump(by_alias=False)
+        return self.attributes
 
 
 class BaseModel(EthpmTypesBaseModel):
