@@ -160,6 +160,9 @@ def _get_alt(name: str) -> Optional[str]:
     return alt
 
 
+_ATTR_TYPE = Union[Dict[str, Any], RootBaseModel]
+
+
 class ExtraModelAttributes(EthpmTypesBaseModel):
     """
     A class for defining extra model attributes.
@@ -174,7 +177,7 @@ class ExtraModelAttributes(EthpmTypesBaseModel):
     we can show a more accurate exception message.
     """
 
-    attributes: Union[Dict[str, Any], RootBaseModel]
+    attributes: Union[_ATTR_TYPE, Callable[[], _ATTR_TYPE]]
     """The attributes."""
 
     include_getattr: bool = True
@@ -190,16 +193,12 @@ class ExtraModelAttributes(EthpmTypesBaseModel):
     """
 
     def __contains__(self, name: str) -> bool:
-        attr_dict = (
-            self.attributes
-            if isinstance(self.attributes, dict)
-            else self.attributes.model_dump(by_alias=False)
-        )
-        if name in attr_dict:
+        attrs = self._attrs()
+        if name in attrs:
             return True
 
         elif alt := _get_alt(name):
-            return alt in attr_dict
+            return alt in attrs
 
         return False
 
@@ -226,11 +225,17 @@ class ExtraModelAttributes(EthpmTypesBaseModel):
         return None
 
     def _get(self, name: str) -> Optional[Any]:
-        return (
-            self.attributes.get(name)
-            if isinstance(self.attributes, dict)
-            else getattr(self.attributes, name, None)
-        )
+        return self._attrs().get(name)
+
+    def _attrs(self) -> dict:
+        if isinstance(self.attributes, dict):
+            return self.attributes
+        elif isinstance(self.attributes, RootBaseModel):
+            return self.attributes.model_dump(by_alias=False)
+
+        # Lazy extras.
+        result = self.attributes()
+        return result if isinstance(result, dict) else result.model_dump(by_alias=False)
 
 
 class BaseModel(EthpmTypesBaseModel):
@@ -256,6 +261,20 @@ class BaseModel(EthpmTypesBaseModel):
 
         return result
 
+    def _repr_mimebundle_(self, include=None, exclude=None):
+        # This works better than AttributeError for Ape.
+        raise NotImplementedError("This model does not implement '_repr_mimebundle_'.")
+
+    def _ipython_display_(self, include=None, exclude=None):
+        # This works better than AttributeError for Ape.
+        raise NotImplementedError("This model does not implement '_ipython_display_'.")
+
+
+def _assert_not_ipython_check(key):
+    # Perf: IPython expects AttributeError here.
+    if isinstance(key, str) and key == "_ipython_canary_method_should_not_exist_":
+        raise AttributeError()
+
 
 class ExtraAttributesMixin:
     """
@@ -280,7 +299,7 @@ class ExtraAttributesMixin:
         An overridden ``__getattr__`` implementation that takes into
         account :meth:`~ape.utils.basemodel.ExtraAttributesMixin.__ape_extra_attributes__`.
         """
-
+        _assert_not_ipython_check(name)
         private_attrs = self.__pydantic_private__ or {}
         if name in private_attrs:
             _recursion_checker.reset()

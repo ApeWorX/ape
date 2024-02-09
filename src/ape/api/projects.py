@@ -366,7 +366,7 @@ class DependencyAPI(ExtraAttributesMixin, BaseInterfaceModel):
     def __ape_extra_attributes__(self) -> Iterator[ExtraModelAttributes]:
         yield ExtraModelAttributes(
             name=self.name,
-            attributes=self.contracts,
+            attributes=lambda: self.contracts,
             include_getattr=True,
             include_getitem=True,
             additional_error_message="Do you have the necessary compiler plugins installed?",

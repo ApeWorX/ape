@@ -13,6 +13,7 @@ from ape.exceptions import (
     NetworkNotFoundError,
 )
 from ape.managers.base import BaseManager
+from ape.utils.basemodel import _assert_not_ipython_check
 from ape.utils.misc import _dict_overlay
 from ape_ethereum.provider import EthereumNodeProvider
 
@@ -303,7 +304,7 @@ class NetworkManager(BaseManager):
 
             eth = networks.ethereum
         """
-
+        _assert_not_ipython_check(attr_name)
         options = {attr_name, attr_name.replace("-", "_"), attr_name.replace("_", "-")}
         ecosystems = self.ecosystems
         for opt in options:
