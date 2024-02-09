@@ -275,7 +275,7 @@ class ReceiptAPI(ExtraAttributesMixin, BaseInterfaceModel):
         return f"<{cls_name} {self.txn_hash}>"
 
     def __ape_extra_attributes__(self) -> Iterator[ExtraModelAttributes]:
-        yield ExtraModelAttributes(name="transaction", attributes=lambda : vars(self.transaction))
+        yield ExtraModelAttributes(name="transaction", attributes=lambda: vars(self.transaction))
 
     @field_validator("transaction", mode="before")
     @classmethod

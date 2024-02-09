@@ -16,6 +16,7 @@ from ape.logging import logger
 from ape.managers.base import BaseManager
 from ape.managers.project.types import ApeProject, BrownieProject
 from ape.utils import get_relative_path
+from ape.utils.basemodel import _assert_not_ipython_check
 
 
 class ProjectManager(BaseManager):
@@ -55,6 +56,9 @@ class ProjectManager(BaseManager):
 
     def __str__(self) -> str:
         return f'Project("{self.path}")'
+
+    def __repr__(self):
+        return "<ProjectManager>"
 
     @property
     def dependencies(self) -> Dict[str, Dict[str, DependencyAPI]]:
@@ -481,7 +485,7 @@ class ProjectManager(BaseManager):
             :class:`~ape.contracts.ContractContainer`,
             a :class:`~ape.contracts.ContractNamespace`, or any attribute.
         """
-
+        _assert_not_ipython_check(attr_name)
         result = self._get_attr(attr_name)
         if result:
             return result

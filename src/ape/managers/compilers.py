@@ -9,7 +9,8 @@ from ape.contracts import ContractContainer
 from ape.exceptions import ApeAttributeError, CompilerError, ContractLogicError
 from ape.logging import logger
 from ape.managers.base import BaseManager
-from ape.utils import get_relative_path
+from ape.utils.basemodel import _assert_not_ipython_check
+from ape.utils.os import get_relative_path
 
 
 class CompilerManager(BaseManager):
@@ -33,6 +34,8 @@ class CompilerManager(BaseManager):
         return f"<{cls_name} len(registered_compilers)={num_compilers}>"
 
     def __getattr__(self, name: str) -> Any:
+        _assert_not_ipython_check(name)
+
         try:
             return self.__getattribute__(name)
         except AttributeError:

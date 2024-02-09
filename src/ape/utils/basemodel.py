@@ -264,6 +264,12 @@ class BaseModel(EthpmTypesBaseModel):
         return result
 
 
+def _assert_not_ipython_check(key):
+    # Perf: IPython expects AttributeError here.
+    if isinstance(key, str) and key == "_ipython_canary_method_should_not_exist_":
+        raise AttributeError()
+
+
 class ExtraAttributesMixin:
     """
     A mixin to use on models that provide ``ExtraModelAttributes``.
@@ -287,7 +293,7 @@ class ExtraAttributesMixin:
         An overridden ``__getattr__`` implementation that takes into
         account :meth:`~ape.utils.basemodel.ExtraAttributesMixin.__ape_extra_attributes__`.
         """
-
+        _assert_not_ipython_check(name)
         private_attrs = self.__pydantic_private__ or {}
         if name in private_attrs:
             _recursion_checker.reset()

@@ -48,6 +48,7 @@ from ape.utils import (
     returns_array,
     to_int,
 )
+from ape.utils.basemodel import _assert_not_ipython_check
 from ape.utils.misc import DEFAULT_MAX_RETRIES_TX, DEFAULT_TRANSACTION_TYPE
 from ape_ethereum.proxies import (
     IMPLEMENTATION_ABI,
@@ -220,6 +221,7 @@ class BaseEthereumConfig(PluginConfig):
         )
 
     def __getattr__(self, key: str) -> Any:
+        _assert_not_ipython_check(key)
         net_key = key.replace("-", "_")
         if net_key.endswith("_fork"):
             return self._get_forked_config(net_key)
