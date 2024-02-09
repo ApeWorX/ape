@@ -6,9 +6,9 @@
 
 # Overview
 
-**Ape Framework** is an easy-to-use Web3 development tool.
+[Ape Framework](https://apeworx.io/framework/) is an easy-to-use Web3 development tool.
 Users can compile, test, and interact with smart contracts all in one command line session.
-With our **modular plugin system**, Ape supports multiple contract languages and chains.
+With our [modular plugin system](#plugin-system), Ape supports multiple contract languages and chains.
 
 Ape is built by [ApeWorX LTD](https://www.apeworx.io/).
 
