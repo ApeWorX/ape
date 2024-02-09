@@ -29,7 +29,7 @@ def test_contract_interaction(geth_provider, geth_account, geth_contract, mocker
 
 
 @geth_process_test
-def test_tx_revert(accounts, not_owner, geth_contract):
+def test_revert(accounts, not_owner, geth_contract):
     # 'sender' is not the owner so it will revert (with a message)
     with pytest.raises(ContractLogicError, match="!authorized") as err:
         geth_contract.setNumber(5, sender=not_owner)
@@ -48,7 +48,7 @@ def test_revert_no_message(accounts, geth_contract, geth_account):
 
 
 @geth_process_test
-def test_custom_error(error_contract_geth, geth_second_account):
+def test_revert_custom_error(error_contract_geth, geth_second_account):
     contract = error_contract_geth
     with pytest.raises(contract.Unauthorized) as err:
         contract.withdraw(sender=geth_second_account)
@@ -58,16 +58,17 @@ def test_custom_error(error_contract_geth, geth_second_account):
 
 
 @geth_process_test
-def test_custom_error_on_deploy(error_contract_container, geth_account, chain, geth_provider):
+def test_revert_custom_error_deploy(error_contract_container, geth_account, chain, geth_provider):
     with pytest.raises(Exception) as err:
         geth_account.deploy(error_contract_container, 0)
 
-    assert isinstance(err.value, ContractLogicError)
-    if err.value.address:
-        contract = chain.contracts.instance_at(err.value.address)
+    err_cls = err.value
+    assert isinstance(err_cls, ContractLogicError)
+    if err_cls.address:
+        contract = chain.contracts.instance_at(err_cls.address)
 
         # Ensure it is the custom error.
-        assert isinstance(err.value, contract.OtherError)
+        assert isinstance(err_cls, contract.OtherError)
 
     else:
         # skip this test - still covered in reverts() tests anyway.
@@ -75,13 +76,12 @@ def test_custom_error_on_deploy(error_contract_container, geth_account, chain, g
 
 
 @geth_process_test
-def test_out_of_gas_error(geth_contract, geth_account, geth_provider):
+def test_revert_out_of_gas_error(geth_account, geth_second_account, geth_provider):
     """
     Attempt to transact with not quite enough gas. We should get an error saying
     we ran out of gas.
     """
-    txn = geth_contract.setNumber.as_transaction(333, sender=geth_account, gas_limit=1)
     with pytest.raises(OutOfGasError) as err:
-        geth_account.call(txn)
+        geth_account.transfer(geth_second_account, 1, gas_limit=1)
 
     assert err.value.txn is not None
