@@ -11,7 +11,14 @@ from ape.exceptions import DecodingError, NetworkError, NetworkNotFoundError
 from ape.types import AddressType
 from ape.utils import DEFAULT_LOCAL_TRANSACTION_ACCEPTANCE_TIMEOUT
 from ape_ethereum.ecosystem import BLUEPRINT_HEADER, BaseEthereumConfig, Block
-from ape_ethereum.transactions import DynamicFeeTransaction, StaticFeeTransaction, TransactionType
+from ape_ethereum.transactions import (
+    DynamicFeeTransaction,
+    Receipt,
+    SharedBlobReceipt,
+    SharedBlobTransaction,
+    StaticFeeTransaction,
+    TransactionType,
+)
 
 LOG = {
     "removed": False,
@@ -407,6 +414,7 @@ def test_decode_receipt(eth_tester_provider, ethereum):
         "effectiveGasPrice": 0,
     }
     receipt = ethereum.decode_receipt(receipt_data)
+    assert type(receipt) is Receipt  # NOTE: Purposely not using isinstance()
 
     # Tests against bug where input data would come back improperly
     assert receipt.data == HexBytes(
@@ -414,7 +422,7 @@ def test_decode_receipt(eth_tester_provider, ethereum):
     )
 
 
-def test_decode_etherscan_receipt(eth_tester_provider, ethereum):
+def test_decode_receipt_from_etherscan(eth_tester_provider, ethereum):
     receipt = ethereum.decode_receipt(
         {
             "blockNumber": "11291970",
@@ -440,9 +448,59 @@ def test_decode_etherscan_receipt(eth_tester_provider, ethereum):
             "chainId": 1,
         }
     )
+    assert type(receipt) is Receipt  # NOTE: Purposely not using isinstance()
     assert receipt.type == 0
     assert receipt.max_fee == 0
     assert receipt.gas_price == 1499999989
+
+
+def test_decode_receipt_shared_blob(ethereum):
+    blob_gas_price = "0x4d137e31b"
+    blob_gas_used = "0x20000"
+
+    data = {
+        "required_confirmations": 0,
+        "blockHash": HexBytes("0x051fb508617fcbe0034538b7ee54c1dedbbbaa6f8d0aeb776edf81bafbc883bd"),
+        "blockNumber": 10526428,
+        "from": "0x194E22F49BC3f58903866d55488E1e9e8d69b517",
+        "gas": 5500000,
+        "gasPrice": 1000000008,
+        "maxFeePerGas": 150000000000,
+        "maxPriorityFeePerGas": 1000000000,
+        "maxFeePerBlobGas": "0x22ecb25c00",
+        "hash": HexBytes("0xd2882bae0d79a6c8e0fbf0089bbcb4b2eef3a1365471ad9f779b06a41ba47d3c"),
+        "input": HexBytes("0xb72d42a1000000000000000000000000000000000000000000"),  # Note: abridged
+        "nonce": 329925,
+        "to": "0xd5c325D183C592C94998000C5e0EED9e6655c020",
+        "transactionIndex": 48,
+        "value": 0,
+        "type": 3,
+        "accessList": [],
+        "chainId": 5,
+        "blobVersionedHashes": [
+            "0x015405d502a27897ad38ffcb80566d1559fa53764befc6d90731082837c2d19e"
+        ],
+        "v": 0,
+        "r": HexBytes("0x4e5bdcbba31548cb8f9806491c5ced7b0f1eac78c7dc0677616c23ee0e469f74"),
+        "s": HexBytes("0x31c98ea044c97225d83b9a3f0fa719e2299b9fbc6436e4b3eb096ea528de03ff"),
+        "yParity": 0,
+        "blobGasPrice": blob_gas_price,
+        "blobGasUsed": blob_gas_used,
+        "contractAddress": None,
+        "cumulativeGasUsed": 23085827,
+        "effectiveGasPrice": 1000000008,
+        "gasUsed": 219756,
+        "logs": [],
+        "logsBloom": HexBytes("0x00000000010002"),
+        "status": 1,
+        "transactionHash": HexBytes(
+            "0xd2882bae0d79a6c8e0fbf0089bbcb4b2eef3a1365471ad9f779b06a41ba47d3c"
+        ),
+    }
+    actual = ethereum.decode_receipt(data)
+    assert isinstance(actual, SharedBlobReceipt)
+    assert actual.blob_gas_used == int(blob_gas_used, 16)
+    assert actual.blob_gas_price == int(blob_gas_price, 16)
 
 
 def test_default_transaction_type_not_connected_used_default_network(
@@ -658,6 +716,43 @@ def test_create_transaction_max_fee_per_gas(kwarg_name, ethereum):
     fee = 1_000_000_000
     tx = ethereum.create_transaction(**{kwarg_name: fee})
     assert tx.max_fee == fee
+
+
+@pytest.mark.parametrize("kwarg_name", ("gas_price", "gasPrice"))
+def test_create_transaction_with_gas_price(kwarg_name, ethereum):
+    price = 123
+    tx = ethereum.create_transaction(**{kwarg_name: price})
+    assert tx.gas_price == price
+
+
+@pytest.mark.parametrize(
+    "tx_kwargs",
+    [{"type": 3}, {"max_fee_per_blob_gas": 123}, {"blob_versioned_hashes": [HexBytes(123)]}],
+)
+def test_create_transaction_shared_blob(tx_kwargs, ethereum):
+    tx = ethereum.create_transaction(**tx_kwargs)
+    assert isinstance(tx, SharedBlobTransaction)
+    assert tx.type == TransactionType.SHARED_BLOB.value
+
+
+@pytest.mark.parametrize(
+    "kwarg_name,value", [("max_fee_per_blob_gas", 345), ("maxFeePerBlobGas", "0x2343")]
+)
+def test_create_transaction_max_fee_per_blob_gas(kwarg_name, value, ethereum):
+    tx = ethereum.create_transaction(**{kwarg_name: value})
+    assert isinstance(tx, SharedBlobTransaction)
+    expected = value if isinstance(value, int) else int(HexBytes(value).hex(), 16)
+    assert tx.max_fee_per_blob_gas == expected
+
+
+@pytest.mark.parametrize(
+    "kwarg_name,value",
+    [("blob_versioned_hashes", "0x123"), ("blobVersionedHashes", HexBytes("0x123"))],
+)
+def test_create_transaction_blob_versioned_hashed(kwarg_name, value, ethereum):
+    tx = ethereum.create_transaction(**{kwarg_name: [value]})
+    assert isinstance(tx, SharedBlobTransaction)
+    assert tx.blob_versioned_hashes == [HexBytes(value)]
 
 
 @pytest.mark.parametrize("tx_type", TransactionType)
