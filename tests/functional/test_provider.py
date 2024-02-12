@@ -278,6 +278,7 @@ def test_prepare_transaction_with_max_gas(tx_type, eth_tester_provider, ethereum
 
     actual = eth_tester_provider.prepare_transaction(tx)
     assert actual.gas_limit == eth_tester_provider.max_gas
+    assert actual.max_fee is not None
 
 
 def test_no_comma_in_rpc_url():

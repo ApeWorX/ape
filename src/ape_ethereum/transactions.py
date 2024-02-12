@@ -47,6 +47,7 @@ class TransactionType(Enum):
     STATIC = 0
     ACCESS_LIST = 1  # EIP-2930
     DYNAMIC = 2  # EIP-1559
+    SHARED_BLOB = 3  # EIP-4844
 
 
 class AccessList(BaseModel):
@@ -128,6 +129,22 @@ class StaticFeeTransaction(BaseTransaction):
         return values
 
 
+class AccessListTransaction(StaticFeeTransaction):
+    """
+    `EIP-2930 <https://eips.ethereum.org/EIPS/eip-2930>`__
+    transactions are similar to legacy transaction with an added access list functionality.
+    """
+
+    gas_price: Optional[int] = Field(None, alias="gasPrice")
+    type: int = Field(TransactionType.ACCESS_LIST.value)
+    access_list: List[AccessList] = Field(default_factory=list, alias="accessList")
+
+    @field_validator("type")
+    @classmethod
+    def check_type(cls, value):
+        return value.value if isinstance(value, TransactionType) else value
+
+
 class DynamicFeeTransaction(BaseTransaction):
     """
     Transactions that are post-EIP-1559 and use the ``maxFeePerGas``
@@ -145,20 +162,23 @@ class DynamicFeeTransaction(BaseTransaction):
         return value.value if isinstance(value, TransactionType) else value
 
 
-class AccessListTransaction(StaticFeeTransaction):
+class SharedBlobTransaction(DynamicFeeTransaction):
     """
-    `EIP-2930 <https://eips.ethereum.org/EIPS/eip-2930>`__
-    transactions are similar to legacy transaction with an added access list functionality.
+    `EIP-4844 <https://eips.ethereum.org/EIPS/eip-4844>`__ transactions.
     """
 
-    gas_price: Optional[int] = Field(None, alias="gasPrice")
-    type: int = Field(TransactionType.ACCESS_LIST.value)
-    access_list: List[AccessList] = Field(default_factory=list, alias="accessList")
+    max_fee_per_blob_gas: int = Field(0, alias="maxFeePerBlobGas")
+    blob_versioned_hashes: List[HexBytes] = Field([], alias="blobVersionedHashes")
 
-    @field_validator("type")
+    """
+    Overridden because EIP-4844 states it cannot be nil.
+    """
+    receiver: AddressType = Field(ZERO_ADDRESS, alias="to")
+
+    @field_validator("max_fee_per_blob_gas", mode="before")
     @classmethod
-    def check_type(cls, value):
-        return value.value if isinstance(value, TransactionType) else value
+    def hex_to_int(cls, value):
+        return value if isinstance(value, int) else int(HexBytes(value).hex(), 16)
 
 
 class Receipt(ReceiptAPI):
@@ -404,3 +424,13 @@ class Receipt(ReceiptAPI):
             transaction_hash=log["transactionHash"],
             transaction_index=log["transactionIndex"],
         )
+
+
+class SharedBlobReceipt(Receipt):
+    blob_gas_used: int
+    blob_gas_price: int
+
+    @field_validator("blob_gas_used", "blob_gas_price", mode="before")
+    @classmethod
+    def hex_to_int(cls, value):
+        return value if isinstance(value, int) else int(HexBytes(value).hex(), 16)

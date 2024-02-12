@@ -127,25 +127,25 @@ def access_list():
 
 
 @pytest.mark.parametrize("type_kwarg", (0, "0x0", b"\x00", "0", HexBytes("0x0"), HexBytes("0x00")))
-def test_create_static_fee_transaction(ethereum, type_kwarg):
+def test_type_0_transactions(ethereum, type_kwarg):
     txn = ethereum.create_transaction(type=type_kwarg)
     assert txn.type == TransactionType.STATIC.value
 
 
 @pytest.mark.parametrize("type_kwarg", (1, "0x01", b"\x01", "1", "01", HexBytes("0x01")))
-def test_create_access_list_transaction(ethereum, type_kwarg):
+def test_type_1_transactions(ethereum, type_kwarg):
     txn = ethereum.create_transaction(type=type_kwarg)
     assert txn.type == TransactionType.ACCESS_LIST.value
 
 
 @pytest.mark.parametrize("type_kwarg", (None, 2, "0x02", b"\x02", "2", "02", HexBytes("0x02")))
-def test_create_dynamic_fee_transaction(ethereum, type_kwarg):
+def test_type_2_transactions(ethereum, type_kwarg):
     txn = ethereum.create_transaction(type=type_kwarg)
     assert txn.type == TransactionType.DYNAMIC.value
 
 
 @pytest.mark.parametrize("key", ("accessList", "access_list"))
-def test_transaction_with_access_lists(ethereum, access_list, key):
+def test_type_1_transactions_using_access_list(ethereum, access_list, key):
     """
     If not given type and only given accessList, the assumed type is 1,
     an "access-list" transaction.
@@ -156,7 +156,7 @@ def test_transaction_with_access_lists(ethereum, access_list, key):
 
 
 @pytest.mark.parametrize("key", ("accessList", "access_list"))
-def test_transaction_with_access_lists_and_max_fee(ethereum, access_list, key):
+def test_type_2_transactions_with_max_fee_and_access_list(ethereum, access_list, key):
     """
     Dynamic-fee txns also support access lists, so the presence of max_fee
     with access_list implies a type 2 txn.
@@ -164,12 +164,22 @@ def test_transaction_with_access_lists_and_max_fee(ethereum, access_list, key):
     data = {"max_fee": 1000000000, key: access_list}
     txn = ethereum.create_transaction(**data)
     assert txn.type == 2
+    assert txn.max_fee == 1000000000
 
 
-def test_create_dynamic_fee_transaction_with_access_lists(ethereum, access_list):
+def test_type_2_transactions_with_access_list(ethereum, access_list):
     txn = ethereum.create_transaction(type=2, accessList=access_list)
     assert txn.type == TransactionType.DYNAMIC.value
     assert txn.access_list == [AccessList.model_validate(x) for x in access_list]
+
+
+@pytest.mark.parametrize(
+    "tx_kwargs",
+    [{"type": 3}, {"max_fee_per_blob_gas": 123}, {"blob_versioned_hashes": [HexBytes(123)]}],
+)
+def test_type_3_transactions(ethereum, tx_kwargs):
+    txn = ethereum.create_transaction(**tx_kwargs)
+    assert txn.type == 3
 
 
 @pytest.mark.parametrize(
@@ -185,7 +195,7 @@ def test_create_dynamic_fee_transaction_with_access_lists(ethereum, access_list)
         {"max_priority_fee": int(1e9), "max_fee": int(100e9)},
     ),
 )
-def test_create_dynamic_fee_kwargs(ethereum, fee_kwargs):
+def test_type_2_transactions_using_fee_kwargs(ethereum, fee_kwargs):
     txn = ethereum.create_transaction(**fee_kwargs)
     assert isinstance(txn, DynamicFeeTransaction)
     if "max_priority_fee" in fee_kwargs:
