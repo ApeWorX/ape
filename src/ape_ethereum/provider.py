@@ -70,6 +70,7 @@ from ape.types import (
 )
 from ape.utils import gas_estimation_error_message, run_until_complete, to_int
 from ape.utils.misc import DEFAULT_MAX_RETRIES_TX
+from ape_ethereum._print import log_print
 from ape_ethereum.transactions import AccessList, AccessListTransaction
 
 DEFAULT_PORT = 8545
@@ -830,8 +831,7 @@ class Web3Provider(ProviderAPI, ABC):
             and txn.gas_price is None
         ):
             txn.gas_price = self.gas_price
-
-        elif txn_type in (TransactionType.DYNAMIC, TransactionType.SHARED_BLOB):
+        elif txn_type is TransactionType.DYNAMIC:
             if txn.max_priority_fee is None:
                 txn.max_priority_fee = self.priority_fee
 
@@ -916,6 +916,11 @@ class Web3Provider(ProviderAPI, ABC):
             # If we get here, for some reason the tx-replay did not produce
             # a VM error.
             receipt.raise_for_status()
+
+        # TODO: Optional configuration?
+        if txn.data:
+            # Look for and print any contract logging
+            log_print(receipt)
 
         logger.info(f"Confirmed {receipt.txn_hash} (total fees paid = {receipt.total_fees_paid})")
         return receipt
