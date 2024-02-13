@@ -139,3 +139,7 @@ class use_temp_sys_path:
         for path in self.exclude:
             if path not in sys.path:
                 sys.path.append(path)
+
+
+def clean_path(path: Path) -> str:
+    return f"{path.relative_to(Path.home())}"
