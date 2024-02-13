@@ -18,8 +18,7 @@ References
 - Discussion on dynamic ABI encoding (Vyper-style) for log calls: https://github.com/NomicFoundation/hardhat/issues/2666  # noqa: E501
 """
 
-from collections.abc import Iterable
-from typing import Any, List
+from typing import Any, Iterable, List
 
 from eth_abi import decode
 from eth_utils import decode_hex
