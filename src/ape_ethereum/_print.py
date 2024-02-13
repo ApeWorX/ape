@@ -19,11 +19,12 @@ References
 """
 
 from collections.abc import Iterable
-from typing import Any, List, TypeGuard
+from typing import Any, List
 
 from eth_abi import decode
 from eth_utils import decode_hex
 from ethpm_types import ContractType, MethodABI
+from typing_extensions import TypeGuard
 
 import ape
 from ape.api import ReceiptAPI
