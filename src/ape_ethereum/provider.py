@@ -40,7 +40,7 @@ from web3.providers import AutoProvider
 from web3.providers.auto import load_provider_from_environment
 from web3.types import FeeHistory, RPCEndpoint, TxParams
 
-from ape.api import BlockAPI, ProviderAPI, ReceiptAPI, TransactionAPI
+from ape.api import Address, BlockAPI, ProviderAPI, ReceiptAPI, TransactionAPI
 from ape.api.networks import LOCAL_NETWORK_NAME
 from ape.exceptions import (
     ApeException,
@@ -918,7 +918,7 @@ class Web3Provider(ProviderAPI, ABC):
             receipt.raise_for_status()
 
         # TODO: Optional configuration?
-        if txn.receiver and txn.receiver.is_contract:
+        if txn.receiver and Address(txn.receiver).is_contract:
             # Look for and print any contract logging
             log_print(receipt)
 
