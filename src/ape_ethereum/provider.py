@@ -918,7 +918,7 @@ class Web3Provider(ProviderAPI, ABC):
             receipt.raise_for_status()
 
         # TODO: Optional configuration?
-        if txn.data:
+        if txn.receiver and txn.receiver.is_contract:
             # Look for and print any contract logging
             log_print(receipt)
 
