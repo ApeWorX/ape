@@ -5,7 +5,7 @@ import time
 from abc import ABC
 from concurrent.futures import ThreadPoolExecutor
 from copy import copy
-from functools import cached_property
+from functools import cached_property, wraps
 from itertools import tee
 from pathlib import Path
 from typing import Any, Dict, Iterator, List, Optional, Union, cast
@@ -101,6 +101,20 @@ class Web3Provider(ProviderAPI, ABC):
 
     _web3: Optional[Web3] = None
     _client_version: Optional[str] = None
+
+    def __new__(cls, *args, **kwargs):
+        # Patching the provider to call a post send_transaction() hook
+        def post_tx_hook(send_tx):
+            @wraps(send_tx)
+            def send_tx_wrapper(self, txn: TransactionAPI) -> ReceiptAPI:
+                receipt = send_tx(self, txn)
+                self._post_send_transaction(txn, receipt)
+                return receipt
+
+            return send_tx_wrapper
+
+        setattr(cls, "send_transaction", post_tx_hook(cls.send_transaction))
+        return super().__new__(cls)  # pydantic v2 doesn't want args
 
     def __init__(self, *args, **kwargs):
         logger.create_logger("web3.RequestManager", handlers=(_sanitize_web3_url,))
@@ -900,6 +914,7 @@ class Web3Provider(ProviderAPI, ABC):
         )
 
         # NOTE: Ensure to cache even the failed receipts.
+        # NOTE: Caching must happen before error enrichment.
         self.chain_manager.history.append(receipt)
 
         if receipt.failed:
@@ -917,13 +932,17 @@ class Web3Provider(ProviderAPI, ABC):
             # a VM error.
             receipt.raise_for_status()
 
+        return receipt
+
+    def _post_send_transaction(self, tx: TransactionAPI, receipt: ReceiptAPI):
+        """Execute post-transaction ops"""
+
         # TODO: Optional configuration?
-        if txn.receiver and Address(txn.receiver).is_contract:
+        if tx.receiver and Address(tx.receiver).is_contract:
             # Look for and print any contract logging
             log_print(receipt)
 
         logger.info(f"Confirmed {receipt.txn_hash} (total fees paid = {receipt.total_fees_paid})")
-        return receipt
 
     def _create_call_tree_node(
         self, evm_call: EvmCallTreeNode, txn_hash: Optional[str] = None
