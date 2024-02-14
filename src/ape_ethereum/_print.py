@@ -27,6 +27,7 @@ from typing_extensions import TypeGuard
 
 import ape
 from ape.api import ReceiptAPI
+from ape.exceptions import APINotImplementedError
 from ape.logging import logger
 from ape.types import CallTreeNode
 
@@ -119,6 +120,14 @@ def extract_logs(receipt: ReceiptAPI) -> Iterable[CallTreeNode]:
 
 def log_print(receipt: ReceiptAPI):
     """Logs messages to console outputted by contracts via print() or console.log() statements"""
+
+    # Some providers do not implement this, so skip
+    try:
+        receipt.call_tree
+    except APINotImplementedError:
+        logger.debug("Call tree not available, skipping print log extraction")
+        return
+
     lines = []
 
     # Extract any Vyper print() calls to output
