@@ -443,6 +443,23 @@ def test_getattr_contract_not_exists(project):
         _ = project.ThisIsNotAContractThatExists
 
 
+@pytest.mark.parametrize("iypthon_attr_name", ("_repr_mimebundle_", "_ipython_display_"))
+def test_getattr_ipython(mocker, project, iypthon_attr_name):
+    spy = mocker.spy(project, "_get_contract")
+    getattr(project, iypthon_attr_name)
+    # Ensure it does not try to do anything with contracts.
+    assert spy.call_count == 0
+
+
+def test_getattr_ipython_canary_check(mocker, project):
+    spy = mocker.spy(project, "_get_contract")
+    with pytest.raises(AttributeError):
+        getattr(project, "_ipython_canary_method_should_not_exist_")
+
+    # Ensure it does not try to do anything with contracts.
+    assert spy.call_count == 0
+
+
 def test_build_file_only_modified_once(project_with_contract):
     project = project_with_contract
     artifact = project.path / ".build" / "__local__.json"

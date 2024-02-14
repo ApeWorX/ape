@@ -30,6 +30,7 @@ from ape.logging import logger
 from ape.types import AddressType, ContractLog, LogFilter, MockContractLog
 from ape.utils import BaseInterfaceModel, ManagerAccessMixin, cached_property, singledispatchmethod
 from ape.utils.abi import StructParser
+from ape.utils.basemodel import _assert_not_ipython_check
 
 
 class ContractConstructor(ManagerAccessMixin):
@@ -1163,7 +1164,7 @@ class ContractInstance(BaseAddress, ContractTypeWrapper):
         Returns:
             Any: The return value from the contract call, or a transaction receipt.
         """
-
+        _assert_not_ipython_check(attr_name)
         if attr_name in set(super(BaseAddress, self).__dir__()):
             return super(BaseAddress, self).__getattribute__(attr_name)
 
@@ -1252,7 +1253,7 @@ class ContractContainer(ContractTypeWrapper):
             :class:`~ape.types.ContractEvent` or a subclass of :class:`~ape.exceptions.CustomError`
             or any real attribute of the class.
         """
-
+        _assert_not_ipython_check(name)
         try:
             # First, check if requesting a regular attribute on this class.
             return self.__getattribute__(name)
@@ -1464,6 +1465,7 @@ class ContractNamespace:
             Union[:class:`~ape.contracts.base.ContractContainer`,
             :class:`~ape.contracts.base.ContractNamespace`]
         """
+        _assert_not_ipython_check(item)
 
         def _get_name(cc: ContractContainer) -> str:
             return cc.contract_type.name or ""

@@ -59,7 +59,7 @@ To avoid naming collisions with other properties on the `project` object, you ca
 ```python
 from ape import project
 
-contract = property.get_contract("MyContract")  # Same as `project.MyContract`.
+contract = project.get_contract("MyContract")  # Same as `project.MyContract`.
 ```
 
 Notice when deploying, we have to specify the `sender=` kwarg because `deploy` operations are transactions.

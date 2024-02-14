@@ -290,7 +290,7 @@ class EcosystemAPI(ExtraAttributesMixin, BaseInterfaceModel):
     def __ape_extra_attributes__(self) -> Iterator[ExtraModelAttributes]:
         yield ExtraModelAttributes(
             name="networks",
-            attributes=self.networks,
+            attributes=lambda: self.networks,
             include_getattr=True,
             include_getitem=True,
         )

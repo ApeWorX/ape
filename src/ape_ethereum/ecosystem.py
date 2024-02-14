@@ -48,6 +48,7 @@ from ape.utils import (
     returns_array,
     to_int,
 )
+from ape.utils.basemodel import _assert_not_ipython_check
 from ape.utils.misc import DEFAULT_MAX_RETRIES_TX, DEFAULT_TRANSACTION_TYPE
 from ape_ethereum.proxies import (
     IMPLEMENTATION_ABI,
@@ -61,6 +62,8 @@ from ape_ethereum.transactions import (
     BaseTransaction,
     DynamicFeeTransaction,
     Receipt,
+    SharedBlobReceipt,
+    SharedBlobTransaction,
     StaticFeeTransaction,
     TransactionStatusEnum,
     TransactionType,
@@ -220,6 +223,7 @@ class BaseEthereumConfig(PluginConfig):
         )
 
     def __getattr__(self, key: str) -> Any:
+        _assert_not_ipython_check(key)
         net_key = key.replace("-", "_")
         if net_key.endswith("_fork"):
             return self._get_forked_config(net_key)
@@ -478,7 +482,7 @@ class Ethereum(EcosystemAPI):
 
     def decode_receipt(self, data: Dict) -> ReceiptAPI:
         status = data.get("status")
-        if status:
+        if status is not None:
             status = self.conversion_manager.convert(status, int)
             status = TransactionStatusEnum(status)
 
@@ -503,7 +507,7 @@ class Ethereum(EcosystemAPI):
         if block_number is None:
             raise ValueError("Missing block number.")
 
-        receipt = Receipt(
+        receipt_kwargs = dict(
             block_number=block_number,
             contract_address=data.get("contract_address") or data.get("contractAddress"),
             gas_limit=data.get("gas", data.get("gas_limit", data.get("gasLimit"))) or 0,
@@ -514,7 +518,19 @@ class Ethereum(EcosystemAPI):
             txn_hash=txn_hash,
             transaction=self.create_transaction(**data),
         )
-        return receipt
+
+        receipt_cls: Type[Receipt]
+        if any(
+            x in data
+            for x in ("blobGasPrice", "blobGasUsed", "blobVersionedHashes", "maxFeePerBlobGas")
+        ):
+            receipt_cls = SharedBlobReceipt
+            receipt_kwargs["blob_gas_price"] = data.get("blob_gas_price", data.get("blobGasPrice"))
+            receipt_kwargs["blob_gas_used"] = data.get("blob_gas_used", data.get("blobGasUsed"))
+        else:
+            receipt_cls = Receipt
+
+        return receipt_cls.model_validate(receipt_kwargs)
 
     def decode_block(self, data: Dict) -> BlockAPI:
         data["hash"] = HexBytes(data["hash"]) if data.get("hash") else None
@@ -766,6 +782,8 @@ class Ethereum(EcosystemAPI):
             tx_data,
             ("txType", "tx_type", "txnType", "txn_type", "transactionType", "transaction_type"),
         )
+        tx_data = _correct_key("maxFeePerBlobGas", tx_data, ("max_fee_per_blob_gas",))
+        tx_data = _correct_key("blobVersionedHashes", tx_data, ("blob_versioned_hashes",))
 
         # Handle unique value specifications, such as "1 ether".
         if "value" in tx_data and not isinstance(tx_data["value"], int):
@@ -779,8 +797,9 @@ class Ethereum(EcosystemAPI):
         # Deduce the transaction type.
         transaction_types: Dict[TransactionType, Type[TransactionAPI]] = {
             TransactionType.STATIC: StaticFeeTransaction,
-            TransactionType.DYNAMIC: DynamicFeeTransaction,
             TransactionType.ACCESS_LIST: AccessListTransaction,
+            TransactionType.DYNAMIC: DynamicFeeTransaction,
+            TransactionType.SHARED_BLOB: SharedBlobTransaction,
         }
         if "type" in tx_data:
             # May be None in data.
@@ -801,6 +820,8 @@ class Ethereum(EcosystemAPI):
             version = TransactionType.DYNAMIC
         elif "access_list" in tx_data or "accessList" in tx_data:
             version = TransactionType.ACCESS_LIST
+        elif "maxFeePerBlobGas" in tx_data or "blobVersionedHashes" in tx_data:
+            version = TransactionType.SHARED_BLOB
         else:
             version = self.default_transaction_type
 

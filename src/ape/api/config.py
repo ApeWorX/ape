@@ -4,6 +4,8 @@ from typing import TYPE_CHECKING, Any, Dict, Optional, TypeVar
 from pydantic import ConfigDict
 from pydantic_settings import BaseSettings
 
+from ape.utils.basemodel import _assert_not_ipython_check
+
 if TYPE_CHECKING:
     from ape.managers.config import ConfigManager
 
@@ -58,6 +60,8 @@ class PluginConfig(BaseSettings):
         return cls(**update(default_values, overrides))
 
     def __getattr__(self, attr_name: str) -> Any:
+        _assert_not_ipython_check(attr_name)
+
         # Allow hyphens in plugin config files.
         attr_name = attr_name.replace("-", "_")
         extra = self.__pydantic_extra__ or {}
