@@ -93,7 +93,8 @@ def extract_debug_logs(call_tree: CallTreeNode) -> Iterable[Tuple[Any]]:
         if is_vyper_print(call) and call.inputs is not None:
             yield vyper_print(call.inputs)
         elif is_console_log(call) and call.inputs is not None:
-            method_abi = console_contract.identifier_lookup[call.method_id]
+            assert call.method_id is not None  # is_console_log check already checked
+            method_abi = console_contract.identifier_lookup.get(call.method_id)
             if isinstance(method_abi, MethodABI):
                 yield console_log(method_abi, call.inputs)
         elif call.calls is not None:
