@@ -18,9 +18,10 @@ References
 - Discussion on dynamic ABI encoding (Vyper-style) for log calls: https://github.com/NomicFoundation/hardhat/issues/2666  # noqa: E501
 """
 
-from typing import Any, Iterable, Tuple
+from typing import Any, Iterable, Tuple, cast
 
 from eth_abi import decode
+from eth_typing import ChecksumAddress
 from eth_utils import decode_hex
 from ethpm_types import ContractType, MethodABI
 from typing_extensions import TypeGuard
@@ -30,7 +31,7 @@ from ape.types import CallTreeNode
 
 from ._console_log_abi import CONSOLE_LOG_ABI
 
-CONSOLE_CONTRACT_ID = "0x000000000000000000636F6e736F6c652e6c6f67"
+CONSOLE_CONTRACT_ID = cast(ChecksumAddress, "0x000000000000000000636F6e736F6c652e6c6f67")
 VYPER_PRINT_METHOD_ID = "0x23cdd8e8"  # log(string,bytes)
 
 console_contract = ContractType(abi=CONSOLE_LOG_ABI)
