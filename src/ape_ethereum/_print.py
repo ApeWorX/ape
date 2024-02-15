@@ -18,7 +18,7 @@ References
 - Discussion on dynamic ABI encoding (Vyper-style) for log calls: https://github.com/NomicFoundation/hardhat/issues/2666  # noqa: E501
 """
 
-from typing import Any, Iterable, List
+from typing import Any, Iterable, Tuple
 
 from eth_abi import decode
 from eth_utils import decode_hex
@@ -26,12 +26,10 @@ from ethpm_types import ContractType, MethodABI
 from typing_extensions import TypeGuard
 
 import ape
-from ape.api import ReceiptAPI
 from ape.types import CallTreeNode
 
 from ._console_log_abi import CONSOLE_LOG_ABI
 
-PREFIX = "[CONTRACT-LOG] "
 CONTRACT_ID = "0x000000000000000000636F6e736F6c652e6c6f67"
 VYPER_METHOD_ID = "0x23cdd8e8"  # log(string,bytes)
 
@@ -74,43 +72,29 @@ def is_vyper_print(call: Any) -> TypeGuard[CallTreeNode]:
     return False
 
 
-def console_log(method_abi: MethodABI, calldata: str) -> List[Any]:
+def console_log(method_abi: MethodABI, calldata: str) -> Tuple[Any]:
     """Return logged data for console.log() calls"""
     bcalldata = decode_hex(calldata)
     data = ape.networks.ethereum.decode_calldata(method_abi, bcalldata)
-    return list(data.values())
+    return tuple(data.values())
 
 
-def vyper_print(calldata: str) -> List[Any]:
+def vyper_print(calldata: str) -> Tuple[Any]:
     """Return logged data for print() calls"""
     bcalldata = decode_hex(calldata)
     schema, payload = decode(["string", "bytes"], bcalldata)
     data = decode(schema.strip("()").split(","), payload)
-    return list(data)
+    return tuple(data)
 
 
-def extract_prints(receipt: ReceiptAPI) -> Iterable[CallTreeNode]:
-    """Filter calls of Vyper print() from a transactions call tree"""
-    if receipt.call_tree is None:
-        return []
-
-    return filter(
-        is_vyper_print,
-        receipt.call_tree.calls,
-    )
-
-
-def extract_logs(receipt: ReceiptAPI) -> Iterable[CallTreeNode]:
-    """Filter calls to console.log() from a transactions call tree"""
-    if receipt.call_tree is None:
-        return []
-
-    return filter(
-        is_console_log,
-        filter(
-            # Since console.log(string,bytes) is a valid call also mathcing Vyper's print(), try and
-            # filter out the Vyper print() calls.
-            lambda c: not (c.method_id == VYPER_METHOD_ID and is_vyper_print(c)),
-            receipt.call_tree.calls,
-        ),
-    )
+def extract_debug_logs(call_tree: CallTreeNode) -> Iterable[Tuple[Any]]:
+    """Filter calls to console.log() and print() from a transactions call tree"""
+    for call in call_tree.calls:
+        if is_vyper_print(call) and call.inputs is not None:
+            yield vyper_print(call.inputs)
+        elif is_console_log(call) and call.inputs is not None:
+            method_abi = console_contract.identifier_lookup[call.method_id]
+            if isinstance(method_abi, MethodABI):
+                yield console_log(method_abi, call.inputs)
+        elif call.calls is not None:
+            yield from extract_debug_logs(call)

@@ -1,7 +1,18 @@
 import sys
 import time
 from datetime import datetime
-from typing import IO, TYPE_CHECKING, Any, Iterator, List, NoReturn, Optional, Union
+from typing import (
+    IO,
+    TYPE_CHECKING,
+    Any,
+    Iterable,
+    Iterator,
+    List,
+    NoReturn,
+    Optional,
+    Tuple,
+    Union,
+)
 
 from eth_pydantic_types import HexBytes
 from eth_utils import is_0x_prefixed, is_hex, to_int
@@ -295,7 +306,7 @@ class ReceiptAPI(ExtraAttributesMixin, BaseInterfaceModel):
         return None
 
     @cached_property
-    def debug_logs(self) -> List[List[Any]]:
+    def debug_logs(self) -> Iterable[Tuple[Any]]:
         """Return any debug log data outputted by the transaction"""
         return []
 
