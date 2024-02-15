@@ -294,6 +294,18 @@ class ReceiptAPI(ExtraAttributesMixin, BaseInterfaceModel):
     def call_tree(self) -> Optional[Any]:
         return None
 
+    @cached_property
+    def debug_logs(self) -> List[List[Any]]:
+        """Return any debug log data outputted by the transaction"""
+        return []
+
+    def print_debug_logs(self):
+        """
+        Log debug logs to the console
+        """
+        for ln in self.debug_logs:
+            logger.info("[CONTRACT-LOG] ".join(map(str, ln)))
+
     @property
     def failed(self) -> bool:
         """
