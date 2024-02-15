@@ -70,6 +70,7 @@ from ape.types import (
 )
 from ape.utils import gas_estimation_error_message, run_until_complete, to_int
 from ape.utils.misc import DEFAULT_MAX_RETRIES_TX
+from ape_ethereum._print import CONSOLE_CONTRACT_ID, console_contract
 from ape_ethereum.transactions import AccessList, AccessListTransaction
 
 DEFAULT_PORT = 8545
@@ -102,6 +103,17 @@ class Web3Provider(ProviderAPI, ABC):
     _client_version: Optional[str] = None
 
     def __new__(cls, *args, **kwargs):
+        # Post-connection ops
+        def post_connect_hook(connect):
+            @wraps(connect)
+            def connect_wrapper(self):
+                print("pre-connect()")
+                connect(self)
+                print("post-connect()")
+                self._post_connect()
+
+            return connect_wrapper
+
         # Patching the provider to call a post send_transaction() hook
         def post_tx_hook(send_tx):
             @wraps(send_tx)
@@ -113,6 +125,7 @@ class Web3Provider(ProviderAPI, ABC):
             return send_tx_wrapper
 
         setattr(cls, "send_transaction", post_tx_hook(cls.send_transaction))
+        setattr(cls, "connect", post_connect_hook(cls.connect))
         return super().__new__(cls)  # pydantic v2 doesn't want args
 
     def __init__(self, *args, **kwargs):
@@ -942,6 +955,10 @@ class Web3Provider(ProviderAPI, ABC):
             receipt.print_debug_logs()
 
         logger.info(f"Confirmed {receipt.txn_hash} (total fees paid = {receipt.total_fees_paid})")
+
+    def _post_connect(self):
+        # Register the console contract for trace enrichment
+        self.chain_manager.contracts._cache_contract_type(CONSOLE_CONTRACT_ID, console_contract)
 
     def _create_call_tree_node(
         self, evm_call: EvmCallTreeNode, txn_hash: Optional[str] = None

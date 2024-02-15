@@ -30,17 +30,18 @@ from ape.types import CallTreeNode
 
 from ._console_log_abi import CONSOLE_LOG_ABI
 
-CONTRACT_ID = "0x000000000000000000636F6e736F6c652e6c6f67"
-VYPER_METHOD_ID = "0x23cdd8e8"  # log(string,bytes)
+CONSOLE_CONTRACT_ID = "0x000000000000000000636F6e736F6c652e6c6f67"
+VYPER_PRINT_METHOD_ID = "0x23cdd8e8"  # log(string,bytes)
 
-console_contract = ContractType(abi=CONSOLE_LOG_ABI, address=CONTRACT_ID)
+console_contract = ContractType(abi=CONSOLE_LOG_ABI)
+console_contract.name = "console"  # TODO: Pretty confused why this can't be set in the constructor
 
 
 def is_console_log(call: Any) -> TypeGuard[CallTreeNode]:
     """Determine if a call is a starndard console.log() call"""
     return (
         isinstance(call, CallTreeNode)
-        and call.contract_id == CONTRACT_ID
+        and call.contract_id == CONSOLE_CONTRACT_ID
         and call.method_id in console_contract.identifier_lookup
     )
 
@@ -49,8 +50,8 @@ def is_vyper_print(call: Any) -> TypeGuard[CallTreeNode]:
     """Determine if a call is a starndard Vyper print() call"""
     if (
         isinstance(call, CallTreeNode)
-        and call.contract_id == CONTRACT_ID
-        and call.method_id == VYPER_METHOD_ID
+        and call.contract_id == CONSOLE_CONTRACT_ID
+        and call.method_id == VYPER_PRINT_METHOD_ID
         and isinstance(call.inputs, str)
     ):
         bcalldata = decode_hex(call.inputs)
