@@ -1,4 +1,5 @@
-"""Logs data from Vyper's print() and the Hardhat Solidity console.log calls
+"""Utilities to extract debug log data from Vyper's print() and the Hardhat Solidity console.log
+calls.
 
 There are two different implementations of the console.log functionality. Vyper's print() and
 Hardhat's console.sol contract. Both send staticcalls to a specific non-existent contract that we
