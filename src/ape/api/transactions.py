@@ -304,7 +304,7 @@ class ReceiptAPI(ExtraAttributesMixin, BaseInterfaceModel):
         Log debug logs to the console
         """
         for ln in self.debug_logs:
-            logger.info("[CONTRACT-LOG] ".join(map(str, ln)))
+            logger.info("[CONTRACT-LOG] " + " ".join(map(str, ln)))
 
     @property
     def failed(self) -> bool:
