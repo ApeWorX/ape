@@ -1,7 +1,7 @@
 import sys
 from enum import Enum, IntEnum
 from functools import cached_property
-from typing import IO, Dict, List, Optional, Union
+from typing import IO, Any, Dict, List, Optional, Union
 
 from eth_abi import decode
 from eth_account import Account as EthAccount
@@ -17,10 +17,17 @@ from pydantic import BaseModel, Field, field_validator, model_validator
 
 from ape.api import ReceiptAPI, TransactionAPI
 from ape.contracts import ContractEvent
-from ape.exceptions import OutOfGasError, SignatureError, TransactionError
+from ape.exceptions import APINotImplementedError, OutOfGasError, SignatureError, TransactionError
 from ape.logging import logger
 from ape.types import AddressType, CallTreeNode, ContractLog, ContractLogContainer, SourceTraceback
 from ape.utils import ZERO_ADDRESS
+from ape_ethereum._print import (
+    console_contract,
+    console_log,
+    extract_logs,
+    extract_prints,
+    vyper_print,
+)
 
 
 class TransactionStatusEnum(IntEnum):
@@ -206,6 +213,34 @@ class Receipt(ReceiptAPI):
     @cached_property
     def call_tree(self) -> Optional[CallTreeNode]:
         return self.provider.get_call_tree(self.txn_hash)
+
+    @cached_property
+    def debug_logs(self) -> List[List[Any]]:
+        """
+        Extract messages to console outputted by contracts via print() or console.log() statements
+        """
+        lines: List[List[Any]] = []
+
+        # Some providers do not implement this, so skip
+        try:
+            self.call_tree
+        except APINotImplementedError:
+            logger.debug("Call tree not available, skipping print log extraction")
+            return lines
+
+        # Extract any Vyper print() calls to output
+        for call in extract_prints(self):
+            if call.inputs is not None:
+                lines.append(vyper_print(call.inputs))
+
+        # Extract any Hardhat console.log() calls to output
+        for call in extract_logs(self):
+            if call.method_id is not None and call.inputs is not None:
+                method_abi = console_contract.identifier_lookup[call.method_id]
+                if isinstance(method_abi, MethodABI):
+                    lines.append(console_log(method_abi, call.inputs))
+
+        return lines
 
     @cached_property
     def contract_type(self) -> Optional[ContractType]:

@@ -70,7 +70,6 @@ from ape.types import (
 )
 from ape.utils import gas_estimation_error_message, run_until_complete, to_int
 from ape.utils.misc import DEFAULT_MAX_RETRIES_TX
-from ape_ethereum._print import log_print
 from ape_ethereum.transactions import AccessList, AccessListTransaction
 
 DEFAULT_PORT = 8545
@@ -940,7 +939,7 @@ class Web3Provider(ProviderAPI, ABC):
         # TODO: Optional configuration?
         if tx.receiver and Address(tx.receiver).is_contract:
             # Look for and print any contract logging
-            log_print(receipt)
+            receipt.print_debug_logs()
 
         logger.info(f"Confirmed {receipt.txn_hash} (total fees paid = {receipt.total_fees_paid})")
 
