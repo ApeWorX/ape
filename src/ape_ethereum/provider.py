@@ -107,9 +107,7 @@ class Web3Provider(ProviderAPI, ABC):
         def post_connect_hook(connect):
             @wraps(connect)
             def connect_wrapper(self):
-                print("pre-connect()")
                 connect(self)
-                print("post-connect()")
                 self._post_connect()
 
             return connect_wrapper
