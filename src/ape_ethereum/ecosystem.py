@@ -551,6 +551,11 @@ class Ethereum(EcosystemAPI):
         if "transactions" in data:
             data["num_transactions"] = len(data["transactions"])
 
+        if "size" not in data:
+            # NOTE: Due to an issue with `eth_subscribe:newHeads` on Infura
+            # https://github.com/ApeWorX/ape-infura/issues/72
+            data["size"] = -1  # HACK: use an unrealistic sentinel value
+
         return Block.model_validate(data)
 
     def _python_type_for_abi_type(self, abi_type: ABIType) -> Union[Type, Sequence]:
