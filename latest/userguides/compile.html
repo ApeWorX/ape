@@ -50,6 +50,7 @@
               <option value="">Select version...</option>
               <option value="latest">latest</option>
               <option value="stable">stable</option>
+                <option value="v0.7.9">v0.7.9</option>
                 <option value="v0.7.8">v0.7.8</option>
                 <option value="v0.7.7">v0.7.7</option>
                 <option value="v0.7.6">v0.7.6</option>
@@ -291,7 +292,21 @@ See <a class="reference external" href="./dependencies.html">this guide</a> to l
 <section id="settings">
 <h2>Settings<a class="headerlink" href="#settings" title="Permalink to this heading"></a></h2>
 <p>Generally, configure compiler plugins using your <code class="docutils literal notranslate"><span class="pre">ape-config.yaml</span></code> file.
-For example, when using the <code class="docutils literal notranslate"><span class="pre">vyper</span></code> plugin, you can configure settings under the <code class="docutils literal notranslate"><span class="pre">vyper</span></code> key:</p>
+One setting that applies to many compiler plugins is <code class="docutils literal notranslate"><span class="pre">cache_folder</span></code>, which holds dependency source files the compiler uses when compiling your contracts.
+By default, the folder is in your <code class="docutils literal notranslate"><span class="pre">contracts/.cache</span></code> folder but there are times you may want to move this to another location.
+Paths are relative to the project directory.
+For instance, to move the dependency cahce to the root project directory:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">compile</span><span class="p">:</span>
+<span class="w">   </span><span class="nt">cache_folder</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">.cache</span>
+</pre></div>
+</div>
+<div class="admonition caution">
+<p class="admonition-title">Caution</p>
+<p>Changing the location of the dependency cache folder may alter the the output bytecode of your contracts from some compilers.
+Specifically, the <a class="reference external" href="https://docs.soliditylang.org/en/latest/metadata.html#encoding-of-the-metadata-hash-in-the-bytecode">solc compiler will apend a hash of the input metadata to the contract bytecode</a> which will change with contract path or compiler settings changes.
+This may impact things like contract verification on existing projects.</p>
+</div>
+<p>As another example, when using the <code class="docutils literal notranslate"><span class="pre">vyper</span></code> plugin, you can configure settings under the <code class="docutils literal notranslate"><span class="pre">vyper</span></code> key:</p>
 <div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">vyper</span><span class="p">:</span>
 <span class="w">  </span><span class="nt">version</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0.3.10</span>
 </pre></div>
