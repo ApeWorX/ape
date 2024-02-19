@@ -298,7 +298,7 @@ def temp_config(config):
     def func(data: Optional[Dict] = None):
         data = data or {}
         with tempfile.TemporaryDirectory() as temp_dir_str:
-            temp_dir = Path(temp_dir_str)
+            temp_dir = Path(temp_dir_str).resolve()
             config._cached_configs = {}
             config_file = temp_dir / CONFIG_FILE_NAME
             config_file.touch()

@@ -200,6 +200,7 @@ class ConfigManager(BaseInterfaceModel):
         )
 
         self.contracts_folder = configs["contracts_folder"] = contracts_folder
+
         deployments = user_config.pop("deployments", {})
         valid_ecosystems = dict(self.plugin_manager.ecosystems)
         valid_network_names = [n[1] for n in [e[1] for e in self.plugin_manager.networks]]
@@ -221,8 +222,13 @@ class ConfigManager(BaseInterfaceModel):
                 ethereum_config_cls = config_class
 
             if config_class != ConfigDict:
-                # NOTE: Will raise if improperly provided keys
-                config = config_class.from_overrides(user_override)  # type: ignore
+                config = config_class.from_overrides(  # type: ignore
+                    # NOTE: Will raise if improperly provided keys
+                    user_override,
+                    # NOTE: Sending ourselves in case the PluginConfig needs access to the root
+                    #       config vars.
+                    config_manager=self,
+                )
             else:
                 # NOTE: Just use it directly as a dict if `ConfigDict` is passed
                 config = user_override

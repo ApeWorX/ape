@@ -164,7 +164,9 @@ class CompilerManager(BaseManager):
                 # For mypy - should not be possible.
                 raise ValueError("Compiler should not be None")
 
-            compiled_contracts = compiler.compile(paths_to_compile, base_path=contracts_folder)
+            compiled_contracts = compiler.compile(
+                paths_to_compile, base_path=self.config_manager.get_config("compile").base_path
+            )
 
             # Validate some things about the compile contracts.
             for contract_type in compiled_contracts:
