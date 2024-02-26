@@ -950,7 +950,7 @@ class Web3Provider(ProviderAPI, ABC):
         # TODO: Optional configuration?
         if tx.receiver and Address(tx.receiver).is_contract:
             # Look for and print any contract logging
-            receipt.print_debug_logs()
+            receipt.show_debug_logs()
 
         logger.info(f"Confirmed {receipt.txn_hash} (total fees paid = {receipt.total_fees_paid})")
 
