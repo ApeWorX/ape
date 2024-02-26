@@ -315,7 +315,7 @@ class ReceiptAPI(ExtraAttributesMixin, BaseInterfaceModel):
         Output debug logs to logging system
         """
         for ln in self.debug_logs:
-            logger.info("[CONTRACT-LOG] " + " ".join(map(str, ln)))
+            logger.info("[DEBUG-LOG] " + " ".join(map(str, ln)))
 
     @property
     def failed(self) -> bool:
