@@ -310,9 +310,9 @@ class ReceiptAPI(ExtraAttributesMixin, BaseInterfaceModel):
         """Return any debug log data outputted by the transaction"""
         return []
 
-    def print_debug_logs(self):
+    def show_debug_logs(self):
         """
-        Log debug logs to the console
+        Output debug logs to logging system
         """
         for ln in self.debug_logs:
             logger.info("[CONTRACT-LOG] " + " ".join(map(str, ln)))
