@@ -359,7 +359,8 @@ def test_fork_with_positive_block_number(networks, mock_sepolia, mock_fork_provi
     with networks.fork(block_number=block_id):
         call = mock_fork_provider.partial_call
 
-    actual = call[1]["provider_settings"]["fork"]["ethereum"]["sepolia"]["block_number"]
+    settings = call[1]["provider_settings"]["fork"]["ethereum"]["sepolia"]
+    actual = settings["block_number"]
     assert actual == block_id
 
 
