@@ -209,7 +209,7 @@ class Receipt(ReceiptAPI):
         return self.provider.get_call_tree(self.txn_hash)
 
     @cached_property
-    def debug_logs(self) -> Iterable[Tuple[Any]]:
+    def debug_logs_typed(self) -> Iterable[Tuple[Any]]:
         """
         Extract messages to console outputted by contracts via print() or console.log() statements
         """
@@ -218,7 +218,7 @@ class Receipt(ReceiptAPI):
         try:
             self.call_tree
         except APINotImplementedError:
-            logger.debug("Call tree not available, skipping print log extraction")
+            logger.debug("Call tree not available, skipping debug log extraction")
             return []
 
         return extract_debug_logs(self.call_tree) if self.call_tree is not None else []

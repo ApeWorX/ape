@@ -306,16 +306,23 @@ class ReceiptAPI(ExtraAttributesMixin, BaseInterfaceModel):
         return None
 
     @cached_property
-    def debug_logs(self) -> Iterable[Tuple[Any]]:
+    def debug_logs_typed(self) -> Iterable[Tuple[Any]]:
         """Return any debug log data outputted by the transaction"""
         return []
+
+    @cached_property
+    def debug_logs_lines(self) -> Iterable[str]:
+        """
+        Return any debug log data outputted by the transaction as strings suitable for printing
+        """
+        return [" ".join(map(str, ln)) for ln in self.debug_logs_typed]
 
     def show_debug_logs(self):
         """
         Output debug logs to logging system
         """
-        for ln in self.debug_logs:
-            logger.info("[DEBUG-LOG] " + " ".join(map(str, ln)))
+        for ln in self.debug_logs_lines:
+            logger.info("[DEBUG-LOG] " + ln)
 
     @property
     def failed(self) -> bool:
