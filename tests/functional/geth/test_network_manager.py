@@ -22,6 +22,7 @@ def mock_geth_sepolia(ethereum, geth_provider, geth_contract):
 @geth_process_test
 def test_fork_upstream_provider(networks, mock_geth_sepolia, geth_provider, mock_fork_provider):
     uri = "http://example.com/node"
+    orig = geth_provider.provider_settings.get("uri")
     geth_provider.provider_settings["uri"] = uri
     try:
         with networks.fork():
@@ -31,5 +32,8 @@ def test_fork_upstream_provider(networks, mock_geth_sepolia, geth_provider, mock
         actual = settings["upstream_provider"]
         assert actual == uri
     finally:
-        if "uri" in geth_provider.provider_settings:
+        # Restore.
+        if orig:
+            geth_provider.provider_settings["uri"] = orig
+        else:
             del geth_provider.provider_settings["uri"]

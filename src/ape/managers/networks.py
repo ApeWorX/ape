@@ -122,7 +122,7 @@ class NetworkManager(BaseManager):
             # Ensure block_number is set in config for this network
             fork_settings["block_number"] = block_number
 
-        if uri := getattr(self.provider, "uri", None):
+        if uri := self.provider.connection_str:
             fork_settings["upstream_provider"] = uri
 
         _dict_overlay(
