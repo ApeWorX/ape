@@ -109,7 +109,7 @@ class NetworkManager(BaseManager):
             raise NetworkError(f"Unable to fork network '{self.network.name}'.") from err
 
         provider_settings = provider_settings or {}
-
+        fork_settings = {}
         if block_number is not None:
             # Negative block_number means relative to HEAD
             if block_number < 0:
@@ -120,14 +120,15 @@ class NetworkManager(BaseManager):
                     raise NetworkError("Unable to fork past genesis block.")
 
             # Ensure block_number is set in config for this network
-            _dict_overlay(
-                provider_settings,
-                {
-                    "fork": {
-                        self.ecosystem.name: {self.network.name: {"block_number": block_number}}
-                    }
-                },
-            )
+            fork_settings["block_number"] = block_number
+
+        if uri := self.provider.connection_str:
+            fork_settings["upstream_provider"] = uri
+
+        _dict_overlay(
+            provider_settings,
+            {"fork": {self.ecosystem.name: {self.network.name: fork_settings}}},
+        )
 
         shared_kwargs: dict = {"provider_settings": provider_settings, "disconnect_after": True}
         return (

@@ -707,7 +707,7 @@ def mock_sepolia(ethereum, eth_tester_provider, vyper_contract_instance):
     network.
     """
     # Ensuring contract exists before hack.
-    # This allow the nework to be past genesis which is more realistic.
+    # This allow the network to be past genesis which is more realistic.
     _ = vyper_contract_instance
     eth_tester_provider.network.name = "sepolia"
     yield eth_tester_provider.network
