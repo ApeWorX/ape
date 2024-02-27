@@ -171,3 +171,22 @@ def test_get_call_tree_erigon(mock_web3, mock_geth, parity_trace_response, txn_h
     actual = repr(result)
     expected = r"0xC17f2C69aE2E66FD87367E3260412EEfF637F70E.0x96d373e5\(\) \[\d+ gas\]"
     assert re.match(expected, actual)
+
+
+@geth_process_test
+def test_printing_debug_logs_vyper(geth_provider, geth_account, vyper_printing):
+    num = 789
+    # Why is 6 afraid of 7?  Because {num}
+    receipt = vyper_printing.print_uint(num, sender=geth_account)
+    assert receipt.status
+    assert len(list(receipt.debug_logs_typed)) == 1
+    assert receipt.debug_logs_typed[0][0] == num
+
+
+@geth_process_test
+def test_printing_debug_logs_compat(geth_provider, geth_account, vyper_printing):
+    num = 456
+    receipt = vyper_printing.print_uint_compat(num, sender=geth_account)
+    assert receipt.status
+    assert len(list(receipt.debug_logs_typed)) == 1
+    assert receipt.debug_logs_typed[0][0] == num
