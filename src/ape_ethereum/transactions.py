@@ -1,7 +1,7 @@
 import sys
 from enum import Enum, IntEnum
 from functools import cached_property
-from typing import IO, Any, Dict, Iterable, List, Optional, Tuple, Union
+from typing import IO, Any, Dict, List, Optional, Tuple, Union
 
 from eth_abi import decode
 from eth_account import Account as EthAccount
@@ -209,19 +209,24 @@ class Receipt(ReceiptAPI):
         return self.provider.get_call_tree(self.txn_hash)
 
     @cached_property
-    def debug_logs_typed(self) -> Iterable[Tuple[Any]]:
+    def debug_logs_typed(self) -> List[Tuple[Any]]:
         """
         Extract messages to console outputted by contracts via print() or console.log() statements
         """
 
-        # Some providers do not implement this, so skip
         try:
-            self.call_tree
+            assert self.call_tree is not None
+
+        # If the call tree is not available, no logs are available
+        except AssertionError:
+            return []
+
+        # Some providers do not implement this, so skip
         except APINotImplementedError:
             logger.debug("Call tree not available, skipping debug log extraction")
             return []
 
-        return extract_debug_logs(self.call_tree) if self.call_tree is not None else []
+        return list(extract_debug_logs(self.call_tree))
 
     @cached_property
     def contract_type(self) -> Optional[ContractType]:
