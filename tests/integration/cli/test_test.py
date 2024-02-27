@@ -140,6 +140,8 @@ def run_gas_test(
         remainder = "\n".join(expected[actual_len:])
         pytest.fail(f"Expected contains more than actual:\n{remainder}")
 
+    print("actual:", "\n".join(actual))
+    print("expected:", "\n".join(expected))
     for actual_line, expected_line in zip(actual, expected):
         message = f"'{actual_line}' does not match pattern '{expected_line}'."
         assert re.match(expected_line, actual_line), message
@@ -220,6 +222,7 @@ def test_gas_flag_when_not_supported(setup_pytester, project, pytester, eth_test
 def test_gas_flag_in_tests(geth_provider, setup_pytester, project, pytester):
     passed, failed = setup_pytester(project.path.name)
     result = pytester.runpytest("--gas")
+    print("result:", result)
     run_gas_test(result, passed, failed)
 
 
