@@ -1,6 +1,9 @@
 import signal
+import threading
 
-signal.signal(signal.SIGINT, lambda s, f: _sys.exit(130))
+if threading.current_thread() is threading.main_thread():
+    # If we are in the main thread, we can safely set the signal handler
+    signal.signal(signal.SIGINT, lambda s, f: _sys.exit(130))
 
 import sys as _sys
 
