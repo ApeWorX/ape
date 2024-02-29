@@ -296,7 +296,7 @@ class ReceiptAPI(ExtraAttributesMixin, BaseInterfaceModel):
 
     @cached_property
     def debug_logs_typed(self) -> List[Tuple[Any]]:
-        """Return any debug log data outputted by the transaction"""
+        """Return any debug log data outputted by the transaction."""
         return []
 
     @cached_property
