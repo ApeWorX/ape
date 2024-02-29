@@ -215,16 +215,15 @@ class Receipt(ReceiptAPI):
         """
 
         try:
-            assert self.call_tree is not None
-
-        # If the call tree is not available, no logs are available
-        except AssertionError:
-            return []
-
+            self.call_tree
         # Some providers do not implement this, so skip
         except APINotImplementedError:
             logger.debug("Call tree not available, skipping debug log extraction")
-            return []
+            return list()
+
+        # If the call tree is not available, no logs are available
+        if self.call_tree is None:
+            return list()
 
         return list(extract_debug_logs(self.call_tree))
 
