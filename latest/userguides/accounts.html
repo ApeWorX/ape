@@ -381,7 +381,7 @@ In addition, you can also use a custom HDPath by using the <code class="docutils
 <p>If you use the <code class="docutils literal notranslate"><span class="pre">--hd-path</span></code> option, you will need to pass the <a class="reference external" href="https://help.myetherwallet.com/en/articles/5867305-hd-wallets-and-derivation-paths">HDPath</a> you’d like to use as an argument in the command.
 If you do not use the <code class="docutils literal notranslate"><span class="pre">--hd-path</span></code> option, Ape will use the default HDPath of (Ethereum network, first account).</p>
 <p>You can import an account programatically using a seed phrase <a class="reference external" href="../methoddocs/ape_accounts.html#ape_accounts.import_account_from_mnemonic">using <code class="docutils literal notranslate"><span class="pre">import_account_from_mnemonic()</span></code></a>:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">ape_acounts</span> <span class="kn">import</span> <span class="n">import_account_from_mnemonic</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">ape_accounts</span> <span class="kn">import</span> <span class="n">import_account_from_mnemonic</span>
 
 <span class="n">alias</span> <span class="o">=</span> <span class="s2">&quot;my-account&quot;</span>
 <span class="n">passphrase</span> <span class="o">=</span> <span class="s2">&quot;my$ecurePassphrase&quot;</span>
@@ -394,7 +394,7 @@ If you do not use the <code class="docutils literal notranslate"><span class="pr
 </div>
 <p>Or using a raw private key <a class="reference external" href="../methoddocs/ape_accounts.html#ape_accounts.import_account_from_private_key">using <code class="docutils literal notranslate"><span class="pre">import_account_from_private_key()</span></code></a>:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">os</span>
-<span class="kn">from</span> <span class="nn">ape_acounts</span> <span class="kn">import</span> <span class="n">import_account_from_private_key</span>
+<span class="kn">from</span> <span class="nn">ape_accounts</span> <span class="kn">import</span> <span class="n">import_account_from_private_key</span>
 
 <span class="n">alias</span> <span class="o">=</span> <span class="s2">&quot;my-account&quot;</span>
 <span class="n">passphrase</span> <span class="o">=</span> <span class="s2">&quot;my SecurePassphrase&quot;</span>
