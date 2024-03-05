@@ -99,7 +99,7 @@ class BaseMulticall(ManagerAccessMixin):
         *args,
         allowFailure: bool = False,
         value: int = 0,
-    ):
+    ) -> "BaseMulticall":
         """
         Adds a call to the Multicall session object.
 
@@ -113,6 +113,10 @@ class BaseMulticall(ManagerAccessMixin):
             *args: The arguments to invoke the method with.
             allowFailure (bool): Whether the call is allowed to fail.
             value (int): The amount of ether to forward with the call.
+
+        Returns:
+            :class:`~ape_ethereum.multicall.handlers.BaseMulticall`: returns itself
+              to emulate a builder pattern.
         """
 
         # Append call dict to the list
@@ -126,6 +130,7 @@ class BaseMulticall(ManagerAccessMixin):
                 "callData": call.encode_input(*args),
             }
         )
+        return self
 
 
 class Call(BaseMulticall):
@@ -141,6 +146,13 @@ class Call(BaseMulticall):
         call.add(contract.myMethod, *call_args)
         ...  # Add as many calls as desired
         call.add(contract.myMethod, *call_args)
+        a, b, ..., z = call()  # Performs multicall
+        # or, using a builder pattern:
+        call = multicall.Call()
+            .add(contract.myMethod, *call_args)
+            .add(contract.myMethod, *call_args)
+            ...  # Add as many calls as desired
+            .add(contract.myMethod, *call_args)
         a, b, ..., z = call()  # Performs multicall
     """
 
@@ -165,6 +177,7 @@ class Call(BaseMulticall):
 
         super().add(call, *args, **kwargs)
         self.abis.append(_select_method_abi(call.abis, args))
+        return self
 
     @property
     def returnData(self) -> List[HexBytes]:
@@ -253,6 +266,13 @@ class Transaction(BaseMulticall):
         txn.add(contract.myMethod, *call_args)
         ...  # Add as many calls as desired to execute
         txn.add(contract.myMethod, *call_args)
+        a, b, ..., z = txn(sender=my_signer)  # Sends the multicall transaction
+        # or, using a builder pattern:
+        txn = Transaction()
+            .add(contract.myMethod, *call_args)
+            .add(contract.myMethod, *call_args)
+            ...  # Add as many calls as desired to execute
+            .add(contract.myMethod, *call_args)
         a, b, ..., z = txn(sender=my_signer)  # Sends the multicall transaction
     """
 
