@@ -194,7 +194,7 @@ class StringDecimalConverter(ConverterAPI):
     def is_convertible(self, value: Any) -> bool:
         # Matches only string-formatted floats with an optional sign character (+/-).
         # Leading and trailing zeros are required.
-        return isinstance(value, str) and re.fullmatch("[+-]?[0-9]+[.][0-9]+", value) is not None
+        return isinstance(value, str) and re.fullmatch(r"[+-]?\d+\.\d+", value) is not None
 
     def convert(self, value: str) -> Decimal:
         return Decimal(value)
