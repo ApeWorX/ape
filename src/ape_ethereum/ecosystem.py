@@ -582,7 +582,7 @@ class Ethereum(EcosystemAPI):
 
         elif "int" in abi_type.type:
             return int
-        
+
         elif "fixed" in abi_type.type:
             return Decimal
 
