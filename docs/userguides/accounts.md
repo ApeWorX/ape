@@ -181,7 +181,7 @@ If you do not use the `--hd-path` option, Ape will use the default HDPath of (Et
 You can import an account programatically using a seed phrase [using `import_account_from_mnemonic()`](../methoddocs/ape_accounts.html#ape_accounts.import_account_from_mnemonic):
 
 ```python
-from ape_acounts import import_account_from_mnemonic
+from ape_accounts import import_account_from_mnemonic
 
 alias = "my-account"
 passphrase = "my$ecurePassphrase"
@@ -196,7 +196,7 @@ Or using a raw private key [using `import_account_from_private_key()`](../method
 
 ```python
 import os
-from ape_acounts import import_account_from_private_key
+from ape_accounts import import_account_from_private_key
 
 alias = "my-account"
 passphrase = "my SecurePassphrase"

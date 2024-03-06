@@ -217,15 +217,19 @@ def test_gas_flag_when_not_supported(setup_pytester, project, pytester, eth_test
 
 @geth_process_test
 @skip_projects_except("geth")
-def test_gas_flag_in_tests(geth_provider, setup_pytester, project, pytester):
+def test_gas_flag_in_tests(geth_provider, setup_pytester, project, pytester, owner):
+    owner.transfer(owner, "1 wei")  # Do this to force a clean slate.
     passed, failed = setup_pytester(project.path.name)
-    result = pytester.runpytest("--gas")
+    result = pytester.runpytest("--gas", "--network", "ethereum:local:geth")
     run_gas_test(result, passed, failed)
 
 
 @geth_process_test
 @skip_projects_except("geth")
-def test_gas_flag_set_in_config(geth_provider, setup_pytester, project, pytester, switch_config):
+def test_gas_flag_set_in_config(
+    geth_provider, setup_pytester, project, pytester, switch_config, geth_account
+):
+    geth_account.transfer(geth_account, "1 wei")  # Force a clean block.
     passed, failed = setup_pytester(project.path.name)
     config_content = f"""
     geth:
@@ -244,27 +248,69 @@ def test_gas_flag_set_in_config(geth_provider, setup_pytester, project, pytester
     """
 
     with switch_config(project, config_content):
+        result = pytester.runpytest("--network", "ethereum:local:geth")
+        run_gas_test(result, passed, failed)
+
+
+@geth_process_test
+@skip_projects_except("geth")
+def test_gas_when_estimating(
+    geth_provider, setup_pytester, project, pytester, switch_config, geth_account
+):
+    """
+    Shows that gas reports still work when estimating gas.
+    """
+    passed, failed = setup_pytester(project.path.name)
+    config_content = f"""
+    geth:
+      ethereum:
+        local:
+          uri: {GETH_URI}
+
+    ethereum:
+      local:
+        default_provider: geth
+        gas_limit: auto
+
+    test:
+      disconnect_providers_after: false
+      gas:
+        show: true
+    """
+
+    geth_account.transfer(geth_account, "1 wei")  # Force a clean block.
+    with switch_config(project, config_content):
         result = pytester.runpytest()
         run_gas_test(result, passed, failed)
 
 
 @geth_process_test
 @skip_projects_except("geth")
-def test_gas_flag_exclude_using_cli_option(geth_provider, setup_pytester, project, pytester):
+def test_gas_flag_exclude_using_cli_option(
+    geth_provider, setup_pytester, project, pytester, geth_account
+):
+    geth_account.transfer(geth_account, "1 wei")  # Force a clean block.
     passed, failed = setup_pytester(project.path.name)
     # NOTE: Includes both a mutable and a view method.
     expected = filter_expected_methods("fooAndBar", "myNumber")
     # Also ensure can filter out whole class
     expected = expected.replace(TOKEN_B_GAS_REPORT, "")
-    result = pytester.runpytest("--gas", "--gas-exclude", "*:fooAndBar,*:myNumber,tokenB:*")
+    result = pytester.runpytest(
+        "--gas",
+        "--gas-exclude",
+        "*:fooAndBar,*:myNumber,tokenB:*",
+        "--network",
+        "ethereum:local:geth",
+    )
     run_gas_test(result, passed, failed, expected_report=expected)
 
 
 @geth_process_test
 @skip_projects_except("geth")
 def test_gas_flag_exclusions_set_in_config(
-    geth_provider, setup_pytester, project, pytester, switch_config
+    geth_provider, setup_pytester, project, pytester, switch_config, geth_account
 ):
+    geth_account.transfer(geth_account, "1 wei")  # Force a clean block.
     passed, failed = setup_pytester(project.path.name)
     # NOTE: Includes both a mutable and a view method.
     expected = filter_expected_methods("fooAndBar", "myNumber")
@@ -289,29 +335,35 @@ def test_gas_flag_exclusions_set_in_config(
           - contract_name: TokenB
     """
     with switch_config(project, config_content):
-        result = pytester.runpytest("--gas")
+        result = pytester.runpytest("--gas", "--network", "ethereum:local:geth")
         run_gas_test(result, passed, failed, expected_report=expected)
 
 
 @geth_process_test
 @skip_projects_except("geth")
-def test_gas_flag_excluding_contracts(geth_provider, setup_pytester, project, pytester):
+def test_gas_flag_excluding_contracts(
+    geth_provider, setup_pytester, project, pytester, geth_account
+):
+    geth_account.transfer(geth_account, "1 wei")  # Force a clean block.
     passed, failed = setup_pytester(project.path.name)
-    result = pytester.runpytest("--gas", "--gas-exclude", "VyperContract,TokenA")
+    result = pytester.runpytest(
+        "--gas", "--gas-exclude", "VyperContract,TokenA", "--network", "ethereum:local:geth"
+    )
     run_gas_test(result, passed, failed, expected_report=TOKEN_B_GAS_REPORT)
 
 
 @geth_process_test
 @skip_projects_except("geth")
-def test_coverage(geth_provider, setup_pytester, project, pytester):
+def test_coverage(geth_provider, setup_pytester, project, pytester, geth_account):
     """
     Ensures the --coverage flag works.
     For better coverage tests, see ape-vyper because the Vyper
     plugin is what implements the `trace_source()` method which does the bulk
     of the coverage work.
     """
+    geth_account.transfer(geth_account, "1 wei")  # Force a clean block.
     passed, failed = setup_pytester(project.path.name)
-    result = pytester.runpytest("--coverage", "--showinternal")
+    result = pytester.runpytest("--coverage", "--showinternal", "--network", "ethereum:local:geth")
     result.assert_outcomes(passed=passed, failed=failed)
 
 

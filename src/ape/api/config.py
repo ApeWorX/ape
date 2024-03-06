@@ -1,10 +1,13 @@
 from enum import Enum
-from typing import Any, Dict, Optional, TypeVar
+from typing import TYPE_CHECKING, Any, Dict, Optional, TypeVar
 
 from pydantic import ConfigDict
 from pydantic_settings import BaseSettings
 
 from ape.utils.basemodel import _assert_not_ipython_check
+
+if TYPE_CHECKING:
+    from ape.managers.config import ConfigManager
 
 ConfigItemType = TypeVar("ConfigItemType")
 
@@ -35,8 +38,14 @@ class PluginConfig(BaseSettings):
     a config API must register a subclass of this class.
     """
 
+    # NOTE: This is probably partially initialized at the time of assignment
+    _config_manager: Optional["ConfigManager"]
+
     @classmethod
-    def from_overrides(cls, overrides: Dict) -> "PluginConfig":
+    def from_overrides(
+        cls, overrides: Dict, config_manager: Optional["ConfigManager"] = None
+    ) -> "PluginConfig":
+        cls._config_manager = config_manager
         default_values = cls().model_dump()
 
         def update(root: Dict, value_map: Dict):
