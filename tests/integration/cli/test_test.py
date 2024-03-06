@@ -254,6 +254,38 @@ def test_gas_flag_set_in_config(
 
 @geth_process_test
 @skip_projects_except("geth")
+def test_gas_when_estimating(
+    geth_provider, setup_pytester, project, pytester, switch_config, geth_account
+):
+    """
+    Shows that gas reports still work when estimating gas.
+    """
+    passed, failed = setup_pytester(project.path.name)
+    config_content = f"""
+    geth:
+      ethereum:
+        local:
+          uri: {GETH_URI}
+
+    ethereum:
+      local:
+        default_provider: geth
+        gas_limit: auto
+
+    test:
+      disconnect_providers_after: false
+      gas:
+        show: true
+    """
+
+    geth_account.transfer(geth_account, "1 wei")  # Force a clean block.
+    with switch_config(project, config_content):
+        result = pytester.runpytest()
+        run_gas_test(result, passed, failed)
+
+
+@geth_process_test
+@skip_projects_except("geth")
 def test_gas_flag_exclude_using_cli_option(
     geth_provider, setup_pytester, project, pytester, geth_account
 ):

@@ -8,7 +8,7 @@ from copy import copy
 from functools import cached_property
 from itertools import tee
 from pathlib import Path
-from typing import Any, Dict, Iterator, List, Optional, Union, cast
+from typing import Any, Dict, Iterator, List, Optional, Tuple, Union, cast
 
 import ijson  # type: ignore
 import requests
@@ -248,7 +248,33 @@ class Web3Provider(ProviderAPI, ABC):
         try:
             return self.web3.eth.estimate_gas(txn_params, block_identifier=block_id)
         except (ValueError, Web3ContractLogicError) as err:
-            tx_error = self.get_virtual_machine_error(err, txn=txn)
+            # NOTE: Try to use debug_traceCall to obtain a trace.
+            #  And the RPC can be very picky with inputs.
+            tx_to_trace: Dict = {}
+            for key, val in txn_params.items():
+                if isinstance(val, int):
+                    tx_to_trace[key] = hex(val)
+                else:
+                    tx_to_trace[key] = val
+
+            try:
+                trace = self._trace_call([tx_to_trace, "latest"])
+            except Exception:
+                trace = None
+
+            tb = None
+            if trace and txn_params.get("to"):
+                traces = (self._create_trace_frame(t) for t in trace[1])
+                contract_type = self.chain_manager.contracts.get(txn_params["to"])
+                if contract_type:
+                    tb = SourceTraceback.create(contract_type, traces, HexBytes(txn_params["data"]))
+
+            tx_error = self.get_virtual_machine_error(
+                err,
+                txn=txn,
+                trace=traces,
+                source_traceback=tb,
+            )
 
             # If this is the cause of a would-be revert,
             # raise ContractLogicError so that we can confirm tx-reverts.
@@ -259,6 +285,11 @@ class Web3Provider(ProviderAPI, ABC):
             raise TransactionError(
                 message, base_err=tx_error, txn=txn, source_traceback=tx_error.source_traceback
             ) from err
+
+    def _trace_call(self, arguments: List[Any]) -> Tuple[Dict, Iterator[EvmTraceFrame]]:
+        result = self._make_request("debug_traceCall", arguments)
+        trace_data = result.get("structLogs", [])
+        return result, create_trace_frames(trace_data)
 
     @cached_property
     def chain_id(self) -> int:
