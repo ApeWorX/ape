@@ -78,7 +78,10 @@ DEFAULT_SETTINGS = {"uri": f"http://{DEFAULT_HOSTNAME}:{DEFAULT_PORT}"}
 
 
 def _sanitize_web3_url(msg: str) -> str:
-    if "URI: " not in msg:
+    """Sanitize RPC URI from given log string"""
+
+    # `auto` used by some providers to figure it out automatically
+    if "URI: " not in msg or "URI: auto" in msg:
         return msg
 
     parts = msg.split("URI: ")
