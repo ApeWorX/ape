@@ -20,6 +20,7 @@ from pydantic import Field, computed_field, model_validator
 from ape.api.config import PluginConfig
 from ape.api.networks import NetworkAPI
 from ape.api.query import BlockTransactionQuery
+from ape.api.trace import TraceAPI
 from ape.api.transactions import ReceiptAPI, TransactionAPI
 from ape.exceptions import (
     APINotImplementedError,
@@ -30,16 +31,7 @@ from ape.exceptions import (
     VirtualMachineError,
 )
 from ape.logging import LogLevel, logger
-from ape.types import (
-    AddressType,
-    BlockID,
-    CallTreeNode,
-    ContractCode,
-    ContractLog,
-    LogFilter,
-    SnapshotID,
-    TraceFrame,
-)
+from ape.types import AddressType, BlockID, ContractCode, ContractLog, LogFilter, SnapshotID
 from ape.utils import (
     EMPTY_BYTES32,
     BaseInterfaceModel,
@@ -253,6 +245,14 @@ class ProviderAPI(BaseInterfaceModel):
             raise ProviderError("Custom network provider missing `connection_str`.")
 
         return f"{self.network.choice}:{self.name}"
+
+    @abstractmethod
+    def make_request(self, rpc: str, parameters: Optional[List] = None) -> Any:
+        """
+        Make a raw RPC request to the provider.
+        Advanced featues such as tracing may utilize this to by-pass unnecessary
+        class-serializations.
+        """
 
     def get_storage_at(self, *args, **kwargs) -> HexBytes:
         warnings.warn(
@@ -634,17 +634,15 @@ class ProviderAPI(BaseInterfaceModel):
         """
 
     @raises_not_implemented
-    def get_transaction_trace(  # type: ignore[empty-body]
-        self, txn_hash: str
-    ) -> Iterator[TraceFrame]:
+    def get_transaction_trace(self, transaction_hash: str) -> TraceAPI:  # type: ignore[empty-body]
         """
         Provide a detailed description of opcodes.
 
         Args:
-            txn_hash (str): The hash of a transaction to trace.
+            transaction_hash (str): The hash of a transaction to trace.
 
         Returns:
-            Iterator(:class:`~ape.type.trace.TraceFrame`): Transaction execution trace.
+            :class:`~ape.api.trace.TraceAPI`: A transaction trace.
         """
 
     @raises_not_implemented
@@ -715,19 +713,6 @@ class ProviderAPI(BaseInterfaceModel):
 
         Returns:
             Iterator[:class:`~ape.types.ContractLog`]
-        """
-
-    @raises_not_implemented
-    def get_call_tree(self, txn_hash: str) -> CallTreeNode:  # type: ignore[empty-body]
-        """
-        Create a tree structure of calls for a transaction.
-
-        Args:
-            txn_hash (str): The hash of a transaction to trace.
-
-        Returns:
-            :class:`~ape.types.trace.CallTreeNode`: Transaction execution
-            call-tree objects.
         """
 
     def prepare_transaction(self, txn: TransactionAPI) -> TransactionAPI:

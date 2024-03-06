@@ -44,7 +44,7 @@ from ape.types.coverage import (
     CoverageStatement,
 )
 from ape.types.signatures import MessageSignature, SignableMessage, TransactionSignature
-from ape.types.trace import CallTreeNode, ControlFlow, GasReport, SourceTraceback, TraceFrame
+from ape.types.trace import ControlFlow, GasReport, SourceTraceback
 from ape.utils import (
     BaseInterfaceModel,
     ExtraAttributesMixin,
@@ -486,7 +486,6 @@ __all__ = [
     "AddressType",
     "BlockID",
     "Bytecode",
-    "CallTreeNode",
     "Checksum",
     "Closure",
     "Compiler",
@@ -508,6 +507,5 @@ __all__ = [
     "SnapshotID",
     "Source",
     "SourceTraceback",
-    "TraceFrame",
     "TransactionSignature",
 ]
