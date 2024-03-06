@@ -1116,7 +1116,17 @@ class Web3Provider(ProviderAPI, ABC):
                 **params,
             )
         )
-        return self.compiler_manager.enrich_error(result)
+        enriched = self.compiler_manager.enrich_error(result)
+
+        # Show call trace if availble
+        if enriched.txn:
+            # Apparently this is not always a receipt on a failed tx
+            if isinstance(enriched.txn, TransactionAPI) and enriched.txn.receipt:
+                enriched.txn.receipt.show_trace()
+            elif isinstance(enriched.txn, ReceiptAPI):
+                enriched.txn.show_trace()
+
+        return enriched
 
 
 class EthereumNodeProvider(Web3Provider, ABC):
