@@ -65,8 +65,6 @@ def load_dependencies(project):
 @pytest.fixture
 def setup_pytester(pytester):
     def setup(project_name: str):
-        # Start on a clean-block.
-
         project_path = BASE_PROJECTS_PATH / project_name
         tests_path = project_path / "tests"
 
