@@ -194,6 +194,8 @@ class StringDecimalConverter(ConverterAPI):
     def is_convertible(self, value: Any) -> bool:
         # Matches only string-formatted floats with an optional sign character (+/-).
         # Leading and trailing zeros are required.
+        # NOTE: `re.fullmatch` will only match the full string, so "1.0 ether" and "10.0 USDC"
+        # will not be identified as convertible.
         return isinstance(value, str) and re.fullmatch(r"[+-]?\d+\.\d+", value) is not None
 
     def convert(self, value: str) -> Decimal:
