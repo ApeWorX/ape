@@ -3,14 +3,12 @@ import shutil
 from itertools import tee
 from pathlib import Path
 from subprocess import DEVNULL, PIPE, Popen
-from typing import Any, Dict, Iterator, List, Optional, Tuple, Union
+from typing import Any, Dict, List, Optional, Union
 
 from eth_pydantic_types import HexBytes
 from eth_typing import HexStr
 from eth_utils import add_0x_prefix, to_hex, to_wei
-from evm_trace import CallType
-from evm_trace import TraceFrame as EvmTraceFrame
-from evm_trace import create_trace_frames, get_calltree_from_geth_trace
+from evm_trace import CallType, get_calltree_from_geth_trace
 from evmchains import get_random_rpc
 from geth.accounts import ensure_account_exists  # type: ignore
 from geth.chain import initialize_chain  # type: ignore
@@ -433,11 +431,6 @@ class GethDev(EthereumNodeProvider, TestProviderAPI, SubprocessProvider):
             self.chain_manager._reports.show_trace(call_tree)
 
         return return_value
-
-    def _trace_call(self, arguments: List[Any]) -> Tuple[Dict, Iterator[EvmTraceFrame]]:
-        result = self._make_request("debug_traceCall", arguments)
-        trace_data = result.get("structLogs", [])
-        return result, create_trace_frames(trace_data)
 
     def _eth_call(self, arguments: List) -> HexBytes:
         try:
