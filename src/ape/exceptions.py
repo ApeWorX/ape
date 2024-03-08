@@ -200,7 +200,7 @@ class TransactionError(ApeException):
 
     def _set_tb(self):
         if not self.source_traceback and self.txn:
-            self.source_traceback = _get_ape_traceback(self.txn)
+            self.source_traceback = _get_ape_traceback_from_tx(self.txn)
 
         if (src_tb := self.source_traceback) and self.txn is not None:
             # Create a custom Pythonic traceback using lines from the sources
@@ -747,7 +747,7 @@ class CustomError(ContractLogicError):
         return self.abi.name
 
 
-def _get_ape_traceback(txn: FailedTxn) -> Optional["SourceTraceback"]:
+def _get_ape_traceback_from_tx(txn: FailedTxn) -> Optional["SourceTraceback"]:
     from ape.api.transactions import ReceiptAPI
 
     receipt: "ReceiptAPI" = txn if isinstance(txn, ReceiptAPI) else txn.receipt  # type: ignore
