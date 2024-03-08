@@ -446,6 +446,8 @@
 <li class="toctree-l2"><a class="reference internal" href="#transactions">Transactions</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#ape.api.transactions.ReceiptAPI"><code class="docutils literal notranslate"><span class="pre">ReceiptAPI</span></code></a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.transactions.ReceiptAPI.await_confirmations"><code class="docutils literal notranslate"><span class="pre">ReceiptAPI.await_confirmations()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ape.api.transactions.ReceiptAPI.debug_logs_lines"><code class="docutils literal notranslate"><span class="pre">ReceiptAPI.debug_logs_lines</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ape.api.transactions.ReceiptAPI.debug_logs_typed"><code class="docutils literal notranslate"><span class="pre">ReceiptAPI.debug_logs_typed</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.transactions.ReceiptAPI.decode_logs"><code class="docutils literal notranslate"><span class="pre">ReceiptAPI.decode_logs()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.transactions.ReceiptAPI.events"><code class="docutils literal notranslate"><span class="pre">ReceiptAPI.events</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.transactions.ReceiptAPI.failed"><code class="docutils literal notranslate"><span class="pre">ReceiptAPI.failed</span></code></a></li>
@@ -453,6 +455,7 @@
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.transactions.ReceiptAPI.raise_for_status"><code class="docutils literal notranslate"><span class="pre">ReceiptAPI.raise_for_status()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.transactions.ReceiptAPI.ran_out_of_gas"><code class="docutils literal notranslate"><span class="pre">ReceiptAPI.ran_out_of_gas</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.transactions.ReceiptAPI.return_value"><code class="docutils literal notranslate"><span class="pre">ReceiptAPI.return_value</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ape.api.transactions.ReceiptAPI.show_debug_logs"><code class="docutils literal notranslate"><span class="pre">ReceiptAPI.show_debug_logs()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.transactions.ReceiptAPI.total_fees_paid"><code class="docutils literal notranslate"><span class="pre">ReceiptAPI.total_fees_paid</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.transactions.ReceiptAPI.trace"><code class="docutils literal notranslate"><span class="pre">ReceiptAPI.trace</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.transactions.ReceiptAPI.track_coverage"><code class="docutils literal notranslate"><span class="pre">ReceiptAPI.track_coverage()</span></code></a></li>
@@ -2954,6 +2957,18 @@ a <a class="reference internal" href="contracts.html#ape.contracts.base.Contract
 </dl>
 </dd></dl>
 
+<dl class="py property">
+<dt class="sig sig-object py" id="ape.api.transactions.ReceiptAPI.debug_logs_lines">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">debug_logs_lines</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#ape.api.transactions.ReceiptAPI.debug_logs_lines" title="Permalink to this definition"></a></dt>
+<dd><p>Return any debug log data outputted by the transaction as strings suitable for printing</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="ape.api.transactions.ReceiptAPI.debug_logs_typed">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">debug_logs_typed</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#ape.api.transactions.ReceiptAPI.debug_logs_typed" title="Permalink to this definition"></a></dt>
+<dd><p>Return any debug log data outputted by the transaction.</p>
+</dd></dl>
+
 <dl class="py method">
 <dt class="sig sig-object py" id="ape.api.transactions.ReceiptAPI.decode_logs">
 <em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">decode_logs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">abi</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">EventABI</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="contracts.html#ape.contracts.base.ContractEvent" title="ape.contracts.base.ContractEvent"><span class="pre">ContractEvent</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">EventABI</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="contracts.html#ape.contracts.base.ContractEvent" title="ape.contracts.base.ContractEvent"><span class="pre">ContractEvent</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ContractLogContainer</span></span></span><a class="headerlink" href="#ape.api.transactions.ReceiptAPI.decode_logs" title="Permalink to this definition"></a></dt>
@@ -3015,6 +3030,12 @@ same amount of gas as the given <code class="docutils literal notranslate"><span
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">return_value</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Any</span></em><a class="headerlink" href="#ape.api.transactions.ReceiptAPI.return_value" title="Permalink to this definition"></a></dt>
 <dd><p>Obtain the final return value of the call. Requires tracing to function,
 since this is not available from the receipt object.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ape.api.transactions.ReceiptAPI.show_debug_logs">
+<span class="sig-name descname"><span class="pre">show_debug_logs</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ape.api.transactions.ReceiptAPI.show_debug_logs" title="Permalink to this definition"></a></dt>
+<dd><p>Output debug logs to logging system</p>
 </dd></dl>
 
 <dl class="py property">
