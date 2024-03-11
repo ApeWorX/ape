@@ -290,7 +290,7 @@ class Web3Provider(ProviderAPI, ABC):
             except Exception:
                 call_trace = None
 
-            traces = tuple()
+            traces = None
             tb = None
             if call_trace and txn_params.get("to"):
                 traces = (self._create_trace_frame(t) for t in call_trace[1])      
