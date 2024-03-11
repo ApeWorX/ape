@@ -286,15 +286,15 @@ class Web3Provider(ProviderAPI, ABC):
                     tx_to_trace[key] = val
 
             try:
-                trace = self._trace_call([tx_to_trace, "latest"])
+                call_trace = self._trace_call([tx_to_trace, "latest"])
             except Exception:
-                trace = None
+                call_trace = None
 
+            traces = tuple()
             tb = None
-            if trace and txn_params.get("to"):
-                traces = (self._create_trace_frame(t) for t in trace[1])
-                contract_type = self.chain_manager.contracts.get(txn_params["to"])
-                if contract_type:
+            if call_trace and txn_params.get("to"):
+                traces = (self._create_trace_frame(t) for t in call_trace[1])      
+                if contract_type := self.chain_manager.contracts.get(txn_params["to"]):
                     tb = SourceTraceback.create(contract_type, traces, HexBytes(txn_params["data"]))
 
             tx_error = self.get_virtual_machine_error(
