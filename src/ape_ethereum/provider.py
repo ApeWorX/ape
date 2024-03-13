@@ -293,7 +293,7 @@ class Web3Provider(ProviderAPI, ABC):
             traces = None
             tb = None
             if call_trace and txn_params.get("to"):
-                traces = (self._create_trace_frame(t) for t in call_trace[1])      
+                traces = (self._create_trace_frame(t) for t in call_trace[1])
                 if contract_type := self.chain_manager.contracts.get(txn_params["to"]):
                     tb = SourceTraceback.create(contract_type, traces, HexBytes(txn_params["data"]))
 
