@@ -337,7 +337,7 @@ class CompilerManager(BaseManager):
         compiler = self.registered_compilers[ext]
         return compiler.enrich_error(err)
 
-    def flatten_contract(self, path: Path) -> Content:
+    def flatten_contract(self, path: Path, **kwargs) -> Content:
         """
         Get the flattened version of a contract via its source path.
         Delegates to the matching :class:`~ape.api.compilers.CompilerAPI`.
@@ -355,7 +355,7 @@ class CompilerManager(BaseManager):
             )
 
         compiler = self.registered_compilers[path.suffix]
-        return compiler.flatten_contract(path)
+        return compiler.flatten_contract(path, **kwargs)
 
     def can_trace_source(self, filename: str) -> bool:
         """
