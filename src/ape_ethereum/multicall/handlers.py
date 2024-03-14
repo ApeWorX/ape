@@ -181,6 +181,7 @@ class Call(BaseMulticall):
 
     @property
     def returnData(self) -> List[HexBytes]:
+        # NOTE: this property is kept camelCase to align with the raw EVM struct
         result = self._result  # Declare for typing reasons.
         if not result:
             raise NotExecutedError()
@@ -266,14 +267,14 @@ class Transaction(BaseMulticall):
         txn.add(contract.myMethod, *call_args)
         ...  # Add as many calls as desired to execute
         txn.add(contract.myMethod, *call_args)
-        a, b, ..., z = txn(sender=my_signer)  # Sends the multicall transaction
+        a, b, ..., z = txn(sender=my_signer).return_data  # Sends the multicall transaction
         # or, using a builder pattern:
         txn = Transaction()
             .add(contract.myMethod, *call_args)
             .add(contract.myMethod, *call_args)
             ...  # Add as many calls as desired to execute
             .add(contract.myMethod, *call_args)
-        a, b, ..., z = txn(sender=my_signer)  # Sends the multicall transaction
+        a, b, ..., z = txn(sender=my_signer).return_data  # Sends the multicall transaction
     """
 
     def _validate_calls(self, **txn_kwargs) -> None:
