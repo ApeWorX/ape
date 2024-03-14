@@ -1,5 +1,6 @@
 from typing import Any, Iterator, List, Optional
 
+from eip712.messages import EIP712Message
 from eth_account import Account as EthAccount
 from eth_account.messages import SignableMessage, encode_defunct
 from eth_utils import to_bytes
@@ -110,6 +111,9 @@ class TestAccount(TestAccountAPI):
         elif isinstance(msg, int):
             msg = HexBytes(msg).hex()
             msg = encode_defunct(hexstr=msg)
+        elif isinstance(msg, EIP712Message):
+            # Convert EIP712Message to SignableMessage for handling below
+            msg = msg.signable_message
 
         # Process SignableMessage
         if isinstance(msg, SignableMessage):
