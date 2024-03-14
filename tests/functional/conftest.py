@@ -597,6 +597,11 @@ def vyper_factory(owner, get_contract_type):
 
 
 @pytest.fixture
+def vyper_printing(owner, get_contract_type):
+    return owner.deploy(ContractContainer(get_contract_type("printing")))
+
+
+@pytest.fixture
 def vyper_blueprint(owner, vyper_contract_container):
     receipt = owner.declare(vyper_contract_container)
     return receipt.contract_address

@@ -1,5 +1,6 @@
 import re
 from copy import deepcopy
+from decimal import Decimal
 from functools import cached_property
 from typing import Any, ClassVar, Dict, Iterator, List, Optional, Sequence, Tuple, Type, Union, cast
 
@@ -551,6 +552,11 @@ class Ethereum(EcosystemAPI):
         if "transactions" in data:
             data["num_transactions"] = len(data["transactions"])
 
+        if "size" not in data:
+            # NOTE: Due to an issue with `eth_subscribe:newHeads` on Infura
+            # https://github.com/ApeWorX/ape-infura/issues/72
+            data["size"] = -1  # HACK: use an unrealistic sentinel value
+
         return Block.model_validate(data)
 
     def _python_type_for_abi_type(self, abi_type: ABIType) -> Union[Type, Sequence]:
@@ -581,6 +587,9 @@ class Ethereum(EcosystemAPI):
 
         elif "int" in abi_type.type:
             return int
+
+        elif "fixed" in abi_type.type:
+            return Decimal
 
         raise ConversionError(f"Unable to convert '{abi_type}'.")
 

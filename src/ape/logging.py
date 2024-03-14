@@ -275,6 +275,8 @@ def _get_level(level: Optional[Union[str, int]] = None) -> str:
 
 
 def sanitize_url(url: str) -> str:
+    """Removes sensitive information from given URL"""
+
     url_obj = URL(url).with_user(None).with_password(None)
 
     # If there is a path, hide it but show that you are hiding it.
