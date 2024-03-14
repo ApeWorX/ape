@@ -142,3 +142,12 @@ class TestAccount(TestAccountAPI):
         )
 
         return txn
+
+    def sign_raw_msghash(self, msghash: HexBytes) -> MessageSignature:
+        signed_msg = EthAccount.signHash(msghash, self.private_key)
+
+        return MessageSignature(
+            v=signed_msg.v,
+            r=to_bytes(signed_msg.r),
+            s=to_bytes(signed_msg.s),
+        )

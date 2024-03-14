@@ -57,6 +57,11 @@ class AccountAPI(BaseInterfaceModel, BaseAddress):
         """
         return None
 
+    def sign_raw_msghash(self, msghash: HexBytes) -> Optional[MessageSignature]:
+        raise NotImplementedError(
+            f"Raw message signing is not supported by '{self.__class__.__name__}'"
+        )
+
     @abstractmethod
     def sign_message(self, msg: Any, **signer_options) -> Optional[MessageSignature]:
         """
@@ -295,8 +300,9 @@ class AccountAPI(BaseInterfaceModel, BaseAddress):
 
     def check_signature(
         self,
-        data: Union[SignableMessage, TransactionAPI, str, EIP712Message, int],
+        data: Union[SignableMessage, TransactionAPI, str, EIP712Message, int, bytes],
         signature: Optional[MessageSignature] = None,  # TransactionAPI doesn't need it
+        recover_using_eip191: bool = True,
     ) -> bool:
         """
         Verify a message or transaction was signed by this account.
@@ -307,6 +313,10 @@ class AccountAPI(BaseInterfaceModel, BaseAddress):
             signature (Optional[:class:`~ape.types.signatures.MessageSignature`]):
               The signature to check. Defaults to ``None`` and is not needed when the first
               argument is a transaction class.
+            recover_using_eip191 (bool):
+              Perform recovery using EIP-191 signed message check. If set False, then will attempt
+              recovery as raw hash. `data`` must be a 32 byte hash if this is set False.
+              Defaults to ``True``.
 
         Returns:
             bool: ``True`` if the data was signed by this account. ``False`` otherwise.
@@ -315,6 +325,8 @@ class AccountAPI(BaseInterfaceModel, BaseAddress):
             data = encode_defunct(text=data)
         elif isinstance(data, int):
             data = encode_defunct(hexstr=HexBytes(data).hex())
+        elif isinstance(data, bytes) and (len(data) != 32 or recover_using_eip191):
+            data = encode_defunct(data)
         elif isinstance(data, EIP712Message):
             data = data.signable_message
         if isinstance(data, (SignableMessage, EIP712SignableMessage)):
@@ -328,6 +340,9 @@ class AccountAPI(BaseInterfaceModel, BaseAddress):
 
         elif isinstance(data, TransactionAPI):
             return self.address == Account.recover_transaction(data.serialize_transaction())
+
+        elif isinstance(data, bytes) and len(data) == 32 and not recover_using_eip191:
+            return self.address == Account._recover_hash(data, vrs=signature)
 
         else:
             raise AccountsError(f"Unsupported message type: {type(data)}.")
