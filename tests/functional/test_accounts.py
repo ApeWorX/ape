@@ -95,9 +95,8 @@ def test_recover_signer(signer, message):
 
 def test_sign_eip712_message(signer):
     foo = Foo(signer.address)  # type: ignore[call-arg]
-    message = foo.signable_message
-    signature = signer.sign_message(message)
-    assert signer.check_signature(message, signature)
+    signature = signer.sign_message(foo)
+    assert signer.check_signature(foo, signature)
 
 
 def test_sign_message_with_prompts(runner, keyfile_account, message):
