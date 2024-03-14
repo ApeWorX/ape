@@ -5,7 +5,7 @@ import time
 from abc import ABC
 from concurrent.futures import ThreadPoolExecutor
 from copy import copy
-from functools import cached_property
+from functools import cached_property, wraps
 from itertools import tee
 from pathlib import Path
 from typing import Any, Dict, Iterator, List, Optional, Tuple, Union, cast
@@ -40,7 +40,7 @@ from web3.providers import AutoProvider
 from web3.providers.auto import load_provider_from_environment
 from web3.types import FeeHistory, RPCEndpoint, TxParams
 
-from ape.api import BlockAPI, ProviderAPI, ReceiptAPI, TransactionAPI
+from ape.api import Address, BlockAPI, ProviderAPI, ReceiptAPI, TransactionAPI
 from ape.api.networks import LOCAL_NETWORK_NAME
 from ape.exceptions import (
     ApeException,
@@ -70,6 +70,7 @@ from ape.types import (
 )
 from ape.utils import gas_estimation_error_message, run_until_complete, to_int
 from ape.utils.misc import DEFAULT_MAX_RETRIES_TX
+from ape_ethereum._print import CONSOLE_CONTRACT_ID, console_contract
 from ape_ethereum.transactions import AccessList, AccessListTransaction
 
 DEFAULT_PORT = 8545
@@ -103,6 +104,30 @@ class Web3Provider(ProviderAPI, ABC):
 
     _web3: Optional[Web3] = None
     _client_version: Optional[str] = None
+
+    def __new__(cls, *args, **kwargs):
+        # Post-connection ops
+        def post_connect_hook(connect):
+            @wraps(connect)
+            def connect_wrapper(self):
+                connect(self)
+                self._post_connect()
+
+            return connect_wrapper
+
+        # Patching the provider to call a post send_transaction() hook
+        def post_tx_hook(send_tx):
+            @wraps(send_tx)
+            def send_tx_wrapper(self, txn: TransactionAPI) -> ReceiptAPI:
+                receipt = send_tx(self, txn)
+                self._post_send_transaction(txn, receipt)
+                return receipt
+
+            return send_tx_wrapper
+
+        setattr(cls, "send_transaction", post_tx_hook(cls.send_transaction))
+        setattr(cls, "connect", post_connect_hook(cls.connect))
+        return super().__new__(cls)  # pydantic v2 doesn't want args
 
     def __init__(self, *args, **kwargs):
         logger.create_logger("web3.RequestManager", handlers=(_sanitize_web3_url,))
@@ -261,15 +286,15 @@ class Web3Provider(ProviderAPI, ABC):
                     tx_to_trace[key] = val
 
             try:
-                trace = self._trace_call([tx_to_trace, "latest"])
+                call_trace = self._trace_call([tx_to_trace, "latest"])
             except Exception:
-                trace = None
+                call_trace = None
 
+            traces = None
             tb = None
-            if trace and txn_params.get("to"):
-                traces = (self._create_trace_frame(t) for t in trace[1])
-                contract_type = self.chain_manager.contracts.get(txn_params["to"])
-                if contract_type:
+            if call_trace and txn_params.get("to"):
+                traces = (self._create_trace_frame(t) for t in call_trace[1])
+                if contract_type := self.chain_manager.contracts.get(txn_params["to"]):
                     tb = SourceTraceback.create(contract_type, traces, HexBytes(txn_params["data"]))
 
             tx_error = self.get_virtual_machine_error(
@@ -864,7 +889,6 @@ class Web3Provider(ProviderAPI, ABC):
             and txn.gas_price is None
         ):
             txn.gas_price = self.gas_price
-
         elif txn_type in (TransactionType.DYNAMIC, TransactionType.SHARED_BLOB):
             if txn.max_priority_fee is None:
                 txn.max_priority_fee = self.priority_fee
@@ -934,6 +958,7 @@ class Web3Provider(ProviderAPI, ABC):
         )
 
         # NOTE: Ensure to cache even the failed receipts.
+        # NOTE: Caching must happen before error enrichment.
         self.chain_manager.history.append(receipt)
 
         if receipt.failed:
@@ -951,8 +976,21 @@ class Web3Provider(ProviderAPI, ABC):
             # a VM error.
             receipt.raise_for_status()
 
-        logger.info(f"Confirmed {receipt.txn_hash} (total fees paid = {receipt.total_fees_paid})")
         return receipt
+
+    def _post_send_transaction(self, tx: TransactionAPI, receipt: ReceiptAPI):
+        """Execute post-transaction ops"""
+
+        # TODO: Optional configuration?
+        if tx.receiver and Address(tx.receiver).is_contract:
+            # Look for and print any contract logging
+            receipt.show_debug_logs()
+
+        logger.info(f"Confirmed {receipt.txn_hash} (total fees paid = {receipt.total_fees_paid})")
+
+    def _post_connect(self):
+        # Register the console contract for trace enrichment
+        self.chain_manager.contracts._cache_contract_type(CONSOLE_CONTRACT_ID, console_contract)
 
     def _create_call_tree_node(
         self, evm_call: EvmCallTreeNode, txn_hash: Optional[str] = None
@@ -1150,7 +1188,17 @@ class Web3Provider(ProviderAPI, ABC):
                 **params,
             )
         )
-        return self.compiler_manager.enrich_error(result)
+        enriched = self.compiler_manager.enrich_error(result)
+
+        # Show call trace if availble
+        if enriched.txn:
+            # Unlikely scenario where a transaction is on the error even though a receipt exists.
+            if isinstance(enriched.txn, TransactionAPI) and enriched.txn.receipt:
+                enriched.txn.receipt.show_trace()
+            elif isinstance(enriched.txn, ReceiptAPI):
+                enriched.txn.show_trace()
+
+        return enriched
 
 
 class EthereumNodeProvider(Web3Provider, ABC):

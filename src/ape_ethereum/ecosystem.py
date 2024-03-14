@@ -1,5 +1,6 @@
 import re
 from copy import deepcopy
+from decimal import Decimal
 from functools import cached_property
 from typing import Any, ClassVar, Dict, Iterator, List, Optional, Sequence, Tuple, Type, Union, cast
 
@@ -586,6 +587,9 @@ class Ethereum(EcosystemAPI):
 
         elif "int" in abi_type.type:
             return int
+
+        elif "fixed" in abi_type.type:
+            return Decimal
 
         raise ConversionError(f"Unable to convert '{abi_type}'.")
 

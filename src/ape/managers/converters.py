@@ -1,3 +1,4 @@
+import re
 from datetime import datetime, timedelta, timezone
 from decimal import Decimal
 from typing import Any, Dict, List, Sequence, Tuple, Type, Union
@@ -185,6 +186,22 @@ class TimestampConverter(ConverterAPI):
             raise ConversionError()
 
 
+class StringDecimalConverter(ConverterAPI):
+    """
+    Convert string-formatted floating point values to `Decimal` type.
+    """
+
+    def is_convertible(self, value: Any) -> bool:
+        # Matches only string-formatted floats with an optional sign character (+/-).
+        # Leading and trailing zeros are required.
+        # NOTE: `re.fullmatch` will only match the full string, so "1.0 ether" and "10.0 USDC"
+        # will not be identified as convertible.
+        return isinstance(value, str) and re.fullmatch(r"[+-]?\d+\.\d+", value) is not None
+
+    def convert(self, value: str) -> Decimal:
+        return Decimal(value)
+
+
 class ConversionManager(BaseManager):
     """
     A singleton that manages all the converters.
@@ -219,7 +236,7 @@ class ConversionManager(BaseManager):
                 StringIntConverter(),
                 AccountIntConverter(),
             ],
-            Decimal: [],
+            Decimal: [StringDecimalConverter()],
             bool: [],
             str: [],
         }
