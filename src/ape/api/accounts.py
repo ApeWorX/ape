@@ -58,6 +58,18 @@ class AccountAPI(BaseInterfaceModel, BaseAddress):
         return None
 
     def sign_raw_msghash(self, msghash: HexBytes) -> Optional[MessageSignature]:
+        """
+        Sign a raw message hash.
+
+        Args:
+          msghash (:class:`~eth_pydantic_types.HexBytes`):
+            The message hash to sign. Plugins may or may not support this operation.
+            Default implementation is to raise ``NotImplementedError``.
+
+        Returns:
+          :class:`~ape.types.signatures.MessageSignature` (optional):
+            The signature corresponding to the message.
+        """
         raise NotImplementedError(
             f"Raw message signing is not supported by '{self.__class__.__name__}'"
         )
