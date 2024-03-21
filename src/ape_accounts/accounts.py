@@ -163,14 +163,17 @@ class KeyfileAccount(AccountAPI):
 
     def sign_message(self, msg: Any, **signer_options) -> Optional[MessageSignature]:
         if isinstance(msg, str):
-            user_approves = self.__autosign or click.confirm(f"Message: {msg}\n\nSign: ")
+            display_msg = f"Signing raw string: '{msg}'"
             msg = encode_defunct(text=msg)
+
         elif isinstance(msg, int):
-            user_approves = self.__autosign or click.confirm(f"Message: {msg}\n\nSign: ")
+            display_msg = f"Signing raw integer: {msg}"
             msg = encode_defunct(hexstr=HexBytes(msg).hex())
+
         elif isinstance(msg, bytes):
-            user_approves = self.__autosign or click.confirm(f"Message: {msg.hex()}\n\nSign: ")
+            display_msg = f"Signing raw bytes: '{msg.hex()}'"
             msg = encode_defunct(primitive=msg)
+
         elif isinstance(msg, EIP712Message):
             # Display message data to user
             display_msg = "Signing EIP712 Message\n"
@@ -193,20 +196,22 @@ class KeyfileAccount(AccountAPI):
             for field, value in msg._body_["message"].items():
                 display_msg += f"\t{field}: {value}\n"
 
-            user_approves = self.__autosign or click.confirm(f"{display_msg}\nSign: ")
-
             # Convert EIP712Message to SignableMessage for handling below
             msg = msg.signable_message
+
         elif isinstance(msg, SignableMessage):
-            user_approves = self.__autosign or click.confirm(f"{msg}\n\nSign: ")
+            display_msg = str(msg)
+
         else:
             logger.warning("Unsupported message type, (type=%r, msg=%r)", type(msg), msg)
             return None
 
-        if not user_approves:
+        if self.__autosign or click.confirm(f"{display_msg}\n\nSign: "):
+            signed_msg = EthAccount.sign_message(msg, self.__key)
+
+        else:
             return None
 
-        signed_msg = EthAccount.sign_message(msg, self.__key)
         return MessageSignature(
             v=signed_msg.v,
             r=to_bytes(signed_msg.r),
@@ -228,6 +233,24 @@ class KeyfileAccount(AccountAPI):
         )
 
         return txn
+
+    def sign_raw_msghash(self, msghash: HexBytes) -> Optional[MessageSignature]:
+        logger.warning(
+            "Signing a raw hash directly is a dangerous action which could risk "
+            "substantial losses! Only confirm if you are 100% sure of the origin!"
+        )
+
+        # NOTE: Signing a raw hash is so dangerous, we don't want to allow autosigning it
+        if not click.confirm("Please confirm you wish to sign using `EthAccount.signHash`"):
+            return None
+
+        signed_msg = EthAccount.signHash(msghash, self.__key)
+
+        return MessageSignature(
+            v=signed_msg.v,
+            r=to_bytes(signed_msg.r),
+            s=to_bytes(signed_msg.s),
+        )
 
     def set_autosign(self, enabled: bool, passphrase: Optional[str] = None):
         """

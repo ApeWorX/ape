@@ -116,6 +116,21 @@ def test_sign_message_with_prompts(runner, keyfile_account, message):
     assert start_nonce == end_nonce
 
 
+def test_sign_raw_hash(runner, keyfile_account):
+    # NOTE: `message` is a 32 byte raw hash, which is treated specially
+    message = b"\xAB" * 32
+
+    # "y\na\ny": yes sign raw hash, password, yes keep unlocked
+    with runner.isolation(input=f"y\n{PASSPHRASE}\ny"):
+        signature = keyfile_account.sign_raw_msghash(message)
+        assert keyfile_account.check_signature(message, signature, recover_using_eip191=False)
+
+    # "n\nn": no sign raw hash: don't sign
+    with runner.isolation(input="n"):
+        signature = keyfile_account.sign_message(message)
+        assert signature is None
+
+
 def test_transfer(sender, receiver, eth_tester_provider, convert):
     initial_receiver_balance = receiver.balance
     initial_sender_balance = sender.balance

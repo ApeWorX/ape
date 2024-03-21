@@ -3,8 +3,8 @@ from typing import Any, Iterator, List, Optional
 from eip712.messages import EIP712Message
 from eth_account import Account as EthAccount
 from eth_account.messages import SignableMessage, encode_defunct
+from eth_pydantic_types import HexBytes
 from eth_utils import to_bytes
-from hexbytes import HexBytes
 
 from ape.api import TestAccountAPI, TestAccountContainerAPI, TransactionAPI
 from ape.exceptions import SignatureError
@@ -142,3 +142,12 @@ class TestAccount(TestAccountAPI):
         )
 
         return txn
+
+    def sign_raw_msghash(self, msghash: HexBytes) -> MessageSignature:
+        signed_msg = EthAccount.signHash(msghash, self.private_key)
+
+        return MessageSignature(
+            v=signed_msg.v,
+            r=to_bytes(signed_msg.r),
+            s=to_bytes(signed_msg.s),
+        )

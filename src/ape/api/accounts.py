@@ -6,7 +6,7 @@ from eip712.messages import EIP712Message
 from eip712.messages import SignableMessage as EIP712SignableMessage
 from eth_account import Account
 from eth_account.messages import encode_defunct
-from hexbytes import HexBytes
+from eth_pydantic_types import HexBytes
 
 from ape.api.address import BaseAddress
 from ape.api.transactions import ReceiptAPI, TransactionAPI
@@ -56,6 +56,23 @@ class AccountAPI(BaseInterfaceModel, BaseAddress):
         A shortened-name for quicker access to the account.
         """
         return None
+
+    def sign_raw_msghash(self, msghash: HexBytes) -> Optional[MessageSignature]:
+        """
+        Sign a raw message hash.
+
+        Args:
+          msghash (:class:`~eth_pydantic_types.HexBytes`):
+            The message hash to sign. Plugins may or may not support this operation.
+            Default implementation is to raise ``NotImplementedError``.
+
+        Returns:
+          :class:`~ape.types.signatures.MessageSignature` (optional):
+            The signature corresponding to the message.
+        """
+        raise NotImplementedError(
+            f"Raw message signing is not supported by '{self.__class__.__name__}'"
+        )
 
     @abstractmethod
     def sign_message(self, msg: Any, **signer_options) -> Optional[MessageSignature]:
@@ -295,8 +312,9 @@ class AccountAPI(BaseInterfaceModel, BaseAddress):
 
     def check_signature(
         self,
-        data: Union[SignableMessage, TransactionAPI, str, EIP712Message, int],
+        data: Union[SignableMessage, TransactionAPI, str, EIP712Message, int, bytes],
         signature: Optional[MessageSignature] = None,  # TransactionAPI doesn't need it
+        recover_using_eip191: bool = True,
     ) -> bool:
         """
         Verify a message or transaction was signed by this account.
@@ -307,6 +325,10 @@ class AccountAPI(BaseInterfaceModel, BaseAddress):
             signature (Optional[:class:`~ape.types.signatures.MessageSignature`]):
               The signature to check. Defaults to ``None`` and is not needed when the first
               argument is a transaction class.
+            recover_using_eip191 (bool):
+              Perform recovery using EIP-191 signed message check. If set False, then will attempt
+              recovery as raw hash. `data`` must be a 32 byte hash if this is set False.
+              Defaults to ``True``.
 
         Returns:
             bool: ``True`` if the data was signed by this account. ``False`` otherwise.
@@ -315,6 +337,8 @@ class AccountAPI(BaseInterfaceModel, BaseAddress):
             data = encode_defunct(text=data)
         elif isinstance(data, int):
             data = encode_defunct(hexstr=HexBytes(data).hex())
+        elif isinstance(data, bytes) and (len(data) != 32 or recover_using_eip191):
+            data = encode_defunct(data)
         elif isinstance(data, EIP712Message):
             data = data.signable_message
         if isinstance(data, (SignableMessage, EIP712SignableMessage)):
@@ -328,6 +352,9 @@ class AccountAPI(BaseInterfaceModel, BaseAddress):
 
         elif isinstance(data, TransactionAPI):
             return self.address == Account.recover_transaction(data.serialize_transaction())
+
+        elif isinstance(data, bytes) and len(data) == 32 and not recover_using_eip191:
+            return self.address == Account._recover_hash(data, vrs=signature)
 
         else:
             raise AccountsError(f"Unsupported message type: {type(data)}.")
