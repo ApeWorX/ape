@@ -6,7 +6,7 @@ from eip712.messages import EIP712Message
 from eip712.messages import SignableMessage as EIP712SignableMessage
 from eth_account import Account
 from eth_account.messages import encode_defunct
-from hexbytes import HexBytes
+from eth_pydantic_types import HexBytes
 
 from ape.api.address import BaseAddress
 from ape.api.transactions import ReceiptAPI, TransactionAPI
