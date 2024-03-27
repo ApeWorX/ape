@@ -17,7 +17,7 @@ from ape.exceptions import (
     TransactionNotFoundError,
 )
 from ape_ethereum.ecosystem import Block
-from ape_ethereum.provider import DEFAULT_SETTINGS
+from ape_ethereum.provider import DEFAULT_SETTINGS, EthereumNodeProvider
 from ape_ethereum.transactions import (
     AccessList,
     AccessListTransaction,
@@ -463,3 +463,29 @@ def test_create_access_list(geth_provider, geth_contract, geth_account):
     assert len(actual) > 0
     assert isinstance(actual[0], AccessList)
     assert len(actual[0].storage_keys) > 0
+
+
+@geth_process_test
+def test_send_call_base_class_block_id(networks, ethereum, mocker):
+    """
+    Testing a case where was a bug in the base class for most providers.
+    Note: can't use ape-geth as-is, as it overrides `send_call()`.
+    """
+
+    provider = mocker.MagicMock()
+    provider.network.name = "mainnet"
+
+    def hacked_send_call(*args, **kwargs):
+        return EthereumNodeProvider.send_call(provider, *args, **kwargs)
+
+    provider.send_call = hacked_send_call
+    tx = ethereum.create_transaction()
+    block_id = 567
+
+    orig = networks.active_provider
+    networks.active_provider = provider
+    _ = provider.send_call(tx, block_id=block_id) == HexStr("0x")
+    networks.active_provider = orig  # put back ASAP
+
+    actual = provider._send_call.call_args[-1]["block_identifier"]
+    assert actual == block_id
