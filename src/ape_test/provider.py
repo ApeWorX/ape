@@ -2,7 +2,7 @@ import re
 from ast import literal_eval
 from functools import cached_property
 from re import Pattern
-from typing import Dict, Optional, cast
+from typing import Any, Dict, Optional, cast
 
 from eth.exceptions import HeaderNotFound
 from eth_pydantic_types import HexBytes
@@ -32,6 +32,7 @@ from ape_ethereum.provider import Web3Provider
 
 class EthTesterProviderConfig(PluginConfig):
     chain_id: int = DEFAULT_TEST_CHAIN_ID
+    auto_mine: bool = True
 
 
 class LocalProvider(TestProviderAPI, Web3Provider):
@@ -50,7 +51,8 @@ class LocalProvider(TestProviderAPI, Web3Provider):
 
         return self._evm_backend
 
-    def connect(self):
+    @cached_property
+    def tester(self):
         chain_id = self.settings.chain_id
         if self._web3 is not None:
             connected_chain_id = self._make_request("eth_chainId")
@@ -66,8 +68,32 @@ class LocalProvider(TestProviderAPI, Web3Provider):
         )
         endpoints = {**API_ENDPOINTS}
         endpoints["eth"] = merge(endpoints["eth"], {"chainId": static_return(chain_id)})
-        tester = EthereumTesterProvider(ethereum_tester=self._evm_backend, api_endpoints=endpoints)
-        self._web3 = Web3(tester)
+        return EthereumTesterProvider(ethereum_tester=self._evm_backend, api_endpoints=endpoints)
+
+    @property
+    def auto_mine(self) -> bool:
+        return self.tester.ethereum_tester.auto_mine_transactions
+
+    def __setattr__(self, attr: str, value: Any) -> None:
+        # NOTE: Need to do this until https://github.com/pydantic/pydantic/pull/2625 is figured out
+        if attr == "auto_mine":
+            if value is True:
+                self.tester.ethereum_tester.enable_auto_mine_transactions()
+            elif value is False:
+                self.tester.ethereum_tester.disable_auto_mine_transactions()
+            else:
+                raise TypeError("Expecting bool-value for auto_mine setter.")
+        else:
+            super().__setattr__(attr, value)
+
+    def connect(self):
+        if "tester" in self.__dict__:
+            del self.__dict__["tester"]
+
+        self._web3 = Web3(self.tester)
+        # Handle disabling auto-mine if the user requested via config.
+        if self.config.provider.auto_mine is False:
+            self.auto_mine = False  # NOTE: set via __setattr__
 
     def disconnect(self):
         # NOTE: This type ignore seems like a bug in pydantic.

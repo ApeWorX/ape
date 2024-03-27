@@ -397,3 +397,10 @@ def test_create_access_list(eth_tester_provider, vyper_contract_instance, owner)
     tx = vyper_contract_instance.setNumber.as_transaction(123, sender=owner)
     with pytest.raises(APINotImplementedError):
         eth_tester_provider.create_access_list(tx)
+
+
+def test_auto_mine(eth_tester_provider):
+    eth_tester_provider.auto_mine = False
+    assert not eth_tester_provider.auto_mine
+    eth_tester_provider.auto_mine = True
+    assert eth_tester_provider.auto_mine
