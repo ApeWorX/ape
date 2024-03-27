@@ -269,7 +269,13 @@ class LocalProvider(TestProviderAPI, Web3Provider):
             raise ProviderError(f"Failed to time travel: {err}") from err
 
     def mine(self, num_blocks: int = 1):
-        self.evm_backend.mine_blocks(num_blocks)
+        if self.auto_mine:
+            # Are able to use the better method.
+            self.evm_backend.mine_blocks(num_blocks)
+        else:
+            # Have to use this method for some reason.
+            for _ in range(num_blocks):
+                self.tester.ethereum_tester.mine_block()
 
     def get_virtual_machine_error(self, exception: Exception, **kwargs) -> VirtualMachineError:
         if isinstance(exception, ValidationError):
