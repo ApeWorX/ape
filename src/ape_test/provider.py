@@ -74,17 +74,14 @@ class LocalProvider(TestProviderAPI, Web3Provider):
     def auto_mine(self) -> bool:
         return self.tester.ethereum_tester.auto_mine_transactions
 
-    def __setattr__(self, attr: str, value: Any) -> None:
-        # NOTE: Need to do this until https://github.com/pydantic/pydantic/pull/2625 is figured out
-        if attr == "auto_mine":
-            if value is True:
-                self.tester.ethereum_tester.enable_auto_mine_transactions()
-            elif value is False:
-                self.tester.ethereum_tester.disable_auto_mine_transactions()
-            else:
-                raise TypeError("Expecting bool-value for auto_mine setter.")
+    @auto_mine.setter
+    def auto_mine(self, value: Any) -> None:
+        if value is True:
+            self.tester.ethereum_tester.enable_auto_mine_transactions()
+        elif value is False:
+            self.tester.ethereum_tester.disable_auto_mine_transactions()
         else:
-            super().__setattr__(attr, value)
+            raise TypeError("Expecting bool-value for auto_mine setter.")
 
     def connect(self):
         if "tester" in self.__dict__:
