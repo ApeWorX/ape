@@ -17,6 +17,7 @@ from ape.managers.base import BaseManager
 from ape.managers.project.types import ApeProject, BrownieProject
 from ape.utils import get_relative_path
 from ape.utils.basemodel import _assert_not_ipython_check
+from ape.utils.os import clean_path
 
 
 class ProjectManager(BaseManager):
@@ -55,11 +56,11 @@ class ProjectManager(BaseManager):
             self.path = self.path.parent
 
     def __str__(self) -> str:
-        return f'Project("{self.path}")'
+        return f'Project("{clean_path(self.path)}")'
 
     def __repr__(self):
         try:
-            path = f" {self.path}"
+            path = f" {clean_path(self.path)}"
         except Exception:
             # Disallow exceptions in __repr__
             path = ""
