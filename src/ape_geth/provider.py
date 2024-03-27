@@ -243,7 +243,8 @@ class GethDev(EthereumNodeProvider, TestProviderAPI, SubprocessProvider):
     @property
     def data_dir(self) -> Path:
         # Overridden from BaseGeth class for placing debug logs in ape data folder.
-        return self.settings.data_dir or self.data_folder / self.name
+        data_folder = self.config_manager.DATA_FOLDER
+        return self.settings.data_dir or data_folder / self.name
 
     def __repr__(self):
         try:

@@ -322,12 +322,11 @@ class Ethereum(EcosystemAPI):
     # NOTE: `default_transaction_type` should be overridden
     #   if the chain doesn't support EIP-1559.
 
-    name: str = "ethereum"
     fee_token_symbol: str = "ETH"
 
     @property
     def config(self) -> EthereumConfig:
-        return cast(EthereumConfig, self.config_manager.get_config(self.name))
+        return cast(EthereumConfig, super().config)
 
     @property
     def default_transaction_type(self) -> TransactionType:

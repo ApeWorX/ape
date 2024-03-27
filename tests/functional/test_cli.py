@@ -15,6 +15,7 @@ from ape.cli import (
     existing_alias_argument,
     network_option,
     non_existing_alias_argument,
+    project_option,
     select_account,
     verbosity_option,
 )
@@ -35,13 +36,13 @@ def keyfile_swap_paths(config):
 
 
 @pytest.fixture
-def one_keyfile_account(keyfile_swap_paths, keyfile_account, temp_config):
+def one_keyfile_account(keyfile_swap_paths, keyfile_account, project):
     src_path, dest_path = keyfile_swap_paths
     existing_keyfiles = [x for x in src_path.iterdir() if x.is_file()]
     test_data = {"test": {"number_of_accounts": 0}}
     if existing_keyfiles == [keyfile_account.keyfile_path]:
         # Already only has the 1 account
-        with temp_config(test_data):
+        with project.temp_config(**test_data):
             yield keyfile_account
 
     else:
@@ -55,7 +56,7 @@ def one_keyfile_account(keyfile_swap_paths, keyfile_account, temp_config):
             shutil.copy(keyfile, dest_path / keyfile.name)
             keyfile.unlink()
 
-        with temp_config(test_data):
+        with project.temp_config(**test_data):
             yield keyfile_account
 
         for file in dest_path.iterdir():
@@ -91,18 +92,18 @@ def _teardown_numb_acct_change(accounts):
 
 
 @pytest.fixture
-def no_accounts(accounts, empty_data_folder, temp_config):
+def no_accounts(accounts, empty_data_folder, project):
     data = _setup_temp_acct_number_change(accounts, 0)
-    with temp_config(data):
+    with project.temp_config(**data):
         yield
 
     _teardown_numb_acct_change(accounts)
 
 
 @pytest.fixture
-def one_account(accounts, empty_data_folder, temp_config, test_accounts):
+def one_account(accounts, empty_data_folder, project, test_accounts):
     data = _setup_temp_acct_number_change(accounts, 1)
-    with temp_config(data):
+    with project.temp_config(**data):
         yield test_accounts[0]
 
     _teardown_numb_acct_change(accounts)
@@ -281,22 +282,25 @@ def test_network_option_specified_none(runner):
 
 
 @pytest.mark.parametrize("network_name", ("apenet", "apenet1"))
-def test_network_option_specify_custom_network(runner, custom_networks_config, network_name):
+def test_network_option_specify_custom_network(
+    runner, project, custom_networks_config_dict, network_name
+):
     network_part = ("--network", f"ethereum:{network_name}:geth")
 
-    # NOTE: Also testing network filter with a custom network
-    #  But this is also required to work around LRU cache
-    #  giving us the wrong networks because click is running
-    #  the tester in-process after re-configuring networks,
-    #  which shouldn't happen IRL.
+    with project.temp_config(**custom_networks_config_dict):
+        # NOTE: Also testing network filter with a custom network
+        #  But this is also required to work around LRU cache
+        #  giving us the wrong networks because click is running
+        #  the tester in-process after re-configuring networks,
+        #  which shouldn't happen IRL.
 
-    @click.command()
-    @network_option(network=network_name)
-    def cmd(network):
-        click.echo(f"Value is '{network.name}'")
+        @click.command()
+        @network_option(network=network_name)
+        def cmd(network):
+            click.echo(f"Value is '{network.name}'")
 
-    result = runner.invoke(cmd, network_part)
-    assert f"Value is '{network_name}'" in result.output
+        result = runner.invoke(cmd, network_part)
+        assert f"Value is '{network_name}'" in result.output
 
 
 def test_account_option(runner, keyfile_account):
@@ -411,14 +415,76 @@ def test_account_prompt_name():
     assert option.name == "account_z"
 
 
-def test_contract_file_paths_argument(runner):
-    @click.command()
-    @contract_file_paths_argument()
-    def cmd(file_paths):
-        pass
+def test_contract_file_paths_argument_path(runner, project):
+    with project.sandbox() as sandbox:
+        path = sandbox.contracts_folder / "path0.json"
+        path.parent.mkdir(exist_ok=True, parents=True)
+        path.touch()
 
-    result = runner.invoke(cmd, ["path0", "path1"])
-    assert "Contract 'path0' not found" in result.output
+        @click.command()
+        @contract_file_paths_argument()
+        @project_option()
+        def cmd(file_paths, project):
+            click.echo(file_paths)
+
+        result = runner.invoke(cmd, ("path0", "--project", f"{sandbox.path}"))
+        assert result.exit_code == 0
+        assert "path0" in result.output
+
+
+def test_contract_file_paths_argument_path_not_found(runner, project):
+    with project.sandbox() as sandbox:
+        path = sandbox.contracts_folder / "path0.json"
+        path.parent.mkdir(exist_ok=True, parents=True)
+        path.touch()
+
+        @click.command()
+        @contract_file_paths_argument()
+        @project_option()
+        def cmd(file_paths, project):
+            pass
+
+        result = runner.invoke(cmd, ("path0", "path1", "--project", f"{sandbox.path}"))
+        assert result.exit_code != 0
+        assert "Source file 'path1' not found" in result.output
+
+
+def test_contract_file_paths_argument_given_contracts_folder(runner, project):
+    with project.sandbox() as sandbox:
+        # NOTE: `contracts_folder` is PROJECT_FOLDER/tests/functional/data/contracts/local
+        path = sandbox.contracts_folder / "path0.json"
+        path.parent.mkdir(exist_ok=True, parents=True)
+        path.touch()
+
+        @click.command()
+        @contract_file_paths_argument()
+        @project_option()
+        def cmd(file_paths, project):
+            click.echo(file_paths)
+
+        # 'local' is then name of the contracts folder.
+        result = runner.invoke(cmd, ("local", "--project", f"{sandbox.path}"))
+        assert result.exit_code == 0, result.output
+        assert "path0" in result.output
+
+
+def test_contract_file_paths_argument_subdirectory(runner, project):
+    with project.sandbox() as sandbox:
+        # NOTE: `contracts_folder` is PROJECT_FOLDER/tests/functional/data/contracts/local
+        path = sandbox.contracts_folder / "subdir" / "path0.json"
+        path.parent.mkdir(exist_ok=True, parents=True)
+        path.touch()
+
+        @click.command()
+        @contract_file_paths_argument()
+        @project_option()
+        def cmd(file_paths, project):
+            click.echo(file_paths)
+
+        # 'local' is then name of the contracts folder.
+        result = runner.invoke(cmd, ("subdir", "--project", f"{sandbox.path}"))
+        assert result.exit_code == 0, result.output
+        assert "path0" in result.output
 
 
 def test_existing_alias_option(runner):
@@ -682,7 +748,7 @@ def test_network_choice_custom_adhoc_network(prefix):
     assert actual.network.name == "custom"
 
 
-def test_network_choice_custom_config_network(custom_networks_config_dict, temp_config):
+def test_network_choice_custom_config_network(custom_networks_config_dict, project):
     data = copy.deepcopy(custom_networks_config_dict)
 
     # Was a bug where couldn't have this name.
@@ -691,7 +757,7 @@ def test_network_choice_custom_config_network(custom_networks_config_dict, temp_
     _get_networks_sequence_from_cache.cache_clear()
 
     network_choice = NetworkChoice()
-    with temp_config(data):
+    with project.temp_config(**data):
         actual = network_choice.convert("ethereum:custom", None, None)
 
     assert actual.network.name == "custom"

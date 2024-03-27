@@ -6,19 +6,18 @@ import yaml
 
 from ape.api import EcosystemAPI, ProviderAPI, ProviderContextManager
 from ape.api.networks import NetworkAPI
-from ape.exceptions import (
-    ApeAttributeError,
-    EcosystemNotFoundError,
-    NetworkError,
-    NetworkNotFoundError,
-)
+from ape.exceptions import EcosystemNotFoundError, NetworkError, NetworkNotFoundError
 from ape.managers.base import BaseManager
-from ape.utils.basemodel import _assert_not_ipython_check
+from ape.utils.basemodel import (
+    ExtraAttributesMixin,
+    ExtraModelAttributes,
+    get_attribute_with_extras,
+)
 from ape.utils.misc import _dict_overlay
 from ape_ethereum.provider import EthereumNodeProvider
 
 
-class NetworkManager(BaseManager):
+class NetworkManager(BaseManager, ExtraAttributesMixin):
     """
     The set of all blockchain network ecosystems registered from the plugin system.
     Typically, you set the provider via the ``--network`` command line option.
@@ -171,33 +170,32 @@ class NetworkManager(BaseManager):
         """
         All the registered ecosystems in ``ape``, such as ``ethereum``.
         """
-        ecosystem_objs = self._plugin_ecosystems
+        plugin_ecosystems = self._plugin_ecosystems
 
         # Load config.
         custom_networks: List = self.config_manager.get_config("networks").get("custom", [])
         for custom_network in custom_networks:
             ecosystem_name = custom_network.ecosystem
-            if ecosystem_name in ecosystem_objs:
+            if ecosystem_name in plugin_ecosystems:
                 # Already included in previous network.
                 continue
 
             base_ecosystem_name = (
                 custom_network.get("base_ecosystem_plugin") or self.default_ecosystem_name
             )
-            existing_cls = ecosystem_objs[base_ecosystem_name]
+            existing_cls = plugin_ecosystems[base_ecosystem_name]
             ecosystem_cls = existing_cls.model_copy(
                 update={"name": ecosystem_name}, cache_clear=("_networks_from_plugins",)
             )
-            ecosystem_objs[ecosystem_name] = ecosystem_cls
+            plugin_ecosystems[ecosystem_name] = ecosystem_cls
 
-        return ecosystem_objs
+        return plugin_ecosystems
 
     @cached_property
     def _plugin_ecosystems(self) -> Dict[str, EcosystemAPI]:
         def to_kwargs(name: str) -> Dict:
             return {
                 "name": name,
-                "data_folder": self.config_manager.DATA_FOLDER / name,
                 "request_header": self.config_manager.REQUEST_HEADER,
             }
 
@@ -272,47 +270,15 @@ class NetworkManager(BaseManager):
         """
         yield from self.ecosystems
 
-    def __getitem__(self, ecosystem_name: str) -> EcosystemAPI:
-        """
-        Get an ecosystem by name.
-
-        Raises:
-            :class:`~ape.exceptions.NetworkError`: When the given ecosystem name is
-              unknown.
-
-        Args:
-            ecosystem_name (str): The name of the ecosystem to get.
-
-        Returns:
-            :class:`~ape.api.networks.EcosystemAPI`
-        """
-        if ecosystem_name not in self.ecosystems:
-            raise IndexError(f"Unknown ecosystem '{ecosystem_name}'.")
-
-        return self.ecosystems[ecosystem_name]
+    def __ape_extra_attributes__(self) -> Iterator[ExtraModelAttributes]:
+        yield ExtraModelAttributes(
+            name="ecosystems",
+            attributes=lambda: self.ecosystems,
+            include_getitem=True,
+        )
 
     def __getattr__(self, attr_name: str) -> EcosystemAPI:
-        """
-        Get an ecosystem via ``.`` access.
-
-        Args:
-            attr_name (str): The name of the ecosystem.
-
-        Returns:
-            :class:`~ape.api.networks.EcosystemAPI`
-
-        Usage example::
-
-            eth = networks.ethereum
-        """
-        _assert_not_ipython_check(attr_name)
-        options = {attr_name, attr_name.replace("-", "_"), attr_name.replace("_", "-")}
-        ecosystems = self.ecosystems
-        for opt in options:
-            if opt in ecosystems:
-                return ecosystems[opt]
-
-        raise ApeAttributeError(f"{NetworkManager.__name__} has no attribute '{attr_name}'.")
+        return get_attribute_with_extras(self, attr_name)
 
     def get_network_choices(
         self,

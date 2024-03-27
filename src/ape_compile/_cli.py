@@ -1,10 +1,12 @@
+import sys
 from pathlib import Path
 from typing import Dict, Set
 
 import click
 from ethpm_types import ContractType
 
-from ape.cli import ape_cli_context, contract_file_paths_argument
+from ape.cli.arguments import contract_file_paths_argument
+from ape.cli.options import ape_cli_context, config_override_option, project_option
 
 
 def _include_dependencies_callback(ctx, param, value):
@@ -12,6 +14,8 @@ def _include_dependencies_callback(ctx, param, value):
 
 
 @click.command(short_help="Compile select contract source files")
+@ape_cli_context()
+@project_option()
 @contract_file_paths_argument()
 @click.option(
     "-f",
@@ -36,8 +40,16 @@ def _include_dependencies_callback(ctx, param, value):
     help="Also compile dependencies",
     callback=_include_dependencies_callback,
 )
-@ape_cli_context()
-def cli(cli_ctx, file_paths: Set[Path], use_cache: bool, display_size: bool, include_dependencies):
+@config_override_option()
+def cli(
+    cli_ctx,
+    project,
+    file_paths: Set[Path],
+    use_cache: bool,
+    display_size: bool,
+    include_dependencies,
+    config_override,
+):
     """
     Compiles the manifest for this project and saves the results
     back to the manifest.
@@ -45,56 +57,48 @@ def cli(cli_ctx, file_paths: Set[Path], use_cache: bool, display_size: bool, inc
     Note that ape automatically recompiles any changed contracts each time
     a project is loaded. You do not have to manually trigger a recompile.
     """
+    compiled = False
+    errored = False
 
-    sources_missing = cli_ctx.project_manager.sources_missing
-    if not file_paths and sources_missing and len(cli_ctx.project_manager.dependencies) == 0:
+    if cfg := config_override:
+        project.reconfigure(**cfg)
+
+    if file_paths == "*":
+        # NOTE: Purposely delay "getting all" until after `.reconfigure()` call.
+        # This handles the case where "all" changes based on settings given.
+        file_paths = set(list(project.sources.compilable_paths))
+
+    if file_paths:
+        contract_types = {
+            ct.name: ct for ct in project.contracts.compile(file_paths, use_cache=use_cache)
+        }
+        cli_ctx.logger.success("'local project' compiled.")
+        compiled = True
+        if display_size:
+            _display_byte_code_sizes(cli_ctx, contract_types)
+
+    if (include_dependencies or project.config.compile.include_dependencies) and len(
+        project.dependencies
+    ) > 0:
+        for dependency in project.dependencies:
+            try:
+                contract_types = dependency.project.load_contracts(use_cache=use_cache)
+            except Exception as err:
+                cli_ctx.logger.log_error(err)
+                errored = True
+                continue
+
+            cli_ctx.logger.success(f"'{dependency.project.name}' compiled.")
+            compiled = True
+            if display_size:
+                _display_byte_code_sizes(cli_ctx, contract_types)
+
+    if not compiled:
         cli_ctx.logger.warning("Nothing to compile.")
-        return
 
-    ext_given = [p.suffix for p in file_paths if p]
-
-    # Filter out common files that we know are not files you can compile anyway,
-    # like documentation files. NOTE: Nothing prevents a CompilerAPI from using these
-    # extensions, we just don't warn about missing compilers here. The warning is really
-    # meant to help guide users when the vyper, solidity, or cairo plugins are not installed.
-    general_extensions = {".md", ".rst", ".txt", ".py", ".html", ".css", ".adoc"}
-
-    ext_with_missing_compilers = {
-        x
-        for x in cli_ctx.project_manager.extensions_with_missing_compilers(ext_given)
-        if x not in general_extensions
-    }
-
-    if ext_with_missing_compilers:
-        if len(ext_with_missing_compilers) > 1:
-            # NOTE: `sorted` to increase reproducibility.
-            extensions_str = ", ".join(sorted(ext_with_missing_compilers))
-            message = f"Missing compilers for the following file types: '{extensions_str}'."
-        else:
-            message = f"Missing a compiler for {ext_with_missing_compilers.pop()} file types."
-
-        message = (
-            f"{message} "
-            f"Possibly, a compiler plugin is not installed "
-            f"or is installed but not loading correctly."
-        )
-        cli_ctx.logger.warning(message)
-
-    contract_types = cli_ctx.project_manager.load_contracts(
-        file_paths=file_paths, use_cache=use_cache
-    )
-
-    if include_dependencies:
-        for versions in cli_ctx.project_manager.dependencies.values():
-            for dependency in versions.values():
-                try:
-                    dependency.compile(use_cache=use_cache)
-                except Exception as err:
-                    # Log error and try to compile the remaining dependencies.
-                    cli_ctx.logger.error(err)
-
-    if display_size:
-        _display_byte_code_sizes(cli_ctx, contract_types)
+    if errored:
+        # Ensure exit code.
+        sys.exit(1)
 
 
 def _display_byte_code_sizes(cli_ctx, contract_types: Dict[str, ContractType]):

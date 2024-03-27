@@ -47,6 +47,7 @@ from ape.utils.misc import (
 from ape.utils.os import (
     expand_environment_variables,
     get_all_files_in_directory,
+    get_full_extension,
     get_relative_path,
     use_temp_sys_path,
 )
@@ -89,6 +90,7 @@ __all__ = [
     "generate_dev_accounts",
     "get_all_files_in_directory",
     "get_current_timestamp_ms",
+    "get_full_extension",
     "pragma_str_to_specifier_set",
     "injected_before_use",
     "is_array",

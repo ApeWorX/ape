@@ -9,7 +9,9 @@ import click
 import pandas as pd
 from eth_pydantic_types import HexBytes
 from ethpm_types.abi import ConstructorABI, ErrorABI, EventABI, MethodABI
-from ethpm_types.contract_type import ABI_W_SELECTOR_T, ContractType
+from ethpm_types.contract_type import ABI_W_SELECTOR_T
+from ethpm_types.contract_type import ABIList as EthPMABIList
+from ethpm_types.contract_type import ContractType
 
 from ape.api import AccountAPI, Address, ReceiptAPI, TransactionAPI
 from ape.api.address import BaseAddress
@@ -30,7 +32,13 @@ from ape.logging import logger
 from ape.types import AddressType, ContractLog, LogFilter, MockContractLog
 from ape.utils import BaseInterfaceModel, ManagerAccessMixin, cached_property, singledispatchmethod
 from ape.utils.abi import StructParser
-from ape.utils.basemodel import _assert_not_ipython_check
+from ape.utils.basemodel import (
+    ExtraAttributesMixin,
+    ExtraModelAttributes,
+    _assert_not_ipython_check,
+    get_attribute_with_extras,
+    only_raise_attribute_error,
+)
 
 
 class ContractConstructor(ManagerAccessMixin):
@@ -712,6 +720,7 @@ class ContractEvent(BaseInterfaceModel):
 
 class ContractTypeWrapper(ManagerAccessMixin):
     contract_type: ContractType
+    base_path: Optional[Path] = None
 
     @property
     def selector_identifiers(self) -> Dict[str, str]:
@@ -729,33 +738,18 @@ class ContractTypeWrapper(ManagerAccessMixin):
         """
         return self.contract_type.identifier_lookup
 
-    @cached_property
+    @property
     def source_path(self) -> Optional[Path]:
         """
         Returns the path to the local contract if determined that this container
         belongs to the active project by cross checking source_id.
-
-        WARN: The will return a path if the contract has the same
-        source ID as one in the current project. That does not necessarily mean
-        they are the same contract, however.
         """
-        contract_name = self.contract_type.name
-        source_id = self.contract_type.source_id
-        if not (contract_name and source_id):
+        if not (source_id := self.contract_type.source_id):
             return None
 
-        contract_container = self.project_manager._get_contract(contract_name)
-        if not (
-            contract_container
-            and contract_container.contract_type.source_id
-            and self.contract_type.source_id
-        ):
-            return None
-
-        if source_id == contract_container.contract_type.source_id:
-            return self.project_manager.contracts_folder / source_id
-        else:
-            return None
+        base = self.base_path or self.project_manager.path
+        path = base / source_id
+        return path if path.is_file() else None
 
     def decode_input(self, calldata: bytes) -> Tuple[str, Dict[str, Any]]:
         """
@@ -1150,6 +1144,7 @@ class ContractInstance(BaseAddress, ContractTypeWrapper):
             )
         )
 
+    @only_raise_attribute_error
     def __getattr__(self, attr_name: str) -> Any:
         """
         Access a method, property, event, or error on the contract using ``.`` access.
@@ -1223,7 +1218,23 @@ class ContractInstance(BaseAddress, ContractTypeWrapper):
             )
 
 
-class ContractContainer(ContractTypeWrapper):
+class ABIList:
+    def __init__(self, abis: EthPMABIList, factory: Callable):
+        self._abis = abis
+        self._factory = factory
+
+    def __contains__(self, item):
+        return item in self._abis
+
+    def __getitem__(self, item) -> Optional[Any]:
+        if item not in self._abis:
+            return None
+
+        abi = self._abis[item]
+        return self._factory(abi)
+
+
+class ContractContainer(ContractTypeWrapper, ExtraAttributesMixin):
     """
     A wrapper around the contract type that has access to the provider.
     When you import your contracts from the :class:`ape.managers.project.ProjectManager`, you
@@ -1242,38 +1253,42 @@ class ContractContainer(ContractTypeWrapper):
     def __repr__(self) -> str:
         return f"<{self.contract_type.name}>"
 
-    def __getattr__(self, name: str) -> Any:
-        """
-        Access a contract error or event type via its ABI name using ``.`` access.
+    def __getattr__(self, attr_name: str) -> Any:
+        return get_attribute_with_extras(self, attr_name)
 
-        Args:
-            name (str): The name of the event or error.
+    def __eq__(self, other):
+        if not hasattr(other, "contract_type"):
+            return NotImplemented
 
-        Returns:
-            :class:`~ape.types.ContractEvent` or a subclass of :class:`~ape.exceptions.CustomError`
-            or any real attribute of the class.
-        """
-        _assert_not_ipython_check(name)
-        try:
-            # First, check if requesting a regular attribute on this class.
-            return self.__getattribute__(name)
-        except AttributeError:
-            pass
+        return other.contract_type == self.contract_type
 
-        try:
-            if name in self.contract_type.events:
-                abi = self.contract_type.events[name]
-                return ContractEvent(contract=self, abi=abi)
+    def __ape_extra_attributes__(self) -> Iterator[ExtraModelAttributes]:
+        yield ExtraModelAttributes(
+            name="events",
+            attributes=self.events,
+            include_getitem=True,
+        )
+        yield ExtraModelAttributes(
+            name="errors",
+            attributes=self.errors,
+            include_getitem=True,
+        )
+        yield ExtraModelAttributes(
+            name="contract_type",
+            attributes=lambda: vars(self.contract_type),
+        )
 
-            elif name in self.contract_type.errors:
-                abi = self.contract_type.errors[name]
-                return self._create_custom_error_type(abi)
+    @cached_property
+    def events(self) -> ABIList:
+        return ABIList(
+            self.contract_type.events, factory=lambda abi: ContractEvent(contract=self, abi=abi)
+        )
 
-        except Exception as err:
-            # __getattr__ must raise AttributeError
-            raise ApeAttributeError(str(err)) from err
-
-        raise ApeAttributeError(f"No ABI with name '{name}'.")
+    @cached_property
+    def errors(self) -> ABIList:
+        return ABIList(
+            self.contract_type.errors, factory=lambda abi: self._create_custom_error_type(abi)
+        )
 
     @property
     def deployments(self):
@@ -1381,7 +1396,7 @@ class ContractContainer(ContractTypeWrapper):
         self.chain_manager.contracts.cache_deployment(instance)
 
         if publish:
-            self.project_manager.track_deployment(instance)
+            self.project_manager.deployments.track(instance)
             self.provider.network.publish_contract(address)
 
         return instance
@@ -1454,6 +1469,7 @@ class ContractNamespace:
     def __repr__(self) -> str:
         return f"<{self.name}>"
 
+    @only_raise_attribute_error
     def __getattr__(self, item: str) -> Union[ContractContainer, "ContractNamespace"]:
         """
         Access the next contract container or namespace.

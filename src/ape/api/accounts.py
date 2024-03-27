@@ -278,9 +278,10 @@ class AccountAPI(BaseInterfaceModel, BaseAddress):
         self.chain_manager.contracts.cache_deployment(instance)
 
         if publish:
-            self.project_manager.track_deployment(instance)
+            self.project_manager.deployments.track(instance)
             self.provider.network.publish_contract(address)
 
+        instance.base_path = contract.base_path or self.project_manager.path
         return instance
 
     def declare(self, contract: "ContractContainer", *args, **kwargs) -> ReceiptAPI:
@@ -401,7 +402,7 @@ class AccountContainerAPI(BaseInterfaceModel):
     instances.
     """
 
-    data_folder: Path
+    name: str
 
     account_type: Type[AccountAPI]
 
@@ -424,6 +425,12 @@ class AccountContainerAPI(BaseInterfaceModel):
         Returns:
             Iterator[:class:`~ape.api.accounts.AccountAPI`]
         """
+
+    @property
+    def data_folder(self) -> Path:
+        path = self.config_manager.DATA_FOLDER / self.name
+        path.mkdir(parents=True, exist_ok=True)
+        return path
 
     @abstractmethod
     def __len__(self) -> int:

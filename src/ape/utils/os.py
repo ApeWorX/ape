@@ -1,8 +1,9 @@
 import os
 import re
 import sys
+import tempfile
 from pathlib import Path
-from typing import List, Optional, Pattern, Union
+from typing import Any, Callable, List, Optional, Pattern, Union
 
 
 def is_relative_to(path: Path, target: Path) -> bool:
@@ -61,7 +62,7 @@ def get_all_files_in_directory(
     path: Path, pattern: Optional[Union[Pattern, str]] = None
 ) -> List[Path]:
     """
-    Returns all the files in a directory structure.
+    Returns all the files in a directory structure (recursive).
 
     For example, given a directory structure like::
 
@@ -79,11 +80,10 @@ def get_all_files_in_directory(
     Returns:
         List[pathlib.Path]: A list of files in the given directory.
     """
-    if not path.exists():
-        return []
-
-    elif path.is_file():
+    if path.is_file():
         return [path]
+    elif not path.is_dir():
+        return []
 
     # is dir
     all_files = [p for p in list(path.rglob("*.*")) if p.is_file()]
@@ -139,3 +139,26 @@ class use_temp_sys_path:
         for path in self.exclude:
             if path not in sys.path:
                 sys.path.append(path)
+
+
+def run_in_tempdir(
+    fn: Callable[
+        [
+            Path,
+        ],
+        Any,
+    ]
+):
+    with tempfile.TemporaryDirectory() as temp_dir:
+        return fn(Path(temp_dir).resolve())
+
+
+def get_full_extension(path: Path) -> str:
+    """
+    For a path like ``Path("Contract.t.sol")``,
+    returns ``.t.sol``, unlike the regular Path
+    property ``.suffix`` which returns ``.sol``.
+    """
+    parts = path.name.split(".")
+    suffix = ".".join(parts[1:])
+    return f".{suffix}" if suffix else ""

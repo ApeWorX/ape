@@ -6,7 +6,18 @@ import traceback
 from inspect import getframeinfo, stack
 from pathlib import Path
 from types import CodeType, TracebackType
-from typing import TYPE_CHECKING, Any, Collection, Dict, Iterator, List, Optional, Union, cast
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    Collection,
+    Dict,
+    Iterator,
+    List,
+    Optional,
+    Sequence,
+    Union,
+    cast,
+)
 
 import click
 from eth_typing import Hash32
@@ -637,7 +648,7 @@ class RPCTimeoutError(SubprocessTimeoutError):
         super().__init__(provider, *args, **kwargs)
 
 
-def handle_ape_exception(err: ApeException, base_paths: List[Path]) -> bool:
+def handle_ape_exception(err: ApeException, base_paths: Sequence[Path]) -> bool:
     """
     Handle a transaction error by showing relevant stack frames,
     including custom contract frames added to the exception.

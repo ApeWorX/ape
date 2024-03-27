@@ -49,7 +49,7 @@ def test_uri_localhost_not_running_uses_random_default(config):
 
 
 @geth_process_test
-def test_uri_when_configured(geth_provider, temp_config, ethereum):
+def test_uri_when_configured(geth_provider, project, ethereum):
     settings = geth_provider.provider_settings
     geth_provider.provider_settings = {}
     value = "https://value/from/config"
@@ -58,7 +58,7 @@ def test_uri_when_configured(geth_provider, temp_config, ethereum):
     network = ethereum.get_network("mainnet")
 
     try:
-        with temp_config(config):
+        with project.temp_config(**config):
             # Assert we use the config value.
             actual_local_uri = geth_provider.uri
             # Assert provider settings takes precedence.
@@ -378,7 +378,7 @@ def test_make_request_not_exists(geth_provider):
 def test_geth_not_found():
     bin_name = "__NOT_A_REAL_EXECUTABLE_HOPEFULLY__"
     with pytest.raises(GethNotInstalledError):
-        _ = GethDevProcess(Path.cwd(), executable=bin_name)
+        _ = GethDevProcess(Path(__file__), executable=bin_name)
 
 
 @geth_process_test

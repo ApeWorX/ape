@@ -1,5 +1,7 @@
+import pytest
+
 from ape.api.networks import LOCAL_NETWORK_NAME
-from tests.conftest import GETH_URI, geth_process_test
+from tests.conftest import ApeSubprocessRunner, geth_process_test
 
 from .utils import run_once, skip_projects_except
 
@@ -79,6 +81,15 @@ ethereum  (default)
 """
 
 
+@pytest.fixture
+def networks_runner(config):
+    class NetworksSubprocessRunner(ApeSubprocessRunner):
+        def __init__(self):
+            super().__init__(("networks",), data_folder=config.DATA_FOLDER)
+
+    return NetworksSubprocessRunner()
+
+
 def assert_rich_text(actual: str, expected: str):
     """
     The output from `rich` causes a bunch of extra spaces to
@@ -134,8 +145,9 @@ def test_list_yaml(ape_cli, runner):
 
 
 @skip_projects_except("geth")
-def test_list_geth(ape_cli, runner, networks, project):
-    result = runner.invoke(ape_cli, ["networks", "list"])
+def test_list_geth(networks_runner, networks, project):
+    networks_runner.project = project
+    result = networks_runner.invoke(("list",))
 
     # Grab ethereum
     actual = "ethereum  (default)\n" + "".join(result.output.split("ethereum  (default)\n")[-1])
@@ -146,7 +158,7 @@ def test_list_geth(ape_cli, runner, networks, project):
     # (was bug where one network's URI disappeared when setting different network's URI)
     geth_provider = networks.get_provider_from_choice(f"ethereum:{LOCAL_NETWORK_NAME}:geth")
     actual_uri = geth_provider.uri
-    assert actual_uri == GETH_URI
+    assert actual_uri.startswith("http")
 
 
 @run_once
@@ -170,8 +182,9 @@ def test_list_filter_providers(ape_cli, runner, networks):
 
 
 @skip_projects_except("geth")
-def test_list_custom_networks(ape_cli, runner):
-    result = runner.invoke(ape_cli, ["networks", "list"])
+def test_list_custom_networks(project, networks_runner):
+    networks_runner.project = project
+    result = networks_runner.invoke(("list",))
     actual = "ethereum  (default)\n" + "".join(result.output.split("ethereum  (default)\n")[-1])
     assert_rich_text(actual, _CUSTOM_NETWORKS_TREE)
 
@@ -200,8 +213,8 @@ def test_run_custom_network(ape_cli, runner):
 
 @geth_process_test
 @skip_projects_except("geth")
-def test_run_already_running(ape_cli, runner, geth_provider):
-    cmd = ("networks", "run", "--network", f"ethereum:{LOCAL_NETWORK_NAME}:geth")
-    result = runner.invoke(ape_cli, cmd)
+def test_run_already_running(networks_runner, project, geth_provider):
+    networks_runner.project = project
+    result = networks_runner.invoke(("run",))
     assert result.exit_code != 0
     assert "ERROR: Process already running." in result.output

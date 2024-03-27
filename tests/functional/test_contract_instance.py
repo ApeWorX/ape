@@ -771,13 +771,12 @@ def test_identifier_lookup(vyper_contract_instance):
 
 
 def test_source_path(project_with_contract, owner):
-    contracts_folder = project_with_contract.contracts_folder
-    contract = project_with_contract.contracts["Contract"]
-    contract_instance = owner.deploy(project_with_contract.get_contract("Contract"))
-    expected = contracts_folder / contract.source_id
+    contract = project_with_contract.get_contract("Contract")
+    instance = owner.deploy(contract)
+    expected = project_with_contract.path / contract.source_id
 
-    assert contract_instance.source_path.is_file()
-    assert contract_instance.source_path == expected
+    assert instance.source_path.is_file()
+    assert instance.source_path == expected
 
 
 def test_fallback(fallback_contract, owner):

@@ -2,6 +2,7 @@ import difflib
 import re
 import sys
 from gettext import gettext
+from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
 import click
@@ -80,7 +81,8 @@ class ApeCLI(click.MultiCommand):
         except click.UsageError as err:
             self._suggest_cmd(err)
         except ApeException as err:
-            if handle_ape_exception(err, [ctx.obj.project_manager.path]):
+            path = ctx.obj.project_manager.path
+            if isinstance(path, Path) and handle_ape_exception(err, [path]):
                 # All exc details already outputted.
                 sys.exit(1)
             else:

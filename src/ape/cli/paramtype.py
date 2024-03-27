@@ -1,10 +1,7 @@
+import json
 from pathlib import Path as PathLibPath
-from typing import Any, List, Optional
 
 import click
-from click import Context, Parameter
-
-from ape.utils import get_all_files_in_directory
 
 
 class Path(click.Path):
@@ -20,15 +17,20 @@ class Path(click.Path):
         super().__init__(*args, **kwargs)
 
 
-class AllFilePaths(Path):
+class JSON(click.ParamType):
     """
-    Either all the file paths in the given directory,
-    or a list containing only the given file.
+    A type that accepts a raw-JSON str
+    and loads it into a dictionary.
     """
 
-    def convert(  # type: ignore[override]
-        self, value: Any, param: Optional["Parameter"], ctx: Optional["Context"]
-    ) -> List[PathLibPath]:
-        path = super().convert(value, param, ctx)
-        assert isinstance(path, PathLibPath)  # For mypy
-        return get_all_files_in_directory(path) if path.is_dir() else [path]
+    def convert(self, value, param, ctx):
+        if not value:
+            return {}
+
+        elif isinstance(value, str):
+            try:
+                return json.loads(value)
+            except ValueError as err:
+                self.fail(f"Invalid JSON string: {err}", param, ctx)
+
+        return value  # Good already.

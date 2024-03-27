@@ -1,6 +1,6 @@
 # Dependencies
 
-Ape downloads and caches dependencies in the `.ape/packages/<name>/<version-id>` directory where `<name>` refers to the name of the dependency and `<version-id>` refers to the version or branch of the package.
+Ape downloads and caches dependencies in the `.ape/packages/projects/<name>/<version-id>` directory where `<name>` refers to the name of the dependency and `<version-id>` refers to the version or branch of the package.
 When first downloading dependencies, Ape only places the source contents in the `sources` field of the `PackageManifest` and leaves the `contract_types` field untouched.
 This is because dependencies may not compile by Ape's standard out-of-the-box but their contract types can still be used in projects that do.
 
@@ -141,25 +141,25 @@ For `npm` dependencies, you use an `npm:` prefix.
 For local dependencies, you give it a path to the local dependency.
 `--version` is not required when using a local dependency.
 
-### remove
+### uninstall
 
-Remove previously installed packages using the `remove` command:
+Remove previously installed packages using the `uninstall` command:
 
 ```shell
-ape pm remove OpenZeppelin
+ape pm uninstall OpenZeppelin
 ```
 
 If there is a single version installed, the command will remove the single version.
 If multiple versions are installed, pass additional arguments specifying the version(s) to be removed:
 
 ```shell
-ape pm remove OpenZeppelin 4.5.0 4.6.0
+ape pm uninstall OpenZeppelin 4.5.0 4.6.0
 ```
 
 To skip the confirmation prompts, use the `--yes` flag (abbreviated as `-y`):
 
 ```shell
-ape pm remove OpenZeppelin all --yes
+ape pm uninstall OpenZeppelin all --yes
 ```
 
 **NOTE**: Additionally, use the `all` special version key to delete all versions.
@@ -235,6 +235,12 @@ dependencies:
          evm_version: paris
 ```
 
+You can also specify `--config-override` in the `ape pm install` command to try different settings more adhoc:
+
+```shell
+ape pm install --config-override '{"solidity": {"evm_version": "paris"}}'
+```
+
 ### Solidity Remappings
 
 A common use-case for dependencies involves the Solidity plugin.
@@ -266,7 +272,8 @@ You can achieve this using the project manager:
 from ape import accounts, project
 
 # NOTE: This will compile the dependency
-dependency_contract = project.dependencies["my_dependency"]["1.0.0"].DependencyContractType
+dependency = project.dependencies["my_dependency"]["1.0.0"]
+dependency_contract = dependency.project.DependencyContractType
 my_account = accounts.load("alias")
 deployed_contract = my_account.deploy(dependency_contract, "argument")
 print(deployed_contract.address)

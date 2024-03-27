@@ -46,9 +46,9 @@ ape console --network ethereum:goerli:alchemy
 This will launch an IPython shell:
 
 ```python
-In [1]: dev = accounts.load("dev")
-In [2]: token = dev.deploy(project.Token) 
-In [3]: token.contract_method_defined_in_contract()
+In[1]: dev = accounts.load("dev")
+In[2]: token = dev.deploy(project.Token)
+In[3]: token.contract_method_defined_in_contract()
 ```
 
 For an in depth tutorial on how to deploy, please visit [ApeAcademy](https://academy.apeworx.io/).

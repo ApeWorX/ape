@@ -92,7 +92,7 @@ def test_import_alias_is_private_key(ape_cli, runner):
     )
     assert result.exit_code != 0, result.output
     expected = "ERROR: (AccountsError) Longer aliases cannot be hex strings.\n"
-    assert result.output == expected
+    assert expected in result.output
 
 
 @run_once

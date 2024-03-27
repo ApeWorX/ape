@@ -1120,12 +1120,12 @@ class ContractCache(BaseManager):
                 isinstance(abi, str) and "{" not in abi and Path(abi).is_file()
             ):
                 # Handle both absolute and relative paths
-                abi = Path(abi)
-                if not abi.is_absolute():
-                    abi = self.project_manager.path / abi
+                abi_path = Path(abi)
+                if not abi_path.is_absolute():
+                    abi_path = self.project_manager.path / abi_path
 
                 try:
-                    abi = json.loads(abi.read_text())
+                    abi = json.loads(abi_path.read_text())
                 except Exception as err:
                     if contract_type:
                         # If a default contract type was provided, don't error and use it.
@@ -1216,7 +1216,7 @@ class ContractCache(BaseManager):
             ecosystem_name = self.provider.network.ecosystem.name
             network_name = self.provider.network.name
             all_config_deployments = (
-                self.config_manager.deployments.root if self.config_manager.deployments else {}
+                self.config_manager.deployments if self.config_manager.deployments else {}
             )
             ecosystem_deployments = all_config_deployments.get(ecosystem_name, {})
             network_deployments = ecosystem_deployments.get(network_name, {})
