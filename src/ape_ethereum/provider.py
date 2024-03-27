@@ -405,6 +405,9 @@ class Web3Provider(ProviderAPI, ABC):
         state: Optional[Dict] = None,
         **kwargs,
     ) -> HexBytes:
+        if block_id is not None:
+            kwargs["block_identifier"] = block_id
+
         if kwargs.pop("skip_trace", False):
             return self._send_call(txn, **kwargs)
         elif self._test_runner is not None:
@@ -497,7 +500,7 @@ class Web3Provider(ProviderAPI, ABC):
         try:
             result = self._make_request("eth_call", arguments)
         except Exception as err:
-            receiver = txn_dict["to"]
+            receiver = txn_dict.get("to")
             raise self.get_virtual_machine_error(err, contract_address=receiver) from err
 
         if "error" in result:
