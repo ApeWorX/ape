@@ -1,13 +1,13 @@
-from itertools import chain
+from pathlib import Path
 
 import click
+from click import BadArgumentUsage
 
 from ape.cli.choices import _ACCOUNT_TYPE_FILTER, Alias
-from ape.cli.paramtype import AllFilePaths
+from ape.logging import logger
 from ape.utils.basemodel import ManagerAccessMixin
+from ape.utils.os import get_full_extension
 from ape.utils.validators import _validate_account_alias
-
-_flatten = chain.from_iterable
 
 
 def _alias_callback(ctx, param, value):
@@ -41,20 +41,69 @@ def non_existing_alias_argument(**kwargs):
 
 
 def _create_contracts_paths(ctx, param, value):
-    contract_paths = _flatten(value)
+    pm = ctx.params.get("project", ManagerAccessMixin.project_manager)
+    cm = ManagerAccessMixin.compiler_manager
+    if value:
+        paths = [Path(v) for v in value]
+    else:
+        return "*"  # Get all (after all config stuff sorted out).
 
-    def _raise_bad_arg(name):
-        raise click.BadArgumentUsage(f"Contract '{name}' not found.")
+    path_set = set()
+    suffixed_warned = set()
 
-    resolved_contract_paths = set()
-    for contract_path in contract_paths:
-        # Adds missing absolute path as well as extension.
-        if resolved_contract_path := ManagerAccessMixin.project_manager.lookup_path(contract_path):
-            resolved_contract_paths.add(resolved_contract_path)
-        else:
-            _raise_bad_arg(contract_path.name)
+    def lookup(path_ls):
+        for path in path_ls:
+            if (
+                pm.path / path.name
+            ) == pm.contracts_folder or path.name == pm.contracts_folder.name:
+                # Was given the path to the contracts folder.
+                lookup([p for p in pm.sources.paths])
 
-    return resolved_contract_paths
+            elif (pm.path / path).is_dir():
+                # Was given sub-dir in the project folder.
+                lookup([p for p in (pm.path / path).iterdir()])
+
+            elif (pm.contracts_folder / path).is_dir():
+                # Was given sub-dir in the contracts folder.
+                lookup([p for p in (pm.contracts_folder / path).iterdir()])
+
+            elif path.name.startswith("."):
+                continue
+
+            elif resolved_path := pm.sources.lookup(path):
+                # Check compiler missing.
+                suffix = get_full_extension(resolved_path)
+                if (
+                    suffix
+                    and suffix not in cm.registered_compilers
+                    and suffix not in suffixed_warned
+                ):
+                    # Warn for common missing compilers.
+                    message = f"Missing compiler for '{suffix}' file extensions."
+                    suffixed_warned.add(suffix)
+                    if suffix == ".vy":
+                        message = f"{message} Is 'ape-vyper' installed?"
+                    elif suffix == ".sol":
+                        message = f"{message} Is 'ape-solidity' installed?"
+                    else:
+                        continue
+
+                    logger.error(message)
+                    continue
+
+                elif suffix in cm.registered_compilers:
+                    # File exists and is compile-able.
+                    path_set.add(resolved_path)
+
+                elif suffix:
+                    raise BadArgumentUsage(f"Source file '{resolved_path.name}' not found.")
+
+            else:
+                raise BadArgumentUsage(f"Source file '{path.name}' not found.")
+
+    lookup(paths)
+
+    return path_set
 
 
 def contract_file_paths_argument():
@@ -69,6 +118,5 @@ def contract_file_paths_argument():
     return click.argument(
         "file_paths",
         nargs=-1,
-        type=AllFilePaths(resolve_path=True),
         callback=_create_contracts_paths,
     )

@@ -14,12 +14,10 @@ from ape.types import (
     CoverageReport,
     SourceTraceback,
 )
-from ape.utils import (
-    ManagerAccessMixin,
-    get_current_timestamp_ms,
-    get_relative_path,
-    parse_coverage_tables,
-)
+from ape.utils.basemodel import ManagerAccessMixin
+from ape.utils.misc import get_current_timestamp_ms
+from ape.utils.os import get_full_extension, get_relative_path
+from ape.utils.trace import parse_coverage_tables
 
 
 class CoverageData(ManagerAccessMixin):
@@ -48,7 +46,7 @@ class CoverageData(ManagerAccessMixin):
 
         for src in self.sources:
             source_cov = project_coverage.include(src)
-            ext = Path(src.source_id).suffix
+            ext = get_full_extension(Path(src.source_id))
             if ext not in self.compiler_manager.registered_compilers:
                 continue
 

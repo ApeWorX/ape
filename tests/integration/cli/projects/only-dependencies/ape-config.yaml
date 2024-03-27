@@ -1,3 +1,6 @@
+# Avoid it thinking the dependency is the contracts' folder.
+contracts_folder: contracts
+
 dependencies:
   - name: dependency-in-project-only
     local: ./dependency_in_project_only

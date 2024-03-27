@@ -1,4 +1,5 @@
 import shlex
+from pathlib import Path
 
 import click
 from click.testing import CliRunner
@@ -10,6 +11,7 @@ import ape
 from ape._cli import cli
 from ape.exceptions import Abort, ApeException, handle_ape_exception
 from ape.logging import logger
+from ape.managers.project import LocalProject
 from ape.types import AddressType
 from ape.utils import cached_property
 
@@ -75,7 +77,15 @@ class ApeConsoleMagics(Magics):
 
 
 def custom_exception_handler(self, etype, value, tb, tb_offset=None):
-    if not handle_ape_exception(value, [self.user_ns["project"].path]):
+    project = self.user_ns["project"]
+    if isinstance(project, LocalProject):
+        path = project.path
+    else:
+        # This happens if renamed `project` in your session
+        # to something else.
+        path = Path.cwd()
+
+    if not handle_ape_exception(value, [path]):
         logger.error(Abort.from_ape_exception(value).format_message())
 
 

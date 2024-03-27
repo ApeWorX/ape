@@ -279,9 +279,11 @@ Here is an example with custom EIP-712 classes:
 from ape import accounts
 from eip712.messages import EIP712Message, EIP712Type
 
+
 class Person(EIP712Type):
     name: "string"
     wallet: "address"
+
 
 class Mail(EIP712Message):
     _chainId_: "uint256" = 1
@@ -292,7 +294,8 @@ class Mail(EIP712Message):
     sender: Person
     receiver: Person
 
-alice = Person(name="Alice", wallet="0xCD2a3d9F938E13CD947Ec05AbC7FE734Df8DD826") 
+
+alice = Person(name="Alice", wallet="0xCD2a3d9F938E13CD947Ec05AbC7FE734Df8DD826")
 bob = Person("Bob", "0xB0B0b0b0b0b0B000000000000000000000000000")
 message = Mail(sender=alice, receiver=bob)
 

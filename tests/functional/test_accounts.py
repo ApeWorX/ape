@@ -544,7 +544,7 @@ def test_unlock_and_reload(runner, accounts, keyfile_account, message):
         assert keyfile_account.check_signature(message, signature)
 
 
-def test_custom_num_of_test_accounts_config(test_accounts, temp_config):
+def test_custom_num_of_test_accounts_config(test_accounts, project):
     custom_number_of_test_accounts = 20
     test_config = {
         "test": {
@@ -554,7 +554,7 @@ def test_custom_num_of_test_accounts_config(test_accounts, temp_config):
 
     assert len(test_accounts) == DEFAULT_NUMBER_OF_TEST_ACCOUNTS
 
-    with temp_config(test_config):
+    with project.temp_config(**test_config):
         assert len(test_accounts) == custom_number_of_test_accounts
 
 
@@ -604,7 +604,7 @@ def test_is_not_contract(owner, keyfile_account):
     assert not keyfile_account.is_contract
 
 
-def test_using_different_hd_path(test_accounts, temp_config):
+def test_using_different_hd_path(test_accounts, project):
     test_config = {
         "test": {
             "hd_path": "m/44'/60'/0'/{}",
@@ -612,12 +612,12 @@ def test_using_different_hd_path(test_accounts, temp_config):
     }
 
     old_first_account = test_accounts[0]
-    with temp_config(test_config):
+    with project.temp_config(**test_config):
         new_first_account = test_accounts[0]
         assert old_first_account.address != new_first_account.address
 
 
-def test_using_random_mnemonic(test_accounts, temp_config):
+def test_using_random_mnemonic(test_accounts, project):
     test_config = {
         "test": {
             "mnemonic": "test_mnemonic_for_ape",
@@ -625,7 +625,7 @@ def test_using_random_mnemonic(test_accounts, temp_config):
     }
 
     old_first_account = test_accounts[0]
-    with temp_config(test_config):
+    with project.temp_config(**test_config):
         new_first_account = test_accounts[0]
         assert old_first_account.address != new_first_account.address
 

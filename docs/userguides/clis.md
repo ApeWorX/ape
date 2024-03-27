@@ -40,17 +40,20 @@ In Ape, it is easy to extend the CLI context object and use the extended version
 from ape.cli import ApeCliContextObject, ape_cli_context
 import click
 
+
 class MyManager:
-   """My custom manager."""
+    """My custom manager."""
+
 
 class CustomContext(ApeCliContextObject):
-   """Add new managers to your custom context"""
-   my_manager: MyManager = MyManager()
-   
-   @property
-   def signer(self):
-      """Utilize existing managers in your custom context."""
-      return self.account_manager.load("my_account")
+    """Add new managers to your custom context"""
+    my_manager: MyManager = MyManager()
+
+    @property
+    def signer(self):
+        """Utilize existing managers in your custom context."""
+        return self.account_manager.load("my_account")
+
 
 @click.command()
 @ape_cli_context(obj_type=CustomContext)
@@ -203,17 +206,19 @@ from ape_accounts.accounts import KeyfileAccount
 # NOTE: This is just an example and not anything specific or recommended.
 APPLICATION_PREFIX = "<FOO_BAR>"
 
+
 @click.command()
 @existing_alias_argument(account_type=KeyfileAccount)
 def cli_0(alias):
-   pass
-   
+    pass
+
+
 @click.command()
 @existing_alias_argument(account_type=lambda a: a.alias.startswith(APPLICATION_PREFIX))
 def cli_1(alias):
-   pass
-    
-   
+    pass
+
+
 # Select from the given accounts directly.
 my_accounts = [accounts.load("me"), accounts.load("me2")]
 selected_account = get_user_selected_account(account_type=my_accounts)

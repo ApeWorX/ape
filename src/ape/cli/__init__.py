@@ -23,16 +23,16 @@ from ape.cli.options import (
     incompatible_with,
     network_option,
     output_format_option,
+    project_option,
     skip_confirmation_option,
     verbosity_option,
 )
-from ape.cli.paramtype import AllFilePaths, Path
+from ape.cli.paramtype import JSON, Path
 
 __all__ = [
     "account_option",
     "AccountAliasPromptChoice",
     "Alias",
-    "AllFilePaths",
     "ape_cli_context",
     "ApeCliContextObject",
     "ConnectedProviderCommand",
@@ -41,6 +41,7 @@ __all__ = [
     "existing_alias_argument",
     "get_user_selected_account",
     "incompatible_with",
+    "JSON",
     "network_option",
     "NetworkBoundCommand",
     "NetworkChoice",
@@ -50,6 +51,7 @@ __all__ = [
     "output_format_option",
     "OutputFormat",
     "Path",
+    "project_option",
     "PromptChoice",
     "select_account",
     "skip_confirmation_option",

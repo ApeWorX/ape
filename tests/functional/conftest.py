@@ -304,22 +304,21 @@ def ds_note_test_contract(eth_tester_provider, vyper_contract_type, owner, get_c
     return contract_container.deploy(sender=owner)
 
 
-@pytest.fixture
-def project_with_contract(temp_config):
-    with temp_config() as project:
-        copy_tree(str(APE_PROJECT_FOLDER), str(project.path))
+@pytest.fixture(scope="session")
+def project_with_contract():
+    with ape.Project(APE_PROJECT_FOLDER).sandbox() as project:
         yield project
 
 
-@pytest.fixture
-def project_with_source_files_contract(temp_config):
+@pytest.fixture(scope="session")
+def project_with_source_files_contract(project_with_contract):
     bases_source_dir = BASE_SOURCES_DIRECTORY
-    project_source_dir = APE_PROJECT_FOLDER
+    project_source_dir = project_with_contract.path
 
-    with temp_config() as project:
-        copy_tree(str(project_source_dir), str(project.path))
-        copy_tree(str(bases_source_dir), f"{project.path}/contracts/")
-        yield project
+    with ape.Project.create_sandbox() as sandbox_project:
+        copy_tree(str(project_source_dir), str(sandbox_project.path))
+        copy_tree(str(bases_source_dir), f"{sandbox_project.path}/contracts/")
+        yield sandbox_project
 
 
 @pytest.fixture
@@ -331,18 +330,20 @@ def clean_contracts_cache(chain):
 
 
 @pytest.fixture
-def project_with_dependency_config(temp_config):
+def project_with_dependency_config(project):
     dependencies_config = {
         "dependencies": [
             {
                 "local": str(PROJECT_WITH_LONG_CONTRACTS_FOLDER),
                 "name": "testdependency",
-                "contracts_folder": "source/v0.1",
+                "config_override": {
+                    "contracts_folder": "source/v0.1",
+                },
             }
         ]
     }
-    with temp_config(dependencies_config) as project:
-        yield project
+    with project.sandbox(**dependencies_config) as sandbox:
+        yield sandbox
 
 
 @pytest.fixture(scope="session")
@@ -675,9 +676,11 @@ def mock_compiler(mocker):
     mock = mocker.MagicMock()
     mock.name = "mock"
     mock.ext = ".__mock__"
+    mock.tracked_settings = []
 
-    def mock_compile(paths, base_path=None):
-        mock.tracked_settings.append(mock.compiler_settings)
+    def mock_compile(paths, project=None, settings=None):
+        settings = settings or {}
+        mock.tracked_settings.append(settings)
         result = []
         for path in paths:
             if path.suffix == mock.ext:
@@ -687,7 +690,7 @@ def mock_compiler(mocker):
                     "contractName": name,
                     "abi": [],
                     "deploymentBytecode": code,
-                    "sourceId": path.name,
+                    "sourceId": f"{project.contracts_folder.name}/{path.name}",
                 }
 
                 # Check for mocked overrides

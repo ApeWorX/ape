@@ -44,8 +44,8 @@ def event_abi(vyper_contract_instance):
 
 
 @pytest.fixture
-def custom_ecosystem_config(
-    custom_networks_config_dict, temp_config, networks, custom_network_name_0
+def configured_custom_ecosystem(
+    custom_networks_config_dict, project, networks, custom_network_name_0
 ):
     data = copy.deepcopy(custom_networks_config_dict)
     data["networks"]["custom"][0]["ecosystem"] = CUSTOM_ECOSYSTEM_NAME
@@ -54,7 +54,7 @@ def custom_ecosystem_config(
     # it were from a plugin.
     data[CUSTOM_ECOSYSTEM_NAME] = {"default_network": custom_network_name_0}
 
-    with temp_config(data):
+    with project.temp_config(**data):
         yield
 
 
@@ -62,7 +62,7 @@ def test_name(ethereum):
     assert ethereum.name == "ethereum"
 
 
-def test_name_when_custom(custom_ecosystem_config, networks):
+def test_name_when_custom(configured_custom_ecosystem, networks):
     ecosystem = networks.get_ecosystem(CUSTOM_ECOSYSTEM_NAME)
     actual = ecosystem.name
     expected = CUSTOM_ECOSYSTEM_NAME
@@ -166,14 +166,14 @@ def test_block_handles_snake_case_parent_hash(eth_tester_provider, sender, recei
     assert redefined_block.parent_hash == latest_block.parent_hash
 
 
-def test_transaction_acceptance_timeout(temp_config, config, networks):
+def test_transaction_acceptance_timeout(project, networks):
     assert (
         networks.provider.network.transaction_acceptance_timeout
         == DEFAULT_LOCAL_TRANSACTION_ACCEPTANCE_TIMEOUT
     )
     new_value = DEFAULT_LOCAL_TRANSACTION_ACCEPTANCE_TIMEOUT + 1
     timeout_config = {"ethereum": {"local": {"transaction_acceptance_timeout": new_value}}}
-    with temp_config(timeout_config):
+    with project.temp_config(**timeout_config):
         assert networks.provider.network.transaction_acceptance_timeout == new_value
 
 
@@ -181,7 +181,7 @@ def test_decode_logs(ethereum, vyper_contract_instance):
     abi = vyper_contract_instance.NumberChange.abi
     result = [x for x in ethereum.decode_logs([LOG], abi)]
     assert len(result) == 1
-    assert dict(result[0]) == {
+    assert result[0].model_dump() == {
         "event_name": "NumberChange",
         "contract_address": "0x274b028b03A250cA03644E6c578D81f019eE1323",
         "event_arguments": {
@@ -503,14 +503,12 @@ def test_decode_receipt_shared_blob(ethereum):
     assert actual.blob_gas_price == int(blob_gas_price, 16)
 
 
-def test_default_transaction_type_not_connected_used_default_network(
-    temp_config, ethereum, networks
-):
+def test_default_transaction_type_not_connected_used_default_network(project, ethereum, networks):
     value = TransactionType.STATIC.value
     config_dict = {"ethereum": {"mainnet_fork": {"default_transaction_type": value}}}
     assert ethereum.default_transaction_type == TransactionType.DYNAMIC
 
-    with temp_config(config_dict):
+    with project.temp_config(**config_dict):
         ethereum._default_network = "mainnet-fork"
         provider = networks.active_provider
 
@@ -525,12 +523,12 @@ def test_default_transaction_type_not_connected_used_default_network(
 
 
 def test_default_transaction_type_configured_from_local_network(
-    eth_tester_provider, ethereum, temp_config
+    eth_tester_provider, ethereum, project
 ):
     _ = eth_tester_provider  # Connection required so 'ethereum' knows the network.
     value = TransactionType.STATIC.value
     config = {"ethereum": {LOCAL_NETWORK_NAME: {"default_transaction_type": value}}}
-    with temp_config(config):
+    with project.temp_config(**config):
         assert ethereum.default_transaction_type == TransactionType.STATIC
 
 
@@ -539,10 +537,10 @@ def test_default_transaction_type_changed_at_class_level(ethereum):
     Simulates an L2 plugin changing the default at the definition-level.
     """
 
-    class Subconfig(BaseEthereumConfig):
+    class L2NetworkConfig(BaseEthereumConfig):
         DEFAULT_TRANSACTION_TYPE: ClassVar[int] = TransactionType.STATIC.value
 
-    config = Subconfig()
+    config = L2NetworkConfig()
     assert config.local.default_transaction_type.value == 0
     assert config.mainnet.default_transaction_type.value == 0
     assert config.mainnet_fork.default_transaction_type.value == 0
@@ -764,7 +762,7 @@ def test_encode_transaction(tx_type, ethereum, vyper_contract_instance, owner, e
     assert actual.gas_limit == eth_tester_provider.max_gas
 
 
-def test_set_default_network_not_exists(temp_config, ethereum):
+def test_set_default_network_not_exists(ethereum):
     bad_network = "NOT_EXISTS"
     expected = f"No network in 'ethereum' named '{bad_network}'. Options:.*"
     with pytest.raises(NetworkNotFoundError, match=expected):
@@ -779,22 +777,25 @@ def test_networks(ethereum):
 
 
 def test_networks_includes_custom_networks(
-    ethereum, custom_networks_config, custom_network_name_0, custom_network_name_1
+    ethereum, custom_networks_config_dict, project, custom_network_name_0, custom_network_name_1
 ):
-    actual = ethereum.networks
-    for net in (
-        "goerli",
-        "sepolia",
-        "mainnet",
-        LOCAL_NETWORK_NAME,
-        custom_network_name_0,
-        custom_network_name_1,
-    ):
-        assert net in actual
-        assert isinstance(actual[net], NetworkAPI)
+    with project.temp_config(**custom_networks_config_dict):
+        actual = ethereum.networks
+        for net in (
+            "goerli",
+            "sepolia",
+            "mainnet",
+            LOCAL_NETWORK_NAME,
+            custom_network_name_0,
+            custom_network_name_1,
+        ):
+            assert net in actual
+            assert isinstance(actual[net], NetworkAPI)
 
 
-def test_networks_when_custom_ecosystem(custom_ecosystem_config, networks, custom_network_name_0):
+def test_networks_when_custom_ecosystem(
+    configured_custom_ecosystem, networks, custom_network_name_0
+):
     obj = networks.custom_ecosystem
     actual = obj.networks
     assert obj.name == CUSTOM_ECOSYSTEM_NAME
@@ -802,13 +803,11 @@ def test_networks_when_custom_ecosystem(custom_ecosystem_config, networks, custo
     assert "mainnet" not in actual
 
 
-def test_networks_multiple_networks_with_same_name(
-    temp_config, custom_networks_config_dict, ethereum
-):
+def test_networks_multiple_networks_with_same_name(custom_networks_config_dict, ethereum, project):
     data = copy.deepcopy(custom_networks_config_dict)
     data["networks"]["custom"][0]["name"] = "mainnet"  # There already is a mainnet in "ethereum".
     expected = ".*More than one network named 'mainnet' in ecosystem 'ethereum'.*"
-    with temp_config(data):
+    with project.temp_config(**data):
         with pytest.raises(NetworkError, match=expected):
             _ = ethereum.networks
 
@@ -818,10 +817,13 @@ def test_getattr(ethereum):
     assert isinstance(ethereum.mainnet, NetworkAPI)
 
 
-def test_getattr_custom_networks(ethereum, custom_networks_config, custom_network_name_0):
-    actual = getattr(ethereum, custom_network_name_0)
-    assert actual.name == custom_network_name_0
-    assert isinstance(actual, NetworkAPI)
+def test_getattr_custom_networks(
+    ethereum, custom_networks_config_dict, project, custom_network_name_0
+):
+    with project.temp_config(**custom_networks_config_dict):
+        actual = getattr(ethereum, custom_network_name_0)
+        assert actual.name == custom_network_name_0
+        assert isinstance(actual, NetworkAPI)
 
 
 def test_default_network(ethereum):
@@ -829,7 +831,7 @@ def test_default_network(ethereum):
 
 
 def test_default_network_when_custom_and_set_in_config(
-    custom_ecosystem_config, networks, custom_network_name_0
+    configured_custom_ecosystem, networks, custom_network_name_0
 ):
     ecosystem = networks.get_ecosystem(CUSTOM_ECOSYSTEM_NAME)
     # Force it to use config value (in case was set from previous test)

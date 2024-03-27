@@ -12,7 +12,6 @@ from eth_utils import (
     is_hex,
     is_hex_address,
     to_checksum_address,
-    to_hex,
     to_int,
 )
 from ethpm_types import ConstructorABI, EventABI, MethodABI
@@ -149,11 +148,21 @@ class IntAddressConverter(ConverterAPI):
     A converter that converts an integer address to an :class:`~ape.types.address.AddressType`.
     """
 
+    _cache: Dict[int, str] = {}
+
     def is_convertible(self, value: Any) -> bool:
-        return isinstance(value, int) and is_hex_address(to_hex(value))
+        if not isinstance(value, int):
+            return False
+
+        elif value in self._cache:
+            return True
+
+        val = HexBytes(value).hex()
+        return is_hex_address(val)
 
     def convert(self, value: Any) -> AddressType:
-        return to_checksum_address(to_hex(value))
+        val = HexBytes(value).hex()
+        return to_checksum_address(val)
 
 
 class TimestampConverter(ConverterAPI):
@@ -326,7 +335,7 @@ class ConversionManager(BaseManager):
                 return converter.convert(value)
             except Exception as err:
                 try:
-                    error_value = f" '{value}' "
+                    error_value = f" '{value}' (type={type(value)}) "
                 except Exception:
                     error_value = " "
 

@@ -1,13 +1,13 @@
 import inspect
 from functools import partial
+from pathlib import Path
 from typing import Callable, Dict, List, NoReturn, Optional, Type, Union
 
 import click
 from click import Option
 from ethpm_types import ContractType
 
-from ape.api import ProviderAPI
-from ape.cli import ConnectedProviderCommand
+from ape.api.providers import ProviderAPI
 from ape.cli.choices import (
     _ACCOUNT_TYPE_FILTER,
     _NONE_NETWORK,
@@ -16,6 +16,8 @@ from ape.cli.choices import (
     OutputFormat,
     output_format_choice,
 )
+from ape.cli.commands import ConnectedProviderCommand
+from ape.cli.paramtype import JSON
 from ape.exceptions import Abort, ProjectError
 from ape.logging import DEFAULT_LOG_LEVEL, ApeLogger, LogLevel, logger
 from ape.utils.basemodel import ManagerAccessMixin
@@ -438,3 +440,48 @@ def incompatible_with(incompatible_opts) -> Type[click.Option]:
             return super().handle_parse_result(ctx, opts, args)
 
     return IncompatibleOption
+
+
+def _project_callback(ctx, param, val):
+    pm = None
+    if not val:
+        pm = ManagerAccessMixin.project_manager
+
+    else:
+        path = Path(val)
+        if path == ManagerAccessMixin.project_manager.path:
+            pm = ManagerAccessMixin.project_manager
+
+        else:
+            Project = ManagerAccessMixin.Project
+            if path.is_file() and path.suffix == ".json":
+                pm = Project.from_manifest(path)
+
+            elif path.is_dir():
+                pm = Project(path)
+
+    if pm is None:
+        raise click.BadOptionUsage("--project", "Not a valid project")
+
+    return pm
+
+
+def project_option(**kwargs):
+    return click.option(
+        "--project",
+        help="The path to a local project or manifest",
+        callback=_project_callback,
+        metavar="PATH",
+        is_eager=True,
+        **kwargs,
+    )
+
+
+def config_override_option(**kwargs):
+    return click.option(
+        "--config-override",
+        help="Config override mappings",
+        type=JSON(),
+        metavar='{"KEY": "VAL"}',
+        **kwargs,
+    )

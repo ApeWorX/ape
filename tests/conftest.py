@@ -1,4 +1,5 @@
 import json
+import os
 import shutil
 import subprocess
 import sys
@@ -6,26 +7,17 @@ import tempfile
 import time
 from contextlib import contextmanager
 from pathlib import Path
-from tempfile import mkdtemp
 from typing import Any, Callable, Dict, Optional, Sequence
 
 import pytest
-import yaml
 from click.testing import CliRunner
 
 import ape
-from ape.exceptions import APINotImplementedError, UnknownSnapshotError
+from ape.exceptions import APINotImplementedError, ProviderNotConnectedError, UnknownSnapshotError
 from ape.logging import LogLevel, logger
-from ape.managers.config import CONFIG_FILE_NAME
 from ape.types import AddressType
-from ape.utils import DEFAULT_TEST_CHAIN_ID, ZERO_ADDRESS
-
-# NOTE: Ensure that we don't use local paths for these
-DATA_FOLDER = Path(mkdtemp()).resolve()
-ape.config.DATA_FOLDER = DATA_FOLDER
-ape.config.dependency_manager.DATA_FOLDER = DATA_FOLDER
-PROJECT_FOLDER = Path(mkdtemp()).resolve()
-ape.config.PROJECT_FOLDER = PROJECT_FOLDER
+from ape.utils import DEFAULT_TEST_CHAIN_ID, ZERO_ADDRESS, get_relative_path
+from ape.utils.basemodel import only_raise_attribute_error
 
 # Needed to test tracing support in core `ape test` command.
 pytest_plugins = ["pytester"]
@@ -58,8 +50,21 @@ def setenviron(monkeypatch):
 
 
 @pytest.fixture(scope="session")
+def project(config):
+    path = Path(__file__).parent / "functional" / "data" / "contracts" / "local"
+    relative_path = f"{get_relative_path(path.absolute(), ape.project.path)}"
+    with ape.project.temp_config(contracts_folder=relative_path):
+        yield ape.project
+
+
+@pytest.fixture(scope="session", autouse=True)
 def config():
-    return ape.config
+    cfg = ape.config
+    # Ensure we don't persist any .ape data.
+    with tempfile.TemporaryDirectory() as temp_dir:
+        path = Path(temp_dir).resolve()
+        cfg.DATA_FOLDER = path
+        yield cfg
 
 
 @pytest.fixture(scope="session")
@@ -69,7 +74,7 @@ def convert(chain):
 
 @pytest.fixture(scope="session")
 def data_folder(config):
-    return DATA_FOLDER
+    return config.DATA_FOLDER
 
 
 @pytest.fixture(scope="session")
@@ -95,11 +100,6 @@ def networks():
 @pytest.fixture(scope="session")
 def chain():
     return ape.chain
-
-
-@pytest.fixture(scope="session")
-def project_folder():
-    return PROJECT_FOLDER
 
 
 @pytest.fixture(scope="session")
@@ -145,18 +145,6 @@ def geth_account(test_accounts):
 @pytest.fixture
 def geth_second_account(test_accounts):
     return test_accounts[7]
-
-
-@pytest.fixture
-def project(config, project_folder):
-    project_folder.mkdir(parents=True, exist_ok=True)
-    with config.using_project(project_folder) as project:
-        yield project
-
-
-@pytest.fixture
-def dependency_manager(project):
-    return project.dependency_manager
 
 
 @pytest.fixture(scope="session")
@@ -264,7 +252,7 @@ def _isolation():
 
     try:
         snapshot = ape.chain.snapshot()
-    except APINotImplementedError:
+    except (APINotImplementedError, ProviderNotConnectedError):
         # Provider not used or connected in test.
         snapshot = None
 
@@ -280,7 +268,7 @@ def _isolation():
 
     try:
         ape.chain.restore(snapshot)
-    except UnknownSnapshotError:
+    except (UnknownSnapshotError, ProviderNotConnectedError):
         # Assume snapshot removed for testing reasons
         # or the provider was not needed to be connected for the test.
         pass
@@ -292,35 +280,15 @@ def eth_tester_isolation(eth_tester_provider):
         yield
 
 
-@pytest.fixture(scope="session")
-def temp_config(config):
-    @contextmanager
-    def func(data: Optional[Dict] = None):
-        data = data or {}
-        with tempfile.TemporaryDirectory() as temp_dir_str:
-            temp_dir = Path(temp_dir_str).resolve()
-            config._cached_configs = {}
-            config_file = temp_dir / CONFIG_FILE_NAME
-            config_file.touch()
-            config_file.write_text(yaml.dump(data))
-
-            with config.using_project(temp_dir) as temp_project:
-                yield temp_project
-
-            config_file.unlink()
-            config._cached_configs = {}
-
-    return func
-
-
 @pytest.fixture
 def empty_data_folder():
     current_data_folder = ape.config.DATA_FOLDER
-    ape.config.DATA_FOLDER = Path(mkdtemp()).resolve()
-    ape.config.dependency_manager.DATA_FOLDER = ape.config.DATA_FOLDER
-    yield
+    with tempfile.TemporaryDirectory() as temp_dir:
+        path = Path(temp_dir).resolve()
+        ape.config.DATA_FOLDER = path
+        yield
+
     ape.config.DATA_FOLDER = current_data_folder
-    ape.config.dependency_manager.DATA_FOLDER = ape.config.DATA_FOLDER
 
 
 @pytest.fixture
@@ -414,11 +382,20 @@ def zero_address():
 def ape_caplog(caplog):
     class ApeCaplog:
         def __init__(self, caplog_level: LogLevel = LogLevel.WARNING):
+            self.level = caplog_level
             self.messages_at_start = list(caplog.messages)
             self.set_levels(caplog_level=caplog_level)
 
+        @only_raise_attribute_error
         def __getattr__(self, name: str) -> Any:
             return getattr(caplog, name)
+
+        @contextmanager
+        def at_level(self, level: LogLevel):
+            original = self.level
+            self.set_levels(level)
+            yield
+            self.set_levels(original)
 
         @property
         def fail_message(self) -> str:
@@ -444,8 +421,8 @@ def ape_caplog(caplog):
             """
             return caplog.messages[-1] if len(caplog.messages) else ""
 
-        @classmethod
-        def set_levels(cls, caplog_level: LogLevel = LogLevel.WARNING):
+        def set_levels(self, caplog_level: LogLevel = LogLevel.WARNING):
+            self.level = caplog_level
             logger.set_level(LogLevel.INFO)
             caplog.set_level(caplog_level)
 
@@ -496,14 +473,26 @@ class SubprocessRunner:
     modify installed plugins.
     """
 
-    def __init__(self, root_cmd: Optional[Sequence[str]] = None):
+    def __init__(
+        self, root_cmd: Optional[Sequence[str]] = None, data_folder: Optional[Path] = None
+    ):
         self.root_cmd = root_cmd or []
+        self.data_folder = data_folder
 
-    def invoke(self, subcommand: Optional[Sequence[str]] = None):
+    def invoke(self, subcommand: Optional[Sequence[str]] = None, input=None):
         subcommand = subcommand or []
         cmd_ls = [*self.root_cmd, *subcommand]
-        completed_process = subprocess.run(cmd_ls, capture_output=True, text=True)
-        return SubprocessResult(completed_process)
+
+        env = dict(os.environ)
+        if self.data_folder:
+            env["APE_DATA_FOLDER"] = str(self.data_folder)
+
+        completed_process = subprocess.run(
+            cmd_ls, capture_output=True, env=env, input=input, text=True
+        )
+        result = SubprocessResult(completed_process)
+        sys.stdin = sys.__stdin__
+        return result
 
 
 class ApeSubprocessRunner(SubprocessRunner):
@@ -511,9 +500,30 @@ class ApeSubprocessRunner(SubprocessRunner):
     Subprocess runner for Ape-specific commands.
     """
 
-    def __init__(self, root_cmd: Optional[Sequence[str]] = None):
+    def __init__(
+        self, root_cmd: Optional[Sequence[str]] = None, data_folder: Optional[Path] = None
+    ):
         ape_path = Path(sys.executable).parent / "ape"
-        super().__init__([str(ape_path), *(root_cmd or [])])
+        super().__init__([str(ape_path), *(root_cmd or [])], data_folder=data_folder)
+        self.project = None
+
+    def invoke(self, subcommand: Optional[Sequence[str]] = None, input=None):
+        if self.project:
+            try:
+                here = os.getcwd()
+            except Exception:
+                here = None
+
+            os.chdir(f"{self.project.path}")
+
+        else:
+            here = None
+
+        result = super().invoke(subcommand, input=input)
+        if here:
+            os.chdir(here)
+
+        return result
 
 
 class SubprocessResult:
@@ -556,12 +566,6 @@ def custom_networks_config_dict():
 
 
 @pytest.fixture(scope="session")
-def custom_networks_config(temp_config, custom_networks_config_dict):
-    with temp_config(custom_networks_config_dict):
-        yield custom_networks_config_dict
-
-
-@pytest.fixture(scope="session")
 def custom_network_name_0():
     return CUSTOM_NETWORK_0
 
@@ -582,5 +586,6 @@ def custom_network_chain_id_1():
 
 
 @pytest.fixture
-def custom_network(ethereum, custom_networks_config):
-    return ethereum.apenet
+def custom_network(ethereum, project, custom_networks_config_dict):
+    with project.temp_config(**custom_networks_config_dict):
+        yield ethereum.apenet

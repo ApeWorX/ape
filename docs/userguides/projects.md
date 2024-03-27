@@ -17,64 +17,56 @@ project                             # The root project directory
 Notice that you can configure you ape project using the `ape-config.yaml` file.
 See the [configuration guide](./config.html) for a more detailed explanation of settings you can adjust.
 
-## Adding Plugins
+## The Local Project
 
-Your project may require plugins.
-To install plugins, use the `ape plugins install .` command.
-Learn more about configuring your project's required plugins by following [this guide](./installing_plugins.html).
+After you have a local project and you are in the directory of that project, the global `project` reference in Ape will refer to this project.
+You can see this by typing `project` in the `ape console`:
 
-## Compiling Contracts
+```python
+In [1]: project
+Out[1]: <ProjectManager ~/ApeProjects/ape-demo-project>
+```
 
-The project manager object is a representation of your current project.
-Access it from the root `ape` namespace:
+In this case, my terminal's current working directory is the same as a local project named `ape-demo-project`.
+
+## Other Projects
+
+You can reference other local projects on your computer by using the `Project` factory class (notice the capital `P`):
+
+```python
+from ape import Project
+
+my_other_project = Project("../path/to/my/other/project")
+_ = my_other_project.MyContract  # Do anything you can do to the root-level project.
+```
+
+## Project Manifests
+
+Ape stores and caches artifacts in an [EthPM package manifest](https://eips.ethereum.org/EIPS/eip-2678).
+When working with local projects, the manifests get placed in the `<project-path>/.build/__local__.json`.
+However, you may obtain a manifest from a different location.
+If that is the case, you can create a project directly from the manifest itself:
+
+```python
+from ape import Project
+
+# Pass in a manifest (object or dictionary), or a path to a manifest's JSON file.
+project = Project.from_manifest("path/to/manifest.json")
+_ = project.MyContract  # Do anything you can do to the root-level project.
+```
+
+## Dependencies
+
+Use other projects as dependencies in Ape.
+There is an extensive guide you can read on this [here](./dependencies.html).
+But it is important to note that the dependency system largely is dependent on the project system.
+Dependencies are just projects after all; projects containing source files you both use in your projects or compile independently.
+
+For example, access a dependency project and treat it like any other project this way:
 
 ```python
 from ape import project
+
+dependency = project.dependencies.get_dependency("my-dependency", "1.0.0")
+contract_type = dependency.project.ContractFromDependency
 ```
-
-Your `project` contains all the "relevant" files, such as source files in the `contracts/` directory.
-Use the following command to compile all contracts in the `contracts/` directory:
-
-```bash
-ape compile
-```
-
-For more information on compiling your project, see [this guide](./compile.html).
-
-## Deploying Contracts
-
-After compiling, the contract containers are accessible from the `project` manager.
-Deploy them in the `console` or in scripts; for example:
-
-```python
-from ape import accounts, project
-
-account = accounts.load("my_account_alias")
-account.deploy(project.MyContract)
-```
-
-**NOTE**: You can also deploy contracts from the container itself:
-
-```python
-from ape import accounts, project
-
-account = accounts.load("my_account_alias")
-project.MyContract.deploy(sender=account)
-```
-
-### Dependencies
-
-To set up and use dependencies in your project, follow [this guide](./dependencies.html).
-
-## Scripts
-
-The scripts folder contains project automation scripts, such as deploy scripts, as well as other executable jobs, such as scripts for running simulations.
-To learn more about scripting in Ape, see [the scripting guide](./scripts.html).
-
-## Testing
-
-Use tests to verify your project.
-You can test your project using the `ape test` command.
-The `ape test` command comes with the core-plugin `ape-test`.
-The `ape-test` plugin extends the popular python testing framework [pytest](https://docs.pytest.org/en/6.2.x/contents.html).
-Testing is a complex topic; learn more about testing using Ape framework [here](./testing.html).

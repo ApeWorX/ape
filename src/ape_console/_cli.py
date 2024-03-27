@@ -4,7 +4,7 @@ import logging
 import sys
 from importlib.machinery import SourceFileLoader
 from importlib.util import module_from_spec, spec_from_loader
-from os import environ, getcwd
+from os import environ
 from types import ModuleType
 from typing import Any, Dict, cast
 
@@ -12,7 +12,9 @@ import click
 import IPython
 from IPython.terminal.ipapp import Config as IPythonConfig
 
-from ape.cli import ConnectedProviderCommand, ape_cli_context
+from ape.cli.commands import ConnectedProviderCommand
+from ape.cli.options import ape_cli_context, project_option
+from ape.managers.project import ProjectManager
 from ape.utils.basemodel import ManagerAccessMixin
 from ape.utils.misc import _python_version
 from ape.version import version as ape_version
@@ -27,10 +29,11 @@ CONSOLE_EXTRAS_FILENAME = "ape_console_extras.py"
     context_settings=dict(ignore_unknown_options=True),
 )
 @ape_cli_context()
-def cli(cli_ctx):
+@project_option(hidden=True)  # Hidden as mostly used for test purposes.
+def cli(cli_ctx, project):
     """Opens a console for the local project."""
     verbose = cli_ctx.logger.level == logging.DEBUG
-    return console(verbose=verbose)
+    return console(project=project, verbose=verbose)
 
 
 def import_extras_file(file_path) -> ModuleType:
@@ -46,13 +49,11 @@ def import_extras_file(file_path) -> ModuleType:
     return module
 
 
-def load_console_extras(**namespace: Any) -> Dict[str, Any]:
+def load_console_extras(pm: ProjectManager, **namespace: Any) -> Dict[str, Any]:
     """load and return namespace updates from ape_console_extras.py  files if
     they exist"""
-    global_extras = ManagerAccessMixin.config_manager.DATA_FOLDER.joinpath(CONSOLE_EXTRAS_FILENAME)
-    project_extras = ManagerAccessMixin.config_manager.PROJECT_FOLDER.joinpath(
-        CONSOLE_EXTRAS_FILENAME
-    )
+    global_extras = pm.config_manager.DATA_FOLDER.joinpath(CONSOLE_EXTRAS_FILENAME)
+    project_extras = pm.path.joinpath(CONSOLE_EXTRAS_FILENAME)
 
     for extras_file in [global_extras, project_extras]:
         if not extras_file.is_file():
@@ -91,9 +92,8 @@ def load_console_extras(**namespace: Any) -> Dict[str, Any]:
 def console(project=None, verbose=None, extra_locals=None, embed=False):
     import ape
 
-    if not project:
-        # Use default project
-        project = ManagerAccessMixin.project_manager
+    # Use default project
+    project = project or ManagerAccessMixin.project_manager
 
     banner = ""
     if verbose:
@@ -115,13 +115,16 @@ def console(project=None, verbose=None, extra_locals=None, embed=False):
             faulthandler.enable()  # NOTE: In case we segfault
 
     namespace = {component: getattr(ape, component) for component in ape.__all__}
+    namespace["project"] = project  # Use the given project.
     namespace["ape"] = ape
+
+    # Allows modules relative to the project.
+    sys.path.insert(0, f"{project.path}")
 
     # NOTE: `ape_console_extras` only is meant to work with default namespace.
     #  Load extras before local namespace to avoid console extras receiving
     #  the wrong values for its arguments.
-    sys.path.insert(0, getcwd())
-    console_extras = load_console_extras(**namespace)
+    console_extras = load_console_extras(project, **namespace)
 
     if extra_locals:
         namespace.update(extra_locals)

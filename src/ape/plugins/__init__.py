@@ -7,7 +7,7 @@ from typing import Any, Callable, Generator, Iterator, List, Optional, Set, Tupl
 from ape.__modules__ import __modules__
 from ape.exceptions import ApeAttributeError
 from ape.logging import logger
-from ape.utils.basemodel import _assert_not_ipython_check
+from ape.utils.basemodel import _assert_not_ipython_check, only_raise_attribute_error
 
 from .account import AccountPlugin
 from .compiler import CompilerPlugin
@@ -128,6 +128,7 @@ class PluginManager:
     def __repr__(self):
         return f"<{PluginManager.__name__}>"
 
+    @only_raise_attribute_error
     def __getattr__(self, attr_name: str) -> Iterator[Tuple[str, Tuple]]:
         _assert_not_ipython_check(attr_name)
 
