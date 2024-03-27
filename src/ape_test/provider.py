@@ -93,7 +93,7 @@ class LocalProvider(TestProviderAPI, Web3Provider):
         self._web3 = Web3(self.tester)
         # Handle disabling auto-mine if the user requested via config.
         if self.config.provider.auto_mine is False:
-            self.auto_mine = False  # NOTE: set via __setattr__
+            self.auto_mine = False  # type: ignore[misc]
 
     def disconnect(self):
         # NOTE: This type ignore seems like a bug in pydantic.
@@ -269,13 +269,7 @@ class LocalProvider(TestProviderAPI, Web3Provider):
             raise ProviderError(f"Failed to time travel: {err}") from err
 
     def mine(self, num_blocks: int = 1):
-        if self.auto_mine:
-            # Are able to use the better method.
-            self.evm_backend.mine_blocks(num_blocks)
-        else:
-            # Have to use this method for some reason.
-            for _ in range(num_blocks):
-                self.tester.ethereum_tester.mine_block()
+        self.evm_backend.mine_blocks(num_blocks)
 
     def get_virtual_machine_error(self, exception: Exception, **kwargs) -> VirtualMachineError:
         if isinstance(exception, ValidationError):

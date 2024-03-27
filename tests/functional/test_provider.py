@@ -402,5 +402,12 @@ def test_create_access_list(eth_tester_provider, vyper_contract_instance, owner)
 def test_auto_mine(eth_tester_provider):
     eth_tester_provider.auto_mine = False
     assert not eth_tester_provider.auto_mine
+
+    # Ensure can still manually mine.
+    block = eth_tester_provider.get_block("latest").number
+    eth_tester_provider.mine()
+    next_block = eth_tester_provider.get_block("latest").number
+    assert next_block > block
+
     eth_tester_provider.auto_mine = True
     assert eth_tester_provider.auto_mine
