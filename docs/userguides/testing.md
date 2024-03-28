@@ -252,7 +252,7 @@ ape plugins install hardhat
 ### Mining
 
 Test providers allow you to control mining.
-For example, mine an empty block using the `mine` method:
+For example, mine an empty block using the [mine](../methoddocs/api.html#ape.api.providers.TestProviderAPI.mine) method:
 
 ```python
 from ape import chain
