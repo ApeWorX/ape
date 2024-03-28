@@ -249,6 +249,36 @@ Another option for testing providers is the [ape-hardhat](https://github.com/Ape
 ape plugins install hardhat
 ```
 
+### Mining
+
+Test providers allow you to control mining.
+For example, mine an empty block using the [mine](../methoddocs/api.html#ape.api.providers.TestProviderAPI.mine) method:
+
+```python
+from ape import chain
+
+chain.provider.mine()
+```
+
+You can also pass it a number of blocks to mine:
+
+```python
+from ape import chain
+
+chain.provider.mine(5)
+```
+
+By default, testing providers automatically mine after sending transactions.
+However, you can disable this feature by setting the property.
+
+```python
+from ape import chain
+
+chain.provider.auto_mine = False
+# You can also re-enable
+chain.provider.auto_mine = True
+```
+
 ## Advanced Testing Tips
 
 If you want to use sample projects, follow this link to [Ape Academy](https://github.com/ApeAcademy).
