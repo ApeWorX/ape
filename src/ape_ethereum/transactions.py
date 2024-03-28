@@ -453,4 +453,6 @@ class SharedBlobReceipt(Receipt):
     @field_validator("blob_gas_used", "blob_gas_price", mode="before")
     @classmethod
     def hex_to_int(cls, value):
+        if value == None:
+            return 0
         return value if isinstance(value, int) else int(HexBytes(value).hex(), 16)
