@@ -177,7 +177,6 @@ class Call(BaseMulticall):
     @property
     def returnData(self) -> List[HexBytes]:
         # NOTE: this property is kept camelCase to align with the raw EVM struct
-        print(self._result)
         result = self._result  # Declare for typing reasons.
         return [res.returnData if res.success else None for res in result]  # type: ignore
 
