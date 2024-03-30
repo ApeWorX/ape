@@ -1,14 +1,17 @@
 import re
-from dataclasses import make_dataclass
-from typing import Any, Dict, List, Optional, Sequence, Tuple, Union
+from decimal import Decimal
+from typing import Any, Dict, List, Optional, Sequence, Tuple, Type, Union
 
 from eth_abi import decode, grammar
 from eth_abi.exceptions import DecodingError, InsufficientDataBytes
 from eth_pydantic_types import HexBytes
 from eth_utils import decode_hex
 from ethpm_types.abi import ABIType, ConstructorABI, EventABI, EventABIType, MethodABI
+from pydantic import create_model
 
+from ape.exceptions import ConversionError
 from ape.logging import logger
+from ape.utils.basemodel import BaseModel
 
 ARRAY_PATTERN = re.compile(r"[(*\w,? )]*\[\d*]")
 
@@ -260,18 +263,63 @@ def is_named_tuple(outputs: Sequence[ABIType], output_values: Sequence) -> bool:
     return all(o.name for o in outputs) and len(output_values) > 1
 
 
-class Struct:
+class Struct(BaseModel):
     """
     A class for contract return values using the struct data-structure.
     """
 
-    def items(self) -> Dict:
-        """Override"""
-        return {}
+    def __getitem__(self, key) -> Any:
+        return getattr(self, key)
 
     def __setitem__(self, key, value):
-        """Override"""
-        pass
+        setattr(self, key, value)
+
+    def __contains__(self, key):
+        return key in self.model_fields
+
+    def __eq__(self, other) -> bool:
+        if not hasattr(other, "__len__"):
+            return NotImplemented
+
+        _len = len(other)
+        if _len != len(self):
+            return False
+
+        if hasattr(other, "items"):
+            # Struct or dictionary.
+            for key, value in other.items():
+                if key not in self:
+                    # Different object.
+                    return False
+
+                if self[key] != value:
+                    # Mismatched properties.
+                    return False
+
+            # Both objects represent the same struct.
+            return True
+
+        elif isinstance(other, (list, tuple)):
+            # Allows comparing structs with sequence types.
+            # NOTE: The order of the expected sequence matters!
+
+            for itm1, itm2 in zip(self.values(), other):
+                if itm1 != itm2:
+                    return False
+
+            return True
+
+        else:
+            return NotImplemented
+
+    def __len__(self) -> int:
+        return len(self.model_fields)
+
+    def items(self) -> List[Tuple]:
+        return [(k, self[k]) for k in self.model_fields]
+
+    def values(self) -> List[Any]:
+        return [self[k] for k in self.model_fields]
 
 
 def create_struct(name: str, types: Sequence[ABIType], output_values: Sequence) -> Any:
@@ -292,89 +340,51 @@ def create_struct(name: str, types: Sequence[ABIType], output_values: Sequence) 
         Any: The struct dataclass.
     """
 
-    def get_item(struct, key) -> Any:
-        # NOTE: Allow struct to function as a tuple and dict as well
-        struct_values = tuple(getattr(struct, field) for field in struct.__dataclass_fields__)
-        if isinstance(key, str):
-            return dict(zip(struct.__dataclass_fields__, struct_values))[key]
-
-        return struct_values[key]
-
-    def set_item(struct, key, value):
-        if isinstance(key, str):
-            setattr(struct, key, value)
-        else:
-            struct_values = tuple(getattr(struct, field) for field in struct.__dataclass_fields__)
-            field_to_set = struct_values[key]
-            setattr(struct, field_to_set, value)
-
-    def contains(struct, key):
-        return key in struct.__dataclass_fields__
-
-    def is_equal(struct, other) -> bool:
-        _len = len(other)
-        if not hasattr(other, "__len__"):
-            return NotImplemented
-
-        elif _len != len(struct):
-            return False
-
-        if hasattr(other, "items"):
-            # Struct or dictionary.
-            for key, value in other.items():
-                if key not in struct:
-                    # Different object.
-                    return False
-
-                if struct[key] != value:
-                    # Mismatched properties.
-                    return False
-
-            # Both objects represent the same struct.
-            return True
-
-        elif isinstance(other, (list, tuple)):
-            # Allows comparing structs with sequence types.
-            # NOTE: The order of the expected sequence matters!
-
-            for itm1, itm2 in zip(struct.values(), other):
-                if itm1 != itm2:
-                    return False
-
-            return True
-
-        else:
-            return NotImplemented
-
-    def length(struct) -> int:
-        return len(struct.__dataclass_fields__)
-
-    def items(struct) -> List[Tuple]:
-        return [(k, struct[k]) for k, v in struct.__dataclass_fields__.items()]
-
-    def values(struct) -> List[Any]:
-        return [x[1] for x in struct.items()]
-
     # NOTE: Should never be "_{i}", but mypy complains and we need a unique value
-    properties = [m.name or f"_{i}" for i, m in enumerate(types)]
-    methods = {
-        "__eq__": is_equal,
-        "__getitem__": get_item,
-        "__setitem__": set_item,
-        "__contains__": contains,
-        "__len__": length,
-        "items": items,
-        "values": values,
-    }
+    # type_names = [m.name or f"_{i}" for i, m in enumerate(types)]
 
-    struct_def = make_dataclass(
-        name,
-        properties,
-        namespace=methods,
-        bases=(Struct,),  # We set a base class for subclass checking elsewhere.
-    )
+    definition: Dict = {}
+    for idx, (_type, value) in enumerate(zip(types, output_values)):
+        prop_name = _type.name or f"_{idx}"
+        py_type = abi_type_to_python(_type)
+        definition[prop_name] = (py_type, value)
 
-    return struct_def(*output_values)
+    struct_def = create_model(name, __base__=Struct, **definition)
+    data = {k: v[-1] for k, v in definition.items()}
+    return struct_def.model_validate(data)
+
+
+def abi_type_to_python(abi_type: ABIType) -> Union[Type, Sequence]:
+    # NOTE: An array can be an array of tuples, so we start with an array check
+    if str(abi_type.type).endswith("]"):
+        # remove one layer of the potential onion of array
+        new_type = "[".join(str(abi_type.type).split("[")[:-1])
+        # create a new type with the inner type of array
+        new_abi_type = ABIType(type=new_type, **abi_type.model_dump(exclude={"type"}))
+        # NOTE: type for static and dynamic array is a single item list
+        # containing the type of the array
+        return [abi_type_to_python(new_abi_type)]
+
+    if abi_type.components is not None:
+        return tuple(abi_type_to_python(c) for c in abi_type.components)
+
+    if abi_type.type == "address":
+        from ape.types.address import AddressType
+
+        return AddressType
+
+    elif abi_type.type == "bool":
+        return bool
+    elif abi_type.type == "string":
+        return str
+    elif "bytes" in abi_type.type:
+        return bytes
+    elif "int" in abi_type.type:
+        return int
+    elif "fixed" in abi_type.type:
+        return Decimal
+
+    raise ConversionError(f"Unable to convert '{abi_type}'.")
 
 
 def is_dynamic_sized_type(abi_type: Union[ABIType, str]) -> bool:

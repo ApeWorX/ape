@@ -1,6 +1,5 @@
 import re
 from copy import deepcopy
-from decimal import Decimal
 from functools import cached_property
 from typing import Any, ClassVar, Dict, Iterator, List, Optional, Sequence, Tuple, Type, Union, cast
 
@@ -25,7 +24,7 @@ from pydantic_settings import SettingsConfigDict
 from ape.api import BlockAPI, EcosystemAPI, PluginConfig, ReceiptAPI, TransactionAPI
 from ape.api.networks import LOCAL_NETWORK_NAME
 from ape.contracts.base import ContractCall
-from ape.exceptions import ApeException, APINotImplementedError, ConversionError, DecodingError
+from ape.exceptions import ApeException, APINotImplementedError, DecodingError
 from ape.managers.config import merge_configs
 from ape.types import (
     AddressType,
@@ -49,6 +48,7 @@ from ape.utils import (
     returns_array,
     to_int,
 )
+from ape.utils.abi import abi_type_to_python
 from ape.utils.basemodel import _assert_not_ipython_check
 from ape.utils.misc import DEFAULT_MAX_RETRIES_TX, DEFAULT_TRANSACTION_TYPE
 from ape_ethereum.proxies import (
@@ -560,38 +560,7 @@ class Ethereum(EcosystemAPI):
         return Block.model_validate(data)
 
     def _python_type_for_abi_type(self, abi_type: ABIType) -> Union[Type, Sequence]:
-        # NOTE: An array can be an array of tuples, so we start with an array check
-        if str(abi_type.type).endswith("]"):
-            # remove one layer of the potential onion of array
-            new_type = "[".join(str(abi_type.type).split("[")[:-1])
-            # create a new type with the inner type of array
-            new_abi_type = ABIType(type=new_type, **abi_type.model_dump(exclude={"type"}))
-            # NOTE: type for static and dynamic array is a single item list
-            # containing the type of the array
-            return [self._python_type_for_abi_type(new_abi_type)]
-
-        if abi_type.components is not None:
-            return tuple(self._python_type_for_abi_type(c) for c in abi_type.components)
-
-        if abi_type.type == "address":
-            return AddressType
-
-        elif abi_type.type == "bool":
-            return bool
-
-        elif abi_type.type == "string":
-            return str
-
-        elif "bytes" in abi_type.type:
-            return bytes
-
-        elif "int" in abi_type.type:
-            return int
-
-        elif "fixed" in abi_type.type:
-            return Decimal
-
-        raise ConversionError(f"Unable to convert '{abi_type}'.")
+        return abi_type_to_python(abi_type)
 
     def encode_calldata(self, abi: Union[ConstructorABI, MethodABI], *args) -> HexBytes:
         if not abi.inputs:
