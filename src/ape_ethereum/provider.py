@@ -14,7 +14,7 @@ import ijson  # type: ignore
 import requests
 from eth_pydantic_types import HexBytes
 from eth_typing import BlockNumber, HexStr
-from eth_utils import add_0x_prefix, to_hex
+from eth_utils import add_0x_prefix, is_hex, to_hex
 from ethpm_types import EventABI
 from evm_trace import CallTreeNode as EvmCallTreeNode
 from evm_trace import ParityTraceList
@@ -407,7 +407,6 @@ class Web3Provider(ProviderAPI, ABC):
     ) -> HexBytes:
         if block_id is not None:
             kwargs["block_identifier"] = block_id
-
         if kwargs.pop("skip_trace", False):
             return self._send_call(txn, **kwargs)
         elif self._test_runner is not None:
@@ -1146,7 +1145,14 @@ class Web3Provider(ProviderAPI, ABC):
         contract_address: Optional[AddressType] = None,
         source_traceback: Optional[SourceTraceback] = None,
     ) -> ContractLogicError:
-        message = str(exception).split(":")[-1].strip()
+
+        if hasattr(exception, "args") and len(exception.args) == 2:
+            message = exception.args[0]
+            data = exception.args[1]
+        else:
+            message = str(exception).split(":")[-1].strip()
+            data = None
+
         params: Dict = {
             "trace": trace,
             "contract_address": contract_address,
@@ -1155,31 +1161,35 @@ class Web3Provider(ProviderAPI, ABC):
         no_reason = message == "execution reverted"
 
         if isinstance(exception, Web3ContractLogicError) and no_reason:
-            # Check for custom exception data and use that as the message instead.
-            # This allows compiler exception enrichment to function.
-            err_trace = None
-            try:
-                if trace:
-                    trace, err_trace = tee(trace)
-                elif txn:
-                    err_trace = self.provider.get_transaction_trace(txn.txn_hash.hex())
-
+            if data is None:
+                # Check for custom exception data and use that as the message instead.
+                # This allows compiler exception enrichment to function.
+                err_trace = None
                 try:
-                    trace_ls: List[TraceFrame] = list(err_trace) if err_trace else []
-                except Exception as err:
-                    logger.error(f"Failed getting traceback: {err}")
-                    trace_ls = []
+                    if trace:
+                        trace, err_trace = tee(trace)
+                    elif txn:
+                        err_trace = self.provider.get_transaction_trace(txn.txn_hash.hex())
 
-                data = trace_ls[-1].raw if len(trace_ls) > 0 else {}
-                memory = data.get("memory", [])
-                return_value = "".join([x[2:] for x in memory[4:]])
-                if return_value:
-                    message = f"0x{return_value}"
-                    no_reason = False
+                    try:
+                        trace_ls: List[TraceFrame] = list(err_trace) if err_trace else []
+                    except Exception as err:
+                        logger.error(f"Failed getting traceback: {err}")
+                        trace_ls = []
 
-            except (ApeException, NotImplementedError):
-                # Either provider does not support or isn't a custom exception.
-                pass
+                    data = trace_ls[-1].raw if len(trace_ls) > 0 else {}
+                    memory = data.get("memory", [])
+                    return_value = "".join([x[2:] for x in memory[4:]])
+                    if return_value:
+                        message = f"0x{return_value}"
+                        no_reason = False
+
+                except (ApeException, NotImplementedError):
+                    # Either provider does not support or isn't a custom exception.
+                    pass
+
+            elif data != "no data" and is_hex(data):
+                message = add_0x_prefix(data)
 
         result = (
             ContractLogicError(txn=txn, **params)
@@ -1312,8 +1322,6 @@ class EthereumNodeProvider(Web3Provider, ABC):
                 if all((hasattr(err, "args"), err.args, isinstance(err.args[0], dict)))
                 else "Error getting chain id."
             )
-
-        is_likely_poa = False
 
         # NOTE: We have to check both earliest and latest
         #   because if the chain was _ever_ PoA, we need
