@@ -772,7 +772,8 @@ def test_identifier_lookup(vyper_contract_instance):
 
 def test_source_path(project_with_contract, owner):
     contracts_folder = project_with_contract.contracts_folder
-    contract = project_with_contract.contracts["Contract"]
+    contracts = project_with_contract.load_contracts()
+    contract = contracts["Contract"]
     contract_instance = owner.deploy(project_with_contract.get_contract("Contract"))
     expected = contracts_folder / contract.source_id
 
