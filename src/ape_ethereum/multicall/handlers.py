@@ -93,7 +93,7 @@ class BaseMulticall(ManagerAccessMixin):
         self,
         call: ContractMethodHandler,
         *args,
-        allow_failure: bool = True,
+        allowFailure: bool = True,
         value: int = 0,
     ) -> "BaseMulticall":
         """
@@ -107,7 +107,7 @@ class BaseMulticall(ManagerAccessMixin):
             call (:class:`~ape_ethereum.multicall.handlers.ContractMethodHandler`):
               The method to call.
             *args: The arguments to invoke the method with.
-            allow_failure (bool): Whether the call is allowed to fail.
+            allowFailure (bool): Whether the call is allowed to fail.
             value (int): The amount of ether to forward with the call.
 
         Returns:
@@ -121,7 +121,7 @@ class BaseMulticall(ManagerAccessMixin):
         self.calls.append(
             {
                 "target": call.contract.address,
-                "allowFailure": allow_failure,
+                "allowFailure": allowFailure,
                 "value": value,
                 "callData": call.encode_input(*args),
             }
