@@ -61,6 +61,11 @@ def test_block_calculate_size(block):
     actual = block.model_validate(original)  # re-init without size.
     assert actual.size == size
 
+    original["size"] = 123
+    new_block = Block.model_validate(original)
+    assert new_block.size == 123  # Show no clashing.
+    assert actual.size == size  # Show this hasn't changed.
+
 
 def test_block_uncles(block):
     data = block.model_dump(by_alias=True)
