@@ -489,3 +489,8 @@ def test_send_call_base_class_block_id(networks, ethereum, mocker):
 
     actual = provider._send_call.call_args[-1]["block_identifier"]
     assert actual == block_id
+
+
+@geth_process_test
+def test_get_virtual_machine_error(geth_provider):
+    pass

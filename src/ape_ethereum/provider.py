@@ -1147,7 +1147,7 @@ class Web3Provider(ProviderAPI, ABC):
     ) -> ContractLogicError:
 
         if hasattr(exception, "args") and len(exception.args) == 2:
-            message = exception.args[0]
+            message = exception.args[0].replace("execution reverted: ", "")
             data = exception.args[1]
         else:
             message = str(exception).split(":")[-1].strip()
