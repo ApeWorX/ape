@@ -6,6 +6,7 @@ from eth_pydantic_types import HashBytes32
 from eth_typing import HexStr
 from evmchains import PUBLIC_CHAIN_META
 from hexbytes import HexBytes
+from web3.exceptions import ContractLogicError as Web3ContractLogicError
 from web3.exceptions import ExtraDataLengthError
 from web3.middleware import geth_poa_middleware
 
@@ -489,3 +490,11 @@ def test_send_call_base_class_block_id(networks, ethereum, mocker):
 
     actual = provider._send_call.call_args[-1]["block_identifier"]
     assert actual == block_id
+
+
+@geth_process_test
+def test_get_virtual_machine_error(geth_provider):
+    expected = "__EXPECTED__"
+    error = Web3ContractLogicError(f"execution reverted: {expected}", "0x08c379a")
+    actual = geth_provider.get_virtual_machine_error(error)
+    assert actual.message == expected
