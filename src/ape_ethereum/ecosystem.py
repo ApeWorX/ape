@@ -295,6 +295,7 @@ class Block(BlockAPI):
     base_fee: int = Field(0, alias="baseFeePerGas")
     difficulty: int = 0
     total_difficulty: int = Field(0, alias="totalDifficulty")
+    uncles: List[HexBytes] = []
 
     # Type re-declares.
     hash: Optional[HexBytes] = None
@@ -316,6 +317,33 @@ class Block(BlockAPI):
     @classmethod
     def validate_ints(cls, value):
         return to_int(value) if value else 0
+
+    @computed_field()  # type: ignore[misc]
+    @property
+    def size(self) -> int:
+        """
+        The size of the block in gas. Most of the time,
+        this field is passed to the model at validation time,
+        but occasionally it is missing (like in Infura::newHeads),
+        in which case it gets calculated.
+        """
+
+        if self._size is not None:
+            # The size was provided with the rest of the model
+            # (normal).
+            return self._size
+
+        # Try to get it from the provider.
+        if provider := self.network_manager.active_provider:
+            block = provider.get_block(self.number)
+            size = block._size
+            if size is not None and size > -1:
+                self._size = size
+                return size
+
+        # Don't cache.
+        # TODO: Could try to manually calculate here.
+        return -1
 
 
 class Ethereum(EcosystemAPI):
@@ -551,11 +579,6 @@ class Ethereum(EcosystemAPI):
             data["baseFeePerGas"] = data.pop("baseFee")
         if "transactions" in data:
             data["num_transactions"] = len(data["transactions"])
-
-        if "size" not in data:
-            # NOTE: Due to an issue with `eth_subscribe:newHeads` on Infura
-            # https://github.com/ApeWorX/ape-infura/issues/72
-            data["size"] = -1  # HACK: use an unrealistic sentinel value
 
         return Block.model_validate(data)
 
