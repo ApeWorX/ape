@@ -19,6 +19,7 @@ from ape.utils import (
     cached_property,
     get_all_files_in_directory,
     get_relative_path,
+    log_instead_of_fail,
 )
 
 if TYPE_CHECKING:
@@ -49,7 +50,8 @@ class ProjectAPI(BaseInterfaceModel):
 
     _contracts: Optional[Dict[str, ContractType]] = None
 
-    def __repr__(self):
+    @log_instead_of_fail(default="<ProjectAPI>")
+    def __repr__(self) -> str:
         cls_name = getattr(type(self), "__name__", ProjectAPI.__name__)
         return f"<{cls_name} {self.path.name}>"
 
@@ -359,7 +361,8 @@ class DependencyAPI(ExtraAttributesMixin, BaseInterfaceModel):
 
     _cached_manifest: Optional[PackageManifest] = None
 
-    def __repr__(self):
+    @log_instead_of_fail(default="<DependencyAPI>")
+    def __repr__(self) -> str:
         cls_name = getattr(type(self), "__name__", DependencyAPI.__name__)
         return f"<{cls_name} name='{self.name}'>"
 

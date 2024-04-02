@@ -13,7 +13,7 @@ from rich.tree import Tree
 
 from ape.types.address import AddressType
 from ape.utils.basemodel import BaseInterfaceModel
-from ape.utils.misc import is_evm_precompile, is_zero_hex
+from ape.utils.misc import is_evm_precompile, is_zero_hex, log_instead_of_fail
 from ape.utils.trace import _exclude_gas, parse_as_str, parse_gas_table, parse_rich_tree
 
 if TYPE_CHECKING:
@@ -91,6 +91,7 @@ class CallTreeNode(BaseInterfaceModel):
     The raw tree, as a dictionary, associated with the call.
     """
 
+    @log_instead_of_fail(default="<CallTreeNode>")
     def __repr__(self) -> str:
         return parse_as_str(self)
 
@@ -253,6 +254,7 @@ class ControlFlow(BaseModel):
     def __str__(self) -> str:
         return f"{self.source_header}\n{self.format()}"
 
+    @log_instead_of_fail(default="<ControlFlow>")
     def __repr__(self) -> str:
         source_name = f" {self.source_path.name} " if self.source_path is not None else " "
         representation = f"<control path,{source_name}{self.closure.name}"
@@ -514,6 +516,7 @@ class SourceTraceback(RootModel[List[ControlFlow]]):
     def __str__(self) -> str:
         return self.format()
 
+    @log_instead_of_fail(default="<SourceTraceback>")
     def __repr__(self) -> str:
         return f"<ape.types.SourceTraceback control_paths={len(self.root)}>"
 

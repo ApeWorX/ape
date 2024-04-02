@@ -1,4 +1,5 @@
 import asyncio
+import functools
 import json
 import sys
 from asyncio import gather
@@ -502,6 +503,31 @@ def _dict_overlay(mapping: Dict[str, Any], overlay: Dict[str, Any], depth: int =
     return mapping
 
 
+def log_instead_of_fail(default: Optional[Any] = None):
+    """
+    A decorator for logging errors instead of raising.
+    This is useful for methods like __repr__ which shouldn't fail.
+    """
+
+    def wrapper(fn):
+        @functools.wraps(fn)
+        def wrapped(*args, **kwargs):
+            try:
+                if args and isinstance(args[0], type):
+                    return fn(*args, **kwargs)
+                else:
+                    return fn(*args, **kwargs)
+
+            except Exception as err:
+                logger.error(str(err))
+                if default:
+                    return default
+
+        return wrapped
+
+    return wrapper
+
+
 __all__ = [
     "allow_disconnected",
     "cached_property",
@@ -514,6 +540,7 @@ __all__ = [
     "is_evm_precompile",
     "is_zero_hex",
     "load_config",
+    "log_instead_of_fail",
     "nonreentrant",
     "raises_not_implemented",
     "run_until_complete",

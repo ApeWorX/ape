@@ -51,7 +51,7 @@ from ape.utils import (
     ExtraModelAttributes,
     cached_property,
 )
-from ape.utils.misc import ZERO_ADDRESS, to_int
+from ape.utils.misc import ZERO_ADDRESS, log_instead_of_fail, to_int
 
 if TYPE_CHECKING:
     from ape.api.providers import BlockAPI
@@ -130,6 +130,7 @@ class ContractFunctionPath:
     def __str__(self) -> str:
         return f"{self.contract_name}:{self.method_name}"
 
+    @log_instead_of_fail(default="<ContractFunctionPath>")
     def __repr__(self) -> str:
         return f"<{self}>"
 
@@ -318,6 +319,7 @@ class ContractLog(ExtraAttributesMixin, BaseContractLog):
     def __str__(self) -> str:
         return f"{self.event_name}({self._event_args_str})"
 
+    @log_instead_of_fail(default="<ContractLog>")
     def __repr__(self) -> str:
         event_arg_str = self._event_args_str
         suffix = f" {event_arg_str}" if event_arg_str else ""

@@ -9,7 +9,7 @@ from pydantic import RootModel, model_validator
 from ape.api import ConfigDict, DependencyAPI, PluginConfig
 from ape.exceptions import ConfigError
 from ape.logging import logger
-from ape.utils import BaseInterfaceModel, load_config
+from ape.utils import BaseInterfaceModel, load_config, log_instead_of_fail
 
 if TYPE_CHECKING:
     from .project import ProjectManager
@@ -262,7 +262,8 @@ class ConfigManager(BaseInterfaceModel):
         self._cached_configs[self._project_key] = configs
         return configs
 
-    def __repr__(self):
+    @log_instead_of_fail(default="<ConfigManager>")
+    def __repr__(self) -> str:
         return f"<{ConfigManager.__name__} project={self.PROJECT_FOLDER.name}>"
 
     def load(self, force_reload: bool = False) -> "ConfigManager":

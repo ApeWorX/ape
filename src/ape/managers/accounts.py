@@ -13,7 +13,7 @@ from ape.api.accounts import (
 from ape.exceptions import ConversionError
 from ape.managers.base import BaseManager
 from ape.types import AddressType
-from ape.utils import ManagerAccessMixin, cached_property, singledispatchmethod
+from ape.utils import ManagerAccessMixin, cached_property, log_instead_of_fail, singledispatchmethod
 
 _DEFAULT_SENDERS: List[AccountAPI] = []
 
@@ -34,6 +34,7 @@ class TestAccountManager(list, ManagerAccessMixin):
 
     _impersonated_accounts: Dict[AddressType, ImpersonatedAccount] = {}
 
+    @log_instead_of_fail(default="<TestAccountManager>")
     def __repr__(self) -> str:
         accounts_str = ", ".join([a.address for a in self.accounts])
         return f"[{accounts_str}]"
@@ -224,6 +225,7 @@ class AccountManager(BaseManager):
         for container in self.containers.values():
             yield from container.accounts
 
+    @log_instead_of_fail(default="<AccountManager>")
     def __repr__(self) -> str:
         return "[" + ", ".join(repr(a) for a in self) + "]"
 

@@ -13,7 +13,7 @@ from pydantic import field_validator, model_validator
 from ape.__modules__ import __modules__
 from ape.logging import logger
 from ape.plugins import clean_plugin_name
-from ape.utils import BaseInterfaceModel, get_package_version, github_client
+from ape.utils import BaseInterfaceModel, get_package_version, github_client, log_instead_of_fail
 from ape.utils.basemodel import BaseModel
 from ape.version import version as ape_version_str
 from ape_plugins.exceptions import PluginVersionError
@@ -554,13 +554,9 @@ class PluginGroup(BaseModel):
     def __bool__(self) -> bool:
         return len(self.plugins) > 0
 
+    @log_instead_of_fail(default="<PluginGroup>")
     def __repr__(self) -> str:
-        try:
-            return f"<{self.name} Plugins Group>"
-        except Exception:
-            # Prevent exceptions happening in repr()
-            logger.log_debug_stack_trace()
-            return "<PluginGroup>"
+        return f"<{self.name} Plugins Group>"
 
     def __str__(self) -> str:
         return self.to_str()
@@ -621,14 +617,10 @@ class ApePluginsRepr:
         self.include = include or (PluginType.INSTALLED, PluginType.THIRD_PARTY)
         self.metadata = metadata
 
+    @log_instead_of_fail(default="<ApePluginsRepr>")
     def __repr__(self) -> str:
-        try:
-            to_display_str = ", ".join([x.value for x in self.include])
-            return f"<PluginMap to_display='{to_display_str}'>"
-        except Exception:
-            # Prevent exceptions happening in repr()
-            logger.log_debug_stack_trace()
-            return "<ApePluginsRepr>"
+        to_display_str = ", ".join([x.value for x in self.include])
+        return f"<PluginMap to_display='{to_display_str}'>"
 
     def __str__(self) -> str:
         sections = []

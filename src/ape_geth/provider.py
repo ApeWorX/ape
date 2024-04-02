@@ -30,6 +30,7 @@ from ape.utils import (
     DEFAULT_TEST_MNEMONIC,
     JoinableQueue,
     generate_dev_accounts,
+    log_instead_of_fail,
     raises_not_implemented,
     spawn,
 )
@@ -245,11 +246,9 @@ class GethDev(EthereumNodeProvider, TestProviderAPI, SubprocessProvider):
         # Overridden from BaseGeth class for placing debug logs in ape data folder.
         return self.settings.data_dir or self.data_folder / self.name
 
-    def __repr__(self):
-        try:
-            return f"<geth chain_id={self.chain_id}>"
-        except Exception:
-            return "<geth>"
+    @log_instead_of_fail(default="<geth>")
+    def __repr__(self) -> str:
+        return f"<geth chain_id={self.chain_id}>"
 
     def connect(self):
         self._set_web3()

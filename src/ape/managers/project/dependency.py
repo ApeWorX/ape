@@ -17,6 +17,7 @@ from ape.utils import (
     cached_property,
     github_client,
     load_config,
+    log_instead_of_fail,
     pragma_str_to_specifier_set,
 )
 
@@ -234,7 +235,8 @@ class GithubDependency(DependencyAPI):
 
         return HttpUrl(_uri)
 
-    def __repr__(self):
+    @log_instead_of_fail(default="<GithubDependency>")
+    def __repr__(self) -> str:
         cls_name = getattr(type(self), "__name__", GithubDependency.__name__)
         return f"<{cls_name} github={self.github}>"
 

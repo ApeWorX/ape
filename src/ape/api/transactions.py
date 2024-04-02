@@ -33,6 +33,7 @@ from ape.utils import (
     ExtraModelAttributes,
     abstractmethod,
     cached_property,
+    log_instead_of_fail,
     raises_not_implemented,
 )
 
@@ -173,6 +174,7 @@ class TransactionAPI(BaseInterfaceModel):
         Serialize the transaction
         """
 
+    @log_instead_of_fail(default="<TransactionAPI>")
     def __repr__(self) -> str:
         data = self.model_dump(mode="json")
         params = ", ".join(f"{k}={v}" for k, v in data.items())
@@ -270,6 +272,7 @@ class ReceiptAPI(ExtraAttributesMixin, BaseInterfaceModel):
     txn_hash: str
     transaction: TransactionAPI
 
+    @log_instead_of_fail(default="<ReceiptAPI>")
     def __repr__(self) -> str:
         cls_name = getattr(self.__class__, "__name__", ReceiptAPI.__name__)
         return f"<{cls_name} {self.txn_hash}>"

@@ -21,7 +21,7 @@ from ape.api import ConverterAPI, TransactionAPI
 from ape.api.address import BaseAddress
 from ape.exceptions import ConversionError
 from ape.types import AddressType
-from ape.utils import cached_property
+from ape.utils import cached_property, log_instead_of_fail
 
 from .base import BaseManager
 
@@ -217,7 +217,8 @@ class ConversionManager(BaseManager):
         amount = convert("1 gwei", int)
     """
 
-    def __repr__(self):
+    @log_instead_of_fail(default="<DependencyAPI>")
+    def __repr__(self) -> str:
         return f"<{ConversionManager.__name__}>"
 
     @cached_property

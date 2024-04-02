@@ -6,6 +6,8 @@ from eth_pydantic_types import HexBytes
 from eth_utils import to_bytes, to_hex
 from pydantic.dataclasses import dataclass
 
+from ape.utils import log_instead_of_fail
+
 try:
     # Only on Python 3.11
     from typing import Self  # type: ignore
@@ -87,6 +89,7 @@ class _Signature:
 
         return cls(v=vrs[0], r=HexBytes(vrs[1:33]), s=HexBytes(vrs[33:]))
 
+    @log_instead_of_fail(default="<_Signature>")
     def __repr__(self) -> str:
         class_name = getattr(type(self), "__name__", "_Signature")
         return f"<{class_name} v={self.v} r={to_hex(self.r)} s={to_hex(self.s)}>"
