@@ -28,7 +28,13 @@ from ape.exceptions import (
 )
 from ape.logging import logger
 from ape.types import AddressType, ContractLog, LogFilter, MockContractLog
-from ape.utils import BaseInterfaceModel, ManagerAccessMixin, cached_property, singledispatchmethod
+from ape.utils import (
+    BaseInterfaceModel,
+    ManagerAccessMixin,
+    cached_property,
+    log_instead_of_fail,
+    singledispatchmethod,
+)
 from ape.utils.abi import StructParser
 from ape.utils.basemodel import _assert_not_ipython_check
 
@@ -46,6 +52,7 @@ class ContractConstructor(ManagerAccessMixin):
             logger.warning("Deploying an empty contract (no bytecode)")
             self.deployment_bytecode = HexBytes("")
 
+    @log_instead_of_fail(default="<ContractConstructor>")
     def __repr__(self) -> str:
         return self.abi.signature if self.abi else "constructor()"
 
@@ -87,6 +94,7 @@ class ContractCall(ManagerAccessMixin):
         self.abi = abi
         self.address = address
 
+    @log_instead_of_fail(default="<ContractCall>")
     def __repr__(self) -> str:
         return self.abi.signature
 
@@ -124,6 +132,7 @@ class ContractMethodHandler(ManagerAccessMixin):
         self.contract = contract
         self.abis = abis
 
+    @log_instead_of_fail(default="<ContractMethodHandler>")
     def __repr__(self) -> str:
         # `<ContractName 0x1234...AbCd>.method_name`
         return f"{self.contract.__repr__()}.{self.abis[-1].name}"
@@ -268,6 +277,7 @@ class ContractTransaction(ManagerAccessMixin):
         self.abi = abi
         self.address = address
 
+    @log_instead_of_fail(default="<ContractTransaction>")
     def __repr__(self) -> str:
         return self.abi.signature
 
@@ -386,7 +396,8 @@ class ContractEvent(BaseInterfaceModel):
     abi: EventABI
     _logs: Optional[List[ContractLog]] = None
 
-    def __repr__(self):
+    @log_instead_of_fail(default="<ContractEvent>")
+    def __repr__(self) -> str:
         return self.abi.signature
 
     @property
@@ -892,6 +903,7 @@ class ContractInstance(BaseAddress, ContractTypeWrapper):
         self._cached_receipt = receipt
         return receipt
 
+    @log_instead_of_fail(default="<ContractInstance>")
     def __repr__(self) -> str:
         contract_name = self.contract_type.name or "Unnamed contract"
         return f"<{contract_name} {self.address}>"
@@ -1239,6 +1251,7 @@ class ContractContainer(ContractTypeWrapper):
     def __init__(self, contract_type: ContractType) -> None:
         self.contract_type = contract_type
 
+    @log_instead_of_fail(default="<ContractContainer>")
     def __repr__(self) -> str:
         return f"<{self.contract_type.name}>"
 
@@ -1451,6 +1464,7 @@ class ContractNamespace:
         self.name = name
         self.contracts = contracts
 
+    @log_instead_of_fail(default="<ContractNamespace>")
     def __repr__(self) -> str:
         return f"<{self.name}>"
 

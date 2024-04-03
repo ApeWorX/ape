@@ -18,6 +18,7 @@ from ape.exceptions import AccountsError
 from ape.logging import logger
 from ape.types import AddressType, MessageSignature, SignableMessage, TransactionSignature
 from ape.utils.basemodel import ManagerAccessMixin
+from ape.utils.misc import log_instead_of_fail
 from ape.utils.validators import _validate_account_alias, _validate_account_passphrase
 
 
@@ -62,18 +63,11 @@ class KeyfileAccount(AccountAPI):
     __autosign: bool = False
     __cached_key: Optional[HexBytes] = None
 
-    def __repr__(self):
+    @log_instead_of_fail(default="<KeyfileAccount>")
+    def __repr__(self) -> str:
         # NOTE: Prevent errors from preventing repr from working.
-        try:
-            address_str = f" address={self.address} "
-        except Exception:
-            address_str = ""
-
-        try:
-            alias_str = f" alias={self.alias} "
-        except Exception:
-            alias_str = ""
-
+        address_str = f" address={self.address} " if self.address else ""
+        alias_str = f" alias={self.alias} " if self.alias else ""
         return f"<{self.__class__.__name__}{address_str}{alias_str}>"
 
     @property

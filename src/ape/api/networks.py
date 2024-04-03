@@ -43,6 +43,7 @@ from ape.utils import (
     ManagerAccessMixin,
     abstractmethod,
     cached_property,
+    log_instead_of_fail,
     raises_not_implemented,
 )
 
@@ -91,6 +92,7 @@ class EcosystemAPI(ExtraAttributesMixin, BaseInterfaceModel):
     _default_network: Optional[str] = None
     """The default network of the ecosystem, such as ``local``."""
 
+    @log_instead_of_fail(default="<EcosystemAPI>")
     def __repr__(self) -> str:
         return f"<{self.name}>"
 

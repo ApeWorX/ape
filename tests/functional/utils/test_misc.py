@@ -12,6 +12,7 @@ from ape.utils.misc import (
     get_package_version,
     is_evm_precompile,
     is_zero_hex,
+    log_instead_of_fail,
     pragma_str_to_specifier_set,
     raises_not_implemented,
     run_until_complete,
@@ -159,3 +160,12 @@ def test_dict_overlay():
     assert "c" in mapping
     assert isinstance(mapping["c"], dict)
     assert "four" in mapping["c"]
+
+
+def test_log_instead_of_fail(ape_caplog):
+    @log_instead_of_fail()
+    def my_method():
+        raise ValueError("Oh no!")
+
+    my_method()
+    assert "Oh no!" in ape_caplog.head

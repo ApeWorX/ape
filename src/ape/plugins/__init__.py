@@ -8,6 +8,7 @@ from ape.__modules__ import __modules__
 from ape.exceptions import ApeAttributeError
 from ape.logging import logger
 from ape.utils.basemodel import _assert_not_ipython_check
+from ape.utils.misc import log_instead_of_fail
 
 from .account import AccountPlugin
 from .compiler import CompilerPlugin
@@ -125,7 +126,8 @@ class PluginManager:
     def __init__(self) -> None:
         self.__registered = False
 
-    def __repr__(self):
+    @log_instead_of_fail(default="<PluginManager>")
+    def __repr__(self) -> str:
         return f"<{PluginManager.__name__}>"
 
     def __getattr__(self, attr_name: str) -> Iterator[Tuple[str, Tuple]]:

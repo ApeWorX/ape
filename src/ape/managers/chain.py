@@ -34,7 +34,13 @@ from ape.exceptions import (
 from ape.logging import logger
 from ape.managers.base import BaseManager
 from ape.types import AddressType, BlockID, CallTreeNode, SnapshotID, SourceTraceback
-from ape.utils import BaseInterfaceModel, TraceStyles, nonreentrant, singledispatchmethod
+from ape.utils import (
+    BaseInterfaceModel,
+    TraceStyles,
+    log_instead_of_fail,
+    nonreentrant,
+    singledispatchmethod,
+)
 
 
 class BlockContainer(BaseManager):
@@ -1502,6 +1508,7 @@ class ChainManager(BaseManager):
     def pending_timestamp(self, new_value: str):
         self.provider.set_timestamp(self.conversion_manager.convert(value=new_value, type=int))
 
+    @log_instead_of_fail(default="<ChainManager>")
     def __repr__(self) -> str:
         props = f"id={self.chain_id}" if self.network_manager.active_provider else "disconnected"
         cls_name = getattr(type(self), "__name__", ChainManager.__name__)

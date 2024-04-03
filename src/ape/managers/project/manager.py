@@ -15,7 +15,7 @@ from ape.exceptions import ApeAttributeError, APINotImplementedError, ChainError
 from ape.logging import logger
 from ape.managers.base import BaseManager
 from ape.managers.project.types import ApeProject, BrownieProject
-from ape.utils import get_relative_path
+from ape.utils import get_relative_path, log_instead_of_fail
 from ape.utils.basemodel import _assert_not_ipython_check
 
 
@@ -57,13 +57,9 @@ class ProjectManager(BaseManager):
     def __str__(self) -> str:
         return f'Project("{self.path}")'
 
-    def __repr__(self):
-        try:
-            path = f" {self.path}"
-        except Exception:
-            # Disallow exceptions in __repr__
-            path = ""
-
+    @log_instead_of_fail(default="<ProjectManager>")
+    def __repr__(self) -> str:
+        path = f" {self.path}" if self.path else ""
         return f"<ProjectManager{path}>"
 
     @property

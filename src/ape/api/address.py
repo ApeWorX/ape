@@ -4,7 +4,7 @@ from eth_pydantic_types import HexBytes
 
 from ape.exceptions import ConversionError
 from ape.types import AddressType, ContractCode
-from ape.utils import BaseInterface, abstractmethod, cached_property
+from ape.utils import BaseInterface, abstractmethod, cached_property, log_instead_of_fail
 
 if TYPE_CHECKING:
     from ape.api.transactions import ReceiptAPI, TransactionAPI
@@ -71,6 +71,7 @@ class BaseAddress(BaseInterface):
         """
         return self._base_dir_values
 
+    @log_instead_of_fail(default="<BaseAddress>")
     def __repr__(self) -> str:
         cls_name = getattr(type(self), "__name__", BaseAddress.__name__)
         return f"<{cls_name} {self.address}>"

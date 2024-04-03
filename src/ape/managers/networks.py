@@ -14,7 +14,7 @@ from ape.exceptions import (
 )
 from ape.managers.base import BaseManager
 from ape.utils.basemodel import _assert_not_ipython_check
-from ape.utils.misc import _dict_overlay
+from ape.utils.misc import _dict_overlay, log_instead_of_fail
 from ape_ethereum.provider import EthereumNodeProvider
 
 
@@ -36,7 +36,8 @@ class NetworkManager(BaseManager):
     _active_provider: Optional[ProviderAPI] = None
     _default_ecosystem_name: Optional[str] = None
 
-    def __repr__(self):
+    @log_instead_of_fail(default="<NetworkManager>")
+    def __repr__(self) -> str:
         provider = self.active_provider
         class_name = NetworkManager.__name__
         content = f"{class_name} active_provider={repr(provider)}" if provider else class_name
