@@ -27,10 +27,7 @@ __pycache__
 def cli(cli_ctx, github):
     """
     ``ape init`` allows the user to create an ape project with
-    default folders and ape-config.yaml
-
-    From more information:
-    https://docs.apeworx.io/ape/stable/userguides/data.html#using-the-cache
+    default folders and ape-config.yaml.
     """
     if github:
         github_client.clone_repo(github, Path.cwd())
