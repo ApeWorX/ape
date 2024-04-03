@@ -1,3 +1,7 @@
+from tests.integration.cli.utils import run_once
+
+
+@run_once
 def test_cache_init_purge(ape_cli, runner):
     cmd = ("cache", "init", "--network", "ethereum:goerli")
     result = runner.invoke(ape_cli, cmd)
