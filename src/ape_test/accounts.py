@@ -1,3 +1,4 @@
+import warnings
 from typing import Any, Iterator, List, Optional
 
 from eip712.messages import EIP712Message
@@ -144,7 +145,9 @@ class TestAccount(TestAccountAPI):
         return txn
 
     def sign_raw_msghash(self, msghash: HexBytes) -> MessageSignature:
-        signed_msg = EthAccount.signHash(msghash, self.private_key)
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore", category=DeprecationWarning)
+            signed_msg = EthAccount.signHash(msghash, self.private_key)
 
         return MessageSignature(
             v=signed_msg.v,

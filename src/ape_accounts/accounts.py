@@ -1,4 +1,5 @@
 import json
+import warnings
 from os import environ
 from pathlib import Path
 from typing import Any, Dict, Iterator, Optional, Tuple
@@ -244,7 +245,9 @@ class KeyfileAccount(AccountAPI):
         if not click.confirm("Please confirm you wish to sign using `EthAccount.signHash`"):
             return None
 
-        signed_msg = EthAccount.signHash(msghash, self.__key)
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore", category=DeprecationWarning)
+            signed_msg = EthAccount.signHash(msghash, self.__key)
 
         return MessageSignature(
             v=signed_msg.v,
