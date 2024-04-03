@@ -6,10 +6,7 @@ from ethpm_types import ContractType
 
 from ape.exceptions import APINotImplementedError
 from ape_ethereum.multicall import Call
-from ape_ethereum.multicall.constants import (
-    MULTICALL3_ADDRESS,
-    MULTICALL3_CONTRACT_TYPE,
-)
+from ape_ethereum.multicall.constants import MULTICALL3_ADDRESS, MULTICALL3_CONTRACT_TYPE
 from ape_ethereum.multicall.exceptions import UnsupportedChainError
 
 RETURNDATA = HexBytes("0x4a821464")
