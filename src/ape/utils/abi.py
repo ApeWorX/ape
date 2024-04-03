@@ -363,6 +363,7 @@ def create_struct(name: str, types: Sequence[ABIType], output_values: Sequence) 
         "__setitem__": set_item,
         "__contains__": contains,
         "__len__": length,
+        "__reduce__": lambda self: (create_struct, (name, types, output_values)),
         "items": items,
         "values": values,
     }
