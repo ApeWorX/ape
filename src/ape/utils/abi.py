@@ -312,11 +312,11 @@ def create_struct(name: str, types: Sequence[ABIType], output_values: Sequence) 
         return key in struct.__dataclass_fields__
 
     def is_equal(struct, other) -> bool:
-        _len = len(other)
         if not hasattr(other, "__len__"):
             return NotImplemented
 
-        elif _len != len(struct):
+        _len = len(other)
+        if _len != len(struct):
             return False
 
         if hasattr(other, "items"):
