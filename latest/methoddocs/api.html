@@ -188,6 +188,7 @@
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.accounts.AccountAPI.deploy"><code class="docutils literal notranslate"><span class="pre">AccountAPI.deploy()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.accounts.AccountAPI.prepare_transaction"><code class="docutils literal notranslate"><span class="pre">AccountAPI.prepare_transaction()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.accounts.AccountAPI.sign_message"><code class="docutils literal notranslate"><span class="pre">AccountAPI.sign_message()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ape.api.accounts.AccountAPI.sign_raw_msghash"><code class="docutils literal notranslate"><span class="pre">AccountAPI.sign_raw_msghash()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.accounts.AccountAPI.sign_transaction"><code class="docutils literal notranslate"><span class="pre">AccountAPI.sign_transaction()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.accounts.AccountAPI.transfer"><code class="docutils literal notranslate"><span class="pre">AccountAPI.transfer()</span></code></a></li>
 </ul>
@@ -586,7 +587,7 @@ Defaults to <code class="docutils literal notranslate"><span class="pre">False</
 
 <dl class="py method">
 <dt class="sig sig-object py" id="ape.api.accounts.AccountAPI.check_signature">
-<span class="sig-name descname"><span class="pre">check_signature</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="types.html#ape.types.signatures.SignableMessage" title="eth_account.messages.SignableMessage"><span class="pre">SignableMessage</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="#ape.api.transactions.TransactionAPI" title="ape.api.transactions.TransactionAPI"><span class="pre">TransactionAPI</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">EIP712Message</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">signature</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="types.html#ape.types.signatures.MessageSignature" title="ape.types.signatures.MessageSignature"><span class="pre">MessageSignature</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="headerlink" href="#ape.api.accounts.AccountAPI.check_signature" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">check_signature</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="types.html#ape.types.signatures.SignableMessage" title="eth_account.messages.SignableMessage"><span class="pre">SignableMessage</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="#ape.api.transactions.TransactionAPI" title="ape.api.transactions.TransactionAPI"><span class="pre">TransactionAPI</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">EIP712Message</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">bytes</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">signature</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="types.html#ape.types.signatures.MessageSignature" title="ape.types.signatures.MessageSignature"><span class="pre">MessageSignature</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">recover_using_eip191</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="headerlink" href="#ape.api.accounts.AccountAPI.check_signature" title="Permalink to this definition"></a></dt>
 <dd><p>Verify a message or transaction was signed by this account.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -595,6 +596,9 @@ Defaults to <code class="docutils literal notranslate"><span class="pre">False</
 The message or transaction to verify.</p></li>
 <li><p><strong>signature</strong> (Optional[<a class="reference internal" href="types.html#ape.types.signatures.MessageSignature" title="ape.types.signatures.MessageSignature"><code class="xref py py-class docutils literal notranslate"><span class="pre">MessageSignature</span></code></a>]) – The signature to check. Defaults to <code class="docutils literal notranslate"><span class="pre">None</span></code> and is not needed when the first
 argument is a transaction class.</p></li>
+<li><p><strong>recover_using_eip191</strong> (<em>bool</em>) – Perform recovery using EIP-191 signed message check. If set False, then will attempt
+recovery as raw hash. <cite>data`</cite> must be a 32 byte hash if this is set False.
+Defaults to <code class="docutils literal notranslate"><span class="pre">True</span></code>.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
@@ -685,6 +689,24 @@ See these
 for more type information on the <code class="docutils literal notranslate"><span class="pre">SignableMessage</span></code> type.</p></li>
 <li><p><strong>**signer_options</strong> – Additional kwargs given to the signer to modify the signing operation.</p></li>
 </ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The signature corresponding to the message.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="types.html#ape.types.signatures.MessageSignature" title="ape.types.signatures.MessageSignature"><code class="xref py py-class docutils literal notranslate"><span class="pre">MessageSignature</span></code></a> (optional)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ape.api.accounts.AccountAPI.sign_raw_msghash">
+<span class="sig-name descname"><span class="pre">sign_raw_msghash</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">msghash</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">HexBytes</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="types.html#ape.types.signatures.MessageSignature" title="ape.types.signatures.MessageSignature"><span class="pre">MessageSignature</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></span><a class="headerlink" href="#ape.api.accounts.AccountAPI.sign_raw_msghash" title="Permalink to this definition"></a></dt>
+<dd><p>Sign a raw message hash.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>msghash</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">HexBytes</span></code>) – The message hash to sign. Plugins may or may not support this operation.
+Default implementation is to raise <code class="docutils literal notranslate"><span class="pre">NotImplementedError</span></code>.</p>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>The signature corresponding to the message.</p>

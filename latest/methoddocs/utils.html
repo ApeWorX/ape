@@ -257,6 +257,7 @@
 <li class="toctree-l2"><a class="reference internal" href="#ape.utils.is_struct"><code class="docutils literal notranslate"><span class="pre">is_struct()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#ape.utils.is_zero_hex"><code class="docutils literal notranslate"><span class="pre">is_zero_hex()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#ape.utils.load_config"><code class="docutils literal notranslate"><span class="pre">load_config()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#ape.utils.log_instead_of_fail"><code class="docutils literal notranslate"><span class="pre">log_instead_of_fail()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#ape.utils.pragma_str_to_specifier_set"><code class="docutils literal notranslate"><span class="pre">pragma_str_to_specifier_set()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#ape.utils.raises_not_implemented"><code class="docutils literal notranslate"><span class="pre">raises_not_implemented()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#ape.utils.returns_array"><code class="docutils literal notranslate"><span class="pre">returns_array()</span></code></a></li>
@@ -958,6 +959,13 @@ and is able to be load.</p></li>
 <dd class="field-odd"><p>Dict (dict)</p>
 </dd>
 </dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ape.utils.log_instead_of_fail">
+<span class="sig-prename descclassname"><span class="pre">ape.utils.</span></span><span class="sig-name descname"><span class="pre">log_instead_of_fail</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">default</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.utils.log_instead_of_fail" title="Permalink to this definition"></a></dt>
+<dd><p>A decorator for logging errors instead of raising.
+This is useful for methods like __repr__ which shouldn’t fail.</p>
 </dd></dl>
 
 <dl class="py function">

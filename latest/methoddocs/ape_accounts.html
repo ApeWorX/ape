@@ -187,6 +187,7 @@
 <li class="toctree-l3"><a class="reference internal" href="#ape_accounts.KeyfileAccount.alias"><code class="docutils literal notranslate"><span class="pre">KeyfileAccount.alias</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ape_accounts.KeyfileAccount.set_autosign"><code class="docutils literal notranslate"><span class="pre">KeyfileAccount.set_autosign()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ape_accounts.KeyfileAccount.sign_message"><code class="docutils literal notranslate"><span class="pre">KeyfileAccount.sign_message()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#ape_accounts.KeyfileAccount.sign_raw_msghash"><code class="docutils literal notranslate"><span class="pre">KeyfileAccount.sign_raw_msghash()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ape_accounts.KeyfileAccount.sign_transaction"><code class="docutils literal notranslate"><span class="pre">KeyfileAccount.sign_transaction()</span></code></a></li>
 </ul>
 </li>
@@ -303,6 +304,24 @@ See these
 for more type information on the <code class="docutils literal notranslate"><span class="pre">SignableMessage</span></code> type.</p></li>
 <li><p><strong>**signer_options</strong> – Additional kwargs given to the signer to modify the signing operation.</p></li>
 </ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The signature corresponding to the message.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="types.html#ape.types.signatures.MessageSignature" title="ape.types.signatures.MessageSignature"><code class="xref py py-class docutils literal notranslate"><span class="pre">MessageSignature</span></code></a> (optional)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ape_accounts.KeyfileAccount.sign_raw_msghash">
+<span class="sig-name descname"><span class="pre">sign_raw_msghash</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">msghash</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">HexBytes</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="types.html#ape.types.signatures.MessageSignature" title="ape.types.signatures.MessageSignature"><span class="pre">MessageSignature</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></span><a class="headerlink" href="#ape_accounts.KeyfileAccount.sign_raw_msghash" title="Permalink to this definition"></a></dt>
+<dd><p>Sign a raw message hash.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>msghash</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">HexBytes</span></code>) – The message hash to sign. Plugins may or may not support this operation.
+Default implementation is to raise <code class="docutils literal notranslate"><span class="pre">NotImplementedError</span></code>.</p>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>The signature corresponding to the message.</p>
