@@ -5,7 +5,7 @@ import click
 
 from ape.cli import ape_cli_context
 from ape.managers.config import CONFIG_FILE_NAME
-from ape.utils import github_client
+from ape.utils._github import github_client
 
 GITIGNORE_CONTENT = """
 # Ape stuff

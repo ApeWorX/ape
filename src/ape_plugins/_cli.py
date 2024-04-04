@@ -17,7 +17,7 @@ from ape.plugins._utils import (
     _pip_freeze,
     ape_version,
 )
-from ape.utils import load_config
+from ape.utils.misc import load_config
 
 
 @click.group(short_help="Manage ape plugins")
