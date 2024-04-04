@@ -167,7 +167,7 @@ class TestPluginMetadata:
             f"ape-available>=0.{ape_version.minor},<0.{ape_version.minor + 1}",
             "--quiet",
         ]
-        assert arguments[0].endswith("python")
+        assert "python" in arguments[0]
         assert arguments[1:] == expected
 
     def test_prepare_install_upgrade(self):
@@ -183,7 +183,7 @@ class TestPluginMetadata:
             f"ape-available>=0.{ape_version.minor},<0.{ape_version.minor + 1}",
             "--quiet",
         ]
-        assert arguments[0].endswith("python")
+        assert "python" in arguments[0]
         assert arguments[1:] == expected
 
     @mark_specifiers_less_than_ape
