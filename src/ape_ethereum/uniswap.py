@@ -21,7 +21,7 @@ factory_selectors = [
 ]
 
 
-def is_pool(code):
+def is_uniswap_v3_pool(code):
     has_pool_selectors = all(sel in code for sel in pool_selectors)
     has_factory_selectors = all(sel in code for sel in factory_selectors)
 
