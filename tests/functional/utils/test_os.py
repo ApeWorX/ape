@@ -3,6 +3,7 @@ from pathlib import Path
 import pytest
 
 from ape.utils.os import (
+    clean_path,
     create_tempdir,
     get_all_files_in_directory,
     get_full_extension,
@@ -117,3 +118,17 @@ def test_run_in_tempdir(name):
     assert arguments[0].resolve() == arguments[0]
     if name is not None:
         assert arguments[0].name == name
+
+
+def test_clean_path_relative_to_home():
+    name = "__canary_ape_test__"
+    path = Path.home() / name
+    actual = clean_path(path)
+    assert actual == name
+
+
+def test_clean_path_not_relative_to_home():
+    name = "__canary_ape_test__"
+    path = Path(name)
+    actual = clean_path(path)
+    assert actual == name
