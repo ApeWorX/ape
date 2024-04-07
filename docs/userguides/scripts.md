@@ -78,7 +78,7 @@ def cli(cli_ctx):
     # There is no connection yet at this point.
     testnets = {
         "ethereum": ["sepolia"],
-        "polygon": ["mumbai"]
+        "polygon": ["amoy"]
     }
     nm = cli_ctx.network_manager
 
@@ -137,7 +137,7 @@ Without specifying `--network`, the script with connect to your default network.
 Else, specify the network using the `--network` flag:
 
 ```shell
-ape run foobar --network polygon:mumbai:alchemy
+ape run foobar --network polygon:amoy:alchemy
 ```
 
 You can also change networks within the script using the `ProviderContextManager` (see examples in the CLI-script section above).
