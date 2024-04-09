@@ -321,13 +321,6 @@ class Block(BlockAPI):
     @computed_field()  # type: ignore[misc]
     @property
     def size(self) -> int:
-        """
-        The size of the block in gas. Most of the time,
-        this field is passed to the model at validation time,
-        but occasionally it is missing (like in Infura::newHeads),
-        in which case it gets calculated.
-        """
-
         if self._size is not None:
             # The size was provided with the rest of the model
             # (normal).
