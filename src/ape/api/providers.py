@@ -140,7 +140,8 @@ class BlockAPI(BaseInterfaceModel):
         The size of the block in gas. Most of the time,
         this field is passed to the model at validation time,
         but occassionally it is missing (like in Infura::newHeads),
-        in which case it gets calculated.
+        in which case it gets calculated if and only if the user
+        requests it (or during serialization of this model to disk).
         """
 
         if self._size is not None:
