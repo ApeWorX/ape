@@ -21,7 +21,7 @@ from .constants import (
     MULTICALL3_CONTRACT_TYPE,
     SUPPORTED_CHAINS,
 )
-from .exceptions import InvalidOption, NotExecutedError, UnsupportedChainError, ValueRequired
+from .exceptions import InvalidOption, UnsupportedChainError, ValueRequired
 
 
 class BaseMulticall(ManagerAccessMixin):
@@ -87,17 +87,13 @@ class BaseMulticall(ManagerAccessMixin):
         if any(call["value"] > 0 for call in self.calls):
             return self.contract.aggregate3Value
 
-        elif any(call["allowFailure"] for call in self.calls):
-            return self.contract.aggregate3
-
-        else:
-            return self.contract.aggregate
+        return self.contract.aggregate3
 
     def add(
         self,
         call: ContractMethodHandler,
         *args,
-        allowFailure: bool = False,
+        allowFailure: bool = True,
         value: int = 0,
     ) -> "BaseMulticall":
         """
@@ -164,8 +160,7 @@ class Call(BaseMulticall):
         super().__init__(address=address, supported_chains=supported_chains)
 
         self.abis: List[MethodABI] = []
-        self._result: Union[None, Tuple[int, List[HexBytes]], List[Tuple[bool, HexBytes]]] = None
-        self._failed_results: List[HexBytes] = []
+        self._result: Union[None, List[Tuple[bool, HexBytes]]] = None
 
     @property
     def handler(self) -> ContractCallHandler:  # type: ignore[override]
@@ -183,29 +178,11 @@ class Call(BaseMulticall):
     def returnData(self) -> List[HexBytes]:
         # NOTE: this property is kept camelCase to align with the raw EVM struct
         result = self._result  # Declare for typing reasons.
-        if not result:
-            raise NotExecutedError()
-
-        elif (
-            isinstance(result, (tuple, list))
-            and len(result) >= 2
-            and type(result[0]) is bool
-            and isinstance(result[1], bytes)
-        ):
-            # Call3[] or Call3Value[] when only single call.
-            return [result[1]]
-
-        elif isinstance(result, tuple):
-            # Call3[] or Call3Value[] when multiple calls.
-            return list(r[1] for r in self._result)  # type: ignore
-
-        else:
-            # blockNumber: uint256, returnData: Call[]
-            return result.returnData  # type: ignore
+        return [res.returnData if res.success else None for res in result]  # type: ignore
 
     def _decode_results(self) -> Iterator[Any]:
         for abi, data in zip(self.abis, self.returnData):
-            if data in self._failed_results:
+            if data is None:
                 # The call failed.
                 yield data
                 continue

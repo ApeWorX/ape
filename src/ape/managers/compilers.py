@@ -9,6 +9,7 @@ from ape.contracts import ContractContainer
 from ape.exceptions import ApeAttributeError, CompilerError, ContractLogicError
 from ape.logging import logger
 from ape.managers.base import BaseManager
+from ape.utils import log_instead_of_fail
 from ape.utils.basemodel import _assert_not_ipython_check
 from ape.utils.os import get_relative_path
 
@@ -28,7 +29,8 @@ class CompilerManager(BaseManager):
 
     _registered_compilers_cache: Dict[Path, Dict[str, CompilerAPI]] = {}
 
-    def __repr__(self):
+    @log_instead_of_fail(default="<CompilerManager>")
+    def __repr__(self) -> str:
         num_compilers = len(self.registered_compilers)
         cls_name = getattr(type(self), "__name__", CompilerManager.__name__)
         return f"<{cls_name} len(registered_compilers)={num_compilers}>"

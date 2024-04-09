@@ -1,3 +1,4 @@
+import re
 import warnings
 
 import pytest
@@ -301,6 +302,16 @@ def test_str_when_data_is_bytes(ethereum):
 def test_receipt_when_none(ethereum):
     txn = ethereum.create_transaction(data=HexBytes("0x123"))
     assert txn.receipt is None
+
+
+def test_repr(ethereum):
+    txn = ethereum.create_transaction(data=HexBytes("0x123"))
+    actual = repr(txn)
+    expected = (
+        r"<DynamicFeeTransaction chainId=\d*, "
+        r"gas=\d*, value=0, data=0x\d*, type=2, accessList=\[\]>"
+    )
+    assert re.match(expected, actual)
 
 
 # NOTE: Some of these values are needed for signing to work.

@@ -312,11 +312,11 @@ def create_struct(name: str, types: Sequence[ABIType], output_values: Sequence) 
         return key in struct.__dataclass_fields__
 
     def is_equal(struct, other) -> bool:
-        _len = len(other)
         if not hasattr(other, "__len__"):
             return NotImplemented
 
-        elif _len != len(struct):
+        _len = len(other)
+        if _len != len(struct):
             return False
 
         if hasattr(other, "items"):
@@ -355,6 +355,9 @@ def create_struct(name: str, types: Sequence[ABIType], output_values: Sequence) 
     def values(struct) -> List[Any]:
         return [x[1] for x in struct.items()]
 
+    def reduce(struct) -> tuple:
+        return (create_struct, (name, types, output_values))
+
     # NOTE: Should never be "_{i}", but mypy complains and we need a unique value
     properties = [m.name or f"_{i}" for i, m in enumerate(types)]
     methods = {
@@ -363,6 +366,7 @@ def create_struct(name: str, types: Sequence[ABIType], output_values: Sequence) 
         "__setitem__": set_item,
         "__contains__": contains,
         "__len__": length,
+        "__reduce__": reduce,
         "items": items,
         "values": values,
     }

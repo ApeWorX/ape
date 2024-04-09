@@ -40,16 +40,13 @@ from ape.types import (
     SnapshotID,
     TraceFrame,
 )
-from ape.utils import (
+from ape.utils import BaseInterfaceModel, JoinableQueue, abstractmethod, cached_property, spawn
+from ape.utils.misc import (
     EMPTY_BYTES32,
-    BaseInterfaceModel,
-    JoinableQueue,
-    abstractmethod,
-    cached_property,
+    _create_raises_not_implemented_error,
+    log_instead_of_fail,
     raises_not_implemented,
-    spawn,
 )
-from ape.utils.misc import _create_raises_not_implemented_error
 
 
 class BlockAPI(BaseInterfaceModel):
@@ -646,6 +643,7 @@ class ProviderAPI(BaseInterfaceModel):
             amount (int): The balance to set in the address.
         """
 
+    @log_instead_of_fail(default="<ProviderAPI>")
     def __repr__(self) -> str:
         try:
             chain_id = self.chain_id

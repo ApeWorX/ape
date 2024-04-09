@@ -13,7 +13,12 @@ from ape.api.config import PluginConfig
 from ape.exceptions import APINotImplementedError, ContractLogicError
 from ape.types.coverage import ContractSourceCoverage
 from ape.types.trace import SourceTraceback, TraceFrame
-from ape.utils import BaseInterfaceModel, abstractmethod, raises_not_implemented
+from ape.utils import (
+    BaseInterfaceModel,
+    abstractmethod,
+    log_instead_of_fail,
+    raises_not_implemented,
+)
 
 
 class CompilerAPI(BaseInterfaceModel):
@@ -159,6 +164,7 @@ class CompilerAPI(BaseInterfaceModel):
             Dict[Version, Set[Path]]
         """
 
+    @log_instead_of_fail(default="<CompilerAPI>")
     def __repr__(self) -> str:
         cls_name = getattr(type(self), "__name__", CompilerAPI.__name__)
         return f"<{cls_name} {self.name}>"

@@ -1,8 +1,11 @@
+import pickle
+from copy import deepcopy
+
 import pytest
 from eth_pydantic_types import HexBytes
-from ethpm_types.abi import EventABI, EventABIType
+from ethpm_types.abi import ABIType, EventABI, EventABIType
 
-from ape.utils.abi import LogInputABICollection
+from ape.utils.abi import LogInputABICollection, create_struct
 
 
 @pytest.fixture
@@ -79,3 +82,47 @@ def test_decoding_with_strict(collection, topics, log_data_missing_trailing_zero
         "stakingLimit": 0,
     }
     assert actual == expected
+
+
+class TestStruct:
+    @pytest.fixture
+    def struct(self):
+        return create_struct(
+            "MyStruct", (ABIType(name="proptest", type="string"),), ("output_value_0",)
+        )
+
+    def test_get_and_set_item(self, struct):
+        assert struct["proptest"] == "output_value_0"
+        struct["proptest"] = "something else"
+        assert struct["proptest"] == "something else"
+
+    def test_is_equal(self, struct):
+        # Show struct equality works when props are the same.
+        assert struct == struct  # even self
+        new_struct = deepcopy(struct)
+        assert struct == new_struct
+        # Show changing a property makes them unequal.
+        new_struct["proptest"] = "something else"
+        assert struct != new_struct
+        # Show testing with other types works w/o erroring.
+        assert struct != 47
+
+    def test_contains(self, struct):
+        assert "proptest" in struct
+
+    def test_len(self, struct):
+        assert len(struct) == 1
+
+    def test_items(self, struct):
+        actual = struct.items()
+        assert len(actual) == 1
+        assert actual[0] == ("proptest", "output_value_0")
+
+    def test_values(self, struct):
+        actual = struct.values()
+        assert len(actual) == 1
+        assert actual[0] == "output_value_0"
+
+    def test_pickle(self, struct):
+        actual = pickle.dumps(struct)
+        assert isinstance(actual, bytes)
