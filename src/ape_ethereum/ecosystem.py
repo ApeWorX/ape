@@ -334,9 +334,7 @@ class Block(BlockAPI):
                 self._size = size
                 return size
 
-        # Don't cache.
-        # TODO: Could try to manually calculate here.
-        return -1
+        raise APINotImplementedError()
 
 
 class Ethereum(EcosystemAPI):

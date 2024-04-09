@@ -84,6 +84,7 @@ class BlockAPI(BaseInterfaceModel):
 
     """
     The timestamp the block was produced.
+    NOTE: The pending block uses the current timestamp.
     """
     timestamp: int
 
@@ -149,8 +150,7 @@ class BlockAPI(BaseInterfaceModel):
             # (normal).
             return self._size
 
-        # NOTE: See `ape-ethereum.ecosystem.Block` for a real implementation.
-        return -1
+        raise APINotImplementedError()
 
 
 class ProviderAPI(BaseInterfaceModel):
