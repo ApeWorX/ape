@@ -1,11 +1,11 @@
 import difflib
+import importlib.metadata as metadata
 import re
 import sys
 from gettext import gettext
 from typing import Any, Dict, List, Optional, Tuple
 
 import click
-import importlib.metadata as metadata
 import yaml
 
 from ape.cli import ape_cli_context
