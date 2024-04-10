@@ -7,8 +7,8 @@ from typing import Any, Dict, Iterator, List, Optional, Sequence, Set, Tuple
 import click
 from packaging.specifiers import SpecifierSet
 from packaging.version import Version
-from pkg_resources import working_set
 from pydantic import field_validator, model_validator
+from importlib.metadata import distributions
 
 from ape.__modules__ import __modules__
 from ape.logging import logger
@@ -128,7 +128,7 @@ class _PipFreeze:
             for p in (
                 _check_pip_freeze().splitlines()
                 if use_process
-                else [str(x).replace(" ", "==") for x in working_set]
+                else [f"{x.name}=={x.version}" for x in distributions()]
             )
             if p.startswith("ape-") or (p.startswith("-e") and "ape-" in p)
         ]
