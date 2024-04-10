@@ -5,7 +5,7 @@ from gettext import gettext
 from typing import Any, Dict, List, Optional, Tuple
 
 import click
-import importlib_metadata as metadata
+import importlib.metadata as metadata
 import yaml
 
 from ape.cli import ape_cli_context
