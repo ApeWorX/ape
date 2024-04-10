@@ -5,6 +5,8 @@ import sys
 from asyncio import gather
 from datetime import datetime
 from functools import cached_property, lru_cache, singledispatchmethod, wraps
+from importlib.metadata import PackageNotFoundError, distributions
+from importlib.metadata import version as version_metadata
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Callable, Coroutine, Dict, List, Mapping, Optional, cast
 
@@ -12,8 +14,6 @@ import requests
 import yaml
 from eth_pydantic_types import HexBytes
 from eth_utils import is_0x_prefixed
-from importlib_metadata import PackageNotFoundError, distributions, packages_distributions
-from importlib_metadata import version as version_metadata
 from packaging.specifiers import SpecifierSet
 from tqdm.auto import tqdm  # type: ignore
 
@@ -40,16 +40,7 @@ _python_version = (
 
 
 @lru_cache(maxsize=None)
-def get_distributions():
-    """
-    Get a mapping of top-level packages to their distributions.
-    """
-
-    return packages_distributions()
-
-
-@lru_cache(maxsize=None)
-def _get_distributions(pkg_name: str) -> List:
+def _get_distributions(pkg_name: Optional[str] = None) -> List:
     """
     Get a mapping of top-level packages to their distributions.
     """
@@ -59,7 +50,7 @@ def _get_distributions(pkg_name: str) -> List:
     for dist in all_distros:
         package_names = (dist.read_text("top_level.txt") or "").split()
         for name in package_names:
-            if name == pkg_name:
+            if pkg_name is None or name == pkg_name:
                 distros.append(dist)
 
     return distros

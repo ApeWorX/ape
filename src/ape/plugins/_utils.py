@@ -1,20 +1,19 @@
-import subprocess
 import sys
 from enum import Enum
 from functools import cached_property
-from typing import Any, Dict, Iterator, List, Optional, Sequence, Set, Tuple
+from typing import Any, Dict, Iterable, Iterator, List, Optional, Sequence, Tuple
 
 import click
 from packaging.specifiers import SpecifierSet
 from packaging.version import Version
 from pydantic import field_validator, model_validator
-from importlib.metadata import distributions
 
 from ape.__modules__ import __modules__
 from ape.logging import logger
 from ape.plugins import clean_plugin_name
 from ape.utils import BaseInterfaceModel, get_package_version, github_client, log_instead_of_fail
 from ape.utils.basemodel import BaseModel
+from ape.utils.misc import _get_distributions
 from ape.version import version as ape_version_str
 from ape_plugins.exceptions import PluginVersionError
 
@@ -111,53 +110,6 @@ class PluginType(Enum):
     """
 
 
-def _check_pip_freeze() -> str:
-    result = subprocess.check_output([sys.executable, "-m", "pip", "freeze"])
-    return result.decode("utf8")
-
-
-class _PipFreeze:
-    cache: Optional[Set[str]] = None
-
-    def get_plugins(self, use_cache: bool = True, use_process: bool = False) -> Set[str]:
-        if use_cache and self.cache is not None:
-            return self.cache
-
-        lines = [
-            p
-            for p in (
-                _check_pip_freeze().splitlines()
-                if use_process
-                else [f"{x.name}=={x.version}" for x in distributions()]
-            )
-            if p.startswith("ape-") or (p.startswith("-e") and "ape-" in p)
-        ]
-
-        # NOTE: Package IDs should look like "name==version"
-        #  if version is available.
-        package_ids = []
-        for package in lines:
-            if "-e" in package:
-                package_ids.append(package.split(".git")[0].split("/")[-1])
-            elif "@" in package:
-                package_ids.append(package.split("@")[0].strip())
-            elif "==" in package:
-                package_ids.append(package)
-            else:
-                package_ids.append(package)
-
-        self.cache = set(x for x in package_ids)
-        return self.cache
-
-
-_pip_freeze = _PipFreeze()
-
-
-def _pip_freeze_plugins(use_cache: bool = True, use_process: bool = False):
-    # NOTE: In a method for mocking purposes in tests.
-    return _pip_freeze.get_plugins(use_cache=use_cache, use_process=use_process)
-
-
 class PluginMetadataList(BaseModel):
     """
     Metadata per plugin type, including information for all plugins.
@@ -175,14 +127,17 @@ class PluginMetadataList(BaseModel):
         return cls.from_package_names(registered_plugins.union(available_plugins))
 
     @classmethod
-    def from_package_names(cls, packages: Sequence[str]) -> "PluginMetadataList":
+    def from_package_names(cls, packages: Iterable[str]) -> "PluginMetadataList":
         PluginMetadataList.model_rebuild()
         core = PluginGroup(plugin_type=PluginType.CORE)
         available = PluginGroup(plugin_type=PluginType.AVAILABLE)
         installed = PluginGroup(plugin_type=PluginType.INSTALLED)
         third_party = PluginGroup(plugin_type=PluginType.THIRD_PARTY)
-        for name in {p for p in packages}:
-            plugin = PluginMetadata(name=name.strip())
+        for package_id in packages:
+            parts = package_id.split("==")
+            name = parts[0]
+            version = parts[1] if len(parts) == 2 else None
+            plugin = PluginMetadata(name=name.strip(), version=version)
             if plugin.in_core:
                 core.plugins[name] = plugin
             elif plugin.is_available and not plugin.is_installed:
@@ -238,11 +193,6 @@ class PluginMetadata(BaseInterfaceModel):
 
     version: Optional[str] = None
     """The version requested, if there is one."""
-
-    _use_subprocess_pip_freeze: bool = False
-    """
-    Set to True if verifying changes.
-    """
 
     @model_validator(mode="before")
     @classmethod
@@ -367,29 +317,6 @@ class PluginMetadata(BaseInterfaceModel):
         return self.is_installed and not self.is_available
 
     @property
-    def pip_freeze_version(self) -> Optional[str]:
-        """
-        The version from ``pip freeze`` output.
-        This is useful because when updating a plugin, it is not available
-        until the next Python session but you can use the property to
-        verify the update.
-        """
-
-        for package in _pip_freeze_plugins(
-            use_cache=False, use_process=self._use_subprocess_pip_freeze
-        ):
-            parts = package.split("==")
-            if len(parts) != 2:
-                continue
-
-            name = parts[0]
-            if name == self.package_name:
-                version_str = parts[-1]
-                return version_str
-
-        return None
-
-    @property
     def is_available(self) -> bool:
         """
         Whether the plugin is maintained by the ApeWorX organization.
@@ -408,12 +335,10 @@ class PluginMetadata(BaseInterfaceModel):
         return f"{self.name}{version_key}"
 
     def check_installed(self, use_cache: bool = True):
-        ape_packages = [
-            _split_name_and_version(n)[0]
-            for n in _pip_freeze_plugins(
-                use_cache=use_cache, use_process=self._use_subprocess_pip_freeze
-            )
-        ]
+        if not use_cache:
+            _get_distributions.cache_clear()
+
+        ape_packages = [n.name for n in _get_distributions()]
         return self.package_name in ape_packages
 
     def _prepare_install(
@@ -483,7 +408,7 @@ class ModifyPluginResultHandler:
             return False
         else:
             plugin_id = self._plugin.name
-            version = self._plugin.pip_freeze_version
+            version = self._plugin.version
             if version:
                 # Sometimes, like in editable mode, the version is missing here.
                 plugin_id = f"{plugin_id}=={version}"
@@ -496,15 +421,15 @@ class ModifyPluginResultHandler:
             self._log_errors_occurred("upgrading")
             return False
 
-        version_now = self._plugin.pip_freeze_version
+        version_now = self._plugin.version
         if version_now is not None and version_before == version_now:
             logger.info(f"'{self._plugin.name}' already has version '{version_now}'.")
             return True
 
-        elif self._plugin.pip_freeze_version:
+        elif self._plugin.version:
             logger.success(
                 f"Plugin '{self._plugin.name}' has been "
-                f"upgraded to version {self._plugin.pip_freeze_version}."
+                f"upgraded to version {self._plugin.version}."
             )
             return True
 
