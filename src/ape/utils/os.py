@@ -152,5 +152,9 @@ def get_full_extension(path: Path) -> str:
 
     parts = path.name.split(".")
     start_idx = 2 if path.name.startswith(".") else 1
+
+    # NOTE: Handles when given just `.hiddenFile` since slice indices
+    #   may exceed their bounds.
     suffix = ".".join(parts[start_idx:])
+
     return f".{suffix}" if suffix and f".{suffix}" != f"{path.name}" else ""
