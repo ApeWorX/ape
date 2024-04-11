@@ -1203,7 +1203,7 @@ class Web3Provider(ProviderAPI, ABC):
         )
         enriched = self.compiler_manager.enrich_error(result)
 
-        # Show call trace if availble
+        # Show call trace if available
         if enriched.txn:
             # Unlikely scenario where a transaction is on the error even though a receipt exists.
             if isinstance(enriched.txn, TransactionAPI) and enriched.txn.receipt:
