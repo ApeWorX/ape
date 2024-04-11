@@ -9,6 +9,7 @@ from packaging.version import Version
 from pydantic import field_validator, model_validator
 
 from ape.__modules__ import __modules__
+from ape.cli import PIP_COMMAND
 from ape.logging import logger
 from ape.plugins import clean_plugin_name
 from ape.utils import BaseInterfaceModel, get_package_version, github_client, log_instead_of_fail
@@ -371,7 +372,7 @@ class PluginMetadata(BaseInterfaceModel):
             logger.warning(f"Plugin '{self.name}' is not an trusted plugin.")
 
         result_handler = ModifyPluginResultHandler(self)
-        pip_arguments = [sys.executable, "-m", "pip", "install"]
+        pip_arguments = PIP_COMMAND + ["install"]
 
         if upgrade:
             logger.info(f"Upgrading '{self.name}' plugin ...")

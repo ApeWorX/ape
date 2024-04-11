@@ -1,3 +1,5 @@
+import sys
+from shutil import which
 from ape.cli.arguments import (
     contract_file_paths_argument,
     existing_alias_argument,
@@ -27,6 +29,8 @@ from ape.cli.options import (
     verbosity_option,
 )
 from ape.cli.paramtype import AllFilePaths, Path
+
+PIP_COMMAND = ["uv", "pip"] if which("uv") else [sys.executable, "-m", "pip"]
 
 __all__ = [
     "account_option",

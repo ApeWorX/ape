@@ -46,7 +46,6 @@ extras_require = {
         "sphinx-plausible>=0.1.2,<0.2",
     ],
     "release": [  # `release` GitHub Action job uses this
-        "setuptools",  # Installation tool
         "wheel",  # Packaging tool
         "twine==3.8.0",  # Package upload tool
     ],
@@ -75,7 +74,6 @@ extras_require["dev"] = (
 
 with open("./README.md") as readme:
     long_description = readme.read()
-
 
 setup(
     name="eth-ape",
@@ -112,6 +110,7 @@ setup(
         "PyYAML>=5.0,<7",
         "requests>=2.28.1,<3",
         "rich>=12.5.1,<14",
+        "setuptools",  # Installation tool
         "SQLAlchemy>=1.4.35",
         "tqdm>=4.62.3,<5.0",
         "traitlets>=5.3.0",
