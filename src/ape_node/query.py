@@ -1,6 +1,7 @@
-from collections.abc import Iterator
 from functools import singledispatchmethod
-from typing import Optional, TypedDict
+from typing import Iterator, Optional
+
+from pydantic import BaseModel
 
 from ape.api import ReceiptAPI
 from ape.api.query import ContractCreationQuery, QueryAPI, QueryType
@@ -9,7 +10,7 @@ from ape.types.address import AddressType
 from ape_ethereum.provider import EthereumNodeProvider
 
 
-class ContractCreation(TypedDict):
+class ContractCreation(BaseModel):
     receipt: ReceiptAPI
     deployer: AddressType
     factory: AddressType | None
@@ -47,9 +48,9 @@ class OTSQueryEngine(QueryAPI):
                 return None
             creator = self.conversion_manager.convert(ots["creator"], AddressType)
             receipt = self.provider.get_receipt(ots["hash"])
-            yield {
-                "receipt": receipt,
-                "deployer": receipt.sender,
-                "factory": creator if creator != receipt.sender else None,
-                "block": receipt.block_number,
-            }
+            yield ContractCreation(
+                receipt=receipt,
+                deployer=receipt.sender,
+                factory=creator if creator != receipt.sender else None,
+                block=receipt.block_number,
+            )

@@ -7,7 +7,6 @@ from statistics import mean, median
 from typing import IO, Collection, Dict, Iterator, List, Optional, Set, Type, Union, cast
 
 import pandas as pd
-from ape_node.query import ContractCreation
 from ethpm_types import ABI, ContractType
 from rich import get_console
 from rich.box import SIMPLE
@@ -47,6 +46,7 @@ from ape.utils import (
     nonreentrant,
     singledispatchmethod,
 )
+from ape_node.query import ContractCreation
 
 
 class BlockContainer(BaseManager):
@@ -1332,10 +1332,13 @@ class ContractCache(BaseManager):
         Returns:
             :class:`~ape.apt.transactions.ReceiptAPI`
         """
+        # add caching
         query = ContractCreationQuery(columns=["*"], contract=address)
         creation_receipts = cast(Iterator[ContractCreation], self.query_manager.query(query))
-        if creation_receipts is not None:
-            return next(creation_receipts)["receipt"]
+        try:
+            return next(creation_receipts).receipt
+        except StopIteration:
+            pass
 
         raise ChainError(
             f"Failed to find a contract-creation receipt for '{address}'. "
