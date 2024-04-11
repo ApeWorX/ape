@@ -3,7 +3,7 @@ from pathlib import Path
 
 import pytest
 
-from ape.utils.os import get_all_files_in_directory, get_relative_path
+from ape.utils.os import get_all_files_in_directory, get_full_extension, get_relative_path
 
 _TEST_DIRECTORY_PATH = Path("/This/is/a/test/")
 _TEST_FILE_PATH = _TEST_DIRECTORY_PATH / "scripts" / "script.py"
@@ -70,3 +70,21 @@ def test_get_all_files_in_directory():
         assert len(txt_files) == 3
         assert len(t_txt_files) == 1
         assert len(inner_txt_files) == 1
+
+
+@pytest.mark.parametrize(
+    "path,expected",
+    [
+        ("test.json", ".json"),
+        ("Contract.t.sol", ".t.sol"),
+        ("this.is.a.lot.of.dots", ".is.a.lot.of.dots"),
+        ("directory", ""),
+        (".privateDirectory", ""),
+        ("path/to/.gitkeep", ""),
+        (".config.json", ".json"),
+    ],
+)
+def test_get_full_extension(path, expected):
+    path = Path(path)
+    actual = get_full_extension(path)
+    assert actual == expected
