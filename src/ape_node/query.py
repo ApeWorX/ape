@@ -45,10 +45,11 @@ class OTSQueryEngine(QueryAPI):
             ots = self.provider.make_request("ots_getContractCreator", [query.contract])
             if ots is None:
                 return None
+            creator = self.conversion_manager.convert(ots["creator"], AddressType)
             receipt = self.provider.get_receipt(ots["hash"])
             yield {
                 "receipt": receipt,
                 "deployer": receipt.sender,
-                "factory": ots["creator"] if ots["creator"] != receipt.sender else None,
+                "factory": creator if creator != receipt.sender else None,
                 "block": receipt.block_number,
             }
