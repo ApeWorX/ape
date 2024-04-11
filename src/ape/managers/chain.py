@@ -1338,12 +1338,7 @@ class ContractCache(BaseManager):
         if stop_block is None:
             stop_block = self.chain_manager.blocks.height
 
-        query = ContractCreationQuery(
-            columns=["*"],
-            contract=address,
-            start_block=start_block,
-            stop_block=stop_block,
-        )
+        query = ContractCreationQuery(columns=["*"], contract=address)
         creation_receipts = cast(Iterator[ReceiptAPI], self.query_manager.query(query))
 
         if tx := next(creation_receipts, None):

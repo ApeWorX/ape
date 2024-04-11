@@ -152,7 +152,7 @@ class AccountTransactionQuery(_BaseQuery):
         return values
 
 
-class ContractCreationQuery(_BaseBlockQuery):
+class ContractCreationQuery(_BaseQuery):
     contract: AddressType
 
 
