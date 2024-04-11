@@ -46,6 +46,7 @@ from ape.utils import (
     nonreentrant,
     singledispatchmethod,
 )
+from ape_geth.query import ContractCreation
 
 
 class BlockContainer(BaseManager):
@@ -1321,28 +1322,20 @@ class ContractCache(BaseManager):
         with self._deployments_mapping_cache.open("w") as fp:
             json.dump(deployments_map, fp, sort_keys=True, indent=2, default=sorted)
 
-    def get_creation_receipt(
-        self, address: AddressType, start_block: int = 0, stop_block: Optional[int] = None
-    ) -> ReceiptAPI:
+    def get_creation_receipt(self, address: AddressType) -> ReceiptAPI:
         """
         Get the receipt responsible for the initial creation of the contract.
 
         Args:
             address (:class:`~ape.types.address.AddressType`): The address of the contract.
-            start_block (int): The block to start looking from.
-            stop_block (Optional[int]): The block to stop looking at.
 
         Returns:
             :class:`~ape.apt.transactions.ReceiptAPI`
         """
-        if stop_block is None:
-            stop_block = self.chain_manager.blocks.height
-
         query = ContractCreationQuery(columns=["*"], contract=address)
-        creation_receipts = cast(Iterator[ReceiptAPI], self.query_manager.query(query))
-
-        if tx := next(creation_receipts, None):
-            return tx
+        creation_receipts = cast(Iterator[ContractCreation], self.query_manager.query(query))
+        if creation_receipts is not None:
+            return next(creation_receipts)["receipt"]
 
         raise ChainError(
             f"Failed to find a contract-creation receipt for '{address}'. "
