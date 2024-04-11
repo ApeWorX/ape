@@ -7,6 +7,7 @@ from statistics import mean, median
 from typing import IO, Collection, Dict, Iterator, List, Optional, Set, Type, Union, cast
 
 import pandas as pd
+from ape_node.query import ContractCreation
 from ethpm_types import ABI, ContractType
 from rich import get_console
 from rich.box import SIMPLE
@@ -46,7 +47,6 @@ from ape.utils import (
     nonreentrant,
     singledispatchmethod,
 )
-from ape_geth.query import ContractCreation
 
 
 class BlockContainer(BaseManager):
