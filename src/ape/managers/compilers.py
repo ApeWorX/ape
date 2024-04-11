@@ -11,7 +11,7 @@ from ape.logging import logger
 from ape.managers.base import BaseManager
 from ape.utils import log_instead_of_fail
 from ape.utils.basemodel import _assert_not_ipython_check
-from ape.utils.os import get_relative_path
+from ape.utils.os import get_full_extension, get_relative_path
 
 
 class CompilerManager(BaseManager):
@@ -149,7 +149,7 @@ class CompilerManager(BaseManager):
                 if path.is_file()
                 and path not in paths_to_ignore
                 and path not in already_compiled_paths
-                and path.suffix == extension
+                and get_full_extension(path) == extension
                 and not any(x in [p.name for p in path.parents] for x in (".cache", ".build"))
             ]
 
@@ -261,7 +261,9 @@ class CompilerManager(BaseManager):
 
         for ext, compiler in self.registered_compilers.items():
             try:
-                sources = [p for p in contract_filepaths if p.suffix == ext and p.is_file()]
+                sources = [
+                    p for p in contract_filepaths if get_full_extension(p) == ext and p.is_file()
+                ]
                 imports = compiler.get_imports(contract_filepaths=sources, base_path=base_path)
             except NotImplementedError:
                 imports = None
@@ -296,7 +298,7 @@ class CompilerManager(BaseManager):
         return references_dict
 
     def _get_contract_extensions(self, contract_filepaths: List[Path]) -> Set[str]:
-        extensions = {path.suffix for path in contract_filepaths}
+        extensions = {get_full_extension(path) for path in contract_filepaths}
         unhandled_extensions = {s for s in extensions - set(self.registered_compilers) if s}
         if len(unhandled_extensions) > 0:
             unhandled_extensions_str = ", ".join(unhandled_extensions)
@@ -331,7 +333,7 @@ class CompilerManager(BaseManager):
             # Contract or source not found.
             return err
 
-        ext = Path(contract.source_id).suffix
+        ext = get_full_extension(Path(contract.source_id))
         if ext not in self.registered_compilers:
             # Compiler not found.
             return err
@@ -351,12 +353,11 @@ class CompilerManager(BaseManager):
             ``ethpm_types.source.Content``: The flattened contract content.
         """
 
-        if path.suffix not in self.registered_compilers:
-            raise CompilerError(
-                f"Unable to flatten contract. Missing compiler for '{path.suffix}'."
-            )
+        ext = get_full_extension(path)
+        if ext not in self.registered_compilers:
+            raise CompilerError(f"Unable to flatten contract. Missing compiler for '{ext}'.")
 
-        compiler = self.registered_compilers[path.suffix]
+        compiler = self.registered_compilers[ext]
         return compiler.flatten_contract(path, **kwargs)
 
     def can_trace_source(self, filename: str) -> bool:
@@ -375,7 +376,7 @@ class CompilerManager(BaseManager):
         if not path.is_file():
             return False
 
-        extension = path.suffix
+        extension = get_full_extension(path)
         if extension in self.registered_compilers:
             compiler = self.registered_compilers[extension]
             if compiler.supports_source_tracing:

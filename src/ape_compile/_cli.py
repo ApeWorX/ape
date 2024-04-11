@@ -5,6 +5,7 @@ import click
 from ethpm_types import ContractType
 
 from ape.cli import ape_cli_context, contract_file_paths_argument
+from ape.utils.os import get_full_extension
 
 
 def _include_dependencies_callback(ctx, param, value):
@@ -51,7 +52,7 @@ def cli(cli_ctx, file_paths: Set[Path], use_cache: bool, display_size: bool, inc
         cli_ctx.logger.warning("Nothing to compile.")
         return
 
-    ext_given = [p.suffix for p in file_paths if p]
+    ext_given = [get_full_extension(p) for p in file_paths if p]
 
     # Filter out common files that we know are not files you can compile anyway,
     # like documentation files. NOTE: Nothing prevents a CompilerAPI from using these
@@ -64,7 +65,6 @@ def cli(cli_ctx, file_paths: Set[Path], use_cache: bool, display_size: bool, inc
         for x in cli_ctx.project_manager.extensions_with_missing_compilers(ext_given)
         if x not in general_extensions
     }
-
     if ext_with_missing_compilers:
         if len(ext_with_missing_compilers) > 1:
             # NOTE: `sorted` to increase reproducibility.

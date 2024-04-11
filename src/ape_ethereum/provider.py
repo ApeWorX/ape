@@ -1145,7 +1145,6 @@ class Web3Provider(ProviderAPI, ABC):
         contract_address: Optional[AddressType] = None,
         source_traceback: Optional[SourceTraceback] = None,
     ) -> ContractLogicError:
-
         if hasattr(exception, "args") and len(exception.args) == 2:
             message = exception.args[0].replace("execution reverted: ", "")
             data = exception.args[1]

@@ -17,6 +17,7 @@ from ape.managers.base import BaseManager
 from ape.managers.project.types import ApeProject, BrownieProject
 from ape.utils import get_relative_path, log_instead_of_fail
 from ape.utils.basemodel import _assert_not_ipython_check
+from ape.utils.os import get_full_extension
 
 
 class ProjectManager(BaseManager):
@@ -223,7 +224,7 @@ class ProjectManager(BaseManager):
         compiler_list: List[Compiler] = []
         contracts_folder = self.config_manager.contracts_folder
         for ext, compiler in self.compiler_manager.registered_compilers.items():
-            sources = [x for x in self.source_paths if x.is_file() and x.suffix == ext]
+            sources = [x for x in self.source_paths if x.is_file() and get_full_extension(x) == ext]
             if not sources:
                 continue
 
@@ -283,7 +284,9 @@ class ProjectManager(BaseManager):
             return deployments
 
         for ecosystem_path in [x for x in self._package_deployments_folder.iterdir() if x.is_dir()]:
-            for deployment_path in [x for x in ecosystem_path.iterdir() if x.suffix == ".json"]:
+            for deployment_path in [
+                x for x in ecosystem_path.iterdir() if get_full_extension(x) == ".json"
+            ]:
                 text = deployment_path.read_text()
                 ethpm_instance = EthPMContractInstance.model_validate_json(text)
                 if not ethpm_instance:
@@ -407,7 +410,7 @@ class ProjectManager(BaseManager):
                         continue
 
                     if sub.is_file() and sub not in files_to_ignore:
-                        if sub.suffix in extensions:
+                        if get_full_extension(sub) in extensions:
                             return sub.parent
 
                     elif sub.is_dir():
@@ -642,7 +645,7 @@ class ProjectManager(BaseManager):
             for file in directory.iterdir():
                 if file.is_dir():
                     _append_extensions_in_dir(file)
-                elif ext := file.suffix:
+                elif ext := get_full_extension(file):
                     # NOTE: Also ignores files without extensions for simplicity.
                     extensions_found.add(ext)
 
@@ -677,7 +680,7 @@ class ProjectManager(BaseManager):
         """
 
         path = Path(key_contract_path)
-        ext = path.suffix or None
+        ext = get_full_extension(path) or None
 
         def find_in_dir(dir_path: Path) -> Optional[Path]:
             if not dir_path.is_dir():
@@ -688,7 +691,7 @@ class ProjectManager(BaseManager):
                     return result
 
                 # If the user provided an extension, it has to match.
-                ext_okay = ext == file_path.suffix if ext is not None else True
+                ext_okay = ext == get_full_extension(file_path) if ext is not None else True
 
                 # File found
                 if file_path.stem == path.stem and ext_okay:
