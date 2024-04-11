@@ -1,11 +1,19 @@
 from collections.abc import Iterator
 from functools import singledispatchmethod
-from typing import Optional
+from typing import Optional, TypedDict
 
 from ape.api import ReceiptAPI
 from ape.api.query import ContractCreationQuery, QueryAPI, QueryType
 from ape.exceptions import QueryEngineError
+from ape.types.address import AddressType
 from ape_ethereum.provider import EthereumNodeProvider
+
+
+class ContractCreation(TypedDict):
+    receipt: ReceiptAPI
+    deployer: AddressType
+    factory: AddressType | None
+    block: int
 
 
 class OTSQueryEngine(QueryAPI):
@@ -30,7 +38,17 @@ class OTSQueryEngine(QueryAPI):
         return None
 
     @perform_query.register
-    def get_contract_creation_receipt(self, query: ContractCreationQuery) -> Iterator[ReceiptAPI]:
+    def get_contract_creation_receipt(
+        self, query: ContractCreationQuery
+    ) -> Iterator[ContractCreation]:
         if self.network_manager.active_provider and isinstance(self.provider, EthereumNodeProvider):
-            if receipt := self.provider._get_contract_creation_receipt(query.contract):
-                yield receipt
+            ots = self.provider.make_request("ots_getContractCreator", [query.contract])
+            if ots is None:
+                return None
+            receipt = self.provider.get_receipt(ots["hash"])
+            yield {
+                "receipt": receipt,
+                "deployer": receipt.sender,
+                "factory": ots["creator"] if ots["creator"] != receipt.sender else None,
+                "block": receipt.block_number,
+            }
