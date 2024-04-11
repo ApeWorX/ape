@@ -97,7 +97,7 @@ setup(
     install_requires=[
         "click>=8.1.6,<9",
         "ijson>=3.1.4,<4",
-        "importlib-metadata",
+        "importlib-metadata",  # NOTE: Needed on 3.8 for entry_points `group=` kwarg.
         "ipython>=8.5.0,<9",
         "lazyasd>=0.1.4",
         "packaging>=23.0,<24",
