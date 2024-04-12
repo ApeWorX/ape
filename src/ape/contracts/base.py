@@ -635,10 +635,6 @@ class ContractEvent(BaseInterfaceModel):
 
             if contract:
                 start_block = contract.receipt.block_number
-            else:
-                cache = self.chain_manager.contracts
-                receipt = cache.get_creation_receipt(contract_address)
-                start_block = receipt.block_number
 
             stop_block = start_or_stop
         elif start_or_stop is not None and stop is not None:
@@ -904,7 +900,7 @@ class ContractInstance(BaseAddress, ContractTypeWrapper):
                 return receipt
 
         # Brute force find the receipt.
-        receipt = self.chain_manager.contracts.get_creation_receipt(self.address)
+        receipt = self.meta.receipt
         self._cached_receipt = receipt
         return receipt
 

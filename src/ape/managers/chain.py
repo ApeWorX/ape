@@ -19,7 +19,6 @@ from ape.api.networks import NetworkAPI, ProxyInfoAPI
 from ape.api.query import (
     AccountTransactionQuery,
     BlockQuery,
-    ContractCreationQuery,
     extract_fields,
     validate_and_expand_columns,
 )
@@ -47,7 +46,6 @@ from ape.utils import (
     singledispatchmethod,
 )
 from ape_node.query import ContractCreation
-
 
 class BlockContainer(BaseManager):
     """
@@ -1321,30 +1319,6 @@ class ContractCache(BaseManager):
         self._deployments_mapping_cache.parent.mkdir(exist_ok=True, parents=True)
         with self._deployments_mapping_cache.open("w") as fp:
             json.dump(deployments_map, fp, sort_keys=True, indent=2, default=sorted)
-
-    def get_creation_receipt(self, address: AddressType) -> ReceiptAPI:
-        """
-        Get the receipt responsible for the initial creation of the contract.
-
-        Args:
-            address (:class:`~ape.types.address.AddressType`): The address of the contract.
-
-        Returns:
-            :class:`~ape.apt.transactions.ReceiptAPI`
-        """
-        query = ContractCreationQuery(columns=["*"], contract=address)
-        creation_receipts = cast(Iterator[ContractCreation], self.query_manager.query(query))
-        try:
-            return next(creation_receipts).receipt
-        except StopIteration:
-            pass
-
-        raise ChainError(
-            f"Failed to find a contract-creation receipt for '{address}'. "
-            "Note that it may be the case that the backend used cannot detect contracts "
-            "deployed by other contracts, and you may receive better results by installing "
-            "a plugin that supports it, like Etherscan."
-        )
 
 
 class ReportManager(BaseManager):
