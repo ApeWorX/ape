@@ -20,7 +20,7 @@ class OTSQueryEngine(QueryAPI):
 
     @estimate_query.register
     def estimate_contract_creation_query(self, query: ContractCreationQuery) -> Optional[int]:
-        if self.provider._ots_api_level is not None:
+        if getattr(self.provider, "_ots_api_level", None) is not None:
             return 300
         return None
 
