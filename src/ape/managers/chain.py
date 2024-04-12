@@ -1558,7 +1558,7 @@ class ChainManager(BaseManager):
             snapshot_index = self._snapshots.index(snapshot_id)
             self._snapshots = self._snapshots[:snapshot_index]
 
-        self.provider.revert(snapshot_id)
+        self.provider.restore(snapshot_id)
         self.history.revert_to_block(self.blocks.height)
 
     @contextmanager

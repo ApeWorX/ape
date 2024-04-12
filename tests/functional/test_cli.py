@@ -7,7 +7,6 @@ import pytest
 from ape.cli import (
     AccountAliasPromptChoice,
     ConnectedProviderCommand,
-    NetworkBoundCommand,
     NetworkChoice,
     PromptChoice,
     account_option,
@@ -598,28 +597,6 @@ def test_connected_provider_command_none_network(runner):
     spec = ("--network", "None")
     res = runner.invoke(cmd, spec, catch_exceptions=False)
     assert res.exit_code == 0, res.output
-
-
-# TODO: Delete for 0.8.
-def test_deprecated_network_bound_command(runner):
-    with pytest.warns(
-        DeprecationWarning,
-        match=r"'NetworkBoundCommand' is deprecated\. Use 'ConnectedProviderCommand'\.",
-    ):
-
-        @click.command(cls=NetworkBoundCommand)
-        @network_option()
-        # NOTE: Must also make sure can use other options with this combo!
-        #   (was issue where could not).
-        @click.option("--other", default=OTHER_OPTION_VALUE)
-        def cmd(network, other):
-            click.echo(network)
-            click.echo(other)
-
-    result = runner.invoke(cmd, ["--network", "ethereum:local:test"], catch_exceptions=False)
-    assert result.exit_code == 0, result.output
-    assert "ethereum:local:test" in result.output, result.output
-    assert OTHER_OPTION_VALUE in result.output
 
 
 def test_get_param_from_ctx(mocker):
