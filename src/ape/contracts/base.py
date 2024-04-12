@@ -13,7 +13,12 @@ from ethpm_types.contract_type import ABI_W_SELECTOR_T, ContractType
 
 from ape.api import AccountAPI, Address, ReceiptAPI, TransactionAPI
 from ape.api.address import BaseAddress
-from ape.api.query import ContractEventQuery, extract_fields, validate_and_expand_columns
+from ape.api.query import (
+    ContractCreationQuery,
+    ContractEventQuery,
+    extract_fields,
+    validate_and_expand_columns,
+)
 from ape.exceptions import (
     ApeAttributeError,
     ArgumentsLengthError,
@@ -902,6 +907,14 @@ class ContractInstance(BaseAddress, ContractTypeWrapper):
         receipt = self.chain_manager.contracts.get_creation_receipt(self.address)
         self._cached_receipt = receipt
         return receipt
+
+    @cached_property
+    def meta(self):
+        """
+        Contract creation details: deployer, factory, block, receipt.
+        """
+        query = ContractCreationQuery(columns=["*"], contract=self.address)
+        return next(self.query_manager.query(query))
 
     @log_instead_of_fail(default="<ContractInstance>")
     def __repr__(self) -> str:
