@@ -29,7 +29,6 @@ from ape.exceptions import (
     CustomError,
     MethodNonPayableError,
     MissingDeploymentBytecodeError,
-    TransactionNotFoundError,
 )
 from ape.logging import logger
 from ape.types import AddressType, ContractLog, LogFilter, MockContractLog
@@ -837,7 +836,6 @@ class ContractInstance(BaseAddress, ContractTypeWrapper):
         self._address = address
         self.contract_type = contract_type
         self.txn_hash = txn_hash
-        self._cached_receipt: Optional[ReceiptAPI] = None
 
     def __call__(self, *args, **kwargs) -> ReceiptAPI:
         has_value = kwargs.get("value")
@@ -876,38 +874,13 @@ class ContractInstance(BaseAddress, ContractTypeWrapper):
             contract_type=contract_type,
             txn_hash=receipt.txn_hash,
         )
-        instance._cached_receipt = receipt
+        instance.creation = ContractCreation.from_receipt(receipt)
         return instance
-
-    @property
-    def receipt(self) -> ReceiptAPI:
-        """
-        The receipt associated with deploying the contract instance,
-        if it is known and exists.
-        """
-
-        if self._cached_receipt:
-            return self._cached_receipt
-
-        if self.txn_hash:
-            # Hash is known. Use that to get the receipt.
-            try:
-                receipt = self.chain_manager.get_receipt(self.txn_hash)
-            except (TransactionNotFoundError, ValueError, ChainError):
-                pass
-            else:
-                self._cached_receipt = receipt
-                return receipt
-
-        # query the deployment to find the receipt
-        receipt = self.chain_manager.get_receipt(self.creation.txn_hash)
-        self._cached_receipt = receipt
-        return receipt
 
     @cached_property
     def creation(self) -> ContractCreation:
         """
-        Contract creation details: txn_hash, block, deployer, factory.
+        Contract creation details: txn_hash, block, deployer, factory, receipt.
         """
         data = self.chain_manager.contracts.get_creation_metadata(self.address)
         if data is not None:

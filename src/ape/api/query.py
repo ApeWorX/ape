@@ -172,6 +172,15 @@ class ContractCreation(BaseModel, BaseInterface):
     def receipt(self):
         return self.chain_manager.get_receipt(self.txn_hash)
 
+    @classmethod
+    def from_receipt(cls, receipt: ReceiptAPI):
+        return cls(
+            txn_hash=receipt.txn_hash,
+            block=receipt.block_number,
+            deployer=receipt.sender,
+            # factory is not detected since this is meant for eoa deployments
+        )
+
 
 class ContractEventQuery(_BaseBlockQuery):
     """
