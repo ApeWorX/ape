@@ -1332,7 +1332,6 @@ class ContractCache(BaseManager):
         Returns:
             :class:`~ape.apt.transactions.ReceiptAPI`
         """
-        # add caching
         query = ContractCreationQuery(columns=["*"], contract=address)
         creation_receipts = cast(Iterator[ContractCreation], self.query_manager.query(query))
         try:
