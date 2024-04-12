@@ -907,7 +907,7 @@ class ContractInstance(BaseAddress, ContractTypeWrapper):
     @cached_property
     def creation(self) -> ContractCreation:
         """
-        Contract creation details: txn_hash, deployer, factory, deploy_block.
+        Contract creation details: txn_hash, block, deployer, factory.
         """
         data = self.chain_manager.contracts.get_creation_metadata(self.address)
         if data is not None:

@@ -36,7 +36,7 @@ class OTSQueryEngine(QueryAPI):
             receipt = self.provider.get_receipt(ots["hash"])
             yield ContractCreation(
                 txn_hash=ots["hash"],
+                block=receipt.block_number,
                 deployer=receipt.sender,
                 factory=creator if creator != receipt.sender else None,
-                deploy_block=receipt.block_number,
             )

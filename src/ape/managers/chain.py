@@ -848,7 +848,7 @@ class ContractCache(BaseManager):
 
     def get_creation_metadata(self, address: AddressType) -> Optional[ContractCreation]:
         """
-        Get contract creation metadata containing txn_hash, deployer, factory, deploy_block.
+        Get contract creation metadata containing txn_hash, deployer, factory, block.
 
         Args:
             address (AddressType): The address of the contract.

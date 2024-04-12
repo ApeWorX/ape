@@ -99,14 +99,12 @@ class DefaultQueryProvider(QueryAPI):
         if not self.provider.get_code(query.contract):
             return None
 
-        deploy_block = find_creation_block(0, self.chain_manager.blocks.height)
-        deploy_block_traces = self.provider._make_request(
-            "trace_replayBlockTransactions", [deploy_block, ["trace"]]
-        )
+        block = find_creation_block(0, self.chain_manager.blocks.height)
+        traces = self.provider._make_request("trace_replayBlockTransactions", [block, ["trace"]])
 
         # iterate over transaction traces in a block to find the deploy transaction
         # this method also supports contract factories
-        for tx in deploy_block_traces:
+        for tx in traces:
             for trace in tx["trace"]:
                 if (
                     "error" not in trace
@@ -117,9 +115,9 @@ class DefaultQueryProvider(QueryAPI):
                     creator = self.conversion_manager.convert(trace["action"]["from"], AddressType)
                     yield ContractCreation(
                         txn_hash=tx["transactionHash"],
+                        block=block,
                         deployer=receipt.sender,
                         factory=creator if creator != receipt.sender else None,
-                        deploy_block=deploy_block,
                     )
 
     @perform_query.register
