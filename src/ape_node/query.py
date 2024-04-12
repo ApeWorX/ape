@@ -21,7 +21,7 @@ class OTSQueryEngine(QueryAPI):
     @estimate_query.register
     def estimate_contract_creation_query(self, query: ContractCreationQuery) -> Optional[int]:
         if getattr(self.provider, "_ots_api_level", None) is not None:
-            return 300
+            return 250
         return None
 
     @perform_query.register
@@ -35,7 +35,7 @@ class OTSQueryEngine(QueryAPI):
             creator = self.conversion_manager.convert(ots["creator"], AddressType)
             receipt = self.provider.get_receipt(ots["hash"])
             yield ContractCreation(
-                receipt=receipt,
+                txn_hash=ots["hash"],
                 deployer=receipt.sender,
                 factory=creator if creator != receipt.sender else None,
                 deploy_block=receipt.block_number,

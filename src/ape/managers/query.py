@@ -116,7 +116,7 @@ class DefaultQueryProvider(QueryAPI):
                     receipt = self.chain_manager.get_receipt(tx["transactionHash"])
                     creator = self.conversion_manager.convert(trace["action"]["from"], AddressType)
                     yield ContractCreation(
-                        receipt=receipt,
+                        txn_hash=tx["transactionHash"],
                         deployer=receipt.sender,
                         factory=creator if creator != receipt.sender else None,
                         deploy_block=deploy_block,

@@ -15,7 +15,6 @@ from ape.api import AccountAPI, Address, ReceiptAPI, TransactionAPI
 from ape.api.address import BaseAddress
 from ape.api.query import (
     ContractCreation,
-    ContractCreationQuery,
     ContractEventQuery,
     extract_fields,
     validate_and_expand_columns,
@@ -900,18 +899,20 @@ class ContractInstance(BaseAddress, ContractTypeWrapper):
                 self._cached_receipt = receipt
                 return receipt
 
-        # Brute force find the receipt.
-        receipt = self.meta.receipt
+        # query the deployment to find the receipt
+        receipt = self.chain_manager.get_receipt(self.meta.txn_hash)
         self._cached_receipt = receipt
         return receipt
 
     @cached_property
     def meta(self) -> ContractCreation:
         """
-        Contract creation details: deployer, factory, block, receipt.
+        Contract creation details: txn_hash, deployer, factory, deploy_block.
         """
-        query = ContractCreationQuery(columns=["*"], contract=self.address)
-        return next(self.query_manager.query(query))
+        data = self.chain_manager.contracts.get_creation_metadata(self.address)
+        if data is not None:
+            return data
+        raise AssertionError("unreachable")
 
     @log_instead_of_fail(default="<ContractInstance>")
     def __repr__(self) -> str:

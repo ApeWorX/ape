@@ -1,13 +1,14 @@
 from functools import cache
 from typing import Any, Dict, Iterator, List, Optional, Sequence, Set, Type, Union
 
-from ethpm_types.abi import BaseModel, EventABI, MethodABI
+from ethpm_types.abi import EventABI, MethodABI
 from pydantic import NonNegativeInt, PositiveInt, model_validator
 
 from ape.api.transactions import ReceiptAPI, TransactionAPI
 from ape.logging import logger
 from ape.types import AddressType
 from ape.utils import BaseInterface, BaseInterfaceModel, abstractmethod, cached_property
+from ape.utils.basemodel import BaseModel
 
 QueryType = Union[
     "BlockQuery",
@@ -155,17 +156,17 @@ class AccountTransactionQuery(_BaseQuery):
 class ContractCreationQuery(_BaseQuery):
     """
     A ``QueryType`` that obtains information about contract deployment.
-    Returns ``ContractCreation(receipt, deployer, factory, deploy_block)``.
+    Returns ``ContractCreation(txn_hash, deployer, factory, deploy_block)``.
     """
 
     contract: AddressType
 
 
 class ContractCreation(BaseModel):
-    receipt: ReceiptAPI
-    deployer: AddressType
-    factory: Optional[AddressType]
+    txn_hash: str
     deploy_block: int
+    deployer: AddressType
+    factory: Optional[AddressType] = None
 
 
 class ContractEventQuery(_BaseBlockQuery):

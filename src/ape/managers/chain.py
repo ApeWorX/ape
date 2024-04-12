@@ -19,6 +19,8 @@ from ape.api.networks import NetworkAPI, ProxyInfoAPI
 from ape.api.query import (
     AccountTransactionQuery,
     BlockQuery,
+    ContractCreation,
+    ContractCreationQuery,
     extract_fields,
     validate_and_expand_columns,
 )
@@ -622,6 +624,7 @@ class ContractCache(BaseManager):
     _local_proxies: Dict[AddressType, ProxyInfoAPI] = {}
     _local_blueprints: Dict[str, ContractType] = {}
     _local_deployments_mapping: Dict[str, Dict] = {}
+    _local_contract_creation: Dict[str, ContractCreation] = {}
 
     # chain_id -> address -> custom_err
     # Cached to prevent calling `new_class` multiple times with conflicts.
@@ -665,6 +668,10 @@ class ContractCache(BaseManager):
     @property
     def _blueprint_cache(self) -> Path:
         return self._network_cache / "blueprints"
+
+    @property
+    def _contract_creation_cache(self) -> Path:
+        return self._network_cache / "contract_creation"
 
     @property
     def _full_deployments(self) -> Dict:
@@ -838,6 +845,37 @@ class ContractCache(BaseManager):
         """
 
         return self._local_proxies.get(address) or self._get_proxy_info_from_disk(address)
+
+    def get_creation_metadata(self, address: AddressType) -> Optional[ContractCreation]:
+        """
+        Get contract creation metadata containing txn_hash, deployer, factory, deploy_block.
+
+        Args:
+            address (AddressType): The address of the contract.
+
+        Returns:
+            Optional[:class:`~pae.api.query.ContractCreation`]
+        """
+        creation = self._local_contract_creation.get(address)
+        if creation is not None:
+            return creation
+        # read from disk
+        creation = self._get_contract_creation_from_disk(address)
+        if creation is not None:
+            self._local_contract_creation[address] = creation
+            return creation
+        # query and cache
+        query = ContractCreationQuery(columns=["*"], contract=address)
+        try:
+            creation = next(self.query_manager.query(query))
+        except StopIteration:
+            creation = None
+        if creation is not None:
+            self._cache_contract_creation_to_disk(address, creation)
+            self._local_contract_creation[address] = creation
+            return creation
+
+        return None
 
     def get_blueprint(self, blueprint_id: str) -> Optional[ContractType]:
         """
@@ -1255,6 +1293,7 @@ class ContractCache(BaseManager):
         self._local_proxies = {}
         self._local_blueprints = {}
         self._local_deployments_mapping = {}
+        self._local_creation_metadata = {}
 
     def _get_contract_type_from_disk(self, address: AddressType) -> Optional[ContractType]:
         address_file = self._contract_types_cache / f"{address}.json"
@@ -1293,6 +1332,13 @@ class ContractCache(BaseManager):
 
         return contract_type
 
+    def _get_contract_creation_from_disk(self, address: AddressType) -> Optional[ContractCreation]:
+        path = self._contract_creation_cache / f"{address}.json"
+        if not path.is_file():
+            return None
+
+        return ContractCreation.model_validate_json(path.read_text())
+
     def _cache_contract_to_disk(self, address: AddressType, contract_type: ContractType):
         self._contract_types_cache.mkdir(exist_ok=True, parents=True)
         address_file = self._contract_types_cache / f"{address}.json"
@@ -1307,6 +1353,11 @@ class ContractCache(BaseManager):
         self._blueprint_cache.mkdir(exist_ok=True, parents=True)
         blueprint_file = self._blueprint_cache / f"{blueprint_id}.json"
         blueprint_file.write_text(contract_type.model_dump_json())
+
+    def _cache_contract_creation_to_disk(self, address: AddressType, creation: ContractCreation):
+        self._contract_creation_cache.mkdir(exist_ok=True, parents=True)
+        path = self._contract_creation_cache / f"{address}.json"
+        path.write_text(creation.model_dump_json())
 
     def _load_deployments_cache(self) -> Dict:
         return (
