@@ -30,12 +30,8 @@ class OTSQueryEngine(QueryAPI):
 
     @estimate_query.register
     def estimate_contract_creation_query(self, query: ContractCreationQuery) -> Optional[int]:
-        if provider := self.network_manager.active_provider:
-            if not isinstance(provider, EthereumNodeProvider):
-                return None
-            elif uri := provider.http_uri:
-                return 225 if uri.startswith("http://") else 600
-
+        if self.provider._ots_api_level is not None:
+            return 300
         return None
 
     @perform_query.register
