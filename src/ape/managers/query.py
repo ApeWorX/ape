@@ -9,6 +9,7 @@ from ape.api.query import (
     BaseInterfaceModel,
     BlockQuery,
     BlockTransactionQuery,
+    ContractCreation,
     ContractCreationQuery,
     ContractEventQuery,
 )
@@ -18,7 +19,6 @@ from ape.logging import logger
 from ape.plugins import clean_plugin_name
 from ape.types.address import AddressType
 from ape.utils import ManagerAccessMixin, cached_property, singledispatchmethod
-from ape_geth.query import ContractCreation
 
 
 class DefaultQueryProvider(QueryAPI):

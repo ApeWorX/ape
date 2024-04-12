@@ -1,20 +1,10 @@
 from functools import singledispatchmethod
 from typing import Iterator, Optional
 
-from pydantic import BaseModel
-
-from ape.api import ReceiptAPI
-from ape.api.query import ContractCreationQuery, QueryAPI, QueryType
+from ape.api.query import ContractCreation, ContractCreationQuery, QueryAPI, QueryType
 from ape.exceptions import QueryEngineError
 from ape.types.address import AddressType
 from ape_ethereum.provider import EthereumNodeProvider
-
-
-class ContractCreation(BaseModel):
-    receipt: ReceiptAPI
-    deployer: AddressType
-    factory: Optional[AddressType]
-    deploy_block: int
 
 
 class OTSQueryEngine(QueryAPI):

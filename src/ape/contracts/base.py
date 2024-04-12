@@ -14,6 +14,7 @@ from ethpm_types.contract_type import ABI_W_SELECTOR_T, ContractType
 from ape.api import AccountAPI, Address, ReceiptAPI, TransactionAPI
 from ape.api.address import BaseAddress
 from ape.api.query import (
+    ContractCreation,
     ContractCreationQuery,
     ContractEventQuery,
     extract_fields,
@@ -905,7 +906,7 @@ class ContractInstance(BaseAddress, ContractTypeWrapper):
         return receipt
 
     @cached_property
-    def meta(self):
+    def meta(self) -> ContractCreation:
         """
         Contract creation details: deployer, factory, block, receipt.
         """

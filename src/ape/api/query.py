@@ -161,6 +161,13 @@ class ContractCreationQuery(_BaseQuery):
     contract: AddressType
 
 
+class ContractCreation(BaseModel):
+    receipt: ReceiptAPI
+    deployer: AddressType
+    factory: Optional[AddressType]
+    deploy_block: int
+
+
 class ContractEventQuery(_BaseBlockQuery):
     """
     A ``QueryType`` that collects members from ``event`` over a range of
