@@ -869,13 +869,11 @@ class ContractCache(BaseManager):
         try:
             creation = next(self.query_manager.query(query))
         except StopIteration:
-            creation = None
-        if creation is not None:
-            self._cache_contract_creation_to_disk(address, creation)
-            self._local_contract_creation[address] = creation
-            return creation
+            return None
 
-        return None
+        self._cache_contract_creation_to_disk(address, creation)
+        self._local_contract_creation[address] = creation
+        return creation
 
     def get_blueprint(self, blueprint_id: str) -> Optional[ContractType]:
         """
