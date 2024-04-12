@@ -856,12 +856,10 @@ class ContractCache(BaseManager):
         Returns:
             Optional[:class:`~pae.api.query.ContractCreation`]
         """
-        creation = self._local_contract_creation.get(address)
-        if creation is not None:
+        if creation := self._local_contract_creation.get(address):
             return creation
         # read from disk
-        creation = self._get_contract_creation_from_disk(address)
-        if creation is not None:
+        if creation := self._get_contract_creation_from_disk(address):
             self._local_contract_creation[address] = creation
             return creation
         # query and cache
