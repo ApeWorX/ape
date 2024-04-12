@@ -55,7 +55,7 @@ class LocalProvider(TestProviderAPI, Web3Provider):
     def tester(self):
         chain_id = self.settings.chain_id
         if self._web3 is not None:
-            connected_chain_id = self._make_request("eth_chainId")
+            connected_chain_id = self.make_request("eth_chainId")
             if connected_chain_id == chain_id:
                 # Is already connected and settings have not changed.
                 return
@@ -144,10 +144,14 @@ class LocalProvider(TestProviderAPI, Web3Provider):
             {**self.config.provider.model_dump(mode="json"), **self.provider_settings}
         )
 
+    @property
+    def supports_tracing(self) -> bool:
+        return False
+
     @cached_property
     def chain_id(self) -> int:
         try:
-            result = self._make_request("eth_chainId")
+            result = self.make_request("eth_chainId")
         except ProviderNotConnectedError:
             result = self.settings.chain_id
 

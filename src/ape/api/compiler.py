@@ -1,18 +1,17 @@
 from functools import cached_property
 from pathlib import Path
-from typing import Dict, Iterator, List, Optional, Sequence, Set, Tuple
+from typing import Dict, List, Optional, Sequence, Set
 
 from eth_pydantic_types import HexBytes
 from ethpm_types import ContractType
 from ethpm_types.source import Content, ContractSource
-from evm_trace.geth import TraceFrame as EvmTraceFrame
-from evm_trace.geth import create_call_node_data
 from packaging.version import Version
 
 from ape.api.config import PluginConfig
+from ape.api.trace import TraceAPI
 from ape.exceptions import APINotImplementedError, ContractLogicError
 from ape.types.coverage import ContractSourceCoverage
-from ape.types.trace import SourceTraceback, TraceFrame
+from ape.types.trace import SourceTraceback
 from ape.utils import (
     BaseInterfaceModel,
     abstractmethod,
@@ -205,7 +204,7 @@ class CompilerAPI(BaseInterfaceModel):
 
     @raises_not_implemented
     def trace_source(  # type: ignore[empty-body]
-        self, contract_type: ContractType, trace: Iterator[TraceFrame], calldata: HexBytes
+        self, contract_type: ContractType, trace: TraceAPI, calldata: HexBytes
     ) -> SourceTraceback:
         """
         Get a source-traceback for the given contract type.
@@ -214,8 +213,8 @@ class CompilerAPI(BaseInterfaceModel):
 
         Args:
             contract_type (``ContractType``): A contract type that was created by this compiler.
-            trace (Iterator[:class:`~ape.types.trace.TraceFrame`]): The resulting frames from
-              executing a function defined in the given contract type.
+            trace (:class:`~ape.api.trace.TraceAPI`]): The resulting trace from executing a
+              function defined in the given contract type.
             calldata (``HexBytes``): Calldata passed to the top-level call.
 
         Returns:
@@ -237,26 +236,6 @@ class CompilerAPI(BaseInterfaceModel):
         Returns:
             ``ethpm_types.source.Content``: The flattened contract content.
         """
-
-    def _create_contract_from_call(
-        self, frame: TraceFrame
-    ) -> Tuple[Optional[ContractSource], HexBytes]:
-        evm_frame = EvmTraceFrame(**frame.raw)
-        data = create_call_node_data(evm_frame)
-        calldata = data.get("calldata", HexBytes(""))
-        if not (address := (data.get("address", frame.contract_address) or None)):
-            return None, calldata
-
-        try:
-            address = self.provider.network.ecosystem.decode_address(address)
-        except Exception:
-            return None, calldata
-
-        if address not in self.chain_manager.contracts:
-            return None, calldata
-
-        called_contract = self.chain_manager.contracts[address]
-        return self.project_manager._create_contract_source(called_contract), calldata
 
     @raises_not_implemented
     def init_coverage_profile(

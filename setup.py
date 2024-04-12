@@ -121,6 +121,7 @@ setup(
         "eth-account>=0.10.0,<0.11",
         "eth-typing>=3.5.2,<4",
         "eth-utils>=2.3.1,<3",
+        "hexbytes",  # Peer
         "py-geth>=4.4.0,<5",
         "web3[tester]>=6.16.0,<6.17.1",
         # ** Dependencies maintained by ApeWorX **
