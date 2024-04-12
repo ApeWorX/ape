@@ -16,7 +16,9 @@ from ape.contracts.base import ContractLog, LogFilter
 from ape.exceptions import QueryEngineError
 from ape.logging import logger
 from ape.plugins import clean_plugin_name
+from ape.types.address import AddressType
 from ape.utils import ManagerAccessMixin, cached_property, singledispatchmethod
+from ape_geth.query import ContractCreation
 
 
 class DefaultQueryProvider(QueryAPI):
@@ -76,12 +78,49 @@ class DefaultQueryProvider(QueryAPI):
         return self.provider.get_transactions_by_block(query.block_id)
 
     @perform_query.register
-    def perform_contract_creation_query(self, query: ContractCreationQuery) -> Iterator[ReceiptAPI]:
-        yield from self.provider.get_contract_creation_receipts(
-            address=query.contract,
-            start_block=query.start_block,
-            stop_block=query.stop_block,
+    def perform_contract_creation_query(
+        self, query: ContractCreationQuery
+    ) -> Iterator[ContractCreation]:
+        def find_creation_block(lo, hi):
+            # perform a binary search to find where the contract code appeared
+            # takes log2(height), doesn't work with contracts that have been reinit.
+            while hi - lo > 1:
+                mid = (lo + hi) // 2
+                code = self.provider.get_code(query.contract, block_id=mid)
+                if not code:
+                    lo = mid
+                else:
+                    hi = mid
+
+            if self.provider.get_code(query.contract, block_id=hi):
+                return hi
+
+        # if it doesn't have code at head, skip the search
+        if not self.provider.get_code(query.contract):
+            return None
+
+        deploy_block = find_creation_block(0, self.chain_manager.blocks.height)
+        deploy_block_traces = self.provider._make_request(
+            "trace_replayBlockTransactions", [deploy_block, ["trace"]]
         )
+
+        # iterate over transaction traces in a block to find the deploy transaction
+        # this method also supports contract factories
+        for tx in deploy_block_traces:
+            for trace in tx["trace"]:
+                if (
+                    "error" not in trace
+                    and trace["type"] == "create"
+                    and trace["result"]["address"] == query.contract.lower()
+                ):
+                    receipt = self.chain_manager.get_receipt(tx["transactionHash"])
+                    creator = self.conversion_manager.convert(trace["action"]["from"], AddressType)
+                    yield ContractCreation(
+                        receipt=receipt,
+                        deployer=receipt.sender,
+                        factory=creator if creator != receipt.sender else None,
+                        deploy_block=deploy_block,
+                    )
 
     @perform_query.register
     def perform_contract_events_query(self, query: ContractEventQuery) -> Iterator[ContractLog]:
