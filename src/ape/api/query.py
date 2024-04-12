@@ -153,6 +153,11 @@ class AccountTransactionQuery(_BaseQuery):
 
 
 class ContractCreationQuery(_BaseQuery):
+    """
+    A ``QueryType`` that obtains information about contract deployment.
+    Returns ``ContractCreation(receipt, deployer, factory, deploy_block)``.
+    """
+
     contract: AddressType
 
 
