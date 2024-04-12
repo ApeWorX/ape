@@ -900,12 +900,12 @@ class ContractInstance(BaseAddress, ContractTypeWrapper):
                 return receipt
 
         # query the deployment to find the receipt
-        receipt = self.chain_manager.get_receipt(self.meta.txn_hash)
+        receipt = self.chain_manager.get_receipt(self.creation.txn_hash)
         self._cached_receipt = receipt
         return receipt
 
     @cached_property
-    def meta(self) -> ContractCreation:
+    def creation(self) -> ContractCreation:
         """
         Contract creation details: txn_hash, deployer, factory, deploy_block.
         """
