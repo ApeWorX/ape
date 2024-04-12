@@ -14,7 +14,7 @@ class ContractCreation(BaseModel):
     receipt: ReceiptAPI
     deployer: AddressType
     factory: AddressType | None
-    block: int
+    deploy_block: int
 
 
 class OTSQueryEngine(QueryAPI):
@@ -52,5 +52,5 @@ class OTSQueryEngine(QueryAPI):
                 receipt=receipt,
                 deployer=receipt.sender,
                 factory=creator if creator != receipt.sender else None,
-                block=receipt.block_number,
+                deploy_block=receipt.block_number,
             )
