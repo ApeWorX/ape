@@ -95,6 +95,8 @@ class DefaultQueryProvider(QueryAPI):
             if self.provider.get_code(query.contract, block_id=hi):
                 return hi
 
+            return None
+
         # if it doesn't have code at head, skip the search
         if not self.provider.get_code(query.contract):
             return None
