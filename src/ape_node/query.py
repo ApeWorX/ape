@@ -13,7 +13,7 @@ from ape_ethereum.provider import EthereumNodeProvider
 class ContractCreation(BaseModel):
     receipt: ReceiptAPI
     deployer: AddressType
-    factory: AddressType | None
+    factory: Optional[AddressType]
     deploy_block: int
 
 
