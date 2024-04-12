@@ -117,7 +117,7 @@ setup(
         "urllib3>=2.0.0,<3",
         "watchdog>=3.0,<4",
         # ** Dependencies maintained by Ethereum Foundation **
-        "eth-abi>=4.2.1,<5",
+        "eth-abi>=5.1.0,<6",
         "eth-account>=0.10.0,<0.11",
         "eth-typing>=3.5.2,<4",
         "eth-utils>=2.3.1,<3",
