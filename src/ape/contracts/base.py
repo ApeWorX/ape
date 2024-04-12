@@ -634,7 +634,7 @@ class ContractEvent(BaseInterfaceModel):
                 pass
 
             if contract:
-                start_block = contract.receipt.block_number
+                start_block = contract.creation.block
 
             stop_block = start_or_stop
         elif start_or_stop is not None and stop is not None:
