@@ -162,11 +162,15 @@ class ContractCreationQuery(_BaseQuery):
     contract: AddressType
 
 
-class ContractCreation(BaseModel):
+class ContractCreation(BaseModel, BaseInterface):
     txn_hash: str
     block: int
     deployer: AddressType
     factory: Optional[AddressType] = None
+
+    @property
+    def receipt(self):
+        return self.chain_manager.get_receipt(self.txn_hash)
 
 
 class ContractEventQuery(_BaseBlockQuery):
