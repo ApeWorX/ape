@@ -862,6 +862,9 @@ class ContractInstance(BaseAddress, ContractTypeWrapper):
 
     @classmethod
     def from_receipt(cls, receipt: ReceiptAPI, contract_type: ContractType) -> "ContractInstance":
+        """
+        Create a contract instance from the contract deployment receipt.
+        """
         address = receipt.contract_address
         if not address:
             raise ChainError(
@@ -883,9 +886,8 @@ class ContractInstance(BaseAddress, ContractTypeWrapper):
         Contract creation details: txn_hash, block, deployer, factory, receipt.
         """
         data = self.chain_manager.contracts.get_creation_metadata(self.address)
-        if data is not None:
-            return data
-        raise AssertionError("unreachable")
+        assert data, "unreachable"
+        return data
 
     @log_instead_of_fail(default="<ContractInstance>")
     def __repr__(self) -> str:
