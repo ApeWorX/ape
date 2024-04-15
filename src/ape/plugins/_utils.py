@@ -374,7 +374,7 @@ class PluginMetadata(BaseInterfaceModel):
             logger.warning(f"Plugin '{self.name}' is not an trusted plugin.")
 
         result_handler = ModifyPluginResultHandler(self)
-        pip_arguments = PIP_COMMAND + ["install"]
+        pip_arguments = [*PIP_COMMAND, "install"]
 
         if upgrade:
             logger.info(f"Upgrading '{self.name}' plugin ...")
