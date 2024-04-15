@@ -164,17 +164,15 @@ class PluginManager:
         self._register_plugins()
         return {x[0] for x in pluggy_manager.list_name_plugin()}
 
-    @functools.cached_property
-    def _plugin_modules(self) -> Tuple[str, ...]:
-        plugins = [x.name.replace("-", "_") for x in distributions() if x.name.startswith("ape-")]
-        locals = [p for p in __modules__ if p != "ape"]
-        return tuple(*plugins, *locals)
-
     def _register_plugins(self):
         if self.__registered:
             return
 
-        for module_name in self._plugin_modules:
+        plugins = [x.name.replace("-", "_") for x in distributions() if x.name.startswith("ape-")]
+        locals = [p for p in __modules__ if p != "ape"]
+        plugin_modules = tuple([*plugins, *locals])
+
+        for module_name in plugin_modules:
             try:
                 module = importlib.import_module(module_name)
                 pluggy_manager.register(module)
