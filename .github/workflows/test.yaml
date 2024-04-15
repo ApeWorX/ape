@@ -23,30 +23,20 @@ jobs:
 
         - name: Install Dependencies
           run: |
-            python -m pip install --upgrade uv
-            uv venv .venv
-            source .venv/bin/activate
-            uv pip install .[lint]
+            python -m pip install --upgrade pip
+            pip install .[lint]
 
         - name: Run Black
-          run: |
-            source .venv/bin/activate
-            black --check .
+          run: black --check .
 
         - name: Run isort
-          run: |
-            source .venv/bin/activate
-            isort --check-only .
+          run: isort --check-only .
 
         - name: Run flake8
-          run: |
-            source .venv/bin/activate
-            flake8 .
+          run: flake8 .
 
         - name: Run mdformat
-          run: |
-            source .venv/bin/activate
-            mdformat . --check
+          run: mdformat . --check
 
     type-check:
         runs-on: ubuntu-latest
@@ -61,15 +51,11 @@ jobs:
 
         - name: Install Dependencies
           run: |
-            python -m pip install --upgrade uv
-            uv venv .venv
-            source .venv/bin/activate
-            uv pip install .[lint,test]
+            python -m pip install --upgrade pip
+            pip install .[lint,test]
 
         - name: Run MyPy
-          run: |
-            source .venv/bin/activate
-            mypy .
+          run: mypy .
 
     functional:
         runs-on: ${{ matrix.os }}
@@ -104,15 +90,12 @@ jobs:
 
         - name: Install Dependencies
           run: |
-            python -m pip install --upgrade uv
-            uv venv .venv
-            source .venv/bin/activate
-            uv pip install .[test]
+            python -m pip install --upgrade pip
+            pip uninstall eth-ape --yes
+            pip install .[test]
 
         - name: Run Tests
-          run: |
-            source .venv/bin/activate
-            pytest -m "not fuzzing" -s --cov=src -n auto --dist loadgroup
+          run: pytest -m "not fuzzing" -s --cov=src -n auto --dist loadgroup
 
     fuzzing:
         runs-on: ubuntu-latest
@@ -130,12 +113,8 @@ jobs:
 
         - name: Install Dependencies
           run: |
-            python -m pip install --upgrade uv
-            uv venv .venv
-            source .venv/bin/activate
-            uv pip install --pre .[test]
+            python -m pip install --upgrade pip
+            pip install .[test]
 
         - name: Run Tests
-          run: |
-            source .venv/bin/activate
-            pytest -m "fuzzing" --no-cov -s
+          run: pytest -m "fuzzing" --no-cov -s
