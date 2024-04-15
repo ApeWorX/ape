@@ -1,5 +1,6 @@
 import sys
 from shutil import which
+
 from ape.cli.arguments import (
     contract_file_paths_argument,
     existing_alias_argument,
