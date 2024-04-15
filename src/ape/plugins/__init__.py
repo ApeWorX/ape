@@ -1,7 +1,6 @@
 import functools
 import importlib
-import pkgutil
-import subprocess
+from importlib.metadata import distributions
 from typing import Any, Callable, Generator, Iterator, List, Optional, Set, Tuple, Type
 
 from ape.__modules__ import __modules__
@@ -167,22 +166,9 @@ class PluginManager:
 
     @functools.cached_property
     def _plugin_modules(self) -> Tuple[str, ...]:
-        # NOTE: Unable to use pkgutil.iter_modules() for installed plugins
-        # because it does not work with editable installs.
-        # See https://github.com/python/cpython/issues/99805.
-        result = subprocess.check_output(
-            ["pip", "list", "--format", "freeze", "--disable-pip-version-check"]
+        return tuple(
+            [x.name.replace("-", "_") for x in distributions() if x.name.startswith("ape-")]
         )
-        packages = result.decode("utf8").splitlines()
-        installed_plugin_module_names = {
-            p.split("==")[0].replace("-", "_") for p in packages if p.startswith("ape-")
-        }
-        core_plugin_module_names = {
-            n for _, n, ispkg in pkgutil.iter_modules() if n.startswith("ape_")
-        }
-
-        # NOTE: Returns tuple because this shouldn't change.
-        return tuple(installed_plugin_module_names.union(core_plugin_module_names))
 
     def _register_plugins(self):
         if self.__registered:
