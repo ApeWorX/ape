@@ -269,9 +269,19 @@ class LocalProvider(TestProviderAPI, Web3Provider):
         self.evm_backend.mine_blocks(num_blocks)
 
     def get_contract_logs(self, log_filter: LogFilter) -> Iterator[ContractLog]:
+        from_block = max(0, log_filter.start_block)
+
+        if log_filter.stop_block is None:
+            to_block = None
+        else:
+            latest_block = self.get_block("latest").number
+            to_block = (
+                min(latest_block, log_filter.stop_block)
+                if latest_block is not None
+                else log_filter.stop_block
+            )
+
         for address in log_filter.addresses:
-            from_block = max(0, log_filter.start_block)
-            to_block = min(self.get_block("latest").number, log_filter.stop_block)
             log_gen = self.tester.ethereum_tester.get_logs(
                 address=address,
                 from_block=from_block,
