@@ -166,9 +166,9 @@ class PluginManager:
 
     @functools.cached_property
     def _plugin_modules(self) -> Tuple[str, ...]:
-        return tuple(
-            [x.name.replace("-", "_") for x in distributions() if x.name.startswith("ape-")]
-        )
+        plugins = [x.name.replace("-", "_") for x in distributions() if x.name.startswith("ape-")]
+        locals = [p for p in __modules__ if p != "ape"]
+        return tuple([*plugins, *locals])
 
     def _register_plugins(self):
         if self.__registered:
