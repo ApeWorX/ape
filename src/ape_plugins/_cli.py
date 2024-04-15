@@ -191,7 +191,7 @@ def uninstall(cli_ctx, plugins, skip_confirmation):
             skip_confirmation or click.confirm(f"Remove plugin '{plugin}'?")
         ):
             cli_ctx.logger.info(f"Uninstalling '{plugin.name}'...")
-            args = [*PIP_COMMAND,"uninstall", "-y", plugin.package_name, "--quiet"]
+            args = [*PIP_COMMAND, "uninstall", "-y", plugin.package_name, "--quiet"]
 
             # NOTE: Be *extremely careful* with this command, as it modifies the user's
             #       installed packages, to potentially catastrophic results
