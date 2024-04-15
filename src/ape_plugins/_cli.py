@@ -6,11 +6,12 @@ from typing import Any, Dict, List, Tuple
 import click
 from packaging.version import Version
 
-from ape.cli import PIP_COMMAND, ape_cli_context, skip_confirmation_option
+from ape.cli import ape_cli_context, skip_confirmation_option
 from ape.logging import logger
 from ape.managers.config import CONFIG_FILE_NAME
 from ape.plugins._utils import (
     ModifyPluginResultHandler,
+    PIP_COMMAND,
     PluginMetadata,
     PluginMetadataList,
     PluginType,

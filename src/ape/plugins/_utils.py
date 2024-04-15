@@ -1,5 +1,7 @@
+import sys
 from enum import Enum
 from functools import cached_property
+from shutil import which
 from typing import Any, Dict, Iterable, Iterator, List, Optional, Sequence, Tuple
 
 import click
@@ -8,7 +10,6 @@ from packaging.version import Version
 from pydantic import field_validator, model_validator
 
 from ape.__modules__ import __modules__
-from ape.cli import PIP_COMMAND
 from ape.logging import logger
 from ape.plugins import clean_plugin_name
 from ape.utils import BaseInterfaceModel, get_package_version, github_client, log_instead_of_fail
@@ -19,6 +20,8 @@ from ape_plugins.exceptions import PluginVersionError
 
 # Plugins maintained OSS by ApeWorX (and trusted)
 CORE_PLUGINS = {p for p in __modules__ if p != "ape"}
+# Use `uv pip` if installed, otherwise `python -m pip`
+PIP_COMMAND = ["uv", "pip"] if which("uv") else [sys.executable, "-m", "pip"]
 
 
 class ApeVersion:

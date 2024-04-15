@@ -1,6 +1,3 @@
-import sys
-from shutil import which
-
 from ape.cli.arguments import (
     contract_file_paths_argument,
     existing_alias_argument,
@@ -30,8 +27,7 @@ from ape.cli.options import (
     verbosity_option,
 )
 from ape.cli.paramtype import AllFilePaths, Path
-
-PIP_COMMAND = ["uv", "pip"] if which("uv") else [sys.executable, "-m", "pip"]
+from ape.plugins._utils import PIP_COMMAND
 
 __all__ = [
     "account_option",
@@ -55,6 +51,7 @@ __all__ = [
     "output_format_option",
     "OutputFormat",
     "Path",
+    "PIP_COMMAND",
     "PromptChoice",
     "select_account",
     "skip_confirmation_option",
