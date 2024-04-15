@@ -148,7 +148,6 @@ class PluginManager:
             return h.plugin_name, getattr(h.plugin, attr_name)()
 
         for plugin_name, results in map(get_plugin_name_and_hookfn, hookimpls):
-            print(f"plugin_name: {plugin_name:<20} results: {results}")
             # NOTE: Some plugins return a tuple and some return iterators
             if not isinstance(results, Generator):
                 validated_plugin = self._validate_plugin(plugin_name, results)

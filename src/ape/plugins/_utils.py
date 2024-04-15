@@ -1,4 +1,3 @@
-import sys
 from enum import Enum
 from functools import cached_property
 from typing import Any, Dict, Iterable, Iterator, List, Optional, Sequence, Tuple
