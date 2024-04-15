@@ -76,7 +76,6 @@ extras_require["dev"] = (
 with open("./README.md") as readme:
     long_description = readme.read()
 
-
 setup(
     name="eth-ape",
     use_scm_version=True,
@@ -101,16 +100,16 @@ setup(
         "ipython>=8.5.0,<9",
         "lazyasd>=0.1.4",
         "packaging>=23.0,<24",
-        "pandas>=1.3.0,<2",
+        "pandas>=2",
         "pluggy>=1.3,<2",
         "pydantic>=2.5.2,<3",
         "pydantic-settings>=2.0.3,<3",
         "PyGithub>=1.59,<2",
         "pytest>=6.0,<8.0",
-        "python-dateutil>=2.8.2,<3",
+        "python-dateutil>=2.8.2",
         "PyYAML>=5.0,<7",
         "requests>=2.28.1,<3",
-        "rich>=12.5.1,<14",
+        "rich>=12.5.1",
         "SQLAlchemy>=1.4.35",
         "tqdm>=4.62.3,<5.0",
         "traitlets>=5.3.0",
@@ -119,8 +118,9 @@ setup(
         # ** Dependencies maintained by Ethereum Foundation **
         "eth-abi>=5.1.0,<6",
         "eth-account>=0.11.2,<0.12",
+        "eth-tester @ git+https://github.com/wakamex/eth-tester.git",
         "eth-typing>=3.5.2,<4",
-        "eth-utils>=2.3.1,<3",
+        "eth-utils>=2.3.1",
         "py-geth>=4.4.0,<5",
         "web3[tester]>=6.17.2,<7",
         # ** Dependencies maintained by ApeWorX **
