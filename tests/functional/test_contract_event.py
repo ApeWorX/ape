@@ -124,7 +124,7 @@ def test_contract_logs_range(chain, contract_instance, owner, assert_log_values)
 def test_contract_logs_range_by_address(
     mocker, chain, eth_tester_provider, test_accounts, contract_instance, owner, assert_log_values
 ):
-    get_logs_spy = mocker.spy(eth_tester_provider.web3.eth, "get_logs")
+    get_logs_spy = mocker.spy(eth_tester_provider.tester.ethereum_tester, "get_logs")
     contract_instance.setAddress(test_accounts[1], sender=owner)
     height = chain.blocks.height
     logs = [
@@ -137,18 +137,18 @@ def test_contract_logs_range_by_address(
     # NOTE: This spy assertion tests against a bug where address queries were not
     # 0x-prefixed. However, this was still valid in EthTester and thus was not causing
     # test failures.
-    height_arg = to_hex(chain.blocks.height)
-    get_logs_spy.assert_called_once_with(
-        {
-            "address": [contract_instance.address],
-            "fromBlock": height_arg,
-            "toBlock": height_arg,
-            "topics": [
-                "0x7ff7bacc6cd661809ed1ddce28d4ad2c5b37779b61b9e3235f8262be529101a9",
-                "0x00000000000000000000000070997970c51812dc3a010c7d01b50e0d17dc79c8",
-            ],
-        }
-    )
+    height_arg = chain.blocks.height
+    actual = get_logs_spy.call_args[-1]
+    expected = {
+        "address": [contract_instance.address],
+        "from_block": height_arg,
+        "to_block": height_arg,
+        "topics": [
+            "0x7ff7bacc6cd661809ed1ddce28d4ad2c5b37779b61b9e3235f8262be529101a9",
+            "0x00000000000000000000000070997970c51812dc3a010c7d01b50e0d17dc79c8",
+        ],
+    }
+    assert actual == expected
     assert logs == [contract_instance.AddressChange(newAddress=test_accounts[1])]
 
 

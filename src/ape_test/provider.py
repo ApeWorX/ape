@@ -281,14 +281,13 @@ class LocalProvider(TestProviderAPI, Web3Provider):
                 else log_filter.stop_block
             )
 
-        for address in log_filter.addresses:
-            log_gen = self.tester.ethereum_tester.get_logs(
-                address=address,
-                from_block=from_block,
-                to_block=to_block,
-                topics=log_filter.topic_filter,
-            )
-            yield from self.network.ecosystem.decode_logs(log_gen, *log_filter.events)
+        log_gen = self.tester.ethereum_tester.get_logs(
+            address=log_filter.addresses,
+            from_block=from_block,
+            to_block=to_block,
+            topics=log_filter.topic_filter,
+        )
+        yield from self.network.ecosystem.decode_logs(log_gen, *log_filter.events)
 
     def get_virtual_machine_error(self, exception: Exception, **kwargs) -> VirtualMachineError:
         if isinstance(exception, ValidationError):
