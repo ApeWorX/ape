@@ -27,7 +27,6 @@ from ape.cli.options import (
     verbosity_option,
 )
 from ape.cli.paramtype import AllFilePaths, Path
-from ape.plugins._utils import PIP_COMMAND
 
 __all__ = [
     "account_option",
@@ -51,7 +50,6 @@ __all__ = [
     "output_format_option",
     "OutputFormat",
     "Path",
-    "PIP_COMMAND",
     "PromptChoice",
     "select_account",
     "skip_confirmation_option",
