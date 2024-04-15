@@ -29,16 +29,24 @@ jobs:
             uv pip install .[lint]
 
         - name: Run Black
-          run: black --check .
+          run: |
+            source .venv/bin/activate
+            black --check .
 
         - name: Run isort
-          run: isort --check-only .
+          run: |
+            source .venv/bin/activate
+            isort --check-only .
 
         - name: Run flake8
-          run: flake8 .
+          run: |
+            source .venv/bin/activate
+            flake8 .
 
         - name: Run mdformat
-          run: mdformat . --check
+          run: |
+            source .venv/bin/activate
+            mdformat . --check
 
     type-check:
         runs-on: ubuntu-latest
@@ -59,7 +67,9 @@ jobs:
             uv pip install .[lint,test]
 
         - name: Run MyPy
-          run: mypy .
+          run: |
+            source .venv/bin/activate
+            mypy .
 
     functional:
         runs-on: ${{ matrix.os }}
@@ -100,7 +110,9 @@ jobs:
             uv pip install .[test]
 
         - name: Run Tests
-          run: pytest -m "not fuzzing" -s --cov=src -n auto --dist loadgroup
+          run: |
+            source .venv/bin/activate
+            pytest -m "not fuzzing" -s --cov=src -n auto --dist loadgroup
 
     fuzzing:
         runs-on: ubuntu-latest
@@ -124,4 +136,6 @@ jobs:
             uv pip install --pre .[test]
 
         - name: Run Tests
-          run: pytest -m "fuzzing" --no-cov -s
+          run: |
+            source .venv/bin/activate
+            pytest -m "fuzzing" --no-cov -s
