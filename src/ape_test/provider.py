@@ -2,7 +2,7 @@ import re
 from ast import literal_eval
 from functools import cached_property
 from re import Pattern
-from typing import Any, Dict, Optional, cast
+from typing import Any, Dict, Iterator, Optional, cast
 
 from eth.exceptions import HeaderNotFound
 from eth_pydantic_types import HexBytes
@@ -25,7 +25,7 @@ from ape.exceptions import (
     UnknownSnapshotError,
     VirtualMachineError,
 )
-from ape.types import BlockID, SnapshotID
+from ape.types import BlockID, ContractLog, LogFilter, SnapshotID
 from ape.utils import DEFAULT_TEST_CHAIN_ID, DEFAULT_TEST_HD_PATH, gas_estimation_error_message
 from ape_ethereum.provider import Web3Provider
 
@@ -267,6 +267,18 @@ class LocalProvider(TestProviderAPI, Web3Provider):
 
     def mine(self, num_blocks: int = 1):
         self.evm_backend.mine_blocks(num_blocks)
+
+    def get_contract_logs(self, log_filter: LogFilter) -> Iterator[ContractLog]:
+        for address in log_filter.addresses:
+            from_block = max(0, log_filter.start_block)
+            to_block = min(self.get_block("latest").number, log_filter.stop_block)
+            log_gen = self.tester.ethereum_tester.get_logs(
+                address=address,
+                from_block=from_block,
+                to_block=to_block,
+                topics=log_filter.topic_filter,
+            )
+            yield from self.network.ecosystem.decode_logs(log_gen, *log_filter.events)
 
     def get_virtual_machine_error(self, exception: Exception, **kwargs) -> VirtualMachineError:
         if isinstance(exception, ValidationError):
