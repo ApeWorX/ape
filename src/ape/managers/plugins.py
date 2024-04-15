@@ -1,14 +1,38 @@
+import functools
 import importlib
 import pkgutil
 import subprocess
-from typing import Generator, Iterator, List, Optional, Set, Tuple
+from typing import Any, Generator, Iterator, List, Optional, Set, Tuple
 
 from ape.__modules__ import __modules__
 from ape.exceptions import ApeAttributeError
 from ape.logging import logger
 from ape.plugins._utils import PIP_COMMAND, clean_plugin_name
+from ape.plugins.pluggy_patch import plugin_manager as pluggy_manager
 from ape.utils.basemodel import _assert_not_ipython_check
 from ape.utils.misc import log_instead_of_fail
+
+
+def valid_impl(api_class: Any) -> bool:
+    """
+    Check if an API class is valid. The class must not have any unimplemented
+    abstract methods.
+
+    Args:
+        api_class (any)
+
+    Returns:
+        bool
+    """
+
+    if isinstance(api_class, tuple):
+        return all(valid_impl(c) for c in api_class)
+
+    # Is not an ABC base class or abstractdataclass
+    if not hasattr(api_class, "__abstractmethods__"):
+        return True  # not an abstract class
+
+    return len(api_class.__abstractmethods__) == 0
 
 
 class PluginManager:

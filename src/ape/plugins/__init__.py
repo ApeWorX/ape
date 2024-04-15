@@ -1,13 +1,5 @@
 import functools
-<<<<<<< HEAD
-import importlib
-from importlib.metadata import distributions
-from typing import Any, Callable, Generator, Iterator, List, Optional, Set, Tuple, Type
-=======
-from typing import Any, Callable, Type
->>>>>>> 797ed67c (move PluginManager to src/ape/managers/plugins.py and clean_plugin_name to ape/plugins/_utils to avoid circular import)
-
-from ape.managers.plugins import PluginManager
+from typing import Callable, Type
 
 from .account import AccountPlugin
 from .compiler import CompilerPlugin
@@ -93,29 +85,6 @@ def register(plugin_type: Type[PluginType], **hookimpl_kwargs) -> Callable:
     return functools.partial(check_hook, plugin_type, hookimpl_kwargs)
 
 
-def valid_impl(api_class: Any) -> bool:
-    """
-    Check if an API class is valid. The class must not have any unimplemented
-    abstract methods.
-
-    Args:
-        api_class (any)
-
-    Returns:
-        bool
-    """
-
-    if isinstance(api_class, tuple):
-        return all(valid_impl(c) for c in api_class)
-
-    # Is not an ABC base class or abstractdataclass
-    if not hasattr(api_class, "__abstractmethods__"):
-        return True  # not an abstract class
-
-    return len(api_class.__abstractmethods__) == 0
-
-
 __all__ = [
-    "PluginManager",
     "register",
 ]
