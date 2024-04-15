@@ -24,6 +24,8 @@ jobs:
         - name: Install Dependencies
           run: |
             python -m pip install --upgrade uv
+            uv venv .venv
+            source .venv/bin/activate
             uv pip install .[lint]
 
         - name: Run Black
@@ -52,6 +54,8 @@ jobs:
         - name: Install Dependencies
           run: |
             python -m pip install --upgrade uv
+            uv venv .venv
+            source .venv/bin/activate
             uv pip install .[lint,test]
 
         - name: Run MyPy
@@ -91,7 +95,8 @@ jobs:
         - name: Install Dependencies
           run: |
             python -m pip install --upgrade uv
-            uv pip uninstall eth-ape --yes
+            uv venv .venv
+            source .venv/bin/activate
             uv pip install .[test]
 
         - name: Run Tests
@@ -114,6 +119,8 @@ jobs:
         - name: Install Dependencies
           run: |
             python -m pip install --upgrade uv
+            uv venv .venv
+            source .venv/bin/activate
             uv pip install --pre .[test]
 
         - name: Run Tests
