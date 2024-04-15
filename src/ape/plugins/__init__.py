@@ -9,6 +9,7 @@ from ape.logging import logger
 from ape.utils.basemodel import _assert_not_ipython_check
 from ape.utils.misc import log_instead_of_fail
 
+from ._utils import PIP_COMMAND
 from .account import AccountPlugin
 from .compiler import CompilerPlugin
 from .config import Config
@@ -18,7 +19,6 @@ from .pluggy_patch import PluginType, hookimpl
 from .pluggy_patch import plugin_manager as pluggy_manager
 from .project import DependencyPlugin, ProjectPlugin
 from .query import QueryPlugin
-from ._utils import PIP_COMMAND
 
 
 class PluginError(Exception):

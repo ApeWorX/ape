@@ -10,8 +10,8 @@ from ape.cli import ape_cli_context, skip_confirmation_option
 from ape.logging import logger
 from ape.managers.config import CONFIG_FILE_NAME
 from ape.plugins._utils import (
-    ModifyPluginResultHandler,
     PIP_COMMAND,
+    ModifyPluginResultHandler,
     PluginMetadata,
     PluginMetadataList,
     PluginType,
