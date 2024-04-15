@@ -863,7 +863,8 @@ class Web3Provider(ProviderAPI, ABC):
             start, stop = block_range
             update = {"start_block": start, "stop_block": stop}
             page_filter = log_filter.model_copy(update=update)
-            logs = self._make_request("eth_getLogs", [page_filter])
+            filter_params = page_filter.model_dump(mode="json")
+            logs = self._make_request("eth_getLogs", [filter_params])
             return self.network.ecosystem.decode_logs(logs, *log_filter.events)
 
         with ThreadPoolExecutor(self.concurrency) as pool:
