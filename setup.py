@@ -46,6 +46,7 @@ extras_require = {
         "sphinx-plausible>=0.1.2,<0.2",
     ],
     "release": [  # `release` GitHub Action job uses this
+        "setuptools",  # Installation tool
         "wheel",  # Packaging tool
         "twine==3.8.0",  # Package upload tool
     ],
@@ -106,11 +107,10 @@ setup(
         "pydantic-settings>=2.0.3,<3",
         "PyGithub>=1.59,<2",
         "pytest>=6.0,<8.0",
-        "python-dateutil>=2.8.2,<3",
+        "python-dateutil>=2.8.2",
         "PyYAML>=5.0,<7",
         "requests>=2.28.1,<3",
-        "rich>=12.5.1,<14",
-        "setuptools",  # Installation tool
+        "rich>=12.5.1",
         "SQLAlchemy>=1.4.35",
         "tqdm>=4.62.3,<5.0",
         "traitlets>=5.3.0",
@@ -120,15 +120,15 @@ setup(
         "eth-abi>=5.1.0,<6",
         "eth-account>=0.10.0,<0.11",
         "eth-typing>=3.5.2,<4",
-        "eth-utils>=2.3.1,<3",
+        "eth-utils>=2.3.1",
         "py-geth>=4.4.0,<5",
-        "web3[tester]>=6.16.0,<6.17.1",
+        "web3[tester]>=6.16.0",
         # ** Dependencies maintained by ApeWorX **
-        "eip712>=0.2.7,<0.3",
+        "eip712 @ git+https://github.com/wakamex/eip712.git",
         "ethpm-types>=0.6.9,<0.7",
         "eth_pydantic_types>=0.1.0,<0.2",
         "evmchains>=0.0.6,<0.1",
-        "evm-trace>=0.1.3,<0.2",
+        "evm-trace @ git+https://github.com/wakamex/evm-trace.git",
     ],
     entry_points={
         "console_scripts": ["ape=ape._cli:cli"],
