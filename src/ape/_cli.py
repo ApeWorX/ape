@@ -11,8 +11,7 @@ import yaml
 from ape.cli import ape_cli_context
 from ape.exceptions import Abort, ApeException, handle_ape_exception
 from ape.logging import logger
-from ape.plugins import clean_plugin_name
-from ape.plugins._utils import PluginMetadataList
+from ape.plugins._utils import PluginMetadataList, clean_plugin_name
 from ape.utils.basemodel import ManagerAccessMixin
 
 _DIFFLIB_CUT_OFF = 0.6

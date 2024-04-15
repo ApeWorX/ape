@@ -966,10 +966,10 @@ class NetworkAPI(BaseInterfaceModel):
             Dict[str, partial[:class:`~ape.api.providers.ProviderAPI`]]
         """
 
-        from ape.plugins import clean_plugin_name
+        from ape.plugins._utils import clean_plugin_name
 
         providers = {}
-        for plugin_name, plugin_tuple in self.plugin_manager.providers:
+        for _, plugin_tuple in self.plugin_manager.providers:
             ecosystem_name, network_name, provider_class = plugin_tuple
             provider_name = clean_plugin_name(provider_class.__module__.split(".")[0])
 

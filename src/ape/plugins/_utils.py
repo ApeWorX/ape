@@ -11,7 +11,6 @@ from pydantic import field_validator, model_validator
 
 from ape.__modules__ import __modules__
 from ape.logging import logger
-from ape.plugins import clean_plugin_name
 from ape.utils import BaseInterfaceModel, get_package_version, github_client, log_instead_of_fail
 from ape.utils.basemodel import BaseModel
 from ape.utils.misc import _get_distributions
@@ -22,6 +21,10 @@ from ape_plugins.exceptions import PluginVersionError
 CORE_PLUGINS = {p for p in __modules__ if p != "ape"}
 # Use `uv pip` if installed, otherwise `python -m pip`
 PIP_COMMAND = ["uv", "pip"] if which("uv") else [sys.executable, "-m", "pip"]
+
+
+def clean_plugin_name(name: str) -> str:
+    return name.replace("_", "-").replace("ape-", "")
 
 
 class ApeVersion:
@@ -221,9 +224,6 @@ class PluginMetadata(BaseInterfaceModel):
                 # Just some small validation so you can't put a repo
                 # that isn't this plugin here. NOTE: Forks should still work.
                 raise ValueError("Plugin mismatch with remote git version.")
-
-            version = version
-
         elif not version:
             # Only check name for version constraint if not in version.
             # NOTE: This happens when using the CLI to provide version constraints.
