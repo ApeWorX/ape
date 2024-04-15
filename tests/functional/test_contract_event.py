@@ -4,7 +4,6 @@ from typing import Optional
 
 import pytest
 from eth_pydantic_types import HexBytes
-from eth_utils import to_hex
 from ethpm_types import ContractType
 
 from ape.api import ReceiptAPI
