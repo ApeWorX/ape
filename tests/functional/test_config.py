@@ -95,26 +95,26 @@ def _create_deployments(
 
 
 def test_ethereum_network_configs(config, temp_config):
-    eth_config = {"ethereum": {"goerli": {"default_provider": "test"}}}
+    eth_config = {"ethereum": {"sepolia": {"default_provider": "test"}}}
     with temp_config(eth_config):
         actual = config.get_config("ethereum")
-        assert actual.goerli.default_provider == "test"
+        assert actual.sepolia.default_provider == "test"
 
         # Ensure that non-updated fields remain unaffected
-        assert actual.goerli.block_time == 15
+        assert actual.sepolia.block_time == 15
 
 
 def test_network_gas_limit_default(config):
     eth_config = config.get_config("ethereum")
 
-    assert eth_config.goerli.gas_limit == "auto"
+    assert eth_config.sepolia.gas_limit == "auto"
     assert eth_config.local.gas_limit == "max"
 
 
-def _goerli_with_gas_limit(gas_limit: GasLimit) -> dict:
+def _sepolia_with_gas_limit(gas_limit: GasLimit) -> dict:
     return {
         "ethereum": {
-            "goerli": {
+            "sepolia": {
                 "default_provider": "test",
                 "gas_limit": gas_limit,
             }
@@ -124,12 +124,12 @@ def _goerli_with_gas_limit(gas_limit: GasLimit) -> dict:
 
 @pytest.mark.parametrize("gas_limit", ("auto", "max"))
 def test_network_gas_limit_string_config(gas_limit, config, temp_config):
-    eth_config = _goerli_with_gas_limit(gas_limit)
+    eth_config = _sepolia_with_gas_limit(gas_limit)
 
     with temp_config(eth_config):
         actual = config.get_config("ethereum")
 
-        assert actual.goerli.gas_limit == gas_limit
+        assert actual.sepolia.gas_limit == gas_limit
 
         # Local configuration is unaffected
         assert actual.local.gas_limit == "max"
@@ -137,12 +137,12 @@ def test_network_gas_limit_string_config(gas_limit, config, temp_config):
 
 @pytest.mark.parametrize("gas_limit", (1234, "1234", 0x4D2, "0x4D2"))
 def test_network_gas_limit_numeric_config(gas_limit, config, temp_config):
-    eth_config = _goerli_with_gas_limit(gas_limit)
+    eth_config = _sepolia_with_gas_limit(gas_limit)
 
     with temp_config(eth_config):
         actual = config.get_config("ethereum")
 
-        assert actual.goerli.gas_limit == 1234
+        assert actual.sepolia.gas_limit == 1234
 
         # Local configuration is unaffected
         assert actual.local.gas_limit == "max"
@@ -153,7 +153,7 @@ def test_network_gas_limit_invalid_numeric_string(config, temp_config):
     Test that using hex strings for a network's gas_limit config must be
     prefixed with '0x'
     """
-    eth_config = _goerli_with_gas_limit("4D2")
+    eth_config = _sepolia_with_gas_limit("4D2")
     with pytest.raises(ValueError, match="Gas limit hex str must include '0x' prefix."):
         with temp_config(eth_config):
             pass
