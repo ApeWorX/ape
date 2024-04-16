@@ -2,10 +2,11 @@ import shutil
 from pathlib import Path
 
 import click
+from click import BadParameter
 
 from ape.cli import ape_cli_context
 from ape.managers.config import CONFIG_FILE_NAME
-from ape.utils import github_client
+from ape.utils._github import github_client
 
 GITIGNORE_CONTENT = """
 # Ape stuff
@@ -21,17 +22,39 @@ __pycache__
 """
 
 
+def validate_github_repo(ctx, param, value):
+    if not value:
+        return None
+
+    elif value.count("/") != 1:
+        raise BadParameter("Invalid GitHub parameter, must be in format 'org/repo'.", ctx, param)
+
+    org, repo = value.split("/")
+    if not org:
+        raise BadParameter("Invalid GitHub parameter, missing 'org' value.")
+    if not repo:
+        raise BadParameter("Invalid GitHub parameter, missing 'repo' value.")
+
+    return (org, repo)
+
+
 @click.command(short_help="Initialize an ape project")
 @ape_cli_context()
-@click.option("--github", metavar="github-org/repo", help="Clone a template from Github")
+@click.option(
+    "--github",
+    metavar="github-org/repo",
+    help="Clone a template from Github",
+    callback=validate_github_repo,
+)
 def cli(cli_ctx, github):
     """
     ``ape init`` allows the user to create an ape project with
     default folders and ape-config.yaml.
     """
     if github:
-        github_client.clone_repo(github, Path.cwd())
-        shutil.rmtree(Path.cwd() / ".git")
+        org, repo = github
+        github_client.clone_repo(org, repo, Path.cwd())
+        shutil.rmtree(Path.cwd() / ".git", ignore_errors=True)
     else:
         project_folder = Path.cwd()
 
