@@ -29,9 +29,9 @@ def test_basic_query(chain, eth_tester_provider):
         "num_transactions",
         "number",
         "parent_hash",
-        "size",
         "timestamp",
         "total_difficulty",
+        "uncles",
     ]
 
 
