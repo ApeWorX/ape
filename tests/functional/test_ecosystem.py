@@ -153,6 +153,93 @@ def test_encode_calldata_byte_array(ethereum, sequence_type, item_type):
     assert isinstance(actual, bytes)
 
 
+def test_encode_calldata_nested_structs(ethereum):
+    abi = MethodABI(
+        type="function",
+        name="check",
+        stateMutability="view",
+        inputs=[
+            ABIType(
+                name="data",
+                type="tuple",
+                components=[
+                    ABIType(
+                        name="tokenIn", type="address", components=None, internal_type="address"
+                    ),
+                    ABIType(
+                        name="amountIn", type="uint256", components=None, internal_type="uint256"
+                    ),
+                    ABIType(
+                        name="minAmountOut",
+                        type="uint256",
+                        components=None,
+                        internal_type="uint256",
+                    ),
+                    ABIType(
+                        name="path",
+                        type="tuple",
+                        components=[
+                            ABIType(
+                                name="pairBinSteps",
+                                type="uint256[]",
+                                components=None,
+                                internal_type="uint256[]",
+                            ),
+                            ABIType(
+                                name="versions",
+                                type="uint8[]",
+                                components=None,
+                                internal_type="enum SwapWrapper.Version[]",
+                            ),
+                            ABIType(
+                                name="tokenPath",
+                                type="address[]",
+                                components=None,
+                                internal_type="address[]",
+                            ),
+                        ],
+                        internal_type="struct SwapWrapper.Path",
+                    ),
+                ],
+                internal_type="struct SwapWrapper.SwapData",
+            )
+        ],
+        outputs=[ABIType(name="", type="bool", components=None, internal_type="bool")],
+    )
+    calldata = {
+        "tokenIn": "0xB31f66AA3C1e785363F0875A1B74E27b85FD66c7",
+        "amountIn": 1000000000000000000,
+        "minAmountOut": 10000000,
+        "path": {
+            "pairBinSteps": [0],
+            "versions": [0],
+            "tokenPath": [
+                "0xB31f66AA3C1e785363F0875A1B74E27b85FD66c7",
+                "0xB97EF9Ef8734C71904D8002F8b6Bc66Dd9c48a6E",
+            ],
+        },
+    }
+    actual = ethereum.encode_calldata(abi, calldata)
+    expected = HexBytes(
+        "0x000000000000000000000000000000000000000000000000000000000000002"
+        "0000000000000000000000000b31f66aa3c1e785363f0875a1b74e27b85fd66c7"
+        "0000000000000000000000000000000000000000000000000de0b6b3a76400000"
+        "00000000000000000000000000000000000000000000000000000000098968000"
+        "00000000000000000000000000000000000000000000000000000000000080000"
+        "00000000000000000000000000000000000000000000000000000000000600000"
+        "0000000000000000000000000000000000000000000000000000000000a000000"
+        "000000000000000000000000000000000000000000000000000000000e0000000"
+        "00000000000000000000000000000000000000000000000000000000010000000"
+        "00000000000000000000000000000000000000000000000000000000000000000"
+        "00000000000000000000000000000000000000000000000000000001000000000"
+        "00000000000000000000000000000000000000000000000000000000000000000"
+        "00000000000000000000000000000000000000000000000000000200000000000"
+        "0000000000000b31f66aa3c1e785363f0875a1b74e27b85fd66c7000000000000"
+        "000000000000b97ef9ef8734c71904d8002f8b6bc66dd9c48a6e"
+    )
+    assert actual == expected
+
+
 def test_block_handles_snake_case_parent_hash(eth_tester_provider, sender, receiver):
     # Transaction to change parent hash of next block
     sender.transfer(receiver, "1 gwei")
