@@ -1,5 +1,4 @@
 import inspect
-import warnings
 from typing import Any, List, Optional
 
 import click
@@ -131,17 +130,3 @@ class ConnectedProviderCommand(click.Command):
             ctx.params["network"] = provider.network_choice
 
         return ctx.invoke(self.callback or (lambda: None), **ctx.params)
-
-
-# TODO: 0.8 delete
-class NetworkBoundCommand(ConnectedProviderCommand):
-    def __init__(self, *args, **kwargs):
-        warnings.warn(
-            "'NetworkBoundCommand' is deprecated. Use 'ConnectedProviderCommand'.",
-            DeprecationWarning,
-        )
-
-        # Disable the advanced network class types so it behaves legacy.
-        kwargs["use_cls_types"] = False
-
-        super().__init__(*args, **kwargs)
