@@ -513,7 +513,7 @@ def use_debug(logger):
 @pytest.fixture
 def dummy_live_network(chain):
     original_network = chain.provider.network.name
-    chain.provider.network.name = "goerli"
+    chain.provider.network.name = "sepolia"
     yield chain.provider.network
     chain.provider.network.name = original_network
 
