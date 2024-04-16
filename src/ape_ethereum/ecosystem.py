@@ -73,7 +73,6 @@ from ape_ethereum.transactions import (
 NETWORKS = {
     # chain_id, network_id
     "mainnet": (1, 1),
-    "goerli": (5, 5),
     "sepolia": (11155111, 11155111),
 }
 BLUEPRINT_HEADER = HexBytes("0xfe71")
@@ -281,7 +280,6 @@ class BaseEthereumConfig(PluginConfig):
 
 class EthereumConfig(BaseEthereumConfig):
     mainnet: NetworkConfig = create_network_config(block_time=13)
-    goerli: NetworkConfig = create_network_config(block_time=15)
     sepolia: NetworkConfig = create_network_config(block_time=15)
 
 
