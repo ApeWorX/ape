@@ -1,6 +1,6 @@
 # Networks
 
-When interacting with a blockchain, you will have to select an ecosystem (e.g. Ethereum, Arbitrum, or Fantom), a network (e.g. Mainnet or Goerli) and a provider (e.g. Eth-Tester, Geth, or Alchemy).
+When interacting with a blockchain, you will have to select an ecosystem (e.g. Ethereum, Arbitrum, or Fantom), a network (e.g. Mainnet or Sepolia) and a provider (e.g. Eth-Tester, Geth, or Alchemy).
 Networks are part of ecosystems and typically defined in plugins.
 For example, the `ape-ethereum` plugin comes with Ape and can be used for handling EVM-like behavior.
 
@@ -195,7 +195,7 @@ To add a corresponding entry in `ape-etherscan` (assuming you are using `ape-eth
 etherscan:
   ethereum:
     rate_limit: 15  # Configure a rate limit that makes sense for retry logic.
-    
+
     # The name of the entry is the same as your custom network!
     customnetwork:
       uri: https://custom.scan              # URL used for showing transactions
@@ -360,9 +360,9 @@ ethereum:
     # Most networks use 120 seconds (2 minutes).
     transaction_acceptance_timeout: 60
 
-    # The amount of times to retry fetching a receipt. This is useful 
-    # because decentralized systems may show the transaction accepted 
-    # on some nodes but not on others, and potentially RPC requests 
+    # The amount of times to retry fetching a receipt. This is useful
+    # because decentralized systems may show the transaction accepted
+    # on some nodes but not on others, and potentially RPC requests
     # won't return a receipt immediately after sending its transaction.
     # This config accounts for such delay. The default is `20`.
     max_receipt_retries: 10
@@ -371,13 +371,13 @@ ethereum:
     # estimates gas. Note: local networks tend to use "max" here
     # by default.
     gas_limit: auto
-    
+
     # Base-fee multipliers are useful for times when the base fee changes
     # before a transaction is sent but after the base fee was derived,
     # thus causing rejection. A multiplier reduces the chance of
     # rejection. The default for live networks is `1.4` times the base fee.
     base_fee_multiplier: 1.2
-    
+
     # The block time helps Ape make decisions about
     # polling chain data.
     block_time: 10
