@@ -244,7 +244,7 @@ class LocalProvider(TestProviderAPI, Web3Provider):
     def snapshot(self) -> SnapshotID:
         return self.evm_backend.take_snapshot()
 
-    def revert(self, snapshot_id: SnapshotID):
+    def restore(self, snapshot_id: SnapshotID):
         if snapshot_id:
             current_hash = self.get_block("latest").hash
             if current_hash != snapshot_id:

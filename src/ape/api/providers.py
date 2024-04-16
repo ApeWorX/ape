@@ -601,7 +601,7 @@ class ProviderAPI(BaseInterfaceModel):
         """
 
     @raises_not_implemented
-    def revert(self, snapshot_id: SnapshotID):
+    def restore(self, snapshot_id: SnapshotID):
         """
         Defined to make the ``ProviderAPI`` interchangeable with a
         :class:`~ape.api.providers.TestProviderAPI`, as in
@@ -844,7 +844,7 @@ class TestProviderAPI(ProviderAPI):
         """
 
     @abstractmethod
-    def revert(self, snapshot_id: SnapshotID):
+    def restore(self, snapshot_id: SnapshotID):
         """
         Regress the current call using the given snapshot ID.
         Allows developers to go back to a previous state.
