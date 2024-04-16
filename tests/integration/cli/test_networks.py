@@ -5,8 +5,6 @@ from .utils import run_once, skip_projects_except
 
 _DEFAULT_NETWORKS_TREE = """
 ethereum  (default)
-├── goerli
-│   └── geth  (default)
 ├── local  (default)
 │   ├── geth
 │   └── test  (default)
@@ -20,12 +18,6 @@ ecosystems:
 - isDefault: true
   name: ethereum
   networks:
-  - name: goerli
-    providers:
-    - isDefault: true
-      name: geth
-  - name: goerli-fork
-    providers: []
   - isDefault: true
     name: local
     providers:
@@ -47,8 +39,6 @@ ecosystems:
 """
 _GETH_NETWORKS_TREE = """
 ethereum  (default)
-├── goerli
-│   └── geth  (default)
 ├── local  (default)
 │   └── geth  (default)
 └── mainnet
@@ -59,9 +49,9 @@ ethereum  (default)
 └── local  (default)
     └── test  (default)
 """
-_GOERLI_NETWORK_TREE_OUTPUT = """
+_SEPOLIA_NETWORK_TREE_OUTPUT = """
 ethereum  (default)
-└── goerli
+└── sepolia
     └── geth  (default)
 """
 _CUSTOM_NETWORKS_TREE = """
@@ -69,8 +59,6 @@ ethereum  (default)
 ├── apenet
 │   └── geth  (default)
 ├── apenet1
-│   └── geth  (default)
-├── goerli
 │   └── geth  (default)
 ├── local  (default)
 │   └── geth  (default)
@@ -151,12 +139,12 @@ def test_list_geth(ape_cli, runner, networks, project):
 
 @run_once
 def test_list_filter_networks(ape_cli, runner, networks):
-    result = runner.invoke(ape_cli, ["networks", "list", "--network", "goerli"])
+    result = runner.invoke(ape_cli, ["networks", "list", "--network", "sepolia"])
 
     # Grab ethereum
     actual = "ethereum  (default)\n" + "".join(result.output.split("ethereum  (default)\n")[-1])
 
-    assert_rich_text(actual, _GOERLI_NETWORK_TREE_OUTPUT)
+    assert_rich_text(actual, _SEPOLIA_NETWORK_TREE_OUTPUT)
 
 
 @run_once
