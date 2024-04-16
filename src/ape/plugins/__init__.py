@@ -168,7 +168,11 @@ class PluginManager:
         if self.__registered:
             return
 
-        plugins = [x.name.replace("-", "_") for x in distributions() if x.name.startswith("ape-")]
+        plugins = [
+            getattr(x, "name", "").replace("-", "_")
+            for x in distributions()
+            if getattr(x, "name", "").startswith("ape-")
+        ]
         locals = [p for p in __modules__ if p != "ape"]
         plugin_modules = tuple([*plugins, *locals])
 
