@@ -935,14 +935,18 @@ class Ethereum(EcosystemAPI):
                     converted_arguments[key] = value
 
             yield ContractLog(
-                block_hash=log["blockHash"],
-                block_number=log["blockNumber"],
+                block_hash=log.get("blockHash") or log.get("block_hash") or "",
+                block_number=log.get("blockNumber") or log.get("block_number") or 0,
                 contract_address=self.decode_address(log["address"]),
                 event_arguments=converted_arguments,
                 event_name=abi.event_name,
-                log_index=log["logIndex"],
-                transaction_hash=log["transactionHash"],
-                transaction_index=log["transactionIndex"],
+                log_index=log.get("logIndex") or log.get("log_index") or 0,
+                transaction_hash=log.get("transactionHash") or log.get("transaction_hash") or "",
+                transaction_index=(
+                    log.get("transactionIndex")
+                    if "transactionIndex" in log
+                    else log.get("transaction_index")
+                ),
             )
 
     def enrich_calltree(self, call: CallTreeNode, **kwargs) -> CallTreeNode:

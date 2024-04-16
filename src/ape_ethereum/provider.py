@@ -863,20 +863,13 @@ class Web3Provider(ProviderAPI, ABC):
             start, stop = block_range
             update = {"start_block": start, "stop_block": stop}
             page_filter = log_filter.model_copy(update=update)
-            # eth-tester expects a different format, let web3 handle the conversions for it.
-            raw = "EthereumTester" not in self.client_version
-            logs = self._get_logs(page_filter.model_dump(mode="json"), raw)
+            filter_params = page_filter.model_dump(mode="json")
+            logs = self._make_request("eth_getLogs", [filter_params])
             return self.network.ecosystem.decode_logs(logs, *log_filter.events)
 
         with ThreadPoolExecutor(self.concurrency) as pool:
             for page in pool.map(fetch_log_page, block_ranges):
                 yield from page
-
-    def _get_logs(self, filter_params, raw=True) -> List[Dict]:
-        if not raw:
-            return [vars(d) for d in self.web3.eth.get_logs(filter_params)]
-
-        return self._make_request("eth_getLogs", [filter_params])
 
     def prepare_transaction(self, txn: TransactionAPI) -> TransactionAPI:
         # NOTE: Use "expected value" for Chain ID, so if it doesn't match actual, we raise

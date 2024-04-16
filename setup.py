@@ -26,6 +26,7 @@ extras_require = {
         "types-setuptools",  # Needed due to mypy typeshed
         "pandas-stubs==1.2.0.62",  # Needed due to mypy typeshed
         "types-SQLAlchemy>=1.4.49",  # Needed due to mypy typeshed
+        "types-python-dateutil",  # Needed due to mypy typeshed
         "flake8>=7.0.0,<8",  # Style linter
         "flake8-breakpoint>=1.1.0,<2",  # Detect breakpoints left in code
         "flake8-print>=4.0.1,<5",  # Detect print statements left in code
@@ -122,13 +123,13 @@ setup(
         "eth-typing>=3.5.2,<4",
         "eth-utils>=2.3.1,<3",
         "py-geth>=4.4.0,<5",
-        "web3[tester]>=6.16.0,<7",
+        "web3[tester]>=6.16.0,<6.17.1",
         # ** Dependencies maintained by ApeWorX **
-        "eip712>=0.2.3,<0.4",
-        "ethpm-types>=0.6.7,<0.7",
-        "eth_pydantic_types>=0.1.0a5,<0.2",
-        "evmchains>=0.0.2,<0.1",
-        "evm-trace>=0.1.2",
+        "eip712>=0.2.7,<0.3",
+        "ethpm-types>=0.6.9,<0.7",
+        "eth_pydantic_types>=0.1.0,<0.2",
+        "evmchains>=0.0.6,<0.1",
+        "evm-trace>=0.1.3,<0.2",
     ],
     entry_points={
         "console_scripts": ["ape=ape._cli:cli"],

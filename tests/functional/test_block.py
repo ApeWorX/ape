@@ -17,7 +17,7 @@ def test_block_dict(block):
         "num_transactions": 0,
         "number": 0,
         "parentHash": block.parent_hash.hex(),
-        "size": 548,
+        "size": block.size,
         "timestamp": block.timestamp,
         "totalDifficulty": 0,
         "transactions": [],
@@ -32,7 +32,7 @@ def test_block_json(block):
         f'"hash":"{block.hash.hex()}",'
         '"num_transactions":0,"number":0,'
         f'"parentHash":"{block.parent_hash.hex()}",'
-        f'"size":548,"timestamp":{block.timestamp},'
+        f'"size":{block.size},"timestamp":{block.timestamp},'
         f'"totalDifficulty":0,"transactions":[]}}'
     )
     assert actual == expected
