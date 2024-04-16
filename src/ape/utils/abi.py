@@ -371,6 +371,15 @@ def create_struct(name: str, types: Sequence[ABIType], output_values: Sequence) 
         "values": values,
     }
 
+    if conflicts := [p for p in properties if p in methods]:
+        conflicts_str = ", ".join(conflicts)
+        logger.debug(
+            "The following methods are unavailable on the struct "
+            f"due to having the same name as a field: {conflicts_str}"
+        )
+        for conflict in conflicts:
+            del methods[conflict]
+
     struct_def = make_dataclass(
         name,
         properties,

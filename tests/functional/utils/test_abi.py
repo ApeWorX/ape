@@ -126,3 +126,9 @@ class TestStruct:
     def test_pickle(self, struct):
         actual = pickle.dumps(struct)
         assert isinstance(actual, bytes)
+
+    def test_field_with_same_name_as_method(self):
+        struct = create_struct(
+            "MyStruct", (ABIType(name="values", type="string"),), ("output_value_0",)
+        )
+        assert struct.values == "output_value_0"  # Is the field, not the method.
