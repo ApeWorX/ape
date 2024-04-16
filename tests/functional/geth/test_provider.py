@@ -86,8 +86,8 @@ def test_repr_on_local_network_and_disconnected(networks):
 
 @geth_process_test
 def test_repr_on_live_network_and_disconnected(networks):
-    geth = networks.get_provider_from_choice("ethereum:goerli:geth")
-    assert repr(geth) == "<geth chain_id=5>"
+    geth = networks.get_provider_from_choice("ethereum:sepolia:geth")
+    assert repr(geth) == "<geth chain_id=11155111>"
 
 
 @geth_process_test
@@ -106,8 +106,8 @@ def test_chain_id_when_connected(geth_provider):
 
 @geth_process_test
 def test_chain_id_live_network_not_connected(networks):
-    geth = networks.get_provider_from_choice("ethereum:goerli:geth")
-    assert geth.chain_id == 5
+    geth = networks.get_provider_from_choice("ethereum:sepolia:geth")
+    assert geth.chain_id == 11155111
 
 
 @geth_process_test
@@ -132,12 +132,12 @@ def test_connect_wrong_chain_id(ethereum, geth_provider, web3_factory):
     start_network = geth_provider.network
     expected_error_message = (
         f"Provider connected to chain ID '{geth_provider._web3.eth.chain_id}', "
-        "which does not match network chain ID '5'. "
-        "Are you connected to 'goerli'?"
+        "which does not match network chain ID '11155111'. "
+        "Are you connected to 'sepolia'?"
     )
 
     try:
-        geth_provider.network = ethereum.get_network("goerli")
+        geth_provider.network = ethereum.get_network("sepolia")
 
         # Ensure when reconnecting, it does not use HTTP
         web3_factory.return_value = geth_provider._web3
@@ -151,15 +151,15 @@ def test_connect_wrong_chain_id(ethereum, geth_provider, web3_factory):
 def test_connect_to_chain_that_started_poa(mock_web3, web3_factory, ethereum):
     """
     Ensure that when connecting to a chain that
-    started out as PoA, such as Goerli, we include
+    started out as PoA, such as Sepolia, we include
     the right middleware. Note: even if the chain
     is no longer PoA, we still need the middleware
     to fetch blocks during the PoA portion of the chain.
     """
     mock_web3.eth.get_block.side_effect = ExtraDataLengthError
-    mock_web3.eth.chain_id = ethereum.goerli.chain_id
+    mock_web3.eth.chain_id = ethereum.sepolia.chain_id
     web3_factory.return_value = mock_web3
-    provider = ethereum.goerli.get_provider("geth")
+    provider = ethereum.sepolia.get_provider("geth")
     provider.provider_settings = {"uri": "http://node.example.com"}  # fake
     provider.connect()
 
