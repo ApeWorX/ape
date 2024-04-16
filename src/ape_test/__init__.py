@@ -1,6 +1,6 @@
 from typing import Dict, List, NewType, Optional, Union
 
-from pydantic import NonNegativeInt
+from pydantic import NonNegativeInt, field_validator
 
 from ape import plugins
 from ape.api import PluginConfig
@@ -23,11 +23,6 @@ class GasConfig(PluginConfig):
     Configuration related to test gas reports.
     """
 
-    show: bool = False
-    """
-    Set to ``True`` to always show gas.
-    """
-
     exclude: List[GasExclusion] = []
     """
     Contract methods patterns to skip. Specify ``contract_name:`` and not
@@ -36,6 +31,27 @@ class GasConfig(PluginConfig):
     both to skip methods in a certain contracts. Entries use glob-rules;
     use ``prefix_*`` to skip all items with a certain prefix.
     """
+
+    reports: List[str] = []
+    """
+    Report-types to use. Currently, only supports `terminal`.
+    """
+
+    @field_validator("reports", mode="before")
+    @classmethod
+    def validate_reports(cls, values):
+        values = list(set(values or []))
+        valid = ("terminal",)
+        for val in values:
+            if val not in valid:
+                valid_str = ", ".join(valid)
+                raise ValueError(f"Invalid gas-report format '{val}'. Valid: {valid_str}")
+
+        return values
+
+    @property
+    def show(self) -> bool:
+        return "terminal" in self.reports
 
 
 """Dict is for extra report settings."""
