@@ -172,7 +172,7 @@ E   ape.exceptions.ContractLogicError: Transaction failed.
 def test_show_internal(setup_pytester, project, pytester, eth_tester_provider):
     _ = eth_tester_provider  # Ensure using EthTester for this test.
     setup_pytester(project.path.name)
-    result = pytester.runpytest("--showinternal")
+    result = pytester.runpytest("--show-internal")
     expected = """
     raise vm_err from err
 E   ape.exceptions.ContractLogicError: Transaction failed.
@@ -244,7 +244,8 @@ def test_gas_flag_set_in_config(
     test:
       disconnect_providers_after: false
       gas:
-        show: true
+        reports:
+          - terminal
     """
 
     with switch_config(project, config_content):
@@ -275,7 +276,8 @@ def test_gas_when_estimating(
     test:
       disconnect_providers_after: false
       gas:
-        show: true
+        reports:
+          - terminal
     """
 
     geth_account.transfer(geth_account, "1 wei")  # Force a clean block.
@@ -363,7 +365,7 @@ def test_coverage(geth_provider, setup_pytester, project, pytester, geth_account
     """
     geth_account.transfer(geth_account, "1 wei")  # Force a clean block.
     passed, failed = setup_pytester(project.path.name)
-    result = pytester.runpytest("--coverage", "--showinternal", "--network", "ethereum:local:geth")
+    result = pytester.runpytest("--coverage", "--show-internal", "--network", "ethereum:local:geth")
     result.assert_outcomes(passed=passed, failed=failed)
 
 

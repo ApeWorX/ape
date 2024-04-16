@@ -219,7 +219,7 @@ def test_snapshot_and_revert(geth_provider, geth_account, geth_contract):
     assert actual_block_number == expected_block_number
     assert actual_nonce == expected_nonce
 
-    geth_provider.revert(snapshot)
+    geth_provider.restore(snapshot)
 
     actual_block_number = geth_provider.get_block("latest").number
     expected_block_number = snapshot
@@ -277,7 +277,7 @@ def test_get_pending_block(geth_provider, geth_account, geth_second_account, acc
     assert isinstance(actual, Block)
 
     # Restore state before transaction
-    geth_provider.revert(snap)
+    geth_provider.restore(snap)
     actual = geth_provider.get_block("latest")
     assert isinstance(actual, Block)
 
