@@ -91,7 +91,14 @@ class StructParser:
             and not isinstance(value, tuple)
         ):
             if isinstance(value, dict):
-                return tuple([value[m.name] for m in _type.components])
+                return tuple(
+                    (
+                        self._encode(m, value[m.name])
+                        if isinstance(value[m.name], dict)
+                        else value[m.name]
+                    )
+                    for m in _type.components
+                )
 
             elif isinstance(value, (list, tuple)):
                 # NOTE: Args must be passed in correct order.
