@@ -39,11 +39,11 @@ ecosystems:
 """
 _GETH_NETWORKS_TREE = """
 ethereum  (default)
-├── sepolia
-│   └── geth  (default)
 ├── local  (default)
 │   └── geth  (default)
-└── mainnet
+├── mainnet
+│   └── geth  (default)
+└── sepolia
     └── geth  (default)
 """
 _TEST_PROVIDER_TREE_OUTPUT = """
@@ -62,11 +62,11 @@ ethereum  (default)
 │   └── geth  (default)
 ├── apenet1
 │   └── geth  (default)
-├── sepolia
+├── mainnet
 │   └── geth  (default)
 ├── local  (default)
 │   └── geth  (default)
-└── mainnet
+└── sepolia
     └── geth  (default)
 """
 
