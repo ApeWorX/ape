@@ -3,6 +3,7 @@ from unittest import mock
 
 import pytest
 
+from ape.logging import LogLevel
 from ape.plugins._utils import (
     ApePluginsRepr,
     ModifyPluginResultHandler,
@@ -263,21 +264,12 @@ class TestPluginGroup:
         assert repr(group) == "<PluginGroup>"
 
 
-def test_handle_upgrade_result_when_upgrading_to_same_version(caplog, logger):
+def test_handle_upgrade_result_when_upgrading_to_same_version(ape_caplog, logger):
     plugin = PluginMetadata(name=THIRD_PARTY[0], version=f"0.{ape_version.minor}.0")
     handler = ModifyPluginResultHandler(plugin)
+    ape_caplog.set_levels(LogLevel.INFO)
     handler.handle_upgrade_result(0, f"0.{ape_version.minor}.0")
-    if records := caplog.records:
-        assert (
-            f"'{THIRD_PARTY[0]}' already has version '0.{ape_version.minor}.0'"
-            in records[-1].message
-        )
-    else:
-        version_at_end = plugin.version
-        pytest.fail(
-            f"Missing logs when upgrading to same version 0.{ape_version.minor}.0. "
-            f"version={version_at_end}"
-        )
+    assert f"'{THIRD_PARTY[0]}' already has version '0.{ape_version.minor}.0'" in ape_caplog.head
 
 
 class TestApeVersion:
