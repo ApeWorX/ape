@@ -72,7 +72,7 @@ def test_forked_networks(ethereum):
     # Just make sure it doesn't fail when trying to access.
     assert mainnet_fork.upstream_provider
     # Ensure has default configurations.
-    cfg = mainnet_fork.config.mainnet_fork
+    cfg = mainnet_fork.ecosystem_config.mainnet_fork
     assert cfg.default_transaction_type == TransactionType.DYNAMIC
     assert cfg.block_time == 0
     assert cfg.default_provider is None
@@ -86,7 +86,7 @@ def test_forked_network_with_config(temp_config, ethereum):
         "ethereum": {"mainnet_fork": {"default_transaction_type": TransactionType.STATIC.value}}
     }
     with temp_config(data):
-        cfg = ethereum.mainnet_fork.config.mainnet_fork
+        cfg = ethereum.mainnet_fork.ecosystem_config.mainnet_fork
         assert cfg.default_transaction_type == TransactionType.STATIC
         assert cfg.block_time == 0
         assert cfg.default_provider is None
@@ -108,7 +108,7 @@ def test_config_custom_networks_default(ethereum, custom_networks_config):
     present.
     """
     network = ethereum.apenet
-    cfg = network.config.apenet
+    cfg = network.ecosystem_config.apenet
     assert cfg.default_transaction_type == TransactionType.DYNAMIC
 
 
@@ -121,7 +121,7 @@ def test_config_custom_networks(
     }
     with temp_config(data):
         network = ethereum.apenet
-        ethereum_config = network.config
+        ethereum_config = network.ecosystem_config
         cfg_by_attr = ethereum_config.apenet
         assert cfg_by_attr.default_transaction_type == TransactionType.STATIC
 
@@ -143,7 +143,7 @@ def test_config_networks_from_custom_ecosystem(
     with temp_config(data):
         custom_ecosystem = networks.get_ecosystem("custom-ecosystem")
         network = custom_ecosystem.get_network("apenet")
-        ethereum_config = network.config
+        ethereum_config = network.ecosystem_config
         cfg_by_attr = ethereum_config.apenet
         assert cfg_by_attr.default_transaction_type == TransactionType.STATIC
 

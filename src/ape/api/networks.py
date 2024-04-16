@@ -793,7 +793,7 @@ class NetworkAPI(BaseInterfaceModel):
             return f"<{name}>" if name else f"{type(self)}"
 
     @property
-    def config(self) -> PluginConfig:
+    def ecosystem_config(self) -> PluginConfig:
         """
         The configuration of the network. See :class:`~ape.managers.config.ConfigManager`
         for more information on plugin configurations.
@@ -802,11 +802,11 @@ class NetworkAPI(BaseInterfaceModel):
         return self.config_manager.get_config(self.ecosystem.name)
 
     @property
-    def _network_config(self) -> PluginConfig:
+    def config(self) -> PluginConfig:
         name_options = {self.name, self.name.replace("-", "_"), self.name.replace("_", "-")}
         cfg: Any
         for opt in name_options:
-            if cfg := self.config.get(opt):
+            if cfg := self.ecosystem_config.get(opt):
                 if isinstance(cfg, dict):
                     return cfg
 
@@ -822,7 +822,7 @@ class NetworkAPI(BaseInterfaceModel):
 
     @cached_property
     def gas_limit(self) -> GasLimit:
-        return self._network_config.get("gas_limit", "auto")
+        return self.config.get("gas_limit", "auto")
 
     @cached_property
     def auto_gas_multiplier(self) -> float:
@@ -836,7 +836,7 @@ class NetworkAPI(BaseInterfaceModel):
         """
         A multiplier to apply to a transaction base fee.
         """
-        return self._network_config.get("base_fee_multiplier", 1.0)
+        return self.config.get("base_fee_multiplier", 1.0)
 
     @property
     def chain_id(self) -> int:
@@ -867,7 +867,7 @@ class NetworkAPI(BaseInterfaceModel):
         refer to the number of blocks that have been added since the
         transaction's block.
         """
-        return self._network_config.get("required_confirmations", 0)
+        return self.config.get("required_confirmations", 0)
 
     @property
     def block_time(self) -> int:
@@ -882,7 +882,7 @@ class NetworkAPI(BaseInterfaceModel):
                 block_time: 15
         """
 
-        return self._network_config.get("block_time", 0)
+        return self.config.get("block_time", 0)
 
     @property
     def transaction_acceptance_timeout(self) -> int:
@@ -891,7 +891,7 @@ class NetworkAPI(BaseInterfaceModel):
         Does not include waiting for block-confirmations. Defaults to two minutes.
         Local networks use smaller timeouts.
         """
-        return self._network_config.get(
+        return self.config.get(
             "transaction_acceptance_timeout", DEFAULT_TRANSACTION_ACCEPTANCE_TIMEOUT
         )
 
@@ -1115,7 +1115,7 @@ class NetworkAPI(BaseInterfaceModel):
             # Was set programatically.
             return provider
 
-        elif provider_from_config := self._network_config.get("default_provider"):
+        elif provider_from_config := self.config.get("default_provider"):
             # The default is found in the Network's config class.
             return provider_from_config
 
@@ -1241,7 +1241,7 @@ class ForkedNetworkAPI(NetworkAPI):
         exists.
         """
 
-        config_choice: str = self._network_config.get("upstream_provider")
+        config_choice: str = self.config.get("upstream_provider")
         if provider_name := config_choice or self.upstream_network.default_provider_name:
             return self.upstream_network.get_provider(provider_name)
 
