@@ -15,11 +15,11 @@ from ape.logging import logger
 from ape.utils import (
     ManagerAccessMixin,
     cached_property,
-    github_client,
     load_config,
     log_instead_of_fail,
     pragma_str_to_specifier_set,
 )
+from ape.utils._github import github_client
 
 
 class DependencyManager(ManagerAccessMixin):
@@ -221,8 +221,16 @@ class GithubDependency(DependencyAPI):
         elif self.version and self.version != "latest":
             return self.version
 
-        latest_release = github_client.get_release(self.github, "latest")
-        return latest_release.tag_name
+        latest_release = github_client.get_latest_release(self.org_name, self.repo_name)
+        return latest_release["tag_name"]
+
+    @cached_property
+    def org_name(self) -> str:
+        return self.github.split("/")[0]
+
+    @cached_property
+    def repo_name(self) -> str:
+        return self.github.split("/")[1]
 
     @property
     def uri(self) -> AnyUrl:
@@ -250,12 +258,14 @@ class GithubDependency(DependencyAPI):
             temp_project_path.mkdir(exist_ok=True, parents=True)
 
             if self.ref:
-                github_client.clone_repo(self.github, temp_project_path, branch=self.ref)
+                github_client.clone_repo(
+                    self.org_name, self.repo_name, temp_project_path, branch=self.ref
+                )
 
             else:
                 try:
                     github_client.download_package(
-                        self.github, self.version or "latest", temp_project_path
+                        self.org_name, self.repo_name, self.version or "latest", temp_project_path
                     )
                 except UnknownVersionError as err:
                     logger.warning(
@@ -265,7 +275,7 @@ class GithubDependency(DependencyAPI):
                     )
                     try:
                         github_client.clone_repo(
-                            self.github, temp_project_path, branch=self.version
+                            self.org_name, self.repo_name, temp_project_path, branch=self.version
                         )
                     except Exception:
                         # Raise the UnknownVersionError.
