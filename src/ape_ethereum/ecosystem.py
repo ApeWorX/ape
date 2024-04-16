@@ -942,7 +942,11 @@ class Ethereum(EcosystemAPI):
                 event_name=abi.event_name,
                 log_index=log.get("logIndex") or log.get("log_index") or 0,
                 transaction_hash=log.get("transactionHash") or log.get("transaction_hash") or "",
-                transaction_index=log.get("transactionIndex") or log.get("transaction_index"),
+                transaction_index=(
+                    log.get("transactionIndex")
+                    if "transactionIndex" in log
+                    else log.get("transaction_index")
+                ),
             )
 
     def enrich_calltree(self, call: CallTreeNode, **kwargs) -> CallTreeNode:
