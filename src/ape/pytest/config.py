@@ -69,7 +69,7 @@ class ConfigWrapper(ManagerAccessMixin):
 
     @cached_property
     def show_internal(self) -> bool:
-        return self.pytest_config.getoption("showinternal")
+        return self.pytest_config.getoption("--show-internal")
 
     @cached_property
     def gas_exclusions(self) -> List[ContractFunctionPath]:
