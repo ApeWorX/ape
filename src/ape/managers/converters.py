@@ -3,7 +3,7 @@ from datetime import datetime, timedelta, timezone
 from decimal import Decimal
 from typing import Any, Dict, List, Sequence, Tuple, Type, Union
 
-from dateutil.parser import parse  # type: ignore
+from dateutil.parser import parse
 from eth_pydantic_types import HexBytes
 from eth_typing.evm import ChecksumAddress
 from eth_utils import (
