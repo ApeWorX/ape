@@ -646,7 +646,7 @@ def test_gas_limit_local_networks(ethereum, network_name):
 
 
 def test_gas_limit_live_networks(ethereum):
-    network = ethereum.get_network("goerli")
+    network = ethereum.get_network("sepolia")
     assert network.gas_limit == "auto"
 
 
@@ -860,7 +860,7 @@ def test_set_default_network_not_exists(temp_config, ethereum):
 
 def test_networks(ethereum):
     actual = ethereum.networks
-    for net in ("goerli", "sepolia", "mainnet", LOCAL_NETWORK_NAME):
+    for net in ("sepolia", "mainnet", LOCAL_NETWORK_NAME):
         assert net in actual
         assert isinstance(actual[net], NetworkAPI)
 
@@ -870,7 +870,6 @@ def test_networks_includes_custom_networks(
 ):
     actual = ethereum.networks
     for net in (
-        "goerli",
         "sepolia",
         "mainnet",
         LOCAL_NETWORK_NAME,
