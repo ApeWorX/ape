@@ -17,8 +17,7 @@ from ape.plugins._utils import (
     PluginType,
     ape_version,
 )
-from ape.utils import load_config
-from ape.utils.misc import _get_distributions
+from ape.utils.misc import _get_distributions, load_config
 
 
 @click.group(short_help="Manage ape plugins")

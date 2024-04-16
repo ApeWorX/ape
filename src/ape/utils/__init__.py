@@ -18,7 +18,6 @@ from ape.utils.basemodel import (
     ManagerAccessMixin,
     injected_before_use,
 )
-from ape.utils.github import GithubClient, github_client
 from ape.utils.misc import (
     DEFAULT_LIVE_NETWORK_BASE_FEE_MULTIPLIER,
     DEFAULT_LOCAL_TRANSACTION_ACCEPTANCE_TIMEOUT,
@@ -84,8 +83,6 @@ __all__ = [
     "get_relative_path",
     "gas_estimation_error_message",
     "get_package_version",
-    "GithubClient",
-    "github_client",
     "GeneratedDevAccount",
     "generate_dev_accounts",
     "get_all_files_in_directory",
