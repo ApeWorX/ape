@@ -325,9 +325,13 @@ class Block(BlockAPI):
             # (normal).
             return self._size
 
+        number = self.number
+        if number is None:
+            raise APINotImplementedError()
+
         # Try to get it from the provider.
-        if provider := self.network_manager.active_provider:
-            block = provider.get_block(self.number)
+        elif provider := self.network_manager.active_provider:
+            block = provider.get_block(number)
             size = block._size
             if size is not None and size > -1:
                 self._size = size
@@ -357,11 +361,11 @@ class Ethereum(EcosystemAPI):
 
         for name in networks_to_check:
             network = self.get_network(name)
-            ecosystem_config = network.config
+            ecosystem_config = network.ecosystem_config
             ecosystem_default = ecosystem_config.get(
                 "default_transaction_type", DEFAULT_TRANSACTION_TYPE
             )
-            result: int = network._network_config.get("default_transaction_type", ecosystem_default)
+            result: int = network.config.get("default_transaction_type", ecosystem_default)
             return TransactionType(result)
 
         return TransactionType(DEFAULT_TRANSACTION_TYPE)
