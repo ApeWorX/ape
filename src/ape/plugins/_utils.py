@@ -11,7 +11,8 @@ from pydantic import field_validator, model_validator
 from ape.__modules__ import __modules__
 from ape.logging import logger
 from ape.plugins import clean_plugin_name
-from ape.utils import BaseInterfaceModel, get_package_version, github_client, log_instead_of_fail
+from ape.utils import BaseInterfaceModel, get_package_version, log_instead_of_fail
+from ape.utils._github import github_client
 from ape.utils.basemodel import BaseModel
 from ape.utils.misc import _get_distributions
 from ape.version import version as ape_version_str
