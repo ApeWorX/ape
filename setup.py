@@ -105,7 +105,6 @@ setup(
         "pluggy>=1.3,<2",
         "pydantic>=2.5.2,<3",
         "pydantic-settings>=2.0.3,<3",
-        "PyGithub>=1.59,<2",
         "pytest>=6.0,<8.0",
         "python-dateutil>=2.8.2,<3",
         "PyYAML>=5.0,<7",
