@@ -52,11 +52,14 @@ class ApeCLI(click.MultiCommand):
                 "Plugin": [],
                 "3rd-Party Plugin": [],
             }
-            metadata = PluginMetadataList.load(ManagerAccessMixin.plugin_manager)
+
+            pl_metadata = PluginMetadataList.load(
+                ManagerAccessMixin.plugin_manager, include_available=False
+            )
 
             for cli_name, cmd in commands:
                 help = cmd.get_short_help_str(limit)
-                plugin = metadata.get_plugin(cli_name)
+                plugin = pl_metadata.get_plugin(cli_name)
                 if not plugin:
                     continue
 

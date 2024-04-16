@@ -121,13 +121,17 @@ class PluginMetadataList(BaseModel):
     third_party: "PluginGroup"
 
     @classmethod
-    def load(cls, plugin_manager):
-        registered_plugins = plugin_manager.registered_plugins
-        available_plugins = github_client.available_plugins
-        return cls.from_package_names(registered_plugins.union(available_plugins))
+    def load(cls, plugin_manager, include_available: bool = True):
+        plugins = plugin_manager.registered_plugins
+        if include_available:
+            plugins = plugins.union(github_client.available_plugins)
+
+        return cls.from_package_names(plugins, include_available=include_available)
 
     @classmethod
-    def from_package_names(cls, packages: Iterable[str]) -> "PluginMetadataList":
+    def from_package_names(
+        cls, packages: Iterable[str], include_available: bool = True
+    ) -> "PluginMetadataList":
         PluginMetadataList.model_rebuild()
         core = PluginGroup(plugin_type=PluginType.CORE)
         available = PluginGroup(plugin_type=PluginType.AVAILABLE)
@@ -140,11 +144,17 @@ class PluginMetadataList(BaseModel):
             plugin = PluginMetadata(name=name.strip(), version=version)
             if plugin.in_core:
                 core.plugins[name] = plugin
-            elif plugin.is_available and not plugin.is_installed:
+                continue
+
+            # perf: only check these once.
+            is_installed = plugin.is_installed
+            is_available = include_available and plugin.is_available
+
+            if include_available and is_available and not is_installed:
                 available.plugins[name] = plugin
-            elif plugin.is_installed and not plugin.in_core and not plugin.is_available:
+            elif is_installed and not plugin.in_core and not is_available:
                 third_party.plugins[name] = plugin
-            elif plugin.is_installed:
+            elif is_installed:
                 installed.plugins[name] = plugin
             else:
                 logger.error(f"'{plugin.name}' is not a plugin.")
