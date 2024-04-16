@@ -28,7 +28,7 @@ def pytest_addoption(parser):
 
             raise ConfigError(f"Failed adding option {name_str}: {err}") from err
 
-    add_option("--showinternal", action="store_true")
+    add_option("--show-internal", action="store_true")
     add_option(
         "--network",
         action="store",
@@ -63,7 +63,7 @@ def pytest_addoption(parser):
 
 def pytest_configure(config):
     # Do not include ape internals in tracebacks unless explicitly asked
-    if not config.getoption("showinternal"):
+    if not config.getoption("--show-internal"):
         path_str = sys.modules["ape"].__file__
         if path_str:
             base_path = Path(path_str).parent.as_posix()
