@@ -14,12 +14,12 @@ from ape.logging import logger
 from ape.utils import (
     ManagerAccessMixin,
     cached_property,
-    github_client,
     load_config,
     log_instead_of_fail,
     pragma_str_to_specifier_set,
     run_in_tempdir,
 )
+from ape.utils._github import github_client
 
 
 class DependencyManager(ManagerAccessMixin):
@@ -221,8 +221,16 @@ class GithubDependency(DependencyAPI):
         elif self.version and self.version != "latest":
             return self.version
 
-        latest_release = github_client.get_release(self.github, "latest")
-        return latest_release.tag_name
+        latest_release = github_client.get_latest_release(self.org_name, self.repo_name)
+        return latest_release["tag_name"]
+
+    @cached_property
+    def org_name(self) -> str:
+        return self.github.split("/")[0]
+
+    @cached_property
+    def repo_name(self) -> str:
+        return self.github.split("/")[1]
 
     @property
     def uri(self) -> AnyUrl:
@@ -249,11 +257,13 @@ class GithubDependency(DependencyAPI):
 
     def _extract_manifest_in_path(self, path: Path, use_cache: bool = True) -> PackageManifest:
         if self.ref:
-            github_client.clone_repo(self.github, path, branch=self.ref)
+            github_client.clone_repo(self.org_name, self.repo_name, path, branch=self.ref)
 
         else:
             try:
-                github_client.download_package(self.github, self.version or "latest", path)
+                github_client.download_package(
+                    self.org_name, self.repo_name, self.version or "latest", path
+                )
             except UnknownVersionError as err:
                 logger.warning(
                     f"No official release found for version '{self.version}'. "
@@ -261,7 +271,9 @@ class GithubDependency(DependencyAPI):
                     "Checking for matching tags..."
                 )
                 try:
-                    github_client.clone_repo(self.github, path, branch=self.version)
+                    github_client.clone_repo(
+                        self.org_name, self.repo_name, path, branch=self.version
+                    )
                 except Exception:
                     # Raise the UnknownVersionError.
                     raise err
