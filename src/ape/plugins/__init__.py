@@ -169,7 +169,7 @@ class PluginManager:
             return
 
         plugins = [
-            getattr(x, "name", "").replace("-", "_")
+            x.name.replace("-", "_")
             for x in distributions()
             if getattr(x, "name", "").startswith("ape-")
         ]
