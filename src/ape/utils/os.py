@@ -139,3 +139,22 @@ class use_temp_sys_path:
         for path in self.exclude:
             if path not in sys.path:
                 sys.path.append(path)
+
+
+def get_full_extension(path: Path) -> str:
+    """
+    For a path like ``Path("Contract.t.sol")``,
+    returns ``.t.sol``, unlike the regular Path
+    property ``.suffix`` which returns ``.sol``.
+    """
+    if path.is_dir():
+        return ""
+
+    parts = path.name.split(".")
+    start_idx = 2 if path.name.startswith(".") else 1
+
+    # NOTE: Handles when given just `.hiddenFile` since slice indices
+    #   may exceed their bounds.
+    suffix = ".".join(parts[start_idx:])
+
+    return f".{suffix}" if suffix and f".{suffix}" != f"{path.name}" else ""

@@ -57,17 +57,41 @@ class BlockAPI(BaseInterfaceModel):
     # NOTE: All fields in this class (and it's subclasses) should not be `Optional`
     #       except the edge cases noted below
 
+    """
+    The number of transactions in the block.
+    """
     num_transactions: int = 0
+
+    """
+    The block hash identifier.
+    """
     hash: Optional[Any] = None  # NOTE: pending block does not have a hash
+
+    """
+    The block number identifier.
+    """
     number: Optional[int] = None  # NOTE: pending block does not have a number
+
+    """
+    The preceeding block's hash.
+    """
     parent_hash: Any = Field(
         EMPTY_BYTES32, alias="parentHash"
     )  # NOTE: genesis block has no parent hash
-    size: int
+
+    """
+    The timestamp the block was produced.
+    NOTE: The pending block uses the current timestamp.
+    """
     timestamp: int
+
+    _size: Optional[int] = None
 
     @property
     def datetime(self) -> datetime.datetime:
+        """
+        The block timestamp as a datetime object.
+        """
         return datetime.datetime.fromtimestamp(self.timestamp, tz=datetime.timezone.utc)
 
     @model_validator(mode="before")
@@ -77,11 +101,53 @@ class BlockAPI(BaseInterfaceModel):
         data["parentHash"] = parent_hash
         return data
 
+    @model_validator(mode="wrap")
+    @classmethod
+    def validate_size(cls, values, handler):
+        """
+        A validator for handling non-computed size.
+        Saves it to a private member on this class and
+        gets returned in computed field "size".
+        """
+
+        if not hasattr(values, "pop"):
+            # Handle weird AttributeDict missing pop method.
+            # https://github.com/ethereum/web3.py/issues/3326
+            values = {**values}
+
+        size = values.pop("size", None)
+        model = handler(values)
+        if size is not None:
+            model._size = size
+
+        return model
+
     @computed_field()  # type: ignore[misc]
     @cached_property
     def transactions(self) -> List[TransactionAPI]:
+        """
+        All transactions in a block.
+        """
         query = BlockTransactionQuery(columns=["*"], block_id=self.hash)
         return cast(List[TransactionAPI], list(self.query_manager.query(query)))
+
+    @computed_field()  # type: ignore[misc]
+    @cached_property
+    def size(self) -> int:
+        """
+        The size of the block in gas. Most of the time,
+        this field is passed to the model at validation time,
+        but occassionally it is missing (like in `eth_subscribe:newHeads`),
+        in which case it gets calculated if and only if the user
+        requests it (or during serialization of this model to disk).
+        """
+
+        if self._size is not None:
+            # The size was provided with the rest of the model
+            # (normal).
+            return self._size
+
+        raise APINotImplementedError()
 
 
 class ProviderAPI(BaseInterfaceModel):
@@ -535,7 +601,7 @@ class ProviderAPI(BaseInterfaceModel):
         """
 
     @raises_not_implemented
-    def revert(self, snapshot_id: SnapshotID):
+    def restore(self, snapshot_id: SnapshotID):
         """
         Defined to make the ``ProviderAPI`` interchangeable with a
         :class:`~ape.api.providers.TestProviderAPI`, as in
@@ -778,7 +844,7 @@ class TestProviderAPI(ProviderAPI):
         """
 
     @abstractmethod
-    def revert(self, snapshot_id: SnapshotID):
+    def restore(self, snapshot_id: SnapshotID):
         """
         Regress the current call using the given snapshot ID.
         Allows developers to go back to a previous state.

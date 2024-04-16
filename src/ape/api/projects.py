@@ -243,7 +243,7 @@ class ProjectAPI(BaseInterfaceModel):
                         *(matching_given_compiler.contractTypes or []),
                     }
                 )
-                # NOTE: Purposely we don't add the exising compiler back,
+                # NOTE: Purposely we don't add the existing compiler back,
                 #   as it is the same as the given compiler, (meaning same
                 #   name, version, and settings), and we have
                 #   merged their contract types.

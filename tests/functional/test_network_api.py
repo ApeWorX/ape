@@ -9,7 +9,7 @@ from ape_ethereum.transactions import TransactionType
 
 
 def test_get_provider_when_not_found(ethereum):
-    name = "goerli-fork"
+    name = "sepolia-fork"
     network = ethereum.get_network(name)
     expected = f"No provider named 'test' in network '{name}' in ecosystem 'ethereum'.*"
     with pytest.raises(ProviderNotFoundError, match=expected):
@@ -19,18 +19,18 @@ def test_get_provider_when_not_found(ethereum):
 @pytest.mark.parametrize("scheme", ("http", "https", "ws", "wss"))
 def test_get_provider_http(ethereum, scheme):
     uri = f"{scheme}://example.com"
-    network = ethereum.get_network("goerli")
+    network = ethereum.get_network("sepolia")
     actual = network.get_provider(uri)
     assert actual.uri == uri
-    assert actual.network.name == "goerli"
+    assert actual.network.name == "sepolia"
 
 
 def test_get_provider_ipc(ethereum):
     path = "path/to/geth.ipc"
-    network = ethereum.get_network("goerli")
+    network = ethereum.get_network("sepolia")
     actual = network.get_provider(path)
     assert actual.ipc_path == Path(path)
-    assert actual.network.name == "goerli"
+    assert actual.network.name == "sepolia"
 
 
 def test_get_provider_custom_network(custom_networks_config, ethereum):
@@ -41,14 +41,14 @@ def test_get_provider_custom_network(custom_networks_config, ethereum):
 
 
 def test_block_times(ethereum):
-    assert ethereum.goerli.block_time == 15
+    assert ethereum.sepolia.block_time == 15
 
 
 def test_set_default_provider_not_exists(temp_config, ape_caplog, ethereum):
     bad_provider = "NOT_EXISTS"
-    expected = f"Provider '{bad_provider}' not found in network 'ethereum:goerli'."
+    expected = f"Provider '{bad_provider}' not found in network 'ethereum:sepolia'."
     with pytest.raises(NetworkError, match=expected):
-        ethereum.goerli.set_default_provider(bad_provider)
+        ethereum.sepolia.set_default_provider(bad_provider)
 
 
 def test_gas_limits(ethereum, config, project_with_source_files_contract):
@@ -56,7 +56,7 @@ def test_gas_limits(ethereum, config, project_with_source_files_contract):
     Test the default gas limit configurations for local and live networks.
     """
     _ = project_with_source_files_contract  # Ensure use of project with default config
-    assert ethereum.goerli.gas_limit == "auto"
+    assert ethereum.sepolia.gas_limit == "auto"
     assert ethereum.local.gas_limit == "max"
 
 
@@ -72,7 +72,7 @@ def test_forked_networks(ethereum):
     # Just make sure it doesn't fail when trying to access.
     assert mainnet_fork.upstream_provider
     # Ensure has default configurations.
-    cfg = mainnet_fork.config.mainnet_fork
+    cfg = mainnet_fork.ecosystem_config.mainnet_fork
     assert cfg.default_transaction_type == TransactionType.DYNAMIC
     assert cfg.block_time == 0
     assert cfg.default_provider is None
@@ -86,7 +86,7 @@ def test_forked_network_with_config(temp_config, ethereum):
         "ethereum": {"mainnet_fork": {"default_transaction_type": TransactionType.STATIC.value}}
     }
     with temp_config(data):
-        cfg = ethereum.mainnet_fork.config.mainnet_fork
+        cfg = ethereum.mainnet_fork.ecosystem_config.mainnet_fork
         assert cfg.default_transaction_type == TransactionType.STATIC
         assert cfg.block_time == 0
         assert cfg.default_provider is None
@@ -108,7 +108,7 @@ def test_config_custom_networks_default(ethereum, custom_networks_config):
     present.
     """
     network = ethereum.apenet
-    cfg = network.config.apenet
+    cfg = network.ecosystem_config.apenet
     assert cfg.default_transaction_type == TransactionType.DYNAMIC
 
 
@@ -121,7 +121,7 @@ def test_config_custom_networks(
     }
     with temp_config(data):
         network = ethereum.apenet
-        ethereum_config = network.config
+        ethereum_config = network.ecosystem_config
         cfg_by_attr = ethereum_config.apenet
         assert cfg_by_attr.default_transaction_type == TransactionType.STATIC
 
@@ -143,7 +143,7 @@ def test_config_networks_from_custom_ecosystem(
     with temp_config(data):
         custom_ecosystem = networks.get_ecosystem("custom-ecosystem")
         network = custom_ecosystem.get_network("apenet")
-        ethereum_config = network.config
+        ethereum_config = network.ecosystem_config
         cfg_by_attr = ethereum_config.apenet
         assert cfg_by_attr.default_transaction_type == TransactionType.STATIC
 

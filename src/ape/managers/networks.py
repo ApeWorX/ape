@@ -1,8 +1,5 @@
-import json
 from functools import cached_property
 from typing import Collection, Dict, Iterator, List, Optional, Set, Type, Union
-
-import yaml
 
 from ape.api import EcosystemAPI, ProviderAPI, ProviderContextManager
 from ape.api.networks import NetworkAPI
@@ -628,39 +625,6 @@ class NetworkManager(BaseManager):
             ecosystem_data["networks"].append(network_data)
 
         return ecosystem_data
-
-    @property
-    # TODO: Remove in 0.7
-    def networks_yaml(self) -> str:
-        """
-        Get a ``yaml`` ``str`` representing all the networks
-        in all the ecosystems.
-        **NOTE**: Deprecated.
-
-        View the result via CLI command ``ape networks list --format yaml``.
-
-        Returns:
-            str
-        """
-
-        data = self.network_data
-        if not isinstance(data, dict):
-            raise TypeError(
-                f"Unexpected network data type: {type(data)}. "
-                f"Expecting dict. YAML dump will fail."
-            )
-
-        try:
-            return yaml.dump(data, sort_keys=True)
-        except ValueError as err:
-            try:
-                data_str = json.dumps(data)
-            except Exception:
-                data_str = str(data)
-
-            raise NetworkError(
-                f"Network data did not dump to YAML: {data_str}\nActual err: {err}"
-            ) from err
 
 
 def _validate_filter(arg: Optional[Union[List[str], str]], options: Set[str]):

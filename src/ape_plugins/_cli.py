@@ -14,10 +14,10 @@ from ape.plugins._utils import (
     PluginMetadata,
     PluginMetadataList,
     PluginType,
-    _pip_freeze,
     ape_version,
 )
 from ape.utils.misc import load_config
+from ape.utils.misc import _get_distributions
 
 
 @click.group(short_help="Manage ape plugins")
@@ -40,11 +40,7 @@ def plugins_argument():
         if file_path.is_file():
             config = load_config(file_path)
             if plugins := config.get("plugins"):
-                res = [PluginMetadata.model_validate(d) for d in plugins]
-                for itm in res:
-                    itm._use_subprocess_pip_freeze = True
-
-                return res
+                return [PluginMetadata.model_validate(d) for d in plugins]
 
         ctx.obj.logger.warning(f"No plugins found at '{file_path}'.")
         return []
@@ -60,17 +56,11 @@ def plugins_argument():
             res = (
                 load_from_file(ctx, file_path)
                 if file_path.exists()
-                else [
-                    PluginMetadata(name=v, _use_subprocess_pip_freeze=True)
-                    for v in value[0].split(" ")
-                ]
+                else [PluginMetadata(name=v) for v in value[0].split(" ")]
             )
 
         else:
-            res = [PluginMetadata(name=v, _use_subprocess_pip_freeze=True) for v in value]
-
-        for itm in res:
-            itm._use_subprocess_pip_freeze = True
+            res = [PluginMetadata(name=v) for v in value]
 
         return res
 
@@ -242,7 +232,7 @@ def _change_version(spec: str):
     # This will also update core Ape.
     # NOTE: It is possible plugins may depend on each other and may update in
     #   an order causing some error codes to pop-up, so we ignore those for now.
-    for plugin in _pip_freeze.get_plugins(use_process=True):
+    for plugin in _get_distributions():
         logger.info(f"Updating {plugin} ...")
         name = plugin.split("=")[0].strip()
         subprocess.call([sys.executable, "-m", "pip", "install", f"{name}{spec}", "--quiet"])

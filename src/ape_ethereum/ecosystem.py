@@ -73,7 +73,6 @@ from ape_ethereum.transactions import (
 NETWORKS = {
     # chain_id, network_id
     "mainnet": (1, 1),
-    "goerli": (5, 5),
     "sepolia": (11155111, 11155111),
 }
 BLUEPRINT_HEADER = HexBytes("0xfe71")
@@ -281,7 +280,6 @@ class BaseEthereumConfig(PluginConfig):
 
 class EthereumConfig(BaseEthereumConfig):
     mainnet: NetworkConfig = create_network_config(block_time=13)
-    goerli: NetworkConfig = create_network_config(block_time=15)
     sepolia: NetworkConfig = create_network_config(block_time=15)
 
 
@@ -295,6 +293,7 @@ class Block(BlockAPI):
     base_fee: int = Field(0, alias="baseFeePerGas")
     difficulty: int = 0
     total_difficulty: int = Field(0, alias="totalDifficulty")
+    uncles: List[HexBytes] = []
 
     # Type re-declares.
     hash: Optional[HexBytes] = None
@@ -316,6 +315,24 @@ class Block(BlockAPI):
     @classmethod
     def validate_ints(cls, value):
         return to_int(value) if value else 0
+
+    @computed_field()  # type: ignore[misc]
+    @property
+    def size(self) -> int:
+        if self._size is not None:
+            # The size was provided with the rest of the model
+            # (normal).
+            return self._size
+
+        # Try to get it from the provider.
+        if provider := self.network_manager.active_provider:
+            block = provider.get_block(self.number)
+            size = block._size
+            if size is not None and size > -1:
+                self._size = size
+                return size
+
+        raise APINotImplementedError()
 
 
 class Ethereum(EcosystemAPI):
@@ -339,8 +356,8 @@ class Ethereum(EcosystemAPI):
 
         for name in networks_to_check:
             network = self.get_network(name)
-            ecosystem_default = network.config.DEFAULT_TRANSACTION_TYPE
-            result: int = network._network_config.get("default_transaction_type", ecosystem_default)
+            ecosystem_default = network.ecosystem_config.DEFAULT_TRANSACTION_TYPE
+            result: int = network.config.get("default_transaction_type", ecosystem_default)
             return TransactionType(result)
 
         return TransactionType(DEFAULT_TRANSACTION_TYPE)
@@ -551,11 +568,6 @@ class Ethereum(EcosystemAPI):
             data["baseFeePerGas"] = data.pop("baseFee")
         if "transactions" in data:
             data["num_transactions"] = len(data["transactions"])
-
-        if "size" not in data:
-            # NOTE: Due to an issue with `eth_subscribe:newHeads` on Infura
-            # https://github.com/ApeWorX/ape-infura/issues/72
-            data["size"] = -1  # HACK: use an unrealistic sentinel value
 
         return Block.model_validate(data)
 

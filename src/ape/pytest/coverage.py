@@ -20,6 +20,7 @@ from ape.utils import (
     get_relative_path,
     parse_coverage_tables,
 )
+from ape.utils.os import get_full_extension
 
 
 class CoverageData(ManagerAccessMixin):
@@ -48,7 +49,7 @@ class CoverageData(ManagerAccessMixin):
 
         for src in self.sources:
             source_cov = project_coverage.include(src)
-            ext = Path(src.source_id).suffix
+            ext = get_full_extension(Path(src.source_id))
             if ext not in self.compiler_manager.registered_compilers:
                 continue
 

@@ -198,7 +198,6 @@ class GethDevProcess(BaseGethProcess):
 class GethNetworkConfig(PluginConfig):
     # Make sure you are running the right networks when you try for these
     mainnet: Dict = {"uri": get_random_rpc("ethereum", "mainnet")}
-    goerli: Dict = {"uri": get_random_rpc("ethereum", "goerli")}
     sepolia: Dict = {"uri": get_random_rpc("ethereum", "sepolia")}
     # Make sure to run via `geth --dev` (or similar)
     local: Dict = {**DEFAULT_SETTINGS.copy(), "chain_id": DEFAULT_TEST_CHAIN_ID}
@@ -313,7 +312,7 @@ class GethDev(EthereumNodeProvider, TestProviderAPI, SubprocessProvider):
     def snapshot(self) -> SnapshotID:
         return self.get_block("latest").number or 0
 
-    def revert(self, snapshot_id: SnapshotID):
+    def restore(self, snapshot_id: SnapshotID):
         if isinstance(snapshot_id, int):
             block_number_int = snapshot_id
             block_number_hex_str = str(to_hex(snapshot_id))

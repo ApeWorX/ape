@@ -97,7 +97,7 @@ setup(
     install_requires=[
         "click>=8.1.6,<9",
         "ijson>=3.1.4,<4",
-        "importlib-metadata",
+        "importlib-metadata",  # NOTE: Needed on 3.8 for entry_points `group=` kwarg.
         "ipython>=8.5.0,<9",
         "lazyasd>=0.1.4",
         "packaging>=23.0,<24",
@@ -116,7 +116,7 @@ setup(
         "urllib3>=2.0.0,<3",
         "watchdog>=3.0,<4",
         # ** Dependencies maintained by Ethereum Foundation **
-        "eth-abi>=4.2.1,<5",
+        "eth-abi>=5.1.0,<6",
         "eth-account>=0.10.0,<0.11",
         "eth-typing>=3.5.2,<4",
         "eth-utils>=2.3.1,<3",

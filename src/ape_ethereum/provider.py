@@ -552,7 +552,7 @@ class Web3Provider(ProviderAPI, ABC):
         except TimeExhausted as err:
             raise TransactionNotFoundError(txn_hash, error_messsage=str(err)) from err
 
-        ecosystem_config = self.network.config.model_dump(by_alias=True, mode="json")
+        ecosystem_config = self.network.ecosystem_config.model_dump(by_alias=True, mode="json")
         network_config: Dict = ecosystem_config.get(self.network.name, {})
         max_retries = network_config.get("max_get_transaction_retries", DEFAULT_MAX_RETRIES_TX)
         txn = {}
@@ -1145,7 +1145,6 @@ class Web3Provider(ProviderAPI, ABC):
         contract_address: Optional[AddressType] = None,
         source_traceback: Optional[SourceTraceback] = None,
     ) -> ContractLogicError:
-
         if hasattr(exception, "args") and len(exception.args) == 2:
             message = exception.args[0].replace("execution reverted: ", "")
             data = exception.args[1]
@@ -1203,7 +1202,7 @@ class Web3Provider(ProviderAPI, ABC):
         )
         enriched = self.compiler_manager.enrich_error(result)
 
-        # Show call trace if availble
+        # Show call trace if available
         if enriched.txn:
             # Unlikely scenario where a transaction is on the error even though a receipt exists.
             if isinstance(enriched.txn, TransactionAPI) and enriched.txn.receipt:
