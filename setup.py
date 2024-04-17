@@ -76,6 +76,7 @@ extras_require["dev"] = (
 with open("./README.md") as readme:
     long_description = readme.read()
 
+
 setup(
     name="eth-ape",
     use_scm_version=True,
@@ -106,10 +107,10 @@ setup(
         "pydantic-settings>=2.0.3,<3",
         "PyGithub>=1.59,<2",
         "pytest>=6.0,<8.0",
-        "python-dateutil>=2.8.2",
+        "python-dateutil>=2.8.2,<3",
         "PyYAML>=5.0,<7",
         "requests>=2.28.1,<3",
-        "rich>=12.5.1",
+        "rich>=12.5.1,<14",
         "SQLAlchemy>=1.4.35",
         "tqdm>=4.62.3,<5.0",
         "traitlets>=5.3.0",
@@ -120,7 +121,7 @@ setup(
         "eth-account>=0.11.2,<0.12",
         "eth-tester @ git+https://github.com/wakamex/eth-tester.git",
         "eth-typing>=3.5.2,<4",
-        "eth-utils>=2.3.1",
+        "eth-utils>=2.3.1,<3",
         "py-geth>=4.4.0,<5",
         "web3[tester]>=6.17.2,<7",
         # ** Dependencies maintained by ApeWorX **
