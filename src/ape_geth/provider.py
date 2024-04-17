@@ -249,6 +249,14 @@ class GethDev(EthereumNodeProvider, TestProviderAPI, SubprocessProvider):
     def __repr__(self) -> str:
         return f"<geth chain_id={self.chain_id}>"
 
+    @property
+    def auto_mine(self) -> bool:
+        return self._make_request("eth_mining", [])
+
+    @auto_mine.setter
+    def auto_mine(self, value):
+        raise NotImplementedError("'auto_mine' setter not implemented.")
+
     def connect(self):
         self._set_web3()
         if self.is_connected:

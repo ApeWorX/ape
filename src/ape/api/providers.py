@@ -874,6 +874,20 @@ class TestProviderAPI(ProviderAPI):
             num_blocks (int): The number of blocks allotted to mine. Defaults to ``1``.
         """
 
+    @property
+    @abstractmethod
+    def auto_mine(self) -> bool:
+        """
+        Whether automine is enabled.
+        """
+
+    @auto_mine.setter
+    @abstractmethod
+    def auto_mine(self) -> bool:
+        """
+        Enable or disbale automine.
+        """
+
     def _increment_call_func_coverage_hit_count(self, txn: TransactionAPI):
         """
         A helper method for incrementing a method call function hit count in a
