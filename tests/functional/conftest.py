@@ -737,7 +737,7 @@ def disable_fork_providers(ethereum):
 
 
 @pytest.fixture
-def mock_fork_provider(mocker, ethereum):
+def mock_fork_provider(mocker, ethereum, mock_sepolia):
     """
     A fake provider representing something like ape-foundry
     that can fork networks (only uses sepolia-fork).
@@ -753,11 +753,8 @@ def mock_fork_provider(mocker, ethereum):
         return mock_provider
 
     ethereum.sepolia_fork.__dict__["providers"] = {"mock": fake_partial}
-
     yield mock_provider
-
-    if actual:
-        ethereum.sepolia_fork.__dict__["providers"] = actual
+    ethereum.sepolia_fork.__dict__["providers"] = actual or {}
 
 
 @pytest.fixture
