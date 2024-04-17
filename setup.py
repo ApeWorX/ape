@@ -125,11 +125,11 @@ setup(
         "py-geth>=4.4.0,<5",
         "web3[tester]>=6.16.0,<6.17.1",
         # ** Dependencies maintained by ApeWorX **
-        "eip712>=0.2.7,<0.4",
+        "eip712>=0.2.7,<0.3",
         "ethpm-types>=0.6.9,<0.7",
         "eth_pydantic_types>=0.1.0,<0.2",
-        "evmchains>=0.0.2,<0.1",
-        "evm-trace>=0.1.2",
+        "evmchains>=0.0.6,<0.1",
+        "evm-trace>=0.1.3,<0.2",
     ],
     entry_points={
         "console_scripts": ["ape=ape._cli:cli"],
