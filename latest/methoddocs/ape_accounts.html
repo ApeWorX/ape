@@ -50,6 +50,7 @@
               <option value="">Select version...</option>
               <option value="latest">latest</option>
               <option value="stable">stable</option>
+                <option value="v0.7.16">v0.7.16</option>
                 <option value="v0.7.15">v0.7.15</option>
                 <option value="v0.7.14">v0.7.14</option>
                 <option value="v0.7.12">v0.7.12</option>
@@ -182,11 +183,13 @@
 <li class="toctree-l2"><a class="reference internal" href="#ape_accounts.AccountContainer"><code class="docutils literal notranslate"><span class="pre">AccountContainer</span></code></a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#ape_accounts.AccountContainer.accounts"><code class="docutils literal notranslate"><span class="pre">AccountContainer.accounts</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ape_accounts.AccountContainer.aliases"><code class="docutils literal notranslate"><span class="pre">AccountContainer.aliases</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#ape_accounts.AccountContainer.model_computed_fields"><code class="docutils literal notranslate"><span class="pre">AccountContainer.model_computed_fields</span></code></a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="#ape_accounts.KeyfileAccount"><code class="docutils literal notranslate"><span class="pre">KeyfileAccount</span></code></a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#ape_accounts.KeyfileAccount.address"><code class="docutils literal notranslate"><span class="pre">KeyfileAccount.address</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ape_accounts.KeyfileAccount.alias"><code class="docutils literal notranslate"><span class="pre">KeyfileAccount.alias</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#ape_accounts.KeyfileAccount.model_computed_fields"><code class="docutils literal notranslate"><span class="pre">KeyfileAccount.model_computed_fields</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ape_accounts.KeyfileAccount.set_autosign"><code class="docutils literal notranslate"><span class="pre">KeyfileAccount.set_autosign()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ape_accounts.KeyfileAccount.sign_message"><code class="docutils literal notranslate"><span class="pre">KeyfileAccount.sign_message()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ape_accounts.KeyfileAccount.sign_raw_msghash"><code class="docutils literal notranslate"><span class="pre">KeyfileAccount.sign_raw_msghash()</span></code></a></li>
@@ -259,6 +262,12 @@
 </dl>
 </dd></dl>
 
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ape_accounts.AccountContainer.model_computed_fields">
+<span class="sig-name descname"><span class="pre">model_computed_fields</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ClassVar</span><span class="p"><span class="pre">[</span></span><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ComputedFieldInfo</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{}</span></em><a class="headerlink" href="#ape_accounts.AccountContainer.model_computed_fields" title="Permalink to this definition"></a></dt>
+<dd><p>A dictionary of computed field names and their corresponding <cite>ComputedFieldInfo</cite> objects.</p>
+</dd></dl>
+
 </dd></dl>
 
 <dl class="py class">
@@ -274,6 +283,12 @@
 <dt class="sig sig-object py" id="ape_accounts.KeyfileAccount.alias">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">alias</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#ape_accounts.KeyfileAccount.alias" title="Permalink to this definition"></a></dt>
 <dd><p>A shortened-name for quicker access to the account.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ape_accounts.KeyfileAccount.model_computed_fields">
+<span class="sig-name descname"><span class="pre">model_computed_fields</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ClassVar</span><span class="p"><span class="pre">[</span></span><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ComputedFieldInfo</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{}</span></em><a class="headerlink" href="#ape_accounts.KeyfileAccount.model_computed_fields" title="Permalink to this definition"></a></dt>
+<dd><p>A dictionary of computed field names and their corresponding <cite>ComputedFieldInfo</cite> objects.</p>
 </dd></dl>
 
 <dl class="py method">

@@ -50,6 +50,7 @@
               <option value="">Select version...</option>
               <option value="latest">latest</option>
               <option value="stable">stable</option>
+                <option value="v0.7.16">v0.7.16</option>
                 <option value="v0.7.15">v0.7.15</option>
                 <option value="v0.7.14">v0.7.14</option>
                 <option value="v0.7.12">v0.7.12</option>
@@ -188,6 +189,7 @@
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.accounts.AccountAPI.check_signature"><code class="docutils literal notranslate"><span class="pre">AccountAPI.check_signature()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.accounts.AccountAPI.declare"><code class="docutils literal notranslate"><span class="pre">AccountAPI.declare()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.accounts.AccountAPI.deploy"><code class="docutils literal notranslate"><span class="pre">AccountAPI.deploy()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ape.api.accounts.AccountAPI.model_computed_fields"><code class="docutils literal notranslate"><span class="pre">AccountAPI.model_computed_fields</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.accounts.AccountAPI.prepare_transaction"><code class="docutils literal notranslate"><span class="pre">AccountAPI.prepare_transaction()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.accounts.AccountAPI.sign_message"><code class="docutils literal notranslate"><span class="pre">AccountAPI.sign_message()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.accounts.AccountAPI.sign_raw_msghash"><code class="docutils literal notranslate"><span class="pre">AccountAPI.sign_raw_msghash()</span></code></a></li>
@@ -203,19 +205,25 @@
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.accounts.AccountContainerAPI.accounts"><code class="docutils literal notranslate"><span class="pre">AccountContainerAPI.accounts</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.accounts.AccountContainerAPI.aliases"><code class="docutils literal notranslate"><span class="pre">AccountContainerAPI.aliases</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.accounts.AccountContainerAPI.append"><code class="docutils literal notranslate"><span class="pre">AccountContainerAPI.append()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ape.api.accounts.AccountContainerAPI.model_computed_fields"><code class="docutils literal notranslate"><span class="pre">AccountContainerAPI.model_computed_fields</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.accounts.AccountContainerAPI.remove"><code class="docutils literal notranslate"><span class="pre">AccountContainerAPI.remove()</span></code></a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="#ape.api.accounts.ImpersonatedAccount"><code class="docutils literal notranslate"><span class="pre">ImpersonatedAccount</span></code></a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.accounts.ImpersonatedAccount.address"><code class="docutils literal notranslate"><span class="pre">ImpersonatedAccount.address</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.accounts.ImpersonatedAccount.call"><code class="docutils literal notranslate"><span class="pre">ImpersonatedAccount.call()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ape.api.accounts.ImpersonatedAccount.model_computed_fields"><code class="docutils literal notranslate"><span class="pre">ImpersonatedAccount.model_computed_fields</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.accounts.ImpersonatedAccount.sign_message"><code class="docutils literal notranslate"><span class="pre">ImpersonatedAccount.sign_message()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.accounts.ImpersonatedAccount.sign_transaction"><code class="docutils literal notranslate"><span class="pre">ImpersonatedAccount.sign_transaction()</span></code></a></li>
 </ul>
 </li>
-<li class="toctree-l3"><a class="reference internal" href="#ape.api.accounts.TestAccountAPI"><code class="docutils literal notranslate"><span class="pre">TestAccountAPI</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#ape.api.accounts.TestAccountAPI"><code class="docutils literal notranslate"><span class="pre">TestAccountAPI</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#ape.api.accounts.TestAccountAPI.model_computed_fields"><code class="docutils literal notranslate"><span class="pre">TestAccountAPI.model_computed_fields</span></code></a></li>
+</ul>
+</li>
 <li class="toctree-l3"><a class="reference internal" href="#ape.api.accounts.TestAccountContainerAPI"><code class="docutils literal notranslate"><span class="pre">TestAccountContainerAPI</span></code></a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.accounts.TestAccountContainerAPI.generate_account"><code class="docutils literal notranslate"><span class="pre">TestAccountContainerAPI.generate_account()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ape.api.accounts.TestAccountContainerAPI.model_computed_fields"><code class="docutils literal notranslate"><span class="pre">TestAccountContainerAPI.model_computed_fields</span></code></a></li>
 </ul>
 </li>
 </ul>
@@ -244,6 +252,7 @@
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.compiler.CompilerAPI.config"><code class="docutils literal notranslate"><span class="pre">CompilerAPI.config</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.compiler.CompilerAPI.enrich_error"><code class="docutils literal notranslate"><span class="pre">CompilerAPI.enrich_error()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.compiler.CompilerAPI.get_versions"><code class="docutils literal notranslate"><span class="pre">CompilerAPI.get_versions()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ape.api.compiler.CompilerAPI.model_computed_fields"><code class="docutils literal notranslate"><span class="pre">CompilerAPI.model_computed_fields</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.compiler.CompilerAPI.name"><code class="docutils literal notranslate"><span class="pre">CompilerAPI.name</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.compiler.CompilerAPI.settings"><code class="docutils literal notranslate"><span class="pre">CompilerAPI.settings</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.compiler.CompilerAPI.supports_source_tracing"><code class="docutils literal notranslate"><span class="pre">CompilerAPI.supports_source_tracing</span></code></a></li>
@@ -254,13 +263,17 @@
 <li class="toctree-l2"><a class="reference internal" href="#module-ape.api.config">Config</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#ape.api.config.ConfigEnum"><code class="docutils literal notranslate"><span class="pre">ConfigEnum</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ape.api.config.GenericConfig"><code class="docutils literal notranslate"><span class="pre">GenericConfig</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="#ape.api.config.PluginConfig"><code class="docutils literal notranslate"><span class="pre">PluginConfig</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#ape.api.config.PluginConfig"><code class="docutils literal notranslate"><span class="pre">PluginConfig</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#ape.api.config.PluginConfig.model_computed_fields"><code class="docutils literal notranslate"><span class="pre">PluginConfig.model_computed_fields</span></code></a></li>
+</ul>
+</li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="#module-ape.api.convert">Convert</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#ape.api.convert.ConverterAPI"><code class="docutils literal notranslate"><span class="pre">ConverterAPI</span></code></a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.convert.ConverterAPI.convert"><code class="docutils literal notranslate"><span class="pre">ConverterAPI.convert()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.convert.ConverterAPI.is_convertible"><code class="docutils literal notranslate"><span class="pre">ConverterAPI.is_convertible()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ape.api.convert.ConverterAPI.model_computed_fields"><code class="docutils literal notranslate"><span class="pre">ConverterAPI.model_computed_fields</span></code></a></li>
 </ul>
 </li>
 </ul>
@@ -270,6 +283,7 @@
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.explorers.ExplorerAPI.get_address_url"><code class="docutils literal notranslate"><span class="pre">ExplorerAPI.get_address_url()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.explorers.ExplorerAPI.get_contract_type"><code class="docutils literal notranslate"><span class="pre">ExplorerAPI.get_contract_type()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.explorers.ExplorerAPI.get_transaction_url"><code class="docutils literal notranslate"><span class="pre">ExplorerAPI.get_transaction_url()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ape.api.explorers.ExplorerAPI.model_computed_fields"><code class="docutils literal notranslate"><span class="pre">ExplorerAPI.model_computed_fields</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.explorers.ExplorerAPI.publish_contract"><code class="docutils literal notranslate"><span class="pre">ExplorerAPI.publish_contract()</span></code></a></li>
 </ul>
 </li>
@@ -301,6 +315,7 @@
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.networks.EcosystemAPI.get_network"><code class="docutils literal notranslate"><span class="pre">EcosystemAPI.get_network()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.networks.EcosystemAPI.get_network_data"><code class="docutils literal notranslate"><span class="pre">EcosystemAPI.get_network_data()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.networks.EcosystemAPI.get_proxy_info"><code class="docutils literal notranslate"><span class="pre">EcosystemAPI.get_proxy_info()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ape.api.networks.EcosystemAPI.model_computed_fields"><code class="docutils literal notranslate"><span class="pre">EcosystemAPI.model_computed_fields</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.networks.EcosystemAPI.name"><code class="docutils literal notranslate"><span class="pre">EcosystemAPI.name</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.networks.EcosystemAPI.networks"><code class="docutils literal notranslate"><span class="pre">EcosystemAPI.networks</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.networks.EcosystemAPI.request_header"><code class="docutils literal notranslate"><span class="pre">EcosystemAPI.request_header</span></code></a></li>
@@ -309,6 +324,7 @@
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="#ape.api.networks.ForkedNetworkAPI"><code class="docutils literal notranslate"><span class="pre">ForkedNetworkAPI</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#ape.api.networks.ForkedNetworkAPI.model_computed_fields"><code class="docutils literal notranslate"><span class="pre">ForkedNetworkAPI.model_computed_fields</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.networks.ForkedNetworkAPI.upstream_chain_id"><code class="docutils literal notranslate"><span class="pre">ForkedNetworkAPI.upstream_chain_id</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.networks.ForkedNetworkAPI.upstream_network"><code class="docutils literal notranslate"><span class="pre">ForkedNetworkAPI.upstream_network</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.networks.ForkedNetworkAPI.upstream_provider"><code class="docutils literal notranslate"><span class="pre">ForkedNetworkAPI.upstream_provider</span></code></a></li>
@@ -330,6 +346,7 @@
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.networks.NetworkAPI.is_dev"><code class="docutils literal notranslate"><span class="pre">NetworkAPI.is_dev</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.networks.NetworkAPI.is_fork"><code class="docutils literal notranslate"><span class="pre">NetworkAPI.is_fork</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.networks.NetworkAPI.is_local"><code class="docutils literal notranslate"><span class="pre">NetworkAPI.is_local</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ape.api.networks.NetworkAPI.model_computed_fields"><code class="docutils literal notranslate"><span class="pre">NetworkAPI.model_computed_fields</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.networks.NetworkAPI.name"><code class="docutils literal notranslate"><span class="pre">NetworkAPI.name</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.networks.NetworkAPI.network_id"><code class="docutils literal notranslate"><span class="pre">NetworkAPI.network_id</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.networks.NetworkAPI.providers"><code class="docutils literal notranslate"><span class="pre">NetworkAPI.providers</span></code></a></li>
@@ -348,6 +365,7 @@
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="#ape.api.networks.ProxyInfoAPI"><code class="docutils literal notranslate"><span class="pre">ProxyInfoAPI</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#ape.api.networks.ProxyInfoAPI.model_computed_fields"><code class="docutils literal notranslate"><span class="pre">ProxyInfoAPI.model_computed_fields</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.networks.ProxyInfoAPI.target"><code class="docutils literal notranslate"><span class="pre">ProxyInfoAPI.target</span></code></a></li>
 </ul>
 </li>
@@ -363,6 +381,7 @@
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.projects.DependencyAPI.contracts_folder"><code class="docutils literal notranslate"><span class="pre">DependencyAPI.contracts_folder</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.projects.DependencyAPI.exclude"><code class="docutils literal notranslate"><span class="pre">DependencyAPI.exclude</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.projects.DependencyAPI.extract_manifest"><code class="docutils literal notranslate"><span class="pre">DependencyAPI.extract_manifest()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ape.api.projects.DependencyAPI.model_computed_fields"><code class="docutils literal notranslate"><span class="pre">DependencyAPI.model_computed_fields</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.projects.DependencyAPI.name"><code class="docutils literal notranslate"><span class="pre">DependencyAPI.name</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.projects.DependencyAPI.uri"><code class="docutils literal notranslate"><span class="pre">DependencyAPI.uri</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.projects.DependencyAPI.version"><code class="docutils literal notranslate"><span class="pre">DependencyAPI.version</span></code></a></li>
@@ -376,6 +395,7 @@
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.projects.ProjectAPI.create_manifest"><code class="docutils literal notranslate"><span class="pre">ProjectAPI.create_manifest()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.projects.ProjectAPI.is_valid"><code class="docutils literal notranslate"><span class="pre">ProjectAPI.is_valid</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.projects.ProjectAPI.manifest_cachefile"><code class="docutils literal notranslate"><span class="pre">ProjectAPI.manifest_cachefile</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ape.api.projects.ProjectAPI.model_computed_fields"><code class="docutils literal notranslate"><span class="pre">ProjectAPI.model_computed_fields</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.projects.ProjectAPI.name"><code class="docutils literal notranslate"><span class="pre">ProjectAPI.name</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.projects.ProjectAPI.path"><code class="docutils literal notranslate"><span class="pre">ProjectAPI.path</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.projects.ProjectAPI.process_config_file"><code class="docutils literal notranslate"><span class="pre">ProjectAPI.process_config_file()</span></code></a></li>
@@ -387,7 +407,10 @@
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="#module-ape.api.providers">Providers</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#ape.api.providers.BlockAPI"><code class="docutils literal notranslate"><span class="pre">BlockAPI</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#ape.api.providers.BlockAPI"><code class="docutils literal notranslate"><span class="pre">BlockAPI</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#ape.api.providers.BlockAPI.model_computed_fields"><code class="docutils literal notranslate"><span class="pre">BlockAPI.model_computed_fields</span></code></a></li>
+</ul>
+</li>
 <li class="toctree-l3"><a class="reference internal" href="#ape.api.providers.ProviderAPI"><code class="docutils literal notranslate"><span class="pre">ProviderAPI</span></code></a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.providers.ProviderAPI.base_fee"><code class="docutils literal notranslate"><span class="pre">ProviderAPI.base_fee</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.providers.ProviderAPI.block_page_size"><code class="docutils literal notranslate"><span class="pre">ProviderAPI.block_page_size</span></code></a></li>
@@ -412,6 +435,7 @@
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.providers.ProviderAPI.http_uri"><code class="docutils literal notranslate"><span class="pre">ProviderAPI.http_uri</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.providers.ProviderAPI.is_connected"><code class="docutils literal notranslate"><span class="pre">ProviderAPI.is_connected</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.providers.ProviderAPI.max_gas"><code class="docutils literal notranslate"><span class="pre">ProviderAPI.max_gas</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ape.api.providers.ProviderAPI.model_computed_fields"><code class="docutils literal notranslate"><span class="pre">ProviderAPI.model_computed_fields</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.providers.ProviderAPI.name"><code class="docutils literal notranslate"><span class="pre">ProviderAPI.name</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.providers.ProviderAPI.network"><code class="docutils literal notranslate"><span class="pre">ProviderAPI.network</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.providers.ProviderAPI.network_choice"><code class="docutils literal notranslate"><span class="pre">ProviderAPI.network_choice</span></code></a></li>
@@ -433,6 +457,7 @@
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.providers.SubprocessProvider.connect"><code class="docutils literal notranslate"><span class="pre">SubprocessProvider.connect()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.providers.SubprocessProvider.connection_id"><code class="docutils literal notranslate"><span class="pre">SubprocessProvider.connection_id</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.providers.SubprocessProvider.disconnect"><code class="docutils literal notranslate"><span class="pre">SubprocessProvider.disconnect()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ape.api.providers.SubprocessProvider.model_computed_fields"><code class="docutils literal notranslate"><span class="pre">SubprocessProvider.model_computed_fields</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.providers.SubprocessProvider.process_name"><code class="docutils literal notranslate"><span class="pre">SubprocessProvider.process_name</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.providers.SubprocessProvider.start"><code class="docutils literal notranslate"><span class="pre">SubprocessProvider.start()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.providers.SubprocessProvider.stop"><code class="docutils literal notranslate"><span class="pre">SubprocessProvider.stop()</span></code></a></li>
@@ -440,12 +465,16 @@
 </li>
 <li class="toctree-l3"><a class="reference internal" href="#ape.api.providers.TestProviderAPI"><code class="docutils literal notranslate"><span class="pre">TestProviderAPI</span></code></a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.providers.TestProviderAPI.mine"><code class="docutils literal notranslate"><span class="pre">TestProviderAPI.mine()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ape.api.providers.TestProviderAPI.model_computed_fields"><code class="docutils literal notranslate"><span class="pre">TestProviderAPI.model_computed_fields</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.providers.TestProviderAPI.revert"><code class="docutils literal notranslate"><span class="pre">TestProviderAPI.revert()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.providers.TestProviderAPI.set_timestamp"><code class="docutils literal notranslate"><span class="pre">TestProviderAPI.set_timestamp()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.providers.TestProviderAPI.snapshot"><code class="docutils literal notranslate"><span class="pre">TestProviderAPI.snapshot()</span></code></a></li>
 </ul>
 </li>
-<li class="toctree-l3"><a class="reference internal" href="#ape.api.providers.UpstreamProvider"><code class="docutils literal notranslate"><span class="pre">UpstreamProvider</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#ape.api.providers.UpstreamProvider"><code class="docutils literal notranslate"><span class="pre">UpstreamProvider</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#ape.api.providers.UpstreamProvider.model_computed_fields"><code class="docutils literal notranslate"><span class="pre">UpstreamProvider.model_computed_fields</span></code></a></li>
+</ul>
+</li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="#transactions">Transactions</a><ul>
@@ -457,6 +486,7 @@
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.transactions.ReceiptAPI.events"><code class="docutils literal notranslate"><span class="pre">ReceiptAPI.events</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.transactions.ReceiptAPI.failed"><code class="docutils literal notranslate"><span class="pre">ReceiptAPI.failed</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.transactions.ReceiptAPI.method_called"><code class="docutils literal notranslate"><span class="pre">ReceiptAPI.method_called</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ape.api.transactions.ReceiptAPI.model_computed_fields"><code class="docutils literal notranslate"><span class="pre">ReceiptAPI.model_computed_fields</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.transactions.ReceiptAPI.raise_for_status"><code class="docutils literal notranslate"><span class="pre">ReceiptAPI.raise_for_status()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.transactions.ReceiptAPI.ran_out_of_gas"><code class="docutils literal notranslate"><span class="pre">ReceiptAPI.ran_out_of_gas</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.transactions.ReceiptAPI.return_value"><code class="docutils literal notranslate"><span class="pre">ReceiptAPI.return_value</span></code></a></li>
@@ -468,6 +498,7 @@
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="#ape.api.transactions.TransactionAPI"><code class="docutils literal notranslate"><span class="pre">TransactionAPI</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#ape.api.transactions.TransactionAPI.model_computed_fields"><code class="docutils literal notranslate"><span class="pre">TransactionAPI.model_computed_fields</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.transactions.TransactionAPI.receipt"><code class="docutils literal notranslate"><span class="pre">TransactionAPI.receipt</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.transactions.TransactionAPI.serialize_transaction"><code class="docutils literal notranslate"><span class="pre">TransactionAPI.serialize_transaction()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.transactions.TransactionAPI.total_transfer_value"><code class="docutils literal notranslate"><span class="pre">TransactionAPI.total_transfer_value</span></code></a></li>
@@ -478,12 +509,30 @@
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="#module-ape.api.query">Query</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#ape.api.query.AccountTransactionQuery"><code class="docutils literal notranslate"><span class="pre">AccountTransactionQuery</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="#ape.api.query.BlockQuery"><code class="docutils literal notranslate"><span class="pre">BlockQuery</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="#ape.api.query.BlockTransactionQuery"><code class="docutils literal notranslate"><span class="pre">BlockTransactionQuery</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="#ape.api.query.ContractCreationQuery"><code class="docutils literal notranslate"><span class="pre">ContractCreationQuery</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="#ape.api.query.ContractEventQuery"><code class="docutils literal notranslate"><span class="pre">ContractEventQuery</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="#ape.api.query.ContractMethodQuery"><code class="docutils literal notranslate"><span class="pre">ContractMethodQuery</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#ape.api.query.AccountTransactionQuery"><code class="docutils literal notranslate"><span class="pre">AccountTransactionQuery</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#ape.api.query.AccountTransactionQuery.model_computed_fields"><code class="docutils literal notranslate"><span class="pre">AccountTransactionQuery.model_computed_fields</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#ape.api.query.BlockQuery"><code class="docutils literal notranslate"><span class="pre">BlockQuery</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#ape.api.query.BlockQuery.model_computed_fields"><code class="docutils literal notranslate"><span class="pre">BlockQuery.model_computed_fields</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#ape.api.query.BlockTransactionQuery"><code class="docutils literal notranslate"><span class="pre">BlockTransactionQuery</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#ape.api.query.BlockTransactionQuery.model_computed_fields"><code class="docutils literal notranslate"><span class="pre">BlockTransactionQuery.model_computed_fields</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#ape.api.query.ContractCreationQuery"><code class="docutils literal notranslate"><span class="pre">ContractCreationQuery</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#ape.api.query.ContractCreationQuery.model_computed_fields"><code class="docutils literal notranslate"><span class="pre">ContractCreationQuery.model_computed_fields</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#ape.api.query.ContractEventQuery"><code class="docutils literal notranslate"><span class="pre">ContractEventQuery</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#ape.api.query.ContractEventQuery.model_computed_fields"><code class="docutils literal notranslate"><span class="pre">ContractEventQuery.model_computed_fields</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#ape.api.query.ContractMethodQuery"><code class="docutils literal notranslate"><span class="pre">ContractMethodQuery</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#ape.api.query.ContractMethodQuery.model_computed_fields"><code class="docutils literal notranslate"><span class="pre">ContractMethodQuery.model_computed_fields</span></code></a></li>
+</ul>
+</li>
 <li class="toctree-l3"><a class="reference internal" href="#ape.api.query.QueryAPI"><code class="docutils literal notranslate"><span class="pre">QueryAPI</span></code></a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.query.QueryAPI.estimate_query"><code class="docutils literal notranslate"><span class="pre">QueryAPI.estimate_query()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.query.QueryAPI.perform_query"><code class="docutils literal notranslate"><span class="pre">QueryAPI.perform_query()</span></code></a></li>
@@ -653,6 +702,12 @@ Defaults to <code class="docutils literal notranslate"><span class="pre">False</
 <dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">ContractInstance</span></code></p>
 </dd>
 </dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ape.api.accounts.AccountAPI.model_computed_fields">
+<span class="sig-name descname"><span class="pre">model_computed_fields</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ClassVar</span><span class="p"><span class="pre">[</span></span><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ComputedFieldInfo</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{}</span></em><a class="headerlink" href="#ape.api.accounts.AccountAPI.model_computed_fields" title="Permalink to this definition"></a></dt>
+<dd><p>A dictionary of computed field names and their corresponding <cite>ComputedFieldInfo</cite> objects.</p>
 </dd></dl>
 
 <dl class="py method">
@@ -873,6 +928,12 @@ instances.</p>
 </dl>
 </dd></dl>
 
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ape.api.accounts.AccountContainerAPI.model_computed_fields">
+<span class="sig-name descname"><span class="pre">model_computed_fields</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ClassVar</span><span class="p"><span class="pre">[</span></span><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ComputedFieldInfo</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{}</span></em><a class="headerlink" href="#ape.api.accounts.AccountContainerAPI.model_computed_fields" title="Permalink to this definition"></a></dt>
+<dd><p>A dictionary of computed field names and their corresponding <cite>ComputedFieldInfo</cite> objects.</p>
+</dd></dl>
+
 <dl class="py method">
 <dt class="sig sig-object py" id="ape.api.accounts.AccountContainerAPI.remove">
 <span class="sig-name descname"><span class="pre">remove</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">account</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#ape.api.accounts.AccountAPI" title="ape.api.accounts.AccountAPI"><span class="pre">AccountAPI</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.api.accounts.AccountContainerAPI.remove" title="Permalink to this definition"></a></dt>
@@ -929,6 +990,12 @@ Defaults to <code class="docutils literal notranslate"><span class="pre">False</
 <dd class="field-odd"><p><a class="reference internal" href="#ape.api.transactions.ReceiptAPI" title="ape.api.transactions.ReceiptAPI"><code class="xref py py-class docutils literal notranslate"><span class="pre">ReceiptAPI</span></code></a></p>
 </dd>
 </dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ape.api.accounts.ImpersonatedAccount.model_computed_fields">
+<span class="sig-name descname"><span class="pre">model_computed_fields</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ClassVar</span><span class="p"><span class="pre">[</span></span><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ComputedFieldInfo</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{}</span></em><a class="headerlink" href="#ape.api.accounts.ImpersonatedAccount.model_computed_fields" title="Permalink to this definition"></a></dt>
+<dd><p>A dictionary of computed field names and their corresponding <cite>ComputedFieldInfo</cite> objects.</p>
 </dd></dl>
 
 <dl class="py method">
@@ -991,6 +1058,12 @@ Returns <code class="docutils literal notranslate"><span class="pre">None</span>
 <p>Test accounts for <code class="docutils literal notranslate"><span class="pre">ape</span> <span class="pre">test</span></code> (such accounts that use
 <code class="xref py py-class docutils literal notranslate"><span class="pre">GeneratedDevAccounts</span></code>) should implement this API
 instead of <code class="docutils literal notranslate"><span class="pre">AccountAPI</span></code> directly. This is how they show up in the <code class="docutils literal notranslate"><span class="pre">accounts</span></code> test fixture.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ape.api.accounts.TestAccountAPI.model_computed_fields">
+<span class="sig-name descname"><span class="pre">model_computed_fields</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ClassVar</span><span class="p"><span class="pre">[</span></span><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ComputedFieldInfo</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{}</span></em><a class="headerlink" href="#ape.api.accounts.TestAccountAPI.model_computed_fields" title="Permalink to this definition"></a></dt>
+<dd><p>A dictionary of computed field names and their corresponding <cite>ComputedFieldInfo</cite> objects.</p>
+</dd></dl>
+
 </dd></dl>
 
 <dl class="py class">
@@ -1004,6 +1077,12 @@ instead of <code class="docutils literal notranslate"><span class="pre">AccountA
 <dt class="sig sig-object py" id="ape.api.accounts.TestAccountContainerAPI.generate_account">
 <em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">generate_account</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#ape.api.accounts.TestAccountAPI" title="ape.api.accounts.TestAccountAPI"><span class="pre">TestAccountAPI</span></a></span></span><a class="headerlink" href="#ape.api.accounts.TestAccountContainerAPI.generate_account" title="Permalink to this definition"></a></dt>
 <dd><p>Generate a new test account</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ape.api.accounts.TestAccountContainerAPI.model_computed_fields">
+<span class="sig-name descname"><span class="pre">model_computed_fields</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ClassVar</span><span class="p"><span class="pre">[</span></span><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ComputedFieldInfo</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{}</span></em><a class="headerlink" href="#ape.api.accounts.TestAccountContainerAPI.model_computed_fields" title="Permalink to this definition"></a></dt>
+<dd><p>A dictionary of computed field names and their corresponding <cite>ComputedFieldInfo</cite> objects.</p>
 </dd></dl>
 
 </dd></dl>
@@ -1164,6 +1243,12 @@ to enrich.</p>
 </dl>
 </dd></dl>
 
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ape.api.compiler.CompilerAPI.model_computed_fields">
+<span class="sig-name descname"><span class="pre">model_computed_fields</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ClassVar</span><span class="p"><span class="pre">[</span></span><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ComputedFieldInfo</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{}</span></em><a class="headerlink" href="#ape.api.compiler.CompilerAPI.model_computed_fields" title="Permalink to this definition"></a></dt>
+<dd><p>A dictionary of computed field names and their corresponding <cite>ComputedFieldInfo</cite> objects.</p>
+</dd></dl>
+
 <dl class="py property">
 <dt class="sig sig-object py" id="ape.api.compiler.CompilerAPI.name">
 <em class="property"><span class="pre">abstract</span><span class="w"> </span><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">name</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#ape.api.compiler.CompilerAPI.name" title="Permalink to this definition"></a></dt>
@@ -1221,6 +1306,12 @@ Use this to limit the values of a config item, such as colors <code class="docut
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">BaseSettings</span></code></p>
 <p>A base plugin configuration class. Each plugin that includes
 a config API must register a subclass of this class.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ape.api.config.PluginConfig.model_computed_fields">
+<span class="sig-name descname"><span class="pre">model_computed_fields</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ClassVar</span><span class="p"><span class="pre">[</span></span><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ComputedFieldInfo</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{}</span></em><a class="headerlink" href="#ape.api.config.PluginConfig.model_computed_fields" title="Permalink to this definition"></a></dt>
+<dd><p>A dictionary of computed field names and their corresponding <cite>ComputedFieldInfo</cite> objects.</p>
+</dd></dl>
+
 </dd></dl>
 
 </section>
@@ -1254,6 +1345,12 @@ when the item fails to convert properly.</p>
 <dd class="field-odd"><p>bool</p>
 </dd>
 </dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ape.api.convert.ConverterAPI.model_computed_fields">
+<span class="sig-name descname"><span class="pre">model_computed_fields</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ClassVar</span><span class="p"><span class="pre">[</span></span><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ComputedFieldInfo</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{}</span></em><a class="headerlink" href="#ape.api.convert.ConverterAPI.model_computed_fields" title="Permalink to this definition"></a></dt>
+<dd><p>A dictionary of computed field names and their corresponding <cite>ComputedFieldInfo</cite> objects.</p>
 </dd></dl>
 
 </dd></dl>
@@ -1316,6 +1413,12 @@ in a particular ecosystem.</p>
 <dd class="field-odd"><p>str</p>
 </dd>
 </dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ape.api.explorers.ExplorerAPI.model_computed_fields">
+<span class="sig-name descname"><span class="pre">model_computed_fields</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ClassVar</span><span class="p"><span class="pre">[</span></span><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ComputedFieldInfo</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{}</span></em><a class="headerlink" href="#ape.api.explorers.ExplorerAPI.model_computed_fields" title="Permalink to this definition"></a></dt>
+<dd><p>A dictionary of computed field names and their corresponding <cite>ComputedFieldInfo</cite> objects.</p>
 </dd></dl>
 
 <dl class="py method">
@@ -1723,6 +1826,12 @@ does not use any known proxy pattern.</p>
 </dd></dl>
 
 <dl class="py attribute">
+<dt class="sig sig-object py" id="ape.api.networks.EcosystemAPI.model_computed_fields">
+<span class="sig-name descname"><span class="pre">model_computed_fields</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ClassVar</span><span class="p"><span class="pre">[</span></span><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ComputedFieldInfo</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{}</span></em><a class="headerlink" href="#ape.api.networks.EcosystemAPI.model_computed_fields" title="Permalink to this definition"></a></dt>
+<dd><p>A dictionary of computed field names and their corresponding <cite>ComputedFieldInfo</cite> objects.</p>
+</dd></dl>
+
+<dl class="py attribute">
 <dt class="sig sig-object py" id="ape.api.networks.EcosystemAPI.name">
 <span class="sig-name descname"><span class="pre">name</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#ape.api.networks.EcosystemAPI.name" title="Permalink to this definition"></a></dt>
 <dd><p>The name of the ecosystem. This should be set the same name as the plugin.</p>
@@ -1776,6 +1885,12 @@ does not use any known proxy pattern.</p>
 <dt class="sig sig-object py" id="ape.api.networks.ForkedNetworkAPI">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ape.api.networks.</span></span><span class="sig-name descname"><span class="pre">ForkedNetworkAPI</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ecosystem</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#ape.api.networks.EcosystemAPI" title="ape.api.networks.EcosystemAPI"><span class="pre">EcosystemAPI</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_folder</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">request_header</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.api.networks.ForkedNetworkAPI" title="Permalink to this definition"></a></dt>
 <dd><p>Bases: <a class="reference internal" href="#ape.api.networks.NetworkAPI" title="ape.api.networks.NetworkAPI"><code class="xref py py-class docutils literal notranslate"><span class="pre">NetworkAPI</span></code></a></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ape.api.networks.ForkedNetworkAPI.model_computed_fields">
+<span class="sig-name descname"><span class="pre">model_computed_fields</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ClassVar</span><span class="p"><span class="pre">[</span></span><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ComputedFieldInfo</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{}</span></em><a class="headerlink" href="#ape.api.networks.ForkedNetworkAPI.model_computed_fields" title="Permalink to this definition"></a></dt>
+<dd><p>A dictionary of computed field names and their corresponding <cite>ComputedFieldInfo</cite> objects.</p>
+</dd></dl>
+
 <dl class="py property">
 <dt class="sig sig-object py" id="ape.api.networks.ForkedNetworkAPI.upstream_chain_id">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">upstream_chain_id</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="headerlink" href="#ape.api.networks.ForkedNetworkAPI.upstream_chain_id" title="Permalink to this definition"></a></dt>
@@ -1935,6 +2050,12 @@ in any CLI value and is mostly an “unknown” network.</p>
 <dt class="sig sig-object py" id="ape.api.networks.NetworkAPI.is_local">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">is_local</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><a class="headerlink" href="#ape.api.networks.NetworkAPI.is_local" title="Permalink to this definition"></a></dt>
 <dd><p>True when using the local network.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ape.api.networks.NetworkAPI.model_computed_fields">
+<span class="sig-name descname"><span class="pre">model_computed_fields</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ClassVar</span><span class="p"><span class="pre">[</span></span><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ComputedFieldInfo</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{}</span></em><a class="headerlink" href="#ape.api.networks.NetworkAPI.model_computed_fields" title="Permalink to this definition"></a></dt>
+<dd><p>A dictionary of computed field names and their corresponding <cite>ComputedFieldInfo</cite> objects.</p>
 </dd></dl>
 
 <dl class="py attribute">
@@ -2132,6 +2253,12 @@ an instance of this context manager.</p>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">BaseModel</span></code></p>
 <p>Information about a proxy contract.</p>
 <dl class="py attribute">
+<dt class="sig sig-object py" id="ape.api.networks.ProxyInfoAPI.model_computed_fields">
+<span class="sig-name descname"><span class="pre">model_computed_fields</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ClassVar</span><span class="p"><span class="pre">[</span></span><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ComputedFieldInfo</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{}</span></em><a class="headerlink" href="#ape.api.networks.ProxyInfoAPI.model_computed_fields" title="Permalink to this definition"></a></dt>
+<dd><p>A dictionary of computed field names and their corresponding <cite>ComputedFieldInfo</cite> objects.</p>
+</dd></dl>
+
+<dl class="py attribute">
 <dt class="sig sig-object py" id="ape.api.networks.ProxyInfoAPI.target">
 <span class="sig-name descname"><span class="pre">target</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ChecksumAddress</span></em><a class="headerlink" href="#ape.api.networks.ProxyInfoAPI.target" title="Permalink to this definition"></a></dt>
 <dd><p>The address of the implementation contract.</p>
@@ -2220,6 +2347,12 @@ a re-install.</p>
 <dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">PackageManifest</span></code></p>
 </dd>
 </dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ape.api.projects.DependencyAPI.model_computed_fields">
+<span class="sig-name descname"><span class="pre">model_computed_fields</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ClassVar</span><span class="p"><span class="pre">[</span></span><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ComputedFieldInfo</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{}</span></em><a class="headerlink" href="#ape.api.projects.DependencyAPI.model_computed_fields" title="Permalink to this definition"></a></dt>
+<dd><p>A dictionary of computed field names and their corresponding <cite>ComputedFieldInfo</cite> objects.</p>
 </dd></dl>
 
 <dl class="py attribute">
@@ -2324,6 +2457,12 @@ for sharing, such as uploading to IPFS.</p>
 </dd></dl>
 
 <dl class="py attribute">
+<dt class="sig sig-object py" id="ape.api.projects.ProjectAPI.model_computed_fields">
+<span class="sig-name descname"><span class="pre">model_computed_fields</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ClassVar</span><span class="p"><span class="pre">[</span></span><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ComputedFieldInfo</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{}</span></em><a class="headerlink" href="#ape.api.projects.ProjectAPI.model_computed_fields" title="Permalink to this definition"></a></dt>
+<dd><p>A dictionary of computed field names and their corresponding <cite>ComputedFieldInfo</cite> objects.</p>
+</dd></dl>
+
+<dl class="py attribute">
 <dt class="sig sig-object py" id="ape.api.projects.ProjectAPI.name">
 <span class="sig-name descname"><span class="pre">name</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#ape.api.projects.ProjectAPI.name" title="Permalink to this definition"></a></dt>
 <dd><p>The name of this project when another project uses it as a dependency.</p>
@@ -2381,6 +2520,12 @@ to use.</p>
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ape.api.providers.</span></span><span class="sig-name descname"><span class="pre">BlockAPI</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_transactions</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hash</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">number</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parentHash</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">HexBytes('0x0000000000000000000000000000000000000000000000000000000000000000')</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">timestamp</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.api.providers.BlockAPI" title="Permalink to this definition"></a></dt>
 <dd><p>Bases: <a class="reference internal" href="utils.html#ape.utils.BaseInterfaceModel" title="ape.utils.basemodel.BaseInterfaceModel"><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseInterfaceModel</span></code></a></p>
 <p>An abstract class representing a block and its attributes.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ape.api.providers.BlockAPI.model_computed_fields">
+<span class="sig-name descname"><span class="pre">model_computed_fields</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ClassVar</span><span class="p"><span class="pre">[</span></span><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ComputedFieldInfo</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'transactions':</span> <span class="pre">ComputedFieldInfo(wrapped_property=&lt;functools.cached_property</span> <span class="pre">object&gt;,</span> <span class="pre">return_type=typing.List[ape.api.transactions.TransactionAPI],</span> <span class="pre">alias=None,</span> <span class="pre">alias_priority=None,</span> <span class="pre">title=None,</span> <span class="pre">description=None,</span> <span class="pre">deprecated=None,</span> <span class="pre">examples=None,</span> <span class="pre">json_schema_extra=None,</span> <span class="pre">repr=True)}</span></em><a class="headerlink" href="#ape.api.providers.BlockAPI.model_computed_fields" title="Permalink to this definition"></a></dt>
+<dd><p>A dictionary of computed field names and their corresponding <cite>ComputedFieldInfo</cite> objects.</p>
+</dd></dl>
+
 </dd></dl>
 
 <dl class="py class">
@@ -2671,6 +2816,12 @@ for checking a previous account nonce.</p></li>
 </dd></dl>
 
 <dl class="py attribute">
+<dt class="sig sig-object py" id="ape.api.providers.ProviderAPI.model_computed_fields">
+<span class="sig-name descname"><span class="pre">model_computed_fields</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ClassVar</span><span class="p"><span class="pre">[</span></span><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ComputedFieldInfo</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{}</span></em><a class="headerlink" href="#ape.api.providers.ProviderAPI.model_computed_fields" title="Permalink to this definition"></a></dt>
+<dd><p>A dictionary of computed field names and their corresponding <cite>ComputedFieldInfo</cite> objects.</p>
+</dd></dl>
+
+<dl class="py attribute">
 <dt class="sig sig-object py" id="ape.api.providers.ProviderAPI.name">
 <span class="sig-name descname"><span class="pre">name</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#ape.api.providers.ProviderAPI.name" title="Permalink to this definition"></a></dt>
 <dd><p>The name of the provider (should be the plugin name).</p>
@@ -2865,6 +3016,12 @@ providers of the same type, like multiple Geth –dev nodes.</p>
 Subclasses override this method to do provider-specific disconnection tasks.</p>
 </dd></dl>
 
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ape.api.providers.SubprocessProvider.model_computed_fields">
+<span class="sig-name descname"><span class="pre">model_computed_fields</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ClassVar</span><span class="p"><span class="pre">[</span></span><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ComputedFieldInfo</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{}</span></em><a class="headerlink" href="#ape.api.providers.SubprocessProvider.model_computed_fields" title="Permalink to this definition"></a></dt>
+<dd><p>A dictionary of computed field names and their corresponding <cite>ComputedFieldInfo</cite> objects.</p>
+</dd></dl>
+
 <dl class="py property">
 <dt class="sig sig-object py" id="ape.api.providers.SubprocessProvider.process_name">
 <em class="property"><span class="pre">abstract</span><span class="w"> </span><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">process_name</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#ape.api.providers.SubprocessProvider.process_name" title="Permalink to this definition"></a></dt>
@@ -2899,6 +3056,12 @@ Subclasses override this method to do provider-specific disconnection tasks.</p>
 <dd class="field-odd"><p><strong>num_blocks</strong> (<em>int</em>) – The number of blocks allotted to mine. Defaults to <code class="docutils literal notranslate"><span class="pre">1</span></code>.</p>
 </dd>
 </dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ape.api.providers.TestProviderAPI.model_computed_fields">
+<span class="sig-name descname"><span class="pre">model_computed_fields</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ClassVar</span><span class="p"><span class="pre">[</span></span><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ComputedFieldInfo</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{}</span></em><a class="headerlink" href="#ape.api.providers.TestProviderAPI.model_computed_fields" title="Permalink to this definition"></a></dt>
+<dd><p>A dictionary of computed field names and their corresponding <cite>ComputedFieldInfo</cite> objects.</p>
 </dd></dl>
 
 <dl class="py method">
@@ -2953,6 +3116,12 @@ to go back to this point. This method is for local networks only.</p>
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ape.api.providers.</span></span><span class="sig-name descname"><span class="pre">UpstreamProvider</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">network</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#ape.api.networks.NetworkAPI" title="ape.api.networks.NetworkAPI"><span class="pre">NetworkAPI</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">provider_settings</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_folder</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">request_header</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">block_page_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">100</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">concurrency</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">4</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.api.providers.UpstreamProvider" title="Permalink to this definition"></a></dt>
 <dd><p>Bases: <a class="reference internal" href="#ape.api.providers.ProviderAPI" title="ape.api.providers.ProviderAPI"><code class="xref py py-class docutils literal notranslate"><span class="pre">ProviderAPI</span></code></a></p>
 <p>A provider that can also be set as another provider’s upstream.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ape.api.providers.UpstreamProvider.model_computed_fields">
+<span class="sig-name descname"><span class="pre">model_computed_fields</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ClassVar</span><span class="p"><span class="pre">[</span></span><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ComputedFieldInfo</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{}</span></em><a class="headerlink" href="#ape.api.providers.UpstreamProvider.model_computed_fields" title="Permalink to this definition"></a></dt>
+<dd><p>A dictionary of computed field names and their corresponding <cite>ComputedFieldInfo</cite> objects.</p>
+</dd></dl>
+
 </dd></dl>
 
 </section>
@@ -3027,6 +3196,12 @@ are able to be failing.</p>
 <dt class="sig sig-object py" id="ape.api.transactions.ReceiptAPI.method_called">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">method_called</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">MethodABI</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#ape.api.transactions.ReceiptAPI.method_called" title="Permalink to this definition"></a></dt>
 <dd><p>The method ABI of the method called to produce this receipt.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ape.api.transactions.ReceiptAPI.model_computed_fields">
+<span class="sig-name descname"><span class="pre">model_computed_fields</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ClassVar</span><span class="p"><span class="pre">[</span></span><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ComputedFieldInfo</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{}</span></em><a class="headerlink" href="#ape.api.transactions.ReceiptAPI.model_computed_fields" title="Permalink to this definition"></a></dt>
+<dd><p>A dictionary of computed field names and their corresponding <cite>ComputedFieldInfo</cite> objects.</p>
 </dd></dl>
 
 <dl class="py method">
@@ -3105,6 +3280,12 @@ This gets called when running tests with the <code class="docutils literal notra
 Ecosystem plugins implement one or more of transaction APIs
 depending on which schemas they permit,
 such as typed-transactions from <a class="reference external" href="https://eips.ethereum.org/EIPS/eip-1559">EIP-1559</a>.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ape.api.transactions.TransactionAPI.model_computed_fields">
+<span class="sig-name descname"><span class="pre">model_computed_fields</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ClassVar</span><span class="p"><span class="pre">[</span></span><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ComputedFieldInfo</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{}</span></em><a class="headerlink" href="#ape.api.transactions.TransactionAPI.model_computed_fields" title="Permalink to this definition"></a></dt>
+<dd><p>A dictionary of computed field names and their corresponding <cite>ComputedFieldInfo</cite> objects.</p>
+</dd></dl>
+
 <dl class="py property">
 <dt class="sig sig-object py" id="ape.api.transactions.TransactionAPI.receipt">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">receipt</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#ape.api.transactions.ReceiptAPI" title="ape.api.transactions.ReceiptAPI"><span class="pre">ReceiptAPI</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#ape.api.transactions.TransactionAPI.receipt" title="Permalink to this definition"></a></dt>
@@ -3155,6 +3336,12 @@ and you are using a provider that support tracing.</p>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">_BaseQuery</span></code></p>
 <p>A <code class="docutils literal notranslate"><span class="pre">QueryType</span></code> that collects properties of <code class="docutils literal notranslate"><span class="pre">TransactionAPI</span></code> over a range
 of transactions made by <code class="docutils literal notranslate"><span class="pre">account</span></code> between <code class="docutils literal notranslate"><span class="pre">start_nonce</span></code> and <code class="docutils literal notranslate"><span class="pre">stop_nonce</span></code>.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ape.api.query.AccountTransactionQuery.model_computed_fields">
+<span class="sig-name descname"><span class="pre">model_computed_fields</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ClassVar</span><span class="p"><span class="pre">[</span></span><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ComputedFieldInfo</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{}</span></em><a class="headerlink" href="#ape.api.query.AccountTransactionQuery.model_computed_fields" title="Permalink to this definition"></a></dt>
+<dd><p>A dictionary of computed field names and their corresponding <cite>ComputedFieldInfo</cite> objects.</p>
+</dd></dl>
+
 </dd></dl>
 
 <dl class="py class">
@@ -3163,6 +3350,12 @@ of transactions made by <code class="docutils literal notranslate"><span class="
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">_BaseBlockQuery</span></code></p>
 <p>A <code class="docutils literal notranslate"><span class="pre">QueryType</span></code> that collects properties of <code class="docutils literal notranslate"><span class="pre">BlockAPI</span></code> over a range of
 blocks between <code class="docutils literal notranslate"><span class="pre">start_block</span></code> and <code class="docutils literal notranslate"><span class="pre">stop_block</span></code>.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ape.api.query.BlockQuery.model_computed_fields">
+<span class="sig-name descname"><span class="pre">model_computed_fields</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ClassVar</span><span class="p"><span class="pre">[</span></span><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ComputedFieldInfo</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{}</span></em><a class="headerlink" href="#ape.api.query.BlockQuery.model_computed_fields" title="Permalink to this definition"></a></dt>
+<dd><p>A dictionary of computed field names and their corresponding <cite>ComputedFieldInfo</cite> objects.</p>
+</dd></dl>
+
 </dd></dl>
 
 <dl class="py class">
@@ -3171,12 +3364,24 @@ blocks between <code class="docutils literal notranslate"><span class="pre">star
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">_BaseQuery</span></code></p>
 <p>A <code class="docutils literal notranslate"><span class="pre">QueryType</span></code> that collects properties of <code class="docutils literal notranslate"><span class="pre">TransactionAPI</span></code> over a range of
 transactions collected inside the <code class="docutils literal notranslate"><span class="pre">BlockAPI`</span> <span class="pre">object</span> <span class="pre">represented</span> <span class="pre">by</span> <span class="pre">``block_id</span></code>.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ape.api.query.BlockTransactionQuery.model_computed_fields">
+<span class="sig-name descname"><span class="pre">model_computed_fields</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ClassVar</span><span class="p"><span class="pre">[</span></span><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ComputedFieldInfo</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{}</span></em><a class="headerlink" href="#ape.api.query.BlockTransactionQuery.model_computed_fields" title="Permalink to this definition"></a></dt>
+<dd><p>A dictionary of computed field names and their corresponding <cite>ComputedFieldInfo</cite> objects.</p>
+</dd></dl>
+
 </dd></dl>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="ape.api.query.ContractCreationQuery">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ape.api.query.</span></span><span class="sig-name descname"><span class="pre">ContractCreationQuery</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">columns</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Sequence</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start_block</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stop_block</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">step</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">contract</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ChecksumAddress</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.api.query.ContractCreationQuery" title="Permalink to this definition"></a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">_BaseBlockQuery</span></code></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ape.api.query.ContractCreationQuery.model_computed_fields">
+<span class="sig-name descname"><span class="pre">model_computed_fields</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ClassVar</span><span class="p"><span class="pre">[</span></span><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ComputedFieldInfo</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{}</span></em><a class="headerlink" href="#ape.api.query.ContractCreationQuery.model_computed_fields" title="Permalink to this definition"></a></dt>
+<dd><p>A dictionary of computed field names and their corresponding <cite>ComputedFieldInfo</cite> objects.</p>
+</dd></dl>
+
 </dd></dl>
 
 <dl class="py class">
@@ -3185,6 +3390,12 @@ transactions collected inside the <code class="docutils literal notranslate"><sp
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">_BaseBlockQuery</span></code></p>
 <p>A <code class="docutils literal notranslate"><span class="pre">QueryType</span></code> that collects members from <code class="docutils literal notranslate"><span class="pre">event</span></code> over a range of
 logs emitted by <code class="docutils literal notranslate"><span class="pre">contract</span></code> between <code class="docutils literal notranslate"><span class="pre">start_block</span></code> and <code class="docutils literal notranslate"><span class="pre">stop_block</span></code>.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ape.api.query.ContractEventQuery.model_computed_fields">
+<span class="sig-name descname"><span class="pre">model_computed_fields</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ClassVar</span><span class="p"><span class="pre">[</span></span><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ComputedFieldInfo</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{}</span></em><a class="headerlink" href="#ape.api.query.ContractEventQuery.model_computed_fields" title="Permalink to this definition"></a></dt>
+<dd><p>A dictionary of computed field names and their corresponding <cite>ComputedFieldInfo</cite> objects.</p>
+</dd></dl>
+
 </dd></dl>
 
 <dl class="py class">
@@ -3193,6 +3404,12 @@ logs emitted by <code class="docutils literal notranslate"><span class="pre">con
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">_BaseBlockQuery</span></code></p>
 <p>A <code class="docutils literal notranslate"><span class="pre">QueryType</span></code> that collects return values from calling <code class="docutils literal notranslate"><span class="pre">method</span></code> in <code class="docutils literal notranslate"><span class="pre">contract</span></code>
 over a range of blocks between <code class="docutils literal notranslate"><span class="pre">start_block</span></code> and <code class="docutils literal notranslate"><span class="pre">stop_block</span></code>.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ape.api.query.ContractMethodQuery.model_computed_fields">
+<span class="sig-name descname"><span class="pre">model_computed_fields</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ClassVar</span><span class="p"><span class="pre">[</span></span><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ComputedFieldInfo</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{}</span></em><a class="headerlink" href="#ape.api.query.ContractMethodQuery.model_computed_fields" title="Permalink to this definition"></a></dt>
+<dd><p>A dictionary of computed field names and their corresponding <cite>ComputedFieldInfo</cite> objects.</p>
+</dd></dl>
+
 </dd></dl>
 
 <dl class="py class">

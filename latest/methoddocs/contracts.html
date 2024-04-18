@@ -50,6 +50,7 @@
               <option value="">Select version...</option>
               <option value="latest">latest</option>
               <option value="stable">stable</option>
+                <option value="v0.7.16">v0.7.16</option>
                 <option value="v0.7.15">v0.7.15</option>
                 <option value="v0.7.14">v0.7.14</option>
                 <option value="v0.7.12">v0.7.12</option>
@@ -213,6 +214,7 @@
 <li class="toctree-l3"><a class="reference internal" href="#ape.contracts.base.ContractEvent.__call__"><code class="docutils literal notranslate"><span class="pre">ContractEvent.__call__()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ape.contracts.base.ContractEvent.__iter__"><code class="docutils literal notranslate"><span class="pre">ContractEvent.__iter__()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ape.contracts.base.ContractEvent.from_receipt"><code class="docutils literal notranslate"><span class="pre">ContractEvent.from_receipt()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#ape.contracts.base.ContractEvent.model_computed_fields"><code class="docutils literal notranslate"><span class="pre">ContractEvent.model_computed_fields</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ape.contracts.base.ContractEvent.name"><code class="docutils literal notranslate"><span class="pre">ContractEvent.name</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ape.contracts.base.ContractEvent.poll_logs"><code class="docutils literal notranslate"><span class="pre">ContractEvent.poll_logs()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ape.contracts.base.ContractEvent.query"><code class="docutils literal notranslate"><span class="pre">ContractEvent.query()</span></code></a></li>
@@ -600,6 +602,12 @@ Use the event types via <code class="docutils literal notranslate"><span class="
 <dd class="field-even"><p>List[<code class="xref py py-class docutils literal notranslate"><span class="pre">ContractLog</span></code>]</p>
 </dd>
 </dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ape.contracts.base.ContractEvent.model_computed_fields">
+<span class="sig-name descname"><span class="pre">model_computed_fields</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ClassVar</span><span class="p"><span class="pre">[</span></span><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ComputedFieldInfo</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{}</span></em><a class="headerlink" href="#ape.contracts.base.ContractEvent.model_computed_fields" title="Permalink to this definition"></a></dt>
+<dd><p>A dictionary of computed field names and their corresponding <cite>ComputedFieldInfo</cite> objects.</p>
 </dd></dl>
 
 <dl class="py property">
