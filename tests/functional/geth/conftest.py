@@ -9,11 +9,6 @@ from tests.functional.data.python import TRACE_RESPONSE
 
 
 @pytest.fixture
-def txn_hash():
-    return "0x053cba5c12172654d894f66d5670bab6215517a94189a9ffc09bc40a589ec04d"
-
-
-@pytest.fixture
 def parity_trace_response():
     return TRACE_RESPONSE
 

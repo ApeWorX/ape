@@ -1,227 +1,23 @@
-from itertools import chain, tee
+from itertools import chain
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Dict, Iterator, List, Optional, Set, Union
+from typing import TYPE_CHECKING, Dict, Iterator, List, Optional, Set, Union
 
 from eth_pydantic_types import HexBytes
 from ethpm_types import ASTNode, BaseModel, ContractType
 from ethpm_types.ast import SourceLocation
 from ethpm_types.source import Closure, Content, Function, SourceStatement, Statement
-from evm_trace.gas import merge_reports
-from pydantic import Field, RootModel
-from rich.table import Table
-from rich.tree import Tree
+from pydantic import RootModel
 
-from ape.types.address import AddressType
-from ape.utils.basemodel import BaseInterfaceModel
-from ape.utils.misc import is_evm_precompile, is_zero_hex, log_instead_of_fail
-from ape.utils.trace import _exclude_gas, parse_as_str, parse_gas_table, parse_rich_tree
+from ape.utils.misc import log_instead_of_fail
 
 if TYPE_CHECKING:
-    from ape.types import ContractFunctionPath
+    from ape.api.trace import TraceAPI
 
 
 GasReport = Dict[str, Dict[str, List[int]]]
 """
 A gas report in Ape.
 """
-
-
-class CallTreeNode(BaseInterfaceModel):
-    contract_id: str
-    """
-    The identifier representing the contract in this node.
-    A non-enriched identifier is an address; a more enriched
-    identifier is a token symbol or contract type name.
-    """
-
-    method_id: Optional[str] = None
-    """
-    The identifier representing the method in this node.
-    A non-enriched identifier is a method selector.
-    An enriched identifier is method signature.
-    """
-
-    txn_hash: Optional[str] = None
-    """
-    The transaction hash, if known and/or exists.
-    """
-
-    failed: bool = False
-    """
-    ``True`` where this tree represents a failed call.
-    """
-
-    inputs: Optional[Any] = None
-    """
-    The inputs to the call.
-    Non-enriched inputs are raw bytes or values.
-    Enriched inputs are decoded.
-    """
-
-    outputs: Optional[Any] = None
-    """
-    The output to the call.
-    Non-enriched inputs are raw bytes or values.
-    Enriched outputs are decoded.
-    """
-
-    value: Optional[int] = None
-    """
-    The value sent with the call, if applicable.
-    """
-
-    gas_cost: Optional[int] = None
-    """
-    The gas cost of the call, if known.
-    """
-
-    call_type: Optional[str] = None
-    """
-    A str indicating what type of call it is.
-    See ``evm_trace.enums.CallType`` for EVM examples.
-    """
-
-    calls: List["CallTreeNode"] = []
-    """
-    The list of subcalls made by this call.
-    """
-
-    raw: Dict = Field({}, exclude=True, repr=False)
-    """
-    The raw tree, as a dictionary, associated with the call.
-    """
-
-    @log_instead_of_fail(default="<CallTreeNode>")
-    def __repr__(self) -> str:
-        return parse_as_str(self)
-
-    def __str__(self) -> str:
-        return parse_as_str(self)
-
-    def _repr_pretty_(self, *args, **kwargs):
-        enriched_tree = self.enrich(use_symbol_for_tokens=True)
-        self.chain_manager._reports.show_trace(enriched_tree)
-
-    def enrich(self, **kwargs) -> "CallTreeNode":
-        """
-        Enrich the properties on this call tree using data from contracts
-        and using information about the ecosystem.
-
-        Args:
-            **kwargs: Key-word arguments to pass to
-              :meth:`~ape.api.networks.EcosystemAPI.enrich_calltree`, such as
-              ``use_symbol_for_tokens``.
-
-        Returns:
-            :class:`~ape.types.trace.CallTreeNode`: This call tree node with
-            its properties enriched.
-        """
-
-        return self.provider.network.ecosystem.enrich_calltree(self, **kwargs)
-
-    def add(self, sub_call: "CallTreeNode"):
-        """
-        Add a sub call to this node. This implies this call called the sub-call.
-
-        Args:
-            sub_call (:class:`~ape.types.trace.CallTreeNode`): The sub-call to add.
-        """
-
-        self.calls.append(sub_call)
-
-    def as_rich_tree(self, verbose: bool = False) -> Tree:
-        """
-        Return this object as a ``rich.tree.Tree`` for pretty-printing.
-
-        Returns:
-            ``Tree``
-        """
-
-        return parse_rich_tree(self, verbose=verbose)
-
-    def as_gas_tables(self, exclude: Optional[List["ContractFunctionPath"]] = None) -> List[Table]:
-        """
-        Return this object as list of rich gas tables for pretty printing.
-
-        Args:
-            exclude (Optional[List[:class:`~ape.types.ContractFunctionPath`]]):
-              A list of contract / method combinations to exclude from the gas
-              tables.
-
-        Returns:
-            List[``rich.table.Table``]
-        """
-
-        report = self.get_gas_report(exclude=exclude)
-        return parse_gas_table(report)
-
-    def get_gas_report(self, exclude: Optional[List["ContractFunctionPath"]] = None) -> "GasReport":
-        """
-        Get a unified gas-report of all the calls made in this tree.
-
-        Args:
-            exclude (Optional[List[:class:`~ape.types.ContractFunctionPath`]]):
-              A list of contract / method combinations to exclude from the gas
-              tables.
-
-        Returns:
-            :class:`~ape.types.trace.GasReport`
-        """
-
-        exclusions = exclude or []
-        if (
-            not self.contract_id
-            or not self.method_id
-            or _exclude_gas(exclusions, self.contract_id, self.method_id)
-        ):
-            return merge_reports(*(c.get_gas_report(exclude) for c in self.calls))
-
-        elif not is_zero_hex(self.method_id) and not is_evm_precompile(self.method_id):
-            reports = [
-                *[c.get_gas_report(exclude) for c in self.calls],
-                {
-                    self.contract_id: {
-                        self.method_id: [self.gas_cost] if self.gas_cost is not None else []
-                    }
-                },
-            ]
-            return merge_reports(*reports)
-
-        return merge_reports(*(c.get_gas_report(exclude) for c in self.calls))
-
-
-class TraceFrame(BaseInterfaceModel):
-    """
-    A low-level data structure modeling a transaction trace frame
-    from the Geth RPC ``debug_traceTransaction``.
-    """
-
-    pc: int
-    """Program counter."""
-
-    op: str
-    """Opcode."""
-
-    gas: int
-    """Remaining gas."""
-
-    gas_cost: int
-    """The cost to execute this opcode."""
-
-    depth: int
-    """
-    The number of external jumps away the initially called contract (starts at 0).
-    """
-
-    contract_address: Optional[AddressType] = None
-    """
-    The contract address, if this is a call trace frame.
-    """
-
-    raw: Dict = Field({}, exclude=True, repr=False)
-    """
-    The raw trace frame from the provider.
-    """
 
 
 class ControlFlow(BaseModel):
@@ -490,24 +286,18 @@ class SourceTraceback(RootModel[List[ControlFlow]]):
     """
 
     @classmethod
-    def create(
-        cls,
-        contract_type: ContractType,
-        trace: Iterator[TraceFrame],
-        data: Union[HexBytes, str],
-    ):
-        trace, second_trace = tee(trace)
-        if not second_trace or not (accessor := next(second_trace, None)):
-            return cls.model_validate([])
+    def create(cls, contract_type: ContractType, trace: "TraceAPI", data: Union[HexBytes, str]):
+        # Use the trace as a 'ManagerAccessMixin'.
+        compilers = trace.compiler_manager
 
         if not (source_id := contract_type.source_id):
             return cls.model_validate([])
 
         ext = f".{source_id.split('.')[-1]}"
-        if ext not in accessor.compiler_manager.registered_compilers:
+        if ext not in compilers.registered_compilers:
             return cls.model_validate([])
 
-        compiler = accessor.compiler_manager.registered_compilers[ext]
+        compiler = compilers.registered_compilers[ext]
         try:
             return compiler.trace_source(contract_type, trace, HexBytes(data))
         except NotImplementedError:
