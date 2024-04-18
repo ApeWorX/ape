@@ -102,16 +102,24 @@ class DefaultQueryProvider(QueryAPI):
             return None
 
         block = find_creation_block(0, self.chain_manager.blocks.height)
-        traces = self.provider._make_request("trace_replayBlockTransactions", [block, ["trace"]])
 
         # iterate over transaction traces in a block to find the deploy transaction
         # this method also supports contract factories
+        if "geth" in self.provider.client_version.lower():
+            yield from self._find_creation_in_block_via_geth(block, query.contract)
+        else:
+            yield from self._find_creation_in_block_via_parity(block, query.contract)
+
+    def _find_creation_in_block_via_parity(self, block, contract_address):
+        # requires trace namespace
+        traces = self.provider._make_request("trace_replayBlockTransactions", [block, ["trace"]])
+
         for tx in traces:
             for trace in tx["trace"]:
                 if (
                     "error" not in trace
                     and trace["type"] == "create"
-                    and trace["result"]["address"] == query.contract.lower()
+                    and trace["result"]["address"] == contract_address.lower()
                 ):
                     receipt = self.chain_manager.get_receipt(tx["transactionHash"])
                     creator = self.conversion_manager.convert(trace["action"]["from"], AddressType)
@@ -120,6 +128,41 @@ class DefaultQueryProvider(QueryAPI):
                         block=block,
                         deployer=receipt.sender,
                         factory=creator if creator != receipt.sender else None,
+                    )
+
+    def _find_creation_in_block_via_geth(self, block, contract_address):
+        # requires debug namespace
+        traces = self.provider._make_request(
+            "debug_traceBlockByNumber", [hex(block), {"tracer": "callTracer"}]
+        )
+
+        def flatten(call):
+            if call["type"] in ["CREATE", "CREATE2"]:
+                yield call["from"], call["to"]
+
+            if "error" in call or "calls" not in call:
+                return
+
+            for sub in call["calls"]:
+                if sub["type"] in ["CREATE", "CREATE2"]:
+                    yield sub["from"], sub["to"]
+                else:
+                    yield from flatten(sub)
+
+        for tx in traces:
+            call = tx["result"]
+            sender = call["from"]
+            for factory, contract in flatten(call):
+                if contract == contract_address.lower():
+                    yield ContractCreation(
+                        txn_hash=tx["txHash"],
+                        block=block,
+                        deployer=self.conversion_manager.convert(sender, AddressType),
+                        factory=(
+                            self.conversion_manager.convert(factory, AddressType)
+                            if factory != sender
+                            else None
+                        ),
                     )
 
     @perform_query.register
