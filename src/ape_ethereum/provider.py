@@ -3,12 +3,11 @@ import re
 import sys
 import time
 from abc import ABC
-from collections.abc import Iterator
 from concurrent.futures import ThreadPoolExecutor
 from copy import copy
 from functools import cached_property, wraps
 from pathlib import Path
-from typing import Any, Iterable, Optional, Union, cast
+from typing import Any, Iterable, Iterator, Optional, Union, cast
 
 import ijson  # type: ignore
 import requests
