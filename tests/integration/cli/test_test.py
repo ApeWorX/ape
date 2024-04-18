@@ -63,7 +63,11 @@ def load_dependencies(project):
 
 
 @pytest.fixture
-def setup_pytester(pytester):
+def setup_pytester(pytester, owner):
+    # Mine to a new block so we are not capturing old transactions
+    # in the tests.
+    owner.transfer(owner, 0)
+
     def setup(project_name: str):
         project_path = BASE_PROJECTS_PATH / project_name
         tests_path = project_path / "tests"
@@ -124,7 +128,7 @@ def run_gas_test(
             gas_header_line_index = index
 
     assert gas_header_line_index is not None, "'Gas Profile' not in output."
-    expected = expected_report.split("\n")[1:]
+    expected = [x for x in expected_report.rstrip().split("\n")[1:]]
     start_index = gas_header_line_index + 1
     end_index = start_index + len(expected)
     actual = [x.rstrip() for x in result.outlines[start_index:end_index]]
@@ -209,10 +213,12 @@ def test_gas_flag_when_not_supported(setup_pytester, project, pytester, eth_test
     setup_pytester(project.path.name)
     path = f"{project.path}/tests/test_contract.py::test_contract_interaction_in_tests"
     result = pytester.runpytest(path, "--gas")
-    assert (
+    actual = "\n".join(result.outlines)
+    expected = (
         "Provider 'test' does not support transaction tracing. "
         "The gas profile is limited to receipt-level data."
-    ) in "\n".join(result.outlines)
+    )
+    assert expected in actual
 
 
 @geth_process_test
