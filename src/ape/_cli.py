@@ -3,7 +3,7 @@ import re
 import sys
 from gettext import gettext
 from importlib.metadata import entry_points
-from typing import Any, Optional
+from typing import Any, Iterable, Optional
 
 import click
 import yaml
@@ -118,7 +118,7 @@ class ApeCLI(click.MultiCommand):
         if self._commands:
             return self._commands
 
-        eps = entry_points().get(self._CLI_GROUP_NAME)
+        eps: Iterable = entry_points().get(self._CLI_GROUP_NAME, [])
         self._commands = {clean_plugin_name(cmd.name): cmd.load for cmd in eps}
         return self._commands
 
