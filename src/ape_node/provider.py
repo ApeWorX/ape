@@ -63,7 +63,7 @@ class GethDevProcess(BaseGethProcess):
     ):
         executable = executable or "geth"
         if not shutil.which(executable):
-            raise GethNotInstalledError()
+            raise NodeSoftwareNotInstalledError()
 
         self.data_dir = data_dir
         self._hostname = hostname
@@ -195,7 +195,7 @@ class GethDevProcess(BaseGethProcess):
         self.proc.wait(*args, **kwargs)
 
 
-class GethNetworkConfig(PluginConfig):
+class EthereumNetworkConfig(PluginConfig):
     # Make sure you are running the right networks when you try for these
     mainnet: Dict = {"uri": get_random_rpc("ethereum", "mainnet")}
     sepolia: Dict = {"uri": get_random_rpc("ethereum", "sepolia")}
@@ -205,8 +205,8 @@ class GethNetworkConfig(PluginConfig):
     model_config = SettingsConfigDict(extra="allow")
 
 
-class GethConfig(PluginConfig):
-    ethereum: GethNetworkConfig = GethNetworkConfig()
+class EthereumNodeConfig(PluginConfig):
+    ethereum: EthereumNetworkConfig = EthereumNetworkConfig()
     executable: Optional[str] = None
     ipc_path: Optional[Path] = None
     data_dir: Optional[Path] = None
@@ -214,11 +214,10 @@ class GethConfig(PluginConfig):
     model_config = SettingsConfigDict(extra="allow")
 
 
-# TODO: 0.8 rename exception.
-class GethNotInstalledError(ConnectionError):
+class NodeSoftwareNotInstalledError(ConnectionError):
     def __init__(self):
         super().__init__(
-            "No node found and 'ape-geth' is unable to start one.\n"
+            "No node found and 'ape-node' is unable to start one.\n"
             "Things you can do:\n"
             "\t1. Check your connection URL, if trying to connect remotely.\n"
             "\t2. Install node software (geth), if trying to run a local node.\n"
@@ -229,7 +228,7 @@ class GethNotInstalledError(ConnectionError):
 # NOTE: Using EthereumNodeProvider because of it's geth-derived default behavior.
 class GethDev(EthereumNodeProvider, TestProviderAPI, SubprocessProvider):
     _process: Optional[GethDevProcess] = None
-    name: str = "geth"
+    name: str = "node"
     can_use_parity_traces: Optional[bool] = False
 
     @property
@@ -242,12 +241,14 @@ class GethDev(EthereumNodeProvider, TestProviderAPI, SubprocessProvider):
 
     @property
     def data_dir(self) -> Path:
-        # Overridden from BaseGeth class for placing debug logs in ape data folder.
+        # Overridden from base class for placing debug logs in ape data folder.
         return self.settings.data_dir or self.data_folder / self.name
 
-    @log_instead_of_fail(default="<geth>")
+    @log_instead_of_fail(default="<node>")
     def __repr__(self) -> str:
-        return f"<geth chain_id={self.chain_id}>"
+        client_version = self.client_version
+        client_version_str = f" ({client_version}) " if client_version else " "
+        return f"<Node{client_version_str}chain_id={self.chain_id}>"
 
     @property
     def auto_mine(self) -> bool:
@@ -468,7 +469,7 @@ class GethDev(EthereumNodeProvider, TestProviderAPI, SubprocessProvider):
 
 
 # NOTE: The default behavior of EthereumNodeBehavior assumes geth.
-class Geth(EthereumNodeProvider):
+class Node(EthereumNodeProvider):
     @property
     def uri(self) -> str:
         if "uri" in self.provider_settings:

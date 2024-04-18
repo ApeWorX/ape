@@ -219,7 +219,7 @@ print(receipt.gas_used)
 
 Notice that transacting returns a [ReceiptAPI](../methoddocs/api.html#ape.api.transactions.ReceiptAPI) object which contains all the receipt data, such as `gas_used`.
 
-**NOTE**: If you need the `return_value` from a transaction, you have to either treat transaction as a call (see the section below!) or use a provider with tracing-features enabled (such as `ape-foundry` or `ape-geth`) and access the [return_value](../methoddocs/api.html#ape.api.transactions.ReceiptAPI.return_value) property on the receipt.
+**NOTE**: If you need the `return_value` from a transaction, you have to either treat transaction as a call (see the section below!) or use a provider with tracing-features enabled (such as `ape-foundry` or `ape-node`) and access the [return_value](../methoddocs/api.html#ape.api.transactions.ReceiptAPI.return_value) property on the receipt.
 
 ```python
 assert receipt.return_value == 123

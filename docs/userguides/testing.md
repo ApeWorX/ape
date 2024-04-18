@@ -235,10 +235,11 @@ ape test test_my_contract -I -s
 
 ## Test Providers
 
-Out-of-the-box, your tests run using the `eth-tester` provider, which comes bundled with ape. If you have `geth` installed, you can use the `ape-geth` plugin that also comes with ape.
+Out-of-the-box, your tests run using the `eth-tester` provider, which comes bundled with ape.
+If you have Ethereum node software installed, you can use the `ape-node` plugin that also comes with ape.
 
 ```bash
-ape test --network ethereum:local:geth
+ape test --network ethereum:local:node
 ```
 
 Each testing plugin should work the same way. You will have access to the same test accounts.

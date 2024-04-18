@@ -645,13 +645,7 @@ class ProviderAPI(BaseInterfaceModel):
 
     @log_instead_of_fail(default="<ProviderAPI>")
     def __repr__(self) -> str:
-        try:
-            chain_id = self.chain_id
-        except Exception as err:
-            logger.error(str(err))
-            chain_id = None
-
-        return f"<{self.name} chain_id={self.chain_id}>" if chain_id else f"<{self.name}>"
+        return f"<{self.name.capitalize()} chain_id={self.chain_id}>"
 
     @raises_not_implemented
     def set_code(  # type: ignore[empty-body]

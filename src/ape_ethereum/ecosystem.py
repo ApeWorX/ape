@@ -81,7 +81,7 @@ BLUEPRINT_HEADER = HexBytes("0xfe71")
 class NetworkConfig(PluginConfig):
     required_confirmations: int = 0
 
-    default_provider: Optional[str] = "geth"
+    default_provider: Optional[str] = "node"
     """
     The default provider to use. If set to ``None``, ape will rely on
     an external plugin supplying the provider implementation, such as
