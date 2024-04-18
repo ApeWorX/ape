@@ -173,7 +173,7 @@ def test_config_access():
         config.default_provider
         == config["default_provider"]
         == getattr(config, "default-provider")
-        == "geth"
+        == "node"
     )
 
 
@@ -222,13 +222,13 @@ def test_merge_configs():
     """
     global_config = {
         "ethereum": {
-            "mainnet": {"default_provider": "geth"},
+            "mainnet": {"default_provider": "node"},
             "local": {"default_provider": "test", "required_confirmations": 5},
         }
     }
     project_config = {
         "ethereum": {
-            "local": {"default_provider": "geth"},
+            "local": {"default_provider": "node"},
             "sepolia": {"default_provider": "alchemy"},
         },
         "test": "foo",
@@ -242,8 +242,8 @@ def test_merge_configs():
     # Expected case `add missing project keys`: `test` is added, so is `sepolia` (nested-example).
     expected = {
         "ethereum": {
-            "local": {"default_provider": "geth", "required_confirmations": 5},
-            "mainnet": {"default_provider": "geth"},
+            "local": {"default_provider": "node", "required_confirmations": 5},
+            "mainnet": {"default_provider": "node"},
             "sepolia": {"default_provider": "alchemy"},
         },
         "test": "foo",
