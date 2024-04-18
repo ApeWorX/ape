@@ -248,6 +248,7 @@ def test_txn_hash_when_access_list_is_raw(ethereum, owner):
     # to this state, but somehow they have.
     txn.access_list = ACCESS_LIST_HEXBYTES
 
+    # Ignore the Pydantic warning from access-list being the wrong type.
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
         actual = txn.txn_hash.hex()

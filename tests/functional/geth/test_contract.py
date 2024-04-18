@@ -29,7 +29,19 @@ def test_contract_interaction(geth_provider, geth_account, geth_contract, mocker
 
 
 @geth_process_test
-def test_revert(accounts, not_owner, geth_contract):
+def test_contract_call_show_trace(geth_contract, geth_account):
+    """
+    Show the `show_trace=True` does not corrupt the value.
+    Note: The provider uses `debug_traceCall` to get the result instead of
+    `eth_call`.
+    """
+    geth_contract.setNumber(203, sender=geth_account)
+    actual = geth_contract.myNumber(show_trace=True)
+    assert actual == 203
+
+
+@geth_process_test
+def test_tx_revert(accounts, not_owner, geth_contract):
     # 'sender' is not the owner so it will revert (with a message)
     with pytest.raises(ContractLogicError, match="!authorized") as err:
         geth_contract.setNumber(5, sender=not_owner)
