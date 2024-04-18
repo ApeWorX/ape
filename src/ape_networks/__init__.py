@@ -21,7 +21,7 @@ class CustomNetwork(PluginConfig):
     base_ecosystem_plugin: Optional[str] = None
     """The base ecosystem plugin to use, when applicable. Defaults to the default ecosystem."""
 
-    default_provider: str = "geth"
+    default_provider: str = "node"
     """The default provider plugin to use. Default is the default node provider."""
 
     request_header: Dict = {}
