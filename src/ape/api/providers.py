@@ -11,7 +11,7 @@ from logging import FileHandler, Formatter, Logger, getLogger
 from pathlib import Path
 from signal import SIGINT, SIGTERM, signal
 from subprocess import DEVNULL, PIPE, Popen
-from typing import Any, Dict, Iterator, List, Optional, Union, cast
+from typing import Any, Dict, Iterable, Iterator, List, Optional, Union, cast
 
 from eth_pydantic_types import HexBytes
 from ethpm_types.abi import EventABI
@@ -319,14 +319,14 @@ class ProviderAPI(BaseInterfaceModel):
 
     @raises_not_implemented
     def stream_request(  # type: ignore[empty-body]
-        self, method: str, params: List, iter_path: str = "result.item"
+        self, method: str, params: Iterable, iter_path: str = "result.item"
     ) -> Iterator[Any]:
         """
         Stream a request, great for large requests like events or traces.
 
         Args:
             method (str): The RPC method to call.
-            params (List): Parameters for the method.s
+            params (Iterable): Parameters for the method.s
             iter_path (str): The response dict-path to the items.
 
         Returns:
