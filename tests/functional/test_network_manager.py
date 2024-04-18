@@ -221,7 +221,7 @@ def test_parse_network_choice_multiple_contexts(
     assert (
         eth_tester_provider.chain_id == DEFAULT_TEST_CHAIN_ID
     ), "Test setup failed - expecting to start on default chain ID"
-    assert eth_tester_provider._make_request("eth_chainId") == DEFAULT_TEST_CHAIN_ID
+    assert eth_tester_provider.make_request("eth_chainId") == DEFAULT_TEST_CHAIN_ID
 
     with first_context:
         start_count = len(first_context.connected_providers)
@@ -233,7 +233,7 @@ def test_parse_network_choice_multiple_contexts(
             assert len(second_context.connected_providers) == expected_next_count
 
     assert eth_tester_provider.chain_id == DEFAULT_TEST_CHAIN_ID
-    assert eth_tester_provider._make_request("eth_chainId") == DEFAULT_TEST_CHAIN_ID
+    assert eth_tester_provider.make_request("eth_chainId") == DEFAULT_TEST_CHAIN_ID
 
 
 def test_getattr_ecosystem_with_hyphenated_name(networks, ethereum):
