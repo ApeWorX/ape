@@ -130,8 +130,8 @@ class ProjectAPI(BaseInterfaceModel):
 
     @property
     def contracts(self) -> Dict[str, ContractType]:
-        if self._contracts is not None:
-            return self._contracts
+        if contracts := self._contracts:
+            return contracts
 
         contracts = {}
         for p in self._cache_folder.glob("*.json"):
@@ -143,8 +143,10 @@ class ProjectAPI(BaseInterfaceModel):
             contract_type.name = contract_name if contract_type.name is None else contract_type.name
             contracts[contract_type.name] = contract_type
 
-        self._contracts = contracts
-        return self._contracts
+        if contracts:
+            self._contracts = contracts
+
+        return self._contracts or {}
 
     @property
     def _cache_folder(self) -> Path:

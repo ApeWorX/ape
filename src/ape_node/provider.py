@@ -1,14 +1,12 @@
 import atexit
 import shutil
-from itertools import tee
 from pathlib import Path
 from subprocess import DEVNULL, PIPE, Popen
-from typing import Any, Dict, List, Optional, Union
+from typing import Dict, List, Optional, Union
 
 from eth_pydantic_types import HexBytes
 from eth_typing import HexStr
 from eth_utils import add_0x_prefix, to_hex, to_wei
-from evm_trace import CallType, get_calltree_from_geth_trace
 from evmchains import get_random_rpc
 from geth.accounts import ensure_account_exists  # type: ignore
 from geth.chain import initialize_chain  # type: ignore
@@ -19,10 +17,9 @@ from requests.exceptions import ConnectionError
 from web3.middleware import geth_poa_middleware
 from yarl import URL
 
-from ape.api import PluginConfig, SubprocessProvider, TestProviderAPI, TransactionAPI
-from ape.exceptions import ProviderError
+from ape.api import PluginConfig, SubprocessProvider, TestProviderAPI
 from ape.logging import LogLevel, logger
-from ape.types import BlockID, CallTreeNode, SnapshotID, SourceTraceback
+from ape.types import SnapshotID
 from ape.utils import (
     DEFAULT_NUMBER_OF_TEST_ACCOUNTS,
     DEFAULT_TEST_CHAIN_ID,
@@ -252,7 +249,7 @@ class GethDev(EthereumNodeProvider, TestProviderAPI, SubprocessProvider):
 
     @property
     def auto_mine(self) -> bool:
-        return self._make_request("eth_mining", [])
+        return self.make_request("eth_mining", [])
 
     @auto_mine.setter
     def auto_mine(self, value):
@@ -341,7 +338,7 @@ class GethDev(EthereumNodeProvider, TestProviderAPI, SubprocessProvider):
             logger.error("Unable to set head to future block.")
             return
 
-        self._make_request("debug_setHead", [block_number_hex_str])
+        self.make_request("debug_setHead", [block_number_hex_str])
 
     @raises_not_implemented
     def set_timestamp(self, new_timestamp: int):
@@ -350,120 +347,6 @@ class GethDev(EthereumNodeProvider, TestProviderAPI, SubprocessProvider):
     @raises_not_implemented
     def mine(self, num_blocks: int = 1):
         pass
-
-    def send_call(
-        self,
-        txn: TransactionAPI,
-        block_id: Optional[BlockID] = None,
-        state: Optional[Dict] = None,
-        **kwargs: Any,
-    ) -> HexBytes:
-        if block_id is not None:
-            kwargs["block_identifier"] = block_id
-
-        if state is not None:
-            kwargs["state_override"] = state
-
-        skip_trace = kwargs.pop("skip_trace", False)
-        arguments = self._prepare_call(txn, **kwargs)
-        if skip_trace:
-            return self._eth_call(arguments)
-
-        show_gas = kwargs.pop("show_gas_report", False)
-        show_trace = kwargs.pop("show_trace", False)
-
-        if self._test_runner is not None:
-            track_gas = self._test_runner.gas_tracker.enabled
-            track_coverage = self._test_runner.coverage_tracker.enabled
-        else:
-            track_gas = False
-            track_coverage = False
-
-        needs_trace = track_gas or track_coverage or show_gas or show_trace
-        if not needs_trace:
-            return self._eth_call(arguments)
-
-        # The user is requesting information related to a call's trace,
-        # such as gas usage data.
-
-        result, trace_frames = self._trace_call(arguments)
-        trace_frames, frames_copy = tee(trace_frames)
-        return_value = HexBytes(result["returnValue"])
-        root_node_kwargs = {
-            "gas_cost": result.get("gas", 0),
-            "address": txn.receiver,
-            "calldata": txn.data,
-            "value": txn.value,
-            "call_type": CallType.CALL,
-            "failed": False,
-            "returndata": return_value,
-        }
-
-        evm_call_tree = get_calltree_from_geth_trace(trace_frames, **root_node_kwargs)
-
-        # NOTE: Don't pass txn_hash here, as it will fail (this is not a real txn).
-        call_tree = self._create_call_tree_node(evm_call_tree)
-
-        if track_gas and show_gas and not show_trace and call_tree:
-            # Optimization to enrich early and in_place=True.
-            call_tree.enrich()
-
-        if track_gas and call_tree and self._test_runner is not None and txn.receiver:
-            # Gas report being collected, likely for showing a report
-            # at the end of a test run.
-            # Use `in_place=False` in case also `show_trace=True`
-            enriched_call_tree = call_tree.enrich(in_place=False)
-            self._test_runner.gas_tracker.append_gas(enriched_call_tree, txn.receiver)
-
-        if track_coverage and self._test_runner is not None and txn.receiver:
-            contract_type = self.chain_manager.contracts.get(txn.receiver)
-            if contract_type:
-                traceframes = (self._create_trace_frame(x) for x in frames_copy)
-                method_id = HexBytes(txn.data)
-                selector = (
-                    contract_type.methods[method_id].selector
-                    if method_id in contract_type.methods
-                    else None
-                )
-                source_traceback = SourceTraceback.create(contract_type, traceframes, method_id)
-                self._test_runner.coverage_tracker.cover(
-                    source_traceback, function=selector, contract=contract_type.name
-                )
-
-        if show_gas:
-            enriched_call_tree = call_tree.enrich(in_place=False)
-            self.chain_manager._reports.show_gas(enriched_call_tree)
-
-        if show_trace:
-            call_tree = call_tree.enrich(use_symbol_for_tokens=True)
-            self.chain_manager._reports.show_trace(call_tree)
-
-        return return_value
-
-    def _eth_call(self, arguments: List) -> HexBytes:
-        try:
-            result = self._make_request("eth_call", arguments)
-        except Exception as err:
-            trace, trace2 = tee(self._create_trace_frame(x) for x in self._trace_call(arguments)[1])
-            contract_address = arguments[0]["to"]
-            contract_type = self.chain_manager.contracts.get(contract_address)
-            method_id = arguments[0].get("data", "")[:10] or None
-            tb = (
-                SourceTraceback.create(contract_type, trace, method_id)
-                if method_id and contract_type
-                else None
-            )
-            raise self.get_virtual_machine_error(
-                err, trace=trace2, contract_address=contract_address, source_traceback=tb
-            ) from err
-
-        if "error" in result:
-            raise ProviderError(result["error"]["message"])
-
-        return HexBytes(result)
-
-    def get_call_tree(self, txn_hash: str, **root_node_kwargs) -> CallTreeNode:
-        return self._get_geth_call_tree(txn_hash, **root_node_kwargs)
 
     def build_command(self) -> List[str]:
         return self._process.command if self._process else []

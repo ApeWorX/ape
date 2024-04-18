@@ -120,6 +120,7 @@ setup(
         "eth-account>=0.11.2,<0.12",
         "eth-typing>=3.5.2,<4",
         "eth-utils>=2.3.1,<3",
+        "hexbytes",  # Peer
         "py-geth>=4.4.0,<5",
         "web3[tester]>=6.17.2,<7",
         # ** Dependencies maintained by ApeWorX **

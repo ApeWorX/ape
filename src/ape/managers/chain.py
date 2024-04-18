@@ -3,12 +3,15 @@ from concurrent.futures import ThreadPoolExecutor
 from contextlib import contextmanager
 from functools import partial
 from pathlib import Path
+from statistics import mean, median
 from typing import IO, Collection, Dict, Iterator, List, Optional, Set, Type, Union, cast
 
 import pandas as pd
 from ethpm_types import ABI, ContractType
 from rich import get_console
+from rich.box import SIMPLE
 from rich.console import Console as RichConsole
+from rich.table import Table
 
 from ape.api import BlockAPI, ReceiptAPI
 from ape.api.address import BaseAddress
@@ -29,14 +32,16 @@ from ape.exceptions import (
     CustomError,
     ProviderNotConnectedError,
     QueryEngineError,
+    TransactionNotFoundError,
     UnknownSnapshotError,
 )
 from ape.logging import logger
 from ape.managers.base import BaseManager
-from ape.types import AddressType, BlockID, CallTreeNode, SnapshotID, SourceTraceback
+from ape.types import AddressType, BlockID, GasReport, SnapshotID, SourceTraceback
 from ape.utils import (
     BaseInterfaceModel,
-    TraceStyles,
+    is_evm_precompile,
+    is_zero_hex,
     log_instead_of_fail,
     nonreentrant,
     singledispatchmethod,
@@ -1362,29 +1367,44 @@ class ReportManager(BaseManager):
 
     rich_console_map: Dict[str, RichConsole] = {}
 
-    def show_trace(
-        self,
-        call_tree: CallTreeNode,
-        sender: Optional[AddressType] = None,
-        transaction_hash: Optional[str] = None,
-        revert_message: Optional[str] = None,
-        file: Optional[IO[str]] = None,
-        verbose: bool = False,
-    ):
-        root = call_tree.as_rich_tree(verbose=verbose)
-        console = self._get_console(file)
+    def show_gas(self, report: GasReport, file: Optional[IO[str]] = None):
+        tables: List[Table] = []
 
-        if transaction_hash:
-            console.print(f"Call trace for [bold blue]'{transaction_hash}'[/]")
-        if revert_message:
-            console.print(f"[bold red]{revert_message}[/]")
-        if sender:
-            console.print(f"tx.origin=[{TraceStyles.CONTRACTS}]{sender}[/]")
+        for contract_id, method_calls in report.items():
+            title = f"{contract_id} Gas"
+            table = Table(title=title, box=SIMPLE)
+            table.add_column("Method")
+            table.add_column("Times called", justify="right")
+            table.add_column("Min.", justify="right")
+            table.add_column("Max.", justify="right")
+            table.add_column("Mean", justify="right")
+            table.add_column("Median", justify="right")
+            has_at_least_1_row = False
 
-        console.print(root)
+            for method_call, gases in sorted(method_calls.items()):
+                if not gases:
+                    continue
 
-    def show_gas(self, call_tree: CallTreeNode, file: Optional[IO[str]] = None):
-        tables = call_tree.as_gas_tables()
+                if not method_call or is_zero_hex(method_call) or is_evm_precompile(method_call):
+                    continue
+
+                elif method_call == "__new__":
+                    # Looks better in the gas report.
+                    method_call = "__init__"
+
+                has_at_least_1_row = True
+                table.add_row(
+                    method_call,
+                    f"{len(gases)}",
+                    f"{min(gases)}",
+                    f"{max(gases)}",
+                    f"{int(round(mean(gases)))}",
+                    f"{int(round(median(gases)))}",
+                )
+
+            if has_at_least_1_row:
+                tables.append(table)
+
         self.echo(*tables, file=file)
 
     def echo(self, *rich_items, file: Optional[IO[str]] = None):
@@ -1666,6 +1686,6 @@ class ChainManager(BaseManager):
         """
         receipt = self.chain_manager.history[transaction_hash]
         if not isinstance(receipt, ReceiptAPI):
-            raise ChainError(f"No receipt found with hash '{transaction_hash}'.")
+            raise TransactionNotFoundError(transaction_hash=transaction_hash)
 
         return receipt

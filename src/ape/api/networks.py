@@ -34,7 +34,7 @@ from ape.exceptions import (
     SignatureError,
 )
 from ape.logging import logger
-from ape.types import AddressType, AutoGasLimit, CallTreeNode, ContractLog, GasLimit, RawAddress
+from ape.types import AddressType, AutoGasLimit, ContractLog, GasLimit, RawAddress
 from ape.utils import (
     DEFAULT_TRANSACTION_ACCEPTANCE_TIMEOUT,
     BaseInterfaceModel,
@@ -52,6 +52,7 @@ from .config import PluginConfig
 if TYPE_CHECKING:
     from .explorers import ExplorerAPI
     from .providers import BlockAPI, ProviderAPI, UpstreamProvider
+    from .trace import TraceAPI
     from .transactions import ReceiptAPI, TransactionAPI
 
 
@@ -582,18 +583,19 @@ class EcosystemAPI(ExtraAttributesMixin, BaseInterfaceModel):
 
         return HexBytes(keccak(text=abi.selector)[:4])
 
-    def enrich_calltree(self, call: CallTreeNode, **kwargs) -> CallTreeNode:
+    def enrich_trace(self, trace: "TraceAPI", **kwargs) -> "TraceAPI":
         """
         Enhance the data in the call tree using information about the ecosystem.
 
         Args:
-            call (:class:`~ape.types.trace.CallTreeNode`): The call tree node to enrich.
-            kwargs: Additional kwargs to help with enrichment.
+            call (:class:`~ape.api.trace.TraceAPI`): The trace to enrich.
+            kwargs: Additional kwargs to control enrichment, defined at the
+              plugin level.
 
         Returns:
             :class:`~ape.types.trace.CallTreeNode`
         """
-        return call
+        return trace
 
     @raises_not_implemented
     def get_python_types(  # type: ignore[empty-body]
