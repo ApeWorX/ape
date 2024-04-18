@@ -1211,7 +1211,7 @@ class EthereumNodeProvider(Web3Provider, ABC):
     block_page_size: int = 5000
     concurrency: int = 16
 
-    name: str = "geth"
+    name: str = "node"
 
     """Is ``None`` until known."""
     can_use_parity_traces: Optional[bool] = None

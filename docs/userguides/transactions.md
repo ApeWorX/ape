@@ -265,7 +265,7 @@ Use the `show_trace=` kwarg on a contract call and Ape will display the trace be
 token.balanceOf(account, show_trace=True)
 ```
 
-**NOTE**: This may not work on all providers, but it should work on common ones such as `ape-hardhat` or `ape-geth`.
+**NOTE**: This may not work on all providers, but it should work on common ones such as `ape-hardhat` or `ape-node`.
 
 ## Gas Reports
 

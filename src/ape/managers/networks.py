@@ -26,7 +26,7 @@ class NetworkManager(BaseManager):
         from ape import networks
 
         # "networks" is the NetworkManager singleton
-        with networks.ethereum.mainnet.use_provider("geth"):
+        with networks.ethereum.mainnet.use_provider("node"):
            ...
     """
 
@@ -230,7 +230,7 @@ class NetworkManager(BaseManager):
 
         if provider_name is None:
             if issubclass(provider_cls, EthereumNodeProvider):
-                name = "geth"
+                name = "node"
 
             elif cls_name := getattr(provider_cls, "name", None):
                 name = cls_name
@@ -323,7 +323,7 @@ class NetworkManager(BaseManager):
         e.g. ``--network [ECOSYSTEM:NETWORK:PROVIDER]``.
 
         Each value is in the form ``ecosystem:network:provider`` and shortened options also
-        appear in the list. For example, ``::geth`` would default to ``:ethereum:local:geth``
+        appear in the list. For example, ``::node`` would default to ``:ethereum:local:node``
         and both will be in the returned list. The values come from each
         :class:`~ape.api.providers.ProviderAPI` that is installed.
 
