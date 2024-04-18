@@ -14,7 +14,7 @@ from ape.api.query import (
     ContractEventQuery,
 )
 from ape.contracts.base import ContractLog, LogFilter
-from ape.exceptions import QueryEngineError
+from ape.exceptions import APINotImplementedError, ProviderError, QueryEngineError
 from ape.logging import logger
 from ape.plugins import clean_plugin_name
 from ape.types.address import AddressType
@@ -26,6 +26,9 @@ class DefaultQueryProvider(QueryAPI):
     Default implementation of the :class:`~ape.api.query.QueryAPI`.
     Allows for the query of blockchain data using connected provider.
     """
+
+    def __init__(self):
+        self.supports_contract_creation = None
 
     @singledispatchmethod
     def estimate_query(self, query: QueryType) -> Optional[int]:  # type: ignore
@@ -42,9 +45,11 @@ class DefaultQueryProvider(QueryAPI):
         return self.provider.get_block(query.block_id).num_transactions * 100
 
     @estimate_query.register
-    def estimate_contract_creation_query(self, query: ContractCreationQuery) -> int:
+    def estimate_contract_creation_query(self, query: ContractCreationQuery) -> Optional[int]:
         # NOTE: Extremely expensive query, involves binary search of all blocks in a chain
         #       Very loose estimate of 5s per transaction for this query.
+        if self.supports_contract_creation is False:
+            return None
         return 5000
 
     @estimate_query.register
@@ -101,14 +106,25 @@ class DefaultQueryProvider(QueryAPI):
         if not self.provider.get_code(query.contract):
             return None
 
-        block = find_creation_block(0, self.chain_manager.blocks.height)
+        # requires archive node
+        try:
+            block = find_creation_block(0, self.chain_manager.blocks.height)
+        except ProviderError:
+            self.supports_contract_creation = False
+            return None
 
-        # iterate over transaction traces in a block to find the deploy transaction
+        # iterate over transaction traces in a block to find the deployment transaction
         # this method also supports contract factories
-        if "geth" in self.provider.client_version.lower():
-            yield from self._find_creation_in_block_via_geth(block, query.contract)
-        else:
-            yield from self._find_creation_in_block_via_parity(block, query.contract)
+        try:
+            if "geth" in self.provider.client_version.lower():
+                yield from self._find_creation_in_block_via_geth(block, query.contract)
+            else:
+                yield from self._find_creation_in_block_via_parity(block, query.contract)
+        except (ProviderError, APINotImplementedError):
+            self.supports_contract_creation = False
+            return None
+
+        self.supports_contract_creation = True
 
     def _find_creation_in_block_via_parity(self, block, contract_address):
         # requires trace namespace
