@@ -124,6 +124,7 @@ setup(
         "py-geth>=4.4.0,<5",
         "trie>=3.0.0,<4",  # Peer: stricter pin needed for uv support.
         "web3[tester]>=6.17.2,<7",
+        "trie>=3.0.0,<4",  # Peer: needed extra constraint for 3.12 support.
         # ** Dependencies maintained by ApeWorX **
         "eip712>=0.2.7,<0.3",
         "ethpm-types>=0.6.9,<0.7",
