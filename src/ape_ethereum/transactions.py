@@ -10,18 +10,18 @@ from eth_account._utils.legacy_transactions import (
     serializable_unsigned_transaction_from_dict,
 )
 from eth_pydantic_types import HexBytes
-from eth_utils import decode_hex, encode_hex, keccak, to_hex, to_int
+from eth_utils import decode_hex, encode_hex, keccak, to_int
 from ethpm_types import ContractType
 from ethpm_types.abi import EventABI, MethodABI
 from pydantic import BaseModel, Field, field_validator, model_validator
 
 from ape.api import ReceiptAPI, TransactionAPI
 from ape.contracts import ContractEvent
-from ape.exceptions import APINotImplementedError, OutOfGasError, SignatureError, TransactionError
+from ape.exceptions import OutOfGasError, SignatureError, TransactionError
 from ape.logging import logger
-from ape.types import AddressType, CallTreeNode, ContractLog, ContractLogContainer, SourceTraceback
+from ape.types import AddressType, ContractLog, ContractLogContainer, SourceTraceback
 from ape.utils import ZERO_ADDRESS
-from ape_ethereum._print import extract_debug_logs
+from ape_ethereum.trace import Trace
 
 
 class TransactionStatusEnum(IntEnum):
@@ -205,27 +205,22 @@ class Receipt(ReceiptAPI):
         return self.status != TransactionStatusEnum.NO_ERROR
 
     @cached_property
-    def call_tree(self) -> Optional[CallTreeNode]:
-        return self.provider.get_call_tree(self.txn_hash)
-
-    @cached_property
     def debug_logs_typed(self) -> List[Tuple[Any]]:
         """
         Extract messages to console outputted by contracts via print() or console.log() statements
         """
-
         try:
-            self.call_tree
-        # Some providers do not implement this, so skip
-        except APINotImplementedError:
+            trace = self.trace
+        # Some providers do not implement this, so skip.
+        except NotImplementedError:
             logger.debug("Call tree not available, skipping debug log extraction")
-            return list()
+            return []
 
-        # If the call tree is not available, no logs are available
-        if self.call_tree is None:
-            return list()
+        # If the trace is not available, no logs are available.
+        if trace is None or not isinstance(trace, Trace):
+            return []
 
-        return list(extract_debug_logs(self.call_tree))
+        return list(trace.debug_logs)
 
     @cached_property
     def contract_type(self) -> Optional[ContractType]:
@@ -267,54 +262,10 @@ class Receipt(ReceiptAPI):
             raise TransactionError(f"Transaction '{txn_hash}' failed.", txn=self)
 
     def show_trace(self, verbose: bool = False, file: IO[str] = sys.stdout):
-        if not (call_tree := self.call_tree):
-            return
-
-        call_tree.enrich(use_symbol_for_tokens=True)
-        revert_message = None
-
-        if call_tree.failed:
-            default_message = "reverted without message"
-            returndata = HexBytes(call_tree.raw["returndata"])
-            if not to_hex(returndata).startswith(
-                "0x08c379a00000000000000000000000000000000000000000000000000000000000000020"
-            ):
-                revert_message = default_message
-            else:
-                decoded_result = decode(("string",), returndata[4:])
-                if len(decoded_result) == 1:
-                    revert_message = f'reverted with message: "{decoded_result[0]}"'
-                else:
-                    revert_message = default_message
-
-        self.chain_manager._reports.show_trace(
-            call_tree,
-            sender=self.sender,
-            transaction_hash=self.txn_hash,
-            revert_message=revert_message,
-            verbose=verbose,
-            file=file,
-        )
+        self.trace.show(verbose=verbose, file=file)
 
     def show_gas_report(self, file: IO[str] = sys.stdout):
-        if not (call_tree := self.call_tree):
-            return
-
-        call_tree.enrich()
-
-        # Enrich transfers.
-        if (
-            call_tree.contract_id.startswith("Transferring ")
-            and self.receiver is not None
-            and self.receiver in self.account_manager
-        ):
-            receiver_id = self.account_manager[self.receiver].alias or self.receiver
-            call_tree.method_id = f"to:{receiver_id}"
-
-        elif call_tree.contract_id.startswith("Transferring "):
-            call_tree.method_id = f"to:{self.receiver}"
-
-        self.chain_manager._reports.show_gas(call_tree, file=file)
+        self.trace.show_gas_report()
 
     def show_source_traceback(self, file: IO[str] = sys.stdout):
         self.chain_manager._reports.show_source_traceback(

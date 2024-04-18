@@ -5,6 +5,7 @@ from typing import List
 
 import pytest
 
+from ape_ethereum.trace import CallTrace, Trace, TraceApproach, TransactionTrace
 from tests.conftest import geth_process_test
 
 LOCAL_TRACE = r"""
@@ -24,7 +25,7 @@ ContractA\.methodWithoutArguments\(\) -> 0x[A-Fa-f0-9]{2}..[A-Fa-f0-9]{4} \[\d+ 
 │         333399998888882,
 │         234545457847457457458457457457
 │       \]
-│     \] \[\d+ gas\]
+│   \] \[\d+ gas\]
 ├── SYMBOL\.methodB1\(lolol="ice-cream", dynamo=345457847457457458457457457\) \[\d+ gas\]
 │   ├── ContractC\.getSomeList\(\) -> \[
 │   │     3425311345134513461345134534531452345,
@@ -120,7 +121,7 @@ def assert_rich_output(rich_capture: List[str], expected: str):
 
     for actual, expected in zip(actual_lines, expected_lines):
         fail_message = f"""\n
-        \tPattern: {expected},\n
+        \tPattern: {expected}\n
         \tLine   : {actual}\n
         \n
         Complete output:
@@ -142,35 +143,138 @@ def assert_rich_output(rich_capture: List[str], expected: str):
 
 
 @geth_process_test
-def test_get_call_tree(geth_contract, geth_account, geth_provider):
+def test_str_and_repr(geth_contract, geth_account, geth_provider):
     receipt = geth_contract.setNumber(10, sender=geth_account)
-    result = geth_provider.get_call_tree(receipt.txn_hash)
-    expected = (
-        rf"{geth_contract.address}.0x3fb5c1cb"
-        r"\(0x000000000000000000000000000000000000000000000000000000000000000a\) \[\d+ gas\]"
-    )
-    actual = repr(result)
-    assert re.match(expected, actual)
+    trace = geth_provider.get_transaction_trace(receipt.txn_hash)
+    expected = rf"{geth_contract.contract_type.name}\.setNumber\(\s*num=\d+\s*\) \[\d+ gas\]"
+    for actual in (str(trace), repr(trace)):
+        assert re.match(expected, actual)
 
 
 @geth_process_test
-def test_get_call_tree_deploy(geth_contract, geth_provider):
+def test_str_and_repr_deploy(geth_contract, geth_provider):
     receipt = geth_contract.receipt
-    result = geth_provider.get_call_tree(receipt.txn_hash)
-    result.enrich()
+    trace = geth_provider.get_transaction_trace(receipt.txn_hash)
+    _ = trace.enriched_calltree
     expected = rf"{geth_contract.contract_type.name}\.__new__\(\s*num=\d+\s*\) \[\d+ gas\]"
-    actual = repr(result)
+    for actual in (str(trace), repr(trace)):
+        assert re.match(expected, actual), f"Unexpected repr: {actual}"
+
+
+@geth_process_test
+def test_str_and_repr_erigon(
+    parity_trace_response, geth_provider, mock_web3, networks, mock_geth, geth_contract
+):
+    mock_web3.client_version = "erigon_MOCK"
+
+    def _request(rpc, arguments):
+        if rpc == "trace_transaction":
+            return parity_trace_response
+
+        return geth_provider.web3.provider.make_request(rpc, arguments)
+
+    mock_web3.provider.make_request.side_effect = _request
+    mock_web3.eth = geth_provider.web3.eth
+    orig_provider = networks.active_provider
+    networks.active_provider = mock_geth
+    expected = r"0x[a-fA-F0-9]{40}\.0x[a-fA-F0-9]+\(\) \[\d+ gas\]"
+
+    try:
+        trace = mock_geth.get_transaction_trace(geth_contract.receipt.txn_hash)
+        assert isinstance(trace, Trace)
+        for actual in (str(trace), repr(trace)):
+            assert re.match(expected, actual), actual
+
+    finally:
+        networks.active_provider = orig_provider
+
+
+@geth_process_test
+def test_str_multiline(geth_contract, geth_account):
+    tx = geth_contract.getNestedAddressArray.transact(sender=geth_account)
+    actual = f"{tx.trace}"
+    expected = r"""
+VyperContract\.getNestedAddressArray\(\) -> \[
+    \['tx\.origin', 'tx\.origin', 'tx\.origin'\],
+    \['ZERO_ADDRESS', 'ZERO_ADDRESS', 'ZERO_ADDRESS'\]
+\] \[\d+ gas\]
+"""
+    assert re.match(expected.strip(), actual.strip())
+
+
+@geth_process_test
+def test_str_list_of_lists(geth_contract, geth_account):
+    tx = geth_contract.getNestedArrayMixedDynamic.transact(sender=geth_account)
+    actual = f"{tx.trace}"
+    expected = r"""
+VyperContract\.getNestedArrayMixedDynamic\(\) -> \[
+    \[\[\[0\], \[0, 1\], \[0, 1, 2\]\]\],
+    \[
+        \[\[0\], \[0, 1\], \[0, 1, 2\]\],
+        \[\[0\], \[0, 1\], \[0, 1, 2\]\]
+    \],
+    \[\],
+    \[\],
+    \[\]
+\] \[\d+ gas\]
+"""
+    assert re.match(expected.strip(), actual.strip())
+
+
+@geth_process_test
+def test_get_gas_report(gas_tracker, geth_account, geth_contract):
+    tx = geth_contract.setNumber(924, sender=geth_account)
+    trace = tx.trace
+    actual = trace.get_gas_report()
+    contract_name = geth_contract.contract_type.name
+    expected = {contract_name: {"setNumber": [tx.gas_used]}}
+    assert actual == expected
+
+
+@geth_process_test
+def test_get_gas_report_deploy(gas_tracker, geth_contract):
+    tx = geth_contract.receipt
+    trace = tx.trace
+    actual = trace.get_gas_report()
+    contract_name = geth_contract.contract_type.name
+    expected = {contract_name: {"__new__": [tx.gas_used]}}
+    assert actual == expected
+
+
+@geth_process_test
+def test_transaction_trace_create(vyper_contract_instance):
+    trace = TransactionTrace(transaction_hash=vyper_contract_instance.receipt.txn_hash)
+    actual = f"{trace}"
+    expected = r"VyperContract\.__new__\(num=0\) \[\d+ gas\]"
     assert re.match(expected, actual)
 
 
 @geth_process_test
-def test_get_call_tree_erigon(mock_web3, mock_geth, parity_trace_response, txn_hash):
-    mock_web3.client_version = "erigon_MOCK"
-    mock_web3.provider.make_request.return_value = parity_trace_response
-    result = mock_geth.get_call_tree(txn_hash)
-    actual = repr(result)
-    expected = r"0xC17f2C69aE2E66FD87367E3260412EEfF637F70E.0x96d373e5\(\) \[\d+ gas\]"
-    assert re.match(expected, actual)
+def test_get_transaction_trace_erigon_calltree(
+    parity_trace_response, geth_provider, mock_web3, mocker
+):
+    # hash defined in parity_trace_response
+    tx_hash = "0x3cef4aaa52b97b6b61aa32b3afcecb0d14f7862ca80fdc76504c37a9374645c4"
+    default_make_request = geth_provider.web3.provider.make_request
+
+    def hacked_make_request(rpc, arguments):
+        if rpc == "trace_transaction":
+            return parity_trace_response
+
+        return default_make_request(rpc, arguments)
+
+    mock_web3.provider.make_request.side_effect = hacked_make_request
+    original_web3 = geth_provider._web3
+    geth_provider._web3 = mock_web3
+    trace = geth_provider.get_transaction_trace(tx_hash, call_trace_approach=TraceApproach.PARITY)
+    trace.__dict__["transaction"] = mocker.MagicMock()  # doesn't matter.
+    result = trace.enriched_calltree
+
+    # Defined in parity_mock_response
+    assert result["contract_id"] == "0xC17f2C69aE2E66FD87367E3260412EEfF637F70E"
+    assert result["method_id"] == "0x96d373e5"
+
+    geth_provider._web3 = original_web3
 
 
 @geth_process_test
@@ -190,3 +294,17 @@ def test_printing_debug_logs_compat(geth_provider, geth_account, vyper_printing)
     assert receipt.status
     assert len(list(receipt.debug_logs_typed)) == 1
     assert receipt.debug_logs_typed[0][0] == num
+
+
+def test_call_trace_supports_debug_trace_call(geth_contract, geth_account):
+    tx = {
+        "chainId": "0x539",
+        "to": "0x77c7E3905c21177Be97956c6620567596492C497",
+        "value": "0x0",
+        "data": "0x23fd0e40",
+        "type": 2,
+        "accessList": [],
+    }
+    trace = CallTrace(tx=tx)
+    _ = trace._traced_call
+    assert trace.supports_debug_trace_call

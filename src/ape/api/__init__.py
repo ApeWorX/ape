@@ -20,6 +20,7 @@ from .networks import (
 from .projects import DependencyAPI, ProjectAPI
 from .providers import BlockAPI, ProviderAPI, SubprocessProvider, TestProviderAPI, UpstreamProvider
 from .query import QueryAPI, QueryType
+from .trace import TraceAPI
 from .transactions import ReceiptAPI, TransactionAPI
 
 __all__ = [
@@ -49,6 +50,7 @@ __all__ = [
     "TestAccountAPI",
     "TestAccountContainerAPI",
     "TestProviderAPI",
+    "TraceAPI",
     "TransactionAPI",
     "UpstreamProvider",
 ]
