@@ -854,7 +854,7 @@ class ContractCache(BaseManager):
             address (AddressType): The address of the contract.
 
         Returns:
-            Optional[:class:`~pae.api.query.ContractCreation`]
+            Optional[:class:`~ape.api.query.ContractCreation`]
         """
         if creation := self._local_contract_creation.get(address):
             return creation
