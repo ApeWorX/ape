@@ -1147,6 +1147,9 @@ class EthereumNodeProvider(Web3Provider, ABC):
 
     name: str = "node"
 
+    """Is ``None`` until known."""
+    can_use_parity_traces: Optional[bool] = None
+
     @property
     def uri(self) -> str:
         if "url" in self.provider_settings:
