@@ -241,13 +241,13 @@ def networks_connected_to_tester(eth_tester_provider):
 def geth_provider(networks):
     if (
         not networks.active_provider
-        or networks.provider.name != "geth"
+        or networks.provider.name != "node"
         or not networks.provider.is_connected
         or getattr(networks.provider, "uri", "") != GETH_URI
     ):
         test_acct_100 = "0x63c7f11162dBFC374DC6f5C0B3Aa26C618846a85"
         with networks.ethereum.local.use_provider(
-            "geth", provider_settings={"uri": GETH_URI, "extra_funded_accounts": [test_acct_100]}
+            "node", provider_settings={"uri": GETH_URI, "extra_funded_accounts": [test_acct_100]}
         ) as provider:
             yield provider
     else:

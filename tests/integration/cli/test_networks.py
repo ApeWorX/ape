@@ -6,12 +6,12 @@ from .utils import run_once, skip_projects_except
 _DEFAULT_NETWORKS_TREE = """
 ethereum  (default)
 ├── local  (default)
-│   ├── geth
+│   ├── node
 │   └── test  (default)
 ├── mainnet
 │   └── test  (default)
 └── sepolia
-    └── geth  (default)
+    └── node  (default)
 """
 _DEFAULT_NETWORKS_YAML = """
 ecosystems:
@@ -21,28 +21,28 @@ ecosystems:
   - isDefault: true
     name: local
     providers:
-    - name: geth
+    - name: node
     - isDefault: true
       name: test
   - name: mainnet
     providers:
     - isDefault: true
-      name: geth
+      name: node
   - name: mainnet-fork
     providers: []
   - name: sepolia
     providers:
     - isDefault: true
-      name: geth
+      name: node
   - name: sepolia-fork
     providers: []
 """
-_GETH_NETWORKS_TREE = """
+_NODE_NETWORKS_TREE = """
 ethereum  (default)
 ├── local  (default)
-│   └── geth  (default)
+│   └── node  (default)
 └── mainnet
-    └── geth  (default)
+    └── node  (default)
 """
 _TEST_PROVIDER_TREE_OUTPUT = """
 ethereum  (default)
@@ -52,18 +52,18 @@ ethereum  (default)
 _SEPOLIA_NETWORK_TREE_OUTPUT = """
 ethereum  (default)
 └── sepolia
-    └── geth  (default)
+    └── node  (default)
 """
 _CUSTOM_NETWORKS_TREE = """
 ethereum  (default)
 ├── apenet
-│   └── geth  (default)
+│   └── node  (default)
 ├── apenet1
-│   └── geth  (default)
+│   └── node  (default)
 ├── local  (default)
-│   └── geth  (default)
+│   └── node  (default)
 └── mainnet
-    └── geth  (default)
+    └── node  (default)
 """
 
 
@@ -128,11 +128,11 @@ def test_list_geth(ape_cli, runner, networks, project):
     # Grab ethereum
     actual = "ethereum  (default)\n" + "".join(result.output.split("ethereum  (default)\n")[-1])
 
-    assert_rich_text(actual, _GETH_NETWORKS_TREE)
+    assert_rich_text(actual, _NODE_NETWORKS_TREE)
 
     # Assert that URI still exists for local network
     # (was bug where one network's URI disappeared when setting different network's URI)
-    geth_provider = networks.get_provider_from_choice(f"ethereum:{LOCAL_NETWORK_NAME}:geth")
+    geth_provider = networks.get_provider_from_choice(f"ethereum:{LOCAL_NETWORK_NAME}:node")
     actual_uri = geth_provider.uri
     assert actual_uri == GETH_URI
 
@@ -189,7 +189,7 @@ def test_run_custom_network(ape_cli, runner):
 @geth_process_test
 @skip_projects_except("geth")
 def test_run_already_running(ape_cli, runner, geth_provider):
-    cmd = ("networks", "run", "--network", f"ethereum:{LOCAL_NETWORK_NAME}:geth")
+    cmd = ("networks", "run", "--network", f"ethereum:{LOCAL_NETWORK_NAME}:node")
     result = runner.invoke(ape_cli, cmd)
     assert result.exit_code != 0
     assert "ERROR: Process already running." in result.output

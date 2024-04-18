@@ -107,7 +107,7 @@ def _list(cli_ctx, output_format, ecosystem_filter, network_filter, provider_fil
 
 @cli.command(short_help="Start a node process")
 @ape_cli_context()
-@network_option(default="ethereum:local:geth")
+@network_option(default="ethereum:local:node")
 def run(cli_ctx, provider):
     """
     Start a subprocess node as if running independently

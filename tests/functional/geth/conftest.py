@@ -4,7 +4,7 @@ from pathlib import Path
 import pytest
 
 from ape.contracts import ContractContainer
-from ape_geth.provider import Geth
+from ape_node.provider import Node
 from tests.functional.data.python import TRACE_RESPONSE
 
 
@@ -62,8 +62,8 @@ def middle_contract_geth(geth_provider, owner, leaf_contract_geth, get_contract_
 
 @pytest.fixture
 def mock_geth(geth_provider, mock_web3):
-    provider = Geth(
-        name="geth",
+    provider = Node(
+        name="node",
         network=geth_provider.network,
         provider_settings={},
         data_folder=Path("."),
@@ -105,7 +105,7 @@ def custom_network_connection(
     with temp_config(config):
         geth_provider.network = ethereum.apenet
         try:
-            with networks.ethereum.apenet.use_provider("geth"):
+            with networks.ethereum.apenet.use_provider("node"):
                 yield
 
         finally:
