@@ -40,7 +40,7 @@ EXPECTED_GAS_REPORT = rf"""
 {TOKEN_B_GAS_REPORT}
 """
 GETH_LOCAL_CONFIG = f"""
-geth:
+node:
   ethereum:
     local:
       uri: {GETH_URI}
@@ -220,7 +220,7 @@ def test_gas_flag_when_not_supported(setup_pytester, project, pytester, eth_test
 def test_gas_flag_in_tests(geth_provider, setup_pytester, project, pytester, owner):
     owner.transfer(owner, "1 wei")  # Do this to force a clean slate.
     passed, failed = setup_pytester(project.path.name)
-    result = pytester.runpytest("--gas", "--network", "ethereum:local:geth")
+    result = pytester.runpytest("--gas", "--network", "ethereum:local:node")
     run_gas_test(result, passed, failed)
 
 
@@ -232,14 +232,14 @@ def test_gas_flag_set_in_config(
     geth_account.transfer(geth_account, "1 wei")  # Force a clean block.
     passed, failed = setup_pytester(project.path.name)
     config_content = f"""
-    geth:
+    node:
       ethereum:
         local:
           uri: {GETH_URI}
 
     ethereum:
       local:
-        default_provider: geth
+        default_provider: node
 
     test:
       disconnect_providers_after: false
@@ -249,7 +249,7 @@ def test_gas_flag_set_in_config(
     """
 
     with switch_config(project, config_content):
-        result = pytester.runpytest("--network", "ethereum:local:geth")
+        result = pytester.runpytest("--network", "ethereum:local:node")
         run_gas_test(result, passed, failed)
 
 
@@ -263,14 +263,14 @@ def test_gas_when_estimating(
     """
     passed, failed = setup_pytester(project.path.name)
     config_content = f"""
-    geth:
+    node:
       ethereum:
         local:
           uri: {GETH_URI}
 
     ethereum:
       local:
-        default_provider: geth
+        default_provider: node
         gas_limit: auto
 
     test:
@@ -302,7 +302,7 @@ def test_gas_flag_exclude_using_cli_option(
         "--gas-exclude",
         "*:fooAndBar,*:myNumber,tokenB:*",
         "--network",
-        "ethereum:local:geth",
+        "ethereum:local:node",
     )
     run_gas_test(result, passed, failed, expected_report=expected)
 
@@ -319,14 +319,14 @@ def test_gas_flag_exclusions_set_in_config(
     # Also ensure can filter out whole class
     expected = expected.replace(TOKEN_B_GAS_REPORT, "")
     config_content = rf"""
-    geth:
+    node:
       ethereum:
         local:
           uri: {GETH_URI}
 
     ethereum:
       local:
-        default_provider: geth
+        default_provider: node
 
     test:
       disconnect_providers_after: false
@@ -337,7 +337,7 @@ def test_gas_flag_exclusions_set_in_config(
           - contract_name: TokenB
     """
     with switch_config(project, config_content):
-        result = pytester.runpytest("--gas", "--network", "ethereum:local:geth")
+        result = pytester.runpytest("--gas", "--network", "ethereum:local:node")
         run_gas_test(result, passed, failed, expected_report=expected)
 
 
@@ -349,7 +349,7 @@ def test_gas_flag_excluding_contracts(
     geth_account.transfer(geth_account, "1 wei")  # Force a clean block.
     passed, failed = setup_pytester(project.path.name)
     result = pytester.runpytest(
-        "--gas", "--gas-exclude", "VyperContract,TokenA", "--network", "ethereum:local:geth"
+        "--gas", "--gas-exclude", "VyperContract,TokenA", "--network", "ethereum:local:node"
     )
     run_gas_test(result, passed, failed, expected_report=TOKEN_B_GAS_REPORT)
 
@@ -365,7 +365,7 @@ def test_coverage(geth_provider, setup_pytester, project, pytester, geth_account
     """
     geth_account.transfer(geth_account, "1 wei")  # Force a clean block.
     passed, failed = setup_pytester(project.path.name)
-    result = pytester.runpytest("--coverage", "--show-internal", "--network", "ethereum:local:geth")
+    result = pytester.runpytest("--coverage", "--show-internal", "--network", "ethereum:local:node")
     result.assert_outcomes(passed=passed, failed=failed)
 
 

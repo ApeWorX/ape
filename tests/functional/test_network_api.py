@@ -35,9 +35,9 @@ def test_get_provider_ipc(ethereum):
 
 def test_get_provider_custom_network(custom_networks_config, ethereum):
     network = ethereum.apenet
-    actual = network.get_provider("geth")
+    actual = network.get_provider("node")
     assert isinstance(actual, ProviderAPI)
-    assert actual.name == "geth"
+    assert actual.name == "node"
 
 
 def test_block_times(ethereum):

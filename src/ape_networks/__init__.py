@@ -22,7 +22,7 @@ class CustomNetwork(PluginConfig):
     base_ecosystem_plugin: Optional[str] = None
 
     """The default provider plugin to use. Default is the default node provider."""
-    default_provider: str = "geth"
+    default_provider: str = "node"
 
     """The HTTP request header."""
     request_header: Dict = {}

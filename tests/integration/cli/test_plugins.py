@@ -112,7 +112,7 @@ def test_list_excludes_core_plugins(ape_plugins_runner):
     assert not result.available_plugins
     assert "console" not in result.installed_plugins, message("console")
     assert "networks" not in result.installed_plugins, message("networks")
-    assert "geth" not in result.installed_plugins, message("geth")
+    assert "node" not in result.installed_plugins, message("node")
 
 
 @github_xfail()

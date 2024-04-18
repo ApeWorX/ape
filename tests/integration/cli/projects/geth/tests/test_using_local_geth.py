@@ -5,7 +5,7 @@ def test_provider(project, networks):
     """
     Tests that the network gets set from ape-config.yaml.
     """
-    assert networks.provider.name == "geth"
+    assert networks.provider.name == "node"
     assert networks.provider.is_connected
 
 
