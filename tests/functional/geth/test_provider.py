@@ -25,7 +25,7 @@ from ape_ethereum.transactions import (
     TransactionStatusEnum,
     TransactionType,
 )
-from ape_geth.provider import GethDevProcess, GethNotInstalledError
+from ape_node.provider import GethDevProcess, NodeSoftwareNotInstalledError
 from tests.conftest import GETH_URI, geth_process_test
 
 
@@ -43,9 +43,9 @@ def test_uri(geth_provider):
 
 @geth_process_test
 def test_uri_localhost_not_running_uses_random_default(config):
-    cfg = config.get_config("geth").ethereum.mainnet
+    cfg = config.get_config("node").ethereum.mainnet
     assert cfg["uri"] in PUBLIC_CHAIN_META["ethereum"]["mainnet"]["rpc"]
-    cfg = config.get_config("geth").ethereum.sepolia
+    cfg = config.get_config("node").ethereum.sepolia
     assert cfg["uri"] in PUBLIC_CHAIN_META["ethereum"]["sepolia"]["rpc"]
 
 
@@ -54,7 +54,7 @@ def test_uri_when_configured(geth_provider, temp_config, ethereum):
     settings = geth_provider.provider_settings
     geth_provider.provider_settings = {}
     value = "https://value/from/config"
-    config = {"geth": {"ethereum": {"local": {"uri": value}, "mainnet": {"uri": value}}}}
+    config = {"node": {"ethereum": {"local": {"uri": value}, "mainnet": {"uri": value}}}}
     expected = DEFAULT_SETTINGS["uri"]
     network = ethereum.get_network("mainnet")
 
@@ -63,7 +63,7 @@ def test_uri_when_configured(geth_provider, temp_config, ethereum):
             # Assert we use the config value.
             actual_local_uri = geth_provider.uri
             # Assert provider settings takes precedence.
-            provider = network.get_provider("geth", provider_settings={"uri": expected})
+            provider = network.get_provider("node", provider_settings={"uri": expected})
             actual_mainnet_uri = provider.uri
 
     finally:
@@ -75,19 +75,32 @@ def test_uri_when_configured(geth_provider, temp_config, ethereum):
 
 @geth_process_test
 def test_repr_connected(geth_provider):
-    assert repr(geth_provider) == "<geth chain_id=1337>"
+    actual = repr(geth_provider)
+    expected = f"<Node ({geth_provider.client_version}) chain_id=1337>"
+    assert actual == expected
 
 
 @geth_process_test
 def test_repr_on_local_network_and_disconnected(networks):
-    geth = networks.get_provider_from_choice("ethereum:local:geth")
-    assert repr(geth) == "<geth chain_id=1337>"
+    node = networks.get_provider_from_choice("ethereum:local:node")
+    # Ensure disconnected.
+    if w3 := node._web3:
+        node._web3 = None
+
+    actual = repr(node)
+    expected = "<Node chain_id=1337>"
+    assert actual == expected
+
+    if w3:
+        node._web3 = w3
 
 
 @geth_process_test
 def test_repr_on_live_network_and_disconnected(networks):
-    geth = networks.get_provider_from_choice("ethereum:sepolia:geth")
-    assert repr(geth) == "<geth chain_id=11155111>"
+    node = networks.get_provider_from_choice("ethereum:sepolia:node")
+    actual = repr(node)
+    expected = "<Node chain_id=11155111>"
+    assert actual == expected
 
 
 @geth_process_test
@@ -106,8 +119,8 @@ def test_chain_id_when_connected(geth_provider):
 
 @geth_process_test
 def test_chain_id_live_network_not_connected(networks):
-    geth = networks.get_provider_from_choice("ethereum:sepolia:geth")
-    assert geth.chain_id == 11155111
+    node = networks.get_provider_from_choice("ethereum:sepolia:node")
+    assert node.chain_id == 11155111
 
 
 @geth_process_test
@@ -159,7 +172,7 @@ def test_connect_to_chain_that_started_poa(mock_web3, web3_factory, ethereum):
     mock_web3.eth.get_block.side_effect = ExtraDataLengthError
     mock_web3.eth.chain_id = ethereum.sepolia.chain_id
     web3_factory.return_value = mock_web3
-    provider = ethereum.sepolia.get_provider("geth")
+    provider = ethereum.sepolia.get_provider("node")
     provider.provider_settings = {"uri": "http://node.example.com"}  # fake
     provider.connect()
 
@@ -351,7 +364,7 @@ def test_send_transaction_when_no_error_and_receipt_fails(
 @geth_process_test
 def test_network_choice(geth_provider):
     actual = geth_provider.network_choice
-    expected = "ethereum:local:geth"
+    expected = "ethereum:local:node"
     assert actual == expected
 
 
@@ -378,7 +391,7 @@ def test_make_request_not_exists(geth_provider):
 
 def test_geth_not_found():
     bin_name = "__NOT_A_REAL_EXECUTABLE_HOPEFULLY__"
-    with pytest.raises(GethNotInstalledError):
+    with pytest.raises(NodeSoftwareNotInstalledError):
         _ = GethDevProcess(Path.cwd(), executable=bin_name)
 
 
@@ -470,7 +483,7 @@ def test_create_access_list(geth_provider, geth_contract, geth_account):
 def test_send_call_base_class_block_id(networks, ethereum, mocker):
     """
     Testing a case where was a bug in the base class for most providers.
-    Note: can't use ape-geth as-is, as it overrides `send_call()`.
+    Note: can't use ape-node as-is, as it overrides `send_call()`.
     """
 
     provider = mocker.MagicMock()
