@@ -1,11 +1,11 @@
 ethereum:
   local:
-    default_provider: geth
+    default_provider: node
 
 # Change the default URI for one of the networks to
 # ensure that the default values of the other networks
 # remain unchanged.
-geth:
+node:
   ethereum:
     mainnet:
       uri: http://localhost:5000
