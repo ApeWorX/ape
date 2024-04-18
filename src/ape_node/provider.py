@@ -2,7 +2,7 @@ import atexit
 import shutil
 from pathlib import Path
 from subprocess import DEVNULL, PIPE, Popen
-from typing import Dict, List, Optional, Union
+from typing import Optional, Union
 
 from eth_pydantic_types import HexBytes
 from eth_typing import HexStr
@@ -55,7 +55,7 @@ class GethDevProcess(BaseGethProcess):
         initial_balance: Union[str, int] = to_wei(10000, "ether"),
         executable: Optional[str] = None,
         auto_disconnect: bool = True,
-        extra_funded_accounts: Optional[List[str]] = None,
+        extra_funded_accounts: Optional[list[str]] = None,
         hd_path: Optional[str] = DEFAULT_TEST_HD_PATH,
     ):
         executable = executable or "geth"
@@ -94,7 +94,7 @@ class GethDevProcess(BaseGethProcess):
         addresses.extend(extra_funded_accounts or [])
         bal_dict = {"balance": str(initial_balance)}
         alloc = {a: bal_dict for a in addresses}
-        genesis_data: Dict = {
+        genesis_data: dict = {
             "overwrite": True,
             "coinbase": "0x0000000000000000000000000000000000000000",
             "difficulty": "0x0",
@@ -194,10 +194,10 @@ class GethDevProcess(BaseGethProcess):
 
 class EthereumNetworkConfig(PluginConfig):
     # Make sure you are running the right networks when you try for these
-    mainnet: Dict = {"uri": get_random_rpc("ethereum", "mainnet")}
-    sepolia: Dict = {"uri": get_random_rpc("ethereum", "sepolia")}
+    mainnet: dict = {"uri": get_random_rpc("ethereum", "mainnet")}
+    sepolia: dict = {"uri": get_random_rpc("ethereum", "sepolia")}
     # Make sure to run via `geth --dev` (or similar)
-    local: Dict = {**DEFAULT_SETTINGS.copy(), "chain_id": DEFAULT_TEST_CHAIN_ID}
+    local: dict = {**DEFAULT_SETTINGS.copy(), "chain_id": DEFAULT_TEST_CHAIN_ID}
 
     model_config = SettingsConfigDict(extra="allow")
 
@@ -277,7 +277,7 @@ class GethDev(EthereumNodeProvider, TestProviderAPI, SubprocessProvider):
         # Include extra accounts to allocated funds to at genesis.
         extra_accounts = self.settings.ethereum.local.get("extra_funded_accounts", [])
         extra_accounts.extend(self.provider_settings.get("extra_funded_accounts", []))
-        extra_accounts = list(set([HexBytes(a).hex().lower() for a in extra_accounts]))
+        extra_accounts = list({HexBytes(a).hex().lower() for a in extra_accounts})
         test_config["extra_funded_accounts"] = extra_accounts
 
         process = GethDevProcess.from_uri(self.uri, self.data_dir, **test_config)
@@ -347,7 +347,7 @@ class GethDev(EthereumNodeProvider, TestProviderAPI, SubprocessProvider):
     def mine(self, num_blocks: int = 1):
         pass
 
-    def build_command(self) -> List[str]:
+    def build_command(self) -> list[str]:
         return self._process.command if self._process else []
 
 

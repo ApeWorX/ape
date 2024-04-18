@@ -2,10 +2,10 @@ import difflib
 import re
 import sys
 from gettext import gettext
-from typing import Any, Dict, List, Optional, Tuple
+from importlib.metadata import entry_points as get_entry_points
+from typing import Any, Optional
 
 import click
-import importlib_metadata as metadata
 import yaml
 
 from ape.cli import ape_cli_context
@@ -30,7 +30,7 @@ def display_config(ctx, param, value):
 
 
 class ApeCLI(click.MultiCommand):
-    _commands: Optional[Dict] = None
+    _commands: Optional[dict] = None
     _CLI_GROUP_NAME = "ape_cli_subcommands"
 
     def format_commands(self, ctx, formatter) -> None:
@@ -47,7 +47,7 @@ class ApeCLI(click.MultiCommand):
             limit = formatter.width - 6 - max(len(cmd[0]) for cmd in commands)
 
             # Split the commands into 3 sections.
-            sections: Dict[str, List[Tuple[str, str]]] = {
+            sections: dict[str, list[tuple[str, str]]] = {
                 "Core": [],
                 "Plugin": [],
                 "3rd-Party Plugin": [],
@@ -114,11 +114,11 @@ class ApeCLI(click.MultiCommand):
         raise usage_error
 
     @property
-    def commands(self) -> Dict:
+    def commands(self) -> dict:
         if self._commands:
             return self._commands
 
-        entry_points = metadata.entry_points(group=self._CLI_GROUP_NAME)
+        entry_points = get_entry_points(group=self._CLI_GROUP_NAME)
         if not entry_points:
             raise Abort("Missing registered CLI subcommands.")
 
@@ -127,7 +127,7 @@ class ApeCLI(click.MultiCommand):
         }
         return self._commands
 
-    def list_commands(self, ctx) -> List[str]:
+    def list_commands(self, ctx) -> list[str]:
         return list(sorted(self.commands))
 
     def get_command(self, ctx, name) -> Optional[click.Command]:

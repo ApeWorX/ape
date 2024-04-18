@@ -4,10 +4,11 @@ import subprocess
 import sys
 import tempfile
 import time
+from collections.abc import Sequence
 from contextlib import contextmanager
 from pathlib import Path
 from tempfile import mkdtemp
-from typing import Any, Callable, Dict, Optional, Sequence
+from typing import Any, Callable, Optional
 
 import pytest
 import yaml
@@ -297,7 +298,7 @@ def eth_tester_isolation(eth_tester_provider):
 @pytest.fixture(scope="session")
 def temp_config(config):
     @contextmanager
-    def func(data: Optional[Dict] = None):
+    def func(data: Optional[dict] = None):
         data = data or {}
         with tempfile.TemporaryDirectory() as temp_dir_str:
             temp_dir = Path(temp_dir_str).resolve()
@@ -353,7 +354,7 @@ def temp_keyfile_account_ctx():
     return _temp_keyfile_account
 
 
-def _make_keyfile_account(base_path: Path, alias: str, params: Dict, funder):
+def _make_keyfile_account(base_path: Path, alias: str, params: dict, funder):
     test_keyfile_path = base_path / f"{alias}.json"
 
     if test_keyfile_path.is_file():
@@ -538,7 +539,7 @@ CUSTOM_NETWORK_CHAIN_ID_1 = 944898498948934528629
 CUSTOM_BLOCK_TIME = 123
 
 
-def _make_net(name: str, chain_id: int, **kwargs) -> Dict:
+def _make_net(name: str, chain_id: int, **kwargs) -> dict:
     return {"name": name, "chain_id": chain_id, "ecosystem": "ethereum", **kwargs}
 
 

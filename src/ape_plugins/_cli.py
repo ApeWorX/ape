@@ -1,7 +1,7 @@
 import subprocess
 import sys
 from pathlib import Path
-from typing import Any, Dict, List, Tuple
+from typing import Any
 
 import click
 from packaging.version import Version
@@ -32,7 +32,7 @@ def plugins_argument():
     or plugins loaded from the local config file.
     """
 
-    def load_from_file(ctx, file_path: Path) -> List[PluginMetadata]:
+    def load_from_file(ctx, file_path: Path) -> list[PluginMetadata]:
         if file_path.is_dir() and (file_path / CONFIG_FILE_NAME).is_file():
             file_path = file_path / CONFIG_FILE_NAME
 
@@ -44,7 +44,7 @@ def plugins_argument():
         ctx.obj.logger.warning(f"No plugins found at '{file_path}'.")
         return []
 
-    def callback(ctx, param, value: Tuple[str]):
+    def callback(ctx, param, value: tuple[str]):
         res = []
         if not value:
             ctx.obj.abort("You must give at least one requirement to install.")
@@ -117,14 +117,14 @@ def _list(cli_ctx, to_display):
 @plugins_argument()
 @skip_confirmation_option("Don't ask for confirmation to install the plugins")
 @upgrade_option(help="Upgrade the plugin to the newest available version")
-def install(cli_ctx, plugins: List[PluginMetadata], skip_confirmation: bool, upgrade: bool):
+def install(cli_ctx, plugins: list[PluginMetadata], skip_confirmation: bool, upgrade: bool):
     """Install plugins"""
 
     failures_occurred = False
 
     # Track the operations until the end. This way, if validation
     # fails on one, we can error-out before installing anything.
-    install_list: List[Dict[str, Any]] = []
+    install_list: list[dict[str, Any]] = []
 
     for plugin in plugins:
         result = plugin._prepare_install(upgrade=upgrade, skip_confirmation=skip_confirmation)

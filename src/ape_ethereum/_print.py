@@ -19,11 +19,12 @@ References
 - Discussion on dynamic ABI encoding (Vyper-style) for log calls: https://github.com/NomicFoundation/hardhat/issues/2666  # noqa: E501
 """
 
-from typing import Any, Iterable, Tuple, cast
+from collections.abc import Iterable
+from typing import Any, cast
 
 from eth_abi import decode
-from eth_typing import ChecksumAddress
-from eth_utils import decode_hex
+from eth_typing import ChecksumAddress, HexStr
+from eth_utils import add_0x_prefix, decode_hex
 from ethpm_types import ContractType, MethodABI
 from evm_trace import CallTreeNode
 from hexbytes import HexBytes
@@ -65,24 +66,24 @@ def is_vyper_print(call: CallTreeNode) -> TypeGuard[CallTreeNode]:
     )
 
 
-def console_log(method_abi: MethodABI, calldata: str) -> Tuple[Any]:
+def console_log(method_abi: MethodABI, calldata: str) -> tuple[Any]:
     """Return logged data for console.log() calls"""
     bcalldata = decode_hex(calldata)
     data = ape.networks.ethereum.decode_calldata(method_abi, bcalldata)
     return tuple(data.values())
 
 
-def vyper_print(calldata: HexBytes) -> Tuple[Any]:
+def vyper_print(calldata: str) -> tuple[Any]:
     """Return logged data for print() calls"""
-    schema, payload = decode(["string", "bytes"], calldata)
+    schema, payload = decode(["string", "bytes"], HexBytes(calldata))
     data = decode(schema.strip("()").split(","), payload)
     return tuple(data)
 
 
-def extract_debug_logs(call: CallTreeNode) -> Iterable[Tuple[Any]]:
+def extract_debug_logs(call: CallTreeNode) -> Iterable[tuple[Any]]:
     """Filter calls to console.log() and print() from a transactions call tree"""
     if is_vyper_print(call) and call.calldata is not None:
-        yield vyper_print(call.calldata[4:])
+        yield vyper_print(add_0x_prefix(HexStr(call.calldata[4:].hex())))
 
     elif is_console_log(call) and call.calldata is not None:
         method_abi = console_contract.identifier_lookup.get(call.calldata[:4].hex())

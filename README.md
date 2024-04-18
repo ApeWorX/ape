@@ -27,7 +27,7 @@ Read our [academic platform](https://academy.apeworx.io/) will help you master A
 In the latest release, Ape requires:
 
 - Linux or macOS
-- Python 3.8 up to 3.11
+- Python 3.9 up to 3.12
 - **Windows**: Install Windows Subsystem Linux [(WSL)](https://docs.microsoft.com/en-us/windows/wsl/install)
 
 Check your python version in a terminal with `python3 --version`.

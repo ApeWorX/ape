@@ -310,7 +310,7 @@ class ProviderAPI(BaseInterfaceModel):
         return f"{self.network.choice}:{self.name}"
 
     @abstractmethod
-    def make_request(self, rpc: str, parameters: Optional[List] = None) -> Any:
+    def make_request(self, rpc: str, parameters: Optional[Iterable] = None) -> Any:
         """
         Make a raw RPC request to the provider.
         Advanced featues such as tracing may utilize this to by-pass unnecessary

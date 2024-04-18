@@ -1,4 +1,5 @@
-from typing import Any, Iterator, List, Optional
+from collections.abc import Iterator
+from typing import Any, Optional
 
 from eip712.messages import EIP712Message
 from eth_account import Account as EthAccount
@@ -17,7 +18,7 @@ class TestAccountContainer(TestAccountContainerAPI):
     mnemonic: str = ""
     num_of_accounts: int = 0
     hd_path: str = ""
-    _accounts: List["TestAccount"] = []
+    _accounts: list["TestAccount"] = []
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -44,7 +45,7 @@ class TestAccountContainer(TestAccountContainerAPI):
         return self.config_manager.get_config("test")
 
     @property
-    def _dev_accounts(self) -> List[GeneratedDevAccount]:
+    def _dev_accounts(self) -> list[GeneratedDevAccount]:
         return generate_dev_accounts(
             self.mnemonic,
             number_of_accounts=self.num_of_accounts,
@@ -72,8 +73,7 @@ class TestAccountContainer(TestAccountContainerAPI):
         # As TestAccountManager only uses accounts property this works!
         if self._is_config_changed:
             self.init()
-        for account in self._accounts:
-            yield account
+        yield from self._accounts
 
     def generate_account(self) -> "TestAccountAPI":
         new_index = self.num_of_accounts + self.num_generated
