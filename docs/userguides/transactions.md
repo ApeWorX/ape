@@ -177,6 +177,7 @@ ethereum:
 ## Traces
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 Transaction traces are the steps in the contract the transaction took.
 Traces both power a myriad of features in Ape as well are themselves a tool for developers to use to debug transactions.
 To learn more about traces, see the [traces userguide](./trace.md).
@@ -298,6 +299,11 @@ It will output tables of contracts and methods with gas usages that look like th
 │ mint                        1   25845   25845   25845   25845
 ```
 >>>>>>> 49929845d (refactor!: rename geth to node (#1982))
+=======
+Transaction traces are the steps in the contract the transaction took.
+Traces both power a myriad of features in Ape as well are themselves a tool for developers to use to debug transactions.
+To learn more about traces, see the [traces userguide](./trace.md).
+>>>>>>> 8cbef2689 (refactor!: TraceAPI (#1864))
 
 ## Estimate Gas Cost
 

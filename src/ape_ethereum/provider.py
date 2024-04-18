@@ -482,7 +482,7 @@ class Web3Provider(ProviderAPI, ABC):
         return HexBytes(result)
 
     def _prepare_call(self, txn: Union[dict, TransactionAPI], **kwargs) -> list:
-        # NOTE: Using mode="json" because used as request data.
+        # NOTE: Using mode="json" because used in request data.
         txn_dict = (
             txn.model_dump(by_alias=True, mode="json") if isinstance(txn, TransactionAPI) else txn
         )
@@ -850,7 +850,6 @@ class Web3Provider(ProviderAPI, ABC):
 
             # NOTE: Using JSON mode since used as request data.
             filter_params = page_filter.model_dump(mode="json")
-
             logs = self.make_request("eth_getLogs", [filter_params])
             return self.network.ecosystem.decode_logs(logs, *log_filter.events)
 
@@ -1146,9 +1145,6 @@ class EthereumNodeProvider(Web3Provider, ABC):
     concurrency: int = 16
 
     name: str = "node"
-
-    """Is ``None`` until known."""
-    can_use_parity_traces: Optional[bool] = None
 
     @property
     def uri(self) -> str:

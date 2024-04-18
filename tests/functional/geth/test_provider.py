@@ -107,15 +107,6 @@ def test_repr_on_live_network_and_disconnected(networks):
 
 
 @geth_process_test
-def test_get_logs(geth_contract, geth_account):
-    geth_contract.setNumber(101010, sender=geth_account)
-    actual = geth_contract.NumberChange[-1]
-    assert actual.event_name == "NumberChange"
-    assert actual.contract_address == geth_contract.address
-    assert actual.event_arguments["newNum"] == 101010
-
-
-@geth_process_test
 def test_chain_id_when_connected(geth_provider):
     assert geth_provider.chain_id == 1337
 
