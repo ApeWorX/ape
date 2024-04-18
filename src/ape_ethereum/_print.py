@@ -25,54 +25,44 @@ from eth_abi import decode
 from eth_typing import ChecksumAddress
 from eth_utils import decode_hex
 from ethpm_types import ContractType, MethodABI
+from evm_trace import CallTreeNode
+from hexbytes import HexBytes
 from typing_extensions import TypeGuard
 
 import ape
-from ape.types import CallTreeNode
+from ape_ethereum._console_log_abi import CONSOLE_LOG_ABI
 
-from ._console_log_abi import CONSOLE_LOG_ABI
-
-CONSOLE_CONTRACT_ID = cast(ChecksumAddress, "0x000000000000000000636F6e736F6c652e6c6f67")
-VYPER_PRINT_METHOD_ID = "0x23cdd8e8"  # log(string,bytes)
+CONSOLE_ADDRESS = cast(ChecksumAddress, "0x000000000000000000636F6e736F6c652e6c6f67")
+VYPER_PRINT_METHOD_ID = HexBytes("0x23cdd8e8")  # log(string,bytes)
 
 console_contract = ContractType(abi=CONSOLE_LOG_ABI)
 console_contract.name = "console"  # TODO: Pretty confused why this can't be set in the constructor
 
 
-def is_console_log(call: Any) -> TypeGuard[CallTreeNode]:
-    """Determine if a call is a starndard console.log() call"""
+def is_console_log(call: CallTreeNode) -> TypeGuard[CallTreeNode]:
+    """Determine if a call is a standard console.log() call"""
     return (
-        isinstance(call, CallTreeNode)
-        and call.contract_id == CONSOLE_CONTRACT_ID
-        and call.method_id in console_contract.identifier_lookup
+        call.address == HexBytes(CONSOLE_ADDRESS)
+        and call.calldata[:4].hex() in console_contract.identifier_lookup
     )
 
 
-def is_vyper_print(call: Any) -> TypeGuard[CallTreeNode]:
-    """Determine if a call is a starndard Vyper print() call"""
-    if (
-        isinstance(call, CallTreeNode)
-        and call.contract_id == CONSOLE_CONTRACT_ID
-        and call.method_id == VYPER_PRINT_METHOD_ID
-        and isinstance(call.inputs, str)
-    ):
-        bcalldata = decode_hex(call.inputs)
-        schema, _ = decode(["string", "bytes"], bcalldata)
-        try:
-            # Now we look at the first arg to try and determine if it's an ABI signature
-            first_type = schema.strip("()").split(",")[0]
-            # TODO: Tighten this up.  This is not entirely accurate, but should mostly get us there.
-            if (
-                first_type.startswith("uint")
-                or first_type.startswith("int")
-                or first_type.startswith("bytes")
-                or first_type == "string"
-            ):
-                return True
-        except IndexError:
-            # Empty string as first arg?
-            pass
-    return False
+def is_vyper_print(call: CallTreeNode) -> TypeGuard[CallTreeNode]:
+    """Determine if a call is a standard Vyper print() call"""
+    if call.address != HexBytes(CONSOLE_ADDRESS) or call.calldata[:4] != VYPER_PRINT_METHOD_ID:
+        return False
+
+    schema, _ = decode(["string", "bytes"], call.calldata[4:])
+    types = schema.strip("()").split(",")
+
+    # Now we look at the first arg to try and determine if it's an ABI signature
+    # TODO: Tighten this up. This is not entirely accurate, but should mostly get us there.
+    return len(types) > 0 and (
+        types[0].startswith("uint")
+        or types[0].startswith("int")
+        or types[0].startswith("bytes")
+        or types[0] == "string"
+    )
 
 
 def console_log(method_abi: MethodABI, calldata: str) -> Tuple[Any]:
@@ -82,23 +72,23 @@ def console_log(method_abi: MethodABI, calldata: str) -> Tuple[Any]:
     return tuple(data.values())
 
 
-def vyper_print(calldata: str) -> Tuple[Any]:
+def vyper_print(calldata: HexBytes) -> Tuple[Any]:
     """Return logged data for print() calls"""
-    bcalldata = decode_hex(calldata)
-    schema, payload = decode(["string", "bytes"], bcalldata)
+    schema, payload = decode(["string", "bytes"], calldata)
     data = decode(schema.strip("()").split(","), payload)
     return tuple(data)
 
 
-def extract_debug_logs(call_tree: CallTreeNode) -> Iterable[Tuple[Any]]:
+def extract_debug_logs(call: CallTreeNode) -> Iterable[Tuple[Any]]:
     """Filter calls to console.log() and print() from a transactions call tree"""
-    for call in call_tree.calls:
-        if is_vyper_print(call) and call.inputs is not None:
-            yield vyper_print(call.inputs)
-        elif is_console_log(call) and call.inputs is not None:
-            assert call.method_id is not None  # is_console_log check already checked
-            method_abi = console_contract.identifier_lookup.get(call.method_id)
-            if isinstance(method_abi, MethodABI):
-                yield console_log(method_abi, call.inputs)
-        elif call.calls is not None:
-            yield from extract_debug_logs(call)
+    if is_vyper_print(call) and call.calldata is not None:
+        yield vyper_print(call.calldata[4:])
+
+    elif is_console_log(call) and call.calldata is not None:
+        method_abi = console_contract.identifier_lookup.get(call.calldata[:4].hex())
+        if isinstance(method_abi, MethodABI):
+            yield console_log(method_abi, call.calldata[4:].hex())
+
+    elif call.calls is not None:
+        for sub_call in call.calls:
+            yield from extract_debug_logs(sub_call)
