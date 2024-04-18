@@ -118,18 +118,18 @@ setup(
         "watchdog>=3.0,<4",
         # ** Dependencies maintained by Ethereum Foundation **
         "eth-abi>=5.1.0,<6",
-        "eth-account>=0.10.0,<0.11",
+        "eth-account>=0.11.2,<0.12",
         "eth-typing>=3.5.2,<4",
         "eth-utils>=2.3.1,<3",
         "hexbytes",  # Peer
         "py-geth>=4.4.0,<5",
-        "web3[tester]>=6.16.0,<6.17.1",
+        "web3[tester]>=6.17.2,<7",
         # ** Dependencies maintained by ApeWorX **
         "eip712>=0.2.7,<0.3",
         "ethpm-types>=0.6.9,<0.7",
         "eth_pydantic_types>=0.1.0,<0.2",
         "evmchains>=0.0.6,<0.1",
-        "evm-trace>=0.1.3,<0.2",
+        "evm-trace>=0.1.5,<0.2",
     ],
     entry_points={
         "console_scripts": ["ape=ape._cli:cli"],
