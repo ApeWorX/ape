@@ -281,7 +281,7 @@ def test_network_option_specified_none(runner):
 
 @pytest.mark.parametrize("network_name", ("apenet", "apenet1"))
 def test_network_option_specify_custom_network(runner, custom_networks_config, network_name):
-    network_part = ("--network", f"ethereum:{network_name}:geth")
+    network_part = ("--network", f"ethereum:{network_name}:node")
 
     # NOTE: Also testing network filter with a custom network
     #  But this is also required to work around LRU cache
@@ -582,10 +582,10 @@ def test_connected_provider_command_with_network_option(runner, geth_provider):
         click.echo(provider.name)
 
     # NOTE: Must use a network that is not the default.
-    spec = ("--network", "ethereum:local:geth")
+    spec = ("--network", "ethereum:local:node")
     res = runner.invoke(cmd, spec, catch_exceptions=False)
     assert res.exit_code == 0, res.output
-    assert "geth" in res.output
+    assert "node" in res.output
 
 
 def test_connected_provider_command_none_network(runner):

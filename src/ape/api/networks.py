@@ -124,7 +124,7 @@ class EcosystemAPI(ExtraAttributesMixin, BaseInterfaceModel):
             ecosystem=ethereum,
             data_folder=self.data_folder / "custom",
             request_header=request_header,
-            _default_provider="geth",
+            _default_provider="node",
             _is_custom=True,
         )
 
@@ -958,7 +958,7 @@ class NetworkAPI(BaseInterfaceModel):
     @cached_property
     def providers(self):  # -> Dict[str, Partial[ProviderAPI]]
         """
-        The providers of the network, such as Infura, Alchemy, or Geth.
+        The providers of the network, such as Infura, Alchemy, or Node.
 
         Returns:
             Dict[str, partial[:class:`~ape.api.providers.ProviderAPI`]]
@@ -1023,11 +1023,11 @@ class NetworkAPI(BaseInterfaceModel):
         if ":" in provider_name:
             # NOTE: Shortcut that allows `--network ecosystem:network:http://...` to work
             provider_settings["uri"] = provider_name
-            provider_name = "geth"
+            provider_name = "node"
 
         elif provider_name.endswith(".ipc"):
             provider_settings["ipc_path"] = provider_name
-            provider_name = "geth"
+            provider_name = "node"
 
         if provider_name in self.providers:
             provider = self.providers[provider_name](provider_settings=provider_settings)

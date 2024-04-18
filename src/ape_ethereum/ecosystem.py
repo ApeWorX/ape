@@ -81,7 +81,7 @@ BLUEPRINT_HEADER = HexBytes("0xfe71")
 class NetworkConfig(PluginConfig):
     required_confirmations: int = 0
 
-    default_provider: Optional[str] = "geth"
+    default_provider: Optional[str] = "node"
     """
     The default provider to use. If set to ``None``, ape will rely on
     an external plugin supplying the provider implementation, such as
@@ -324,9 +324,13 @@ class Block(BlockAPI):
             # (normal).
             return self._size
 
+        number = self.number
+        if number is None:
+            raise APINotImplementedError()
+
         # Try to get it from the provider.
         if provider := self.network_manager.active_provider:
-            block = provider.get_block(self.number)
+            block = provider.get_block(number)
             size = block._size
             if size is not None and size > -1:
                 self._size = size
