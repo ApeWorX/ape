@@ -324,9 +324,14 @@ class Block(BlockAPI):
             # (normal).
             return self._size
 
+        number = self.number
+        if number is None:
+            # Not sure.
+            raise APINotImplementedError()
+
         # Try to get it from the provider.
         if provider := self.network_manager.active_provider:
-            block = provider.get_block(self.number)
+            block = provider.get_block(number)
             size = block._size
             if size is not None and size > -1:
                 self._size = size
