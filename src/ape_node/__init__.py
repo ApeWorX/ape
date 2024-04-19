@@ -18,8 +18,3 @@ def providers():
         yield "ethereum", network_name, Node
 
     yield "ethereum", LOCAL_NETWORK_NAME, GethDev
-
-
-@plugins.register(plugins.QueryPlugin)
-def query_engines():
-    yield OTSQueryEngine
