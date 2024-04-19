@@ -2,10 +2,10 @@ import difflib
 import re
 import sys
 from gettext import gettext
-from typing import Any, Dict, List, Optional, Tuple
+from importlib.metadata import entry_points
+from typing import Any, Dict, Iterable, List, Optional, Tuple
 
 import click
-import importlib_metadata as metadata
 import yaml
 
 from ape.cli import ape_cli_context
@@ -118,13 +118,8 @@ class ApeCLI(click.MultiCommand):
         if self._commands:
             return self._commands
 
-        entry_points = metadata.entry_points(group=self._CLI_GROUP_NAME)
-        if not entry_points:
-            raise Abort("Missing registered CLI subcommands.")
-
-        self._commands = {
-            clean_plugin_name(entry_point.name): entry_point.load for entry_point in entry_points
-        }
+        eps: Iterable = entry_points().get(self._CLI_GROUP_NAME, [])
+        self._commands = {clean_plugin_name(cmd.name): cmd.load for cmd in eps}
         return self._commands
 
     def list_commands(self, ctx) -> List[str]:
