@@ -864,9 +864,7 @@ class ContractCache(BaseManager):
             return creation
         # query and cache
         query = ContractCreationQuery(columns=["*"], contract=address)
-        try:
-            creation = next(self.query_manager.query(query))
-        except StopIteration:
+        if not (creation := next(self.query_manager.query(query), None)):  # type: ignore[arg-type]
             return None
 
         self._cache_contract_creation_to_disk(address, creation)
