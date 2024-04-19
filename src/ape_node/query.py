@@ -7,7 +7,7 @@ from ape.types.address import AddressType
 from ape_ethereum.provider import EthereumNodeProvider
 
 
-class OTSQueryEngine(QueryAPI):
+class OtterscanQueryEngine(QueryAPI):
     @singledispatchmethod
     def estimate_query(self, query: QueryType) -> Optional[int]:  # type: ignore[override]
         return None

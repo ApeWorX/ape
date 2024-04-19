@@ -2,7 +2,7 @@ from ape import plugins
 from ape.api.networks import LOCAL_NETWORK_NAME
 
 from .provider import EthereumNetworkConfig, EthereumNodeConfig, GethDev, Node
-from .query import OTSQueryEngine
+from .query import OtterscanQueryEngine
 
 
 @plugins.register(plugins.Config)
@@ -18,3 +18,8 @@ def providers():
         yield "ethereum", network_name, Node
 
     yield "ethereum", LOCAL_NETWORK_NAME, GethDev
+
+
+@plugins.register(plugins.QueryPlugin)
+def query_engines():
+    yield OtterscanQueryEngine

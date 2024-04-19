@@ -78,7 +78,7 @@ class EthereumQueryProvider(QueryAPI):
 
     def _find_creation_in_block_via_parity(self, block, contract_address):
         # NOTE requires `trace_` namespace
-        traces = self.provider._make_request("trace_replayBlockTransactions", [block, ["trace"]])
+        traces = self.provider.make_request("trace_replayBlockTransactions", [block, ["trace"]])
 
         for tx in traces:
             for trace in tx["trace"]:
@@ -98,7 +98,7 @@ class EthereumQueryProvider(QueryAPI):
 
     def _find_creation_in_block_via_geth(self, block, contract_address):
         # NOTE requires `debug_` namespace
-        traces = self.provider._make_request(
+        traces = self.provider.make_request(
             "debug_traceBlockByNumber", [hex(block), {"tracer": "callTracer"}]
         )
 
