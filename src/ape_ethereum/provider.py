@@ -458,6 +458,7 @@ class Web3Provider(ProviderAPI, ABC):
         txn_dict.pop("chainId", None)
 
         arguments[0] = txn_dict
+
         try:
             result = self.make_request("eth_call", arguments)
         except Exception as err:

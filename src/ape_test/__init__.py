@@ -23,6 +23,7 @@ class GasConfig(PluginConfig):
     Configuration related to test gas reports.
     """
 
+    exclude: list[GasExclusion] = []
     """
     Contract methods patterns to skip. Specify ``contract_name:`` and not
     ``method_name:`` to skip all methods in the contract. Only specify
@@ -30,12 +31,11 @@ class GasConfig(PluginConfig):
     both to skip methods in a certain contracts. Entries use glob-rules;
     use ``prefix_*`` to skip all items with a certain prefix.
     """
-    exclude: list[GasExclusion] = []
 
+    reports: list[str] = []
     """
     Report-types to use. Currently, only supports `terminal`.
     """
-    reports: list[str] = []
 
     @field_validator("reports", mode="before")
     @classmethod
