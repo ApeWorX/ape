@@ -47,7 +47,7 @@ from ape.utils import (
     nonreentrant,
     singledispatchmethod,
 )
-from ape_node.query import ContractCreation
+
 
 class BlockContainer(BaseManager):
     """

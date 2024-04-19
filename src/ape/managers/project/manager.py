@@ -764,7 +764,7 @@ class ProjectManager(BaseManager):
             raise ProjectError("Contract name required when publishing.")
 
         try:
-            receipt = contract.receipt
+            receipt = contract.creation.receipt
         except ChainError as err:
             raise ProjectError(
                 f"Contract '{contract_name}' transaction receipt is unknown."
