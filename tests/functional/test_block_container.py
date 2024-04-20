@@ -1,6 +1,5 @@
 import time
 from queue import Queue
-from typing import List
 
 import pytest
 from eth_pydantic_types import HexBytes
@@ -135,7 +134,7 @@ def test_poll_blocks_reorg(chain_that_mined_5, eth_tester_provider, owner, PollD
     ape_caplog.assert_last_log(expected_error)
 
     # Show that there are duplicate blocks
-    block_numbers: List[int] = [blocks.get().number for _ in range(6)]
+    block_numbers: list[int] = [blocks.get().number for _ in range(6)]
     assert len(set(block_numbers)) < len(block_numbers)
 
 

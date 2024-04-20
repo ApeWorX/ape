@@ -1,5 +1,3 @@
-from typing import Tuple, Type
-
 from ape.api.accounts import AccountAPI, AccountContainerAPI
 
 from .pluggy_patch import PluginType, hookspec
@@ -15,7 +13,7 @@ class AccountPlugin(PluginType):
     @hookspec
     def account_types(  # type: ignore[empty-body]
         self,
-    ) -> Tuple[Type[AccountContainerAPI], Type[AccountAPI]]:
+    ) -> tuple[type[AccountContainerAPI], type[AccountAPI]]:
         """
         A hook for returning a tuple of an account container and an account type.
         Each account-base plugin defines and returns their own types here.

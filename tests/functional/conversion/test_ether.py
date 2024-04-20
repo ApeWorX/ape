@@ -18,14 +18,14 @@ from ape_ethereum._converters import ETHER_UNITS
     unit=st.sampled_from(list(ETHER_UNITS.keys())),
 )
 def test_ether_conversions(value, unit, convert):
-    actual = convert(value=f"{value} {unit}", type=int)
+    actual = convert(f"{value} {unit}", int)
     expected = int(value * ETHER_UNITS[unit])
     assert actual == expected
 
 
 def test_bad_type(convert):
     with pytest.raises(ConversionError) as err:
-        convert(value="something", type=float)
+        convert("something", float)
 
     expected = (
         "Type '<class 'float'>' must be one of " "[AddressType, bytes, int, Decimal, bool, str]."
@@ -35,6 +35,6 @@ def test_bad_type(convert):
 
 def test_no_registered_converter(convert):
     with pytest.raises(ConversionError) as err:
-        convert(value="something", type=ChecksumAddress)
+        convert("something", ChecksumAddress)
 
     assert str(err.value) == "No conversion registered to handle 'something'."

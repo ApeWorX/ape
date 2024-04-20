@@ -1,5 +1,4 @@
 from pathlib import Path
-from typing import Dict, Set
 
 import click
 from ethpm_types import ContractType
@@ -45,7 +44,7 @@ def _config_override_callback(ctx, param, value):
 @config_override_option(callback=_config_override_callback)
 def cli(
     cli_ctx,
-    file_paths: Set[Path],
+    file_paths: set[Path],
     use_cache: bool,
     display_size: bool,
     include_dependencies,
@@ -80,7 +79,7 @@ def cli(
         _display_byte_code_sizes(cli_ctx, contract_types)
 
 
-def _display_byte_code_sizes(cli_ctx, contract_types: Dict[str, ContractType]):
+def _display_byte_code_sizes(cli_ctx, contract_types: dict[str, ContractType]):
     # Display bytecode size for *all* contract types (not just ones we compiled)
     code_size = []
     for contract in contract_types.values():

@@ -1,6 +1,7 @@
 import sys
 from abc import abstractmethod
-from typing import IO, Any, Dict, List, Optional, Sequence
+from collections.abc import Sequence
+from typing import IO, Any, Optional
 
 from ape.types import ContractFunctionPath
 from ape.types.trace import GasReport
@@ -48,13 +49,13 @@ class TraceAPI(BaseInterfaceModel):
         """
 
     @abstractmethod
-    def get_raw_frames(self) -> List[Dict]:
+    def get_raw_frames(self) -> list[dict]:
         """
         Get raw trace frames for deeper analysis.
         """
 
     @abstractmethod
-    def get_raw_calltree(self) -> Dict:
+    def get_raw_calltree(self) -> dict:
         """
         Get a raw calltree for deeper analysis.
         """
