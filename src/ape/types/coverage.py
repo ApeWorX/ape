@@ -2,7 +2,7 @@ import itertools
 from datetime import datetime
 from html.parser import HTMLParser
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Set
+from typing import Any, Optional
 from xml.dom.minidom import getDOMImplementation
 from xml.etree.ElementTree import Element, SubElement, tostring
 
@@ -133,7 +133,7 @@ class CoverageStatement(BaseModel):
     If multiple PCs share an exact location, it is only tracked as one.
     """
 
-    pcs: Set[int]
+    pcs: set[int]
     """
     The PCs for this node.
     """
@@ -165,7 +165,7 @@ class FunctionCoverage(BaseModel):
     The unique name of the function.
     """
 
-    statements: List[CoverageStatement] = []
+    statements: list[CoverageStatement] = []
     """
     For statement coverage, these are the individual items.
     See :class:`~ape.types.coverage.CoverageStatement` for more details.
@@ -273,13 +273,13 @@ class ContractCoverage(BaseModel):
     The name of the contract.
     """
 
-    functions: List[FunctionCoverage] = []
+    functions: list[FunctionCoverage] = []
     """
     The coverage of each function individually.
     """
 
     @property
-    def statements(self) -> List[CoverageStatement]:
+    def statements(self) -> list[CoverageStatement]:
         """
         All valid coverage lines from every function in this contract.
         """
@@ -373,13 +373,13 @@ class ContractSourceCoverage(BaseModel):
     The ID of the source covered.
     """
 
-    contracts: List[ContractCoverage] = []
+    contracts: list[ContractCoverage] = []
     """
     Coverage for each contract in the source file.
     """
 
     @property
-    def statements(self) -> List[CoverageStatement]:
+    def statements(self) -> list[CoverageStatement]:
         """
         All valid coverage lines from every function in every contract in this source.
         """
@@ -471,13 +471,13 @@ class CoverageProject(BaseModel):
     The name of the project being covered.
     """
 
-    sources: List[ContractSourceCoverage] = []
+    sources: list[ContractSourceCoverage] = []
     """
     Coverage for each source in the project.
     """
 
     @property
-    def statements(self) -> List[CoverageStatement]:
+    def statements(self) -> list[CoverageStatement]:
         """
         All valid coverage lines from every function in every contract in every source
         in this project.
@@ -560,7 +560,7 @@ class CoverageReport(BaseModel):
     Coverage report schema inspired from coverage.py.
     """
 
-    source_folders: List[Path]
+    source_folders: list[Path]
     """
     All source folders to use. This is needed for codecov.
     """
@@ -570,7 +570,7 @@ class CoverageReport(BaseModel):
     The timestamp the report was generated, in milliseconds.
     """
 
-    projects: List[CoverageProject] = []
+    projects: list[CoverageProject] = []
     """
     Each project with individual coverage tracked.
     """
@@ -582,14 +582,14 @@ class CoverageReport(BaseModel):
         return value or get_current_timestamp_ms()
 
     @property
-    def sources(self) -> List[str]:
+    def sources(self) -> list[str]:
         """
         Every source ID in the report.
         """
         return [s.source_id for p in self.projects for s in p.sources]
 
     @property
-    def statements(self) -> List[CoverageStatement]:
+    def statements(self) -> list[CoverageStatement]:
         """
         All valid coverage lines from every function in every contract in every source
         from every project in this report.
@@ -736,12 +736,12 @@ class CoverageReport(BaseModel):
                     xml_out.createElement("methods")
 
                     # Use name unless the same function found twice, then use full name.
-                    fn_map: Dict[str, FunctionCoverage] = {}
+                    fn_map: dict[str, FunctionCoverage] = {}
                     fn_singles_used = []
 
                     # For the XML report, we split all statements to be only 1 line long.
                     # Each class (contract) can only identify the statement (line number) once.
-                    lines_to_add: Dict[int, int] = {}
+                    lines_to_add: dict[int, int] = {}
                     xlines = xml_out.createElement("lines")
 
                     for function in contract.functions:

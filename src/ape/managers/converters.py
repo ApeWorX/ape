@@ -1,7 +1,8 @@
 import re
+from collections.abc import Sequence
 from datetime import datetime, timedelta, timezone
 from decimal import Decimal
-from typing import Any, Dict, List, Sequence, Tuple, Type, Union
+from typing import Any, Union
 
 from dateutil.parser import parse
 from eth_pydantic_types import Address, HexBytes
@@ -149,7 +150,7 @@ class IntAddressConverter(ConverterAPI):
     A converter that converts an integer address to an :class:`~ape.types.address.AddressType`.
     """
 
-    _cache: Dict[int, Union[AddressType, bool]] = {}
+    _cache: dict[int, Union[AddressType, bool]] = {}
 
     def is_convertible(self, value: Any) -> bool:
         if not isinstance(value, int):
@@ -254,8 +255,8 @@ class ConversionManager(BaseManager):
         return f"<{ConversionManager.__name__}>"
 
     @cached_property
-    def _converters(self) -> Dict[Type, List[ConverterAPI]]:
-        converters: Dict[Type, List[ConverterAPI]] = {
+    def _converters(self) -> dict[type, list[ConverterAPI]]:
+        converters: dict[type, list[ConverterAPI]] = {
             AddressType: [
                 AddressAPIConverter(),
                 BytesAddressConverter(),
@@ -288,7 +289,7 @@ class ConversionManager(BaseManager):
 
         return converters
 
-    def is_type(self, value: Any, type: Type) -> bool:
+    def is_type(self, value: Any, to_type: type) -> bool:
         """
         Check if the value is the given type.
         If given an :class:`~ape.types.address.AddressType`, will also check
@@ -296,15 +297,14 @@ class ConversionManager(BaseManager):
 
         Args:
             value (any): The value to check.
-            type (type): The type to check against.
+            to_type (type): The type to check against.
 
         Returns:
             bool: ``True`` when we consider the given value to be the given type.
         """
+        return is_checksum_address(value) if to_type is AddressType else isinstance(value, to_type)
 
-        return is_checksum_address(value) if type is AddressType else isinstance(value, type)
-
-    def convert(self, value: Any, type: Union[Type, Tuple, List]) -> Any:
+    def convert(self, value: Any, to_type: Union[type, tuple, list]) -> Any:
         """
         Convert the given value to the given type. This method accesses
         all :class:`~ape.api.convert.ConverterAPI` instances known to
@@ -316,42 +316,42 @@ class ConversionManager(BaseManager):
 
         Args:
             value (any): The value to convert.
-            type (type): The type to convert the value to.
+            to_type (to_type): The type to convert the value to.
 
         Returns:
             any: The same given value but with the new given type.
         """
 
-        if isinstance(value, (list, tuple)) and isinstance(type, tuple):
+        if isinstance(value, (list, tuple)) and isinstance(to_type, tuple):
             # We expected to convert a tuple type, so convert each item in the tuple.
             # NOTE: We allow values to be a list, just in case it is a list
-            return [self.convert(v, t) for v, t in zip(value, type)]
+            return [self.convert(v, t) for v, t in zip(value, to_type)]
 
-        elif isinstance(value, (list, tuple)) and isinstance(type, list) and len(type) == 1:
+        elif isinstance(value, (list, tuple)) and isinstance(to_type, list) and len(to_type) == 1:
             # We expected to convert an array type(dynamic or static),
             # so convert each item in the list.
             # NOTE: type for static and dynamic array is a single item
             #  list containing the type of the array.
-            return [self.convert(v, type[0]) for v in value]
+            return [self.convert(v, to_type[0]) for v in value]
 
-        elif isinstance(type, (list, tuple)):
+        elif isinstance(to_type, (list, tuple)):
             raise ConversionError(
                 f"Value '{value}' must be a list or tuple when given multiple types."
             )
 
-        elif type is ChecksumAddress:
+        elif to_type is ChecksumAddress:
             # Use our Annotated alias.
             return self.convert(value, AddressType)
 
-        elif type not in self._converters:
+        elif to_type not in self._converters:
             options = ", ".join([_get_type_name_from_type(t) for t in self._converters])
-            raise ConversionError(f"Type '{type}' must be one of [{options}].")
+            raise ConversionError(f"Type '{to_type}' must be one of [{options}].")
 
-        elif self.is_type(value, type) and not isinstance(value, (list, tuple)):
+        elif self.is_type(value, to_type) and not isinstance(value, (list, tuple)):
             # NOTE: Always process lists and tuples
             return value
 
-        for converter in self._converters[type]:
+        for converter in self._converters[to_type]:
             try:
                 is_convertible = converter.is_convertible(value)
             except Exception as err:
@@ -399,7 +399,7 @@ class ConversionManager(BaseManager):
 
         return converted_arguments
 
-    def convert_method_kwargs(self, kwargs) -> Dict:
+    def convert_method_kwargs(self, kwargs) -> dict:
         fields = TransactionAPI.model_fields
 
         def get_real_type(type_):
@@ -438,7 +438,7 @@ class ConversionManager(BaseManager):
         return {**kwargs, **converted_fields}
 
 
-def _get_type_name_from_type(var_type: Type) -> str:
+def _get_type_name_from_type(var_type: type) -> str:
     if hasattr(var_type, "__args__") and var_type.__args__:
         # Is Annotated
         real_type = var_type.__args__[0]

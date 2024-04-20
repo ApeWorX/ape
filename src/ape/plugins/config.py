@@ -1,5 +1,3 @@
-from typing import Type
-
 from ape.api import PluginConfig
 
 from .pluggy_patch import PluginType, hookspec
@@ -14,7 +12,7 @@ class Config(PluginType):
     """
 
     @hookspec
-    def config_class(self) -> Type[PluginConfig]:  # type: ignore[empty-body]
+    def config_class(self) -> type[PluginConfig]:  # type: ignore[empty-body]
         """
         A hook that returns a :class:`~ape.api.config.PluginConfig` parser class that can be
         used to deconstruct the user config options for this plugins.
@@ -29,5 +27,5 @@ class Config(PluginType):
                 return MyPluginConfig
 
         Returns:
-            Type[:class:`~ape.api.config.PluginConfig`]
+            type[:class:`~ape.api.config.PluginConfig`]
         """

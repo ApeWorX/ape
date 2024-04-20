@@ -1,6 +1,6 @@
 import re
 from re import Pattern
-from typing import Optional, Type, Union
+from typing import Optional, Union
 
 from ethpm_types.abi import ErrorABI
 
@@ -25,7 +25,7 @@ class RevertInfo:
 class RevertsContextManager(ManagerAccessMixin):
     def __init__(
         self,
-        expected_message: Optional[Union[_RevertMessage, Type[CustomError], ErrorABI]] = None,
+        expected_message: Optional[Union[_RevertMessage, type[CustomError], ErrorABI]] = None,
         dev_message: Optional[_RevertMessage] = None,
         **error_inputs,
     ):
@@ -154,7 +154,7 @@ class RevertsContextManager(ManagerAccessMixin):
         self.revert_info = info
         return info
 
-    def __exit__(self, exc_type: Type, exc_value: Exception, traceback) -> bool:
+    def __exit__(self, exc_type: type, exc_value: Exception, traceback) -> bool:
         if exc_type is None:
             raise AssertionError("Transaction did not revert.")
 
