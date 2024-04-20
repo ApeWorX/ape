@@ -1,5 +1,4 @@
 from collections import namedtuple
-from typing import List
 
 from eth_account import Account
 from eth_account.hdaccount import HDPath
@@ -30,7 +29,7 @@ def generate_dev_accounts(
     number_of_accounts: int = DEFAULT_NUMBER_OF_TEST_ACCOUNTS,
     hd_path: str = DEFAULT_TEST_HD_PATH,
     start_index: int = 0,
-) -> List[GeneratedDevAccount]:
+) -> list[GeneratedDevAccount]:
     """
     Create accounts from the given test mnemonic.
     Use these accounts (or the mnemonic) in chain-genesis
@@ -45,7 +44,7 @@ def generate_dev_accounts(
           to 0.
 
     Returns:
-        List[:class:`~ape.utils.GeneratedDevAccount`]: List of development accounts.
+        list[:class:`~ape.utils.GeneratedDevAccount`]: List of development accounts.
     """
     seed = Mnemonic.to_seed(mnemonic)
     accounts = []

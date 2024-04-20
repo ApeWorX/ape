@@ -6,7 +6,7 @@ from importlib.machinery import SourceFileLoader
 from importlib.util import module_from_spec, spec_from_loader
 from os import environ, getcwd
 from types import ModuleType
-from typing import Any, Dict, cast
+from typing import Any, cast
 
 import click
 import IPython
@@ -46,7 +46,7 @@ def import_extras_file(file_path) -> ModuleType:
     return module
 
 
-def load_console_extras(**namespace: Any) -> Dict[str, Any]:
+def load_console_extras(**namespace: Any) -> dict[str, Any]:
     """load and return namespace updates from ape_console_extras.py  files if
     they exist"""
     global_extras = ManagerAccessMixin.config_manager.DATA_FOLDER.joinpath(CONSOLE_EXTRAS_FILENAME)
@@ -66,7 +66,7 @@ def load_console_extras(**namespace: Any) -> Dict[str, Any]:
             # Figure out the kwargs the func is looking for and assemble
             # from the original namespace
             func_spec = inspect.getfullargspec(ape_init_extras)
-            init_kwargs: Dict[str, Any] = {k: namespace.get(k) for k in func_spec.args}
+            init_kwargs: dict[str, Any] = {k: namespace.get(k) for k in func_spec.args}
 
             # Execute functionality with existing console namespace as
             # kwargs.
@@ -140,7 +140,7 @@ def console(project=None, verbose=None, extra_locals=None, embed=False):
     _launch_console(namespace, ipy_config, embed, banner)
 
 
-def _launch_console(namespace: Dict, ipy_config: IPythonConfig, embed: bool, banner: str):
+def _launch_console(namespace: dict, ipy_config: IPythonConfig, embed: bool, banner: str):
     ipython_kwargs = {"user_ns": namespace, "config": ipy_config}
     if embed:
         IPython.embed(**ipython_kwargs, colors="Neutral", banner1=banner)

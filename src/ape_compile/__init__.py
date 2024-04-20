@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Optional, Set
+from typing import Optional
 
 from pydantic import field_validator, model_validator
 
@@ -22,7 +22,7 @@ class Config(PluginConfig):
     should configure ``include_dependencies`` to be ``True``.
     """
 
-    exclude: Set[str] = set()
+    exclude: set[str] = set()
     """
     Source exclusion globs across all file types.
     """

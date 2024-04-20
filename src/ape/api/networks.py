@@ -1,19 +1,7 @@
+from collections.abc import Collection, Iterator, Sequence
 from functools import partial
 from pathlib import Path
-from typing import (
-    TYPE_CHECKING,
-    Any,
-    ClassVar,
-    Collection,
-    Dict,
-    Iterator,
-    List,
-    Optional,
-    Sequence,
-    Tuple,
-    Type,
-    Union,
-)
+from typing import TYPE_CHECKING, Any, ClassVar, Optional, Union
 
 from eth_account import Account as EthAccount
 from eth_account._utils.legacy_transactions import (
@@ -82,7 +70,7 @@ class EcosystemAPI(ExtraAttributesMixin, BaseInterfaceModel):
     data_folder: Path
     """The path to the ``.ape`` directory."""
 
-    request_header: Dict
+    request_header: dict
     """A shareable HTTP header for network requests."""
 
     fee_token_symbol: str
@@ -204,7 +192,7 @@ class EcosystemAPI(ExtraAttributesMixin, BaseInterfaceModel):
         return signed_txn
 
     @abstractmethod
-    def decode_receipt(self, data: Dict) -> "ReceiptAPI":
+    def decode_receipt(self, data: dict) -> "ReceiptAPI":
         """
         Convert data to :class:`~ape.api.transactions.ReceiptAPI`.
 
@@ -216,7 +204,7 @@ class EcosystemAPI(ExtraAttributesMixin, BaseInterfaceModel):
         """
 
     @abstractmethod
-    def decode_block(self, data: Dict) -> "BlockAPI":
+    def decode_block(self, data: dict) -> "BlockAPI":
         """
         Decode data to a :class:`~ape.api.providers.BlockAPI`.
 
@@ -240,12 +228,12 @@ class EcosystemAPI(ExtraAttributesMixin, BaseInterfaceModel):
         return self.config_manager.get_config(self.name)
 
     @property
-    def networks(self) -> Dict[str, "NetworkAPI"]:
+    def networks(self) -> dict[str, "NetworkAPI"]:
         """
         A dictionary of network names mapped to their API implementation.
 
         Returns:
-            Dict[str, :class:`~ape.api.networks.NetworkAPI`]
+            dict[str, :class:`~ape.api.networks.NetworkAPI`]
         """
         networks = {**self._networks_from_plugins}
 
@@ -273,7 +261,7 @@ class EcosystemAPI(ExtraAttributesMixin, BaseInterfaceModel):
         return networks
 
     @cached_property
-    def _networks_from_plugins(self) -> Dict[str, "NetworkAPI"]:
+    def _networks_from_plugins(self) -> dict[str, "NetworkAPI"]:
         return {
             network_name: network_class(
                 name=network_name,
@@ -397,7 +385,7 @@ class EcosystemAPI(ExtraAttributesMixin, BaseInterfaceModel):
         """
 
     @abstractmethod
-    def decode_logs(self, logs: Sequence[Dict], *events: EventABI) -> Iterator["ContractLog"]:
+    def decode_logs(self, logs: Sequence[dict], *events: EventABI) -> Iterator["ContractLog"]:
         """
         Decode any contract logs that match the given event ABI from the raw log data.
 
@@ -411,8 +399,8 @@ class EcosystemAPI(ExtraAttributesMixin, BaseInterfaceModel):
 
     @raises_not_implemented
     def decode_primitive_value(  # type: ignore[empty-body]
-        self, value: Any, output_type: Union[str, Tuple, List]
-    ) -> Union[str, HexBytes, Tuple]:
+        self, value: Any, output_type: Union[str, tuple, list]
+    ) -> Union[str, HexBytes, tuple]:
         """
         Decode a primitive value-type given its ABI type as a ``str``
         and the value itself. This method is a hook for converting
@@ -421,10 +409,10 @@ class EcosystemAPI(ExtraAttributesMixin, BaseInterfaceModel):
 
         Args:
             value (Any): The value to decode.
-            output_type (Union[str, Tuple, List]): The value type.
+            output_type (Union[str, tuple, list]): The value type.
 
         Returns:
-            Union[str, HexBytes, Tuple]
+            Union[str, HexBytes, tuple]
         """
 
     @abstractmethod
@@ -440,7 +428,7 @@ class EcosystemAPI(ExtraAttributesMixin, BaseInterfaceModel):
         """
 
     @abstractmethod
-    def decode_calldata(self, abi: Union[ConstructorABI, MethodABI], calldata: bytes) -> Dict:
+    def decode_calldata(self, abi: Union[ConstructorABI, MethodABI], calldata: bytes) -> dict:
         """
         Decode method calldata.
 
@@ -507,7 +495,7 @@ class EcosystemAPI(ExtraAttributesMixin, BaseInterfaceModel):
 
     def get_network_data(
         self, network_name: str, provider_filter: Optional[Collection[str]] = None
-    ) -> Dict:
+    ) -> dict:
         """
         Get a dictionary of data about providers in the network.
 
@@ -522,7 +510,7 @@ class EcosystemAPI(ExtraAttributesMixin, BaseInterfaceModel):
         Returns:
             dict: A dictionary containing the providers in a network.
         """
-        data: Dict[str, Any] = {"name": str(network_name)}
+        data: dict[str, Any] = {"name": str(network_name)}
 
         # Only add isDefault key when True
         if network_name == self.default_network_name:
@@ -538,7 +526,7 @@ class EcosystemAPI(ExtraAttributesMixin, BaseInterfaceModel):
             if provider_filter and provider_name not in provider_filter:
                 continue
 
-            provider_data: Dict = {"name": str(provider_name)}
+            provider_data: dict = {"name": str(provider_name)}
 
             # Only add isDefault key when True
             if provider_name == network.default_provider_name:
@@ -602,7 +590,7 @@ class EcosystemAPI(ExtraAttributesMixin, BaseInterfaceModel):
     @raises_not_implemented
     def get_python_types(  # type: ignore[empty-body]
         self, abi_type: ABIType
-    ) -> Union[Type, Sequence]:
+    ) -> Union[type, Sequence]:
         """
         Get the Python types for a given ABI type.
 
@@ -660,9 +648,9 @@ class ProviderContextManager(ManagerAccessMixin):
             ...
     """
 
-    connected_providers: Dict[str, "ProviderAPI"] = {}
-    provider_stack: List[str] = []
-    disconnect_map: Dict[str, bool] = {}
+    connected_providers: dict[str, "ProviderAPI"] = {}
+    provider_stack: list[str] = []
+    disconnect_map: dict[str, bool] = {}
 
     # We store a provider object at the class level for use when disconnecting
     # due to an exception, when interactive mode is set. If we don't hold on
@@ -788,7 +776,7 @@ class NetworkAPI(BaseInterfaceModel):
     data_folder: Path  # For caching any data that might need caching
     """The path to the ``.ape`` directory."""
 
-    request_header: Dict
+    request_header: dict
     """A shareable network HTTP header."""
 
     # See ``.default_provider`` which is the proper field.
@@ -977,12 +965,12 @@ class NetworkAPI(BaseInterfaceModel):
         return self.name == "custom" and not self._is_custom
 
     @cached_property
-    def providers(self):  # -> Dict[str, Partial[ProviderAPI]]
+    def providers(self):  # -> dict[str, Partial[ProviderAPI]]
         """
         The providers of the network, such as Infura, Alchemy, or Node.
 
         Returns:
-            Dict[str, partial[:class:`~ape.api.providers.ProviderAPI`]]
+            dict[str, partial[:class:`~ape.api.providers.ProviderAPI`]]
         """
 
         from ape.plugins._utils import clean_plugin_name
@@ -1013,7 +1001,7 @@ class NetworkAPI(BaseInterfaceModel):
     def get_provider(
         self,
         provider_name: Optional[str] = None,
-        provider_settings: Optional[Dict] = None,
+        provider_settings: Optional[dict] = None,
     ):
         """
         Get a provider for the given name. If given ``None``, returns the default provider.
@@ -1074,7 +1062,7 @@ class NetworkAPI(BaseInterfaceModel):
     def use_provider(
         self,
         provider: Union[str, "ProviderAPI"],
-        provider_settings: Optional[Dict] = None,
+        provider_settings: Optional[dict] = None,
         disconnect_after: bool = False,
         disconnect_on_exit: bool = True,
     ) -> ProviderContextManager:
@@ -1176,7 +1164,7 @@ class NetworkAPI(BaseInterfaceModel):
 
     def use_default_provider(
         self,
-        provider_settings: Optional[Dict] = None,
+        provider_settings: Optional[dict] = None,
         disconnect_after: bool = False,
     ) -> ProviderContextManager:
         """
@@ -1289,7 +1277,7 @@ class ForkedNetworkAPI(NetworkAPI):
         return self.upstream_network.use_provider(self.upstream_provider)
 
 
-def create_network_type(chain_id: int, network_id: int) -> Type[NetworkAPI]:
+def create_network_type(chain_id: int, network_id: int) -> type[NetworkAPI]:
     """
     Easily create a :class:`~ape.api.networks.NetworkAPI` subclass.
     """

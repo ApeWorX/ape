@@ -1,5 +1,4 @@
 from pathlib import Path
-from typing import List
 
 import pytest
 
@@ -22,7 +21,7 @@ def statements():
     return create_statements(20, 21, 21)
 
 
-def create_statements(*pcs) -> List[CoverageStatement]:
+def create_statements(*pcs) -> list[CoverageStatement]:
     return [
         CoverageStatement(pcs={pcs[0]}, hit_count=STMT_0_HIT),
         CoverageStatement(pcs={pcs[1]}, hit_count=STMT_1_HIT),

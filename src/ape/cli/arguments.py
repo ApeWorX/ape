@@ -1,7 +1,8 @@
+from collections.abc import Iterable
 from fnmatch import fnmatch
 from functools import cached_property
 from pathlib import Path
-from typing import Iterable, List, Set, Union
+from typing import Union
 
 import click
 from click import BadArgumentUsage
@@ -22,7 +23,7 @@ def existing_alias_argument(account_type: _ACCOUNT_TYPE_FILTER = None, **kwargs)
     A ``click.argument`` for an existing account alias.
 
     Args:
-        account_type (Type[:class:`~ape.api.accounts.AccountAPI`], optional):
+        account_type (type[:class:`~ape.api.accounts.AccountAPI`], optional):
           If given, limits the type of account the user may choose from.
         **kwargs: click.argument overrides.
     """
@@ -55,14 +56,14 @@ class _ContractPaths(ManagerAccessMixin):
         self.exclude_list = {}
 
     @classmethod
-    def callback(cls, ctx, param, value) -> Set[Path]:
+    def callback(cls, ctx, param, value) -> set[Path]:
         """
         Use this for click.option / argument callbacks.
         """
         return cls(value).filtered_paths
 
     @cached_property
-    def filtered_paths(self) -> Set[Path]:
+    def filtered_paths(self) -> set[Path]:
         """
         Get the filtered set of paths.
         """
@@ -105,8 +106,8 @@ class _ContractPaths(ManagerAccessMixin):
         return self._path_set
 
     @property
-    def exclude_patterns(self) -> List[str]:
-        return self.config_manager.get_config("compile").exclude or []
+    def exclude_patterns(self) -> set[str]:
+        return self.config_manager.get_config("compile").exclude or set()
 
     def do_exclude(self, path: Union[Path, str]) -> bool:
         name = path if isinstance(path, str) else path.name

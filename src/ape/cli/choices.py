@@ -1,8 +1,9 @@
 import re
 import warnings
+from collections.abc import Callable, Iterator, Sequence
 from enum import Enum
 from functools import lru_cache
-from typing import Any, Callable, Iterator, List, Optional, Sequence, Type, Union
+from typing import Any, Optional, Union
 
 import click
 from click import BadParameter, Choice, Context, Parameter
@@ -14,11 +15,11 @@ from ape.types import _LazySequence
 from ape.utils.basemodel import ManagerAccessMixin
 
 _ACCOUNT_TYPE_FILTER = Union[
-    None, Sequence[AccountAPI], Type[AccountAPI], Callable[[AccountAPI], bool]
+    None, Sequence[AccountAPI], type[AccountAPI], Callable[[AccountAPI], bool]
 ]
 
 
-def _get_accounts(key: _ACCOUNT_TYPE_FILTER) -> List[AccountAPI]:
+def _get_accounts(key: _ACCOUNT_TYPE_FILTER) -> list[AccountAPI]:
     add_test_accounts = False
     if key is None:
         account_list = list(ManagerAccessMixin.account_manager)
@@ -162,7 +163,7 @@ def select_account(
 
     Args:
         prompt_message (Optional[str]): Customize the prompt message.
-        key (Union[None, Type[AccountAPI], Callable[[AccountAPI], bool]]):
+        key (Union[None, type[AccountAPI], Callable[[AccountAPI], bool]]):
           If given, the user may only select a matching account. You can provide
           a list of accounts, an account class type, or a callable for filtering
           the accounts.
@@ -273,7 +274,7 @@ class AccountAliasPromptChoice(PromptChoice):
         return self.fail("Invalid choice. Type the number or the alias.", param=param)
 
 
-_NETWORK_FILTER = Optional[Union[List[str], str]]
+_NETWORK_FILTER = Optional[Union[list[str], str]]
 _NONE_NETWORK = "__NONE_NETWORK__"
 
 
@@ -339,7 +340,7 @@ class NetworkChoice(click.Choice):
         ecosystem: _NETWORK_FILTER = None,
         network: _NETWORK_FILTER = None,
         provider: _NETWORK_FILTER = None,
-        base_type: Type = ProviderAPI,
+        base_type: type = ProviderAPI,
         callback: Optional[Callable] = None,
     ):
         if not issubclass(base_type, (ProviderAPI, str)):
@@ -416,12 +417,12 @@ class OutputFormat(Enum):
     """A standard .yaml format of the data."""
 
 
-def output_format_choice(options: Optional[List[OutputFormat]] = None) -> Choice:
+def output_format_choice(options: Optional[list[OutputFormat]] = None) -> Choice:
     """
     Returns a ``click.Choice()`` type for the given options.
 
     Args:
-        options (List[:class:`~ape.choices.OutputFormat`], optional):
+        options (list[:class:`~ape.choices.OutputFormat`], optional):
           Limit the formats to accept. Defaults to allowing all formats.
 
     Returns:

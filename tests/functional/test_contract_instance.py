@@ -1,5 +1,4 @@
 import re
-from typing import List, Tuple
 
 import pytest
 from eth_pydantic_types import HexBytes
@@ -295,13 +294,13 @@ def test_nested_structs_in_tuples(contract_instance, owner, chain):
 
 def test_get_empty_dyn_array_of_structs(contract_instance):
     actual = contract_instance.getEmptyDynArrayOfStructs()
-    expected: List = []
+    expected: list = []
     assert actual == expected
 
 
 def test_get_empty_tuple_of_dyn_array_structs(contract_instance):
     actual = contract_instance.getEmptyTupleOfDynArrayStructs()
-    expected: Tuple[List, List] = ([], [])
+    expected: tuple[list, list] = ([], [])
     assert actual == expected
 
 
@@ -326,7 +325,7 @@ def test_get_tuple_of_int_and_struct_array(contract_instance):
 
 def test_get_empty_tuple_of_int_and_dyn_array(contract_instance):
     actual = contract_instance.getEmptyTupleOfIntAndDynArray()
-    expected: Tuple[List, List] = ([], [])
+    expected: tuple[list, list] = ([], [])
     assert actual == expected
 
 

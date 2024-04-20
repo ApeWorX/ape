@@ -1,5 +1,4 @@
 from pathlib import Path
-from typing import Dict, Set
 
 import click
 from ethpm_types import ContractType
@@ -37,7 +36,7 @@ def _include_dependencies_callback(ctx, param, value):
     help="Also compile dependencies",
     callback=_include_dependencies_callback,
 )
-def cli(cli_ctx, file_paths: Set[Path], use_cache: bool, display_size: bool, include_dependencies):
+def cli(cli_ctx, file_paths: set[Path], use_cache: bool, display_size: bool, include_dependencies):
     """
     Compiles the manifest for this project and saves the results
     back to the manifest.
@@ -68,7 +67,7 @@ def cli(cli_ctx, file_paths: Set[Path], use_cache: bool, display_size: bool, inc
         _display_byte_code_sizes(cli_ctx, contract_types)
 
 
-def _display_byte_code_sizes(cli_ctx, contract_types: Dict[str, ContractType]):
+def _display_byte_code_sizes(cli_ctx, contract_types: dict[str, ContractType]):
     # Display bytecode size for *all* contract types (not just ones we compiled)
     code_size = []
     for contract in contract_types.values():
