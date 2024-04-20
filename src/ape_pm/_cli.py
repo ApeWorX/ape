@@ -1,6 +1,6 @@
 import json
 from pathlib import Path
-from typing import Dict, Optional, Tuple
+from typing import Optional
 
 import click
 
@@ -113,7 +113,7 @@ def _check_compiled(version_dir: Path) -> bool:
     )
 
 
-def _handle_package_path(path: Path, original_value: Optional[str] = None) -> Dict:
+def _handle_package_path(path: Path, original_value: Optional[str] = None) -> dict:
     if not path.exists():
         value = original_value or path.as_posix()
         raise click.BadArgumentUsage(f"Unknown package '{value}'.")
@@ -351,7 +351,7 @@ def compile(cli_ctx, name, version, force, config_override):
     elif not version:
         cli_ctx.abort("Please specify --version.")
 
-    version_opts: Tuple
+    version_opts: tuple
     if version == "local":
         version_opts = (version,)
     elif version.startswith("v"):

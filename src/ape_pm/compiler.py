@@ -1,6 +1,7 @@
 import json
+from collections.abc import Sequence
 from pathlib import Path
-from typing import List, Optional, Sequence, Set
+from typing import Optional
 
 from eth_pydantic_types import HexBytes
 from eth_utils import is_0x_prefixed
@@ -17,15 +18,15 @@ class InterfaceCompiler(CompilerAPI):
     def name(self) -> str:
         return "ethpm"
 
-    def get_versions(self, all_paths: Sequence[Path]) -> Set[str]:
+    def get_versions(self, all_paths: Sequence[Path]) -> set[str]:
         # NOTE: This bypasses the serialization of this compiler into the package manifest's
         #       ``compilers`` field. You should not do this with a real compiler plugin.
         return set()
 
     def compile(
         self, filepaths: Sequence[Path], base_path: Optional[Path] = None
-    ) -> List[ContractType]:
-        contract_types: List[ContractType] = []
+    ) -> list[ContractType]:
+        contract_types: list[ContractType] = []
         for path in filepaths:
             source_path = (
                 get_relative_path(path, base_path) if base_path and path.is_absolute() else path

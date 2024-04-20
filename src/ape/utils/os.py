@@ -1,10 +1,12 @@
 import os
 import re
 import sys
+from collections.abc import Callable, Iterator
 from contextlib import contextmanager
 from pathlib import Path
+from re import Pattern
 from tempfile import TemporaryDirectory
-from typing import Any, Callable, Iterator, List, Optional, Pattern, Union
+from typing import Any, Optional, Union
 
 
 def is_relative_to(path: Path, target: Path) -> bool:
@@ -61,7 +63,7 @@ def get_relative_path(target: Path, anchor: Path) -> Path:
 
 def get_all_files_in_directory(
     path: Path, pattern: Optional[Union[Pattern, str]] = None
-) -> List[Path]:
+) -> list[Path]:
     """
     Returns all the files in a directory structure.
 
@@ -79,7 +81,7 @@ def get_all_files_in_directory(
           pattern to match.
 
     Returns:
-        List[pathlib.Path]: A list of files in the given directory.
+        list[pathlib.Path]: A list of files in the given directory.
     """
     if not path.exists():
         return []
@@ -119,7 +121,7 @@ class use_temp_sys_path:
     a user's sys paths without permanently modifying it.
     """
 
-    def __init__(self, path: Path, exclude: Optional[List[Path]] = None):
+    def __init__(self, path: Path, exclude: Optional[list[Path]] = None):
         self.temp_path = str(path)
         self.exclude = [str(p) for p in exclude or []]
 
@@ -204,6 +206,8 @@ def run_in_tempdir(
     Args:
         fn (Callable): A function that takes a path. It gets called
           with the resolved path to the temporary directory.
+        name (Optional[str]): Optionally provide a name for the temporary
+          directory.
 
     Returns:
         Any: The result of the function call.
