@@ -1,6 +1,6 @@
 import tempfile
 from pathlib import Path
-from typing import Dict, Optional, Union
+from typing import Optional, Union
 
 import pytest
 from pydantic_settings import SettingsConfigDict
@@ -81,7 +81,7 @@ def _create_deployments(
     network_name: str = "local",
     address: Union[int, str] = "0x0C25212C557D00024B7CA3DF3238683A35541354",
     contract_name: Optional[str] = "MyContract",
-) -> Dict:
+) -> dict:
     return {
         ecosystem_name: {
             network_name: [
@@ -183,7 +183,7 @@ def test_plugin_config_updates_when_default_is_empty_dict():
         bar: int = 1
 
     class MyConfig(PluginConfig):
-        sub: Dict[str, Dict[str, SubConfig]] = {}
+        sub: dict[str, dict[str, SubConfig]] = {}
 
     overrides = {"sub": {"baz": {"test": {"foo": 5}}}}
     actual = MyConfig.from_overrides(overrides)
@@ -193,8 +193,8 @@ def test_plugin_config_updates_when_default_is_empty_dict():
 @pytest.mark.parametrize("override_0,override_1", [(True, {"foo": 0}), ({"foo": 0}, True)])
 def test_plugin_config_with_union_dicts(override_0, override_1):
     class SubConfig(PluginConfig):
-        bool_or_dict: Union[bool, Dict] = True
-        dict_or_bool: Union[Dict, bool] = {}
+        bool_or_dict: Union[bool, dict] = True
+        dict_or_bool: Union[dict, bool] = {}
 
     config = SubConfig.from_overrides({"bool_or_dict": override_0, "dict_or_bool": override_1})
     assert config.bool_or_dict == override_0

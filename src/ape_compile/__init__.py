@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import List, Optional
+from typing import Optional
 
 from pydantic import field_validator, model_validator
 
@@ -21,7 +21,7 @@ class Config(PluginConfig):
     should configure ``include_dependencies`` to be ``True``.
     """
 
-    exclude: List[str] = ["*package.json", "*package-lock.json", "*tsconfig.json"]
+    exclude: list[str] = ["*package.json", "*package-lock.json", "*tsconfig.json"]
     """
     Source exclusion globs across all file types.
     """

@@ -5,7 +5,7 @@ import tempfile
 import zipfile
 from io import BytesIO
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Set, Union
+from typing import Any, Optional, Union
 
 from requests import Session
 from requests.adapters import HTTPAdapter
@@ -64,7 +64,7 @@ class _GithubClient:
     # ApeWorX-specific attributes.
     ORGANIZATION_NAME = "ApeWorX"
     FRAMEWORK_NAME = "ape"
-    _repo_cache: Dict[str, Dict] = {}
+    _repo_cache: dict[str, dict] = {}
 
     def __init__(self, session: Optional[Session] = None):
         if session:
@@ -85,24 +85,24 @@ class _GithubClient:
             self.__session = session
 
     @cached_property
-    def org(self) -> Dict:
+    def org(self) -> dict:
         """
         Our organization on ``Github``.
         """
         return self.get_organization(self.ORGANIZATION_NAME)
 
     @cached_property
-    def available_plugins(self) -> Set[str]:
+    def available_plugins(self) -> set[str]:
         return {
             repo["name"].replace("-", "_")
             for repo in self.get_org_repos()
             if not repo.get("private", False) and repo["name"].startswith(f"{self.FRAMEWORK_NAME}-")
         }
 
-    def get_org_repos(self) -> List[Dict]:
+    def get_org_repos(self) -> list[dict]:
         return self._get(f"orgs/{self.ORGANIZATION_NAME}/repos")
 
-    def get_release(self, org_name: str, repo_name: str, version: str) -> Dict:
+    def get_release(self, org_name: str, repo_name: str, version: str) -> dict:
         if version == "latest":
             return self.get_latest_release(org_name, repo_name)
 
@@ -127,10 +127,10 @@ class _GithubClient:
 
             raise UnknownVersionError(original_version, repo_name)
 
-    def _get_release(self, org_name: str, repo_name: str, version: str) -> Dict:
+    def _get_release(self, org_name: str, repo_name: str, version: str) -> dict:
         return self._get(f"repos/{org_name}/{repo_name}/releases/tags/{version}")
 
-    def get_repo(self, org_name: str, repo_name: str) -> Dict:
+    def get_repo(self, org_name: str, repo_name: str) -> dict:
         repo_path = f"{org_name}/{repo_name}"
         if repo_path not in self._repo_cache:
             try:
@@ -142,13 +142,13 @@ class _GithubClient:
         else:
             return self._repo_cache[repo_path]
 
-    def _get_repo(self, org_name: str, repo_name: str) -> Dict:
+    def _get_repo(self, org_name: str, repo_name: str) -> dict:
         return self._get(f"repos/{org_name}/{repo_name}")
 
-    def get_latest_release(self, org_name: str, repo_name: str) -> Dict:
+    def get_latest_release(self, org_name: str, repo_name: str) -> dict:
         return self._get(f"repos/{org_name}/{repo_name}/releases/latest")
 
-    def get_organization(self, org_name: str) -> Dict:
+    def get_organization(self, org_name: str) -> dict:
         return self._get(f"orgs/{org_name}")
 
     def clone_repo(

@@ -1,9 +1,10 @@
 import difflib
 import types
+from collections.abc import Callable, Iterator
 from functools import partial
 from itertools import islice
 from pathlib import Path
-from typing import Any, Callable, Dict, Iterator, List, Optional, Tuple, Type, Union
+from typing import Any, Optional, Union
 
 import click
 import pandas as pd
@@ -67,7 +68,7 @@ class ContractConstructor(ManagerAccessMixin):
         encoded_calldata = ecosystem.encode_calldata(self.abi, *args)
         return HexBytes(encoded_calldata)
 
-    def decode_input(self, calldata: bytes) -> Tuple[str, Dict[str, Any]]:
+    def decode_input(self, calldata: bytes) -> tuple[str, dict[str, Any]]:
         decoded_inputs = self.provider.network.ecosystem.decode_calldata(self.abi, calldata)
         return self.abi.selector, decoded_inputs
 
@@ -131,9 +132,9 @@ class ContractCall(ManagerAccessMixin):
 
 class ContractMethodHandler(ManagerAccessMixin):
     contract: "ContractInstance"
-    abis: List[MethodABI]
+    abis: list[MethodABI]
 
-    def __init__(self, contract: "ContractInstance", abis: List[MethodABI]) -> None:
+    def __init__(self, contract: "ContractInstance", abis: list[MethodABI]) -> None:
         super().__init__()
         self.contract = contract
         self.abis = abis
@@ -156,7 +157,7 @@ class ContractMethodHandler(ManagerAccessMixin):
         method_id = ecosystem.get_method_selector(selected_abi)
         return HexBytes(method_id + encoded_calldata)
 
-    def decode_input(self, calldata: bytes) -> Tuple[str, Dict[str, Any]]:
+    def decode_input(self, calldata: bytes) -> tuple[str, dict[str, Any]]:
         matching_abis = []
         rest_calldata = None
         err = ContractDataError(
@@ -260,7 +261,7 @@ class ContractCallHandler(ContractMethodHandler):
         return self.transact.estimate_gas_cost(*arguments, **kwargs)
 
 
-def _select_method_abi(abis: List[MethodABI], args: Union[Tuple, List]) -> MethodABI:
+def _select_method_abi(abis: list[MethodABI], args: Union[tuple, list]) -> MethodABI:
     args = args or []
     selected_abi = None
     for abi in abis:
@@ -400,7 +401,7 @@ class ContractEvent(BaseInterfaceModel):
 
     contract: "ContractTypeWrapper"
     abi: EventABI
-    _logs: Optional[List[ContractLog]] = None
+    _logs: Optional[list[ContractLog]] = None
 
     @log_instead_of_fail(default="<ContractEvent>")
     def __repr__(self) -> str:
@@ -429,7 +430,7 @@ class ContractEvent(BaseInterfaceModel):
         return LogFilter.from_event(event=self.abi, addresses=addresses, start_block=0)
 
     @singledispatchmethod
-    def __getitem__(self, value) -> Union[ContractLog, List[ContractLog]]:  # type: ignore[override]
+    def __getitem__(self, value) -> Union[ContractLog, list[ContractLog]]:  # type: ignore[override]
         raise NotImplementedError(f"Cannot use '{type(value)}' to access logs.")
 
     @__getitem__.register
@@ -457,7 +458,7 @@ class ContractEvent(BaseInterfaceModel):
             raise IndexError(f"No log at index '{index}' for event '{self.abi.name}'.") from err
 
     @__getitem__.register
-    def __getitem_slice(self, value: slice) -> List[ContractLog]:
+    def __getitem_slice(self, value: slice) -> list[ContractLog]:
         """
         Access a slice of logs from this event.
 
@@ -476,7 +477,7 @@ class ContractEvent(BaseInterfaceModel):
 
     def __call__(self, *args: Any, **kwargs: Any) -> MockContractLog:
         # Create a dictionary from the positional arguments
-        event_args: Dict[Any, Any] = dict(zip((ipt.name for ipt in self.abi.inputs), args))
+        event_args: dict[Any, Any] = dict(zip((ipt.name for ipt in self.abi.inputs), args))
 
         overlapping_keys = set(k for k in event_args.keys() if k is not None) & set(
             k for k in kwargs.keys() if k is not None
@@ -528,7 +529,7 @@ class ContractEvent(BaseInterfaceModel):
             else:
                 converted_args[key] = self.conversion_manager.convert(value, py_type)
 
-        properties: Dict = {"event_arguments": converted_args, "event_name": self.abi.name}
+        properties: dict = {"event_arguments": converted_args, "event_name": self.abi.name}
         if hasattr(self.contract, "address"):
             # Only address if this is off an instance.
             properties["contract_address"] = self.contract.address
@@ -576,7 +577,7 @@ class ContractEvent(BaseInterfaceModel):
                 f"'stop={stop_block}' cannot be greater than "
                 f"the chain length ({self.chain_manager.blocks.height})."
             )
-        query: Dict = {
+        query: dict = {
             "columns": list(ContractLog.model_fields) if columns[0] == "*" else columns,
             "event": self.abi,
             "start_block": start_block,
@@ -599,8 +600,8 @@ class ContractEvent(BaseInterfaceModel):
         self,
         start_or_stop: int,
         stop: Optional[int] = None,
-        search_topics: Optional[Dict[str, Any]] = None,
-        extra_addresses: Optional[List] = None,
+        search_topics: Optional[dict[str, Any]] = None,
+        extra_addresses: Optional[list] = None,
     ) -> Iterator[ContractLog]:
         """
         Search through the logs for this event using the given filter parameters.
@@ -611,9 +612,9 @@ class ContractEvent(BaseInterfaceModel):
               Otherwise, it is the total amount of blocks to get starting from ``0``.
             stop (Optional[int]): The latest block number in the
               desired log set. Defaults to delegating to provider.
-            search_topics (Optional[Dict]): Search topics, such as indexed event inputs,
+            search_topics (Optional[dict]): Search topics, such as indexed event inputs,
               to query by. Defaults to getting all events.
-            extra_addresses (Optional[List[:class:`~ape.types.address.AddressType`]]):
+            extra_addresses (Optional[list[:class:`~ape.types.address.AddressType`]]):
               Additional contract addresses containing the same event type. Defaults to
               only looking at the contract instance where this event is defined.
 
@@ -659,7 +660,7 @@ class ContractEvent(BaseInterfaceModel):
         )
         yield from self.query_manager.query(contract_event_query)  # type: ignore
 
-    def from_receipt(self, receipt: ReceiptAPI) -> List[ContractLog]:
+    def from_receipt(self, receipt: ReceiptAPI) -> list[ContractLog]:
         """
         Get all the events from the given receipt.
 
@@ -667,7 +668,7 @@ class ContractEvent(BaseInterfaceModel):
             receipt (:class:`~ape.api.transactions.ReceiptAPI`): The receipt containing the logs.
 
         Returns:
-            List[:class:`~ape.contracts.base.ContractLog`]
+            list[:class:`~ape.contracts.base.ContractLog`]
         """
         ecosystem = self.provider.network.ecosystem
 
@@ -731,7 +732,7 @@ class ContractTypeWrapper(ManagerAccessMixin):
     contract_type: ContractType
 
     @property
-    def selector_identifiers(self) -> Dict[str, str]:
+    def selector_identifiers(self) -> dict[str, str]:
         """
         Provides a mapping of function signatures (pre-hashed selectors) to
         selector identifiers.
@@ -739,7 +740,7 @@ class ContractTypeWrapper(ManagerAccessMixin):
         return self.contract_type.selector_identifiers
 
     @property
-    def identifier_lookup(self) -> Dict[str, ABI_W_SELECTOR_T]:
+    def identifier_lookup(self) -> dict[str, ABI_W_SELECTOR_T]:
         """
         Provides a mapping of method, error, and event selector identifiers to
         ABI Types.
@@ -774,7 +775,7 @@ class ContractTypeWrapper(ManagerAccessMixin):
         else:
             return None
 
-    def decode_input(self, calldata: bytes) -> Tuple[str, Dict[str, Any]]:
+    def decode_input(self, calldata: bytes) -> tuple[str, dict[str, Any]]:
         """
         Decode the given calldata using this contract.
         If the calldata has a method ID prefix, Ape will detect it and find
@@ -784,7 +785,7 @@ class ContractTypeWrapper(ManagerAccessMixin):
             calldata (bytes): The calldata to decode.
 
         Returns:
-            Tuple[str, Dict[str, Any]]: A tuple containing the method selector
+            Tuple[str, dict[str, Any]]: A tuple containing the method selector
             along a mapping of input names to their decoded values.
             If an input does not have a number, it will have the stringified
             index as its key.
@@ -810,7 +811,7 @@ class ContractTypeWrapper(ManagerAccessMixin):
         input_dict = ecosystem.decode_calldata(method, rest_calldata)
         return method.selector, input_dict
 
-    def _create_custom_error_type(self, abi: ErrorABI) -> Type[CustomError]:
+    def _create_custom_error_type(self, abi: ErrorABI) -> type[CustomError]:
         def exec_body(namespace):
             namespace["abi"] = abi
             namespace["contract"] = self
@@ -926,8 +927,8 @@ class ContractInstance(BaseAddress, ContractTypeWrapper):
         return self._address
 
     @cached_property
-    def _view_methods_(self) -> Dict[str, ContractCallHandler]:
-        view_methods: Dict[str, List[MethodABI]] = dict()
+    def _view_methods_(self) -> dict[str, ContractCallHandler]:
+        view_methods: dict[str, list[MethodABI]] = dict()
 
         for abi in self.contract_type.view_methods:
             if abi.name in view_methods:
@@ -945,8 +946,8 @@ class ContractInstance(BaseAddress, ContractTypeWrapper):
             raise ApeAttributeError(str(err)) from err
 
     @cached_property
-    def _mutable_methods_(self) -> Dict[str, ContractTransactionHandler]:
-        mutable_methods: Dict[str, List[MethodABI]] = dict()
+    def _mutable_methods_(self) -> dict[str, ContractTransactionHandler]:
+        mutable_methods: dict[str, list[MethodABI]] = dict()
 
         for abi in self.contract_type.mutable_methods:
             if abi.name in mutable_methods:
@@ -1060,7 +1061,7 @@ class ContractInstance(BaseAddress, ContractTypeWrapper):
 
         raise err
 
-    def get_error_by_signature(self, signature: str) -> Type[CustomError]:
+    def get_error_by_signature(self, signature: str) -> type[CustomError]:
         """
         Get an error by its signature, similar to
         :meth:`~ape.contracts.ContractInstance.get_event_by_signature`.
@@ -1085,8 +1086,8 @@ class ContractInstance(BaseAddress, ContractTypeWrapper):
         raise err
 
     @cached_property
-    def _events_(self) -> Dict[str, List[ContractEvent]]:
-        events: Dict[str, List[EventABI]] = {}
+    def _events_(self) -> dict[str, list[ContractEvent]]:
+        events: dict[str, list[EventABI]] = {}
 
         for abi in self.contract_type.events:
             if abi.name in events:
@@ -1104,8 +1105,8 @@ class ContractInstance(BaseAddress, ContractTypeWrapper):
             raise ApeAttributeError(str(err)) from err
 
     @cached_property
-    def _errors_(self) -> Dict[str, List[Type[CustomError]]]:
-        abis: Dict[str, List[ErrorABI]] = {}
+    def _errors_(self) -> dict[str, list[type[CustomError]]]:
+        abis: dict[str, list[ErrorABI]] = {}
 
         try:
             for abi in self.contract_type.errors:
@@ -1143,12 +1144,12 @@ class ContractInstance(BaseAddress, ContractTypeWrapper):
             # NOTE: Must raise AttributeError for __attr__ method or will seg fault
             raise ApeAttributeError(str(err)) from err
 
-    def __dir__(self) -> List[str]:
+    def __dir__(self) -> list[str]:
         """
         Display methods to IPython on ``c.[TAB]`` tab completion.
 
         Returns:
-            List[str]
+            list[str]
         """
 
         # NOTE: Type ignores because of this issue: https://github.com/python/typing/issues/1112
@@ -1478,7 +1479,7 @@ class ContractNamespace:
 
     """
 
-    def __init__(self, name: str, contracts: List[ContractContainer]):
+    def __init__(self, name: str, contracts: list[ContractContainer]):
         self.name = name
         self.contracts = contracts
 

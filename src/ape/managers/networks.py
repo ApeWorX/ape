@@ -1,5 +1,6 @@
+from collections.abc import Collection, Iterator
 from functools import cached_property
-from typing import Collection, Dict, Iterator, List, Optional, Set, Type, Union
+from typing import Optional, Union
 
 from ape.api import EcosystemAPI, ProviderAPI, ProviderContextManager
 from ape.api.networks import NetworkAPI
@@ -83,7 +84,7 @@ class NetworkManager(BaseManager, ExtraAttributesMixin):
     def fork(
         self,
         provider_name: Optional[str] = None,
-        provider_settings: Optional[Dict] = None,
+        provider_settings: Optional[dict] = None,
         block_number: Optional[int] = None,
     ) -> ProviderContextManager:
         """
@@ -136,7 +137,7 @@ class NetworkManager(BaseManager, ExtraAttributesMixin):
         )
 
     @property
-    def ecosystem_names(self) -> Set[str]:
+    def ecosystem_names(self) -> set[str]:
         """
         The set of all ecosystem names in ``ape``.
         """
@@ -144,7 +145,7 @@ class NetworkManager(BaseManager, ExtraAttributesMixin):
         return set(self.ecosystems)
 
     @property
-    def network_names(self) -> Set[str]:
+    def network_names(self) -> set[str]:
         """
         The set of all network names in ``ape``.
         """
@@ -152,7 +153,7 @@ class NetworkManager(BaseManager, ExtraAttributesMixin):
         return {n for e in self.ecosystems.values() for n in e.networks}
 
     @property
-    def provider_names(self) -> Set[str]:
+    def provider_names(self) -> set[str]:
         """
         The set of all provider names in ``ape``.
         """
@@ -165,14 +166,14 @@ class NetworkManager(BaseManager, ExtraAttributesMixin):
         )
 
     @property
-    def ecosystems(self) -> Dict[str, EcosystemAPI]:
+    def ecosystems(self) -> dict[str, EcosystemAPI]:
         """
         All the registered ecosystems in ``ape``, such as ``ethereum``.
         """
         ecosystem_objs = self._plugin_ecosystems
 
         # Load config.
-        custom_networks: List = self.config_manager.get_config("networks").get("custom", [])
+        custom_networks: list = self.config_manager.get_config("networks").get("custom", [])
         for custom_network in custom_networks:
             ecosystem_name = custom_network.ecosystem
             if ecosystem_name in ecosystem_objs:
@@ -191,8 +192,8 @@ class NetworkManager(BaseManager, ExtraAttributesMixin):
         return ecosystem_objs
 
     @cached_property
-    def _plugin_ecosystems(self) -> Dict[str, EcosystemAPI]:
-        def to_kwargs(name: str) -> Dict:
+    def _plugin_ecosystems(self) -> dict[str, EcosystemAPI]:
+        def to_kwargs(name: str) -> dict:
             return {
                 "name": name,
                 "data_folder": self.config_manager.DATA_FOLDER / name,
@@ -206,7 +207,7 @@ class NetworkManager(BaseManager, ExtraAttributesMixin):
     def create_custom_provider(
         self,
         connection_str: str,
-        provider_cls: Type[ProviderAPI] = EthereumNodeProvider,
+        provider_cls: type[ProviderAPI] = EthereumNodeProvider,
         provider_name: Optional[str] = None,
     ) -> ProviderAPI:
         """
@@ -217,7 +218,7 @@ class NetworkManager(BaseManager, ExtraAttributesMixin):
         Args:
             connection_str (str): The connection string of the node, such as its URI
               when using HTTP.
-            provider_cls (Type[:class:`~ape.api.providers.ProviderAPI`]): Defaults to
+            provider_cls (type[:class:`~ape.api.providers.ProviderAPI`]): Defaults to
               :class:`~ape_ethereum.providers.EthereumNodeProvider`.
             provider_name (Optional[str]): The name of the provider. Defaults to best guess.
 
@@ -245,7 +246,7 @@ class NetworkManager(BaseManager, ExtraAttributesMixin):
         else:
             name = provider_name
 
-        provider_settings: Dict = {}
+        provider_settings: dict = {}
         if connection_str.startswith("https://") or connection_str.startswith("http://"):
             provider_settings["uri"] = connection_str
         elif connection_str.endswith(".ipc"):
@@ -315,9 +316,9 @@ class NetworkManager(BaseManager, ExtraAttributesMixin):
 
     def get_network_choices(
         self,
-        ecosystem_filter: Optional[Union[List[str], str]] = None,
-        network_filter: Optional[Union[List[str], str]] = None,
-        provider_filter: Optional[Union[List[str], str]] = None,
+        ecosystem_filter: Optional[Union[list[str], str]] = None,
+        network_filter: Optional[Union[list[str], str]] = None,
+        provider_filter: Optional[Union[list[str], str]] = None,
     ) -> Iterator[str]:
         """
         The set of all possible network choices available as a "network selection"
@@ -332,11 +333,11 @@ class NetworkManager(BaseManager, ExtraAttributesMixin):
         combinations.
 
         Args:
-            ecosystem_filter (Optional[Union[List[str], str]]): Get only the specified ecosystems.
+            ecosystem_filter (Optional[Union[list[str], str]]): Get only the specified ecosystems.
               Defaults to getting all ecosystems.
-            network_filter (Optional[Union[List[str], str]]): Get only the specified networks.
+            network_filter (Optional[Union[list[str], str]]): Get only the specified networks.
               Defaults to getting all networks in ecosystems.
-            provider_filter (Optional[Union[List[str], str]]): Get only the specified providers.
+            provider_filter (Optional[Union[list[str], str]]): Get only the specified providers.
               Defaults to getting all providers in networks.
 
         Returns:
@@ -420,7 +421,7 @@ class NetworkManager(BaseManager, ExtraAttributesMixin):
     def get_provider_from_choice(
         self,
         network_choice: Optional[str] = None,
-        provider_settings: Optional[Dict] = None,
+        provider_settings: Optional[dict] = None,
     ) -> ProviderAPI:
         """
         Get a :class:`~ape.api.providers.ProviderAPI` from a network choice.
@@ -495,7 +496,7 @@ class NetworkManager(BaseManager, ExtraAttributesMixin):
     def parse_network_choice(
         self,
         network_choice: Optional[str] = None,
-        provider_settings: Optional[Dict] = None,
+        provider_settings: Optional[dict] = None,
         disconnect_after: bool = False,
         disconnect_on_exit: bool = True,
     ) -> ProviderContextManager:
@@ -571,7 +572,7 @@ class NetworkManager(BaseManager, ExtraAttributesMixin):
             raise EcosystemNotFoundError(ecosystem_name, options=self.ecosystem_names)
 
     @property
-    def network_data(self) -> Dict:
+    def network_data(self) -> dict:
         """
         Get a dictionary containing data about networks in the ecosystem.
 
@@ -589,7 +590,7 @@ class NetworkManager(BaseManager, ExtraAttributesMixin):
         network_filter: Optional[Collection[str]] = None,
         provider_filter: Optional[Collection[str]] = None,
     ):
-        data: Dict = {"ecosystems": []}
+        data: dict = {"ecosystems": []}
 
         for ecosystem_name in self:
             if ecosystem_filter and ecosystem_name not in ecosystem_filter:
@@ -607,9 +608,9 @@ class NetworkManager(BaseManager, ExtraAttributesMixin):
         ecosystem_name: str,
         network_filter: Optional[Collection[str]] = None,
         provider_filter: Optional[Collection[str]] = None,
-    ) -> Dict:
+    ) -> dict:
         ecosystem = self[ecosystem_name]
-        ecosystem_data: Dict = {"name": str(ecosystem_name)}
+        ecosystem_data: dict = {"name": str(ecosystem_name)}
 
         # Only add isDefault key when True
         if ecosystem_name == self.default_ecosystem.name:
@@ -628,7 +629,7 @@ class NetworkManager(BaseManager, ExtraAttributesMixin):
         return ecosystem_data
 
 
-def _validate_filter(arg: Optional[Union[List[str], str]], options: Set[str]):
+def _validate_filter(arg: Optional[Union[list[str], str]], options: set[str]):
     filters = arg or []
 
     if isinstance(filters, str):

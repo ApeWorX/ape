@@ -1,11 +1,10 @@
 #!/usr/bin/env python
 from pathlib import Path
-from typing import Dict
 
 from setuptools import find_packages, setup
 
 here = Path(__file__).parent.absolute()
-packages_data: Dict = {}
+packages_data: dict = {}
 with open(here / "src" / "ape" / "__modules__.py", encoding="utf8") as modules_file:
     exec(modules_file.read(), packages_data)
 
@@ -103,7 +102,7 @@ setup(
         "packaging>=23.0,<24",
         "pandas>=1.3.0,<2",
         "pluggy>=1.3,<2",
-        "pydantic>=2.5.2,<3",
+        "pydantic>=2.6.4,<3",
         "pydantic-settings>=2.0.3,<3",
         "pytest>=6.0,<8.0",
         "python-dateutil>=2.8.2,<3",
@@ -128,7 +127,7 @@ setup(
         "eip712>=0.2.7,<0.3",
         "ethpm-types>=0.6.9,<0.7",
         "eth_pydantic_types>=0.1.0,<0.2",
-        "evmchains>=0.0.6,<0.1",
+        "evmchains>=0.0.7,<0.1",
         "evm-trace>=0.1.5,<0.2",
     ],
     entry_points={
@@ -147,7 +146,7 @@ setup(
             "ape_pm=ape_pm._cli:cli",
         ],
     },
-    python_requires=">=3.8,<4",
+    python_requires=">=3.9,<4",
     extras_require=extras_require,
     py_modules=packages_data["__modules__"],
     license="Apache-2.0",
@@ -164,7 +163,6 @@ setup(
         "Operating System :: MacOS",
         "Operating System :: POSIX",
         "Programming Language :: Python :: 3",
-        "Programming Language :: Python :: 3.8",
         "Programming Language :: Python :: 3.9",
         "Programming Language :: Python :: 3.10",
         "Programming Language :: Python :: 3.11",

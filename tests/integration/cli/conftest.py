@@ -2,7 +2,7 @@ from contextlib import contextmanager
 from importlib import import_module
 from pathlib import Path
 from shutil import copytree
-from typing import Dict, List, Optional
+from typing import Optional
 
 import pytest
 
@@ -93,7 +93,7 @@ def project_dir_map(project_folder):
     """
 
     class ProjectDirCache:
-        project_map: Dict[str, Path] = {}
+        project_map: dict[str, Path] = {}
 
         def load(self, name: str) -> Path:
             if name in self.project_map:
@@ -198,7 +198,7 @@ def ape_plugins_runner():
         def __init__(self):
             super().__init__(["plugins"])
 
-        def invoke_list(self, arguments: Optional[List] = None):
+        def invoke_list(self, arguments: Optional[list] = None):
             arguments = arguments or []
             result = self.invoke(["list", *arguments])
             assert result.exit_code == 0, result.output

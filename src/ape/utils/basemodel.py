@@ -1,19 +1,8 @@
 import inspect
 from abc import ABC
+from collections.abc import Callable, Iterator, Sequence
 from sys import getrecursionlimit
-from typing import (
-    TYPE_CHECKING,
-    Any,
-    Callable,
-    ClassVar,
-    Dict,
-    Iterator,
-    List,
-    Optional,
-    Sequence,
-    Union,
-    cast,
-)
+from typing import TYPE_CHECKING, Any, ClassVar, Optional, Union, cast
 
 from ethpm_types import BaseModel as EthpmTypesBaseModel
 from pydantic import BaseModel as RootBaseModel
@@ -53,8 +42,8 @@ class _RecursionChecker:
 
     def __init__(self):
         self.THRESHOLD: int = getrecursionlimit()
-        self.getattr_checking: Dict[str, int] = {}
-        self.getattr_errors: Dict[str, Exception] = {}
+        self.getattr_checking: dict[str, int] = {}
+        self.getattr_errors: dict[str, Exception] = {}
 
     @log_instead_of_fail(default="<_RecursionChecker>")
     def __repr__(self) -> str:
@@ -312,7 +301,7 @@ class BaseModel(EthpmTypesBaseModel):
     def model_copy(
         self: "Model",
         *,
-        update: Optional[Dict[str, Any]] = None,
+        update: Optional[dict[str, Any]] = None,
         deep: bool = False,
         cache_clear: Optional[Sequence[str]] = None,
     ) -> "Model":
@@ -498,7 +487,7 @@ class BaseInterfaceModel(BaseInterface, BaseModel):
 
     model_config = ConfigDict(arbitrary_types_allowed=True)
 
-    def __dir__(self) -> List[str]:
+    def __dir__(self) -> list[str]:
         """
         **NOTE**: Should integrate options in IPython tab-completion.
         https://ipython.readthedocs.io/en/stable/config/integrating.html

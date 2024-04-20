@@ -1,4 +1,5 @@
-from typing import Iterator, Optional, Union
+from collections.abc import Iterator
+from typing import Optional, Union
 
 from eth_account import Account
 from eth_account.messages import SignableMessage

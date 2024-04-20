@@ -1,7 +1,6 @@
 import re
 import tempfile
 from pathlib import Path
-from typing import List
 
 import pytest
 
@@ -113,7 +112,7 @@ def test_local_transaction_traces(geth_receipt, captrace, local_trace):
     run_test()
 
 
-def assert_rich_output(rich_capture: List[str], expected: str):
+def assert_rich_output(rich_capture: list[str], expected: str):
     expected_lines = [x.rstrip() for x in expected.splitlines() if x.rstrip()]
     actual_lines = [x.rstrip() for x in rich_capture if x.rstrip()]
     assert actual_lines, "No output."

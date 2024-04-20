@@ -1,5 +1,5 @@
 import inspect
-from typing import Any, List, Optional
+from typing import Any, Optional
 
 import click
 from click import Context
@@ -62,7 +62,7 @@ class ConnectedProviderCommand(click.Command):
         self._network_callback = kwargs.pop("network_callback", None)
         super().__init__(*args, **kwargs)
 
-    def parse_args(self, ctx: Context, args: List[str]) -> List[str]:
+    def parse_args(self, ctx: Context, args: list[str]) -> list[str]:
         base_type = ProviderAPI if self._use_cls_types else str
         if existing_option := next(
             iter(

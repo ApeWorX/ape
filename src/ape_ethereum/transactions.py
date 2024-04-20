@@ -1,7 +1,7 @@
 import sys
 from enum import Enum, IntEnum
 from functools import cached_property
-from typing import IO, Any, Dict, List, Optional, Tuple, Union
+from typing import IO, Any, Optional, Union
 
 from eth_abi import decode
 from eth_account import Account as EthAccount
@@ -53,7 +53,7 @@ class TransactionType(Enum):
 
 class AccessList(BaseModel):
     address: AddressType
-    storage_keys: List[HexBytes] = Field(default_factory=list, alias="storageKeys")
+    storage_keys: list[HexBytes] = Field(default_factory=list, alias="storageKeys")
 
 
 class BaseTransaction(TransactionAPI):
@@ -122,7 +122,7 @@ class StaticFeeTransaction(BaseTransaction):
 
     @model_validator(mode="before")
     @classmethod
-    def calculate_read_only_max_fee(cls, values) -> Dict:
+    def calculate_read_only_max_fee(cls, values) -> dict:
         # NOTE: Work-around, Pydantic doesn't handle calculated fields well.
         values["max_fee"] = cls.conversion_manager.convert(
             values.get("gas_limit", 0), int
@@ -138,7 +138,7 @@ class AccessListTransaction(StaticFeeTransaction):
 
     gas_price: Optional[int] = Field(None, alias="gasPrice")
     type: int = Field(TransactionType.ACCESS_LIST.value)
-    access_list: List[AccessList] = Field(default_factory=list, alias="accessList")
+    access_list: list[AccessList] = Field(default_factory=list, alias="accessList")
 
     @field_validator("type")
     @classmethod
@@ -155,7 +155,7 @@ class DynamicFeeTransaction(BaseTransaction):
     max_priority_fee: Optional[int] = Field(None, alias="maxPriorityFeePerGas")  # type: ignore
     max_fee: Optional[int] = Field(None, alias="maxFeePerGas")  # type: ignore
     type: int = Field(TransactionType.DYNAMIC.value)
-    access_list: List[AccessList] = Field(default_factory=list, alias="accessList")
+    access_list: list[AccessList] = Field(default_factory=list, alias="accessList")
 
     @field_validator("type")
     @classmethod
@@ -169,7 +169,7 @@ class SharedBlobTransaction(DynamicFeeTransaction):
     """
 
     max_fee_per_blob_gas: int = Field(0, alias="maxFeePerBlobGas")
-    blob_versioned_hashes: List[HexBytes] = Field([], alias="blobVersionedHashes")
+    blob_versioned_hashes: list[HexBytes] = Field([], alias="blobVersionedHashes")
 
     """
     Overridden because EIP-4844 states it cannot be nil.
@@ -205,7 +205,7 @@ class Receipt(ReceiptAPI):
         return self.status != TransactionStatusEnum.NO_ERROR
 
     @cached_property
-    def debug_logs_typed(self) -> List[Tuple[Any]]:
+    def debug_logs_typed(self) -> list[tuple[Any]]:
         """
         Extract messages to console outputted by contracts via print() or console.log() statements
         """
@@ -275,7 +275,7 @@ class Receipt(ReceiptAPI):
     def decode_logs(
         self,
         abi: Optional[
-            Union[List[Union[EventABI, "ContractEvent"]], Union[EventABI, "ContractEvent"]]
+            Union[list[Union[EventABI, "ContractEvent"]], Union[EventABI, "ContractEvent"]]
         ] = None,
     ) -> ContractLogContainer:
         if not self.logs:
@@ -286,7 +286,7 @@ class Receipt(ReceiptAPI):
             if not isinstance(abi, (list, tuple)):
                 abi = [abi]
 
-            event_abis: List[EventABI] = [a.abi if not isinstance(a, EventABI) else a for a in abi]
+            event_abis: list[EventABI] = [a.abi if not isinstance(a, EventABI) else a for a in abi]
             return ContractLogContainer(
                 self.provider.network.ecosystem.decode_logs(self.logs, *event_abis)
             )
@@ -302,7 +302,7 @@ class Receipt(ReceiptAPI):
             }
 
             def get_default_log(
-                _log: Dict, logs: ContractLogContainer, evt_name: Optional[str] = None
+                _log: dict, logs: ContractLogContainer, evt_name: Optional[str] = None
             ) -> ContractLog:
                 log_index = _log.get("logIndex", logs[-1].log_index + 1 if logs else 0)
 
@@ -360,7 +360,7 @@ class Receipt(ReceiptAPI):
 
             return decoded_logs
 
-    def _decode_ds_note(self, log: Dict) -> Optional[ContractLog]:
+    def _decode_ds_note(self, log: dict) -> Optional[ContractLog]:
         # The first topic encodes the function selector
         selector, tail = log["topics"][0][:4], log["topics"][0][4:]
         if sum(tail):
