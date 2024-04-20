@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Sequence, Set, Union
+from typing import Any, Optional, Sequence, Union
 
 from ethpm_types import ContractType
 from ethpm_types.source import Content
@@ -27,7 +27,7 @@ class CompilerManager(BaseManager):
         from ape import compilers  # "compilers" is the CompilerManager singleton
     """
 
-    _registered_compilers_cache: Dict[Path, Dict[str, CompilerAPI]] = {}
+    _registered_compilers_cache: dict[Path, dict[str, CompilerAPI]] = {}
 
     @log_instead_of_fail(default="<CompilerManager>")
     def __repr__(self) -> str:
@@ -49,13 +49,13 @@ class CompilerManager(BaseManager):
         raise ApeAttributeError(f"No attribute or compiler named '{name}'.")
 
     @property
-    def registered_compilers(self) -> Dict[str, CompilerAPI]:
+    def registered_compilers(self) -> dict[str, CompilerAPI]:
         """
         Each compile-able file extension mapped to its respective
         :class:`~ape.api.compiler.CompilerAPI` instance.
 
         Returns:
-            Dict[str, :class:`~ape.api.compiler.CompilerAPI`]: The mapping of file-extensions
+            dict[str, :class:`~ape.api.compiler.CompilerAPI`]: The mapping of file-extensions
             to compiler API classes.
         """
 
@@ -79,7 +79,7 @@ class CompilerManager(BaseManager):
         self._registered_compilers_cache[cache_key] = registered_compilers
         return registered_compilers
 
-    def get_compiler(self, name: str, settings: Optional[Dict] = None) -> Optional[CompilerAPI]:
+    def get_compiler(self, name: str, settings: Optional[dict] = None) -> Optional[CompilerAPI]:
         for compiler in self.registered_compilers.values():
             if compiler.name != name:
                 continue
@@ -93,8 +93,8 @@ class CompilerManager(BaseManager):
         return None
 
     def compile(
-        self, contract_filepaths: Sequence[Union[Path, str]], settings: Optional[Dict] = None
-    ) -> Dict[str, ContractType]:
+        self, contract_filepaths: Sequence[Union[Path, str]], settings: Optional[dict] = None
+    ) -> dict[str, ContractType]:
         """
         Invoke :meth:`ape.ape.compiler.CompilerAPI.compile` for each of the given files.
         For example, use the `ape-solidity plugin <https://github.com/ApeWorX/ape-solidity>`__
@@ -107,21 +107,21 @@ class CompilerManager(BaseManager):
         Args:
             contract_filepaths (Sequence[Union[pathlib.Path], str]): The files to compile,
               as ``pathlib.Path`` objects or path-strs.
-            settings (Optional[Dict]): Adhoc compiler settings. Defaults to None.
+            settings (Optional[dict]): Adhoc compiler settings. Defaults to None.
               Ensure the compiler name key is present in the dict for it to work.
 
         Returns:
-            Dict[str, ``ContractType``]: A mapping of contract names to their type.
+            dict[str, ``ContractType``]: A mapping of contract names to their type.
         """
         contract_file_paths = [Path(p) if isinstance(p, str) else p for p in contract_filepaths]
         extensions = self._get_contract_extensions(contract_file_paths)
         contracts_folder = self.config_manager.contracts_folder
-        contract_types_dict: Dict[str, ContractType] = {}
+        contract_types_dict: dict[str, ContractType] = {}
         cached_manifest = self.project_manager.local_project.cached_manifest
 
         # Load past compiled contracts for verifying type-collision and other things.
-        already_compiled_contracts: Dict[str, ContractType] = {}
-        already_compiled_paths: List[Path] = []
+        already_compiled_contracts: dict[str, ContractType] = {}
+        already_compiled_paths: list[Path] = []
         for name, ct in ((cached_manifest.contract_types or {}) if cached_manifest else {}).items():
             if not ct.source_id:
                 continue
@@ -205,7 +205,7 @@ class CompilerManager(BaseManager):
         self,
         compiler_name: str,
         code: str,
-        settings: Optional[Dict] = None,
+        settings: Optional[dict] = None,
         **kwargs,
     ) -> ContractContainer:
         """
@@ -223,7 +223,7 @@ class CompilerManager(BaseManager):
         Args:
             compiler_name (str): The name of the compiler to use.
             code (str): The source code to compile.
-            settings (Optional[Dict]): Compiler settings.
+            settings (Optional[dict]): Compiler settings.
             **kwargs (Any): Additional overrides for the ``ethpm_types.ContractType`` model.
 
         Returns:
@@ -242,7 +242,7 @@ class CompilerManager(BaseManager):
 
     def get_imports(
         self, contract_filepaths: Sequence[Path], base_path: Optional[Path] = None
-    ) -> Dict[str, List[str]]:
+    ) -> dict[str, list[str]]:
         """
         Combine import dicts from all compilers, where the key is a contract's source_id
         and the value is a list of import source_ids.
@@ -254,9 +254,9 @@ class CompilerManager(BaseManager):
               via ``ape compile``, gets set to the project's ``contracts/`` directory.
 
         Returns:
-            Dict[str, List[str]]: A dictionary like ``{source_id: [import_source_id, ...], ...}``
+            dict[str, list[str]]: A dictionary like ``{source_id: [import_source_id, ...], ...}``
         """
-        imports_dict: Dict[str, List[str]] = {}
+        imports_dict: dict[str, list[str]] = {}
         base_path = base_path or self.project_manager.contracts_folder
 
         for ext, compiler in self.registered_compilers.items():
@@ -273,19 +273,19 @@ class CompilerManager(BaseManager):
 
         return imports_dict
 
-    def get_references(self, imports_dict: Dict[str, List[str]]) -> Dict[str, List[str]]:
+    def get_references(self, imports_dict: dict[str, list[str]]) -> dict[str, list[str]]:
         """
         Provide a mapping containing all referenced source_ids for a given project.
         Each entry contains a source_id as a key and list of source_ids that reference a
         given contract.
 
         Args:
-            imports_dict (Dict[str, List[str]]): A dictionary of source_ids from all compilers.
+            imports_dict (dict[str, list[str]]): A dictionary of source_ids from all compilers.
 
         Returns:
-            Dict[str, List[str]]: A dictionary like ``{source_id: [referring_source_id, ...], ...}``
+            dict[str, list[str]]: A dictionary like ``{source_id: [referring_source_id, ...], ...}``
         """
-        references_dict: Dict[str, List[str]] = {}
+        references_dict: dict[str, list[str]] = {}
         if not imports_dict:
             return {}
 
@@ -297,7 +297,7 @@ class CompilerManager(BaseManager):
 
         return references_dict
 
-    def _get_contract_extensions(self, contract_filepaths: List[Path]) -> Set[str]:
+    def _get_contract_extensions(self, contract_filepaths: list[Path]) -> set[str]:
         extensions = {get_full_extension(path) for path in contract_filepaths}
         unhandled_extensions = {s for s in extensions - set(self.registered_compilers) if s}
         if len(unhandled_extensions) > 0:

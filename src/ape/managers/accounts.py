@@ -1,5 +1,5 @@
 import contextlib
-from typing import ContextManager, Dict, Generator, Iterator, List, Optional, Type, Union
+from typing import ContextManager, Generator, Iterator, Optional, Union
 
 from eth_utils import is_hex
 
@@ -15,7 +15,7 @@ from ape.managers.base import BaseManager
 from ape.types import AddressType
 from ape.utils import ManagerAccessMixin, cached_property, log_instead_of_fail, singledispatchmethod
 
-_DEFAULT_SENDERS: List[AccountAPI] = []
+_DEFAULT_SENDERS: list[AccountAPI] = []
 
 
 @contextlib.contextmanager
@@ -32,7 +32,7 @@ def _use_sender(
 class TestAccountManager(list, ManagerAccessMixin):
     __test__ = False
 
-    _impersonated_accounts: Dict[AddressType, ImpersonatedAccount] = {}
+    _impersonated_accounts: dict[AddressType, ImpersonatedAccount] = {}
 
     @log_instead_of_fail(default="<TestAccountManager>")
     def __repr__(self) -> str:
@@ -40,7 +40,7 @@ class TestAccountManager(list, ManagerAccessMixin):
         return f"[{accounts_str}]"
 
     @cached_property
-    def containers(self) -> Dict[str, TestAccountContainerAPI]:
+    def containers(self) -> dict[str, TestAccountContainerAPI]:
         containers = {}
         account_types = [
             t for t in self.plugin_manager.account_types if issubclass(t[1][1], TestAccountAPI)
@@ -157,7 +157,7 @@ class AccountManager(BaseManager):
         return _DEFAULT_SENDERS[-1] if _DEFAULT_SENDERS else None
 
     @cached_property
-    def containers(self) -> Dict[str, AccountContainerAPI]:
+    def containers(self) -> dict[str, AccountContainerAPI]:
         """
         A dict of all :class:`~ape.api.accounts.AccountContainerAPI` instances
         across all installed plugins.
@@ -197,16 +197,16 @@ class AccountManager(BaseManager):
         for container in self.containers.values():
             yield from container.aliases
 
-    def get_accounts_by_type(self, type_: Type[AccountAPI]) -> List[AccountAPI]:
+    def get_accounts_by_type(self, type_: type[AccountAPI]) -> list[AccountAPI]:
         """
         Get a list of accounts by their type.
 
         Args:
-            type_ (Type[:class:`~ape.api.accounts.AccountAPI`]): The type of account
+            type_ (type[:class:`~ape.api.accounts.AccountAPI`]): The type of account
               to get.
 
         Returns:
-            List[:class:`~ape.api.accounts.AccountAPI`]
+            list[:class:`~ape.api.accounts.AccountAPI`]
         """
 
         return [acc for acc in self if isinstance(acc, type_)]
@@ -311,7 +311,7 @@ class AccountManager(BaseManager):
         :meth:`~ape.managers.accounts.AccountManager.__getitem_str`.
 
         Returns:
-            List[:class:`~ape.api.accounts.AccountAPI`]
+            list[:class:`~ape.api.accounts.AccountAPI`]
         """
 
         start_idx = account_id.start or 0

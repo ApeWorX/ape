@@ -1,7 +1,7 @@
 import re
 from datetime import datetime, timedelta, timezone
 from decimal import Decimal
-from typing import Any, Dict, List, Sequence, Tuple, Type, Union
+from typing import Any, Sequence, Type, Union
 
 from dateutil.parser import parse
 from eth_pydantic_types import HexBytes
@@ -222,8 +222,8 @@ class ConversionManager(BaseManager):
         return f"<{ConversionManager.__name__}>"
 
     @cached_property
-    def _converters(self) -> Dict[Type, List[ConverterAPI]]:
-        converters: Dict[Type, List[ConverterAPI]] = {
+    def _converters(self) -> dict[Type, list[ConverterAPI]]:
+        converters: dict[Type, list[ConverterAPI]] = {
             AddressType: [
                 AddressAPIConverter(),
                 BytesAddressConverter(),
@@ -272,7 +272,7 @@ class ConversionManager(BaseManager):
 
         return is_checksum_address(value) if type is AddressType else isinstance(value, type)
 
-    def convert(self, value: Any, type: Union[Type, Tuple, List]) -> Any:
+    def convert(self, value: Any, type: Union[Type, tuple, list]) -> Any:
         """
         Convert the given value to the given type. This method accesses
         all :class:`~ape.api.convert.ConverterAPI` instances known to
@@ -357,7 +357,7 @@ class ConversionManager(BaseManager):
 
         return converted_arguments
 
-    def convert_method_kwargs(self, kwargs) -> Dict:
+    def convert_method_kwargs(self, kwargs) -> dict:
         fields = TransactionAPI.model_fields
 
         def get_real_type(type_):

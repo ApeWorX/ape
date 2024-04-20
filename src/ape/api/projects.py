@@ -2,7 +2,7 @@ import os.path
 import re
 import tempfile
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Dict, Iterator, List, Optional, Sequence, Union
+from typing import TYPE_CHECKING, Any, Iterator, Optional, Sequence, Union
 
 from ethpm_types import Checksum, Compiler, ContractType, PackageManifest, Source
 from ethpm_types.source import Content
@@ -48,7 +48,7 @@ class ProjectAPI(BaseInterfaceModel):
 
     _cached_manifest: Optional[PackageManifest] = None
 
-    _contracts: Optional[Dict[str, ContractType]] = None
+    _contracts: Optional[dict[str, ContractType]] = None
 
     @log_instead_of_fail(default="<ProjectAPI>")
     def __repr__(self) -> str:
@@ -115,7 +115,7 @@ class ProjectAPI(BaseInterfaceModel):
             manifest.contract_types = {}
 
         else:
-            contracts: Dict[str, ContractType] = {}
+            contracts: dict[str, ContractType] = {}
 
             # Exclude contracts with missing sources, else you'll get validation errors.
             # This scenario happens if changing branches and you have some contracts on
@@ -129,7 +129,7 @@ class ProjectAPI(BaseInterfaceModel):
         return manifest
 
     @property
-    def contracts(self) -> Dict[str, ContractType]:
+    def contracts(self) -> dict[str, ContractType]:
         if contracts := self._contracts:
             return contracts
 
@@ -186,15 +186,15 @@ class ProjectAPI(BaseInterfaceModel):
 
         return False
 
-    def add_compiler_data(self, compiler_data: Sequence[Compiler]) -> List[Compiler]:
+    def add_compiler_data(self, compiler_data: Sequence[Compiler]) -> list[Compiler]:
         """
         Add compiler data to the existing cached manifest.
 
         Args:
-            compiler_data (List[``ethpm_types.Compiler``]): Compilers to add.
+            compiler_data (list[``ethpm_types.Compiler``]): Compilers to add.
 
         Returns:
-            List[``ethpm_types.source.Compiler``]: The full list of compilers.
+            list[``ethpm_types.source.Compiler``]: The full list of compilers.
         """
         # Validate given data.
         given_compilers = set(compiler_data)
@@ -231,7 +231,7 @@ class ProjectAPI(BaseInterfaceModel):
         existing_compilers = self.manifest.compilers or []
 
         # Existing compilers remaining after processing new compilers.
-        remaining_existing_compilers: List[Compiler] = []
+        remaining_existing_compilers: list[Compiler] = []
 
         for existing_compiler in existing_compilers:
             find_iter = iter(x for x in compiler_data if x == existing_compiler)
@@ -273,15 +273,15 @@ class ProjectAPI(BaseInterfaceModel):
 
     def update_manifest_sources(
         self,
-        source_paths: List[Path],
+        source_paths: list[Path],
         contracts_path: Path,
-        contract_types: Dict[str, ContractType],
+        contract_types: dict[str, ContractType],
         name: Optional[str] = None,
         version: Optional[str] = None,
-        compiler_data: Optional[List[Compiler]] = None,
+        compiler_data: Optional[list[Compiler]] = None,
         **kwargs: Any,
     ) -> PackageManifest:
-        items: Dict = {
+        items: dict = {
             "contract_types": contract_types,
             "sources": self._create_source_dict(source_paths, contracts_path),
             "compilers": compiler_data or [],
@@ -295,19 +295,19 @@ class ProjectAPI(BaseInterfaceModel):
 
     @classmethod
     def _create_source_dict(
-        cls, contract_filepaths: Union[Path, List[Path]], base_path: Path
-    ) -> Dict[str, Source]:
+        cls, contract_filepaths: Union[Path, list[Path]], base_path: Path
+    ) -> dict[str, Source]:
         filepaths = (
             [contract_filepaths] if isinstance(contract_filepaths, Path) else contract_filepaths
         )
-        source_imports: Dict[str, List[str]] = cls.compiler_manager.get_imports(
+        source_imports: dict[str, list[str]] = cls.compiler_manager.get_imports(
             filepaths, base_path
         )  # {source_id: [import_source_ids, ...], ...}
-        source_references: Dict[str, List[str]] = cls.compiler_manager.get_references(
+        source_references: dict[str, list[str]] = cls.compiler_manager.get_references(
             imports_dict=source_imports
         )  # {source_id: [referring_source_ids, ...], ...}
 
-        source_dict: Dict[str, Source] = {}
+        source_dict: dict[str, Source] = {}
         for source_path in filepaths:
             key = str(get_relative_path(source_path, base_path))
 
@@ -351,12 +351,12 @@ class DependencyAPI(ExtraAttributesMixin, BaseInterfaceModel):
     **NOTE**: This must be the name of a directory in the project.
     """
 
-    exclude: List[str] = ["package.json", "package-lock.json", "**/.build/**/*.json"]
+    exclude: list[str] = ["package.json", "package-lock.json", "**/.build/**/*.json"]
     """
     A list of glob-patterns for excluding files in dependency projects.
     """
 
-    config_override: Dict = {}
+    config_override: dict = {}
     """
     Extra settings to include in the dependency's configuration.
     """
@@ -440,7 +440,7 @@ class DependencyAPI(ExtraAttributesMixin, BaseInterfaceModel):
         return self._cached_manifest
 
     @cached_property
-    def contracts(self) -> Dict[str, "ContractContainer"]:
+    def contracts(self) -> dict[str, "ContractContainer"]:
         """
         A mapping of name to contract type of all the contracts
         in this dependency.
@@ -473,7 +473,7 @@ class DependencyAPI(ExtraAttributesMixin, BaseInterfaceModel):
         # Figure the config data needed to compile this dependency.
         # Use a combination of looking at the manifest's other artifacts
         # as well, config overrides, and the base project's config.
-        config_data: Dict[str, Any] = {
+        config_data: dict[str, Any] = {
             **_get_compile_configs_from_manifest(manifest),
             **_get_dependency_configs_from_manifest(manifest),
             **self.config_override,
@@ -549,7 +549,7 @@ class DependencyAPI(ExtraAttributesMixin, BaseInterfaceModel):
             if sources := self._get_sources(project):
                 dependencies = self.project_manager._extract_manifest_dependencies()
 
-                extras: Dict = {}
+                extras: dict = {}
                 if dependencies:
                     extras["dependencies"] = dependencies
 
@@ -574,7 +574,7 @@ class DependencyAPI(ExtraAttributesMixin, BaseInterfaceModel):
         self.replace_manifest(project.manifest)
         return project.manifest
 
-    def _get_sources(self, project: ProjectAPI) -> List[Path]:
+    def _get_sources(self, project: ProjectAPI) -> list[Path]:
         escaped_extensions = [re.escape(ext) for ext in self.compiler_manager.registered_compilers]
         extension_pattern = "|".join(escaped_extensions)
         pattern = rf".*({extension_pattern})"
@@ -606,8 +606,8 @@ def _load_manifest_from_file(file_path: Path) -> Optional[PackageManifest]:
         return None
 
 
-def _get_compile_configs_from_manifest(manifest: PackageManifest) -> Dict[str, Dict]:
-    configs: Dict[str, Dict] = {}
+def _get_compile_configs_from_manifest(manifest: PackageManifest) -> dict[str, dict]:
+    configs: dict[str, dict] = {}
     for compiler in [x for x in manifest.compilers or [] if x.settings]:
         name = compiler.name.strip().lower()
         compiler_data = {}
@@ -635,8 +635,8 @@ def _get_compile_configs_from_manifest(manifest: PackageManifest) -> Dict[str, D
     return configs
 
 
-def _get_dependency_configs_from_manifest(manifest: PackageManifest) -> Dict:
-    dependencies_config: List[Dict] = []
+def _get_dependency_configs_from_manifest(manifest: PackageManifest) -> dict:
+    dependencies_config: list[dict] = []
     dependencies = manifest.dependencies or {}
     for package_name, uri in dependencies.items():
         if "://" not in str(uri) and hasattr(uri, "scheme"):
@@ -644,7 +644,7 @@ def _get_dependency_configs_from_manifest(manifest: PackageManifest) -> Dict:
         else:
             uri_str = str(uri)
 
-        dependency: Dict = {"name": str(package_name)}
+        dependency: dict = {"name": str(package_name)}
         if uri_str.startswith("https://"):
             # Assume GitHub dependency
             version = uri_str.split("/")[-1]

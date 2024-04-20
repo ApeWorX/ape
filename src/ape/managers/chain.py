@@ -4,7 +4,7 @@ from contextlib import contextmanager
 from functools import partial
 from pathlib import Path
 from statistics import mean, median
-from typing import IO, Collection, Dict, Iterator, List, Optional, Set, Type, Union, cast
+from typing import IO, Collection, Iterator, Optional, Union, cast
 
 import pandas as pd
 from ethpm_types import ABI, ContractType
@@ -175,7 +175,7 @@ class BlockContainer(BaseManager):
         )
 
         blocks = self.query_manager.query(query, engine_to_use=engine_to_use)
-        columns: List[str] = validate_and_expand_columns(  # type: ignore
+        columns: list[str] = validate_and_expand_columns(  # type: ignore
             columns, self.head.__class__
         )
         extraction = partial(extract_fields, columns=columns)
@@ -317,7 +317,7 @@ class AccountHistory(BaseInterfaceModel):
     The address to get history for.
     """
 
-    sessional: List[ReceiptAPI] = []
+    sessional: list[ReceiptAPI] = []
     """
     The receipts from the current Python session.
     """
@@ -442,7 +442,7 @@ class AccountHistory(BaseInterfaceModel):
             raise IndexError(f"index {index} out of range") from e
 
     @__getitem__.register
-    def __getitem_slice(self, indices: slice) -> List[ReceiptAPI]:
+    def __getitem_slice(self, indices: slice) -> list[ReceiptAPI]:
         start, stop, step = (
             indices.start or 0,
             indices.stop or len(self),
@@ -464,7 +464,7 @@ class AccountHistory(BaseInterfaceModel):
             return []  # nothing to query
 
         return cast(
-            List[ReceiptAPI],
+            list[ReceiptAPI],
             list(
                 self.query_manager.query(
                     AccountTransactionQuery(
@@ -505,8 +505,8 @@ class TransactionHistory(BaseManager):
     A container mapping Transaction History to the transaction from the active session.
     """
 
-    _account_history_cache: Dict[AddressType, AccountHistory] = {}
-    _hash_to_receipt_map: Dict[str, ReceiptAPI] = {}
+    _account_history_cache: dict[AddressType, AccountHistory] = {}
+    _hash_to_receipt_map: dict[str, ReceiptAPI] = {}
 
     @singledispatchmethod
     def __getitem__(self, key):
@@ -619,14 +619,14 @@ class ContractCache(BaseManager):
     it will be cached to disk for faster look-up next time.
     """
 
-    _local_contract_types: Dict[AddressType, ContractType] = {}
-    _local_proxies: Dict[AddressType, ProxyInfoAPI] = {}
-    _local_blueprints: Dict[str, ContractType] = {}
-    _local_deployments_mapping: Dict[str, Dict] = {}
+    _local_contract_types: dict[AddressType, ContractType] = {}
+    _local_proxies: dict[AddressType, ProxyInfoAPI] = {}
+    _local_blueprints: dict[str, ContractType] = {}
+    _local_deployments_mapping: dict[str, dict] = {}
 
     # chain_id -> address -> custom_err
     # Cached to prevent calling `new_class` multiple times with conflicts.
-    _custom_error_types: Dict[int, Dict[AddressType, Set[Type[CustomError]]]] = {}
+    _custom_error_types: dict[int, dict[AddressType, set[type[CustomError]]]] = {}
 
     @property
     def _network(self) -> NetworkAPI:
@@ -668,7 +668,7 @@ class ContractCache(BaseManager):
         return self._network_cache / "blueprints"
 
     @property
-    def _full_deployments(self) -> Dict:
+    def _full_deployments(self) -> dict:
         deployments = self._local_deployments_mapping
         if self._is_live_network:
             deployments = {**deployments, **self._load_deployments_cache()}
@@ -676,7 +676,7 @@ class ContractCache(BaseManager):
         return deployments
 
     @property
-    def _deployments(self) -> Dict:
+    def _deployments(self) -> dict:
         if not self.network_manager.active_provider:
             return {}
 
@@ -858,7 +858,7 @@ class ContractCache(BaseManager):
 
     def _get_errors(
         self, address: AddressType, chain_id: Optional[int] = None
-    ) -> Set[Type[CustomError]]:
+    ) -> set[type[CustomError]]:
         if chain_id is None and self.network_manager.active_provider is not None:
             chain_id = self.provider.chain_id
         elif chain_id is None:
@@ -874,7 +874,7 @@ class ContractCache(BaseManager):
         return set()
 
     def _cache_error(
-        self, address: AddressType, error: Type[CustomError], chain_id: Optional[int] = None
+        self, address: AddressType, error: type[CustomError], chain_id: Optional[int] = None
     ):
         if chain_id is None and self.network_manager.active_provider is not None:
             chain_id = self.provider.chain_id
@@ -919,17 +919,17 @@ class ContractCache(BaseManager):
 
     def get_multiple(
         self, addresses: Collection[AddressType], concurrency: Optional[int] = None
-    ) -> Dict[AddressType, ContractType]:
+    ) -> dict[AddressType, ContractType]:
         """
         Get contract types for all given addresses.
 
         Args:
-            addresses (List[AddressType): A list of addresses to get contract types for.
+            addresses (list[AddressType): A list of addresses to get contract types for.
             concurrency (Optional[int]): The number of threads to use. Defaults to
               ``min(4, len(addresses))``.
 
         Returns:
-            Dict[AddressType, ContractType]: A mapping of addresses to their respective
+            dict[AddressType, ContractType]: A mapping of addresses to their respective
             contract types.
         """
         if not addresses:
@@ -946,7 +946,7 @@ class ContractCache(BaseManager):
             else:
                 return addr, ct
 
-        converted_addresses: List[AddressType] = []
+        converted_addresses: list[AddressType] = []
         for address in converted_addresses:
             if not self.conversion_manager.is_type(address, AddressType):
                 converted_address = self.conversion_manager.convert(address, AddressType)
@@ -1080,7 +1080,7 @@ class ContractCache(BaseManager):
         address: Union[str, AddressType],
         contract_type: Optional[ContractType] = None,
         txn_hash: Optional[str] = None,
-        abi: Optional[Union[List[ABI], Dict, str, Path]] = None,
+        abi: Optional[Union[list[ABI], dict, str, Path]] = None,
     ) -> ContractInstance:
         """
         Get a contract at the given address. If the contract type of the contract is known,
@@ -1100,7 +1100,7 @@ class ContractCache(BaseManager):
               in case it is not already known.
             txn_hash (Optional[str]): The hash of the transaction responsible for deploying the
               contract, if known. Useful for publishing. Defaults to ``None``.
-            abi (Optional[Union[List[ABI], Dict, str, Path]]): Use an ABI str, dict, path,
+            abi (Optional[Union[list[ABI], dict, str, Path]]): Use an ABI str, dict, path,
               or ethpm models to create a contract instance class.
 
         Returns:
@@ -1161,7 +1161,7 @@ class ContractCache(BaseManager):
 
             else:
                 raise TypeError(
-                    f"Invalid ABI type '{type(abi)}', expecting str, List[ABI] or a JSON file."
+                    f"Invalid ABI type '{type(abi)}', expecting str, list[ABI] or a JSON file."
                 )
 
         if not contract_type:
@@ -1201,7 +1201,7 @@ class ContractCache(BaseManager):
         # NOTE: Mostly just needed this method to avoid a local import.
         return ContractInstance.from_receipt(receipt, contract_type)
 
-    def get_deployments(self, contract_container: ContractContainer) -> List[ContractInstance]:
+    def get_deployments(self, contract_container: ContractContainer) -> list[ContractInstance]:
         """
         Retrieves previous deployments of a contract container or contract type.
         Locally deployed contracts are saved for the duration of the script and read from
@@ -1213,7 +1213,7 @@ class ContractCache(BaseManager):
               ``ContractContainer`` with deployments.
 
         Returns:
-            List[:class:`~ape.contracts.ContractInstance`]: Returns a list of contracts that
+            list[:class:`~ape.contracts.ContractInstance`]: Returns a list of contracts that
             have been deployed.
         """
 
@@ -1239,7 +1239,7 @@ class ContractCache(BaseManager):
         if not deployments:
             return []
 
-        instances: List[ContractInstance] = []
+        instances: list[ContractInstance] = []
         for deployment in deployments:
             address = deployment["address"]
             txn_hash = deployment.get("transaction_hash")
@@ -1309,14 +1309,14 @@ class ContractCache(BaseManager):
         blueprint_file = self._blueprint_cache / f"{blueprint_id}.json"
         blueprint_file.write_text(contract_type.model_dump_json())
 
-    def _load_deployments_cache(self) -> Dict:
+    def _load_deployments_cache(self) -> dict:
         return (
             json.loads(self._deployments_mapping_cache.read_text())
             if self._deployments_mapping_cache.is_file()
             else {}
         )
 
-    def _write_deployments_mapping(self, deployments_map: Dict):
+    def _write_deployments_mapping(self, deployments_map: dict):
         self._deployments_mapping_cache.parent.mkdir(exist_ok=True, parents=True)
         with self._deployments_mapping_cache.open("w") as fp:
             json.dump(deployments_map, fp, sort_keys=True, indent=2, default=sorted)
@@ -1365,10 +1365,10 @@ class ReportManager(BaseManager):
     **NOTE**: This class is not part of the public API.
     """
 
-    rich_console_map: Dict[str, RichConsole] = {}
+    rich_console_map: dict[str, RichConsole] = {}
 
     def show_gas(self, report: GasReport, file: Optional[IO[str]] = None):
-        tables: List[Table] = []
+        tables: list[Table] = []
 
         for contract_id, method_calls in report.items():
             title = f"{contract_id} Gas"
@@ -1441,10 +1441,10 @@ class ChainManager(BaseManager):
         from ape import chain
     """
 
-    _snapshots: List[SnapshotID] = []
-    _chain_id_map: Dict[str, int] = {}
-    _block_container_map: Dict[int, BlockContainer] = {}
-    _transaction_history_map: Dict[int, TransactionHistory] = {}
+    _snapshots: list[SnapshotID] = []
+    _chain_id_map: dict[str, int] = {}
+    _block_container_map: dict[int, BlockContainer] = {}
+    _transaction_history_map: dict[int, TransactionHistory] = {}
     contracts: ContractCache = ContractCache()
     _reports: ReportManager = ReportManager()
 

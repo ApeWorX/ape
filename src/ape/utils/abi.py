@@ -1,6 +1,6 @@
 import re
 from dataclasses import make_dataclass
-from typing import Any, Dict, List, Optional, Sequence, Tuple, Union
+from typing import Any, Optional, Sequence, Union
 
 from eth_abi import decode, grammar
 from eth_abi.exceptions import DecodingError, InsufficientDataBytes
@@ -63,12 +63,12 @@ class StructParser:
         name = self.abi.name if isinstance(self.abi, MethodABI) else "constructor"
         return f"{name}_return"
 
-    def encode_input(self, values: Union[List, Tuple, Dict]) -> Any:
+    def encode_input(self, values: Union[list, tuple, dict]) -> Any:
         """
         Convert dicts and other objects to struct inputs.
 
         Args:
-            values (Union[List, Tuple]): A list of of input values.
+            values (Union[list, ttuple]): A list of of input values.
 
         Returns:
             Any: The same input values only decoded into structs when applicable.
@@ -76,7 +76,7 @@ class StructParser:
 
         return [self._encode(ipt, v) for ipt, v in zip(self.abi.inputs, values)]
 
-    def decode_input(self, values: Union[Sequence, Dict[str, Any]]) -> Any:
+    def decode_input(self, values: Union[Sequence, dict[str, Any]]) -> Any:
         return (
             self._decode(self.abi.inputs, values)
             if isinstance(self.abi, (EventABI, MethodABI))
@@ -120,14 +120,14 @@ class StructParser:
 
         return value
 
-    def decode_output(self, values: Union[List, Tuple]) -> Any:
+    def decode_output(self, values: Union[list, tuple]) -> Any:
         """
         Parse a list of output types and values into structs.
         Values are only altered when they are a struct.
         This method also handles structs within structs as well as arrays of structs.
 
         Args:
-            values (Union[List, Tuple]): A list of of output values.
+            values (Union[list, tuple]): A list of of output values.
 
         Returns:
             Any: The same input values only decoded into structs when applicable.
@@ -138,7 +138,7 @@ class StructParser:
     def _decode(
         self,
         _types: Union[Sequence[ABIType]],
-        values: Union[Sequence, Dict[str, Any]],
+        values: Union[Sequence, dict[str, Any]],
     ):
         if is_struct(_types):
             return self._create_struct(_types[0], values)
@@ -147,7 +147,7 @@ class StructParser:
             # Handle tuples. NOTE: unnamed output structs appear as tuples with named members
             return create_struct(self.default_name, _types, values)
 
-        return_values: List = []
+        return_values: list = []
         has_array_return = _is_array_return(_types)
         has_array_of_tuples_return = (
             has_array_return and len(_types) == 1 and "tuple" in _types[0].type
@@ -230,7 +230,7 @@ class StructParser:
             components,
         )
 
-    def _parse_components(self, components: List[ABIType], values) -> List:
+    def _parse_components(self, components: list[ABIType], values) -> list:
         parsed_values = []
         for component, value in zip(components, values):
             if is_struct(component):
@@ -272,7 +272,7 @@ class Struct:
     A class for contract return values using the struct data-structure.
     """
 
-    def items(self) -> Dict:
+    def items(self) -> dict:
         """Override"""
         return {}
 
@@ -292,8 +292,8 @@ def create_struct(name: str, types: Sequence[ABIType], output_values: Sequence) 
 
     Args:
         name (str): The name of the struct.
-        types (List[ABIType]: The types of values in the struct.
-        output_values (List[Any]): The struct property values.
+        types (list[ABIType]: The types of values in the struct.
+        output_values (list[Any]): The struct property values.
 
     Returns:
         Any: The struct dataclass.
@@ -356,10 +356,10 @@ def create_struct(name: str, types: Sequence[ABIType], output_values: Sequence) 
     def length(struct) -> int:
         return len(struct.__dataclass_fields__)
 
-    def items(struct) -> List[Tuple]:
+    def items(struct) -> list[tuple]:
         return [(k, struct[k]) for k, v in struct.__dataclass_fields__.items()]
 
-    def values(struct) -> List[Any]:
+    def values(struct) -> list[Any]:
         return [x[1] for x in struct.items()]
 
     def reduce(struct) -> tuple:
@@ -406,7 +406,7 @@ class LogInputABICollection:
     def __init__(self, abi: EventABI):
         self.abi = abi
         self.topic_abi_types = [i for i in abi.inputs if i.indexed]
-        self.data_abi_types: List[EventABIType] = [i for i in abi.inputs if not i.indexed]
+        self.data_abi_types: list[EventABIType] = [i for i in abi.inputs if not i.indexed]
 
         names = [i.name for i in abi.inputs]
         if len(set(names)) < len(names):
@@ -416,7 +416,7 @@ class LogInputABICollection:
     def event_name(self):
         return self.abi.name
 
-    def decode(self, topics: List[str], data: str, use_hex_on_fail: bool = False) -> Dict:
+    def decode(self, topics: list[str], data: str, use_hex_on_fail: bool = False) -> dict:
         decoded = {}
         for abi, topic_value in zip(self.topic_abi_types, topics[1:]):
             # reference types as indexed arguments are written as a hash

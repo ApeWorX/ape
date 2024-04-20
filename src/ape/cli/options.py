@@ -1,6 +1,6 @@
 import inspect
 from functools import partial
-from typing import Callable, Dict, List, NoReturn, Optional, Type, Union
+from typing import Callable, NoReturn, Optional, Type, Union
 
 import click
 from click import Option
@@ -65,7 +65,7 @@ def verbosity_option(
 
 def _create_verbosity_kwargs(
     _logger: Optional[ApeLogger] = None, default: str = DEFAULT_LOG_LEVEL
-) -> Dict:
+) -> dict:
     cli_logger = _logger or logger
 
     def set_level(ctx, param, value):
@@ -170,9 +170,9 @@ class NetworkOption(Option):
 
 def network_option(
     default: Optional[Union[str, Callable]] = "auto",
-    ecosystem: Optional[Union[List[str], str]] = None,
-    network: Optional[Union[List[str], str]] = None,
-    provider: Optional[Union[List[str], str]] = None,
+    ecosystem: Optional[Union[list[str], str]] = None,
+    network: Optional[Union[list[str], str]] = None,
+    provider: Optional[Union[list[str], str]] = None,
     required: bool = False,
     **kwargs,
 ) -> Callable:
@@ -183,11 +183,11 @@ def network_option(
         default (Optional[str]): Optionally, change which network to
           use as the default. Defaults to how ``ape`` normally
           selects a default network unless ``required=True``, then defaults to ``None``.
-        ecosystem (Optional[Union[List[str], str]]): Filter the options by ecosystem.
+        ecosystem (Optional[Union[list[str], str]]): Filter the options by ecosystem.
           Defaults to getting all ecosystems.
-        network (Optional[Union[List[str], str]]): Filter the options by network.
+        network (Optional[Union[list[str], str]]): Filter the options by network.
           Defaults to getting all networks in ecosystems.
-        provider (Optional[Union[List[str], str]]): Filter the options by provider.
+        provider (Optional[Union[list[str], str]]): Filter the options by provider.
           Defaults to getting all providers in networks.
         required (bool): Whether the option is required. Defaults to ``False``.
           When set to ``True``, the default value is ``None``.
@@ -265,7 +265,7 @@ def network_option(
             return value if user_callback is None else user_callback(ctx, param, value)
 
         # Prevent argument errors but initializing callback to use None placeholders.
-        partial_kwargs: Dict = {}
+        partial_kwargs: dict = {}
         for arg_type in network_object_names:
             if arg_type in requested_network_objects:
                 partial_kwargs[arg_type] = None
@@ -349,7 +349,7 @@ def account_option(account_type: _ACCOUNT_TYPE_FILTER = None) -> Callable:
     )
 
 
-def _load_contracts(ctx, param, value) -> Optional[Union[ContractType, List[ContractType]]]:
+def _load_contracts(ctx, param, value) -> Optional[Union[ContractType, list[ContractType]]]:
     if not value:
         return None
 
@@ -401,7 +401,7 @@ def output_format_option(default: OutputFormat = OutputFormat.TREE) -> Callable:
     )
 
 
-def incompatible_with(incompatible_opts) -> Type[click.Option]:
+def incompatible_with(incompatible_opts) -> type[click.Option]:
     """
     Factory for creating custom ``click.Option`` subclasses that
     enforce incompatibility with the option strings passed to this function.

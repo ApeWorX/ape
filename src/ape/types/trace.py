@@ -1,6 +1,6 @@
 from itertools import chain
 from pathlib import Path
-from typing import TYPE_CHECKING, Dict, Iterator, List, Optional, Set, Union
+from typing import TYPE_CHECKING, Iterator, Optional, Union
 
 from eth_pydantic_types import HexBytes
 from ethpm_types import ASTNode, BaseModel, ContractType
@@ -14,7 +14,7 @@ if TYPE_CHECKING:
     from ape.api.trace import TraceAPI
 
 
-GasReport = Dict[str, Dict[str, List[int]]]
+GasReport = dict[str, dict[str, list[int]]]
 """
 A gas report in Ape.
 """
@@ -25,7 +25,7 @@ class ControlFlow(BaseModel):
     A collection of linear source nodes up until a jump.
     """
 
-    statements: List[Statement]
+    statements: list[Statement]
     """
     The source node statements.
     """
@@ -81,7 +81,7 @@ class ControlFlow(BaseModel):
         return len(self.statements)
 
     @property
-    def source_statements(self) -> List[SourceStatement]:
+    def source_statements(self) -> list[SourceStatement]:
         """
         All statements coming directly from a contract's source.
         Excludes implicit-compiler statements.
@@ -105,7 +105,7 @@ class ControlFlow(BaseModel):
         return stmts[0].ws_begin_lineno if stmts else None
 
     @property
-    def line_numbers(self) -> List[int]:
+    def line_numbers(self) -> list[int]:
         """
         The list of all line numbers as part of this node.
         """
@@ -120,7 +120,7 @@ class ControlFlow(BaseModel):
 
     @property
     def content(self) -> Content:
-        result: Dict[int, str] = {}
+        result: dict[int, str] = {}
         for node in self.source_statements:
             result = {**result, **node.content.root}
 
@@ -144,8 +144,8 @@ class ControlFlow(BaseModel):
         return stmts[-1].end_lineno if stmts else None
 
     @property
-    def pcs(self) -> Set[int]:
-        full_set: Set[int] = set()
+    def pcs(self) -> set[int]:
+        full_set: set[int] = set()
         for stmt in self.statements:
             full_set |= stmt.pcs
 
@@ -154,7 +154,7 @@ class ControlFlow(BaseModel):
     def extend(
         self,
         location: SourceLocation,
-        pcs: Optional[Set[int]] = None,
+        pcs: Optional[set[int]] = None,
         ws_start: Optional[int] = None,
     ):
         """
@@ -280,7 +280,7 @@ class ControlFlow(BaseModel):
         return SourceStatement(asts=next_stmt_asts, content=content)
 
 
-class SourceTraceback(RootModel[List[ControlFlow]]):
+class SourceTraceback(RootModel[list[ControlFlow]]):
     """
     A full execution traceback including source code.
     """
@@ -357,7 +357,7 @@ class SourceTraceback(RootModel[List[ControlFlow]]):
         return self.root[-1] if len(self.root) else None
 
     @property
-    def execution(self) -> List[ControlFlow]:
+    def execution(self) -> list[ControlFlow]:
         """
         All the control flows in order. Each set of statements in
         a control flow is separated by a jump.
@@ -365,14 +365,14 @@ class SourceTraceback(RootModel[List[ControlFlow]]):
         return list(self.root)
 
     @property
-    def statements(self) -> List[Statement]:
+    def statements(self) -> list[Statement]:
         """
         All statements from each control flow.
         """
         return list(chain(*[x.statements for x in self.root]))
 
     @property
-    def source_statements(self) -> List[SourceStatement]:
+    def source_statements(self) -> list[SourceStatement]:
         """
         All source statements from each control flow.
         """
@@ -389,7 +389,7 @@ class SourceTraceback(RootModel[List[ControlFlow]]):
         header = "Traceback (most recent call last)"
         indent = "  "
         last_depth = None
-        segments: List[str] = []
+        segments: list[str] = []
         for control_flow in reversed(self.root):
             if last_depth is None or control_flow.depth == last_depth - 1:
                 if control_flow.depth == 0 and len(segments) >= 1:
@@ -439,7 +439,7 @@ class SourceTraceback(RootModel[List[ControlFlow]]):
         location: SourceLocation,
         function: Function,
         depth: int,
-        pcs: Optional[Set[int]] = None,
+        pcs: Optional[set[int]] = None,
         source_path: Optional[Path] = None,
     ):
         """
@@ -464,7 +464,7 @@ class SourceTraceback(RootModel[List[ControlFlow]]):
         ControlFlow.model_rebuild()
         self._add(asts, content, pcs, function, depth, source_path=source_path)
 
-    def extend_last(self, location: SourceLocation, pcs: Optional[Set[int]] = None):
+    def extend_last(self, location: SourceLocation, pcs: Optional[set[int]] = None):
         """
         Extend the last node with more content.
 
@@ -492,7 +492,7 @@ class SourceTraceback(RootModel[List[ControlFlow]]):
         _type: str,
         full_name: Optional[str] = None,
         source_path: Optional[Path] = None,
-        pcs: Optional[Set[int]] = None,
+        pcs: Optional[set[int]] = None,
     ):
         """
         A convenience method for appending a control flow that happened
@@ -517,9 +517,9 @@ class SourceTraceback(RootModel[List[ControlFlow]]):
 
     def _add(
         self,
-        asts: List[ASTNode],
+        asts: list[ASTNode],
         content: Content,
-        pcs: Set[int],
+        pcs: set[int],
         function: Function,
         depth: int,
         source_path: Optional[Path] = None,

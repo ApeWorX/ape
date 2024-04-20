@@ -14,7 +14,6 @@ import re
 import sys
 from functools import lru_cache
 from pathlib import Path
-from typing import List
 
 import requests
 from packaging.version import Version
@@ -43,7 +42,7 @@ templates_path = ["_templates"]
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
 # This pattern also affects html_static_path and html_extra_path.
-exclude_patterns: List[str] = ["_build", ".DS_Store"]
+exclude_patterns: list[str] = ["_build", ".DS_Store"]
 
 
 # The suffix(es) of source filenames.
@@ -99,7 +98,7 @@ def fixpath(path: str) -> str:
 
 
 @lru_cache(maxsize=None)
-def get_versions() -> List[str]:
+def get_versions() -> list[str]:
     """
     Get all the versions from the Web.
     """

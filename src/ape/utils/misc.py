@@ -8,7 +8,7 @@ from functools import cached_property, lru_cache, singledispatchmethod, wraps
 from importlib.metadata import PackageNotFoundError, distributions
 from importlib.metadata import version as version_metadata
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Callable, Coroutine, Dict, List, Mapping, Optional, cast
+from typing import TYPE_CHECKING, Any, Callable, Coroutine, Mapping, Optional, cast
 
 import requests
 import yaml
@@ -40,7 +40,7 @@ _python_version = (
 
 
 @lru_cache(maxsize=None)
-def _get_distributions(pkg_name: Optional[str] = None) -> List:
+def _get_distributions(pkg_name: Optional[str] = None) -> list:
     """
     Get a mapping of top-level packages to their distributions.
     """
@@ -82,7 +82,7 @@ def pragma_str_to_specifier_set(pragma_str: str) -> Optional[SpecifierSet]:
     pragma_parts_fixed = []
     builder = ""
     for sub_part in pragma_parts:
-        parts_to_handle: List[str] = []
+        parts_to_handle: list[str] = []
         if "," in sub_part:
             sub_sub_parts = [x.strip() for x in sub_part.split(",")]
             if len(sub_sub_parts) > 2:
@@ -180,7 +180,7 @@ __version__ = get_package_version(__name__)
 USER_AGENT = f"Ape/{__version__} (Python/{_python_version})"
 
 
-def load_config(path: Path, expand_envars=True, must_exist=False) -> Dict:
+def load_config(path: Path, expand_envars=True, must_exist=False) -> dict:
     """
     Load a configuration file into memory.
     A file at the given path must exist or else it will throw ``OSError``.
@@ -240,7 +240,7 @@ def gas_estimation_error_message(tx_error: Exception) -> str:
     )
 
 
-def extract_nested_value(root: Mapping, *args: str) -> Optional[Dict]:
+def extract_nested_value(root: Mapping, *args: str) -> Optional[dict]:
     """
     Dig through a nested ``dict`` using the given keys and return the
     last-found object.
@@ -268,21 +268,21 @@ def extract_nested_value(root: Mapping, *args: str) -> Optional[Dict]:
 
 
 def add_padding_to_strings(
-    str_list: List[str],
+    str_list: list[str],
     extra_spaces: int = 0,
     space_character: str = " ",
-) -> List[str]:
+) -> list[str]:
     """
     Append spacing to each string in a list of strings such that
     they all have the same length.
 
     Args:
-        str_list (List[str]): The list of strings that need padding.
+        str_list (list[str]): The list of strings that need padding.
         extra_spaces (int): Optionally append extra spacing. Defaults to ``0``.
         space_character (str): The character to use in the padding. Defaults to ``" "``.
 
     Returns:
-        List[str]: A list of equal-length strings with padded spaces.
+        list[str]: A list of equal-length strings with padded spaces.
     """
 
     if not str_list:
@@ -482,7 +482,7 @@ def is_zero_hex(address: str) -> bool:
         return False
 
 
-def _dict_overlay(mapping: Dict[str, Any], overlay: Dict[str, Any], depth: int = 0):
+def _dict_overlay(mapping: dict[str, Any], overlay: dict[str, Any], depth: int = 0):
     """Overlay given overlay structure on a dict"""
     for key, value in overlay.items():
         if isinstance(value, dict):

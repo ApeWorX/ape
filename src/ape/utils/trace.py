@@ -1,6 +1,6 @@
 from fnmatch import fnmatch
 from statistics import mean, median
-from typing import TYPE_CHECKING, List, Sequence, Tuple
+from typing import TYPE_CHECKING, Sequence
 
 from rich.box import SIMPLE
 from rich.table import Table
@@ -42,8 +42,8 @@ class TraceStyles:
     """The gas used of the call."""
 
 
-def parse_gas_table(report: "GasReport") -> List[Table]:
-    tables: List[Table] = []
+def parse_gas_table(report: "GasReport") -> list[Table]:
+    tables: list[Table] = []
 
     for contract_id, method_calls in report.items():
         title = f"{contract_id} Gas"
@@ -85,7 +85,7 @@ def parse_gas_table(report: "GasReport") -> List[Table]:
 
 def parse_coverage_tables(
     coverage: "CoverageReport", verbose: bool = False, statement: bool = True
-) -> List[Table]:
+) -> list[Table]:
     return (
         _parse_verbose_coverage(coverage, statement=statement)
         if verbose
@@ -123,7 +123,7 @@ def _parse_coverage_table(coverage: "CoverageReport", statement: bool = True) ->
     return table
 
 
-def _parse_verbose_coverage(coverage: "CoverageReport", statement: bool = True) -> List[Table]:
+def _parse_verbose_coverage(coverage: "CoverageReport", statement: bool = True) -> list[Table]:
     tables = []
     for project in coverage.projects:
         for src in project.sources:
@@ -133,7 +133,7 @@ def _parse_verbose_coverage(coverage: "CoverageReport", statement: bool = True) 
                 fn_rate = round(contract.function_rate * 100, 2)
                 caption = f"line={line_rate}%, func={fn_rate}%"
                 table = Table(title=title, box=SIMPLE, caption=caption)
-                rows: List[Tuple[str, ...]] = []
+                rows: list[tuple[str, ...]] = []
                 table.add_column("Func", justify="right")
 
                 if statement:

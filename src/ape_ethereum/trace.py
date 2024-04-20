@@ -3,7 +3,7 @@ import sys
 from abc import abstractmethod
 from enum import Enum
 from functools import cached_property
-from typing import IO, Any, Dict, Iterable, Iterator, List, Optional, Sequence, Tuple, Union
+from typing import IO, Any, Iterable, Iterator, Optional, Sequence, Union
 
 from eth_abi import decode
 from eth_utils import is_0x_prefixed, to_hex
@@ -62,7 +62,7 @@ class Trace(TraceAPI):
     """When None, attempts to deduce."""
     call_trace_approach: Optional[TraceApproach] = None
 
-    _enriched_calltree: Optional[Dict] = None
+    _enriched_calltree: Optional[dict] = None
 
     def __repr__(self) -> str:
         try:
@@ -80,14 +80,14 @@ class Trace(TraceAPI):
 
     @property
     @abstractmethod
-    def raw_trace_frames(self) -> List[Dict]:
+    def raw_trace_frames(self) -> list[dict]:
         """
         The raw trace frames.
         """
 
     @property
     @abstractmethod
-    def transaction(self) -> Dict:
+    def transaction(self) -> dict:
         """
         The transaction data (obtained differently on
         calls versus transactions).
@@ -100,14 +100,14 @@ class Trace(TraceAPI):
         """
 
     @cached_property
-    def debug_logs(self) -> Iterable[Tuple[Any]]:
+    def debug_logs(self) -> Iterable[tuple[Any]]:
         """
         Calls from ``console.log()`` and ``print()`` from a transactions call tree.
         """
         return list(extract_debug_logs(self.get_calltree()))
 
     @property
-    def enriched_calltree(self) -> Dict:
+    def enriched_calltree(self) -> dict:
         """
         The fully enriched calltree node.
         """
@@ -224,15 +224,15 @@ class Trace(TraceAPI):
         gas_report = self.get_gas_report()
         self.chain_manager._reports.show_gas(gas_report, file=file)
 
-    def get_raw_frames(self) -> List[Dict]:
+    def get_raw_frames(self) -> list[dict]:
         return self.raw_trace_frames
 
-    def get_raw_calltree(self) -> Dict:
+    def get_raw_calltree(self) -> dict:
         return self.get_calltree().model_dump(mode="json", by_alias=True)
 
     """ Shared helpers """
 
-    def _get_tx_calltree_kwargs(self) -> Dict:
+    def _get_tx_calltree_kwargs(self) -> dict:
         if (receiver := self.transaction.get("to")) and receiver != ZERO_ADDRESS:
             call_type = CallType.CALL
         else:
@@ -260,10 +260,10 @@ class Trace(TraceAPI):
 
 class TransactionTrace(Trace):
     transaction_hash: str
-    debug_trace_transaction_parameters: Dict = {"enableMemory": True}
+    debug_trace_transaction_parameters: dict = {"enableMemory": True}
 
     @cached_property
-    def raw_trace_frames(self) -> List[Dict]:
+    def raw_trace_frames(self) -> list[dict]:
         """
         The raw trace ``"structLogs"`` from ``debug_traceTransaction``
         for deeper investigation.
@@ -271,12 +271,12 @@ class TransactionTrace(Trace):
         return list(self._stream_struct_logs())
 
     @cached_property
-    def transaction(self) -> Dict:
+    def transaction(self) -> dict:
         receipt = self.chain_manager.get_receipt(self.transaction_hash)
         data = receipt.transaction.model_dump(mode="json", by_alias=True)
         return {**data, **receipt.model_dump(by_alias=True)}
 
-    def _stream_struct_logs(self) -> Iterator[Dict]:
+    def _stream_struct_logs(self) -> Iterator[dict]:
         parameters = self.debug_trace_transaction_parameters
         yield from self.provider.stream_request(
             "debug_traceTransaction",
@@ -334,7 +334,7 @@ class TransactionTrace(Trace):
         # always work.
         raise ProviderError(f"Unable to create CallTreeNode. Reason: {reason}")
 
-    def _debug_trace_transaction(self, parameters: Optional[Dict] = None) -> Dict:
+    def _debug_trace_transaction(self, parameters: Optional[dict] = None) -> dict:
         parameters = parameters or self.debug_trace_transaction_parameters
         return self.provider.make_request(
             "debug_traceTransaction", [self.transaction_hash, parameters]
@@ -376,15 +376,15 @@ class TransactionTrace(Trace):
 
 
 class CallTrace(Trace):
-    tx: Dict
-    arguments: List[Any] = []
+    tx: dict
+    arguments: list[Any] = []
 
     """debug_traceCall must use the struct-log tracer."""
     call_trace_approach: TraceApproach = TraceApproach.GETH_STRUCT_LOG_PARSE
     supports_debug_trace_call: Optional[bool] = None
 
     @property
-    def raw_trace_frames(self) -> List[Dict]:
+    def raw_trace_frames(self) -> list[dict]:
         return self._traced_call.get("structLogs", [])
 
     @property
@@ -392,7 +392,7 @@ class CallTrace(Trace):
         return self._traced_call.get("returnValue", "")
 
     @cached_property
-    def _traced_call(self) -> Dict:
+    def _traced_call(self) -> dict:
         if self.supports_debug_trace_call is True:
             return self._debug_trace_call()
         elif self.supports_debug_trace_call is False:
@@ -408,7 +408,7 @@ class CallTrace(Trace):
         return result
 
     @property
-    def transaction(self) -> Dict:
+    def transaction(self) -> dict:
         return self.tx
 
     def get_calltree(self) -> CallTreeNode:
@@ -432,7 +432,7 @@ class CallTrace(Trace):
         return self.provider.make_request("debug_traceCall", arguments)
 
 
-def parse_rich_tree(call: Dict, verbose: bool = False) -> Tree:
+def parse_rich_tree(call: dict, verbose: bool = False) -> Tree:
     tree = _create_tree(call, verbose=verbose)
     for sub_call in call["calls"]:
         sub_tree = parse_rich_tree(sub_call, verbose=verbose)
@@ -441,7 +441,7 @@ def parse_rich_tree(call: Dict, verbose: bool = False) -> Tree:
     return tree
 
 
-def _call_to_str(call: Dict, stylize: bool = False, verbose: bool = False) -> str:
+def _call_to_str(call: dict, stylize: bool = False, verbose: bool = False) -> str:
     contract = str(call.get("contract_id", ""))
     is_create = "CREATE" in call.get("call_type", "")
     method = (
@@ -501,7 +501,7 @@ def _call_to_str(call: Dict, stylize: bool = False, verbose: bool = False) -> st
     return signature
 
 
-def _create_tree(call: Dict, verbose: bool = False) -> Tree:
+def _create_tree(call: dict, verbose: bool = False) -> Tree:
     signature = _call_to_str(call, stylize=True, verbose=verbose)
     return Tree(signature)
 
@@ -538,7 +538,7 @@ def _get_outputs_str(outputs: Any, stylize: bool = False) -> Optional[str]:
     return f"[{TraceStyles.OUTPUTS}]{outputs}[/]" if stylize else str(outputs)
 
 
-def _dict_to_str(dictionary: Dict, color: Optional[str] = None) -> str:
+def _dict_to_str(dictionary: dict, color: Optional[str] = None) -> str:
     length = sum(len(str(v)) for v in [*dictionary.keys(), *dictionary.values()])
     do_wrap = length > _WRAP_THRESHOLD
 
@@ -566,7 +566,7 @@ def _dict_to_str(dictionary: Dict, color: Optional[str] = None) -> str:
     return f"{kv_str})"
 
 
-def _list_to_str(ls: Union[List, Tuple], depth: int = 0) -> str:
+def _list_to_str(ls: Union[list, tuple], depth: int = 0) -> str:
     if not isinstance(ls, (list, tuple)) or len(str(ls)) < _WRAP_THRESHOLD:
         return str(ls)
 
@@ -609,7 +609,7 @@ def _list_to_str(ls: Union[List, Tuple], depth: int = 0) -> str:
     return _list_to_multiline_str(ls, depth=depth)
 
 
-def _list_to_multiline_str(value: Union[List, Tuple], depth: int = 0) -> str:
+def _list_to_multiline_str(value: Union[list, tuple], depth: int = 0) -> str:
     spacing = _INDENT * " "
     ls_spacing = spacing * (depth + 1)
     joined = ",\n".join([f"{ls_spacing}{v}" for v in value])

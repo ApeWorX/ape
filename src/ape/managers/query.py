@@ -1,7 +1,7 @@
 import difflib
 import time
 from itertools import tee
-from typing import Dict, Iterator, Optional
+from typing import Iterator, Optional
 
 from ape.api import QueryAPI, QueryType, ReceiptAPI, TransactionAPI
 from ape.api.query import (
@@ -120,7 +120,7 @@ class QueryManager(ManagerAccessMixin):
     """
 
     @cached_property
-    def engines(self) -> Dict[str, QueryAPI]:
+    def engines(self) -> dict[str, QueryAPI]:
         """
         A dict of all :class:`~ape.api.query.QueryAPI` instances across all
         installed plugins.
@@ -129,7 +129,7 @@ class QueryManager(ManagerAccessMixin):
             dict[str, :class:`~ape.api.query.QueryAPI`]
         """
 
-        engines: Dict[str, QueryAPI] = {"__default__": DefaultQueryProvider()}
+        engines: dict[str, QueryAPI] = {"__default__": DefaultQueryProvider()}
 
         for plugin_name, engine_class in self.plugin_manager.query_engines:
             engine_name = clean_plugin_name(plugin_name)

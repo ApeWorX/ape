@@ -5,7 +5,7 @@ import traceback
 from contextlib import contextmanager
 from pathlib import Path
 from runpy import run_module
-from typing import Any, Dict, Union
+from typing import Any, Union
 
 import click
 from click import Command, Context, Option
@@ -171,14 +171,14 @@ class ScriptCommand(click.MultiCommand, ManagerAccessMixin):
             return call
 
     @property
-    def commands(self) -> Dict[str, Union[click.Command, click.Group]]:
+    def commands(self) -> dict[str, Union[click.Command, click.Group]]:
         if not self.project_manager.scripts_folder.is_dir():
             return {}
 
         return self._get_cli_commands(self.project_manager.scripts_folder)
 
-    def _get_cli_commands(self, base_path: Path) -> Dict:
-        commands: Dict[str, Command] = {}
+    def _get_cli_commands(self, base_path: Path) -> dict:
+        commands: dict[str, Command] = {}
 
         for filepath in base_path.iterdir():
             if filepath.stem.startswith("_"):

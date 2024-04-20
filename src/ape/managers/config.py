@@ -1,7 +1,7 @@
 import os
 from contextlib import contextmanager
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Dict, Generator, List, Optional, Union
+from typing import TYPE_CHECKING, Any, Generator, Optional, Union
 
 from ethpm_types import PackageMeta
 from pydantic import RootModel, model_validator
@@ -26,10 +26,10 @@ class DeploymentConfig(PluginConfig):
 class DeploymentConfigCollection(RootModel[dict]):
     @model_validator(mode="before")
     @classmethod
-    def validate_deployments(cls, data: Dict, info):
+    def validate_deployments(cls, data: dict, info):
         valid_ecosystems = data.pop("valid_ecosystems", {})
         valid_networks = data.pop("valid_networks", {})
-        valid_data: Dict = {}
+        valid_data: dict = {}
         for ecosystem_name, networks in data.items():
             if ecosystem_name not in valid_ecosystems:
                 logger.warning(f"Invalid ecosystem '{ecosystem_name}' in deployments config.")
@@ -88,7 +88,7 @@ class ConfigManager(BaseInterfaceModel):
     DATA_FOLDER: Path
     """The path to the ``ape`` directory such as ``$HOME/.ape``."""
 
-    REQUEST_HEADER: Dict
+    REQUEST_HEADER: dict
 
     PROJECT_FOLDER: Path
     """The path to the ``ape`` project."""
@@ -108,7 +108,7 @@ class ConfigManager(BaseInterfaceModel):
     (differs by project structure).
     """
 
-    dependencies: List[DependencyAPI] = []
+    dependencies: list[DependencyAPI] = []
     """A list of project dependencies."""
 
     deployments: Optional[DeploymentConfigCollection] = None
@@ -117,11 +117,11 @@ class ConfigManager(BaseInterfaceModel):
     default_ecosystem: str = "ethereum"
     """The default ecosystem to use. Defaults to ``"ethereum"``."""
 
-    _cached_configs: Dict[str, Dict[str, Any]] = {}
+    _cached_configs: dict[str, dict[str, Any]] = {}
 
     @model_validator(mode="before")
     @classmethod
-    def check_config_for_extra_fields(cls, values: Dict[str, Any]) -> Dict[str, Any]:
+    def check_config_for_extra_fields(cls, values: dict[str, Any]) -> dict[str, Any]:
         extra = [key for key in values.keys() if key not in cls.model_fields]
         if extra:
             logger.warning(f"Unprocessed extra config fields not set '{extra}'.")
@@ -143,11 +143,11 @@ class ConfigManager(BaseInterfaceModel):
         return self.PROJECT_FOLDER.stem
 
     @property
-    def _project_configs(self) -> Dict[str, Any]:
+    def _project_configs(self) -> dict[str, Any]:
         return self._cached_configs.get(self._project_key, {})
 
     @property
-    def _plugin_configs(self) -> Dict[str, PluginConfig]:
+    def _plugin_configs(self) -> dict[str, PluginConfig]:
         if cache := self._cached_configs.get(self._project_key):
             self.name = cache.get("name", "")
             self.version = cache.get("version", "")
@@ -365,8 +365,8 @@ class ConfigManager(BaseInterfaceModel):
                 config_file.unlink()
 
 
-def merge_configs(base: Dict, secondary: Dict) -> Dict:
-    result: Dict = {}
+def merge_configs(base: dict, secondary: dict) -> dict:
+    result: dict = {}
 
     # Short circuits
     if not base and not secondary:

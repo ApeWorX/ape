@@ -1,17 +1,5 @@
 from abc import ABC
-from typing import (
-    TYPE_CHECKING,
-    Any,
-    Callable,
-    ClassVar,
-    Dict,
-    Iterator,
-    List,
-    Optional,
-    Sequence,
-    Union,
-    cast,
-)
+from typing import TYPE_CHECKING, Any, Callable, ClassVar, Iterator, Optional, Sequence, Union, cast
 
 from ethpm_types import BaseModel as EthpmTypesBaseModel
 from pydantic import BaseModel as RootBaseModel
@@ -49,8 +37,8 @@ class _RecursionChecker:
     # that happen in custom __getattr__ methods.
 
     THRESHOLD: int = 10
-    getattr_checking: Dict[str, int] = {}
-    getattr_errors: Dict[str, Exception] = {}
+    getattr_checking: dict[str, int] = {}
+    getattr_errors: dict[str, Exception] = {}
 
     def check(self, name: str) -> bool:
         return (self.getattr_checking.get(name, 0) or 0) >= self.THRESHOLD
@@ -160,7 +148,7 @@ def _get_alt(name: str) -> Optional[str]:
     return alt
 
 
-_ATTR_TYPE = Union[Dict[str, Any], RootBaseModel]
+_ATTR_TYPE = Union[dict[str, Any], RootBaseModel]
 
 
 class ExtraModelAttributes(EthpmTypesBaseModel):
@@ -248,7 +236,7 @@ class BaseModel(EthpmTypesBaseModel):
     def model_copy(
         self: "Model",
         *,
-        update: Optional[Dict[str, Any]] = None,
+        update: Optional[dict[str, Any]] = None,
         deep: bool = False,
         cache_clear: Optional[Sequence[str]] = None,
     ) -> "Model":
@@ -405,7 +393,7 @@ class BaseInterfaceModel(BaseInterface, BaseModel):
 
     model_config = ConfigDict(arbitrary_types_allowed=True)
 
-    def __dir__(self) -> List[str]:
+    def __dir__(self) -> list[str]:
         """
         **NOTE**: Should integrate options in IPython tab-completion.
         https://ipython.readthedocs.io/en/stable/config/integrating.html

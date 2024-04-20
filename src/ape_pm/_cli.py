@@ -1,6 +1,5 @@
 import json
 from pathlib import Path
-from typing import Tuple
 
 import click
 
@@ -331,7 +330,7 @@ def compile(cli_ctx, name, version, force):
     elif not version:
         cli_ctx.abort("Please specify --version.")
 
-    version_opts: Tuple
+    version_opts: tuple
     if version == "local":
         version_opts = (version,)
     elif version.startswith("v"):

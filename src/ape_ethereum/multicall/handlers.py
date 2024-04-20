@@ -1,5 +1,5 @@
 from types import ModuleType
-from typing import Any, Dict, Iterator, List, Optional, Tuple, Union
+from typing import Any, Iterator, Optional, Union
 
 from ape.api import ReceiptAPI, TransactionAPI
 from ape.contracts.base import (
@@ -28,14 +28,14 @@ class BaseMulticall(ManagerAccessMixin):
     def __init__(
         self,
         address: AddressType = MULTICALL3_ADDRESS,
-        supported_chains: Optional[List[int]] = None,
+        supported_chains: Optional[list[int]] = None,
     ) -> None:
         """
         Initialize a new Multicall session object. By default, there are no calls to make.
         """
         self.address = address
         self.supported_chains = supported_chains or SUPPORTED_CHAINS
-        self.calls: List[Dict] = []
+        self.calls: list[dict] = []
 
     @classmethod
     def inject(cls) -> ModuleType:
@@ -155,12 +155,12 @@ class Call(BaseMulticall):
     def __init__(
         self,
         address: AddressType = MULTICALL3_ADDRESS,
-        supported_chains: Optional[List[int]] = None,
+        supported_chains: Optional[list[int]] = None,
     ) -> None:
         super().__init__(address=address, supported_chains=supported_chains)
 
-        self.abis: List[MethodABI] = []
-        self._result: Union[None, List[Tuple[bool, HexBytes]]] = None
+        self.abis: list[MethodABI] = []
+        self._result: Union[None, list[tuple[bool, HexBytes]]] = None
 
     @property
     def handler(self) -> ContractCallHandler:  # type: ignore[override]
@@ -175,7 +175,7 @@ class Call(BaseMulticall):
         return self
 
     @property
-    def returnData(self) -> List[HexBytes]:
+    def returnData(self) -> list[HexBytes]:
         # NOTE: this property is kept camelCase to align with the raw EVM struct
         result = self._result  # Declare for typing reasons.
         return [res.returnData if res.success else None for res in result]  # type: ignore

@@ -1,4 +1,4 @@
-from typing import Dict, List, NewType, Optional, Union
+from typing import NewType, Optional, Union
 
 from pydantic import NonNegativeInt, field_validator
 
@@ -23,7 +23,7 @@ class GasConfig(PluginConfig):
     Configuration related to test gas reports.
     """
 
-    exclude: List[GasExclusion] = []
+    exclude: list[GasExclusion] = []
     """
     Contract methods patterns to skip. Specify ``contract_name:`` and not
     ``method_name:`` to skip all methods in the contract. Only specify
@@ -32,7 +32,7 @@ class GasConfig(PluginConfig):
     use ``prefix_*`` to skip all items with a certain prefix.
     """
 
-    reports: List[str] = []
+    reports: list[str] = []
     """
     Report-types to use. Currently, only supports `terminal`.
     """
@@ -55,7 +55,7 @@ class GasConfig(PluginConfig):
 
 
 """Dict is for extra report settings."""
-_ReportType = Union[bool, Dict]
+_ReportType = Union[bool, dict]
 
 
 class CoverageReportsConfig(PluginConfig):
@@ -99,7 +99,7 @@ class CoverageConfig(PluginConfig):
     Enable reports.
     """
 
-    exclude: List[CoverageExclusion] = []
+    exclude: list[CoverageExclusion] = []
     """
     Contract methods patterns to skip. Specify ``contract_name:`` and not
     ``method_name:`` to skip all methods in the contract. Only specify

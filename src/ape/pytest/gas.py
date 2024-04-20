@@ -1,4 +1,4 @@
-from typing import Dict, List, Optional
+from typing import Optional
 
 from ethpm_types.abi import MethodABI
 from ethpm_types.source import ContractSource
@@ -27,7 +27,7 @@ class GasTracker(ManagerAccessMixin):
         return self.config_wrapper.track_gas
 
     @property
-    def gas_exclusions(self) -> List[ContractFunctionPath]:
+    def gas_exclusions(self) -> list[ContractFunctionPath]:
         return self.config_wrapper.gas_exclusions
 
     def show_session_gas(self) -> bool:
@@ -54,6 +54,6 @@ class GasTracker(ManagerAccessMixin):
         ):
             self._merge({contract_id: {method.selector: [gas_cost]}})
 
-    def _merge(self, report: Dict):
+    def _merge(self, report: dict):
         session_report = self.session_gas_report or {}
         self.session_gas_report = merge_reports(session_report, report)

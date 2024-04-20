@@ -1,6 +1,6 @@
 import copy
 from fnmatch import fnmatch
-from typing import Dict, Iterator, List, Optional
+from typing import Iterator, Optional
 
 import pytest
 
@@ -35,7 +35,7 @@ class PytestApeFixtures(ManagerAccessMixin):
         )
 
     @pytest.fixture(scope="session")
-    def accounts(self) -> List[TestAccountAPI]:
+    def accounts(self) -> list[TestAccountAPI]:
         """
         A collection of pre-funded accounts.
         """
@@ -142,8 +142,8 @@ class PytestApeFixtures(ManagerAccessMixin):
 
 class ReceiptCapture(ManagerAccessMixin):
     config_wrapper: ConfigWrapper
-    receipt_map: Dict[str, Dict[str, ReceiptAPI]] = {}
-    enter_blocks: List[int] = []
+    receipt_map: dict[str, dict[str, ReceiptAPI]] = {}
+    enter_blocks: list[int] = []
 
     def __init__(self, config_wrapper: ConfigWrapper):
         self.config_wrapper = config_wrapper
@@ -242,7 +242,7 @@ class ReceiptCapture(ManagerAccessMixin):
         return False
 
 
-def _build_report(report: Dict, contract: str, method: str, usages: List) -> Dict:
+def _build_report(report: dict, contract: str, method: str, usages: list) -> dict:
     new_dict = copy.deepcopy(report)
     if contract not in new_dict:
         new_dict[contract] = {method: usages}

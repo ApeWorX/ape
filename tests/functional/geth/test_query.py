@@ -1,5 +1,3 @@
-from typing import List, Tuple
-
 from ape.exceptions import ChainError
 from tests.conftest import geth_process_test
 
@@ -26,7 +24,7 @@ def test_get_contract_creation_receipts(mock_geth, geth_contract, chain, network
 
         # Ensure we tried using OTS.
         actual = mock_geth._web3.provider.make_request.call_args
-        expected: Tuple[str, List] = ("ots_getApiLevel", [])
+        expected: tuple[str, list] = ("ots_getApiLevel", [])
         assert any(arguments == expected for arguments in actual)
 
     finally:

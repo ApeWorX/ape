@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Iterator, List, Optional, Type, Union
+from typing import TYPE_CHECKING, Any, Iterator, Optional, Union
 
 import click
 from eip712.messages import EIP712Message
@@ -31,12 +31,12 @@ class AccountAPI(BaseInterfaceModel, BaseAddress):
     An API class representing an account.
     """
 
-    def __dir__(self) -> List[str]:
+    def __dir__(self) -> list[str]:
         """
         Display methods to IPython on ``a.[TAB]`` tab completion.
 
         Returns:
-            List[str]: Method names that IPython uses for tab completion.
+            list[str]: Method names that IPython uses for tab completion.
         """
         base_value_excludes = ("code", "codesize", "is_contract")  # Not needed for accounts
         base_values = [v for v in self._base_dir_values if v not in base_value_excludes]
@@ -410,7 +410,7 @@ class AccountContainerAPI(BaseInterfaceModel):
     The type of account in this container.
     See :class:`~ape.api.accounts.AccountAPI`.
     """
-    account_type: Type[AccountAPI]
+    account_type: type[AccountAPI]
 
     @property
     @abstractmethod

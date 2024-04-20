@@ -3,10 +3,11 @@ import sys
 import tempfile
 import time
 import traceback
+from collections.abc import Collection
 from inspect import getframeinfo, stack
 from pathlib import Path
 from types import CodeType, TracebackType
-from typing import TYPE_CHECKING, Any, Collection, Dict, Iterable, List, Optional, Union, cast
+from typing import TYPE_CHECKING, Any, Iterable, Optional, Union, cast
 
 import click
 from eth_typing import Hash32
@@ -103,7 +104,7 @@ class ArgumentsLengthError(ContractDataError):
     def __init__(
         self,
         arguments_length: int,
-        inputs: Union[MethodABI, ConstructorABI, int, List, None] = None,
+        inputs: Union[MethodABI, ConstructorABI, int, list, None] = None,
         **kwargs,
     ):
         prefix = (
@@ -114,7 +115,7 @@ class ArgumentsLengthError(ContractDataError):
             super().__init__(f"{prefix}.")
             return
 
-        inputs_ls: List[Union[MethodABI, ConstructorABI, int]] = (
+        inputs_ls: list[Union[MethodABI, ConstructorABI, int]] = (
             inputs if isinstance(inputs, list) else [inputs]
         )
         if not inputs_ls:
@@ -718,7 +719,7 @@ class CustomError(ContractLogicError):
     def __init__(
         self,
         abi: ErrorABI,
-        inputs: Dict[str, Any],
+        inputs: dict[str, Any],
         txn: Optional[FailedTxn] = None,
         trace: Optional["TraceAPI"] = None,
         contract_address: Optional["AddressType"] = None,

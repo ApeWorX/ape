@@ -1,7 +1,7 @@
 import sys
 import time
 from datetime import datetime
-from typing import IO, TYPE_CHECKING, Any, Iterator, List, NoReturn, Optional, Tuple, Union
+from typing import IO, TYPE_CHECKING, Any, Iterator, NoReturn, Optional, Union
 
 from eth_pydantic_types import HexBytes
 from eth_utils import is_0x_prefixed, is_hex, to_int
@@ -269,7 +269,7 @@ class ReceiptAPI(ExtraAttributesMixin, BaseInterfaceModel):
     contract_address: Optional[AddressType] = None
     block_number: int
     gas_used: int
-    logs: List[dict] = []
+    logs: list[dict] = []
     status: int
     txn_hash: str
     transaction: TransactionAPI
@@ -296,12 +296,12 @@ class ReceiptAPI(ExtraAttributesMixin, BaseInterfaceModel):
         return HexBytes(value).hex()
 
     @cached_property
-    def debug_logs_typed(self) -> List[Tuple[Any]]:
+    def debug_logs_typed(self) -> list[tuple[Any]]:
         """Return any debug log data outputted by the transaction."""
         return []
 
     @cached_property
-    def debug_logs_lines(self) -> List[str]:
+    def debug_logs_lines(self) -> list[str]:
         """
         Return any debug log data outputted by the transaction as strings suitable for printing
         """
@@ -390,7 +390,7 @@ class ReceiptAPI(ExtraAttributesMixin, BaseInterfaceModel):
     def decode_logs(
         self,
         abi: Optional[
-            Union[List[Union[EventABI, "ContractEvent"]], Union[EventABI, "ContractEvent"]]
+            Union[list[Union[EventABI, "ContractEvent"]], Union[EventABI, "ContractEvent"]]
         ] = None,
     ) -> ContractLogContainer:
         """
@@ -400,7 +400,7 @@ class ReceiptAPI(ExtraAttributesMixin, BaseInterfaceModel):
             abi (``EventABI``): The ABI of the event to decode into logs.
 
         Returns:
-            List[:class:`~ape.types.ContractLog`]
+            list[:class:`~ape.types.ContractLog`]
         """
 
     def raise_for_status(self) -> Optional[NoReturn]:

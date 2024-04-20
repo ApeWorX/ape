@@ -3,7 +3,7 @@ import os
 import shutil
 import tempfile
 from pathlib import Path
-from typing import Dict, Iterable, List, Optional, Type
+from typing import Iterable, Optional, Type
 
 from ethpm_types import PackageManifest
 from packaging.version import Version
@@ -24,7 +24,7 @@ from ape.utils._github import github_client
 
 class DependencyManager(ManagerAccessMixin):
     DATA_FOLDER: Path
-    _cached_dependencies: Dict[str, Dict[str, Dict[str, DependencyAPI]]] = {}
+    _cached_dependencies: dict[str, dict[str, dict[str, DependencyAPI]]] = {}
 
     def __init__(self, data_folder: Path):
         self.DATA_FOLDER = data_folder
@@ -34,8 +34,8 @@ class DependencyManager(ManagerAccessMixin):
         return self.DATA_FOLDER / "packages"
 
     @cached_property
-    def dependency_types(self) -> Dict[str, Type[DependencyAPI]]:
-        dependency_classes: Dict[str, Type[DependencyAPI]] = {
+    def dependency_types(self) -> dict[str, Type[DependencyAPI]]:
+        dependency_classes: dict[str, Type[DependencyAPI]] = {
             "github": GithubDependency,
             "local": LocalDependency,
             "npm": NpmDependency,
@@ -47,7 +47,7 @@ class DependencyManager(ManagerAccessMixin):
 
         return dependency_classes
 
-    def decode_dependency(self, config_dependency_data: Dict) -> DependencyAPI:
+    def decode_dependency(self, config_dependency_data: dict) -> DependencyAPI:
         for key, dependency_cls in self.dependency_types.items():
             if key in config_dependency_data:
                 return dependency_cls(**config_dependency_data)
@@ -57,7 +57,7 @@ class DependencyManager(ManagerAccessMixin):
 
     def load_dependencies(
         self, project_id: str, use_cache: bool = True
-    ) -> Dict[str, Dict[str, DependencyAPI]]:
+    ) -> dict[str, dict[str, DependencyAPI]]:
         if use_cache and project_id in self._cached_dependencies:
             return self._cached_dependencies[project_id]
 
@@ -89,7 +89,7 @@ class DependencyManager(ManagerAccessMixin):
 
         return self._cached_dependencies.get(project_id, {})
 
-    def get_versions(self, name: str) -> List[Path]:
+    def get_versions(self, name: str) -> list[Path]:
         path = self.packages_folder / name
         if not path.is_dir():
             logger.warning("Dependency not installed.")
@@ -97,11 +97,11 @@ class DependencyManager(ManagerAccessMixin):
 
         return [x for x in path.iterdir() if x.is_dir()]
 
-    def remove_dependency(self, project_id: str, name: str, versions: Optional[List[str]] = None):
+    def remove_dependency(self, project_id: str, name: str, versions: Optional[list[str]] = None):
         self._remove_local_dependency(project_id, name, versions=versions)
         self._remove_disk_dependency(name, versions=versions)
 
-    def _remove_disk_dependency(self, name: str, versions: Optional[List[str]] = None):
+    def _remove_disk_dependency(self, name: str, versions: Optional[list[str]] = None):
         versions = versions or []
         available_versions = self.get_versions(name)
         if not available_versions:
@@ -145,7 +145,7 @@ class DependencyManager(ManagerAccessMixin):
             shutil.rmtree(self.packages_folder / name, ignore_errors=True)
 
     def _remove_local_dependency(
-        self, project_id: str, name: str, versions: Optional[List[str]] = None
+        self, project_id: str, name: str, versions: Optional[list[str]] = None
     ):
         versions = versions or []
         if name in self._cached_dependencies.get(project_id, {}):

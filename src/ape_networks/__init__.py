@@ -1,4 +1,4 @@
-from typing import Dict, List, Optional
+from typing import Optional
 
 from ape import plugins
 from ape.api import PluginConfig
@@ -25,11 +25,11 @@ class CustomNetwork(PluginConfig):
     default_provider: str = "node"
 
     """The HTTP request header."""
-    request_header: Dict = {}
+    request_header: dict = {}
 
 
 class NetworksConfig(PluginConfig):
-    custom: List[CustomNetwork] = []
+    custom: list[CustomNetwork] = []
 
 
 @plugins.register(plugins.Config)

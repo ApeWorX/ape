@@ -1,4 +1,3 @@
-from typing import Set
 from unittest import mock
 
 import pytest
@@ -73,7 +72,7 @@ def plugin_test_env(mocker, mock_installed_packages):
 
 
 @pytest.fixture
-def package_names() -> Set[str]:
+def package_names() -> set[str]:
     return {
         f"ape-{x}" for x in [*CORE_PLUGINS, *AVAILABLE_PLUGINS, *INSTALLED_PLUGINS, *THIRD_PARTY]
     }

@@ -1,5 +1,5 @@
 import importlib
-from typing import Any, Generator, Iterator, List, Optional, Set, Tuple
+from typing import Any, Generator, Iterator, Optional
 
 from ape.__modules__ import __modules__
 from ape.exceptions import ApeAttributeError
@@ -33,7 +33,7 @@ def valid_impl(api_class: Any) -> bool:
 
 
 class PluginManager:
-    _unimplemented_plugins: List[str] = []
+    _unimplemented_plugins: list[str] = []
 
     def __init__(self) -> None:
         self.__registered = False
@@ -42,7 +42,7 @@ class PluginManager:
     def __repr__(self) -> str:
         return f"<{PluginManager.__name__}>"
 
-    def __getattr__(self, attr_name: str) -> Iterator[Tuple[str, Tuple]]:
+    def __getattr__(self, attr_name: str) -> Iterator[tuple[str, tuple]]:
         _assert_not_ipython_check(attr_name)
 
         # NOTE: The first time this method is called, the actual
@@ -73,7 +73,7 @@ class PluginManager:
                         yield validated_plugin
 
     @property
-    def registered_plugins(self) -> Set[str]:
+    def registered_plugins(self) -> set[str]:
         self._register_plugins()
         return {x[0] for x in pluggy_manager.list_name_plugin()}
 
@@ -100,7 +100,7 @@ class PluginManager:
 
         self.__registered = True
 
-    def _validate_plugin(self, plugin_name: str, plugin_cls) -> Optional[Tuple[str, Tuple]]:
+    def _validate_plugin(self, plugin_name: str, plugin_cls) -> Optional[tuple[str, tuple]]:
         if valid_impl(plugin_cls):
             return clean_plugin_name(plugin_name), plugin_cls
         else:

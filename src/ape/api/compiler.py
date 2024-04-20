@@ -1,6 +1,6 @@
 from functools import cached_property
 from pathlib import Path
-from typing import Dict, List, Optional, Sequence, Set
+from typing import Optional, Sequence
 
 from eth_pydantic_types import HexBytes
 from ethpm_types import ContractType
@@ -31,7 +31,7 @@ class CompilerAPI(BaseInterfaceModel):
     this API.
     """
 
-    compiler_settings: Dict = {}
+    compiler_settings: dict = {}
     """
     Adhoc compiler settings.
     """
@@ -60,7 +60,7 @@ class CompilerAPI(BaseInterfaceModel):
         return CustomConfig.model_validate(data)
 
     @abstractmethod
-    def get_versions(self, all_paths: Sequence[Path]) -> Set[str]:
+    def get_versions(self, all_paths: Sequence[Path]) -> set[str]:
         """
         Retrieve the set of available compiler versions for this plugin to compile ``all_paths``.
 
@@ -74,7 +74,7 @@ class CompilerAPI(BaseInterfaceModel):
     @raises_not_implemented
     def get_compiler_settings(  # type: ignore[empty-body]
         self, contract_filepaths: Sequence[Path], base_path: Optional[Path] = None
-    ) -> Dict[Version, Dict]:
+    ) -> dict[Version, dict]:
         """
         Get a mapping of the settings that would be used to compile each of the sources
         by the compiler version number.
@@ -84,13 +84,13 @@ class CompilerAPI(BaseInterfaceModel):
             base_path (Optional[pathlib.Path]): The contracts folder base path.
 
         Returns:
-            Dict[Version, Dict]: A dict of compiler settings by compiler version.
+            dict[Version, dict]: A dict of compiler settings by compiler version.
         """
 
     @abstractmethod
     def compile(
         self, contract_filepaths: Sequence[Path], base_path: Optional[Path]
-    ) -> List[ContractType]:
+    ) -> list[ContractType]:
         """
         Compile the given source files. All compiler plugins must implement this function.
 
@@ -101,7 +101,7 @@ class CompilerAPI(BaseInterfaceModel):
               via ``ape compile``, gets set to the project's ``contracts/`` directory.
 
         Returns:
-            List[:class:`~ape.type.contract.ContractType`]
+            list[:class:`~ape.type.contract.ContractType`]
         """
 
     @raises_not_implemented
@@ -129,7 +129,7 @@ class CompilerAPI(BaseInterfaceModel):
     @raises_not_implemented
     def get_imports(  # type: ignore[empty-body]
         self, contract_filepaths: Sequence[Path], base_path: Optional[Path]
-    ) -> Dict[str, List[str]]:
+    ) -> dict[str, list[str]]:
         """
         Returns a list of imports as source_ids for each contract's source_id in a given
         compiler.
@@ -141,7 +141,7 @@ class CompilerAPI(BaseInterfaceModel):
               via ``ape compile``, gets set to the project's ``contracts/`` directory.
 
         Returns:
-            Dict[str, List[str]]: A dictionary like ``{source_id: [import_source_id, ...], ...}``
+            dict[str, list[str]]: A dictionary like ``{source_id: [import_source_id, ...], ...}``
         """
 
     @raises_not_implemented
@@ -149,7 +149,7 @@ class CompilerAPI(BaseInterfaceModel):
         self,
         contract_filepaths: Sequence[Path],
         base_path: Optional[Path] = None,
-    ) -> Dict[Version, Set[Path]]:
+    ) -> dict[Version, set[Path]]:
         """
         Get a map of versions to source paths.
 
@@ -160,7 +160,7 @@ class CompilerAPI(BaseInterfaceModel):
               ``contracts_folder``.
 
         Returns:
-            Dict[Version, Set[Path]]
+            dict[Version, set[Path]]
         """
 
     @log_instead_of_fail(default="<CompilerAPI>")

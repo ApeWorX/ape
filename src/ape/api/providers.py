@@ -11,7 +11,7 @@ from logging import FileHandler, Formatter, Logger, getLogger
 from pathlib import Path
 from signal import SIGINT, SIGTERM, signal
 from subprocess import DEVNULL, PIPE, Popen
-from typing import Any, Dict, Iterable, Iterator, List, Optional, Union, cast
+from typing import Any, Iterable, Iterator, Optional, Union, cast
 
 from eth_pydantic_types import HexBytes
 from ethpm_types.abi import EventABI
@@ -116,12 +116,12 @@ class BlockAPI(BaseInterfaceModel):
 
     @computed_field()  # type: ignore[misc]
     @cached_property
-    def transactions(self) -> List[TransactionAPI]:
+    def transactions(self) -> list[TransactionAPI]:
         """
         All transactions in a block.
         """
         query = BlockTransactionQuery(columns=["*"], block_id=self.hash)
-        return cast(List[TransactionAPI], list(self.query_manager.query(query)))
+        return cast(list[TransactionAPI], list(self.query_manager.query(query)))
 
     @computed_field()  # type: ignore[misc]
     @cached_property
@@ -155,13 +155,13 @@ class ProviderAPI(BaseInterfaceModel):
     network: NetworkAPI
     """A reference to the network this provider provides."""
 
-    provider_settings: Dict = {}
+    provider_settings: dict = {}
     """The settings for the provider, as overrides to the configuration."""
 
     data_folder: Path
     """The path to the  ``.ape`` directory."""
 
-    request_header: Dict
+    request_header: dict
     """A header to set on HTTP/RPC requests."""
 
     block_page_size: int = 100
@@ -249,7 +249,7 @@ class ProviderAPI(BaseInterfaceModel):
         return f"{self.network_choice}:{chain_id}"
 
     @abstractmethod
-    def update_settings(self, new_settings: Dict):
+    def update_settings(self, new_settings: dict):
         """
         Change a provider's setting, such as configure a new port to run on.
         May require a reconnect.
@@ -466,7 +466,7 @@ class ProviderAPI(BaseInterfaceModel):
         self,
         txn: TransactionAPI,
         block_id: Optional[BlockID] = None,
-        state: Optional[Dict] = None,
+        state: Optional[dict] = None,
         **kwargs,
     ) -> HexBytes:  # Return value of function
         """
@@ -478,7 +478,7 @@ class ProviderAPI(BaseInterfaceModel):
             block_id (Optional[:class:`~ape.types.BlockID`]): The block ID
                 to use to send a call at a historical point of a contract.
                 Useful for checking a past estimation cost of a transaction.
-            state (Optional[Dict]): Modify the state of the blockchain
+            state (Optional[dict]): Modify the state of the blockchain
                 prior to sending the call, for testing purposes.
             **kwargs: Provider-specific extra kwargs.
 
@@ -755,10 +755,10 @@ class ProviderAPI(BaseInterfaceModel):
         self,
         stop_block: Optional[int] = None,
         address: Optional[AddressType] = None,
-        topics: Optional[List[Union[str, List[str]]]] = None,
+        topics: Optional[list[Union[str, list[str]]]] = None,
         required_confirmations: Optional[int] = None,
         new_block_timeout: Optional[int] = None,
-        events: Optional[List[EventABI]] = None,
+        events: Optional[list[EventABI]] = None,
     ) -> Iterator[ContractLog]:
         """
         Poll new blocks. Optionally set a start block to include historical blocks.
@@ -775,7 +775,7 @@ class ProviderAPI(BaseInterfaceModel):
               Defaults to never-ending.
             address (Optional[str]): The address of the contract to filter logs by.
               Defaults to all addresses.
-            topics (Optional[List[Union[str, List[str]]]]): The topics to filter logs by.
+            topics (Optional[list[Union[str, list[str]]]]): The topics to filter logs by.
               Defaults to all topics.
             required_confirmations (Optional[int]): The amount of confirmations to wait
               before yielding the block. The more confirmations, the less likely a reorg will occur.
@@ -783,7 +783,7 @@ class ProviderAPI(BaseInterfaceModel):
             new_block_timeout (Optional[int]): The amount of time to wait for a new block before
               quitting. Defaults to 10 seconds for local networks or ``50 * block_time`` for live
               networks.
-            events (Optional[List[``EventABI``]]): An optional list of events to listen on.
+            events (Optional[list[``EventABI``]]): An optional list of events to listen on.
 
         Returns:
             Iterator[:class:`~ape.types.ContractLog`]
@@ -930,13 +930,13 @@ class SubprocessProvider(ProviderAPI):
         """The name of the process, such as ``Hardhat node``."""
 
     @abstractmethod
-    def build_command(self) -> List[str]:
+    def build_command(self) -> list[str]:
         """
         Get the command as a list of ``str``.
         Subclasses should override and add command arguments if needed.
 
         Returns:
-            List[str]: The command to pass to ``subprocess.Popen``.
+            list[str]: The command to pass to ``subprocess.Popen``.
         """
 
     @property

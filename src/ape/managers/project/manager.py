@@ -1,6 +1,6 @@
 import shutil
 from pathlib import Path
-from typing import Any, Dict, Iterable, List, Optional, Set, Type, Union, cast
+from typing import Any, Iterable, Optional, Type, Union, cast
 
 from eth_pydantic_types import Bip122Uri, HexStr
 from ethpm_types import ContractInstance as EthPMContractInstance
@@ -44,7 +44,7 @@ class ProjectManager(BaseManager):
     path: Path
     """The project path."""
 
-    _cached_projects: Dict[str, ProjectAPI] = {}
+    _cached_projects: dict[str, ProjectAPI] = {}
     _getattr_contracts: bool = True
 
     def __init__(
@@ -64,7 +64,7 @@ class ProjectManager(BaseManager):
         return f"<ProjectManager{path}>"
 
     @property
-    def dependencies(self) -> Dict[str, Dict[str, DependencyAPI]]:
+    def dependencies(self) -> dict[str, dict[str, DependencyAPI]]:
         """
         The package manifests of all dependencies mentioned
         in this project's ``ape-config.yaml`` file.
@@ -73,7 +73,7 @@ class ProjectManager(BaseManager):
         return self.load_dependencies()
 
     @property
-    def sources(self) -> Dict[str, Source]:
+    def sources(self) -> dict[str, Source]:
         """
         A mapping of source identifier to ``ethpm_types.Source`` object.
         """
@@ -113,19 +113,19 @@ class ProjectManager(BaseManager):
         return compile_conf.cache_folder
 
     @property
-    def source_paths(self) -> List[Path]:
+    def source_paths(self) -> list[Path]:
         """
         All the source files in the project.
         Excludes files with extensions that don't have a registered compiler.
 
         Returns:
-            List[pathlib.Path]: A list of a source file paths in the project.
+            list[pathlib.Path]: A list of a source file paths in the project.
         """
         contracts_folder = self.contracts_folder
         if not contracts_folder or not self.contracts_folder.is_dir():
             return []
 
-        files: List[Path] = []
+        files: list[Path] = []
 
         # Dependency sources should be ignored, as they are pulled in
         # independently to compiler via import.
@@ -183,13 +183,13 @@ class ProjectManager(BaseManager):
         return self.path / "tests"
 
     @property
-    def compiler_data(self) -> List[Compiler]:
+    def compiler_data(self) -> list[Compiler]:
         """
         A list of ``Compiler`` objects representing the raw-data specifics of a compiler.
         """
         return self.get_compiler_data()
 
-    def get_compiler_data(self, compile_if_needed: bool = True) -> List[Compiler]:
+    def get_compiler_data(self, compile_if_needed: bool = True) -> list[Compiler]:
         """
         A list of ``Compiler`` objects representing the raw-data specifics of a compiler.
 
@@ -198,7 +198,7 @@ class ProjectManager(BaseManager):
               Defaults to ``True``.
 
         Returns:
-            List[Compiler]
+            list[Compiler]
         """
         if compilers := self._get_cached_compiler_data():
             # Compiler data was already in manifest
@@ -210,7 +210,7 @@ class ProjectManager(BaseManager):
 
         return []
 
-    def _get_cached_compiler_data(self) -> List[Compiler]:
+    def _get_cached_compiler_data(self) -> list[Compiler]:
         if not (cached_manifest := self.local_project.cached_manifest):
             return []
 
@@ -219,9 +219,9 @@ class ProjectManager(BaseManager):
 
         return compilers
 
-    def _derive_settings(self) -> List[Compiler]:
+    def _derive_settings(self) -> list[Compiler]:
         contract_types: Iterable[ContractType] = self.load_contracts().values()
-        compiler_list: List[Compiler] = []
+        compiler_list: list[Compiler] = []
         contracts_folder = self.config_manager.contracts_folder
         for ext, compiler in self.compiler_manager.registered_compilers.items():
             sources = [x for x in self.source_paths if x.is_file() and get_full_extension(x) == ext]
@@ -271,7 +271,7 @@ class ProjectManager(BaseManager):
         return self.config_manager.meta
 
     @property
-    def tracked_deployments(self) -> Dict[Bip122Uri, Dict[str, EthPMContractInstance]]:
+    def tracked_deployments(self) -> dict[Bip122Uri, dict[str, EthPMContractInstance]]:
         """
         Deployments that have been explicitly tracked via
         :meth:`~ape.managers.project.manager.ProjectManager.track_deployment`.
@@ -279,7 +279,7 @@ class ProjectManager(BaseManager):
         of this package.
         """
 
-        deployments: Dict[Bip122Uri, Dict[str, EthPMContractInstance]] = {}
+        deployments: dict[Bip122Uri, dict[str, EthPMContractInstance]] = {}
         if not self._package_deployments_folder.is_dir():
             return deployments
 
@@ -298,7 +298,7 @@ class ProjectManager(BaseManager):
         return deployments
 
     @property
-    def project_types(self) -> List[Type[ProjectAPI]]:
+    def project_types(self) -> list[Type[ProjectAPI]]:
         """
         The available :class:`~ape.api.project.ProjectAPI` types available,
         such as :class:`~ape.managers.project.ApeProject`, which is the default.
@@ -331,20 +331,20 @@ class ProjectManager(BaseManager):
         manifest.dependencies = self._extract_manifest_dependencies()
         return manifest
 
-    def _extract_manifest_dependencies(self) -> Optional[Dict[PackageName, AnyUrl]]:
-        package_dependencies: Dict[str, AnyUrl] = {}
+    def _extract_manifest_dependencies(self) -> Optional[dict[PackageName, AnyUrl]]:
+        package_dependencies: dict[str, AnyUrl] = {}
         for dependency_config in self.config_manager.dependencies:
             package_name = dependency_config.name.replace("_", "-").lower()
             package_dependencies[package_name] = dependency_config.uri
 
-        return cast(Optional[Dict[PackageName, AnyUrl]], package_dependencies)
+        return cast(Optional[dict[PackageName, AnyUrl]], package_dependencies)
 
     @property
     def _package_deployments_folder(self) -> Path:
         return self.local_project._cache_folder / "deployments"
 
     @property
-    def _contract_sources(self) -> List[ContractSource]:
+    def _contract_sources(self) -> list[ContractSource]:
         sources = []
         for contract in self.contracts.values():
             contract_src = self._create_contract_source(contract)
@@ -396,7 +396,7 @@ class ProjectManager(BaseManager):
             extensions = list(self.compiler_manager.registered_compilers.keys())
 
             def find_contracts_folder(
-                sub_dir: Path, exclusions: Optional[List[str]] = None
+                sub_dir: Path, exclusions: Optional[list[str]] = None
             ) -> Optional[Path]:
                 # Check if config file exists
                 exclusions = exclusions or []
@@ -460,13 +460,13 @@ class ProjectManager(BaseManager):
         raise ProjectError(f"'{self.path.name}' is not recognized as a project.")
 
     @property
-    def contracts(self) -> Dict[str, ContractType]:
+    def contracts(self) -> dict[str, ContractType]:
         """
         A dictionary of contract names to their type.
         See :meth:`~ape.managers.project.ProjectManager.load_contracts` for more information.
 
         Returns:
-            Dict[str, ``ContractType``]
+            dict[str, ``ContractType``]
         """
         if self.local_project.cached_manifest and (contracts := self.local_project.contracts):
             return contracts
@@ -623,13 +623,13 @@ class ProjectManager(BaseManager):
 
         raise ProjectError(f"No contract found with name '{contract_name}'.")
 
-    def extensions_with_missing_compilers(self, extensions: Optional[List[str]] = None) -> Set[str]:
+    def extensions_with_missing_compilers(self, extensions: Optional[list[str]] = None) -> set[str]:
         """
         All file extensions in the ``contracts/`` directory (recursively)
         that do not correspond to a registered compiler.
 
         Args:
-            extensions (List[str], optional): If provided, returns only extensions that
+            extensions (list[str], optional): If provided, returns only extensions that
                 are in this list. Useful for checking against a subset of source files.
 
         Returns:
@@ -703,7 +703,7 @@ class ProjectManager(BaseManager):
 
     def load_contracts(
         self, file_paths: Optional[Union[Iterable[Path], Path]] = None, use_cache: bool = True
-    ) -> Dict[str, ContractType]:
+    ) -> dict[str, ContractType]:
         """
         Compile and get the contract types in the project.
         This is called when invoking the CLI command ``ape compile`` as well as prior to running
@@ -717,7 +717,7 @@ class ProjectManager(BaseManager):
               Defaults to ``True``.
 
         Returns:
-            Dict[str, ``ContractType``]: A dictionary of contract names to their
+            dict[str, ``ContractType``]: A dictionary of contract names to their
             types for each compiled contract.
         """
 
@@ -736,10 +736,10 @@ class ProjectManager(BaseManager):
         )
         return manifest.contract_types or {}
 
-    def load_dependencies(self, use_cache: bool = True) -> Dict[str, Dict[str, DependencyAPI]]:
+    def load_dependencies(self, use_cache: bool = True) -> dict[str, dict[str, DependencyAPI]]:
         return self.dependency_manager.load_dependencies(self.path.as_posix(), use_cache=use_cache)
 
-    def remove_dependency(self, dependency_name: str, versions: Optional[List[str]] = None):
+    def remove_dependency(self, dependency_name: str, versions: Optional[list[str]] = None):
         self.dependency_manager.remove_dependency(
             self.path.as_posix(), dependency_name, versions=versions
         )

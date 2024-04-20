@@ -2,9 +2,9 @@ import subprocess
 import sys
 import threading
 import time
+from collections.abc import Sequence
 from datetime import datetime, timedelta
 from pathlib import Path
-from typing import List, Sequence
 
 import click
 import pytest
@@ -43,7 +43,7 @@ class EventHandler(events.FileSystemEventHandler, ManagerAccessMixin):
             self.process_event(event)
 
     @cached_property
-    def _extensions_to_watch(self) -> List[str]:
+    def _extensions_to_watch(self) -> list[str]:
         return [".py", *self.compiler_manager.registered_compilers.keys()]
 
     def _is_path_watched(self, filepath: str) -> bool:

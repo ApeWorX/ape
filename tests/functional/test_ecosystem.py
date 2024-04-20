@@ -1,5 +1,5 @@
 import copy
-from typing import Any, ClassVar, Dict
+from typing import Any, ClassVar
 
 import pytest
 from eth_pydantic_types import HashBytes32, HexBytes
@@ -357,7 +357,7 @@ def test_decode_logs_with_struct_from_interface(ethereum):
 
 def test_decode_block_when_hash_is_none(ethereum):
     # When using some providers, such as hardhat, the hash of the pending block is None
-    block_data_with_none_hash: Dict[str, Any] = {
+    block_data_with_none_hash: dict[str, Any] = {
         "number": None,
         "hash": None,
         "parentHash": HexBytes(

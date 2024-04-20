@@ -1,4 +1,4 @@
-from typing import Any, List, Optional, Union
+from typing import Any, Optional, Union
 
 from eth_pydantic_types import Address as _Address
 from eth_pydantic_types import HashBytes20, HashStr20
@@ -30,7 +30,7 @@ class _AddressValidator(_Address, ManagerAccessMixin):
     @classmethod
     def __eth_pydantic_validate__(cls, value: Any, info: Optional[ValidationInfo] = None) -> str:
         if type(value) in (list, tuple):
-            return cls.conversion_manager.convert(value, List[AddressType])
+            return cls.conversion_manager.convert(value, list[AddressType])
 
         return (
             cls.conversion_manager.convert(value, AddressType)

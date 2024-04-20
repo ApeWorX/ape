@@ -3,9 +3,7 @@ from typing import (
     TYPE_CHECKING,
     Any,
     Callable,
-    Dict,
     Iterator,
-    List,
     Literal,
     Optional,
     Sequence,
@@ -136,12 +134,12 @@ class ContractFunctionPath:
 
 
 class LogFilter(BaseModel):
-    addresses: List[AddressType] = []
-    events: List[EventABI] = []
+    addresses: list[AddressType] = []
+    events: list[EventABI] = []
     topic_filter: TopicFilter = []
     start_block: int = 0
     stop_block: Optional[int] = None  # Use block height
-    selectors: Dict[str, EventABI] = {}
+    selectors: dict[str, EventABI] = {}
 
     @model_validator(mode="before")
     @classmethod
@@ -171,8 +169,8 @@ class LogFilter(BaseModel):
     def from_event(
         cls,
         event: Union[EventABI, "ContractEvent"],
-        search_topics: Optional[Dict[str, Any]] = None,
-        addresses: Optional[List[AddressType]] = None,
+        search_topics: Optional[dict[str, Any]] = None,
+        addresses: Optional[list[AddressType]] = None,
         start_block=None,
         stop_block=None,
     ):
@@ -184,7 +182,7 @@ class LogFilter(BaseModel):
 
         event_abi: EventABI = getattr(event, "abi", event)  # type: ignore
         search_topics = search_topics or {}
-        topic_filter: List[Optional[HexStr]] = [encode_hex(keccak(text=event_abi.selector))]
+        topic_filter: list[Optional[HexStr]] = [encode_hex(keccak(text=event_abi.selector))]
         abi_inputs = LogInputABICollection(event_abi)
 
         def encode_topic_value(abi_type, value):
@@ -236,7 +234,7 @@ class BaseContractLog(BaseInterfaceModel):
     contract_address: AddressType = ZERO_ADDRESS
     """The contract responsible for emitting the log."""
 
-    event_arguments: Dict[str, Any] = {}
+    event_arguments: dict[str, Any] = {}
     """The arguments to the event, including both indexed and non-indexed data."""
 
     @field_validator("contract_address", mode="before")
@@ -414,7 +412,7 @@ class ContractLogContainer(list):
     Container for ContractLogs which is adding capability of filtering logs
     """
 
-    def filter(self, event: "ContractEvent", **kwargs) -> List[ContractLog]:
+    def filter(self, event: "ContractEvent", **kwargs) -> list[ContractLog]:
         return [
             x
             for x in self
@@ -433,7 +431,7 @@ _T = TypeVar("_T")  # _LazySequence generic.
 class _LazySequence(Sequence[_T]):
     def __init__(self, generator: Union[Iterator[_T], Callable[[], Iterator[_T]]]):
         self._generator = generator
-        self.cache: List = []
+        self.cache: list = []
 
     @overload
     def __getitem__(self, index: int) -> _T: ...

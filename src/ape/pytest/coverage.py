@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Iterable, List, Optional, Set, Tuple
+from typing import Iterable, Optional
 
 import click
 from ethpm_types.abi import MethodABI
@@ -75,14 +75,14 @@ class CoverageData(ManagerAccessMixin):
 
     def cover(
         self, src_path: Path, pcs: Iterable[int], inc_fn_hits: bool = True
-    ) -> Tuple[Set[int], List[str]]:
+    ) -> tuple[set[int], list[str]]:
         source_id = str(get_relative_path(src_path.absolute(), self.base_path))
         if source_id not in self.report.sources:
             # The source is not tracked for coverage.
             return set(), []
 
         handled_pcs = set()
-        functions_incremented: List[str] = []
+        functions_incremented: list[str] = []
         for pc in pcs:
             if pc < 0:
                 continue
@@ -137,7 +137,7 @@ class CoverageTracker(ManagerAccessMixin):
         return self.config_wrapper.track_coverage
 
     @property
-    def exclusions(self) -> List[ContractFunctionPath]:
+    def exclusions(self) -> list[ContractFunctionPath]:
         return self.config_wrapper.coverage_exclusions
 
     def reset(self):
@@ -168,7 +168,7 @@ class CoverageTracker(ManagerAccessMixin):
             return
 
         last_path: Optional[Path] = None
-        last_pcs: Set[int] = set()
+        last_pcs: set[int] = set()
         last_call: Optional[str] = None
         main_fn = None
 
@@ -225,9 +225,9 @@ class CoverageTracker(ManagerAccessMixin):
         self,
         control_flow: ControlFlow,
         last_path: Optional[Path] = None,
-        last_pcs: Optional[Set[int]] = None,
+        last_pcs: Optional[set[int]] = None,
         last_call: Optional[str] = None,
-    ) -> Tuple[Set[int], List[str]]:
+    ) -> tuple[set[int], list[str]]:
         if not self.data or control_flow.source_path is None:
             return set(), []
 

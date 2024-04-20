@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import TYPE_CHECKING, Any, Dict, Optional, TypeVar
+from typing import TYPE_CHECKING, Any, Optional, TypeVar
 
 from pydantic import ConfigDict
 from pydantic_settings import BaseSettings
@@ -43,12 +43,12 @@ class PluginConfig(BaseSettings):
 
     @classmethod
     def from_overrides(
-        cls, overrides: Dict, config_manager: Optional["ConfigManager"] = None
+        cls, overrides: dict, config_manager: Optional["ConfigManager"] = None
     ) -> "PluginConfig":
         cls._config_manager = config_manager
         default_values = cls().model_dump()
 
-        def update(root: Dict, value_map: Dict):
+        def update(root: dict, value_map: dict):
             for key, val in value_map.items():
                 if isinstance(val, dict) and key in root and isinstance(root[key], dict):
                     root[key] = update(root[key], val)
@@ -84,7 +84,7 @@ class PluginConfig(BaseSettings):
         return key in self.__dict__ or key in (self.__pydantic_extra__ or {})
 
     def get(self, key: str, default: Optional[ConfigItemType] = None) -> ConfigItemType:
-        extra: Dict = self.__pydantic_extra__ or {}
+        extra: dict = self.__pydantic_extra__ or {}
         return self.__dict__.get(key, extra.get(key, default))
 
 

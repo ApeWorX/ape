@@ -1,5 +1,5 @@
-from functools import lru_cache
-from typing import Any, Dict, Iterator, List, Optional, Sequence, Set, Type, Union
+from functools import cache
+from typing import Any, Iterator, Optional, Sequence, Union
 
 from ethpm_types.abi import BaseModel, EventABI, MethodABI
 from pydantic import NonNegativeInt, PositiveInt, model_validator
@@ -19,9 +19,8 @@ QueryType = Union[
 ]
 
 
-# TODO: Replace with `functools.cache` when Py3.8 dropped
-@lru_cache(maxsize=None)
-def _basic_columns(Model: Type[BaseInterfaceModel]) -> Set[str]:
+@cache
+def _basic_columns(Model: type[BaseInterfaceModel]) -> set[str]:
     columns = set(Model.model_fields)
 
     # TODO: Remove once `ReceiptAPI` fields cleaned up for better processing
@@ -32,9 +31,8 @@ def _basic_columns(Model: Type[BaseInterfaceModel]) -> Set[str]:
     return columns
 
 
-# TODO: Replace with `functools.cache` when Py3.8 dropped
-@lru_cache(maxsize=None)
-def _all_columns(Model: Type[BaseInterfaceModel]) -> Set[str]:
+@cache
+def _all_columns(Model: type[BaseInterfaceModel]) -> set[str]:
     columns = _basic_columns(Model)
     # NOTE: Iterate down the series of subclasses of `Model` (e.g. Block and BlockAPI)
     #       and get all of the public property methods of each class (which are valid columns)
@@ -54,8 +52,8 @@ def _all_columns(Model: Type[BaseInterfaceModel]) -> Set[str]:
 
 
 def validate_and_expand_columns(
-    columns: Sequence[str], Model: Type[BaseInterfaceModel]
-) -> List[str]:
+    columns: Sequence[str], Model: type[BaseInterfaceModel]
+) -> list[str]:
     if len(columns) == 1 and columns[0] == "*":
         # NOTE: By default, only pull explicit fields
         #       (because they are cheap to pull, but properties might not be)
@@ -83,13 +81,13 @@ def validate_and_expand_columns(
     raise ValueError(err_msg)
 
 
-def _unrecognized_columns(selected_columns: Set[str], all_columns: Set[str]) -> str:
+def _unrecognized_columns(selected_columns: set[str], all_columns: set[str]) -> str:
     unrecognized = "', '".join(sorted(selected_columns - all_columns))
     all_cols = ", ".join(sorted(all_columns))
     return f"Unrecognized field(s) '{unrecognized}', must be one of '{all_cols}'."
 
 
-def extract_fields(item: BaseInterfaceModel, columns: Sequence[str]) -> List[Any]:
+def extract_fields(item: BaseInterfaceModel, columns: Sequence[str]) -> list[Any]:
     return [getattr(item, col, None) for col in columns]
 
 
@@ -144,7 +142,7 @@ class AccountTransactionQuery(_BaseQuery):
 
     @model_validator(mode="before")
     @classmethod
-    def check_start_nonce_before_stop_nonce(cls, values: Dict) -> Dict:
+    def check_start_nonce_before_stop_nonce(cls, values: dict) -> dict:
         if values["stop_nonce"] < values["start_nonce"]:
             raise ValueError(
                 f"stop_nonce: '{values['stop_nonce']}' cannot be less than "
@@ -164,9 +162,9 @@ class ContractEventQuery(_BaseBlockQuery):
     logs emitted by ``contract`` between ``start_block`` and ``stop_block``.
     """
 
-    contract: Union[List[AddressType], AddressType]
+    contract: Union[list[AddressType], AddressType]
     event: EventABI
-    search_topics: Optional[Dict[str, Any]] = None
+    search_topics: Optional[dict[str, Any]] = None
 
 
 class ContractMethodQuery(_BaseBlockQuery):
@@ -177,7 +175,7 @@ class ContractMethodQuery(_BaseBlockQuery):
 
     contract: AddressType
     method: MethodABI
-    method_args: Dict[str, Any]
+    method_args: dict[str, Any]
 
 
 class QueryAPI(BaseInterface):

@@ -1,6 +1,6 @@
 import os
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Sequence
+from typing import Any, Optional, Sequence
 
 from ethpm_types import ContractType, PackageManifest, Source
 from ethpm_types.utils import compute_checksum
@@ -31,11 +31,11 @@ class _ProjectSources:
         self.cache_folder = cache_folder
 
     @cached_property
-    def cached_sources(self) -> Dict[str, Source]:
+    def cached_sources(self) -> dict[str, Source]:
         return self.cached_manifest.sources or {}
 
     @cached_property
-    def remaining_cached_contract_types(self) -> Dict[str, ContractType]:
+    def remaining_cached_contract_types(self) -> dict[str, ContractType]:
         cached_contract_types = self.cached_manifest.contract_types or {}
 
         # Filter out deleted sources.
@@ -49,11 +49,11 @@ class _ProjectSources:
         }
 
     @cached_property
-    def sources_needing_compilation(self) -> List[Path]:
+    def sources_needing_compilation(self) -> list[Path]:
         needs_compile = set(filter(self._check_needs_compiling, self.active_sources))
 
         # NOTE: Add referring path imports for each source path
-        all_referenced_paths: List[Path] = []
+        all_referenced_paths: list[Path] = []
         sources_to_check_refs = needs_compile.copy()
         while sources_to_check_refs:
             source_id = str(get_relative_path(sources_to_check_refs.pop(), self.contracts_folder))
@@ -67,7 +67,7 @@ class _ProjectSources:
         return list(needs_compile)
 
     @cached_property
-    def _source_reference_paths(self) -> Dict[str, List[Path]]:
+    def _source_reference_paths(self) -> dict[str, list[Path]]:
         return {
             source_id: [self.contracts_folder.joinpath(Path(s)) for s in source.references or []]
             for source_id, source in self.cached_sources.items()
@@ -92,7 +92,7 @@ class _ProjectSources:
         checksum = compute_checksum(content.encode("utf8"), algorithm=cached_checksum.algorithm)
         return checksum != cached_checksum.hash  # Contents changed
 
-    def get_source_reference_paths(self, source_id: str) -> List[Path]:
+    def get_source_reference_paths(self, source_id: str) -> list[Path]:
         return [s for s in self._source_reference_paths.get(source_id, []) if s.is_file()]
 
 
@@ -115,15 +115,15 @@ class BaseProject(ProjectAPI):
         return True
 
     @property
-    def source_paths(self) -> List[Path]:
+    def source_paths(self) -> list[Path]:
         """
         All the source files in the project.
         Excludes files with extensions that don't have a registered compiler.
 
         Returns:
-            List[pathlib.Path]: A list of a source file paths in the project.
+            list[pathlib.Path]: A list of a source file paths in the project.
         """
-        files: List[Path] = []
+        files: list[Path] = []
 
         if not self.contracts_folder.is_dir():
             return files
@@ -167,7 +167,7 @@ class BaseProject(ProjectAPI):
         # Read the project config and migrate project-settings to Ape settings if needed.
         compile_config = self.config_manager.get_config("compile")
         self.project_manager.load_dependencies()
-        source_paths: List[Path] = list(
+        source_paths: list[Path] = list(
             set(
                 [p for p in self.source_paths if p in file_paths]
                 if file_paths
@@ -219,8 +219,8 @@ class BaseProject(ProjectAPI):
 
     def _compile(
         self, project_sources: _ProjectSources, use_cache: bool = True
-    ) -> Dict[str, ContractType]:
-        def _compile_sources(proj_srcs: _ProjectSources) -> Dict[str, ContractType]:
+    ) -> dict[str, ContractType]:
+        def _compile_sources(proj_srcs: _ProjectSources) -> dict[str, ContractType]:
             contracts_folder = self.contracts_folder
             srcs_to_compile = proj_srcs.sources_needing_compilation
 
@@ -292,7 +292,7 @@ class BrownieProject(BaseProject):
     def process_config_file(self, **kwargs) -> bool:
         # Migrate the brownie-config.yaml file to ape-config.yaml
 
-        migrated_config_data: Dict[str, Any] = {}
+        migrated_config_data: dict[str, Any] = {}
         with open(self.brownie_config_path) as brownie_config_file:
             brownie_config_data = safe_load(brownie_config_file) or {}
 
@@ -350,7 +350,7 @@ class BrownieProject(BaseProject):
                             )
 
         if import_remapping or solidity_version:
-            migrated_solidity_config: Dict[str, Any] = {}
+            migrated_solidity_config: dict[str, Any] = {}
 
             if import_remapping:
                 migrated_solidity_config["import_remapping"] = import_remapping

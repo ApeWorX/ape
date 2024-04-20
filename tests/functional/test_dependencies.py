@@ -2,7 +2,6 @@ import os
 import shutil
 import tempfile
 from pathlib import Path
-from typing import Dict
 
 import pytest
 from pydantic import ValidationError
@@ -13,7 +12,7 @@ from ape.managers.project.dependency import GithubDependency, LocalDependency, N
 
 @pytest.fixture
 def oz_dependencies_config():
-    def _create_oz_dependency(version: str) -> Dict:
+    def _create_oz_dependency(version: str) -> dict:
         return {
             "name": "OpenZeppelin",
             "version": version,
