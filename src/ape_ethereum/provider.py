@@ -294,8 +294,13 @@ class Web3Provider(ProviderAPI, ABC):
             tb = None
             if call_trace and txn_params.get("to"):
                 traces = (self._create_trace_frame(t) for t in call_trace[1])
-                if contract_type := self.chain_manager.contracts.get(txn_params["to"]):
-                    tb = SourceTraceback.create(contract_type, traces, HexBytes(txn_params["data"]))
+                try:
+                    if contract_type := self.chain_manager.contracts.get(txn_params["to"]):
+                        tb = SourceTraceback.create(
+                            contract_type, traces, HexBytes(txn_params["data"])
+                        )
+                except ProviderNotConnectedError:
+                    pass
 
             tx_error = self.get_virtual_machine_error(
                 err,
