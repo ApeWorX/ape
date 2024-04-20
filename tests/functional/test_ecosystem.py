@@ -1,5 +1,5 @@
 import copy
-from typing import Any, ClassVar, Dict, List, cast
+from typing import Any, ClassVar, cast
 
 import pytest
 from eth_pydantic_types import HashBytes32, HexBytes
@@ -365,7 +365,7 @@ def test_decode_logs_with_struct_from_interface(ethereum):
 
 def test_decode_block_when_hash_is_none(ethereum):
     # When using some providers, such as hardhat, the hash of the pending block is None
-    block_data_with_none_hash: Dict[str, Any] = {
+    block_data_with_none_hash: dict[str, Any] = {
         "number": None,
         "hash": None,
         "parentHash": HexBytes(
@@ -1020,7 +1020,7 @@ def test_decode_custom_error_tx_unsigned(ethereum):
 
 def test_decode_custom_error_selector_not_found(mocker, chain, ethereum):
     data = HexBytes("0x6a12f104")
-    abi: List = []
+    abi: list = []
     contract_type = ContractType(abi=abi)
     addr = cast(AddressType, "0x3fC91A3afd70395Cd496C647d5a6CC9D4B2b7FAD")
 
