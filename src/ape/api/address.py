@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING, Any, List
+from typing import TYPE_CHECKING, Any
 
 from eth_pydantic_types import HexBytes
 
@@ -17,7 +17,7 @@ class BaseAddress(BaseInterface):
     """
 
     @property
-    def _base_dir_values(self) -> List[str]:
+    def _base_dir_values(self) -> list[str]:
         """
         This exists because when you call ``dir(BaseAddress)``, you get the type's return
         value and not the instances. This allows base-classes to make use of shared
@@ -61,13 +61,13 @@ class BaseAddress(BaseInterface):
             # Check other __eq__
             return NotImplemented
 
-    def __dir__(self) -> List[str]:
+    def __dir__(self) -> list[str]:
         """
         Display methods to IPython on ``a.[TAB]`` tab completion.
         Overridden to lessen amount of methods shown to only those that are useful.
 
         Returns:
-            List[str]: Method names that IPython uses for tab completion.
+            list[str]: Method names that IPython uses for tab completion.
         """
         return self._base_dir_values
 

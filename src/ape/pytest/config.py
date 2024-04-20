@@ -1,4 +1,4 @@
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Optional, Union
 
 from _pytest.config import Config as PytestConfig
 
@@ -6,7 +6,7 @@ from ape.types import ContractFunctionPath
 from ape.utils import ManagerAccessMixin, cached_property
 
 
-def _get_config_exclusions(config) -> List[ContractFunctionPath]:
+def _get_config_exclusions(config) -> list[ContractFunctionPath]:
     return [
         ContractFunctionPath(contract_name=x.contract_name, method_name=x.method_name)
         for x in config.exclude
@@ -60,11 +60,11 @@ class ConfigWrapper(ManagerAccessMixin):
         return self.pytest_config.getoption("--coverage") or self.ape_test_config.coverage.track
 
     @property
-    def xml_coverage(self) -> Union[bool, Dict]:
+    def xml_coverage(self) -> Union[bool, dict]:
         return self.ape_test_config.coverage.reports.xml
 
     @property
-    def html_coverage(self) -> Union[bool, Dict]:
+    def html_coverage(self) -> Union[bool, dict]:
         return self.ape_test_config.coverage.reports.html
 
     @cached_property
@@ -72,13 +72,13 @@ class ConfigWrapper(ManagerAccessMixin):
         return self.pytest_config.getoption("--show-internal")
 
     @cached_property
-    def gas_exclusions(self) -> List[ContractFunctionPath]:
+    def gas_exclusions(self) -> list[ContractFunctionPath]:
         """
         The combination of both CLI values and config values.
         """
 
         cli_value = self.pytest_config.getoption("--gas-exclude")
-        exclusions: List[ContractFunctionPath] = []
+        exclusions: list[ContractFunctionPath] = []
         if cli_value:
             items = cli_value.split(",")
             for item in items:
@@ -90,7 +90,7 @@ class ConfigWrapper(ManagerAccessMixin):
         return exclusions
 
     @cached_property
-    def coverage_exclusions(self) -> List[ContractFunctionPath]:
+    def coverage_exclusions(self) -> list[ContractFunctionPath]:
         return _get_config_exclusions(self.ape_test_config.coverage)
 
     def get_pytest_plugin(self, name: str) -> Optional[Any]:
