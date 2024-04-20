@@ -1,5 +1,5 @@
 import json
-from typing import Callable, Dict
+from typing import Callable
 
 import click
 import yaml
@@ -62,7 +62,7 @@ def _list(cli_ctx, output_format, ecosystem_filter, network_filter, provider_fil
         ecosystems = network_data["ecosystems"]
         ecosystems = sorted(ecosystems, key=lambda e: e["name"])
 
-        def make_sub_tree(data: Dict, create_tree: Callable) -> Tree:
+        def make_sub_tree(data: dict, create_tree: Callable) -> Tree:
             name = f"[bold green]{data['name']}"
             if "isDefault" in data and data["isDefault"]:
                 name += default_suffix

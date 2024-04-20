@@ -1,5 +1,6 @@
+from collections.abc import Iterator
 from functools import singledispatchmethod
-from typing import Iterator, Optional
+from typing import Optional
 
 from ape.api import ReceiptAPI
 from ape.api.query import ContractCreationQuery, QueryAPI, QueryType

@@ -3,7 +3,7 @@ import re
 import sys
 from gettext import gettext
 from importlib.metadata import entry_points
-from typing import Any, Dict, Iterable, List, Optional, Tuple
+from typing import Any, Iterable, Optional
 
 import click
 import yaml
@@ -34,7 +34,7 @@ def display_config(ctx, param, value):
 
 
 class ApeCLI(click.MultiCommand):
-    _commands: Optional[Dict] = None
+    _commands: Optional[dict] = None
     _CLI_GROUP_NAME = "ape_cli_subcommands"
 
     def format_commands(self, ctx, formatter) -> None:
@@ -51,7 +51,7 @@ class ApeCLI(click.MultiCommand):
             limit = formatter.width - 6 - max(len(cmd[0]) for cmd in commands)
 
             # Split the commands into 3 sections.
-            sections: Dict[str, List[Tuple[str, str]]] = {
+            sections: dict[str, list[tuple[str, str]]] = {
                 "Core": [],
                 "Plugin": [],
                 "3rd-Party Plugin": [],
@@ -118,7 +118,7 @@ class ApeCLI(click.MultiCommand):
         raise usage_error
 
     @property
-    def commands(self) -> Dict:
+    def commands(self) -> dict:
         if self._commands:
             return self._commands
 
@@ -126,7 +126,7 @@ class ApeCLI(click.MultiCommand):
         self._commands = {clean_plugin_name(cmd.name): cmd.load for cmd in eps}
         return self._commands
 
-    def list_commands(self, ctx) -> List[str]:
+    def list_commands(self, ctx) -> list[str]:
         return list(sorted(self.commands))
 
     def get_command(self, ctx, name) -> Optional[click.Command]:

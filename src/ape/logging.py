@@ -2,9 +2,10 @@
 import logging
 import sys
 import traceback
+from collections.abc import Sequence
 from enum import IntEnum
 from pathlib import Path
-from typing import IO, Any, Callable, Dict, Optional, Sequence, Union
+from typing import IO, Any, Callable, Optional, Union
 
 import click
 from yarl import URL
@@ -73,8 +74,8 @@ class ApeColorFormatter(logging.Formatter):
         if _isatty(sys.stdout) and _isatty(sys.stderr):
             # Only color log messages when sys.stdout and sys.stderr are sent to the terminal.
             level = LogLevel(record.levelno)
-            default_dict: Dict[str, Any] = {}
-            styles: Dict[str, Any] = CLICK_STYLE_KWARGS.get(level, default_dict)
+            default_dict: dict[str, Any] = {}
+            styles: dict[str, Any] = CLICK_STYLE_KWARGS.get(level, default_dict)
             record.levelname = click.style(record.levelname, **styles)
 
         path = Path(record.pathname)
@@ -89,7 +90,7 @@ class ApeColorFormatter(logging.Formatter):
 
 class ClickHandler(logging.Handler):
     def __init__(
-        self, echo_kwargs: Dict, handlers: Optional[Sequence[Callable[[str], str]]] = None
+        self, echo_kwargs: dict, handlers: Optional[Sequence[Callable[[str], str]]] = None
     ):
         super().__init__()
         self.echo_kwargs = echo_kwargs
@@ -112,7 +113,7 @@ class ClickHandler(logging.Handler):
 
 class ApeLogger:
     _mentioned_verbosity_option = False
-    _extra_loggers: Dict[str, logging.Logger] = {}
+    _extra_loggers: dict[str, logging.Logger] = {}
 
     def __init__(
         self,

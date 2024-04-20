@@ -2,7 +2,7 @@ import re
 from ast import literal_eval
 from functools import cached_property
 from re import Pattern
-from typing import Any, Dict, Iterator, Optional, cast
+from typing import Any, Iterator, Optional, cast
 
 from eth.exceptions import HeaderNotFound
 from eth_pydantic_types import HexBytes
@@ -98,7 +98,7 @@ class LocalProvider(TestProviderAPI, Web3Provider):
         self._evm_backend = None
         self.provider_settings = {}
 
-    def update_settings(self, new_settings: Dict):
+    def update_settings(self, new_settings: dict):
         self.provider_settings = {**self.provider_settings, **new_settings}
         self.disconnect()
         self.connect()
@@ -184,14 +184,14 @@ class LocalProvider(TestProviderAPI, Web3Provider):
         self,
         txn: TransactionAPI,
         block_id: Optional[BlockID] = None,
-        state: Optional[Dict] = None,
+        state: Optional[dict] = None,
         **kwargs,
     ) -> HexBytes:
         # NOTE: Using JSON mode since used as request data.
         data = txn.model_dump(mode="json", exclude_none=True)
 
         state = kwargs.pop("state_override", None)
-        call_kwargs: Dict = {"block_identifier": block_id, "state_override": state}
+        call_kwargs: dict = {"block_identifier": block_id, "state_override": state}
 
         # Remove unneeded properties
         data.pop("gas", None)

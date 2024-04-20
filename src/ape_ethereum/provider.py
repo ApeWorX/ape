@@ -3,10 +3,12 @@ import re
 import sys
 import time
 from abc import ABC
+from collections.abc import Iterator
 from concurrent.futures import ThreadPoolExecutor
+from copy import copy
 from functools import cached_property, wraps
 from pathlib import Path
-from typing import Any, Dict, Iterable, Iterator, List, Optional, Union, cast
+from typing import Any, Iterable, Optional, Union, cast
 
 import ijson  # type: ignore
 import requests
@@ -274,7 +276,7 @@ class Web3Provider(ProviderAPI, ABC):
         except (ValueError, Web3ContractLogicError) as err:
             # NOTE: Try to use debug_traceCall to obtain a trace.
             #  And the RPC can be very picky with inputs.
-            tx_to_trace: Dict = {}
+            tx_to_trace: dict = {}
             for key, val in txn_params.items():
                 if isinstance(val, int):
                     tx_to_trace[key] = hex(val)
@@ -380,7 +382,7 @@ class Web3Provider(ProviderAPI, ABC):
         self,
         txn: TransactionAPI,
         block_id: Optional[BlockID] = None,
-        state: Optional[Dict] = None,
+        state: Optional[dict] = None,
         **kwargs: Any,
     ) -> HexBytes:
         if block_id is not None:
@@ -447,7 +449,17 @@ class Web3Provider(ProviderAPI, ABC):
 
         return HexBytes(trace.return_value)
 
-    def _eth_call(self, arguments: List) -> HexBytes:
+    def _eth_call(self, arguments: list) -> HexBytes:
+        # Force the usage of hex-type to support a wider-range of nodes.
+        txn_dict = copy(arguments[0])
+        if isinstance(txn_dict.get("type"), int):
+            txn_dict["type"] = HexBytes(txn_dict["type"]).hex()
+
+        # Remove unnecessary values to support a wider-range of nodes.
+        txn_dict.pop("chainId", None)
+
+        arguments[0] = txn_dict
+
         try:
             result = self.make_request("eth_call", arguments)
         except Exception as err:
@@ -469,8 +481,8 @@ class Web3Provider(ProviderAPI, ABC):
 
         return HexBytes(result)
 
-    def _prepare_call(self, txn: TransactionAPI, **kwargs) -> List:
-        # NOTE: Using JSON mode since used as request data.
+    def _prepare_call(self, txn: Union[dict, TransactionAPI], **kwargs) -> list:
+        # NOTE: Using mode="json" because used as request data.
         txn_dict = (
             txn.model_dump(by_alias=True, mode="json") if isinstance(txn, TransactionAPI) else txn
         )
@@ -524,7 +536,7 @@ class Web3Provider(ProviderAPI, ABC):
             ) from err
 
         ecosystem_config = self.network.ecosystem_config.model_dump(by_alias=True)
-        network_config: Dict = ecosystem_config.get(self.network.name, {})
+        network_config: dict = ecosystem_config.get(self.network.name, {})
         max_retries = network_config.get("max_get_transaction_retries", DEFAULT_MAX_RETRIES_TX)
         txn = {}
         for attempt in range(max_retries):
@@ -554,7 +566,7 @@ class Web3Provider(ProviderAPI, ABC):
             if block_id.isnumeric():
                 block_id = add_0x_prefix(block_id)
 
-        block = cast(Dict, self.web3.eth.get_block(block_id, full_transactions=True))
+        block = cast(dict, self.web3.eth.get_block(block_id, full_transactions=True))
         for transaction in block.get("transactions", []):
             yield self.network.ecosystem.create_transaction(**transaction)
 
@@ -734,10 +746,10 @@ class Web3Provider(ProviderAPI, ABC):
         self,
         stop_block: Optional[int] = None,
         address: Optional[AddressType] = None,
-        topics: Optional[List[Union[str, List[str]]]] = None,
+        topics: Optional[list[Union[str, list[str]]]] = None,
         required_confirmations: Optional[int] = None,
         new_block_timeout: Optional[int] = None,
-        events: Optional[List[EventABI]] = None,
+        events: Optional[list[EventABI]] = None,
     ) -> Iterator[ContractLog]:
         events = events or []
         if required_confirmations is None:
@@ -751,7 +763,7 @@ class Web3Provider(ProviderAPI, ABC):
             if block.number is None:
                 raise ValueError("Block number cannot be None")
 
-            log_params: Dict[str, Any] = {
+            log_params: dict[str, Any] = {
                 "start_block": block.number,
                 "stop_block": block.number,
                 "events": events,
@@ -994,7 +1006,7 @@ class Web3Provider(ProviderAPI, ABC):
 
     def create_access_list(
         self, transaction: TransactionAPI, block_id: Optional[BlockID] = None
-    ) -> List[AccessList]:
+    ) -> list[AccessList]:
         """
         Get the access list for a transaction use ``eth_createAccessList``.
 
@@ -1077,7 +1089,7 @@ class Web3Provider(ProviderAPI, ABC):
             message = str(exception).split(":")[-1].strip()
             data = None
 
-        params: Dict = {
+        params: dict = {
             "trace": trace,
             "contract_address": contract_address,
             "source_traceback": source_traceback,
@@ -1269,7 +1281,7 @@ class EthereumNodeProvider(Web3Provider, ABC):
         )
         logger.info(f"{msg} {suffix}.")
 
-    def ots_get_contract_creator(self, address: AddressType) -> Optional[Dict]:
+    def ots_get_contract_creator(self, address: AddressType) -> Optional[dict]:
         if self._ots_api_level is None:
             return None
 

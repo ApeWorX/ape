@@ -1,4 +1,4 @@
-from functools import lru_cache
+from functools import cache
 from typing import Any, Dict, Iterator, List, Optional, Sequence, Set, Type, Union
 
 from ethpm_types.abi import BaseModel, EventABI, MethodABI
@@ -19,8 +19,7 @@ QueryType = Union[
 ]
 
 
-# TODO: Replace with `functools.cache` when Py3.8 dropped
-@lru_cache(maxsize=None)
+@cache
 def _basic_columns(Model: Type[BaseInterfaceModel]) -> Set[str]:
     columns = set(Model.model_fields)
 
@@ -32,8 +31,7 @@ def _basic_columns(Model: Type[BaseInterfaceModel]) -> Set[str]:
     return columns
 
 
-# TODO: Replace with `functools.cache` when Py3.8 dropped
-@lru_cache(maxsize=None)
+@cache
 def _all_columns(Model: Type[BaseInterfaceModel]) -> Set[str]:
     columns = _basic_columns(Model)
     # NOTE: Iterate down the series of subclasses of `Model` (e.g. Block and BlockAPI)

@@ -1,7 +1,8 @@
 import re
+from collections.abc import Iterator, Sequence
 from decimal import Decimal
 from functools import cached_property
-from typing import Any, ClassVar, Dict, Iterator, List, Optional, Sequence, Tuple, Type, Union, cast
+from typing import Any, ClassVar, Optional, Union, cast
 
 from eth_abi import decode, encode
 from eth_abi.exceptions import InsufficientDataBytes, NonEmptyPaddingBytes
@@ -155,7 +156,7 @@ def create_local_network_config(
 def create_network_config(
     required_confirmations: int = 2,
     base_fee_multiplier: float = DEFAULT_LIVE_NETWORK_BASE_FEE_MULTIPLIER,
-    cls: Type = NetworkConfig,
+    cls: type = NetworkConfig,
     **kwargs,
 ) -> NetworkConfig:
     return cls(
@@ -172,18 +173,18 @@ class BaseEthereumConfig(PluginConfig):
 
     DEFAULT_TRANSACTION_TYPE: ClassVar[int] = TransactionType.DYNAMIC.value
     DEFAULT_LOCAL_GAS_LIMIT: ClassVar[GasLimit] = "max"
-    NETWORKS: ClassVar[Dict[str, Tuple[int, int]]] = NETWORKS
+    NETWORKS: ClassVar[dict[str, tuple[int, int]]] = NETWORKS
 
     default_network: str = LOCAL_NETWORK_NAME
-    _forked_configs: Dict[str, ForkedNetworkConfig] = {}
-    _custom_networks: Dict[str, NetworkConfig] = {}
+    _forked_configs: dict[str, ForkedNetworkConfig] = {}
+    _custom_networks: dict[str, NetworkConfig] = {}
 
     model_config = SettingsConfigDict(extra="allow")
 
     @model_validator(mode="before")
     @classmethod
     def load_network_configs(cls, values):
-        cfg_forks: Dict[str, ForkedNetworkConfig] = {}
+        cfg_forks: dict[str, ForkedNetworkConfig] = {}
         custom_networks = {}
         for name, obj in values.items():
             if name.startswith("_"):
@@ -292,7 +293,7 @@ class Block(BlockAPI):
     base_fee: int = Field(0, alias="baseFeePerGas")
     difficulty: int = 0
     total_difficulty: int = Field(0, alias="totalDifficulty")
-    uncles: List[HexBytes] = []
+    uncles: list[HexBytes] = []
 
     # Type re-declares.
     hash: Optional[HexBytes] = None
@@ -373,7 +374,7 @@ class Ethereum(EcosystemAPI):
     def encode_address(cls, address: AddressType) -> RawAddress:
         return str(address)
 
-    def decode_transaction_type(self, transaction_type_id: Any) -> Type[TransactionAPI]:
+    def decode_transaction_type(self, transaction_type_id: Any) -> type[TransactionAPI]:
         if isinstance(transaction_type_id, TransactionType):
             tx_type = transaction_type_id
         elif isinstance(transaction_type_id, int):
@@ -501,7 +502,7 @@ class Ethereum(EcosystemAPI):
 
         return None
 
-    def decode_receipt(self, data: Dict) -> ReceiptAPI:
+    def decode_receipt(self, data: dict) -> ReceiptAPI:
         status = data.get("status")
         if status is not None:
             status = self.conversion_manager.convert(status, int)
@@ -540,7 +541,7 @@ class Ethereum(EcosystemAPI):
             transaction=self.create_transaction(**data),
         )
 
-        receipt_cls: Type[Receipt]
+        receipt_cls: type[Receipt]
         if any(
             x in data
             for x in ("blobGasPrice", "blobGasUsed", "blobVersionedHashes", "maxFeePerBlobGas")
@@ -553,7 +554,7 @@ class Ethereum(EcosystemAPI):
 
         return receipt_cls.model_validate(receipt_kwargs)
 
-    def decode_block(self, data: Dict) -> BlockAPI:
+    def decode_block(self, data: dict) -> BlockAPI:
         data["hash"] = HexBytes(data["hash"]) if data.get("hash") else None
         if "gas_limit" in data:
             data["gasLimit"] = data.pop("gas_limit")
@@ -574,7 +575,7 @@ class Ethereum(EcosystemAPI):
 
         return Block.model_validate(data)
 
-    def _python_type_for_abi_type(self, abi_type: ABIType) -> Union[Type, Sequence]:
+    def _python_type_for_abi_type(self, abi_type: ABIType) -> Union[type, Sequence]:
         # NOTE: An array can be an array of tuples, so we start with an array check
         if str(abi_type.type).endswith("]"):
             # remove one layer of the potential onion of array
@@ -620,7 +621,7 @@ class Ethereum(EcosystemAPI):
         encoded_calldata = encode(input_types, converted_args)
         return HexBytes(encoded_calldata)
 
-    def decode_calldata(self, abi: Union[ConstructorABI, MethodABI], calldata: bytes) -> Dict:
+    def decode_calldata(self, abi: Union[ConstructorABI, MethodABI], calldata: bytes) -> dict:
         raw_input_types = [i.canonical_type for i in abi.inputs]
         input_types = [parse_type(i.model_dump()) for i in abi.inputs]
 
@@ -641,7 +642,7 @@ class Ethereum(EcosystemAPI):
 
         return arguments
 
-    def decode_returndata(self, abi: MethodABI, raw_data: bytes) -> Tuple[Any, ...]:
+    def decode_returndata(self, abi: MethodABI, raw_data: bytes) -> tuple[Any, ...]:
         output_types_str_ls = [o.canonical_type for o in abi.outputs]
 
         if raw_data:
@@ -725,8 +726,8 @@ class Ethereum(EcosystemAPI):
         return value
 
     def decode_primitive_value(
-        self, value: Any, output_type: Union[str, Tuple, List]
-    ) -> Union[str, HexBytes, Tuple, List]:
+        self, value: Any, output_type: Union[str, tuple, list]
+    ) -> Union[str, HexBytes, tuple, list]:
         if output_type == "address":
             try:
                 return self.decode_address(value)
@@ -823,7 +824,7 @@ class Ethereum(EcosystemAPI):
             tx_data["data"] = b""
 
         # Deduce the transaction type.
-        transaction_types: Dict[TransactionType, Type[TransactionAPI]] = {
+        transaction_types: dict[TransactionType, type[TransactionAPI]] = {
             TransactionType.STATIC: StaticFeeTransaction,
             TransactionType.ACCESS_LIST: AccessListTransaction,
             TransactionType.DYNAMIC: DynamicFeeTransaction,
@@ -894,7 +895,7 @@ class Ethereum(EcosystemAPI):
 
         return txn_class(**tx_data)
 
-    def decode_logs(self, logs: Sequence[Dict], *events: EventABI) -> Iterator["ContractLog"]:
+    def decode_logs(self, logs: Sequence[dict], *events: EventABI) -> Iterator["ContractLog"]:
         if not logs:
             return
 
@@ -925,7 +926,7 @@ class Ethereum(EcosystemAPI):
 
             # Since LogABICollection does not have access to the Ecosystem,
             # the rest of the decoding must happen here.
-            converted_arguments: Dict = {}
+            converted_arguments: dict = {}
 
             for item in abi.abi.inputs:
                 _type, key, value = item.canonical_type, item.name, event_arguments[item.name]
@@ -995,7 +996,7 @@ class Ethereum(EcosystemAPI):
 
         return trace
 
-    def _enrich_calltree(self, call: Dict, **kwargs) -> Dict:
+    def _enrich_calltree(self, call: dict, **kwargs) -> dict:
         if "contract_id" in call:
             # Already enriched.
             return call
@@ -1126,11 +1127,11 @@ class Ethereum(EcosystemAPI):
 
     def _enrich_calldata(
         self,
-        call: Dict,
+        call: dict,
         method_abi: Union[MethodABI, ConstructorABI],
         contract_type: ContractType,
         **kwargs,
-    ) -> Dict:
+    ) -> dict:
         calldata = call["calldata"]
         if isinstance(calldata, (str, bytes, int)):
             calldata_arg = HexBytes(calldata)
@@ -1160,7 +1161,7 @@ class Ethereum(EcosystemAPI):
 
         return call
 
-    def _enrich_returndata(self, call: Dict, method_abi: MethodABI, **kwargs) -> Dict:
+    def _enrich_returndata(self, call: dict, method_abi: MethodABI, **kwargs) -> dict:
         if "CREATE" in call.get("call_type", ""):
             call["returndata"] = ""
             return call
@@ -1212,11 +1213,11 @@ class Ethereum(EcosystemAPI):
         call["returndata"] = output_val
         return call
 
-    def get_python_types(self, abi_type: ABIType) -> Union[Type, Sequence]:
+    def get_python_types(self, abi_type: ABIType) -> Union[type, Sequence]:
         return self._python_type_for_abi_type(abi_type)
 
 
-def parse_type(type_: Dict[str, Any]) -> Union[str, Tuple, List]:
+def parse_type(type_: dict[str, Any]) -> Union[str, tuple, list]:
     if "tuple" not in type_["type"]:
         return type_["type"]
 
@@ -1224,7 +1225,7 @@ def parse_type(type_: Dict[str, Any]) -> Union[str, Tuple, List]:
     return [result] if is_array(type_["type"]) else result
 
 
-def _correct_key(key: str, data: Dict, alt_keys: Tuple[str, ...]) -> Dict:
+def _correct_key(key: str, data: dict, alt_keys: tuple[str, ...]) -> dict:
     if key in data:
         return data
 
