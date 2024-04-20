@@ -1,7 +1,6 @@
 import os
 import shutil
 from pathlib import Path
-from typing import Dict
 
 import pytest
 from pydantic import ValidationError
@@ -13,7 +12,7 @@ from ape.utils import create_tempdir
 
 @pytest.fixture
 def oz_dependencies_config():
-    def _create_oz_dependency(version: str) -> Dict:
+    def _create_oz_dependency(version: str) -> dict:
         return {
             "name": "OpenZeppelin",
             "version": version,
