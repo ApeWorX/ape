@@ -26,6 +26,7 @@ repos:
     -   id: mypy
         additional_dependencies: [
                 types-PyYAML,
+                types-python-dateutil,
                 types-requests,
                 types-setuptools,
                 pydantic,
