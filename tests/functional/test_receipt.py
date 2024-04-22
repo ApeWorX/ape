@@ -10,7 +10,7 @@ from ape_ethereum.transactions import Receipt, TransactionStatusEnum
 
 @pytest.fixture
 def deploy_receipt(vyper_contract_instance):
-    return vyper_contract_instance.creation.receipt
+    return vyper_contract_instance.creation_metadata.receipt
 
 
 @pytest.fixture

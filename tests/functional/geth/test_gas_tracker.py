@@ -15,7 +15,7 @@ def test_append_gas(gas_tracker, geth_account, geth_contract):
 
 @geth_process_test
 def test_append_gas_deploy(gas_tracker, geth_contract):
-    tx = geth_contract.creation.receipt
+    tx = geth_contract.creation_metadata.receipt
     trace = tx.trace
     gas_tracker.append_gas(trace, geth_contract.address)
     report = gas_tracker.session_gas_report

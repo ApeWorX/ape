@@ -766,10 +766,10 @@ class ProjectManager(BaseManager):
         if self.provider.network.is_dev:
             raise ProjectError("Can only publish deployments on a live network.")
 
-        if not (contract_name := contract.contract_type.name):
+        elif not (contract_name := contract.contract_type.name):
             raise ProjectError("Contract name required when publishing.")
 
-        if not (creation := contract.creation):
+        elif not (creation := contract.creation_metadata):
             raise ProjectError("Unable to find contract creation.")
 
         try:
@@ -781,7 +781,6 @@ class ProjectManager(BaseManager):
 
         block_number = receipt.block_number
         block_hash_bytes = self.provider.get_block(block_number).hash
-
         if not block_hash_bytes:
             # Mostly for mypy, not sure this can ever happen.
             raise ProjectError(

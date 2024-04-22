@@ -633,7 +633,7 @@ class ContractEvent(BaseInterfaceModel):
                 pass
 
             if contract:
-                if creation := contract.creation:
+                if creation := contract.creation_metadata:
                     start_block = creation.block
 
             stop_block = start_or_stop
@@ -887,7 +887,7 @@ class ContractInstance(BaseAddress, ContractTypeWrapper):
         return instance
 
     @property
-    def creation(self) -> Optional[ContractCreation]:
+    def creation_metadata(self) -> Optional[ContractCreation]:
         """
         Contract creation details: txn_hash, block, deployer, factory, receipt.
         """
@@ -1144,7 +1144,7 @@ class ContractInstance(BaseAddress, ContractTypeWrapper):
             self.get_event_by_signature.__name__,
             self.invoke_transaction.__name__,
             self.call_view_method.__name__,
-            ContractInstance.creation.fget.__name__,  # type: ignore[attr-defined]
+            ContractInstance.creation_metadata.fget.__name__,  # type: ignore[attr-defined]
         ]
         return list(
             set(self._base_dir_values).union(

@@ -540,8 +540,8 @@ def test_call_transact(vyper_contract_instance, owner):
 
 
 def test_creation_receipt(contract_instance, owner):
-    assert contract_instance.creation is not None
-    receipt = contract_instance.creation.receipt
+    assert contract_instance.creation_metadata is not None
+    receipt = contract_instance.creation_metadata.receipt
     assert receipt.txn_hash == contract_instance.txn_hash
     assert receipt.contract_address == contract_instance.address
     assert receipt.sender == owner
@@ -590,7 +590,7 @@ def test_dir(vyper_contract_instance):
         "code",
         "contract_type",
         "codesize",
-        "creation",
+        "creation_metadata",
         "decode_input",
         "get_event_by_signature",
         "invoke_transaction",
