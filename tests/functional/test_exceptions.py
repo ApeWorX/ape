@@ -75,7 +75,8 @@ def test_transaction_error_deploy_address_as_address(
 ):
     contract = vyper_contract_container.deploy(629, sender=owner)
 
-    data = contract.receipt.model_dump(exclude=("transaction",))
+    receipt = contract.creation_metadata.receipt
+    data = receipt.model_dump(exclude=("transaction",))
     # Show when receier is zero_address, it still picks contract address.
     data["transaction"] = ethereum.create_transaction(receiver=zero_address)
 
