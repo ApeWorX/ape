@@ -538,21 +538,12 @@ def test_call_transact(vyper_contract_instance, owner):
     assert receipt.status == TransactionStatusEnum.NO_ERROR
 
 
-def test_receipt(contract_instance, owner):
-    receipt = contract_instance.receipt
+def test_creation_receipt(contract_instance, owner):
+    assert contract_instance.creation_metadata is not None
+    receipt = contract_instance.creation_metadata.receipt
     assert receipt.txn_hash == contract_instance.txn_hash
     assert receipt.contract_address == contract_instance.address
     assert receipt.sender == owner
-
-
-def test_receipt_when_needs_brute_force(vyper_contract_instance, owner):
-    # Force it to use the brute-force approach.
-    vyper_contract_instance._cached_receipt = None
-    vyper_contract_instance.txn_hash = None
-
-    actual = vyper_contract_instance.receipt.contract_address
-    expected = vyper_contract_instance.address
-    assert actual == expected
 
 
 def test_from_receipt_when_receipt_not_deploy(contract_instance, owner):
@@ -594,18 +585,18 @@ def test_dir(vyper_contract_instance):
         # From base class
         "address",
         "balance",
+        "call_view_method",
         "code",
         "contract_type",
         "codesize",
-        "nonce",
-        "is_contract",
-        "provider",
-        "receipt",
-        "txn_hash",
+        "creation_metadata",
         "decode_input",
         "get_event_by_signature",
         "invoke_transaction",
-        "call_view_method",
+        "is_contract",
+        "nonce",
+        "provider",
+        "txn_hash",
         *vyper_contract_instance._events_,
         *vyper_contract_instance._mutable_methods_,
         *vyper_contract_instance._view_methods_,
