@@ -265,10 +265,10 @@ def test_data_when_contains_whitespace():
 def test_model_dump_excludes_none_values():
     txn = StaticFeeTransaction()
     txn.value = 1000000
-    actual = txn.model_dump(mode="json")
+    actual = txn.model_dump()
     assert "value" in actual
     txn.value = None  # type: ignore
-    actual = txn.model_dump(mode="json")
+    actual = txn.model_dump()
     assert "value" not in actual
 
 

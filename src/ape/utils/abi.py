@@ -113,7 +113,7 @@ class StructParser:
             and isinstance(value, (list, tuple))
             and len(_type.components or []) > 0
         ):
-            non_array_type_data = _type.model_dump(mode="json")
+            non_array_type_data = _type.model_dump()
             non_array_type_data["type"] = "tuple"
             non_array_type = ABIType(**non_array_type_data)
             return [self._encode(non_array_type, v) for v in value]
@@ -159,7 +159,7 @@ class StructParser:
         elif has_array_of_tuples_return:
             item_type_str = str(_types[0].type).split("[")[0]
             data = {
-                **_types[0].model_dump(mode="json"),
+                **_types[0].model_dump(),
                 "type": item_type_str,
                 "internalType": item_type_str,
             }
@@ -181,7 +181,7 @@ class StructParser:
                     if item_type_str == "tuple":
                         # Either an array of structs or nested structs.
                         item_type_data = {
-                            **output_type.model_dump(mode="json"),
+                            **output_type.model_dump(),
                             "type": item_type_str,
                             "internalType": item_type_str,
                         }

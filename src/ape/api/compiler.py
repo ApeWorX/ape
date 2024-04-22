@@ -57,7 +57,7 @@ class CompilerAPI(BaseInterfaceModel):
         The combination of settings from ``ape-config.yaml`` and ``.compiler_settings``.
         """
         CustomConfig = self.config.__class__
-        data = {**self.config.model_dump(mode="json", by_alias=True), **self.compiler_settings}
+        data = {**self.config.model_dump(by_alias=True), **self.compiler_settings}
         return CustomConfig.model_validate(data)
 
     @abstractmethod

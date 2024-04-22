@@ -110,7 +110,10 @@ class LocalProvider(TestProviderAPI, Web3Provider):
             return self.network.gas_limit
 
         estimate_gas = self.web3.eth.estimate_gas
+
+        # NOTE: Using JSON mode since used as request data.
         txn_dict = txn.model_dump(mode="json")
+
         txn_dict.pop("gas", None)
         txn_data = cast(TxParams, txn_dict)
 
@@ -125,7 +128,10 @@ class LocalProvider(TestProviderAPI, Web3Provider):
                 # and then set it back.
                 expected_nonce, actual_nonce = gas_match.groups()
                 txn.nonce = int(expected_nonce)
+
+                # NOTE: Using JSON mode since used as request data.
                 txn_params: TxParams = cast(TxParams, txn.model_dump(by_alias=True, mode="json"))
+
                 value = estimate_gas(txn_params, block_identifier=block_id)
                 txn.nonce = int(actual_nonce)
                 return value
@@ -141,7 +147,7 @@ class LocalProvider(TestProviderAPI, Web3Provider):
     @property
     def settings(self) -> EthTesterProviderConfig:
         return EthTesterProviderConfig.model_validate(
-            {**self.config.provider.model_dump(mode="json"), **self.provider_settings}
+            {**self.config.provider.model_dump(), **self.provider_settings}
         )
 
     @cached_property
@@ -177,7 +183,9 @@ class LocalProvider(TestProviderAPI, Web3Provider):
         state: Optional[Dict] = None,
         **kwargs,
     ) -> HexBytes:
+        # NOTE: Using JSON mode since used as request data.
         data = txn.model_dump(mode="json", exclude_none=True)
+
         state = kwargs.pop("state_override", None)
         call_kwargs: Dict = {"block_identifier": block_id, "state_override": state}
 
@@ -214,7 +222,9 @@ class LocalProvider(TestProviderAPI, Web3Provider):
         self.chain_manager.history.append(receipt)
 
         if receipt.failed:
+            # NOTE: Using JSON mode since used as request data.
             txn_dict = txn.model_dump(mode="json")
+
             txn_dict["nonce"] += 1
             txn_params = cast(TxParams, txn_dict)
 
