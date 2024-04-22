@@ -176,12 +176,14 @@ class TransactionAPI(BaseInterfaceModel):
 
     @log_instead_of_fail(default="<TransactionAPI>")
     def __repr__(self) -> str:
+        # NOTE: Using JSON mode for style.
         data = self.model_dump(mode="json")
         params = ", ".join(f"{k}={v}" for k, v in data.items())
         cls_name = getattr(type(self), "__name__", TransactionAPI.__name__)
         return f"<{cls_name} {params}>"
 
     def __str__(self) -> str:
+        # NOTE: Using JSON mode for style.
         data = self.model_dump(mode="json")
         if len(data["data"]) > 9:
             # only want to specify encoding if data["data"] is a string

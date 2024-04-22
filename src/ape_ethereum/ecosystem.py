@@ -199,7 +199,7 @@ class BaseEthereumConfig(PluginConfig):
                     use_fork=True,
                     default_transaction_type=cls.DEFAULT_TRANSACTION_TYPE,
                     gas_limit=cls.DEFAULT_LOCAL_GAS_LIMIT,
-                ).model_dump(mode="json", by_alias=True)
+                ).model_dump(by_alias=True)
                 data = merge_configs(default_fork_model, obj)
                 cfg_forks[key] = ForkedNetworkConfig.model_validate(data)
 
@@ -207,7 +207,7 @@ class BaseEthereumConfig(PluginConfig):
                 # Custom network.
                 default_network_model = create_network_config(
                     default_transaction_type=cls.DEFAULT_TRANSACTION_TYPE
-                ).model_dump(mode="json", by_alias=True)
+                ).model_dump(by_alias=True)
                 data = merge_configs(default_network_model, obj)
                 custom_networks[name] = NetworkConfig.model_validate(data)
 
@@ -607,7 +607,7 @@ class Ethereum(EcosystemAPI):
 
     def decode_calldata(self, abi: Union[ConstructorABI, MethodABI], calldata: bytes) -> Dict:
         raw_input_types = [i.canonical_type for i in abi.inputs]
-        input_types = [parse_type(i.model_dump(mode="json")) for i in abi.inputs]
+        input_types = [parse_type(i.model_dump()) for i in abi.inputs]
 
         try:
             raw_input_values = decode(raw_input_types, calldata, strict=False)
@@ -644,7 +644,7 @@ class Ethereum(EcosystemAPI):
         elif not isinstance(vm_return_values, (tuple, list)):
             vm_return_values = (vm_return_values,)
 
-        output_types = [parse_type(o.model_dump(mode="json")) for o in abi.outputs]
+        output_types = [parse_type(o.model_dump()) for o in abi.outputs]
         output_values = [
             self.decode_primitive_value(v, t) for v, t in zip(vm_return_values, output_types)
         ]

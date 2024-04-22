@@ -799,7 +799,7 @@ def test_value_to_non_payable_fallback_and_no_receive(
     and you try to send a value, it fails.
     """
     # Hack to set fallback as non-payable.
-    contract_type_data = vyper_fallback_contract_type.model_dump(mode="json")
+    contract_type_data = vyper_fallback_contract_type.model_dump()
     for abi in contract_type_data["abi"]:
         if abi.get("type") == "fallback":
             abi["stateMutability"] = "non-payable"

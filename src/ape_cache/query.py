@@ -407,6 +407,7 @@ class CacheQueryProvider(QueryAPI):
     def _get_block_cache_data(
         self, query: BlockQuery, result: Iterator[BaseInterfaceModel]
     ) -> Optional[List[Dict[str, Any]]]:
+        # NOTE: Using JSON-mode for maximum DB compatibility.
         return [m.model_dump(mode="json", by_alias=False) for m in result]
 
     @_get_cache_data.register
@@ -416,6 +417,8 @@ class CacheQueryProvider(QueryAPI):
         new_result = []
         table_columns = [c.key for c in Transactions.__table__.columns]  # type: ignore
         txns: List[TransactionAPI] = cast(List[TransactionAPI], result)
+
+        # NOTE: Using JSON mode for maximum DB compatibility.
         for val in [m for m in txns]:
             new_dict = {
                 k: v
@@ -444,6 +447,7 @@ class CacheQueryProvider(QueryAPI):
     def _get_cache_events_data(
         self, query: ContractEventQuery, result: Iterator[BaseInterfaceModel]
     ) -> Optional[List[Dict[str, Any]]]:
+        # NOTE: Using JSON mode for maximum DB compatibility.
         return [m.model_dump(mode="json", by_alias=False) for m in result]
 
     def update_cache(self, query: QueryType, result: Iterator[BaseInterfaceModel]):

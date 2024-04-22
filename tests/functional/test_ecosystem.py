@@ -246,7 +246,7 @@ def test_block_handles_snake_case_parent_hash(eth_tester_provider, sender, recei
 
     # Replace 'parentHash' key with 'parent_hash'
     latest_block = eth_tester_provider.get_block("latest")
-    latest_block_dict = eth_tester_provider.get_block("latest").model_dump(mode="json")
+    latest_block_dict = eth_tester_provider.get_block("latest").model_dump()
     latest_block_dict["parent_hash"] = latest_block_dict.pop("parentHash")
 
     redefined_block = Block.model_validate(latest_block_dict)

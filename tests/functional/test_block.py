@@ -7,7 +7,7 @@ def block(chain):
 
 
 def test_block_dict(block):
-    actual = block.model_dump(mode="json")
+    actual = block.model_dump()
     expected = {
         "baseFeePerGas": 1000000000,
         "difficulty": 0,

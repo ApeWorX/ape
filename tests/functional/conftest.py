@@ -308,6 +308,7 @@ def ds_note_test_contract(eth_tester_provider, vyper_contract_type, owner, get_c
 def project_with_contract(temp_config):
     with temp_config() as project:
         copy_tree(str(APE_PROJECT_FOLDER), str(project.path))
+        project.local_project._cached_manifest = None  # Clean manifest
         yield project
 
 

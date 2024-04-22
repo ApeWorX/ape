@@ -258,6 +258,7 @@ class GethDev(EthereumNodeProvider, TestProviderAPI, SubprocessProvider):
             self.start()
 
     def start(self, timeout: int = 20):
+        # NOTE: Using JSON mode to ensure types can be passed as CLI args.
         test_config = self.config_manager.get_config("test").model_dump(mode="json")
 
         # Allow configuring a custom executable besides your $PATH geth.

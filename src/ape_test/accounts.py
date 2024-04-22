@@ -127,6 +127,7 @@ class TestAccount(TestAccountAPI):
 
     def sign_transaction(self, txn: TransactionAPI, **signer_options) -> Optional[TransactionAPI]:
         # Signs anything that's given to it
+        # NOTE: Using JSON mode since used as request data.
         tx_data = txn.model_dump(mode="json", by_alias=True)
 
         try:
