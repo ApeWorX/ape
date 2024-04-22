@@ -4,6 +4,7 @@ from ape.api.networks import LOCAL_NETWORK_NAME
 
 from ._converters import WeiConversions
 from .ecosystem import NETWORKS, Ethereum, EthereumConfig
+from .query import EthereumQueryProvider
 
 
 @plugins.register(plugins.Config)
@@ -29,3 +30,8 @@ def networks():
 
     # NOTE: This works for local providers, as they get chain_id from themselves
     yield "ethereum", LOCAL_NETWORK_NAME, NetworkAPI
+
+
+@plugins.register(plugins.QueryPlugin)
+def query_engines():
+    yield EthereumQueryProvider
