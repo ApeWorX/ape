@@ -311,14 +311,14 @@ def test_cache_non_checksum_address(chain, vyper_contract_instance):
     assert chain.contracts[vyper_contract_instance.address] == vyper_contract_instance.contract_type
 
 
-def test_get_contract_receipt(chain, vyper_contract_instance):
+def test_get_creation_metadata(chain, vyper_contract_instance, owner):
     address = vyper_contract_instance.address
-    receipt = chain.contracts.get_creation_receipt(address)
-    assert receipt.contract_address == address
+    creation = chain.contracts.get_creation_metadata(address)
+    assert creation.deployer == owner.address
 
     chain.mine()
-    receipt = chain.contracts.get_creation_receipt(address)
-    assert receipt.contract_address == address
+    creation = chain.contracts.get_creation_metadata(address)
+    assert creation.deployer == owner.address
 
 
 def test_delete_contract(vyper_contract_instance, chain):

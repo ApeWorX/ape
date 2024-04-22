@@ -10,7 +10,7 @@ def test_append_gas(gas_tracker, owner, vyper_contract_instance):
 
 
 def test_append_gas_deploy(gas_tracker, vyper_contract_instance):
-    tx = vyper_contract_instance.receipt
+    tx = vyper_contract_instance.creation_metadata.receipt
     trace = tx.trace
     gas_tracker.append_gas(trace, vyper_contract_instance.address)
     report = gas_tracker.session_gas_report
