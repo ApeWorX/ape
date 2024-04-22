@@ -357,12 +357,18 @@ class PluginMetadata(BaseInterfaceModel):
         version_key = f"=={self.version}" if self.version and self.version[0].isnumeric() else ""
         return f"{self.name}{version_key}"
 
-    def check_installed(self, use_cache: bool = True):
+    def check_installed(self, use_cache: bool = True) -> bool:
         if not use_cache:
             _get_distributions.cache_clear()
 
-        ape_packages = [n.name for n in _get_distributions()]
-        return self.package_name in ape_packages
+        pkg_name = self.package_name
+        for dist in _get_distributions():
+            if not (name := getattr(dist, "name", "")):
+                continue
+            elif name == pkg_name:
+                return True
+
+        return False
 
     def _prepare_install(
         self, upgrade: bool = False, skip_confirmation: bool = False
