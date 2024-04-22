@@ -38,7 +38,7 @@ from ape.exceptions import (
 )
 from ape.logging import logger
 from ape.managers.base import BaseManager
-from ape.types import AddressType, BlockID, GasReport, SnapshotID, SourceTraceback
+from ape.types import AddressType, GasReport, SnapshotID, SourceTraceback
 from ape.utils import (
     BaseInterfaceModel,
     is_evm_precompile,
@@ -67,7 +67,7 @@ class BlockContainer(BaseManager):
         The latest block.
         """
 
-        return self._get_block("latest")
+        return self.provider.get_block("latest")
 
     @property
     def height(self) -> int:
@@ -99,7 +99,7 @@ class BlockContainer(BaseManager):
         if block_number < 0:
             block_number = len(self) + block_number
 
-        return self._get_block(block_number)
+        return self.provider.get_block(block_number)
 
     def __len__(self) -> int:
         """
@@ -303,9 +303,6 @@ class BlockContainer(BaseManager):
             required_confirmations=required_confirmations,
             new_block_timeout=new_block_timeout,
         )
-
-    def _get_block(self, block_id: BlockID) -> BlockAPI:
-        return self.provider.get_block(block_id)
 
 
 class AccountHistory(BaseInterfaceModel):
@@ -778,7 +775,7 @@ class ContractCache(BaseManager):
         contract_type = contract_instance.contract_type
 
         # Cache contract type in memory before proxy check,
-        # in case it is needed somewhere. It may get overriden.
+        # in case it is needed somewhere. It may get overridden.
         self._local_contract_types[address] = contract_type
 
         proxy_info = self.provider.network.ecosystem.get_proxy_info(address)
@@ -858,16 +855,26 @@ class ContractCache(BaseManager):
         """
         if creation := self._local_contract_creation.get(address):
             return creation
+
         # read from disk
-        if creation := self._get_contract_creation_from_disk(address):
+        elif creation := self._get_contract_creation_from_disk(address):
             self._local_contract_creation[address] = creation
             return creation
+
         # query and cache
         query = ContractCreationQuery(columns=["*"], contract=address)
-        if not (creation := next(self.query_manager.query(query), None)):  # type: ignore[arg-type]
+        get_creation = self.query_manager.query(query)
+
+        try:
+            if not (creation := next(get_creation, None)):  # type: ignore[arg-type]
+                return None
+
+        except QueryEngineError:
             return None
 
-        self._cache_contract_creation_to_disk(address, creation)
+        if self._is_live_network:
+            self._cache_contract_creation_to_disk(address, creation)
+
         self._local_contract_creation[address] = creation
         return creation
 

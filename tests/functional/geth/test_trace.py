@@ -153,8 +153,7 @@ def test_str_and_repr(geth_contract, geth_account, geth_provider):
 
 @geth_process_test
 def test_str_and_repr_deploy(geth_contract, geth_provider):
-    receipt = geth_contract.receipt
-    trace = geth_provider.get_transaction_trace(receipt.txn_hash)
+    trace = geth_provider.get_transaction_trace(geth_contract.creation.txn_hash)
     _ = trace.enriched_calltree
     expected = rf"{geth_contract.contract_type.name}\.__new__\(\s*num=\d+\s*\) \[\d+ gas\]"
     for actual in (str(trace), repr(trace)):
@@ -180,7 +179,7 @@ def test_str_and_repr_erigon(
     expected = r"0x[a-fA-F0-9]{40}\.0x[a-fA-F0-9]+\(\) \[\d+ gas\]"
 
     try:
-        trace = mock_geth.get_transaction_trace(geth_contract.receipt.txn_hash)
+        trace = mock_geth.get_transaction_trace(geth_contract.creation.txn_hash)
         assert isinstance(trace, Trace)
         for actual in (str(trace), repr(trace)):
             assert re.match(expected, actual), actual
@@ -233,7 +232,7 @@ def test_get_gas_report(gas_tracker, geth_account, geth_contract):
 
 @geth_process_test
 def test_get_gas_report_deploy(gas_tracker, geth_contract):
-    tx = geth_contract.receipt
+    tx = geth_contract.creation.receipt
     trace = tx.trace
     actual = trace.get_gas_report()
     contract_name = geth_contract.contract_type.name
@@ -243,7 +242,8 @@ def test_get_gas_report_deploy(gas_tracker, geth_contract):
 
 @geth_process_test
 def test_transaction_trace_create(vyper_contract_instance):
-    trace = TransactionTrace(transaction_hash=vyper_contract_instance.receipt.txn_hash)
+    tx_hash = vyper_contract_instance.creation.txn_hash
+    trace = TransactionTrace(transaction_hash=tx_hash)
     actual = f"{trace}"
     expected = r"VyperContract\.__new__\(num=0\) \[\d+ gas\]"
     assert re.match(expected, actual)

@@ -25,6 +25,7 @@ from ape.api.transactions import ReceiptAPI, TransactionAPI
 from ape.exceptions import (
     APINotImplementedError,
     ProviderError,
+    QueryEngineError,
     RPCTimeoutError,
     SubprocessError,
     SubprocessTimeoutError,
@@ -79,6 +80,10 @@ class BlockAPI(BaseInterfaceModel):
 
     _size: Optional[int] = None
 
+    @log_instead_of_fail(default="<BlockAPI>")
+    def __repr__(self) -> str:
+        return super().__repr__()
+
     @property
     def datetime(self) -> datetime.datetime:
         """
@@ -120,8 +125,13 @@ class BlockAPI(BaseInterfaceModel):
         """
         All transactions in a block.
         """
-        query = BlockTransactionQuery(columns=["*"], block_id=self.hash)
-        return cast(List[TransactionAPI], list(self.query_manager.query(query)))
+        try:
+            query = BlockTransactionQuery(columns=["*"], block_id=self.hash)
+            return cast(List[TransactionAPI], list(self.query_manager.query(query)))
+        except QueryEngineError as err:
+            # NOTE: Re-raising a better error here because was confusing
+            #  when doing anything with fields, and this would fail.
+            raise ProviderError(f"Unable to find block transactions: {err}") from err
 
     @computed_field()  # type: ignore[misc]
     @cached_property

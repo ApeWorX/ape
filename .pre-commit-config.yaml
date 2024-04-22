@@ -31,8 +31,7 @@ repos:
                 types-setuptools,
                 pydantic,
                 pandas-stubs,
-                types-SQLAlchemy,
-                types-python-dateutil
+                types-SQLAlchemy
         ]
 
 -   repo: https://github.com/executablebooks/mdformat

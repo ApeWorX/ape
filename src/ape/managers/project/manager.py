@@ -11,7 +11,13 @@ from pydantic import AnyUrl
 
 from ape.api import DependencyAPI, ProjectAPI
 from ape.contracts import ContractContainer, ContractInstance, ContractNamespace
-from ape.exceptions import ApeAttributeError, APINotImplementedError, ChainError, ProjectError
+from ape.exceptions import (
+    ApeAttributeError,
+    APINotImplementedError,
+    ChainError,
+    ProjectError,
+    TransactionNotFoundError,
+)
 from ape.logging import logger
 from ape.managers.base import BaseManager
 from ape.managers.project.types import ApeProject, BrownieProject
@@ -763,15 +769,19 @@ class ProjectManager(BaseManager):
         if not (contract_name := contract.contract_type.name):
             raise ProjectError("Contract name required when publishing.")
 
+        if not (creation := contract.creation):
+            raise ProjectError("Unable to find contract creation.")
+
         try:
-            receipt = contract.creation.receipt
-        except ChainError as err:
+            receipt = creation.receipt
+        except (ChainError, TransactionNotFoundError) as err:
             raise ProjectError(
                 f"Contract '{contract_name}' transaction receipt is unknown."
             ) from err
 
         block_number = receipt.block_number
         block_hash_bytes = self.provider.get_block(block_number).hash
+
         if not block_hash_bytes:
             # Mostly for mypy, not sure this can ever happen.
             raise ProjectError(

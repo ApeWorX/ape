@@ -633,9 +633,11 @@ class ContractEvent(BaseInterfaceModel):
                 pass
 
             if contract:
-                start_block = contract.creation.block
+                if creation := contract.creation:
+                    start_block = creation.block
 
             stop_block = start_or_stop
+
         elif start_or_stop is not None and stop is not None:
             start_block = start_or_stop
             stop_block = stop - 1
@@ -648,7 +650,7 @@ class ContractEvent(BaseInterfaceModel):
             contract=addresses,
             event=self.abi,
             search_topics=search_topics,
-            start_block=start_block,
+            start_block=start_block or 0,
             stop_block=stop_block,
         )
         yield from self.query_manager.query(contract_event_query)  # type: ignore
@@ -877,17 +879,19 @@ class ContractInstance(BaseAddress, ContractTypeWrapper):
             contract_type=contract_type,
             txn_hash=receipt.txn_hash,
         )
-        instance.creation = ContractCreation.from_receipt(receipt)
+
+        # Cache creation.
+        creation = ContractCreation.from_receipt(receipt)
+        cls.chain_manager.contracts._local_contract_creation[address] = creation
+
         return instance
 
-    @cached_property
-    def creation(self) -> ContractCreation:
+    @property
+    def creation(self) -> Optional[ContractCreation]:
         """
         Contract creation details: txn_hash, block, deployer, factory, receipt.
         """
-        data = self.chain_manager.contracts.get_creation_metadata(self.address)
-        assert data, "unreachable"
-        return data
+        return self.chain_manager.contracts.get_creation_metadata(self.address)
 
     @log_instead_of_fail(default="<ContractInstance>")
     def __repr__(self) -> str:
@@ -1140,7 +1144,7 @@ class ContractInstance(BaseAddress, ContractTypeWrapper):
             self.get_event_by_signature.__name__,
             self.invoke_transaction.__name__,
             self.call_view_method.__name__,
-            ContractInstance.receipt.fget.__name__,  # type: ignore[attr-defined]
+            ContractInstance.creation.fget.__name__,  # type: ignore[attr-defined]
         ]
         return list(
             set(self._base_dir_values).union(

@@ -106,7 +106,13 @@ class _BaseBlockQuery(_BaseQuery):
     @model_validator(mode="before")
     @classmethod
     def check_start_block_before_stop_block(cls, values):
-        if values["stop_block"] < values["start_block"]:
+        start_block = values.get("start_block")
+        stop_block = values.get("stop_block")
+        if (
+            isinstance(start_block, int)
+            and isinstance(stop_block, int)
+            and stop_block < start_block
+        ):
             raise ValueError(
                 f"stop_block: '{values['stop_block']}' cannot be less than "
                 f"start_block: '{values['start_block']}'."

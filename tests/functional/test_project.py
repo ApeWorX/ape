@@ -45,7 +45,7 @@ def deployment_path(vyper_contract_instance, base_deployments_path):
 
 @pytest.fixture
 def contract_block_hash(eth_tester_provider, vyper_contract_instance):
-    block_number = vyper_contract_instance.receipt.block_number
+    block_number = vyper_contract_instance.creation.block
     return eth_tester_provider.get_block(block_number).hash.hex()
 
 
@@ -272,7 +272,7 @@ def test_track_deployment(
     bip122_chain_id,
 ):
     contract = vyper_contract_instance
-    receipt = contract.receipt
+    receipt = contract.creation.receipt
     name = contract.contract_type.name
     address = vyper_contract_instance.address
 
@@ -307,7 +307,8 @@ def test_track_deployment_from_previously_deployed_contract(
     base_deployments_path,
     bip122_chain_id,
 ):
-    receipt = owner.deploy(vyper_contract_container, 0, required_confirmations=0).receipt
+    deploy = owner.deploy(vyper_contract_container, 0, required_confirmations=0)
+    receipt = deploy.creation.receipt
     address = receipt.contract_address
     contract = Contract(address, txn_hash=receipt.txn_hash)
     name = contract.contract_type.name
