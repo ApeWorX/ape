@@ -1,13 +1,14 @@
 from functools import cache
 from typing import Any, Dict, Iterator, List, Optional, Sequence, Set, Type, Union
 
-from ethpm_types.abi import BaseModel, EventABI, MethodABI
+from ethpm_types.abi import EventABI, MethodABI
 from pydantic import NonNegativeInt, PositiveInt, model_validator
 
 from ape.api.transactions import ReceiptAPI, TransactionAPI
 from ape.logging import logger
 from ape.types import AddressType
 from ape.utils import BaseInterface, BaseInterfaceModel, abstractmethod, cached_property
+from ape.utils.basemodel import BaseModel
 
 QueryType = Union[
     "BlockQuery",
@@ -105,7 +106,13 @@ class _BaseBlockQuery(_BaseQuery):
     @model_validator(mode="before")
     @classmethod
     def check_start_block_before_stop_block(cls, values):
-        if values["stop_block"] < values["start_block"]:
+        start_block = values.get("start_block")
+        stop_block = values.get("stop_block")
+        if (
+            isinstance(start_block, int)
+            and isinstance(stop_block, int)
+            and stop_block < start_block
+        ):
             raise ValueError(
                 f"stop_block: '{values['stop_block']}' cannot be less than "
                 f"start_block: '{values['start_block']}'."
@@ -152,8 +159,33 @@ class AccountTransactionQuery(_BaseQuery):
         return values
 
 
-class ContractCreationQuery(_BaseBlockQuery):
+class ContractCreationQuery(_BaseQuery):
+    """
+    A ``QueryType`` that obtains information about contract deployment.
+    Returns ``ContractCreation(txn_hash, block, deployer, factory)``.
+    """
+
     contract: AddressType
+
+
+class ContractCreation(BaseModel, BaseInterface):
+    txn_hash: str
+    block: int
+    deployer: AddressType
+    factory: Optional[AddressType] = None
+
+    @property
+    def receipt(self):
+        return self.chain_manager.get_receipt(self.txn_hash)
+
+    @classmethod
+    def from_receipt(cls, receipt: ReceiptAPI):
+        return cls(
+            txn_hash=receipt.txn_hash,
+            block=receipt.block_number,
+            deployer=receipt.sender,
+            # factory is not detected since this is meant for eoa deployments
+        )
 
 
 class ContractEventQuery(_BaseBlockQuery):

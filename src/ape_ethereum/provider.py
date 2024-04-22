@@ -3,12 +3,11 @@ import re
 import sys
 import time
 from abc import ABC
-from collections.abc import Iterator
 from concurrent.futures import ThreadPoolExecutor
 from copy import copy
 from functools import cached_property, wraps
 from pathlib import Path
-from typing import Any, Iterable, Optional, Union, cast
+from typing import Any, Iterable, Iterator, Optional, Union, cast
 
 import ijson  # type: ignore
 import requests
@@ -482,7 +481,7 @@ class Web3Provider(ProviderAPI, ABC):
         return HexBytes(result)
 
     def _prepare_call(self, txn: Union[dict, TransactionAPI], **kwargs) -> list:
-        # NOTE: Using mode="json" because used as request data.
+        # NOTE: Using mode="json" because used in request data.
         txn_dict = (
             txn.model_dump(by_alias=True, mode="json") if isinstance(txn, TransactionAPI) else txn
         )
@@ -786,55 +785,6 @@ class Web3Provider(ProviderAPI, ABC):
             stop_block = min(stop, start_block + page - 1)
             yield start_block, stop_block
 
-    def get_contract_creation_receipts(
-        self,
-        address: AddressType,
-        start_block: int = 0,
-        stop_block: Optional[int] = None,
-        contract_code: Optional[HexBytes] = None,
-    ) -> Iterator[ReceiptAPI]:
-        if stop_block is None:
-            stop_block = self.chain_manager.blocks.height
-
-        if contract_code is None:
-            contract_code = HexBytes(self.get_code(address))
-
-        mid_block = (stop_block - start_block) // 2 + start_block
-        # NOTE: biased towards mid_block == start_block
-
-        if start_block == mid_block:
-            for tx in self.chain_manager.blocks[mid_block].transactions:
-                if (receipt := tx.receipt) and receipt.contract_address == address:
-                    yield receipt
-
-            if mid_block + 1 <= stop_block:
-                yield from self.get_contract_creation_receipts(
-                    address,
-                    start_block=mid_block + 1,
-                    stop_block=stop_block,
-                    contract_code=contract_code,
-                )
-
-        # TODO: Handle when code is nonzero but doesn't match
-        # TODO: Handle when code is empty after it's not (re-init)
-        elif HexBytes(self.get_code(address, block_id=mid_block)) == contract_code:
-            # If the code exists, we need to look backwards.
-            yield from self.get_contract_creation_receipts(
-                address,
-                start_block=start_block,
-                stop_block=mid_block,
-                contract_code=contract_code,
-            )
-
-        elif mid_block + 1 <= stop_block:
-            # The code does not exist yet, we need to look ahead.
-            yield from self.get_contract_creation_receipts(
-                address,
-                start_block=mid_block + 1,
-                stop_block=stop_block,
-                contract_code=contract_code,
-            )
-
     def get_contract_logs(self, log_filter: LogFilter) -> Iterator[ContractLog]:
         height = self.chain_manager.blocks.height
         start_block = log_filter.start_block
@@ -849,7 +799,6 @@ class Web3Provider(ProviderAPI, ABC):
 
             # NOTE: Using JSON mode since used as request data.
             filter_params = page_filter.model_dump(mode="json")
-
             logs = self.make_request("eth_getLogs", [filter_params])
             return self.network.ecosystem.decode_logs(logs, *log_filter.events)
 

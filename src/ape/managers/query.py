@@ -9,7 +9,6 @@ from ape.api.query import (
     BaseInterfaceModel,
     BlockQuery,
     BlockTransactionQuery,
-    ContractCreationQuery,
     ContractEventQuery,
 )
 from ape.contracts.base import ContractLog, LogFilter
@@ -25,6 +24,9 @@ class DefaultQueryProvider(QueryAPI):
     Allows for the query of blockchain data using connected provider.
     """
 
+    def __init__(self):
+        self.supports_contract_creation = None
+
     @singledispatchmethod
     def estimate_query(self, query: QueryType) -> Optional[int]:  # type: ignore
         return None  # can't handle this query
@@ -38,12 +40,6 @@ class DefaultQueryProvider(QueryAPI):
     def estimate_block_transaction_query(self, query: BlockTransactionQuery) -> int:
         # NOTE: Very loose estimate of 1000ms per block for this query.
         return self.provider.get_block(query.block_id).num_transactions * 100
-
-    @estimate_query.register
-    def estimate_contract_creation_query(self, query: ContractCreationQuery) -> int:
-        # NOTE: Extremely expensive query, involves binary search of all blocks in a chain
-        #       Very loose estimate of 5s per transaction for this query.
-        return 5000
 
     @estimate_query.register
     def estimate_contract_events_query(self, query: ContractEventQuery) -> int:
@@ -74,14 +70,6 @@ class DefaultQueryProvider(QueryAPI):
         self, query: BlockTransactionQuery
     ) -> Iterator[TransactionAPI]:
         return self.provider.get_transactions_by_block(query.block_id)
-
-    @perform_query.register
-    def perform_contract_creation_query(self, query: ContractCreationQuery) -> Iterator[ReceiptAPI]:
-        yield from self.provider.get_contract_creation_receipts(
-            address=query.contract,
-            start_block=query.start_block,
-            stop_block=query.stop_block,
-        )
 
     @perform_query.register
     def perform_contract_events_query(self, query: ContractEventQuery) -> Iterator[ContractLog]:

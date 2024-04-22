@@ -19,6 +19,7 @@ from ape.api.networks import NetworkAPI, ProxyInfoAPI
 from ape.api.query import (
     AccountTransactionQuery,
     BlockQuery,
+    ContractCreation,
     ContractCreationQuery,
     extract_fields,
     validate_and_expand_columns,
@@ -37,7 +38,7 @@ from ape.exceptions import (
 )
 from ape.logging import logger
 from ape.managers.base import BaseManager
-from ape.types import AddressType, BlockID, GasReport, SnapshotID, SourceTraceback
+from ape.types import AddressType, GasReport, SnapshotID, SourceTraceback
 from ape.utils import (
     BaseInterfaceModel,
     is_evm_precompile,
@@ -66,7 +67,7 @@ class BlockContainer(BaseManager):
         The latest block.
         """
 
-        return self._get_block("latest")
+        return self.provider.get_block("latest")
 
     @property
     def height(self) -> int:
@@ -98,7 +99,7 @@ class BlockContainer(BaseManager):
         if block_number < 0:
             block_number = len(self) + block_number
 
-        return self._get_block(block_number)
+        return self.provider.get_block(block_number)
 
     def __len__(self) -> int:
         """
@@ -302,9 +303,6 @@ class BlockContainer(BaseManager):
             required_confirmations=required_confirmations,
             new_block_timeout=new_block_timeout,
         )
-
-    def _get_block(self, block_id: BlockID) -> BlockAPI:
-        return self.provider.get_block(block_id)
 
 
 class AccountHistory(BaseInterfaceModel):
@@ -623,6 +621,7 @@ class ContractCache(BaseManager):
     _local_proxies: Dict[AddressType, ProxyInfoAPI] = {}
     _local_blueprints: Dict[str, ContractType] = {}
     _local_deployments_mapping: Dict[str, Dict] = {}
+    _local_contract_creation: Dict[str, ContractCreation] = {}
 
     # chain_id -> address -> custom_err
     # Cached to prevent calling `new_class` multiple times with conflicts.
@@ -666,6 +665,10 @@ class ContractCache(BaseManager):
     @property
     def _blueprint_cache(self) -> Path:
         return self._network_cache / "blueprints"
+
+    @property
+    def _contract_creation_cache(self) -> Path:
+        return self._network_cache / "contract_creation"
 
     @property
     def _full_deployments(self) -> Dict:
@@ -772,7 +775,7 @@ class ContractCache(BaseManager):
         contract_type = contract_instance.contract_type
 
         # Cache contract type in memory before proxy check,
-        # in case it is needed somewhere. It may get overriden.
+        # in case it is needed somewhere. It may get overridden.
         self._local_contract_types[address] = contract_type
 
         proxy_info = self.provider.network.ecosystem.get_proxy_info(address)
@@ -839,6 +842,41 @@ class ContractCache(BaseManager):
         """
 
         return self._local_proxies.get(address) or self._get_proxy_info_from_disk(address)
+
+    def get_creation_metadata(self, address: AddressType) -> Optional[ContractCreation]:
+        """
+        Get contract creation metadata containing txn_hash, deployer, factory, block.
+
+        Args:
+            address (AddressType): The address of the contract.
+
+        Returns:
+            Optional[:class:`~ape.api.query.ContractCreation`]
+        """
+        if creation := self._local_contract_creation.get(address):
+            return creation
+
+        # read from disk
+        elif creation := self._get_contract_creation_from_disk(address):
+            self._local_contract_creation[address] = creation
+            return creation
+
+        # query and cache
+        query = ContractCreationQuery(columns=["*"], contract=address)
+        get_creation = self.query_manager.query(query)
+
+        try:
+            if not (creation := next(get_creation, None)):  # type: ignore[arg-type]
+                return None
+
+        except QueryEngineError:
+            return None
+
+        if self._is_live_network:
+            self._cache_contract_creation_to_disk(address, creation)
+
+        self._local_contract_creation[address] = creation
+        return creation
 
     def get_blueprint(self, blueprint_id: str) -> Optional[ContractType]:
         """
@@ -1256,6 +1294,7 @@ class ContractCache(BaseManager):
         self._local_proxies = {}
         self._local_blueprints = {}
         self._local_deployments_mapping = {}
+        self._local_creation_metadata = {}
 
     def _get_contract_type_from_disk(self, address: AddressType) -> Optional[ContractType]:
         address_file = self._contract_types_cache / f"{address}.json"
@@ -1294,6 +1333,13 @@ class ContractCache(BaseManager):
 
         return contract_type
 
+    def _get_contract_creation_from_disk(self, address: AddressType) -> Optional[ContractCreation]:
+        path = self._contract_creation_cache / f"{address}.json"
+        if not path.is_file():
+            return None
+
+        return ContractCreation.model_validate_json(path.read_text())
+
     def _cache_contract_to_disk(self, address: AddressType, contract_type: ContractType):
         self._contract_types_cache.mkdir(exist_ok=True, parents=True)
         address_file = self._contract_types_cache / f"{address}.json"
@@ -1309,6 +1355,11 @@ class ContractCache(BaseManager):
         blueprint_file = self._blueprint_cache / f"{blueprint_id}.json"
         blueprint_file.write_text(contract_type.model_dump_json())
 
+    def _cache_contract_creation_to_disk(self, address: AddressType, creation: ContractCreation):
+        self._contract_creation_cache.mkdir(exist_ok=True, parents=True)
+        path = self._contract_creation_cache / f"{address}.json"
+        path.write_text(creation.model_dump_json())
+
     def _load_deployments_cache(self) -> Dict:
         return (
             json.loads(self._deployments_mapping_cache.read_text())
@@ -1320,41 +1371,6 @@ class ContractCache(BaseManager):
         self._deployments_mapping_cache.parent.mkdir(exist_ok=True, parents=True)
         with self._deployments_mapping_cache.open("w") as fp:
             json.dump(deployments_map, fp, sort_keys=True, indent=2, default=sorted)
-
-    def get_creation_receipt(
-        self, address: AddressType, start_block: int = 0, stop_block: Optional[int] = None
-    ) -> ReceiptAPI:
-        """
-        Get the receipt responsible for the initial creation of the contract.
-
-        Args:
-            address (:class:`~ape.types.address.AddressType`): The address of the contract.
-            start_block (int): The block to start looking from.
-            stop_block (Optional[int]): The block to stop looking at.
-
-        Returns:
-            :class:`~ape.apt.transactions.ReceiptAPI`
-        """
-        if stop_block is None:
-            stop_block = self.chain_manager.blocks.height
-
-        query = ContractCreationQuery(
-            columns=["*"],
-            contract=address,
-            start_block=start_block,
-            stop_block=stop_block,
-        )
-        creation_receipts = cast(Iterator[ReceiptAPI], self.query_manager.query(query))
-
-        if tx := next(creation_receipts, None):
-            return tx
-
-        raise ChainError(
-            f"Failed to find a contract-creation receipt for '{address}'. "
-            "Note that it may be the case that the backend used cannot detect contracts "
-            "deployed by other contracts, and you may receive better results by installing "
-            "a plugin that supports it, like Etherscan."
-        )
 
 
 class ReportManager(BaseManager):

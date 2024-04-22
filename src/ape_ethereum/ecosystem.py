@@ -1,8 +1,7 @@
 import re
-from collections.abc import Iterator, Sequence
 from decimal import Decimal
 from functools import cached_property
-from typing import Any, ClassVar, Optional, Union, cast
+from typing import Any, ClassVar, Iterator, Optional, Sequence, Union, cast
 
 from eth_abi import decode, encode
 from eth_abi.exceptions import InsufficientDataBytes, NonEmptyPaddingBytes

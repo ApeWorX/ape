@@ -13,7 +13,12 @@ from ethpm_types.contract_type import ABI_W_SELECTOR_T, ContractType
 
 from ape.api import AccountAPI, Address, ReceiptAPI, TransactionAPI
 from ape.api.address import BaseAddress
-from ape.api.query import ContractEventQuery, extract_fields, validate_and_expand_columns
+from ape.api.query import (
+    ContractCreation,
+    ContractEventQuery,
+    extract_fields,
+    validate_and_expand_columns,
+)
 from ape.exceptions import (
     ApeAttributeError,
     ArgumentsLengthError,
@@ -24,7 +29,6 @@ from ape.exceptions import (
     CustomError,
     MethodNonPayableError,
     MissingDeploymentBytecodeError,
-    TransactionNotFoundError,
 )
 from ape.logging import logger
 from ape.types import AddressType, ContractLog, LogFilter, MockContractLog
@@ -629,13 +633,11 @@ class ContractEvent(BaseInterfaceModel):
                 pass
 
             if contract:
-                start_block = contract.receipt.block_number
-            else:
-                cache = self.chain_manager.contracts
-                receipt = cache.get_creation_receipt(contract_address)
-                start_block = receipt.block_number
+                if creation := contract.creation_metadata:
+                    start_block = creation.block
 
             stop_block = start_or_stop
+
         elif start_or_stop is not None and stop is not None:
             start_block = start_or_stop
             stop_block = stop - 1
@@ -648,7 +650,7 @@ class ContractEvent(BaseInterfaceModel):
             contract=addresses,
             event=self.abi,
             search_topics=search_topics,
-            start_block=start_block,
+            start_block=start_block or 0,
             stop_block=stop_block,
         )
         yield from self.query_manager.query(contract_event_query)  # type: ignore
@@ -836,7 +838,6 @@ class ContractInstance(BaseAddress, ContractTypeWrapper):
         self._address = address
         self.contract_type = contract_type
         self.txn_hash = txn_hash
-        self._cached_receipt: Optional[ReceiptAPI] = None
 
     def __call__(self, *args, **kwargs) -> ReceiptAPI:
         has_value = kwargs.get("value")
@@ -863,6 +864,9 @@ class ContractInstance(BaseAddress, ContractTypeWrapper):
 
     @classmethod
     def from_receipt(cls, receipt: ReceiptAPI, contract_type: ContractType) -> "ContractInstance":
+        """
+        Create a contract instance from the contract deployment receipt.
+        """
         address = receipt.contract_address
         if not address:
             raise ChainError(
@@ -875,33 +879,19 @@ class ContractInstance(BaseAddress, ContractTypeWrapper):
             contract_type=contract_type,
             txn_hash=receipt.txn_hash,
         )
-        instance._cached_receipt = receipt
+
+        # Cache creation.
+        creation = ContractCreation.from_receipt(receipt)
+        cls.chain_manager.contracts._local_contract_creation[address] = creation
+
         return instance
 
     @property
-    def receipt(self) -> ReceiptAPI:
+    def creation_metadata(self) -> Optional[ContractCreation]:
         """
-        The receipt associated with deploying the contract instance,
-        if it is known and exists.
+        Contract creation details: txn_hash, block, deployer, factory, receipt.
         """
-
-        if self._cached_receipt:
-            return self._cached_receipt
-
-        if self.txn_hash:
-            # Hash is known. Use that to get the receipt.
-            try:
-                receipt = self.chain_manager.get_receipt(self.txn_hash)
-            except (TransactionNotFoundError, ValueError, ChainError):
-                pass
-            else:
-                self._cached_receipt = receipt
-                return receipt
-
-        # Brute force find the receipt.
-        receipt = self.chain_manager.contracts.get_creation_receipt(self.address)
-        self._cached_receipt = receipt
-        return receipt
+        return self.chain_manager.contracts.get_creation_metadata(self.address)
 
     @log_instead_of_fail(default="<ContractInstance>")
     def __repr__(self) -> str:
@@ -1154,7 +1144,7 @@ class ContractInstance(BaseAddress, ContractTypeWrapper):
             self.get_event_by_signature.__name__,
             self.invoke_transaction.__name__,
             self.call_view_method.__name__,
-            ContractInstance.receipt.fget.__name__,  # type: ignore[attr-defined]
+            ContractInstance.creation_metadata.fget.__name__,  # type: ignore[attr-defined]
         ]
         return list(
             set(self._base_dir_values).union(
