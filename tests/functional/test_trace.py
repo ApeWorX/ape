@@ -33,7 +33,7 @@ def test_get_gas_report(gas_tracker, owner, vyper_contract_instance):
 
 
 def test_get_gas_report_deploy(gas_tracker, vyper_contract_instance):
-    tx = vyper_contract_instance.receipt
+    tx = vyper_contract_instance.creation_metadata.receipt
     trace = tx.trace
     actual = trace.get_gas_report()
     contract_name = vyper_contract_instance.contract_type.name
@@ -50,7 +50,7 @@ def test_get_gas_report_transfer(gas_tracker, sender, receiver):
 
 
 def test_transaction_trace_create(vyper_contract_instance):
-    trace = TransactionTrace(transaction_hash=vyper_contract_instance.receipt.txn_hash)
+    trace = TransactionTrace(transaction_hash=vyper_contract_instance.creation_metadata.txn_hash)
     actual = f"{trace}"
     expected = r"VyperContract\.__new__\(num=0\) \[\d+ gas\]"
     assert re.match(expected, actual)
