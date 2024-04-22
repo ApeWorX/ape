@@ -1,6 +1,8 @@
+import re
 import sys
 from enum import Enum
 from functools import cached_property
+from pathlib import Path
 from typing import Any, Dict, Iterable, Iterator, List, Optional, Sequence, Tuple
 
 import click
@@ -8,18 +10,28 @@ from packaging.specifiers import SpecifierSet
 from packaging.version import Version
 from pydantic import field_validator, model_validator
 
-from ape.__modules__ import __modules__
+from ape.exceptions import PluginVersionError
 from ape.logging import logger
-from ape.plugins import clean_plugin_name
 from ape.utils import BaseInterfaceModel, get_package_version, log_instead_of_fail
 from ape.utils._github import github_client
 from ape.utils.basemodel import BaseModel
 from ape.utils.misc import _get_distributions
 from ape.version import version as ape_version_str
-from ape_plugins.exceptions import PluginVersionError
 
 # Plugins maintained OSS by ApeWorX (and trusted)
-CORE_PLUGINS = {p for p in __modules__ if p != "ape"}
+PLUGIN_PATTERN = re.compile(r"\bape_\w+(?!\S)")
+CORE_PLUGINS = [
+    "ape",
+    *[
+        f.name
+        for f in Path(__file__).parent.parent.parent.iterdir()
+        if f.name.startswith("ape_") and f.is_dir() and re.match(PLUGIN_PATTERN, f.name)
+    ],
+]
+
+
+def clean_plugin_name(name: str) -> str:
+    return name.replace("_", "-").replace("ape-", "")
 
 
 class ApeVersion:

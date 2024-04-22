@@ -3,9 +3,9 @@ import importlib
 from importlib.metadata import distributions
 from typing import Any, Callable, Generator, Iterator, List, Optional, Set, Tuple, Type
 
-from ape.__modules__ import __modules__
 from ape.exceptions import ApeAttributeError
 from ape.logging import logger
+from ape.plugins._utils import CORE_PLUGINS, clean_plugin_name
 from ape.utils.basemodel import _assert_not_ipython_check
 from ape.utils.misc import log_instead_of_fail
 
@@ -43,10 +43,6 @@ class AllPluginHooks(
 
 # All hookspecs are registered
 pluggy_manager.add_hookspecs(AllPluginHooks)
-
-
-def clean_plugin_name(name: str) -> str:
-    return name.replace("_", "-").replace("ape-", "")
 
 
 def get_hooks(plugin_type):
@@ -168,20 +164,21 @@ class PluginManager:
         if self.__registered:
             return
 
-        plugins = [
-            x.name.replace("-", "_")
-            for x in distributions()
-            if getattr(x, "name", "").startswith("ape-")
-        ]
-        locals = [p for p in __modules__ if p != "ape"]
-        plugin_modules = tuple([*plugins, *locals])
+        plugins: list[str] = []
+        for dist in distributions():
+            if not (name := getattr(dist, "name", "")):
+                continue
+            elif name.startswith("ape-"):
+                plugins.append(name.replace("-", "_"))
+
+        plugin_modules = tuple([*plugins, *CORE_PLUGINS])
 
         for module_name in plugin_modules:
             try:
                 module = importlib.import_module(module_name)
                 pluggy_manager.register(module)
             except Exception as err:
-                if module_name in __modules__:
+                if module_name in CORE_PLUGINS:
                     # Always raise core plugin registration errors.
                     raise
 
