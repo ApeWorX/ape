@@ -11,7 +11,13 @@ from pydantic import AnyUrl
 
 from ape.api import DependencyAPI, ProjectAPI
 from ape.contracts import ContractContainer, ContractInstance, ContractNamespace
-from ape.exceptions import ApeAttributeError, APINotImplementedError, ChainError, ProjectError
+from ape.exceptions import (
+    ApeAttributeError,
+    APINotImplementedError,
+    ChainError,
+    ProjectError,
+    TransactionNotFoundError,
+)
 from ape.logging import logger
 from ape.managers.base import BaseManager
 from ape.managers.project.types import ApeProject, BrownieProject
@@ -760,12 +766,15 @@ class ProjectManager(BaseManager):
         if self.provider.network.is_dev:
             raise ProjectError("Can only publish deployments on a live network.")
 
-        if not (contract_name := contract.contract_type.name):
+        elif not (contract_name := contract.contract_type.name):
             raise ProjectError("Contract name required when publishing.")
 
+        elif not (creation := contract.creation_metadata):
+            raise ProjectError("Unable to find contract creation.")
+
         try:
-            receipt = contract.receipt
-        except ChainError as err:
+            receipt = creation.receipt
+        except (ChainError, TransactionNotFoundError) as err:
             raise ProjectError(
                 f"Contract '{contract_name}' transaction receipt is unknown."
             ) from err

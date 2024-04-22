@@ -25,6 +25,7 @@ from ape.api.transactions import ReceiptAPI, TransactionAPI
 from ape.exceptions import (
     APINotImplementedError,
     ProviderError,
+    QueryEngineError,
     RPCTimeoutError,
     SubprocessError,
     SubprocessTimeoutError,
@@ -79,6 +80,10 @@ class BlockAPI(BaseInterfaceModel):
 
     _size: Optional[int] = None
 
+    @log_instead_of_fail(default="<BlockAPI>")
+    def __repr__(self) -> str:
+        return super().__repr__()
+
     @property
     def datetime(self) -> datetime.datetime:
         """
@@ -120,8 +125,13 @@ class BlockAPI(BaseInterfaceModel):
         """
         All transactions in a block.
         """
-        query = BlockTransactionQuery(columns=["*"], block_id=self.hash)
-        return cast(list[TransactionAPI], list(self.query_manager.query(query)))
+        try:
+            query = BlockTransactionQuery(columns=["*"], block_id=self.hash)
+            return cast(list[TransactionAPI], list(self.query_manager.query(query)))
+        except QueryEngineError as err:
+            # NOTE: Re-raising a better error here because was confusing
+            #  when doing anything with fields, and this would fail.
+            raise ProviderError(f"Unable to find block transactions: {err}") from err
 
     @computed_field()  # type: ignore[misc]
     @cached_property
@@ -526,27 +536,6 @@ class ProviderAPI(BaseInterfaceModel):
             account (:class:`~ape.types.address.AddressType`): The address of the account.
             start_nonce (int): The nonce of the account to start the search with.
             stop_nonce (int): The nonce of the account to stop the search with.
-
-        Returns:
-            Iterator[:class:`~ape.api.transactions.ReceiptAPI`]
-        """
-
-    @raises_not_implemented
-    def get_contract_creation_receipts(  # type: ignore[empty-body]
-        self,
-        address: AddressType,
-        start_block: int = 0,
-        stop_block: int = -1,
-        contract_code: Optional[HexBytes] = None,
-    ) -> Iterator[ReceiptAPI]:
-        """
-        Get all receipts where a contract address was created or re-created.
-
-        Args:
-            address (:class:`~ape.types.address.AddressType`): The address of the account.
-            start_block (int): The block number to start the search with.
-            stop_block (int): The block number to stop the search with.
-            contract_code (Optional[bytes]): The code of the contract at the stop block.
 
         Returns:
             Iterator[:class:`~ape.api.transactions.ReceiptAPI`]
