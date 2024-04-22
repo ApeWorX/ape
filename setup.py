@@ -119,7 +119,7 @@ setup(
         # ** Dependencies maintained by Ethereum Foundation **
         "eth-abi>=5.1.0,<6",
         "eth-account>=0.11.2,<0.12",
-        "eth-tester @ git+https://github.com/wakamex/eth-tester.git",
+        "eth-tester>=0.11.0-beta.2,<0.12",
         "eth-typing>=3.5.2,<4",
         "eth-utils>=2.3.1,<3",
         "py-geth>=4.4.0,<5",
