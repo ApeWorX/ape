@@ -833,6 +833,7 @@ class ProjectManager(BaseManager):
         return None
 
     # def publish_manifest(self):
+    #     NOTE: Using JSON mode for maximum publishing compatibility.
     #     manifest = self.manifest.model_dump(mode="json")
     #     if not manifest["name"]:
     #         raise ProjectError("Need name to release manifest")

@@ -257,6 +257,7 @@ class Web3Provider(ProviderAPI, ABC):
         self.connect()
 
     def estimate_gas_cost(self, txn: TransactionAPI, block_id: Optional[BlockID] = None) -> int:
+        # NOTE: Using JSON mode since used as request data.
         txn_dict = txn.model_dump(by_alias=True, mode="json")
 
         # Force the use of hex values to support a wider range of nodes.
@@ -513,6 +514,7 @@ class Web3Provider(ProviderAPI, ABC):
         return HexBytes(result)
 
     def _prepare_call(self, txn: TransactionAPI, **kwargs) -> List:
+        # NOTE: Using JSON mode since used as request data.
         txn_dict = txn.model_dump(by_alias=True, mode="json")
         fields_to_convert = ("data", "chainId", "value")
         for field in fields_to_convert:
@@ -557,7 +559,7 @@ class Web3Provider(ProviderAPI, ABC):
         except TimeExhausted as err:
             raise TransactionNotFoundError(txn_hash, error_messsage=str(err)) from err
 
-        ecosystem_config = self.network.config.model_dump(by_alias=True, mode="json")
+        ecosystem_config = self.network.config.model_dump(by_alias=True)
         network_config: Dict = ecosystem_config.get(self.network.name, {})
         max_retries = network_config.get("max_get_transaction_retries", DEFAULT_MAX_RETRIES_TX)
         txn = {}
@@ -868,7 +870,10 @@ class Web3Provider(ProviderAPI, ABC):
             start, stop = block_range
             update = {"start_block": start, "stop_block": stop}
             page_filter = log_filter.model_copy(update=update)
+
+            # NOTE: Using JSON mode since used as request data.
             filter_params = page_filter.model_dump(mode="json")
+
             logs = self._make_request("eth_getLogs", [filter_params])
             return self.network.ecosystem.decode_logs(logs, *log_filter.events)
 
@@ -941,6 +946,7 @@ class Web3Provider(ProviderAPI, ABC):
                 if txn.sender not in self.web3.eth.accounts:
                     self.chain_manager.provider.unlock_account(txn.sender)
 
+                # NOTE: Using JSON mode since used as request data.
                 txn_data = cast(TxParams, txn.model_dump(by_alias=True, mode="json"))
                 txn_hash = self.web3.eth.send_transaction(txn_data)
 
@@ -962,7 +968,9 @@ class Web3Provider(ProviderAPI, ABC):
         self.chain_manager.history.append(receipt)
 
         if receipt.failed:
+            # NOTE: Using JSON mode since used as request data.
             txn_dict = receipt.transaction.model_dump(by_alias=True, mode="json")
+
             txn_params = cast(TxParams, txn_dict)
 
             # Replay txn to get revert reason
@@ -1012,7 +1020,7 @@ class Web3Provider(ProviderAPI, ABC):
             inputs=evm_call.calldata if "CREATE" in call_type else evm_call.calldata[4:].hex(),
             method_id=evm_call.calldata[:4].hex(),
             outputs=evm_call.returndata.hex(),
-            raw=evm_call.model_dump(by_alias=True, mode="json"),
+            raw=evm_call.model_dump(by_alias=True),
             txn_hash=txn_hash,
         )
 
@@ -1035,7 +1043,7 @@ class Web3Provider(ProviderAPI, ABC):
             gas_cost=evm_frame.gas_cost,
             depth=evm_frame.depth,
             contract_address=address,
-            raw=evm_frame.model_dump(by_alias=True, mode="json"),
+            raw=evm_frame.model_dump(by_alias=True),
         )
 
     def _make_request(self, endpoint: str, parameters: Optional[List] = None) -> Any:
@@ -1081,6 +1089,7 @@ class Web3Provider(ProviderAPI, ABC):
         Returns:
             List[:class:`~ape_ethereum.transactions.AccessList`]
         """
+        # NOTE: Using JSON mode since used in request data.
         tx_dict = transaction.model_dump(by_alias=True, mode="json", exclude=("chain_id",))
         tx_dict_converted = {}
         for key, val in tx_dict.items():
@@ -1230,7 +1239,7 @@ class EthereumNodeProvider(Web3Provider, ABC):
             # Use adhoc, scripted value
             return self.provider_settings["uri"]
 
-        config = self.config.model_dump(mode="json").get(self.network.ecosystem.name, None)
+        config = self.config.model_dump().get(self.network.ecosystem.name, None)
         if config is None:
             return DEFAULT_SETTINGS["uri"]
 

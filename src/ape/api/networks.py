@@ -259,9 +259,7 @@ class EcosystemAPI(ExtraAttributesMixin, BaseInterfaceModel):
                     f"More than one network named '{custom_net.name}' in ecosystem '{self.name}'."
                 )
 
-            network_data = custom_net.model_dump(
-                mode="json", by_alias=True, exclude=("default_provider",)
-            )
+            network_data = custom_net.model_dump(by_alias=True, exclude=("default_provider",))
             network_data["data_folder"] = self.data_folder / custom_net.name
             network_data["ecosystem"] = self
             network_type = create_network_type(custom_net.chain_id, custom_net.chain_id)

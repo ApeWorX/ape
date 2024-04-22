@@ -23,7 +23,11 @@ def display_config(ctx, param, value):
         return
 
     click.echo("# Current configuration")
-    click.echo(yaml.dump(ManagerAccessMixin.project_manager.config_manager.model_dump(mode="json")))
+
+    # NOTE: Using json-mode as yaml.dump requires JSON-like structure.
+    model = ManagerAccessMixin.project_manager.config_manager.model_dump(mode="json")
+
+    click.echo(yaml.dump(model))
 
     ctx.exit()  # NOTE: Must exit to bypass running ApeCLI
 

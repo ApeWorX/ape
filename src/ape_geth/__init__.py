@@ -13,7 +13,7 @@ def config_class():
 
 @plugins.register(plugins.ProviderPlugin)
 def providers():
-    networks_dict = GethNetworkConfig().model_dump(mode="json")
+    networks_dict = GethNetworkConfig().model_dump()
     networks_dict.pop(LOCAL_NETWORK_NAME)
     for network_name in networks_dict:
         yield "ethereum", network_name, GethProvider
