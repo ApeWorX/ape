@@ -772,22 +772,18 @@ class ContractTypeWrapper(ManagerAccessMixin):
 
     def decode_input(self, calldata: bytes) -> tuple[str, dict[str, Any]]:
         """
-                Decode the given calldata using this contract.
-                If the calldata has a method ID prefix, Ape will detect it and find
-                the corresponding method, else it will error.
+        Decode the given calldata using this contract.
+        If the calldata has a method ID prefix, Ape will detect it and find
+        the corresponding method, else it will error.
 
-                Args:
-                    calldata (bytes): The calldata to decode.
+        Args:
+            calldata (bytes): The calldata to decode.
 
-                Returns:
-        <<<<<<< HEAD
-                    tuple[str, dict[str, Any]]: A tuple containing the method selector
-        =======
-                    Tuple[str, dict[str, Any]]: A tuple containing the method selector
-        >>>>>>> f1bb03be6 (refactor: drop 3.8 support)
-                    along a mapping of input names to their decoded values.
-                    If an input does not have a number, it will have the stringified
-                    index as its key.
+        Returns:
+            tuple[str, dict[str, Any]]: A tuple containing the method selector
+            along a mapping of input names to their decoded values.
+            If an input does not have a number, it will have the stringified
+            index as its key.
         """
 
         ecosystem = self.provider.network.ecosystem
