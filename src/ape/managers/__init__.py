@@ -1,6 +1,5 @@
 from pathlib import Path as _Path
 
-from ape.plugins import PluginManager
 from ape.utils import USER_AGENT, ManagerAccessMixin
 
 from .accounts import AccountManager
@@ -9,6 +8,7 @@ from .compilers import CompilerManager
 from .config import ConfigManager
 from .converters import ConversionManager
 from .networks import NetworkManager
+from .plugins import PluginManager
 from .project import DependencyManager, ProjectManager
 from .query import QueryManager
 
