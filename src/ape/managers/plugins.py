@@ -2,6 +2,7 @@ import functools
 import importlib
 import pkgutil
 import subprocess
+from importlib.metadata import distributions
 from typing import Any, Generator, Iterator, List, Optional, Set, Tuple
 
 from ape.__modules__ import __modules__
@@ -80,41 +81,19 @@ class PluginManager:
         self._register_plugins()
         return {x[0] for x in pluggy_manager.list_name_plugin()}
 
-    @functools.cached_property
-    def _plugin_modules(self) -> Tuple[str, ...]:
-        core_plugin_module_names = {n for _, n, _ in pkgutil.iter_modules() if n.startswith("ape_")}
-        if PIP_COMMAND[0] != "uv":
-            # NOTE: Unable to use pkgutil.iter_modules() for installed plugins
-            # because it does not work with editable installs.
-            # See https://github.com/python/cpython/issues/99805.
-            result = subprocess.check_output(
-                ["pip", "list", "--format", "freeze", "--disable-pip-version-check"]
-            )
-            packages = result.decode("utf8").splitlines()
-            installed_plugin_module_names = {
-                p.split("==")[0].replace("-", "_") for p in packages if p.startswith("ape-")
-            }
-        else:
-            result = subprocess.check_output(["uv", "pip", "list"])
-            # format is in the output of:
-            # Package                   Version                         Editable project location
-            # ------------------------- ------------------------------- -------------------------
-            # aiosignal                 1.3.1
-            # annotated-types           0.6.0
-            # skip the header
-            packages = result.decode("utf8").splitlines()[2:]
-            installed_plugin_module_names = {
-                p.split(" ")[0].replace("-", "_") for p in packages if p.startswith("ape-")
-            }
-
-        # NOTE: Returns tuple because this shouldn't change.
-        return tuple(installed_plugin_module_names.union(core_plugin_module_names))
-
     def _register_plugins(self):
         if self.__registered:
             return
 
-        for module_name in self._plugin_modules:
+        plugins = [
+            x.name.replace("-", "_")
+            for x in distributions()
+            if getattr(x, "name", "").startswith("ape-")
+        ]
+        locals = [p for p in __modules__ if p != "ape"]
+        plugin_modules = tuple([*plugins, *locals])
+
+        for module_name in plugin_modules:
             try:
                 module = importlib.import_module(module_name)
                 pluggy_manager.register(module)
