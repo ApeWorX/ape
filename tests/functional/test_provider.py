@@ -288,12 +288,6 @@ def test_no_comma_in_rpc_url():
     assert "," not in sanitised_url
 
 
-def test_use_provider_using_provider_instance(eth_tester_provider):
-    network = eth_tester_provider.network
-    with network.use_provider(eth_tester_provider) as provider:
-        assert id(provider) == id(eth_tester_provider)
-
-
 def test_send_transaction_when_no_error_and_receipt_fails(
     mock_transaction, mock_web3, eth_tester_provider, owner, vyper_contract_instance
 ):

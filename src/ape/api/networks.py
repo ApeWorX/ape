@@ -1034,7 +1034,11 @@ class NetworkAPI(BaseInterfaceModel):
             connection_id = provider.connection_id
             if connection_id in ProviderContextManager.connected_providers:
                 # Likely multi-chain testing or utilizing multiple on-going connections.
-                return ProviderContextManager.connected_providers[connection_id]
+                provider = ProviderContextManager.connected_providers[connection_id]
+                if not provider.is_connected:
+                    provider.connect()
+
+                return provider
 
             return provider
 
