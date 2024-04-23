@@ -28,22 +28,31 @@ mark_specifiers_less_than_ape = pytest.mark.parametrize(
 
 
 @pytest.fixture(autouse=True)
-def mock_installed_packages(mocker):
-    def make_dist(name, version):
+def get_dists_patch(mocker):
+    return mocker.patch("ape.plugins._utils._get_distributions")
+
+
+@pytest.fixture
+def make_dist(mocker):
+    def fn(name, version):
         mock_dist = mocker.MagicMock()
         mock_dist.name = name
         mock_dist.version = version
         return mock_dist
 
+    return fn
+
+
+@pytest.fixture(autouse=True)
+def mock_installed_packages(make_dist, get_dists_patch):
     def fn(version: str):
-        patch = mocker.patch("ape.plugins._utils._get_distributions")
-        patch.return_value = (
+        get_dists_patch.return_value = (
             make_dist("FOOFOO", "1.1.1"),
             make_dist(f"ape-{INSTALLED_PLUGINS[0]}", version),
             make_dist("aiohttp", "3.8.5"),
             make_dist(f"ape-{THIRD_PARTY[0]}", version),
         )
-        return patch
+        return get_dists_patch
 
     return fn
 
@@ -195,6 +204,24 @@ class TestPluginMetadata:
         )
         with pytest.raises(PluginVersionError, match=expected):
             metadata._prepare_install(skip_confirmation=True)
+
+    @pytest.mark.parametrize(
+        "plugin,expected", [(list(INSTALLED_PLUGINS)[0], True), (list(AVAILABLE_PLUGINS)[0], False)]
+    )
+    def test_check_installed(self, plugin, expected):
+        installed = PluginMetadata(name=plugin)
+        assert installed.check_installed() is expected
+
+    def test_check_installed_dist_no_name_attr(self, mocker, get_dists_patch):
+        mock_dist = mocker.MagicMock()
+        get_dists_patch.return_value = mock_dist
+        mock_dist.name.side_effect = AttributeError("no name")
+
+        metadata = PluginMetadata(name="dontmatter")
+
+        # If the next line doesn't fail, the test passed.
+        # This triggers looping through the dist w/o a name attr.
+        metadata.check_installed()
 
 
 class TestApePluginsRepr:
