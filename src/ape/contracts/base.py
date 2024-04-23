@@ -780,7 +780,7 @@ class ContractTypeWrapper(ManagerAccessMixin):
             calldata (bytes): The calldata to decode.
 
         Returns:
-            Tuple[str, dict[str, Any]]: A tuple containing the method selector
+            tuple[str, dict[str, Any]]: A tuple containing the method selector
             along a mapping of input names to their decoded values.
             If an input does not have a number, it will have the stringified
             index as its key.

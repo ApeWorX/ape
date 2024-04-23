@@ -3,7 +3,7 @@ import os
 import shutil
 import tempfile
 from pathlib import Path
-from typing import Iterable, Optional, Type
+from typing import Iterable, Optional
 
 from ethpm_types import PackageManifest
 from packaging.version import Version
@@ -34,8 +34,8 @@ class DependencyManager(ManagerAccessMixin):
         return self.DATA_FOLDER / "packages"
 
     @cached_property
-    def dependency_types(self) -> dict[str, Type[DependencyAPI]]:
-        dependency_classes: dict[str, Type[DependencyAPI]] = {
+    def dependency_types(self) -> dict[str, type[DependencyAPI]]:
+        dependency_classes: dict[str, type[DependencyAPI]] = {
             "github": GithubDependency,
             "local": LocalDependency,
             "npm": NpmDependency,

@@ -1,6 +1,6 @@
 import shutil
 from pathlib import Path
-from typing import Any, Iterable, Optional, Type, Union, cast
+from typing import Any, Iterable, Optional, Union, cast
 
 from eth_pydantic_types import Bip122Uri, HexStr
 from ethpm_types import ContractInstance as EthPMContractInstance
@@ -304,7 +304,7 @@ class ProjectManager(BaseManager):
         return deployments
 
     @property
-    def project_types(self) -> list[Type[ProjectAPI]]:
+    def project_types(self) -> list[type[ProjectAPI]]:
         """
         The available :class:`~ape.api.project.ProjectAPI` types available,
         such as :class:`~ape.managers.project.ApeProject`, which is the default.
@@ -436,7 +436,7 @@ class ProjectManager(BaseManager):
 
             contracts_folder = find_contracts_folder(path, exclusions=excls) or contracts_folder
 
-        def _try_create_project(proj_cls: Type[ProjectAPI]) -> Optional[ProjectAPI]:
+        def _try_create_project(proj_cls: type[ProjectAPI]) -> Optional[ProjectAPI]:
             with self.config_manager.using_project(
                 path, contracts_folder=contracts_folder
             ) as _project:
@@ -639,7 +639,7 @@ class ProjectManager(BaseManager):
                 are in this list. Useful for checking against a subset of source files.
 
         Returns:
-            Set[str]: A list of file extensions found in the ``contracts/`` directory
+            set[str]: A list of file extensions found in the ``contracts/`` directory
             that do not have associated compilers installed.
         """
         extensions_found = set()

@@ -166,7 +166,7 @@ class ControlFlow(BaseModel):
         Args:
             location (SourceLocation): The location of the content, in the form
               (lineno, col_offset, end_lineno, end_coloffset).
-            pcs (Optional[Set[int]]): The PC values of the statements.
+            pcs (Optional[set[int]]): The PC values of the statements.
             ws_start (Optional[int]): Optionally provide a white-space starting point
               to back-fill.
         """
@@ -450,7 +450,7 @@ class SourceTraceback(RootModel[list[ControlFlow]]):
             function (``Function``): The function executing.
             source_path (Optional[``Path``]): The path of the source file.
             depth (int): The depth of the function call in the call tree.
-            pcs (Optional[Set[int]]): The program counter values.
+            pcs (Optional[set[int]]): The program counter values.
             source_path (Optional[``Path``]): The path of the source file.
         """
 
@@ -470,7 +470,7 @@ class SourceTraceback(RootModel[list[ControlFlow]]):
 
         Args:
             location (``SourceLocation``): The location of the new content.
-            pcs (Optional[Set[int]]): The PC values to add on.
+            pcs (Optional[set[int]]): The PC values to add on.
         """
 
         if not self.last:
@@ -504,7 +504,7 @@ class SourceTraceback(RootModel[list[ControlFlow]]):
             _type (str): A str describing the type of check.
             full_name (Optional[str]): A full-name ID.
             source_path (Optional[Path]): The source file related, if there is one.
-            pcs (Optional[Set[int]]): Program counter values mapping to this check.
+            pcs (Optional[set[int]]): Program counter values mapping to this check.
         """
         pcs = pcs or set()
         closure = Closure(name=name, full_name=full_name or name)

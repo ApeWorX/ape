@@ -68,7 +68,7 @@ class CompilerAPI(BaseInterfaceModel):
             all_paths (Sequence[pathlib.Path]): The list of paths.
 
         Returns:
-            Set[str]: A set of available compiler versions.
+            set[str]: A set of available compiler versions.
         """
 
     @raises_not_implemented

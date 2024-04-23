@@ -1,5 +1,5 @@
 import functools
-from typing import Callable, Type
+from typing import Callable
 
 from .account import AccountPlugin
 from .compiler import CompilerPlugin
@@ -41,7 +41,7 @@ def get_hooks(plugin_type):
     return [name for name, method in plugin_type.__dict__.items() if hasattr(method, "ape_spec")]
 
 
-def register(plugin_type: Type[PluginType], **hookimpl_kwargs) -> Callable:
+def register(plugin_type: type[PluginType], **hookimpl_kwargs) -> Callable:
     """
     Register your plugin to ape. You must call this decorator to get your plugins
     included in ape's plugin ecosystem.
@@ -53,7 +53,7 @@ def register(plugin_type: Type[PluginType], **hookimpl_kwargs) -> Callable:
             return AccountContainer, KeyfileAccount
 
     Args:
-        plugin_type (Type[:class:`~ape.plugins.pluggy_patch.PluginType`]): The plugin
+        plugin_type (type[:class:`~ape.plugins.pluggy_patch.PluginType`]): The plugin
           type to register.
 
         hookimpl_kwargs: Return-values required by the plugin type.

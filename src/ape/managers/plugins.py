@@ -1,10 +1,9 @@
 import importlib
 from typing import Any, Generator, Iterator, Optional
 
-from ape.__modules__ import __modules__
 from ape.exceptions import ApeAttributeError
 from ape.logging import logger
-from ape.plugins._utils import _filter_plugins_from_dists, clean_plugin_name
+from ape.plugins._utils import CORE_PLUGINS, _filter_plugins_from_dists, clean_plugin_name
 from ape.plugins.pluggy_patch import plugin_manager as pluggy_manager
 from ape.utils.basemodel import _assert_not_ipython_check
 from ape.utils.misc import _get_distributions, log_instead_of_fail
@@ -84,7 +83,7 @@ class PluginManager:
         plugins = list(
             {n.replace("-", "_") for n in _filter_plugins_from_dists(_get_distributions())}
         )
-        locals = [p for p in __modules__ if p != "ape"]
+        locals = [p for p in CORE_PLUGINS if p != "ape"]
         plugin_modules = tuple([*plugins, *locals])
 
         for module_name in plugin_modules:
@@ -92,7 +91,7 @@ class PluginManager:
                 module = importlib.import_module(module_name)
                 pluggy_manager.register(module)
             except Exception as err:
-                if module_name in __modules__:
+                if module_name in CORE_PLUGINS:
                     # Always raise core plugin registration errors.
                     raise
 

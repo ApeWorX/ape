@@ -50,7 +50,8 @@ def test_get_gas_report_transfer(gas_tracker, sender, receiver):
 
 
 def test_transaction_trace_create(vyper_contract_instance):
-    trace = TransactionTrace(transaction_hash=vyper_contract_instance.creation_metadata.txn_hash)
+    tx_hash = vyper_contract_instance.creation_metadata.txn_hash
+    trace = TransactionTrace(transaction_hash=tx_hash)
     actual = f"{trace}"
     expected = r"VyperContract\.__new__\(num=0\) \[\d+ gas\]"
     assert re.match(expected, actual)
