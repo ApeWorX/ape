@@ -641,7 +641,7 @@ class ProjectManager(BaseManager):
                 are in this list. Useful for checking against a subset of source files.
 
         Returns:
-            Set[str]: A list of file extensions found in the ``contracts/`` directory
+            set[str]: A list of file extensions found in the ``contracts/`` directory
             that do not have associated compilers installed.
         """
         extensions_found = set()
