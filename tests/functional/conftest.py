@@ -1,8 +1,8 @@
 import threading
 import time
 from contextlib import contextmanager
-from distutils.dir_util import copy_tree
 from pathlib import Path
+from shutil import copytree
 from typing import Optional, cast
 
 import pytest
@@ -307,7 +307,7 @@ def ds_note_test_contract(eth_tester_provider, vyper_contract_type, owner, get_c
 @pytest.fixture
 def project_with_contract(temp_config):
     with temp_config() as project:
-        copy_tree(str(APE_PROJECT_FOLDER), str(project.path))
+        copytree(str(APE_PROJECT_FOLDER), str(project.path))
         project.local_project._cached_manifest = None  # Clean manifest
         yield project
 
@@ -318,8 +318,8 @@ def project_with_source_files_contract(temp_config):
     project_source_dir = APE_PROJECT_FOLDER
 
     with temp_config() as project:
-        copy_tree(str(project_source_dir), str(project.path))
-        copy_tree(str(bases_source_dir), f"{project.path}/contracts/")
+        copytree(str(project_source_dir), str(project.path))
+        copytree(str(bases_source_dir), f"{project.path}/contracts/")
         yield project
 
 
