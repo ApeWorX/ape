@@ -1,14 +1,11 @@
-import functools
 import importlib
-import pkgutil
-import subprocess
 from importlib.metadata import distributions
 from typing import Any, Generator, Iterator, List, Optional, Set, Tuple
 
 from ape.__modules__ import __modules__
 from ape.exceptions import ApeAttributeError
 from ape.logging import logger
-from ape.plugins._utils import PIP_COMMAND, clean_plugin_name
+from ape.plugins._utils import clean_plugin_name
 from ape.plugins.pluggy_patch import plugin_manager as pluggy_manager
 from ape.utils.basemodel import _assert_not_ipython_check
 from ape.utils.misc import log_instead_of_fail

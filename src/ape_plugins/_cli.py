@@ -239,11 +239,11 @@ def _install(name, spec) -> int:
     Returns:
         The process return-code.
     """
-    args = [*PIP_COMMAND, "install", f"{name}{spec}", "--quiet"]
+    arguments = [*PIP_COMMAND, "install", f"{name}{spec}", "--quiet"]
 
     # Run the installation process and capture output for error checking
     completed_process = subprocess.run(
-        args,
+        arguments,
         capture_output=True,
         text=True,  # Output as string
         check=False,  # Allow manual error handling
