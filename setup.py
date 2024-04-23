@@ -1,12 +1,14 @@
 #!/usr/bin/env python
+import re
 from pathlib import Path
 
 from setuptools import find_packages, setup
 
-here = Path(__file__).parent.absolute()
-packages_data: dict = {}
-with open(here / "src" / "ape" / "__modules__.py", encoding="utf8") as modules_file:
-    exec(modules_file.read(), packages_data)
+_HERE = Path(__file__).parent.absolute()
+_CORE_PLUGIN_PATTERN = re.compile(r"\bape_\w+(?!\S)")
+_PACKAGES = find_packages("src")
+_MODULES = {p for p in _PACKAGES if re.match(_CORE_PLUGIN_PATTERN, p)}
+_MODULES.add("ape")
 
 extras_require = {
     "test": [  # `test` GitHub Action jobs uses this
@@ -51,7 +53,7 @@ extras_require = {
     ],
     "dev": [
         # commitizen: Manage commits and publishing releases
-        (here / "cz-requirement.txt").read_text().strip(),
+        (_HERE / "cz-requirement.txt").read_text().strip(),
         "pre-commit",  # Ensure that linters are run prior to committing
         "pytest-watch",  # `ptw` test watcher/runner
         "ipdb",  # Debugger (Must use `export PYTHONBREAKPOINT=ipdb.set_trace`)
@@ -59,7 +61,7 @@ extras_require = {
     # NOTE: These are extras that someone can install to get up and running quickly w/ ape
     #       They should be kept up to date with what works and what doesn't out of the box
     #       Usage example: `pipx install eth-ape[recommended-plugins]`
-    "recommended-plugins": (here / "recommended-plugins.txt").read_text().splitlines(),
+    "recommended-plugins": (_HERE / "recommended-plugins.txt").read_text().splitlines(),
 }
 
 # NOTE: `pip install -e .[dev]` to install package
@@ -148,13 +150,13 @@ setup(
     },
     python_requires=">=3.9,<4",
     extras_require=extras_require,
-    py_modules=packages_data["__modules__"],
+    py_modules=list(_MODULES),
     license="Apache-2.0",
     zip_safe=False,
     keywords="ethereum",
-    packages=find_packages("src"),
+    packages=_PACKAGES,
     package_dir={"": "src"},
-    package_data={p: ["py.typed"] for p in packages_data["__modules__"]},
+    package_data={p: ["py.typed"] for p in _MODULES},
     classifiers=[
         "Development Status :: 5 - Production/Stable",
         "Intended Audience :: Developers",
