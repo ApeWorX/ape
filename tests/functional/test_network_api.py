@@ -151,3 +151,16 @@ def test_config_networks_from_custom_ecosystem(
         cfg_by_get = ethereum_config.get("apenet")
         assert cfg_by_get is not None
         assert cfg_by_get.default_transaction_type == TransactionType.STATIC
+
+
+def test_use_provider_using_provider_instance(eth_tester_provider):
+    network = eth_tester_provider.network
+    with network.use_provider(eth_tester_provider) as provider:
+        assert id(provider) == id(eth_tester_provider)
+
+
+def test_use_provider_previously_used_and_not_connected(eth_tester_provider):
+    network = eth_tester_provider.network
+    eth_tester_provider.disconnect()
+    with network.use_provider("test") as provider:
+        assert provider.is_connected
