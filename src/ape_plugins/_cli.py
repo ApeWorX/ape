@@ -233,8 +233,11 @@ def _install(name, spec) -> int:
     Helper function to install or update a Python package using pip.
 
     Args:
-    name (str): The package name.
-    spec (str): Version specifier, e.g., '==1.0.0', '>=1.0.0', etc.
+      name (str): The package name.
+      spec (str): Version specifier, e.g., '==1.0.0', '>=1.0.0', etc.
+
+    Returns:
+        The process return-code.
     """
     args = [*PIP_COMMAND, "install", f"{name}{spec}", "--quiet"]
 
