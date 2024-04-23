@@ -2,6 +2,7 @@ from unittest import mock
 
 import pytest
 
+from ape.exceptions import PluginVersionError
 from ape.logging import LogLevel
 from ape.plugins._utils import (
     ApePluginsRepr,
@@ -13,7 +14,6 @@ from ape.plugins._utils import (
     _filter_plugins_from_dists,
     ape_version,
 )
-from ape_plugins.exceptions import PluginVersionError
 
 CORE_PLUGINS = ("run",)
 AVAILABLE_PLUGINS = ("available", "installed")
