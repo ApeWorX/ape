@@ -40,5 +40,5 @@ class DependencyPlugin(PluginType):
         will automatically use this ``DependencyAPI`` implementation.
 
         Returns:
-            Type[:class:`~ape.api.projects.DependencyAPI`]
+            type[:class:`~ape.api.projects.DependencyAPI`]
         """
