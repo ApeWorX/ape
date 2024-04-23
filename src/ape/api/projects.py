@@ -130,8 +130,8 @@ class ProjectAPI(BaseInterfaceModel):
 
     @property
     def contracts(self) -> Dict[str, ContractType]:
-        if self._contracts is not None:
-            return self._contracts
+        if contracts := self._contracts:
+            return contracts
 
         contracts = {}
         for p in self._cache_folder.glob("*.json"):
