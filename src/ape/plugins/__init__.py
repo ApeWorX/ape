@@ -53,7 +53,7 @@ def register(plugin_type: type[PluginType], **hookimpl_kwargs) -> Callable:
             return AccountContainer, KeyfileAccount
 
     Args:
-        plugin_type (Type[:class:`~ape.plugins.pluggy_patch.PluginType`]): The plugin
+        plugin_type (type[:class:`~ape.plugins.pluggy_patch.PluginType`]): The plugin
           type to register.
 
         hookimpl_kwargs: Return-values required by the plugin type.
