@@ -191,12 +191,12 @@ def uninstall(cli_ctx, plugins, skip_confirmation):
             skip_confirmation or click.confirm(f"Remove plugin '{plugin}'?")
         ):
             cli_ctx.logger.info(f"Uninstalling '{plugin.name}'...")
-            args = [*PIP_COMMAND, "uninstall", "-y", plugin.package_name, "--quiet"]
+            arguments = plugin._get_uninstall_args()
 
             # NOTE: Be *extremely careful* with this command, as it modifies the user's
             #       installed packages, to potentially catastrophic results
             # NOTE: This is not abstracted into another function *on purpose*
-            result = subprocess.call(args)
+            result = subprocess.call(arguments)
             failures_occurred = not result_handler.handle_uninstall_result(result)
 
     if failures_occurred:

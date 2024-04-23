@@ -210,6 +210,12 @@ class PluginMetadata(BaseInterfaceModel):
     version: Optional[str] = None
     """The version requested, if there is one."""
 
+    pip_command: List[str] = PIP_COMMAND
+    """
+    The pip base command to use.
+    (NOTE: is a field mainly for testing purposes).
+    """
+
     @model_validator(mode="before")
     @classmethod
     def validate_name(cls, values):
@@ -224,6 +230,7 @@ class PluginMetadata(BaseInterfaceModel):
                 # Just some small validation so you can't put a repo
                 # that isn't this plugin here. NOTE: Forks should still work.
                 raise ValueError("Plugin mismatch with remote git version.")
+
         elif not version:
             # Only check name for version constraint if not in version.
             # NOTE: This happens when using the CLI to provide version constraints.
@@ -236,7 +243,8 @@ class PluginMetadata(BaseInterfaceModel):
                 name, version = _split_name_and_version(name)
                 break
 
-        return {"name": clean_plugin_name(name), "version": version}
+        pip_cmd = values.get("pip_command", PIP_COMMAND)
+        return {"name": clean_plugin_name(name), "version": version, "pip_command": pip_cmd}
 
     @cached_property
     def package_name(self) -> str:
@@ -373,7 +381,7 @@ class PluginMetadata(BaseInterfaceModel):
             logger.warning(f"Plugin '{self.name}' is not an trusted plugin.")
 
         result_handler = ModifyPluginResultHandler(self)
-        pip_arguments = [*PIP_COMMAND, "install"]
+        pip_arguments = [*self.pip_command, "install"]
 
         if upgrade:
             logger.info(f"Upgrading '{self.name}' plugin ...")
@@ -405,6 +413,15 @@ class PluginMetadata(BaseInterfaceModel):
                 f"'{self.name}' is already installed. Did you mean to include '--upgrade'?"
             )
             return None
+
+    def _get_uninstall_args(self) -> List[str]:
+        arguments = [*self.pip_command, "uninstall"]
+
+        if self.pip_command[0] != "uv":
+            arguments.append("-y")
+
+        arguments.extend((self.package_name, "--quiet"))
+        return arguments
 
 
 class ModifyPluginResultHandler:

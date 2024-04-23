@@ -25,6 +25,9 @@ mark_specifiers_less_than_ape = pytest.mark.parametrize(
     "specifier",
     (f"<{ape_version[0]}", f">0.1,<{ape_version[0]}", f"==0.{int(ape_version[2]) - 1}"),
 )
+parametrize_pip_cmd = pytest.mark.parametrize(
+    "pip_command", [["python", "-m", "pip"], ["uv", "pip"]]
+)
 
 
 @pytest.fixture(autouse=True)
@@ -163,36 +166,48 @@ class TestPluginMetadata:
         metadata = PluginMetadata(name="foobar")
         assert not metadata.is_available
 
-    def test_prepare_install(self):
-        metadata = PluginMetadata(name=list(AVAILABLE_PLUGINS)[0])
+    @parametrize_pip_cmd
+    def test_prepare_install(self, pip_command):
+        metadata = PluginMetadata(name=list(AVAILABLE_PLUGINS)[0], pip_command=pip_command)
         actual = metadata._prepare_install(skip_confirmation=True)
         assert actual is not None
         arguments = actual.get("args", [])
-        expected = [
-            "-m",
+        shared = [
             "pip",
             "install",
             f"ape-available>=0.{ape_version.minor},<0.{ape_version.minor + 1}",
             "--quiet",
         ]
-        assert "python" in arguments[0]
-        assert arguments[1:] == expected
+        if arguments[0] == "uv":
+            expected = ["uv", *shared]
+            assert arguments == expected
+        else:
+            expected = ["-m", *shared]
+            assert "python" in arguments[0]
+            assert arguments[1:] == expected
 
-    def test_prepare_install_upgrade(self):
-        metadata = PluginMetadata(name=list(AVAILABLE_PLUGINS)[0])
+    @parametrize_pip_cmd
+    def test_prepare_install_upgrade(self, pip_command):
+        metadata = PluginMetadata(name=list(AVAILABLE_PLUGINS)[0], pip_command=pip_command)
         actual = metadata._prepare_install(upgrade=True, skip_confirmation=True)
         assert actual is not None
         arguments = actual.get("args", [])
-        expected = [
-            "-m",
+        shared = [
             "pip",
             "install",
             "--upgrade",
             f"ape-available>=0.{ape_version.minor},<0.{ape_version.minor + 1}",
             "--quiet",
         ]
-        assert "python" in arguments[0]
-        assert arguments[1:] == expected
+
+        if pip_command[0].startswith("uv"):
+            expected = ["uv", *shared]
+            assert arguments == expected
+
+        else:
+            expected = ["-m", *shared]
+            assert "python" in arguments[0]
+            assert arguments[1:] == expected
 
     @mark_specifiers_less_than_ape
     def test_prepare_install_version_smaller_than_ape(self, specifier, ape_caplog):
@@ -222,6 +237,22 @@ class TestPluginMetadata:
         # If the next line doesn't fail, the test passed.
         # This triggers looping through the dist w/o a name attr.
         metadata.check_installed()
+
+    @parametrize_pip_cmd
+    def test_get_uninstall_args(self, pip_command):
+        metadata = PluginMetadata(name="dontmatter", pip_command=pip_command)
+        arguments = metadata._get_uninstall_args()
+        pip_cmd_len = len(metadata.pip_command)
+
+        for idx, pip_pt in enumerate(pip_command):
+            assert arguments[idx] == pip_pt
+
+        expected = ["uninstall"]
+        if pip_command[0] == "python":
+            expected.append("-y")
+
+        expected.extend(("ape-dontmatter", "--quiet"))
+        assert arguments[pip_cmd_len:] == expected
 
 
 class TestApePluginsRepr:
