@@ -386,7 +386,7 @@ def test_fails():
     pytester.makepyfile(test)
     stdin = "print(foo)\nexit\n"
     monkeypatch.setattr("sys.stdin", io.StringIO(stdin))
-    result = pytester.runpytest_subprocess("--interactive", "-s")
+    result = pytester.runpytest("--interactive", "-s")
     result.assert_outcomes(failed=1)
     actual = str(result.stdout)
     assert secret in actual

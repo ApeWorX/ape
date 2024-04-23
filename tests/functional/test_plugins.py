@@ -3,6 +3,7 @@ from unittest import mock
 import pytest
 
 from ape.api import TransactionAPI
+from ape.exceptions import PluginVersionError
 from ape.logging import LogLevel
 from ape.managers.plugins import _get_unimplemented_methods_warning
 from ape.plugins._utils import (
@@ -15,7 +16,6 @@ from ape.plugins._utils import (
     _filter_plugins_from_dists,
     ape_version,
 )
-from ape_plugins.exceptions import PluginVersionError
 
 CORE_PLUGINS = ("run",)
 AVAILABLE_PLUGINS = ("available", "installed")
