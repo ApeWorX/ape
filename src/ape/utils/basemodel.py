@@ -30,9 +30,9 @@ if TYPE_CHECKING:
     from ape.managers.config import ConfigManager
     from ape.managers.converters import ConversionManager
     from ape.managers.networks import NetworkManager
+    from ape.managers.plugins import PluginManager
     from ape.managers.project import DependencyManager, ProjectManager
     from ape.managers.query import QueryManager
-    from ape.plugins import PluginManager
     from ape.pytest.runners import PytestApeRunner
 
 

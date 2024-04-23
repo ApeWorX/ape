@@ -15,7 +15,7 @@ from ape.api.query import (
 from ape.contracts.base import ContractLog, LogFilter
 from ape.exceptions import QueryEngineError
 from ape.logging import logger
-from ape.plugins import clean_plugin_name
+from ape.plugins._utils import clean_plugin_name
 from ape.utils import ManagerAccessMixin, cached_property, singledispatchmethod
 
 

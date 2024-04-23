@@ -10,6 +10,7 @@ from ape.cli import ape_cli_context, skip_confirmation_option
 from ape.logging import logger
 from ape.managers.config import CONFIG_FILE_NAME
 from ape.plugins._utils import (
+    PIP_COMMAND,
     ModifyPluginResultHandler,
     PluginMetadata,
     PluginMetadataList,
@@ -190,12 +191,12 @@ def uninstall(cli_ctx, plugins, skip_confirmation):
             skip_confirmation or click.confirm(f"Remove plugin '{plugin}'?")
         ):
             cli_ctx.logger.info(f"Uninstalling '{plugin.name}'...")
-            args = [sys.executable, "-m", "pip", "uninstall", "-y", plugin.package_name, "--quiet"]
+            arguments = plugin._get_uninstall_args()
 
             # NOTE: Be *extremely careful* with this command, as it modifies the user's
             #       installed packages, to potentially catastrophic results
             # NOTE: This is not abstracted into another function *on purpose*
-            result = subprocess.call(args)
+            result = subprocess.call(arguments)
             failures_occurred = not result_handler.handle_uninstall_result(result)
 
     if failures_occurred:
@@ -227,6 +228,40 @@ def change_version(version):
     _change_version(version)
 
 
+def _install(name, spec) -> int:
+    """
+    Helper function to install or update a Python package using pip.
+
+    Args:
+      name (str): The package name.
+      spec (str): Version specifier, e.g., '==1.0.0', '>=1.0.0', etc.
+
+    Returns:
+        The process return-code.
+    """
+    arguments = [*PIP_COMMAND, "install", f"{name}{spec}", "--quiet"]
+
+    # Run the installation process and capture output for error checking
+    completed_process = subprocess.run(
+        arguments,
+        capture_output=True,
+        text=True,  # Output as string
+        check=False,  # Allow manual error handling
+    )
+
+    # Check for installation errors
+    if completed_process.returncode != 0:
+        message = f"Failed to install/update {name}"
+        if completed_process.stdout:
+            message += f": {completed_process.stdout}"
+        logger.error(message)
+        sys.exit(completed_process.returncode)
+    else:
+        logger.info(f"Successfully installed/updated {name}")
+
+    return completed_process.returncode
+
+
 def _change_version(spec: str):
     # Update all the plugins.
     # This will also update core Ape.
@@ -235,20 +270,10 @@ def _change_version(spec: str):
     for plugin in _get_distributions():
         logger.info(f"Updating {plugin} ...")
         name = plugin.split("=")[0].strip()
-        subprocess.call([sys.executable, "-m", "pip", "install", f"{name}{spec}", "--quiet"])
+        _install(name, spec)
 
     # This check is for verifying the update and shouldn't actually do anything.
     logger.info("Updating Ape core ...")
-    completed_process = subprocess.run(
-        [sys.executable, "-m", "pip", "install", f"eth-ape{spec}", "--quiet"]
-    )
-    if completed_process.returncode != 0:
-        message = "Update failed"
-        if output := completed_process.stdout:
-            message = f"{message}: {output.decode('utf8')}"
-
-        logger.error(message)
-        sys.exit(completed_process.returncode)
-
-    else:
+    returncode = _install("eth-ape", spec)
+    if returncode == 0:
         logger.success("Ape and all plugins have successfully upgraded.")

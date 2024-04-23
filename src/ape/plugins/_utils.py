@@ -1,6 +1,7 @@
 import sys
 from enum import Enum
 from functools import cached_property
+from shutil import which
 from typing import Any, Dict, Iterable, Iterator, List, Optional, Sequence, Tuple
 
 import click
@@ -10,7 +11,6 @@ from pydantic import field_validator, model_validator
 
 from ape.__modules__ import __modules__
 from ape.logging import logger
-from ape.plugins import clean_plugin_name
 from ape.utils import BaseInterfaceModel, get_package_version, github_client, log_instead_of_fail
 from ape.utils.basemodel import BaseModel
 from ape.utils.misc import _get_distributions
@@ -19,6 +19,12 @@ from ape_plugins.exceptions import PluginVersionError
 
 # Plugins maintained OSS by ApeWorX (and trusted)
 CORE_PLUGINS = {p for p in __modules__ if p != "ape"}
+# Use `uv pip` if installed, otherwise `python -m pip`
+PIP_COMMAND = ["uv", "pip"] if which("uv") else [sys.executable, "-m", "pip"]
+
+
+def clean_plugin_name(name: str) -> str:
+    return name.replace("_", "-").replace("ape-", "")
 
 
 class ApeVersion:
@@ -204,6 +210,12 @@ class PluginMetadata(BaseInterfaceModel):
     version: Optional[str] = None
     """The version requested, if there is one."""
 
+    pip_command: List[str] = PIP_COMMAND
+    """
+    The pip base command to use.
+    (NOTE: is a field mainly for testing purposes).
+    """
+
     @model_validator(mode="before")
     @classmethod
     def validate_name(cls, values):
@@ -219,8 +231,6 @@ class PluginMetadata(BaseInterfaceModel):
                 # that isn't this plugin here. NOTE: Forks should still work.
                 raise ValueError("Plugin mismatch with remote git version.")
 
-            version = version
-
         elif not version:
             # Only check name for version constraint if not in version.
             # NOTE: This happens when using the CLI to provide version constraints.
@@ -233,7 +243,8 @@ class PluginMetadata(BaseInterfaceModel):
                 name, version = _split_name_and_version(name)
                 break
 
-        return {"name": clean_plugin_name(name), "version": version}
+        pip_cmd = values.get("pip_command", PIP_COMMAND)
+        return {"name": clean_plugin_name(name), "version": version, "pip_command": pip_cmd}
 
     @cached_property
     def package_name(self) -> str:
@@ -370,7 +381,7 @@ class PluginMetadata(BaseInterfaceModel):
             logger.warning(f"Plugin '{self.name}' is not an trusted plugin.")
 
         result_handler = ModifyPluginResultHandler(self)
-        pip_arguments = [sys.executable, "-m", "pip", "install"]
+        pip_arguments = [*self.pip_command, "install"]
 
         if upgrade:
             logger.info(f"Upgrading '{self.name}' plugin ...")
@@ -402,6 +413,15 @@ class PluginMetadata(BaseInterfaceModel):
                 f"'{self.name}' is already installed. Did you mean to include '--upgrade'?"
             )
             return None
+
+    def _get_uninstall_args(self) -> List[str]:
+        arguments = [*self.pip_command, "uninstall"]
+
+        if self.pip_command[0] != "uv":
+            arguments.append("-y")
+
+        arguments.extend((self.package_name, "--quiet"))
+        return arguments
 
 
 class ModifyPluginResultHandler:
