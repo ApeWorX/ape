@@ -121,7 +121,14 @@ class ApeCLI(click.MultiCommand):
         if self._commands:
             return self._commands
 
-        eps: Iterable = entry_points().get(self._CLI_GROUP_NAME, [])
+        # Update when dropping Python 3.9 support.
+        _entry_points = entry_points()
+        eps: Iterable = (
+            _entry_points.get(self._CLI_GROUP_NAME, [])
+            if isinstance(_entry_points, dict)
+            else entry_points(group=self._CLI_GROUP_NAME)
+        )
+
         self._commands = {clean_plugin_name(cmd.name): cmd.load for cmd in eps}
         return self._commands
 

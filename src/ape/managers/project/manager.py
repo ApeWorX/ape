@@ -468,10 +468,10 @@ class ProjectManager(BaseManager):
         Returns:
             Dict[str, ``ContractType``]
         """
-        if self.local_project.cached_manifest is None:
-            return self.load_contracts()
+        if self.local_project.cached_manifest and (contracts := self.local_project.contracts):
+            return contracts
 
-        return self.local_project.contracts
+        return self.load_contracts()
 
     def __getattr__(self, attr_name: str) -> Any:
         """
