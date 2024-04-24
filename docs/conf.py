@@ -31,6 +31,7 @@ extensions = [
     "sphinx_click",
     "sphinx.ext.autodoc",
     "sphinx.ext.autosummary",
+    "sphinx.ext.doctest",
     "sphinx.ext.napoleon",
     "sphinx_rtd_theme",
     "sphinx_plausible",
@@ -84,6 +85,17 @@ autodoc_default_options = {
     "exclude-members": "__repr__,__weakref__,__metaclass__,__init__,model_config,model_fields,model_post_init"
 }
 
+# -- Doctest configuration -------------------------------------------------
+# Doctest global imports and instances
+import doctest
+
+doctest_default_flags = (
+    0
+    | doctest.DONT_ACCEPT_TRUE_FOR_1
+    | doctest.ELLIPSIS
+    | doctest.IGNORE_EXCEPTION_DETAIL
+    | doctest.NORMALIZE_WHITESPACE
+)
 
 def fixpath(path: str) -> str:
     """
