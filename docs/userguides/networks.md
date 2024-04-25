@@ -465,12 +465,15 @@ with ape.networks.arbitrum.mainnet.use_default_provider():
 
 You can also use the [parse_network_choice()](../methoddocs/managers.html#ape.managers.networks.NetworkManager.parse_network_choice) method when working with network choice strings:
 
-```python
-from ape import networks
+```{eval-rst}
 
-# Same as doing `networks.ethereum.local.use_provider("test")`.
-with networks.parse_network_choice("ethereum:local:test") as provider:
-    print(provider)
+.. doctest::
+>>> from ape import networks
+
+>>> # Same as doing `networks.ethereum.local.use_provider("test")`.
+>>> with networks.parse_network_choice("ethereum:local:test") as provider:
+...     print(provider.name)
+    test
 ```
 
 **A note about disconnect**: Providers do not disconnect until the very end of your Python session.
