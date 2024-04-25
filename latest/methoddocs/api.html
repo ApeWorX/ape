@@ -50,6 +50,7 @@
               <option value="">Select version...</option>
               <option value="latest">latest</option>
               <option value="stable">stable</option>
+                <option value="v0.7.18">v0.7.18</option>
                 <option value="v0.7.17">v0.7.17</option>
                 <option value="v0.7.16">v0.7.16</option>
                 <option value="v0.7.15">v0.7.15</option>
@@ -206,6 +207,7 @@
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.accounts.AccountContainerAPI.accounts"><code class="docutils literal notranslate"><span class="pre">AccountContainerAPI.accounts</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.accounts.AccountContainerAPI.aliases"><code class="docutils literal notranslate"><span class="pre">AccountContainerAPI.aliases</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.accounts.AccountContainerAPI.append"><code class="docutils literal notranslate"><span class="pre">AccountContainerAPI.append()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ape.api.accounts.AccountContainerAPI.data_folder"><code class="docutils literal notranslate"><span class="pre">AccountContainerAPI.data_folder</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.accounts.AccountContainerAPI.model_computed_fields"><code class="docutils literal notranslate"><span class="pre">AccountContainerAPI.model_computed_fields</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.accounts.AccountContainerAPI.remove"><code class="docutils literal notranslate"><span class="pre">AccountContainerAPI.remove()</span></code></a></li>
 </ul>
@@ -896,7 +898,7 @@ instances.</p>
 <dl class="py property">
 <dt class="sig sig-object py" id="ape.api.accounts.AccountContainerAPI.accounts">
 <em class="property"><span class="pre">abstract</span><span class="w"> </span><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">accounts</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Iterator</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#ape.api.accounts.AccountAPI" title="ape.api.accounts.AccountAPI"><span class="pre">AccountAPI</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#ape.api.accounts.AccountContainerAPI.accounts" title="Permalink to this definition"></a></dt>
-<dd><p>Iterate over all accounts.</p>
+<dd><p>All accounts.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
 <dd class="field-odd"><p>Iterator[<a class="reference internal" href="#ape.api.accounts.AccountAPI" title="ape.api.accounts.AccountAPI"><code class="xref py py-class docutils literal notranslate"><span class="pre">AccountAPI</span></code></a>]</p>
@@ -907,7 +909,7 @@ instances.</p>
 <dl class="py property">
 <dt class="sig sig-object py" id="ape.api.accounts.AccountContainerAPI.aliases">
 <em class="property"><span class="pre">abstract</span><span class="w"> </span><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">aliases</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Iterator</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#ape.api.accounts.AccountContainerAPI.aliases" title="Permalink to this definition"></a></dt>
-<dd><p>Iterate over all available aliases.</p>
+<dd><p>All available aliases.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
 <dd class="field-odd"><p>Iterator[str]</p>
@@ -927,6 +929,13 @@ instances.</p>
 <dd class="field-even"><p><strong>account</strong> (<a class="reference internal" href="#ape.api.accounts.AccountAPI" title="ape.api.accounts.AccountAPI"><code class="xref py py-class docutils literal notranslate"><span class="pre">AccountAPI</span></code></a>) – The account to add.</p>
 </dd>
 </dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ape.api.accounts.AccountContainerAPI.data_folder">
+<span class="sig-name descname"><span class="pre">data_folder</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Path</span></em><a class="headerlink" href="#ape.api.accounts.AccountContainerAPI.data_folder" title="Permalink to this definition"></a></dt>
+<dd><p>The type of account in this container.
+See <a class="reference internal" href="#ape.api.accounts.AccountAPI" title="ape.api.accounts.AccountAPI"><code class="xref py py-class docutils literal notranslate"><span class="pre">AccountAPI</span></code></a>.</p>
 </dd></dl>
 
 <dl class="py attribute">
@@ -1058,7 +1067,7 @@ Returns <code class="docutils literal notranslate"><span class="pre">None</span>
 <dd><p>Bases: <a class="reference internal" href="#ape.api.accounts.AccountAPI" title="ape.api.accounts.AccountAPI"><code class="xref py py-class docutils literal notranslate"><span class="pre">AccountAPI</span></code></a></p>
 <p>Test accounts for <code class="docutils literal notranslate"><span class="pre">ape</span> <span class="pre">test</span></code> (such accounts that use
 <code class="xref py py-class docutils literal notranslate"><span class="pre">GeneratedDevAccounts</span></code>) should implement this API
-instead of <code class="docutils literal notranslate"><span class="pre">AccountAPI</span></code> directly. This is how they show up in the <code class="docutils literal notranslate"><span class="pre">accounts</span></code> test fixture.</p>
+instead of <code class="docutils literal notranslate"><span class="pre">AccountAPI</span></code> directly. Then, they show up in the <code class="docutils literal notranslate"><span class="pre">accounts</span></code> test fixture.</p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="ape.api.accounts.TestAccountAPI.model_computed_fields">
 <span class="sig-name descname"><span class="pre">model_computed_fields</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ClassVar</span><span class="p"><span class="pre">[</span></span><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ComputedFieldInfo</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{}</span></em><a class="headerlink" href="#ape.api.accounts.TestAccountAPI.model_computed_fields" title="Permalink to this definition"></a></dt>
@@ -1073,11 +1082,11 @@ instead of <code class="docutils literal notranslate"><span class="pre">AccountA
 <dd><p>Bases: <a class="reference internal" href="#ape.api.accounts.AccountContainerAPI" title="ape.api.accounts.AccountContainerAPI"><code class="xref py py-class docutils literal notranslate"><span class="pre">AccountContainerAPI</span></code></a></p>
 <p>Test account containers for <code class="docutils literal notranslate"><span class="pre">ape</span> <span class="pre">test</span></code> (such containers that generate accounts using
 <code class="xref py py-class docutils literal notranslate"><span class="pre">GeneratedDevAccounts</span></code>) should implement this API instead of
-<code class="docutils literal notranslate"><span class="pre">AccountContainerAPI</span></code> directly. This is how they show up in the <code class="docutils literal notranslate"><span class="pre">accounts</span></code> test fixture.</p>
+<code class="docutils literal notranslate"><span class="pre">AccountContainerAPI</span></code> directly. Then, they show up in the <code class="docutils literal notranslate"><span class="pre">accounts</span></code> test fixture.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="ape.api.accounts.TestAccountContainerAPI.generate_account">
 <em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">generate_account</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#ape.api.accounts.TestAccountAPI" title="ape.api.accounts.TestAccountAPI"><span class="pre">TestAccountAPI</span></a></span></span><a class="headerlink" href="#ape.api.accounts.TestAccountContainerAPI.generate_account" title="Permalink to this definition"></a></dt>
-<dd><p>Generate a new test account</p>
+<dd><p>Generate a new test account.</p>
 </dd></dl>
 
 <dl class="py attribute">
