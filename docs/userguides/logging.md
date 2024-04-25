@@ -40,10 +40,12 @@ ape my_cmd -v ERROR
 
 You can also import and use the logger in your own Python scripts or commands:
 
-```python
-from ape.logging import logger, LogLevel
+```{eval-rst}
 
-def main():
-    logger.info("You have entered `main()`.")
-    logger.set_level(LogLevel.WARNING)
+.. doctest::
+>>> from ape.logging import logger, LogLevel
+
+>>> def main():
+>>>  logger.info("You have entered `main()`.")
+>>>  logger.set_level(LogLevel.WARNING)
 ```
