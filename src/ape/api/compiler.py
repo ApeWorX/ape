@@ -204,7 +204,7 @@ class CompilerAPI(BaseInterfaceModel):
 
     @raises_not_implemented
     def trace_source(  # type: ignore[empty-body]
-        self, contract_type: ContractType, trace: TraceAPI, calldata: HexBytes
+        self, contract_source: ContractSource, trace: TraceAPI, calldata: HexBytes
     ) -> SourceTraceback:
         """
         Get a source-traceback for the given contract type.
@@ -212,7 +212,8 @@ class CompilerAPI(BaseInterfaceModel):
         When available, source-code location information is accessible from the object.
 
         Args:
-            contract_type (``ContractType``): A contract type that was created by this compiler.
+            contract_source (``ContractSource``): A contract type with a local-source that was
+              compiled by this compiler.
             trace (:class:`~ape.api.trace.TraceAPI`]): The resulting trace from executing a
               function defined in the given contract type.
             calldata (``HexBytes``): Calldata passed to the top-level call.

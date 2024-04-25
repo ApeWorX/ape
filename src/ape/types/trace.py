@@ -3,9 +3,16 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Iterator, Optional, Union
 
 from eth_pydantic_types import HexBytes
-from ethpm_types import ASTNode, BaseModel, ContractType
+from ethpm_types import ASTNode, BaseModel
 from ethpm_types.ast import SourceLocation
-from ethpm_types.source import Closure, Content, Function, SourceStatement, Statement
+from ethpm_types.source import (
+    Closure,
+    Content,
+    ContractSource,
+    Function,
+    SourceStatement,
+    Statement,
+)
 from pydantic import RootModel
 
 from ape.utils.misc import log_instead_of_fail
@@ -286,20 +293,17 @@ class SourceTraceback(RootModel[list[ControlFlow]]):
     """
 
     @classmethod
-    def create(cls, contract_type: ContractType, trace: "TraceAPI", data: Union[HexBytes, str]):
+    def create(cls, contract_source: ContractSource, trace: "TraceAPI", data: Union[HexBytes, str]):
         # Use the trace as a 'ManagerAccessMixin'.
         compilers = trace.compiler_manager
-
-        if not (source_id := contract_type.source_id):
-            return cls.model_validate([])
-
+        source_id = contract_source.source_id
         ext = f".{source_id.split('.')[-1]}"
         if ext not in compilers.registered_compilers:
             return cls.model_validate([])
 
         compiler = compilers.registered_compilers[ext]
         try:
-            return compiler.trace_source(contract_type, trace, HexBytes(data))
+            return compiler.trace_source(contract_source, trace, HexBytes(data))
         except NotImplementedError:
             return cls.model_validate([])
 

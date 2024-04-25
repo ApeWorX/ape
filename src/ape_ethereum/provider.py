@@ -3,12 +3,11 @@ import re
 import sys
 import time
 from abc import ABC
-from collections.abc import Iterator
 from concurrent.futures import ThreadPoolExecutor
 from copy import copy
 from functools import cached_property, wraps
 from pathlib import Path
-from typing import Any, Iterable, Optional, Union, cast
+from typing import Any, Iterable, Iterator, Optional, Union, cast
 
 import ijson  # type: ignore
 import requests
@@ -428,18 +427,18 @@ class Web3Provider(ProviderAPI, ABC):
             self._test_runner.gas_tracker.append_gas(trace, txn.receiver)
 
         if track_coverage and self._test_runner is not None and txn.receiver:
-            contract_type = self.chain_manager.contracts.get(txn.receiver)
-            if contract_type:
-                method_id = HexBytes(txn.data)
-                selector = (
-                    contract_type.methods[method_id].selector
-                    if method_id in contract_type.methods
-                    else None
-                )
-                source_traceback = SourceTraceback.create(contract_type, trace, method_id)
-                self._test_runner.coverage_tracker.cover(
-                    source_traceback, function=selector, contract=contract_type.name
-                )
+            if contract_type := self.chain_manager.contracts.get(txn.receiver):
+                if contract_src := self.project_manager._create_contract_source(contract_type):
+                    method_id = HexBytes(txn.data)
+                    selector = (
+                        contract_type.methods[method_id].selector
+                        if method_id in contract_type.methods
+                        else None
+                    )
+                    source_traceback = SourceTraceback.create(contract_src, trace, method_id)
+                    self._test_runner.coverage_tracker.cover(
+                        source_traceback, function=selector, contract=contract_type.name
+                    )
 
         if show_gas:
             trace.show_gas_report()
@@ -467,11 +466,11 @@ class Web3Provider(ProviderAPI, ABC):
             contract_address = arguments[0]["to"]
             contract_type = self.chain_manager.contracts.get(contract_address)
             method_id = arguments[0].get("data", "")[:10] or None
-            tb = (
-                SourceTraceback.create(contract_type, trace, method_id)
-                if method_id and contract_type
-                else None
-            )
+            tb = None
+            if contract_type and method_id:
+                if contract_src := self.project_manager._create_contract_source(contract_type):
+                    tb = SourceTraceback.create(contract_src, trace, method_id)
+
             raise self.get_virtual_machine_error(
                 err, trace=trace, contract_address=contract_address, source_traceback=tb
             ) from err

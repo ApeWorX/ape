@@ -20,7 +20,6 @@ def test_get_contract_metadata(
         for client in ("geth", "erigon"):
             chain.network_manager.active_provider._client_version = client
             _ = chain.contracts.get_creation_metadata(geth_contract.address)
-
     finally:
         chain.network_manager.active_provider._web3 = orig_web3
 
