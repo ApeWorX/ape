@@ -93,54 +93,64 @@ More information on publishing contracts can be found in [this guide](./publishi
 
 You can also use the [at() method](../methoddocs/contracts.html#ape.contracts.base.ContractContainer.at) from the same top-level project manager when you know the address of an already-deployed contract:
 
-```python
-from ape import project
+```{eval-rst}
 
-contract = project.MyContract.at("0x68b3465833fb72A70ecDF485E0e4C7bD8665Fc45")
+.. doctest::
+
+    >>> from ape import project
+    >>> contract = project.MyContract.at("0x68b3465833fb72A70ecDF485E0e4C7bD8665Fc45")
 ```
 
 ## From Any Address
 
 If you already know the address of a contract, you can create instances of it using the `Contract` top-level factory:
 
-```python
-from ape import Contract
+```{eval-rst}
 
-contract = Contract("0x68b3465833fb72A70ecDF485E0e4C7bD8665Fc45")
+.. doctest::
+
+    >>> from ape import Contract
+    >>> contract = Contract("0x68b3465833fb72A70ecDF485E0e4C7bD8665Fc45")
 ```
 
 It will fetch the `contract-type` using the explorer plugin from the active network, such as [ape-etherscan](https://github.com/ApeWorX/ape-etherscan).
 
 If you have the [ENS plugin](https://github.com/ApeWorX/ape-ens) installed, you can use `.eth` domain names as the argument:
 
-```python
-from ape import Contract
+```{eval-rst}
 
-contract = Contract("v2.registry.ychad.eth")
+.. doctest::
+
+    >>> from ape import Contract
+
+    >>> contract = Contract("v2.registry.ychad.eth")
 ```
 
 ## From ABIs
 
 You can load contracts using their ABIs:
 
-```python
-from ape import Contract
+```{eval-rst}
 
-address = "0x68b3465833fb72A70ecDF485E0e4C7bD8665Fc45"
+.. doctest::
 
-# Using a JSON str:
-contract = Contract(
-    address, abi='[{"name":"foo","type":"fallback", "stateMutability":"nonpayable"}]'
-)
+>>> from ape import Contract
 
-# Using a JSON file path:
-contract = Contract(address, abi="abi.json")
+>>> address = "0x68b3465833fb72A70ecDF485E0e4C7bD8665Fc45"
 
-# Using a Python dictionary from JSON:
-contract = Contract(
-    address,
-    abi=[{"name":"foo","type":"fallback", "stateMutability":"nonpayable"}]
-)
+>>> # Using a JSON str:
+>>> contract = Contract(
+...     address, abi='[{"name":"foo","type":"fallback", "stateMutability":"nonpayable"}]'
+... )
+
+>>> # Using a JSON file path:
+>>> contract = Contract(address, abi="abi.json")
+
+>>> # Using a Python dictionary from JSON:
+>>> contract = Contract(
+...    address,
+...    abi=[{"name":"foo","type":"fallback", "stateMutability":"nonpayable"}]
+... )
 ```
 
 This will create the Contract instance from the given ABI.
@@ -153,20 +163,25 @@ On live networks, this history of deployments is saved; on local networks, this 
 Let's say you previously deployed a smart contract called `MyContract` on the rinkeby test network.
 You could then refer back to it like so:
 
-```python
-from ape import project, chain
+```{eval-rst}
 
-def main():
-  my_contract = chain.contracts.get_deployments(project.MyContract)[-1]
+.. doctest::
+
+    >>> from ape import project, chain
+
+    >>> def main():
+    >>>   my_contract = chain.contracts.get_deployments(project.MyContract)[-1]
 ```
 
 or
 
-```python
-from ape import project
+```{eval-rst}
 
-def main():
-  my_contract = project.MyContract.deployments[-1]
+.. doctest::
+>>> from ape import project
+
+>>> def main():
+>>>   my_contract = project.MyContract.deployments[-1]
 ```
 
 `my_contract` will be of type `ContractInstance`.
