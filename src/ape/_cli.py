@@ -3,6 +3,7 @@ import re
 import sys
 from gettext import gettext
 from importlib.metadata import entry_points
+from pathlib import Path
 from typing import Any, Dict, Iterable, List, Optional, Tuple
 
 import click
@@ -86,7 +87,10 @@ class ApeCLI(click.MultiCommand):
         except click.UsageError as err:
             self._suggest_cmd(err)
         except ApeException as err:
-            if handle_ape_exception(err, [ctx.obj.project_manager.path]):
+            path = ctx.obj.project_manager.path
+
+            # NOTE: isinstance check for type-checkers.
+            if isinstance(path, Path) and handle_ape_exception(err, (path,)):
                 # All exc details already outputted.
                 sys.exit(1)
             else:
