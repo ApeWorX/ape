@@ -97,6 +97,11 @@ doctest_default_flags = (
     | doctest.NORMALIZE_WHITESPACE
 )
 
+doctest_global_setup = '''
+from ape import accounts
+
+my_account_alias = accounts.test_accounts[0]
+'''
 def fixpath(path: str) -> str:
     """
     Change paths to reference the resources from 'latest/' to save room.

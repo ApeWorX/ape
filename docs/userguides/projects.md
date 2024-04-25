@@ -46,11 +46,14 @@ For more information on compiling your project, see [this guide](./compile.html)
 After compiling, the contract containers are accessible from the `project` manager.
 Deploy them in the `console` or in scripts; for example:
 
-```python
-from ape import accounts, project
+```{eval-rst}
 
-account = accounts.load("my_account_alias")
-account.deploy(project.MyContract)
+.. doctest::
+
+>>> from ape import accounts, project, networks
+>>> with networks.parse_network_choice("ethereum:local:test") as provider:
+...     account = accounts.load("my_account_alias")
+...     account.deploy(project.MyContract)
 ```
 
 **NOTE**: You can also deploy contracts from the container itself:
@@ -58,7 +61,7 @@ account.deploy(project.MyContract)
 ```python
 from ape import accounts, project
 
-account = accounts.load("my_account_alias")
+account = accounts.load(f"{my_account_alias}")
 project.MyContract.deploy(sender=account)
 ```
 
