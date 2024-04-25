@@ -26,9 +26,12 @@ Each account within ape will also fetch and store transactional data that you ca
 To work with an account's transaction data, you can do stuff like this:
 
 ```python
-In [1]: chain.history["example.eth"].query("value").sum()  # All value sent by this address
-In [2]: acct = accounts.load("my-acct"); acct.history[-1]  # Last txn `acct` made
-In [3]: acct.history.query("total_fees_paid").sum()  # Sum of ether paid for fees by `acct`
+from ape import accounts, chain
+
+chain.history["example.eth"].query("value").sum()  # All value sent by this address
+acct = accounts.load("my-acct")
+tx = acct.history[-1]  # Last txn `acct` made
+acct.history.query("total_fees_paid").sum()  # Sum of ether paid for fees by `acct`
 ```
 
 ## Getting Contract Event Data
