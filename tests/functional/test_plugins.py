@@ -11,6 +11,7 @@ from ape.plugins._utils import (
     PluginMetadata,
     PluginMetadataList,
     PluginType,
+    _filter_plugins_from_dists,
     ape_version,
 )
 from ape_plugins.exceptions import PluginVersionError
@@ -220,23 +221,24 @@ class TestPluginMetadata:
         with pytest.raises(PluginVersionError, match=expected):
             metadata._prepare_install(skip_confirmation=True)
 
-    @pytest.mark.parametrize(
-        "plugin,expected", [(list(INSTALLED_PLUGINS)[0], True), (list(AVAILABLE_PLUGINS)[0], False)]
-    )
-    def test_check_installed(self, plugin, expected):
-        installed = PluginMetadata(name=plugin)
-        assert installed.check_installed() is expected
-
-    def test_check_installed_dist_no_name_attr(self, mocker, get_dists_patch):
+    def test_check_installed_python_39(self, mocker, get_dists_patch):
         mock_dist = mocker.MagicMock()
-        get_dists_patch.return_value = mock_dist
-        mock_dist.name.side_effect = AttributeError("no name")
+        get_dists_patch.return_value = [mock_dist]
+        mock_dist.name = ""
+        mock_dist.metadata = {"Name": "ape-py39plugin"}
 
-        metadata = PluginMetadata(name="dontmatter")
+        metadata = PluginMetadata(name="py39plugin")
 
         # If the next line doesn't fail, the test passed.
         # This triggers looping through the dist w/o a name attr.
-        metadata.check_installed()
+        assert metadata.check_installed()
+
+    @pytest.mark.parametrize(
+        "plugin,expected", [(list(INSTALLED_PLUGINS)[0], True), (list(AVAILABLE_PLUGINS)[0], False)]
+    )
+    def test_check_installed_python_310_or_greater(self, plugin, expected):
+        installed = PluginMetadata(name=plugin)
+        assert installed.check_installed() is expected
 
     @parametrize_pip_cmd
     def test_get_uninstall_args(self, pip_command):
@@ -349,3 +351,28 @@ class TestApeVersion:
     @mark_specifiers_less_than_ape
     def test_would_be_downgraded(self, specifier):
         assert ape_version.would_get_downgraded(specifier)
+
+
+def test_filter_plugins_from_dists_py39(mocker):
+    def make_dist(name: str):
+        mock_dist = mocker.MagicMock()
+        mock_dist.name = ""
+        mock_dist.metadata = {"Name": f"ape-{name}"}
+        return mock_dist
+
+    plugins = [make_dist("solidity"), make_dist("vyper"), make_dist("optimism")]
+    actual = set(_filter_plugins_from_dists(plugins))
+    expected = {"ape-solidity", "ape-vyper", "ape-optimism"}
+    assert actual == expected
+
+
+def test_filter_plugins_from_dists_py310_and_greater(mocker):
+    def make_dist(name: str):
+        mock_dist = mocker.MagicMock()
+        mock_dist.name = f"ape-{name}"
+        return mock_dist
+
+    plugins = [make_dist("solidity"), make_dist("vyper"), make_dist("optimism")]
+    actual = set(_filter_plugins_from_dists(plugins))
+    expected = {"ape-solidity", "ape-vyper", "ape-optimism"}
+    assert actual == expected
