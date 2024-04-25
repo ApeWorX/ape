@@ -401,15 +401,22 @@ class AccountContainerAPI(BaseInterfaceModel):
     instances.
     """
 
+    """
+    The path to the account's data.
+    """
     data_folder: Path
 
+    """
+    The type of account in this container.
+    See :class:`~ape.api.accounts.AccountAPI`.
+    """
     account_type: Type[AccountAPI]
 
     @property
     @abstractmethod
     def aliases(self) -> Iterator[str]:
         """
-        Iterate over all available aliases.
+        All available aliases.
 
         Returns:
             Iterator[str]
@@ -419,7 +426,7 @@ class AccountContainerAPI(BaseInterfaceModel):
     @abstractmethod
     def accounts(self) -> Iterator[AccountAPI]:
         """
-        Iterate over all accounts.
+        All accounts.
 
         Returns:
             Iterator[:class:`~ape.api.accounts.AccountAPI`]
@@ -542,13 +549,13 @@ class TestAccountContainerAPI(AccountContainerAPI):
     """
     Test account containers for ``ape test`` (such containers that generate accounts using
     :class:`~ape.utils.GeneratedDevAccounts`) should implement this API instead of
-    ``AccountContainerAPI`` directly. This is how they show up in the ``accounts`` test fixture.
+    ``AccountContainerAPI`` directly. Then, they show up in the ``accounts`` test fixture.
     """
 
     @abstractmethod
     def generate_account(self) -> "TestAccountAPI":
         """
-        Generate a new test account
+        Generate a new test account.
         """
 
 
@@ -556,7 +563,7 @@ class TestAccountAPI(AccountAPI):
     """
     Test accounts for ``ape test`` (such accounts that use
     :class:`~ape.utils.GeneratedDevAccounts`) should implement this API
-    instead of ``AccountAPI`` directly. This is how they show up in the ``accounts`` test fixture.
+    instead of ``AccountAPI`` directly. Then, they show up in the ``accounts`` test fixture.
     """
 
 
@@ -565,6 +572,9 @@ class ImpersonatedAccount(AccountAPI):
     An account to use that does not require signing.
     """
 
+    """
+    The field-address of the account.
+    """
     raw_address: AddressType
 
     @property
