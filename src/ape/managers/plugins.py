@@ -1,14 +1,13 @@
 import importlib
-from importlib.metadata import distributions
 from typing import Any, Generator, Iterator, List, Optional, Set, Tuple
 
 from ape.__modules__ import __modules__
 from ape.exceptions import ApeAttributeError
 from ape.logging import logger
-from ape.plugins._utils import clean_plugin_name
+from ape.plugins._utils import _filter_plugins_from_dists, clean_plugin_name
 from ape.plugins.pluggy_patch import plugin_manager as pluggy_manager
 from ape.utils.basemodel import _assert_not_ipython_check
-from ape.utils.misc import log_instead_of_fail
+from ape.utils.misc import _get_distributions, log_instead_of_fail
 
 
 def valid_impl(api_class: Any) -> bool:
@@ -82,11 +81,9 @@ class PluginManager:
         if self.__registered:
             return
 
-        plugins = [
-            x.name.replace("-", "_")
-            for x in distributions()
-            if getattr(x, "name", "").startswith("ape-")
-        ]
+        plugins = list(
+            {n.replace("-", "_") for n in _filter_plugins_from_dists(_get_distributions())}
+        )
         locals = [p for p in __modules__ if p != "ape"]
         plugin_modules = tuple([*plugins, *locals])
 

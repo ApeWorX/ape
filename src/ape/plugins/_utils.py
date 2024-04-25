@@ -27,6 +27,20 @@ def clean_plugin_name(name: str) -> str:
     return name.replace("_", "-").replace("ape-", "")
 
 
+def _filter_plugins_from_dists(dists: Iterable) -> Iterator[str]:
+    for dist in dists:
+        if name := getattr(dist, "name", ""):
+            # Python 3.10 or greater.
+            if name.startswith("ape-"):
+                yield name
+
+        elif metadata := getattr(dist, "metadata", {}):
+            # Python 3.9.
+            name = metadata.get("Name", "")
+            if name.startswith("ape-"):
+                yield name
+
+
 class ApeVersion:
     def __str__(self) -> str:
         return str(self.version)
@@ -359,7 +373,7 @@ class PluginMetadata(BaseInterfaceModel):
         if not use_cache:
             _get_distributions.cache_clear()
 
-        return any(self.package_name == getattr(d, "name", "") for d in _get_distributions())
+        return any(n == self.package_name for n in _filter_plugins_from_dists(_get_distributions()))
 
     def _prepare_install(
         self, upgrade: bool = False, skip_confirmation: bool = False
