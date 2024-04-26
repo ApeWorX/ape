@@ -1227,8 +1227,8 @@ class EthereumNodeProvider(Web3Provider, ABC):
 
     name: str = "geth"
 
-    """Is ``None`` until known."""
     can_use_parity_traces: Optional[bool] = None
+    """Is ``None`` until known."""
 
     @property
     def uri(self) -> str:

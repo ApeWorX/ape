@@ -9,23 +9,23 @@ class CustomNetwork(PluginConfig):
     A custom network config.
     """
 
-    """Name of the network e.g. mainnet."""
     name: str
+    """Name of the network e.g. mainnet."""
 
-    """Chain ID (required)."""
     chain_id: int
+    """Chain ID (required)."""
 
-    """The name of the ecosystem."""
     ecosystem: str
+    """The name of the ecosystem."""
 
-    """The base ecosystem plugin to use, when applicable. Defaults to the default ecosystem."""
     base_ecosystem_plugin: Optional[str] = None
+    """The base ecosystem plugin to use, when applicable. Defaults to the default ecosystem."""
 
-    """The default provider plugin to use. Default is the default node provider."""
     default_provider: str = "geth"
+    """The default provider plugin to use. Default is the default node provider."""
 
-    """The HTTP request header."""
     request_header: Dict = {}
+    """The HTTP request header."""
 
 
 class NetworksConfig(PluginConfig):

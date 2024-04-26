@@ -38,8 +38,8 @@ class GasConfig(PluginConfig):
     """
 
 
-"""Dict is for extra report settings."""
 _ReportType = Union[bool, Dict]
+"""Dict is for extra report settings."""
 
 
 class CoverageReportsConfig(PluginConfig):
