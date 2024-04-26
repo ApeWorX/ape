@@ -1348,6 +1348,9 @@ class EthereumNodeProvider(Web3Provider, ABC):
         if is_likely_poa and geth_poa_middleware not in self.web3.middleware_onion:
             self.web3.middleware_onion.inject(geth_poa_middleware, layer=0)
 
+        # Some things within ape don't handle AttributeDict outputs very well.
+        self.web3.middleware_onion.remove("attrdict")
+
         self.network.verify_chain_id(chain_id)
 
     def disconnect(self):
