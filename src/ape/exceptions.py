@@ -6,7 +6,18 @@ import traceback
 from inspect import getframeinfo, stack
 from pathlib import Path
 from types import CodeType, TracebackType
-from typing import TYPE_CHECKING, Any, Collection, Dict, Iterator, List, Optional, Union, cast
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    Collection,
+    Dict,
+    Iterable,
+    Iterator,
+    List,
+    Optional,
+    Union,
+    cast,
+)
 
 import click
 from eth_typing import Hash32
@@ -637,7 +648,7 @@ class RPCTimeoutError(SubprocessTimeoutError):
         super().__init__(provider, *args, **kwargs)
 
 
-def handle_ape_exception(err: ApeException, base_paths: List[Path]) -> bool:
+def handle_ape_exception(err: ApeException, base_paths: Iterable[Path]) -> bool:
     """
     Handle a transaction error by showing relevant stack frames,
     including custom contract frames added to the exception.
@@ -647,7 +658,7 @@ def handle_ape_exception(err: ApeException, base_paths: List[Path]) -> bool:
     Args:
         err (:class:`~ape.exceptions.TransactionError`): The transaction error
           being handled.
-        base_paths (Optional[List[Path]]): Optionally include additional
+        base_paths (Optional[Iterable[Path]]): Optionally include additional
           source-path prefixes to use when finding relevant frames.
 
     Returns:
@@ -655,8 +666,7 @@ def handle_ape_exception(err: ApeException, base_paths: List[Path]) -> bool:
     """
 
     tb = traceback.extract_tb(sys.exc_info()[2])
-    relevant_tb = [f for f in tb if any(str(p) in f.filename for p in base_paths)]
-    if not relevant_tb:
+    if not (relevant_tb := [f for f in tb if any(str(p) in f.filename for p in base_paths)]):
         return False
 
     click.echo()
