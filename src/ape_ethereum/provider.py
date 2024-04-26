@@ -1048,7 +1048,7 @@ class Web3Provider(ProviderAPI, ABC):
 
     def _make_request(self, endpoint: str, parameters: Optional[List] = None) -> Any:
         parameters = parameters or []
-        coroutine = self.web3.provider.make_request(RPCEndpoint(endpoint), parameters)
+        coroutine = self.web3.manager._make_request(RPCEndpoint(endpoint), parameters)
         result = run_until_complete(coroutine)
 
         if "error" in result:
