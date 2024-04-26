@@ -46,8 +46,8 @@ class TestAccountManager(list, ManagerAccessMixin):
             t for t in self.plugin_manager.account_types if issubclass(t[1][1], TestAccountAPI)
         ]
         for plugin_name, (container_type, account_type) in account_types:
-            # Pydantic validation won't allow passing None for data_folder/required attr
-            containers[plugin_name] = container_type(data_folder="", account_type=account_type)
+            # Pydantic validation won't allow passing None for name/required attr
+            containers[plugin_name] = container_type(name="", account_type=account_type)
 
         return containers
 
@@ -174,11 +174,7 @@ class AccountManager(BaseManager):
             if issubclass(account_type, TestAccountAPI):
                 continue
 
-            accounts_folder = data_folder / plugin_name
-            accounts_folder.mkdir(exist_ok=True)
-            containers[plugin_name] = container_type(
-                data_folder=accounts_folder, account_type=account_type
-            )
+            containers[plugin_name] = container_type(name=plugin_name, account_type=account_type)
 
         return containers
 

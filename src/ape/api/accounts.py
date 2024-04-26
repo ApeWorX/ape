@@ -402,9 +402,11 @@ class AccountContainerAPI(BaseInterfaceModel):
     """
 
     """
-    The path to the account's data.
+    The name of the account container.
+    For example, the ``ape-ledger`` plugin
+    uses ``"ledger"`` as its name.
     """
-    data_folder: Path
+    name: str
 
     """
     The type of account in this container.
@@ -431,6 +433,15 @@ class AccountContainerAPI(BaseInterfaceModel):
         Returns:
             Iterator[:class:`~ape.api.accounts.AccountAPI`]
         """
+
+    @property
+    def data_folder(self) -> Path:
+        """
+        The path to the account data files.
+        """
+        path = self.config_manager.DATA_FOLDER / self.name
+        path.mkdir(parents=True, exist_ok=True)
+        return path
 
     @abstractmethod
     def __len__(self) -> int:
