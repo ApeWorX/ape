@@ -82,9 +82,9 @@ class ScriptCommand(click.MultiCommand, ManagerAccessMixin):
                 with self.network_manager.parse_network_choice(
                     network_value, disconnect_on_exit=False
                 ):
-                    if not isinstance(err, ApeException) or not handle_ape_exception(
-                        err, [ctx.obj.project_manager.path]
-                    ):
+                    path = ctx.obj.project_manager.path
+                    assert isinstance(path, Path)  # For mypy.
+                    if not isinstance(err, ApeException) or not handle_ape_exception(err, (path,)):
                         err_info = traceback.format_exc()
                         click.echo(err_info)
 
