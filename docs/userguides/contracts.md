@@ -178,6 +178,8 @@ Then, after you have a contract instance, you can call methods on the contract.
 For example, let's say you have a Vyper contract containing some functions:
 
 ```python
+wdAmount: public(uint256)
+
 @pure
 @external
 def get_static_list() -> DynArray[uint256, 3]:
@@ -188,20 +190,33 @@ def set_number(num: uint256):
     assert msg.sender == self.owner, "!authorized"
     self.prevNumber = self.myNumber
     self.myNumber = num
+
+@external
+@payable
+def withdraw():
+    self.wdAmount = msg.value
 ```
 
-Notice the contract has both an external pure method and an external method that modifies state.
+Notice the contract has an external pure method, an external method that modifies state, and an external payable method that also modifies state using the given `msg.value`.
 In EVM languages, methods that modify state require a transaction to execute because they cost money.
 Modifying the storage of a contract requires gas and thus requires a sender with enough funding.
+Methods that accept value are `payable` (e.g. `msg.value` in Vyper); provide additional value (e.g. Ether) to these methods.
 Contract calls, on the other hand, are read-operations and do not cost anything.
+Calls are never payable.
 Thus, calls do not require specifying a `sender=` in Ape.
 
 At the RPC level, Ethereum calls are performed using the `eth_call` RPC and transactions are performed using the `eth_sendTransaction` or `eth_sendRawTransaction` RPCs.
 
+The following sub-sections show how, using Ape, we can invoke or call the methods defined above.
+
 ### Transactions
 
 The following example demonstrates invoking a contract's method in Ape as a transaction.
-However, take note that there is a [separate guide](./transactions.html) which fully covers transactions in Ape.
+Remember: transactions cost money, whether they are payable or not.
+Payable transactions cost more money, because the contract-logic accepts additional value (e.g. Ether).
+
+Before continuing, take note that there is a [separate guide](./transactions.html) which fully covers transactions in Ape at a more granular level.
+For this guide, assume we are using the default transaction type in Ape for Ethereum-based networks.
 
 ```python
 from ape import accounts, Contract
@@ -214,6 +229,13 @@ receipt = contract.set_number(sender=account)
 assert not receipt.failed
 
 # The receipt contains data such as `gas_used`.
+print(receipt.gas_used)
+```
+
+To provider additional value to a payable method, use the `value=` kwarg:
+
+```python
+receipt = contract.withdraw(sender=account, value=123)
 print(receipt.gas_used)
 ```
 
