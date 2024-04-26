@@ -21,7 +21,7 @@ from pydantic import ConfigDict
 
 from ape.exceptions import ApeAttributeError, ApeIndexError, ProviderNotConnectedError
 from ape.logging import logger
-from ape.utils.misc import raises_not_implemented
+from ape.utils.misc import log_instead_of_fail, raises_not_implemented
 
 if TYPE_CHECKING:
     from pydantic.main import Model
@@ -56,7 +56,8 @@ class _RecursionChecker:
         self.getattr_checking: Dict[str, int] = {}
         self.getattr_errors: Dict[str, Exception] = {}
 
-    def __repr__(self):
+    @log_instead_of_fail(default="<_RecursionChecker>")
+    def __repr__(self) -> str:
         return repr(self.getattr_checking)
 
     def check(self, name: str) -> bool:
@@ -393,6 +394,11 @@ def get_attribute_with_extras(obj: Any, name: str) -> Any:
     _recursion_checker.add(name)
 
     res = None
+
+    if not isinstance(obj, ExtraAttributesMixin):
+        name = getattr(type(obj), "__name__", "obj")
+        raise AttributeError(f"{name} must use the '{ExtraAttributesMixin.__name__}' mixin'")
+
     try:
         res = super(ExtraAttributesMixin, obj).__getattribute__(name)
     except AttributeError as base_attr_err:

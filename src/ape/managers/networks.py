@@ -9,6 +9,7 @@ from ape.api.networks import NetworkAPI
 from ape.exceptions import EcosystemNotFoundError, NetworkError, NetworkNotFoundError
 from ape.managers.base import BaseManager
 from ape.utils.basemodel import (
+    ExtraAttributesMixin,
     ExtraModelAttributes,
     get_attribute_with_extras,
     only_raise_attribute_error,
@@ -17,7 +18,7 @@ from ape.utils.misc import _dict_overlay, log_instead_of_fail
 from ape_ethereum.provider import EthereumNodeProvider
 
 
-class NetworkManager(BaseManager):
+class NetworkManager(BaseManager, ExtraAttributesMixin):
     """
     The set of all blockchain network ecosystems registered from the plugin system.
     Typically, you set the provider via the ``--network`` command line option.

@@ -19,9 +19,9 @@ from ape.logging import LogLevel, logger
 from ape.managers.config import CONFIG_FILE_NAME
 from ape.types import AddressType
 from ape.utils import DEFAULT_TEST_CHAIN_ID, ZERO_ADDRESS
-# NOTE: Ensure that we don't use local paths for these
 from ape.utils.basemodel import only_raise_attribute_error
 
+# NOTE: Ensure that we don't use local paths for these
 DATA_FOLDER = Path(mkdtemp()).resolve()
 ape.config.DATA_FOLDER = DATA_FOLDER
 ape.config.dependency_manager.DATA_FOLDER = DATA_FOLDER

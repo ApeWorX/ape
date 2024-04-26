@@ -37,6 +37,7 @@ from ape.utils import (
 )
 from ape.utils.abi import StructParser
 from ape.utils.basemodel import (
+    ExtraAttributesMixin,
     ExtraModelAttributes,
     _assert_not_ipython_check,
     get_attribute_with_extras,
@@ -1241,7 +1242,7 @@ class ContractInstance(BaseAddress, ContractTypeWrapper):
             )
 
 
-class ContractContainer(ContractTypeWrapper):
+class ContractContainer(ContractTypeWrapper, ExtraAttributesMixin):
     """
     A wrapper around the contract type that has access to the provider.
     When you import your contracts from the :class:`ape.managers.project.ProjectManager`, you
@@ -1284,17 +1285,25 @@ class ContractContainer(ContractTypeWrapper):
     def __ape_extra_attributes__(self) -> Iterator[ExtraModelAttributes]:
         yield ExtraModelAttributes(
             name="events",
-            attributes=lambda: self.events,
+            attributes=lambda x: (
+                ContractEvent(contract=self, abi=self.contract_type.events[x])
+                if x in self.contract_type.events
+                else None
+            ),
             include_getitem=True,
         )
         yield ExtraModelAttributes(
             name="errors",
-            attributes=lambda: self.errors,
+            attributes=lambda x: (
+                self._create_custom_error_type(self.contract_type.errors[x])
+                if x in self.contract_type.errors
+                else None
+            ),
             include_getitem=True,
         )
         yield ExtraModelAttributes(
             name="contract_type",
-            attributes=lambda: vars(self.contract_type),
+            attributes=self.contract_type,
         )
 
     @property

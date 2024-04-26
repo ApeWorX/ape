@@ -11,6 +11,7 @@ from ape.logging import logger
 from ape.managers.base import BaseManager
 from ape.utils import log_instead_of_fail
 from ape.utils.basemodel import (
+    ExtraAttributesMixin,
     ExtraModelAttributes,
     get_attribute_with_extras,
     only_raise_attribute_error,
@@ -18,7 +19,7 @@ from ape.utils.basemodel import (
 from ape.utils.os import get_full_extension, get_relative_path
 
 
-class CompilerManager(BaseManager):
+class CompilerManager(BaseManager, ExtraAttributesMixin):
     """
     The singleton that manages :class:`~ape.api.compiler.CompilerAPI` instances.
     Each compiler plugin typically contains a single :class:`~ape.api.compiler.CompilerAPI`.
