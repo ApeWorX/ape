@@ -36,7 +36,12 @@ from ape.utils import (
     singledispatchmethod,
 )
 from ape.utils.abi import StructParser
-from ape.utils.basemodel import _assert_not_ipython_check
+from ape.utils.basemodel import (
+    ExtraModelAttributes,
+    _assert_not_ipython_check,
+    get_attribute_with_extras,
+    only_raise_attribute_error,
+)
 
 
 class ContractConstructor(ManagerAccessMixin):
@@ -1162,6 +1167,7 @@ class ContractInstance(BaseAddress, ContractTypeWrapper):
             )
         )
 
+    @only_raise_attribute_error
     def __getattr__(self, attr_name: str) -> Any:
         """
         Access a method, property, event, or error on the contract using ``.`` access.
@@ -1255,38 +1261,41 @@ class ContractContainer(ContractTypeWrapper):
     def __repr__(self) -> str:
         return f"<{self.contract_type.name}>"
 
-    def __getattr__(self, name: str) -> Any:
+    @only_raise_attribute_error
+    def __getattr__(self, attr_name: str) -> Any:
         """
         Access a contract error or event type via its ABI name using ``.`` access.
 
         Args:
-            name (str): The name of the event or error.
+            attr_name (str): The name of the event or error.
 
         Returns:
             :class:`~ape.types.ContractEvent` or a subclass of :class:`~ape.exceptions.CustomError`
             or any real attribute of the class.
         """
-        _assert_not_ipython_check(name)
-        try:
-            # First, check if requesting a regular attribute on this class.
-            return self.__getattribute__(name)
-        except AttributeError:
-            pass
+        return get_attribute_with_extras(self, attr_name)
 
-        try:
-            if name in self.contract_type.events:
-                abi = self.contract_type.events[name]
-                return ContractEvent(contract=self, abi=abi)
+    def __eq__(self, other):
+        if not hasattr(other, "contract_type"):
+            return NotImplemented
 
-            elif name in self.contract_type.errors:
-                abi = self.contract_type.errors[name]
-                return self._create_custom_error_type(abi)
+        return other.contract_type == self.contract_type
 
-        except Exception as err:
-            # __getattr__ must raise AttributeError
-            raise ApeAttributeError(str(err)) from err
-
-        raise ApeAttributeError(f"No ABI with name '{name}'.")
+    def __ape_extra_attributes__(self) -> Iterator[ExtraModelAttributes]:
+        yield ExtraModelAttributes(
+            name="events",
+            attributes=lambda: self.events,
+            include_getitem=True,
+        )
+        yield ExtraModelAttributes(
+            name="errors",
+            attributes=lambda: self.errors,
+            include_getitem=True,
+        )
+        yield ExtraModelAttributes(
+            name="contract_type",
+            attributes=lambda: vars(self.contract_type),
+        )
 
     @property
     def deployments(self):
@@ -1468,6 +1477,7 @@ class ContractNamespace:
     def __repr__(self) -> str:
         return f"<{self.name}>"
 
+    @only_raise_attribute_error
     def __getattr__(self, item: str) -> Union[ContractContainer, "ContractNamespace"]:
         """
         Access the next contract container or namespace.

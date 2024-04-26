@@ -1,16 +1,20 @@
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Sequence, Set, Union
+from typing import Any, Dict, Iterator, List, Optional, Sequence, Set, Union
 
 from ethpm_types import ContractType
 from ethpm_types.source import Content
 
 from ape.api import CompilerAPI
 from ape.contracts import ContractContainer
-from ape.exceptions import ApeAttributeError, CompilerError, ContractLogicError
+from ape.exceptions import CompilerError, ContractLogicError
 from ape.logging import logger
 from ape.managers.base import BaseManager
 from ape.utils import log_instead_of_fail
-from ape.utils.basemodel import _assert_not_ipython_check
+from ape.utils.basemodel import (
+    ExtraModelAttributes,
+    get_attribute_with_extras,
+    only_raise_attribute_error,
+)
 from ape.utils.os import get_full_extension, get_relative_path
 
 
@@ -35,18 +39,16 @@ class CompilerManager(BaseManager):
         cls_name = getattr(type(self), "__name__", CompilerManager.__name__)
         return f"<{cls_name} len(registered_compilers)={num_compilers}>"
 
-    def __getattr__(self, name: str) -> Any:
-        _assert_not_ipython_check(name)
+    def __ape_extra_attributes__(self) -> Iterator[ExtraModelAttributes]:
+        yield ExtraModelAttributes(
+            name="compilers",
+            # Allow referencing compilers by name e.g. `compilers.vyper`.
+            attributes=lambda: {c.name: c for c in self.registered_compilers.values()},
+        )
 
-        try:
-            return self.__getattribute__(name)
-        except AttributeError:
-            pass
-
-        if compiler := self.get_compiler(name):
-            return compiler
-
-        raise ApeAttributeError(f"No attribute or compiler named '{name}'.")
+    @only_raise_attribute_error
+    def __getattr__(self, attr_name: str) -> Any:
+        return get_attribute_with_extras(self, attr_name)
 
     @property
     def registered_compilers(self) -> Dict[str, CompilerAPI]:

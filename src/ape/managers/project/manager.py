@@ -16,7 +16,7 @@ from ape.logging import logger
 from ape.managers.base import BaseManager
 from ape.managers.project.types import ApeProject, BrownieProject
 from ape.utils import get_relative_path, log_instead_of_fail
-from ape.utils.basemodel import _assert_not_ipython_check
+from ape.utils.basemodel import _assert_not_ipython_check, only_raise_attribute_error
 from ape.utils.os import get_full_extension
 
 
@@ -473,6 +473,7 @@ class ProjectManager(BaseManager):
 
         return self.load_contracts()
 
+    @only_raise_attribute_error
     def __getattr__(self, attr_name: str) -> Any:
         """
         Get a contract container from an existing contract type in

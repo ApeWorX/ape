@@ -49,7 +49,7 @@ from ape.utils import (
     returns_array,
     to_int,
 )
-from ape.utils.basemodel import _assert_not_ipython_check
+from ape.utils.basemodel import _assert_not_ipython_check, only_raise_attribute_error
 from ape.utils.misc import DEFAULT_MAX_RETRIES_TX, DEFAULT_TRANSACTION_TYPE
 from ape_ethereum.proxies import (
     IMPLEMENTATION_ABI,
@@ -223,6 +223,7 @@ class BaseEthereumConfig(PluginConfig):
             gas_limit=self.DEFAULT_LOCAL_GAS_LIMIT,
         )
 
+    @only_raise_attribute_error
     def __getattr__(self, key: str) -> Any:
         _assert_not_ipython_check(key)
         net_key = key.replace("-", "_")

@@ -6,14 +6,13 @@ import yaml
 
 from ape.api import EcosystemAPI, ProviderAPI, ProviderContextManager
 from ape.api.networks import NetworkAPI
-from ape.exceptions import (
-    ApeAttributeError,
-    EcosystemNotFoundError,
-    NetworkError,
-    NetworkNotFoundError,
-)
+from ape.exceptions import EcosystemNotFoundError, NetworkError, NetworkNotFoundError
 from ape.managers.base import BaseManager
-from ape.utils.basemodel import _assert_not_ipython_check
+from ape.utils.basemodel import (
+    ExtraModelAttributes,
+    get_attribute_with_extras,
+    only_raise_attribute_error,
+)
 from ape.utils.misc import _dict_overlay, log_instead_of_fail
 from ape_ethereum.provider import EthereumNodeProvider
 
@@ -292,6 +291,14 @@ class NetworkManager(BaseManager):
 
         return self.ecosystems[ecosystem_name]
 
+    def __ape_extra_attributes__(self) -> Iterator[ExtraModelAttributes]:
+        yield ExtraModelAttributes(
+            name="ecosystems",
+            attributes=lambda: self.ecosystems,
+            include_getitem=True,
+        )
+
+    @only_raise_attribute_error
     def __getattr__(self, attr_name: str) -> EcosystemAPI:
         """
         Get an ecosystem via ``.`` access.
@@ -306,14 +313,7 @@ class NetworkManager(BaseManager):
 
             eth = networks.ethereum
         """
-        _assert_not_ipython_check(attr_name)
-        options = {attr_name, attr_name.replace("-", "_"), attr_name.replace("_", "-")}
-        ecosystems = self.ecosystems
-        for opt in options:
-            if opt in ecosystems:
-                return ecosystems[opt]
-
-        raise ApeAttributeError(f"{NetworkManager.__name__} has no attribute '{attr_name}'.")
+        return get_attribute_with_extras(self, attr_name)
 
     def get_network_choices(
         self,

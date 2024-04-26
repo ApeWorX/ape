@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING, Any, Dict, Optional, TypeVar
 from pydantic import ConfigDict
 from pydantic_settings import BaseSettings
 
-from ape.utils.basemodel import _assert_not_ipython_check
+from ape.utils.basemodel import _assert_not_ipython_check, only_raise_attribute_error
 
 if TYPE_CHECKING:
     from ape.managers.config import ConfigManager
@@ -59,6 +59,7 @@ class PluginConfig(BaseSettings):
 
         return cls(**update(default_values, overrides))
 
+    @only_raise_attribute_error
     def __getattr__(self, attr_name: str) -> Any:
         _assert_not_ipython_check(attr_name)
 
