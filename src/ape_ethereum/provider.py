@@ -1048,7 +1048,10 @@ class Web3Provider(ProviderAPI, ABC):
 
     def _make_request(self, endpoint: str, parameters: Optional[List] = None) -> Any:
         parameters = parameters or []
-        result = self.web3.provider.make_request(RPCEndpoint(endpoint), parameters)
+
+        # request_func() essentially returns make_request() wrapped with middleware
+        request_func = self.web3.provider.request_func(self.web3, self.web3.middleware_onion)
+        result = request_func(RPCEndpoint(endpoint), parameters)
 
         if "error" in result:
             error = result["error"]
