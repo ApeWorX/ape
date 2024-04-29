@@ -1,10 +1,10 @@
 import json
 from pathlib import Path
-from typing import Tuple
+from typing import Dict, Tuple
 
 import click
 
-from ape.cli import ape_cli_context
+from ape.cli import ape_cli_context, config_override_option
 
 
 @click.group()
@@ -113,10 +113,24 @@ def _check_compiled(version_dir: Path) -> bool:
     )
 
 
+def _handle_package_path(path: Path) -> Dict:
+    if not path.exists():
+        return {}
+
+    if path.is_file() and path.name == "ape-config.yaml":
+        path = path.parent
+
+    path = path.resolve().absolute()
+    return {"local": path.as_posix()}
+
+
 def _package_callback(ctx, param, value):
     if value is None:
         # Install all packages from local project.
         return None
+
+    elif isinstance(value, Path):
+        return _handle_package_path(value)
 
     elif value.startswith("gh:"):
         # Is a GitHub style dependency
@@ -133,16 +147,11 @@ def _package_callback(ctx, param, value):
     try:
         path = Path(value).absolute()
     except Exception:
-        path = None
+        pass
+    else:
+        return _handle_package_path(path)
 
-    if path is not None and path.exists():
-        # Is a local package somewhere.
-        if path.is_file() and path.name == "ape-config.yaml":
-            path = path.parent
-
-        return {"local": path.as_posix()}
-
-    elif ":" in value:
+    if isinstance(value, str) and ":" in value:
         # Catch-all for unknown dependency types that may exist.
         parts = value.split(":")
         return {parts[0]: parts[1]}
@@ -161,7 +170,8 @@ def _package_callback(ctx, param, value):
     metavar="REF",
 )
 @click.option("--force", "-f", help="Force a re-install", is_flag=True)
-def install(cli_ctx, package, name, version, ref, force):
+@config_override_option()
+def install(cli_ctx, package, name, version, ref, force, config_override):
     """
     Download and cache packages
     """
@@ -169,6 +179,10 @@ def install(cli_ctx, package, name, version, ref, force):
     log_name = None
 
     if not package or package == ".":
+        if config_override:
+            # NOTE: Handled correctly on feat/0.8
+            cli_ctx.abort("Cannot provide 'config_override' option without specific package(s).")
+
         # `ape pm install`: Load all dependencies from current package.
         try:
             cli_ctx.project_manager.load_dependencies(use_cache=not force)
@@ -183,6 +197,8 @@ def install(cli_ctx, package, name, version, ref, force):
             data["version"] = version
         if ref is not None:
             data["ref"] = ref
+        if config_override:
+            data["config_override"] = config_override
 
         try:
             dependency_obj = cli_ctx.dependency_manager.decode_dependency(data)

@@ -21,7 +21,7 @@ def test_info(simple_runner):
     def cmd(cli_ctx):
         cli_ctx.logger.info("this is a test")
 
-    result = simple_runner.invoke(group_for_testing, ["cmd"])
+    result = simple_runner.invoke(group_for_testing, "cmd")
     assert "INFO" in result.output
     assert "this is a test" in result.output
 
@@ -32,7 +32,7 @@ def test_info_level_higher(simple_runner):
     def cmd(cli_ctx):
         cli_ctx.logger.info("this is a test")
 
-    result = simple_runner.invoke(group_for_testing, ["cmd", "-v", "WARNING"])
+    result = simple_runner.invoke(group_for_testing, ("cmd", "-v", "WARNING"))
 
     # You don't get INFO log when log level is higher
     assert "INFO" not in result.output
@@ -45,7 +45,7 @@ def test_warning(simple_runner):
     def cmd(cli_ctx):
         cli_ctx.logger.warning("this is a test")
 
-    result = simple_runner.invoke(group_for_testing, ["cmd"])
+    result = simple_runner.invoke(group_for_testing, "cmd")
     assert "WARNING" in result.output
     assert "this is a test" in result.output
 
@@ -56,7 +56,7 @@ def test_warning_level_higher(simple_runner):
     def cmd(cli_ctx):
         cli_ctx.logger.warning("this is a test")
 
-    result = simple_runner.invoke(group_for_testing, ["cmd", "-v", "ERROR"])
+    result = simple_runner.invoke(group_for_testing, ("cmd", "-v", "ERROR"))
     assert "WARNING" not in result.output
     assert "this is a test" not in result.output
 
@@ -70,7 +70,7 @@ def test_success(simple_runner):
     def cmd(cli_ctx):
         cli_ctx.logger.success("this is a test")
 
-    result = simple_runner.invoke(group_for_testing, ["cmd"])
+    result = simple_runner.invoke(group_for_testing, "cmd")
     assert "SUCCESS" in result.output
     assert "this is a test" in result.output
 
@@ -81,7 +81,7 @@ def test_success_level_higher(simple_runner):
     def cmd(cli_ctx):
         cli_ctx.logger.success("this is a test")
 
-    result = simple_runner.invoke(group_for_testing, ["cmd", "-v", "WARNING"])
+    result = simple_runner.invoke(group_for_testing, ("cmd", "-v", "WARNING"))
     assert "SUCCESS" not in result.output
     assert "this is a test" not in result.output
 
@@ -96,5 +96,5 @@ def test_format(simple_runner):
         finally:
             cli_ctx.logger.format()
 
-    result = simple_runner.invoke(group_for_testing, ["cmd", "-v", "SUCCESS"])
+    result = simple_runner.invoke(group_for_testing, ("cmd", "-v", "SUCCESS"))
     assert "SUCCESS" not in result.output

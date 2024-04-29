@@ -93,6 +93,7 @@ def _display_all_callback(ctx, param, value):
 
 
 @cli.command(name="list", short_help="Display plugins")
+@ape_cli_context()
 @click.option(
     "-a",
     "--all",
@@ -102,7 +103,6 @@ def _display_all_callback(ctx, param, value):
     callback=_display_all_callback,
     help="Display all plugins installed and available (including Core)",
 )
-@ape_cli_context()
 def _list(cli_ctx, to_display):
     metadata = PluginMetadataList.load(cli_ctx.plugin_manager)
     if output := metadata.to_str(include=to_display):
@@ -156,8 +156,8 @@ def install(cli_ctx, plugins: List[PluginMetadata], skip_confirmation: bool, upg
 
 
 @cli.command()
-@plugins_argument()
 @ape_cli_context()
+@plugins_argument()
 @skip_confirmation_option("Don't ask for confirmation to install the plugins")
 def uninstall(cli_ctx, plugins, skip_confirmation):
     """Uninstall plugins"""

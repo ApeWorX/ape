@@ -1,3 +1,4 @@
+import json
 from pathlib import Path as PathLibPath
 from typing import Any, List, Optional
 
@@ -32,3 +33,22 @@ class AllFilePaths(Path):
         path = super().convert(value, param, ctx)
         assert isinstance(path, PathLibPath)  # For mypy
         return get_all_files_in_directory(path) if path.is_dir() else [path]
+
+
+class JSON(click.ParamType):
+    """
+    A type that accepts a raw-JSON str
+    and loads it into a dictionary.
+    """
+
+    def convert(self, value, param, ctx):
+        if not value:
+            return {}
+
+        elif isinstance(value, str):
+            try:
+                return json.loads(value)
+            except ValueError as err:
+                self.fail(f"Invalid JSON string: {err}", param, ctx)
+
+        return value  # Good already.
