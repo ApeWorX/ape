@@ -11,7 +11,13 @@ from ape.api.networks import LOCAL_NETWORK_NAME, NetworkAPI
 from ape.exceptions import DecodingError, NetworkError, NetworkNotFoundError
 from ape.types import AddressType
 from ape.utils import DEFAULT_LOCAL_TRANSACTION_ACCEPTANCE_TIMEOUT
-from ape_ethereum.ecosystem import BLUEPRINT_HEADER, BaseEthereumConfig, Block, Ethereum
+from ape_ethereum.ecosystem import (
+    BLUEPRINT_HEADER,
+    BaseEthereumConfig,
+    Block,
+    Ethereum,
+    EthereumConfig,
+)
 from ape_ethereum.transactions import (
     DynamicFeeTransaction,
     Receipt,
@@ -933,7 +939,8 @@ def test_default_network_name_set_programmatically(ethereum):
 
 def test_default_network_name_from_config(config, ethereum):
     orig = config._plugin_configs["ethereum"]
-    config._plugin_configs["ethereum"] = {"default_network": "testnet"}
+    data = {"default_network": "testnet"}
+    config._plugin_configs["ethereum"] = EthereumConfig.model_validate(data)
     assert ethereum.default_network_name == "testnet"
     config._plugin_configs["ethereum"] = orig
 
@@ -942,6 +949,7 @@ def test_default_network_name_when_not_set_uses_local(config, ethereum):
     orig = config._plugin_configs["ethereum"]
     data = orig if isinstance(orig, dict) else orig.model_dump()
     data = {k: v for k, v in data.items() if k not in ("default_network",)}
+    data["default_network"] = None
     config._plugin_configs["ethereum"] = data
     assert ethereum.default_network_name == LOCAL_NETWORK_NAME
     config._plugin_configs["ethereum"] = orig

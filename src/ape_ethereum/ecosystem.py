@@ -340,7 +340,10 @@ class Ethereum(EcosystemAPI):
 
         for name in networks_to_check:
             network = self.get_network(name)
-            ecosystem_default = network.config.DEFAULT_TRANSACTION_TYPE
+            ecosystem_config = network.config
+            ecosystem_default = ecosystem_config.get(
+                "default_transaction_type", DEFAULT_TRANSACTION_TYPE
+            )
             result: int = network._network_config.get("default_transaction_type", ecosystem_default)
             return TransactionType(result)
 
