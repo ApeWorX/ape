@@ -213,7 +213,7 @@ The following sub-sections show how, using Ape, we can invoke or call the method
 
 The following example demonstrates invoking a contract's method in Ape as a transaction.
 Remember: transactions cost money, whether they are payable or not.
-Payable transactions cost more money, because the contract-logic accepts additional value (e.g. Ether).
+Payable transactions cost more money, because the contract-logic requires additional value (e.g. Ether) to be forwarded with the call.
 
 Before continuing, take note that there is a [separate guide](./transactions.html) which fully covers transactions in Ape at a more granular level.
 For this guide, assume we are using the default transaction type in Ape for Ethereum-based networks.
