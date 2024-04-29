@@ -44,8 +44,8 @@ class MyManager:
    """My custom manager."""
 
 class CustomContext(ApeCliContextObject):
-   """Add new managers to your custom context"""
    my_manager: MyManager = MyManager()
+   """Add new managers to your custom context"""
    
    @property
    def signer(self):
