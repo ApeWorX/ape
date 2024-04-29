@@ -388,7 +388,9 @@ You could then refer back to it like so:</p>
 <h2>Contract Interaction<a class="headerlink" href="#contract-interaction" title="Permalink to this heading"></a></h2>
 <p>Then, after you have a contract instance, you can call methods on the contract.
 For example, let’s say you have a Vyper contract containing some functions:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nd">@pure</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">wdAmount</span><span class="p">:</span> <span class="n">public</span><span class="p">(</span><span class="n">uint256</span><span class="p">)</span>
+
+<span class="nd">@pure</span>
 <span class="nd">@external</span>
 <span class="k">def</span> <span class="nf">get_static_list</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">DynArray</span><span class="p">[</span><span class="n">uint256</span><span class="p">,</span> <span class="mi">3</span><span class="p">]:</span>
     <span class="k">return</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">]</span>
@@ -398,18 +400,29 @@ For example, let’s say you have a Vyper contract containing some functions:</p
     <span class="k">assert</span> <span class="n">msg</span><span class="o">.</span><span class="n">sender</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">owner</span><span class="p">,</span> <span class="s2">&quot;!authorized&quot;</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">prevNumber</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">myNumber</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">myNumber</span> <span class="o">=</span> <span class="n">num</span>
+
+<span class="nd">@external</span>
+<span class="nd">@payable</span>
+<span class="k">def</span> <span class="nf">withdraw</span><span class="p">():</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">wdAmount</span> <span class="o">=</span> <span class="n">msg</span><span class="o">.</span><span class="n">value</span>
 </pre></div>
 </div>
-<p>Notice the contract has both an external pure method and an external method that modifies state.
+<p>Notice the contract has an external pure method, an external method that modifies state, and an external payable method that also modifies state using the given <code class="docutils literal notranslate"><span class="pre">msg.value</span></code>.
 In EVM languages, methods that modify state require a transaction to execute because they cost money.
 Modifying the storage of a contract requires gas and thus requires a sender with enough funding.
+Methods that accept value are <code class="docutils literal notranslate"><span class="pre">payable</span></code> (e.g. <code class="docutils literal notranslate"><span class="pre">msg.value</span></code> in Vyper); provide additional value (e.g. Ether) to these methods.
 Contract calls, on the other hand, are read-operations and do not cost anything.
+Calls are never payable.
 Thus, calls do not require specifying a <code class="docutils literal notranslate"><span class="pre">sender=</span></code> in Ape.</p>
 <p>At the RPC level, Ethereum calls are performed using the <code class="docutils literal notranslate"><span class="pre">eth_call</span></code> RPC and transactions are performed using the <code class="docutils literal notranslate"><span class="pre">eth_sendTransaction</span></code> or <code class="docutils literal notranslate"><span class="pre">eth_sendRawTransaction</span></code> RPCs.</p>
+<p>The following sub-sections show how, using Ape, we can invoke or call the methods defined above.</p>
 <section id="transactions">
 <h3>Transactions<a class="headerlink" href="#transactions" title="Permalink to this heading"></a></h3>
 <p>The following example demonstrates invoking a contract’s method in Ape as a transaction.
-However, take note that there is a <a class="reference external" href="./transactions.html">separate guide</a> which fully covers transactions in Ape.</p>
+Remember: transactions cost money, whether they are payable or not.
+Payable transactions cost more money, because the contract-logic requires additional value (e.g. Ether) to be forwarded with the call.</p>
+<p>Before continuing, take note that there is a <a class="reference external" href="./transactions.html">separate guide</a> which fully covers transactions in Ape at a more granular level.
+For this guide, assume we are using the default transaction type in Ape for Ethereum-based networks.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">ape</span> <span class="kn">import</span> <span class="n">accounts</span><span class="p">,</span> <span class="n">Contract</span>
 
 <span class="n">account</span> <span class="o">=</span> <span class="n">accounts</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;&lt;ALIAS&gt;&quot;</span><span class="p">)</span>
@@ -421,6 +434,16 @@ However, take note that there is a <a class="reference external" href="./transac
 
 <span class="c1"># The receipt contains data such as `gas_used`.</span>
 <span class="nb">print</span><span class="p">(</span><span class="n">receipt</span><span class="o">.</span><span class="n">gas_used</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>To provider additional value to a payable method, use the <code class="docutils literal notranslate"><span class="pre">value=</span></code> kwarg:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">receipt</span> <span class="o">=</span> <span class="n">contract</span><span class="o">.</span><span class="n">withdraw</span><span class="p">(</span><span class="n">sender</span><span class="o">=</span><span class="n">account</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="mi">123</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">receipt</span><span class="o">.</span><span class="n">gas_used</span><span class="p">)</span>
+
+<span class="c1"># NOTE: You can also use &quot;smart&quot; values such as `&quot;0.1 ether&quot;` or `&quot;100 gwei&quot;`:</span>
+<span class="n">_</span> <span class="o">=</span> <span class="n">contract</span><span class="o">.</span><span class="n">withdraw</span><span class="p">(</span><span class="n">sender</span><span class="o">=</span><span class="n">account</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="s2">&quot;0.1 ether&quot;</span><span class="p">)</span>
+<span class="n">_</span> <span class="o">=</span> <span class="n">contract</span><span class="o">.</span><span class="n">withdraw</span><span class="p">(</span><span class="n">sender</span><span class="o">=</span><span class="n">account</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="s2">&quot;100 gwei&quot;</span><span class="p">)</span>
+<span class="n">_</span> <span class="o">=</span> <span class="n">contract</span><span class="o">.</span><span class="n">withdraw</span><span class="p">(</span><span class="n">sender</span><span class="o">=</span><span class="n">account</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="s2">&quot;1 wei&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>Notice that transacting returns a <a class="reference external" href="../methoddocs/api.html#ape.api.transactions.ReceiptAPI">ReceiptAPI</a> object which contains all the receipt data, such as <code class="docutils literal notranslate"><span class="pre">gas_used</span></code>.</p>

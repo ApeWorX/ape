@@ -165,6 +165,7 @@
 <li class="toctree-l2"><a class="reference internal" href="#dynamic-fee-transactions">Dynamic-Fee Transactions</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#static-fee-transactions">Static-Fee Transactions</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#access-list-transactions">Access List Transactions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#payable-transactions">Payable Transactions</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#transaction-logs">Transaction Logs</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#transaction-acceptance-timeout">Transaction Acceptance Timeout</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#traces">Traces</a></li>
@@ -307,13 +308,13 @@ property.</p>
 (before <a class="reference external" href="https://eips.ethereum.org/EIPS/eip-1559">EIP-1559</a>).
 <strong>However, some applications may still require using static-fee transactions.</strong></p>
 <p>One way to use a static-fee transaction is by specifying the <code class="docutils literal notranslate"><span class="pre">gas_price</span></code> as a key-value argument:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">contract</span><span class="o">.</span><span class="n">fundMyContract</span><span class="p">(</span><span class="n">value</span><span class="o">=</span><span class="s2">&quot;1 gwei&quot;</span><span class="p">,</span> <span class="n">gas_price</span><span class="o">=</span><span class="s2">&quot;100 gwei&quot;</span><span class="p">,</span> <span class="n">sender</span><span class="o">=</span><span class="n">sender</span><span class="p">)</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">contract</span><span class="o">.</span><span class="n">startAuction</span><span class="p">(</span><span class="n">gas_price</span><span class="o">=</span><span class="s2">&quot;100 gwei&quot;</span><span class="p">,</span> <span class="n">sender</span><span class="o">=</span><span class="n">sender</span><span class="p">)</span>
 </pre></div>
 </div>
 <p><strong>NOTE</strong>: Miners prioritize static-fee transactions based on the highest <code class="docutils literal notranslate"><span class="pre">gas_price</span></code>.</p>
 <p>Another way to use a static-fee transaction (without having to provide <code class="docutils literal notranslate"><span class="pre">gas_price</span></code>) is to set the key-value
 argument <code class="docutils literal notranslate"><span class="pre">type</span></code> equal to <code class="docutils literal notranslate"><span class="pre">0x00</span></code>.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">contract</span><span class="o">.</span><span class="n">fundMyContract</span><span class="p">(</span><span class="n">value</span><span class="o">=</span><span class="s2">&quot;1 gwei&quot;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="s2">&quot;0x0&quot;</span><span class="p">,</span> <span class="n">sender</span><span class="o">=</span><span class="n">sender</span><span class="p">)</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">contract</span><span class="o">.</span><span class="n">startAuction</span><span class="p">(</span><span class="nb">type</span><span class="o">=</span><span class="s2">&quot;0x0&quot;</span><span class="p">,</span> <span class="n">sender</span><span class="o">=</span><span class="n">sender</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>When declaring <code class="docutils literal notranslate"><span class="pre">type=&quot;0x0&quot;</span></code> and <em>not</em> specifying a <code class="docutils literal notranslate"><span class="pre">gas_price</span></code>, the <code class="docutils literal notranslate"><span class="pre">gas_price</span></code> gets set using the provider’s estimation.</p>
@@ -325,14 +326,23 @@ Access-list transactions are static-fee transactions except you can optionally s
 Access-lists make contract-interaction more predictable and optimized.
 You can also use Access-lists in Dynamic-fee transactions.</p>
 <p>To automatically use access-list (type 1) transactions in Ape, specify <code class="docutils literal notranslate"><span class="pre">type=1</span></code> in your call:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">contract</span><span class="o">.</span><span class="n">fundMyContract</span><span class="p">(</span><span class="n">value</span><span class="o">=</span><span class="s2">&quot;1 gwei&quot;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">sender</span><span class="o">=</span><span class="n">sender</span><span class="p">)</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">contract</span><span class="o">.</span><span class="n">startAuction</span><span class="p">(</span><span class="nb">type</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">sender</span><span class="o">=</span><span class="n">sender</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>When specifying <code class="docutils literal notranslate"><span class="pre">type=1</span></code>, Ape uses <code class="docutils literal notranslate"><span class="pre">eth_createAccessList</span></code> RPC to attach an access list to the transaction automatically.</p>
 <p>You can also specify the access-list directly:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">contract</span><span class="o">.</span><span class="n">fundMyContract</span><span class="p">(</span><span class="n">value</span><span class="o">=</span><span class="s2">&quot;1 gwei&quot;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">sender</span><span class="o">=</span><span class="n">sender</span><span class="p">,</span> <span class="n">access_list</span><span class="o">=</span><span class="n">MY_ACCESS_LIST</span><span class="p">)</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">contract</span><span class="o">.</span><span class="n">fundMyContract</span><span class="p">(</span><span class="nb">type</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">sender</span><span class="o">=</span><span class="n">sender</span><span class="p">,</span> <span class="n">access_list</span><span class="o">=</span><span class="n">MY_ACCESS_LIST</span><span class="p">)</span>
 </pre></div>
 </div>
+</section>
+<section id="payable-transactions">
+<h2>Payable Transactions<a class="headerlink" href="#payable-transactions" title="Permalink to this heading"></a></h2>
+<p>To add value to a transaction, use the <code class="docutils literal notranslate"><span class="pre">value=</span></code> kwarg when transacting in Ape.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">contract</span><span class="o">.</span><span class="n">fundMyContract</span><span class="p">(</span><span class="n">value</span><span class="o">=</span><span class="s2">&quot;1 ether&quot;</span><span class="p">,</span> <span class="n">sender</span><span class="o">=</span><span class="n">sender</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The <code class="docutils literal notranslate"><span class="pre">value=&quot;1</span> <span class="pre">ether&quot;</span></code> part is sending 1 ETH to the contract.
+You would do this if <code class="docutils literal notranslate"><span class="pre">fundMyContract</span></code> was a <code class="docutils literal notranslate"><span class="pre">&quot;payable&quot;</span></code> method, e.g. marked <code class="docutils literal notranslate"><span class="pre">&#64;payable</span></code> in Vyper.</p>
 </section>
 <section id="transaction-logs">
 <h2>Transaction Logs<a class="headerlink" href="#transaction-logs" title="Permalink to this heading"></a></h2>
