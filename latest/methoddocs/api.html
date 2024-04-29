@@ -204,6 +204,7 @@
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.accounts.AccountContainerAPI.__delitem__"><code class="docutils literal notranslate"><span class="pre">AccountContainerAPI.__delitem__()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.accounts.AccountContainerAPI.__getitem__"><code class="docutils literal notranslate"><span class="pre">AccountContainerAPI.__getitem__()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.accounts.AccountContainerAPI.__len__"><code class="docutils literal notranslate"><span class="pre">AccountContainerAPI.__len__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ape.api.accounts.AccountContainerAPI.account_type"><code class="docutils literal notranslate"><span class="pre">AccountContainerAPI.account_type</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.accounts.AccountContainerAPI.accounts"><code class="docutils literal notranslate"><span class="pre">AccountContainerAPI.accounts</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.accounts.AccountContainerAPI.aliases"><code class="docutils literal notranslate"><span class="pre">AccountContainerAPI.aliases</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.accounts.AccountContainerAPI.append"><code class="docutils literal notranslate"><span class="pre">AccountContainerAPI.append()</span></code></a></li>
@@ -895,6 +896,13 @@ instances.</p>
 <dd><p>Number of accounts.</p>
 </dd></dl>
 
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ape.api.accounts.AccountContainerAPI.account_type">
+<span class="sig-name descname"><span class="pre">account_type</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Type</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#ape.api.accounts.AccountAPI" title="ape.api.accounts.AccountAPI"><span class="pre">AccountAPI</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#ape.api.accounts.AccountContainerAPI.account_type" title="Permalink to this definition"></a></dt>
+<dd><p>The type of account in this container.
+See <a class="reference internal" href="#ape.api.accounts.AccountAPI" title="ape.api.accounts.AccountAPI"><code class="xref py py-class docutils literal notranslate"><span class="pre">AccountAPI</span></code></a>.</p>
+</dd></dl>
+
 <dl class="py property">
 <dt class="sig sig-object py" id="ape.api.accounts.AccountContainerAPI.accounts">
 <em class="property"><span class="pre">abstract</span><span class="w"> </span><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">accounts</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Iterator</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#ape.api.accounts.AccountAPI" title="ape.api.accounts.AccountAPI"><span class="pre">AccountAPI</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#ape.api.accounts.AccountContainerAPI.accounts" title="Permalink to this definition"></a></dt>
@@ -934,8 +942,7 @@ instances.</p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="ape.api.accounts.AccountContainerAPI.data_folder">
 <span class="sig-name descname"><span class="pre">data_folder</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Path</span></em><a class="headerlink" href="#ape.api.accounts.AccountContainerAPI.data_folder" title="Permalink to this definition"></a></dt>
-<dd><p>The type of account in this container.
-See <a class="reference internal" href="#ape.api.accounts.AccountAPI" title="ape.api.accounts.AccountAPI"><code class="xref py py-class docutils literal notranslate"><span class="pre">AccountAPI</span></code></a>.</p>
+<dd><p>The path to the account’s data.</p>
 </dd></dl>
 
 <dl class="py attribute">
@@ -2610,7 +2617,7 @@ or an IPC path.</p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="ape.api.providers.ProviderAPI.data_folder">
 <span class="sig-name descname"><span class="pre">data_folder</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Path</span></em><a class="headerlink" href="#ape.api.providers.ProviderAPI.data_folder" title="Permalink to this definition"></a></dt>
-<dd><p>The path to the  <code class="docutils literal notranslate"><span class="pre">.ape</span></code> directory.</p>
+<dd><p>The path to the <code class="docutils literal notranslate"><span class="pre">.ape</span></code> directory.</p>
 </dd></dl>
 
 <dl class="py method">
