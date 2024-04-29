@@ -962,6 +962,7 @@ def test_default_network_name_when_not_set_and_no_local_uses_only(mocker, config
     mock_net.name = net_name
     mock_pm.networks = ((None, ("ethereum", net_name, lambda *args, **kwargs: mock_net)),)
     Ethereum.plugin_manager = mock_pm
+    ethereum._default_network = None
 
     try:
         assert ethereum.default_network_name == net_name
