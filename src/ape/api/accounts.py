@@ -1,3 +1,4 @@
+import os
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Iterator, Optional, Union
 
@@ -438,6 +439,7 @@ class AccountContainerAPI(BaseInterfaceModel):
     def data_folder(self) -> Path:
         """
         The path to the account data files.
+        Defaults to ``$HOME/.ape/<plugin_name>`` unless overriden.
         """
         path = self.config_manager.DATA_FOLDER / self.name
         path.mkdir(parents=True, exist_ok=True)
@@ -562,6 +564,19 @@ class TestAccountContainerAPI(AccountContainerAPI):
     :class:`~ape.utils.GeneratedDevAccounts`) should implement this API instead of
     ``AccountContainerAPI`` directly. Then, they show up in the ``accounts`` test fixture.
     """
+
+    @property
+    def data_folder(self) -> Path:
+        """
+        **NOTE**: Test account containers do not touch
+        persistant data. By default and unless overriden,
+        this property returns the path to ``/dev/null`` and
+        it is not used for anything.
+        """
+        if os.name == "posix":
+            return Path("/dev/null")
+
+        return Path("NUL")
 
     @abstractmethod
     def generate_account(self) -> "TestAccountAPI":

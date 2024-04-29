@@ -46,8 +46,7 @@ class TestAccountManager(list, ManagerAccessMixin):
             t for t in self.plugin_manager.account_types if issubclass(t[1][1], TestAccountAPI)
         ]
         for plugin_name, (container_type, account_type) in account_types:
-            # Pydantic validation won't allow passing None for name/required attr
-            containers[plugin_name] = container_type(name="", account_type=account_type)
+            containers[plugin_name] = container_type(name=plugin_name, account_type=account_type)
 
         return containers
 
