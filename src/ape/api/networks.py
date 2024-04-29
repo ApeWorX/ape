@@ -320,7 +320,7 @@ class EcosystemAPI(ExtraAttributesMixin, BaseInterfaceModel):
             str
         """
         if network := self._default_network:
-            # Was set programatically.
+            # Was set programmatically.
             return network
 
         elif network := self.config.get("default_network"):
@@ -333,7 +333,8 @@ class EcosystemAPI(ExtraAttributesMixin, BaseInterfaceModel):
 
         elif len(self.networks) >= 1:
             # Use the first network.
-            return self.networks[0]
+            key = next(iter(self.networks.keys()))
+            return self.networks[key].name
 
         # Very unlikely scenario.
         raise NetworkError("No networks found.")
@@ -809,14 +810,10 @@ class NetworkAPI(BaseInterfaceModel):
             if cfg := self.config.get(opt):
                 if isinstance(cfg, dict):
                     return cfg
-
                 elif isinstance(cfg, PluginConfig):
                     return cfg
-
                 else:
                     raise TypeError(f"Network config must be a dictionary. Received '{type(cfg)}'.")
-
-                return cfg
 
         return PluginConfig()
 
@@ -1112,7 +1109,7 @@ class NetworkAPI(BaseInterfaceModel):
 
         provider_from_config: str
         if provider := self._default_provider:
-            # Was set programatically.
+            # Was set programmatically.
             return provider
 
         elif provider_from_config := self._network_config.get("default_provider"):

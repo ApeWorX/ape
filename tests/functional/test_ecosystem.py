@@ -6,11 +6,12 @@ from eth_pydantic_types import HashBytes32, HexBytes
 from eth_typing import HexAddress, HexStr
 from ethpm_types.abi import ABIType, EventABI, MethodABI
 
+from ape.api import PluginConfig
 from ape.api.networks import LOCAL_NETWORK_NAME, NetworkAPI
 from ape.exceptions import DecodingError, NetworkError, NetworkNotFoundError
 from ape.types import AddressType
 from ape.utils import DEFAULT_LOCAL_TRANSACTION_ACCEPTANCE_TIMEOUT
-from ape_ethereum.ecosystem import BLUEPRINT_HEADER, BaseEthereumConfig, Block
+from ape_ethereum.ecosystem import BLUEPRINT_HEADER, BaseEthereumConfig, Block, Ethereum
 from ape_ethereum.transactions import (
     DynamicFeeTransaction,
     Receipt,
@@ -922,3 +923,50 @@ def test_default_network_when_custom_and_set_in_config(
     # Force it to use config value (in case was set from previous test)
     ecosystem._default_network = None
     assert ecosystem.default_network_name == custom_network_name_0
+
+
+def test_default_network_name_set_programmatically(ethereum):
+    ethereum._default_network = "testnet"
+    assert ethereum.default_network_name == "testnet"
+    ethereum._default_network = None
+
+
+def test_default_network_name_from_config(config, ethereum):
+    orig = config._plugin_configs["ethereum"]
+    config._plugin_configs["ethereum"] = {"default_network": "testnet"}
+    assert ethereum.default_network_name == "testnet"
+    config._plugin_configs["ethereum"] = orig
+
+
+def test_default_network_name_when_not_set_uses_local(config, ethereum):
+    orig = config._plugin_configs["ethereum"]
+    data = orig if isinstance(orig, dict) else orig.model_dump()
+    data = {k: v for k, v in data.items() if k not in ("default_network",)}
+    config._plugin_configs["ethereum"] = data
+    assert ethereum.default_network_name == LOCAL_NETWORK_NAME
+    config._plugin_configs["ethereum"] = orig
+
+
+def test_default_network_name_when_not_set_and_no_local_uses_only(mocker, config, ethereum):
+    # Delete cache.
+    if "_networks_from_plugins" in ethereum.__dict__:
+        del ethereum.__dict__["_networks_from_plugins"]
+
+    orig_eth = config._plugin_configs["ethereum"]
+    orig_pm = ethereum.plugin_manager
+
+    net_name = "onlynet"
+    config._plugin_configs["ethereum"] = PluginConfig()
+    mock_pm = mocker.MagicMock()
+    mock_net = mocker.MagicMock()
+    mock_net.name = net_name
+    mock_pm.networks = ((None, ("ethereum", net_name, lambda *args, **kwargs: mock_net)),)
+    Ethereum.plugin_manager = mock_pm
+
+    try:
+        assert ethereum.default_network_name == net_name
+    finally:
+        config._plugin_configs["ethereum"] = orig_eth
+        Ethereum.plugin_manager = orig_pm
+        if "_networks_from_plugins" in ethereum.__dict__:
+            del ethereum.__dict__["_networks_from_plugins"]
