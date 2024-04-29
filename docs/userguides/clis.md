@@ -207,13 +207,12 @@ APPLICATION_PREFIX = "<FOO_BAR>"
 @existing_alias_argument(account_type=KeyfileAccount)
 def cli_0(alias):
    pass
-   
+
 @click.command()
 @existing_alias_argument(account_type=lambda a: a.alias.startswith(APPLICATION_PREFIX))
 def cli_1(alias):
    pass
-    
-   
+
 # Select from the given accounts directly.
 my_accounts = [accounts.load("me"), accounts.load("me2")]
 selected_account = get_user_selected_account(account_type=my_accounts)
