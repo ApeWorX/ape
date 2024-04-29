@@ -180,7 +180,7 @@ def install(cli_ctx, package, name, version, ref, force, config_override):
 
     if not package or package == ".":
         if config_override:
-            # NOTE: Handled correctly on feat/0.8
+            # TODO: Handle correctly in project-refactor for feat/08
             cli_ctx.abort("Cannot provide 'config_override' option without specific package(s).")
 
         # `ape pm install`: Load all dependencies from current package.
