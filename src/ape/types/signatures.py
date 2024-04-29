@@ -64,8 +64,19 @@ def _left_pad_bytes(val: bytes, num_bytes: int) -> bytes:
 @dataclass(frozen=True)
 class _Signature:
     v: int
+    """
+    The version byte (``v``) in an Ethereum-style ECDSA signture.
+    """
+
     r: bytes
+    """
+    The random point (``r``) in an ECDSA signature.
+    """
+
     s: bytes
+    """
+    The signature proof point (``s``) in an ECDSA signature.
+    """
 
     def __iter__(self) -> Iterator[Union[int, bytes]]:
         # NOTE: Allows tuple destructuring
