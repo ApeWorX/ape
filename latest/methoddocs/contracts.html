@@ -195,7 +195,6 @@
 <li class="toctree-l2"><a class="reference internal" href="#ape.contracts.base.ContractInstance"><code class="docutils literal notranslate"><span class="pre">ContractInstance</span></code></a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#ape.contracts.base.ContractInstance.__call__"><code class="docutils literal notranslate"><span class="pre">ContractInstance.__call__()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ape.contracts.base.ContractInstance.__dir__"><code class="docutils literal notranslate"><span class="pre">ContractInstance.__dir__()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="#ape.contracts.base.ContractInstance.__getattr__"><code class="docutils literal notranslate"><span class="pre">ContractInstance.__getattr__()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ape.contracts.base.ContractInstance.address"><code class="docutils literal notranslate"><span class="pre">ContractInstance.address</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ape.contracts.base.ContractInstance.call_view_method"><code class="docutils literal notranslate"><span class="pre">ContractInstance.call_view_method()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ape.contracts.base.ContractInstance.get_error_by_signature"><code class="docutils literal notranslate"><span class="pre">ContractInstance.get_error_by_signature()</span></code></a></li>
@@ -205,8 +204,10 @@
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="#ape.contracts.base.ContractContainer"><code class="docutils literal notranslate"><span class="pre">ContractContainer</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#ape.contracts.base.ContractContainer.__ape_extra_attributes__"><code class="docutils literal notranslate"><span class="pre">ContractContainer.__ape_extra_attributes__()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ape.contracts.base.ContractContainer.__call__"><code class="docutils literal notranslate"><span class="pre">ContractContainer.__call__()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="#ape.contracts.base.ContractContainer.__getattr__"><code class="docutils literal notranslate"><span class="pre">ContractContainer.__getattr__()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#ape.contracts.base.ContractContainer.__eq__"><code class="docutils literal notranslate"><span class="pre">ContractContainer.__eq__()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#ape.contracts.base.ContractContainer.__hash__"><code class="docutils literal notranslate"><span class="pre">ContractContainer.__hash__</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ape.contracts.base.ContractContainer.at"><code class="docutils literal notranslate"><span class="pre">ContractContainer.at()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ape.contracts.base.ContractContainer.deploy"><code class="docutils literal notranslate"><span class="pre">ContractContainer.deploy()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ape.contracts.base.ContractContainer.deployments"><code class="docutils literal notranslate"><span class="pre">ContractContainer.deployments</span></code></a></li>
@@ -350,27 +351,6 @@ default handler.</p>
 </dl>
 </dd></dl>
 
-<dl class="py method">
-<dt class="sig sig-object py" id="ape.contracts.base.ContractInstance.__getattr__">
-<span class="sig-name descname"><span class="pre">__getattr__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">attr_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Any</span></span></span><a class="headerlink" href="#ape.contracts.base.ContractInstance.__getattr__" title="Permalink to this definition"></a></dt>
-<dd><p>Access a method, property, event, or error on the contract using <code class="docutils literal notranslate"><span class="pre">.</span></code> access.</p>
-<p>Usage example:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">result</span> <span class="o">=</span> <span class="n">contract</span><span class="o">.</span><span class="n">vote</span><span class="p">()</span>  <span class="c1"># Implies a method named &quot;vote&quot; exists on the contract.</span>
-</pre></div>
-</div>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>attr_name</strong> (<em>str</em>) – The name of the method or property to access.</p>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>The return value from the contract call, or a transaction receipt.</p>
-</dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>Any</p>
-</dd>
-</dl>
-</dd></dl>
-
 <dl class="py property">
 <dt class="sig sig-object py" id="ape.contracts.base.ContractInstance.address">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">address</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ChecksumAddress</span></em><a class="headerlink" href="#ape.contracts.base.ContractInstance.address" title="Permalink to this definition"></a></dt>
@@ -426,7 +406,7 @@ or <code class="docutils literal notranslate"><span class="pre">balance</span></
 <dt class="sig sig-object py" id="ape.contracts.base.ContractInstance.get_event_by_signature">
 <span class="sig-name descname"><span class="pre">get_event_by_signature</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">signature</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#ape.contracts.base.ContractEvent" title="ape.contracts.base.ContractEvent"><span class="pre">ContractEvent</span></a></span></span><a class="headerlink" href="#ape.contracts.base.ContractInstance.get_event_by_signature" title="Permalink to this definition"></a></dt>
 <dd><p>Get an event by its signature. Most often, you can use the
-<a class="reference internal" href="#ape.contracts.base.ContractInstance.__getattr__" title="ape.contracts.base.ContractInstance.__getattr__"><code class="xref py py-meth docutils literal notranslate"><span class="pre">__getattr__()</span></code></a>
+<code class="xref py py-meth docutils literal notranslate"><span class="pre">__getattr__()</span></code>
 method on this class to access events. However, in the case
 when you have more than one event with the same name, such
 as the case where one event is coming from a base contract,
@@ -480,7 +460,7 @@ if it is known and exists.</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="ape.contracts.base.ContractContainer">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ape.contracts.base.</span></span><span class="sig-name descname"><span class="pre">ContractContainer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">contract_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ContractType</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.contracts.base.ContractContainer" title="Permalink to this definition"></a></dt>
-<dd><p>Bases: <a class="reference internal" href="#ape.contracts.base.ContractTypeWrapper" title="ape.contracts.base.ContractTypeWrapper"><code class="xref py py-class docutils literal notranslate"><span class="pre">ContractTypeWrapper</span></code></a></p>
+<dd><p>Bases: <a class="reference internal" href="#ape.contracts.base.ContractTypeWrapper" title="ape.contracts.base.ContractTypeWrapper"><code class="xref py py-class docutils literal notranslate"><span class="pre">ContractTypeWrapper</span></code></a>, <a class="reference internal" href="utils.html#ape.utils.ExtraAttributesMixin" title="ape.utils.basemodel.ExtraAttributesMixin"><code class="xref py py-class docutils literal notranslate"><span class="pre">ExtraAttributesMixin</span></code></a></p>
 <p>A wrapper around the contract type that has access to the provider.
 When you import your contracts from the <code class="xref py py-class docutils literal notranslate"><span class="pre">ape.managers.project.ProjectManager</span></code>, you
 are using this class.</p>
@@ -491,25 +471,38 @@ are using this class.</p>
 </pre></div>
 </div>
 <dl class="py method">
+<dt class="sig sig-object py" id="ape.contracts.base.ContractContainer.__ape_extra_attributes__">
+<span class="sig-name descname"><span class="pre">__ape_extra_attributes__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Iterator</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="utils.html#ape.utils.ExtraModelAttributes" title="ape.utils.basemodel.ExtraModelAttributes"><span class="pre">ExtraModelAttributes</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#ape.contracts.base.ContractContainer.__ape_extra_attributes__" title="Permalink to this definition"></a></dt>
+<dd><p>Override this method to supply extra attributes
+to a model in Ape; this allow more properties
+to be available when invoking <code class="docutils literal notranslate"><span class="pre">__getattr__</span></code>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>A
+series of instances defining extra model attributes.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>Iterator[<a class="reference internal" href="utils.html#ape.utils.ExtraModelAttributes" title="ape.utils.basemodel.ExtraModelAttributes"><code class="xref py py-class docutils literal notranslate"><span class="pre">ExtraModelAttributes</span></code></a>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="ape.contracts.base.ContractContainer.__call__">
 <span class="sig-name descname"><span class="pre">__call__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="api.html#ape.api.transactions.TransactionAPI" title="ape.api.transactions.TransactionAPI"><span class="pre">TransactionAPI</span></a></span></span><a class="headerlink" href="#ape.contracts.base.ContractContainer.__call__" title="Permalink to this definition"></a></dt>
 <dd><p>Call self as a function.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ape.contracts.base.ContractContainer.__getattr__">
-<span class="sig-name descname"><span class="pre">__getattr__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Any</span></span></span><a class="headerlink" href="#ape.contracts.base.ContractContainer.__getattr__" title="Permalink to this definition"></a></dt>
-<dd><p>Access a contract error or event type via its ABI name using <code class="docutils literal notranslate"><span class="pre">.</span></code> access.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>name</strong> (<em>str</em>) – The name of the event or error.</p>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">ContractEvent</span></code> or a subclass of <a class="reference internal" href="exceptions.html#ape.exceptions.CustomError" title="ape.exceptions.CustomError"><code class="xref py py-class docutils literal notranslate"><span class="pre">CustomError</span></code></a>
-or any real attribute of the class.</p>
-</dd>
-</dl>
+<dt class="sig sig-object py" id="ape.contracts.base.ContractContainer.__eq__">
+<span class="sig-name descname"><span class="pre">__eq__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">other</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.contracts.base.ContractContainer.__eq__" title="Permalink to this definition"></a></dt>
+<dd><p>Return self==value.</p>
 </dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ape.contracts.base.ContractContainer.__hash__">
+<span class="sig-name descname"><span class="pre">__hash__</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#ape.contracts.base.ContractContainer.__hash__" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="ape.contracts.base.ContractContainer.at">

@@ -404,7 +404,6 @@
 </li>
 <li class="toctree-l2"><a class="reference internal" href="#module-ape.managers.project.manager">Project</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#ape.managers.project.manager.ProjectManager"><code class="docutils literal notranslate"><span class="pre">ProjectManager</span></code></a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#ape.managers.project.manager.ProjectManager.__getattr__"><code class="docutils literal notranslate"><span class="pre">ProjectManager.__getattr__()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.managers.project.manager.ProjectManager.__str__"><code class="docutils literal notranslate"><span class="pre">ProjectManager.__str__()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.managers.project.manager.ProjectManager.compiler_cache_folder"><code class="docutils literal notranslate"><span class="pre">ProjectManager.compiler_cache_folder</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.managers.project.manager.ProjectManager.compiler_data"><code class="docutils literal notranslate"><span class="pre">ProjectManager.compiler_data</span></code></a></li>
@@ -2530,34 +2529,6 @@ this class uninitialized.</p>
 <span class="n">contract_type</span> <span class="o">=</span> <span class="n">project</span><span class="o">.</span><span class="n">MyContactType</span>
 </pre></div>
 </div>
-<dl class="py method">
-<dt class="sig sig-object py" id="ape.managers.project.manager.ProjectManager.__getattr__">
-<span class="sig-name descname"><span class="pre">__getattr__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">attr_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Any</span></span></span><a class="headerlink" href="#ape.managers.project.manager.ProjectManager.__getattr__" title="Permalink to this definition"></a></dt>
-<dd><p>Get a contract container from an existing contract type in
-the local project using <code class="docutils literal notranslate"><span class="pre">.</span></code> access.</p>
-<p><strong>NOTE</strong>: To get a dependency contract, use
-<code class="xref py py-attr docutils literal notranslate"><span class="pre">dependencies</span></code>.</p>
-<p>Usage example:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">ape</span> <span class="kn">import</span> <span class="n">project</span>
-
-<span class="n">contract</span> <span class="o">=</span> <span class="n">project</span><span class="o">.</span><span class="n">MyContract</span>
-</pre></div>
-</div>
-<dl class="field-list simple">
-<dt class="field-odd">Raises<span class="colon">:</span></dt>
-<dd class="field-odd"><p><a class="reference internal" href="exceptions.html#ape.exceptions.ApeAttributeError" title="ape.exceptions.ApeAttributeError"><strong>ApeAttributeError</strong></a> – When the given name is not
-    a contract in the project.</p>
-</dd>
-<dt class="field-even">Parameters<span class="colon">:</span></dt>
-<dd class="field-even"><p><strong>attr_name</strong> (<em>str</em>) – The name of the contract in the project.</p>
-</dd>
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">ContractContainer</span></code>,
-a <code class="xref py py-class docutils literal notranslate"><span class="pre">ContractNamespace</span></code>, or any attribute.</p>
-</dd>
-</dl>
-</dd></dl>
-
 <dl class="py method">
 <dt class="sig sig-object py" id="ape.managers.project.manager.ProjectManager.__str__">
 <span class="sig-name descname"><span class="pre">__str__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="headerlink" href="#ape.managers.project.manager.ProjectManager.__str__" title="Permalink to this definition"></a></dt>
