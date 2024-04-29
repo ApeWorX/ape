@@ -941,6 +941,7 @@ def test_default_network_name_from_config(config, ethereum):
     orig = config._plugin_configs["ethereum"]
     data = {"default_network": "testnet"}
     config._plugin_configs["ethereum"] = EthereumConfig.model_validate(data)
+    ethereum._default_network = None
     assert ethereum.default_network_name == "testnet"
     config._plugin_configs["ethereum"] = orig
 
@@ -951,6 +952,7 @@ def test_default_network_name_when_not_set_uses_local(config, ethereum):
     data = {k: v for k, v in data.items() if k not in ("default_network",)}
     data["default_network"] = None
     config._plugin_configs["ethereum"] = data
+    ethereum._default_network = None
     assert ethereum.default_network_name == LOCAL_NETWORK_NAME
     config._plugin_configs["ethereum"] = orig
 
