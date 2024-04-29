@@ -150,7 +150,7 @@ def test_compile_with_config_override(dependency_manager, project):
     #  for this test to test against a previous bug where we got multiple values.
     override = {"contracts_folder": "src"}
     path = "__test_path__"
-    contracts_path = project.path / path / "contracts"
+    contracts_path = project.path / path / "src"
     contracts_path.mkdir(exist_ok=True, parents=True)
     (contracts_path / "contract.json").write_text('{"abi": []}')
     data = {"name": "FooBar", "local": path, "config_override": override}

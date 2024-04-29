@@ -1,6 +1,6 @@
 import json
 from pathlib import Path
-from typing import Dict, Tuple
+from typing import Dict, Optional, Tuple
 
 import click
 
@@ -113,11 +113,12 @@ def _check_compiled(version_dir: Path) -> bool:
     )
 
 
-def _handle_package_path(path: Path) -> Dict:
+def _handle_package_path(path: Path, original_value: Optional[str] = None) -> Dict:
     if not path.exists():
-        return {}
+        value = original_value or path.as_posix()
+        raise click.BadArgumentUsage(f"Unknown package '{value}'.")
 
-    if path.is_file() and path.name == "ape-config.yaml":
+    elif path.is_file() and path.name == "ape-config.yaml":
         path = path.parent
 
     path = path.resolve().absolute()
@@ -130,7 +131,7 @@ def _package_callback(ctx, param, value):
         return None
 
     elif isinstance(value, Path):
-        return _handle_package_path(value)
+        return _handle_package_path(value, original_value=value)
 
     elif value.startswith("gh:"):
         # Is a GitHub style dependency
@@ -149,7 +150,7 @@ def _package_callback(ctx, param, value):
     except Exception:
         pass
     else:
-        return _handle_package_path(path)
+        return _handle_package_path(path, original_value=value)
 
     if isinstance(value, str) and ":" in value:
         # Catch-all for unknown dependency types that may exist.
