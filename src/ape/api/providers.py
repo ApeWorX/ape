@@ -101,7 +101,7 @@ class ProviderAPI(BaseInterfaceModel):
     """The settings for the provider, as overrides to the configuration."""
 
     data_folder: Path
-    """The path to the  ``.ape`` directory."""
+    """The path to the ``.ape`` directory."""
 
     request_header: Dict
     """A header to set on HTTP/RPC requests."""
