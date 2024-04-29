@@ -407,13 +407,12 @@ Use <code class="docutils literal notranslate"><span class="pre">account_type</s
 <span class="nd">@existing_alias_argument</span><span class="p">(</span><span class="n">account_type</span><span class="o">=</span><span class="n">KeyfileAccount</span><span class="p">)</span>
 <span class="k">def</span> <span class="nf">cli_0</span><span class="p">(</span><span class="n">alias</span><span class="p">):</span>
    <span class="k">pass</span>
-   
+
 <span class="nd">@click</span><span class="o">.</span><span class="n">command</span><span class="p">()</span>
 <span class="nd">@existing_alias_argument</span><span class="p">(</span><span class="n">account_type</span><span class="o">=</span><span class="k">lambda</span> <span class="n">a</span><span class="p">:</span> <span class="n">a</span><span class="o">.</span><span class="n">alias</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="n">APPLICATION_PREFIX</span><span class="p">))</span>
 <span class="k">def</span> <span class="nf">cli_1</span><span class="p">(</span><span class="n">alias</span><span class="p">):</span>
    <span class="k">pass</span>
-    
-   
+
 <span class="c1"># Select from the given accounts directly.</span>
 <span class="n">my_accounts</span> <span class="o">=</span> <span class="p">[</span><span class="n">accounts</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;me&quot;</span><span class="p">),</span> <span class="n">accounts</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;me2&quot;</span><span class="p">)]</span>
 <span class="n">selected_account</span> <span class="o">=</span> <span class="n">get_user_selected_account</span><span class="p">(</span><span class="n">account_type</span><span class="o">=</span><span class="n">my_accounts</span><span class="p">)</span>
