@@ -237,6 +237,11 @@ To provider additional value to a payable method, use the `value=` kwarg:
 ```python
 receipt = contract.withdraw(sender=account, value=123)
 print(receipt.gas_used)
+
+# NOTE: You can also use "smart" values such as `"0.1 ether"` or `"100 gwei"`:
+_ = contract.withdraw(sender=account, value="0.1 ether")
+_ = contract.withdraw(sender=account, value="100 gwei")
+_ = contract.withdraw(sender=account, value="1 wei")
 ```
 
 Notice that transacting returns a [ReceiptAPI](../methoddocs/api.html#ape.api.transactions.ReceiptAPI) object which contains all the receipt data, such as `gas_used`.
