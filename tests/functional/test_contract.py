@@ -9,8 +9,6 @@ from ape.exceptions import ChainError
 
 """NOTE: This is testing Contract with a capital C."""
 
-"""NOTE: This is testing contract with a capital C."""
-
 
 def test_Contract_from_abi(contract_instance):
     contract = Contract(contract_instance.address, abi=contract_instance.contract_type.abi)
