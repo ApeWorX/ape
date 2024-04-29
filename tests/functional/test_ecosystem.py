@@ -268,7 +268,7 @@ def test_decode_logs(ethereum, vyper_contract_instance):
     abi = vyper_contract_instance.NumberChange.abi
     result = [x for x in ethereum.decode_logs([LOG], abi)]
     assert len(result) == 1
-    assert dict(result[0]) == {
+    assert result[0].model_dump() == {
         "event_name": "NumberChange",
         "contract_address": "0x274b028b03A250cA03644E6c578D81f019eE1323",
         "event_arguments": {

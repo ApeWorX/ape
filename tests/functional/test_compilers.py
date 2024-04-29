@@ -65,8 +65,12 @@ def test_get_compiler_with_settings(compilers, mock_compiler, project_with_contr
 def test_getattr(compilers):
     compiler = compilers.ethpm
     assert compiler.name == "ethpm"
+    expected = (
+        r"'CompilerManager' object has no attribute 'foobar'\. "
+        r"Also checked extra\(s\) 'compilers'\."
+    )
 
-    with pytest.raises(AttributeError, match=r"No attribute or compiler named 'foobar'\."):
+    with pytest.raises(AttributeError, match=expected):
         _ = compilers.foobar
 
 
