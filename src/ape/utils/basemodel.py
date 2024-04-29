@@ -1,4 +1,6 @@
+import inspect
 from abc import ABC
+from sys import getrecursionlimit
 from typing import (
     TYPE_CHECKING,
     Any,
@@ -19,6 +21,7 @@ from pydantic import ConfigDict
 
 from ape.exceptions import ApeAttributeError, ApeIndexError, ProviderNotConnectedError
 from ape.logging import logger
+from ape.utils.misc import log_instead_of_fail, raises_not_implemented
 
 if TYPE_CHECKING:
     from pydantic.main import Model
@@ -48,22 +51,27 @@ class _RecursionChecker:
     # A helper for preventing the recursion errors
     # that happen in custom __getattr__ methods.
 
-    THRESHOLD: int = 10
-    getattr_checking: Dict[str, int] = {}
-    getattr_errors: Dict[str, Exception] = {}
+    def __init__(self):
+        self.THRESHOLD: int = getrecursionlimit()
+        self.getattr_checking: Dict[str, int] = {}
+        self.getattr_errors: Dict[str, Exception] = {}
+
+    @log_instead_of_fail(default="<_RecursionChecker>")
+    def __repr__(self) -> str:
+        return repr(self.getattr_checking)
 
     def check(self, name: str) -> bool:
         return (self.getattr_checking.get(name, 0) or 0) >= self.THRESHOLD
 
     def add(self, name: str):
-        if name in self.getattr_errors:
+        if name in self.getattr_checking:
             self.getattr_checking[name] += 1
         else:
             self.getattr_checking[name] = 1
 
-    def reset(self):
-        self.getattr_checking = {}
-        self.getattr_errors = {}
+    def reset(self, name: str):
+        self.getattr_checking.pop(name, None)
+        self.getattr_errors.pop(name, None)
 
 
 _recursion_checker = _RecursionChecker()
@@ -94,6 +102,18 @@ class injected_before_use(property):
 
         error_message = f"{error_message}. Please inject this property before calling."
         raise ValueError(error_message)
+
+
+def only_raise_attribute_error(fn: Callable) -> Any:
+    def wrapper(*args, **kwargs):
+        try:
+            return fn(*args, **kwargs)
+        except Exception as e:
+            # Wrap the exception in AttributeError
+            logger.log_debug_stack_trace()
+            raise ApeAttributeError(f"{e}") from e
+
+    return wrapper
 
 
 class ManagerAccessMixin:
@@ -160,7 +180,35 @@ def _get_alt(name: str) -> Optional[str]:
     return alt
 
 
-_ATTR_TYPE = Union[Dict[str, Any], RootBaseModel]
+class _AttrLookup(dict):
+    """
+    Used when given extra attributes via a callback
+    that takes the attribute name.
+    """
+
+    def __init__(
+        self,
+        callback: Callable[
+            [
+                str,
+            ],
+            None,
+        ],
+    ):
+        self._callback = callback
+
+    def __contains__(self, item) -> bool:
+        return self._callback(item) is not None
+
+    @only_raise_attribute_error
+    def __getattr__(self, item):
+        return self._callback(item)
+
+    def __getitem__(self, item):
+        return self._callback(item)
+
+    def get(self, item):
+        return self._callback(item)
 
 
 class ExtraModelAttributes(EthpmTypesBaseModel):
@@ -177,7 +225,7 @@ class ExtraModelAttributes(EthpmTypesBaseModel):
     we can show a more accurate exception message.
     """
 
-    attributes: Union[_ATTR_TYPE, Callable[[], _ATTR_TYPE]]
+    attributes: Union[Any, Callable[[], Any], Callable[[str], Any]]
     """The attributes."""
 
     include_getattr: bool = True
@@ -192,9 +240,21 @@ class ExtraModelAttributes(EthpmTypesBaseModel):
     the normal IndexError message.
     """
 
-    def __contains__(self, name: str) -> bool:
+    def __repr__(self) -> str:
+        try:
+            return f"<ExtraAttributes '{self.name}'>"
+        except Exception:
+            # Disallow exceptions in __repr__
+            return "<ExtraModelAttributes>"
+
+    def __contains__(self, name: Any) -> bool:
         attrs = self._attrs()
-        if name in attrs:
+        try:
+            name = str(name)
+        except Exception:
+            return False
+
+        if name in attrs or hasattr(attrs, name):
             return True
 
         elif alt := _get_alt(name):
@@ -225,17 +285,21 @@ class ExtraModelAttributes(EthpmTypesBaseModel):
         return None
 
     def _get(self, name: str) -> Optional[Any]:
-        return self._attrs().get(name)
+        attrs = self._attrs()
+        return attrs.get(name) if hasattr(attrs, "get") else getattr(attrs, name, None)
 
-    def _attrs(self) -> dict:
-        if isinstance(self.attributes, dict):
+    def _attrs(self) -> Any:
+        if hasattr(self.attributes, "__contains__"):
+            # Dict or model that can do a lookup.
             return self.attributes
-        elif isinstance(self.attributes, RootBaseModel):
-            return self.attributes.model_dump(by_alias=False)
 
-        # Lazy extras.
-        result = self.attributes()
-        return result if isinstance(result, dict) else result.model_dump(by_alias=False)
+        signature = inspect.signature(self.attributes)
+        if len(signature.parameters) == 0:
+            # Lazy-eval dict.
+            return self.attributes()  # type: ignore
+
+        # Callable lookup via name.
+        return _AttrLookup(self.attributes)  # type: ignore
 
 
 class BaseModel(EthpmTypesBaseModel):
@@ -261,13 +325,15 @@ class BaseModel(EthpmTypesBaseModel):
 
         return result
 
+    @raises_not_implemented
     def _repr_mimebundle_(self, include=None, exclude=None):
         # This works better than AttributeError for Ape.
-        raise NotImplementedError("This model does not implement '_repr_mimebundle_'.")
+        pass
 
+    @raises_not_implemented
     def _ipython_display_(self, include=None, exclude=None):
         # This works better than AttributeError for Ape.
-        raise NotImplementedError("This model does not implement '_ipython_display_'.")
+        pass
 
 
 def _assert_not_ipython_check(key):
@@ -294,108 +360,135 @@ class ExtraAttributesMixin:
         """
         return iter(())
 
+    @only_raise_attribute_error
     def __getattr__(self, name: str) -> Any:
         """
         An overridden ``__getattr__`` implementation that takes into
         account :meth:`~ape.utils.basemodel.ExtraAttributesMixin.__ape_extra_attributes__`.
         """
         _assert_not_ipython_check(name)
-        private_attrs = self.__pydantic_private__ or {}
+        private_attrs = (self.__pydantic_private__ or {}) if isinstance(self, RootBaseModel) else {}
         if name in private_attrs:
-            _recursion_checker.reset()
+            _recursion_checker.reset(name)
             return private_attrs[name]
 
-        elif _recursion_checker.check(name):
-            # Prevent recursive error.
-            # First, attempt to get real error.
-            message = f"Failed trying to get {name}"
-            if real_error := _recursion_checker.getattr_errors.get(name):
-                message = f"{message}. {real_error}"
-
-            _recursion_checker.reset()
-            raise AttributeError(message)
-
-        _recursion_checker.add(name)
-
-        try:
-            res = super().__getattribute__(name)
-        except AttributeError as err:
-            _recursion_checker.getattr_errors[name] = err
-            extras_checked = set()
-            for ape_extra in self.__ape_extra_attributes__():
-                if not ape_extra.include_getattr:
-                    continue
-
-                if name in ape_extra:
-                    # Attribute was found in one of the supplied
-                    # extra attributes mappings.
-                    _recursion_checker.reset()
-                    return ape_extra.get(name)
-
-                extras_checked.add(ape_extra.name)
-
-            # The error message mentions the alternative mappings,
-            # such as a contract-type map.
-            base_err = None
-            if name in _recursion_checker.getattr_errors:
-                # There was an error getting the value. Show that.
-                base_err = _recursion_checker.getattr_errors[name]
-                message = str(base_err)
-
-            else:
-                message = f"'{repr(self)}' has no attribute '{name}'"
-                if extras_checked:
-                    extras_str = ", ".join(extras_checked)
-                    message = f"{message}. Also checked '{extras_str}'"
-
-            _recursion_checker.reset()
-            attr_err = ApeAttributeError(message)
-            if base_err:
-                raise attr_err from base_err
-            else:
-                raise attr_err
-
-        _recursion_checker.reset()
-        return res
+        return get_attribute_with_extras(self, name)
 
     def __getitem__(self, name: Any) -> Any:
         # For __getitem__, we first try the extra (unlike `__getattr__`).
-        extras_checked = set()
-        additional_error_messages = {}
-        for extra in self.__ape_extra_attributes__():
-            if not extra.include_getitem:
-                continue
+        return get_item_with_extras(self, name)
 
-            if name in extra:
-                return extra.get(name)
 
-            extras_checked.add(extra.name)
+def get_attribute_with_extras(obj: Any, name: str) -> Any:
+    _assert_not_ipython_check(name)
+    if _recursion_checker.check(name):
+        # Prevent segfaults.
+        # First, attempt to get real error.
+        message = f"Failed trying to get {name}"
+        if real_error := _recursion_checker.getattr_errors.get(name):
+            message = f"{message}. {real_error}"
 
-            if extra.additional_error_message:
-                additional_error_messages[extra.name] = extra.additional_error_message
+        _recursion_checker.reset(name)
+        raise AttributeError(message)
 
-        # NOTE: If extras were supplied, the user was expecting it to be
-        #   there (unlike __getattr__).
-        if extras_checked:
-            prefix = f"Unable to find '{name}' in"
-            if not additional_error_messages:
-                extras_str = ", ".join(extras_checked)
-                message = f"{prefix} any of '{extras_str}'."
+    _recursion_checker.add(name)
 
-            else:
-                # The class is including additional error messages for the IndexError.
-                message = ""
-                for extra_checked in extras_checked:
-                    additional_message = additional_error_messages.get(extra_checked)
-                    suffix = f" {additional_message}" if additional_message else ""
-                    sub_message = f"{prefix} '{extra_checked}'.{suffix}"
-                    message = f"{message}\n{sub_message}" if message else sub_message
+    res = None
 
-            raise ApeIndexError(message)
+    if not isinstance(obj, ExtraAttributesMixin):
+        name = getattr(type(obj), "__name__", "obj")
+        raise AttributeError(f"{name} must use the '{ExtraAttributesMixin.__name__}' mixin'")
 
-        # The user did not supply any extra __getitem__ attributes.
-        # Do what you would have normally done.
-        return super().__getitem__(name)  # type: ignore
+    try:
+        res = super(ExtraAttributesMixin, obj).__getattribute__(name)
+    except AttributeError as base_attr_err:
+        _recursion_checker.getattr_errors[name] = base_attr_err
+
+    if res is not None:
+        _recursion_checker.reset(name)
+        return res
+
+    # NOTE: Do not check extras within the error handler to avoid
+    #   errors occurring within an exception handler (Python shows that differently).
+    extras_checked = set()
+    for ape_extra in obj.__ape_extra_attributes__():
+        if not ape_extra.include_getattr:
+            continue
+
+        extras_checked.add(ape_extra.name)
+        try:
+            if name in ape_extra:
+                # Attribute was found in one of the supplied
+                # extra attributes mappings.
+                result = ape_extra.get(name)
+                # NOTE: Don't reset until _after_ we have the result.
+                _recursion_checker.reset(name)
+                return result
+
+        except Exception as err:
+            _recursion_checker.reset(name)
+            raise ApeAttributeError(f"{name} - {err}") from err
+
+    # The error message mentions the alternative mappings,
+    # such as a contract-type map.
+    base_err = None
+    if name in _recursion_checker.getattr_errors:
+        # There was an error getting the value. Show that.
+        base_err = _recursion_checker.getattr_errors[name]
+        message = str(base_err)
+    else:
+        message = f"'{repr(obj)}' has no attribute '{name}'"
+
+    if extras_checked:
+        extras_str = ", ".join(sorted(extras_checked))
+        message = f"{message}. Also checked extra(s) '{extras_str}'."
+
+    _recursion_checker.reset(name)
+    attr_err = ApeAttributeError(message)
+    if base_err:
+        raise attr_err from base_err
+    else:
+        raise attr_err
+
+
+def get_item_with_extras(obj: Any, name: str) -> Any:
+    # For __getitem__, we first try the extra (unlike `__getattr__`).
+    extras_checked = set()
+    additional_error_messages = {}
+    for extra in obj.__ape_extra_attributes__():
+        if not extra.include_getitem:
+            continue
+
+        if name in extra:
+            return extra.get(name)
+
+        extras_checked.add(extra.name)
+
+        if extra.additional_error_message:
+            additional_error_messages[extra.name] = extra.additional_error_message
+
+    # NOTE: If extras were supplied, the user was expecting it to be
+    #   there (unlike __getattr__).
+    if extras_checked:
+        prefix = f"Unable to find '{name}' in"
+        if not additional_error_messages:
+            extras_str = ", ".join(extras_checked)
+            message = f"{prefix} any of '{extras_str}'."
+
+        else:
+            # The class is including additional error messages for the IndexError.
+            message = ""
+            for extra_checked in extras_checked:
+                additional_message = additional_error_messages.get(extra_checked)
+                suffix = f" {additional_message}" if additional_message else ""
+                sub_message = f"{prefix} '{extra_checked}'.{suffix}"
+                message = f"{message}\n{sub_message}" if message else sub_message
+
+        raise ApeIndexError(message)
+
+    # The user did not supply any extra __getitem__ attributes.
+    # Do what you would have normally done.
+    return super(ExtraAttributesMixin, obj).__getitem__(name)  # type: ignore
 
 
 class BaseInterfaceModel(BaseInterface, BaseModel):
