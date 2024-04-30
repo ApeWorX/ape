@@ -119,11 +119,12 @@ class Web3Provider(ProviderAPI, ABC):
         setattr(cls, "connect", post_connect_hook(cls.connect))
         return super().__new__(cls)  # pydantic v2 doesn't want args
 
+    _call_trace_approach: Optional[TraceApproach] = None
     """
     Is ``None`` until known.
     NOTE: This gets set in `ape_ethereum.trace.Trace`.
     """
-    _call_trace_approach: Optional[TraceApproach] = None
+
     _supports_debug_trace_call: Optional[bool] = None
 
     def __init__(self, *args, **kwargs):

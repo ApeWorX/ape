@@ -169,9 +169,6 @@ class ProviderAPI(BaseInterfaceModel):
     provider_settings: dict = {}
     """The settings for the provider, as overrides to the configuration."""
 
-    data_folder: Path
-    """The path to the ``.ape`` directory."""
-
     request_header: dict
     """A header to set on HTTP/RPC requests."""
 
@@ -185,6 +182,14 @@ class ProviderAPI(BaseInterfaceModel):
     """
     How many parallel threads to use when fetching logs.
     """
+
+    @property
+    def data_folder(self) -> Path:
+        """
+        The path to the provider's data,
+        e.g. ``$HOME/.api/{self.name}`` unless overridden.
+        """
+        return self.config_manager.DATA_FOLDER / self.name
 
     @property
     @abstractmethod
@@ -266,7 +271,7 @@ class ProviderAPI(BaseInterfaceModel):
         May require a reconnect.
 
         Args:
-            new_settings (Dict): The new provider settings.
+            new_settings (dict): The new provider settings.
         """
 
     @property

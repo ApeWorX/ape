@@ -66,9 +66,6 @@ class EcosystemAPI(ExtraAttributesMixin, BaseInterfaceModel):
     The name of the ecosystem. This should be set the same name as the plugin.
     """
 
-    data_folder: Path
-    """The path to the ``.ape`` directory."""
-
     request_header: dict
     """A shareable HTTP header for network requests."""
 
@@ -84,6 +81,14 @@ class EcosystemAPI(ExtraAttributesMixin, BaseInterfaceModel):
     @log_instead_of_fail(default="<EcosystemAPI>")
     def __repr__(self) -> str:
         return f"<{self.name}>"
+
+    @property
+    def data_folder(self) -> Path:
+        """
+        The path to the ecosystem's data folder,
+        e.g. ``$HOME/.ape/{self.name}`` unless overridden.
+        """
+        return self.config_manager.DATA_FOLDER / self.name
 
     @cached_property
     def custom_network(self) -> "NetworkAPI":
@@ -102,16 +107,11 @@ class EcosystemAPI(ExtraAttributesMixin, BaseInterfaceModel):
             raise NetworkError("Core Ethereum plugin missing.")
 
         request_header = self.config_manager.REQUEST_HEADER
-        init_kwargs = {
-            "name": "ethereum",
-            "data_folder": self.data_folder,
-            "request_header": request_header,
-        }
+        init_kwargs = {"name": "ethereum", "request_header": request_header}
         ethereum = ethereum_class(**init_kwargs)  # type: ignore
         return NetworkAPI(
             name="custom",
             ecosystem=ethereum,
-            data_folder=self.data_folder / "custom",
             request_header=request_header,
             _default_provider="node",
             _is_custom=True,
@@ -223,7 +223,6 @@ class EcosystemAPI(ExtraAttributesMixin, BaseInterfaceModel):
         Returns:
             :class:`ape.api.config.PluginConfig`
         """
-
         return self.config_manager.get_config(self.name)
 
     @property
@@ -249,7 +248,6 @@ class EcosystemAPI(ExtraAttributesMixin, BaseInterfaceModel):
                 )
 
             network_data = custom_net.model_dump(by_alias=True, exclude=("default_provider",))
-            network_data["data_folder"] = self.data_folder / custom_net.name
             network_data["ecosystem"] = self
             network_type = create_network_type(custom_net.chain_id, custom_net.chain_id)
             network_api = network_type.model_validate(network_data)
@@ -263,10 +261,7 @@ class EcosystemAPI(ExtraAttributesMixin, BaseInterfaceModel):
     def _networks_from_plugins(self) -> dict[str, "NetworkAPI"]:
         return {
             network_name: network_class(
-                name=network_name,
-                ecosystem=self,
-                data_folder=self.data_folder / network_name,
-                request_header=self.request_header,
+                name=network_name, ecosystem=self, request_header=self.request_header
             )
             for _, (ecosystem_name, network_name, network_class) in self.plugin_manager.networks
             if ecosystem_name == self.name
@@ -751,9 +746,6 @@ class NetworkAPI(BaseInterfaceModel):
     ecosystem: EcosystemAPI
     """The ecosystem of the network."""
 
-    data_folder: Path  # For caching any data that might need caching
-    """The path to the ``.ape`` directory."""
-
     request_header: dict
     """A shareable network HTTP header."""
 
@@ -782,6 +774,15 @@ class NetworkAPI(BaseInterfaceModel):
                 name = None
 
             return f"<{name}>" if name else f"{type(self)}"
+
+    @property
+    def data_folder(self) -> Path:
+        """
+        The path to the network's data folder,
+        e.g. ``$HOME/.ape/{self.ecosystem_name}/{self.name}`` unless
+        overridden.
+        """
+        return self.ecosystem.data_folder / self.name
 
     @property
     def ecosystem_config(self) -> PluginConfig:
@@ -969,8 +970,6 @@ class NetworkAPI(BaseInterfaceModel):
                     provider_class,
                     name=provider_name,
                     network=self,
-                    # NOTE: No need to have separate folder, caching should be interoperable
-                    data_folder=self.data_folder,
                     request_header=self.request_header,
                 )
 
