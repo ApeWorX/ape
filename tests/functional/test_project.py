@@ -420,7 +420,7 @@ def test_sources(project_with_source_files_contract):
 
 def test_contracts_folder(project, config):
     # Relaxed to handle xdist resource sharing.
-    assert project.contracts_folder.name == "contracts"
+    assert project.contracts_folder.name in ("contracts", "src")
 
     # Show that even when None in the config, it won't be None here.
     config.contracts_folder = None

@@ -1,6 +1,7 @@
 import difflib
 import re
 import sys
+import warnings
 from gettext import gettext
 from importlib.metadata import entry_points
 from pathlib import Path
@@ -125,13 +126,16 @@ class ApeCLI(click.MultiCommand):
         if self._commands:
             return self._commands
 
-        # Update when dropping Python 3.9 support.
         _entry_points = entry_points()
-        eps: Iterable = (
-            _entry_points.get(self._CLI_GROUP_NAME, [])
-            if isinstance(_entry_points, dict)
-            else entry_points(group=self._CLI_GROUP_NAME)
-        )
+        eps: Iterable
+        if select_fn := getattr(_entry_points, "select", None):
+            # NOTE: Using getattr because mypy.
+            eps = select_fn(group=self._CLI_GROUP_NAME)
+        else:
+            # Python 3.9. Can remove once we drop support.
+            with warnings.catch_warnings():
+                warnings.simplefilter("ignore")
+                eps = _entry_points.get(self._CLI_GROUP_NAME, [])
 
         self._commands = {clean_plugin_name(cmd.name): cmd.load for cmd in eps}
         return self._commands

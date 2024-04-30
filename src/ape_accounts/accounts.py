@@ -1,4 +1,5 @@
 import json
+import warnings
 from os import environ
 from pathlib import Path
 from typing import Any, Dict, Iterator, Optional, Tuple
@@ -238,7 +239,11 @@ class KeyfileAccount(AccountAPI):
         if not click.confirm("Please confirm you wish to sign using `EthAccount.signHash`"):
             return None
 
-        signed_msg = EthAccount.signHash(msghash, self.__key)
+        # Ignoring misleading deprecated warning from web3.py.
+        # Also, we have already warned the user about the safety.
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            signed_msg = EthAccount.signHash(msghash, self.__key)
 
         return MessageSignature(
             v=signed_msg.v,
