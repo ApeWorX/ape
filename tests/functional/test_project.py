@@ -412,6 +412,36 @@ def test_lookup_path(project_with_source_files_contract):
     assert actual_from_str == actual_from_path == expected
 
 
+def test_lookup_path_closest_match(project_with_source_files_contract):
+    pm = project_with_source_files_contract
+    source_path = pm.contracts_folder / "Contract.json"
+    temp_dir = pm.contracts_folder / "temp"
+    nested_source = temp_dir / "Contract.json"
+
+    def clean():
+        if temp_dir.is_dir():
+            shutil.rmtree(temp_dir)
+
+    clean()
+    temp_dir.mkdir(parents=True)
+
+    try:
+        # Duplicate contract so that there are multiple with the same name.
+        nested_source.touch()
+        nested_source.write_text(source_path.read_text())
+
+        # Show it picks the smallest closest match when that makes sense.
+        for base in (source_path, str(source_path), "Contract", "Contract.json"):
+            assert pm.lookup_path(base) == source_path, f"Failed to lookup {base}"
+
+        # Show it picks the closest match when it can.
+        for closest in (nested_source, str(nested_source), "temp/Contract", "temp/Contract.json"):
+            assert pm.lookup_path(closest) == nested_source, f"Failed to lookup {closest}"
+
+    finally:
+        clean()
+
+
 def test_sources(project_with_source_files_contract):
     project = project_with_source_files_contract
     assert "ApeContract0.json" in project.sources

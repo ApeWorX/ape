@@ -143,6 +143,12 @@ def test_compile_when_sources_change(ape_cli, runner, project, clean_cache):
 def test_compile_when_contract_type_collision(ape_cli, runner, project, clean_cache):
     source_path = project.contracts_folder / "Interface.json"
     temp_dir = project.contracts_folder / "temp"
+
+    def clean():
+        if temp_dir.is_dir():
+            shutil.rmtree(temp_dir)
+
+    clean()
     source_copy = temp_dir / "Interface.json"
     expected = (
         r"ERROR: \(CompilerError\) ContractType collision between sources '"
@@ -161,8 +167,7 @@ def test_compile_when_contract_type_collision(ape_cli, runner, project, clean_ca
         assert {groups[0], groups[1]} == {"Interface.json", "temp/Interface.json"}
 
     finally:
-        if temp_dir.is_dir():
-            shutil.rmtree(temp_dir)
+        clean()
 
 
 @skip_projects_except("multiple-interfaces")
