@@ -141,6 +141,15 @@ For `npm` dependencies, you use an `npm:` prefix.
 For local dependencies, you give it a path to the local dependency.
 `--version` is not required when using a local dependency.
 
+To change the config of a dependency when installing, use the `--config-override` CLI option:
+
+```shell
+ape pm install gh:OpenZeppelin/openzeppelin-contracts \
+  --name openzeppelin \
+  --version "4.6.0" \
+  --config-override '{"solidity": {"version": "0.8.12"}}'
+```
+
 ### remove
 
 Remove previously installed packages using the `remove` command:

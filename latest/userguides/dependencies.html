@@ -356,6 +356,13 @@ Then, add the following to your config so that Ape can find the dependency:</p>
 For <code class="docutils literal notranslate"><span class="pre">npm</span></code> dependencies, you use an <code class="docutils literal notranslate"><span class="pre">npm:</span></code> prefix.
 For local dependencies, you give it a path to the local dependency.
 <code class="docutils literal notranslate"><span class="pre">--version</span></code> is not required when using a local dependency.</p>
+<p>To change the config of a dependency when installing, use the <code class="docutils literal notranslate"><span class="pre">--config-override</span></code> CLI option:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>ape<span class="w"> </span>pm<span class="w"> </span>install<span class="w"> </span>gh:OpenZeppelin/openzeppelin-contracts<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--name<span class="w"> </span>openzeppelin<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--version<span class="w"> </span><span class="s2">&quot;4.6.0&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--config-override<span class="w"> </span><span class="s1">&#39;{&quot;solidity&quot;: {&quot;version&quot;: &quot;0.8.12&quot;}}&#39;</span>
+</pre></div>
+</div>
 </section>
 <section id="remove">
 <h3>remove<a class="headerlink" href="#remove" title="Permalink to this heading"></a></h3>

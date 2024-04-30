@@ -251,6 +251,10 @@
 <li class="toctree-l4"><a class="reference internal" href="#ape.cli.paramtype.AllFilePaths.convert"><code class="docutils literal notranslate"><span class="pre">AllFilePaths.convert()</span></code></a></li>
 </ul>
 </li>
+<li class="toctree-l3"><a class="reference internal" href="#ape.cli.paramtype.JSON"><code class="docutils literal notranslate"><span class="pre">JSON</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#ape.cli.paramtype.JSON.convert"><code class="docutils literal notranslate"><span class="pre">JSON.convert()</span></code></a></li>
+</ul>
+</li>
 <li class="toctree-l3"><a class="reference internal" href="#ape.cli.paramtype.Path"><code class="docutils literal notranslate"><span class="pre">Path</span></code></a></li>
 </ul>
 </li>
@@ -738,6 +742,39 @@ or a list containing only the given file.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="ape.cli.paramtype.AllFilePaths.convert">
 <span class="sig-name descname"><span class="pre">convert</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">param</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Parameter</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ctx</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Context</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Path</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#ape.cli.paramtype.AllFilePaths.convert" title="Permalink to this definition"></a></dt>
+<dd><p>Convert the value to the correct type. This is not called if
+the value is <code class="docutils literal notranslate"><span class="pre">None</span></code> (the missing value).</p>
+<p>This must accept string values from the command line, as well as
+values that are already the correct type. It may also convert
+other compatible types.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">param</span></code> and <code class="docutils literal notranslate"><span class="pre">ctx</span></code> arguments may be <code class="docutils literal notranslate"><span class="pre">None</span></code> in certain
+situations, such as when converting prompt input.</p>
+<p>If the value cannot be converted, call <code class="xref py py-meth docutils literal notranslate"><span class="pre">fail()</span></code> with a
+descriptive message.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>value</strong> – The value to convert.</p></li>
+<li><p><strong>param</strong> – The parameter that is using this type to convert
+its value. May be <code class="docutils literal notranslate"><span class="pre">None</span></code>.</p></li>
+<li><p><strong>ctx</strong> – The current context that arrived at this value. May
+be <code class="docutils literal notranslate"><span class="pre">None</span></code>.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ape.cli.paramtype.JSON">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ape.cli.paramtype.</span></span><span class="sig-name descname"><span class="pre">JSON</span></span><a class="headerlink" href="#ape.cli.paramtype.JSON" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">ParamType</span></code></p>
+<p>A type that accepts a raw-JSON str
+and loads it into a dictionary.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="ape.cli.paramtype.JSON.convert">
+<span class="sig-name descname"><span class="pre">convert</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">param</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ctx</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.cli.paramtype.JSON.convert" title="Permalink to this definition"></a></dt>
 <dd><p>Convert the value to the correct type. This is not called if
 the value is <code class="docutils literal notranslate"><span class="pre">None</span></code> (the missing value).</p>
 <p>This must accept string values from the command line, as well as
