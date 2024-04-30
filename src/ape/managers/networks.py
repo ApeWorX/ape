@@ -194,11 +194,7 @@ class NetworkManager(BaseManager, ExtraAttributesMixin):
     @cached_property
     def _plugin_ecosystems(self) -> dict[str, EcosystemAPI]:
         def to_kwargs(name: str) -> dict:
-            return {
-                "name": name,
-                "data_folder": self.config_manager.DATA_FOLDER / name,
-                "request_header": self.config_manager.REQUEST_HEADER,
-            }
+            return {"name": name, "request_header": self.config_manager.REQUEST_HEADER}
 
         # Load plugins.
         plugins = self.plugin_manager.ecosystems
