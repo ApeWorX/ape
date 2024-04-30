@@ -131,7 +131,7 @@ def _package_callback(ctx, param, value):
         return None
 
     elif isinstance(value, Path):
-        return _handle_package_path(value, original_value=value)
+        return _handle_package_path(value)
 
     elif value.startswith("gh:"):
         # Is a GitHub style dependency

@@ -91,7 +91,7 @@ def test_install_github_dependency_with_ref(ape_cli, runner):
 def test_install_config_override(ape_cli, runner, project):
     config_override = '{"contracts_folder": "src"}'
     dep_path = project.path / "dep"
-    name = "foodep"
+    name = "foodep2"
     result = runner.invoke(
         ape_cli,
         (
@@ -102,10 +102,11 @@ def test_install_config_override(ape_cli, runner, project):
             name,
             "--config-override",
             config_override,
+            "--force",
         ),
     )
     assert (
-        "No source files found in dependency 'foodep'. "
+        f"No source files found in dependency '{name}'. "
         "Try adjusting its config using `config_override`"
     ) in result.output
 
