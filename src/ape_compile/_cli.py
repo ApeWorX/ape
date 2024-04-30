@@ -13,6 +13,7 @@ def _include_dependencies_callback(ctx, param, value):
 
 
 @click.command(short_help="Compile select contract source files")
+@ape_cli_context()
 @contract_file_paths_argument()
 @click.option(
     "-f",
@@ -37,7 +38,6 @@ def _include_dependencies_callback(ctx, param, value):
     help="Also compile dependencies",
     callback=_include_dependencies_callback,
 )
-@ape_cli_context()
 def cli(cli_ctx, file_paths: Set[Path], use_cache: bool, display_size: bool, include_dependencies):
     """
     Compiles the manifest for this project and saves the results

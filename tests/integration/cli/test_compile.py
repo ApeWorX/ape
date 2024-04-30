@@ -29,7 +29,7 @@ skip_non_compilable_projects = skip_projects(
     "with-contracts",
 )
 def test_compile_missing_contracts_dir(ape_cli, runner, project):
-    arg_lists = [["compile"], ["compile", "--include-dependencies"]]
+    arg_lists = [("compile",), ("compile", "--include-dependencies")]
     for arg_list in arg_lists:
         result = runner.invoke(ape_cli, arg_list)
         assert result.exit_code == 0, result.output
@@ -39,7 +39,7 @@ def test_compile_missing_contracts_dir(ape_cli, runner, project):
 
 @skip_projects_except("bad-contracts")
 def test_skip_contracts_and_missing_compilers(ape_cli, runner, project, switch_config):
-    result = runner.invoke(ape_cli, ["compile", "--force"])
+    result = runner.invoke(ape_cli, ("compile", "--force"))
     assert "INFO: Compiling 'subdir/tsconfig.json'." not in result.output
     assert "INFO: Compiling 'package.json'." not in result.output
 
@@ -56,13 +56,13 @@ def test_skip_contracts_and_missing_compilers(ape_cli, runner, project, switch_c
         - "*package.json"
     """
     with switch_config(project, content):
-        result = runner.invoke(ape_cli, ["compile", "--force"])
+        result = runner.invoke(ape_cli, ("compile", "--force"))
         assert "INFO: Compiling 'subdir/tsconfig.json'." in result.output
 
 
 @skip_non_compilable_projects
 def test_compile(ape_cli, runner, project, clean_cache):
-    result = runner.invoke(ape_cli, ["compile"], catch_exceptions=False)
+    result = runner.invoke(ape_cli, "compile", catch_exceptions=False)
     assert result.exit_code == 0, result.output
 
     # First time it compiles, it compiles the files with registered compilers successfully.
@@ -106,7 +106,7 @@ def test_compile(ape_cli, runner, project, clean_cache):
     shutil.copytree(project.path / ".build", project.contracts_folder / ".build")
 
     try:
-        result = runner.invoke(ape_cli, ["compile"], catch_exceptions=False)
+        result = runner.invoke(ape_cli, "compile", catch_exceptions=False)
         assert result.exit_code == 0, result.output
         # First time it compiles, it caches
         for file in project.path.glob("contracts/**/*"):
@@ -118,7 +118,7 @@ def test_compile(ape_cli, runner, project, clean_cache):
 
 @skip_projects_except("multiple-interfaces")
 def test_compile_when_sources_change(ape_cli, runner, project, clean_cache):
-    result = runner.invoke(ape_cli, ["compile"], catch_exceptions=False)
+    result = runner.invoke(ape_cli, "compile", catch_exceptions=False)
     assert result.exit_code == 0, result.output
     assert "Compiling 'Interface.json'" in result.output
 
@@ -129,12 +129,12 @@ def test_compile_when_sources_change(ape_cli, runner, project, clean_cache):
     source_path.touch()
     source_path.write_text(modified_source_text)
 
-    result = runner.invoke(ape_cli, ["compile"], catch_exceptions=False)
+    result = runner.invoke(ape_cli, "compile", catch_exceptions=False)
     assert result.exit_code == 0, result.output
     assert "Compiling 'Interface.json'" in result.output
 
     # Verify that the next time, it does not need to recompile (no changes)
-    result = runner.invoke(ape_cli, ["compile"], catch_exceptions=False)
+    result = runner.invoke(ape_cli, "compile", catch_exceptions=False)
     assert result.exit_code == 0, result.output
     assert "Compiling 'Interface.json'" not in result.output
 
@@ -152,7 +152,7 @@ def test_compile_when_contract_type_collision(ape_cli, runner, project, clean_ca
     try:
         source_copy.touch()
         source_copy.write_text(source_path.read_text())
-        result = runner.invoke(ape_cli, ["compile"], catch_exceptions=False)
+        result = runner.invoke(ape_cli, "compile", catch_exceptions=False)
         assert result.exit_code == 1
         actual = result.output
         search_result = re.search(expected, actual)
@@ -179,12 +179,12 @@ def test_compile_when_source_contains_return_characters(ape_cli, runner, project
     source_path.touch()
     source_path.write_text(modified_source_text)
 
-    result = runner.invoke(ape_cli, ["compile"], catch_exceptions=False)
+    result = runner.invoke(ape_cli, "compile", catch_exceptions=False)
     assert result.exit_code == 0, result.output
     assert "Compiling 'Interface.json'" in result.output
 
     # Verify that the next time, it does not need to recompile (no changes)
-    result = runner.invoke(ape_cli, ["compile"], catch_exceptions=False)
+    result = runner.invoke(ape_cli, "compile", catch_exceptions=False)
     assert result.exit_code == 0, result.output
     assert "Compiling 'Interface.json'" not in result.output
 
@@ -202,17 +202,17 @@ def test_can_access_contracts(project, clean_cache):
     ("Interface", "Interface.json", "contracts/Interface", "contracts/Interface.json"),
 )
 def test_compile_specified_contracts(ape_cli, runner, project, contract_path, clean_cache):
-    result = runner.invoke(ape_cli, ["compile", contract_path], catch_exceptions=False)
+    result = runner.invoke(ape_cli, ("compile", contract_path), catch_exceptions=False)
     assert result.exit_code == 0, result.output
     assert "Compiling 'Interface.json'" in result.output
 
     # Already compiled.
-    result = runner.invoke(ape_cli, ["compile", contract_path], catch_exceptions=False)
+    result = runner.invoke(ape_cli, ("compile", contract_path), catch_exceptions=False)
     assert result.exit_code == 0, result.output
     assert "Compiling 'Interface.json'" not in result.output
 
     # Force recompile.
-    result = runner.invoke(ape_cli, ["compile", contract_path, "--force"], catch_exceptions=False)
+    result = runner.invoke(ape_cli, ("compile", contract_path, "--force"), catch_exceptions=False)
     assert result.exit_code == 0, result.output
     assert "Compiling 'Interface.json'" in result.output
 
@@ -220,7 +220,7 @@ def test_compile_specified_contracts(ape_cli, runner, project, contract_path, cl
 @skip_projects_except("multiple-interfaces")
 def test_compile_unknown_extension_does_not_compile(ape_cli, runner, project, clean_cache):
     result = runner.invoke(
-        ape_cli, ["compile", "Interface.js"], catch_exceptions=False
+        ape_cli, ("compile", "Interface.js"), catch_exceptions=False
     )  # Suffix to existing extension
     assert result.exit_code == 2, result.output
     assert "Error: Contract 'Interface.js' not found." in result.output
@@ -228,7 +228,7 @@ def test_compile_unknown_extension_does_not_compile(ape_cli, runner, project, cl
 
 @skip_projects_except()
 def test_compile_contracts(ape_cli, runner, project):
-    result = runner.invoke(ape_cli, ["compile", "--size"], catch_exceptions=False)
+    result = runner.invoke(ape_cli, ("compile", "--size"), catch_exceptions=False)
     assert result.exit_code == 0, result.output
     # Still caches but displays bytecode size
     for file in project.path.glob("contracts/**/*"):
@@ -263,7 +263,7 @@ def test_compile_with_dependency(ape_cli, runner, project, contract_path):
 
 @skip_projects_except("with-dependencies")
 def test_compile_individual_contract_excludes_other_contract(ape_cli, runner, project):
-    result = runner.invoke(ape_cli, ["compile", "Project", "--force"], catch_exceptions=False)
+    result = runner.invoke(ape_cli, ("compile", "Project", "--force"), catch_exceptions=False)
     assert result.exit_code == 0, result.output
     assert "Other" not in result.output
 
@@ -275,7 +275,7 @@ def test_compile_non_ape_project_deletes_ape_config_file(ape_cli, runner, projec
         # Corrupted from a previous test.
         ape_config.unlink()
 
-    result = runner.invoke(ape_cli, ["compile", "Project", "--force"], catch_exceptions=False)
+    result = runner.invoke(ape_cli, ("compile", "Project", "--force"), catch_exceptions=False)
     assert result.exit_code == 0, result.output
     assert "ape-config.yaml" not in [f.name for f in (project.path / "default").iterdir()]
 
@@ -287,7 +287,7 @@ def test_compile_only_dependency(ape_cli, runner, project, clean_cache, caplog):
     if dependency_cache.is_dir():
         shutil.rmtree(str(dependency_cache))
 
-    result = runner.invoke(ape_cli, ["compile", "--force"], catch_exceptions=False)
+    result = runner.invoke(ape_cli, ("compile", "--force"), catch_exceptions=False)
     assert result.exit_code == 0, result.output
 
     # Dependencies are not compiled automatically
@@ -315,7 +315,7 @@ def test_compile_only_dependency(ape_cli, runner, project, clean_cache, caplog):
 
     # Force a re-compile and trigger the dependency to compile via CLI
     result = runner.invoke(
-        ape_cli, ["compile", "--force", "--include-dependencies"], catch_exceptions=False
+        ape_cli, ("compile", "--force", "--include-dependencies"), catch_exceptions=False
     )
     assert result.exit_code == 0, result.output
     assert expected_log_message in result.output
@@ -328,7 +328,7 @@ def test_compile_only_dependency(ape_cli, runner, project, clean_cache, caplog):
         config_file.unlink()
         config_file.write_text(text)
         project.config_manager.load(force_reload=True)
-        result = runner.invoke(ape_cli, ["compile", "--force"], catch_exceptions=False)
+        result = runner.invoke(ape_cli, ("compile", "--force"), catch_exceptions=False)
         assert result.exit_code == 0, result.output
         assert expected_log_message in result.output
     finally:
@@ -354,6 +354,6 @@ def test_compile_after_deleting_cache_file(project):
 
 @skip_projects_except("with-contracts")
 def test_compile_exclude(ape_cli, runner):
-    result = runner.invoke(ape_cli, ["compile", "--force"], catch_exceptions=False)
+    result = runner.invoke(ape_cli, ("compile", "--force"), catch_exceptions=False)
     assert "Compiling 'Exclude.json'" not in result.output
     assert "Compiling 'exclude_dir/UnwantedContract.json'" not in result.output

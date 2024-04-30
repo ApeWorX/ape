@@ -74,12 +74,12 @@ def clean_console_rc_write(project):
 @skip_projects("geth")
 @pytest.mark.parametrize("item", __all__)
 def test_console(ape_cli, runner, item):
-    result = runner.invoke(ape_cli, ["console"], input=f"{item}\nexit\n", catch_exceptions=False)
+    result = runner.invoke(ape_cli, "console", input=f"{item}\nexit\n", catch_exceptions=False)
     assert result.exit_code == 0, result.output
     assert no_console_error(result), result.output
     result = runner.invoke(
         ape_cli,
-        ["console", "-v", "debug"],
+        ("console", "-v", "debug"),
         input=f"{item}\nexit\n",
         catch_exceptions=False,
     )
@@ -94,7 +94,7 @@ def test_console_extras(project, folder, ape_cli, runner):
 
     result = runner.invoke(
         ape_cli,
-        ["console"],
+        "console",
         input="\n".join(["assert A == 1", "exit"]) + "\n",
         catch_exceptions=False,
     )
@@ -103,7 +103,7 @@ def test_console_extras(project, folder, ape_cli, runner):
 
     result = runner.invoke(
         ape_cli,
-        ["console"],
+        "console",
         input="\n".join(["assert a() == 1", "exit"]) + "\n",
         catch_exceptions=False,
     )
@@ -117,7 +117,7 @@ def test_console_init_extras(project, folder, ape_cli, runner):
     write_ape_console_extras(project, folder, EXTRAS_SCRIPT_2)
     result = runner.invoke(
         ape_cli,
-        ["console"],
+        "console",
         input="print('a:', A)\nassert A == 2\nexit\n",
         catch_exceptions=False,
     )
@@ -130,7 +130,7 @@ def test_console_init_extras(project, folder, ape_cli, runner):
 def test_console_init_extras_kwargs(project, folder, ape_cli, runner):
     write_ape_console_extras(project, folder, EXTRAS_SCRIPT_3)
 
-    result = runner.invoke(ape_cli, ["console"], input="exit\n", catch_exceptions=False)
+    result = runner.invoke(ape_cli, "console", input="exit\n", catch_exceptions=False)
     assert result.exit_code == 0, result.output
     assert no_console_error(result), result.output
 
@@ -143,7 +143,7 @@ def test_console_init_extras_return(project, folder, ape_cli, runner):
     # Test asserts returned A exists and B is not overwritten
     result = runner.invoke(
         ape_cli,
-        ["console"],
+        "console",
         input="\n".join(
             [
                 "assert A == 1, 'unexpected A'",
@@ -163,7 +163,7 @@ def test_console_init_extras_return(project, folder, ape_cli, runner):
 def test_console_import_local_path(project, ape_cli, runner):
     result = runner.invoke(
         ape_cli,
-        ["console"],
+        "console",
         input="\n".join(["from dependency_in_project_only.importme import import_me", "exit"])
         + "\n",
     )
@@ -177,7 +177,7 @@ def test_console_import_local_path_in_extras_file(project, ape_cli, runner):
 
     result = runner.invoke(
         ape_cli,
-        ["console"],
+        "console",
         input="exit\n",
         catch_exceptions=False,
     )
@@ -189,7 +189,7 @@ def test_console_import_local_path_in_extras_file(project, ape_cli, runner):
 def test_console_ape_magic(ape_cli, runner):
     result = runner.invoke(
         ape_cli,
-        ["console"],
+        ("console",),
         input="%load_ext ape_console.plugin\n%ape--help\nexit\n",
         catch_exceptions=False,
     )
@@ -210,7 +210,7 @@ def test_console_bal_magic(ape_cli, runner, keyfile_account):
     cmd_str = "\n".join(cmd_ls)
     result = runner.invoke(
         ape_cli,
-        ["console"],
+        ("console",),
         input=f"{cmd_str}\n",
         catch_exceptions=False,
     )
@@ -233,7 +233,7 @@ def test_uncaught_txn_err(ape_cli, runner, mocker):
     cmd_str = "\n".join(cmd_ls)
     runner.invoke(
         ape_cli,
-        ["console"],
+        ("console",),
         input=f"{cmd_str}\n",
         catch_exceptions=False,
     )
@@ -243,6 +243,6 @@ def test_uncaught_txn_err(ape_cli, runner, mocker):
 
 def test_console_none_network(ape_cli, runner):
     result = runner.invoke(
-        ape_cli, ["console", "--network", "None"], input="exit\n", catch_exceptions=False
+        ape_cli, ("console", "--network", "None"), input="exit\n", catch_exceptions=False
     )
     assert result.exit_code == 0

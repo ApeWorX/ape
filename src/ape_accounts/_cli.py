@@ -35,8 +35,8 @@ def cli():
 
 # Different name because `list` is a keyword
 @cli.command(name="list", short_help="List available local accounts")
-@click.option("--all", "show_all_plugins", help="Output accounts from all plugins", is_flag=True)
 @ape_cli_context()
+@click.option("--all", "show_all_plugins", help="Output accounts from all plugins", is_flag=True)
 def _list(cli_ctx, show_all_plugins):
     if "accounts" not in cli_ctx.account_manager.containers:
         cli_ctx.abort("Accounts plugin unexpectedly failed to load.")
@@ -75,6 +75,7 @@ def _list(cli_ctx, show_all_plugins):
 
 
 @cli.command(short_help="Create an account with a random mnemonic seed phrase")
+@ape_cli_context()
 @click.option(
     "--hide-mnemonic",
     help="Hide the newly generated mnemonic from the terminal",
@@ -94,7 +95,6 @@ def _list(cli_ctx, show_all_plugins):
     show_default=True,
 )
 @non_existing_alias_argument()
-@ape_cli_context()
 def generate(cli_ctx, alias, hide_mnemonic, word_count, custom_hd_path):
     click.prompt(
         "Enhance the security of your account by adding additional random input",
@@ -122,6 +122,7 @@ def generate(cli_ctx, alias, hide_mnemonic, word_count, custom_hd_path):
 
 # Different name because `import` is a keyword
 @cli.command(name="import", short_help="Import an account by private key or seed phrase")
+@ape_cli_context()
 @click.option(
     "--use-mnemonic", "import_from_mnemonic", help="Import a key from a mnemonic", is_flag=True
 )
@@ -133,7 +134,6 @@ def generate(cli_ctx, alias, hide_mnemonic, word_count, custom_hd_path):
     show_default=True,
 )
 @non_existing_alias_argument()
-@ape_cli_context()
 def _import(cli_ctx, alias, import_from_mnemonic, custom_hd_path):
     account: Optional[KeyfileAccount] = None
 
@@ -183,8 +183,8 @@ def export(cli_ctx, alias):
 
 
 @cli.command(short_help="Change the password of an existing account")
-@existing_alias_argument(account_type=KeyfileAccount)
 @ape_cli_context()
+@existing_alias_argument(account_type=KeyfileAccount)
 def change_password(cli_ctx, alias):
     account = cli_ctx.account_manager.load(alias)
     assert isinstance(account, KeyfileAccount)
@@ -193,8 +193,8 @@ def change_password(cli_ctx, alias):
 
 
 @cli.command(short_help="Delete an existing account")
-@existing_alias_argument(account_type=KeyfileAccount)
 @ape_cli_context()
+@existing_alias_argument(account_type=KeyfileAccount)
 def delete(cli_ctx, alias):
     account = cli_ctx.account_manager.load(alias)
     assert isinstance(account, KeyfileAccount)

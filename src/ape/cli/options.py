@@ -7,7 +7,6 @@ from click import Option
 from ethpm_types import ContractType
 
 from ape.api import ProviderAPI
-from ape.cli import ConnectedProviderCommand
 from ape.cli.choices import (
     _ACCOUNT_TYPE_FILTER,
     _NONE_NETWORK,
@@ -16,6 +15,8 @@ from ape.cli.choices import (
     OutputFormat,
     output_format_choice,
 )
+from ape.cli.commands import ConnectedProviderCommand
+from ape.cli.paramtype import JSON
 from ape.exceptions import Abort, ProjectError
 from ape.logging import DEFAULT_LOG_LEVEL, ApeLogger, LogLevel, logger
 from ape.utils.basemodel import ManagerAccessMixin
@@ -438,3 +439,17 @@ def incompatible_with(incompatible_opts) -> Type[click.Option]:
             return super().handle_parse_result(ctx, opts, args)
 
     return IncompatibleOption
+
+
+def _json_option(name, help, **kwargs):
+    return click.option(
+        name,
+        help=help,
+        type=JSON(),
+        metavar='{"KEY": "VAL"}',
+        **kwargs,
+    )
+
+
+def config_override_option(**kwargs):
+    return _json_option("--config-override", help="Config override mappings", **kwargs)
