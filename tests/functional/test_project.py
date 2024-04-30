@@ -415,28 +415,48 @@ def test_lookup_path(project_with_source_files_contract):
 def test_lookup_path_closest_match(project_with_source_files_contract):
     pm = project_with_source_files_contract
     source_path = pm.contracts_folder / "Contract.json"
-    temp_dir = pm.contracts_folder / "temp"
-    nested_source = temp_dir / "Contract.json"
+    temp_dir_a = pm.contracts_folder / "temp"
+    temp_dir_b = temp_dir_a / "tempb"
+    nested_source_a = temp_dir_a / "Contract.json"
+    nested_source_b = temp_dir_b / "Contract.json"
 
     def clean():
-        if temp_dir.is_dir():
-            shutil.rmtree(temp_dir)
+        # NOTE: Will also delete temp_dir_b.
+        if temp_dir_a.is_dir():
+            shutil.rmtree(temp_dir_a)
 
     clean()
-    temp_dir.mkdir(parents=True)
+
+    # NOTE: Will also make temp_dir_a.
+    temp_dir_b.mkdir(parents=True)
 
     try:
         # Duplicate contract so that there are multiple with the same name.
-        nested_source.touch()
-        nested_source.write_text(source_path.read_text())
+        for nested_src in (nested_source_a, nested_source_b):
+            nested_src.touch()
+            nested_src.write_text(source_path.read_text())
 
-        # Show it picks the smallest closest match when that makes sense.
+        # Top-level match.
         for base in (source_path, str(source_path), "Contract", "Contract.json"):
             assert pm.lookup_path(base) == source_path, f"Failed to lookup {base}"
 
-        # Show it picks the closest match when it can.
-        for closest in (nested_source, str(nested_source), "temp/Contract", "temp/Contract.json"):
-            assert pm.lookup_path(closest) == nested_source, f"Failed to lookup {closest}"
+        # Nested: 1st level
+        for closest in (
+            nested_source_a,
+            str(nested_source_a),
+            "temp/Contract",
+            "temp/Contract.json",
+        ):
+            assert pm.lookup_path(closest) == nested_source_a, f"Failed to lookup {closest}"
+
+        # Nested: 2nd level
+        for closest in (
+            nested_source_b,
+            str(nested_source_b),
+            "temp/tempb/Contract",
+            "temp/tempb/Contract.json",
+        ):
+            assert pm.lookup_path(closest) == nested_source_b, f"Failed to lookup {closest}"
 
     finally:
         clean()
