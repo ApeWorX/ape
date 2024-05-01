@@ -15,6 +15,7 @@ from ape.plugins._utils import (
     PluginMetadata,
     PluginMetadataList,
     PluginType,
+    _filter_plugins_from_dists,
     ape_version,
 )
 from ape.utils import load_config
@@ -254,6 +255,9 @@ def _install(name, spec) -> int:
         message = f"Failed to install/update {name}"
         if completed_process.stdout:
             message += f": {completed_process.stdout}"
+        if completed_process.stderr:
+            message += f": {completed_process.stderr}"
+
         logger.error(message)
         sys.exit(completed_process.returncode)
     else:
@@ -267,7 +271,7 @@ def _change_version(spec: str):
     # This will also update core Ape.
     # NOTE: It is possible plugins may depend on each other and may update in
     #   an order causing some error codes to pop-up, so we ignore those for now.
-    for plugin in _get_distributions():
+    for plugin in _filter_plugins_from_dists(_get_distributions()):
         logger.info(f"Updating {plugin} ...")
         name = plugin.split("=")[0].strip()
         _install(name, spec)
