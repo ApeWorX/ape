@@ -218,7 +218,7 @@ my_accounts = [accounts.load("me"), accounts.load("me2")]
 selected_account = get_user_selected_account(account_type=my_accounts)
 ```
 
-# Contract File Paths
+## Contract File Paths
 
 Does your CLI interact with contract source files?
 (Think `ape compile`).
