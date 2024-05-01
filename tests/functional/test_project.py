@@ -495,7 +495,7 @@ def test_getattr_contract_not_exists(project):
     expected = (
         r"ProjectManager has no attribute or contract named "
         r"'ThisIsNotAContractThatExists'. However, there is a source "
-        r"file named 'ThisIsNotAContractThatExists', did you mean to "
+        r"file named 'ThisIsNotAContractThatExists\.foo', did you mean to "
         r"reference a contract name from this source file\? "
         r"Else, could it be from one of the missing compilers for extensions:.*\?"
     )

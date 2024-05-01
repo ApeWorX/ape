@@ -29,7 +29,7 @@ def test_missing_compilers_error_message(project_with_source_files_contract, sen
     missing_exts = project_with_source_files_contract.extensions_with_missing_compilers()
     expected = (
         r"ProjectManager has no attribute or contract named 'ContractA'\. "
-        r"However, there is a source file named 'ContractA', "
+        r"However, there is a source file named 'ContractA.sol', "
         r"did you mean to reference a contract name from this source file\? "
         r"Else, could it be from one of the missing compilers for extensions: "
         rf'{", ".join(sorted(missing_exts))}\?'
