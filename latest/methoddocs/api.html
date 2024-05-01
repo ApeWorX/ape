@@ -152,6 +152,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../userguides/dependencies.html">Dependencies</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../userguides/compile.html">Compile</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../userguides/clis.html">CLIs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../userguides/clis.html#contract-file-paths">Contract File Paths</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../userguides/data.html">Querying Data</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../userguides/networks.html">Networks</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../userguides/forking_networks.html">Forking Networks</a></li>
@@ -2337,13 +2338,14 @@ in this dependency.</p>
 <dd><p>The name of the dependency’s <code class="docutils literal notranslate"><span class="pre">contracts/</span></code> directory.
 This is where <code class="docutils literal notranslate"><span class="pre">ape</span></code> will look for source files when compiling
 the manifest for this dependency.</p>
-<p><strong>NOTE</strong>: This must be the name of a directory in the project.</p>
+<p><strong>Deprecated</strong>: Use <code class="docutils literal notranslate"><span class="pre">config_override:contracts_folder</span></code>.</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="ape.api.projects.DependencyAPI.exclude">
 <span class="sig-name descname"><span class="pre">exclude</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#ape.api.projects.DependencyAPI.exclude" title="Permalink to this definition"></a></dt>
-<dd><p>A list of glob-patterns for excluding files in dependency projects.</p>
+<dd><p>A list of glob-patterns for excluding files in dependency projects.
+<strong>Deprecated</strong>: Use <code class="docutils literal notranslate"><span class="pre">config_override:compile:exclude</span></code>.</p>
 </dd></dl>
 
 <dl class="py method">

@@ -157,6 +157,7 @@
 <li class="toctree-l2"><a class="reference internal" href="#account-tools">Account Tools</a></li>
 </ul>
 </li>
+<li class="toctree-l1"><a class="reference internal" href="#contract-file-paths">Contract File Paths</a></li>
 <li class="toctree-l1"><a class="reference internal" href="data.html">Querying Data</a></li>
 <li class="toctree-l1"><a class="reference internal" href="networks.html">Networks</a></li>
 <li class="toctree-l1"><a class="reference internal" href="forking_networks.html">Forking Networks</a></li>
@@ -419,6 +420,29 @@ Use <code class="docutils literal notranslate"><span class="pre">account_type</s
 </pre></div>
 </div>
 </section>
+</section>
+<section id="contract-file-paths">
+<h1>Contract File Paths<a class="headerlink" href="#contract-file-paths" title="Permalink to this heading"></a></h1>
+<p>Does your CLI interact with contract source files?
+(Think <code class="docutils literal notranslate"><span class="pre">ape</span> <span class="pre">compile</span></code>).</p>
+<p>If so, use the <code class="docutils literal notranslate"><span class="pre">&#64;contract_file_paths_argument()</span></code> decorator in your CLI.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">import</span> <span class="nn">click</span>
+
+<span class="kn">from</span> <span class="nn">ape.cli</span> <span class="kn">import</span> <span class="n">contract_file_paths_argument</span>
+
+<span class="nd">@click</span><span class="o">.</span><span class="n">command</span><span class="p">()</span>
+<span class="nd">@contract_file_paths_argument</span><span class="p">()</span>
+<span class="k">def</span> <span class="nf">cli</span><span class="p">(</span><span class="n">file_paths</span><span class="p">:</span> <span class="nb">set</span><span class="p">[</span><span class="n">Path</span><span class="p">]):</span>
+   <span class="c1"># Loop through all source files given (or all source files in the project).</span>
+    <span class="k">for</span> <span class="n">path</span> <span class="ow">in</span> <span class="n">file_paths</span><span class="p">:</span>
+        <span class="n">click</span><span class="o">.</span><span class="n">echo</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Source found: </span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>When using the <code class="docutils literal notranslate"><span class="pre">&#64;contract_file_paths_argument()</span></code> decorator, you can pass any number of source files as arguments.
+When not passing any source file(s), <code class="docutils literal notranslate"><span class="pre">&#64;contract_file_paths_argument()</span></code> defaults to all sources in the local project.
+That is why <code class="docutils literal notranslate"><span class="pre">ape</span> <span class="pre">compile</span></code> compiles the full project and <code class="docutils literal notranslate"><span class="pre">ape</span> <span class="pre">compile</span> <span class="pre">MySource.vy</span></code> only compiles <code class="docutils literal notranslate"><span class="pre">MySource.vy</span></code> (and whatever else it needs / imports).
+Use <code class="docutils literal notranslate"><span class="pre">&#64;contract_file_paths_argument()</span></code> for any similar use-case involving contract source files.</p>
 </section>
 
 
