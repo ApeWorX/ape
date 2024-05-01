@@ -7,10 +7,10 @@ from typing import Any, Callable, Dict, Iterator, List, Optional, Tuple, Type, U
 
 import click
 import pandas as pd
+from eth_pydantic_types import HexBytes
 from eth_utils import to_hex
 from ethpm_types.abi import ConstructorABI, ErrorABI, EventABI, MethodABI
 from ethpm_types.contract_type import ABI_W_SELECTOR_T, ContractType
-from hexbytes import HexBytes
 
 from ape.api import AccountAPI, Address, ReceiptAPI, TransactionAPI
 from ape.api.address import BaseAddress

@@ -6,8 +6,8 @@ from pathlib import Path
 from typing import IO, Collection, Dict, Iterator, List, Optional, Set, Type, Union, cast
 
 import pandas as pd
+from eth_pydantic_types import HexBytes
 from ethpm_types import ABI, ContractType
-from hexbytes import HexBytes
 from rich import get_console
 from rich.console import Console as RichConsole
 
