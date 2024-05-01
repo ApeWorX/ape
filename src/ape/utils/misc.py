@@ -32,6 +32,19 @@ DEFAULT_LOCAL_TRANSACTION_ACCEPTANCE_TIMEOUT = 20
 DEFAULT_LIVE_NETWORK_BASE_FEE_MULTIPLIER = 1.4
 DEFAULT_TRANSACTION_TYPE = 0
 DEFAULT_MAX_RETRIES_TX = 20
+SOURCE_EXCLUDE_PATTERNS = (
+    "*package.json",
+    "*package-lock.json",
+    "*tsconfig.json",
+    "*.md",
+    "*.rst",
+    "*.txt",
+    "*.py[a-zA-Z]?",
+    "*.html",
+    "*.css",
+    "*.adoc",
+)
+
 
 _python_version = (
     f"{sys.version_info.major}.{sys.version_info.minor}"

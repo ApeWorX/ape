@@ -1,24 +1,13 @@
 from pathlib import Path
-from typing import List, Optional
+from typing import Optional, Set
 
 from pydantic import field_validator, model_validator
 
 from ape import plugins
 from ape.api import PluginConfig
+from ape.utils.misc import SOURCE_EXCLUDE_PATTERNS
 
 DEFAULT_CACHE_FOLDER_NAME = ".cache"  # default relative to contracts/
-EXCLUDE_PATTERNS = [
-    "*package.json",
-    "*package-lock.json",
-    "*tsconfig.json",
-    "*.md",
-    "*.rst",
-    "*.txt",
-    "*.py[a-zA-Z]?",
-    "*.html",
-    "*.css",
-    "*.adoc",
-]
 
 
 class Config(PluginConfig):
@@ -33,7 +22,7 @@ class Config(PluginConfig):
     should configure ``include_dependencies`` to be ``True``.
     """
 
-    exclude: List[str] = []
+    exclude: Set[str] = set()
     """
     Source exclusion globs across all file types.
     """
@@ -91,8 +80,7 @@ class Config(PluginConfig):
     @field_validator("exclude", mode="before")
     @classmethod
     def validate_exclude(cls, value):
-        excl = [*(value or []), *EXCLUDE_PATTERNS]
-        return list(set(excl))
+        return {*(value or []), *SOURCE_EXCLUDE_PATTERNS}
 
 
 @plugins.register(plugins.Config)
