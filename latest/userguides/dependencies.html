@@ -164,9 +164,9 @@
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="#misc">Misc</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#config-override">Config Override</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#custom-contracts-folder">Custom Contracts Folder</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#file-exclusions">File Exclusions</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#config-override">Config Override</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#solidity-remappings">Solidity Remappings</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#compiling-dependencies">Compiling Dependencies</a></li>
 </ul>
@@ -175,7 +175,6 @@
 </li>
 <li class="toctree-l1"><a class="reference internal" href="compile.html">Compile</a></li>
 <li class="toctree-l1"><a class="reference internal" href="clis.html">CLIs</a></li>
-<li class="toctree-l1"><a class="reference internal" href="clis.html#contract-file-paths">Contract File Paths</a></li>
 <li class="toctree-l1"><a class="reference internal" href="data.html">Querying Data</a></li>
 <li class="toctree-l1"><a class="reference internal" href="networks.html">Networks</a></li>
 <li class="toctree-l1"><a class="reference internal" href="forking_networks.html">Forking Networks</a></li>
@@ -284,7 +283,6 @@ Bypass the original failing attempt by including a <code class="docutils literal
 <div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">dependencies</span><span class="p">:</span>
 <span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">MyDependency</span>
 <span class="w">    </span><span class="nt">local</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">local/path/to/MyDependency</span>
-<span class="w">    </span><span class="nt">contracts_folder</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">src/contracts</span>
 </pre></div>
 </div>
 <p>This is helpful when:</p>
@@ -409,29 +407,6 @@ Otherwise, you just give it the name.</p>
 <section id="misc">
 <h2>Misc<a class="headerlink" href="#misc" title="Permalink to this heading"></a></h2>
 <p>The following guidelines are applicable to <strong>ALL</strong> dependency types.</p>
-<section id="custom-contracts-folder">
-<h3>Custom Contracts Folder<a class="headerlink" href="#custom-contracts-folder" title="Permalink to this heading"></a></h3>
-<p>You can set the name of the dependency’s contracts folder, e.g.:</p>
-<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">dependencies</span><span class="p">:</span>
-<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">DappToolsERC20</span>
-<span class="w">    </span><span class="nt">github</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">dapphub/erc20</span>
-<span class="w">    </span><span class="nt">ref</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">dappnix</span>
-<span class="w">    </span><span class="nt">contracts_folder</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">src</span>
-</pre></div>
-</div>
-</section>
-<section id="file-exclusions">
-<h3>File Exclusions<a class="headerlink" href="#file-exclusions" title="Permalink to this heading"></a></h3>
-<p>To ignore files from a dependency project, use the <code class="docutils literal notranslate"><span class="pre">exclude</span></code> setting to specify glob patterns:</p>
-<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">dependencies</span><span class="p">:</span>
-<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">dependency-project-name</span>
-<span class="w">    </span><span class="nt">github</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">org-name/dependency-project-name</span>
-<span class="w">    </span><span class="nt">exclude</span><span class="p">:</span>
-<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">package.json</span><span class="w">    </span><span class="c1"># Ignore package.json files.</span>
-<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">mocks/**/*</span><span class="w">      </span><span class="c1"># Ignore all files in the &#39;mocks&#39; directory</span>
-</pre></div>
-</div>
-</section>
 <section id="config-override">
 <h3>Config Override<a class="headerlink" href="#config-override" title="Permalink to this heading"></a></h3>
 <p>To use any extra config item for a dependency, such as configurations for compilers needed during compiling, use the <code class="docutils literal notranslate"><span class="pre">config_override</span></code> setting:</p>
@@ -441,6 +416,33 @@ Otherwise, you just give it the name.</p>
 <span class="w">    </span><span class="nt">config_override</span><span class="p">:</span>
 <span class="w">       </span><span class="nt">solidity</span><span class="p">:</span>
 <span class="w">         </span><span class="nt">evm_version</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">paris</span>
+</pre></div>
+</div>
+<p>This is the same as if these values were in an <code class="docutils literal notranslate"><span class="pre">ape-config.yaml</span></code> file in the project directly.</p>
+</section>
+<section id="custom-contracts-folder">
+<h3>Custom Contracts Folder<a class="headerlink" href="#custom-contracts-folder" title="Permalink to this heading"></a></h3>
+<p>You can set the name of the dependency’s contracts folder using the <code class="docutils literal notranslate"><span class="pre">config_override</span></code> key, e.g.:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">dependencies</span><span class="p">:</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">DappToolsERC20</span>
+<span class="w">    </span><span class="nt">github</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">dapphub/erc20</span>
+<span class="w">    </span><span class="nt">ref</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">dappnix</span>
+<span class="w">    </span><span class="nt">config_override</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">contracts_folder</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">src</span>
+</pre></div>
+</div>
+</section>
+<section id="file-exclusions">
+<h3>File Exclusions<a class="headerlink" href="#file-exclusions" title="Permalink to this heading"></a></h3>
+<p>To ignore files from a dependency project, use the <code class="docutils literal notranslate"><span class="pre">exclude</span></code> setting in the <code class="docutils literal notranslate"><span class="pre">config_override:compile</span></code> section to specify glob patterns:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">dependencies</span><span class="p">:</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">dependency-project-name</span>
+<span class="w">    </span><span class="nt">github</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">org-name/dependency-project-name</span>
+<span class="w">    </span><span class="nt">config_override</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">compile</span><span class="p">:</span>
+<span class="w">        </span><span class="nt">exclude</span><span class="p">:</span>
+<span class="w">          </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">package.json</span><span class="w">    </span><span class="c1"># Ignore package.json files.</span>
+<span class="w">          </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">mocks/**/*</span><span class="w">      </span><span class="c1"># Ignore all files in the &#39;mocks&#39; directory</span>
 </pre></div>
 </div>
 </section>
