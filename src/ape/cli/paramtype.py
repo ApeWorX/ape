@@ -32,6 +32,12 @@ class AllFilePaths(Path):
     ) -> List[PathLibPath]:
         path = super().convert(value, param, ctx)
         assert isinstance(path, PathLibPath)  # For mypy
+
+        if not path.is_file() and path.is_absolute():
+            # Don't do absolute non-existent paths.
+            # Let it resolve elsewhere.
+            path = PathLibPath(value)
+
         return get_all_files_in_directory(path) if path.is_dir() else [path]
 
 
