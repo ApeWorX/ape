@@ -462,6 +462,19 @@ def test_lookup_path_closest_match(project_with_source_files_contract):
         clean()
 
 
+def test_lookup_path_includes_contracts_prefix(project_with_source_files_contract):
+    """
+    Show we can include the `contracts/` prefix.
+    """
+    project = project_with_source_files_contract
+    actual_from_str = project.lookup_path("contracts/ContractA.sol")
+    actual_from_path = project.lookup_path(Path("contracts/ContractA.sol"))
+    expected = project.contracts_folder / "ContractA.sol"
+    assert actual_from_str == actual_from_path == expected
+    assert actual_from_str.is_absolute()
+    assert actual_from_path.is_absolute()
+
+
 def test_sources(project_with_source_files_contract):
     project = project_with_source_files_contract
     assert "ApeContract0.json" in project.sources

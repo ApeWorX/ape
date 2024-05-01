@@ -21,6 +21,8 @@ class Path(click.Path):
         super().__init__(*args, **kwargs)
 
 
+# TODO: Delete for 0.8 (list of lists is weird and we
+#  are no longer using this).
 class AllFilePaths(Path):
     """
     Either all the file paths in the given directory,

@@ -38,26 +38,30 @@ def test_compile_missing_contracts_dir(ape_cli, runner, project):
 
 
 @skip_projects_except("bad-contracts")
-def test_skip_contracts_and_missing_compilers(ape_cli, runner, project, switch_config):
+def test_compile_skip_contracts_and_missing_compilers(ape_cli, runner, project, switch_config):
     result = runner.invoke(ape_cli, ("compile", "--force"))
+
+    # Default exclude test.
     assert "INFO: Compiling 'subdir/tsconfig.json'." not in result.output
     assert "INFO: Compiling 'package.json'." not in result.output
 
-    # NOTE: `.md` should NOT appear in this list!
+    # Ensure extensions from exclude (such as .md) don't appear in missing-compilers.
     assert (
         "WARNING: Missing compilers for the following file types: '.foo, .foobar, .test'. "
         "Possibly, a compiler plugin is not installed or is installed but not loading correctly."
     ) in result.output
 
-    # Simulate configuring Ape to not ignore tsconfig.json for some reason.
+    # Show we can include custom excludes.
     content = """
     compile:
       exclude:
-        - "*package.json"
+        - "*Contract2.foo"
     """
     with switch_config(project, content):
         result = runner.invoke(ape_cli, ("compile", "--force"))
-        assert "INFO: Compiling 'subdir/tsconfig.json'." in result.output
+
+        # Show our custom exclude is not mentioned in missing compilers.
+        assert "pes: '.foo," not in result.output
 
 
 @skip_non_compilable_projects
@@ -224,11 +228,11 @@ def test_compile_specified_contracts(ape_cli, runner, project, contract_path, cl
 
 @skip_projects_except("multiple-interfaces")
 def test_compile_unknown_extension_does_not_compile(ape_cli, runner, project, clean_cache):
-    result = runner.invoke(
-        ape_cli, ("compile", "Interface.js"), catch_exceptions=False
-    )  # Suffix to existing extension
+    name = "Interface.js"
+    result = runner.invoke(ape_cli, ("compile", name), catch_exceptions=False)
+    expected = f"Source file '{name}' not found."
     assert result.exit_code == 2, result.output
-    assert "Error: Contract 'Interface.js' not found." in result.output
+    assert expected in result.output
 
 
 @skip_projects_except()

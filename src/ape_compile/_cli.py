@@ -5,7 +5,6 @@ import click
 from ethpm_types import ContractType
 
 from ape.cli import ape_cli_context, contract_file_paths_argument
-from ape.utils.os import get_full_extension
 
 
 def _include_dependencies_callback(ctx, param, value):
@@ -51,34 +50,6 @@ def cli(cli_ctx, file_paths: Set[Path], use_cache: bool, display_size: bool, inc
     if not file_paths and sources_missing and len(cli_ctx.project_manager.dependencies) == 0:
         cli_ctx.logger.warning("Nothing to compile.")
         return
-
-    ext_given = [get_full_extension(p) for p in file_paths if p]
-
-    # Filter out common files that we know are not files you can compile anyway,
-    # like documentation files. NOTE: Nothing prevents a CompilerAPI from using these
-    # extensions, we just don't warn about missing compilers here. The warning is really
-    # meant to help guide users when the vyper, solidity, or cairo plugins are not installed.
-    general_extensions = {".md", ".rst", ".txt", ".py", ".html", ".css", ".adoc"}
-
-    ext_with_missing_compilers = {
-        x
-        for x in cli_ctx.project_manager.extensions_with_missing_compilers(ext_given)
-        if x not in general_extensions
-    }
-    if ext_with_missing_compilers:
-        if len(ext_with_missing_compilers) > 1:
-            # NOTE: `sorted` to increase reproducibility.
-            extensions_str = ", ".join(sorted(ext_with_missing_compilers))
-            message = f"Missing compilers for the following file types: '{extensions_str}'."
-        else:
-            message = f"Missing a compiler for {ext_with_missing_compilers.pop()} file types."
-
-        message = (
-            f"{message} "
-            f"Possibly, a compiler plugin is not installed "
-            f"or is installed but not loading correctly."
-        )
-        cli_ctx.logger.warning(message)
 
     contract_types = cli_ctx.project_manager.load_contracts(
         file_paths=file_paths, use_cache=use_cache

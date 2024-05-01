@@ -683,7 +683,7 @@ class ProjectManager(BaseManager):
         input_path = Path(key_contract_path)
         if input_path.is_file():
             # Already given an existing file.
-            return input_path
+            return input_path.absolute()
 
         input_stem = input_path.stem
         input_extension = get_full_extension(input_path) or None

@@ -1,13 +1,16 @@
-from itertools import chain
+from fnmatch import fnmatch
+from functools import cached_property
+from pathlib import Path
+from typing import Iterable, List, Set, Union
 
 import click
+from click import BadArgumentUsage
 
 from ape.cli.choices import _ACCOUNT_TYPE_FILTER, Alias
-from ape.cli.paramtype import AllFilePaths
+from ape.logging import logger
 from ape.utils.basemodel import ManagerAccessMixin
+from ape.utils.os import get_all_files_in_directory, get_full_extension
 from ape.utils.validators import _validate_account_alias
-
-_flatten = chain.from_iterable
 
 
 def _alias_callback(ctx, param, value):
@@ -40,21 +43,127 @@ def non_existing_alias_argument(**kwargs):
     return click.argument("alias", callback=callback, **kwargs)
 
 
-def _create_contracts_paths(ctx, param, value):
-    contract_paths = _flatten(value)
+class _ContractPaths(ManagerAccessMixin):
+    """
+    Helper callback class for handling CLI-given contract paths.
+    """
 
-    def _raise_bad_arg(name):
-        raise click.BadArgumentUsage(f"Contract '{name}' not found.")
+    def __init__(self, value):
+        self.value = value
+        self._path_set = set()
+        self.missing_compilers = set()
+        self.exclude_list = {}
 
-    resolved_contract_paths = set()
-    for contract_path in contract_paths:
-        # Adds missing absolute path as well as extension.
-        if resolved_contract_path := ManagerAccessMixin.project_manager.lookup_path(contract_path):
-            resolved_contract_paths.add(resolved_contract_path)
+    @classmethod
+    def callback(cls, ctx, param, value) -> Set[Path]:
+        """
+        Use this for click.option / argument callbacks.
+        """
+        return cls(value).filtered_paths
+
+    @cached_property
+    def filtered_paths(self) -> Set[Path]:
+        """
+        Get the filtered set of paths.
+        """
+        value = self.value
+        contract_paths: Iterable[Path]
+
+        if value and isinstance(value, (list, tuple, set)):
+            # Given a single list of paths.
+            contract_paths = value
+
+        elif value and isinstance(value, (Path, str)):
+            # Given single path.
+            contract_paths = (Path(value),)
+
+        elif not value or value == "*":
+            # Get all file paths in the project.
+            contract_paths = get_all_files_in_directory(self.project_manager.contracts_folder)
+
         else:
-            _raise_bad_arg(contract_path.name)
+            raise ValueError(f"Unknown contracts-paths value '{value}'.")
 
-    return resolved_contract_paths
+        self.lookup(contract_paths)
+
+        # Handle missing compilers.
+        if self.missing_compilers:
+            # Craft a nice message for all missing compilers.
+            missing_ext = ", ".join(sorted(self.missing_compilers))
+            message = (
+                f"Missing compilers for the following file types: '{missing_ext}'. "
+                "Possibly, a compiler plugin is not installed or is "
+                "installed but not loading correctly."
+            )
+            if ".vy" in self.missing_compilers:
+                message = f"{message} Is 'ape-vyper' installed?"
+            if ".sol" in self.missing_compilers:
+                message = f"{message} Is 'ape-solidity' installed?"
+
+            logger.warning(message)
+
+        return self._path_set
+
+    @property
+    def exclude_patterns(self) -> List[str]:
+        return self.config_manager.get_config("compile").exclude or []
+
+    def do_exclude(self, path: Union[Path, str]) -> bool:
+        name = path if isinstance(path, str) else path.name
+        if path not in self.exclude_list:
+            self.exclude_list[path] = any(fnmatch(name, p) for p in self.exclude_patterns)
+
+        return self.exclude_list[path]
+
+    def compiler_is_unknown(self, path: Union[Path, str]) -> bool:
+        path = Path(path)
+        if self.do_exclude(path):
+            return False
+
+        ext = get_full_extension(path)
+        unknown_compiler = ext and ext not in self.compiler_manager.registered_compilers
+        if unknown_compiler and ext not in self.missing_compilers:
+            self.missing_compilers.add(ext)
+
+        return bool(unknown_compiler)
+
+    def lookup(self, path_iter):
+        for path in path_iter:
+            path = Path(path)
+            if self.do_exclude(path):
+                continue
+
+            contracts_folder = self.project_manager.contracts_folder
+            if (
+                self.project_manager.path / path.name
+            ) == contracts_folder or path.name == contracts_folder.name:
+                # Was given the path to the contracts folder.
+                self.lookup(p for p in self.project_manager.source_paths)
+
+            elif (self.project_manager.path / path).is_dir():
+                # Was given sub-dir in the project folder.
+                self.lookup(p for p in (self.project_manager.path / path).iterdir())
+
+            elif (contracts_folder / path.name).is_dir():
+                # Was given sub-dir in the contracts folder.
+                self.lookup(p for p in (contracts_folder / path.name).iterdir())
+
+            elif resolved_path := self.project_manager.lookup_path(path):
+                # Check compiler missing.
+                if self.compiler_is_unknown(resolved_path):
+                    # NOTE: ^ Also tracks.
+                    continue
+
+                suffix = get_full_extension(resolved_path)
+                if suffix in self.compiler_manager.registered_compilers:
+                    # File exists and is compile-able.
+                    self._path_set.add(resolved_path)
+
+                elif suffix:
+                    raise BadArgumentUsage(f"Source file '{resolved_path.name}' not found.")
+
+            else:
+                raise BadArgumentUsage(f"Source file '{path.name}' not found.")
 
 
 def contract_file_paths_argument():
@@ -66,9 +175,4 @@ def contract_file_paths_argument():
     source file-paths.
     """
 
-    return click.argument(
-        "file_paths",
-        nargs=-1,
-        type=AllFilePaths(resolve_path=True),
-        callback=_create_contracts_paths,
-    )
+    return click.argument("file_paths", nargs=-1, callback=_ContractPaths.callback)

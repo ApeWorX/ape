@@ -7,6 +7,18 @@ from ape import plugins
 from ape.api import PluginConfig
 
 DEFAULT_CACHE_FOLDER_NAME = ".cache"  # default relative to contracts/
+EXCLUDE_PATTERNS = [
+    "*package.json",
+    "*package-lock.json",
+    "*tsconfig.json",
+    "*.md",
+    "*.rst",
+    "*.txt",
+    "*.py[a-zA-Z]?",
+    "*.html",
+    "*.css",
+    "*.adoc",
+]
 
 
 class Config(PluginConfig):
@@ -21,7 +33,7 @@ class Config(PluginConfig):
     should configure ``include_dependencies`` to be ``True``.
     """
 
-    exclude: List[str] = ["*package.json", "*package-lock.json", "*tsconfig.json"]
+    exclude: List[str] = []
     """
     Source exclusion globs across all file types.
     """
@@ -41,7 +53,7 @@ class Config(PluginConfig):
         assert self.cache_folder is not None
 
         # If the dependency cache folder is configured, to be outside of the contracts dir, we want
-        # to use the projects folder to be the base dir for copmilation.
+        # to use the projects folder to be the base dir for compilation.
         if self._config_manager.contracts_folder not in self.cache_folder.parents:
             return self._config_manager.PROJECT_FOLDER
 
@@ -79,7 +91,8 @@ class Config(PluginConfig):
     @field_validator("exclude", mode="before")
     @classmethod
     def validate_exclude(cls, value):
-        return value or []
+        excl = [*(value or []), *EXCLUDE_PATTERNS]
+        return list(set(excl))
 
 
 @plugins.register(plugins.Config)
