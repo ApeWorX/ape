@@ -584,7 +584,7 @@ class ProjectManager(BaseManager):
                 continue
 
             message = (
-                f"{message} However, there is a source file named '{attr_name}', "
+                f"{message} However, there is a source file named '{file.name}', "
                 "did you mean to reference a contract name from this source file?"
             )
             file_check_appended = True
