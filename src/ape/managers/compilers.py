@@ -321,9 +321,7 @@ class CompilerManager(BaseManager, ExtraAttributesMixin):
         Returns:
             :class:`~ape.exceptions.ContractLogicError`: The enriched exception.
         """
-
-        address = err.address
-        if not address:
+        if not (address := err.address):
             # Contract address not found.
             return err
 
