@@ -292,3 +292,5 @@ def _change_version(spec: str):
 
         logger.success(f"{prefix} have successfully upgraded.")
     # else: _install logs errors already.
+
+    sys.exit(ape_retcode | plugin_retcode)
