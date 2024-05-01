@@ -3,6 +3,7 @@ import sys
 import tempfile
 import time
 import traceback
+from functools import cached_property
 from inspect import getframeinfo, stack
 from pathlib import Path
 from types import CodeType, TracebackType
@@ -208,6 +209,20 @@ class TransactionError(ApeException):
             or getattr(self.txn, "receiver", None)
             or getattr(self.txn, "contract_address", None)
         )
+
+    @cached_property
+    def contract_type(self) -> Optional[ContractType]:
+        if not (address := self.address):
+            # Contract address not found.
+            return None
+
+        # Lazy import because of exceptions.py root nature.
+        from ape.utils.basemodel import ManagerAccessMixin
+
+        try:
+            return ManagerAccessMixin.chain_manager.contracts.get(address)
+        except (RecursionError, ProviderNotConnectedError):
+            return None
 
     def _set_tb(self):
         if not self.source_traceback and self.txn:

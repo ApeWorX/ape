@@ -1,9 +1,12 @@
 from pathlib import Path
+from typing import cast
 
 import pytest
+from ethpm_types import ContractType, ErrorABI
 
 from ape.contracts import ContractContainer
-from ape.exceptions import APINotImplementedError, CompilerError
+from ape.exceptions import APINotImplementedError, CompilerError, ContractLogicError, CustomError
+from ape.types import AddressType
 from tests.conftest import skip_if_plugin_installed
 
 
@@ -144,3 +147,18 @@ def test_compile_source(compilers):
     code = '[{"name":"foo","type":"fallback", "stateMutability":"nonpayable"}]'
     actual = compilers.compile_source("ethpm", code)
     assert isinstance(actual, ContractContainer)
+
+
+def test_enrich_error_custom_error(compilers):
+    errors = [ErrorABI(type="error", name="InsufficientETH", inputs=[])]
+    contract_type = ContractType(abi=errors)
+    addr = cast(AddressType, "0x3fC91A3afd70395Cd496C647d5a6CC9D4B2b7FAD")
+    err = ContractLogicError("0x6a12f104", contract_address=addr)
+    # Hack in contract-type.
+    err.__dict__["contract_type"] = contract_type
+
+    # Enriching the error should produce a custom error from the ABI.
+    actual = compilers.enrich_error(err)
+
+    assert isinstance(actual, CustomError)
+    assert actual.__class__.__name__ == "InsufficientETH"
