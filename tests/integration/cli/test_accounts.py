@@ -72,7 +72,7 @@ def test_import_valid_private_key(ape_cli, runner, temp_account, temp_keyfile_pa
     # Add account from valid private key
     result = runner.invoke(
         ape_cli,
-        ["accounts", "import", ALIAS],
+        ("accounts", "import", ALIAS),
         input="\n".join([f"0x{PRIVATE_KEY}", PASSWORD, PASSWORD]),
     )
     assert result.exit_code == 0, result.output
@@ -87,7 +87,7 @@ def test_import_alias_is_private_key(ape_cli, runner):
     key_alias = f"0x{PRIVATE_KEY}"
     result = runner.invoke(
         ape_cli,
-        ["accounts", "import", key_alias],
+        ("accounts", "import", key_alias),
         input="\n".join([f"0x{PRIVATE_KEY}", PASSWORD, PASSWORD]),
     )
     assert result.exit_code != 0, result.output
@@ -105,7 +105,7 @@ def test_import_alias_is_really_long(ape_cli, runner):
     long_alias = "this is a long alias that i am going to use and you cant stop me"
     result = runner.invoke(
         ape_cli,
-        ["accounts", "import", long_alias],
+        ("accounts", "import", long_alias),
         input="\n".join([f"0x{PRIVATE_KEY}", PASSWORD, PASSWORD]),
     )
     assert result.exit_code == 0
@@ -116,7 +116,7 @@ def test_import_invalid_private_key(ape_cli, runner):
     # Add account from invalid private key
     result = runner.invoke(
         ape_cli,
-        ["accounts", "import", ALIAS],
+        ("accounts", "import", ALIAS),
         input="\n".join(["0xhello", PASSWORD, PASSWORD]),
     )
     assert result.exit_code == 1, result.output
@@ -128,7 +128,7 @@ def test_import_alias_already_in_use(ape_cli, runner):
     def invoke_import():
         return runner.invoke(
             ape_cli,
-            ["accounts", "import", ALIAS],
+            ("accounts", "import", ALIAS),
             input="\n".join([f"0x{PRIVATE_KEY}", PASSWORD, PASSWORD]),
         )
 
@@ -144,7 +144,7 @@ def test_import_account_instantiation_failure(mocker, ape_cli, runner):
     eth_account_from_key_patch.side_effect = Exception("Can't instantiate this account!")
     result = runner.invoke(
         ape_cli,
-        ["accounts", "import", ALIAS],
+        ("accounts", "import", ALIAS),
         input="\n".join([f"0x{PRIVATE_KEY}", PASSWORD, PASSWORD]),
     )
     assert_failure(result, "Key can't be imported: Can't instantiate this account!")
@@ -158,7 +158,7 @@ def test_import_mnemonic_default_hdpath(
     # Add account from mnemonic with default hdpath of ETHEREUM_DEFAULT_PATH
     result = runner.invoke(
         ape_cli,
-        ["accounts", "import", "--use-mnemonic", ALIAS],
+        ("accounts", "import", "--use-mnemonic", ALIAS),
         input="\n".join([MNEMONIC, PASSWORD, PASSWORD]),
     )
     assert result.exit_code == 0, result.output
@@ -175,7 +175,7 @@ def test_import_mnemonic_custom_hdpath(
     # Add account from mnemonic with custom hdpath
     result = runner.invoke(
         ape_cli,
-        ["accounts", "import", ALIAS, "--use-mnemonic", "--hd-path", CUSTOM_HDPATH],
+        ("accounts", "import", ALIAS, "--use-mnemonic", "--hd-path", CUSTOM_HDPATH),
         input="\n".join([MNEMONIC, PASSWORD, PASSWORD]),
     )
     assert result.exit_code == 0, result.output
@@ -189,7 +189,7 @@ def test_export(ape_cli, runner, temp_keyfile, keyfile_account, test_accounts):
     # export key
     result = runner.invoke(
         ape_cli,
-        ["accounts", "export", ALIAS],
+        ("accounts", "export", ALIAS),
         input="\n".join([PASSWORD, PASSWORD]),
     )
     assert result.exit_code == 0, result.output
@@ -205,7 +205,7 @@ def test_import_invalid_mnemonic(ape_cli, runner):
     # Add account from invalid mnemonic
     result = runner.invoke(
         ape_cli,
-        ["accounts", "import", "--use-mnemonic", ALIAS],
+        ("accounts", "import", "--use-mnemonic", ALIAS),
         input="\n".join([INVALID_MNEMONIC, PASSWORD, PASSWORD]),
     )
     assert result.exit_code == 1, result.output
@@ -221,7 +221,7 @@ def test_generate_default(ape_cli, runner, temp_keyfile_path):
     show_mnemonic = ""
     result = runner.invoke(
         ape_cli,
-        ["accounts", "generate", ALIAS],
+        ("accounts", "generate", ALIAS),
         input="\n".join(["random entropy", show_mnemonic, PASSWORD, PASSWORD]),
     )
     assert result.exit_code == 0, result.output
@@ -241,7 +241,7 @@ def test_generate_hide_mnemonic_prompt(ape_cli, runner, temp_keyfile_path):
     show_mnemonic = "n"
     result = runner.invoke(
         ape_cli,
-        ["accounts", "generate", ALIAS],
+        ("accounts", "generate", ALIAS),
         input="\n".join(["random entropy", show_mnemonic, PASSWORD, PASSWORD]),
     )
     assert result.exit_code == 0, result.output
@@ -257,7 +257,7 @@ def test_generate_hide_mnemonic_option(ape_cli, runner, temp_keyfile_path):
     # Generate new private key
     result = runner.invoke(
         ape_cli,
-        ["accounts", "generate", ALIAS, "--hide-mnemonic"],
+        ("accounts", "generate", ALIAS, "--hide-mnemonic"),
         input="\n".join(["random entropy", PASSWORD, PASSWORD]),
     )
     assert result.exit_code == 0, result.output
@@ -275,7 +275,7 @@ def test_generate_24_words(ape_cli, runner, temp_keyfile_path):
     word_count = 24
     result = runner.invoke(
         ape_cli,
-        ["accounts", "generate", ALIAS, "--word-count", word_count],
+        ("accounts", "generate", ALIAS, "--word-count", word_count),
         input="\n".join(["random entropy", show_mnemonic, PASSWORD, PASSWORD]),
     )
     assert result.exit_code == 0, result.output
@@ -295,7 +295,7 @@ def test_generate_custom_hdpath(ape_cli, runner, temp_keyfile_path):
     show_mnemonic = ""
     result = runner.invoke(
         ape_cli,
-        ["accounts", "generate", ALIAS, "--hd-path", CUSTOM_HDPATH],
+        ("accounts", "generate", ALIAS, "--hd-path", CUSTOM_HDPATH),
         input="\n".join(["random entropy", show_mnemonic, PASSWORD, PASSWORD]),
     )
     assert result.exit_code == 0, result.output
@@ -316,7 +316,7 @@ def test_generate_24_words_and_custom_hdpath(ape_cli, runner, temp_keyfile_path)
     word_count = 24
     result = runner.invoke(
         ape_cli,
-        ["accounts", "generate", ALIAS, "--word-count", word_count, "--hd-path", CUSTOM_HDPATH],
+        ("accounts", "generate", ALIAS, "--word-count", word_count, "--hd-path", CUSTOM_HDPATH),
         input="\n".join(["random entropy", show_mnemonic, PASSWORD, PASSWORD]),
     )
     assert result.exit_code == 0, result.output
@@ -335,7 +335,7 @@ def test_generate_alias_already_in_use(ape_cli, runner):
         show_mnemonic = ""
         return runner.invoke(
             ape_cli,
-            ["accounts", "generate", ALIAS],
+            ("accounts", "generate", ALIAS),
             input="\n".join(["random entropy", show_mnemonic, PASSWORD, PASSWORD]),
         )
 
@@ -347,14 +347,14 @@ def test_generate_alias_already_in_use(ape_cli, runner):
 
 @run_once
 def test_list(ape_cli, runner, keyfile_account):
-    result = runner.invoke(ape_cli, ["accounts", "list"], catch_exceptions=False)
+    result = runner.invoke(ape_cli, ("accounts", "list"), catch_exceptions=False)
     assert keyfile_account.alias in result.output
     assert keyfile_account.address in result.output
 
 
 @run_once
 def test_list_all(ape_cli, runner, keyfile_account):
-    result = runner.invoke(ape_cli, ["accounts", "list", "--all"], catch_exceptions=False)
+    result = runner.invoke(ape_cli, ("accounts", "list", "--all"), catch_exceptions=False)
     assert keyfile_account.alias in result.output
     assert keyfile_account.address in result.output
 
@@ -366,7 +366,7 @@ def test_change_password(ape_cli, runner, temp_keyfile):
     valid_input = [PASSWORD, "N", "password2", "password2"]
     result = runner.invoke(
         ape_cli,
-        ["accounts", "change-password", ALIAS],
+        ("accounts", "change-password", ALIAS),
         input="\n".join(valid_input) + "\n",
     )
     assert result.exit_code == 0, result.output
@@ -376,6 +376,6 @@ def test_change_password(ape_cli, runner, temp_keyfile):
 def test_delete(ape_cli, runner, temp_keyfile):
     assert temp_keyfile.is_file()
     # Delete Account
-    result = runner.invoke(ape_cli, ["accounts", "delete", ALIAS], input=f"{PASSWORD}\n")
+    result = runner.invoke(ape_cli, ("accounts", "delete", ALIAS), input=f"{PASSWORD}\n")
     assert result.exit_code == 0, result.output
     assert not temp_keyfile.is_file()

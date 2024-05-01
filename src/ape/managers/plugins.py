@@ -6,7 +6,7 @@ from ape.exceptions import ApeAttributeError
 from ape.logging import logger
 from ape.plugins._utils import _filter_plugins_from_dists, clean_plugin_name
 from ape.plugins.pluggy_patch import plugin_manager as pluggy_manager
-from ape.utils.basemodel import _assert_not_ipython_check
+from ape.utils.basemodel import _assert_not_ipython_check, only_raise_attribute_error
 from ape.utils.misc import _get_distributions, log_instead_of_fail
 
 
@@ -42,6 +42,7 @@ class PluginManager:
     def __repr__(self) -> str:
         return f"<{PluginManager.__name__}>"
 
+    @only_raise_attribute_error
     def __getattr__(self, attr_name: str) -> Iterator[Tuple[str, Tuple]]:
         _assert_not_ipython_check(attr_name)
 

@@ -11,6 +11,7 @@ from ape.cli import (
     NetworkChoice,
     PromptChoice,
     account_option,
+    config_override_option,
     contract_file_paths_argument,
     existing_alias_argument,
     network_option,
@@ -210,7 +211,7 @@ def test_network_option_with_other_option(runner):
         click.echo(other)
 
     def run(cmd, fail_msg=None):
-        res = runner.invoke(cmd, [], catch_exceptions=False)
+        res = runner.invoke(cmd, (), catch_exceptions=False)
         fail_msg = f"{fail_msg}\n{res.output}" if fail_msg else res.output
         assert res.exit_code == 0, fail_msg
         assert OTHER_OPTION_VALUE in res.output, fail_msg
@@ -255,7 +256,7 @@ def test_network_option_make_required(runner):
     def cmd(network):
         click.echo(OUTPUT_FORMAT.format(network))
 
-    result = runner.invoke(cmd, [])
+    result = runner.invoke(cmd, ())
     assert result.exit_code == 2
     assert "Error: Missing option '--network'." in result.output
 
@@ -307,7 +308,7 @@ def test_account_option(runner, keyfile_account):
         click.echo(_expected)
 
     expected = get_expected_account_str(keyfile_account)
-    result = runner.invoke(cmd, ["--account", keyfile_account.alias])
+    result = runner.invoke(cmd, ("--account", keyfile_account.alias))
     assert expected in result.output
 
 
@@ -324,7 +325,7 @@ def test_account_option_uses_single_account_as_default(runner, one_account):
         click.echo(_expected)
 
     expected = get_expected_account_str(one_account)
-    result = runner.invoke(cmd, [])
+    result = runner.invoke(cmd, ())
     assert expected in result.output
 
 
@@ -340,7 +341,7 @@ def test_account_prompts_when_more_than_one_keyfile_account(
     expected = get_expected_account_str(keyfile_account)
 
     # Requires user input.
-    result = runner.invoke(cmd, [], input="0\n")
+    result = runner.invoke(cmd, (), input="0\n")
 
     assert expected in result.output
 
@@ -356,7 +357,7 @@ def test_account_option_can_use_test_account(runner, test_accounts):
         click.echo(_expected)
 
     expected = get_expected_account_str(test_account)
-    result = runner.invoke(cmd, ["--account", f"TEST::{index}"])
+    result = runner.invoke(cmd, ("--account", f"TEST::{index}"))
     assert expected in result.output
 
 
@@ -709,3 +710,15 @@ def test_network_choice_explicit_none():
     network_choice = NetworkChoice()
     actual = network_choice.convert("None", None, None)
     assert actual == _NONE_NETWORK
+
+
+def test_config_override_option(runner):
+    @click.command()
+    @config_override_option()
+    def cli(config_override):
+        assert isinstance(config_override, dict)
+        assert config_override["foo"] == "bar"
+
+    result = runner.invoke(cli, ("--config-override", '{"foo": "bar"}'))
+    assert result.exit_code == 0
+    assert not result.exception

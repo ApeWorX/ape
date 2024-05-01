@@ -8,11 +8,11 @@ from tests.integration.cli.utils import run_once
 @run_once
 @pytest.mark.parametrize(
     "args",
-    (
-        [],
-        ["--version"],
-        ["--config"],
-    ),
+    [
+        (),
+        ("--version",),
+        ("--config",),
+    ],
 )
 def test_invocation(ape_cli, runner, args):
     result = runner.invoke(ape_cli, args)

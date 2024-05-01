@@ -68,7 +68,7 @@ from ape.types import (
     SourceTraceback,
     TraceFrame,
 )
-from ape.utils import gas_estimation_error_message, run_until_complete, to_int
+from ape.utils import gas_estimation_error_message, to_int
 from ape.utils.misc import DEFAULT_MAX_RETRIES_TX
 from ape_ethereum._print import CONSOLE_CONTRACT_ID, console_contract
 from ape_ethereum.transactions import AccessList, AccessListTransaction
@@ -230,7 +230,7 @@ class Web3Provider(ProviderAPI, ABC):
         if self._web3 is None:
             return False
 
-        return run_until_complete(self._web3.is_connected())
+        return self._web3.is_connected()
 
     @property
     def max_gas(self) -> int:
@@ -1048,8 +1048,7 @@ class Web3Provider(ProviderAPI, ABC):
 
     def _make_request(self, endpoint: str, parameters: Optional[List] = None) -> Any:
         parameters = parameters or []
-        coroutine = self.web3.provider.make_request(RPCEndpoint(endpoint), parameters)
-        result = run_until_complete(coroutine)
+        result = self.web3.provider.make_request(RPCEndpoint(endpoint), parameters)
 
         if "error" in result:
             error = result["error"]
@@ -1227,8 +1226,8 @@ class EthereumNodeProvider(Web3Provider, ABC):
 
     name: str = "geth"
 
-    """Is ``None`` until known."""
     can_use_parity_traces: Optional[bool] = None
+    """Is ``None`` until known."""
 
     @property
     def uri(self) -> str:

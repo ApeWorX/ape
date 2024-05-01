@@ -401,16 +401,16 @@ class AccountContainerAPI(BaseInterfaceModel):
     instances.
     """
 
+    data_folder: Path
     """
     The path to the account's data.
     """
-    data_folder: Path
 
+    account_type: Type[AccountAPI]
     """
     The type of account in this container.
     See :class:`~ape.api.accounts.AccountAPI`.
     """
-    account_type: Type[AccountAPI]
 
     @property
     @abstractmethod

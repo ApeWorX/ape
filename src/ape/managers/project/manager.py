@@ -16,7 +16,7 @@ from ape.logging import logger
 from ape.managers.base import BaseManager
 from ape.managers.project.types import ApeProject, BrownieProject
 from ape.utils import get_relative_path, log_instead_of_fail
-from ape.utils.basemodel import _assert_not_ipython_check
+from ape.utils.basemodel import _assert_not_ipython_check, only_raise_attribute_error
 from ape.utils.os import get_full_extension
 
 
@@ -473,6 +473,7 @@ class ProjectManager(BaseManager):
 
         return self.load_contracts()
 
+    @only_raise_attribute_error
     def __getattr__(self, attr_name: str) -> Any:
         """
         Get a contract container from an existing contract type in
@@ -679,27 +680,57 @@ class ProjectManager(BaseManager):
             pathlib.Path: The path if it exists, else ``None``.
         """
 
-        path = Path(key_contract_path)
-        ext = get_full_extension(path) or None
+        input_path = Path(key_contract_path)
+        if input_path.is_file():
+            # Already given an existing file.
+            return input_path
 
-        def find_in_dir(dir_path: Path) -> Optional[Path]:
-            if not dir_path.is_dir():
-                return None
+        input_stem = input_path.stem
+        input_extension = get_full_extension(input_path) or None
 
-            for file_path in dir_path.iterdir():
-                if file_path.is_dir() and (result := find_in_dir(file_path)):
-                    return result
+        def find_in_dir(dir_path: Path, path_id: Path) -> Optional[Path]:
+            # Try exact match with or without extension
+            possible_matches = []
 
-                # If the user provided an extension, it has to match.
-                ext_okay = ext == get_full_extension(file_path) if ext is not None else True
+            if path_id.is_absolute():
+                full_path = path_id
+            else:
+                # Check if a file with an exact match exists.
+                full_path = dir_path / path_id
 
-                # File found
-                if file_path.stem == path.stem and ext_okay:
-                    return file_path
+            if full_path.is_file():
+                return full_path
+
+            # Check for exact match with no given extension.
+            if input_extension is None:
+                if full_path.parent.is_dir():
+                    for file in full_path.parent.iterdir():
+                        if not file.is_file():
+                            continue
+                        elif not (file_ext := get_full_extension(file)):
+                            continue
+
+                        # Check exact match w/o extension.
+                        prefix = file_ext.join(str(file).split(file_ext)[:-1])
+                        if str(full_path) == prefix:
+                            return file
+
+                # Look for stem-only matches (last resort).
+                for file_path in dir_path.rglob("*"):
+                    if file_path.stem == input_stem:
+                        possible_matches.append(file_path)
+
+            # If we have possible matches, return the one with the closest relative path
+            if possible_matches:
+                # Prioritize the exact relative path or first match in the list
+                possible_matches.sort(key=lambda p: len(str(p.relative_to(dir_path))))
+                return possible_matches[0]
 
             return None
 
-        return find_in_dir(self.contracts_folder)
+        # Derive the relative path from the given key_contract_path.
+        relative_path = input_path.relative_to(input_path.anchor)
+        return find_in_dir(self.contracts_folder, relative_path)
 
     def load_contracts(
         self, file_paths: Optional[Union[Iterable[Path], Path]] = None, use_cache: bool = True

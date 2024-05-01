@@ -92,7 +92,7 @@ Static-fee transactions are the transactions that Ethereum used before the Londo
 One way to use a static-fee transaction is by specifying the `gas_price` as a key-value argument:
 
 ```python
-contract.fundMyContract(value="1 gwei", gas_price="100 gwei", sender=sender)
+contract.startAuction(gas_price="100 gwei", sender=sender)
 ```
 
 **NOTE**: Miners prioritize static-fee transactions based on the highest `gas_price`.
@@ -101,7 +101,7 @@ Another way to use a static-fee transaction (without having to provide `gas_pric
 argument `type` equal to `0x00`.
 
 ```python
-contract.fundMyContract(value="1 gwei", type="0x0", sender=sender)
+contract.startAuction(type="0x0", sender=sender)
 ```
 
 When declaring `type="0x0"` and _not_ specifying a `gas_price`, the `gas_price` gets set using the provider's estimation.
@@ -116,7 +116,7 @@ You can also use Access-lists in Dynamic-fee transactions.
 To automatically use access-list (type 1) transactions in Ape, specify `type=1` in your call:
 
 ```python
-contract.fundMyContract(value="1 gwei", type=1, sender=sender)
+contract.startAuction(type=1, sender=sender)
 ```
 
 When specifying `type=1`, Ape uses `eth_createAccessList` RPC to attach an access list to the transaction automatically.
@@ -124,8 +124,19 @@ When specifying `type=1`, Ape uses `eth_createAccessList` RPC to attach an acces
 You can also specify the access-list directly:
 
 ```python
-contract.fundMyContract(value="1 gwei", type=1, sender=sender, access_list=MY_ACCESS_LIST)
+contract.fundMyContract(type=1, sender=sender, access_list=MY_ACCESS_LIST)
 ```
+
+## Payable Transactions
+
+To add value to a transaction, use the `value=` kwarg when transacting in Ape.
+
+```python
+contract.fundMyContract(value="1 ether", sender=sender)
+```
+
+The `value="1 ether"` part is sending 1 ETH to the contract.
+You would do this if `fundMyContract` was a `"payable"` method, e.g. marked `@payable` in Vyper.
 
 ## Transaction Logs
 

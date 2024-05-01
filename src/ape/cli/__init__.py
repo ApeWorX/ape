@@ -19,6 +19,7 @@ from ape.cli.options import (
     NetworkOption,
     account_option,
     ape_cli_context,
+    config_override_option,
     contract_option,
     incompatible_with,
     network_option,
@@ -26,7 +27,7 @@ from ape.cli.options import (
     skip_confirmation_option,
     verbosity_option,
 )
-from ape.cli.paramtype import AllFilePaths, Path
+from ape.cli.paramtype import JSON, AllFilePaths, Path
 
 __all__ = [
     "account_option",
@@ -35,12 +36,14 @@ __all__ = [
     "AllFilePaths",
     "ape_cli_context",
     "ApeCliContextObject",
+    "config_override_option",
     "ConnectedProviderCommand",
     "contract_file_paths_argument",
     "contract_option",
     "existing_alias_argument",
     "get_user_selected_account",
     "incompatible_with",
+    "JSON",
     "network_option",
     "NetworkBoundCommand",
     "NetworkChoice",

@@ -328,7 +328,7 @@ class ContractLog(ExtraAttributesMixin, BaseContractLog):
     def __ape_extra_attributes__(self) -> Iterator[ExtraModelAttributes]:
         yield ExtraModelAttributes(
             name=self.event_name,
-            attributes=self.event_arguments,
+            attributes=lambda: self.event_arguments or {},
             include_getattr=True,
             include_getitem=True,
         )

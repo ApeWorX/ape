@@ -19,6 +19,7 @@ from ape.logging import LogLevel, logger
 from ape.managers.config import CONFIG_FILE_NAME
 from ape.types import AddressType
 from ape.utils import DEFAULT_TEST_CHAIN_ID, ZERO_ADDRESS
+from ape.utils.basemodel import only_raise_attribute_error
 
 # NOTE: Ensure that we don't use local paths for these
 DATA_FOLDER = Path(mkdtemp()).resolve()
@@ -417,6 +418,7 @@ def ape_caplog(caplog):
             self.messages_at_start = list(caplog.messages)
             self.set_levels(caplog_level=caplog_level)
 
+        @only_raise_attribute_error
         def __getattr__(self, name: str) -> Any:
             return getattr(caplog, name)
 

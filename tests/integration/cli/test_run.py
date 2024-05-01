@@ -7,14 +7,14 @@ BAD_COMMAND = "not-a-name"
 
 @skip_projects_except("script")
 def test_run_unknown_script(ape_cli, runner, project):
-    result = runner.invoke(ape_cli, ["run", BAD_COMMAND])
+    result = runner.invoke(ape_cli, ("run", BAD_COMMAND))
     assert result.exit_code == 2
     assert f"No such command '{BAD_COMMAND}'." in result.output
 
 
 @skip_projects_except("script")
 def test_run(ape_cli, runner, project):
-    result = runner.invoke(ape_cli, ["run"])
+    result = runner.invoke(ape_cli, "run")
     assert result.exit_code == 0, result.output
     # By default, no commands are run
     assert "Super secret script output" not in result.output
@@ -26,7 +26,7 @@ def test_run(ape_cli, runner, project):
         if not s.name.startswith("error") and s.stem not in not_part_of_test
     ]
     for script_file in scripts:
-        result = runner.invoke(ape_cli, ["run", script_file.stem], catch_exceptions=False)
+        result = runner.invoke(ape_cli, ("run", script_file.stem), catch_exceptions=False)
         assert (
             result.exit_code == 0
         ), f"Unexpected exit code for '{script_file.name}'\n{result.output}"
@@ -40,13 +40,13 @@ def test_run(ape_cli, runner, project):
 
 @skip_projects_except("script")
 def test_run_with_verbosity(ape_cli, runner, project):
-    result = runner.invoke(ape_cli, ["run", "click", "--verbosity", "DEBUG"])
+    result = runner.invoke(ape_cli, ("run", "click", "--verbosity", "DEBUG"))
     assert result.exit_code == 0, result.output
 
 
 @skip_projects_except("script")
 def test_run_subdirectories(ape_cli, runner, project):
-    result = runner.invoke(ape_cli, ["run"])
+    result = runner.invoke(ape_cli, "run")
     assert result.exit_code == 0, result.output
     # By default, no commands are run
     assert "Super secret script output" not in result.output
@@ -56,14 +56,14 @@ def test_run_subdirectories(ape_cli, runner, project):
         if not s.name.startswith("error")
     ]
     for each in subdirectory_scripts:
-        result = runner.invoke(ape_cli, ["run", "subdirectory", each.stem])
+        result = runner.invoke(ape_cli, ("run", "subdirectory", each.stem))
         assert result.exit_code == 0
         assert "Super secret script output" in result.output
 
 
 @skip_projects_except("only-script-subdirs")
 def test_run_only_subdirs(ape_cli, runner, project):
-    result = runner.invoke(ape_cli, ["run"])
+    result = runner.invoke(ape_cli, "run")
     assert result.exit_code == 0, result.output
     # By default, no commands are run
     assert "Super secret script output" not in result.output
@@ -73,7 +73,7 @@ def test_run_only_subdirs(ape_cli, runner, project):
         if not s.name.startswith("error")
     ]
     for each in subdirectory_scripts:
-        result = runner.invoke(ape_cli, ["run", "subdirectory", each.stem])
+        result = runner.invoke(ape_cli, ("run", "subdirectory", each.stem))
         assert result.exit_code == 0, f"Unexpected exit code for '{each.name}'"
         assert "Super secret script output" in result.output
 
@@ -86,7 +86,7 @@ def test_run_when_script_errors(ape_cli, runner, project):
         if s.name.startswith("error") and not s.name.endswith("forgot_click.py")
     ]
     for script_file in scripts:
-        result = runner.invoke(ape_cli, ["run", script_file.stem])
+        result = runner.invoke(ape_cli, ("run", script_file.stem))
         assert (
             result.exit_code != 0
         ), f"Unexpected exit code for '{script_file.name}'.\n{result.output}"
@@ -102,7 +102,7 @@ def test_run_interactive(ape_cli, runner, project):
     # Show that the variable namespace from the script is available in the console.
     user_input = "local_variable\nape.chain.provider.mine()\nape.chain.blocks.head\nexit\n"
 
-    result = runner.invoke(ape_cli, ["run", "--interactive", scripts[0].stem], input=user_input)
+    result = runner.invoke(ape_cli, ("run", "--interactive", scripts[0].stem), input=user_input)
     assert result.exit_code == 0, result.output
 
     # From script: local_variable = "test foo bar"
@@ -114,7 +114,7 @@ def test_run_interactive(ape_cli, runner, project):
 def test_run_custom_provider(ape_cli, runner, project):
     result = runner.invoke(
         ape_cli,
-        ["run", "deploy", "--network", "ethereum:mainnet:http://127.0.0.1:9545"],
+        ("run", "deploy", "--network", "ethereum:mainnet:http://127.0.0.1:9545"),
         catch_exceptions=False,
     )
 
@@ -125,7 +125,7 @@ def test_run_custom_provider(ape_cli, runner, project):
 
 @skip_projects_except("script")
 def test_run_custom_network(ape_cli, runner, project):
-    result = runner.invoke(ape_cli, ["run", "deploy", "--network", "http://127.0.0.1:9545"])
+    result = runner.invoke(ape_cli, ("run", "deploy", "--network", "http://127.0.0.1:9545"))
 
     # Show that it attempts to connect
     assert result.exit_code == 1, result.output
@@ -140,13 +140,13 @@ def test_try_run_script_missing_cli_decorator(ape_cli, runner, project):
     a usage error.
     """
 
-    result = runner.invoke(ape_cli, ["run", "error_forgot_click"])
+    result = runner.invoke(ape_cli, ("run", "error_forgot_click"))
     assert "Usage: cli run" in result.output
 
 
 @skip_projects_except("with-contracts")
 def test_uncaught_tx_err(ape_cli, runner, project):
-    result = runner.invoke(ape_cli, ["run", "txerr"])
+    result = runner.invoke(ape_cli, ("run", "txerr"))
     assert '/scripts/txerr.py", line 12, in main' in result.output
     assert "contract.setNumber(5, sender=account)" in result.output
     assert "ERROR: (ContractLogicError) Transaction failed." in result.output
@@ -165,7 +165,7 @@ def test_scripts_module_already_installed(ape_cli, runner, project, mocker):
     mock_scripts.__path__ = mock_path
     sys.modules["scripts"] = mock_scripts
 
-    result = runner.invoke(ape_cli, ["run"])
+    result = runner.invoke(ape_cli, ("run",))
     assert result.exit_code == 0, result.output
 
     del sys.modules["scripts"]
@@ -178,7 +178,7 @@ def test_run_recompiles_if_needed(ape_cli, runner, project):
     when we run a script, it re-compiles the script first.
     """
     # Ensure we begin compiled.
-    runner.invoke(ape_cli, ["compile", "--force"])
+    runner.invoke(ape_cli, ("compile", "--force"))
 
     # Make a change to the contract
     contract = project.contracts_folder / "VyperContract.json"

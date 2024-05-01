@@ -412,6 +412,56 @@ def test_lookup_path(project_with_source_files_contract):
     assert actual_from_str == actual_from_path == expected
 
 
+def test_lookup_path_closest_match(project_with_source_files_contract):
+    pm = project_with_source_files_contract
+    source_path = pm.contracts_folder / "Contract.json"
+    temp_dir_a = pm.contracts_folder / "temp"
+    temp_dir_b = temp_dir_a / "tempb"
+    nested_source_a = temp_dir_a / "Contract.json"
+    nested_source_b = temp_dir_b / "Contract.json"
+
+    def clean():
+        # NOTE: Will also delete temp_dir_b.
+        if temp_dir_a.is_dir():
+            shutil.rmtree(temp_dir_a)
+
+    clean()
+
+    # NOTE: Will also make temp_dir_a.
+    temp_dir_b.mkdir(parents=True)
+
+    try:
+        # Duplicate contract so that there are multiple with the same name.
+        for nested_src in (nested_source_a, nested_source_b):
+            nested_src.touch()
+            nested_src.write_text(source_path.read_text())
+
+        # Top-level match.
+        for base in (source_path, str(source_path), "Contract", "Contract.json"):
+            assert pm.lookup_path(base) == source_path, f"Failed to lookup {base}"
+
+        # Nested: 1st level
+        for closest in (
+            nested_source_a,
+            str(nested_source_a),
+            "temp/Contract",
+            "temp/Contract.json",
+        ):
+            assert pm.lookup_path(closest) == nested_source_a, f"Failed to lookup {closest}"
+
+        # Nested: 2nd level
+        for closest in (
+            nested_source_b,
+            str(nested_source_b),
+            "temp/tempb/Contract",
+            "temp/tempb/Contract.json",
+        ):
+            assert pm.lookup_path(closest) == nested_source_b, f"Failed to lookup {closest}"
+
+    finally:
+        clean()
+
+
 def test_sources(project_with_source_files_contract):
     project = project_with_source_files_contract
     assert "ApeContract0.json" in project.sources
@@ -420,7 +470,7 @@ def test_sources(project_with_source_files_contract):
 
 def test_contracts_folder(project, config):
     # Relaxed to handle xdist resource sharing.
-    assert project.contracts_folder.name == "contracts"
+    assert project.contracts_folder.name in ("contracts", "src")
 
     # Show that even when None in the config, it won't be None here.
     config.contracts_folder = None

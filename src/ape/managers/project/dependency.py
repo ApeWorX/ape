@@ -294,6 +294,10 @@ class LocalDependency(DependencyAPI):
         if value.get("contracts_folder") not in (None, "contracts"):
             return value
 
+        elif cfg_value := value.get("config_override", {}).get("contracts_folder"):
+            value["contracts_folder"] = cfg_value
+            return value
+
         # If using default value, check if exists
         local_path_value = value.get("local") or os.getcwd()
         local_project_path = Path(local_path_value)
