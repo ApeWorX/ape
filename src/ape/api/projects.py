@@ -340,18 +340,21 @@ class DependencyAPI(ExtraAttributesMixin, BaseInterfaceModel):
     The version of the dependency. Omit to use the latest.
     """
 
+    # TODO: Remove in 0.8.
     contracts_folder: str = "contracts"
     """
     The name of the dependency's ``contracts/`` directory.
     This is where ``ape`` will look for source files when compiling
     the manifest for this dependency.
 
-    **NOTE**: This must be the name of a directory in the project.
+    **Deprecated**: Use ``config_override:contracts_folder``.
     """
 
+    # TODO: Remove in 0.8.
     exclude: List[str] = ["package.json", "package-lock.json", "**/.build/**/*.json"]
     """
     A list of glob-patterns for excluding files in dependency projects.
+    **Deprecated**: Use ``config_override:compile:exclude``.
     """
 
     config_override: Dict = {}
@@ -535,13 +538,16 @@ class DependencyAPI(ExtraAttributesMixin, BaseInterfaceModel):
         elif project_path.parent.is_dir():
             project_path = project_path.parent
 
+        # TODO: In 0.8, delete self.contracts_folder and rely on cfg override.
+        contracts_folder = self.config_override.get("contracts_folder", self.contracts_folder)
+
         # NOTE: Dependencies are not compiled here. Instead, the sources are packaged
         # for later usage via imports. For legacy reasons, many dependency-esque projects
         # are not meant to compile on their own.
 
         with self.config_manager.using_project(
             project_path,
-            contracts_folder=(project_path / self.contracts_folder).expanduser().resolve(),
+            contracts_folder=(project_path / contracts_folder).expanduser().resolve(),
         ) as pm:
             project = pm.local_project
             if sources := self._get_sources(project):
@@ -578,8 +584,14 @@ class DependencyAPI(ExtraAttributesMixin, BaseInterfaceModel):
         pattern = rf".*({extension_pattern})"
         all_sources = get_all_files_in_directory(project.contracts_folder, pattern=pattern)
 
+        # TODO: In 0.8, delete self.exclude and only use config override.
+        exclude = [
+            *(self.exclude or []),
+            *(self.config_override.get("compile", {}).get("exclude", []) or []),
+        ]
+
         excluded_files = set()
-        for pattern in set(self.exclude):
+        for pattern in set(exclude):
             excluded_files.update({f for f in project.contracts_folder.glob(pattern)})
 
         return [s for s in all_sources if s not in excluded_files]
