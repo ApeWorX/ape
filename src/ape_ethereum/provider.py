@@ -130,8 +130,8 @@ class Web3Provider(ProviderAPI, ABC):
         return super().__new__(cls)  # pydantic v2 doesn't want args
 
     def __init__(self, *args, **kwargs):
-        logger.create_logger("web3.RequestManager", handlers=(_sanitize_web3_url,))
-        logger.create_logger("web3.providers.HTTPProvider", handlers=(_sanitize_web3_url,))
+        # logger.create_logger("web3.RequestManager", handlers=(_sanitize_web3_url,))
+        # logger.create_logger("web3.providers.HTTPProvider", handlers=(_sanitize_web3_url,))
         super().__init__(*args, **kwargs)
 
     @property
