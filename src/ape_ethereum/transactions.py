@@ -300,19 +300,15 @@ class Receipt(ReceiptAPI):
                 except ProviderNotConnectedError:
                     revert_message = default_message
                 else:
-                    selector = returndata[:4]
-                    input_data = returndata[4:]
+                    if provider := self.network_manager.active_provider:
+                        ecosystem = provider.network.ecosystem
+                    else:
+                        # Default to Ethereum.
+                        ecosystem = self.network_manager.ethereum
 
-                    if selector not in contract_type.errors:
-                        # Not a custom error.
-                        return None
-
-                    ecosystem = self.provider.network.ecosystem
-                    abi = contract_type.errors[selector]
-                    inputs = ecosystem.decode_calldata(abi, input_data)
-                    container = self.chain_manager.contracts.get_container(contract_type)
-                    error_class = container._create_custom_error_type(abi)
-                    instance = error_class(abi, inputs, contract_address=address)
+                    instance = ecosystem.decode_custom_error(
+                        returndata, contract_type, contract_address=address
+                    )
                     revert_message = repr(instance)
 
         self.chain_manager._reports.show_trace(

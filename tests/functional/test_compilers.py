@@ -191,4 +191,4 @@ def test_enrich_error_custom_error_with_inputs(compilers):
     assert isinstance(actual, CustomError)
     assert actual.__class__.__name__ == "AllowanceExpired"
     assert actual.inputs["deadline"] == deadline
-    assert repr(actual) == f"AllowanceExpired('deadline={deadline}')"
+    assert repr(actual) == f"AllowanceExpired(deadline={deadline})"

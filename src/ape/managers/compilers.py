@@ -1,9 +1,9 @@
 from pathlib import Path
 from typing import Any, Dict, Iterator, List, Optional, Sequence, Set, Union
 
+from eth_pydantic_types import HexBytes
 from ethpm_types import ContractType
 from ethpm_types.source import Content
-from hexbytes import HexBytes
 
 from ape.api import CompilerAPI
 from ape.contracts import ContractContainer
@@ -361,22 +361,15 @@ class CompilerManager(BaseManager, ExtraAttributesMixin):
         elif not (contract_type := err.contract_type):
             return None
 
-        bytes_message = HexBytes(message)
-        selector = bytes_message[:4]
-        input_data = bytes_message[4:]
+        if provider := self.network_manager.active_provider:
+            ecosystem = provider.network.ecosystem
+        else:
+            # Default to Ethereum.
+            ecosystem = self.network_manager.ethereum
 
-        if selector not in contract_type.errors:
-            # Not a custom error.
-            return None
-
-        ecosystem = self.provider.network.ecosystem
-        abi = contract_type.errors[selector]
-        inputs = ecosystem.decode_calldata(abi, input_data)
-        container = self.chain_manager.contracts.get_container(contract_type)
-        error_class = container._create_custom_error_type(abi)
-        return error_class(
-            abi,
-            inputs,
+        return ecosystem.decode_custom_error(
+            HexBytes(message),
+            contract_type,
             base_err=err.base_err,
             contract_address=err.contract_address,
             source_traceback=err.source_traceback,
