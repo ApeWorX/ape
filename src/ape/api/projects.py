@@ -515,11 +515,9 @@ class DependencyAPI(ExtraAttributesMixin, BaseInterfaceModel):
         if project_path.is_file() and project_path.suffix == ".json":
             try:
                 manifest = PackageManifest.model_validate_json(project_path.read_text())
-
             except ValueError as err:
                 if project_path.parent.is_dir():
                     project_path = project_path.parent
-
                 else:
                     raise ProjectError(f"Invalid manifest file: '{project_path}'.") from err
 

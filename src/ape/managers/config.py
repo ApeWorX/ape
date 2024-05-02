@@ -200,7 +200,6 @@ class ConfigManager(BaseInterfaceModel):
         )
 
         self.contracts_folder = configs["contracts_folder"] = contracts_folder
-
         deployments = user_config.pop("deployments", {})
         valid_ecosystems = dict(self.plugin_manager.ecosystems)
         valid_network_names = [n[1] for n in [e[1] for e in self.plugin_manager.networks]]
