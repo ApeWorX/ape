@@ -1,4 +1,3 @@
-import tempfile
 from pathlib import Path
 
 import pytest
@@ -6,6 +5,7 @@ from github import UnknownObjectException
 from requests.exceptions import ConnectTimeout
 
 from ape.utils.github import GithubClient
+from ape.utils.os import create_tempdir
 
 REPO_PATH = "test/path"
 
@@ -50,7 +50,7 @@ class TestGithubClient:
         client = GithubClient()
         git_patch = mocker.patch("ape.utils.github.subprocess.call")
         git_patch.return_value = 0
-        with tempfile.TemporaryDirectory() as temp_dir:
+        with create_tempdir() as temp_dir:
             try:
                 client.clone_repo("dapphub/ds-test", Path(temp_dir), branch="master")
             except ConnectTimeout:

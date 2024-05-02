@@ -1,4 +1,3 @@
-import tempfile
 from pathlib import Path
 from typing import Dict, Optional, Union
 
@@ -14,6 +13,7 @@ from ape.managers.config import (
     merge_configs,
 )
 from ape.types import GasLimit
+from ape.utils import create_tempdir
 from ape_ethereum.ecosystem import NetworkConfig
 from ape_networks import CustomNetwork
 from tests.functional.conftest import PROJECT_WITH_LONG_CONTRACTS_FOLDER
@@ -295,9 +295,8 @@ def test_config_manager_loads_on_init(config):
     """
     name = "nametestvalidate"
 
-    with tempfile.TemporaryDirectory() as temp_dir:
+    with create_tempdir() as path:
         config = f"name: {name}"
-        path = Path(temp_dir)
         (path / "ape-config.yaml").write_text(config)
         manager = ConfigManager(REQUEST_HEADER={}, DATA_FOLDER=Path.cwd(), PROJECT_FOLDER=path)
         assert manager.name == name

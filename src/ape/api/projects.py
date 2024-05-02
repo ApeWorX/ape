@@ -1,6 +1,5 @@
 import os.path
 import re
-import tempfile
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Dict, Iterator, List, Optional, Sequence, Union
 
@@ -17,6 +16,7 @@ from ape.utils import (
     ExtraModelAttributes,
     abstractmethod,
     cached_property,
+    create_tempdir,
     get_all_files_in_directory,
     get_relative_path,
     log_instead_of_fail,
@@ -480,8 +480,7 @@ class DependencyAPI(ExtraAttributesMixin, BaseInterfaceModel):
             **self.config_override,
         }
 
-        with tempfile.TemporaryDirectory() as temp_dir:
-            path = Path(temp_dir)
+        with create_tempdir() as path:
             contracts_folder = path / config_data.get("contracts_folder", "contracts")
 
             if "contracts_folder" not in config_data:

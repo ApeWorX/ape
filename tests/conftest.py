@@ -2,7 +2,6 @@ import json
 import shutil
 import subprocess
 import sys
-import tempfile
 import time
 from contextlib import contextmanager
 from pathlib import Path
@@ -18,7 +17,7 @@ from ape.exceptions import APINotImplementedError, UnknownSnapshotError
 from ape.logging import LogLevel, logger
 from ape.managers.config import CONFIG_FILE_NAME
 from ape.types import AddressType
-from ape.utils import DEFAULT_TEST_CHAIN_ID, ZERO_ADDRESS
+from ape.utils import DEFAULT_TEST_CHAIN_ID, ZERO_ADDRESS, create_tempdir
 from ape.utils.basemodel import only_raise_attribute_error
 
 # NOTE: Ensure that we don't use local paths for these
@@ -298,8 +297,7 @@ def temp_config(config):
     @contextmanager
     def func(data: Optional[Dict] = None):
         data = data or {}
-        with tempfile.TemporaryDirectory() as temp_dir_str:
-            temp_dir = Path(temp_dir_str).resolve()
+        with create_tempdir() as temp_dir:
             config._cached_configs = {}
             config_file = temp_dir / CONFIG_FILE_NAME
             config_file.touch()

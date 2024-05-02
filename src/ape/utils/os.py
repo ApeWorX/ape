@@ -1,8 +1,10 @@
 import os
 import re
 import sys
+from contextlib import contextmanager
 from pathlib import Path
-from typing import List, Optional, Pattern, Union
+from tempfile import TemporaryDirectory
+from typing import Any, Callable, Iterator, List, Optional, Pattern, Union
 
 
 def is_relative_to(path: Path, target: Path) -> bool:
@@ -158,3 +160,53 @@ def get_full_extension(path: Path) -> str:
     suffix = ".".join(parts[start_idx:])
 
     return f".{suffix}" if suffix and f".{suffix}" != f"{path.name}" else ""
+
+
+@contextmanager
+def create_tempdir(name: Optional[str] = None) -> Iterator[Path]:
+    """
+    Create a temporary directory. Differs from ``TemporaryDirectory()``
+    context-call alone because it automatically resolves the path.
+
+    Args:
+        name (Optional[str]): Optional provide a name of  the directory.
+          Else, defaults to root of ``tempfile.TemporaryDirectory()``
+          (resolved).
+
+    Returns:
+        Iterator[Path]: Context managing the temporary directory.
+    """
+    with TemporaryDirectory() as temp_dir:
+        temp_path = Path(temp_dir).resolve()
+
+        if name:
+            path = temp_path / name
+            path.mkdir()
+        else:
+            path = temp_path
+
+        yield path
+
+
+def run_in_tempdir(
+    fn: Callable[
+        [
+            Path,
+        ],
+        Any,
+    ],
+    name: Optional[str] = None,
+):
+    """
+    Run the given function in a temporary directory with its path
+    resolved.
+
+    Args:
+        fn (Callable): A function that takes a path. It gets called
+          with the resolved path to the temporary directory.
+
+    Returns:
+        Any: The result of the function call.
+    """
+    with create_tempdir(name=name) as temp_dir:
+        return fn(temp_dir)

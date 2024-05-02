@@ -1,6 +1,5 @@
 import os
 import shutil
-import tempfile
 from pathlib import Path
 from typing import Dict
 
@@ -9,6 +8,7 @@ from pydantic import ValidationError
 
 from ape.exceptions import ProjectError
 from ape.managers.project.dependency import GithubDependency, LocalDependency, NpmDependency
+from ape.utils import create_tempdir
 
 
 @pytest.fixture
@@ -102,11 +102,11 @@ def test_npm_dependency(mock_home_directory):
     package = "safe-singleton-factory"
     version = "1.0.0"
     dependency = NpmDependency(name=package, npm=f"{name}/{package}", version=version)
-    with tempfile.TemporaryDirectory() as temp_dir:
-        os.chdir(temp_dir)
+    with create_tempdir() as temp_dir:
+        os.chdir(str(temp_dir))
 
         # Test with both local and global node modules install.
-        for base in (Path(temp_dir), mock_home_directory):
+        for base in (temp_dir, mock_home_directory):
             package_folder = base / "node_modules" / name / package
             contracts_folder = package_folder / "contracts"
             contracts_folder.mkdir(parents=True)
@@ -179,8 +179,8 @@ def test_dependency_missing_sources():
         r"\nMore information: "
         r"https://docs.apeworx.io/ape/stable/userguides/dependencies.html#config-override"
     )
-    with tempfile.TemporaryDirectory() as temp_dir:
-        dependency = LocalDependency(name=name, local=temp_dir)
+    with create_tempdir() as temp_dir:
+        dependency = LocalDependency(name=name, local=str(temp_dir))
 
         # Raises because there are no source files in temp_dir.
         with pytest.raises(ProjectError, match=expected):
