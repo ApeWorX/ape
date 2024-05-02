@@ -634,11 +634,42 @@ class EcosystemAPI(ExtraAttributesMixin, BaseInterfaceModel):
         selector = data[:4]
         input_data = data[4:]
 
-        if selector not in contract_type.errors:
-            # Not a custom error.
+        abi = None
+        if selector in contract_type.errors:
+            abi = contract_type.errors[selector]
+
+        else:
+            # ABI not found. Try looking at the "last" contract.
+            if not (tx := kwargs.get("txn")):
+                return None
+
+            if not (provider := self.network_manager.active_provider):
+                return None
+
+            try:
+                trace = list(provider.get_transaction_trace(tx.txn_hash))
+            except Exception:
+                return None
+
+            for frame in trace[::-1]:
+                if not (addr := frame.contract_address):
+                    continue
+
+                try:
+                    ct = self.chain_manager.contracts.get(addr)
+                except Exception:
+                    break
+
+                if not ct or selector not in ct.errors:
+                    continue
+
+                abi = ct.errors[selector]
+                break
+
+        # ABI never found.
+        if abi is None:
             return None
 
-        abi = contract_type.errors[selector]
         container = self.chain_manager.contracts.get_container(contract_type)
         error_cls = container._create_custom_error_type(abi)
         inputs = self.decode_calldata(abi, input_data)

@@ -633,7 +633,7 @@ class ProviderAPI(BaseInterfaceModel):
 
     @raises_not_implemented
     def get_transaction_trace(  # type: ignore[empty-body]
-        self, txn_hash: str
+        self, txn_hash: Union[HexBytes, str]
     ) -> Iterator[TraceFrame]:
         """
         Provide a detailed description of opcodes.

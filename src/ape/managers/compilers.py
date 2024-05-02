@@ -371,7 +371,7 @@ class CompilerManager(BaseManager, ExtraAttributesMixin):
             HexBytes(message),
             contract_type,
             base_err=err.base_err,
-            contract_address=err.contract_address,
+            contract_address=err.address,
             source_traceback=err.source_traceback,
             trace=err.trace,
             txn=err.txn,
