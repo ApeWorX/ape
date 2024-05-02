@@ -771,6 +771,11 @@ class CustomError(ContractLogicError):
         """
         return self.abi.name
 
+    def __repr__(self) -> str:
+        name = self.__class__.__name__  # Custom error name
+        calldata = ", ".join(sorted([f"{k}={v}" for k, v in self.inputs.items()])) or ""
+        return f"{name}({calldata})"
+
 
 def _get_ape_traceback_from_tx(txn: FailedTxn) -> Optional["SourceTraceback"]:
     from ape.api.transactions import ReceiptAPI

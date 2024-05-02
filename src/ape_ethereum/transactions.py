@@ -17,7 +17,13 @@ from pydantic import BaseModel, Field, field_validator, model_validator
 
 from ape.api import ReceiptAPI, TransactionAPI
 from ape.contracts import ContractEvent
-from ape.exceptions import APINotImplementedError, OutOfGasError, SignatureError, TransactionError
+from ape.exceptions import (
+    APINotImplementedError,
+    OutOfGasError,
+    ProviderNotConnectedError,
+    SignatureError,
+    TransactionError,
+)
 from ape.logging import logger
 from ape.types import AddressType, CallTreeNode, ContractLog, ContractLogContainer, SourceTraceback
 from ape.utils import ZERO_ADDRESS
@@ -276,16 +282,38 @@ class Receipt(ReceiptAPI):
         if call_tree.failed:
             default_message = "reverted without message"
             returndata = HexBytes(call_tree.raw["returndata"])
-            if not to_hex(returndata).startswith(
+            if to_hex(returndata).startswith(
                 "0x08c379a00000000000000000000000000000000000000000000000000000000000000020"
             ):
-                revert_message = default_message
-            else:
+                # Extra revert-message
                 decoded_result = decode(("string",), returndata[4:])
                 if len(decoded_result) == 1:
                     revert_message = f'reverted with message: "{decoded_result[0]}"'
                 else:
                     revert_message = default_message
+
+            else:
+                # Try to enrich revert error using ABI.
+                address = self.receiver or self.contract_address
+                try:
+                    contract_type = self.chain_manager.contracts.get(address)
+                except ProviderNotConnectedError:
+                    revert_message = default_message
+                else:
+                    selector = returndata[:4]
+                    input_data = returndata[4:]
+
+                    if selector not in contract_type.errors:
+                        # Not a custom error.
+                        return None
+
+                    ecosystem = self.provider.network.ecosystem
+                    abi = contract_type.errors[selector]
+                    inputs = ecosystem.decode_calldata(abi, input_data)
+                    container = self.chain_manager.contracts.get_container(contract_type)
+                    error_class = container._create_custom_error_type(abi)
+                    instance = error_class(abi, inputs, contract_address=address)
+                    revert_message = repr(instance)
 
         self.chain_manager._reports.show_trace(
             call_tree,

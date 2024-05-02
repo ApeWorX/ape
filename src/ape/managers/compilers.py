@@ -360,8 +360,6 @@ class CompilerManager(BaseManager, ExtraAttributesMixin):
             return None
         elif not (contract_type := err.contract_type):
             return None
-        elif not (address := err.address):
-            return None
 
         bytes_message = HexBytes(message)
         selector = bytes_message[:4]
@@ -375,8 +373,7 @@ class CompilerManager(BaseManager, ExtraAttributesMixin):
         abi = contract_type.errors[selector]
         inputs = ecosystem.decode_calldata(abi, input_data)
         container = self.chain_manager.contracts.get_container(contract_type)
-        contract = container.at(address, txn_hash=err.txn.txn_hash if err.txn else None)
-        error_class = contract.get_error_by_signature(abi.signature)
+        error_class = container._create_custom_error_type(abi)
         return error_class(
             abi,
             inputs,
