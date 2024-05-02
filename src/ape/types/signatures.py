@@ -65,7 +65,7 @@ def _left_pad_bytes(val: bytes, num_bytes: int) -> bytes:
 class _Signature:
     v: int
     """
-    The version byte (``v``) in an Ethereum-style ECDSA signture.
+    The version byte (``v``) in an Ethereum-style ECDSA signature.
     """
 
     r: bytes

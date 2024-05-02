@@ -1357,7 +1357,7 @@ class EthereumNodeProvider(Web3Provider, ABC):
 
     def get_transaction_trace(self, txn_hash: Union[HexBytes, str]) -> Iterator[TraceFrame]:
         if isinstance(txn_hash, HexBytes):
-            txn_hash_str = to_hex(txn_hash)
+            txn_hash_str = str(to_hex(txn_hash))
         else:
             txn_hash_str = txn_hash
 

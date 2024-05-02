@@ -358,7 +358,7 @@ class CompilerManager(BaseManager, ExtraAttributesMixin):
         message = err.revert_message
         if not message.startswith("0x"):
             return None
-        elif not (contract_type := err.contract_type):
+        elif not (address := err.address):
             return None
 
         if provider := self.network_manager.active_provider:
@@ -369,9 +369,8 @@ class CompilerManager(BaseManager, ExtraAttributesMixin):
 
         return ecosystem.decode_custom_error(
             HexBytes(message),
-            contract_type,
+            address,
             base_err=err.base_err,
-            contract_address=err.address,
             source_traceback=err.source_traceback,
             trace=err.trace,
             txn=err.txn,

@@ -17,13 +17,7 @@ from pydantic import BaseModel, Field, field_validator, model_validator
 
 from ape.api import ReceiptAPI, TransactionAPI
 from ape.contracts import ContractEvent
-from ape.exceptions import (
-    APINotImplementedError,
-    OutOfGasError,
-    ProviderNotConnectedError,
-    SignatureError,
-    TransactionError,
-)
+from ape.exceptions import APINotImplementedError, OutOfGasError, SignatureError, TransactionError
 from ape.logging import logger
 from ape.types import AddressType, CallTreeNode, ContractLog, ContractLogContainer, SourceTraceback
 from ape.utils import ZERO_ADDRESS
@@ -292,24 +286,16 @@ class Receipt(ReceiptAPI):
                 else:
                     revert_message = default_message
 
-            else:
+            elif address := (self.receiver or self.contract_address):
                 # Try to enrich revert error using ABI.
-                address = self.receiver or self.contract_address
-                try:
-                    contract_type = self.chain_manager.contracts.get(address)
-                except ProviderNotConnectedError:
-                    revert_message = default_message
+                if provider := self.network_manager.active_provider:
+                    ecosystem = provider.network.ecosystem
                 else:
-                    if provider := self.network_manager.active_provider:
-                        ecosystem = provider.network.ecosystem
-                    else:
-                        # Default to Ethereum.
-                        ecosystem = self.network_manager.ethereum
+                    # Default to Ethereum.
+                    ecosystem = self.network_manager.ethereum
 
-                    instance = ecosystem.decode_custom_error(
-                        returndata, contract_type, contract_address=address
-                    )
-                    revert_message = repr(instance)
+                instance = ecosystem.decode_custom_error(returndata, address)
+                revert_message = repr(instance)
 
         self.chain_manager._reports.show_trace(
             call_tree,

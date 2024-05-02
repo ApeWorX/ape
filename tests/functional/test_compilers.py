@@ -150,13 +150,14 @@ def test_compile_source(compilers):
     assert isinstance(actual, ContractContainer)
 
 
-def test_enrich_error_custom_error(compilers):
+def test_enrich_error_custom_error(chain, compilers):
     abi = [ErrorABI(type="error", name="InsufficientETH", inputs=[])]
     contract_type = ContractType(abi=abi)
     addr = cast(AddressType, "0x3fC91A3afd70395Cd496C647d5a6CC9D4B2b7FAD")
     err = ContractLogicError("0x6a12f104", contract_address=addr)
+
     # Hack in contract-type.
-    err.__dict__["contract_type"] = contract_type
+    chain.contracts._local_contract_types[addr] = contract_type
 
     # Enriching the error should produce a custom error from the ABI.
     actual = compilers.enrich_error(err)
@@ -165,7 +166,7 @@ def test_enrich_error_custom_error(compilers):
     assert actual.__class__.__name__ == "InsufficientETH"
 
 
-def test_enrich_error_custom_error_with_inputs(compilers):
+def test_enrich_error_custom_error_with_inputs(chain, compilers):
     abi = [
         ErrorABI(
             type="error",
@@ -183,7 +184,7 @@ def test_enrich_error_custom_error_with_inputs(compilers):
         contract_address=addr,
     )
     # Hack in contract-type.
-    err.__dict__["contract_type"] = contract_type
+    chain.contracts._local_contract_types[addr] = contract_type
 
     # Enriching the error should produce a custom error from the ABI.
     actual = compilers.enrich_error(err)

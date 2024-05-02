@@ -614,7 +614,7 @@ class EcosystemAPI(ExtraAttributesMixin, BaseInterfaceModel):
     def decode_custom_error(
         self,
         data: HexBytes,
-        contract_type: ContractType,
+        address: AddressType,
         **kwargs,
     ) -> Optional[CustomError]:
         """
@@ -623,57 +623,52 @@ class EcosystemAPI(ExtraAttributesMixin, BaseInterfaceModel):
         Args:
             data (HexBytes): The error data contining the selector
               and input data.
-            contract_type (ContractType): The contract type with the
-              error ABI definition(s).
+            address (AddressType): The address of the contract containing
+              the error.
             **kwargs: Additional init kwargs for the custom error class.
 
         Returns:
             Optional[CustomError]: If it able to decode one, else ``None``.
         """
 
+        # Use an instance (required for proper error caching).
+        contract = self.chain_manager.contracts.instance_at(address)
+
         selector = data[:4]
         input_data = data[4:]
 
         abi = None
-        if selector in contract_type.errors:
-            abi = contract_type.errors[selector]
-
-        else:
+        if selector not in contract.contract_type.errors:
             # ABI not found. Try looking at the "last" contract.
-            if not (tx := kwargs.get("txn")):
+            if not (tx := kwargs.get("txn")) or not self.network_manager.active_provider:
                 return None
-
-            if not (provider := self.network_manager.active_provider):
+            elif not (last_addr := self._get_last_address_from_trace(tx.txn_hash)):
                 return None
+            elif not (cerr := self.decode_custom_error(data, last_addr)):
+                return cerr
 
-            try:
-                trace = list(provider.get_transaction_trace(tx.txn_hash))
-            except Exception:
-                return None
-
-            for frame in trace[::-1]:
-                if not (addr := frame.contract_address):
-                    continue
-
-                try:
-                    ct = self.chain_manager.contracts.get(addr)
-                except Exception:
-                    break
-
-                if not ct or selector not in ct.errors:
-                    continue
-
-                abi = ct.errors[selector]
-                break
-
-        # ABI never found.
-        if abi is None:
+            # error never found.
             return None
 
-        container = self.chain_manager.contracts.get_container(contract_type)
-        error_cls = container._create_custom_error_type(abi)
+        abi = contract.contract_type.errors[selector]
+        error_cls = contract.get_error_by_signature(abi.signature)
         inputs = self.decode_calldata(abi, input_data)
+        kwargs["contract_address"] = address
         return error_cls(abi, inputs, **kwargs)
+
+    def _get_last_address_from_trace(self, txn_hash: Union[str, HexBytes]) -> Optional[AddressType]:
+        try:
+            trace = list(self.chain_manager.provider.get_transaction_trace(txn_hash))
+        except Exception:
+            return None
+
+        for frame in trace[::-1]:
+            if not (addr := frame.contract_address):
+                continue
+
+            return addr
+
+        return None
 
 
 class ProviderContextManager(ManagerAccessMixin):
