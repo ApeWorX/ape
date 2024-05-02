@@ -617,6 +617,20 @@ class EcosystemAPI(ExtraAttributesMixin, BaseInterfaceModel):
         contract_type: ContractType,
         **kwargs,
     ) -> Optional[CustomError]:
+        """
+        Decode a custom error class from an ABI defined in a contract.
+
+        Args:
+            data (HexBytes): The error data contining the selector
+              and input data.
+            contract_type (ContractType): The contract type with the
+              error ABI definition(s).
+            **kwargs: Additional init kwargs for the custom error class.
+
+        Returns:
+            Optional[CustomError]: If it able to decode one, else ``None``.
+        """
+
         selector = data[:4]
         input_data = data[4:]
 
