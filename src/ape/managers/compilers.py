@@ -323,10 +323,8 @@ class CompilerManager(BaseManager, ExtraAttributesMixin):
             :class:`~ape.exceptions.ContractLogicError`: The enriched exception.
         """
         # First, try enriching using their ABI.
-        if custom_err := self.get_custom_error(err):
-            return custom_err
-
-        elif not (contract_type := err.contract_type):
+        err = self.get_custom_error(err) or err
+        if not (contract_type := err.contract_type):
             return err
 
         # Delegate to compiler APIs.
@@ -340,7 +338,7 @@ class CompilerManager(BaseManager, ExtraAttributesMixin):
             compiler = self.registered_compilers[ext]
             return compiler.enrich_error(err)
 
-        # No enrichment.
+        # No further enrichment.
         return err
 
     def get_custom_error(self, err: ContractLogicError) -> Optional[CustomError]:
