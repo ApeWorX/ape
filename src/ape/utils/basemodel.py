@@ -202,7 +202,12 @@ class _AttrLookup(dict):
 
     @only_raise_attribute_error
     def __getattr__(self, item):
-        return self._callback(item)
+        res = self._callback(item)
+        if res is None:
+            # attr-lookups cannot return None!
+            raise AttributeError(item)
+
+        return res
 
     def __getitem__(self, item):
         return self._callback(item)
@@ -226,7 +231,14 @@ class ExtraModelAttributes(EthpmTypesBaseModel):
     """
 
     attributes: Union[Any, Callable[[], Any], Callable[[str], Any]]
-    """The attributes."""
+    """The attributes. The following types are supported:
+
+    1. A model or dictionary to lookup attributes.
+    2. A callable with no arguments, for lazily evaluating a model or dictionary
+       for lookup.
+    3. A callable with a single argument that is the attribute name. This style
+       of lookup cannot be used for optionals.
+    """
 
     include_getattr: bool = True
     """Whether to use these in ``__getattr__``."""
@@ -289,7 +301,7 @@ class ExtraModelAttributes(EthpmTypesBaseModel):
         return attrs.get(name) if hasattr(attrs, "get") else getattr(attrs, name, None)
 
     def _attrs(self) -> Any:
-        if hasattr(self.attributes, "__contains__"):
+        if not isinstance(self.attributes, Callable):  # type: ignore
             # Dict or model that can do a lookup.
             return self.attributes
 
