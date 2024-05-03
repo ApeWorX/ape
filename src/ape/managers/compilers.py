@@ -367,14 +367,17 @@ class CompilerManager(BaseManager, ExtraAttributesMixin):
             # Default to Ethereum.
             ecosystem = self.network_manager.ethereum
 
-        return ecosystem.decode_custom_error(
-            HexBytes(message),
-            address,
-            base_err=err.base_err,
-            source_traceback=err.source_traceback,
-            trace=err.trace,
-            txn=err.txn,
-        )
+        try:
+            return ecosystem.decode_custom_error(
+                HexBytes(message),
+                address,
+                base_err=err.base_err,
+                source_traceback=err.source_traceback,
+                trace=err.trace,
+                txn=err.txn,
+            )
+        except NotImplementedError:
+            return None
 
     def flatten_contract(self, path: Path, **kwargs) -> Content:
         """

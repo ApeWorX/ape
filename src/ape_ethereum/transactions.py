@@ -294,8 +294,12 @@ class Receipt(ReceiptAPI):
                     # Default to Ethereum.
                     ecosystem = self.network_manager.ethereum
 
-                instance = ecosystem.decode_custom_error(returndata, address)
-                revert_message = repr(instance)
+                try:
+                    instance = ecosystem.decode_custom_error(returndata, address)
+                except NotImplementedError:
+                    pass
+                else:
+                    revert_message = repr(instance)
 
         self.chain_manager._reports.show_trace(
             call_tree,
