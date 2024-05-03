@@ -597,9 +597,11 @@ def test_decode_receipt_shared_blob(ethereum, blob_gas_used):
 
     if blob_gas_used:
         assert actual.blob_gas_used == 131072
+    elif blob_gas_used is None:
+        assert actual.blob_gas_used is None
     else:
-        assert actual.blob_gas_used == 0
-
+        # Must be int.
+        assert actual.blob_gas_used == blob_gas_used
 
 
 def test_default_transaction_type_not_connected_used_default_network(
