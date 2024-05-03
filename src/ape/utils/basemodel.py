@@ -108,10 +108,12 @@ def only_raise_attribute_error(fn: Callable) -> Any:
     def wrapper(*args, **kwargs):
         try:
             return fn(*args, **kwargs)
-        except Exception as e:
+        except AttributeError:
+            raise  # Don't modify or log attr errors.
+        except Exception as err:
             # Wrap the exception in AttributeError
             logger.log_debug_stack_trace()
-            raise ApeAttributeError(f"{e}") from e
+            raise ApeAttributeError(f"{err}") from err
 
     return wrapper
 
