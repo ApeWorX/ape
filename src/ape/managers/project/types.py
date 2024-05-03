@@ -150,9 +150,17 @@ class BaseProject(ProjectAPI):
             config_data["version"] = self.version
 
         contracts_folder = kwargs.get("contracts_folder") or self.contracts_folder
-        contracts_folder_config_item = (
-            str(contracts_folder).replace(str(self.path), "").strip(os.path.sep)
-        )
+
+        if contracts_folder == self.path:
+            # Handle projects pointed at root path.
+            contracts_folder_config_item = "."
+        elif isinstance(contracts_folder, Path):
+            # Strip of path prefix.
+            contracts_folder_config_item = os.path.relpath(contracts_folder, self.path)
+        else:
+            # Was given a str.
+            contracts_folder_config_item = contracts_folder
+
         config_data["contracts_folder"] = contracts_folder_config_item
         self.config_file.parent.mkdir(parents=True, exist_ok=True)
         self.config_file.touch()

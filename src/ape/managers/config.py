@@ -200,7 +200,6 @@ class ConfigManager(BaseInterfaceModel):
         )
 
         self.contracts_folder = configs["contracts_folder"] = contracts_folder
-
         deployments = user_config.pop("deployments", {})
         valid_ecosystems = dict(self.plugin_manager.ecosystems)
         valid_network_names = [n[1] for n in [e[1] for e in self.plugin_manager.networks]]
@@ -335,9 +334,15 @@ class ConfigManager(BaseInterfaceModel):
             return
 
         self.PROJECT_FOLDER = project_folder
-        self.contracts_folder = (
-            contracts_folder if contracts_folder else project_folder / "contracts"
-        )
+
+        if isinstance(contracts_folder, str):
+            contracts_folder = (project_folder / contracts_folder).expanduser().resolve()
+        elif isinstance(contracts_folder, Path):
+            contracts_folder = contracts_folder
+        else:
+            contracts_folder = project_folder / "contracts"
+
+        self.contracts_folder = contracts_folder
         self.project_manager.path = project_folder
         os.chdir(project_folder)
         clean_config = False
@@ -347,7 +352,11 @@ class ConfigManager(BaseInterfaceModel):
             project = self.project_manager.get_project(
                 project_folder, contracts_folder=contracts_folder
             )
-            clean_config = project.process_config_file(contracts_folder=contracts_folder, **config)
+            # Ensure this ends up in the project's config.
+            if "contracts_folder" not in config:
+                config["contracts_folder"] = contracts_folder
+
+            clean_config = project.process_config_file(**config)
             self.load(force_reload=True)
             yield self.project_manager
 
