@@ -47,9 +47,11 @@ from ape.utils.misc import (
     to_int,
 )
 from ape.utils.os import (
+    create_tempdir,
     expand_environment_variables,
     get_all_files_in_directory,
     get_relative_path,
+    run_in_tempdir,
     use_temp_sys_path,
 )
 from ape.utils.process import JoinableQueue, spawn
@@ -70,6 +72,7 @@ __all__ = [
     "BaseInterface",
     "BaseInterfaceModel",
     "cached_property",
+    "create_tempdir",
     "DEFAULT_LIVE_NETWORK_BASE_FEE_MULTIPLIER",
     "DEFAULT_LOCAL_TRANSACTION_ACCEPTANCE_TIMEOUT",
     "DEFAULT_NUMBER_OF_TEST_ACCOUNTS",
@@ -109,6 +112,7 @@ __all__ = [
     "parse_gas_table",
     "raises_not_implemented",
     "returns_array",
+    "run_in_tempdir",
     "run_until_complete",
     "singledispatchmethod",
     "SOURCE_EXCLUDE_PATTERNS",

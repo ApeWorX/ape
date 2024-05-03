@@ -1,7 +1,6 @@
 import json
 import os
 import shutil
-import tempfile
 from pathlib import Path
 from typing import Dict, Iterable, List, Optional, Type
 
@@ -19,6 +18,7 @@ from ape.utils import (
     load_config,
     log_instead_of_fail,
     pragma_str_to_specifier_set,
+    run_in_tempdir,
 )
 
 
@@ -245,33 +245,28 @@ class GithubDependency(DependencyAPI):
             # Already downloaded
             return self.cached_manifest
 
-        with tempfile.TemporaryDirectory() as temp_dir:
-            temp_project_path = (Path(temp_dir) / self.name).resolve()
-            temp_project_path.mkdir(exist_ok=True, parents=True)
+        return run_in_tempdir(lambda p: self._extract_manifest_in_path(p, use_cache=use_cache))
 
-            if self.ref:
-                github_client.clone_repo(self.github, temp_project_path, branch=self.ref)
+    def _extract_manifest_in_path(self, path: Path, use_cache: bool = True) -> PackageManifest:
+        if self.ref:
+            github_client.clone_repo(self.github, path, branch=self.ref)
 
-            else:
+        else:
+            try:
+                github_client.download_package(self.github, self.version or "latest", path)
+            except UnknownVersionError as err:
+                logger.warning(
+                    f"No official release found for version '{self.version}'. "
+                    "Use `ref:` instead of `version:` for release tags. "
+                    "Checking for matching tags..."
+                )
                 try:
-                    github_client.download_package(
-                        self.github, self.version or "latest", temp_project_path
-                    )
-                except UnknownVersionError as err:
-                    logger.warning(
-                        f"No official release found for version '{self.version}'. "
-                        "Use `ref:` instead of `version:` for release tags. "
-                        "Checking for matching tags..."
-                    )
-                    try:
-                        github_client.clone_repo(
-                            self.github, temp_project_path, branch=self.version
-                        )
-                    except Exception:
-                        # Raise the UnknownVersionError.
-                        raise err
+                    github_client.clone_repo(self.github, path, branch=self.version)
+                except Exception:
+                    # Raise the UnknownVersionError.
+                    raise err
 
-            return self._extract_local_manifest(temp_project_path, use_cache=use_cache)
+        return self._extract_local_manifest(path, use_cache=use_cache)
 
 
 class LocalDependency(DependencyAPI):

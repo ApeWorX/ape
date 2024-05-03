@@ -2,7 +2,6 @@ import os
 import random
 import shutil
 import string
-import tempfile
 from pathlib import Path
 
 import pytest
@@ -16,6 +15,7 @@ from ape import Contract
 from ape.exceptions import ProjectError
 from ape.logging import LogLevel
 from ape.managers.project import BrownieProject
+from ape.utils import create_tempdir
 
 WITH_DEPS_PROJECT = (
     Path(__file__).parent.parent / "integration" / "cli" / "projects" / "with-dependencies"
@@ -185,14 +185,13 @@ def test_create_manifest_empty_files(compilers, mock_compiler, config, ape_caplo
     letters = string.ascii_letters
     name = "".join(random.choice(letters) for _ in range(10))
 
-    with tempfile.TemporaryDirectory() as temp_dir:
-        base_dir = Path(temp_dir)
-        contracts = base_dir / "contracts"
+    with create_tempdir() as temp_dir:
+        contracts = temp_dir / "contracts"
         contracts.mkdir()
         file_1 = contracts / f"{name}.__mock__"
         file_1.write_text("")
 
-        with config.using_project(base_dir) as proj:
+        with config.using_project(temp_dir) as proj:
             compilers.registered_compilers[".__mock__"] = mock_compiler
 
             # NOTE: Set levels as close to the operation as possible
@@ -604,8 +603,7 @@ def test_load_contracts_after_deleting_same_named_contract(config, compilers, mo
     collision error from deleted files.
     """
 
-    with tempfile.TemporaryDirectory() as temp_dir:
-        path = Path(temp_dir)
+    with create_tempdir() as path:
         contracts = path / "contracts"
         contracts.mkdir()
         init_contract = contracts / "foo.__mock__"
