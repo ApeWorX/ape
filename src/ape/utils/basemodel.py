@@ -109,7 +109,7 @@ def only_raise_attribute_error(fn: Callable) -> Any:
         try:
             return fn(*args, **kwargs)
         except AttributeError:
-            raise  # Don't modify or log normal already attr errors.
+            raise  # Don't modify or log attr errors.
         except Exception as err:
             # Wrap the exception in AttributeError
             logger.log_debug_stack_trace()
