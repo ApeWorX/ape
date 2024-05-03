@@ -461,10 +461,26 @@ class Receipt(ReceiptAPI):
 
 
 class SharedBlobReceipt(Receipt):
+    """
+    An `EIP-4844 <https://eips.ethereum.org/EIPS/eip-4844#blob-transaction>`__"
+    blob transaction.
+    """
+
     blob_gas_used: int
+    """
+    The total amount of blob gas consumed by the transactions within the block.
+    """
+
     blob_gas_price: int
+    """
+    The blob-gas price, independent from regular gas price.
+    """
 
     @field_validator("blob_gas_used", "blob_gas_price", mode="before")
     @classmethod
-    def hex_to_int(cls, value):
+    def validate_hex(cls, value):
+        return cls._hex_to_int(value or 0)
+
+    @classmethod
+    def _hex_to_int(cls, value) -> int:
         return value if isinstance(value, int) else int(HexBytes(value).hex(), 16)

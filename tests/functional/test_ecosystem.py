@@ -548,9 +548,9 @@ def test_decode_receipt_from_etherscan(eth_tester_provider, ethereum):
     assert receipt.gas_price == 1499999989
 
 
-def test_decode_receipt_shared_blob(ethereum):
+@pytest.mark.parametrize("blob_gas_used", ("0x20000", 131072, 0, None))
+def test_decode_receipt_shared_blob(ethereum, blob_gas_used):
     blob_gas_price = "0x4d137e31b"
-    blob_gas_used = "0x20000"
 
     data = {
         "required_confirmations": 0,
@@ -593,8 +593,13 @@ def test_decode_receipt_shared_blob(ethereum):
     }
     actual = ethereum.decode_receipt(data)
     assert isinstance(actual, SharedBlobReceipt)
-    assert actual.blob_gas_used == int(blob_gas_used, 16)
     assert actual.blob_gas_price == int(blob_gas_price, 16)
+
+    if blob_gas_used:
+        assert actual.blob_gas_used == 131072
+    else:
+        assert actual.blob_gas_used == 0
+
 
 
 def test_default_transaction_type_not_connected_used_default_network(
