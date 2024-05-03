@@ -26,6 +26,7 @@ from ethpm_types import BaseModel, ContractType
 from ethpm_types.abi import ABIType, ConstructorABI, EventABI, MethodABI
 
 from ape.exceptions import (
+    CustomError,
     NetworkError,
     NetworkMismatchError,
     NetworkNotFoundError,
@@ -608,6 +609,27 @@ class EcosystemAPI(ExtraAttributesMixin, BaseInterfaceModel):
 
         Returns:
             Union[Type, Sequence]: The Python types for the given ABI type.
+        """
+
+    @raises_not_implemented
+    def decode_custom_error(
+        self,
+        data: HexBytes,
+        address: AddressType,
+        **kwargs,
+    ) -> Optional[CustomError]:
+        """
+        Decode a custom error class from an ABI defined in a contract.
+
+        Args:
+            data (HexBytes): The error data contining the selector
+              and input data.
+            address (AddressType): The address of the contract containing
+              the error.
+            **kwargs: Additional init kwargs for the custom error class.
+
+        Returns:
+            Optional[CustomError]: If it able to decode one, else ``None``.
         """
 
 

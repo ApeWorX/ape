@@ -8,6 +8,7 @@ from typing import Any, Callable, Dict, Iterator, List, Optional, Tuple, Type, U
 import click
 import pandas as pd
 from eth_pydantic_types import HexBytes
+from eth_utils import to_hex
 from ethpm_types.abi import ConstructorABI, ErrorABI, EventABI, MethodABI
 from ethpm_types.contract_type import ABI_W_SELECTOR_T, ContractType
 
@@ -836,12 +837,14 @@ class ContractInstance(BaseAddress, ContractTypeWrapper):
         self,
         address: AddressType,
         contract_type: ContractType,
-        txn_hash: Optional[str] = None,
+        txn_hash: Optional[Union[str, HexBytes]] = None,
     ) -> None:
         super().__init__()
         self._address = address
         self.contract_type = contract_type
-        self.txn_hash = txn_hash
+        self.txn_hash = (
+            (txn_hash if isinstance(txn_hash, str) else to_hex(txn_hash)) if txn_hash else None
+        )
         self._cached_receipt: Optional[ReceiptAPI] = None
 
     def __call__(self, *args, **kwargs) -> ReceiptAPI:
@@ -1319,7 +1322,9 @@ class ContractContainer(ContractTypeWrapper, ExtraAttributesMixin):
 
         return self.chain_manager.contracts.get_deployments(self)
 
-    def at(self, address: AddressType, txn_hash: Optional[str] = None) -> ContractInstance:
+    def at(
+        self, address: AddressType, txn_hash: Optional[Union[str, HexBytes]] = None
+    ) -> ContractInstance:
         """
         Get a contract at the given address.
 
@@ -1334,8 +1339,8 @@ class ContractContainer(ContractTypeWrapper, ExtraAttributesMixin):
               **NOTE**: Things will not work as expected if the contract is not actually
               deployed to this address or if the contract at the given address has
               a different ABI than :attr:`~ape.contracts.ContractContainer.contract_type`.
-            txn_hash (str): The hash of the transaction that deployed the contract, if
-              available. Defaults to ``None``.
+            txn_hash (Union[str, HexBytes]): The hash of the transaction that deployed the
+              contract, if available. Defaults to ``None``.
 
         Returns:
             :class:`~ape.contracts.ContractInstance`

@@ -1355,9 +1355,16 @@ class EthereumNodeProvider(Web3Provider, ABC):
         self._web3 = None
         self._client_version = None
 
-    def get_transaction_trace(self, txn_hash: str) -> Iterator[TraceFrame]:
+    def get_transaction_trace(self, txn_hash: Union[HexBytes, str]) -> Iterator[TraceFrame]:
+        if isinstance(txn_hash, HexBytes):
+            txn_hash_str = str(to_hex(txn_hash))
+        else:
+            txn_hash_str = txn_hash
+
         frames = self._stream_request(
-            "debug_traceTransaction", [txn_hash, {"enableMemory": True}], "result.structLogs.item"
+            "debug_traceTransaction",
+            [txn_hash_str, {"enableMemory": True}],
+            "result.structLogs.item",
         )
         for frame in create_trace_frames(frames):
             yield self._create_trace_frame(frame)

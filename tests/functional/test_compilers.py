@@ -1,9 +1,13 @@
 from pathlib import Path
+from typing import cast
 
 import pytest
+from ethpm_types import ContractType, ErrorABI
+from ethpm_types.abi import ABIType
 
 from ape.contracts import ContractContainer
-from ape.exceptions import APINotImplementedError, CompilerError
+from ape.exceptions import APINotImplementedError, CompilerError, ContractLogicError, CustomError
+from ape.types import AddressType
 from tests.conftest import skip_if_plugin_installed
 
 
@@ -144,3 +148,48 @@ def test_compile_source(compilers):
     code = '[{"name":"foo","type":"fallback", "stateMutability":"nonpayable"}]'
     actual = compilers.compile_source("ethpm", code)
     assert isinstance(actual, ContractContainer)
+
+
+def test_enrich_error_custom_error(chain, compilers):
+    abi = [ErrorABI(type="error", name="InsufficientETH", inputs=[])]
+    contract_type = ContractType(abi=abi)
+    addr = cast(AddressType, "0x3fC91A3afd70395Cd496C647d5a6CC9D4B2b7FAD")
+    err = ContractLogicError("0x6a12f104", contract_address=addr)
+
+    # Hack in contract-type.
+    chain.contracts._local_contract_types[addr] = contract_type
+
+    # Enriching the error should produce a custom error from the ABI.
+    actual = compilers.enrich_error(err)
+
+    assert isinstance(actual, CustomError)
+    assert actual.__class__.__name__ == "InsufficientETH"
+
+
+def test_enrich_error_custom_error_with_inputs(chain, compilers):
+    abi = [
+        ErrorABI(
+            type="error",
+            name="AllowanceExpired",
+            inputs=[
+                ABIType(name="deadline", type="uint256", components=None, internal_type="uint256")
+            ],
+        )
+    ]
+    contract_type = ContractType(abi=abi)
+    addr = cast(AddressType, "0x3fC91A3afd70395Cd496C647d5a6CC9D4B2b7FAD")
+    deadline = 5
+    err = ContractLogicError(
+        f"0xd81b2f2e000000000000000000000000000000000000000000000000000000000000000{deadline}",
+        contract_address=addr,
+    )
+    # Hack in contract-type.
+    chain.contracts._local_contract_types[addr] = contract_type
+
+    # Enriching the error should produce a custom error from the ABI.
+    actual = compilers.enrich_error(err)
+
+    assert isinstance(actual, CustomError)
+    assert actual.__class__.__name__ == "AllowanceExpired"
+    assert actual.inputs["deadline"] == deadline
+    assert repr(actual) == f"AllowanceExpired(deadline={deadline})"

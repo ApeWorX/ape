@@ -6,6 +6,7 @@ from pathlib import Path
 from typing import IO, Collection, Dict, Iterator, List, Optional, Set, Type, Union, cast
 
 import pandas as pd
+from eth_pydantic_types import HexBytes
 from ethpm_types import ABI, ContractType
 from rich import get_console
 from rich.console import Console as RichConsole
@@ -1074,7 +1075,7 @@ class ContractCache(BaseManager):
         self,
         address: Union[str, AddressType],
         contract_type: Optional[ContractType] = None,
-        txn_hash: Optional[str] = None,
+        txn_hash: Optional[Union[str, HexBytes]] = None,
         abi: Optional[Union[List[ABI], Dict, str, Path]] = None,
     ) -> ContractInstance:
         """
@@ -1093,8 +1094,8 @@ class ContractCache(BaseManager):
               plugin, you can also provide an ENS domain name.
             contract_type (Optional[``ContractType``]): Optionally provide the contract type
               in case it is not already known.
-            txn_hash (Optional[str]): The hash of the transaction responsible for deploying the
-              contract, if known. Useful for publishing. Defaults to ``None``.
+            txn_hash (Optional[Union[str, HexBytes]]): The hash of the transaction responsible for
+              deploying the contract, if known. Useful for publishing. Defaults to ``None``.
             abi (Optional[Union[List[ABI], Dict, str, Path]]): Use an ABI str, dict, path,
               or ethpm models to create a contract instance class.
 

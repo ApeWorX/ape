@@ -276,16 +276,30 @@ class Receipt(ReceiptAPI):
         if call_tree.failed:
             default_message = "reverted without message"
             returndata = HexBytes(call_tree.raw["returndata"])
-            if not to_hex(returndata).startswith(
+            if to_hex(returndata).startswith(
                 "0x08c379a00000000000000000000000000000000000000000000000000000000000000020"
             ):
-                revert_message = default_message
-            else:
+                # Extra revert-message
                 decoded_result = decode(("string",), returndata[4:])
                 if len(decoded_result) == 1:
                     revert_message = f'reverted with message: "{decoded_result[0]}"'
                 else:
                     revert_message = default_message
+
+            elif address := (self.receiver or self.contract_address):
+                # Try to enrich revert error using ABI.
+                if provider := self.network_manager.active_provider:
+                    ecosystem = provider.network.ecosystem
+                else:
+                    # Default to Ethereum.
+                    ecosystem = self.network_manager.ethereum
+
+                try:
+                    instance = ecosystem.decode_custom_error(returndata, address)
+                except NotImplementedError:
+                    pass
+                else:
+                    revert_message = repr(instance)
 
         self.chain_manager._reports.show_trace(
             call_tree,

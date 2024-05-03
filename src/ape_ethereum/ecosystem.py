@@ -25,7 +25,13 @@ from pydantic_settings import SettingsConfigDict
 from ape.api import BlockAPI, EcosystemAPI, PluginConfig, ReceiptAPI, TransactionAPI
 from ape.api.networks import LOCAL_NETWORK_NAME
 from ape.contracts.base import ContractCall
-from ape.exceptions import ApeException, APINotImplementedError, ConversionError, DecodingError
+from ape.exceptions import (
+    ApeException,
+    APINotImplementedError,
+    ConversionError,
+    CustomError,
+    DecodingError,
+)
 from ape.managers.config import merge_configs
 from ape.types import (
     AddressType,
@@ -1158,6 +1164,59 @@ class Ethereum(EcosystemAPI):
 
     def get_python_types(self, abi_type: ABIType) -> Union[Type, Sequence]:
         return self._python_type_for_abi_type(abi_type)
+
+    def decode_custom_error(
+        self,
+        data: HexBytes,
+        address: AddressType,
+        **kwargs,
+    ) -> Optional[CustomError]:
+        # Use an instance (required for proper error caching).
+        contract = self.chain_manager.contracts.instance_at(address)
+
+        selector = data[:4]
+        input_data = data[4:]
+
+        abi = None
+        if selector not in contract.contract_type.errors:
+            # ABI not found. Try looking at the "last" contract.
+            if not (tx := kwargs.get("txn")) or not self.network_manager.active_provider:
+                return None
+            elif not (last_addr := self._get_last_address_from_trace(tx.txn_hash)):
+                return None
+
+            if last_addr == address:
+                # Avoid checking same address twice.
+                return None
+
+            try:
+                if not (cerr := self.decode_custom_error(data, last_addr)):
+                    return cerr
+            except NotImplementedError:
+                return None
+
+            # error never found.
+            return None
+
+        abi = contract.contract_type.errors[selector]
+        error_cls = contract.get_error_by_signature(abi.signature)
+        inputs = self.decode_calldata(abi, input_data)
+        kwargs["contract_address"] = address
+        return error_cls(abi, inputs, **kwargs)
+
+    def _get_last_address_from_trace(self, txn_hash: Union[str, HexBytes]) -> Optional[AddressType]:
+        try:
+            trace = list(self.chain_manager.provider.get_transaction_trace(txn_hash))
+        except Exception:
+            return None
+
+        for frame in trace[::-1]:
+            if not (addr := frame.contract_address):
+                continue
+
+            return addr
+
+        return None
 
 
 def parse_type(type_: Dict[str, Any]) -> Union[str, Tuple, List]:
