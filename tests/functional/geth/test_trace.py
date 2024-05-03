@@ -96,14 +96,14 @@ def test_local_transaction_traces(geth_receipt, captrace, local_trace):
     # And we have to write to a file, close it, and then re-open it to see output.
     def run_test(path):
         # Use a tempfile to avoid terminal inconsistencies affecting output.
-        with open(path, "w") as file:
+        with open(path / "temp", "w") as file:
             geth_receipt.show_trace(file=file)
 
-        with open(path, "r") as file:
+        with open(path / "temp", "r") as file:
             lines = captrace.read_trace("Call trace for", file=file)
             assert_rich_output(lines, local_trace)
 
-    run_in_tempdir(run_test, name="temp")
+    run_in_tempdir(run_test)
 
     # Verify can happen more than once.
     run_in_tempdir(run_test, name="temp")
