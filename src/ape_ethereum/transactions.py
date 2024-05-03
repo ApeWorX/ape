@@ -466,12 +466,12 @@ class SharedBlobReceipt(Receipt):
     blob transaction.
     """
 
-    blob_gas_used: Optional[int] = None
+    blob_gas_used: int
     """
     The total amount of blob gas consumed by the transactions within the block.
     """
 
-    blob_gas_price: Optional[int] = None
+    blob_gas_price: int
     """
     The blob-gas price, independent from regular gas price.
     """
@@ -479,7 +479,7 @@ class SharedBlobReceipt(Receipt):
     @field_validator("blob_gas_used", "blob_gas_price", mode="before")
     @classmethod
     def validate_hex(cls, value):
-        return None if value is None else cls._hex_to_int(value)
+        return cls._hex_to_int(value or 0)
 
     @classmethod
     def _hex_to_int(cls, value) -> int:
