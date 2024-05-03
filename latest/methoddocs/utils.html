@@ -366,7 +366,14 @@ the normal IndexError message.</p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="ape.utils.ExtraModelAttributes.attributes">
 <span class="sig-name descname"><span class="pre">attributes</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Any</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#ape.utils.ExtraModelAttributes.attributes" title="Permalink to this definition"></a></dt>
-<dd><p>The attributes.</p>
+<dd><p>The attributes. The following types are supported:</p>
+<ol class="arabic simple">
+<li><p>A model or dictionary to lookup attributes.</p></li>
+<li><p>A callable with no arguments, for lazily evaluating a model or dictionary
+for lookup.</p></li>
+<li><p>A callable with a single argument that is the attribute name. This style
+of lookup cannot be used for optionals.</p></li>
+</ol>
 </dd></dl>
 
 <dl class="py method">
