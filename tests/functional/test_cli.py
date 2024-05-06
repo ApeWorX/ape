@@ -461,6 +461,15 @@ def test_contract_file_paths_argument_given_contracts_folder_name(
     assert f"EXPECTED {all_paths}" in result.output
 
 
+def test_contract_file_paths_handles_exclude(project_with_contract, runner, contracts_paths_cmd):
+    cfg = project_with_contract.config_manager.get_config("compile")
+    failmsg = "Setup failed - missing exclude config (set in ape-config.yaml)."
+    assert "*Excl*" in cfg.exclude, failmsg
+    result = runner.invoke(contracts_paths_cmd, "contracts")
+    assert "Exclude.json" not in result.output
+    assert "ExcludeNested.json" not in result.output
+
+
 @pytest.mark.parametrize("name", ("contracts/subdir", "subdir"))
 def test_contract_file_paths_argument_given_subdir_relative_to_path(
     project_with_contract, runner, contracts_paths_cmd, name
