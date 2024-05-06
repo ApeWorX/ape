@@ -357,12 +357,19 @@ class NetworkNotFoundError(NetworkError):
         options: Optional[Collection[str]] = None,
     ):
         self.network = network
-        message = (
-            f"No network in '{ecosystem}' named '{network}'."
-            if ecosystem
-            else f"No network named '{network}'."
-        )
+        options = options or []
+        if network in options:
+            # Only seen in testing scenarios. Not realistic.
+            raise ValueError(
+                f"{network} found in options. Should not have gotten `NetworkNotFoundError`."
+            )
+
         if options:
+            message = (
+                f"No network in '{ecosystem}' named '{network}'."
+                if ecosystem
+                else f"No network named '{network}'."
+            )
             close_matches = difflib.get_close_matches(network, options, cutoff=0.6)
             if close_matches:
                 message = f"{message} Did you mean '{', '.join(close_matches)}'?"
@@ -370,6 +377,12 @@ class NetworkNotFoundError(NetworkError):
                 # No close matches - show all options.
                 options_str = "\n".join(sorted(options))
                 message = f"{message} Options:\n{options_str}"
+
+        elif ecosystem:
+            message = f"'{ecosystem}' has no networks."
+
+        else:
+            message = "No networks found."
 
         super().__init__(message)
 
