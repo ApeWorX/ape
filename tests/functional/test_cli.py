@@ -448,7 +448,7 @@ def test_contract_file_paths_argument_given_contracts_folder(
 ):
     pm = project_with_contract
     result = runner.invoke(contracts_paths_cmd, pm.contracts_folder.as_posix())
-    all_paths = ", ".join(x.name for x in sorted(pm.source_paths))
+    all_paths = ", ".join(x.name for x in sorted(pm.source_paths) if "Excl" not in x.name)
     assert f"EXPECTED {all_paths}" in result.output
 
 
@@ -457,7 +457,7 @@ def test_contract_file_paths_argument_given_contracts_folder_name(
 ):
     pm = project_with_contract
     result = runner.invoke(contracts_paths_cmd, "contracts")
-    all_paths = ", ".join(x.name for x in sorted(pm.source_paths))
+    all_paths = ", ".join(x.name for x in sorted(pm.source_paths) if "Excl" not in x.name)
     assert f"EXPECTED {all_paths}" in result.output
 
 
@@ -476,7 +476,11 @@ def test_contract_file_paths_argument_given_subdir_relative_to_path(
 ):
     pm = project_with_contract
     result = runner.invoke(contracts_paths_cmd, name)
-    all_paths = ", ".join(x.name for x in sorted(pm.source_paths) if x.parent.name == "subdir")
+    all_paths = ", ".join(
+        x.name
+        for x in sorted(pm.source_paths)
+        if x.parent.name == "subdir" and "Excl" not in x.name
+    )
     assert f"EXPECTED {all_paths}" in result.output
 
 
