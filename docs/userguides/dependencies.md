@@ -149,25 +149,25 @@ ape pm install gh:OpenZeppelin/openzeppelin-contracts \
   --config-override '{"solidity": {"version": "0.8.12"}}'
 ```
 
-### remove
+### uninstall
 
-Remove previously installed packages using the `remove` command:
+Remove previously installed packages using the `uninstall` command:
 
 ```shell
-ape pm remove OpenZeppelin
+ape pm uninstall OpenZeppelin
 ```
 
 If there is a single version installed, the command will remove the single version.
 If multiple versions are installed, pass additional arguments specifying the version(s) to be removed:
 
 ```shell
-ape pm remove OpenZeppelin 4.5.0 4.6.0
+ape pm uninstall OpenZeppelin 4.5.0 4.6.0
 ```
 
 To skip the confirmation prompts, use the `--yes` flag (abbreviated as `-y`):
 
 ```shell
-ape pm remove OpenZeppelin all --yes
+ape pm uninstall OpenZeppelin all --yes
 ```
 
 **NOTE**: Additionally, use the `all` special version key to delete all versions.
