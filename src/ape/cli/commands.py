@@ -35,9 +35,11 @@ def parse_network(ctx: Context) -> Optional[ProviderContextManager]:
         return provider.network.use_provider(provider, disconnect_on_exit=not interactive)
 
     elif provider not in (None, _NONE_NETWORK) and isinstance(provider, str):
+        # Is using a choice-str network param value instead of the network object instances.
         return ManagerAccessMixin.network_manager.parse_network_choice(
             provider, disconnect_on_exit=not interactive
         )
+
     elif provider is None:
         ecosystem = ManagerAccessMixin.network_manager.default_ecosystem
         network = ecosystem.default_network
