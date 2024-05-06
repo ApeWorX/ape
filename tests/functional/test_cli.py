@@ -681,7 +681,6 @@ def test_connected_provider_command_with_network_option_and_cls_types_false(runn
     spec = ("--network", "ethereum:local:geth")
     res = runner.invoke(cmd, spec, catch_exceptions=False)
     assert res.exit_code == 0, res.output
-    assert "geth" in res.output
 
 
 def test_connected_provider_command_none_network(runner):

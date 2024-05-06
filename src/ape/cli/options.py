@@ -261,6 +261,13 @@ def network_option(
                                 "with non key-settable context object."
                             )
 
+            elif keep_as_choice_str:
+                # Add raw choice to object context.
+                ctx.obj = ctx.obj or {}
+                ctx.params = ctx.params or {}
+                ctx.obj["network"] = value
+                ctx.params["network"] = value
+
             # else: provider is None, meaning not connected intentionally.
 
             return value if user_callback is None else user_callback(ctx, param, value)

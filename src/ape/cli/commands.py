@@ -66,6 +66,7 @@ class ConnectedProviderCommand(click.Command):
         super().__init__(*args, **kwargs)
 
     def parse_args(self, ctx: Context, args: List[str]) -> List[str]:
+        arguments = args  # Renamed for better pdb support.
         base_type = ProviderAPI if self._use_cls_types else str
         if existing_option := next(
             iter(
@@ -87,7 +88,7 @@ class ConnectedProviderCommand(click.Command):
             option = NetworkOption(base_type=base_type, callback=self._network_callback)
             self.params.append(option)
 
-        return super().parse_args(ctx, args)
+        return super().parse_args(ctx, arguments)
 
     def invoke(self, ctx: Context) -> Any:
         if self.callback is None:
