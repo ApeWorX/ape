@@ -127,7 +127,7 @@ class ConnectedProviderCommand(click.Command):
                     ctx.params[name] = options.get(name)
 
         elif not self._use_cls_types and provider is not None:
-            # Legacy behavior, but may have a purpose.
+            # Keep choice-str instead of parsing to objects.
             ctx.params["network"] = provider.network_choice
 
         return ctx.invoke(self.callback or (lambda: None), **ctx.params)
