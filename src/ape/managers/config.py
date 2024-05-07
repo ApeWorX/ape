@@ -117,6 +117,9 @@ class ConfigManager(BaseInterfaceModel):
     default_ecosystem: str = "ethereum"
     """The default ecosystem to use. Defaults to ``"ethereum"``."""
 
+    _config_override: Dict[str, Any] = {}
+    """Adhoc config overrides."""
+
     _cached_configs: Dict[str, Dict[str, Any]] = {}
 
     @model_validator(mode="before")
@@ -169,7 +172,7 @@ class ConfigManager(BaseInterfaceModel):
         # NOTE: It is critical that we read in global config values first
         # so that project config values will override them as-needed.
         project_config = load_config(config_file) if config_file.is_file() else {}
-        user_config = merge_configs(global_config, project_config)
+        user_config = merge_configs(global_config, project_config, self._config_override)
 
         self.name = configs["name"] = user_config.pop("name", "")
         self.version = configs["version"] = user_config.pop("version", "")
@@ -265,7 +268,7 @@ class ConfigManager(BaseInterfaceModel):
     def __repr__(self) -> str:
         return f"<{ConfigManager.__name__} project={self.PROJECT_FOLDER.name}>"
 
-    def load(self, force_reload: bool = False) -> "ConfigManager":
+    def load(self, force_reload: bool = False, **overrides) -> "ConfigManager":
         """
         Load the user config file and return this class.
         """
@@ -273,6 +276,7 @@ class ConfigManager(BaseInterfaceModel):
         if force_reload:
             self._cached_configs = {}
 
+        self._config_override = overrides or {}
         _ = self._plugin_configs
 
         return self
@@ -374,7 +378,17 @@ class ConfigManager(BaseInterfaceModel):
                 config_file.unlink()
 
 
-def merge_configs(base: Dict, secondary: Dict) -> Dict:
+def merge_configs(*cfgs) -> Dict:
+    if len(cfgs) == 0:
+        return {}
+    elif len(cfgs) == 1:
+        return cfgs[0]
+
+    new_base = _merge_configs(cfgs[0], cfgs[1])
+    return merge_configs(new_base, *cfgs[2:])
+
+
+def _merge_configs(base: Dict, secondary: Dict) -> Dict:
     result: Dict = {}
 
     # Short circuits
@@ -396,7 +410,7 @@ def merge_configs(base: Dict, secondary: Dict) -> Dict:
 
         else:
             # Merge the dictionaries.
-            sub = merge_configs(base[key], secondary[key])
+            sub = _merge_configs(base[key], secondary[key])
             result[key] = sub
 
     # Add missed keys from secondary.

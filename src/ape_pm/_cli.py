@@ -312,7 +312,8 @@ def remove(cli_ctx, package, versions, yes):
 @click.argument("name", nargs=1, required=False)
 @click.option("--version", help="The dependency version", metavar="VERSION")
 @click.option("--force", "-f", help="Force a re-compile", is_flag=True)
-def compile(cli_ctx, name, version, force):
+@config_override_option()
+def compile(cli_ctx, name, version, force, config_override):
     """
     Compile a package
     """
@@ -325,6 +326,8 @@ def compile(cli_ctx, name, version, force):
                 if version != "local":
                     log_line += f"@{version}"
 
+                if config_override:
+                    dependency.config_override = config_override
                 try:
                     dependency.compile(use_cache=not force)
                 except Exception as err:
@@ -366,6 +369,8 @@ def compile(cli_ctx, name, version, force):
         cli_ctx.abort(f"Version '{version}' for dependency '{name}' not found. Is it installed?")
 
     dependency = versions[version_found]
+    if config_override:
+        dependency.config_override = config_override
 
     try:
         dependency.compile(use_cache=not force)

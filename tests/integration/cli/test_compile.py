@@ -366,3 +366,15 @@ def test_compile_exclude(ape_cli, runner):
     result = runner.invoke(ape_cli, ("compile", "--force"), catch_exceptions=False)
     assert "Compiling 'Exclude.json'" not in result.output
     assert "Compiling 'exclude_dir/UnwantedContract.json'" not in result.output
+
+
+@skip_projects_except("with-contracts")
+def test_compile_config_override(ape_cli, runner):
+    arguments = (
+        "compile",
+        "--force",
+        "--config-override",
+        '{"compile": {"exclude": ["*ContractA*"]}}',
+    )
+    result = runner.invoke(ape_cli, arguments, catch_exceptions=False)
+    assert "Compiling 'ContractA.json'" not in result.output
