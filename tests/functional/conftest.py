@@ -309,6 +309,8 @@ def project_with_contract(temp_config):
     with temp_config() as project:
         copytree(str(APE_PROJECT_FOLDER), str(project.path), dirs_exist_ok=True)
         project.local_project._cached_manifest = None  # Clean manifest
+        project.config_manager.load(force_reload=True)  # Reload after copying config file.
+
         yield project
 
 

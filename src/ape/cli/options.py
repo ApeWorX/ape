@@ -211,14 +211,14 @@ def network_option(
         user_callback = kwargs.pop("callback", None)
 
         def callback(ctx, param, value):
-            is_legacy = param.type.base_type is str
-            use_default = default == "auto"
+            keep_as_choice_str = param.type.base_type is str
+            use_default = value is None and default == "auto"
 
-            if not is_legacy and value is None and use_default:
+            if not keep_as_choice_str and use_default:
                 default_ecosystem = ManagerAccessMixin.network_manager.default_ecosystem
                 provider_obj = default_ecosystem.default_network.default_provider
 
-            elif value is None or is_legacy:
+            elif value is None or keep_as_choice_str:
                 provider_obj = None
 
             elif isinstance(value, ProviderAPI):
@@ -260,6 +260,13 @@ def network_option(
                                 "Cannot use connected-provider command type(s) "
                                 "with non key-settable context object."
                             )
+
+            elif keep_as_choice_str:
+                # Add raw choice to object context.
+                ctx.obj = ctx.obj or {}
+                ctx.params = ctx.params or {}
+                ctx.obj["network"] = value
+                ctx.params["network"] = value
 
             # else: provider is None, meaning not connected intentionally.
 

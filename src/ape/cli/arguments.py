@@ -110,10 +110,10 @@ class _ContractPaths(ManagerAccessMixin):
 
     def do_exclude(self, path: Union[Path, str]) -> bool:
         name = path if isinstance(path, str) else path.name
-        if path not in self.exclude_list:
-            self.exclude_list[path] = any(fnmatch(name, p) for p in self.exclude_patterns)
+        if name not in self.exclude_list:
+            self.exclude_list[name] = any(fnmatch(name, p) for p in self.exclude_patterns)
 
-        return self.exclude_list[path]
+        return self.exclude_list[name]
 
     def compiler_is_unknown(self, path: Union[Path, str]) -> bool:
         path = Path(path)
@@ -174,5 +174,4 @@ def contract_file_paths_argument():
     The return type from the callback is a flattened list of
     source file-paths.
     """
-
     return click.argument("file_paths", nargs=-1, callback=_ContractPaths.callback)
