@@ -61,7 +61,7 @@ def test_dependency_contracts_folder(config, local_dependency):
     This test ensures that the contracts folder field is honored, specifically
     In the case when it contains sub-paths.
     """
-    actual = local_dependency.contracts_folder
+    actual = local_dependency.config_override["contracts_folder"]
     assert actual == "source/v0.1"
 
 
