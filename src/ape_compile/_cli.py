@@ -4,11 +4,16 @@ from typing import Dict, Set
 import click
 from ethpm_types import ContractType
 
-from ape.cli import ape_cli_context, contract_file_paths_argument
+from ape.cli import ape_cli_context, config_override_option, contract_file_paths_argument
 
 
 def _include_dependencies_callback(ctx, param, value):
     return value or ctx.obj.config_manager.get_config("compile").include_dependencies
+
+
+def _config_override_callback(ctx, param, value):
+    if value:
+        ctx.obj.config_manager.load(force_reload=True, **value)
 
 
 @click.command(short_help="Compile select contract source files")
@@ -37,7 +42,15 @@ def _include_dependencies_callback(ctx, param, value):
     help="Also compile dependencies",
     callback=_include_dependencies_callback,
 )
-def cli(cli_ctx, file_paths: Set[Path], use_cache: bool, display_size: bool, include_dependencies):
+@config_override_option(callback=_config_override_callback)
+def cli(
+    cli_ctx,
+    file_paths: Set[Path],
+    use_cache: bool,
+    display_size: bool,
+    include_dependencies,
+    config_override,
+):
     """
     Compiles the manifest for this project and saves the results
     back to the manifest.
@@ -45,7 +58,6 @@ def cli(cli_ctx, file_paths: Set[Path], use_cache: bool, display_size: bool, inc
     Note that ape automatically recompiles any changed contracts each time
     a project is loaded. You do not have to manually trigger a recompile.
     """
-
     sources_missing = cli_ctx.project_manager.sources_missing
     if not file_paths and sources_missing and len(cli_ctx.project_manager.dependencies) == 0:
         cli_ctx.logger.warning("Nothing to compile.")
