@@ -722,3 +722,10 @@ def test_add_compiler_data(project_with_dependency_config):
     compiler_5 = Compiler(name="test456", version="9.0.0", contractTypes=["bar"])
     with pytest.raises(ProjectError, match=r".*'bar' collision across compilers.*"):
         proj.add_compiler_data([compiler_4, compiler_5])
+
+
+def test_repr(project):
+    actual = repr(project)
+    # NOTE: tmp path is NOT relative to home.
+    expected = f"<ProjectManager {project.path}>"
+    assert actual == expected

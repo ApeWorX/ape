@@ -206,7 +206,7 @@ def run_in_tempdir(
     Args:
         fn (Callable): A function that takes a path. It gets called
           with the resolved path to the temporary directory.
-        name (str): Optionally name the temporary directory.
+        name (Optional[str]): Optionally name the temporary directory.
 
     Returns:
         Any: The result of the function call.
@@ -250,3 +250,11 @@ def path_match(path: Union[str, Path], *exclusions: str) -> bool:
                     return True
 
     return False
+
+
+def clean_path(path: Path) -> str:
+    home = Path.home()
+    if path.is_relative_to(home):
+        return f"$HOME{os.path.sep}{path.relative_to(home)}"
+
+    return f"{path}"
