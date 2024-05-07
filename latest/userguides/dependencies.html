@@ -420,6 +420,10 @@ Otherwise, you just give it the name.</p>
 </pre></div>
 </div>
 <p>This is the same as if these values were in an <code class="docutils literal notranslate"><span class="pre">ape-config.yaml</span></code> file in the project directly.</p>
+<p>You can also specify <code class="docutils literal notranslate"><span class="pre">--config-override</span></code> in the <code class="docutils literal notranslate"><span class="pre">ape</span> <span class="pre">pm</span> <span class="pre">install</span></code> command to try different settings more adhoc:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>ape<span class="w"> </span>pm<span class="w"> </span>install<span class="w"> </span>--config-override<span class="w"> </span><span class="s1">&#39;{&quot;solidity&quot;: {&quot;evm_version&quot;: &quot;paris&quot;}}&#39;</span>
+</pre></div>
+</div>
 </section>
 <section id="custom-contracts-folder">
 <h3>Custom Contracts Folder<a class="headerlink" href="#custom-contracts-folder" title="Permalink to this heading"></a></h3>

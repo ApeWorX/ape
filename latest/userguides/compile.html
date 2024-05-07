@@ -154,7 +154,7 @@
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Compile</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#the-json-compiler">The JSON Compiler</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#other-compiler-plugins">Other Compiler Plugins</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#ignore-files">Ignore Files</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#exclude-files">Exclude Files</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#dependencies">Dependencies</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#settings">Settings</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#compile-source-code">Compile Source Code</a></li>
@@ -269,20 +269,21 @@ This is useful if you want to use contracts from much larger projects as depende
 To include additional compilers in your project, you can add the plugins to the <code class="docutils literal notranslate"><span class="pre">plugins</span></code> list in your <code class="docutils literal notranslate"><span class="pre">ape-config.yaml</span></code> or install them using the CLI.
 For information on how to configure plugins in your project, follow <a class="reference external" href="./installing_plugins.html">this guide</a>.</p>
 </section>
-<section id="ignore-files">
-<h2>Ignore Files<a class="headerlink" href="#ignore-files" title="Permalink to this heading"></a></h2>
-<p>You can configure files to be ignored from compilation.
-By default, Ape ignores files <code class="docutils literal notranslate"><span class="pre">package.json</span></code>, <code class="docutils literal notranslate"><span class="pre">package-lock.json</span></code>, <code class="docutils literal notranslate"><span class="pre">tsconfig.json</span></code>.
-To override this list, edit your <code class="docutils literal notranslate"><span class="pre">ape-config.yaml</span></code> similarly:</p>
+<section id="exclude-files">
+<h2>Exclude Files<a class="headerlink" href="#exclude-files" title="Permalink to this heading"></a></h2>
+<p>You can configure files to be excluded from compilation.
+By default, Ape excludes known non-contract files such as <code class="docutils literal notranslate"><span class="pre">package.json</span></code>, <code class="docutils literal notranslate"><span class="pre">package-lock.json</span></code>, <code class="docutils literal notranslate"><span class="pre">tsconfig.json</span></code>, or <code class="docutils literal notranslate"><span class="pre">.DS_Store</span></code>.
+To append file-globs to the exclusions list, edit your <code class="docutils literal notranslate"><span class="pre">compile:exclude</span></code> config like this:</p>
 <div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">compile</span><span class="p">:</span>
 <span class="w">  </span><span class="nt">exclude</span><span class="p">:</span>
-<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&quot;*package.json&quot;</span>
-<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&quot;*package-lock.json&quot;</span>
-<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&quot;*tsconfig.json&quot;</span>
-<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&quot;*custom.json&quot;</span><span class="w">  </span><span class="c1"># Append a custom ignore</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&quot;examples&quot;</span><span class="w">  </span><span class="c1"># Exclude all files in the examples/ directory</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&quot;*Mock.sol&quot;</span><span class="w">  </span><span class="c1"># Exclude all files ending in Mock.sol</span>
 </pre></div>
 </div>
-<p><strong>NOTE</strong>: You must include the defaults in the list when overriding if you wish to retain them.</p>
+<p>You can also exclude files using the <code class="docutils literal notranslate"><span class="pre">--config-override</span></code> CLI option:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>ape<span class="w"> </span>compile<span class="w"> </span>--config-override<span class="w"> </span><span class="s1">&#39;{&quot;compile&quot;: {&quot;exclude&quot;: [&quot;*Mock.sol&quot;]}}&#39;</span>
+</pre></div>
+</div>
 </section>
 <section id="dependencies">
 <h2>Dependencies<a class="headerlink" href="#dependencies" title="Permalink to this heading"></a></h2>
@@ -320,7 +321,12 @@ This may impact things like contract verification on existing projects.</p>
 <span class="w">  </span><span class="nt">version</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0.3.10</span>
 </pre></div>
 </div>
-<p>You can also configure adhoc settings in Python code:</p>
+<p>When using the CLI, you can also specify settings using the <code class="docutils literal notranslate"><span class="pre">--config-override</span></code>.
+This is not limited to compiler settings; you can include other settings, such as <code class="docutils literal notranslate"><span class="pre">&quot;contracts_folder&quot;</span></code>, which affects compiling.</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>ape<span class="w"> </span>compile<span class="w"> </span>--config-override<span class="w"> </span><span class="s1">&#39;{&quot;contracts_folder&quot;: &quot;other_contracts&quot;, &quot;vyper&quot;: {&quot;evm_version&quot;: &quot;paris&quot;}, &quot;solidity&quot;: {&quot;evm_version&quot;: &quot;paris&quot;}}&#39;</span>
+</pre></div>
+</div>
+<p>Finally, you can also configure settings in Python code:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
 <span class="kn">from</span> <span class="nn">ape</span> <span class="kn">import</span> <span class="n">compilers</span>
 
