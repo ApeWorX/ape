@@ -220,6 +220,12 @@ dependencies:
 
 This is the same as if these values were in an `ape-config.yaml` file in the project directly.
 
+You can also specify `--config-override` in the `ape pm install` command to try different settings more adhoc:
+
+```shell
+ape pm install --config-override '{"solidity": {"evm_version": "paris"}}'
+```
+
 ### Custom Contracts Folder
 
 You can set the name of the dependency's contracts folder using the `config_override` key, e.g.:

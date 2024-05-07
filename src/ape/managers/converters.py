@@ -19,6 +19,7 @@ from ethpm_types import ConstructorABI, EventABI, MethodABI
 from ape.api import ConverterAPI, TransactionAPI
 from ape.api.address import BaseAddress
 from ape.exceptions import ConversionError
+from ape.logging import logger
 from ape.types import AddressType
 from ape.utils import cached_property, log_instead_of_fail
 
@@ -351,7 +352,17 @@ class ConversionManager(BaseManager):
             return value
 
         for converter in self._converters[type]:
-            if not converter.is_convertible(value):
+            try:
+                is_convertible = converter.is_convertible(value)
+            except Exception as err:
+                # If errors while checking if we can convert, log the error
+                # and assume it's not convertible.
+                converter_name = converter.__class__.__name__
+                msg = f"Issue while checking `{converter_name}.is_convertible()`: {err}"
+                logger.error(msg)
+                continue
+
+            if not is_convertible:
                 continue
 
             try:
