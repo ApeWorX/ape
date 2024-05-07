@@ -1,5 +1,4 @@
 import re
-import warnings
 from collections.abc import Callable, Iterator, Sequence
 from enum import Enum
 from functools import lru_cache
@@ -138,18 +137,6 @@ class PromptChoice(click.ParamType):
             return self.choices[choice_idx]
 
         raise IndexError(f"Choice index '{choice_idx}' out of range.")
-
-
-def get_user_selected_account(
-    prompt_message: Optional[str] = None, account_type: _ACCOUNT_TYPE_FILTER = None
-) -> AccountAPI:
-    """
-    **DEPRECATED**: Use :meth:`~ape.cli.choices.select_account` instead.
-    """
-    warnings.warn(
-        "'get_user_selected_account' is deprecated. Use 'select_account'.", DeprecationWarning
-    )
-    return select_account(prompt_message=prompt_message, key=account_type)
 
 
 def select_account(

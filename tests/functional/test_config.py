@@ -162,7 +162,7 @@ def test_network_gas_limit_invalid_numeric_string(config, temp_config):
 def test_dependencies(project_with_dependency_config, config):
     assert len(config.dependencies) == 1
     assert config.dependencies[0].name == "testdependency"
-    assert config.dependencies[0].contracts_folder == "source/v0.1"
+    assert config.dependencies[0].config_override["contracts_folder"] == "source/v0.1"
     assert config.dependencies[0].local == str(PROJECT_WITH_LONG_CONTRACTS_FOLDER)
 
 
