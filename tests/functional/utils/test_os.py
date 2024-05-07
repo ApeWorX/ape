@@ -124,7 +124,8 @@ def test_clean_path_relative_to_home():
     name = "__canary_ape_test__"
     path = Path.home() / name
     actual = clean_path(path)
-    assert actual == name
+    expected = f"$HOME/{name}"
+    assert actual == expected
 
 
 def test_clean_path_not_relative_to_home():
