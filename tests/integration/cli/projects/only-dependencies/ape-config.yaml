@@ -1,7 +1,8 @@
 dependencies:
   - name: dependency-in-project-only
     local: ./dependency_in_project_only
-    contracts_folder: sources
+    config_override:
+      contracts_folder: sources
 
 compile:
   # NOTE: this should say `include_dependencies: false` below.
