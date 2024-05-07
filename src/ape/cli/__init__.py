@@ -9,7 +9,6 @@ from ape.cli.choices import (
     NetworkChoice,
     OutputFormat,
     PromptChoice,
-    get_user_selected_account,
     output_format_choice,
     select_account,
 )
@@ -27,13 +26,12 @@ from ape.cli.options import (
     skip_confirmation_option,
     verbosity_option,
 )
-from ape.cli.paramtype import JSON, AllFilePaths, Path
+from ape.cli.paramtype import JSON, Path
 
 __all__ = [
     "account_option",
     "AccountAliasPromptChoice",
     "Alias",
-    "AllFilePaths",
     "ape_cli_context",
     "ApeCliContextObject",
     "config_override_option",
@@ -41,7 +39,6 @@ __all__ = [
     "contract_file_paths_argument",
     "contract_option",
     "existing_alias_argument",
-    "get_user_selected_account",
     "incompatible_with",
     "JSON",
     "network_option",
