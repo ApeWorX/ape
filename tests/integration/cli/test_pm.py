@@ -141,7 +141,7 @@ def test_compile_config_override(ape_cli, runner, project):
         ("pm", "compile", name, "--force", "--config-override", '{"contracts_folder": "src"}'),
     )
     assert result.exit_code == 0, result.output
-    assert f"Package '{name}' compiled." in result.outpupt
+    assert f"Package '{name}' compiled." in result.output
 
 
 @skip_projects_except("only-dependencies")
