@@ -148,7 +148,7 @@ class IntAddressConverter(ConverterAPI):
     A converter that converts an integer address to an :class:`~ape.types.address.AddressType`.
     """
 
-    _cache: dict[int, Union[AddressType, bool]] = {}
+    _cache: Dict[int, Union[AddressType, bool]] = {}
 
     def is_convertible(self, value: Any) -> bool:
         if not isinstance(value, int):
