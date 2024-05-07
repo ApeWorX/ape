@@ -145,81 +145,81 @@ def test_compile_config_override(ape_cli, runner, project):
 
 
 @skip_projects_except("only-dependencies")
-def test_remove(ape_cli, runner, project):
+def test_uninstall(ape_cli, runner, project):
     package_name = "dependency-in-project-only"
 
     # Install packages
     runner.invoke(ape_cli, ("pm", "install", ".", "--force"))
 
-    result = runner.invoke(ape_cli, ("pm", "remove", package_name), input="y\n")
-    expected_message = f"Version 'local' of package '{package_name}' removed."
+    result = runner.invoke(ape_cli, ("pm", "uninstall", package_name), input="y\n")
+    expected_message = f"Version 'local' of package '{package_name}' uninstalled."
     assert result.exit_code == 0, result.output
     assert expected_message in result.output
 
 
 @skip_projects_except("only-dependencies")
-def test_remove_not_exists(ape_cli, runner, project):
+def test_uninstall_not_exists(ape_cli, runner, project):
     package_name = "_this_does_not_exist_"
-    result = runner.invoke(ape_cli, ("pm", "remove", package_name))
+    result = runner.invoke(ape_cli, ("pm", "uninstall", package_name))
     expected_message = f"ERROR: Package '{package_name}' is not installed."
     assert result.exit_code != 0, result.output
     assert expected_message in result.output
 
 
 @skip_projects_except("only-dependencies")
-def test_remove_specific_version(ape_cli, runner, project):
+def test_uninstall_specific_version(ape_cli, runner, project):
     package_name = "dependency-in-project-only"
     version = "local"
 
     # Install packages
     runner.invoke(ape_cli, ("pm", "install", ".", "--force"))
 
-    result = runner.invoke(ape_cli, ("pm", "remove", package_name), input="y\n")
-    expected_message = f"Version '{version}' of package '{package_name}' removed."
+    result = runner.invoke(ape_cli, ("pm", "uninstall", package_name), input="y\n")
+    expected_message = f"Version '{version}' of package '{package_name}' uninstalled."
     assert result.exit_code == 0, result.output
     assert expected_message in result.output
 
 
 @skip_projects_except("only-dependencies")
-def test_remove_all_versions_with_y(ape_cli, runner):
+def test_uninstall_all_versions_with_y(ape_cli, runner):
     # Install packages
     runner.invoke(ape_cli, ("pm", "install", ".", "--force"))
 
     package_name = "dependency-in-project-only"
-    result = runner.invoke(ape_cli, ("pm", "remove", package_name, "-y"))
-    expected_message = f"SUCCESS: Version 'local' of package '{package_name}' removed."
+    result = runner.invoke(ape_cli, ("pm", "uninstall", package_name, "-y"))
+    expected_message = f"SUCCESS: Version 'local' of package '{package_name}' uninstalled."
     assert result.exit_code == 0, result.output
     assert expected_message in result.output
 
 
 @skip_projects_except("only-dependencies")
-def test_remove_specific_version_with_y(ape_cli, runner):
+def test_uninstall_specific_version_with_y(ape_cli, runner):
     # Install packages
     runner.invoke(ape_cli, ("pm", "install", ".", "--force"))
 
     package_name = "dependency-in-project-only"
     version = "local"
-    result = runner.invoke(ape_cli, ["pm", "remove", package_name, version, "-y"])
-    expected_message = f"Version '{version}' of package '{package_name}' removed."
+    result = runner.invoke(ape_cli, ("pm", "uninstall", package_name, version, "-y"))
+    expected_message = f"Version '{version}' of package '{package_name}' uninstalled."
     assert result.exit_code == 0, result.output
     assert expected_message in result.output
 
 
 @skip_projects_except("only-dependencies")
-def test_remove_cancel(ape_cli, runner):
+def test_uninstall_cancel(ape_cli, runner):
     # Install packages
-    runner.invoke(ape_cli, ["pm", "install", ".", "--force"])
+    runner.invoke(ape_cli, ("pm", "install", ".", "--force"))
 
     package_name = "dependency-in-project-only"
     version = "local"
-    result = runner.invoke(ape_cli, ["pm", "remove", package_name, version], input="n\n")
+    result = runner.invoke(ape_cli, ["pm", "uninstall", package_name, version], input="n\n")
     assert result.exit_code == 0, result.output
-    expected_message = f"Version '{version}' of package '{package_name}' removed."
+    expected_message = f"Version '{version}' of package '{package_name}' uninstalled."
     assert expected_message not in result.output
 
 
 @skip_projects_except("only-dependencies")
-def test_remove_invalid_version(ape_cli, runner, project):
+def test_uninstall_invalid_version(ape_cli, runner, project):
     package_name = "dependency-in-project-only"
 
     # Install packages
@@ -230,7 +230,7 @@ def test_remove_invalid_version(ape_cli, runner, project):
     assert (project.dependency_manager.DATA_FOLDER / "packages" / package_name).is_dir()
 
     invalid_version = "0.0.0"
-    result = runner.invoke(ape_cli, ["pm", "remove", package_name, invalid_version])
+    result = runner.invoke(ape_cli, ("pm", "uninstall", package_name, invalid_version))
 
     expected_message = f"Version '{invalid_version}' of package '{package_name}' is not installed."
     assert expected_message in result.output
