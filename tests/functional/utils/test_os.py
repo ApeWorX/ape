@@ -4,6 +4,7 @@ import pytest
 
 from ape.utils.misc import SOURCE_EXCLUDE_PATTERNS
 from ape.utils.os import (
+    clean_path,
     create_tempdir,
     get_all_files_in_directory,
     get_full_extension,
@@ -209,3 +210,18 @@ def test_path_match_recurse_dir(path):
     """
     excl = "exclude_dir/**"
     assert path_match(path, excl)
+
+
+def test_clean_path_relative_to_home():
+    name = "__canary_ape_test__"
+    path = Path.home() / name
+    actual = clean_path(path)
+    expected = f"$HOME/{name}"
+    assert actual == expected
+
+
+def test_clean_path_not_relative_to_home():
+    name = "__canary_ape_test__"
+    path = Path(name)
+    actual = clean_path(path)
+    assert actual == name
