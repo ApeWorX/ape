@@ -730,6 +730,7 @@ class ContractEvent(BaseInterfaceModel):
 
 class ContractTypeWrapper(ManagerAccessMixin):
     contract_type: ContractType
+    base_path: Optional[Path] = None
 
     @property
     def selector_identifiers(self) -> Dict[str, str]:
@@ -747,7 +748,7 @@ class ContractTypeWrapper(ManagerAccessMixin):
         """
         return self.contract_type.identifier_lookup
 
-    @cached_property
+    @property
     def source_path(self) -> Optional[Path]:
         """
         Returns the path to the local contract if determined that this container
@@ -757,23 +758,12 @@ class ContractTypeWrapper(ManagerAccessMixin):
         source ID as one in the current project. That does not necessarily mean
         they are the same contract, however.
         """
-        contract_name = self.contract_type.name
-        source_id = self.contract_type.source_id
-        if not (contract_name and source_id):
+        if not (source_id := self.contract_type.source_id):
             return None
 
-        contract_container = self.project_manager._get_contract(contract_name)
-        if not (
-            contract_container
-            and contract_container.contract_type.source_id
-            and self.contract_type.source_id
-        ):
-            return None
-
-        if source_id == contract_container.contract_type.source_id:
-            return self.project_manager.contracts_folder / source_id
-        else:
-            return None
+        base = self.base_path or self.project_manager.contracts_folder
+        path = base / source_id
+        return path if path.is_file() else None
 
     def decode_input(self, calldata: bytes) -> Tuple[str, Dict[str, Any]]:
         """
@@ -1420,6 +1410,7 @@ class ContractContainer(ContractTypeWrapper, ExtraAttributesMixin):
             self.project_manager.track_deployment(instance)
             self.provider.network.publish_contract(address)
 
+        instance.base_path = self.base_path or self.project_manager.contracts_folder
         return instance
 
     def _cache_wrap(self, function: Callable) -> ReceiptAPI:
