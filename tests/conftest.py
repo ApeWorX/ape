@@ -63,8 +63,13 @@ def config():
 
 
 @pytest.fixture(scope="session")
-def convert(chain):
-    return chain.conversion_manager.convert
+def conversion_manager(chain):
+    return chain.conversion_manager
+
+
+@pytest.fixture(scope="session")
+def convert(conversion_manager):
+    return conversion_manager.convert
 
 
 @pytest.fixture(scope="session")

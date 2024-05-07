@@ -4,7 +4,7 @@ from decimal import Decimal
 from typing import Any, Dict, List, Sequence, Tuple, Type, Union
 
 from dateutil.parser import parse
-from eth_pydantic_types import HexBytes
+from eth_pydantic_types import Address, HexBytes
 from eth_typing.evm import ChecksumAddress
 from eth_utils import (
     is_0x_prefixed,
@@ -12,7 +12,6 @@ from eth_utils import (
     is_hex,
     is_hex_address,
     to_checksum_address,
-    to_hex,
     to_int,
 )
 from ethpm_types import ConstructorABI, EventABI, MethodABI
@@ -20,6 +19,7 @@ from ethpm_types import ConstructorABI, EventABI, MethodABI
 from ape.api import ConverterAPI, TransactionAPI
 from ape.api.address import BaseAddress
 from ape.exceptions import ConversionError
+from ape.logging import logger
 from ape.types import AddressType
 from ape.utils import cached_property, log_instead_of_fail
 
@@ -149,11 +149,43 @@ class IntAddressConverter(ConverterAPI):
     A converter that converts an integer address to an :class:`~ape.types.address.AddressType`.
     """
 
+    _cache: Dict[int, Union[AddressType, bool]] = {}
+
     def is_convertible(self, value: Any) -> bool:
-        return isinstance(value, int) and is_hex_address(to_hex(value))
+        if not isinstance(value, int):
+            return False
+        elif isinstance(self._cache.get(value), str):
+            return True
+
+        val = self._convert(value)
+        self._cache[value] = val
+        return isinstance(val, str)
 
     def convert(self, value: Any) -> AddressType:
-        return to_checksum_address(to_hex(value))
+        err_msg = f"Failed to convert '{value}' to 'AddressType'."
+        if cached_val := self._cache.get(value):
+            if not isinstance(cached_val, str):
+                # Shouldn't get here in normal execution.
+                raise ConversionError(err_msg)
+
+            return cached_val
+
+        # Shouldn't get here in normal execution.
+        res = self._convert(value)
+        self._cache[value] = res
+
+        if not isinstance(res, str):
+            raise ConversionError(err_msg)
+
+        return res
+
+    def _convert(self, value: int) -> Union[AddressType, bool]:
+        try:
+            val = Address.__eth_pydantic_validate__(value)
+        except Exception:
+            return False
+
+        return AddressType(to_checksum_address(val))
 
 
 class TimestampConverter(ConverterAPI):
@@ -320,7 +352,17 @@ class ConversionManager(BaseManager):
             return value
 
         for converter in self._converters[type]:
-            if not converter.is_convertible(value):
+            try:
+                is_convertible = converter.is_convertible(value)
+            except Exception as err:
+                # If errors while checking if we can convert, log the error
+                # and assume it's not convertible.
+                converter_name = converter.__class__.__name__
+                msg = f"Issue while checking `{converter_name}.is_convertible()`: {err}"
+                logger.error(msg)
+                continue
+
+            if not is_convertible:
                 continue
 
             try:

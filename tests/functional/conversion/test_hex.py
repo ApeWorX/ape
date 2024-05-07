@@ -5,15 +5,14 @@ from ape.exceptions import ConversionError
 from ape.managers.converters import HexConverter, HexIntConverter
 
 
-def test_hex_str(convert):
-    hex_value = "0xA100"
-    int_str_value = "100"
-    hex_expected = 41216
-    int_expected = 100
-    assert convert(hex_value, int) == hex_expected
-    assert convert(int_str_value, int) == int_expected
-    assert convert(hex_value, bytes) == HexBytes(hex_value)
-    assert convert(int_expected, bytes) == HexBytes(int_expected)
+@pytest.mark.parametrize("val", ("0xA100", "0x0A100", "0x00a100"))
+def test_hex_str(convert, val):
+    assert convert(val, int) == 0xA100
+    assert int(convert(val, bytes).hex(), 16) == int(HexBytes(0xA100).hex(), 16)
+
+
+def test_int_str(convert):
+    assert convert("100", int) == 100
 
 
 def test_missing_prefix(convert):
