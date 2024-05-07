@@ -448,7 +448,7 @@ def test_contract_file_paths_argument_given_contracts_folder(
 ):
     pm = project_with_contract
     result = runner.invoke(contracts_paths_cmd, pm.contracts_folder.as_posix())
-    all_paths = ", ".join(x.name for x in sorted(pm.source_paths))
+    all_paths = ", ".join(x.name for x in sorted(pm.source_paths) if "Excl" not in x.name)
     assert f"EXPECTED {all_paths}" in result.output
 
 
@@ -457,8 +457,17 @@ def test_contract_file_paths_argument_given_contracts_folder_name(
 ):
     pm = project_with_contract
     result = runner.invoke(contracts_paths_cmd, "contracts")
-    all_paths = ", ".join(x.name for x in sorted(pm.source_paths))
+    all_paths = ", ".join(x.name for x in sorted(pm.source_paths) if "Excl" not in x.name)
     assert f"EXPECTED {all_paths}" in result.output
+
+
+def test_contract_file_paths_handles_exclude(project_with_contract, runner, contracts_paths_cmd):
+    cfg = project_with_contract.config_manager.get_config("compile")
+    failmsg = "Setup failed - missing exclude config (set in ape-config.yaml)."
+    assert "*Excl*" in cfg.exclude, failmsg
+    result = runner.invoke(contracts_paths_cmd, "contracts")
+    assert "Exclude.json" not in result.output
+    assert "ExcludeNested.json" not in result.output
 
 
 @pytest.mark.parametrize("name", ("contracts/subdir", "subdir"))
@@ -467,7 +476,11 @@ def test_contract_file_paths_argument_given_subdir_relative_to_path(
 ):
     pm = project_with_contract
     result = runner.invoke(contracts_paths_cmd, name)
-    all_paths = ", ".join(x.name for x in sorted(pm.source_paths) if x.parent.name == "subdir")
+    all_paths = ", ".join(
+        x.name
+        for x in sorted(pm.source_paths)
+        if x.parent.name == "subdir" and "Excl" not in x.name
+    )
     assert f"EXPECTED {all_paths}" in result.output
 
 
