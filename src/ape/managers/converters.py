@@ -4,7 +4,7 @@ from decimal import Decimal
 from typing import Any, Dict, List, Sequence, Tuple, Type, Union
 
 from dateutil.parser import parse
-from eth_pydantic_types import HexBytes
+from eth_pydantic_types import Address, HexBytes
 from eth_typing.evm import ChecksumAddress
 from eth_utils import (
     is_0x_prefixed,
@@ -12,7 +12,6 @@ from eth_utils import (
     is_hex,
     is_hex_address,
     to_checksum_address,
-    to_hex,
     to_int,
 )
 from ethpm_types import ConstructorABI, EventABI, MethodABI
@@ -149,11 +148,43 @@ class IntAddressConverter(ConverterAPI):
     A converter that converts an integer address to an :class:`~ape.types.address.AddressType`.
     """
 
+    _cache: dict[int, Union[AddressType, bool]] = {}
+
     def is_convertible(self, value: Any) -> bool:
-        return isinstance(value, int) and is_hex_address(to_hex(value))
+        if not isinstance(value, int):
+            return False
+        elif isinstance(self._cache.get(value), str):
+            return True
+
+        val = self._convert(value)
+        self._cache[value] = val
+        return isinstance(val, str)
 
     def convert(self, value: Any) -> AddressType:
-        return to_checksum_address(to_hex(value))
+        err_msg = f"Failed to convert '{value}' to 'AddressType'."
+        if cached_val := self._cache.get(value):
+            if not isinstance(cached_val, str):
+                # Shouldn't get here in normal execution.
+                raise ConversionError(err_msg)
+
+            return cached_val
+
+        # Shouldn't get here in normal execution.
+        res = self._convert(value)
+        self._cache[value] = res
+
+        if not isinstance(res, str):
+            raise ConversionError(err_msg)
+
+        return res
+
+    def _convert(self, value: int) -> Union[AddressType, bool]:
+        try:
+            val = Address.__eth_pydantic_validate__(value)
+        except Exception:
+            return False
+
+        return AddressType(to_checksum_address(val))
 
 
 class TimestampConverter(ConverterAPI):
