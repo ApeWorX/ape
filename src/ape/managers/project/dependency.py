@@ -299,14 +299,11 @@ class LocalDependency(DependencyAPI):
     @model_validator(mode="before")
     @classmethod
     def validate_contracts_folder(cls, value):
-        if value.get("contracts_folder") not in (None, "contracts"):
+        if value.get("config_override", {}).get("contracts_folder"):
+            # Already set.
             return value
 
-        elif cfg_value := value.get("config_override", {}).get("contracts_folder"):
-            value["contracts_folder"] = cfg_value
-            return value
-
-        # If using default value, check if exists
+        # If using default value, check if exists.
         local_path_value = value.get("local") or os.getcwd()
         local_project_path = Path(local_path_value)
         try_contracts_path = local_project_path / "contracts"

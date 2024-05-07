@@ -340,7 +340,9 @@ def project_with_dependency_config(temp_config):
             {
                 "local": str(PROJECT_WITH_LONG_CONTRACTS_FOLDER),
                 "name": "testdependency",
-                "contracts_folder": "source/v0.1",
+                "config_override": {
+                    "contracts_folder": "source/v0.1",
+                },
             }
         ]
     }
