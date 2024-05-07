@@ -24,7 +24,7 @@ from ape.managers.base import BaseManager
 from ape.managers.project.types import ApeProject, BrownieProject
 from ape.utils import get_relative_path, log_instead_of_fail
 from ape.utils.basemodel import _assert_not_ipython_check, only_raise_attribute_error
-from ape.utils.os import get_full_extension
+from ape.utils.os import clean_path, get_full_extension
 
 
 class ProjectManager(BaseManager):
@@ -63,11 +63,11 @@ class ProjectManager(BaseManager):
             self.path = self.path.parent
 
     def __str__(self) -> str:
-        return f'Project("{self.path}")'
+        return f'Project("{clean_path(self.path)}")'
 
     @log_instead_of_fail(default="<ProjectManager>")
     def __repr__(self) -> str:
-        path = f" {self.path}" if self.path else ""
+        path = f" {clean_path(self.path)}" if self.path else ""
         return f"<ProjectManager{path}>"
 
     @property

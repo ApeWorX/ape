@@ -214,3 +214,11 @@ def run_in_tempdir(
     """
     with create_tempdir(name=name) as temp_dir:
         return fn(temp_dir)
+
+
+def clean_path(path: Path) -> str:
+    home = Path.home()
+    if path.is_relative_to(home):
+        return f"$HOME{os.path.sep}{path.relative_to(home)}"
+
+    return f"{path}"
