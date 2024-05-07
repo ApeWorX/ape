@@ -206,7 +206,8 @@ def run_in_tempdir(
     Args:
         fn (Callable): A function that takes a path. It gets called
           with the resolved path to the temporary directory.
-        name (Optional[str]): Optionally name the temporary directory.
+        name (Optional[str]): Optionally provide a name for the temporary
+          directory.
 
     Returns:
         Any: The result of the function call.
