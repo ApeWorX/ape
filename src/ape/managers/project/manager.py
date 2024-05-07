@@ -100,6 +100,9 @@ class ProjectManager(BaseManager):
                 # Was set explicitly to `None` in config.
                 return self.path / "contracts"
 
+        elif isinstance(folder, str):
+            return self.path / folder
+
         return folder
 
     @property

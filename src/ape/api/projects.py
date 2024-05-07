@@ -351,7 +351,7 @@ class DependencyAPI(ExtraAttributesMixin, BaseInterfaceModel):
     """
 
     # TODO: Remove in 0.8.
-    exclude: List[str] = ["package.json", "package-lock.json", "**/.build/**/*.json"]
+    exclude: List[str] = []
     """
     A list of glob-patterns for excluding files in dependency projects.
     **Deprecated**: Use ``config_override:compile:exclude``.

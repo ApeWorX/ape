@@ -154,7 +154,6 @@ class CompilerManager(BaseManager, ExtraAttributesMixin):
                 and path not in paths_to_ignore
                 and path not in already_compiled_paths
                 and get_full_extension(path) == extension
-                and not any(x in [p.name for p in path.parents] for x in (".cache", ".build"))
             ]
 
             if not paths_to_compile:
