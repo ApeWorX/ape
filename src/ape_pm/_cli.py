@@ -241,7 +241,7 @@ def install(cli_ctx, package, name, version, ref, force, config_override):
 @click.option(
     "-y", "--yes", is_flag=True, help="Automatically confirm the removal of the package(s)"
 )
-def remove(cli_ctx, package, versions, yes):
+def uninstall(cli_ctx, package, versions, yes):
     """
     Remove a package
 
@@ -304,7 +304,9 @@ def remove(cli_ctx, package, versions, yes):
             f"Are you sure you want to remove version '{version}' of package '{package}'?"
         ):
             cli_ctx.project_manager.remove_dependency(package_dir.name, versions=[version])
-            cli_ctx.logger.success(f"Version '{version}' of package '{package_dir.name}' removed.")
+            cli_ctx.logger.success(
+                f"Version '{version}' of package '{package_dir.name}' uninstalled."
+            )
 
 
 @cli.command()
