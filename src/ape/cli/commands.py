@@ -65,6 +65,7 @@ class ConnectedProviderCommand(click.Command):
         super().__init__(*args, **kwargs)
 
     def parse_args(self, ctx: Context, args: list[str]) -> list[str]:
+        arguments = args  # Renamed for better pdb support.
         base_type = ProviderAPI if self._use_cls_types else str
         if existing_option := next(
             iter(
