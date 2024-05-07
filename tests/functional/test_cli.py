@@ -680,6 +680,22 @@ def test_connected_provider_command_with_network_option(runner, geth_provider):
     assert "geth" in res.output
 
 
+@geth_process_test
+def test_connected_provider_command_with_network_option_and_cls_types_false(runner, geth_provider):
+    _ = geth_provider  # Ensure already running, to avoid clashing later on.
+
+    @click.command(cls=ConnectedProviderCommand, use_cls_types=False)
+    @network_option()
+    def cmd(network):
+        assert isinstance(network, str)
+        assert network == "ethereum:local:geth"
+
+    # NOTE: Must use a network that is not the default.
+    spec = ("--network", "ethereum:local:geth")
+    res = runner.invoke(cmd, spec, catch_exceptions=False)
+    assert res.exit_code == 0, res.output
+
+
 def test_connected_provider_command_none_network(runner):
     @click.command(cls=ConnectedProviderCommand)
     def cmd(network, provider):

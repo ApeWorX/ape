@@ -226,7 +226,7 @@ class EcosystemAPI(ExtraAttributesMixin, BaseInterfaceModel):
             :class:`~ape.api.providers.BlockAPI`
         """
 
-    @cached_property
+    @property
     def config(self) -> PluginConfig:
         """
         The configuration of the ecosystem. See :class:`ape.managers.config.ConfigManager`
@@ -821,7 +821,6 @@ class NetworkAPI(BaseInterfaceModel):
         The configuration of the network. See :class:`~ape.managers.config.ConfigManager`
         for more information on plugin configurations.
         """
-
         return self.config_manager.get_config(self.ecosystem.name)
 
     @property
