@@ -1,3 +1,4 @@
+import os
 from unittest import mock
 
 import pytest
@@ -18,7 +19,7 @@ from ape.exceptions import (
 )
 from ape.types import LogFilter
 from ape.utils import DEFAULT_TEST_CHAIN_ID
-from ape_ethereum.provider import _sanitize_web3_url
+from ape_ethereum.provider import WEB3_PROVIDER_URI_ENV_VAR_NAME, Web3Provider, _sanitize_web3_url
 from ape_ethereum.transactions import TransactionStatusEnum, TransactionType
 
 
@@ -405,3 +406,36 @@ def test_auto_mine(eth_tester_provider):
 
     eth_tester_provider.auto_mine = True
     assert eth_tester_provider.auto_mine
+
+
+def test_new_when_web3_provider_uri_set():
+    """
+    Tests against a confusing case where having an env var
+    $WEB3_PROVIDER_URI caused web3.py to only ever use that RPC
+    URL regardless of what was said in Ape's --network or config.
+    Now, we raise an error to avoid having users think Ape's
+    network system is broken.
+    """
+    os.environ[WEB3_PROVIDER_URI_ENV_VAR_NAME] = "TEST"
+    expected = (
+        rf"Ape does not support Web3\.py's environment variable "
+        rf"\${WEB3_PROVIDER_URI_ENV_VAR_NAME}\. If you are using this environment "
+        r"variable name incidentally, please use a different name\. If you are "
+        r"trying to set the network in Web3\.py, please use Ape's `ape-config\.yaml` "
+        r"or `--network` option instead\."
+    )
+
+    class MyProvider(Web3Provider):
+        def connect(self):
+            raise NotImplementedError()
+
+        def disconnect(self):
+            raise NotImplementedError()
+
+    try:
+        with pytest.raises(ProviderError, match=expected):
+            _ = MyProvider(data_folder=None, name=None, network=None, request_header=None)
+
+    finally:
+        if WEB3_PROVIDER_URI_ENV_VAR_NAME in os.environ:
+            del os.environ[WEB3_PROVIDER_URI_ENV_VAR_NAME]

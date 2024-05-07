@@ -96,6 +96,34 @@ def _sanitize_web3_url(msg: str) -> str:
     return f"{prefix} URI: {sanitized_url} {' '.join(rest[1:])}"
 
 
+WEB3_PROVIDER_URI_ENV_VAR_NAME = "WEB3_PROVIDER_URI"
+
+
+def assert_web3_provider_uri_env_var_not_set():
+    """
+    Environment variable $WEB3_PROVIDER_URI causes problems
+    when used with Ape (ignores Ape's networks). Use
+    this validator to eliminate the concern.
+
+    Raises:
+          :class:`~ape.exceptions.ProviderError`: If environment variable
+            WEB3_PROVIDER_URI exists in ``os.environ``.
+    """
+    if WEB3_PROVIDER_URI_ENV_VAR_NAME not in os.environ:
+        return
+
+    # NOTE: This was the source of confusion for user when they noticed
+    #  Ape would only connect to RPC URL set by an environment variable
+    #  named $WEB3_PROVIDER_URI instead of whatever network they were telling Ape.
+    raise ProviderError(
+        "Ape does not support Web3.py's environment variable "
+        f"${WEB3_PROVIDER_URI_ENV_VAR_NAME}. If you are using this environment "
+        "variable name incidentally, please use a different name. If you are "
+        "trying to set the network in Web3.py, please use Ape's `ape-config.yaml` "
+        "or `--network` option instead."
+    )
+
+
 class Web3Provider(ProviderAPI, ABC):
     """
     A base provider mixin class that uses the
@@ -106,6 +134,8 @@ class Web3Provider(ProviderAPI, ABC):
     _client_version: Optional[str] = None
 
     def __new__(cls, *args, **kwargs):
+        assert_web3_provider_uri_env_var_not_set()
+
         # Post-connection ops
         def post_connect_hook(connect):
             @wraps(connect)
@@ -714,7 +744,7 @@ class Web3Provider(ProviderAPI, ABC):
             try:
                 if head.number is None or head.hash is None:
                     raise ProviderError("Head block has no number or hash.")
-                # Use an "adjused" head, based on the required confirmations.
+                # Use an "adjusted" head, based on the required confirmations.
                 adjusted_head = self.get_block(head.number - required_confirmations)
                 if adjusted_head.number is None or adjusted_head.hash is None:
                     raise ProviderError("Adjusted head block has no number or hash.")
