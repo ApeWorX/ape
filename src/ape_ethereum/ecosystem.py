@@ -31,6 +31,7 @@ from ape.exceptions import (
     ConversionError,
     CustomError,
     DecodingError,
+    SignatureError,
 )
 from ape.managers.config import merge_configs
 from ape.types import (
@@ -1203,7 +1204,13 @@ class Ethereum(EcosystemAPI):
             # ABI not found. Try looking at the "last" contract.
             if not (tx := kwargs.get("txn")) or not self.network_manager.active_provider:
                 return None
-            elif not (last_addr := self._get_last_address_from_trace(tx.txn_hash)):
+
+            try:
+                tx_hash = tx.txn_hash
+            except SignatureError:
+                return None
+
+            if not (last_addr := self._get_last_address_from_trace(tx_hash)):
                 return None
 
             if last_addr == address:
