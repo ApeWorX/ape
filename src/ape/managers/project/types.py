@@ -1,4 +1,5 @@
 import os
+from fnmatch import fnmatch
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Sequence
 
@@ -177,12 +178,12 @@ class BaseProject(ProjectAPI):
         self.project_manager.load_dependencies()
         source_paths: List[Path] = list(
             set(
-                [p for p in self.source_paths if p in file_paths]
+                [str(p) for p in self.source_paths if p in file_paths]
                 if file_paths
                 else [
                     p
                     for p in self.source_paths
-                    if not any(p.match(e) for e in compile_config.exclude)
+                    if not any(fnmatch(p, e) for e in compile_config.exclude)
                 ]
             )
         )

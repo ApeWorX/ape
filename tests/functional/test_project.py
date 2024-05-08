@@ -213,6 +213,18 @@ def test_create_manifest_empty_files(compilers, mock_compiler, config, ape_caplo
             assert f"Compiling '{name}.__mock__'." not in ape_caplog.head
 
 
+def test_create_manifest_excludes_cache(ape_project):
+    cachefile = ape_project.contracts_folder / ".cache" / "CacheFile.json"
+    cachefile2 = ape_project.contracts_folder / ".cache" / "subdir" / "Cache2.json"
+    cachefile2.parent.mkdir(parents=True)
+    cachefile.write_text("Doesn't matter")
+    cachefile2.write_text("Doesn't matter")
+    manifest = ape_project.create_manifest()
+    assert isinstance(manifest, PackageManifest)
+    assert ".cache/CacheFile.json" not in (manifest.sources or {})
+    assert ".cache/subdir/CacheFile.json" not in (manifest.sources or {})
+
+
 def test_meta(temp_config, project):
     meta_config = {
         "meta": {
