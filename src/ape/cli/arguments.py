@@ -109,7 +109,7 @@ class _ContractPaths(ManagerAccessMixin):
         return self.config_manager.get_config("compile").exclude or []
 
     def do_exclude(self, path: Union[Path, str]) -> bool:
-        name = path if isinstance(path, str) else path.name
+        name = path if isinstance(path, str) else str(path)
         if name not in self.exclude_list:
             self.exclude_list[name] = any(fnmatch(name, p) for p in self.exclude_patterns)
 
