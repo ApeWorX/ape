@@ -1190,7 +1190,10 @@ class Ethereum(EcosystemAPI):
         **kwargs,
     ) -> Optional[CustomError]:
         # Use an instance (required for proper error caching).
-        contract = self.chain_manager.contracts.instance_at(address)
+        try:
+            contract = self.chain_manager.contracts.instance_at(address)
+        except Exception:
+            return None
 
         selector = data[:4]
         input_data = data[4:]
