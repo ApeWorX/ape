@@ -63,7 +63,7 @@ def get_all_files_in_directory(
     path: Path, pattern: Optional[Union[Pattern, str]] = None
 ) -> List[Path]:
     """
-    Returns all the files in a directory structure.
+    Returns all the files in a directory structure (recursive).
 
     For example, given a directory structure like::
 
@@ -81,11 +81,10 @@ def get_all_files_in_directory(
     Returns:
         List[pathlib.Path]: A list of files in the given directory.
     """
-    if not path.exists():
-        return []
-
-    elif path.is_file():
+    if path.is_file():
         return [path]
+    elif not path.is_dir():
+        return []
 
     # is dir
     all_files = [p for p in list(path.rglob("*.*")) if p.is_file()]

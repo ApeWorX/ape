@@ -60,9 +60,7 @@ def test_fail_all_files_and_folders_exist(ape_cli, runner, project):
         for folder_name in ["contracts", "tests", "scripts"]:
             # Create target Directory
             folder = project_folder_path / folder_name
-            if folder.exists():
-                pass
-            else:
+            if not folder.exists():
                 folder.mkdir(exist_ok=False)
 
         result = runner.invoke(ape_cli, ["init"], input="\n".join(["init_fail"]))

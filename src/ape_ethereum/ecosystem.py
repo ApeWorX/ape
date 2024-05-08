@@ -96,9 +96,27 @@ class NetworkConfig(PluginConfig):
     """
 
     block_time: int = 0
+    """
+    Approximate amount of time for a block to be
+    added to the network.
+    """
+
     transaction_acceptance_timeout: int = DEFAULT_TRANSACTION_ACCEPTANCE_TIMEOUT
+    """
+    The amount tof time before failing when sending a
+    transaction and it leaving the mempool.
+    """
+
     default_transaction_type: TransactionType = TransactionType.DYNAMIC
+    """
+    The default type of transaction to use.
+    """
+
     max_receipt_retries: int = DEFAULT_MAX_RETRIES_TX
+    """
+    Maximum number of retries when getting a receipt
+    from a transaction before failing.
+    """
 
     gas_limit: GasLimit = "auto"
     """

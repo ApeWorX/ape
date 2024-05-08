@@ -753,10 +753,6 @@ class ContractTypeWrapper(ManagerAccessMixin):
         """
         Returns the path to the local contract if determined that this container
         belongs to the active project by cross checking source_id.
-
-        WARN: The will return a path if the contract has the same
-        source ID as one in the current project. That does not necessarily mean
-        they are the same contract, however.
         """
         if not (source_id := self.contract_type.source_id):
             return None

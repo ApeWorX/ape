@@ -380,7 +380,6 @@ class NetworkNotFoundError(NetworkError):
 
         elif ecosystem:
             message = f"'{ecosystem}' has no networks."
-
         else:
             message = "No networks found."
 

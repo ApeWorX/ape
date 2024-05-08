@@ -172,26 +172,26 @@ class NetworkManager(BaseManager, ExtraAttributesMixin):
         """
         All the registered ecosystems in ``ape``, such as ``ethereum``.
         """
-        ecosystem_objs = self._plugin_ecosystems
+        plugin_ecosystems = self._plugin_ecosystems
 
         # Load config.
         custom_networks: List = self.config_manager.get_config("networks").get("custom", [])
         for custom_network in custom_networks:
             ecosystem_name = custom_network.ecosystem
-            if ecosystem_name in ecosystem_objs:
+            if ecosystem_name in plugin_ecosystems:
                 # Already included in previous network.
                 continue
 
             base_ecosystem_name = (
                 custom_network.get("base_ecosystem_plugin") or self.default_ecosystem_name
             )
-            existing_cls = ecosystem_objs[base_ecosystem_name]
+            existing_cls = plugin_ecosystems[base_ecosystem_name]
             ecosystem_cls = existing_cls.model_copy(
                 update={"name": ecosystem_name}, cache_clear=("_networks_from_plugins",)
             )
-            ecosystem_objs[ecosystem_name] = ecosystem_cls
+            plugin_ecosystems[ecosystem_name] = ecosystem_cls
 
-        return ecosystem_objs
+        return plugin_ecosystems
 
     @cached_property
     def _plugin_ecosystems(self) -> Dict[str, EcosystemAPI]:

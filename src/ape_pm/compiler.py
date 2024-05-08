@@ -73,7 +73,6 @@ class InterfaceCompiler(CompilerAPI):
         ):
             # Raw contract type JSON or raw compiler output.
             contract_type_data = {**data, **kwargs}
-
             if (
                 "deploymentBytecode" not in contract_type_data
                 or "runtimeBytecode" not in contract_type_data
