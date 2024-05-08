@@ -1,0 +1,311 @@
+@import url("https://fonts.cdnfonts.com/css/barlow");
+
+html {
+  font-weight: 400;
+  font-family: "Barlow", sans-serif;
+  min-height: 100%;
+  background: rgb(244, 244, 244);
+  font-size: 17px;
+}
+
+#version-picker-label {
+  color: #000000;
+  display: inline;
+  font-size: 16px;
+
+  font-family: "Barlow", sans-serif;
+  font-weight: 600;
+  width: 100%;
+}
+
+body {
+  font-weight: 400;
+  font-family: "Barlow", sans-serif;
+  min-height: 100%;
+  background: rgb(244, 244, 244);
+  font-size: 17px;
+}
+
+p {
+  font-weight: 400;
+  font-family: "Barlow", sans-serif;
+  font-size: 18px;
+}
+
+h1 {
+  font-size: 60px;
+  line-height: 54px;
+  font-weight: 600;
+  font-family: "Barlow", sans-serif;
+  text-transform: uppercase;
+  letter-spacing: -0.05em;
+  color: #000000;
+  padding: 0 !important;
+}
+
+h2 {
+  font-size: 32px;
+  line-height: 32px;
+  font-family: "Barlow", sans-serif;
+  letter-spacing: -0.02em;
+  padding: 0;
+  color: #000000;
+}
+
+h3 {
+  font-size: 24px;
+  line-height: 24px;
+  font-family: "Barlow", sans-serif;
+  letter-spacing: -0.05em;
+  font-weight: 300;
+  color: #000000;
+}
+
+.wy-nav-content-wrap {
+  margin-left: 300px;
+  background: #fff;
+  min-height: 100%;
+  padding: 20px;
+}
+
+.wy-side-scroll {
+  width: 320px;
+  background-color: #ffffff;
+  position: relative;
+  overflow-x: hidden;
+  overflow-y: scroll;
+  height: 100%;
+  padding: 20px;
+}
+
+.wy-nav-top {
+  display: block;
+  background-color: rgb(255, 255, 255);
+  padding: 0.4045em 0.809em;
+  position: relative;
+  line-height: 50px;
+  text-align: center;
+  font-size: 100%;
+  font-family: "Barlow", sans-serif;
+  color: black;
+}
+
+.wy-side-nav-search {
+  display: block;
+  width: 300px;
+  /*padding: 0.809em;
+  margin-bottom: 0.809em;*/
+  z-index: 200;
+  background-color: #000000;
+  text-align: center;
+  color: #fafafa;
+}
+
+.wy-menu-vertical header,
+.wy-menu-vertical p.caption {
+  color: #000000;
+  font-family: "Barlow", sans-serif;
+  height: 32px;
+  line-height: 32px;
+  display: block;
+  font-weight: 700;
+  text-transform: uppercase;
+  font-size: 20px;
+  white-space: nowrap;
+  background-color: rgb(255, 255, 255);
+}
+
+.wy-menu-vertical a {
+  line-height: 18px;
+  padding: 0.4045em 1.618em;
+  display: block;
+  position: relative;
+  font-size: 90%;
+  color: #000000;
+}
+
+.rst-content code.literal,
+.rst-content tt.literal {
+  color: #000000;
+}
+
+footer {
+  color: rgb(0, 0, 0);
+  display: none;
+}
+
+.wy-nav-top {
+  display: none;
+  background: #ffffff;
+  color: rgb(0, 0, 0);
+  padding: 0.4045em 0.809em;
+  position: relative;
+  line-height: 50px;
+  text-align: center;
+  font-size: 100%;
+}
+
+.wy-nav-side {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  padding-bottom: 2em;
+  width: 300px;
+  overflow-x: hidden;
+  overflow-y: hidden;
+  min-height: 100%;
+  background-color: #ffffff;
+  z-index: 200;
+}
+
+@media only screen and (min-device-width: 320px) and (max-device-width: 480px) {
+  .wy-nav-side {
+    display: none;
+  }
+  .wy-nav-side.shift {
+    display: block;
+  }
+  .wy-nav-content-wrap {
+    margin-left: 0;
+    background-color: #f2f3f8;
+    min-height: 100%;
+  }
+  .wy-nav-top {
+    display: block;
+    color: #fff;
+    padding: 0.4045em 0.809em;
+    position: relative;
+    line-height: 50px;
+    text-align: center;
+    font-size: 100%;
+  }
+
+  .wy-side-nav-search {
+    display: block;
+    width: 300px;
+    /*padding: 0.809em;*/
+    margin-bottom: 0.809em;
+    z-index: 200;
+    background-color: #000000;
+    text-align: center;
+    color: #fafafa;
+  }
+
+  h1 {
+    font-size: 32px;
+    line-height: 32px;
+    font-family: "Barlow", sans-serif;
+    text-transform: uppercase;
+    letter-spacing: -0.05em;
+    color: #000000;
+  }
+
+  h2 {
+    font-size: 34px;
+    line-height: 34px;
+    font-family: "Barlow", sans-serif;
+    letter-spacing: -0.05em;
+  }
+}
+
+a {
+  color: rgb(93, 0, 255);
+  cursor: pointer;
+}
+
+@media only screen and (min-device-width: 320px) and (max-device-width: 480px) {
+  a {
+    color: rgb(93, 0, 255);
+    cursor: pointer;
+  }
+}
+.toctree-l3 {
+  color: red;
+}
+
+.caption-text {
+  color: black;
+  margin: -10px;
+  font-family: "Barlow", sans-serif;
+  font-weight: 600;
+  font-size: 24px;
+  padding: 0 !important;
+}
+
+.reference {
+  color: rgb(93, 0, 255);
+}
+
+.wy-menu-vertical li.current a {
+  background: #ff969600;
+}
+
+.wy-menu-vertical a {
+  line-height: 28px;
+  font-weight: 400;
+  font-family: "Barlow", sans-serif;
+  padding: 0.4045em 1.618em;
+  display: block;
+  position: relative;
+  font-size: 100%;
+  color: #000000;
+}
+
+.wy-menu-vertical a:hover {
+  line-height: 28px;
+  font-weight: 400;
+  font-family: "Barlow", sans-serif;
+  display: block;
+  position: relative;
+  font-size: 100%;
+  color: #000000;
+  background-color: rgba(247, 247, 247, 0.961);
+  cursor: pointer;
+}
+
+.logo {
+  filter: invert(0.85);
+  width: 250px !important;
+  height: auto;
+  position: relative;
+  top: 20px !important;
+  left: 20px !important;
+  margin-left: -10px;
+  z-index: 240;
+}
+
+.wy-side-nav-search {
+  display: block;
+  width: 300px;
+
+  z-index: 200;
+  background-color: transparent;
+  text-align: center;
+  color: #fafafa;
+}
+
+.wy-side-nav-search input[type="text"] {
+  width: 80%;
+  border-radius: 25px;
+  padding: 6px 12px;
+  border: 1.5em #000000;
+}
+
+.wy-menu-vertical li.current a {
+  background: #ffffff;
+  border-style: none;
+}
+
+.wy-menu-vertical li.current a:hover {
+  background-color: rgba(247, 247, 247, 0.961);
+  border-style: none;
+}
+
+.wy-menu-vertical li.toctree-l2 button.toctree-expand {
+  display: none;
+}
+
+.icon {
+  display: none;
+}
