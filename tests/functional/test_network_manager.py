@@ -385,3 +385,9 @@ def test_fork_past_genesis(networks, mock_sepolia, mock_fork_provider, eth_teste
     with pytest.raises(NetworkError, match="Unable to fork past genesis block."):
         with networks.fork(block_number=block_id):
             pass
+
+
+def test_getitem(networks):
+    ethereum = networks["ethereum"]
+    assert ethereum.name == "ethereum"
+    assert isinstance(ethereum, EcosystemAPI)

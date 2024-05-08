@@ -273,25 +273,6 @@ class NetworkManager(BaseManager, ExtraAttributesMixin):
         """
         yield from self.ecosystems
 
-    def __getitem__(self, ecosystem_name: str) -> EcosystemAPI:
-        """
-        Get an ecosystem by name.
-
-        Raises:
-            :class:`~ape.exceptions.NetworkError`: When the given ecosystem name is
-              unknown.
-
-        Args:
-            ecosystem_name (str): The name of the ecosystem to get.
-
-        Returns:
-            :class:`~ape.api.networks.EcosystemAPI`
-        """
-        if ecosystem_name not in self.ecosystems:
-            raise IndexError(f"Unknown ecosystem '{ecosystem_name}'.")
-
-        return self.ecosystems[ecosystem_name]
-
     def __ape_extra_attributes__(self) -> Iterator[ExtraModelAttributes]:
         yield ExtraModelAttributes(
             name="ecosystems",
