@@ -265,7 +265,7 @@ class BaseProject(ProjectAPI):
                 self._cached_manifest.contract_types = filtered_contract_types
                 self._contracts = filtered_contract_types
 
-            return self.compiler_manager.compile(srcs_to_compile)
+            return {ct.name: ct for ct in self.compiler_manager.compile(srcs_to_compile) if ct.name}
 
         if self.project_manager.path.absolute() != self.path.absolute():
             # In case compiling a dependency (or anything outside the root project).

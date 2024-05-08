@@ -524,7 +524,8 @@ class ProjectManager(BaseManager):
         contract_types = self.compiler_manager.compile(missing_sources)
 
         # Cache all contract types that were missing for next time.
-        for ct in contract_types.values():
+        contract_type = None
+        for ct in contract_types:
             if not ct.name:
                 continue
 
@@ -536,7 +537,10 @@ class ProjectManager(BaseManager):
             else:
                 self.local_project._contracts[ct.name] = ct
 
-        contract_type = contract_types.get(attr_name)
+            # Grab the matching contract-type
+            if attr_name == ct.name:
+                contract_type = ct
+
         if not contract_type:
             # Still not found. Contract likely doesn't exist.
             return self._handle_attr_or_contract_not_found(attr_name)

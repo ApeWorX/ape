@@ -1,5 +1,5 @@
 import json
-from collections.abc import Iterable
+from collections.abc import Iterable, Iterator
 from pathlib import Path
 from typing import Optional
 
@@ -25,8 +25,7 @@ class InterfaceCompiler(CompilerAPI):
 
     def compile(
         self, filepaths: Iterable[Path], base_path: Optional[Path] = None
-    ) -> list[ContractType]:
-        contract_types: list[ContractType] = []
+    ) -> Iterator[ContractType]:
         for path in filepaths:
             source_path = (
                 get_relative_path(path, base_path) if base_path and path.is_absolute() else path
@@ -54,9 +53,7 @@ class InterfaceCompiler(CompilerAPI):
                 logger.warning(f"Unable to parse {ContractType.__name__} from '{source_id}'.")
                 continue
 
-            contract_types.append(contract_type)
-
-        return contract_types
+            yield contract_type
 
     def compile_code(
         self,

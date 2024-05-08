@@ -91,7 +91,7 @@ class CompilerAPI(BaseInterfaceModel):
     @abstractmethod
     def compile(
         self, contract_filepaths: Iterable[Path], base_path: Optional[Path]
-    ) -> list[ContractType]:
+    ) -> Iterable[ContractType]:
         """
         Compile the given source files. All compiler plugins must implement this function.
 
@@ -102,7 +102,7 @@ class CompilerAPI(BaseInterfaceModel):
               via ``ape compile``, gets set to the project's ``contracts/`` directory.
 
         Returns:
-            list[:class:`~ape.type.contract.ContractType`]
+            Iterator[``ContractType``]
         """
 
     @raises_not_implemented
