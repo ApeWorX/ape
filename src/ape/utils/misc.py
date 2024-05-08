@@ -40,7 +40,7 @@ SOURCE_EXCLUDE_PATTERNS = (
     "*.md",
     "*.rst",
     "*.txt",
-    "*.py[a-zA-Z]?",
+    "*.py*",
     "*.html",
     "*.css",
     "*.adoc",

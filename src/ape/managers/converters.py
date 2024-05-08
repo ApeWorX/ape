@@ -26,10 +26,10 @@ from ape.utils import cached_property, log_instead_of_fail
 from .base import BaseManager
 
 
-# NOTE: This utility converter ensures that all bytes args can accept hex too
 class HexConverter(ConverterAPI):
     """
     A converter that converts ``str`` to ``HexBytes``.
+    NOTE: This utility converter ensures that all bytes args can accept hex too
     """
 
     def is_convertible(self, value: Any) -> bool:
@@ -369,7 +369,7 @@ class ConversionManager(BaseManager):
                 return converter.convert(value)
             except Exception as err:
                 try:
-                    error_value = f" '{value}' "
+                    error_value = f" '{value}' (type={type(value)}) "
                 except Exception:
                     error_value = " "
 
