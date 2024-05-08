@@ -1,5 +1,5 @@
 import json
-from collections.abc import Sequence
+from collections.abc import Iterable
 from pathlib import Path
 from typing import Optional
 
@@ -18,13 +18,13 @@ class InterfaceCompiler(CompilerAPI):
     def name(self) -> str:
         return "ethpm"
 
-    def get_versions(self, all_paths: Sequence[Path]) -> set[str]:
+    def get_versions(self, all_paths: Iterable[Path]) -> set[str]:
         # NOTE: This bypasses the serialization of this compiler into the package manifest's
         #       ``compilers`` field. You should not do this with a real compiler plugin.
         return set()
 
     def compile(
-        self, filepaths: Sequence[Path], base_path: Optional[Path] = None
+        self, filepaths: Iterable[Path], base_path: Optional[Path] = None
     ) -> list[ContractType]:
         contract_types: list[ContractType] = []
         for path in filepaths:
