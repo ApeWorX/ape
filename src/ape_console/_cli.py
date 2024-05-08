@@ -4,15 +4,16 @@ import logging
 import sys
 from importlib.machinery import SourceFileLoader
 from importlib.util import module_from_spec, spec_from_loader
-from os import environ, getcwd
+from os import environ
 from types import ModuleType
-from typing import Any, Dict, cast
+from typing import Any, Dict, Optional, cast
 
 import click
 import IPython
 from IPython.terminal.ipapp import Config as IPythonConfig
 
 from ape.cli import ConnectedProviderCommand, ape_cli_context
+from ape.managers import ProjectManager
 from ape.utils.basemodel import ManagerAccessMixin
 from ape.utils.misc import _python_version
 from ape.version import version as ape_version
@@ -49,10 +50,9 @@ def import_extras_file(file_path) -> ModuleType:
 def load_console_extras(**namespace: Any) -> Dict[str, Any]:
     """load and return namespace updates from ape_console_extras.py  files if
     they exist"""
-    global_extras = ManagerAccessMixin.config_manager.DATA_FOLDER.joinpath(CONSOLE_EXTRAS_FILENAME)
-    project_extras = ManagerAccessMixin.config_manager.PROJECT_FOLDER.joinpath(
-        CONSOLE_EXTRAS_FILENAME
-    )
+    pm = namespace.get("project", ManagerAccessMixin.project_manager)
+    global_extras = pm.config_manager.DATA_FOLDER.joinpath(CONSOLE_EXTRAS_FILENAME)
+    project_extras = pm.path.joinpath(CONSOLE_EXTRAS_FILENAME)
 
     for extras_file in [global_extras, project_extras]:
         if not extras_file.is_file():
@@ -88,13 +88,15 @@ def load_console_extras(**namespace: Any) -> Dict[str, Any]:
     return namespace
 
 
-def console(project=None, verbose=None, extra_locals=None, embed=False):
+def console(
+    project: Optional[ProjectManager] = None,
+    verbose: bool = False,
+    extra_locals: Optional[Dict] = None,
+    embed: bool = False,
+):
     import ape
 
-    if not project:
-        # Use default project
-        project = ManagerAccessMixin.project_manager
-
+    project = project or ManagerAccessMixin.project_manager
     banner = ""
     if verbose:
         banner = """
@@ -115,12 +117,15 @@ def console(project=None, verbose=None, extra_locals=None, embed=False):
             faulthandler.enable()  # NOTE: In case we segfault
 
     namespace = {component: getattr(ape, component) for component in ape.__all__}
+    namespace["project"] = project  # Use the given project.
     namespace["ape"] = ape
+
+    # Allows modules relative to the project.
+    sys.path.insert(0, f"{project.path}")
 
     # NOTE: `ape_console_extras` only is meant to work with default namespace.
     #  Load extras before local namespace to avoid console extras receiving
     #  the wrong values for its arguments.
-    sys.path.insert(0, getcwd())
     console_extras = load_console_extras(**namespace)
 
     if extra_locals:
