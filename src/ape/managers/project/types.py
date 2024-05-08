@@ -178,7 +178,7 @@ class BaseProject(ProjectAPI):
         self.project_manager.load_dependencies()
         source_paths: List[Path] = list(
             set(
-                [str(p) for p in self.source_paths if p in file_paths]
+                [p for p in self.source_paths if p in file_paths]
                 if file_paths
                 else [
                     p
