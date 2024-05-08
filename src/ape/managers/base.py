@@ -1,4 +1,4 @@
-from ape.utils import ManagerAccessMixin
+from ape.utils import ManagerAccessMixin, raises_not_implemented
 
 
 class BaseManager(ManagerAccessMixin):
@@ -6,10 +6,12 @@ class BaseManager(ManagerAccessMixin):
     Base manager that allows us to add other IPython integration features
     """
 
+    @raises_not_implemented
     def _repr_mimebundle_(self, include=None, exclude=None):
         # This works better than AttributeError for Ape.
-        raise NotImplementedError("This manager does not implement '_repr_mimebundle_'.")
+        pass
 
+    @raises_not_implemented
     def _ipython_display_(self, include=None, exclude=None):
         # This works better than AttributeError for Ape.
-        raise NotImplementedError("This manager does not implement '_ipython_display_'.")
+        pass

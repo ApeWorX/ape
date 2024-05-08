@@ -281,6 +281,7 @@ class AccountAPI(BaseInterfaceModel, BaseAddress):
             self.project_manager.track_deployment(instance)
             self.provider.network.publish_contract(address)
 
+        instance.base_path = contract.base_path or self.project_manager.contracts_folder
         return instance
 
     def declare(self, contract: "ContractContainer", *args, **kwargs) -> ReceiptAPI:
