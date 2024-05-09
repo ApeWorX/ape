@@ -113,7 +113,7 @@ def test_contract_type_collision(compilers, project_with_contract, mock_compiler
 
         with pytest.raises(CompilerError, match="ContractType collision.*"):
             # Must include existing contract in case not yet compiled.
-            compilers.compile([existing_path, new_contract])
+            list(compilers.compile((existing_path, new_contract)))
 
     finally:
         compilers._registered_compilers_cache[project_with_contract.path] = existing_compilers
@@ -128,7 +128,7 @@ def test_compile_with_settings(mock_compiler, compilers, project_with_contract):
 
     try:
         compilers._registered_compilers_cache[project_with_contract.path] = all_compilers
-        compilers.compile([new_contract], settings=settings)
+        list(compilers.compile((new_contract,), settings=settings))
 
     finally:
         compilers._registered_compilers_cache[project_with_contract.path] = existing_compilers
@@ -139,9 +139,9 @@ def test_compile_with_settings(mock_compiler, compilers, project_with_contract):
 
 def test_compile_str_path(compilers, project_with_contract):
     path = next(iter(project_with_contract.source_paths))
-    actual = compilers.compile([str(path)])
+    actual = compilers.compile((str(path),))
     contract_name = path.stem
-    assert actual[contract_name].name == contract_name
+    assert contract_name in [x.name for x in actual]
 
 
 def test_compile_source(compilers):

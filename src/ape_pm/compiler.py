@@ -1,5 +1,5 @@
 import json
-from collections.abc import Sequence
+from collections.abc import Iterable, Iterator
 from pathlib import Path
 from typing import Optional
 
@@ -18,15 +18,14 @@ class InterfaceCompiler(CompilerAPI):
     def name(self) -> str:
         return "ethpm"
 
-    def get_versions(self, all_paths: Sequence[Path]) -> set[str]:
+    def get_versions(self, all_paths: Iterable[Path]) -> set[str]:
         # NOTE: This bypasses the serialization of this compiler into the package manifest's
         #       ``compilers`` field. You should not do this with a real compiler plugin.
         return set()
 
     def compile(
-        self, filepaths: Sequence[Path], base_path: Optional[Path] = None
-    ) -> list[ContractType]:
-        contract_types: list[ContractType] = []
+        self, filepaths: Iterable[Path], base_path: Optional[Path] = None
+    ) -> Iterator[ContractType]:
         for path in filepaths:
             source_path = (
                 get_relative_path(path, base_path) if base_path and path.is_absolute() else path
@@ -54,9 +53,7 @@ class InterfaceCompiler(CompilerAPI):
                 logger.warning(f"Unable to parse {ContractType.__name__} from '{source_id}'.")
                 continue
 
-            contract_types.append(contract_type)
-
-        return contract_types
+            yield contract_type
 
     def compile_code(
         self,
