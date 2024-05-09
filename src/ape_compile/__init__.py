@@ -25,6 +25,9 @@ class Config(PluginConfig):
     exclude: Set[str] = set()
     """
     Source exclusion globs across all file types.
+
+    **NOTE**: ``ape.utils.misc.SOURCE_EXCLUDE_PATTERNS`` are automatically
+    included in this set.
     """
 
     cache_folder: Optional[Path] = None
