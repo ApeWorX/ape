@@ -2,6 +2,7 @@ import os
 import re
 import sys
 from contextlib import contextmanager
+from fnmatch import fnmatch
 from pathlib import Path
 from tempfile import TemporaryDirectory
 from typing import Any, Callable, Iterator, List, Optional, Pattern, Union
@@ -203,9 +204,47 @@ def run_in_tempdir(
     Args:
         fn (Callable): A function that takes a path. It gets called
           with the resolved path to the temporary directory.
+        name (str): Optionally name the temporary directory.
 
     Returns:
         Any: The result of the function call.
     """
     with create_tempdir(name=name) as temp_dir:
         return fn(temp_dir)
+
+
+def path_match(path: Union[str, Path], *exclusions: str) -> bool:
+    """
+    A better glob-matching function. For example:
+
+    >>> from pathlib import Path
+    >>> p = Path("test/to/.build/me/2/file.json")
+    >>> p.match("**/.build/**")
+    False
+    >>> from ape.utils.os import path_match
+    >>> path_match(p, "**/.build/**")
+    True
+    """
+    path_str = str(path)
+    path_path = Path(path)
+
+    for excl in exclusions:
+        if fnmatch(path_str, excl):
+            return True
+
+        elif fnmatch(path_path.name, excl):
+            return True
+
+        else:
+            # If the exclusion is he full name of any of the parents
+            # (e.g. ".cache", it is a match).
+            for parent in path_path.parents:
+                if parent.name == excl:
+                    return True
+
+                # Walk the path recursively.
+                relative_str = path_str.replace(str(parent), "").strip(os.path.sep)
+                if fnmatch(relative_str, excl):
+                    return True
+
+    return False

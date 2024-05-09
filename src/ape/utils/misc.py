@@ -33,10 +33,10 @@ DEFAULT_LIVE_NETWORK_BASE_FEE_MULTIPLIER = 1.4
 DEFAULT_TRANSACTION_TYPE = 0
 DEFAULT_MAX_RETRIES_TX = 20
 SOURCE_EXCLUDE_PATTERNS = (
-    "**/.cache/**",
+    ".cache",
     ".DS_Store",
     ".gitkeep",
-    "**/.build/**/*.json",
+    ".build",
     "*.md",
     "*.rst",
     "*.txt",
