@@ -1,4 +1,5 @@
 import os
+from fnmatch import fnmatch
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Sequence
 
@@ -182,7 +183,7 @@ class BaseProject(ProjectAPI):
                 else [
                     p
                     for p in self.source_paths
-                    if not any(p.match(e) for e in compile_config.exclude)
+                    if not any(fnmatch(p, e) for e in compile_config.exclude)
                 ]
             )
         )
