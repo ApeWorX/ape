@@ -1419,7 +1419,7 @@ class EthereumNodeProvider(Web3Provider, ABC):
         try:
             # Try the Parity traces first, in case node client supports it.
             tree = self._get_parity_call_tree(txn_hash)
-        except (ValueError, APINotImplementedError, ProviderError):
+        except Exception:
             self.can_use_parity_traces = False
             return self._get_geth_call_tree(txn_hash)
 
