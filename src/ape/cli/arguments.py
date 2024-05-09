@@ -110,7 +110,7 @@ class _ContractPaths(ManagerAccessMixin):
     def do_exclude(self, path: Union[Path, str]) -> bool:
         name = path if isinstance(path, str) else str(path)
         if name not in self.exclude_list:
-            self.exclude_list[name] = path_match(name, self.exclude_patterns)
+            self.exclude_list[name] = path_match(name, *self.exclude_patterns)
 
         return self.exclude_list[name]
 

@@ -8,7 +8,7 @@ from functools import cached_property, lru_cache, singledispatchmethod, wraps
 from importlib.metadata import PackageNotFoundError, distributions
 from importlib.metadata import version as version_metadata
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Callable, Coroutine, Dict, List, Mapping, Optional, cast, Union
+from typing import TYPE_CHECKING, Any, Callable, Coroutine, Dict, List, Mapping, Optional, cast
 
 import requests
 import yaml
@@ -33,10 +33,10 @@ DEFAULT_LIVE_NETWORK_BASE_FEE_MULTIPLIER = 1.4
 DEFAULT_TRANSACTION_TYPE = 0
 DEFAULT_MAX_RETRIES_TX = 20
 SOURCE_EXCLUDE_PATTERNS = (
-    "**/.cache/**",
+    ".cache",
     ".DS_Store",
     ".gitkeep",
-    "**/.build/**",
+    ".build",
     "*.md",
     "*.rst",
     "*.txt",

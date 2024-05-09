@@ -2,11 +2,13 @@ from pathlib import Path
 
 import pytest
 
+from ape.utils.misc import SOURCE_EXCLUDE_PATTERNS
 from ape.utils.os import (
     create_tempdir,
     get_all_files_in_directory,
     get_full_extension,
     get_relative_path,
+    path_match,
     run_in_tempdir,
 )
 
@@ -117,3 +119,62 @@ def test_run_in_tempdir(name):
     assert arguments[0].resolve() == arguments[0]
     if name is not None:
         assert arguments[0].name == name
+
+
+@pytest.mark.parametrize(
+    "path",
+    (
+        "path/to/.cache/file/1.json",
+        Path("path/to/.cache/file/1.json"),
+        ".cache",
+        Path(".cache"),
+        Path("contracts/.cache/TEST.json"),
+    ),
+)
+def test_path_match_cache_folder(path):
+    assert path_match(path, *SOURCE_EXCLUDE_PATTERNS)
+
+
+@pytest.mark.parametrize(
+    "path",
+    (
+        "path/to/.build/__local__.json",
+        Path("path/to/.build/__local__.json"),
+        ".build",
+        Path(".build"),
+        Path("contracts/.build/TEST.json"),
+    ),
+)
+def test_path_match_build_folder(path):
+    assert path_match(path, *SOURCE_EXCLUDE_PATTERNS)
+
+
+@pytest.mark.parametrize(
+    "path",
+    (
+        "path/to/MyFile.build.json/__local__.json",
+        Path("path/to/MyFile.build.json/__local__.json"),
+        ".builder",
+        Path(".cacher"),
+        Path("contracts/.builder/TEST.json"),
+    ),
+)
+def test_patch_match_does_not_match_but_close(path):
+    """
+    Ensures we don't get false positives.
+    """
+    assert not path_match(path, *SOURCE_EXCLUDE_PATTERNS)
+
+
+@pytest.mark.parametrize(
+    "path",
+    (
+        ".gitkeep",
+        "path/to/.gitkeep",
+        "index.html",
+        "path/to/index.css",
+        "py.typed",
+    ),
+)
+def test_patch_match(path):
+    assert path_match(path, *SOURCE_EXCLUDE_PATTERNS)

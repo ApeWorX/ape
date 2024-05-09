@@ -179,11 +179,7 @@ class BaseProject(ProjectAPI):
             set(
                 [p for p in self.source_paths if p in file_paths]
                 if file_paths
-                else [
-                    p
-                    for p in self.source_paths
-                    if not path_match(p, compile_config.exclude)
-                ]
+                else [p for p in self.source_paths if not path_match(p, *compile_config.exclude)]
             )
         )
 

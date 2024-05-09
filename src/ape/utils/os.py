@@ -225,4 +225,22 @@ def path_match(path: Union[str, Path], *exclusions: str) -> bool:
     >>> path_match(p, "**/.build/**")
     True
     """
-    return any(fnmatch(str(path), e) for e in exclusions)
+
+    path_str = str(path)
+    path_path = Path(path)
+
+    for excl in exclusions:
+        if fnmatch(path_str, excl):
+            return True
+
+        elif fnmatch(path_path.name, excl):
+            return True
+
+        elif "*" not in excl:
+            # If the exclusion is he full name of any of the parents
+            # (e.g. ".cache", it is a match).
+            for parent in path_path.parents:
+                if parent.name == excl:
+                    return True
+
+    return False
