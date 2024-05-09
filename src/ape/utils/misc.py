@@ -36,7 +36,7 @@ SOURCE_EXCLUDE_PATTERNS = (
     "**/.cache/**",
     ".DS_Store",
     ".gitkeep",
-    "**/.build/**/*.json",
+    "**/.build/**",
     "*.md",
     "*.rst",
     "*.txt",
