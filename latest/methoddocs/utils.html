@@ -271,6 +271,7 @@
 <li class="toctree-l2"><a class="reference internal" href="#ape.utils.is_zero_hex"><code class="docutils literal notranslate"><span class="pre">is_zero_hex()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#ape.utils.load_config"><code class="docutils literal notranslate"><span class="pre">load_config()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#ape.utils.log_instead_of_fail"><code class="docutils literal notranslate"><span class="pre">log_instead_of_fail()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#ape.utils.path_match"><code class="docutils literal notranslate"><span class="pre">path_match()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#ape.utils.pragma_str_to_specifier_set"><code class="docutils literal notranslate"><span class="pre">pragma_str_to_specifier_set()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#ape.utils.raises_not_implemented"><code class="docutils literal notranslate"><span class="pre">raises_not_implemented()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#ape.utils.returns_array"><code class="docutils literal notranslate"><span class="pre">returns_array()</span></code></a></li>
@@ -1030,6 +1031,21 @@ This is useful for methods like __repr__ which shouldn’t fail.</p>
 </dd></dl>
 
 <dl class="py function">
+<dt class="sig sig-object py" id="ape.utils.path_match">
+<span class="sig-prename descclassname"><span class="pre">ape.utils.</span></span><span class="sig-name descname"><span class="pre">path_match</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Path</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">exclusions</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="headerlink" href="#ape.utils.path_match" title="Permalink to this definition"></a></dt>
+<dd><p>A better glob-matching function. For example:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">p</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="s2">&quot;test/to/.build/me/2/file.json&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">p</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="s2">&quot;**/.build/**&quot;</span><span class="p">)</span>
+<span class="go">False</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">ape.utils.os</span> <span class="kn">import</span> <span class="n">path_match</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">path_match</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="s2">&quot;**/.build/**&quot;</span><span class="p">)</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
 <dt class="sig sig-object py" id="ape.utils.pragma_str_to_specifier_set">
 <span class="sig-prename descclassname"><span class="pre">ape.utils.</span></span><span class="sig-name descname"><span class="pre">pragma_str_to_specifier_set</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pragma_str</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">SpecifierSet</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></span><a class="headerlink" href="#ape.utils.pragma_str_to_specifier_set" title="Permalink to this definition"></a></dt>
 <dd><p>Convert the given pragma str to a <code class="docutils literal notranslate"><span class="pre">packaging.version.SpecifierSet</span></code>
@@ -1071,8 +1087,11 @@ if possible.</p>
 resolved.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>fn</strong> (<em>Callable</em>) – A function that takes a path. It gets called
-with the resolved path to the temporary directory.</p>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>fn</strong> (<em>Callable</em>) – A function that takes a path. It gets called
+with the resolved path to the temporary directory.</p></li>
+<li><p><strong>name</strong> (<em>str</em>) – Optionally name the temporary directory.</p></li>
+</ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>The result of the function call.</p>
