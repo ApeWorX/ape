@@ -1,5 +1,4 @@
 import os
-from fnmatch import fnmatch
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Sequence
 
@@ -10,7 +9,7 @@ from yaml import safe_dump, safe_load
 from ape.api import ProjectAPI
 from ape.logging import logger
 from ape.managers.config import CONFIG_FILE_NAME as APE_CONFIG_FILE_NAME
-from ape.utils import cached_property, get_all_files_in_directory, get_relative_path
+from ape.utils import cached_property, get_all_files_in_directory, get_relative_path, path_match
 
 
 class _ProjectSources:
@@ -183,7 +182,7 @@ class BaseProject(ProjectAPI):
                 else [
                     p
                     for p in self.source_paths
-                    if not any(fnmatch(p, e) for e in compile_config.exclude)
+                    if not path_match(p, compile_config.exclude)
                 ]
             )
         )

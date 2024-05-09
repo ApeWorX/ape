@@ -8,7 +8,7 @@ from functools import cached_property, lru_cache, singledispatchmethod, wraps
 from importlib.metadata import PackageNotFoundError, distributions
 from importlib.metadata import version as version_metadata
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Callable, Coroutine, Dict, List, Mapping, Optional, cast
+from typing import TYPE_CHECKING, Any, Callable, Coroutine, Dict, List, Mapping, Optional, cast, Union
 
 import requests
 import yaml
