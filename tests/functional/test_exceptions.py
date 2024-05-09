@@ -57,3 +57,30 @@ def test_network_without_ecosystem_not_found_no_options():
     actual = str(error)
     expected = "No networks found."
     assert actual == expected
+
+
+def test_transaction_error_address(owner):
+    err = TransactionError(contract_address=owner.address)
+    assert err.address == owner.address
+
+
+def test_transaction_error_receiver_as_address(owner):
+    tx = owner.transfer(owner, "1 wei")
+    err = TransactionError(txn=tx)
+    assert err.address == owner.address
+
+
+def test_transaction_error_deploy_address_as_address(
+    owner, ethereum, vyper_contract_container, zero_address
+):
+    contract = vyper_contract_container.deploy(629, sender=owner)
+
+    data = contract.receipt.model_dump(exclude=("transaction",))
+    # Show when receier is zero_address, it still picks contract address.
+    data["transaction"] = ethereum.create_transaction(receiver=zero_address)
+
+    tx = Receipt.model_validate(data)
+    assert tx.receiver == zero_address, "setup failed"
+
+    err = TransactionError(txn=tx)
+    assert err.address == contract.address

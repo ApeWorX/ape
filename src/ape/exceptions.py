@@ -204,6 +204,17 @@ class TransactionError(ApeException):
 
     @property
     def address(self) -> Optional["AddressType"]:
+        if addr := self.contract_address:
+            return addr
+
+        receiver = getattr(self.txn, "receiver", None)
+        if receiver in (None, "0x0000000000000000000000000000000000000000"):
+            # Check if deploy
+            if addr := getattr(self.txn, "contract_address", None):
+                return addr
+
+        return receiver
+
         return (
             self.contract_address
             or getattr(self.txn, "receiver", None)
