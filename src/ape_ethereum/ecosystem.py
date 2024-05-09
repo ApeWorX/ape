@@ -88,6 +88,10 @@ BLUEPRINT_HEADER = HexBytes("0xfe71")
 
 class NetworkConfig(PluginConfig):
     required_confirmations: int = 0
+    """
+    The amount of blocks to wait before
+    considering a transaction 'confirmed'.
+    """
 
     default_provider: Optional[str] = "geth"
     """
@@ -353,7 +357,7 @@ class Ethereum(EcosystemAPI):
 
     @property
     def config(self) -> EthereumConfig:
-        return cast(EthereumConfig, self.config_manager.get_config(self.name))
+        return cast(EthereumConfig, super().config)
 
     @property
     def default_transaction_type(self) -> TransactionType:
