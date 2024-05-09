@@ -159,7 +159,7 @@ def test_path_match_build_folder(path):
         Path("contracts/.builder/TEST.json"),
     ),
 )
-def test_patch_match_does_not_match_but_close(path):
+def test_pat_match_does_not_match_but_close(path):
     """
     Ensures we don't get false positives.
     """
@@ -176,5 +176,20 @@ def test_patch_match_does_not_match_but_close(path):
         "py.typed",
     ),
 )
-def test_patch_match(path):
+def test_path_match(path):
     assert path_match(path, *SOURCE_EXCLUDE_PATTERNS)
+
+
+@pytest.mark.parametrize(
+    "path,exc",
+    [
+        ("path/to/MyContract.t.sol", "*t.sol"),
+        ("contracts/mocks/MyContract.sol", "mocks"),
+        ("mocks/MyContract.sol", "mocks"),
+        ("MockContract.sol", "Mock*"),
+    ],
+)
+def test_path_match_test_contracts(path, exc):
+    assert not path_match(path, *SOURCE_EXCLUDE_PATTERNS)
+    exclusions = [*SOURCE_EXCLUDE_PATTERNS, exc]
+    assert path_match(path, *exclusions)
