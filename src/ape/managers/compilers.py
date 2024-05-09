@@ -1,4 +1,4 @@
-from collections.abc import Iterator, Sequence
+from collections.abc import Iterable, Iterator
 from pathlib import Path
 from typing import Any, Optional, Union
 
@@ -98,8 +98,8 @@ class CompilerManager(BaseManager, ExtraAttributesMixin):
         return None
 
     def compile(
-        self, contract_filepaths: Sequence[Union[Path, str]], settings: Optional[dict] = None
-    ) -> dict[str, ContractType]:
+        self, contract_filepaths: Iterable[Union[Path, str]], settings: Optional[dict] = None
+    ) -> Iterator[ContractType]:
         """
         Invoke :meth:`ape.ape.compiler.CompilerAPI.compile` for each of the given files.
         For example, use the `ape-solidity plugin <https://github.com/ApeWorX/ape-solidity>`__
@@ -110,13 +110,13 @@ class CompilerManager(BaseManager, ExtraAttributesMixin):
               file-extension as well as when there are contract-type collisions across compilers.
 
         Args:
-            contract_filepaths (Sequence[Union[pathlib.Path], str]): The files to compile,
+            contract_filepaths (Iterable[Union[pathlib.Path], str]): The files to compile,
               as ``pathlib.Path`` objects or path-strs.
             settings (Optional[dict]): Adhoc compiler settings. Defaults to None.
               Ensure the compiler name key is present in the dict for it to work.
 
         Returns:
-            dict[str, ``ContractType``]: A mapping of contract names to their type.
+            Iterator[``ContractType``]: An iterator of contract types.
         """
         contract_file_paths = [Path(p) if isinstance(p, str) else p for p in contract_filepaths]
         extensions = self._get_contract_extensions(contract_file_paths)
@@ -125,7 +125,6 @@ class CompilerManager(BaseManager, ExtraAttributesMixin):
         cached_manifest = self.project_manager.local_project.cached_manifest
 
         # Load past compiled contracts for verifying type-collision and other things.
-        already_compiled_contracts: dict[str, ContractType] = {}
         already_compiled_paths: list[Path] = []
         for name, ct in ((cached_manifest.contract_types or {}) if cached_manifest else {}).items():
             if not ct.source_id:
@@ -135,7 +134,7 @@ class CompilerManager(BaseManager, ExtraAttributesMixin):
             if not _file.is_file():
                 continue
 
-            already_compiled_contracts[name] = ct
+            contract_types_dict[name] = ct
             already_compiled_paths.append(_file)
 
         exclusions = self.config_manager.get_config("compile").exclude
@@ -191,9 +190,8 @@ class CompilerManager(BaseManager, ExtraAttributesMixin):
                             f"Was compiler plugin for '{extension} implemented correctly?"
                         )
 
-                full_ct_dict = {**contract_types_dict, **already_compiled_contracts}
-                if contract_name in full_ct_dict:
-                    already_added_contract_type = full_ct_dict[contract_name]
+                if contract_name in contract_types_dict:
+                    already_added_contract_type = contract_types_dict[contract_name]
                     error_message = (
                         f"{ContractType.__name__} collision between sources "
                         f"'{contract_type.source_id}' and "
@@ -201,9 +199,10 @@ class CompilerManager(BaseManager, ExtraAttributesMixin):
                     )
                     raise CompilerError(error_message)
 
+                # Cache is for collision detection.
                 contract_types_dict[contract_name] = contract_type
 
-        return contract_types_dict
+                yield contract_type
 
     def compile_source(
         self,
@@ -245,14 +244,14 @@ class CompilerManager(BaseManager, ExtraAttributesMixin):
         return ContractContainer(contract_type=contract_type)
 
     def get_imports(
-        self, contract_filepaths: Sequence[Path], base_path: Optional[Path] = None
+        self, contract_filepaths: Iterable[Path], base_path: Optional[Path] = None
     ) -> dict[str, list[str]]:
         """
         Combine import dicts from all compilers, where the key is a contract's source_id
         and the value is a list of import source_ids.
 
         Args:
-            contract_filepaths (Sequence[pathlib.Path]): A list of source file paths to compile.
+            contract_filepaths (Iterable[pathlib.Path]): A list of source file paths to compile.
             base_path (Optional[pathlib.Path]): Optionally provide the base path, such as the
               project ``contracts/`` directory. Defaults to ``None``. When using in a project
               via ``ape compile``, gets set to the project's ``contracts/`` directory.

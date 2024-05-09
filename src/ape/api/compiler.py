@@ -1,4 +1,4 @@
-from collections.abc import Sequence
+from collections.abc import Iterable
 from functools import cached_property
 from pathlib import Path
 from typing import Optional
@@ -61,12 +61,12 @@ class CompilerAPI(BaseInterfaceModel):
         return CustomConfig.model_validate(data)
 
     @abstractmethod
-    def get_versions(self, all_paths: Sequence[Path]) -> set[str]:
+    def get_versions(self, all_paths: Iterable[Path]) -> set[str]:
         """
         Retrieve the set of available compiler versions for this plugin to compile ``all_paths``.
 
         Args:
-            all_paths (Sequence[pathlib.Path]): The list of paths.
+            all_paths (Iterable[pathlib.Path]): The list of paths.
 
         Returns:
             set[str]: A set of available compiler versions.
@@ -74,14 +74,14 @@ class CompilerAPI(BaseInterfaceModel):
 
     @raises_not_implemented
     def get_compiler_settings(  # type: ignore[empty-body]
-        self, contract_filepaths: Sequence[Path], base_path: Optional[Path] = None
+        self, contract_filepaths: Iterable[Path], base_path: Optional[Path] = None
     ) -> dict[Version, dict]:
         """
         Get a mapping of the settings that would be used to compile each of the sources
         by the compiler version number.
 
         Args:
-            contract_filepaths (Sequence[pathlib.Path]): The list of paths.
+            contract_filepaths (Iterable[pathlib.Path]): The list of paths.
             base_path (Optional[pathlib.Path]): The contracts folder base path.
 
         Returns:
@@ -90,19 +90,19 @@ class CompilerAPI(BaseInterfaceModel):
 
     @abstractmethod
     def compile(
-        self, contract_filepaths: Sequence[Path], base_path: Optional[Path]
-    ) -> list[ContractType]:
+        self, contract_filepaths: Iterable[Path], base_path: Optional[Path]
+    ) -> Iterable[ContractType]:
         """
         Compile the given source files. All compiler plugins must implement this function.
 
         Args:
-            contract_filepaths (Sequence[pathlib.Path]): A list of source file paths to compile.
+            contract_filepaths (Iterable[pathlib.Path]): A list of source file paths to compile.
             base_path (Optional[pathlib.Path]): Optionally provide the base path, such as the
               project ``contracts/`` directory. Defaults to ``None``. When using in a project
               via ``ape compile``, gets set to the project's ``contracts/`` directory.
 
         Returns:
-            list[:class:`~ape.type.contract.ContractType`]
+            Iterator[``ContractType``]
         """
 
     @raises_not_implemented
@@ -129,14 +129,14 @@ class CompilerAPI(BaseInterfaceModel):
 
     @raises_not_implemented
     def get_imports(  # type: ignore[empty-body]
-        self, contract_filepaths: Sequence[Path], base_path: Optional[Path]
+        self, contract_filepaths: Iterable[Path], base_path: Optional[Path]
     ) -> dict[str, list[str]]:
         """
         Returns a list of imports as source_ids for each contract's source_id in a given
         compiler.
 
         Args:
-            contract_filepaths (Sequence[pathlib.Path]): A list of source file paths to compile.
+            contract_filepaths (Iterable[pathlib.Path]): A list of source file paths to compile.
             base_path (Optional[pathlib.Path]): Optionally provide the base path, such as the
               project ``contracts/`` directory. Defaults to ``None``. When using in a project
               via ``ape compile``, gets set to the project's ``contracts/`` directory.
@@ -148,14 +148,14 @@ class CompilerAPI(BaseInterfaceModel):
     @raises_not_implemented
     def get_version_map(  # type: ignore[empty-body]
         self,
-        contract_filepaths: Sequence[Path],
+        contract_filepaths: Iterable[Path],
         base_path: Optional[Path] = None,
     ) -> dict[Version, set[Path]]:
         """
         Get a map of versions to source paths.
 
         Args:
-            contract_filepaths (Sequence[Path]): Input source paths. Defaults to all source paths
+            contract_filepaths (Iterable[Path]): Input source paths. Defaults to all source paths
               per compiler.
             base_path (Path): The base path of sources. Defaults to the project's
               ``contracts_folder``.
