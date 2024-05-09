@@ -7,6 +7,7 @@ from eth_tester.exceptions import TransactionFailed  # type: ignore
 from eth_typing import HexStr
 from eth_utils import ValidationError
 from hexbytes import HexBytes
+from requests import HTTPError
 from web3.exceptions import ContractPanicError
 
 from ape.exceptions import (
@@ -358,7 +359,8 @@ def test_make_request_not_exists(eth_tester_provider):
 @pytest.mark.parametrize("msg", ("Method not found", "Method ape_thisDoesNotExist not found"))
 def test_make_request_not_exists_dev_nodes(eth_tester_provider, mock_web3, msg):
     """
-    Simulate what *most* of the dev providers do, like hardhat, anvil, and ganache.
+    Handle an issue found from Base-sepolia where not-implemented RPCs
+    caused HTTPErrors.
     """
     real_web3 = eth_tester_provider._web3
     mock_web3.eth = real_web3.eth
@@ -367,6 +369,28 @@ def test_make_request_not_exists_dev_nodes(eth_tester_provider, mock_web3, msg):
     def custom_make_request(rpc, params):
         if rpc == "ape_thisDoesNotExist":
             return {"error": {"message": msg}}
+
+        return real_web3.provider.make_request(rpc, params)
+
+    mock_web3.provider.make_request.side_effect = custom_make_request
+    with pytest.raises(
+        APINotImplementedError,
+        match="RPC method 'ape_thisDoesNotExist' is not implemented by this node instance.",
+    ):
+        eth_tester_provider._make_request("ape_thisDoesNotExist")
+
+
+def test_make_request_handles_http_error_method_not_allowed(eth_tester_provider, mock_web3):
+    """
+    Simulate what *most* of the dev providers do, like hardhat, anvil, and ganache.
+    """
+    real_web3 = eth_tester_provider._web3
+    mock_web3.eth = real_web3.eth
+    eth_tester_provider._web3 = mock_web3
+
+    def custom_make_request(rpc, params):
+        if rpc == "ape_thisDoesNotExist":
+            raise HTTPError("Client error: Method Not Allowed")
 
         return real_web3.provider.make_request(rpc, params)
 

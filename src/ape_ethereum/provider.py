@@ -25,6 +25,7 @@ from evm_trace import (
     get_calltree_from_parity_trace,
 )
 from pydantic.dataclasses import dataclass
+from requests import HTTPError
 from web3 import HTTPProvider, IPCProvider, Web3
 from web3.exceptions import ContractLogicError as Web3ContractLogicError
 from web3.exceptions import (
@@ -1078,7 +1079,16 @@ class Web3Provider(ProviderAPI, ABC):
 
     def _make_request(self, endpoint: str, parameters: Optional[List] = None) -> Any:
         parameters = parameters or []
-        result = self.web3.provider.make_request(RPCEndpoint(endpoint), parameters)
+
+        try:
+            result = self.web3.provider.make_request(RPCEndpoint(endpoint), parameters)
+        except HTTPError as err:
+            if "method not allowed" in str(err).lower():
+                raise APINotImplementedError(
+                    f"RPC method '{endpoint}' is not implemented by this node instance."
+                )
+
+            raise ProviderError(str(err)) from err
 
         if "error" in result:
             error = result["error"]
@@ -1419,7 +1429,11 @@ class EthereumNodeProvider(Web3Provider, ABC):
         try:
             # Try the Parity traces first, in case node client supports it.
             tree = self._get_parity_call_tree(txn_hash)
-        except Exception:
+        except (ValueError, APINotImplementedError, ProviderError):
+            self.can_use_parity_traces = False
+            return self._get_geth_call_tree(txn_hash)
+        except Exception as err:
+            logger.error(f"Unknown exception while checking for Parity-trace support: {err} ")
             self.can_use_parity_traces = False
             return self._get_geth_call_tree(txn_hash)
 
