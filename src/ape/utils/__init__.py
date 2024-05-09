@@ -53,6 +53,7 @@ from ape.utils.os import (
     get_all_files_in_directory,
     get_full_extension,
     get_relative_path,
+    path_match,
     run_in_tempdir,
     use_temp_sys_path,
 )
@@ -114,6 +115,7 @@ __all__ = [
     "only_raise_attribute_error",
     "parse_coverage_tables",
     "parse_gas_table",
+    "path_match",
     "raises_not_implemented",
     "returns_array",
     "run_in_tempdir",

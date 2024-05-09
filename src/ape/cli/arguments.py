@@ -1,4 +1,3 @@
-from fnmatch import fnmatch
 from functools import cached_property
 from pathlib import Path
 from typing import Iterable, List, Set, Union
@@ -9,7 +8,7 @@ from click import BadArgumentUsage
 from ape.cli.choices import _ACCOUNT_TYPE_FILTER, Alias
 from ape.logging import logger
 from ape.utils.basemodel import ManagerAccessMixin
-from ape.utils.os import get_all_files_in_directory, get_full_extension
+from ape.utils.os import get_all_files_in_directory, get_full_extension, path_match
 from ape.utils.validators import _validate_account_alias
 
 
@@ -111,7 +110,7 @@ class _ContractPaths(ManagerAccessMixin):
     def do_exclude(self, path: Union[Path, str]) -> bool:
         name = path if isinstance(path, str) else str(path)
         if name not in self.exclude_list:
-            self.exclude_list[name] = any(fnmatch(name, p) for p in self.exclude_patterns)
+            self.exclude_list[name] = path_match(name, *self.exclude_patterns)
 
         return self.exclude_list[name]
 
