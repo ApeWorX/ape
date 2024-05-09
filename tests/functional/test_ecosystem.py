@@ -1,14 +1,15 @@
 import copy
-from typing import Any, ClassVar, Dict
+from typing import Any, ClassVar, Dict, List, cast
 
 import pytest
 from eth_pydantic_types import HashBytes32, HexBytes
 from eth_typing import HexAddress, HexStr
+from ethpm_types import ContractType, ErrorABI
 from ethpm_types.abi import ABIType, EventABI, MethodABI
 
 from ape.api import PluginConfig
 from ape.api.networks import LOCAL_NETWORK_NAME, NetworkAPI
-from ape.exceptions import DecodingError, NetworkError, NetworkNotFoundError
+from ape.exceptions import CustomError, DecodingError, NetworkError, NetworkNotFoundError
 from ape.types import AddressType
 from ape.utils import DEFAULT_LOCAL_TRANSACTION_ACCEPTANCE_TIMEOUT
 from ape_ethereum.ecosystem import (
@@ -987,3 +988,46 @@ def test_default_network_name_when_not_set_and_no_local_uses_only(mocker, config
         Ethereum.plugin_manager = orig_pm
         if "_networks_from_plugins" in ethereum.__dict__:
             del ethereum.__dict__["_networks_from_plugins"]
+
+
+def test_decode_custom_error(chain, ethereum):
+    data = HexBytes("0x6a12f104")
+    abi = [ErrorABI(type="error", name="InsufficientETH", inputs=[])]
+    contract_type = ContractType(abi=abi)
+    addr = cast(AddressType, "0x3fC91A3afd70395Cd496C647d5a6CC9D4B2b7FAD")
+
+    # Hack in contract-type.
+    chain.contracts._local_contract_types[addr] = contract_type
+
+    actual = ethereum.decode_custom_error(data, addr)
+    assert isinstance(actual, CustomError)
+
+
+def test_decode_custom_error_contract_type_not_found(ethereum):
+    data = HexBytes("0x6a12f104")
+    # not known
+    addr = cast(AddressType, "0x4fC92A3afd70395Cd496C647d5a6CC9D4B2b7FAD")
+    actual = ethereum.decode_custom_error(data, addr)
+    assert actual is None
+
+
+def test_decode_custom_error_tx_unsigned(ethereum):
+    data = HexBytes("0x6a12f104")
+    # not known
+    addr = cast(AddressType, "0x4fC92A3afd70395Cd496C647d5a6CC9D4B2b7FAD")
+    actual = ethereum.decode_custom_error(data, addr)
+    assert actual is None
+
+
+def test_decode_custom_error_selector_not_found(mocker, chain, ethereum):
+    data = HexBytes("0x6a12f104")
+    abi: List = []
+    contract_type = ContractType(abi=abi)
+    addr = cast(AddressType, "0x3fC91A3afd70395Cd496C647d5a6CC9D4B2b7FAD")
+
+    # Hack in contract-type.
+    chain.contracts._local_contract_types[addr] = contract_type
+
+    tx = ethereum.create_transaction()
+    actual = ethereum.decode_custom_error(data, addr, txn=tx)
+    assert actual is None
