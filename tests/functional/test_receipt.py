@@ -3,7 +3,7 @@ import pytest
 from ape.api import ReceiptAPI
 from ape.exceptions import APINotImplementedError, ContractLogicError, OutOfGasError
 from ape.utils import ManagerAccessMixin
-from ape_ethereum.transactions import Receipt, TransactionStatusEnum
+from ape_ethereum.transactions import DynamicFeeTransaction, Receipt, TransactionStatusEnum
 
 
 @pytest.fixture
@@ -198,3 +198,15 @@ def test_track_coverage(deploy_receipt, mocker):
 def test_access_from_tx(deploy_receipt):
     actual = deploy_receipt.transaction.receipt
     assert actual == deploy_receipt
+
+
+def test_transaction_validated_from_dict(ethereum, owner, deploy_receipt):
+    tx = ethereum.create_transaction(sender=owner.address, value=123, data=b"hello")
+    tx_data = tx.model_dump()
+    receipt_data = deploy_receipt.model_dump(by_alias=True)
+    receipt_data["transaction"] = tx_data
+    receipt = Receipt.model_validate(receipt_data)
+    assert isinstance(receipt.transaction, DynamicFeeTransaction)
+    assert receipt.transaction.sender == owner.address
+    assert receipt.transaction.value == 123
+    assert receipt.transaction.data == b"hello"
