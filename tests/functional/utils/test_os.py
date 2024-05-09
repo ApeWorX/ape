@@ -196,15 +196,16 @@ def test_path_match_test_contracts(path, exc):
 
 
 @pytest.mark.parametrize(
-    "path", (
+    "path",
+    (
         Path("path/to/contracts/exclude_dir/subdir/MyContract.json"),
         Path("exclude_dir/subdir/MyContract.json"),
         Path("exclude_dir/MyContract.json"),
-    )
+    ),
 )
 def test_path_match_recurse_dir(path):
     """
     Testing a specific way of excluding all the files in a directory.
     """
     excl = "exclude_dir/**"
-    assert path_match(path, path)
+    assert path_match(path, excl)

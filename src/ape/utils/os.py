@@ -225,7 +225,6 @@ def path_match(path: Union[str, Path], *exclusions: str) -> bool:
     >>> path_match(p, "**/.build/**")
     True
     """
-
     path_str = str(path)
     path_path = Path(path)
 
@@ -236,11 +235,16 @@ def path_match(path: Union[str, Path], *exclusions: str) -> bool:
         elif fnmatch(path_path.name, excl):
             return True
 
-        elif "*" not in excl:
+        else:
             # If the exclusion is he full name of any of the parents
             # (e.g. ".cache", it is a match).
             for parent in path_path.parents:
                 if parent.name == excl:
+                    return True
+
+                # Walk the path recursively.
+                relative_str = path_str.replace(str(parent), "").strip(os.path.sep)
+                if fnmatch(relative_str, excl):
                     return True
 
     return False
