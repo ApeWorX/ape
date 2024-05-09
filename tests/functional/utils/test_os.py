@@ -193,3 +193,18 @@ def test_path_match_test_contracts(path, exc):
     assert not path_match(path, *SOURCE_EXCLUDE_PATTERNS)
     exclusions = [*SOURCE_EXCLUDE_PATTERNS, exc]
     assert path_match(path, *exclusions)
+
+
+@pytest.mark.parametrize(
+    "path", (
+        Path("path/to/contracts/exclude_dir/subdir/MyContract.json"),
+        Path("exclude_dir/subdir/MyContract.json"),
+        Path("exclude_dir/MyContract.json"),
+    )
+)
+def test_path_match_recurse_dir(path):
+    """
+    Testing a specific way of excluding all the files in a directory.
+    """
+    excl = "exclude_dir/**"
+    assert path_match(path, path)
