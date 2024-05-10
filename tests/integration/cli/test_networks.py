@@ -5,8 +5,6 @@ from .utils import run_once, skip_projects_except
 
 _DEFAULT_NETWORKS_TREE = """
 ethereum  (default)
-├── goerli
-│   └── geth  (default)
 ├── local  (default)
 │   ├── geth
 │   └── test  (default)
@@ -20,12 +18,6 @@ ecosystems:
 - isDefault: true
   name: ethereum
   networks:
-  - name: goerli
-    providers:
-    - isDefault: true
-      name: geth
-  - name: goerli-fork
-    providers: []
   - isDefault: true
     name: local
     providers:
@@ -47,7 +39,7 @@ ecosystems:
 """
 _GETH_NETWORKS_TREE = """
 ethereum  (default)
-├── goerli
+├── sepolia
 │   └── geth  (default)
 ├── local  (default)
 │   └── geth  (default)
@@ -59,9 +51,9 @@ ethereum  (default)
 └── local  (default)
     └── test  (default)
 """
-_GOERLI_NETWORK_TREE_OUTPUT = """
+_SEPOLIA_NETWORK_TREE_OUTPUT = """
 ethereum  (default)
-└── goerli
+└── sepolia
     └── geth  (default)
 """
 _CUSTOM_NETWORKS_TREE = """
@@ -70,7 +62,7 @@ ethereum  (default)
 │   └── geth  (default)
 ├── apenet1
 │   └── geth  (default)
-├── goerli
+├── sepolia
 │   └── geth  (default)
 ├── local  (default)
 │   └── geth  (default)
@@ -102,7 +94,7 @@ def assert_rich_text(actual: str, expected: str):
 
 @run_once
 def test_list(ape_cli, runner):
-    result = runner.invoke(ape_cli, ["networks", "list"])
+    result = runner.invoke(ape_cli, ("networks", "list"))
 
     # Grab ethereum
     actual = "ethereum  (default)\n" + "".join(result.output.split("ethereum  (default)\n")[-1])
@@ -113,7 +105,7 @@ def test_list(ape_cli, runner):
 @run_once
 def test_list_yaml(ape_cli, runner):
     result = runner.invoke(
-        ape_cli, ["networks", "list", "--format", "yaml"], catch_exceptions=False
+        ape_cli, ("networks", "list", "--format", "yaml"), catch_exceptions=False
     )
     expected_lines = _DEFAULT_NETWORKS_YAML.strip().split("\n")
 
@@ -134,8 +126,8 @@ def test_list_yaml(ape_cli, runner):
 
 
 @skip_projects_except("geth")
-def test_list_geth(ape_cli, runner, networks, project):
-    result = runner.invoke(ape_cli, ["networks", "list"])
+def test_list_geth(ape_cli, runner, networks):
+    result = runner.invoke(ape_cli, ("networks", "list"))
 
     # Grab ethereum
     actual = "ethereum  (default)\n" + "".join(result.output.split("ethereum  (default)\n")[-1])
@@ -150,18 +142,18 @@ def test_list_geth(ape_cli, runner, networks, project):
 
 
 @run_once
-def test_list_filter_networks(ape_cli, runner, networks):
-    result = runner.invoke(ape_cli, ["networks", "list", "--network", "goerli"])
+def test_list_filter_networks(ape_cli, runner):
+    result = runner.invoke(ape_cli, ("networks", "list", "--network", "sepolia"))
 
     # Grab ethereum
     actual = "ethereum  (default)\n" + "".join(result.output.split("ethereum  (default)\n")[-1])
 
-    assert_rich_text(actual, _GOERLI_NETWORK_TREE_OUTPUT)
+    assert_rich_text(actual, _SEPOLIA_NETWORK_TREE_OUTPUT)
 
 
 @run_once
-def test_list_filter_providers(ape_cli, runner, networks):
-    result = runner.invoke(ape_cli, ["networks", "list", "--provider", "test"])
+def test_list_filter_providers(ape_cli, runner):
+    result = runner.invoke(ape_cli, ("networks", "list", "--provider", "test"))
 
     # Grab ethereum
     actual = "ethereum  (default)\n" + "".join(result.output.split("ethereum  (default)\n")[-1])
@@ -171,7 +163,7 @@ def test_list_filter_providers(ape_cli, runner, networks):
 
 @skip_projects_except("geth")
 def test_list_custom_networks(ape_cli, runner):
-    result = runner.invoke(ape_cli, ["networks", "list"])
+    result = runner.invoke(ape_cli, ("networks", "list"))
     actual = "ethereum  (default)\n" + "".join(result.output.split("ethereum  (default)\n")[-1])
     assert_rich_text(actual, _CUSTOM_NETWORKS_TREE)
 
