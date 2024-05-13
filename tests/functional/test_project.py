@@ -647,11 +647,26 @@ def test_add_compiler_data(project_with_dependency_config):
     start_compilers = project.local_project.manifest.compilers or []
 
     # NOTE: Pre-defining things to lessen chance of race condition.
-    compiler = Compiler(name="comp", version="1.0.0", contractTypes=["foo"])
-    compiler_2 = Compiler(name="test", version="2.0.0", contractTypes=["bar", "stay"])
+    compiler = Compiler(
+        name="comp",
+        version="1.0.0",
+        contractTypes=["foo"],
+        settings={"outputSelection": {"foo": "*"}},
+    )
+    compiler_2 = Compiler(
+        name="test",
+        version="2.0.0",
+        contractTypes=["bar", "stay"],
+        settings={"outputSelection": {"bar": "*", "stay": "*"}},
+    )
 
     # NOTE: Has same contract as compiler 2 and thus replaces the contract.
-    compiler_3 = Compiler(name="test", version="3.0.0", contractTypes=["bar"])
+    compiler_3 = Compiler(
+        name="test",
+        version="3.0.0",
+        contractTypes=["bar"],
+        settings={"outputSelection": {"bar": "*"}},
+    )
 
     proj = project.local_project
     argument = [compiler]
@@ -670,9 +685,14 @@ def test_add_compiler_data(project_with_dependency_config):
     proj.add_compiler_data(second_arg)
     assert proj.manifest.compilers == final_exp
 
+    # `bar` has moved to a new compiler.
     proj.add_compiler_data(third_arg)
     comp = [c for c in proj.manifest.compilers if c.name == "test" and c.version == "2.0.0"][0]
     assert "bar" not in comp.contractTypes
+    assert "bar" not in comp.settings["outputSelection"]
+    new_comp = [c for c in proj.manifest.compilers if c.name == "test" and c.version == "3.0.0"][0]
+    assert "bar" in new_comp.contractTypes
+    assert "bar" in new_comp.settings["outputSelection"]
 
     # Show that compilers without contract types go away.
     (compiler_3.contractTypes or []).append("stay")

@@ -256,6 +256,14 @@ class ProjectAPI(BaseInterfaceModel):
                     c for c in (existing_compiler.contractTypes or []) if c not in new_types
                 ]
 
+                # Clear output selection for new types, since they are present in the new compiler.
+                if existing_compiler.settings and "outputSelection" in existing_compiler.settings:
+                    existing_compiler.settings["outputSelection"] = {
+                        k: v
+                        for k, v in existing_compiler.settings["outputSelection"].items()
+                        if k not in new_types
+                    }
+
                 # Remove compilers without contract types.
                 if existing_compiler.contractTypes:
                     remaining_existing_compilers.append(existing_compiler)
