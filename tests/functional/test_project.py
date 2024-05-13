@@ -651,13 +651,13 @@ def test_add_compiler_data(project_with_dependency_config):
         name="comp",
         version="1.0.0",
         contractTypes=["foo"],
-        settings={"outputSelection": {"foo": "*"}},
+        settings={"outputSelection": {"path/to/Foo.sol": "*"}},
     )
     compiler_2 = Compiler(
         name="test",
         version="2.0.0",
         contractTypes=["bar", "stay"],
-        settings={"outputSelection": {"bar": "*", "stay": "*"}},
+        settings={"outputSelection": {"path/to/Bar.vy": "*", "stay.vy": "*"}},
     )
 
     # NOTE: Has same contract as compiler 2 and thus replaces the contract.
@@ -665,7 +665,7 @@ def test_add_compiler_data(project_with_dependency_config):
         name="test",
         version="3.0.0",
         contractTypes=["bar"],
-        settings={"outputSelection": {"bar": "*"}},
+        settings={"outputSelection": {"path/to/Bar.vy": "*"}},
     )
 
     proj = project.local_project
@@ -692,7 +692,7 @@ def test_add_compiler_data(project_with_dependency_config):
     assert "bar" not in comp.settings["outputSelection"]
     new_comp = [c for c in proj.manifest.compilers if c.name == "test" and c.version == "3.0.0"][0]
     assert "bar" in new_comp.contractTypes
-    assert "bar" in new_comp.settings["outputSelection"]
+    assert "path/to/Bar.vy" in new_comp.settings["outputSelection"]
 
     # Show that compilers without contract types go away.
     (compiler_3.contractTypes or []).append("stay")

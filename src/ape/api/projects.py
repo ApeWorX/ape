@@ -258,10 +258,16 @@ class ProjectAPI(BaseInterfaceModel):
 
                 # Clear output selection for new types, since they are present in the new compiler.
                 if existing_compiler.settings and "outputSelection" in existing_compiler.settings:
+                    new_src_ids = {
+                        (self.manifest.contract_types or {})[x].source_id
+                        for x in new_types
+                        if x in (self.manifest.contract_types or {})
+                        and (self.manifest.contract_types or {})[x].source_id is not None
+                    }
                     existing_compiler.settings["outputSelection"] = {
                         k: v
                         for k, v in existing_compiler.settings["outputSelection"].items()
-                        if k not in new_types
+                        if k not in new_src_ids
                     }
 
                 # Remove compilers without contract types.
