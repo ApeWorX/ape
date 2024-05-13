@@ -742,7 +742,8 @@ def mock_fork_provider(mocker, ethereum):
     A fake provider representing something like ape-foundry
     that can fork networks (only uses sepolia-fork).
     """
-    actual = ethereum.sepolia_fork.__dict__.pop("providers", {})
+    initial_providers = ethereum.sepolia_fork.__dict__.pop("providers", {})
+    initial_default = ethereum.sepolia_fork._default_provider
     mock_provider = mocker.MagicMock()
     mock_provider.name = "mock"
     mock_provider.network = ethereum.sepolia_fork
@@ -752,12 +753,15 @@ def mock_fork_provider(mocker, ethereum):
         mock_provider.partial_call = (args, kwargs)
         return mock_provider
 
+    ethereum.sepolia_fork._default_provider = "mock"
     ethereum.sepolia_fork.__dict__["providers"] = {"mock": fake_partial}
 
     yield mock_provider
 
-    if actual:
-        ethereum.sepolia_fork.__dict__["providers"] = actual
+    if initial_providers:
+        ethereum.sepolia_fork.__dict__["providers"] = initial_providers
+    if initial_default:
+        ethereum.sepolia_fork._default_provider = initial_default
 
 
 @pytest.fixture

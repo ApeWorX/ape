@@ -78,8 +78,9 @@ def network_with_no_providers(ethereum):
     yield network
 
     if default_provider or providers:
-        network._default_provider = default_provider
+        network._default_provider = default_provider.name
         network.__dict__["providers"] = providers
+        assert network.default_provider, "Tear-down failed - providers not set."
 
 
 def test_get_network_choices(networks, ethereum, mocker):
