@@ -151,7 +151,7 @@ def test_connect_wrong_chain_id(ethereum, geth_provider, web3_factory):
 def test_connect_to_chain_that_started_poa(mock_web3, web3_factory, ethereum):
     """
     Ensure that when connecting to a chain that
-    started out as PoA, such as sepolia, we include
+    started out as PoA, such as Sepolia, we include
     the right middleware. Note: even if the chain
     is no longer PoA, we still need the middleware
     to fetch blocks during the PoA portion of the chain.
