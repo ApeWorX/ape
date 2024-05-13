@@ -651,13 +651,13 @@ def test_add_compiler_data(project_with_dependency_config):
         name="comp",
         version="1.0.0",
         contractTypes=["foo"],
-        settings={"outputSelection": {"foo": "*"}},
+        settings={"outputSelection": {"path/to/Foo.sol": "*"}},
     )
     compiler_2 = Compiler(
         name="test",
         version="2.0.0",
         contractTypes=["bar", "stay"],
-        settings={"outputSelection": {"bar": "*", "stay": "*"}},
+        settings={"outputSelection": {"path/to/Bar.vy": "*", "stay.vy": "*"}},
     )
 
     # NOTE: Has same contract as compiler 2 and thus replaces the contract.
@@ -665,7 +665,7 @@ def test_add_compiler_data(project_with_dependency_config):
         name="test",
         version="3.0.0",
         contractTypes=["bar"],
-        settings={"outputSelection": {"bar": "*"}},
+        settings={"outputSelection": {"path/to/Bar.vy": "*"}},
     )
 
     proj = project.local_project
@@ -674,6 +674,16 @@ def test_add_compiler_data(project_with_dependency_config):
     third_arg = [compiler_3]
     first_exp = [*start_compilers, compiler]
     final_exp = [*first_exp, compiler_2]
+
+    # Ensure types are in manifest for type-source-id lookup.
+    bar = ContractType(contractName="bar", sourceId="path/to/Bar.vy")
+    foo = ContractType(contractName="foo", sourceId="path/to/Foo.sol")
+    proj._cached_manifest = PackageManifest(
+        contractTypes={"bar": bar, "foo": foo},
+        sources={"path/to/Bar.vy": Source(), "path/to/Foo.vy": Source()},
+    )
+    proj._contracts = proj._cached_manifest.contract_types
+    assert proj.cached_manifest.contract_types, "Setup failed - need manifest contract types"
 
     # Add twice to show it's only added once.
     proj.add_compiler_data(argument)
@@ -689,10 +699,10 @@ def test_add_compiler_data(project_with_dependency_config):
     proj.add_compiler_data(third_arg)
     comp = [c for c in proj.manifest.compilers if c.name == "test" and c.version == "2.0.0"][0]
     assert "bar" not in comp.contractTypes
-    assert "bar" not in comp.settings["outputSelection"]
+    assert "path/to/Bar.vy" not in comp.settings["outputSelection"]
     new_comp = [c for c in proj.manifest.compilers if c.name == "test" and c.version == "3.0.0"][0]
     assert "bar" in new_comp.contractTypes
-    assert "bar" in new_comp.settings["outputSelection"]
+    assert "path/to/Bar.vy" in new_comp.settings["outputSelection"]
 
     # Show that compilers without contract types go away.
     (compiler_3.contractTypes or []).append("stay")

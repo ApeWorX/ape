@@ -211,7 +211,9 @@ class ProjectAPI(BaseInterfaceModel):
             )
 
         for given_compiler in given_compilers:
-            other_given_compilers = [c for c in given_compilers if c != given_compiler]
+            if not (other_given_compilers := [c for c in given_compilers if c != given_compiler]):
+                continue
+
             contract_types_from_others = [
                 n for c in other_given_compilers for n in (c.contractTypes or [])
             ]
@@ -224,15 +226,12 @@ class ProjectAPI(BaseInterfaceModel):
                 raise ProjectError(f"Contract type(s) '{collide_str}' collision across compilers.")
 
         new_types = [n for c in given_compilers for n in (c.contractTypes or [])]
-
-        # Merge given compilers with existing compilers.
         existing_compilers = self.manifest.compilers or []
-
-        # Existing compilers remaining after processing new compilers.
         remaining_existing_compilers: List[Compiler] = []
 
         for existing_compiler in existing_compilers:
-            find_iter = iter(x for x in compiler_data if x == existing_compiler)
+            # NOTE: For compilers to be equal, their name, version, and settings must be equal.
+            find_iter = (x for x in compiler_data if x == existing_compiler)
 
             if matching_given_compiler := next(find_iter, None):
                 # Compiler already exists in the system, possibly with different contract types.
@@ -243,6 +242,7 @@ class ProjectAPI(BaseInterfaceModel):
                         *(matching_given_compiler.contractTypes or []),
                     }
                 )
+
                 # NOTE: Purposely we don't add the existing compiler back,
                 #   as it is the same as the given compiler, (meaning same
                 #   name, version, and settings), and we have
@@ -258,10 +258,16 @@ class ProjectAPI(BaseInterfaceModel):
 
                 # Clear output selection for new types, since they are present in the new compiler.
                 if existing_compiler.settings and "outputSelection" in existing_compiler.settings:
+                    new_src_ids = {
+                        (self.manifest.contract_types or {})[x].source_id
+                        for x in new_types
+                        if x in (self.manifest.contract_types or {})
+                        and (self.manifest.contract_types or {})[x].source_id is not None
+                    }
                     existing_compiler.settings["outputSelection"] = {
                         k: v
                         for k, v in existing_compiler.settings["outputSelection"].items()
-                        if k not in new_types
+                        if k not in new_src_ids
                     }
 
                 # Remove compilers without contract types.
