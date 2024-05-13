@@ -40,7 +40,7 @@ assert receipt.sender == dev
 Deploying from [ape console](./console.html) allows you to interact with a contract in real time. You can also use the `--network` flag to connect a live network.
 
 ```bash
-ape console --network ethereum:goerli:alchemy
+ape console --network ethereum:sepolia:alchemy
 ```
 
 This will launch an IPython shell:
