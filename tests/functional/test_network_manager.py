@@ -243,11 +243,11 @@ def test_getattr_ecosystem_with_hyphenated_name(networks, ethereum):
     del networks.ecosystems["hyphen-in-name"]
 
 
-def test_getattr_custom_ecosystem(networks, custom_networks_config_dict, temp_config):
+def test_getattr_custom_ecosystem(networks, custom_networks_config_dict, project):
     data = copy.deepcopy(custom_networks_config_dict)
     data["networks"]["custom"][0]["ecosystem"] = "custom-ecosystem"
 
-    with temp_config(data):
+    with project.temp_config(**data):
         actual = getattr(networks, "custom_ecosystem")
         assert isinstance(actual, EcosystemAPI)
 
@@ -279,10 +279,10 @@ def test_ecosystems(networks):
     assert actual["ethereum"].name == "ethereum"
 
 
-def test_ecosystems_include_custom(networks, custom_networks_config_dict, temp_config):
+def test_ecosystems_include_custom(networks, custom_networks_config_dict, project):
     data = copy.deepcopy(custom_networks_config_dict)
     data["networks"]["custom"][0]["ecosystem"] = "custom-ecosystem"
-    with temp_config(data):
+    with project.temp_config(**data):
         actual = networks.ecosystems
 
     assert "custom-ecosystem" in actual

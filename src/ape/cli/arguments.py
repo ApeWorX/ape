@@ -1,7 +1,7 @@
 from collections.abc import Iterable
 from functools import cached_property
 from pathlib import Path
-from typing import Union
+from typing import TYPE_CHECKING, Optional, Union
 
 import click
 from click import BadArgumentUsage
@@ -9,8 +9,11 @@ from click import BadArgumentUsage
 from ape.cli.choices import _ACCOUNT_TYPE_FILTER, Alias
 from ape.logging import logger
 from ape.utils.basemodel import ManagerAccessMixin
-from ape.utils.os import get_all_files_in_directory, get_full_extension, path_match
+from ape.utils.os import get_full_extension, path_match
 from ape.utils.validators import _validate_account_alias
+
+if TYPE_CHECKING:
+    from ape.managers.project import ProjectManager
 
 
 def _alias_callback(ctx, param, value):
@@ -48,18 +51,20 @@ class _ContractPaths(ManagerAccessMixin):
     Helper callback class for handling CLI-given contract paths.
     """
 
-    def __init__(self, value):
+    def __init__(self, value, pm: Optional["ProjectManager"] = None):
         self.value = value
-        self._path_set = set()
-        self.missing_compilers = set()
-        self.exclude_list = {}
+        self._path_set: set[Path] = set()
+        self.missing_compilers: set[str] = set()  # set of .ext
+        self.exclude_list: dict[str, bool] = {}
+        self.pm = pm or ManagerAccessMixin.project_manager
 
     @classmethod
     def callback(cls, ctx, param, value) -> set[Path]:
         """
         Use this for click.option / argument callbacks.
         """
-        return cls(value).filtered_paths
+        pm = ctx.params.get("project")
+        return cls(value, pm=pm).filtered_paths
 
     @cached_property
     def filtered_paths(self) -> set[Path]:
@@ -79,7 +84,7 @@ class _ContractPaths(ManagerAccessMixin):
 
         elif not value or value == "*":
             # Get all file paths in the project.
-            contract_paths = get_all_files_in_directory(self.project_manager.contracts_folder)
+            return self.pm.sources.paths
 
         else:
             raise ValueError(f"Unknown contracts-paths value '{value}'.")
@@ -133,22 +138,20 @@ class _ContractPaths(ManagerAccessMixin):
             if self.do_exclude(path):
                 continue
 
-            contracts_folder = self.project_manager.contracts_folder
-            if (
-                self.project_manager.path / path.name
-            ) == contracts_folder or path.name == contracts_folder.name:
+            contracts_folder = self.pm.contracts_folder
+            if (self.pm.path / path.name) == contracts_folder or path.name == contracts_folder.name:
                 # Was given the path to the contracts folder.
-                self.lookup(p for p in self.project_manager.source_paths)
+                self.lookup(p for p in self.pm.sources.paths)
 
-            elif (self.project_manager.path / path).is_dir():
+            elif (self.pm.path / path).is_dir():
                 # Was given sub-dir in the project folder.
-                self.lookup(p for p in (self.project_manager.path / path).iterdir())
+                self.lookup(p for p in (self.pm.path / path).iterdir())
 
             elif (contracts_folder / path.name).is_dir():
                 # Was given sub-dir in the contracts folder.
                 self.lookup(p for p in (contracts_folder / path.name).iterdir())
 
-            elif resolved_path := self.project_manager.lookup_path(path):
+            elif resolved_path := self.pm.sources.lookup(path):
                 # Check compiler missing.
                 if self.compiler_is_unknown(resolved_path):
                     # NOTE: ^ Also tracks.

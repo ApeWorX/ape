@@ -760,7 +760,7 @@ class ContractTypeWrapper(ManagerAccessMixin):
         if not (source_id := self.contract_type.source_id):
             return None
 
-        base = self.base_path or self.project_manager.contracts_folder
+        base = self.base_path or self.project_manager.path
         path = base / source_id
         return path if path.is_file() else None
 
@@ -1394,7 +1394,7 @@ class ContractContainer(ContractTypeWrapper, ExtraAttributesMixin):
         self.chain_manager.contracts.cache_deployment(instance)
 
         if publish:
-            self.project_manager.track_deployment(instance)
+            self.project_manager.deployments.track(instance)
             self.provider.network.publish_contract(address)
 
         instance.base_path = self.base_path or self.project_manager.contracts_folder

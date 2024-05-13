@@ -53,7 +53,7 @@ def test_uri_localhost_not_running_uses_random_default(config):
 
 
 @geth_process_test
-def test_uri_when_configured(geth_provider, temp_config, ethereum):
+def test_uri_when_configured(geth_provider, project, ethereum):
     settings = geth_provider.provider_settings
     geth_provider.provider_settings = {}
     value = "https://value/from/config"
@@ -62,7 +62,7 @@ def test_uri_when_configured(geth_provider, temp_config, ethereum):
     network = ethereum.get_network("mainnet")
 
     try:
-        with temp_config(config):
+        with project.temp_config(**config):
             # Assert we use the config value.
             actual_local_uri = geth_provider.uri
             # Assert provider settings takes precedence.

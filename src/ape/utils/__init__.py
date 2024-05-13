@@ -47,6 +47,7 @@ from ape.utils.misc import (
     to_int,
 )
 from ape.utils.os import (
+    clean_path,
     create_tempdir,
     expand_environment_variables,
     get_all_files_in_directory,
@@ -74,6 +75,7 @@ __all__ = [
     "BaseInterface",
     "BaseInterfaceModel",
     "cached_property",
+    "clean_path",
     "create_tempdir",
     "DEFAULT_LIVE_NETWORK_BASE_FEE_MULTIPLIER",
     "DEFAULT_LOCAL_TRANSACTION_ACCEPTANCE_TIMEOUT",

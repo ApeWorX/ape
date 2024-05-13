@@ -206,8 +206,7 @@ def run_in_tempdir(
     Args:
         fn (Callable): A function that takes a path. It gets called
           with the resolved path to the temporary directory.
-        name (Optional[str]): Optionally provide a name for the temporary
-          directory.
+        name (Optional[str]): Optionally name the temporary directory.
 
     Returns:
         Any: The result of the function call.
@@ -254,6 +253,17 @@ def path_match(path: Union[str, Path], *exclusions: str) -> bool:
 
 
 def clean_path(path: Path) -> str:
+    """
+    Replace the home directory with key ``$HOME`` and return
+    the path as a str. This is used for outputting paths
+    with less doxxing.
+
+    Args:
+        path (Path): The path to sanitize.
+
+    Returns:
+        str: A sanitized path-str.
+    """
     home = Path.home()
     if path.is_relative_to(home):
         return f"$HOME{os.path.sep}{path.relative_to(home)}"

@@ -23,7 +23,7 @@ if TYPE_CHECKING:
     from ape.managers.converters import ConversionManager
     from ape.managers.networks import NetworkManager
     from ape.managers.plugins import PluginManager
-    from ape.managers.project import DependencyManager, ProjectManager
+    from ape.managers.project import ProjectManager
     from ape.managers.query import QueryManager
     from ape.pytest.runners import PytestApeRunner
 
@@ -121,15 +121,13 @@ class ManagerAccessMixin:
         "ConversionManager", injected_before_use()
     )
 
-    dependency_manager: ClassVar["DependencyManager"] = cast(
-        "DependencyManager", injected_before_use()
-    )
-
     network_manager: ClassVar["NetworkManager"] = cast("NetworkManager", injected_before_use())
 
     plugin_manager: ClassVar["PluginManager"] = cast("PluginManager", injected_before_use())
 
     project_manager: ClassVar["ProjectManager"] = cast("ProjectManager", injected_before_use())
+
+    Project: ClassVar[type["ProjectManager"]] = cast(type["ProjectManager"], injected_before_use())
 
     query_manager: ClassVar["QueryManager"] = cast("QueryManager", injected_before_use())
 

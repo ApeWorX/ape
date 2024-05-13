@@ -15,13 +15,10 @@ from ape.types import (
     CoverageReport,
     SourceTraceback,
 )
-from ape.utils import (
-    ManagerAccessMixin,
-    get_current_timestamp_ms,
-    get_relative_path,
-    parse_coverage_tables,
-)
-from ape.utils.os import get_full_extension
+from ape.utils.basemodel import ManagerAccessMixin
+from ape.utils.misc import get_current_timestamp_ms
+from ape.utils.os import get_full_extension, get_relative_path
+from ape.utils.trace import parse_coverage_tables
 
 
 class CoverageData(ManagerAccessMixin):
@@ -282,7 +279,7 @@ class CoverageTracker(ManagerAccessMixin):
 
         # Reports are set in ape-config.yaml.
         reports = self.config_wrapper.ape_test_config.coverage.reports
-        out_folder = self.project_manager.local_project._cache_folder
+        out_folder = self.project_manager.manifest_path.parent
         if reports.terminal:
             verbose = (
                 reports.terminal.get("verbose", False)

@@ -1,7 +1,7 @@
-from collections.abc import Iterable
+from collections.abc import Iterable, Iterator
 from functools import cached_property
 from pathlib import Path
-from typing import Optional
+from typing import TYPE_CHECKING, Optional
 
 from eth_pydantic_types import HexBytes
 from ethpm_types import ContractType
@@ -19,6 +19,9 @@ from ape.utils import (
     log_instead_of_fail,
     raises_not_implemented,
 )
+
+if TYPE_CHECKING:
+    from ape.managers.project import ProjectManager
 
 
 class CompilerAPI(BaseInterfaceModel):
@@ -44,24 +47,25 @@ class CompilerAPI(BaseInterfaceModel):
         The name of the compiler.
         """
 
-    @property
-    def config(self) -> PluginConfig:
-        """
-        The provider's configuration.
-        """
-        return self.config_manager.get_config(self.name)
-
-    @property
-    def settings(self) -> PluginConfig:
+    def get_config(self, project: Optional["ProjectManager"] = None) -> PluginConfig:
         """
         The combination of settings from ``ape-config.yaml`` and ``.compiler_settings``.
-        """
-        CustomConfig = self.config.__class__
-        data = {**self.config.model_dump(by_alias=True), **self.compiler_settings}
-        return CustomConfig.model_validate(data)
 
-    @abstractmethod
-    def get_versions(self, all_paths: Iterable[Path]) -> set[str]:
+        Args:
+            project (Optional[:class:`~ape.managers.project.ProjectManager`]): Optionally provide
+              the project containing the base paths and full source set. Defaults to the local
+              project. Dependencies will change this value to their respective projects.
+
+        Returns:
+            :class:`~ape.api.config.PluginConfig`
+        """
+        pm = project or self.project_manager
+        config = pm.config.get_config(self.name)
+        data = {**config.model_dump(mode="json", by_alias=True), **self.compiler_settings}
+        return config.model_validate(data)
+
+    @raises_not_implemented
+    def get_versions(self, all_paths: Iterable[Path]) -> set[str]:  # type: ignore[empty-body]
         """
         Retrieve the set of available compiler versions for this plugin to compile ``all_paths``.
 
@@ -74,7 +78,10 @@ class CompilerAPI(BaseInterfaceModel):
 
     @raises_not_implemented
     def get_compiler_settings(  # type: ignore[empty-body]
-        self, contract_filepaths: Iterable[Path], base_path: Optional[Path] = None
+        self,
+        contract_filepaths: Iterable[Path],
+        project: Optional["ProjectManager"] = None,
+        **overrides,
     ) -> dict[Version, dict]:
         """
         Get a mapping of the settings that would be used to compile each of the sources
@@ -82,7 +89,10 @@ class CompilerAPI(BaseInterfaceModel):
 
         Args:
             contract_filepaths (Iterable[pathlib.Path]): The list of paths.
-            base_path (Optional[pathlib.Path]): The contracts folder base path.
+            project (Optional[:class:`~ape.managers.project.ProjectManager`]): Optionally provide
+              the project containing the base paths and full source set. Defaults to the local
+              project. Dependencies will change this value to their respective projects.
+            **overrides: Settings overrides.
 
         Returns:
             dict[Version, dict]: A dict of compiler settings by compiler version.
@@ -90,26 +100,31 @@ class CompilerAPI(BaseInterfaceModel):
 
     @abstractmethod
     def compile(
-        self, contract_filepaths: Iterable[Path], base_path: Optional[Path]
-    ) -> Iterable[ContractType]:
+        self,
+        contract_filepaths: Iterable[Path],
+        project: Optional["ProjectManager"],
+        settings: Optional[dict] = None,
+    ) -> Iterator[ContractType]:
         """
         Compile the given source files. All compiler plugins must implement this function.
 
         Args:
             contract_filepaths (Iterable[pathlib.Path]): A list of source file paths to compile.
-            base_path (Optional[pathlib.Path]): Optionally provide the base path, such as the
-              project ``contracts/`` directory. Defaults to ``None``. When using in a project
-              via ``ape compile``, gets set to the project's ``contracts/`` directory.
+            project (Optional[:class:`~ape.managers.project.ProjectManager`]): Optionally provide
+              the project containing the base paths and full source set. Defaults to the local
+              project. Dependencies will change this value to their respective projects.
+            settings (Optional[dict]): Adhoc compiler settings.
 
         Returns:
-            Iterator[``ContractType``]
+            list[:class:`~ape.type.contract.ContractType`]
         """
 
     @raises_not_implemented
     def compile_code(  # type: ignore[empty-body]
         self,
         code: str,
-        base_path: Optional[Path] = None,
+        project: Optional["ProjectManager"],
+        settings: Optional[dict] = None,
         **kwargs,
     ) -> ContractType:
         """
@@ -117,10 +132,10 @@ class CompilerAPI(BaseInterfaceModel):
 
         Args:
             code (str): The code to compile.
-            base_path (Optional[pathlib.Path]): Optionally provide the base path, such as the
-              project ``contracts/`` directory. Defaults to ``None``. When using in a project
-              via ``compilers.compile_source()``, gets set to the project's ``contracts/``
-              directory.
+            project (Optional[:class:`~ape.managers.project.ProjectManager`]): Optionally provide
+              the project containing the base paths and full source set. Defaults to the local
+              project. Dependencies will change this value to their respective projects.
+            settings (Optional[Dict]): Adhoc compiler settings.
             **kwargs: Additional overrides for the ``ethpm_types.ContractType`` model.
 
         Returns:
@@ -129,7 +144,7 @@ class CompilerAPI(BaseInterfaceModel):
 
     @raises_not_implemented
     def get_imports(  # type: ignore[empty-body]
-        self, contract_filepaths: Iterable[Path], base_path: Optional[Path]
+        self, contract_filepaths: Iterable[Path], project: Optional["ProjectManager"]
     ) -> dict[str, list[str]]:
         """
         Returns a list of imports as source_ids for each contract's source_id in a given
@@ -137,9 +152,9 @@ class CompilerAPI(BaseInterfaceModel):
 
         Args:
             contract_filepaths (Iterable[pathlib.Path]): A list of source file paths to compile.
-            base_path (Optional[pathlib.Path]): Optionally provide the base path, such as the
-              project ``contracts/`` directory. Defaults to ``None``. When using in a project
-              via ``ape compile``, gets set to the project's ``contracts/`` directory.
+            project (Optional[:class:`~ape.managers.project.ProjectManager`]): Optionally provide
+              the project containing the base paths and full source set. Defaults to the local
+              project. Dependencies will change this value to their respective projects.
 
         Returns:
             dict[str, list[str]]: A dictionary like ``{source_id: [import_source_id, ...], ...}``
@@ -149,7 +164,7 @@ class CompilerAPI(BaseInterfaceModel):
     def get_version_map(  # type: ignore[empty-body]
         self,
         contract_filepaths: Iterable[Path],
-        base_path: Optional[Path] = None,
+        project: Optional["ProjectManager"] = None,
     ) -> dict[Version, set[Path]]:
         """
         Get a map of versions to source paths.
@@ -157,8 +172,9 @@ class CompilerAPI(BaseInterfaceModel):
         Args:
             contract_filepaths (Iterable[Path]): Input source paths. Defaults to all source paths
               per compiler.
-            base_path (Path): The base path of sources. Defaults to the project's
-              ``contracts_folder``.
+            project (Optional[:class:`~ape.managers.project.ProjectManager`]): Optionally provide
+              the project containing the base paths and full source set. Defaults to the local
+              project. Dependencies will change this value to their respective projects.
 
         Returns:
             dict[Version, set[Path]]
@@ -224,7 +240,9 @@ class CompilerAPI(BaseInterfaceModel):
         """
 
     @raises_not_implemented
-    def flatten_contract(self, path: Path, **kwargs) -> Content:  # type: ignore[empty-body]
+    def flatten_contract(  # type: ignore[empty-body]
+        self, path: Path, project: Optional["ProjectManager"] = None, **kwargs
+    ) -> Content:
         """
         Get the content of a flattened contract via its source path.
         Plugin implementations handle import resolution, SPDX de-duplication,
@@ -232,6 +250,9 @@ class CompilerAPI(BaseInterfaceModel):
 
         Args:
             path (``pathlib.Path``): The source path of the contract.
+            project (Optional[:class:`~ape.managers.project.ProjectManager`]): Optionally provide
+              the project containing the base paths and full source set. Defaults to the local
+              project. Dependencies will change this value to their respective projects.
             **kwargs (Any): Additional compiler-specific settings. See specific
               compiler plugins when applicable.
 

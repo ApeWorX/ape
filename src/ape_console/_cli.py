@@ -12,8 +12,9 @@ import click
 import IPython
 from IPython.terminal.ipapp import Config as IPythonConfig
 
-from ape.cli import ConnectedProviderCommand, ape_cli_context
-from ape.managers import ProjectManager
+from ape.cli.commands import ConnectedProviderCommand
+from ape.cli.options import ape_cli_context, project_option
+from ape.managers.project import ProjectManager
 from ape.utils.basemodel import ManagerAccessMixin
 from ape.utils.misc import _python_version
 from ape.version import version as ape_version
@@ -28,10 +29,11 @@ CONSOLE_EXTRAS_FILENAME = "ape_console_extras.py"
     context_settings=dict(ignore_unknown_options=True),
 )
 @ape_cli_context()
-def cli(cli_ctx):
+@project_option(hidden=True)  # Hidden as mostly used for test purposes.
+def cli(cli_ctx, project):
     """Opens a console for the local project."""
     verbose = cli_ctx.logger.level == logging.DEBUG
-    return console(verbose=verbose)
+    return console(project=project, verbose=verbose)
 
 
 def import_extras_file(file_path) -> ModuleType:

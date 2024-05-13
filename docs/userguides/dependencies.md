@@ -1,6 +1,6 @@
 # Dependencies
 
-Ape downloads and caches dependencies in the `.ape/packages/<name>/<version-id>` directory where `<name>` refers to the name of the dependency and `<version-id>` refers to the version or branch of the package.
+Ape downloads and caches dependencies in the `.ape/packages/projects/<name>/<version-id>` directory where `<name>` refers to the full-name of the dependency (e.g. `"OpenZeppelin/openzeppelin-contracts"`) and `<version-id>` refers to the version or branch of the package.
 When first downloading dependencies, Ape only places the source contents in the `sources` field of the `PackageManifest` and leaves the `contract_types` field untouched.
 This is because dependencies may not compile by Ape's standard out-of-the-box but their contract types can still be used in projects that do.
 
@@ -285,7 +285,8 @@ You can achieve this using the project manager:
 from ape import accounts, project
 
 # NOTE: This will compile the dependency
-dependency_contract = project.dependencies["my_dependency"]["1.0.0"].DependencyContractType
+dependency = project.dependencies["my_dependency"]["1.0.0"]
+dependency_contract = dependency.project.DependencyContractType
 my_account = accounts.load("alias")
 deployed_contract = my_account.deploy(dependency_contract, "argument")
 print(deployed_contract.address)

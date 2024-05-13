@@ -1,384 +1,35 @@
-import os.path
-import re
-from collections.abc import Iterator, Sequence
+from functools import cached_property
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Optional, Union
+from typing import Optional
 
-from ethpm_types import Checksum, Compiler, ContractType, PackageManifest, Source
-from ethpm_types.source import Content
-from packaging.version import InvalidVersion, Version
-from pydantic import AnyUrl, ValidationError
+from pydantic import field_validator
 
-from ape.exceptions import ProjectError
-from ape.logging import logger
-from ape.utils import (
-    BaseInterfaceModel,
-    ExtraAttributesMixin,
-    ExtraModelAttributes,
-    abstractmethod,
-    cached_property,
-    create_tempdir,
-    get_all_files_in_directory,
-    get_relative_path,
-    log_instead_of_fail,
-)
-
-if TYPE_CHECKING:
-    from ape.contracts import ContractContainer
+from ape.api.config import ApeConfig
+from ape.utils import BaseInterfaceModel, abstractmethod
 
 
-class ProjectAPI(BaseInterfaceModel):
+class DependencyAPI(BaseInterfaceModel):
     """
-    An abstract base-class for working with projects.
-    This class can also be extended to a plugin for supporting non-ape projects.
-    """
-
-    path: Path
-    """The project path."""
-
-    contracts_folder: Path
-    """The path to the contracts in the project."""
-
-    name: Optional[str] = None
-    """The name of this project when another project uses it as a dependency."""
-
-    version: Optional[str] = None
-    """The version of the project whe another project uses it as a dependency."""
-
-    config_file_name: str = "ape-config.yaml"
-
-    _cached_manifest: Optional[PackageManifest] = None
-
-    _contracts: Optional[dict[str, ContractType]] = None
-
-    @log_instead_of_fail(default="<ProjectAPI>")
-    def __repr__(self) -> str:
-        cls_name = getattr(type(self), "__name__", ProjectAPI.__name__)
-        return f"<{cls_name} {self.path.name}>"
-
-    @property
-    @abstractmethod
-    def is_valid(self) -> bool:
-        """
-        ``True`` if the project at the given path matches this project type.
-        Useful for figuring out the best ``ProjectAPI`` to use when compiling a project.
-        """
-
-    @property
-    def manifest(self) -> PackageManifest:
-        return self.cached_manifest or PackageManifest()
-
-    @abstractmethod
-    def create_manifest(
-        self, file_paths: Optional[Sequence[Path]] = None, use_cache: bool = True
-    ) -> PackageManifest:
-        """
-        Create a manifest from the project.
-
-        Args:
-            file_paths (Optional[Sequence[Path]]): An optional list of paths to compile
-              from this project.
-            use_cache (bool): Set to ``False`` to clear caches and force a re-compile.
-
-        Returns:
-            ``PackageManifest``
-        """
-
-    @property
-    def manifest_cachefile(self) -> Path:
-        """
-        The path to the project's cached manifest. The manifest
-        is a cached file representing the project and is useful
-        for sharing, such as uploading to IPFS.
-
-        Returns:
-            pathlib.Path
-        """
-
-        file_name = self.name or "__local__"
-        return self._cache_folder / f"{file_name}.json"
-
-    @property
-    def cached_manifest(self) -> Optional[PackageManifest]:
-        """
-        The ``PackageManifest`` at :py:attr:`~ape.api.projects.ProjectAPI.manifest_cachefile`
-        if it exists and is valid.
-        """
-        if self._cached_manifest is None:
-            self._cached_manifest = _load_manifest_from_file(self.manifest_cachefile)
-            if self._cached_manifest is None:
-                return None
-
-        manifest = self._cached_manifest
-        if manifest.contract_types and not self.contracts:
-            # Rely on individual cache files.
-            self._contracts = manifest.contract_types
-            manifest.contract_types = {}
-
-        else:
-            contracts: dict[str, ContractType] = {}
-
-            # Exclude contracts with missing sources, else you'll get validation errors.
-            # This scenario happens if changing branches and you have some contracts on
-            # one branch and others on the next.
-            for name, contract in self.contracts.items():
-                if (source_id := contract.source_id) and source_id in (manifest.sources or {}):
-                    contracts[name] = contract
-
-            manifest.contract_types = contracts
-
-        return manifest
-
-    @property
-    def contracts(self) -> dict[str, ContractType]:
-        if contracts := self._contracts:
-            return contracts
-
-        contracts = {}
-        for p in self._cache_folder.glob("*.json"):
-            if p == self.manifest_cachefile:
-                continue
-
-            contract_name = p.stem
-            contract_type = ContractType.model_validate_json(p.read_text())
-            contract_type.name = contract_name if contract_type.name is None else contract_type.name
-            contracts[contract_type.name] = contract_type
-
-        if contracts:
-            self._contracts = contracts
-
-        return self._contracts or {}
-
-    @property
-    def _cache_folder(self) -> Path:
-        folder = self.contracts_folder.parent / ".build"
-        # NOTE: If we use the cache folder, we expect it to exist
-        folder.mkdir(exist_ok=True, parents=True)
-        return folder
-
-    def update_manifest(self, **kwargs) -> PackageManifest:
-        """
-        Add additional package manifest parts to the cache.
-
-        Args:
-            **kwargs: Fields from ``ethpm_types.manifest.PackageManifest``.
-        """
-        new_manifest = self.manifest.model_copy(update=kwargs)
-        return self.replace_manifest(new_manifest)
-
-    def replace_manifest(self, manifest: PackageManifest) -> PackageManifest:
-        """
-        Replace the entire cached manifest.
-
-        Args:
-            manifest (``ethpm_types.manifest.PackageManifest``): The manifest
-              to use.
-        """
-        self.manifest_cachefile.unlink(missing_ok=True)
-        self.manifest_cachefile.write_text(manifest.model_dump_json())
-        self._cached_manifest = manifest
-        return manifest
-
-    def process_config_file(self, **kwargs) -> bool:
-        """
-        Process the project's config file.
-        Returns ``True`` if had to create a temporary ``ape-config.yaml`` file.
-        """
-
-        return False
-
-    def add_compiler_data(self, compiler_data: Sequence[Compiler]) -> list[Compiler]:
-        """
-        Add compiler data to the existing cached manifest.
-
-        Args:
-            compiler_data (list[``ethpm_types.Compiler``]): Compilers to add.
-
-        Returns:
-            list[``ethpm_types.source.Compiler``]: The full list of compilers.
-        """
-        # Validate given data.
-        given_compilers = set(compiler_data)
-        if len(given_compilers) != len(compiler_data):
-            raise ProjectError(
-                f"`{self.add_compiler_data.__name__}()` was given multiple of the same compiler. "
-                "Please filter inputs."
-            )
-
-        # Filter out given compilers without contract types.
-        given_compilers = {c for c in given_compilers if c.contractTypes}
-        if len(given_compilers) != len(compiler_data):
-            logger.warning(
-                f"`{self.add_compiler_data.__name__}()` given compilers without contract types. "
-                "Ignoring these inputs."
-            )
-
-        for given_compiler in given_compilers:
-            if not (other_given_compilers := [c for c in given_compilers if c != given_compiler]):
-                continue
-
-            contract_types_from_others = [
-                n for c in other_given_compilers for n in (c.contractTypes or [])
-            ]
-
-            collisions = {
-                n for n in (given_compiler.contractTypes or []) if n in contract_types_from_others
-            }
-            if collisions:
-                collide_str = ", ".join(collisions)
-                raise ProjectError(f"Contract type(s) '{collide_str}' collision across compilers.")
-
-        new_types = [n for c in given_compilers for n in (c.contractTypes or [])]
-        existing_compilers = self.manifest.compilers or []
-
-        # Existing compilers remaining after processing new compilers.
-        remaining_existing_compilers: list[Compiler] = []
-
-        for existing_compiler in existing_compilers:
-            # NOTE: For compilers to be equal, their name, version, and settings must be equal.
-            find_iter = (x for x in compiler_data if x == existing_compiler)
-
-            if matching_given_compiler := next(find_iter, None):
-                # Compiler already exists in the system, possibly with different contract types.
-                # Merge contract types.
-                matching_given_compiler.contractTypes = list(
-                    {
-                        *(existing_compiler.contractTypes or []),
-                        *(matching_given_compiler.contractTypes or []),
-                    }
-                )
-
-                # NOTE: Purposely we don't add the existing compiler back,
-                #   as it is the same as the given compiler, (meaning same
-                #   name, version, and settings), and we have
-                #   merged their contract types.
-
-                continue
-
-            else:
-                # Filter out contract types added now under a different compiler.
-                existing_compiler.contractTypes = [
-                    c for c in (existing_compiler.contractTypes or []) if c not in new_types
-                ]
-
-                # Clear output selection for new types, since they are present in the new compiler.
-                if existing_compiler.settings and "outputSelection" in existing_compiler.settings:
-                    new_src_ids = {
-                        (self.manifest.contract_types or {})[x].source_id
-                        for x in new_types
-                        if x in (self.manifest.contract_types or {})
-                        and (self.manifest.contract_types or {})[x].source_id is not None
-                    }
-                    existing_compiler.settings["outputSelection"] = {
-                        k: v
-                        for k, v in existing_compiler.settings["outputSelection"].items()
-                        if k not in new_src_ids
-                    }
-
-                # Remove compilers without contract types.
-                if existing_compiler.contractTypes:
-                    remaining_existing_compilers.append(existing_compiler)
-
-        # Use Compiler.__hash__ to remove duplicated.
-        # Also, sort for consistency.
-        compilers = sorted(
-            list({*remaining_existing_compilers, *compiler_data}),
-            key=lambda x: f"{x.name}@{x.version}",
-        )
-        manifest = self.update_manifest(compilers=compilers)
-        return manifest.compilers or compilers  # Or for mypy.
-
-    def update_manifest_sources(
-        self,
-        source_paths: list[Path],
-        contracts_path: Path,
-        contract_types: dict[str, ContractType],
-        name: Optional[str] = None,
-        version: Optional[str] = None,
-        compiler_data: Optional[list[Compiler]] = None,
-        **kwargs: Any,
-    ) -> PackageManifest:
-        items: dict = {
-            "contract_types": contract_types,
-            "sources": self._create_source_dict(source_paths, contracts_path),
-            "compilers": compiler_data or [],
-        }
-        if name is not None:
-            items["name"] = name.lower()
-        if version:
-            items["version"] = version
-
-        return self.update_manifest(**{**items, **kwargs})
-
-    @classmethod
-    def _create_source_dict(
-        cls, contract_filepaths: Union[Path, list[Path]], base_path: Path
-    ) -> dict[str, Source]:
-        filepaths = (
-            [contract_filepaths] if isinstance(contract_filepaths, Path) else contract_filepaths
-        )
-        source_imports: dict[str, list[str]] = cls.compiler_manager.get_imports(
-            filepaths, base_path
-        )  # {source_id: [import_source_ids, ...], ...}
-        source_references: dict[str, list[str]] = cls.compiler_manager.get_references(
-            imports_dict=source_imports
-        )  # {source_id: [referring_source_ids, ...], ...}
-
-        source_dict: dict[str, Source] = {}
-        for source_path in filepaths:
-            key = str(get_relative_path(source_path, base_path))
-
-            try:
-                text = source_path.read_text("utf8")
-            except UnicodeDecodeError:
-                # Let it attempt to find the encoding.
-                # (this is much slower and a-typical).
-                text = source_path.read_text()
-
-            source_dict[key] = Source(
-                checksum=Checksum.from_file(source_path),
-                urls=[],
-                content=Content(root={i + 1: x for i, x in enumerate(text.splitlines())}),
-                imports=source_imports.get(key, []),
-                references=source_references.get(key, []),
-            )
-
-        return source_dict  # {source_id: Source}
-
-
-class DependencyAPI(ExtraAttributesMixin, BaseInterfaceModel):
-    """
-    A base-class for dependency sources, such as GitHub or IPFS.
+    An API for obtaining sources.
     """
 
     name: str
-    """The name of the dependency."""
-
-    version: Optional[str] = None
     """
-    The version of the dependency. Omit to use the latest.
+    The package-name of the dependency.
     """
 
     config_override: dict = {}
     """
-    Extra settings to include in the dependency's configuration.
+    Set different config than what Ape can deduce.
     """
 
-    _cached_manifest: Optional[PackageManifest] = None
-
-    @log_instead_of_fail(default="<DependencyAPI>")
-    def __repr__(self) -> str:
-        cls_name = getattr(type(self), "__name__", DependencyAPI.__name__)
-        return f"<{cls_name} name='{self.name}'>"
-
-    def __ape_extra_attributes__(self) -> Iterator[ExtraModelAttributes]:
-        yield ExtraModelAttributes(
-            name=self.name,
-            attributes=lambda: self.contracts,
-            include_getattr=True,
-            include_getitem=True,
-            additional_error_message="Do you have the necessary compiler plugins installed?",
-        )
+    @property
+    @abstractmethod
+    def package_id(self) -> str:
+        """
+        The full name of the package, used for storage.
+        Example: ``OpenZeppelin/openzepplin-contracts``.
+        """
 
     @property
     @abstractmethod
@@ -390,278 +41,94 @@ class DependencyAPI(ExtraAttributesMixin, BaseInterfaceModel):
 
     @property
     @abstractmethod
-    def uri(self) -> AnyUrl:
+    def uri(self) -> str:
         """
-        The URI to use when listing in a PackageManifest.
+        The URI for the package.
         """
-
-    @cached_property
-    def _base_cache_path(self) -> Path:
-        version_id = self.version_id
-
-        try:
-            _ = Version(version_id)  # Will raise if can't parse
-            if not version_id.startswith("v"):
-                version_id = f"v{version_id}"
-        except InvalidVersion:
-            pass
-
-        return self.config_manager.packages_folder / self.name / version_id
-
-    @property
-    def _target_manifest_cache_file(self) -> Path:
-        return self._base_cache_path / f"{self.name}.json"
 
     @abstractmethod
-    def extract_manifest(self, use_cache: bool = True) -> PackageManifest:
+    def fetch(self, destination: Path):
         """
-        Create a ``PackageManifest`` definition,
-        presumably by downloading and compiling the dependency.
-
-        Implementations may use ``self.project_manager`` to call method
-        :meth:`~ape.managers.project.ProjectManager.get_project`
-        to dynamically get the correct :class:`~ape.api.projects.ProjectAPI`.
-        based on the project's structure.
+        Fetch the dependency. E.g. for GitHub dependency,
+        download the files to the destination.
 
         Args:
-            use_cache (bool): Defaults to ``True``. Set to ``False`` to force
-              a re-install.
-
-        Returns:
-            ``PackageManifest``
+            destination (Path): The destination for the dependency
+              files.
         """
+
+    @field_validator("name", mode="before")
+    @classmethod
+    def validate_name(cls, value):
+        return (value or "").lower().replace("_", "-")
+
+
+class ProjectAPI(BaseInterfaceModel):
+    """
+    An API for recognizing different project types,
+    such as brownie projects versus ape projects.
+    NOTE: This assumed the project sources are available and unpacked.
+    Use :class:`~ape.api.projects.DependencyAPI` to fetch different
+    projects. The main task of the project API is to generate
+    a configuration needed to compile in Ape.
+    """
+
+    path: Path
+    """
+    The location of the project.
+    """
 
     @property
-    def cached_manifest(self) -> Optional[PackageManifest]:
+    @abstractmethod
+    def is_valid(self) -> bool:
         """
-        The manifest from the ``.ape/packages/<dependency-name>/<version-id>``
-        if it exists and is valid.
+        Return ``True`` when detecting a project of this type.
         """
-        if self._cached_manifest is None:
-            self._cached_manifest = _load_manifest_from_file(self._target_manifest_cache_file)
 
-        return self._cached_manifest
-
-    @cached_property
-    def contracts(self) -> dict[str, "ContractContainer"]:
+    @abstractmethod
+    def extract_config(self, **overrides) -> "ApeConfig":
         """
-        A mapping of name to contract type of all the contracts
-        in this dependency.
-        """
-        return {
-            n: self.chain_manager.contracts.get_container(c)
-            for n, c in (self.compile().contract_types or {}).items()
-        }
-
-    def get(self, contract_name: str) -> Optional["ContractContainer"]:
-        return self.contracts.get(contract_name)
-
-    def compile(self, use_cache: bool = True) -> PackageManifest:
-        """
-        Compile the contract types in this dependency into
-        a package manifest.
+        Extra configuration from the project so that
+        Ape understands the dependencies and how to compile everything.
 
         Args:
-            use_cache (bool): Defaults to ``True``. Set to ``False`` to force
-              a re-compile.
+            **overrides: Config overrides.
 
-        **NOTE**: By default, dependency's compile lazily.
+        Returns:
+            :class:`~ape.managers.config.ApeConfig`
         """
 
-        manifest = self.extract_manifest()
-        if use_cache and manifest.contract_types:
-            # Already compiled
-            return manifest
+    @classmethod
+    def attempt_validate(cls, **kwargs) -> Optional["ProjectAPI"]:
+        try:
+            instance = cls(**kwargs)
+        except ValueError:
+            return None
 
-        # Figure the config data needed to compile this dependency.
-        # Use a combination of looking at the manifest's other artifacts
-        # as well, config overrides, and the base project's config.
-        config_data: dict[str, Any] = {
-            **_get_compile_configs_from_manifest(manifest),
-            **_get_dependency_configs_from_manifest(manifest),
-            **self.config_override,
-        }
-
-        with create_tempdir() as path:
-            contracts_folder = path / config_data.get("contracts_folder", "contracts")
-
-            if "contracts_folder" not in config_data:
-                config_data["contracts_folder"] = contracts_folder
-
-            contracts_folder.mkdir(exist_ok=True, parents=True)
-            with self.config_manager.using_project(path, **config_data) as project:
-                manifest.unpack_sources(contracts_folder)
-                compiled_manifest = project.local_project.create_manifest()
-
-                if not compiled_manifest.contract_types:
-                    # Manifest is empty. No need to write to disk.
-                    logger.warning(
-                        "Compiled manifest produced no contract types! "
-                        "Are you missing compiler plugins?"
-                    )
-                    return compiled_manifest
-
-                self.replace_manifest(compiled_manifest)
-                return compiled_manifest
-
-    def _extract_local_manifest(
-        self, project_path: Path, use_cache: bool = True
-    ) -> PackageManifest:
-        cached_manifest = (
-            _load_manifest_from_file(self._target_manifest_cache_file)
-            if use_cache and self._target_manifest_cache_file.is_file()
-            else None
-        )
-        if cached_manifest:
-            return cached_manifest
-
-        if project_path.is_file() and project_path.suffix == ".json":
-            try:
-                manifest = PackageManifest.model_validate_json(project_path.read_text())
-            except ValueError as err:
-                if project_path.parent.is_dir():
-                    project_path = project_path.parent
-                else:
-                    raise ProjectError(f"Invalid manifest file: '{project_path}'.") from err
-
-            else:
-                # Was given a path to a manifest JSON.
-                self.replace_manifest(manifest)
-                return manifest
-
-        elif (project_path.parent / project_path.name.replace("-", "_")).is_dir():
-            project_path = project_path.parent / project_path.name.replace("-", "_")
-
-        elif (project_path.parent / project_path.name.replace("_", "-")).is_dir():
-            project_path = project_path.parent / project_path.name.replace("_", "-")
-
-        elif project_path.parent.is_dir():
-            project_path = project_path.parent
-
-        contracts_folder = self.config_override.get("contracts_folder", "contracts")
-
-        # NOTE: Dependencies are not compiled here. Instead, the sources are packaged
-        # for later usage via imports. For legacy reasons, many dependency-esque projects
-        # are not meant to compile on their own.
-
-        with self.config_manager.using_project(
-            project_path,
-            contracts_folder=(project_path / contracts_folder).expanduser().resolve(),
-        ) as pm:
-            project = pm.local_project
-            if sources := self._get_sources(project):
-                dependencies = self.project_manager._extract_manifest_dependencies()
-
-                extras: dict = {}
-                if dependencies:
-                    extras["dependencies"] = dependencies
-
-                project.update_manifest_sources(
-                    sources,
-                    project.contracts_folder,
-                    {},
-                    name=project.name,
-                    version=project.version,
-                    **extras,
-                )
-            else:
-                raise ProjectError(
-                    f"No source files found in dependency '{self.name}'. "
-                    "Try adjusting its config using `config_override` to "
-                    "get Ape to recognize the project. "
-                    "\nMore information: https://docs.apeworx.io/ape/stable"
-                    "/userguides/dependencies.html#config-override"
-                )
-
-        # Replace the dependency's manifest with the temp project's.
-        self.replace_manifest(project.manifest)
-        return project.manifest
-
-    def _get_sources(self, project: ProjectAPI) -> list[Path]:
-        escaped_extensions = [re.escape(ext) for ext in self.compiler_manager.registered_compilers]
-        extension_pattern = "|".join(escaped_extensions)
-        pattern = rf".*({extension_pattern})"
-        all_sources = get_all_files_in_directory(project.contracts_folder, pattern=pattern)
-        exclude = [
-            *(self.config_override.get("compile", {}).get("exclude", []) or []),
-        ]
-        excluded_files = set()
-        for pattern in set(exclude):
-            excluded_files.update({f for f in project.contracts_folder.glob(pattern)})
-
-        return [s for s in all_sources if s not in excluded_files]
-
-    def replace_manifest(self, manifest: PackageManifest):
-        self._target_manifest_cache_file.unlink(missing_ok=True)
-        self._target_manifest_cache_file.parent.mkdir(exist_ok=True, parents=True)
-        self._target_manifest_cache_file.write_text(manifest.model_dump_json())
-        self._cached_manifest = manifest
+        return instance if instance.is_valid else None
 
 
-def _load_manifest_from_file(file_path: Path) -> Optional[PackageManifest]:
-    if not file_path.is_file():
-        return None
+class ApeProject(ProjectAPI):
+    """
+    The default ProjectAPI implementation.
+    """
 
-    try:
-        return PackageManifest.model_validate_json(file_path.read_text())
-    except ValidationError as err:
-        logger.warning(
-            f"Existing manifest file '{file_path}' corrupted (problem={err}). Re-building."
-        )
-        return None
+    CONFIG_FILE_NAME: str = "ape-config"
+    EXTENSIONS: tuple[str, ...] = (".yaml", ".yml", ".json")
 
+    @property
+    def is_valid(self) -> bool:
+        return True  # If all else fails, treat as a default Ape project.
 
-def _get_compile_configs_from_manifest(manifest: PackageManifest) -> dict[str, dict]:
-    configs: dict[str, dict] = {}
-    for compiler in [x for x in manifest.compilers or [] if x.settings]:
-        name = compiler.name.strip().lower()
-        compiler_data = {}
-        settings = compiler.settings or {}
-        remapping_list = []
-        for remapping in settings.get("remappings") or []:
-            parts = remapping.split("=")
-            key = parts[0]
-            link = parts[1]
-            if link.startswith(f".cache{os.path.sep}"):
-                link = os.path.sep.join(link.split(f".cache{os.path.sep}"))[1:]
+    @cached_property
+    def config_file(self) -> Path:
+        for ext in self.EXTENSIONS:
+            path = self.path / f"{self.CONFIG_FILE_NAME}{ext}"
+            if path.is_file():
+                return path
 
-            new_entry = f"{key}={link}"
-            remapping_list.append(new_entry)
+        # Default
+        return self.path / f"{self.CONFIG_FILE_NAME}.yaml"
 
-        if remapping_list:
-            compiler_data["import_remapping"] = remapping_list
-
-        if "evm_version" in settings:
-            compiler_data["evm_version"] = settings["evm_version"]
-
-        if compiler_data:
-            configs[name] = compiler_data
-
-    return configs
-
-
-def _get_dependency_configs_from_manifest(manifest: PackageManifest) -> dict:
-    dependencies_config: list[dict] = []
-    dependencies = manifest.dependencies or {}
-    for package_name, uri in dependencies.items():
-        if "://" not in str(uri) and hasattr(uri, "scheme"):
-            uri_str = f"{uri.scheme}://{uri}"
-        else:
-            uri_str = str(uri)
-
-        dependency: dict = {"name": str(package_name)}
-        if uri_str.startswith("https://"):
-            # Assume GitHub dependency
-            version = uri_str.split("/")[-1]
-            dependency["github"] = uri_str.replace(f"/releases/tag/{version}", "")
-            dependency["github"] = dependency["github"].replace("https://github.com/", "")
-
-            # NOTE: If version fails, the dependency system will automatically try `ref`.
-            dependency["version"] = version
-
-        elif uri_str.startswith("file://"):
-            dependency["local"] = uri_str.replace("file://", "")
-
-        dependencies_config.append(dependency)
-
-    return {"dependencies": dependencies_config} if dependencies_config else {}
+    def extract_config(self, **overrides) -> ApeConfig:
+        return ApeConfig.validate_file(self.config_file, **overrides)
