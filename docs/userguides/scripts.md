@@ -77,7 +77,7 @@ from ape.cli import ape_cli_context
 def cli(cli_ctx):        
     # There is no connection yet at this point.
     testnets = {
-        "ethereum": ["sepolia", "goerli"],
+        "ethereum": ["sepolia"],
         "polygon": ["mumbai"]
     }
     nm = cli_ctx.network_manager

@@ -198,7 +198,6 @@ class GethDevProcess(BaseGethProcess):
 class GethNetworkConfig(PluginConfig):
     # Make sure you are running the right networks when you try for these
     mainnet: Dict = {"uri": get_random_rpc("ethereum", "mainnet")}
-    goerli: Dict = {"uri": get_random_rpc("ethereum", "goerli")}
     sepolia: Dict = {"uri": get_random_rpc("ethereum", "sepolia")}
     # Make sure to run via `geth --dev` (or similar)
     local: Dict = {**DEFAULT_SETTINGS.copy(), "chain_id": DEFAULT_TEST_CHAIN_ID}
