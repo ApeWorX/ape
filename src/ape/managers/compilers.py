@@ -120,7 +120,7 @@ class CompilerManager(BaseManager, ExtraAttributesMixin):
             Iterator[``ContractType``]: An iterator of contract types.
         """
 
-        pm = project or self.project_manager
+        pm = project or self.local_project
         files_by_ext = defaultdict(list)
         for path in map(Path, contract_filepaths):
             suffix = get_full_extension(path)

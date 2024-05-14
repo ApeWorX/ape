@@ -243,7 +243,7 @@ class Receipt(ReceiptAPI):
     @cached_property
     def source_traceback(self) -> SourceTraceback:
         if contract_type := self.contract_type:
-            if contract_src := self.project_manager._create_contract_source(contract_type):
+            if contract_src := self.local_project._create_contract_source(contract_type):
                 try:
                     return SourceTraceback.create(contract_src, self.trace, HexBytes(self.data))
                 except Exception as err:

@@ -60,7 +60,7 @@ class CoverageData(ManagerAccessMixin):
         timestamp = get_current_timestamp_ms()
         report = CoverageReport(
             projects=[project_coverage],
-            source_folders=[self.project_manager.contracts_folder],
+            source_folders=[self.local_project.contracts_folder],
             timestamp=timestamp,
         )
 
@@ -122,10 +122,10 @@ class CoverageData(ManagerAccessMixin):
 class CoverageTracker(ManagerAccessMixin):
     def __init__(self, config_wrapper: ConfigWrapper):
         self.config_wrapper = config_wrapper
-        sources = self.project_manager._contract_sources
+        sources = self.local_project._contract_sources
 
         self.data: Optional[CoverageData] = (
-            CoverageData(self.project_manager.contracts_folder, sources)
+            CoverageData(self.local_project.contracts_folder, sources)
             if self.config_wrapper.track_coverage
             else None
         )
@@ -180,7 +180,7 @@ class CoverageTracker(ManagerAccessMixin):
                 for src in project.sources:
                     # NOTE: We will allow this check to skip if there is no source is the
                     # traceback. This helps increment methods that are missing from the source map.
-                    path = self.project_manager.contracts_folder / src.source_id
+                    path = self.local_project.contracts_folder / src.source_id
                     if source_path is not None and path != source_path:
                         continue
 
@@ -279,7 +279,7 @@ class CoverageTracker(ManagerAccessMixin):
 
         # Reports are set in ape-config.yaml.
         reports = self.config_wrapper.ape_test_config.coverage.reports
-        out_folder = self.project_manager.manifest_path.parent
+        out_folder = self.local_project.manifest_path.parent
         if reports.terminal:
             verbose = (
                 reports.terminal.get("verbose", False)

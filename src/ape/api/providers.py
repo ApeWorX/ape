@@ -894,7 +894,7 @@ class TestProviderAPI(ProviderAPI):
             return
 
         if not (contract_type := self.chain_manager.contracts.get(txn.receiver)) or not (
-            contract_src := self.project_manager._create_contract_source(contract_type)
+            contract_src := self.local_project._create_contract_source(contract_type)
         ):
             return
 

@@ -11,12 +11,12 @@ class OutputExtras(ConfigEnum):
     appear in ``.build/{key.lower()/``
     """
 
+    ABI = "ABI"
     """
     Include this value to output the ABIs of your contracts
     to minified JSONs. This is useful for hosting purposes
     for web-apps.
     """
-    ABI = "ABI"
 
 
 class Config(PluginConfig):

@@ -22,5 +22,5 @@ ManagerAccessMixin.query_manager = QueryManager()
 ManagerAccessMixin.conversion_manager = ConversionManager()
 ManagerAccessMixin.chain_manager = ChainManager()
 ManagerAccessMixin.account_manager = AccountManager()
-ManagerAccessMixin.project_manager = ProjectManager(Path.cwd())
+ManagerAccessMixin.local_project = ProjectManager(Path.cwd())
 ManagerAccessMixin.Project = ProjectManager

@@ -43,7 +43,7 @@ class ConfigManager(ExtraAttributesMixin, BaseManager):
         yield ExtraModelAttributes(
             name="config",
             # Active project's config.
-            attributes=self.project_manager.config,
+            attributes=self.local_project.config,
             include_getitem=True,
         )
 
@@ -52,7 +52,7 @@ class ConfigManager(ExtraAttributesMixin, BaseManager):
         return f"<{CONFIG_FILE_NAME}>"
 
     def __str__(self) -> str:
-        return str(self.project_manager.config)
+        return str(self.local_project.config)
 
     @only_raise_attribute_error
     def __getattr__(self, name: str) -> Any:

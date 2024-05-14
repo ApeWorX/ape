@@ -274,7 +274,7 @@ class NpmDependency(DependencyAPI):
         The version from your project's package.json, if exists.
         """
         return _get_version_from_package_json(
-            self.project_manager.path, dict_path=("dependencies", self.package_id)
+            self.local_project.path, dict_path=("dependencies", self.package_id)
         )
 
     @property

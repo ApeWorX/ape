@@ -52,7 +52,7 @@ def import_extras_file(file_path) -> ModuleType:
 def load_console_extras(**namespace: Any) -> dict[str, Any]:
     """load and return namespace updates from ape_console_extras.py  files if
     they exist"""
-    pm = namespace.get("project", ManagerAccessMixin.project_manager)
+    pm = namespace.get("project", ManagerAccessMixin.local_project)
     global_extras = pm.config_manager.DATA_FOLDER.joinpath(CONSOLE_EXTRAS_FILENAME)
     project_extras = pm.path.joinpath(CONSOLE_EXTRAS_FILENAME)
 
@@ -98,7 +98,7 @@ def console(
 ):
     import ape
 
-    project = project or ManagerAccessMixin.project_manager
+    project = project or ManagerAccessMixin.local_project
     banner = ""
     if verbose:
         banner = """

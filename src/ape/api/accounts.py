@@ -280,10 +280,10 @@ class AccountAPI(BaseInterfaceModel, BaseAddress):
         self.chain_manager.contracts.cache_deployment(instance)
 
         if publish:
-            self.project_manager.deployments.track(instance)
+            self.local_project.deployments.track(instance)
             self.provider.network.publish_contract(address)
 
-        instance.base_path = contract.base_path or self.project_manager.path
+        instance.base_path = contract.base_path or self.local_project.path
         return instance
 
     def declare(self, contract: "ContractContainer", *args, **kwargs) -> ReceiptAPI:

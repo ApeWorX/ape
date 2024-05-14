@@ -1173,7 +1173,7 @@ class ContractCache(BaseManager):
                 # Handle both absolute and relative paths
                 abi_path = Path(abi)
                 if not abi_path.is_absolute():
-                    abi_path = self.project_manager.path / abi
+                    abi_path = self.local_project.path / abi
 
                 try:
                     abi = json.loads(abi_path.read_text())

@@ -11,6 +11,7 @@ from pydantic import ConfigDict, Field, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 from ape.exceptions import ConfigError
+from ape.logging import logger
 from ape.types import AddressType
 from ape.utils.basemodel import (
     ExtraAttributesMixin,
@@ -430,17 +431,25 @@ def _get_dependency_configs_from_manifest(manifest: PackageManifest) -> dict:
             uri_str = str(uri)
 
         dependency: dict = {"name": str(package_name)}
-        if uri_str.startswith("https://"):
-            # Assume GitHub dependency
-            version = uri_str.split("/")[-1]
-            dependency["github"] = uri_str.replace(f"/releases/tag/{version}", "")
-            dependency["github"] = dependency["github"].replace("https://github.com/", "")
+        if uri_str.startswith("https://github.com/") and "releases/tag" in uri_str:
+            # 'https:', '', 'github.com', org, repo, 'releases', 'tag', version
+            # Fails with ValueError if not matching
+            try:
+                _, _, _, org, repo, _, _, version = uri_str.split("/")
+            except ValueError:
+                raise ConfigError("")
 
-            # NOTE: If version fails, the dependency system will automatically try `ref`.
+            dependency["github"] = f"{org}/{repo}"
+
+            # If version fails, the dependency system will automatically try `ref`.
             dependency["version"] = version
 
         elif uri_str.startswith("file://"):
             dependency["local"] = uri_str.replace("file://", "")
+
+        else:
+            logger.error(f"Manifest URI {uri_str} not a supported dependency.")
+            continue
 
         dependencies_config.append(dependency)
 

@@ -363,7 +363,7 @@ def _load_contracts(ctx, param, value) -> Optional[Union[ContractType, list[Cont
     if not value:
         return None
 
-    if len(ManagerAccessMixin.project_manager.contracts) == 0:
+    if len(ManagerAccessMixin.local_project.contracts) == 0:
         raise ProjectError("Project has no contracts.")
 
     # If the user passed in `multiple=True`, then `value` is a list,
@@ -371,10 +371,10 @@ def _load_contracts(ctx, param, value) -> Optional[Union[ContractType, list[Cont
     is_multiple = isinstance(value, (tuple, list))
 
     def get_contract(contract_name: str) -> ContractType:
-        if contract_name not in ManagerAccessMixin.project_manager.contracts:
+        if contract_name not in ManagerAccessMixin.local_project.contracts:
             raise ProjectError(f"No contract named '{value}'")
 
-        return ManagerAccessMixin.project_manager.contracts[contract_name]
+        return ManagerAccessMixin.local_project.contracts[contract_name]
 
     return [get_contract(c) for c in value] if is_multiple else get_contract(value)
 
@@ -453,12 +453,12 @@ def incompatible_with(incompatible_opts) -> type[click.Option]:
 def _project_callback(ctx, param, val):
     pm = None
     if not val:
-        pm = ManagerAccessMixin.project_manager
+        pm = ManagerAccessMixin.local_project
 
     else:
         path = Path(val)
-        if path == ManagerAccessMixin.project_manager.path:
-            pm = ManagerAccessMixin.project_manager
+        if path == ManagerAccessMixin.local_project.path:
+            pm = ManagerAccessMixin.local_project
 
         else:
             Project = ManagerAccessMixin.Project

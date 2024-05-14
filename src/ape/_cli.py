@@ -28,7 +28,7 @@ def display_config(ctx, param, value):
     click.echo("# Current configuration")
 
     # NOTE: Using json-mode as yaml.dump requires JSON-like structure.
-    model = ManagerAccessMixin.project_manager.config_manager.model_dump(mode="json")
+    model = ManagerAccessMixin.local_project.config_manager.model_dump(mode="json")
 
     click.echo(yaml.dump(model))
 
@@ -89,7 +89,7 @@ class ApeCLI(click.MultiCommand):
         except click.UsageError as err:
             self._suggest_cmd(err)
         except ApeException as err:
-            path = ctx.obj.project_manager.path
+            path = ctx.obj.local_project.path
 
             # NOTE: isinstance check for type-checkers.
             if isinstance(path, Path) and handle_ape_exception(err, (path,)):

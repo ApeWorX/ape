@@ -417,7 +417,7 @@ class Dependency(BaseManager, ExtraAttributesMixin):
     def __init__(self, api: DependencyAPI, project: Optional["ProjectManager"] = None):
         self.api = api
         # This is the base project using this dependency.
-        self.base_project = project or self.project_manager
+        self.base_project = project or self.local_project
         # When installed (and set, lazily), this is the dependency project.
         self._installation: Optional["ProjectManager"] = None
 
@@ -665,7 +665,7 @@ class DependencyManager(BaseManager):
     """
 
     def __init__(self, project: Optional["ProjectManager"] = None):
-        self.project = project or self.project_manager
+        self.project = project or self.local_project
 
     @log_instead_of_fail(default="<DependencyManager>")
     def __repr__(self) -> str:
@@ -1195,7 +1195,8 @@ class Project(ProjectManager):
         """
         Change manifest values. Overwrites.
 
-        **kwargs: Top-level manifest attributes.
+        Args:
+            **kwargs: Top-level manifest attributes.
         """
         for k, v in kwargs.items():
             setattr(self._manifest, k, v)

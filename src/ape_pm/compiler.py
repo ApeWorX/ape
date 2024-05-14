@@ -31,7 +31,7 @@ class InterfaceCompiler(CompilerAPI):
         project: Optional["ProjectManager"],
         settings: Optional[dict] = None,
     ) -> Iterator[ContractType]:
-        project = project or self.project_manager
+        project = project or self.local_project
         source_ids = {
             p: f"{get_relative_path(p.absolute(), project.path.absolute())}"
             for p in contract_filepaths

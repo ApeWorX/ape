@@ -125,7 +125,7 @@ class ManagerAccessMixin:
 
     plugin_manager: ClassVar["PluginManager"] = cast("PluginManager", injected_before_use())
 
-    project_manager: ClassVar["ProjectManager"] = cast("ProjectManager", injected_before_use())
+    local_project: ClassVar["ProjectManager"] = cast("ProjectManager", injected_before_use())
 
     Project: ClassVar[type["ProjectManager"]] = cast(type["ProjectManager"], injected_before_use())
 

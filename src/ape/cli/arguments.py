@@ -56,7 +56,7 @@ class _ContractPaths(ManagerAccessMixin):
         self._path_set: set[Path] = set()
         self.missing_compilers: set[str] = set()  # set of .ext
         self.exclude_list: dict[str, bool] = {}
-        self.pm = pm or ManagerAccessMixin.project_manager
+        self.pm = pm or ManagerAccessMixin.local_project
 
     @classmethod
     def callback(cls, ctx, param, value) -> set[Path]:

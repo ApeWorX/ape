@@ -285,8 +285,8 @@ You can achieve this using the project manager:
 from ape import accounts, project
 
 # NOTE: This will compile the dependency
-dependency = project.dependencies["my_dependency"]["1.0.0"]
-dependency_contract = dependency.project.DependencyContractType
+dependency_project = project.dependencies["my_dependency"]["1.0.0"]
+dependency_contract = dependency_project.DependencyContractType 
 my_account = accounts.load("alias")
 deployed_contract = my_account.deploy(dependency_contract, "argument")
 print(deployed_contract.address)

@@ -85,7 +85,7 @@ def custom_exception_handler(self, etype, value, tb, tb_offset=None):
     else:
         # This happens if assigned the variable `project` in your session
         # to something other than ``ape.project``.
-        path = ManagerAccessMixin.project_manager.path
+        path = ManagerAccessMixin.local_project.path
 
     if not handle_ape_exception(value, [path]):
         logger.error(Abort.from_ape_exception(value).format_message())

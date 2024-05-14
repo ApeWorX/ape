@@ -23,7 +23,7 @@ def _list(cli_ctx):
     List installed packages
     """
 
-    pm = cli_ctx.project_manager
+    pm = cli_ctx.local_project
     packages = []
     for dependency in pm.dependencies:
         item = {
@@ -131,7 +131,7 @@ def install(cli_ctx, package, name, version, ref, force, config_override):
     Download and cache packages
     """
 
-    pm = cli_ctx.project_manager
+    pm = cli_ctx.local_project
     if not package or package == ".":
         if version:
             cli_ctx.abort("Cannot specify version when installing from config.")
@@ -186,7 +186,7 @@ def uninstall(cli_ctx, name, versions, yes):
     - Remove all versions: ape pm remove <PackageName> -y
     """
 
-    pm = cli_ctx.project_manager
+    pm = cli_ctx.local_project
 
     # NOTE: Purposely don't call `get_dependency` or anything so we for sure
     #   are only checking the installed.
@@ -254,7 +254,7 @@ def compile(cli_ctx, name, version, force, config_override):
     """
     Compile a package
     """
-    pm = cli_ctx.project_manager
+    pm = cli_ctx.local_project
     if not name or name == ".":
         if version:
             cli_ctx.abort("Cannot specify 'version' without 'name'.")

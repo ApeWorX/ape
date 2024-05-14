@@ -59,7 +59,7 @@ class CompilerAPI(BaseInterfaceModel):
         Returns:
             :class:`~ape.api.config.PluginConfig`
         """
-        pm = project or self.project_manager
+        pm = project or self.local_project
         config = pm.config.get_config(self.name)
         data = {**config.model_dump(mode="json", by_alias=True), **self.compiler_settings}
         return config.model_validate(data)
