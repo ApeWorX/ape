@@ -156,6 +156,16 @@ ape pm install gh:OpenZeppelin/openzeppelin-contracts \
   --config-override '{"solidity": {"version": "0.8.12"}}'
 ```
 
+You can also use Python to install dependencies, using `**kwargs` as the same fields you put in your `dependencies:` config:
+
+```python
+from ape import project
+
+project.dependencies.install(
+   github="OpenZeppelin/openzeppelin-contracts", name="openzeppelin", version="4.4.2"
+)
+```
+
 ### uninstall
 
 Remove previously installed packages using the `uninstall` command:

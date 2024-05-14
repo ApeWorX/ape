@@ -19,15 +19,15 @@ class LocalDependency(DependencyAPI):
     A dependency located on the local machine.
     """
 
+    local: Path
     """
     The root path (and API defining key) to the dependency files.
     """
-    local: Path
 
+    version: Optional[str] = None
     """
     Specified version.
     """
-    version: Optional[str] = None
 
     @model_validator(mode="before")
     @classmethod
@@ -89,12 +89,13 @@ class GithubDependency(DependencyAPI):
             version: 4.4.0
     """
 
+    github: str
     """
     The Github repo ID e.g. the organization name followed by the repo name,
     such as ``dapphub/erc20``.
     """
-    github: str
 
+    ref: Optional[str] = None
     """
     The branch or tag to use. When using this field
     instead of the 'release' field, the repository
@@ -103,8 +104,8 @@ class GithubDependency(DependencyAPI):
 
     **NOTE**: Will be ignored if given a 'release'.
     """
-    ref: Optional[str] = None
 
+    version: Optional[str] = None
     """
     The release version to use. When using this
     field instead of the 'ref' field, the GitHub
@@ -112,7 +113,6 @@ class GithubDependency(DependencyAPI):
 
     **NOTE**: Will be ignored if given a 'ref'.
     """
-    version: Optional[str] = None
 
     @model_validator(mode="after")
     @classmethod
@@ -197,19 +197,19 @@ class NpmDependency(DependencyAPI):
             version: 1.0.14
     """
 
+    npm: Path
     """
     The NPM repo ID e.g. the organization name followed by the repo name,
     such as ``"@gnosis.pm/safe-singleton-factory"``.
     Note: Resolves to a 'path' after serialization.
     The package must already be installed!
     """
-    npm: Path
 
+    version: Optional[str] = None
     """
     Specify the version, if not wanting to use discovered version
     from install.
     """
-    version: Optional[str] = None
 
     @model_validator(mode="before")
     @classmethod

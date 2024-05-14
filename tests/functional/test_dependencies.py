@@ -170,9 +170,8 @@ def test_project_load_contracts_with_config_override(project):
         contracts_path.mkdir(exist_ok=True, parents=True)
         (contracts_path / "contract.json").write_text('{"abi": []}')
         data = {"name": "FooBar", "local": f"{tmp_project.path}", "config_override": override}
-        api = tmp_project.dependencies.decode_dependency(data)
-        tmp_project.dependencies.install(api)
-        dependency = tmp_project.dependencies.get(api.name, api.version_id)
+        tmp_project.dependencies.install(**data)
+        dependency = tmp_project.dependencies.get("foobar", "local")
         assert dependency.config.contracts_folder == "src"
         assert dependency.contracts_folder == dependency.path / "src"
         assert dependency.contracts_folder.is_dir()

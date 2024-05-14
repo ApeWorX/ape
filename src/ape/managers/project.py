@@ -926,14 +926,13 @@ class DependencyManager(BaseManager):
         self.packages_cache.cache_api(api)
         return self.get_dependency(api.name, api.version_id)
 
-    def install(self, *dependencies: Union[dict, DependencyAPI], use_cache: bool = True):
+    def install(self, **dependency: Any):
         """
         Install dependencies.
         """
-        if dependencies:
-            for item in dependencies:
-                self._install(item, use_cache=use_cache)
-
+        use_cache: bool = dependency.pop("use_cache", False)
+        if dependency:
+            self._install(dependency, use_cache=use_cache)
         else:
             # Install all project's.
             _ = [x for x in self.specified]
