@@ -1,10 +1,17 @@
 # Dependencies
 
-Ape downloads and caches dependencies in the `.ape/packages/projects/<name>/<version-id>` directory where `<name>` refers to the full-name of the dependency (e.g. `"OpenZeppelin/openzeppelin-contracts"`) and `<version-id>` refers to the version or branch of the package.
-When first downloading dependencies, Ape only places the source contents in the `sources` field of the `PackageManifest` and leaves the `contract_types` field untouched.
-This is because dependencies may not compile by Ape's standard out-of-the-box but their contract types can still be used in projects that do.
+Ape downloads and caches dependencies in the `.ape/packages` folder.
+There are three sub-folders in `.ape/packages` for dependencies:
 
-To use dependencies in your projects, you must configure them in your `ape-config.yaml` file.
+1. `projects/` - contains the raw project files for each dependency in subsequent `/<name>/<version-id>` directories (where `<name>` refers to the path-ified full-name of the dependency, e.g. `"OpenZeppelin_openzeppelin-contracts"`, and `<version-id>` refers to the version or branch of the package).
+   This location is where local project compilation looks for additional sources from import statements.
+2. `manifests/` - much like your local projects' `.build/__local__.json`, this is where dependencies cache their manifests.
+   When you compile a dependency, the contract types are stored in the dependency manifest's JSON file.
+3. `api/` - for caching the API data placed in `dependencies:` config or `ape pm install` commands, allowing dependency usage and management from anywhere in the file system.
+
+*NOTE*: You can install dependencies that don't compile out-of-the-box.
+Sometimes, dependencies are only collections of source files not meant to compile on their own but instead be used in projects via import statements.
+You can change the settings of a dependency using `config_override:` to compile dependencies after installed, if needed, and the `api/` cache always refers to the latest used during installation or compilation.
 
 ## Types of Dependencies
 

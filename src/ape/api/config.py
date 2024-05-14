@@ -126,16 +126,16 @@ class DeploymentConfig(PluginConfig):
     Add 'deployments' to your config.
     """
 
+    address: AddressType
     """
     The address of the deployment.
     """
-    address: AddressType
 
+    contract_type: str
     """
     The contract type name reference
     (must be a contract in the project).
     """
-    contract_type: str
 
 
 class ApeConfig(ExtraAttributesMixin, BaseSettings, ManagerAccessMixin):
@@ -143,6 +143,7 @@ class ApeConfig(ExtraAttributesMixin, BaseSettings, ManagerAccessMixin):
     The top-level config.
     """
 
+    contracts_folder: Optional[str] = None
     """
     The path to the folder containing the contract source files.
     **NOTE**: Non-absolute paths are relative to the project-root.
@@ -151,44 +152,43 @@ class ApeConfig(ExtraAttributesMixin, BaseSettings, ManagerAccessMixin):
     that folder does not exist, Ape tries to find a folder with
     contracts.
     """
-    contracts_folder: Optional[str] = None
 
+    default_ecosystem: str = "ethereum"
     """
     The default ecosystem to use in Ape.
     """
-    default_ecosystem: str = "ethereum"
 
+    dependencies: list[dict] = []
     """
     Project dependency declarations.
     Note: The actual dependency classes are decoded later.
     """
-    dependencies: list[dict] = []
 
+    deployment_data: dict[str, dict[str, list[DeploymentConfig]]] = Field({}, alias="deployments")
     """
     Data for deployed contracts from the project.
     """
-    deployment_data: dict[str, dict[str, list[DeploymentConfig]]] = Field({}, alias="deployments")
 
+    interfaces_folder: str = "interfaces"
     """
     The path to the project's interfaces.
     """
-    interfaces_folder: str = "interfaces"
 
+    meta: PackageMeta = PackageMeta()
     """
     Metadata about the active project as per EIP
     https://eips.ethereum.org/EIPS/eip-2678#the-package-meta-object
     """
-    meta: PackageMeta = PackageMeta()
 
+    name: str = ""
     """
     The name of the project.
     """
-    name: str = ""
 
+    version: str = ""
     """
     The version of the project.
     """
-    version: str = ""
 
     # NOTE: Plugin configs are technically "extras".
     model_config = SettingsConfigDict(extra="allow")
