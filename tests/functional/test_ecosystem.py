@@ -959,7 +959,7 @@ def test_default_network_name_when_not_set_and_no_local_uses_only(
     project, custom_networks_config_dict
 ):
     ecosystem_name = "customeco"
-    data = {**custom_networks_config_dict}
+    data = copy.deepcopy(custom_networks_config_dict)
     data["networks"]["custom"][0]["ecosystem"] = ecosystem_name
     with project.temp_config(**data):
         ecosystem = project.network_manager.get_ecosystem(ecosystem_name)
@@ -995,7 +995,7 @@ def test_decode_custom_error_tx_unsigned(ethereum):
     assert actual is None
 
 
-def test_decode_custom_error_selector_not_found(mocker, chain, ethereum):
+def test_decode_custom_error_selector_not_found(chain, ethereum):
     data = HexBytes("0x6a12f104")
     abi: list = []
     contract_type = ContractType(abi=abi)
