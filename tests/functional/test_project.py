@@ -368,6 +368,18 @@ def test_extract_manifest_when_sources_missing(tmp_project):
     assert "notreallyhere" not in manifest.contract_types
 
 
+def test_extract_manifest_excludes_cache(tmp_project):
+    cachefile = tmp_project.contracts_folder / ".cache" / "CacheFile.json"
+    cachefile2 = tmp_project.contracts_folder / ".cache" / "subdir" / "Cache2.json"
+    cachefile2.parent.mkdir(parents=True)
+    cachefile.write_text("Doesn't matter")
+    cachefile2.write_text("Doesn't matter")
+    manifest = tmp_project.extract_manifest()
+    assert isinstance(manifest, PackageManifest)
+    assert ".cache/CacheFile.json" not in (manifest.sources or {})
+    assert ".cache/subdir/CacheFile.json" not in (manifest.sources or {})
+
+
 def test_exclusions(tmp_project):
     exclusions = ["Other.json", "*Excl*"]
     exclude_config = {"compile": {"exclude": exclusions}}

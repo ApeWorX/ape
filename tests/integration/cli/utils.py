@@ -126,11 +126,11 @@ def skip_projects_except(*names: str):
     return decorator
 
 
+run_once = skip_projects_except("test")
 """
 For times when the CLI integration test is unlikely to be
 affected by project structure.
 """
-run_once = skip_projects_except("test")
 
 
 def github_xfail():

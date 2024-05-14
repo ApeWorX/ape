@@ -228,6 +228,21 @@ def test_uninstall_invalid_version(pm_runner, project):
 
 
 @skip_projects_except("only-dependencies")
+def test_uninstall_cancel(pm_runner, project):
+    pm_runner.project = project
+    package_name = "dependency-in-project-only"
+    version = "local"
+
+    # Install packages
+    pm_runner.invoke("install", ".", "--force")
+
+    result = pm_runner.invoke("uninstall", package_name, version, input="n\n")
+    assert result.exit_code == 0, result.output
+    expected_message = f"Version '{version}' of package '{package_name}' uninstalled."
+    assert expected_message not in result.output
+
+
+@skip_projects_except("only-dependencies")
 def test_list(pm_runner, project):
     pm_runner.project = project
     package_name = "dependency-in-project-only"
