@@ -926,20 +926,30 @@ class DependencyManager(BaseManager):
         self.packages_cache.cache_api(api)
         return self.get_dependency(api.name, api.version_id)
 
-    def install(self, **dependency: Any):
+    def install(self, **dependency: Any) -> Union[Dependency, list[Dependency]]:
         """
         Install dependencies.
+
+        Args:
+            **dependency: Dependency data, same to what you put in `dependencies:` config.
+              When excluded, installs all project-specified dependencies. Also, use
+              ``use_cache=False`` to force a re-install.
+
+        Returns:
+            :class:`~ape.managers.project.Dependency` when given data else a list
+            of them, one for each specified.
         """
         use_cache: bool = dependency.pop("use_cache", False)
         if dependency:
-            self._install(dependency, use_cache=use_cache)
+            return self._install(dependency, use_cache=use_cache)
         else:
             # Install all project's.
-            _ = [x for x in self.specified]
+            return [x for x in self.specified]
 
-    def _install(self, item: Union[dict, DependencyAPI], use_cache: bool = True):
+    def _install(self, item: Union[dict, DependencyAPI], use_cache: bool = True) -> Dependency:
         dependency = self.add(item)
         dependency.install(use_cache=use_cache)
+        return dependency
 
     def unpack(self, path: Path):
         """

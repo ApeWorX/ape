@@ -154,13 +154,12 @@ def install(cli_ctx, package, name, version, ref, force, config_override):
         package["config_override"] = config_override
 
     try:
-        api = pm.dependencies.decode_dependency(package)
+        dependency = pm.dependencies.install(**package, use_cache=not force)
     except Exception as err:
-        # Invalid API data.
         cli_ctx.logger.log_error(err)
     else:
-        pm.dependencies.install(**api, use_cache=not force)
-        cli_ctx.logger.success(f"Package '{api.name}@{api.version_id}' installed.")
+        assert isinstance(dependency, Dependency)  # for mypy
+        cli_ctx.logger.success(f"Package '{dependency.name}@{dependency.version_id}' installed.")
 
 
 @cli.command()
@@ -265,17 +264,16 @@ def compile(cli_ctx, name, version, force, config_override):
             if config_override:
                 cfg["config_override"] = config_override
 
-            api = pm.dependencies.decode_dependency(cfg)
-            pm.dependencies.install(**api)
-            dependency = pm.dependencies.get_dependency(api.name, api.version_id)
-
+            dependency = pm.dependencies.install(**cfg)
             try:
                 dependency.compile(use_cache=not force)
             except Exception as err:
                 cli_ctx.logger.error(str(err))
                 continue
             else:
-                cli_ctx.logger.success(f"Package '{api.name}@{api.version_id}' compiled.")
+                cli_ctx.logger.success(
+                    f"Package '{dependency.name}@{dependency.version}' compiled."
+                )
 
         if did_error:
             sys.exit(1)
