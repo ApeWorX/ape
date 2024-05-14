@@ -159,7 +159,7 @@ def install(cli_ctx, package, name, version, ref, force, config_override):
         cli_ctx.logger.log_error(err)
     else:
         assert isinstance(dependency, Dependency)  # for mypy
-        cli_ctx.logger.success(f"Package '{dependency.name}@{dependency.version_id}' installed.")
+        cli_ctx.logger.success(f"Package '{dependency.name}@{dependency.version}' installed.")
 
 
 @cli.command()
