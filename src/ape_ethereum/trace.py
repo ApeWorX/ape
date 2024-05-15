@@ -6,8 +6,7 @@ from enum import Enum
 from functools import cached_property
 from typing import IO, Any, Optional, Union
 
-from eth_abi import decode
-from eth_utils import is_0x_prefixed, to_hex
+from eth_utils import is_0x_prefixed
 from evm_trace import (
     CallTreeNode,
     CallType,
@@ -139,6 +138,16 @@ class Trace(TraceAPI):
 
     @cached_property
     def revert_message(self) -> Optional[str]:
+        call = self.enriched_calltree
+        if not call.get("failed", False):
+            return None
+
+        returndata = call.get("returndata")
+        if returndata and isinstance(returndata, str) and not returndata.startswith("0x"):
+            # Was enriched.
+            return returndata
+
+        # Enrichment call-tree not available. Attempt looking in trace-frames.
         try:
             frames = self.raw_trace_frames
         except Exception as err:
@@ -156,37 +165,34 @@ class Trace(TraceAPI):
 
     def show(self, verbose: bool = False, file: IO[str] = sys.stdout):
         call = self.enriched_calltree
-        revert_message = None
+        revert_message = self.revert_message
 
-        if call.get("failed", False):
-            default_message = "reverted without message"
-            returndata = HexBytes(call.get("returndata", b""))
-            if to_hex(returndata).startswith(_REVERT_PREFIX):
-                decoded_result = decode(("string",), returndata[4:])
-                if len(decoded_result) == 1:
-                    revert_message = f'reverted with message: "{decoded_result[0]}"'
-                else:
-                    revert_message = default_message
+        if revert_message:
+            revert_message = f'reverted with message: "{revert_message}"'
 
-            elif address := (
-                self.transaction.get("to") or self.transaction.get("contract_address")
-            ):
-                # Try to enrich revert error using ABI.
-                if provider := self.network_manager.active_provider:
-                    ecosystem = provider.network.ecosystem
-                else:
-                    # Default to Ethereum.
-                    ecosystem = self.network_manager.ethereum
-
-                try:
-                    instance = ecosystem.decode_custom_error(returndata, address)
-                except NotImplementedError:
-                    pass
-                else:
-                    revert_message = repr(instance)
-
+        elif (
+            call.get("failed", False)
+            and self.return_value
+            and (
+                address := (self.transaction.get("to") or self.transaction.get("contract_address"))
+            )
+        ):
+            # Try to enrich revert error using ABI.
+            if provider := self.network_manager.active_provider:
+                ecosystem = provider.network.ecosystem
             else:
-                revert_message = default_message
+                # Default to Ethereum.
+                ecosystem = self.network_manager.ethereum
+
+            try:
+                instance = ecosystem.decode_custom_error(self.return_value, address)
+            except NotImplementedError:
+                pass
+            else:
+                revert_message = repr(instance)
+
+        elif call.get("failed", False):
+            revert_message = "reverted without message"
 
         root = self._get_tree(verbose=verbose)
         console = self.chain_manager._reports._get_console(file=file)
@@ -204,6 +210,11 @@ class Trace(TraceAPI):
 
     def get_gas_report(self, exclude: Optional[Sequence[ContractFunctionPath]] = None) -> GasReport:
         call = self.enriched_calltree
+        return self._get_gas_report_from_call(call, exclude=exclude)
+
+    def _get_gas_report_from_call(
+        self, call: dict, exclude: Optional[Sequence[ContractFunctionPath]] = None
+    ) -> GasReport:
         tx = self.transaction
 
         # Enrich transfers.
@@ -217,28 +228,27 @@ class Trace(TraceAPI):
             call["method_id"] = f"to:{receiver}"
 
         exclusions = exclude or []
+        calls = call.get("calls", [])
+        sub_reports = (self._get_gas_report_from_call(c, exclude=exclusions) for c in calls)
 
         if (
             not call.get("contract_id")
             or not call.get("method_id")
             or _exclude_gas(exclusions, call.get("contract_id", ""), call.get("method_id", ""))
         ):
-            return merge_reports(*(c.get_gas_report(exclude) for c in call.get("calls", [])))
+            return merge_reports(*sub_reports)
 
         elif not is_zero_hex(call["method_id"]) and not is_evm_precompile(call["method_id"]):
-            reports = [
-                *[c.get_gas_report(exclude) for c in call.get("calls", [])],
-                {
-                    call["contract_id"]: {
-                        call["method_id"]: (
-                            [call.get("gas_cost")] if call.get("gas_cost") is not None else []
-                        )
-                    }
-                },
-            ]
-            return merge_reports(*reports)
+            report = {
+                call["contract_id"]: {
+                    call["method_id"]: (
+                        [call.get("gas_cost")] if call.get("gas_cost") is not None else []
+                    )
+                }
+            }
+            return merge_reports(*sub_reports, report)
 
-        return merge_reports(*(c.get_gas_report(exclude) for c in call.get("calls", [])))
+        return merge_reports(*sub_reports)
 
     def show_gas_report(self, verbose: bool = False, file: IO[str] = sys.stdout):
         gas_report = self.get_gas_report()

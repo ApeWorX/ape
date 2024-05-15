@@ -994,6 +994,18 @@ class Web3Provider(ProviderAPI, ABC):
 
         return result
 
+    def stream_request(self, method: str, params: Iterable, iter_path: str = "result.item"):
+        payload = {"jsonrpc": "2.0", "id": 1, "method": method, "params": params}
+        results = ijson.sendable_list()
+        coroutine = ijson.items_coro(results, iter_path)
+        resp = requests.post(self.uri, json=payload, stream=True)
+        resp.raise_for_status()
+
+        for chunk in resp.iter_content(chunk_size=2**17):
+            coroutine.send(chunk)
+            yield from results
+            del results[:]
+
     def create_access_list(
         self, transaction: TransactionAPI, block_id: Optional[BlockID] = None
     ) -> list[AccessList]:
@@ -1288,18 +1300,6 @@ class EthereumNodeProvider(Web3Provider, ABC):
             return self.get_receipt(tx_hash)
 
         return None
-
-    def stream_request(self, method: str, params: Iterable, iter_path: str = "result.item"):
-        payload = {"jsonrpc": "2.0", "id": 1, "method": method, "params": params}
-        results = ijson.sendable_list()
-        coroutine = ijson.items_coro(results, iter_path)
-        resp = requests.post(self.uri, json=payload, stream=True)
-        resp.raise_for_status()
-
-        for chunk in resp.iter_content(chunk_size=2**17):
-            coroutine.send(chunk)
-            yield from results
-            del results[:]
 
     def connect(self):
         self._set_web3()

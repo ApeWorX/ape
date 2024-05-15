@@ -64,7 +64,7 @@ from ape_ethereum.proxies import (
     ProxyInfo,
     ProxyType,
 )
-from ape_ethereum.trace import Trace, TransactionTrace
+from ape_ethereum.trace import _REVERT_PREFIX, Trace, TransactionTrace
 from ape_ethereum.transactions import (
     AccessListTransaction,
     BaseTransaction,
@@ -1200,11 +1200,15 @@ class Ethereum(EcosystemAPI):
             return call
 
         default_return_value = "<?>"
-        returndata = call.get("returndata")
+        returndata = call.get("returndata", "")
+        is_hex = isinstance(returndata, str) and is_0x_prefixed(returndata)
+        if is_hex and returndata.startswith(_REVERT_PREFIX):
+            # The returndata is the revert-str.
+            decoded_result = decode(("string",), HexBytes(returndata)[4:])
+            call["returndata"] = decoded_result[0] if len(decoded_result) == 1 else ""
+            return call
 
-        if (
-            returndata and isinstance(returndata, str) and is_0x_prefixed(returndata)
-        ) or isinstance(returndata, (int, bytes)):
+        elif is_hex or isinstance(returndata, (int, bytes)):
             return_value_bytes = HexBytes(returndata)
         else:
             return_value_bytes = None
