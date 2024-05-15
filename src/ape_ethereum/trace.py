@@ -19,8 +19,10 @@ from evm_trace import (
 )
 from evm_trace.gas import merge_reports
 from hexbytes import HexBytes
+from pydantic import field_validator
 from rich.tree import Tree
 
+from ape.api import TransactionAPI
 from ape.api.trace import TraceAPI
 from ape.exceptions import ProviderError, TransactionNotFoundError
 from ape.logging import logger
@@ -400,6 +402,14 @@ class CallTrace(Trace):
     """debug_traceCall must use the struct-log tracer."""
     call_trace_approach: TraceApproach = TraceApproach.GETH_STRUCT_LOG_PARSE
     supports_debug_trace_call: Optional[bool] = None
+
+    @field_validator("tx", mode="before")
+    @classmethod
+    def _tx_to_dict(cls, value):
+        if isinstance(value, TransactionAPI):
+            return value.model_dump(by_alias=True)
+
+        return value
 
     @property
     def raw_trace_frames(self) -> list[dict]:
