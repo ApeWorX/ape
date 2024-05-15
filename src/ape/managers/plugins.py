@@ -33,7 +33,7 @@ def valid_impl(api_class: Any) -> bool:
 
 
 def _get_unimplemented_methods_warning(api, plugin_name: str) -> str:
-    unimplemented_methods = []
+    unimplemented_methods: List[str] = []
 
     # Find the best API name to warn about.
     if isinstance(api, (list, tuple)):
@@ -153,7 +153,7 @@ class PluginManager:
             # Already warned
             return
 
-        message = _get_unimplemented_methods_warning(results)
+        message = _get_unimplemented_methods_warning(results, plugin_name)
         logger.warning(message)
 
         # Record so we don't warn repeatedly
