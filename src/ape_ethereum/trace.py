@@ -19,8 +19,10 @@ from evm_trace import (
 )
 from evm_trace.gas import merge_reports
 from hexbytes import HexBytes
+from pydantic import field_validator
 from rich.tree import Tree
 
+from ape.api import TransactionAPI
 from ape.api.trace import TraceAPI
 from ape.exceptions import ProviderError, TransactionNotFoundError
 from ape.logging import logger
@@ -37,21 +39,21 @@ _REVERT_PREFIX = "0x08c379a00000000000000000000000000000000000000000000000000000
 class TraceApproach(Enum):
     """RPC trace_transaction."""
 
-    """No tracing support; think of EthTester."""
     BASIC = 0
+    """No tracing support; think of EthTester."""
 
-    """RPC 'trace_transaction'."""
     PARITY = 1
+    """RPC 'trace_transaction'."""
 
-    """RPC debug_traceTransaction using tracer='callTracer'."""
     GETH_CALL_TRACER = 2
+    """RPC debug_traceTransaction using tracer='callTracer'."""
 
+    GETH_STRUCT_LOG_PARSE = 3
     """
     RPC debug_traceTransaction using struct-log tracer
     and sophisticated parsing from the evm-trace library.
     NOT RECOMMENDED.
     """
-    GETH_STRUCT_LOG_PARSE = 3
 
 
 class Trace(TraceAPI):
@@ -61,8 +63,8 @@ class Trace(TraceAPI):
     involved, Ape must use the ``.name`` as the identifier for all contracts.
     """
 
-    """When None, attempts to deduce."""
     call_trace_approach: Optional[TraceApproach] = None
+    """When None, attempts to deduce."""
 
     _enriched_calltree: Optional[dict] = None
 
@@ -395,11 +397,28 @@ class TransactionTrace(Trace):
 
 class CallTrace(Trace):
     tx: dict
-    arguments: list[Any] = []
+    """
+    Transaction data. Is a dictionary to allow traces to easily
+    be created near sending the request.
+    """
 
-    """debug_traceCall must use the struct-log tracer."""
+    arguments: list[Any] = []
+    """
+    Remaining eth-call arguments, minus the transaction.
+    """
+
     call_trace_approach: TraceApproach = TraceApproach.GETH_STRUCT_LOG_PARSE
+    """debug_traceCall must use the struct-log tracer."""
+
     supports_debug_trace_call: Optional[bool] = None
+
+    @field_validator("tx", mode="before")
+    @classmethod
+    def _tx_to_dict(cls, value):
+        if isinstance(value, TransactionAPI):
+            return value.model_dump(by_alias=True)
+
+        return value
 
     @property
     def raw_trace_frames(self) -> list[dict]:
