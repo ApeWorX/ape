@@ -36,6 +36,7 @@ To access the same prefunded accounts in your scripts or console, use the root `
 >>> from ape import accounts
 
 >>> sender = accounts.test_accounts[0]
+1
 ```
 
 You can configure your test accounts using your `ape-config.yaml` file:
