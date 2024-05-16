@@ -95,6 +95,17 @@ jobs:
             python -m pip install --upgrade pip
             pip uninstall eth-ape --yes
             pip install .[test]
+            
+        - name: Doctesting
+          run: |
+            sphinx-build -b doctest docs docs/_build/doctest
+            if grep -q '0 failed' docs/_build/doctest/output.txt; then
+              echo "All doctests passed!"
+            else
+              echo "Some doctests failed. See the output below."
+              cat docs/_build/doctest/output.txt
+              exit 1
+            fi
 
         - name: Run Tests
           run: pytest -m "not fuzzing" -s --cov=src -n auto --dist loadgroup

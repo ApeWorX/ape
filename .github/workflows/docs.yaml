@@ -37,17 +37,6 @@ jobs:
               name: DocumentationHTML
               path: docs/_build/ape
 
-        - name: Doctesting
-          run: |
-            sphinx-build -b doctest docs docs/_build/doctest
-            if grep -q '0 failed' docs/_build/doctest/output.txt; then
-              echo "All doctests passed!"
-            else
-              echo "Some doctests failed. See the output below."
-              cat docs/_build/doctest/output.txt
-              exit 1
-            fi
-
         - name: Commit and publish documentation changes to gh-pages branch
           run: |
               if [[ "${GITHUB_EVENT_NAME}" =~ "pull_request" ]]; then
