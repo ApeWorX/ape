@@ -95,7 +95,10 @@ jobs:
             python -m pip install --upgrade pip
             pip uninstall eth-ape --yes
             pip install .[test]
-            
+
+        - name: Run Tests
+          run: pytest -m "not fuzzing" -s --cov=src -n auto --dist loadgroup
+
         - name: Doctesting
           run: |
             sphinx-build -b doctest docs docs/_build/doctest
@@ -106,9 +109,6 @@ jobs:
               cat docs/_build/doctest/output.txt
               exit 1
             fi
-
-        - name: Run Tests
-          run: pytest -m "not fuzzing" -s --cov=src -n auto --dist loadgroup
 
     fuzzing:
         runs-on: ubuntu-latest
