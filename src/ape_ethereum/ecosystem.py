@@ -1205,7 +1205,7 @@ class Ethereum(EcosystemAPI):
         if is_hex and returndata.startswith(_REVERT_PREFIX):
             # The returndata is the revert-str.
             decoded_result = decode(("string",), HexBytes(returndata)[4:])
-            call["returndata"] = decoded_result[0] if len(decoded_result) == 1 else ""
+            call["revert_message"] = decoded_result[0] if len(decoded_result) == 1 else ""
             return call
 
         elif is_hex or isinstance(returndata, (int, bytes)):

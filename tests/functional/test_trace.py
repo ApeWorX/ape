@@ -1,8 +1,57 @@
 import re
 
+import pytest
 from evm_trace import CallTreeNode, CallType
 
-from ape_ethereum.trace import CallTrace, TransactionTrace, parse_rich_tree
+from ape_ethereum.trace import CallTrace, Trace, TransactionTrace, parse_rich_tree
+
+# Used foundry to retrieve this partity-style trace data.
+FAILING_PARITY_TRACE = {
+    "call_type": "CALL",
+    "address": "0x5fbdb2315678afecb367f032d93f642f64180aa3",
+    "value": 0,
+    "depth": 0,
+    "gas_limit": 30000000,
+    "gas_cost": 2524,
+    "calldata": "0x3fb5c1cb0000000000000000000000000000000000000000000000000000000000000141",
+    "returndata": "0x08c379a00000000000000000000000000000000000000000000000000000000000000020000000000000000000000000000000000000000000000000000000000000000b21617574686f72697a6564000000000000000000000000000000000000000000",  # noqa: E501
+    "calls": [],
+    "selfdestruct": False,
+    "failed": True,
+}
+PASSING_PARITY_TRACE = {
+    "call_type": "CALL",
+    "address": "0x5fbdb2315678afecb367f032d93f642f64180aa3",
+    "value": 0,
+    "depth": 0,
+    "gas_limit": 30000000,
+    "gas_cost": 32775,
+    "calldata": "0x3fb5c1cb0000000000000000000000000000000000000000000000000000000000000141",  # noqa: E501
+    "returndata": "0x",
+    "calls": [],
+    "selfdestruct": False,
+    "failed": False,
+}
+
+
+@pytest.fixture
+def simple_trace_cls():
+    def fn(call):
+        class SimpleTrace(Trace):
+            def get_calltree(self) -> CallTreeNode:
+                return CallTreeNode.model_validate(call)
+
+            @property
+            def raw_trace_frames(self):
+                return []
+
+            @property
+            def transaction(self) -> dict:
+                return {}
+
+        return SimpleTrace
+
+    return fn
 
 
 def test_parse_rich_tree(vyper_contract_instance):
@@ -95,3 +144,26 @@ def test_call_trace_debug_trace_call_not_supported(owner, vyper_contract_instanc
     trace = CallTrace(tx=tx)
     actual = f"{trace}"
     assert actual == "VyperContract.0x()"
+
+
+def test_revert_message(simple_trace_cls):
+    trace_cls = simple_trace_cls(FAILING_PARITY_TRACE)
+    data = {
+        "call_trace_approach": 1,
+        "transaction_hash": "0xb7d7f1d5ce7743e821d3026647df486f517946ef1342a1ae93c96e4a8016eab7",
+        "debug_trace_transaction_parameters": {"stepsTracing": True, "enableMemory": True},
+    }
+    trace = trace_cls.model_validate(data)
+    expected = "!authorized"
+    assert trace.revert_message == expected
+
+
+def test_revert_message_passing_trace(simple_trace_cls):
+    trace_cls = simple_trace_cls(PASSING_PARITY_TRACE)
+    data = {
+        "call_trace_approach": 1,
+        "transaction_hash": "0xb7d7f1d5ce7743e821d3026647df486f517946ef1342a1ae93c96e4a8016eab7",
+        "debug_trace_transaction_parameters": {"stepsTracing": True, "enableMemory": True},
+    }
+    trace = trace_cls.model_validate(data)
+    assert trace.revert_message is None  # didn't revert

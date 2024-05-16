@@ -995,10 +995,13 @@ class Web3Provider(ProviderAPI, ABC):
         return result
 
     def stream_request(self, method: str, params: Iterable, iter_path: str = "result.item"):
+        if not (uri := self.http_uri):
+            raise ProviderError("This provider has no HTTP URI and is unable to strem requests.")
+
         payload = {"jsonrpc": "2.0", "id": 1, "method": method, "params": params}
         results = ijson.sendable_list()
         coroutine = ijson.items_coro(results, iter_path)
-        resp = requests.post(self.uri, json=payload, stream=True)
+        resp = requests.post(uri, json=payload, stream=True)
         resp.raise_for_status()
 
         for chunk in resp.iter_content(chunk_size=2**17):

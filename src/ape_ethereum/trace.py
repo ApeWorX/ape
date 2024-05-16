@@ -134,7 +134,9 @@ class Trace(TraceAPI):
         if "return_value" in self.__dict__:
             return self.__dict__["return_value"]
 
-        return calltree.get("unenriched_return_values", calltree.get("returndata"))
+        # If enriching too much, Ethereum places regular values in a key
+        # named "unenriched_return_values".
+        return calltree.get("unenriched_return_values") or calltree.get("returndata")
 
     @cached_property
     def revert_message(self) -> Optional[str]:
@@ -142,10 +144,10 @@ class Trace(TraceAPI):
         if not call.get("failed", False):
             return None
 
-        returndata = call.get("returndata")
-        if returndata and isinstance(returndata, str) and not returndata.startswith("0x"):
+        message = call.get("revert_message")
+        if message and isinstance(message, str) and not message.startswith("0x"):
             # Was enriched.
-            return returndata
+            return message
 
         # Enrichment call-tree not available. Attempt looking in trace-frames.
         try:
@@ -239,10 +241,10 @@ class Trace(TraceAPI):
             return merge_reports(*sub_reports)
 
         elif not is_zero_hex(call["method_id"]) and not is_evm_precompile(call["method_id"]):
-            report = {
+            report: GasReport = {
                 call["contract_id"]: {
                     call["method_id"]: (
-                        [call.get("gas_cost")] if call.get("gas_cost") is not None else []
+                        [int(call["gas_cost"])] if call.get("gas_cost") is not None else []
                     )
                 }
             }
