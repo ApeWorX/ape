@@ -38,10 +38,8 @@ jobs:
               path: docs/_build/ape
 
         - name: Doctesting
-          run: sphinx-build -b doctest docs docs/_build/doctest
-        
-        - name: Check doctest results
           run: |
+            sphinx-build -b doctest docs docs/_build/doctest
             if grep -q '0 failed' docs/_build/doctest/output.txt; then
               echo "All doctests passed!"
             else
