@@ -101,6 +101,7 @@ jobs:
 
         - name: Doctesting
           run: |
+            python build_docs.py
             sphinx-build -b doctest docs docs/_build/doctest
             if grep -q '0 failed' docs/_build/doctest/output.txt; then
               echo "All doctests passed!"
