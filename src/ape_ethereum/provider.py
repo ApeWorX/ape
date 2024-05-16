@@ -408,7 +408,7 @@ class Web3Provider(ProviderAPI, ABC):
         if "call_trace_approach" not in kwargs:
             kwargs["call_trace_approach"] = self._call_trace_approach
 
-        return self._get_transaction_trace(transaction_hash, **kwargs)
+        return TransactionTrace(transaction_hash=transaction_hash, **kwargs)
 
     def send_call(
         self,
@@ -1139,9 +1139,6 @@ class Web3Provider(ProviderAPI, ABC):
                 enriched.txn.show_trace()
 
         return enriched
-
-    def _get_transaction_trace(self, transaction_hash: str, **kwargs) -> TraceAPI:
-        return TransactionTrace(transaction_hash=transaction_hash, **kwargs)
 
 
 class EthereumNodeProvider(Web3Provider, ABC):
