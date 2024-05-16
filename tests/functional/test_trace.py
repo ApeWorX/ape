@@ -1,9 +1,11 @@
+import json
 import re
 
 import pytest
 from evm_trace import CallTreeNode, CallType
 
 from ape_ethereum.trace import CallTrace, Trace, TransactionTrace, parse_rich_tree
+from tests.functional.data.python import PARITY_TRACE
 
 # Used foundry to retrieve this partity-style trace data.
 FAILING_PARITY_TRACE = {
@@ -31,6 +33,12 @@ PASSING_PARITY_TRACE = {
     "calls": [],
     "selfdestruct": False,
     "failed": False,
+}
+PASSING_PARITY_TRACE_LARGE = json.loads(PARITY_TRACE)
+TRACE_API_DATA = {
+    "call_trace_approach": 1,
+    "transaction_hash": "0xb7d7f1d5ce7743e821d3026647df486f517946ef1342a1ae93c96e4a8016eab7",
+    "debug_trace_transaction_parameters": {"stepsTracing": True, "enableMemory": True},
 }
 
 
@@ -98,6 +106,13 @@ def test_get_gas_report_transfer(gas_tracker, sender, receiver):
     assert actual == expected
 
 
+def test_get_gas_report_with_sub_calls(simple_trace_cls):
+    trace_cls = simple_trace_cls(PASSING_PARITY_TRACE_LARGE)
+    trace = trace_cls.model_validate(TRACE_API_DATA)
+    actual = trace.get_gas_report()
+    assert len(actual) > 1  # Sub-contract calls!
+
+
 def test_transaction_trace_create(vyper_contract_instance):
     tx_hash = vyper_contract_instance.creation_metadata.txn_hash
     trace = TransactionTrace(transaction_hash=tx_hash)
@@ -148,22 +163,12 @@ def test_call_trace_debug_trace_call_not_supported(owner, vyper_contract_instanc
 
 def test_revert_message(simple_trace_cls):
     trace_cls = simple_trace_cls(FAILING_PARITY_TRACE)
-    data = {
-        "call_trace_approach": 1,
-        "transaction_hash": "0xb7d7f1d5ce7743e821d3026647df486f517946ef1342a1ae93c96e4a8016eab7",
-        "debug_trace_transaction_parameters": {"stepsTracing": True, "enableMemory": True},
-    }
-    trace = trace_cls.model_validate(data)
+    trace = trace_cls.model_validate(TRACE_API_DATA)
     expected = "!authorized"
     assert trace.revert_message == expected
 
 
 def test_revert_message_passing_trace(simple_trace_cls):
     trace_cls = simple_trace_cls(PASSING_PARITY_TRACE)
-    data = {
-        "call_trace_approach": 1,
-        "transaction_hash": "0xb7d7f1d5ce7743e821d3026647df486f517946ef1342a1ae93c96e4a8016eab7",
-        "debug_trace_transaction_parameters": {"stepsTracing": True, "enableMemory": True},
-    }
-    trace = trace_cls.model_validate(data)
+    trace = trace_cls.model_validate(TRACE_API_DATA)
     assert trace.revert_message is None  # didn't revert

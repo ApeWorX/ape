@@ -996,7 +996,7 @@ class Web3Provider(ProviderAPI, ABC):
 
     def stream_request(self, method: str, params: Iterable, iter_path: str = "result.item"):
         if not (uri := self.http_uri):
-            raise ProviderError("This provider has no HTTP URI and is unable to strem requests.")
+            raise ProviderError("This provider has no HTTP URI and is unable to stream requests.")
 
         payload = {"jsonrpc": "2.0", "id": 1, "method": method, "params": params}
         results = ijson.sendable_list()
