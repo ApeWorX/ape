@@ -12,6 +12,7 @@ from evm_trace import (
     CallType,
     ParityTraceList,
     TraceFrame,
+    create_trace_frames,
     get_calltree_from_geth_call_trace,
     get_calltree_from_geth_trace,
     get_calltree_from_parity_trace,
@@ -21,11 +22,10 @@ from hexbytes import HexBytes
 from pydantic import field_validator
 from rich.tree import Tree
 
-from ape.api import TransactionAPI
-from ape.api.trace import TraceAPI
+from ape.api import EcosystemAPI, TraceAPI, TransactionAPI
 from ape.exceptions import ProviderError, TransactionNotFoundError
 from ape.logging import logger
-from ape.types import ContractFunctionPath, GasReport
+from ape.types import AddressType, ContractFunctionPath, GasReport
 from ape.utils import ZERO_ADDRESS, is_evm_precompile, is_zero_hex
 from ape.utils.trace import TraceStyles, _exclude_gas
 from ape_ethereum._print import extract_debug_logs
@@ -126,6 +126,37 @@ class Trace(TraceAPI):
 
         return self._enriched_calltree
 
+    @property
+    def frames(self) -> Iterator[TraceFrame]:
+        yield from create_trace_frames(iter(self.raw_trace_frames))
+
+    @property
+    def addresses(self) -> Iterator[AddressType]:
+        yield from self.get_addresses_used()
+
+    @property
+    def _ecosystem(self) -> EcosystemAPI:
+        if provider := self.network_manager.active_provider:
+            return provider.network.ecosystem
+
+        # Default to Ethereum (since we are in that plugin!)
+        return self.network_manager.ethereum
+
+    def get_addresses_used(self, reverse: bool = False):
+        frames: Iterable
+        if reverse:
+            frames = list(self.frames)
+            frames = frames[::-1] if reverse else frames
+        else:
+            # Don't need to run whole list.
+            frames = self.frames
+
+        for frame in frames:
+            if not (addr := frame.address):
+                continue
+
+            yield self._ecosystem.decode_address(addr)
+
     @cached_property
     def return_value(self) -> Any:
         calltree = self.enriched_calltree
@@ -144,9 +175,17 @@ class Trace(TraceAPI):
         if not call.get("failed", False):
             return None
 
-        message = call.get("revert_message")
-        if message and isinstance(message, str) and not message.startswith("0x"):
-            # Was enriched.
+        def try_get_revert_msg(c) -> Optional[str]:
+            if msg := c.get("revert_message"):
+                return msg
+
+            for sub_c in c.get("calls", []):
+                if msg := try_get_revert_msg(sub_c):
+                    return msg
+
+            return None
+
+        if message := try_get_revert_msg(call):
             return message
 
         # Enrichment call-tree not available. Attempt looking in trace-frames.
@@ -167,34 +206,15 @@ class Trace(TraceAPI):
 
     def show(self, verbose: bool = False, file: IO[str] = sys.stdout):
         call = self.enriched_calltree
-        revert_message = self.revert_message
-
-        if revert_message:
-            revert_message = f'reverted with message: "{revert_message}"'
-
-        elif (
-            call.get("failed", False)
-            and self.return_value
-            and (
-                address := (self.transaction.get("to") or self.transaction.get("contract_address"))
+        failed = call.get("failed", False)
+        revert_message = None
+        if failed:
+            revert_message = self.revert_message
+            revert_message = (
+                f'reverted with message: "{revert_message}"'
+                if revert_message
+                else "reverted without message"
             )
-        ):
-            # Try to enrich revert error using ABI.
-            if provider := self.network_manager.active_provider:
-                ecosystem = provider.network.ecosystem
-            else:
-                # Default to Ethereum.
-                ecosystem = self.network_manager.ethereum
-
-            try:
-                instance = ecosystem.decode_custom_error(self.return_value, address)
-            except NotImplementedError:
-                pass
-            else:
-                revert_message = repr(instance)
-
-        elif call.get("failed", False):
-            revert_message = "reverted without message"
 
         root = self._get_tree(verbose=verbose)
         console = self.chain_manager._reports._get_console(file=file)
@@ -282,9 +302,7 @@ class Trace(TraceAPI):
 
     def _debug_trace_transaction_struct_logs_to_call(self) -> CallTreeNode:
         init_kwargs = self._get_tx_calltree_kwargs()
-        return get_calltree_from_geth_trace(
-            (TraceFrame.model_validate(f) for f in self.raw_trace_frames), **init_kwargs
-        )
+        return get_calltree_from_geth_trace(self.frames, **init_kwargs)
 
     def _get_tree(self, verbose: bool = False) -> Tree:
         return parse_rich_tree(self.enriched_calltree, verbose=verbose)
@@ -313,7 +331,7 @@ class TransactionTrace(Trace):
         yield from self.provider.stream_request(
             "debug_traceTransaction",
             [self.transaction_hash, parameters],
-            iter_path="result.item",
+            iter_path="result.structLogs.item",
         )
 
     def get_calltree(self) -> CallTreeNode:

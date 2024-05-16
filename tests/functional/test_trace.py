@@ -5,10 +5,10 @@ import pytest
 from evm_trace import CallTreeNode, CallType
 
 from ape_ethereum.trace import CallTrace, Trace, TransactionTrace, parse_rich_tree
-from tests.functional.data.python import PARITY_TRACE
+from tests.functional.data.python import TRACE_WITH_CUSTOM_ERROR, TRACE_WITH_SUB_CALLS
 
 # Used foundry to retrieve this partity-style trace data.
-FAILING_PARITY_TRACE = {
+FAILING_TRACE = {
     "call_type": "CALL",
     "address": "0x5fbdb2315678afecb367f032d93f642f64180aa3",
     "value": 0,
@@ -21,7 +21,7 @@ FAILING_PARITY_TRACE = {
     "selfdestruct": False,
     "failed": True,
 }
-PASSING_PARITY_TRACE = {
+PASSING_TRACE = {
     "call_type": "CALL",
     "address": "0x5fbdb2315678afecb367f032d93f642f64180aa3",
     "value": 0,
@@ -34,7 +34,8 @@ PASSING_PARITY_TRACE = {
     "selfdestruct": False,
     "failed": False,
 }
-PASSING_PARITY_TRACE_LARGE = json.loads(PARITY_TRACE)
+PASSING_TRACE_LARGE = json.loads(TRACE_WITH_SUB_CALLS)
+FAILING_TRACE_WITH_CUSTOM_ERROR = json.loads(TRACE_WITH_CUSTOM_ERROR)
 TRACE_API_DATA = {
     "call_trace_approach": 1,
     "transaction_hash": "0xb7d7f1d5ce7743e821d3026647df486f517946ef1342a1ae93c96e4a8016eab7",
@@ -107,7 +108,7 @@ def test_get_gas_report_transfer(gas_tracker, sender, receiver):
 
 
 def test_get_gas_report_with_sub_calls(simple_trace_cls):
-    trace_cls = simple_trace_cls(PASSING_PARITY_TRACE_LARGE)
+    trace_cls = simple_trace_cls(PASSING_TRACE_LARGE)
     trace = trace_cls.model_validate(TRACE_API_DATA)
     actual = trace.get_gas_report()
     assert len(actual) > 1  # Sub-contract calls!
@@ -162,13 +163,22 @@ def test_call_trace_debug_trace_call_not_supported(owner, vyper_contract_instanc
 
 
 def test_revert_message(simple_trace_cls):
-    trace_cls = simple_trace_cls(FAILING_PARITY_TRACE)
+    trace_cls = simple_trace_cls(FAILING_TRACE)
     trace = trace_cls.model_validate(TRACE_API_DATA)
     expected = "!authorized"
     assert trace.revert_message == expected
 
 
 def test_revert_message_passing_trace(simple_trace_cls):
-    trace_cls = simple_trace_cls(PASSING_PARITY_TRACE)
+    trace_cls = simple_trace_cls(PASSING_TRACE)
     trace = trace_cls.model_validate(TRACE_API_DATA)
     assert trace.revert_message is None  # didn't revert
+
+
+def test_revert_message_custom_error(simple_trace_cls, setup_custom_error):
+    address = "0x3fC91A3afd70395Cd496C647d5a6CC9D4B2b7FAD"
+    setup_custom_error(address)
+    trace_cls = simple_trace_cls(FAILING_TRACE_WITH_CUSTOM_ERROR)
+    trace = trace_cls.model_validate(TRACE_API_DATA)
+    expected = "AllowanceExpired(deadline=0)"
+    assert trace.revert_message == expected
