@@ -3,9 +3,14 @@ import re
 
 import pytest
 from evm_trace import CallTreeNode, CallType
+from hexbytes import HexBytes
 
 from ape_ethereum.trace import CallTrace, Trace, TransactionTrace, parse_rich_tree
-from tests.functional.data.python import TRACE_WITH_CUSTOM_ERROR, TRACE_WITH_SUB_CALLS
+from tests.functional.data.python import (
+    TRACE_MISSING_GAS,
+    TRACE_WITH_CUSTOM_ERROR,
+    TRACE_WITH_SUB_CALLS,
+)
 
 # Used foundry to retrieve this partity-style trace data.
 FAILING_TRACE = {
@@ -36,6 +41,7 @@ PASSING_TRACE = {
 }
 PASSING_TRACE_LARGE = json.loads(TRACE_WITH_SUB_CALLS)
 FAILING_TRACE_WITH_CUSTOM_ERROR = json.loads(TRACE_WITH_CUSTOM_ERROR)
+PASSING_TRACE_MISSING_GAS = json.loads(TRACE_MISSING_GAS)
 TRACE_API_DATA = {
     "call_trace_approach": 1,
     "transaction_hash": "0xb7d7f1d5ce7743e821d3026647df486f517946ef1342a1ae93c96e4a8016eab7",
@@ -45,7 +51,7 @@ TRACE_API_DATA = {
 
 @pytest.fixture
 def simple_trace_cls():
-    def fn(call):
+    def fn(call, tx=None):
         class SimpleTrace(Trace):
             def get_calltree(self) -> CallTreeNode:
                 return CallTreeNode.model_validate(call)
@@ -56,7 +62,7 @@ def simple_trace_cls():
 
             @property
             def transaction(self) -> dict:
-                return {}
+                return tx or {}
 
         return SimpleTrace
 
@@ -182,3 +188,17 @@ def test_revert_message_custom_error(simple_trace_cls, setup_custom_error):
     trace = trace_cls.model_validate(TRACE_API_DATA)
     expected = "AllowanceExpired(deadline=0)"
     assert trace.revert_message == expected
+
+
+def test_enriched_calltree_adds_missing_gas(simple_trace_cls):
+    compute_gas = 1234
+    base_gas = 21_000
+    data_gas = 64  # 4 gas per 0-byte and 16 gas per non-zero byte
+    total_gas = compute_gas + base_gas + data_gas
+
+    trace_cls = simple_trace_cls(
+        PASSING_TRACE_MISSING_GAS, tx={"gas_used": total_gas, "data": HexBytes("0x12345678")}
+    )
+    trace = trace_cls.model_validate(TRACE_API_DATA)
+    actual = trace.enriched_calltree
+    assert actual["gas_cost"] == compute_gas

@@ -124,6 +124,18 @@ class Trace(TraceAPI):
             # If still None (shouldn't be), set to avoid repeated attempts.
             self._enriched_calltree = {}
 
+        # Add top-level data if missing.
+        if not self._enriched_calltree.get("gas_cost"):
+            # Happens on calltrees built from structLogs.
+            if gas_used := self.transaction.get("gas_used"):
+                if "data" in self.transaction:
+                    # Subtract base gas costs.
+                    # (21_000 + 4 gas per 0-byte and 16 gas per non-zero byte).
+                    data_gas = sum(
+                        [4 if x == 0 else 16 for x in HexBytes(self.transaction["data"])]
+                    )
+                    self._enriched_calltree["gas_cost"] = gas_used - 21_000 - data_gas
+
         return self._enriched_calltree
 
     @property
@@ -541,7 +553,6 @@ def _call_to_str(call: dict, stylize: bool = False, verbose: bool = False) -> st
 
     signature = f"{call_path}{arguments_str}"
     returndata = call.get("returndata", "")
-
     if not is_create and returndata not in ((), [], None, {}, ""):
         if return_str := _get_outputs_str(returndata, stylize=stylize):
             signature = f"{signature} -> {return_str}"
