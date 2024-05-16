@@ -607,7 +607,7 @@ class EcosystemAPI(ExtraAttributesMixin, BaseInterfaceModel):
         Decode a custom error class from an ABI defined in a contract.
 
         Args:
-            data (HexBytes): The error data contining the selector
+            data (HexBytes): The error data containing the selector
               and input data.
             address (AddressType): The address of the contract containing
               the error.

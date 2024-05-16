@@ -90,7 +90,7 @@ Generally, configure compiler plugins using your `ape-config.yaml` file.
 One setting that applies to many compiler plugins is `cache_folder`, which holds dependency source files the compiler uses when compiling your contracts.
 By default, the folder is in your `contracts/.cache` folder but there are times you may want to move this to another location.
 Paths are relative to the project directory.
-For instance, to move the dependency cahce to the root project directory:
+For instance, to move the dependency cache to the root project directory:
 
 ```yaml
 compile:
