@@ -1,5 +1,5 @@
 import importlib
-from collections.abc import Generator, Iterator
+from collections.abc import Generator, Iterable, Iterator
 from typing import Any, Optional
 
 from ape.exceptions import ApeAttributeError
@@ -30,6 +30,46 @@ def valid_impl(api_class: Any) -> bool:
         return True  # not an abstract class
 
     return len(api_class.__abstractmethods__) == 0
+
+
+def _get_unimplemented_methods_warning(api, plugin_name: str) -> str:
+    unimplemented_methods: list[str] = []
+
+    # Find the best API name to warn about.
+    if isinstance(api, (list, tuple)):
+        if classes := [p for p in api if hasattr(p, "__name__")]:
+            # Likely only ever a single class in a registration, but just in case.
+            api_name = " - ".join([p.__name__ for p in classes if hasattr(p, "__name__")])
+            for api_cls in classes:
+                unimplemented_methods.extend(_get_unimplemented_methods(api_cls))
+
+        else:
+            # This would only happen if the registration consisted of all primitives.
+            api_name = " - ".join(api)
+
+    elif hasattr(api, "__name__"):
+        api_name = api.__name__
+        unimplemented_methods.extend(_get_unimplemented_methods(api))
+
+    else:
+        api_name = api
+
+    message = f"'{api_name}' from '{plugin_name}' is not fully implemented."
+    if unimplemented_methods:
+        # NOTE: Sorted for consistency.
+        methods_str = ", ".join(sorted(unimplemented_methods))
+        message = f"{message} Remaining abstract methods: '{methods_str}'."
+
+    return message
+
+
+def _get_unimplemented_methods(api) -> Iterable[str]:
+    if (abstract_methods := getattr(api, "__abstractmethods__", None)) and hasattr(
+        abstract_methods, "__iter__"
+    ):
+        return api.__abstractmethods__
+
+    return []
 
 
 class PluginManager:
@@ -113,39 +153,7 @@ class PluginManager:
             # Already warned
             return
 
-        unimplemented_methods = []
-
-        # Find the best API name to warn about.
-        if isinstance(results, (list, tuple)):
-            classes = [p for p in results if hasattr(p, "__name__")]
-            if classes:
-                # Likely only ever a single class in a registration, but just in case.
-                api_name = " - ".join([p.__name__ for p in classes if hasattr(p, "__name__")])
-                for api_cls in classes:
-                    if (
-                        abstract_methods := getattr(api_cls, "__abstractmethods__", None)
-                    ) and isinstance(abstract_methods, dict):
-                        unimplemented_methods.extend(api_cls.__abstractmethods__)
-
-            else:
-                # This would only happen if the registration consisted of all primitives.
-                api_name = " - ".join(results)
-
-        elif hasattr(results, "__name__"):
-            api_name = results.__name__
-            if (abstract_methods := getattr(results, "__abstractmethods__", None)) and isinstance(
-                abstract_methods, dict
-            ):
-                unimplemented_methods.extend(results.__abstractmethods__)
-
-        else:
-            api_name = results
-
-        message = f"'{api_name}' from '{plugin_name}' is not fully implemented."
-        if unimplemented_methods:
-            methods_str = ", ".join(unimplemented_methods)
-            message = f"{message} Remaining abstract methods: '{methods_str}'."
-
+        message = _get_unimplemented_methods_warning(results, plugin_name)
         logger.warning(message)
 
         # Record so we don't warn repeatedly

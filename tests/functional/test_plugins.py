@@ -2,8 +2,10 @@ from unittest import mock
 
 import pytest
 
+from ape.api import TransactionAPI
 from ape.exceptions import PluginVersionError
 from ape.logging import LogLevel
+from ape.managers.plugins import _get_unimplemented_methods_warning
 from ape.plugins._utils import (
     ApePluginsRepr,
     ModifyPluginResultHandler,
@@ -374,4 +376,15 @@ def test_filter_plugins_from_dists_py310_and_greater(mocker):
     plugins = [make_dist("solidity"), make_dist("vyper"), make_dist("optimism")]
     actual = set(_filter_plugins_from_dists(plugins))
     expected = {"ape-solidity", "ape-vyper", "ape-optimism"}
+    assert actual == expected
+
+
+@pytest.mark.parametrize("abstract_methods", [("method1", "method2"), {"method1": 0, "method2": 0}])
+def test_get_unimplemented_methods_warning_list_containing_plugin(abstract_methods):
+    plugin_registration = ("foo", "bar", TransactionAPI)
+    actual = _get_unimplemented_methods_warning(plugin_registration, "p1")
+    expected = (
+        "'TransactionAPI' from 'p1' is not fully implemented. "
+        "Remaining abstract methods: 'serialize_transaction, txn_hash'."
+    )
     assert actual == expected
