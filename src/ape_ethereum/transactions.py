@@ -266,7 +266,7 @@ class Receipt(ReceiptAPI):
         self.trace.show(verbose=verbose, file=file)
 
     def show_gas_report(self, file: IO[str] = sys.stdout):
-        self.trace.show_gas_report()
+        self.trace.show_gas_report(file=file)
 
     def show_source_traceback(self, file: IO[str] = sys.stdout):
         self.chain_manager._reports.show_source_traceback(
