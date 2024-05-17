@@ -1,3 +1,6 @@
+from datetime import timezone, datetime
+from zoneinfo import ZoneInfo
+
 import pytest
 from eth_pydantic_types import HexBytes
 from packaging.version import Version
@@ -16,6 +19,7 @@ from ape.utils.misc import (
     pragma_str_to_specifier_set,
     raises_not_implemented,
     run_until_complete,
+    get_current_timestamp_ms,
     to_int,
 )
 
@@ -169,3 +173,15 @@ def test_log_instead_of_fail(ape_caplog):
 
     my_method()
     assert "Oh no!" in ape_caplog.head
+
+
+def test_get_current_timestamp_ms():
+    """
+    Proving the current timestamp is UTC.
+    """
+    actual = get_current_timestamp_ms()  # UTC
+    zone = ZoneInfo("America/Chicago")
+    dt = datetime(2020, 10, 31, 12, tzinfo=zone)
+    unexpected = round(datetime.now(tz=dt.tzinfo).timestamp() * 1000)
+    diff = actual - unexpected
+    assert diff == pytest.approx(18_000_000)  # Difference of CST to UTC.
