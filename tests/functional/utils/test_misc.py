@@ -1,4 +1,4 @@
-from datetime import timezone, datetime
+from datetime import datetime
 from zoneinfo import ZoneInfo
 
 import pytest
@@ -12,6 +12,7 @@ from ape.utils.misc import (
     _dict_overlay,
     add_padding_to_strings,
     extract_nested_value,
+    get_current_timestamp_ms,
     get_package_version,
     is_evm_precompile,
     is_zero_hex,
@@ -19,7 +20,6 @@ from ape.utils.misc import (
     pragma_str_to_specifier_set,
     raises_not_implemented,
     run_until_complete,
-    get_current_timestamp_ms,
     to_int,
 )
 
