@@ -408,7 +408,7 @@ class Web3Provider(ProviderAPI, ABC):
         if "call_trace_approach" not in kwargs:
             kwargs["call_trace_approach"] = self._call_trace_approach
 
-        return self._get_transaction_trace(transaction_hash, **kwargs)
+        return TransactionTrace(transaction_hash=transaction_hash, **kwargs)
 
     def send_call(
         self,
@@ -994,6 +994,21 @@ class Web3Provider(ProviderAPI, ABC):
 
         return result
 
+    def stream_request(self, method: str, params: Iterable, iter_path: str = "result.item"):
+        if not (uri := self.http_uri):
+            raise ProviderError("This provider has no HTTP URI and is unable to stream requests.")
+
+        payload = {"jsonrpc": "2.0", "id": 1, "method": method, "params": params}
+        results = ijson.sendable_list()
+        coroutine = ijson.items_coro(results, iter_path)
+        resp = requests.post(uri, json=payload, stream=True)
+        resp.raise_for_status()
+
+        for chunk in resp.iter_content(chunk_size=2**17):
+            coroutine.send(chunk)
+            yield from results
+            del results[:]
+
     def create_access_list(
         self, transaction: TransactionAPI, block_id: Optional[BlockID] = None
     ) -> list[AccessList]:
@@ -1124,9 +1139,6 @@ class Web3Provider(ProviderAPI, ABC):
                 enriched.txn.show_trace()
 
         return enriched
-
-    def _get_transaction_trace(self, transaction_hash: str, **kwargs) -> TraceAPI:
-        return TransactionTrace(transaction_hash=transaction_hash, **kwargs)
 
 
 class EthereumNodeProvider(Web3Provider, ABC):
@@ -1288,18 +1300,6 @@ class EthereumNodeProvider(Web3Provider, ABC):
             return self.get_receipt(tx_hash)
 
         return None
-
-    def stream_request(self, method: str, params: Iterable, iter_path: str = "result.item"):
-        payload = {"jsonrpc": "2.0", "id": 1, "method": method, "params": params}
-        results = ijson.sendable_list()
-        coroutine = ijson.items_coro(results, iter_path)
-        resp = requests.post(self.uri, json=payload, stream=True)
-        resp.raise_for_status()
-
-        for chunk in resp.iter_content(chunk_size=2**17):
-            coroutine.send(chunk)
-            yield from results
-            del results[:]
 
     def connect(self):
         self._set_web3()
