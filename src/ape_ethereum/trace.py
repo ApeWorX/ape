@@ -83,7 +83,7 @@ class Trace(TraceAPI):
 
     @property
     @abstractmethod
-    def raw_trace_frames(self) -> list[dict]:
+    def raw_trace_frames(self) -> Iterator[dict]:
         """
         The raw trace frames.
         """
@@ -202,7 +202,7 @@ class Trace(TraceAPI):
 
         # Enrichment call-tree not available. Attempt looking in trace-frames.
         try:
-            frames = self.raw_trace_frames
+            frames = list(self.raw_trace_frames)
         except Exception as err:
             logger.error(f"Failed getting traceback: {err}")
             frames = []
@@ -288,8 +288,8 @@ class Trace(TraceAPI):
         gas_report = self.get_gas_report()
         self.chain_manager._reports.show_gas(gas_report, file=file)
 
-    def get_raw_frames(self) -> list[dict]:
-        return self.raw_trace_frames
+    def get_raw_frames(self) -> Iterator[dict]:
+        yield from self.raw_trace_frames
 
     def get_raw_calltree(self) -> dict:
         return self.get_calltree().model_dump(mode="json", by_alias=True)
@@ -323,14 +323,21 @@ class Trace(TraceAPI):
 class TransactionTrace(Trace):
     transaction_hash: str
     debug_trace_transaction_parameters: dict = {"enableMemory": True}
+    _frames: list[dict] = []
 
-    @cached_property
-    def raw_trace_frames(self) -> list[dict]:
+    @property
+    def raw_trace_frames(self) -> Iterator[dict]:
         """
         The raw trace ``"structLogs"`` from ``debug_traceTransaction``
         for deeper investigation.
         """
-        return list(self._stream_struct_logs())
+        if self._frames:
+            yield from self._frames
+
+        else:
+            for frame in self._stream_struct_logs():
+                self._frames.append(frame)
+                yield frame
 
     @cached_property
     def transaction(self) -> dict:
@@ -463,8 +470,8 @@ class CallTrace(Trace):
         return value
 
     @property
-    def raw_trace_frames(self) -> list[dict]:
-        return self._traced_call.get("structLogs", [])
+    def raw_trace_frames(self) -> Iterator[dict]:
+        yield from self._traced_call.get("structLogs", [])
 
     @property
     def return_value(self) -> Any:
