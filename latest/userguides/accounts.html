@@ -273,9 +273,13 @@ Live network accounts are for interacting with live blockchains and should be se
 <section id="use-test-accounts-outside-of-tests">
 <h3>Use test accounts outside of tests<a class="headerlink" href="#use-test-accounts-outside-of-tests" title="Permalink to this heading"></a></h3>
 <p>To access the same prefunded accounts in your scripts or console, use the root <code class="docutils literal notranslate"><span class="pre">accounts</span></code> object and the <a class="reference external" href="../methoddocs/managers.html#ape.managers.accounts.AccountManager.test_accounts">test_accounts</a> property:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">ape</span> <span class="kn">import</span> <span class="n">accounts</span>
-
-<span class="n">sender</span> <span class="o">=</span> <span class="n">accounts</span><span class="o">.</span><span class="n">test_accounts</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+<div class="highlight-pycon notranslate"><div class="highlight"><pre><span></span>
+</pre></div>
+</div>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">ape</span> <span class="kn">import</span> <span class="n">accounts</span>
+</pre></div>
+</div>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">sender</span> <span class="o">=</span> <span class="n">accounts</span><span class="o">.</span><span class="n">test_accounts</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
 </pre></div>
 </div>
 <p>You can configure your test accounts using your <code class="docutils literal notranslate"><span class="pre">ape-config.yaml</span></code> file:</p>
@@ -290,9 +294,13 @@ The accounts generated from this seed are solely for testing and debugging purpo
 <section id="creating-new-test-accounts">
 <h3>Creating new test accounts<a class="headerlink" href="#creating-new-test-accounts" title="Permalink to this heading"></a></h3>
 <p>You can create a new test account by doing the following:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">ape</span> <span class="kn">import</span> <span class="n">accounts</span>
-
-<span class="n">account</span> <span class="o">=</span> <span class="n">accounts</span><span class="o">.</span><span class="n">test_accounts</span><span class="o">.</span><span class="n">generate_test_account</span><span class="p">()</span>
+<div class="highlight-pycon notranslate"><div class="highlight"><pre><span></span>
+</pre></div>
+</div>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">ape</span> <span class="kn">import</span> <span class="n">accounts</span>
+</pre></div>
+</div>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">account</span> <span class="o">=</span> <span class="n">accounts</span><span class="o">.</span><span class="n">test_accounts</span><span class="o">.</span><span class="n">generate_test_account</span><span class="p">()</span>
 </pre></div>
 </div>
 <p><strong>NOTE</strong>: Creating a new test account means it will be unfunded by default.</p>
