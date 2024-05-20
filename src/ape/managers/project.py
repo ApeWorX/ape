@@ -74,7 +74,7 @@ class SourceManager(BaseManager):
         # NOTE: Can't use walrus operator here because empty Source objects
         #   are false-y.
         if src is None:
-            raise IndexError(f"Source '{source_id}' not found.")
+            raise KeyError(f"Source '{source_id}' not found.")
 
         return src
 
@@ -101,8 +101,7 @@ class SourceManager(BaseManager):
         return None
 
     def items(self) -> Iterator[tuple[str, Source]]:
-        for path in self.paths:
-            source_id = self._get_source_id(path)
+        for source_id in self.keys():
             yield source_id, self[source_id]
 
     def keys(self) -> Iterator[str]:
@@ -110,8 +109,7 @@ class SourceManager(BaseManager):
             yield self._get_source_id(path)
 
     def values(self) -> Iterator[Source]:
-        for path in self.paths:
-            source_id = self._get_source_id(path)
+        for source_id in self.keys():
             yield self[source_id]
 
     @singledispatchmethod
@@ -267,7 +265,7 @@ class ContractManager(BaseManager):
         if contract := self.get(contract_name):
             return contract
 
-        raise IndexError(f"Contract '{contract_name}' not found.")
+        raise KeyError(f"Contract '{contract_name}' not found.")
 
     def __iter__(self) -> Iterator[str]:
         self._compile_missing_contracts(self.sources.paths)
@@ -423,7 +421,7 @@ class Dependency(BaseManager, ExtraAttributesMixin):
 
     @log_instead_of_fail(default="<Dependency>")
     def __repr__(self) -> str:
-        return f"<{self.api.package_id}@{self.api.version_id}>"
+        return f"<{self.api.package_id} version={self.api.version_id}>"
 
     @only_raise_attribute_error
     def __getattr__(self, name: str) -> Any:
@@ -469,7 +467,6 @@ class Dependency(BaseManager, ExtraAttributesMixin):
     ) -> "ProjectManager":
         config_override = {**(self.api.config_override or {}), **(config_override or {})}
         project = None
-
         if self._installation is not None and use_cache:
             if config_override:
                 self._installation.reconfigure(**config_override)
@@ -756,8 +753,7 @@ class DependencyManager(BaseManager):
         """
         for data in self.config.dependencies:
             api = self.decode_dependency(data)
-            self._install(api)
-            yield self.get_dependency(api.name, api.version_id)
+            yield self._install(api)
 
     @property
     def installed(self) -> Iterator[Dependency]:
@@ -1352,7 +1348,7 @@ class Project(ProjectManager):
     def _update_contract_types(self, contract_types: dict[str, ContractType]):
         self._manifest.contract_types = {**(self._manifest.contract_types or {}), **contract_types}
         self.update_manifest(
-            contract_types=self._manifest.contract_types, sources=dict(self.sources)
+            contract_types=self._manifest.contract_types, sources=dict(self.sources.items())
         )
 
     def reconfigure(self, **overrides):
@@ -1558,7 +1554,7 @@ class LocalProject(Project):
                 data["version"] = self.version
 
             try:
-                src_dict = dict(self.sources)
+                src_dict = dict(self.sources.items())
             except Exception as err:
                 logger.error(str(err))
             else:

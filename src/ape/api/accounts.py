@@ -462,7 +462,7 @@ class AccountContainerAPI(BaseInterfaceModel):
               `ChecksumAddress <https://eth-typing.readthedocs.io/en/latest/types.html#checksumaddress>`__.  # noqa: E501
 
         Raises:
-            IndexError: When there is no local account with the given address.
+            KeyError: When there is no local account with the given address.
 
         Returns:
             :class:`~ape.api.accounts.AccountAPI`
@@ -471,7 +471,7 @@ class AccountContainerAPI(BaseInterfaceModel):
             if account.address == address:
                 return account
 
-        raise IndexError(f"No local account {address}.")
+        raise KeyError(f"No local account {address}.")
 
     def append(self, account: AccountAPI):
         """
@@ -541,7 +541,7 @@ class AccountContainerAPI(BaseInterfaceModel):
             self.__getitem__(address)
             return True
 
-        except (IndexError, AttributeError):
+        except (IndexError, KeyError, AttributeError):
             return False
 
     def _verify_account_type(self, account):

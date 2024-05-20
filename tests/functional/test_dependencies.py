@@ -153,11 +153,18 @@ def test_decode_dependency_with_config_override(project):
         assert dependency.config_override == settings
 
 
+def test_project_path(project_with_dependency_config):
+    dependencies = project_with_dependency_config.dependencies
+    project = dependencies["testdependency"]["releases/v6"]
+    assert project.path.is_dir()
+
+
 def test_project_load_contracts(project_with_downloaded_dependencies):
     name = "openzeppelin"
     options = project_with_downloaded_dependencies.dependencies[name]
+    project = options["4.4.2"]
     # NOTE: the test data is pre-compiled because the ape-solidity plugin is required.
-    actual = options["4.4.2"].load_contracts()
+    actual = project.load_contracts()
     assert len(actual) > 0
 
 

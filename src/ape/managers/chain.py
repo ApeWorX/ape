@@ -952,8 +952,8 @@ class ContractCache(BaseManager):
             err = ContractNotFoundError(
                 address, self.provider.network.explorer is not None, self.provider.network_choice
             )
-            # Must raise IndexError.
-            raise IndexError(str(err))
+            # Must raise KeyError.
+            raise KeyError(str(err))
 
         return contract_type
 

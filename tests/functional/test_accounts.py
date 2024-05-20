@@ -371,7 +371,7 @@ def test_accounts_address_access(owner, accounts):
 
 def test_accounts_address_access_conversion_fail(accounts):
     with pytest.raises(
-        IndexError,
+        KeyError,
         match=(
             r"No account with ID 'FAILS'\. "
             r"Do you have the necessary conversion plugins installed?"
@@ -382,18 +382,18 @@ def test_accounts_address_access_conversion_fail(accounts):
 
 def test_accounts_address_access_not_found(accounts):
     address = "0x1222262222222922222222222222222222222222"
-    with pytest.raises(IndexError, match=rf"No account with address '{address}'\."):
+    with pytest.raises(KeyError, match=rf"No account with address '{address}'\."):
         _ = accounts[address]
 
 
 def test_test_accounts_address_access_conversion_fail(test_accounts):
-    with pytest.raises(IndexError, match=r"No account with ID 'FAILS'"):
+    with pytest.raises(KeyError, match=r"No account with ID 'FAILS'"):
         _ = test_accounts["FAILS"]
 
 
 def test_test_accounts_address_access_not_found(test_accounts):
     address = "0x1222262222222922222222222222222222222222"
-    with pytest.raises(IndexError, match=rf"No account with address '{address}'\."):
+    with pytest.raises(KeyError, match=rf"No account with address '{address}'\."):
         _ = test_accounts[address]
 
 
@@ -425,10 +425,10 @@ def test_autosign_transactions(runner, keyfile_account, receiver):
 
 def test_impersonate_not_implemented(accounts, address):
     expected_err_msg = (
-        "Your provider does not support impersonating accounts:\n"
-        f"No account with address '{address}'."
+        r"Your provider does not support impersonating accounts:\\n"
+        rf"No account with address '{address}'\."
     )
-    with pytest.raises(IndexError, match=expected_err_msg):
+    with pytest.raises(KeyError, match=expected_err_msg):
         _ = accounts[address]
 
 
@@ -452,10 +452,10 @@ def test_impersonated_account_ignores_signature_check_on_txn(accounts, address):
 
 def test_contract_as_sender_non_fork_network(contract_instance):
     expected_err_msg = (
-        "Your provider does not support impersonating accounts:\n"
-        f"No account with address '{contract_instance}'."
+        r"Your provider does not support impersonating accounts:\\n"
+        rf"No account with address '{contract_instance}'\."
     )
-    with pytest.raises(IndexError, match=expected_err_msg):
+    with pytest.raises(KeyError, match=expected_err_msg):
         contract_instance.setNumber(5, sender=contract_instance)
 
 
