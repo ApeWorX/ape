@@ -4,7 +4,7 @@ import json
 import sys
 from asyncio import gather
 from collections.abc import Callable, Coroutine, Mapping
-from datetime import datetime
+from datetime import datetime, timezone
 from functools import cached_property, lru_cache, singledispatchmethod, wraps
 from importlib.metadata import PackageNotFoundError, distributions
 from importlib.metadata import version as version_metadata
@@ -458,7 +458,7 @@ def get_current_timestamp_ms() -> int:
     Returns:
         int
     """
-    return round(datetime.utcnow().timestamp() * 1000)
+    return round(datetime.now(tz=timezone.utc).timestamp() * 1000)
 
 
 def is_evm_precompile(address: str) -> bool:
