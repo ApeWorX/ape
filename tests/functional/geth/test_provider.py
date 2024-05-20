@@ -14,6 +14,7 @@ from web3.middleware import geth_poa_middleware
 from ape.exceptions import (
     APINotImplementedError,
     BlockNotFoundError,
+    ContractLogicError,
     NetworkMismatchError,
     TransactionError,
     TransactionNotFoundError,
@@ -485,6 +486,13 @@ def test_estimate_gas_cost_of_static_fee_txn(geth_contract, geth_provider, geth_
     txn = geth_contract.setNumber.as_transaction(900, sender=geth_account, type=0)
     estimate = geth_provider.estimate_gas_cost(txn)
     assert estimate > 0
+
+
+@geth_process_test
+def test_estimate_gas_cost_reverts(geth_contract, geth_provider, geth_second_account):
+    txn = geth_contract.setNumber.as_transaction(900, sender=geth_second_account, type=0)
+    with pytest.raises(ContractLogicError):
+        geth_provider.estimate_gas_cost(txn)
 
 
 @geth_process_test

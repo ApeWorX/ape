@@ -294,6 +294,7 @@ def test_printing_debug_logs_compat(geth_provider, geth_account, vyper_printing)
     assert receipt.debug_logs_typed[0][0] == num
 
 
+@geth_process_test
 def test_call_trace_supports_debug_trace_call(geth_contract, geth_account):
     tx = {
         "chainId": "0x539",

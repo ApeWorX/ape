@@ -64,7 +64,7 @@ from ape_ethereum.proxies import (
     ProxyInfo,
     ProxyType,
 )
-from ape_ethereum.trace import Trace, TransactionTrace
+from ape_ethereum.trace import _REVERT_PREFIX, Trace, TransactionTrace
 from ape_ethereum.transactions import (
     AccessListTransaction,
     BaseTransaction,
@@ -1002,6 +1002,7 @@ class Ethereum(EcosystemAPI):
             )
 
     def enrich_trace(self, trace: TraceAPI, **kwargs) -> TraceAPI:
+        kwargs["trace"] = trace
         if not isinstance(trace, Trace):
             return trace
 
@@ -1015,10 +1016,10 @@ class Ethereum(EcosystemAPI):
         # Get the un-enriched calltree.
         data = trace.get_calltree().model_dump(mode="json", by_alias=True)
 
-        # Return value was discovered already.
         if isinstance(trace, TransactionTrace):
             return_value = trace.__dict__.get("return_value") if data.get("depth", 0) == 0 else None
             if return_value is not None:
+                # Return value was discovered already.
                 kwargs["return_value"] = return_value
 
         enriched_calltree = self._enrich_calltree(data, **kwargs)
@@ -1051,7 +1052,9 @@ class Ethereum(EcosystemAPI):
         # Figure out the contract.
         address = call.pop("address", "")
         try:
-            call["contract_id"] = address = str(self.decode_address(address))
+            call["contract_id"] = address = kwargs["contract_address"] = str(
+                self.decode_address(address)
+            )
         except Exception:
             # Tx was made with a weird address.
             call["contract_id"] = address
@@ -1120,6 +1123,10 @@ class Ethereum(EcosystemAPI):
             else:
                 # For constructors, don't include outputs, as it is likely a large amount of bytes.
                 call["returndata"] = None
+
+        elif "revert_message" not in call:
+            # Method not found but perhaps we still know the error.
+            call = self._enrich_revert_message(call)
 
         return call
 
@@ -1198,12 +1205,36 @@ class Ethereum(EcosystemAPI):
             call["returndata"] = ""
             return call
 
-        default_return_value = "<?>"
-        returndata = call.get("returndata")
+        elif "revert_message" in call:
+            # Already enriched, in a sense..
+            return call
 
-        if (
-            returndata and isinstance(returndata, str) and is_0x_prefixed(returndata)
-        ) or isinstance(returndata, (int, bytes)):
+        default_return_value = "<?>"
+        returndata = call.get("returndata", "")
+        is_hexstr = isinstance(returndata, str) and is_0x_prefixed(returndata)
+        return_value_bytes = None
+
+        # Check if return is only a revert string.
+        call = self._enrich_revert_message(call)
+        if "revert_message" in call:
+            return call
+
+        elif is_hexstr:
+            return_value_bytes = HexBytes(returndata)
+
+            # Check if custom-error.
+            if "trace" in kwargs and "contract_address" in kwargs:
+                address = kwargs["contract_address"]
+                try:
+                    instance = self.decode_custom_error(return_value_bytes, address, **kwargs)
+                except NotImplementedError:
+                    pass
+                else:
+                    if instance is not None:
+                        call["revert_message"] = repr(instance)
+                        return call
+
+        elif is_hexstr or isinstance(returndata, (int, bytes)):
             return_value_bytes = HexBytes(returndata)
         else:
             return_value_bytes = None
@@ -1245,6 +1276,16 @@ class Ethereum(EcosystemAPI):
         call["returndata"] = output_val
         return call
 
+    def _enrich_revert_message(self, call: dict) -> dict:
+        returndata = call.get("returndata", "")
+        is_hexstr = isinstance(returndata, str) and is_0x_prefixed(returndata)
+        if is_hexstr and returndata.startswith(_REVERT_PREFIX):
+            # The returndata is the revert-str.
+            decoded_result = decode(("string",), HexBytes(returndata)[4:])
+            call["revert_message"] = decoded_result[0] if len(decoded_result) == 1 else ""
+
+        return call
+
     def get_python_types(self, abi_type: ABIType) -> Union[type, Sequence]:
         return self._python_type_for_abi_type(abi_type)
 
@@ -1263,51 +1304,43 @@ class Ethereum(EcosystemAPI):
         selector = data[:4]
         input_data = data[4:]
 
-        abi = None
-        if selector not in contract.contract_type.errors:
-            # ABI not found. Try looking at the "last" contract.
-            if not (tx := kwargs.get("txn")) or not self.network_manager.active_provider:
-                return None
+        if selector in contract.contract_type.errors:
+            abi = contract.contract_type.errors[selector]
+            error_cls = contract.get_error_by_signature(abi.signature)
+            inputs = self.decode_calldata(abi, input_data)
+            kwargs["contract_address"] = address
+            error_kwargs = {
+                k: v
+                for k, v in kwargs.items()
+                if k in ("trace", "txn", "contract_address", "source_traceback")
+            }
+            return error_cls(abi, inputs, **error_kwargs)
 
-            try:
-                tx_hash = tx.txn_hash
-            except SignatureError:
-                return None
-
-            if not (last_addr := self._get_last_address_from_trace(tx_hash)):
-                return None
-
-            if last_addr == address:
-                # Avoid checking same address twice.
-                return None
-
-            try:
-                if not (cerr := self.decode_custom_error(data, last_addr)):
-                    return cerr
-            except NotImplementedError:
-                return None
-
-            # error never found.
+        # ABI not found. Try looking at the "last" contract.
+        if not (tx := kwargs.get("txn")) or not self.network_manager.active_provider:
             return None
 
-        abi = contract.contract_type.errors[selector]
-        error_cls = contract.get_error_by_signature(abi.signature)
-        inputs = self.decode_calldata(abi, input_data)
-        kwargs["contract_address"] = address
-        return error_cls(abi, inputs, **kwargs)
-
-    def _get_last_address_from_trace(self, txn_hash: Union[str, HexBytes]) -> Optional[AddressType]:
         try:
-            trace = list(self.chain_manager.provider.get_transaction_trace(txn_hash))
-        except Exception:
+            tx_hash = tx.txn_hash
+        except SignatureError:
             return None
 
-        for frame in trace[::-1]:
-            if not (addr := frame.contract_address):
-                continue
+        trace = kwargs.get("trace") or self.provider.get_transaction_trace(tx_hash)
+        if not (last_addr := next(trace.get_addresses_used(reverse=True), None)):
+            return None
 
-            return addr
+        if last_addr == address:
+            # Avoid checking same address twice.
+            return None
 
+        try:
+            if cerr := self.decode_custom_error(data, last_addr, **kwargs):
+                return cerr
+
+        except NotImplementedError:
+            return None
+
+        # error never found.
         return None
 
 

@@ -574,12 +574,12 @@ class EcosystemAPI(ExtraAttributesMixin, BaseInterfaceModel):
         Enhance the data in the call tree using information about the ecosystem.
 
         Args:
-            call (:class:`~ape.api.trace.TraceAPI`): The trace to enrich.
-            kwargs: Additional kwargs to control enrichment, defined at the
+            trace (:class:`~ape.api.trace.TraceAPI`): The trace to enrich.
+            **kwargs: Additional kwargs to control enrichment, defined at the
               plugin level.
 
         Returns:
-            :class:`~ape.types.trace.CallTreeNode`
+            :class:`~ape.api.trace.TraceAPI`
         """
         return trace
 
@@ -608,7 +608,7 @@ class EcosystemAPI(ExtraAttributesMixin, BaseInterfaceModel):
         Decode a custom error class from an ABI defined in a contract.
 
         Args:
-            data (HexBytes): The error data contining the selector
+            data (HexBytes): The error data containing the selector
               and input data.
             address (AddressType): The address of the contract containing
               the error.

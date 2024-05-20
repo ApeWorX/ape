@@ -1,6 +1,6 @@
 import sys
 from abc import abstractmethod
-from collections.abc import Sequence
+from collections.abc import Iterator, Sequence
 from typing import IO, Any, Optional
 
 from ape.types import ContractFunctionPath
@@ -49,7 +49,7 @@ class TraceAPI(BaseInterfaceModel):
         """
 
     @abstractmethod
-    def get_raw_frames(self) -> list[dict]:
+    def get_raw_frames(self) -> Iterator[dict]:
         """
         Get raw trace frames for deeper analysis.
         """

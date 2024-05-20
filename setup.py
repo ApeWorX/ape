@@ -12,7 +12,7 @@ _MODULES.add("ape")
 
 extras_require = {
     "test": [  # `test` GitHub Action jobs uses this
-        "pytest-xdist>=3.5.0,<4",  # Multi-process runner
+        "pytest-xdist>=3.6.1,<4",  # Multi-process runner
         "pytest-cov>=4.0.0,<5",  # Coverage analyzer plugin
         "pytest-mock",  # For creating mocks
         "pytest-timeout>=2.2.0,<3",  # For avoiding timing out during tests
@@ -106,7 +106,7 @@ setup(
         "pluggy>=1.3,<2",
         "pydantic>=2.6.4,<3",
         "pydantic-settings>=2.0.3,<3",
-        "pytest>=6.0,<8.0",
+        "pytest>=8.0,<9.0",
         "python-dateutil>=2.8.2,<3",
         "PyYAML>=5.0,<7",
         "requests>=2.28.1,<3",

@@ -6,25 +6,26 @@ from enum import Enum
 from functools import cached_property
 from typing import IO, Any, Optional, Union
 
-from eth_abi import decode
-from eth_utils import is_0x_prefixed, to_hex
+from eth_utils import is_0x_prefixed
 from evm_trace import (
     CallTreeNode,
     CallType,
     ParityTraceList,
     TraceFrame,
+    create_trace_frames,
     get_calltree_from_geth_call_trace,
     get_calltree_from_geth_trace,
     get_calltree_from_parity_trace,
 )
 from evm_trace.gas import merge_reports
 from hexbytes import HexBytes
+from pydantic import field_validator
 from rich.tree import Tree
 
-from ape.api.trace import TraceAPI
+from ape.api import EcosystemAPI, TraceAPI, TransactionAPI
 from ape.exceptions import ProviderError, TransactionNotFoundError
 from ape.logging import logger
-from ape.types import ContractFunctionPath, GasReport
+from ape.types import AddressType, ContractFunctionPath, GasReport
 from ape.utils import ZERO_ADDRESS, is_evm_precompile, is_zero_hex
 from ape.utils.trace import TraceStyles, _exclude_gas
 from ape_ethereum._print import extract_debug_logs
@@ -37,21 +38,21 @@ _REVERT_PREFIX = "0x08c379a00000000000000000000000000000000000000000000000000000
 class TraceApproach(Enum):
     """RPC trace_transaction."""
 
-    """No tracing support; think of EthTester."""
     BASIC = 0
+    """No tracing support; think of EthTester."""
 
-    """RPC 'trace_transaction'."""
     PARITY = 1
+    """RPC 'trace_transaction'."""
 
-    """RPC debug_traceTransaction using tracer='callTracer'."""
     GETH_CALL_TRACER = 2
+    """RPC debug_traceTransaction using tracer='callTracer'."""
 
+    GETH_STRUCT_LOG_PARSE = 3
     """
     RPC debug_traceTransaction using struct-log tracer
     and sophisticated parsing from the evm-trace library.
     NOT RECOMMENDED.
     """
-    GETH_STRUCT_LOG_PARSE = 3
 
 
 class Trace(TraceAPI):
@@ -61,8 +62,8 @@ class Trace(TraceAPI):
     involved, Ape must use the ``.name`` as the identifier for all contracts.
     """
 
-    """When None, attempts to deduce."""
     call_trace_approach: Optional[TraceApproach] = None
+    """When None, attempts to deduce."""
 
     _enriched_calltree: Optional[dict] = None
 
@@ -82,7 +83,7 @@ class Trace(TraceAPI):
 
     @property
     @abstractmethod
-    def raw_trace_frames(self) -> list[dict]:
+    def raw_trace_frames(self) -> Iterator[dict]:
         """
         The raw trace frames.
         """
@@ -123,7 +124,50 @@ class Trace(TraceAPI):
             # If still None (shouldn't be), set to avoid repeated attempts.
             self._enriched_calltree = {}
 
+        # Add top-level data if missing.
+        if not self._enriched_calltree.get("gas_cost"):
+            # Happens on calltrees built from structLogs.
+            if gas_used := self.transaction.get("gas_used"):
+                if "data" in self.transaction:
+                    # Subtract base gas costs.
+                    # (21_000 + 4 gas per 0-byte and 16 gas per non-zero byte).
+                    data_gas = sum(
+                        [4 if x == 0 else 16 for x in HexBytes(self.transaction["data"])]
+                    )
+                    self._enriched_calltree["gas_cost"] = gas_used - 21_000 - data_gas
+
         return self._enriched_calltree
+
+    @property
+    def frames(self) -> Iterator[TraceFrame]:
+        yield from create_trace_frames(iter(self.raw_trace_frames))
+
+    @property
+    def addresses(self) -> Iterator[AddressType]:
+        yield from self.get_addresses_used()
+
+    @property
+    def _ecosystem(self) -> EcosystemAPI:
+        if provider := self.network_manager.active_provider:
+            return provider.network.ecosystem
+
+        # Default to Ethereum (since we are in that plugin!)
+        return self.network_manager.ethereum
+
+    def get_addresses_used(self, reverse: bool = False):
+        frames: Iterable
+        if reverse:
+            frames = list(self.frames)
+            frames = frames[::-1] if reverse else frames
+        else:
+            # Don't need to run whole list.
+            frames = self.frames
+
+        for frame in frames:
+            if not (addr := frame.address):
+                continue
+
+            yield self._ecosystem.decode_address(addr)
 
     @cached_property
     def return_value(self) -> Any:
@@ -133,12 +177,32 @@ class Trace(TraceAPI):
         if "return_value" in self.__dict__:
             return self.__dict__["return_value"]
 
-        return calltree.get("unenriched_return_values", calltree.get("returndata"))
+        # If enriching too much, Ethereum places regular values in a key
+        # named "unenriched_return_values".
+        return calltree.get("unenriched_return_values") or calltree.get("returndata")
 
     @cached_property
     def revert_message(self) -> Optional[str]:
+        call = self.enriched_calltree
+        if not call.get("failed", False):
+            return None
+
+        def try_get_revert_msg(c) -> Optional[str]:
+            if msg := c.get("revert_message"):
+                return msg
+
+            for sub_c in c.get("calls", []):
+                if msg := try_get_revert_msg(sub_c):
+                    return msg
+
+            return None
+
+        if message := try_get_revert_msg(call):
+            return message
+
+        # Enrichment call-tree not available. Attempt looking in trace-frames.
         try:
-            frames = self.raw_trace_frames
+            frames = list(self.raw_trace_frames)
         except Exception as err:
             logger.error(f"Failed getting traceback: {err}")
             frames = []
@@ -154,37 +218,15 @@ class Trace(TraceAPI):
 
     def show(self, verbose: bool = False, file: IO[str] = sys.stdout):
         call = self.enriched_calltree
+        failed = call.get("failed", False)
         revert_message = None
-
-        if call.get("failed", False):
-            default_message = "reverted without message"
-            returndata = HexBytes(call.get("returndata", b""))
-            if to_hex(returndata).startswith(_REVERT_PREFIX):
-                decoded_result = decode(("string",), returndata[4:])
-                if len(decoded_result) == 1:
-                    revert_message = f'reverted with message: "{decoded_result[0]}"'
-                else:
-                    revert_message = default_message
-
-            elif address := (
-                self.transaction.get("to") or self.transaction.get("contract_address")
-            ):
-                # Try to enrich revert error using ABI.
-                if provider := self.network_manager.active_provider:
-                    ecosystem = provider.network.ecosystem
-                else:
-                    # Default to Ethereum.
-                    ecosystem = self.network_manager.ethereum
-
-                try:
-                    instance = ecosystem.decode_custom_error(returndata, address)
-                except NotImplementedError:
-                    pass
-                else:
-                    revert_message = repr(instance)
-
-            else:
-                revert_message = default_message
+        if failed:
+            revert_message = self.revert_message
+            revert_message = (
+                f'reverted with message: "{revert_message}"'
+                if revert_message
+                else "reverted without message"
+            )
 
         root = self._get_tree(verbose=verbose)
         console = self.chain_manager._reports._get_console(file=file)
@@ -202,6 +244,11 @@ class Trace(TraceAPI):
 
     def get_gas_report(self, exclude: Optional[Sequence[ContractFunctionPath]] = None) -> GasReport:
         call = self.enriched_calltree
+        return self._get_gas_report_from_call(call, exclude=exclude)
+
+    def _get_gas_report_from_call(
+        self, call: dict, exclude: Optional[Sequence[ContractFunctionPath]] = None
+    ) -> GasReport:
         tx = self.transaction
 
         # Enrich transfers.
@@ -215,35 +262,34 @@ class Trace(TraceAPI):
             call["method_id"] = f"to:{receiver}"
 
         exclusions = exclude or []
+        calls = call.get("calls", [])
+        sub_reports = (self._get_gas_report_from_call(c, exclude=exclusions) for c in calls)
 
         if (
             not call.get("contract_id")
             or not call.get("method_id")
             or _exclude_gas(exclusions, call.get("contract_id", ""), call.get("method_id", ""))
         ):
-            return merge_reports(*(c.get_gas_report(exclude) for c in call.get("calls", [])))
+            return merge_reports(*sub_reports)
 
         elif not is_zero_hex(call["method_id"]) and not is_evm_precompile(call["method_id"]):
-            reports = [
-                *[c.get_gas_report(exclude) for c in call.get("calls", [])],
-                {
-                    call["contract_id"]: {
-                        call["method_id"]: (
-                            [call.get("gas_cost")] if call.get("gas_cost") is not None else []
-                        )
-                    }
-                },
-            ]
-            return merge_reports(*reports)
+            report: GasReport = {
+                call["contract_id"]: {
+                    call["method_id"]: (
+                        [int(call["gas_cost"])] if call.get("gas_cost") is not None else []
+                    )
+                }
+            }
+            return merge_reports(*sub_reports, report)
 
-        return merge_reports(*(c.get_gas_report(exclude) for c in call.get("calls", [])))
+        return merge_reports(*sub_reports)
 
     def show_gas_report(self, verbose: bool = False, file: IO[str] = sys.stdout):
         gas_report = self.get_gas_report()
         self.chain_manager._reports.show_gas(gas_report, file=file)
 
-    def get_raw_frames(self) -> list[dict]:
-        return self.raw_trace_frames
+    def get_raw_frames(self) -> Iterator[dict]:
+        yield from self.raw_trace_frames
 
     def get_raw_calltree(self) -> dict:
         return self.get_calltree().model_dump(mode="json", by_alias=True)
@@ -268,9 +314,7 @@ class Trace(TraceAPI):
 
     def _debug_trace_transaction_struct_logs_to_call(self) -> CallTreeNode:
         init_kwargs = self._get_tx_calltree_kwargs()
-        return get_calltree_from_geth_trace(
-            (TraceFrame.model_validate(f) for f in self.raw_trace_frames), **init_kwargs
-        )
+        return get_calltree_from_geth_trace(self.frames, **init_kwargs)
 
     def _get_tree(self, verbose: bool = False) -> Tree:
         return parse_rich_tree(self.enriched_calltree, verbose=verbose)
@@ -279,14 +323,21 @@ class Trace(TraceAPI):
 class TransactionTrace(Trace):
     transaction_hash: str
     debug_trace_transaction_parameters: dict = {"enableMemory": True}
+    _frames: list[dict] = []
 
-    @cached_property
-    def raw_trace_frames(self) -> list[dict]:
+    @property
+    def raw_trace_frames(self) -> Iterator[dict]:
         """
         The raw trace ``"structLogs"`` from ``debug_traceTransaction``
         for deeper investigation.
         """
-        return list(self._stream_struct_logs())
+        if self._frames:
+            yield from self._frames
+
+        else:
+            for frame in self._stream_struct_logs():
+                self._frames.append(frame)
+                yield frame
 
     @cached_property
     def transaction(self) -> dict:
@@ -299,7 +350,7 @@ class TransactionTrace(Trace):
         yield from self.provider.stream_request(
             "debug_traceTransaction",
             [self.transaction_hash, parameters],
-            iter_path="result.item",
+            iter_path="result.structLogs.item",
         )
 
     def get_calltree(self) -> CallTreeNode:
@@ -395,15 +446,32 @@ class TransactionTrace(Trace):
 
 class CallTrace(Trace):
     tx: dict
-    arguments: list[Any] = []
+    """
+    Transaction data. Is a dictionary to allow traces to easily
+    be created near sending the request.
+    """
 
-    """debug_traceCall must use the struct-log tracer."""
+    arguments: list[Any] = []
+    """
+    Remaining eth-call arguments, minus the transaction.
+    """
+
     call_trace_approach: TraceApproach = TraceApproach.GETH_STRUCT_LOG_PARSE
+    """debug_traceCall must use the struct-log tracer."""
+
     supports_debug_trace_call: Optional[bool] = None
 
+    @field_validator("tx", mode="before")
+    @classmethod
+    def _tx_to_dict(cls, value):
+        if isinstance(value, TransactionAPI):
+            return value.model_dump(by_alias=True)
+
+        return value
+
     @property
-    def raw_trace_frames(self) -> list[dict]:
-        return self._traced_call.get("structLogs", [])
+    def raw_trace_frames(self) -> Iterator[dict]:
+        yield from self._traced_call.get("structLogs", [])
 
     @property
     def return_value(self) -> Any:
@@ -492,7 +560,6 @@ def _call_to_str(call: dict, stylize: bool = False, verbose: bool = False) -> st
 
     signature = f"{call_path}{arguments_str}"
     returndata = call.get("returndata", "")
-
     if not is_create and returndata not in ((), [], None, {}, ""):
         if return_str := _get_outputs_str(returndata, stylize=stylize):
             signature = f"{signature} -> {return_str}"

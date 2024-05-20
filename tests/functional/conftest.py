@@ -7,7 +7,8 @@ from typing import Optional, cast
 
 import pytest
 from eth_pydantic_types import HexBytes
-from ethpm_types import ContractType, MethodABI
+from ethpm_types import ContractType, ErrorABI, MethodABI
+from ethpm_types.abi import ABIType
 
 import ape
 from ape.api.networks import LOCAL_NETWORK_NAME
@@ -774,3 +775,37 @@ def delete_account_after(project_path):
             account_path.unlink()
 
     return delete_account_context
+
+
+@pytest.fixture
+def setup_custom_error(chain):
+    def fn(addr: AddressType):
+        abi = [
+            ErrorABI(
+                type="error",
+                name="AllowanceExpired",
+                inputs=[
+                    ABIType(
+                        name="deadline", type="uint256", components=None, internal_type="uint256"
+                    )
+                ],
+            ),
+            MethodABI(
+                type="function",
+                name="execute",
+                stateMutability="payable",
+                inputs=[
+                    ABIType(name="commands", type="bytes", components=None, internal_type="bytes"),
+                    ABIType(
+                        name="inputs", type="bytes[]", components=None, internal_type="bytes[]"
+                    ),
+                ],
+                outputs=[],
+            ),
+        ]
+        contract_type = ContractType(abi=abi)
+
+        # Hack in contract-type.
+        chain.contracts._local_contract_types[addr] = contract_type
+
+    return fn
