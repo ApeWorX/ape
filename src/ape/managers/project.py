@@ -1882,6 +1882,11 @@ class LocalProject(Project):
     def clean(self):
         if self.manifest_path.name == "__local__.json":
             self.manifest_path.unlink(missing_ok=True)
+            self._manifest = PackageManifest()
+
+        elif self._manifest.contract_types:
+            # For manifests / dependencies.
+            self._manifest.contract_types = {}
 
     def _create_contract_source(self, contract_type: ContractType) -> Optional[ContractSource]:
         if not (source_id := contract_type.source_id):
