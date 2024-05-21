@@ -173,8 +173,7 @@ class _GithubClient:
 
         target_path = Path(target_path)
         if target_path.exists():
-            # Else, cloning will fail!
-            target_path = target_path / repo_name
+            raise ProjectError("`target_path` should not exist when calling `.clone_repo()`.")
 
         self.git.clone(url, branch=branch, target_path=target_path)
 

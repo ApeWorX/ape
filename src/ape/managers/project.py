@@ -467,17 +467,31 @@ class Dependency(BaseManager, ExtraAttributesMixin):
     ) -> "ProjectManager":
         config_override = {**(self.api.config_override or {}), **(config_override or {})}
         project = None
+
         if self._installation is not None and use_cache:
             if config_override:
                 self._installation.reconfigure(**config_override)
 
             return self._installation
 
-        elif (not self.project_path.is_dir() and not self.manifest_path.is_file()) or not use_cache:
-            # Fetch the project if needed.
-            shutil.rmtree(self.project_path, ignore_errors=True)
-            self.project_path.parent.mkdir(parents=True, exist_ok=True)
-            self.api.fetch(self.project_path)
+        elif (not self.project_path.is_dir()) or not use_cache:
+            unpacked = False
+            if use_cache and self.manifest_path.is_file():
+                # Attempt using sources from manifest. This may happen
+                # if having deleted dependencies but not their manifests.
+                man = PackageManifest.model_validate_json(self.manifest_path.read_text())
+                if srces := (man.sources or {}):
+                    for src_id, src in srces.items():
+                        src_path = self.project_path / src_id
+                        src_path.parent.mkdir(parents=True, exist_ok=True)
+                        src_path.write_text(str(src))
+                        unpacked = True
+
+            if not unpacked:
+                # No sources found! Fetch the project.
+                shutil.rmtree(self.project_path, ignore_errors=True)
+                self.project_path.parent.mkdir(parents=True, exist_ok=True)
+                self.api.fetch(self.project_path)
 
         # Set name / version for the project, if it needs.
         if "name" not in config_override:
@@ -486,7 +500,6 @@ class Dependency(BaseManager, ExtraAttributesMixin):
             config_override["version"] = self.api.version_id
 
         if self.project_path.is_dir():
-            # Handle if given a manifest only.
             paths = [x for x in self.project_path.iterdir()]
             if len(paths) > 0:
                 suffix = get_full_extension(paths[0])
@@ -529,8 +542,10 @@ class Dependency(BaseManager, ExtraAttributesMixin):
         self._installation = project
 
         # Also, install dependencies of dependencies.
-        for dependency in project.dependencies.specified:
-            dependency.install(use_cache=use_cache, config_override=config_override)
+        spec = project.dependencies._get_specified(
+            use_cache=use_cache, config_override=config_override
+        )
+        list(spec)
 
         return project
 
@@ -545,37 +560,47 @@ class Dependency(BaseManager, ExtraAttributesMixin):
 
         return self.project.load_contracts(use_cache=use_cache)
 
-    def unpack(self, path: Path):
+    def unpack(self, path: Path) -> Iterator["Dependency"]:
         """
-        Move dependencies into a .cache folder.
-        Ideal for tmp-projects.
-        """
-        self._unpack(path, set())
+        Move dependencies into a .cache folder. Also unpacks
+        dependencies of dependencies. Ideal for tmp-projects.
 
-    def _unpack(self, path: Path, tracked: set[str]):
-        key = self.project_id
+        Args:
+            path (Path): The destination where to unpack sources.
+
+        Returns:
+            Iterates over every dependency unpacked, so the user
+            knows the dependencies of dependencies.
+        """
+        yield from self._unpack(path, set())
+
+    def _unpack(self, path: Path, tracked: set[str]) -> Iterator["Dependency"]:
+        key = self.package_id
         if key in tracked:
             return
 
         tracked.add(key)
+
+        # NOTE: Don't do the same weird path-ify thing for
+        #  the in-contracts .cache folder. Short names work here.
         folder = path / self.name / self.version
 
-        if folder.is_dir():
-            # This dependency (and its dependencies) were already handled!
-            return
+        if not folder.is_dir():
+            # Not yet unpacked.
+            contracts_folder_id = get_relative_path(
+                self.project.contracts_folder, self.project.path
+            )
+            destination = folder / contracts_folder_id
+            destination.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copytree(self.project.contracts_folder, destination)
 
-        if sources := self.project.sources:
-            for source_id, src in sources.items():
-                src_path = folder / source_id
-                src_path.parent.mkdir(parents=True, exist_ok=True)
-                if src_path.is_file():
-                    continue
-
-                src_path.write_text(str(src.content))
+        # self is done!
+        yield self
 
         # Unpack dependencies of dependencies (if they aren't already).
         for dependency in self.project.dependencies.specified:
-            dependency._unpack(path, tracked=tracked)
+            for unpacked_dep in dependency._unpack(path, tracked=tracked):
+                yield unpacked_dep
 
 
 class PackagesCache(ManagerAccessMixin):
@@ -751,9 +776,12 @@ class DependencyManager(BaseManager):
         """
         All dependencies specified in the config.
         """
+        yield from self._get_specified()
+
+    def _get_specified(self, use_cache: bool = True, config_override: Optional[dict] = None):
         for data in self.config.dependencies:
             api = self.decode_dependency(data)
-            yield self._install(api)
+            yield self._install(api, use_cache=use_cache, config_override=config_override)
 
     @property
     def installed(self) -> Iterator[Dependency]:
@@ -890,10 +918,13 @@ class DependencyManager(BaseManager):
         else:
             version_options.append(f"v{version}")
 
+        name_options = {name, name.lower()}
+
         def try_get():
-            for opt in version_options:
-                if dependency := self._get(name, opt):
-                    return dependency
+            for nm in name_options:
+                for opt in version_options:
+                    if dependency := self._get(nm, opt):
+                        return dependency
 
         if res := try_get():
             return res
@@ -942,17 +973,28 @@ class DependencyManager(BaseManager):
             # Install all project's.
             return [x for x in self.specified]
 
-    def _install(self, item: Union[dict, DependencyAPI], use_cache: bool = True) -> Dependency:
+    def _install(
+        self,
+        item: Union[dict, DependencyAPI],
+        use_cache: bool = True,
+        config_override: Optional[dict] = None,
+    ) -> Dependency:
         dependency = self.add(item)
-        dependency.install(use_cache=use_cache)
+        dependency.install(use_cache=use_cache, config_override=config_override)
         return dependency
 
-    def unpack(self, path: Path):
+    def unpack(self, base_path: Path, cache_name: str = ".cache"):
         """
         Move dependencies into a .cache folder.
         Ideal for isolated, temporary projects.
+
+        Args:
+            base_path (Path): The target path.
+            cache_name (str): The cache folder name to create
+              at the target path. Defaults to ``.cache`` because
+              that is what is what ``ape-solidity`` uses.
         """
-        cache_folder = path / ".cache"
+        cache_folder = base_path / cache_name
         for dependency in self.specified:
             dependency.unpack(cache_folder)
 
@@ -1128,16 +1170,22 @@ class Project(ProjectManager):
         return Project(manifest, config_override=config_override)
 
     def __ape_extra_attributes__(self) -> Iterator[ExtraModelAttributes]:
-        yield ExtraModelAttributes(
-            name="contracts",
-            attributes=lambda: self.contracts,
-            include_getitem=True,
+        extras = (
+            ExtraModelAttributes(
+                name="contracts",
+                attributes=lambda: self.contracts,
+                include_getitem=True,
+            ),
+            ExtraModelAttributes(
+                name="manifest",
+                attributes=lambda: self.manifest,
+                include_getitem=True,
+            ),
         )
-        yield ExtraModelAttributes(
-            name="manifest",
-            attributes=lambda: self.manifest,
-            include_getitem=True,
-        )
+
+        # If manifest is not compiled, don't search for contracts right
+        # away to delay compiling if unnecessary.
+        yield from extras if self.manifest.contract_types else reversed(extras)
 
     @property
     def manifest(self) -> PackageManifest:

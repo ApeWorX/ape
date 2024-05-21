@@ -41,7 +41,7 @@ class BrownieProject(ProjectAPI):
         for dependency in brownie_config_data.get("dependencies", []):
             dependency_dict = {}
             dep_parts = dependency.split("/")
-            dep_name = dep_parts[0]
+            dep_name = dep_parts[0].lower()
             if len(dep_parts) > 1:
                 dependency_dict["name"] = dep_name
                 if "@" in dep_parts[1]:

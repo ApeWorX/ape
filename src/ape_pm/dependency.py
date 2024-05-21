@@ -161,11 +161,13 @@ class GithubDependency(DependencyAPI):
         return f"<{cls_name} github={self.github}>"
 
     def fetch(self, destination: Path):
-        destination.mkdir(exist_ok=True, parents=True)
+        destination.parent.mkdir(exist_ok=True, parents=True)
         if self.ref:
+            # NOTE: Destination path should not exist at this point!
             github_client.clone_repo(self.org_name, self.repo_name, destination, branch=self.ref)
 
         else:
+            destination.mkdir(exist_ok=True)  # parents already made.
             try:
                 github_client.download_package(
                     self.org_name, self.repo_name, self.version or "latest", destination
