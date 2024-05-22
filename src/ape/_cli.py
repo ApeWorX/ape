@@ -136,7 +136,7 @@ class ApeCLI(click.MultiCommand):
             # Python 3.9. Can remove once we drop support.
             with warnings.catch_warnings():
                 warnings.simplefilter("ignore")
-                eps = _entry_points.get(self._CLI_GROUP_NAME, [])
+                eps = _entry_points.get(self._CLI_GROUP_NAME, [])  # type: ignore
 
         self._commands = {clean_plugin_name(cmd.name): cmd.load for cmd in eps}
         return self._commands
