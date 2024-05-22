@@ -67,4 +67,5 @@
 
    methoddocs/ape_accounts.md
    methoddocs/ape_compile.md
+   methoddocs/ape_pm.md
 ```

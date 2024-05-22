@@ -20,3 +20,12 @@ def dependencies():
 @plugins.register(plugins.ProjectPlugin)
 def projects():
     yield BrownieProject
+
+
+__all__ = [
+    "BrownieProject",
+    "GithubDependency",
+    "InterfaceCompiler",
+    "LocalDependency",
+    "NpmDependency",
+]

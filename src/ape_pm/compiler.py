@@ -16,6 +16,12 @@ from ape.utils.os import get_relative_path
 
 
 class InterfaceCompiler(CompilerAPI):
+    """
+    A compiler plugin for interface JSONs (ABIs). Also, this
+    compiler can "compile" already-compiled ``ContractType``
+    JSON files.
+    """
+
     @property
     def name(self) -> str:
         return "ethpm"

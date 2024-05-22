@@ -10,7 +10,7 @@ from ape.utils.os import expand_environment_variables
 
 class BrownieProject(ProjectAPI):
     """
-    Other traditional Brownie projects to work with Ape.
+    Allows traditional Brownie projects to work with Ape.
     This class implements the necessary methods in order
     to detect config settings in a Brownie project and
     treat it like an Ape project.
