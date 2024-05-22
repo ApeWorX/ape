@@ -1,8 +1,11 @@
 import os
 import re
 import sys
+from contextlib import contextmanager
+from fnmatch import fnmatch
 from pathlib import Path
-from typing import List, Optional, Pattern, Union
+from tempfile import TemporaryDirectory
+from typing import Any, Callable, Iterator, List, Optional, Pattern, Union
 
 
 def is_relative_to(path: Path, target: Path) -> bool:
@@ -61,7 +64,7 @@ def get_all_files_in_directory(
     path: Path, pattern: Optional[Union[Pattern, str]] = None
 ) -> List[Path]:
     """
-    Returns all the files in a directory structure.
+    Returns all the files in a directory structure (recursive).
 
     For example, given a directory structure like::
 
@@ -79,11 +82,10 @@ def get_all_files_in_directory(
     Returns:
         List[pathlib.Path]: A list of files in the given directory.
     """
-    if not path.exists():
-        return []
-
-    elif path.is_file():
+    if path.is_file():
         return [path]
+    elif not path.is_dir():
+        return []
 
     # is dir
     all_files = [p for p in list(path.rglob("*.*")) if p.is_file()]
@@ -158,3 +160,91 @@ def get_full_extension(path: Path) -> str:
     suffix = ".".join(parts[start_idx:])
 
     return f".{suffix}" if suffix and f".{suffix}" != f"{path.name}" else ""
+
+
+@contextmanager
+def create_tempdir(name: Optional[str] = None) -> Iterator[Path]:
+    """
+    Create a temporary directory. Differs from ``TemporaryDirectory()``
+    context-call alone because it automatically resolves the path.
+
+    Args:
+        name (Optional[str]): Optional provide a name of  the directory.
+          Else, defaults to root of ``tempfile.TemporaryDirectory()``
+          (resolved).
+
+    Returns:
+        Iterator[Path]: Context managing the temporary directory.
+    """
+    with TemporaryDirectory() as temp_dir:
+        temp_path = Path(temp_dir).resolve()
+
+        if name:
+            path = temp_path / name
+            path.mkdir()
+        else:
+            path = temp_path
+
+        yield path
+
+
+def run_in_tempdir(
+    fn: Callable[
+        [
+            Path,
+        ],
+        Any,
+    ],
+    name: Optional[str] = None,
+):
+    """
+    Run the given function in a temporary directory with its path
+    resolved.
+
+    Args:
+        fn (Callable): A function that takes a path. It gets called
+          with the resolved path to the temporary directory.
+        name (str): Optionally name the temporary directory.
+
+    Returns:
+        Any: The result of the function call.
+    """
+    with create_tempdir(name=name) as temp_dir:
+        return fn(temp_dir)
+
+
+def path_match(path: Union[str, Path], *exclusions: str) -> bool:
+    """
+    A better glob-matching function. For example:
+
+    >>> from pathlib import Path
+    >>> p = Path("test/to/.build/me/2/file.json")
+    >>> p.match("**/.build/**")
+    False
+    >>> from ape.utils.os import path_match
+    >>> path_match(p, "**/.build/**")
+    True
+    """
+    path_str = str(path)
+    path_path = Path(path)
+
+    for excl in exclusions:
+        if fnmatch(path_str, excl):
+            return True
+
+        elif fnmatch(path_path.name, excl):
+            return True
+
+        else:
+            # If the exclusion is he full name of any of the parents
+            # (e.g. ".cache", it is a match).
+            for parent in path_path.parents:
+                if parent.name == excl:
+                    return True
+
+                # Walk the path recursively.
+                relative_str = path_str.replace(str(parent), "").strip(os.path.sep)
+                if fnmatch(relative_str, excl):
+                    return True
+
+    return False

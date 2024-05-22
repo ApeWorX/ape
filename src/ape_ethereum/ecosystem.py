@@ -25,7 +25,14 @@ from pydantic_settings import SettingsConfigDict
 from ape.api import BlockAPI, EcosystemAPI, PluginConfig, ReceiptAPI, TransactionAPI
 from ape.api.networks import LOCAL_NETWORK_NAME
 from ape.contracts.base import ContractCall
-from ape.exceptions import ApeException, APINotImplementedError, ConversionError, DecodingError
+from ape.exceptions import (
+    ApeException,
+    APINotImplementedError,
+    ConversionError,
+    CustomError,
+    DecodingError,
+    SignatureError,
+)
 from ape.managers.config import merge_configs
 from ape.types import (
     AddressType,
@@ -73,7 +80,6 @@ from ape_ethereum.transactions import (
 NETWORKS = {
     # chain_id, network_id
     "mainnet": (1, 1),
-    "goerli": (5, 5),
     "sepolia": (11155111, 11155111),
 }
 BLUEPRINT_HEADER = HexBytes("0xfe71")
@@ -81,6 +87,10 @@ BLUEPRINT_HEADER = HexBytes("0xfe71")
 
 class NetworkConfig(PluginConfig):
     required_confirmations: int = 0
+    """
+    The amount of blocks to wait before
+    considering a transaction 'confirmed'.
+    """
 
     default_provider: Optional[str] = "geth"
     """
@@ -90,9 +100,27 @@ class NetworkConfig(PluginConfig):
     """
 
     block_time: int = 0
+    """
+    Approximate amount of time for a block to be
+    added to the network.
+    """
+
     transaction_acceptance_timeout: int = DEFAULT_TRANSACTION_ACCEPTANCE_TIMEOUT
+    """
+    The amount tof time before failing when sending a
+    transaction and it leaving the mempool.
+    """
+
     default_transaction_type: TransactionType = TransactionType.DYNAMIC
+    """
+    The default type of transaction to use.
+    """
+
     max_receipt_retries: int = DEFAULT_MAX_RETRIES_TX
+    """
+    Maximum number of retries when getting a receipt
+    from a transaction before failing.
+    """
 
     gas_limit: GasLimit = "auto"
     """
@@ -282,7 +310,6 @@ class BaseEthereumConfig(PluginConfig):
 
 class EthereumConfig(BaseEthereumConfig):
     mainnet: NetworkConfig = create_network_config(block_time=13)
-    goerli: NetworkConfig = create_network_config(block_time=15)
     sepolia: NetworkConfig = create_network_config(block_time=15)
 
 
@@ -328,7 +355,7 @@ class Ethereum(EcosystemAPI):
 
     @property
     def config(self) -> EthereumConfig:
-        return cast(EthereumConfig, self.config_manager.get_config(self.name))
+        return cast(EthereumConfig, super().config)
 
     @property
     def default_transaction_type(self) -> TransactionType:
@@ -1158,6 +1185,68 @@ class Ethereum(EcosystemAPI):
 
     def get_python_types(self, abi_type: ABIType) -> Union[Type, Sequence]:
         return self._python_type_for_abi_type(abi_type)
+
+    def decode_custom_error(
+        self,
+        data: HexBytes,
+        address: AddressType,
+        **kwargs,
+    ) -> Optional[CustomError]:
+        # Use an instance (required for proper error caching).
+        try:
+            contract = self.chain_manager.contracts.instance_at(address)
+        except Exception:
+            return None
+
+        selector = data[:4]
+        input_data = data[4:]
+
+        abi = None
+        if selector not in contract.contract_type.errors:
+            # ABI not found. Try looking at the "last" contract.
+            if not (tx := kwargs.get("txn")) or not self.network_manager.active_provider:
+                return None
+
+            try:
+                tx_hash = tx.txn_hash
+            except SignatureError:
+                return None
+
+            if not (last_addr := self._get_last_address_from_trace(tx_hash)):
+                return None
+
+            if last_addr == address:
+                # Avoid checking same address twice.
+                return None
+
+            try:
+                if not (cerr := self.decode_custom_error(data, last_addr)):
+                    return cerr
+            except NotImplementedError:
+                return None
+
+            # error never found.
+            return None
+
+        abi = contract.contract_type.errors[selector]
+        error_cls = contract.get_error_by_signature(abi.signature)
+        inputs = self.decode_calldata(abi, input_data)
+        kwargs["contract_address"] = address
+        return error_cls(abi, inputs, **kwargs)
+
+    def _get_last_address_from_trace(self, txn_hash: Union[str, HexBytes]) -> Optional[AddressType]:
+        try:
+            trace = list(self.chain_manager.provider.get_transaction_trace(txn_hash))
+        except Exception:
+            return None
+
+        for frame in trace[::-1]:
+            if not (addr := frame.contract_address):
+                continue
+
+            return addr
+
+        return None
 
 
 def parse_type(type_: Dict[str, Any]) -> Union[str, Tuple, List]:

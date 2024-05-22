@@ -136,14 +136,14 @@ def test_list_does_not_repeat(ape_plugins_runner, installed_plugin):
 
 @pytest.mark.pip
 @run_once
-def test_upgrade(ape_plugins_runner, installed_plugin):
+def test_install_upgrade(ape_plugins_runner, installed_plugin):
     result = ape_plugins_runner.invoke(("install", TEST_PLUGIN_NAME, "--upgrade"))
     assert result.exit_code == 0
 
 
 @pytest.mark.pip
 @run_once
-def test_upgrade_failure(ape_plugins_runner):
+def test_install_upgrade_failure(ape_plugins_runner):
     result = ape_plugins_runner.invoke(("install", "NOT_EXISTS", "--upgrade"))
     assert result.exit_code == 1
 

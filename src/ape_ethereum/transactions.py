@@ -254,7 +254,6 @@ class Receipt(ReceiptAPI):
                 # Failing to get a traceback should not halt an Ape application.
                 # Sometimes, a node crashes and we are left with nothing.
                 logger.error(f"Problem retrieving traceback: {err}")
-                pass
 
         return SourceTraceback.model_validate([])
 
@@ -276,16 +275,30 @@ class Receipt(ReceiptAPI):
         if call_tree.failed:
             default_message = "reverted without message"
             returndata = HexBytes(call_tree.raw["returndata"])
-            if not to_hex(returndata).startswith(
+            if to_hex(returndata).startswith(
                 "0x08c379a00000000000000000000000000000000000000000000000000000000000000020"
             ):
-                revert_message = default_message
-            else:
+                # Extra revert-message
                 decoded_result = decode(("string",), returndata[4:])
                 if len(decoded_result) == 1:
                     revert_message = f'reverted with message: "{decoded_result[0]}"'
                 else:
                     revert_message = default_message
+
+            elif address := (self.receiver or self.contract_address):
+                # Try to enrich revert error using ABI.
+                if provider := self.network_manager.active_provider:
+                    ecosystem = provider.network.ecosystem
+                else:
+                    # Default to Ethereum.
+                    ecosystem = self.network_manager.ethereum
+
+                try:
+                    instance = ecosystem.decode_custom_error(returndata, address)
+                except NotImplementedError:
+                    pass
+                else:
+                    revert_message = repr(instance)
 
         self.chain_manager._reports.show_trace(
             call_tree,
@@ -447,10 +460,26 @@ class Receipt(ReceiptAPI):
 
 
 class SharedBlobReceipt(Receipt):
+    """
+    An `EIP-4844 <https://eips.ethereum.org/EIPS/eip-4844#blob-transaction>`__"
+    blob transaction.
+    """
+
     blob_gas_used: int
+    """
+    The total amount of blob gas consumed by the transactions within the block.
+    """
+
     blob_gas_price: int
+    """
+    The blob-gas price, independent from regular gas price.
+    """
 
     @field_validator("blob_gas_used", "blob_gas_price", mode="before")
     @classmethod
-    def hex_to_int(cls, value):
+    def validate_hex(cls, value):
+        return cls._hex_to_int(value or 0)
+
+    @classmethod
+    def _hex_to_int(cls, value) -> int:
         return value if isinstance(value, int) else int(HexBytes(value).hex(), 16)

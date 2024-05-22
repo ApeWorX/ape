@@ -125,7 +125,7 @@ def test_source_path_in_project(project_with_contract):
     contract = project_with_contract.contracts["Contract"]
     contract_container = project_with_contract.get_contract("Contract")
     expected = contracts_folder / contract.source_id
-
+    assert contract_container.source_path is not None
     assert contract_container.source_path.is_file()
     assert contract_container.source_path == expected
 
@@ -158,3 +158,10 @@ def test_decode_input(contract_container, calldata):
 def test_declare(contract_container, sender):
     receipt = contract_container.declare(sender=sender)
     assert not receipt.failed
+
+
+def test_source_id(contract_container):
+    actual = contract_container.source_id
+    expected = contract_container.contract_type.source_id
+    # Is just a pass-through (via extras-model), but making sure it works.
+    assert actual == expected

@@ -21,8 +21,6 @@ chain_id_factory = NewChainID()
 DEFAULT_CHOICES = {
     "::geth",
     "::test",
-    ":goerli",
-    ":goerli:geth",
     ":sepolia",
     ":sepolia:geth",
     ":local",
@@ -31,8 +29,6 @@ DEFAULT_CHOICES = {
     "ethereum",
     "ethereum::test",
     "ethereum::geth",
-    "ethereum:goerli",
-    "ethereum:goerli:geth",
     "ethereum:sepolia",
     "ethereum:sepolia:geth",
     "ethereum:local",
@@ -70,7 +66,7 @@ def get_context(networks_connected_to_tester):
 
 @pytest.fixture
 def network_with_no_providers(ethereum):
-    network = ethereum.get_network("goerli-fork")
+    network = ethereum.get_network("sepolia-fork")
     default_provider = network.default_provider
     providers = network.__dict__["providers"]
 
@@ -82,8 +78,9 @@ def network_with_no_providers(ethereum):
     yield network
 
     if default_provider or providers:
-        network._default_provider = default_provider
+        network._default_provider = default_provider.name
         network.__dict__["providers"] = providers
+        assert network.default_provider, "Tear-down failed - providers not set."
 
 
 def test_get_network_choices(networks, ethereum, mocker):
@@ -128,7 +125,7 @@ def test_get_network_choices_filter_provider(networks):
 def test_get_provider_when_no_default(network_with_no_providers):
     expected = f"No default provider for network '{network_with_no_providers.name}'"
     with pytest.raises(NetworkError, match=expected):
-        # Not provider installed out-of-the-box for goerli-fork network
+        # Not provider installed out-of-the-box for sepolia-fork network
         provider = network_with_no_providers.get_provider()
         assert not provider, f"Provider should be None but got '{provider.name}'"
 
@@ -148,7 +145,7 @@ def test_repr_disconnected(networks_disconnected):
     assert repr(networks_disconnected) == "<NetworkManager>"
     assert repr(networks_disconnected.ethereum) == "<ethereum>"
     assert repr(networks_disconnected.ethereum.local) == "<ethereum:local>"
-    assert repr(networks_disconnected.ethereum.goerli) == "<ethereum:goerli chain_id=5>"
+    assert repr(networks_disconnected.ethereum.sepolia) == "<ethereum:sepolia chain_id=11155111>"
 
 
 def test_get_provider_from_choice_custom_provider(networks_connected_to_tester):
@@ -385,3 +382,9 @@ def test_fork_past_genesis(networks, mock_sepolia, mock_fork_provider, eth_teste
     with pytest.raises(NetworkError, match="Unable to fork past genesis block."):
         with networks.fork(block_number=block_id):
             pass
+
+
+def test_getitem(networks):
+    ethereum = networks["ethereum"]
+    assert ethereum.name == "ethereum"
+    assert isinstance(ethereum, EcosystemAPI)

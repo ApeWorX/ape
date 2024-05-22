@@ -217,3 +217,29 @@ def cli_1(alias):
 my_accounts = [accounts.load("me"), accounts.load("me2")]
 selected_account = get_user_selected_account(account_type=my_accounts)
 ```
+
+## Contract File Paths
+
+Does your CLI interact with contract source files?
+(Think `ape compile`).
+
+If so, use the `@contract_file_paths_argument()` decorator in your CLI.
+
+```python
+from pathlib import Path
+import click
+
+from ape.cli import contract_file_paths_argument
+
+@click.command()
+@contract_file_paths_argument()
+def cli(file_paths: set[Path]):
+   # Loop through all source files given (or all source files in the project).
+    for path in file_paths:
+        click.echo(f"Source found: {path}")
+```
+
+When using the `@contract_file_paths_argument()` decorator, you can pass any number of source files as arguments.
+When not passing any source file(s), `@contract_file_paths_argument()` defaults to all sources in the local project.
+That is why `ape compile` compiles the full project and `ape compile MySource.vy` only compiles `MySource.vy` (and whatever else it needs / imports).
+Use `@contract_file_paths_argument()` for any similar use-case involving contract source files.

@@ -1,10 +1,11 @@
 from pathlib import Path
-from typing import List, Optional
+from typing import Optional, Set
 
 from pydantic import field_validator, model_validator
 
 from ape import plugins
 from ape.api import PluginConfig
+from ape.utils.misc import SOURCE_EXCLUDE_PATTERNS
 
 DEFAULT_CACHE_FOLDER_NAME = ".cache"  # default relative to contracts/
 
@@ -21,9 +22,12 @@ class Config(PluginConfig):
     should configure ``include_dependencies`` to be ``True``.
     """
 
-    exclude: List[str] = ["*package.json", "*package-lock.json", "*tsconfig.json"]
+    exclude: Set[str] = set()
     """
     Source exclusion globs across all file types.
+
+    **NOTE**: ``ape.utils.misc.SOURCE_EXCLUDE_PATTERNS`` are automatically
+    included in this set.
     """
 
     cache_folder: Optional[Path] = None
@@ -41,7 +45,7 @@ class Config(PluginConfig):
         assert self.cache_folder is not None
 
         # If the dependency cache folder is configured, to be outside of the contracts dir, we want
-        # to use the projects folder to be the base dir for copmilation.
+        # to use the projects folder to be the base dir for compilation.
         if self._config_manager.contracts_folder not in self.cache_folder.parents:
             return self._config_manager.PROJECT_FOLDER
 
@@ -79,7 +83,7 @@ class Config(PluginConfig):
     @field_validator("exclude", mode="before")
     @classmethod
     def validate_exclude(cls, value):
-        return value or []
+        return {*(value or []), *SOURCE_EXCLUDE_PATTERNS}
 
 
 @plugins.register(plugins.Config)

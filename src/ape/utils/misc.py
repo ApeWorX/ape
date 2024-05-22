@@ -3,7 +3,7 @@ import functools
 import json
 import sys
 from asyncio import gather
-from datetime import datetime
+from datetime import datetime, timezone
 from functools import cached_property, lru_cache, singledispatchmethod, wraps
 from importlib.metadata import PackageNotFoundError, distributions
 from importlib.metadata import version as version_metadata
@@ -32,6 +32,25 @@ DEFAULT_LOCAL_TRANSACTION_ACCEPTANCE_TIMEOUT = 20
 DEFAULT_LIVE_NETWORK_BASE_FEE_MULTIPLIER = 1.4
 DEFAULT_TRANSACTION_TYPE = 0
 DEFAULT_MAX_RETRIES_TX = 20
+SOURCE_EXCLUDE_PATTERNS = (
+    ".cache",
+    ".DS_Store",
+    ".gitkeep",
+    ".build",
+    "*.md",
+    "*.rst",
+    "*.txt",
+    "*.py*",
+    "*.html",
+    "*.css",
+    "*.adoc",
+    "*package.json",
+    "*package-lock.json",
+    "*tsconfig.json",
+    "ape-config.yaml",
+    "py.typed",
+)
+
 
 _python_version = (
     f"{sys.version_info.major}.{sys.version_info.minor}"
@@ -438,7 +457,7 @@ def get_current_timestamp_ms() -> int:
     Returns:
         int
     """
-    return round(datetime.utcnow().timestamp() * 1000)
+    return round(datetime.now(tz=timezone.utc).timestamp() * 1000)
 
 
 def is_evm_precompile(address: str) -> bool:

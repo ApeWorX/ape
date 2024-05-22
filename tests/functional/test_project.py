@@ -2,7 +2,6 @@ import os
 import random
 import shutil
 import string
-import tempfile
 from pathlib import Path
 
 import pytest
@@ -16,6 +15,7 @@ from ape import Contract
 from ape.exceptions import ProjectError
 from ape.logging import LogLevel
 from ape.managers.project import BrownieProject
+from ape.utils import create_tempdir
 
 WITH_DEPS_PROJECT = (
     Path(__file__).parent.parent / "integration" / "cli" / "projects" / "with-dependencies"
@@ -185,14 +185,13 @@ def test_create_manifest_empty_files(compilers, mock_compiler, config, ape_caplo
     letters = string.ascii_letters
     name = "".join(random.choice(letters) for _ in range(10))
 
-    with tempfile.TemporaryDirectory() as temp_dir:
-        base_dir = Path(temp_dir)
-        contracts = base_dir / "contracts"
+    with create_tempdir() as temp_dir:
+        contracts = temp_dir / "contracts"
         contracts.mkdir()
         file_1 = contracts / f"{name}.__mock__"
         file_1.write_text("")
 
-        with config.using_project(base_dir) as proj:
+        with config.using_project(temp_dir) as proj:
             compilers.registered_compilers[".__mock__"] = mock_compiler
 
             # NOTE: Set levels as close to the operation as possible
@@ -212,6 +211,18 @@ def test_create_manifest_empty_files(compilers, mock_compiler, config, ape_caplo
             # Ensure is not double compiled!
             proj.local_project.create_manifest()
             assert f"Compiling '{name}.__mock__'." not in ape_caplog.head
+
+
+def test_create_manifest_excludes_cache(ape_project):
+    cachefile = ape_project.contracts_folder / ".cache" / "CacheFile.json"
+    cachefile2 = ape_project.contracts_folder / ".cache" / "subdir" / "Cache2.json"
+    cachefile2.parent.mkdir(parents=True)
+    cachefile.write_text("Doesn't matter")
+    cachefile2.write_text("Doesn't matter")
+    manifest = ape_project.create_manifest()
+    assert isinstance(manifest, PackageManifest)
+    assert ".cache/CacheFile.json" not in (manifest.sources or {})
+    assert ".cache/subdir/CacheFile.json" not in (manifest.sources or {})
 
 
 def test_meta(temp_config, project):
@@ -462,6 +473,19 @@ def test_lookup_path_closest_match(project_with_source_files_contract):
         clean()
 
 
+def test_lookup_path_includes_contracts_prefix(project_with_source_files_contract):
+    """
+    Show we can include the `contracts/` prefix.
+    """
+    project = project_with_source_files_contract
+    actual_from_str = project.lookup_path("contracts/ContractA.sol")
+    actual_from_path = project.lookup_path(Path("contracts/ContractA.sol"))
+    expected = project.contracts_folder / "ContractA.sol"
+    assert actual_from_str == actual_from_path == expected
+    assert actual_from_str.is_absolute()
+    assert actual_from_path.is_absolute()
+
+
 def test_sources(project_with_source_files_contract):
     project = project_with_source_files_contract
     assert "ApeContract0.json" in project.sources
@@ -482,7 +506,7 @@ def test_getattr_contract_not_exists(project):
     expected = (
         r"ProjectManager has no attribute or contract named "
         r"'ThisIsNotAContractThatExists'. However, there is a source "
-        r"file named 'ThisIsNotAContractThatExists', did you mean to "
+        r"file named 'ThisIsNotAContractThatExists\.foo', did you mean to "
         r"reference a contract name from this source file\? "
         r"Else, could it be from one of the missing compilers for extensions:.*\?"
     )
@@ -591,8 +615,7 @@ def test_load_contracts_after_deleting_same_named_contract(config, compilers, mo
     collision error from deleted files.
     """
 
-    with tempfile.TemporaryDirectory() as temp_dir:
-        path = Path(temp_dir)
+    with create_tempdir() as path:
         contracts = path / "contracts"
         contracts.mkdir()
         init_contract = contracts / "foo.__mock__"
@@ -624,11 +647,26 @@ def test_add_compiler_data(project_with_dependency_config):
     start_compilers = project.local_project.manifest.compilers or []
 
     # NOTE: Pre-defining things to lessen chance of race condition.
-    compiler = Compiler(name="comp", version="1.0.0", contractTypes=["foo"])
-    compiler_2 = Compiler(name="test", version="2.0.0", contractTypes=["bar", "stay"])
+    compiler = Compiler(
+        name="comp",
+        version="1.0.0",
+        contractTypes=["foo"],
+        settings={"outputSelection": {"path/to/Foo.sol": "*"}},
+    )
+    compiler_2 = Compiler(
+        name="test",
+        version="2.0.0",
+        contractTypes=["bar", "stay"],
+        settings={"outputSelection": {"path/to/Bar.vy": "*", "stay.vy": "*"}},
+    )
 
     # NOTE: Has same contract as compiler 2 and thus replaces the contract.
-    compiler_3 = Compiler(name="test", version="3.0.0", contractTypes=["bar"])
+    compiler_3 = Compiler(
+        name="test",
+        version="3.0.0",
+        contractTypes=["bar"],
+        settings={"outputSelection": {"path/to/Bar.vy": "*"}},
+    )
 
     proj = project.local_project
     argument = [compiler]
@@ -636,6 +674,16 @@ def test_add_compiler_data(project_with_dependency_config):
     third_arg = [compiler_3]
     first_exp = [*start_compilers, compiler]
     final_exp = [*first_exp, compiler_2]
+
+    # Ensure types are in manifest for type-source-id lookup.
+    bar = ContractType(contractName="bar", sourceId="path/to/Bar.vy")
+    foo = ContractType(contractName="foo", sourceId="path/to/Foo.sol")
+    proj._cached_manifest = PackageManifest(
+        contractTypes={"bar": bar, "foo": foo},
+        sources={"path/to/Bar.vy": Source(), "path/to/Foo.vy": Source()},
+    )
+    proj._contracts = proj._cached_manifest.contract_types
+    assert proj.cached_manifest.contract_types, "Setup failed - need manifest contract types"
 
     # Add twice to show it's only added once.
     proj.add_compiler_data(argument)
@@ -647,9 +695,14 @@ def test_add_compiler_data(project_with_dependency_config):
     proj.add_compiler_data(second_arg)
     assert proj.manifest.compilers == final_exp
 
+    # `bar` has moved to a new compiler.
     proj.add_compiler_data(third_arg)
     comp = [c for c in proj.manifest.compilers if c.name == "test" and c.version == "2.0.0"][0]
     assert "bar" not in comp.contractTypes
+    assert "path/to/Bar.vy" not in comp.settings["outputSelection"]
+    new_comp = [c for c in proj.manifest.compilers if c.name == "test" and c.version == "3.0.0"][0]
+    assert "bar" in new_comp.contractTypes
+    assert "path/to/Bar.vy" in new_comp.settings["outputSelection"]
 
     # Show that compilers without contract types go away.
     (compiler_3.contractTypes or []).append("stay")

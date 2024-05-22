@@ -284,11 +284,22 @@ class ReceiptAPI(ExtraAttributesMixin, BaseInterfaceModel):
 
     @field_validator("transaction", mode="before")
     @classmethod
-    def confirm_transaction(cls, value):
-        if isinstance(value, dict):
-            value = TransactionAPI.model_validate(value)
+    def _validate_transaction(cls, value):
+        if not isinstance(value, dict):
+            # Already a `TransactionAPI`.
+            return value
 
-        return value
+        # Attempt to create a transaction model for the data.
+        if provider := cls.network_manager.active_provider:
+            ecosystem = provider.network.ecosystem
+        else:
+            logger.warning(
+                "Given raw-transaction data when not connected to any provider. "
+                "Network is unknown. Assuming EVM-like transaction model."
+            )
+            ecosystem = cls.network_manager.ethereum
+
+        return ecosystem.create_transaction(**value)
 
     @field_validator("txn_hash", mode="before")
     @classmethod

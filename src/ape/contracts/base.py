@@ -8,6 +8,7 @@ from typing import Any, Callable, Dict, Iterator, List, Optional, Tuple, Type, U
 import click
 import pandas as pd
 from eth_pydantic_types import HexBytes
+from eth_utils import to_hex
 from ethpm_types.abi import ConstructorABI, ErrorABI, EventABI, MethodABI
 from ethpm_types.contract_type import ABI_W_SELECTOR_T, ContractType
 
@@ -729,6 +730,7 @@ class ContractEvent(BaseInterfaceModel):
 
 class ContractTypeWrapper(ManagerAccessMixin):
     contract_type: ContractType
+    base_path: Optional[Path] = None
 
     @property
     def selector_identifiers(self) -> Dict[str, str]:
@@ -746,33 +748,18 @@ class ContractTypeWrapper(ManagerAccessMixin):
         """
         return self.contract_type.identifier_lookup
 
-    @cached_property
+    @property
     def source_path(self) -> Optional[Path]:
         """
         Returns the path to the local contract if determined that this container
         belongs to the active project by cross checking source_id.
-
-        WARN: The will return a path if the contract has the same
-        source ID as one in the current project. That does not necessarily mean
-        they are the same contract, however.
         """
-        contract_name = self.contract_type.name
-        source_id = self.contract_type.source_id
-        if not (contract_name and source_id):
+        if not (source_id := self.contract_type.source_id):
             return None
 
-        contract_container = self.project_manager._get_contract(contract_name)
-        if not (
-            contract_container
-            and contract_container.contract_type.source_id
-            and self.contract_type.source_id
-        ):
-            return None
-
-        if source_id == contract_container.contract_type.source_id:
-            return self.project_manager.contracts_folder / source_id
-        else:
-            return None
+        base = self.base_path or self.project_manager.contracts_folder
+        path = base / source_id
+        return path if path.is_file() else None
 
     def decode_input(self, calldata: bytes) -> Tuple[str, Dict[str, Any]]:
         """
@@ -836,12 +823,14 @@ class ContractInstance(BaseAddress, ContractTypeWrapper):
         self,
         address: AddressType,
         contract_type: ContractType,
-        txn_hash: Optional[str] = None,
+        txn_hash: Optional[Union[str, HexBytes]] = None,
     ) -> None:
         super().__init__()
         self._address = address
         self.contract_type = contract_type
-        self.txn_hash = txn_hash
+        self.txn_hash = (
+            (txn_hash if isinstance(txn_hash, str) else to_hex(txn_hash)) if txn_hash else None
+        )
         self._cached_receipt: Optional[ReceiptAPI] = None
 
     def __call__(self, *args, **kwargs) -> ReceiptAPI:
@@ -1319,7 +1308,9 @@ class ContractContainer(ContractTypeWrapper, ExtraAttributesMixin):
 
         return self.chain_manager.contracts.get_deployments(self)
 
-    def at(self, address: AddressType, txn_hash: Optional[str] = None) -> ContractInstance:
+    def at(
+        self, address: AddressType, txn_hash: Optional[Union[str, HexBytes]] = None
+    ) -> ContractInstance:
         """
         Get a contract at the given address.
 
@@ -1334,8 +1325,8 @@ class ContractContainer(ContractTypeWrapper, ExtraAttributesMixin):
               **NOTE**: Things will not work as expected if the contract is not actually
               deployed to this address or if the contract at the given address has
               a different ABI than :attr:`~ape.contracts.ContractContainer.contract_type`.
-            txn_hash (str): The hash of the transaction that deployed the contract, if
-              available. Defaults to ``None``.
+            txn_hash (Union[str, HexBytes]): The hash of the transaction that deployed the
+              contract, if available. Defaults to ``None``.
 
         Returns:
             :class:`~ape.contracts.ContractInstance`
@@ -1415,6 +1406,7 @@ class ContractContainer(ContractTypeWrapper, ExtraAttributesMixin):
             self.project_manager.track_deployment(instance)
             self.provider.network.publish_contract(address)
 
+        instance.base_path = self.base_path or self.project_manager.contracts_folder
         return instance
 
     def _cache_wrap(self, function: Callable) -> ReceiptAPI:

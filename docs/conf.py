@@ -9,6 +9,7 @@
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 #
+import doctest
 import os
 import re
 import sys
@@ -86,8 +87,6 @@ autodoc_default_options = {
 }
 
 # -- Doctest configuration -------------------------------------------------
-# Doctest global imports and instances
-import doctest
 
 doctest_default_flags = (
     0
@@ -97,11 +96,11 @@ doctest_default_flags = (
     | doctest.NORMALIZE_WHITESPACE
 )
 
-doctest_global_setup = '''
-from ape import accounts
+doctest_global_setup = """
+from ape import *
+"""
 
-my_account_alias = accounts.test_accounts[0]
-'''
+
 def fixpath(path: str) -> str:
     """
     Change paths to reference the resources from 'latest/' to save room.

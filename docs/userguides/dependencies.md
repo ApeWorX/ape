@@ -53,7 +53,6 @@ You can use already-downloaded projects as dependencies by referencing them as l
 dependencies:
   - name: MyDependency
     local: local/path/to/MyDependency
-    contracts_folder: src/contracts
 ```
 
 This is helpful when:
@@ -206,31 +205,6 @@ ape compile --include-dependencies
 
 The following guidelines are applicable to **ALL** dependency types.
 
-### Custom Contracts Folder
-
-You can set the name of the dependency's contracts folder, e.g.:
-
-```yaml
-dependencies:
-  - name: DappToolsERC20
-    github: dapphub/erc20
-    ref: dappnix
-    contracts_folder: src
-```
-
-### File Exclusions
-
-To ignore files from a dependency project, use the `exclude` setting to specify glob patterns:
-
-```yaml
-dependencies:
-  - name: dependency-project-name
-    github: org-name/dependency-project-name
-    exclude:
-      - package.json    # Ignore package.json files.
-      - mocks/**/*      # Ignore all files in the 'mocks' directory
-```
-
 ### Config Override
 
 To use any extra config item for a dependency, such as configurations for compilers needed during compiling, use the `config_override` setting:
@@ -242,6 +216,42 @@ dependencies:
     config_override:
        solidity:
          evm_version: paris
+```
+
+This is the same as if these values were in an `ape-config.yaml` file in the project directly.
+
+You can also specify `--config-override` in the `ape pm install` command to try different settings more adhoc:
+
+```shell
+ape pm install --config-override '{"solidity": {"evm_version": "paris"}}'
+```
+
+### Custom Contracts Folder
+
+You can set the name of the dependency's contracts folder using the `config_override` key, e.g.:
+
+```yaml
+dependencies:
+  - name: DappToolsERC20
+    github: dapphub/erc20
+    ref: dappnix
+    config_override:
+      contracts_folder: src
+```
+
+### File Exclusions
+
+To ignore files from a dependency project, use the `exclude` setting in the `config_override:compile` section to specify glob patterns:
+
+```yaml
+dependencies:
+  - name: dependency-project-name
+    github: org-name/dependency-project-name
+    config_override:
+      compile:
+        exclude:
+          - package.json    # Ignore package.json files.
+          - mocks/**/*      # Ignore all files in the 'mocks' directory
 ```
 
 ### Solidity Remappings

@@ -25,6 +25,7 @@ from evm_trace import (
     get_calltree_from_parity_trace,
 )
 from pydantic.dataclasses import dataclass
+from requests import HTTPError
 from web3 import HTTPProvider, IPCProvider, Web3
 from web3.exceptions import ContractLogicError as Web3ContractLogicError
 from web3.exceptions import (
@@ -96,6 +97,34 @@ def _sanitize_web3_url(msg: str) -> str:
     return f"{prefix} URI: {sanitized_url} {' '.join(rest[1:])}"
 
 
+WEB3_PROVIDER_URI_ENV_VAR_NAME = "WEB3_PROVIDER_URI"
+
+
+def assert_web3_provider_uri_env_var_not_set():
+    """
+    Environment variable $WEB3_PROVIDER_URI causes problems
+    when used with Ape (ignores Ape's networks). Use
+    this validator to eliminate the concern.
+
+    Raises:
+          :class:`~ape.exceptions.ProviderError`: If environment variable
+            WEB3_PROVIDER_URI exists in ``os.environ``.
+    """
+    if WEB3_PROVIDER_URI_ENV_VAR_NAME not in os.environ:
+        return
+
+    # NOTE: This was the source of confusion for user when they noticed
+    #  Ape would only connect to RPC URL set by an environment variable
+    #  named $WEB3_PROVIDER_URI instead of whatever network they were telling Ape.
+    raise ProviderError(
+        "Ape does not support Web3.py's environment variable "
+        f"${WEB3_PROVIDER_URI_ENV_VAR_NAME}. If you are using this environment "
+        "variable name incidentally, please use a different name. If you are "
+        "trying to set the network in Web3.py, please use Ape's `ape-config.yaml` "
+        "or `--network` option instead."
+    )
+
+
 class Web3Provider(ProviderAPI, ABC):
     """
     A base provider mixin class that uses the
@@ -106,6 +135,8 @@ class Web3Provider(ProviderAPI, ABC):
     _client_version: Optional[str] = None
 
     def __new__(cls, *args, **kwargs):
+        assert_web3_provider_uri_env_var_not_set()
+
         # Post-connection ops
         def post_connect_hook(connect):
             @wraps(connect)
@@ -714,7 +745,7 @@ class Web3Provider(ProviderAPI, ABC):
             try:
                 if head.number is None or head.hash is None:
                     raise ProviderError("Head block has no number or hash.")
-                # Use an "adjused" head, based on the required confirmations.
+                # Use an "adjusted" head, based on the required confirmations.
                 adjusted_head = self.get_block(head.number - required_confirmations)
                 if adjusted_head.number is None or adjusted_head.hash is None:
                     raise ProviderError("Adjusted head block has no number or hash.")
@@ -1048,7 +1079,16 @@ class Web3Provider(ProviderAPI, ABC):
 
     def _make_request(self, endpoint: str, parameters: Optional[List] = None) -> Any:
         parameters = parameters or []
-        result = self.web3.provider.make_request(RPCEndpoint(endpoint), parameters)
+
+        try:
+            result = self.web3.provider.make_request(RPCEndpoint(endpoint), parameters)
+        except HTTPError as err:
+            if "method not allowed" in str(err).lower():
+                raise APINotImplementedError(
+                    f"RPC method '{endpoint}' is not implemented by this node instance."
+                )
+
+            raise ProviderError(str(err)) from err
 
         if "error" in result:
             error = result["error"]
@@ -1355,9 +1395,16 @@ class EthereumNodeProvider(Web3Provider, ABC):
         self._web3 = None
         self._client_version = None
 
-    def get_transaction_trace(self, txn_hash: str) -> Iterator[TraceFrame]:
+    def get_transaction_trace(self, txn_hash: Union[HexBytes, str]) -> Iterator[TraceFrame]:
+        if isinstance(txn_hash, HexBytes):
+            txn_hash_str = str(to_hex(txn_hash))
+        else:
+            txn_hash_str = txn_hash
+
         frames = self._stream_request(
-            "debug_traceTransaction", [txn_hash, {"enableMemory": True}], "result.structLogs.item"
+            "debug_traceTransaction",
+            [txn_hash_str, {"enableMemory": True}],
+            "result.structLogs.item",
         )
         for frame in create_trace_frames(frames):
             yield self._create_trace_frame(frame)
@@ -1383,6 +1430,10 @@ class EthereumNodeProvider(Web3Provider, ABC):
             # Try the Parity traces first, in case node client supports it.
             tree = self._get_parity_call_tree(txn_hash)
         except (ValueError, APINotImplementedError, ProviderError):
+            self.can_use_parity_traces = False
+            return self._get_geth_call_tree(txn_hash)
+        except Exception as err:
+            logger.error(f"Unknown exception while checking for Parity-trace support: {err} ")
             self.can_use_parity_traces = False
             return self._get_geth_call_tree(txn_hash)
 

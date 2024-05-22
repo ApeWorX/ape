@@ -35,9 +35,11 @@ def parse_network(ctx: Context) -> Optional[ProviderContextManager]:
         return provider.network.use_provider(provider, disconnect_on_exit=not interactive)
 
     elif provider not in (None, _NONE_NETWORK) and isinstance(provider, str):
+        # Is using a choice-str network param value instead of the network object instances.
         return ManagerAccessMixin.network_manager.parse_network_choice(
             provider, disconnect_on_exit=not interactive
         )
+
     elif provider is None:
         ecosystem = ManagerAccessMixin.network_manager.default_ecosystem
         network = ecosystem.default_network
@@ -64,6 +66,7 @@ class ConnectedProviderCommand(click.Command):
         super().__init__(*args, **kwargs)
 
     def parse_args(self, ctx: Context, args: List[str]) -> List[str]:
+        arguments = args  # Renamed for better pdb support.
         base_type = ProviderAPI if self._use_cls_types else str
         if existing_option := next(
             iter(
@@ -85,7 +88,7 @@ class ConnectedProviderCommand(click.Command):
             option = NetworkOption(base_type=base_type, callback=self._network_callback)
             self.params.append(option)
 
-        return super().parse_args(ctx, args)
+        return super().parse_args(ctx, arguments)
 
     def invoke(self, ctx: Context) -> Any:
         if self.callback is None:
@@ -127,7 +130,7 @@ class ConnectedProviderCommand(click.Command):
                     ctx.params[name] = options.get(name)
 
         elif not self._use_cls_types and provider is not None:
-            # Legacy behavior, but may have a purpose.
+            # Keep choice-str instead of parsing to objects.
             ctx.params["network"] = provider.network_choice
 
         return ctx.invoke(self.callback or (lambda: None), **ctx.params)

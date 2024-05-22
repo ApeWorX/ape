@@ -1,6 +1,5 @@
 import os.path
 import re
-import tempfile
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Dict, Iterator, List, Optional, Sequence, Union
 
@@ -17,6 +16,7 @@ from ape.utils import (
     ExtraModelAttributes,
     abstractmethod,
     cached_property,
+    create_tempdir,
     get_all_files_in_directory,
     get_relative_path,
     log_instead_of_fail,
@@ -211,7 +211,9 @@ class ProjectAPI(BaseInterfaceModel):
             )
 
         for given_compiler in given_compilers:
-            other_given_compilers = [c for c in given_compilers if c != given_compiler]
+            if not (other_given_compilers := [c for c in given_compilers if c != given_compiler]):
+                continue
+
             contract_types_from_others = [
                 n for c in other_given_compilers for n in (c.contractTypes or [])
             ]
@@ -224,15 +226,12 @@ class ProjectAPI(BaseInterfaceModel):
                 raise ProjectError(f"Contract type(s) '{collide_str}' collision across compilers.")
 
         new_types = [n for c in given_compilers for n in (c.contractTypes or [])]
-
-        # Merge given compilers with existing compilers.
         existing_compilers = self.manifest.compilers or []
-
-        # Existing compilers remaining after processing new compilers.
         remaining_existing_compilers: List[Compiler] = []
 
         for existing_compiler in existing_compilers:
-            find_iter = iter(x for x in compiler_data if x == existing_compiler)
+            # NOTE: For compilers to be equal, their name, version, and settings must be equal.
+            find_iter = (x for x in compiler_data if x == existing_compiler)
 
             if matching_given_compiler := next(find_iter, None):
                 # Compiler already exists in the system, possibly with different contract types.
@@ -243,6 +242,7 @@ class ProjectAPI(BaseInterfaceModel):
                         *(matching_given_compiler.contractTypes or []),
                     }
                 )
+
                 # NOTE: Purposely we don't add the existing compiler back,
                 #   as it is the same as the given compiler, (meaning same
                 #   name, version, and settings), and we have
@@ -255,6 +255,20 @@ class ProjectAPI(BaseInterfaceModel):
                 existing_compiler.contractTypes = [
                     c for c in (existing_compiler.contractTypes or []) if c not in new_types
                 ]
+
+                # Clear output selection for new types, since they are present in the new compiler.
+                if existing_compiler.settings and "outputSelection" in existing_compiler.settings:
+                    new_src_ids = {
+                        (self.manifest.contract_types or {})[x].source_id
+                        for x in new_types
+                        if x in (self.manifest.contract_types or {})
+                        and (self.manifest.contract_types or {})[x].source_id is not None
+                    }
+                    existing_compiler.settings["outputSelection"] = {
+                        k: v
+                        for k, v in existing_compiler.settings["outputSelection"].items()
+                        if k not in new_src_ids
+                    }
 
                 # Remove compilers without contract types.
                 if existing_compiler.contractTypes:
@@ -340,18 +354,21 @@ class DependencyAPI(ExtraAttributesMixin, BaseInterfaceModel):
     The version of the dependency. Omit to use the latest.
     """
 
+    # TODO: Remove in 0.8.
     contracts_folder: str = "contracts"
     """
     The name of the dependency's ``contracts/`` directory.
     This is where ``ape`` will look for source files when compiling
     the manifest for this dependency.
 
-    **NOTE**: This must be the name of a directory in the project.
+    **Deprecated**: Use ``config_override:contracts_folder``.
     """
 
-    exclude: List[str] = ["package.json", "package-lock.json", "**/.build/**/*.json"]
+    # TODO: Remove in 0.8.
+    exclude: List[str] = []
     """
     A list of glob-patterns for excluding files in dependency projects.
+    **Deprecated**: Use ``config_override:compile:exclude``.
     """
 
     config_override: Dict = {}
@@ -477,8 +494,7 @@ class DependencyAPI(ExtraAttributesMixin, BaseInterfaceModel):
             **self.config_override,
         }
 
-        with tempfile.TemporaryDirectory() as temp_dir:
-            path = Path(temp_dir)
+        with create_tempdir() as path:
             contracts_folder = path / config_data.get("contracts_folder", "contracts")
 
             if "contracts_folder" not in config_data:
@@ -513,11 +529,9 @@ class DependencyAPI(ExtraAttributesMixin, BaseInterfaceModel):
         if project_path.is_file() and project_path.suffix == ".json":
             try:
                 manifest = PackageManifest.model_validate_json(project_path.read_text())
-
             except ValueError as err:
                 if project_path.parent.is_dir():
                     project_path = project_path.parent
-
                 else:
                     raise ProjectError(f"Invalid manifest file: '{project_path}'.") from err
 
@@ -535,13 +549,16 @@ class DependencyAPI(ExtraAttributesMixin, BaseInterfaceModel):
         elif project_path.parent.is_dir():
             project_path = project_path.parent
 
+        # TODO: In 0.8, delete self.contracts_folder and rely on cfg override.
+        contracts_folder = self.config_override.get("contracts_folder", self.contracts_folder)
+
         # NOTE: Dependencies are not compiled here. Instead, the sources are packaged
         # for later usage via imports. For legacy reasons, many dependency-esque projects
         # are not meant to compile on their own.
 
         with self.config_manager.using_project(
             project_path,
-            contracts_folder=(project_path / self.contracts_folder).expanduser().resolve(),
+            contracts_folder=(project_path / contracts_folder).expanduser().resolve(),
         ) as pm:
             project = pm.local_project
             if sources := self._get_sources(project):
@@ -578,8 +595,14 @@ class DependencyAPI(ExtraAttributesMixin, BaseInterfaceModel):
         pattern = rf".*({extension_pattern})"
         all_sources = get_all_files_in_directory(project.contracts_folder, pattern=pattern)
 
+        # TODO: In 0.8, delete self.exclude and only use config override.
+        exclude = [
+            *(self.exclude or []),
+            *(self.config_override.get("compile", {}).get("exclude", []) or []),
+        ]
+
         excluded_files = set()
-        for pattern in set(self.exclude):
+        for pattern in set(exclude):
             excluded_files.update({f for f in project.contracts_folder.glob(pattern)})
 
         return [s for s in all_sources if s not in excluded_files]

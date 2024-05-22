@@ -26,6 +26,7 @@ from ethpm_types import BaseModel, ContractType
 from ethpm_types.abi import ABIType, ConstructorABI, EventABI, MethodABI
 
 from ape.exceptions import (
+    CustomError,
     NetworkError,
     NetworkMismatchError,
     NetworkNotFoundError,
@@ -225,7 +226,7 @@ class EcosystemAPI(ExtraAttributesMixin, BaseInterfaceModel):
             :class:`~ape.api.providers.BlockAPI`
         """
 
-    @cached_property
+    @property
     def config(self) -> PluginConfig:
         """
         The configuration of the ecosystem. See :class:`ape.managers.config.ConfigManager`
@@ -610,6 +611,27 @@ class EcosystemAPI(ExtraAttributesMixin, BaseInterfaceModel):
             Union[Type, Sequence]: The Python types for the given ABI type.
         """
 
+    @raises_not_implemented
+    def decode_custom_error(
+        self,
+        data: HexBytes,
+        address: AddressType,
+        **kwargs,
+    ) -> Optional[CustomError]:
+        """
+        Decode a custom error class from an ABI defined in a contract.
+
+        Args:
+            data (HexBytes): The error data containing the selector
+              and input data.
+            address (AddressType): The address of the contract containing
+              the error.
+            **kwargs: Additional init kwargs for the custom error class.
+
+        Returns:
+            Optional[CustomError]: If it able to decode one, else ``None``.
+        """
+
 
 class ProviderContextManager(ManagerAccessMixin):
     """
@@ -799,7 +821,6 @@ class NetworkAPI(BaseInterfaceModel):
         The configuration of the network. See :class:`~ape.managers.config.ConfigManager`
         for more information on plugin configurations.
         """
-
         return self.config_manager.get_config(self.ecosystem.name)
 
     @property

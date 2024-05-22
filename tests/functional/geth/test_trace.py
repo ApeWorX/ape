@@ -1,10 +1,9 @@
 import re
-import tempfile
-from pathlib import Path
 from typing import List
 
 import pytest
 
+from ape.utils import run_in_tempdir
 from tests.conftest import geth_process_test
 
 LOCAL_TRACE = r"""
@@ -95,21 +94,19 @@ def test_supports_tracing(geth_provider):
 def test_local_transaction_traces(geth_receipt, captrace, local_trace):
     # NOTE: Strange bug in Rich where we can't use sys.stdout for testing tree output.
     # And we have to write to a file, close it, and then re-open it to see output.
-    def run_test():
-        with tempfile.TemporaryDirectory() as temp_dir:
-            # Use a tempfile to avoid terminal inconsistencies affecting output.
-            file_path = Path(temp_dir) / "temp"
-            with open(file_path, "w") as file:
-                geth_receipt.show_trace(file=file)
+    def run_test(path):
+        # Use a tempfile to avoid terminal inconsistencies affecting output.
+        with open(path / "temp", "w") as file:
+            geth_receipt.show_trace(file=file)
 
-            with open(file_path, "r") as file:
-                lines = captrace.read_trace("Call trace for", file=file)
-                assert_rich_output(lines, local_trace)
+        with open(path / "temp", "r") as file:
+            lines = captrace.read_trace("Call trace for", file=file)
+            assert_rich_output(lines, local_trace)
 
-    run_test()
+    run_in_tempdir(run_test)
 
     # Verify can happen more than once.
-    run_test()
+    run_in_tempdir(run_test, name="temp")
 
 
 def assert_rich_output(rich_capture: List[str], expected: str):

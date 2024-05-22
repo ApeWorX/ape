@@ -33,10 +33,9 @@ To access the same prefunded accounts in your scripts or console, use the root `
 
 .. doctest::
 
-  >>> from ape import accounts
+>>> from ape import accounts
 
-  >>> sender = accounts.test_accounts[0]
-
+>>> sender = accounts.test_accounts[0]
 ```
 
 You can configure your test accounts using your `ape-config.yaml` file:
@@ -58,10 +57,9 @@ You can create a new test account by doing the following:
 
 .. doctest::
 
-  >>> from ape import accounts 
-  
-  >>> account = accounts.test_accounts.generate_test_account()
+>>> from ape import accounts
 
+>>> account = accounts.test_accounts.generate_test_account()
 ```
 
 **NOTE**: Creating a new test account means it will be unfunded by default.

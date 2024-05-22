@@ -6,6 +6,7 @@ from pathlib import Path
 from typing import IO, Collection, Dict, Iterator, List, Optional, Set, Type, Union, cast
 
 import pandas as pd
+from eth_pydantic_types import HexBytes
 from ethpm_types import ABI, ContractType
 from rich import get_console
 from rich.console import Console as RichConsole
@@ -1074,7 +1075,7 @@ class ContractCache(BaseManager):
         self,
         address: Union[str, AddressType],
         contract_type: Optional[ContractType] = None,
-        txn_hash: Optional[str] = None,
+        txn_hash: Optional[Union[str, HexBytes]] = None,
         abi: Optional[Union[List[ABI], Dict, str, Path]] = None,
     ) -> ContractInstance:
         """
@@ -1093,8 +1094,8 @@ class ContractCache(BaseManager):
               plugin, you can also provide an ENS domain name.
             contract_type (Optional[``ContractType``]): Optionally provide the contract type
               in case it is not already known.
-            txn_hash (Optional[str]): The hash of the transaction responsible for deploying the
-              contract, if known. Useful for publishing. Defaults to ``None``.
+            txn_hash (Optional[Union[str, HexBytes]]): The hash of the transaction responsible for
+              deploying the contract, if known. Useful for publishing. Defaults to ``None``.
             abi (Optional[Union[List[ABI], Dict, str, Path]]): Use an ABI str, dict, path,
               or ethpm models to create a contract instance class.
 
@@ -1126,12 +1127,12 @@ class ContractCache(BaseManager):
                 isinstance(abi, str) and "{" not in abi and Path(abi).is_file()
             ):
                 # Handle both absolute and relative paths
-                abi = Path(abi)
-                if not abi.is_absolute():
-                    abi = self.project_manager.path / abi
+                abi_path = Path(abi)
+                if not abi_path.is_absolute():
+                    abi_path = self.project_manager.path / abi
 
                 try:
-                    abi = json.loads(abi.read_text())
+                    abi = json.loads(abi_path.read_text())
                 except Exception as err:
                     if contract_type:
                         # If a default contract type was provided, don't error and use it.

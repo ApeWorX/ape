@@ -1,7 +1,6 @@
 import os
 import shutil
 import subprocess
-import tempfile
 import zipfile
 from io import BytesIO
 from pathlib import Path
@@ -17,6 +16,7 @@ from urllib3.util.retry import Retry
 from ape.exceptions import CompilerError, ProjectError, UnknownVersionError
 from ape.logging import logger
 from ape.utils.misc import USER_AGENT, cached_property, stream_response
+from ape.utils.os import run_in_tempdir
 
 
 class GitProcessWrapper:
@@ -205,22 +205,23 @@ class GithubClient:
 
         release = self.get_release(repo_path, version)
         description = f"Downloading {repo_path}@{version}"
-        release_content = stream_response(release.zipball_url, progress_bar_description=description)
+        content = stream_response(release.zipball_url, progress_bar_description=description)
 
         # Use temporary path to isolate a package when unzipping
-        with tempfile.TemporaryDirectory() as tmp:
-            temp_path = Path(tmp)
-            with zipfile.ZipFile(BytesIO(release_content)) as zf:
-                zf.extractall(temp_path)
+        run_in_tempdir(lambda p: self._extract_package(p, content, target_path, repo_path))
 
-            # Copy the directory contents into the target path.
-            downloaded_packages = [f for f in temp_path.iterdir() if f.is_dir()]
-            if len(downloaded_packages) < 1:
-                raise CompilerError(f"Unable to download package at '{repo_path}'.")
+    def _extract_package(self, temp_path: Path, content: bytes, target_path: Path, repo_path: str):
+        with zipfile.ZipFile(BytesIO(content)) as zf:
+            zf.extractall(temp_path)
 
-            package_path = temp_path / downloaded_packages[0]
-            for source_file in package_path.iterdir():
-                shutil.move(str(source_file), str(target_path))
+        # Copy the directory contents into the target path.
+        downloaded_packages = [f for f in temp_path.iterdir() if f.is_dir()]
+        if len(downloaded_packages) < 1:
+            raise CompilerError(f"Unable to download package at '{repo_path}'.")
+
+        package_path = temp_path / downloaded_packages[0]
+        for source_file in package_path.iterdir():
+            shutil.move(str(source_file), str(target_path))
 
 
 github_client = GithubClient()

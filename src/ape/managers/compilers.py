@@ -1,12 +1,13 @@
 from pathlib import Path
 from typing import Any, Dict, Iterator, List, Optional, Sequence, Set, Union
 
+from eth_pydantic_types import HexBytes
 from ethpm_types import ContractType
 from ethpm_types.source import Content
 
 from ape.api import CompilerAPI
 from ape.contracts import ContractContainer
-from ape.exceptions import CompilerError, ContractLogicError
+from ape.exceptions import CompilerError, ContractLogicError, CustomError
 from ape.logging import logger
 from ape.managers.base import BaseManager
 from ape.utils import log_instead_of_fail
@@ -153,7 +154,6 @@ class CompilerManager(BaseManager, ExtraAttributesMixin):
                 and path not in paths_to_ignore
                 and path not in already_compiled_paths
                 and get_full_extension(path) == extension
-                and not any(x in [p.name for p in path.parents] for x in (".cache", ".build"))
             ]
 
             if not paths_to_compile:
@@ -321,28 +321,62 @@ class CompilerManager(BaseManager, ExtraAttributesMixin):
         Returns:
             :class:`~ape.exceptions.ContractLogicError`: The enriched exception.
         """
-
-        address = err.address
-        if not address:
-            # Contract address not found.
+        # First, try enriching using their ABI.
+        err = self.get_custom_error(err) or err
+        if not (contract_type := err.contract_type):
             return err
+
+        # Delegate to compiler APIs.
+        elif source_id := contract_type.source_id:
+            # Source ID found! Delegate to a CompilerAPI for enrichment.
+            ext = get_full_extension(Path(source_id))
+            if ext not in self.registered_compilers:
+                # Compiler not found.
+                return err
+
+            compiler = self.registered_compilers[ext]
+            return compiler.enrich_error(err)
+
+        # No further enrichment.
+        return err
+
+    def get_custom_error(self, err: ContractLogicError) -> Optional[CustomError]:
+        """
+        Get a custom error for the given contract logic error using the contract-type
+        found from address-data in the error. Returns ``None`` if the given error is
+        not a custom-error or it is not able to find the associated contract type or
+        address.
+
+        Args:
+            err (:class:`~ape.exceptions.ContractLogicError`): The error to enrich
+              as a custom error.
+
+        Returns:
+
+        """
+        message = err.revert_message
+        if not message.startswith("0x"):
+            return None
+        elif not (address := err.address):
+            return None
+
+        if provider := self.network_manager.active_provider:
+            ecosystem = provider.network.ecosystem
+        else:
+            # Default to Ethereum.
+            ecosystem = self.network_manager.ethereum
 
         try:
-            contract = self.chain_manager.contracts.get(address)
-        except RecursionError:
-            contract = None
-
-        if not contract or not contract.source_id:
-            # Contract or source not found.
-            return err
-
-        ext = get_full_extension(Path(contract.source_id))
-        if ext not in self.registered_compilers:
-            # Compiler not found.
-            return err
-
-        compiler = self.registered_compilers[ext]
-        return compiler.enrich_error(err)
+            return ecosystem.decode_custom_error(
+                HexBytes(message),
+                address,
+                base_err=err.base_err,
+                source_traceback=err.source_traceback,
+                trace=err.trace,
+                txn=err.txn,
+            )
+        except NotImplementedError:
+            return None
 
     def flatten_contract(self, path: Path, **kwargs) -> Content:
         """

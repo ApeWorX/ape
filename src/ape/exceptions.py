@@ -3,6 +3,7 @@ import sys
 import tempfile
 import time
 import traceback
+from functools import cached_property
 from inspect import getframeinfo, stack
 from pathlib import Path
 from types import CodeType, TracebackType
@@ -203,11 +204,36 @@ class TransactionError(ApeException):
 
     @property
     def address(self) -> Optional["AddressType"]:
+        if addr := self.contract_address:
+            return addr
+
+        receiver = getattr(self.txn, "receiver", None)
+        if receiver in (None, "0x0000000000000000000000000000000000000000"):
+            # Check if deploy
+            if addr := getattr(self.txn, "contract_address", None):
+                return addr
+
+        return receiver
+
         return (
             self.contract_address
             or getattr(self.txn, "receiver", None)
             or getattr(self.txn, "contract_address", None)
         )
+
+    @cached_property
+    def contract_type(self) -> Optional[ContractType]:
+        if not (address := self.address):
+            # Contract address not found.
+            return None
+
+        # Lazy import because of exceptions.py root nature.
+        from ape.utils.basemodel import ManagerAccessMixin
+
+        try:
+            return ManagerAccessMixin.chain_manager.contracts.get(address)
+        except (RecursionError, ProviderNotConnectedError):
+            return None
 
     def _set_tb(self):
         if not self.source_traceback and self.txn:
@@ -342,12 +368,19 @@ class NetworkNotFoundError(NetworkError):
         options: Optional[Collection[str]] = None,
     ):
         self.network = network
-        message = (
-            f"No network in '{ecosystem}' named '{network}'."
-            if ecosystem
-            else f"No network named '{network}'."
-        )
+        options = options or []
+        if network in options:
+            # Only seen in testing scenarios. Not realistic.
+            raise ValueError(
+                f"{network} found in options. Should not have gotten `NetworkNotFoundError`."
+            )
+
         if options:
+            message = (
+                f"No network in '{ecosystem}' named '{network}'."
+                if ecosystem
+                else f"No network named '{network}'."
+            )
             close_matches = difflib.get_close_matches(network, options, cutoff=0.6)
             if close_matches:
                 message = f"{message} Did you mean '{', '.join(close_matches)}'?"
@@ -355,6 +388,11 @@ class NetworkNotFoundError(NetworkError):
                 # No close matches - show all options.
                 options_str = "\n".join(sorted(options))
                 message = f"{message} Options:\n{options_str}"
+
+        elif ecosystem:
+            message = f"'{ecosystem}' has no networks."
+        else:
+            message = "No networks found."
 
         super().__init__(message)
 
@@ -755,6 +793,11 @@ class CustomError(ContractLogicError):
         The name of the error.
         """
         return self.abi.name
+
+    def __repr__(self) -> str:
+        name = self.__class__.__name__  # Custom error name
+        calldata = ", ".join(sorted([f"{k}={v}" for k, v in self.inputs.items()])) or ""
+        return f"{name}({calldata})"
 
 
 def _get_ape_traceback_from_tx(txn: FailedTxn) -> Optional["SourceTraceback"]:

@@ -35,8 +35,7 @@ from ._console_log_abi import CONSOLE_LOG_ABI
 CONSOLE_CONTRACT_ID = cast(ChecksumAddress, "0x000000000000000000636F6e736F6c652e6c6f67")
 VYPER_PRINT_METHOD_ID = "0x23cdd8e8"  # log(string,bytes)
 
-console_contract = ContractType(abi=CONSOLE_LOG_ABI)
-console_contract.name = "console"  # TODO: Pretty confused why this can't be set in the constructor
+console_contract = ContractType(abi=CONSOLE_LOG_ABI, contractName="console")
 
 
 def is_console_log(call: Any) -> TypeGuard[CallTreeNode]:

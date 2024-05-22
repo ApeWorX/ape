@@ -23,7 +23,7 @@ from ape.cli.choices import _NONE_NETWORK, _get_networks_sequence_from_cache
 from ape.cli.commands import get_param_from_ctx, parse_network
 from ape.exceptions import AccountsError
 from ape.logging import logger
-from tests.conftest import geth_process_test
+from tests.conftest import geth_process_test, skip_if_plugin_installed
 
 OUTPUT_FORMAT = "__TEST__{0}:{1}:{2}_"
 OTHER_OPTION_VALUE = "TEST_OTHER_OPTION"
@@ -70,6 +70,19 @@ def network_cmd():
     def cmd(ecosystem, network, provider):
         output = OUTPUT_FORMAT.format(ecosystem.name, network.name, provider.name)
         click.echo(output)
+
+    return cmd
+
+
+@pytest.fixture
+def contracts_paths_cmd():
+    expected = "EXPECTED {}"
+
+    @click.command()
+    @contract_file_paths_argument()
+    def cmd(file_paths):
+        output = ", ".join(x.name for x in sorted(file_paths))
+        click.echo(expected.format(output))
 
     return cmd
 
@@ -412,14 +425,99 @@ def test_account_prompt_name():
     assert option.name == "account_z"
 
 
-def test_contract_file_paths_argument(runner):
-    @click.command()
-    @contract_file_paths_argument()
-    def cmd(file_paths):
-        pass
+def test_contract_file_paths_argument_given_source_id(
+    project_with_source_files_contract, runner, contracts_paths_cmd
+):
+    pm = project_with_source_files_contract
+    src_id = next(iter(pm.sources))
+    result = runner.invoke(contracts_paths_cmd, src_id)
+    assert f"EXPECTED {src_id}" in result.output
 
-    result = runner.invoke(cmd, ["path0", "path1"])
-    assert "Contract 'path0' not found" in result.output
+
+def test_contract_file_paths_argument_given_name(
+    project_with_source_files_contract, runner, contracts_paths_cmd
+):
+    pm = project_with_source_files_contract
+    src_stem = next(iter(pm.sources)).split(".")[0]
+    result = runner.invoke(contracts_paths_cmd, src_stem)
+    assert f"EXPECTED {src_stem}" in result.output
+
+
+def test_contract_file_paths_argument_given_contracts_folder(
+    project_with_contract, runner, contracts_paths_cmd
+):
+    pm = project_with_contract
+    result = runner.invoke(contracts_paths_cmd, pm.contracts_folder.as_posix())
+    all_paths = ", ".join(x.name for x in sorted(pm.source_paths) if "Excl" not in x.name)
+    assert f"EXPECTED {all_paths}" in result.output
+
+
+def test_contract_file_paths_argument_given_contracts_folder_name(
+    project_with_contract, runner, contracts_paths_cmd
+):
+    pm = project_with_contract
+    result = runner.invoke(contracts_paths_cmd, "contracts")
+    all_paths = ", ".join(x.name for x in sorted(pm.source_paths) if "Excl" not in x.name)
+    assert f"EXPECTED {all_paths}" in result.output
+
+
+def test_contract_file_paths_handles_exclude(project_with_contract, runner, contracts_paths_cmd):
+    cfg = project_with_contract.config_manager.get_config("compile")
+    failmsg = "Setup failed - missing exclude config (set in ape-config.yaml)."
+    assert "*Excl*" in cfg.exclude, failmsg
+
+    # make a .cache file to show it is ignored.
+    cache_file = project_with_contract.contracts_folder / ".cache" / "thing.json"
+    cache_file.parent.mkdir(parents=True, exist_ok=True)
+    cache_file.write_text("FAILS IF LOADED")
+
+    result = runner.invoke(contracts_paths_cmd, "contracts")
+    assert "Exclude.json" not in result.output
+    assert "ExcludeNested.json" not in result.output
+    # Ensure .cache always ignored!
+    assert ".cache" not in result.output
+
+
+@pytest.mark.parametrize("name", ("contracts/subdir", "subdir"))
+def test_contract_file_paths_argument_given_subdir_relative_to_path(
+    project_with_contract, runner, contracts_paths_cmd, name
+):
+    pm = project_with_contract
+    result = runner.invoke(contracts_paths_cmd, name)
+    all_paths = ", ".join(
+        x.name
+        for x in sorted(pm.source_paths)
+        if x.parent.name == "subdir" and "Excl" not in x.name
+    )
+    assert f"EXPECTED {all_paths}" in result.output
+
+
+@skip_if_plugin_installed("vyper")
+def test_contract_file_paths_argument_missing_vyper(
+    project_with_source_files_contract, runner, contracts_paths_cmd
+):
+    name = "VyperContract"
+    result = runner.invoke(contracts_paths_cmd, name)
+    expected = (
+        "Missing compilers for the following file types: '.vy'. "
+        "Possibly, a compiler plugin is not installed or is installed "
+        "but not loading correctly. Is 'ape-vyper' installed?"
+    )
+    assert expected in result.output
+
+
+@skip_if_plugin_installed("solidity")
+def test_contract_file_paths_argument_missing_solidity(
+    project_with_source_files_contract, runner, contracts_paths_cmd
+):
+    name = "SolidityContract"
+    result = runner.invoke(contracts_paths_cmd, name)
+    expected = (
+        "Missing compilers for the following file types: '.sol'. "
+        "Possibly, a compiler plugin is not installed or is installed "
+        "but not loading correctly. Is 'ape-solidity' installed?"
+    )
+    assert expected in result.output
 
 
 def test_existing_alias_option(runner):
@@ -428,7 +526,7 @@ def test_existing_alias_option(runner):
     def cmd(alias):
         click.echo(alias)
 
-    result = runner.invoke(cmd, ["TEST::0"])
+    result = runner.invoke(cmd, "TEST::0")
     assert "TEST::0" in result.output
 
 
@@ -443,7 +541,7 @@ def test_existing_alias_option_custom_callback(runner):
     def cmd(alias):
         click.echo(alias)
 
-    result = runner.invoke(cmd, ["TEST::0"])
+    result = runner.invoke(cmd, "TEST::0")
     assert magic_value in result.output
 
 
@@ -453,7 +551,7 @@ def test_non_existing_alias_option(runner):
     def cmd(alias):
         click.echo(alias)
 
-    result = runner.invoke(cmd, ["non-exists"])
+    result = runner.invoke(cmd, "non-exists")
     assert "non-exists" in result.output
 
 
@@ -468,7 +566,7 @@ def test_non_existing_alias_option_custom_callback(runner):
     def cmd(alias):
         click.echo(alias)
 
-    result = runner.invoke(cmd, ["non-exists"])
+    result = runner.invoke(cmd, "non-exists")
     assert magic_value in result.output
 
 
@@ -489,7 +587,7 @@ def test_connected_provider_command_invalid_value(runner):
     def cmd():
         pass
 
-    result = runner.invoke(cmd, ["--network", "OOGA_BOOGA"], catch_exceptions=False)
+    result = runner.invoke(cmd, ("--network", "OOGA_BOOGA"), catch_exceptions=False)
     assert result.exit_code != 0
     assert "Invalid value for '--network'" in result.output
 
@@ -588,6 +686,22 @@ def test_connected_provider_command_with_network_option(runner, geth_provider):
     res = runner.invoke(cmd, spec, catch_exceptions=False)
     assert res.exit_code == 0, res.output
     assert "geth" in res.output
+
+
+@geth_process_test
+def test_connected_provider_command_with_network_option_and_cls_types_false(runner, geth_provider):
+    _ = geth_provider  # Ensure already running, to avoid clashing later on.
+
+    @click.command(cls=ConnectedProviderCommand, use_cls_types=False)
+    @network_option()
+    def cmd(network):
+        assert isinstance(network, str)
+        assert network == "ethereum:local:geth"
+
+    # NOTE: Must use a network that is not the default.
+    spec = ("--network", "ethereum:local:geth")
+    res = runner.invoke(cmd, spec, catch_exceptions=False)
+    assert res.exit_code == 0, res.output
 
 
 def test_connected_provider_command_none_network(runner):

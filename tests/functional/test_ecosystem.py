@@ -1,14 +1,15 @@
 import copy
-from typing import Any, ClassVar, Dict
+from typing import Any, ClassVar, Dict, List, cast
 
 import pytest
 from eth_pydantic_types import HashBytes32, HexBytes
 from eth_typing import HexAddress, HexStr
+from ethpm_types import ContractType, ErrorABI
 from ethpm_types.abi import ABIType, EventABI, MethodABI
 
 from ape.api import PluginConfig
 from ape.api.networks import LOCAL_NETWORK_NAME, NetworkAPI
-from ape.exceptions import DecodingError, NetworkError, NetworkNotFoundError
+from ape.exceptions import CustomError, DecodingError, NetworkError, NetworkNotFoundError
 from ape.types import AddressType
 from ape.utils import DEFAULT_LOCAL_TRANSACTION_ACCEPTANCE_TIMEOUT
 from ape_ethereum.ecosystem import (
@@ -548,9 +549,9 @@ def test_decode_receipt_from_etherscan(eth_tester_provider, ethereum):
     assert receipt.gas_price == 1499999989
 
 
-def test_decode_receipt_shared_blob(ethereum):
+@pytest.mark.parametrize("blob_gas_used", ("0x20000", 131072, 0, None))
+def test_decode_receipt_shared_blob(ethereum, blob_gas_used):
     blob_gas_price = "0x4d137e31b"
-    blob_gas_used = "0x20000"
 
     data = {
         "required_confirmations": 0,
@@ -593,8 +594,14 @@ def test_decode_receipt_shared_blob(ethereum):
     }
     actual = ethereum.decode_receipt(data)
     assert isinstance(actual, SharedBlobReceipt)
-    assert actual.blob_gas_used == int(blob_gas_used, 16)
     assert actual.blob_gas_price == int(blob_gas_price, 16)
+
+    if blob_gas_used:
+        # all test-values are this when they exist.
+        assert actual.blob_gas_used == 131072
+    else:
+        # when None, should also default to 0.
+        assert actual.blob_gas_used == 0
 
 
 def test_default_transaction_type_not_connected_used_default_network(
@@ -653,7 +660,7 @@ def test_gas_limit_local_networks(ethereum, network_name):
 
 
 def test_gas_limit_live_networks(ethereum):
-    network = ethereum.get_network("goerli")
+    network = ethereum.get_network("sepolia")
     assert network.gas_limit == "auto"
 
 
@@ -858,7 +865,7 @@ def test_encode_transaction(tx_type, ethereum, vyper_contract_instance, owner, e
     assert actual.gas_limit == eth_tester_provider.max_gas
 
 
-def test_set_default_network_not_exists(temp_config, ethereum):
+def test_set_default_network_not_exists(ethereum):
     bad_network = "NOT_EXISTS"
     expected = f"No network in 'ethereum' named '{bad_network}'. Options:.*"
     with pytest.raises(NetworkNotFoundError, match=expected):
@@ -867,7 +874,7 @@ def test_set_default_network_not_exists(temp_config, ethereum):
 
 def test_networks(ethereum):
     actual = ethereum.networks
-    for net in ("goerli", "sepolia", "mainnet", LOCAL_NETWORK_NAME):
+    for net in ("sepolia", "mainnet", LOCAL_NETWORK_NAME):
         assert net in actual
         assert isinstance(actual[net], NetworkAPI)
 
@@ -877,7 +884,6 @@ def test_networks_includes_custom_networks(
 ):
     actual = ethereum.networks
     for net in (
-        "goerli",
         "sepolia",
         "mainnet",
         LOCAL_NETWORK_NAME,
@@ -981,3 +987,46 @@ def test_default_network_name_when_not_set_and_no_local_uses_only(mocker, config
         Ethereum.plugin_manager = orig_pm
         if "_networks_from_plugins" in ethereum.__dict__:
             del ethereum.__dict__["_networks_from_plugins"]
+
+
+def test_decode_custom_error(chain, ethereum):
+    data = HexBytes("0x6a12f104")
+    abi = [ErrorABI(type="error", name="InsufficientETH", inputs=[])]
+    contract_type = ContractType(abi=abi)
+    addr = cast(AddressType, "0x3fC91A3afd70395Cd496C647d5a6CC9D4B2b7FAD")
+
+    # Hack in contract-type.
+    chain.contracts._local_contract_types[addr] = contract_type
+
+    actual = ethereum.decode_custom_error(data, addr)
+    assert isinstance(actual, CustomError)
+
+
+def test_decode_custom_error_contract_type_not_found(ethereum):
+    data = HexBytes("0x6a12f104")
+    # not known
+    addr = cast(AddressType, "0x4fC92A3afd70395Cd496C647d5a6CC9D4B2b7FAD")
+    actual = ethereum.decode_custom_error(data, addr)
+    assert actual is None
+
+
+def test_decode_custom_error_tx_unsigned(ethereum):
+    data = HexBytes("0x6a12f104")
+    # not known
+    addr = cast(AddressType, "0x4fC92A3afd70395Cd496C647d5a6CC9D4B2b7FAD")
+    actual = ethereum.decode_custom_error(data, addr)
+    assert actual is None
+
+
+def test_decode_custom_error_selector_not_found(mocker, chain, ethereum):
+    data = HexBytes("0x6a12f104")
+    abi: List = []
+    contract_type = ContractType(abi=abi)
+    addr = cast(AddressType, "0x3fC91A3afd70395Cd496C647d5a6CC9D4B2b7FAD")
+
+    # Hack in contract-type.
+    chain.contracts._local_contract_types[addr] = contract_type
+
+    tx = ethereum.create_transaction()
+    actual = ethereum.decode_custom_error(data, addr, txn=tx)
+    assert actual is None

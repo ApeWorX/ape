@@ -17,6 +17,7 @@ from ape.utils.basemodel import (
     ExtraModelAttributes,
     ManagerAccessMixin,
     injected_before_use,
+    only_raise_attribute_error,
 )
 from ape.utils.github import GithubClient, github_client
 from ape.utils.misc import (
@@ -24,6 +25,7 @@ from ape.utils.misc import (
     DEFAULT_LOCAL_TRANSACTION_ACCEPTANCE_TIMEOUT,
     DEFAULT_TRANSACTION_ACCEPTANCE_TIMEOUT,
     EMPTY_BYTES32,
+    SOURCE_EXCLUDE_PATTERNS,
     USER_AGENT,
     ZERO_ADDRESS,
     add_padding_to_strings,
@@ -46,9 +48,13 @@ from ape.utils.misc import (
     to_int,
 )
 from ape.utils.os import (
+    create_tempdir,
     expand_environment_variables,
     get_all_files_in_directory,
+    get_full_extension,
     get_relative_path,
+    path_match,
+    run_in_tempdir,
     use_temp_sys_path,
 )
 from ape.utils.process import JoinableQueue, spawn
@@ -69,6 +75,7 @@ __all__ = [
     "BaseInterface",
     "BaseInterfaceModel",
     "cached_property",
+    "create_tempdir",
     "DEFAULT_LIVE_NETWORK_BASE_FEE_MULTIPLIER",
     "DEFAULT_LOCAL_TRANSACTION_ACCEPTANCE_TIMEOUT",
     "DEFAULT_NUMBER_OF_TEST_ACCOUNTS",
@@ -90,6 +97,7 @@ __all__ = [
     "generate_dev_accounts",
     "get_all_files_in_directory",
     "get_current_timestamp_ms",
+    "get_full_extension",
     "pragma_str_to_specifier_set",
     "injected_before_use",
     "is_array",
@@ -104,12 +112,16 @@ __all__ = [
     "LogInputABICollection",
     "ManagerAccessMixin",
     "nonreentrant",
+    "only_raise_attribute_error",
     "parse_coverage_tables",
     "parse_gas_table",
+    "path_match",
     "raises_not_implemented",
     "returns_array",
+    "run_in_tempdir",
     "run_until_complete",
     "singledispatchmethod",
+    "SOURCE_EXCLUDE_PATTERNS",
     "spawn",
     "stream_response",
     "Struct",

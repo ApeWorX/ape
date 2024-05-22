@@ -15,6 +15,7 @@ from ape.plugins._utils import (
     PluginMetadata,
     PluginMetadataList,
     PluginType,
+    _filter_plugins_from_dists,
     ape_version,
 )
 from ape.utils import load_config
@@ -228,13 +229,14 @@ def change_version(version):
     _change_version(version)
 
 
-def _install(name, spec) -> int:
+def _install(name, spec, exit_on_fail: bool = True) -> int:
     """
     Helper function to install or update a Python package using pip.
 
     Args:
       name (str): The package name.
       spec (str): Version specifier, e.g., '==1.0.0', '>=1.0.0', etc.
+      exit_on_fail (bool): Set to ``False`` to not exit on fail.
 
     Returns:
         The process return-code.
@@ -254,8 +256,12 @@ def _install(name, spec) -> int:
         message = f"Failed to install/update {name}"
         if completed_process.stdout:
             message += f": {completed_process.stdout}"
+        if completed_process.stderr:
+            message += f": {completed_process.stderr}"
+
         logger.error(message)
-        sys.exit(completed_process.returncode)
+        if exit_on_fail:
+            sys.exit(completed_process.returncode)
     else:
         logger.info(f"Successfully installed/updated {name}")
 
@@ -267,13 +273,24 @@ def _change_version(spec: str):
     # This will also update core Ape.
     # NOTE: It is possible plugins may depend on each other and may update in
     #   an order causing some error codes to pop-up, so we ignore those for now.
-    for plugin in _get_distributions():
+    plugin_retcode = 0
+    for plugin in _filter_plugins_from_dists(_get_distributions()):
         logger.info(f"Updating {plugin} ...")
         name = plugin.split("=")[0].strip()
-        _install(name, spec)
+        retcode = _install(name, spec, exit_on_fail=False)
+        if retcode != 0:
+            plugin_retcode = retcode
+        # else: errors logged in _install separately
 
     # This check is for verifying the update and shouldn't actually do anything.
     logger.info("Updating Ape core ...")
-    returncode = _install("eth-ape", spec)
-    if returncode == 0:
-        logger.success("Ape and all plugins have successfully upgraded.")
+    ape_retcode = _install("eth-ape", spec)
+    if ape_retcode == 0 and plugin_retcode == 0:
+        prefix = "Ape"
+        if plugin_retcode == 0:
+            prefix = f"{prefix} and plugins"
+
+        logger.success(f"{prefix} have successfully upgraded.")
+    # else: _install logs errors already.
+
+    sys.exit(ape_retcode | plugin_retcode)

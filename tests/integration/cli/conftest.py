@@ -144,10 +144,14 @@ def clean_cache(project):
     if cache_file.is_file():
         cache_file.unlink()
 
+    project.local_project._cached_manifest = None
+
     yield
 
     if cache_file.is_file():
         cache_file.unlink()
+
+    project.local_project._cached_manifest = None
 
 
 @pytest.fixture

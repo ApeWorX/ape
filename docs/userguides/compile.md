@@ -47,22 +47,24 @@ If your project includes Solidity (`.sol`) or Vyper (`.vy`) files, you will have
 To include additional compilers in your project, you can add the plugins to the `plugins` list in your `ape-config.yaml` or install them using the CLI.
 For information on how to configure plugins in your project, follow [this guide](./installing_plugins.html).
 
-## Ignore Files
+## Exclude Files
 
-You can configure files to be ignored from compilation.
-By default, Ape ignores files `package.json`, `package-lock.json`, `tsconfig.json`.
-To override this list, edit your `ape-config.yaml` similarly:
+You can configure files to be excluded from compilation.
+By default, Ape excludes known non-contract files such as `package.json`, `package-lock.json`, `tsconfig.json`, or `.DS_Store`.
+To append file-globs to the exclusions list, edit your `compile:exclude` config like this:
 
 ```yaml
 compile:
   exclude:
-    - "*package.json"
-    - "*package-lock.json"
-    - "*tsconfig.json"
-    - "*custom.json"  # Append a custom ignore
+    - "examples"  # Exclude all files in the examples/ directory
+    - "*Mock.sol"  # Exclude all files ending in Mock.sol
 ```
 
-**NOTE**: You must include the defaults in the list when overriding if you wish to retain them.
+You can also exclude files using the `--config-override` CLI option:
+
+```shell
+ape compile --config-override '{"compile": {"exclude": ["*Mock.sol"]}}'
+```
 
 ## Dependencies
 
@@ -88,7 +90,7 @@ Generally, configure compiler plugins using your `ape-config.yaml` file.
 One setting that applies to many compiler plugins is `cache_folder`, which holds dependency source files the compiler uses when compiling your contracts.
 By default, the folder is in your `contracts/.cache` folder but there are times you may want to move this to another location.
 Paths are relative to the project directory.
-For instance, to move the dependency cahce to the root project directory:
+For instance, to move the dependency cache to the root project directory:
 
 ```yaml
 compile:
@@ -108,7 +110,14 @@ vyper:
   version: 0.3.10
 ```
 
-You can also configure adhoc settings in Python code:
+When using the CLI, you can also specify settings using the `--config-override`.
+This is not limited to compiler settings; you can include other settings, such as `"contracts_folder"`, which affects compiling.
+
+```shell
+ape compile --config-override '{"contracts_folder": "other_contracts", "vyper": {"evm_version": "paris"}, "solidity": {"evm_version": "paris"}}'
+```
+
+Finally, you can also configure settings in Python code:
 
 ```python
 from pathlib import Path

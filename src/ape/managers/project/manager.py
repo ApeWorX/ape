@@ -100,6 +100,9 @@ class ProjectManager(BaseManager):
                 # Was set explicitly to `None` in config.
                 return self.path / "contracts"
 
+        elif isinstance(folder, str):
+            return self.path / folder
+
         return folder
 
     @property
@@ -584,7 +587,7 @@ class ProjectManager(BaseManager):
                 continue
 
             message = (
-                f"{message} However, there is a source file named '{attr_name}', "
+                f"{message} However, there is a source file named '{file.name}', "
                 "did you mean to reference a contract name from this source file?"
             )
             file_check_appended = True
@@ -683,7 +686,7 @@ class ProjectManager(BaseManager):
         input_path = Path(key_contract_path)
         if input_path.is_file():
             # Already given an existing file.
-            return input_path
+            return input_path.absolute()
 
         input_stem = input_path.stem
         input_extension = get_full_extension(input_path) or None
