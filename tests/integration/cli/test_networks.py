@@ -77,7 +77,7 @@ ethereum  (default)
 def networks_runner(config):
     class NetworksSubprocessRunner(ApeSubprocessRunner):
         def __init__(self):
-            super().__init__(("networks",), data_folder=config.DATA_FOLDER)
+            super().__init__("networks", data_folder=config.DATA_FOLDER)
 
     return NetworksSubprocessRunner()
 
@@ -104,8 +104,8 @@ def assert_rich_text(actual: str, expected: str):
 
 
 @run_once
-def test_list(networks_runner):
-    result = networks_runner.invoke("list")
+def test_list(ape_cli, runner):
+    result = runner.invoke(ape_cli, ("networks", "list"))
     assert result.exit_code == 0
 
     # Grab ethereum
@@ -115,8 +115,8 @@ def test_list(networks_runner):
 
 
 @run_once
-def test_list_yaml(networks_runner):
-    result = networks_runner.invoke("list", "--format", "yaml")
+def test_list_yaml(ape_cli, runner):
+    result = runner.invoke(ape_cli, ("networks", "list", "--format", "yaml"))
     expected_lines = _DEFAULT_NETWORKS_YAML.strip().split("\n")
 
     for expected_line in expected_lines:
@@ -136,9 +136,8 @@ def test_list_yaml(networks_runner):
 
 
 @skip_projects_except("geth")
-def test_list_geth(networks_runner, networks, project):
-    networks_runner.project = project
-    result = networks_runner.invoke("list")
+def test_list_geth(ape_cli, runner, networks, project):
+    result = runner.invoke(ape_cli, ("networks", "list"))
     assert result.exit_code == 0
 
     # Grab ethereum
@@ -154,8 +153,8 @@ def test_list_geth(networks_runner, networks, project):
 
 
 @run_once
-def test_list_filter_networks(networks_runner, networks):
-    result = networks_runner.invoke("list", "--network", "sepolia")
+def test_list_filter_networks(ape_cli, runner, networks):
+    result = runner.invoke(ape_cli, ("networks", "list", "--network", "sepolia"))
     assert result.exit_code == 0
 
     # Grab ethereum
@@ -165,8 +164,8 @@ def test_list_filter_networks(networks_runner, networks):
 
 
 @run_once
-def test_list_filter_providers(networks_runner, networks):
-    result = networks_runner.invoke("list", "--provider", "test")
+def test_list_filter_providers(ape_cli, runner, networks):
+    result = runner.invoke(ape_cli, ("networks", "list", "--provider", "test"))
     assert result.exit_code == 0
 
     # Grab ethereum
@@ -194,9 +193,9 @@ def test_run_not_subprocess_provider(networks_runner):
 
 
 @run_once
-def test_run_custom_network(networks_runner):
-    cmd = ("run", "--network", "ethereum:local:test")
-    result = networks_runner.invoke(*cmd)
+def test_run_custom_network(ape_cli, runner):
+    cmd = ("networks", "run", "--network", "ethereum:local:test")
+    result = runner.invoke(ape_cli, cmd)
     expected = "`ape networks run` requires a provider that manages a process, not 'test'"
     assert result.exit_code != 0
     assert expected in result.output

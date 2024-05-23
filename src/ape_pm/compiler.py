@@ -39,15 +39,20 @@ class InterfaceCompiler(CompilerAPI):
     ) -> Iterator[ContractType]:
         project = project or self.local_project
         source_ids = {
-            p: f"{get_relative_path(p.absolute(), project.path.absolute())}"
+            p: f"{get_relative_path(p, project.path.absolute())}" if p.is_absolute() else str(p)
             for p in contract_filepaths
         }
         logger.info(f"Compiling {', '.join(source_ids.values())}.")
         for path in contract_filepaths:
-            if not path.is_file():
+            if not path.is_file() and (project.path / path).is_file():
+                # Was given a relative path.
+                src_path = project.path / path
+            elif not path.is_file():
                 raise CompilerError(f"'{path}' is not a file.")
+            else:
+                src_path = path
 
-            code = path.read_text()
+            code = src_path.read_text()
             source_id = source_ids[path]
             try:
                 # NOTE: Always set the source ID to the source of the JSON file
@@ -61,7 +66,7 @@ class InterfaceCompiler(CompilerAPI):
 
             # NOTE: Try getting name/ ID from code-JSON first.
             #   That's why this is not part of `**kwargs` in `compile_code()`.
-            contract_type.name = contract_type.name or path.stem
+            contract_type.name = contract_type.name or src_path.stem
             yield contract_type
 
     def compile_code(

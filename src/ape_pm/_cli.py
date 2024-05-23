@@ -200,7 +200,7 @@ def uninstall(cli_ctx, name, versions, yes):
 
         # Uninstall all dependencies from the config.
         for cfg in pm.config.dependencies:
-            api = pm.dependencies.decode_dependency(cfg)
+            api = pm.dependencies.decode_dependency(**cfg)
             for dependency in installed:
                 if dependency.name != api.name or dependency.version != api.version_id:
                     continue

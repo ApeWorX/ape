@@ -1,8 +1,6 @@
 import json
-import os
 import random
 import shutil
-import tempfile
 from collections.abc import Callable, Iterable, Iterator
 from contextlib import contextmanager
 from functools import cached_property, singledispatchmethod
@@ -36,6 +34,7 @@ from ape.utils.os import (
     get_all_files_in_directory,
     get_full_extension,
     get_relative_path,
+    in_tempdir,
     path_match,
 )
 
@@ -45,6 +44,17 @@ def path_to_source_id(path: Path, root_path: Path) -> str:
 
 
 class SourceManager(BaseManager):
+    """
+    A manager of a local-project's sources-paths.
+    Access via ``project.sources``. Allows source-access
+    from both ``source_id`` as well as ``path``. Handles
+    detecting modified sources as well as excluded sources.
+    Is meant to resemble a PackageManifest's source dict
+    but with more functionality for active development.
+    """
+
+    _path_cache: Optional[list[Path]] = None
+
     def __init__(
         self,
         root_path: Path,
@@ -62,6 +72,10 @@ class SourceManager(BaseManager):
         return f"<LocalSources{path_str}>"
 
     def __len__(self) -> int:
+        if self._path_cache is not None:
+            return len(self._path_cache)
+
+        # Will set _path_cache, eliminates need to iterte (perf).
         return len(list(self.paths))
 
     def __iter__(self) -> Iterator[str]:
@@ -79,6 +93,15 @@ class SourceManager(BaseManager):
         return src
 
     def get(self, source_id: str) -> Optional[Source]:
+        """
+        Get a Source by source_id.
+
+        Args:
+            source_id (str): The source identifier.
+
+        Returns:
+            Source | None
+        """
         if source_id in self._sources:
             return self._sources[source_id]
 
@@ -137,7 +160,21 @@ class SourceManager(BaseManager):
         """
         All contract sources paths.
         """
+        if self._path_cache is not None:
+            yield from [p for p in self._path_cache if p.is_file()]
+            return
+
+        cache: list[Path] = []
+        for path in self._get_paths():
+            cache.append(path)
+            yield path
+
+        self._path_cache = cache
+
+    def _get_paths(self) -> Iterator[Path]:
+        # Yield for first time.
         contracts_folder = self.get_contracts_path()
+        cache: list[Path] = []
         if not contracts_folder.is_dir():
             return
 
@@ -146,9 +183,24 @@ class SourceManager(BaseManager):
             if self.is_excluded(path):
                 continue
 
+            cache.append(path)
             yield path
 
+        # Helps `self.paths` be faster.
+        self._path_cache = cache
+
     def is_excluded(self, path: Path) -> bool:
+        """
+        Check if the given path is considered an "excluded"
+        file based on the configured ignore-patterns.
+
+        Args:
+            path (Path): The path to check.
+
+        Returns:
+            bool
+        """
+
         for excl in self.exclude_globs:
             source_id = self._get_source_id(path)
             options = (str(path), path.name, source_id)
@@ -216,6 +268,7 @@ class SourceManager(BaseManager):
 
                         # Check exact match w/o extension.
                         prefix = file_ext.join(str(file).split(file_ext)[:-1])
+
                         if str(full_path) == prefix:
                             return file
 
@@ -245,7 +298,7 @@ class SourceManager(BaseManager):
 
 class ContractManager(BaseManager):
     """
-    Local contract-type loader.
+    Local contract-type loader. Only dict-like behavior is public.
     """
 
     def __init__(self, project: "LocalProject", sources: SourceManager):
@@ -275,10 +328,23 @@ class ContractManager(BaseManager):
                     yield ct.name
 
     def get(self, name: str, compile_missing: bool = True) -> Optional[ContractContainer]:
+        """
+        Get a contract by name.
+
+        Args:
+            name (str): The name of the contract.
+            compile_missing (bool): Set to ``False`` to not attempt compiling
+              if the contract can't be found. Note: modified sources are
+              re-compiled regardless of this flag.
+
+        Returns:
+            ContractContainer | None
+        """
+
         existing_types = self.project.manifest.contract_types or {}
         if contract_type := existing_types.get(name):
             source_id = contract_type.source_id or ""
-            if source_id in self.sources and self.detect_change(source_id):
+            if source_id in self.sources and self._detect_change(source_id):
                 # Previous cache is outdated.
                 compiled = {
                     ct.name: ct
@@ -296,7 +362,7 @@ class ContractManager(BaseManager):
 
         if compile_missing:
             # Try again after compiling all missing.
-            self._compile_missing_contracts(self.sources.paths)
+            self._compile_missing_contracts(self.sources._get_paths())
             return self.get(name, compile_missing=False)
 
         return None
@@ -316,7 +382,7 @@ class ContractManager(BaseManager):
 
     def _get_needs_compile(self, paths: Iterable[Union[Path, str]]) -> Iterable[Path]:
         for path in paths:
-            if self.detect_change(path):
+            if self._detect_change(path):
                 if isinstance(path, str):
                     yield self.sources._get_path(path)
                 else:
@@ -336,35 +402,49 @@ class ContractManager(BaseManager):
         contract_types = {**existing_types, **new_types}
         self.project._update_contract_types(contract_types)
 
-    def load_contracts(self, use_cache: bool = True) -> dict[str, ContractContainer]:
+    def _load_contracts(self, use_cache: bool = True) -> dict[str, ContractContainer]:
         return {
             c.contract_type.name: c
-            for c in self.compile_all(use_cache=use_cache)
+            for c in self._compile_all(use_cache=use_cache)
             if c.contract_type.name
         }
 
-    def compile_all(self, use_cache: bool = True) -> Iterator[ContractContainer]:
+    def _compile_all(self, use_cache: bool = True) -> Iterator[ContractContainer]:
         if sources := self.sources:
-            yield from self.compile(sources.paths, use_cache=use_cache)
+            paths = sources._get_paths()
+            yield from self._compile(paths, use_cache=use_cache)
 
-    def compile(
+    def _compile(
         self, paths: Union[Path, str, Iterable[Union[Path, str]]], use_cache: bool = True
     ) -> Iterator[ContractContainer]:
         path_ls = list([paths] if isinstance(paths, (Path, str)) else paths)
         if not path_ls:
             return
 
+        path_ls_final = []
+        for path in path_ls:
+            path = Path(path)
+            if path.is_absolute():
+                path_ls_final.append(path)
+            elif (self.project.path / path).exists():
+                path_ls_final.append(self.project.path / path)
+            else:
+                raise FileNotFoundError(str(path))
+
         # Compile necessary contracts.
-        needs_compile = list(self._get_needs_compile(path_ls) if use_cache else path_ls)
-        if needs_compile:
+        if needs_compile := list(
+            self._get_needs_compile(path_ls_final) if use_cache else path_ls_final
+        ):
             self._compile_contracts(needs_compile)
 
-        src_ids = [f"{get_relative_path(Path(p).absolute(), self.project.path)}" for p in path_ls]
+        src_ids = [
+            (f"{get_relative_path(Path(p).absolute(), self.project.path)}") for p in path_ls_final
+        ]
         for contract_type in (self.project.manifest.contract_types or {}).values():
             if contract_type.source_id and contract_type.source_id in src_ids:
                 yield ContractContainer(contract_type)
 
-    def detect_change(self, path: Union[Path, str]) -> bool:
+    def _detect_change(self, path: Union[Path, str]) -> bool:
         if not (existing_types := (self.project.manifest.contract_types or {}).values()):
             return True  # Nothing compiled yet.
 
@@ -421,7 +501,17 @@ class Dependency(BaseManager, ExtraAttributesMixin):
 
     @log_instead_of_fail(default="<Dependency>")
     def __repr__(self) -> str:
-        return f"<{self.api.package_id} version={self.api.version_id}>"
+        pkg_id = self.package_id
+
+        # Handle local dependencies better.
+        path = Path(pkg_id)
+        if path.exists():
+            pkg_id = clean_path(Path(pkg_id))
+
+        return f"<Dependency package={pkg_id} version={self.api.version_id}>"
+
+    def __hash__(self):
+        return hash(f"{self.package_id}@{self.version}")
 
     @only_raise_attribute_error
     def __getattr__(self, name: str) -> Any:
@@ -430,20 +520,42 @@ class Dependency(BaseManager, ExtraAttributesMixin):
     def __ape_extra_attributes__(self) -> Iterator[ExtraModelAttributes]:
         yield ExtraModelAttributes(name="project", attributes=lambda: self.project)
 
+    def __eq__(self, other: Any) -> bool:
+        if not isinstance(other, Dependency):
+            # We can't handle this type.
+            # This line causes python to retry from the other end.
+            return NotImplemented
+
+        return self.package_id == other.package_id and self.version == other.version
+
     @property
     def name(self) -> str:
+        """
+        The short-name of the dependency, used for remappings.
+        """
         return self.api.name
 
     @property
     def package_id(self) -> str:
+        """
+        The long-name of the dependency, used as an ID.
+        """
         return self.api.package_id
 
     @property
     def version(self) -> str:
+        """
+        The version of the dependency. Combined with the
+        package_id, you have a full identifier of the package.
+        """
         return self.api.version_id
 
     @property
     def project(self) -> "ProjectManager":
+        """
+        The "project" of the dependency, use like any other
+        project in Ape (compile and interact with its contracts).
+        """
         return self.install()
 
     @property
@@ -459,14 +571,35 @@ class Dependency(BaseManager, ExtraAttributesMixin):
         return self._cache.get_manifest_path(self.package_id, self.version)
 
     @property
+    def api_path(self) -> Path:
+        return self._cache.get_api_path(self.package_id, self.version)
+
+    @property
     def uri(self) -> str:
+        """
+        The dependency's URI for refreshing.
+        """
         return self.api.uri
 
     def install(
         self, use_cache: bool = True, config_override: Optional[dict] = None
     ) -> "ProjectManager":
+        """
+        Install this dependency.
+
+        Args:
+            use_cache (bool): To force a re-install, like a refresh, set this
+              to ``False``.
+            config_override (dict): Optionally change the configurtion during install.
+
+        Returns:
+            :class:`~ape.managers.project.ProjectManager`: The resulting project, ready
+            for compiling.
+        """
+
         config_override = {**(self.api.config_override or {}), **(config_override or {})}
         project = None
+        did_fetch = False
 
         if self._installation is not None and use_cache:
             if config_override:
@@ -480,18 +613,18 @@ class Dependency(BaseManager, ExtraAttributesMixin):
                 # Attempt using sources from manifest. This may happen
                 # if having deleted dependencies but not their manifests.
                 man = PackageManifest.model_validate_json(self.manifest_path.read_text())
-                if srces := (man.sources or {}):
-                    for src_id, src in srces.items():
-                        src_path = self.project_path / src_id
-                        src_path.parent.mkdir(parents=True, exist_ok=True)
-                        src_path.write_text(str(src))
-                        unpacked = True
+                if man.sources:
+                    self.project_path.mkdir(parents=True, exist_ok=True)
+                    man.unpack_sources(self.project_path)
+                    unpacked = True
 
+            # Either never fetched, it is missing but present in manifest, or we are forcing.
             if not unpacked:
                 # No sources found! Fetch the project.
                 shutil.rmtree(self.project_path, ignore_errors=True)
                 self.project_path.parent.mkdir(parents=True, exist_ok=True)
                 self.api.fetch(self.project_path)
+                did_fetch = True
 
         # Set name / version for the project, if it needs.
         if "name" not in config_override:
@@ -500,10 +633,12 @@ class Dependency(BaseManager, ExtraAttributesMixin):
             config_override["version"] = self.api.version_id
 
         if self.project_path.is_dir():
-            paths = [x for x in self.project_path.iterdir()]
-            if len(paths) > 0:
+            paths = get_all_files_in_directory(self.project_path)
+
+            # Check if given only a manifest.
+            if len(paths) == 1:
                 suffix = get_full_extension(paths[0])
-                if len(paths) == 1 and suffix == ".json":
+                if suffix == ".json":
                     path = paths[0]
                     try:
                         manifest = PackageManifest.model_validate_json(path.read_text())
@@ -535,17 +670,16 @@ class Dependency(BaseManager, ExtraAttributesMixin):
             project = Project.from_manifest(self.manifest_path, config_override=config_override)
 
         else:
-            # Project dir is missing, but we know the manifest path at least exists by this point.
             raise ProjectError("Project install failed.")
 
         # Cache for next time.
         self._installation = project
 
-        # Also, install dependencies of dependencies.
-        spec = project.dependencies._get_specified(
-            use_cache=use_cache, config_override=config_override
-        )
-        list(spec)
+        # Also, install dependencies of dependencies, if fetching for the
+        # first time.
+        if did_fetch:
+            spec = project.dependencies._get_specified(use_cache=use_cache)
+            list(spec)
 
         return project
 
@@ -603,6 +737,12 @@ class Dependency(BaseManager, ExtraAttributesMixin):
                 yield unpacked_dep
 
 
+def _get_cache_suffix(package_id: str, version: str, suffix: str = "") -> Path:
+    package_id_name = package_id.replace("/", "_")
+    version_name = f"{version.replace('.', '_').replace('/', '_')}{suffix}"
+    return Path(package_id_name) / version_name
+
+
 class PackagesCache(ManagerAccessMixin):
     def __init__(self):
         self._api_cache: dict[str, DependencyAPI] = {}
@@ -635,30 +775,41 @@ class PackagesCache(ManagerAccessMixin):
         """
         Path to the dir of the cached project.
         """
-        package_id_name = package_id.replace("/", "_")
-        version_name = version.replace(".", "_")
-        return self.projects_folder / package_id_name / version_name
+        return self.projects_folder / _get_cache_suffix(package_id, version)
 
     def get_manifest_path(self, package_id: str, version: str) -> Path:
         """
         Path to the manifest filepath the dependency project uses
         as a base.
         """
-        package_id_name = package_id.replace("/", "_")
-        version_name = f"{version.replace('.', '_')}.json"
-        return self.manifests_folder / package_id_name / version_name
+        return self.manifests_folder / _get_cache_suffix(package_id, version, suffix=".json")
 
-    def cache_api(self, api: DependencyAPI):
+    def get_api_path(self, package_id: str, version: str) -> Path:
+        """
+        Path to the manifest filepath the dependency project uses
+        as a base.
+        """
+        return self.api_folder / _get_cache_suffix(package_id, version, suffix=".json")
+
+    def cache_api(self, api: DependencyAPI) -> Path:
         """
         Cache a dependency JSON for usage outside of the project.
         """
-        package_id_name = api.package_id.replace("/", "_")
-        version_name = api.version_id.replace(".", "_").replace("/", "_")
-        api_file = self.api_folder / package_id_name / f"{version_name}.json"
+        api_file = self.get_api_path(api.package_id, api.version_id)
         api_file.parent.mkdir(parents=True, exist_ok=True)
         api_file.unlink(missing_ok=True)
-        json_text = api.model_dump_json(by_alias=True, mode="json")
+
+        # NOTE: All the excludes only for sabing disk space.
+        json_text = api.model_dump_json(
+            by_alias=True,
+            mode="json",
+            exclude_none=True,
+            exclude_unset=True,
+            exclude_defaults=True,
+        )
+
         api_file.write_text(json_text)
+        return api_file
 
     def remove(self, package_id: str, version: str):
         project_path = self.get_project_path(package_id, version)
@@ -672,11 +823,9 @@ class PackagesCache(ManagerAccessMixin):
             # Delete empty dependency root folder.
             shutil.rmtree(project_path.parent)
 
-        package_id_name = package_id.replace("/", "_")
-        version_name = f"{version.replace('.', '_')}.json"
-        api_file = self.api_folder / package_id_name / version_name
+        api_file = self.get_api_path(package_id, version)
         api_file.unlink(missing_ok=True)
-        manifest_file = self.manifests_folder / package_id_name / version_name
+        manifest_file = self.get_manifest_path(package_id, version)
         manifest_file.unlink(missing_ok=True)
 
 
@@ -691,7 +840,14 @@ class DependencyManager(BaseManager):
 
     @log_instead_of_fail(default="<DependencyManager>")
     def __repr__(self) -> str:
-        return f"<DependencyManager project={clean_path(self.project.path)}>"
+        result = "<DependencyManager"
+        project_id = None
+        if hasattr(self.project, "path"):
+            project_id = clean_path(self.project.path)
+        elif name := self.project.name:
+            project_id = name
+
+        return f"{result} project={project_id}>" if project_id else f"{result}>"
 
     def __iter__(self) -> Iterator[Dependency]:
         yield from self.specified
@@ -723,7 +879,7 @@ class DependencyManager(BaseManager):
             return result
 
         # Try installing specified.
-        if versions := {d.version: d.project for d in self.specified if d.name == name}:
+        if versions := {d.version: d.project for d in self._get_specified(name=name)}:
             return versions
 
         return {}
@@ -778,10 +934,25 @@ class DependencyManager(BaseManager):
         """
         yield from self._get_specified()
 
-    def _get_specified(self, use_cache: bool = True, config_override: Optional[dict] = None):
-        for data in self.config.dependencies:
-            api = self.decode_dependency(data)
+    def _get_specified(
+        self,
+        use_cache: bool = True,
+        config_override: Optional[dict] = None,
+        name: Optional[str] = None,
+        version: Optional[str] = None,
+    ):
+        for api in self.config_apis:
+            if (name is not None and api.name != name and api.package_id != name) or (
+                version is not None and api.version_id != version
+            ):
+                continue
+
             yield self._install(api, use_cache=use_cache, config_override=config_override)
+
+    @property
+    def config_apis(self) -> Iterator[DependencyAPI]:
+        for data in self.config.dependencies:
+            yield self.decode_dependency(**data)
 
     @property
     def installed(self) -> Iterator[Dependency]:
@@ -801,7 +972,7 @@ class DependencyManager(BaseManager):
                     continue
 
                 data = json.loads(api_file.read_text())
-                api = self.decode_dependency(data)
+                api = self.decode_dependency(**data)
                 if api.name == self.project.name:
                     # Don't include self as a dependency
                     # (happens when compiling a dependency)
@@ -851,16 +1022,13 @@ class DependencyManager(BaseManager):
                 return name_matches[0]
 
         # Check if not installed.
-        name_matches = []
         if allow_install:
             # NOTE: If any specified dependencies are not installed,
             #  they will be now.
-            for dependency in self.specified:
-                if dependency.package_id == name and dependency.version == version:
-                    return dependency
-
-                elif dependency.name == name and dependency.version == version:
-                    name_matches.append(dependency)
+            for dep in name_matches:
+                for vers in dep.get_version():
+                    if vers == version:
+                        return dependency
 
         if name_matches:
             return name_matches[0]
@@ -868,16 +1036,26 @@ class DependencyManager(BaseManager):
         # Was not found in this project's dependencies.
         checked.add(self.project.project_id)
 
+        deps = [*self.installed]
+        if allow_install:
+            deps.extend([*self.specified])
+
         # Still not found - check dependencies of dependencies.
         # NOTE: Purposely checking all specified first.
-        for dependency in [*self.specified, *self.installed]:
-            sub_project = dependency.project
+        for dependency in deps:
+            try:
+                sub_project = dependency.project
+            except ProjectError:
+                continue
+
             key = sub_project.project_id
             if key in checked:
                 continue
 
             checked.add(key)
-            sub_dependency = sub_project.dependencies._get(name, version, checked=checked)
+            sub_dependency = sub_project.dependencies._get(
+                name, version, checked=checked, allow_install=allow_install
+            )
             return sub_dependency
 
         return None
@@ -894,13 +1072,12 @@ class DependencyManager(BaseManager):
         """
         # First, check specified. Note: installs if needed.
         versions_yielded = set()
-        for dependency in self.specified:
-            if dependency.name == name:
-                if dependency.version in versions_yielded:
-                    continue
+        for dependency in self._get_specified(name=name):
+            if dependency.version in versions_yielded:
+                continue
 
-                yield dependency
-                versions_yielded.add(dependency.version)
+            yield dependency
+            versions_yielded.add(dependency.version)
 
         # Yield any remaining installed.
         for dependency in self.installed:
@@ -911,33 +1088,72 @@ class DependencyManager(BaseManager):
                 yield dependency
                 versions_yielded.add(dependency.version)
 
-    def get_dependency(self, name: str, version: str) -> Dependency:
-        version_options = [version]
-        if version.startswith("v"):
-            version_options.append(version[1:])
-        else:
-            version_options.append(f"v{version}")
+    def get_dependency(
+        self, dependency_id: str, version: str, allow_install: bool = True
+    ) -> Dependency:
+        """
+        Get a dependency.
 
-        name_options = {name, name.lower()}
+        Args:
+            dependency_id (str): The package ID of the dependency. You can also
+              provide the short-name of the dependency.
+            version (str): The version identifier.
+            allow_install (bool): If the dependendency API is known but the
+              project is not installed, attempt to install it. Defaults to ``True``.
+
+        Raises:
+            :class:`~ape.exceptions.ProjectError`: When unable to find the
+              dependency.
+
+        Returns:
+            class:`~ape.managers.project.Dependency`
+        """
+
+        version_options = {version}
+        if version.startswith("v"):
+            version_options.add(version[1:])
+        elif version and version[0].isnumeric():
+            # All try a v-prefix if using a numeric-like version.
+            version_options.add(f"v{version}")
+
+        # Also try the lower of the name
+        # so ``OpenZeppelin`` would give you ``openzeppelin``.
+        id_options = {dependency_id, dependency_id.lower()}
 
         def try_get():
-            for nm in name_options:
-                for opt in version_options:
-                    if dependency := self._get(nm, opt):
+            for dep_id in id_options:
+                for v in version_options:
+                    # NOTE: `allow_install=False` here because we install
+                    # _after_ exhausting all options.
+                    if dependency := self._get(dep_id, v, allow_install=False):
                         return dependency
 
         if res := try_get():
             return res
 
-        # Try installing first.
-        self.install()
+        if allow_install:
+            # Try installing first.
+            self.install()
 
         if res := try_get():
             return res
 
-        raise ProjectError(f"Dependency '{name}' with version '{version}' not found.")
+        raise ProjectError(f"Dependency '{dependency_id}' with version '{version}' not found.")
 
-    def decode_dependency(self, item: dict) -> DependencyAPI:
+    def decode_dependency(self, **item: Any) -> DependencyAPI:
+        """
+        Decode data into a :class:`~ape.api.projects.DependencyAPI`.
+
+        Args:
+            **item: The same data you put in your ``dependencies:`` config.
+
+        Raises:
+            :class:`~ape.exceptions.ProjectError`: When unable to handle the
+              given API data.
+
+        Returns:
+            :class:`~ape.api.projects.DependencyAPI`
+        """
         for key, cls in self.types.items():
             if key in item:
                 return cls.model_validate(item)
@@ -949,9 +1165,37 @@ class DependencyManager(BaseManager):
         )
 
     def add(self, dependency: Union[dict, DependencyAPI]) -> Dependency:
-        api = self.decode_dependency(dependency) if isinstance(dependency, dict) else dependency
+        """
+        Add the dependency API data. This sets up a dependency such that
+        it can be fetched.
+
+        Args:
+            dependency (dict | :class:`~ape.api.projects.DependencyAPI`): The
+              API data necessary for fetching the dependency.
+
+        Returns:
+            class:`~ape.managers.project.Dependency`
+        """
+
+        api = self.decode_dependency(**dependency) if isinstance(dependency, dict) else dependency
         self.packages_cache.cache_api(api)
-        return self.get_dependency(api.name, api.version_id)
+
+        # Avoid infinite loop where Ape re-tries installing the dependency
+        # again and again in error situatuons.
+        install_if_not_found = False
+
+        try:
+            return self.get_dependency(
+                api.package_id,
+                api.version_id,
+                allow_install=install_if_not_found,
+            )
+        except ProjectError:
+            raise  # Avoids bottom except.
+        except Exception as err:
+            raise ProjectError(
+                f"Failed to add dependency {api.name}@{api.version_id}: {err}"
+            ) from err
 
     def install(self, **dependency: Any) -> Union[Dependency, list[Dependency]]:
         """
@@ -999,7 +1243,7 @@ class DependencyManager(BaseManager):
             dependency.unpack(cache_folder)
 
 
-def load_manifest(path: Union[Path, str]) -> PackageManifest:
+def _load_manifest(path: Union[Path, str]) -> PackageManifest:
     path = Path(path)
     return (
         PackageManifest.model_validate_json(path.read_text())
@@ -1166,7 +1410,7 @@ class Project(ProjectManager):
         cls, manifest: Union[PackageManifest, Path, str], config_override: Optional[dict] = None
     ) -> "Project":
         config_override = config_override or {}
-        manifest = load_manifest(manifest) if isinstance(manifest, (Path, str)) else manifest
+        manifest = _load_manifest(manifest) if isinstance(manifest, (Path, str)) else manifest
         return Project(manifest, config_override=config_override)
 
     def __ape_extra_attributes__(self) -> Iterator[ExtraModelAttributes]:
@@ -1180,6 +1424,7 @@ class Project(ProjectManager):
                 name="manifest",
                 attributes=lambda: self.manifest,
                 include_getitem=True,
+                include_getattr=False,  # avoids contract-type confusion.
             ),
         )
 
@@ -1229,7 +1474,6 @@ class Project(ProjectManager):
         from the manifest. Converts a manifest-based project
         to a local one.
         """
-
         config_override = {**self._config_override, **(config_override or {})}
         sources = self.sources or {}
 
@@ -1358,8 +1602,12 @@ class Project(ProjectManager):
     def contracts(self) -> dict[str, ContractContainer]:
         return self.load_contracts()
 
+    @property
+    def sources(self) -> dict[str, Source]:
+        return self.manifest.sources or {}
+
     def load_contracts(
-        self, *source_ids: Union[str], use_cache: bool = True
+        self, *source_ids: Union[str, Path], use_cache: bool = True
     ) -> dict[str, ContractContainer]:
         result = {
             ct.name: ct
@@ -1394,10 +1642,9 @@ class Project(ProjectManager):
         return {n: ContractContainer(ct) for n, ct in result.items()}
 
     def _update_contract_types(self, contract_types: dict[str, ContractType]):
-        self._manifest.contract_types = {**(self._manifest.contract_types or {}), **contract_types}
-        self.update_manifest(
-            contract_types=self._manifest.contract_types, sources=dict(self.sources.items())
-        )
+        contract_types = {**(self._manifest.contract_types or {}), **contract_types}
+        sources = dict(self.sources.items())
+        self.update_manifest(contract_types=contract_types, sources=sources)
 
     def reconfigure(self, **overrides):
         """
@@ -1417,6 +1664,9 @@ class Project(ProjectManager):
 
     def extract_manifest(self) -> PackageManifest:
         return self.manifest
+
+    def clean(self):
+        self._manifest.contract_types = None
 
 
 class DeploymentManager(ManagerAccessMixin):
@@ -1589,7 +1839,7 @@ class LocalProject(Project):
 
         # NOTE: Avoid pointlessly adding info to the __local__ manifest.
         # This is mainly for dependencies.
-        if self.manifest_path.stem != "__local__" and not self.manifest.sources:
+        if self.manifest_path.stem != "__local__" and not manifest.sources:
             # Perform initial manifest updates.
             data: dict = {}
             if (
@@ -1765,9 +2015,7 @@ class LocalProject(Project):
         if not self.path:
             return False
 
-        temp_dir = os.path.normpath(f"{Path(tempfile.gettempdir()).resolve()}")
-        normalized_path = os.path.normpath(self.path)
-        return normalized_path.startswith(temp_dir)
+        return in_tempdir(self.path)
 
     @property
     def manifest(self) -> PackageManifest:
@@ -1792,8 +2040,8 @@ class LocalProject(Project):
     def scripts_folder(self) -> Path:
         return self.path / "scripts"
 
-    @property
-    def sources(self) -> SourceManager:
+    @cached_property
+    def sources(self) -> SourceManager:  # type: ignore[override]
         """
         All the sources in the project.
         """
@@ -1858,7 +2106,7 @@ class LocalProject(Project):
             return PackageManifest()
 
         try:
-            return load_manifest(self.manifest_path)
+            return _load_manifest(self.manifest_path)
         except Exception as err:
             logger.error(f"__local__.json manifest corrupted! Re-building.\nFull error: {err}.")
             self.manifest_path.unlink(missing_ok=True)
@@ -1884,14 +2132,16 @@ class LocalProject(Project):
         self.manifest_path.write_text(manifest_text)
 
     def load_contracts(
-        self, *source_ids: Union[Path, str], use_cache: bool = True
+        self, *source_ids: Union[str, Path], use_cache: bool = True
     ) -> dict[str, ContractContainer]:
         paths = (
-            [(self.path / src_id) for src_id in source_ids] if source_ids else self.sources.paths
+            [(self.path / src_id) for src_id in source_ids]
+            if source_ids
+            else self.sources._get_paths()
         )
         return {
             c.contract_type.name: c
-            for c in self.contracts.compile(paths, use_cache=use_cache)
+            for c in self.contracts._compile(paths, use_cache=use_cache)
             if c.contract_type.name
         }
 
@@ -1924,13 +2174,12 @@ class LocalProject(Project):
         return self.manifest
 
     def clean(self):
+        super().clean()
         if self.manifest_path.name == "__local__.json":
             self.manifest_path.unlink(missing_ok=True)
             self._manifest = PackageManifest()
 
-        elif self._manifest.contract_types:
-            # For manifests / dependencies.
-            self._manifest.contract_types = {}
+        self.sources._path_cache = None
 
     def _create_contract_source(self, contract_type: ContractType) -> Optional[ContractSource]:
         if not (source_id := contract_type.source_id):
@@ -1957,6 +2206,9 @@ class LocalProject(Project):
             return None
 
     def _update_contract_types(self, contract_types: dict[str, ContractType]):
+        # First, ensure paths are up to date.
+        _ = self.sources._get_paths()
+
         super()._update_contract_types(contract_types)
 
         if "ABI" in [x.value for x in self.config.compile.output_extra]:

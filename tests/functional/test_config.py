@@ -1,15 +1,41 @@
+from pathlib import Path
 from typing import Optional, Union
 
 import pytest
 from pydantic_settings import SettingsConfigDict
 
-from ape.api.config import ConfigEnum, PluginConfig
+from ape.api.config import ApeConfig, ConfigEnum, PluginConfig
 from ape.exceptions import ConfigError
 from ape.managers.config import CONFIG_FILE_NAME, merge_configs
 from ape.types import GasLimit
 from ape_ethereum.ecosystem import NetworkConfig
 from ape_networks import CustomNetwork
 from tests.functional.conftest import PROJECT_WITH_LONG_CONTRACTS_FOLDER
+
+
+def test_model_validate_empty():
+    data: dict = {}
+    cfg = ApeConfig.model_validate(data)
+    assert cfg.contracts_folder is None
+
+
+def test_model_validate():
+    data = {"contracts_folder": "src"}
+    cfg = ApeConfig.model_validate(data)
+    assert cfg.contracts_folder == "src"
+
+
+def test_model_validate_none_contracts_folder():
+    data = {"contracts_folder": None}
+    cfg = ApeConfig.model_validate(data)
+    assert cfg.contracts_folder is None
+
+
+def test_model_validate_path_contracts_folder():
+    path = Path.home() / "contracts"
+    data = {"contracts_folder": path}
+    cfg = ApeConfig.model_validate(data)
+    assert cfg.contracts_folder == str(path)
 
 
 def test_deployments(networks_connected_to_tester, owner, vyper_contract_container, project):

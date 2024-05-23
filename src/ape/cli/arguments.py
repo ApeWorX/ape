@@ -84,7 +84,7 @@ class _ContractPaths(ManagerAccessMixin):
 
         elif not value or value == "*":
             # Get all file paths in the project.
-            return self.project.sources.paths
+            return {p for p in self.project.sources.paths}
 
         else:
             raise ValueError(f"Unknown contracts-paths value '{value}'.")
@@ -132,7 +132,7 @@ class _ContractPaths(ManagerAccessMixin):
 
         return bool(unknown_compiler)
 
-    def lookup(self, path_iter):
+    def lookup(self, path_iter: Iterable):
         for path in path_iter:
             path = Path(path)
             if self.do_exclude(path):
@@ -143,7 +143,7 @@ class _ContractPaths(ManagerAccessMixin):
                 self.project.path / path.name
             ) == contracts_folder or path.name == contracts_folder.name:
                 # Was given the path to the contracts folder.
-                self.lookup(p for p in self.project.sources.paths)
+                self.lookup(self.project.sources.paths)
 
             elif (self.project.path / path).is_dir():
                 # Was given sub-dir in the project folder.

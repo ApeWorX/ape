@@ -221,6 +221,10 @@ class ApeConfig(ExtraAttributesMixin, BaseSettings, ManagerAccessMixin):
             if fixed_deps:
                 fixed_model["dependencies"] = fixed_deps
 
+        # field: contracs_folder: Handle if given Path object.
+        if "contracts_folder" in fixed_model and isinstance(fixed_model["contracts_folder"], Path):
+            fixed_model["contracts_folder"] = str(fixed_model["contracts_folder"])
+
         return fixed_model
 
     @cached_property
@@ -249,7 +253,15 @@ class ApeConfig(ExtraAttributesMixin, BaseSettings, ManagerAccessMixin):
 
     @classmethod
     def validate_file(cls, path: Path, **overrides) -> "ApeConfig":
-        data = {**load_config(path), **overrides, "project": path.parent}
+        data = {**load_config(path), **overrides}
+
+        # NOTE: We are including the project path here to assist
+        #  in relative-path resolution, such as for local dependencies.
+        #  You can use relative paths in local dependencies in your
+        #  ape-config.yaml file but Ape needs to know the source to be
+        #  relative from.
+        data["project"] = path.parent
+
         return cls.model_validate(data)
 
     @classmethod

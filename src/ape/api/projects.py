@@ -2,7 +2,7 @@ from functools import cached_property
 from pathlib import Path
 from typing import Optional
 
-from pydantic import field_validator
+from pydantic import Field, field_validator
 
 from ape.api.config import ApeConfig
 from ape.utils import BaseInterfaceModel, abstractmethod
@@ -18,7 +18,7 @@ class DependencyAPI(BaseInterfaceModel):
     The package-name of the dependency.
     """
 
-    config_override: dict = {}
+    config_override: dict = Field({}, repr=False)
     """
     Set different config than what Ape can deduce.
     """

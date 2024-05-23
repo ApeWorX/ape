@@ -13,7 +13,7 @@ EXPECTED_FAIL_MESSAGE = "Unknown package '{}'."
 def pm_runner(config):
     class PMSubprocessRunner(ApeSubprocessRunner):
         def __init__(self):
-            super().__init__(("pm",), data_folder=config.DATA_FOLDER)
+            super().__init__("pm", data_folder=config.DATA_FOLDER)
 
     return PMSubprocessRunner()
 
@@ -237,7 +237,7 @@ def test_uninstall_cancel(pm_runner, project):
     pm_runner.invoke("install", ".", "--force")
 
     result = pm_runner.invoke("uninstall", package_name, version, input="n\n")
-    assert result.exit_code == 0, result.output
+    assert result.exit_code == 0, result._completed_process.stderr
     expected_message = f"Version '{version}' of package '{package_name}' uninstalled."
     assert expected_message not in result.output
 

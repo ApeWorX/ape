@@ -155,7 +155,7 @@ def ape_plugins_runner(config):
 
     class PluginSubprocessRunner(ApeSubprocessRunner):
         def __init__(self):
-            super().__init__(("plugins",), data_folder=config.DATA_FOLDER)
+            super().__init__("plugins", data_folder=config.DATA_FOLDER)
 
         def invoke_list(self, arguments: Optional[list] = None):
             arguments = arguments or []

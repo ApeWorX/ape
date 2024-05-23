@@ -95,7 +95,7 @@ class CompilerManager(BaseManager, ExtraAttributesMixin):
 
     def compile(
         self,
-        contract_filepaths: Iterable[Union[Path, str]],
+        contract_filepaths: Union[Path, str, Iterable[Union[Path, str]]],
         project: Optional["ProjectManager"] = None,
         settings: Optional[dict] = None,
     ) -> Iterator[ContractType]:
@@ -109,8 +109,8 @@ class CompilerManager(BaseManager, ExtraAttributesMixin):
               file-extension as well as when there are contract-type collisions across compilers.
 
         Args:
-            contract_filepaths (Iterable[Union[pathlib.Path], str]): The files to compile,
-              as ``pathlib.Path`` objects or path-strs.
+            contract_filepaths (Union[Path, str, Iterable[Union[Path, str]]]): The files to
+              compile, as ``pathlib.Path`` objects or path-strs.
             project (Optional[:class:`~ape.managers.project.ProjectManager`]): Optionally
               compile a different project that the one from the current-working directory.
             settings (Optional[Dict]): Adhoc compiler settings. Defaults to None.
@@ -122,6 +122,10 @@ class CompilerManager(BaseManager, ExtraAttributesMixin):
 
         pm = project or self.local_project
         files_by_ext = defaultdict(list)
+
+        if isinstance(contract_filepaths, (str, Path)):
+            contract_filepaths = (contract_filepaths,)
+
         for path in map(Path, contract_filepaths):
             suffix = get_full_extension(path)
             if suffix in self.registered_compilers:
@@ -145,7 +149,8 @@ class CompilerManager(BaseManager, ExtraAttributesMixin):
 
                     if contract.name and contract.source_id:
                         tracker[contract.name] = contract.source_id
-                        yield contract
+
+                    yield contract
 
             except Exception as err:
                 # One of the compilers failed. Show the error but carry on.

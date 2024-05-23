@@ -41,12 +41,13 @@ class BrownieProject(ProjectAPI):
         for dependency in brownie_config_data.get("dependencies", []):
             dependency_dict = {}
             dep_parts = dependency.split("/")
-            dep_name = dep_parts[0].lower()
+            gh_name = dep_parts[0]
+            dep_name = gh_name.lower()
             if len(dep_parts) > 1:
                 dependency_dict["name"] = dep_name
                 if "@" in dep_parts[1]:
                     suffix_parts = dep_parts[1].split("@")
-                    dependency_dict["github"] = f"{dep_name}/{suffix_parts[0]}"
+                    dependency_dict["github"] = f"{gh_name}/{suffix_parts[0]}"
                     dependency_dict["version"] = suffix_parts[1]
                 else:
                     dependency_dict["github"] = dep_parts[1]
@@ -75,7 +76,7 @@ class BrownieProject(ProjectAPI):
                     real_path = parts[1]
 
                     real_path_parts = real_path.split("/")
-                    dependency_name = real_path_parts[0]
+                    dependency_name = real_path_parts[0].lower()
 
                     if dependency_name in available_dependencies:
                         suffix = real_path_parts[1]

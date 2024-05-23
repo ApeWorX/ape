@@ -475,7 +475,9 @@ def test_contract_file_paths_argument_given_contracts_folder_name(
     assert f"EXPECTED {all_paths}" in result.output
 
 
-def test_contract_file_paths_handles_exclude(project_with_contract, runner, contracts_paths_cmd):
+def test_contract_file_paths_argument_handles_exclude(
+    project_with_contract, runner, contracts_paths_cmd
+):
     pm = project_with_contract
     cfg = pm.config.get_config("compile")
     failmsg = "Setup failed - missing exclude config (set in ape-config.yaml)."
@@ -538,6 +540,19 @@ def test_contract_file_paths_argument_missing_solidity(
         "Possibly, a compiler plugin is not installed or is installed "
         "but not loading correctly. Is 'ape-solidity' installed?"
     )
+    assert expected in result.output
+
+
+def test_contract_file_paths_argument_contract_does_not_exist(
+    project_with_source_files_contract, runner, contracts_paths_cmd
+):
+    name = "MadeUp"
+    pm = project_with_source_files_contract
+    with pm.isolate_in_tempdir() as tmp_project:
+        arguments = (name, "--project", f"{tmp_project.path}")
+        result = runner.invoke(contracts_paths_cmd, arguments)
+
+    expected = f"Source file '{name}' not found."
     assert expected in result.output
 
 

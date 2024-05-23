@@ -6,7 +6,7 @@ from contextlib import contextmanager
 from fnmatch import fnmatch
 from pathlib import Path
 from re import Pattern
-from tempfile import TemporaryDirectory
+from tempfile import TemporaryDirectory, gettempdir
 from typing import Any, Optional, Union
 
 
@@ -213,6 +213,21 @@ def run_in_tempdir(
     """
     with create_tempdir(name=name) as temp_dir:
         return fn(temp_dir)
+
+
+def in_tempdir(path: Path) -> bool:
+    """
+    Returns ``True`` when the given path is in a temporary directory.
+
+    Args:
+        path (Path): The path to check.
+
+    Returns:
+        bool
+    """
+    temp_dir = os.path.normpath(f"{Path(gettempdir()).resolve()}")
+    normalized_path = os.path.normpath(path)
+    return normalized_path.startswith(temp_dir)
 
 
 def path_match(path: Union[str, Path], *exclusions: str) -> bool:

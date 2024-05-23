@@ -11,6 +11,7 @@ from pydantic import model_validator
 from ape.api.projects import DependencyAPI
 from ape.exceptions import ProjectError
 from ape.logging import logger
+from ape.utils import clean_path, in_tempdir
 from ape.utils._github import github_client
 
 
@@ -47,9 +48,19 @@ class LocalDependency(DependencyAPI):
 
         return model
 
+    def __repr__(self) -> str:
+        path = clean_path(self.local)
+        return f"<LocalDependency local={path}, version={self.version}>"
+
     @property
     def package_id(self) -> str:
-        return self.local.as_posix()
+        path = self.local
+        if in_tempdir(path):
+            # Avoids never-ending tmp paths.
+            return self.name
+
+        else:
+            return self.local.as_posix()
 
     @property
     def version_id(self) -> str:

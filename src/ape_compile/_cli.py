@@ -63,12 +63,14 @@ def cli(
         project.reconfigure(**cfg)
 
     if file_paths:
-        gen_contracts = project.contracts.compile(file_paths, use_cache=use_cache)
-        contract_types = {ct.name: ct for ct in gen_contracts}
+        contracts = {
+            k: v.contract_type
+            for k, v in project.load_contracts(*file_paths, use_cache=use_cache).items()
+        }
         cli_ctx.logger.success("'local project' compiled.")
         compiled = True
         if display_size:
-            _display_byte_code_sizes(cli_ctx, contract_types)
+            _display_byte_code_sizes(cli_ctx, contracts)
 
     if (include_dependencies or project.config.compile.include_dependencies) and len(
         project.dependencies

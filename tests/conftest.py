@@ -8,7 +8,7 @@ import time
 from collections.abc import Callable, Sequence
 from contextlib import contextmanager
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any, Optional, Union
 
 import pytest
 from click.testing import CliRunner
@@ -104,6 +104,16 @@ def convert(conversion_manager):
 @pytest.fixture(scope="session")
 def data_folder(config):
     return DATA_FOLDER
+
+
+@pytest.fixture(scope="session")
+def projects_path():
+    return Path(__file__).parent / "integration" / "cli" / "projects"
+
+
+@pytest.fixture(scope="session")
+def with_dependencies_project_path(projects_path):
+    return projects_path / "with-dependencies"
 
 
 @pytest.fixture(scope="session")
@@ -520,10 +530,17 @@ class ApeSubprocessRunner(SubprocessRunner):
     """
 
     def __init__(
-        self, root_cmd: Optional[Sequence[str]] = None, data_folder: Optional[Path] = None
+        self,
+        root_cmd: Optional[Union[str, Sequence[str]]] = None,
+        data_folder: Optional[Path] = None,
     ):
         ape_path = Path(sys.executable).parent / "ape"
-        super().__init__([str(ape_path), *(root_cmd or [])], data_folder=data_folder)
+
+        root = root_cmd or ()
+        if isinstance(root, str):
+            root = (root,)
+
+        super().__init__([str(ape_path), *root], data_folder=data_folder)
         self.project = None
 
     def invoke(self, *subcommand: str, input=None, timeout: int = 40):

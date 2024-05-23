@@ -13,7 +13,7 @@ BAD_COMMAND = "not-a-name"
 def scripts_runner(config):
     class ScriptsSubprocessRunner(ApeSubprocessRunner):
         def __init__(self):
-            super().__init__(("run",), data_folder=config.DATA_FOLDER)
+            super().__init__("run", data_folder=config.DATA_FOLDER)
 
     return ScriptsSubprocessRunner()
 
