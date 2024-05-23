@@ -76,6 +76,10 @@ def cli(
         project.dependencies
     ) > 0:
         for dependency in project.dependencies:
+            # Even if compiling we failed, we at least tried
+            # and so we don't need to warn "Nothing to compile".
+            compiled = True
+
             try:
                 contract_types = dependency.project.load_contracts(use_cache=use_cache)
             except Exception as err:
@@ -84,7 +88,6 @@ def cli(
                 continue
 
             cli_ctx.logger.success(f"'{dependency.project.name}' compiled.")
-            compiled = True
             if display_size:
                 _display_byte_code_sizes(cli_ctx, contract_types)
 

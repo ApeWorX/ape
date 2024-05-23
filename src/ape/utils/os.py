@@ -145,12 +145,22 @@ class use_temp_sys_path:
                 sys.path.append(path)
 
 
-def get_full_extension(path: Path) -> str:
+def get_full_extension(path: Union[Path, str]) -> str:
     """
     For a path like ``Path("Contract.t.sol")``,
     returns ``.t.sol``, unlike the regular Path
     property ``.suffix`` which returns ``.sol``.
+
+    Args:
+        path (Path | str): The path with an extension.
+
+    Returns:
+        str: The full suffix
     """
+    if not path:
+        return ""
+
+    path = Path(path)
     if path.is_dir():
         return ""
 

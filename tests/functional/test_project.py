@@ -1,5 +1,4 @@
 import json
-import re
 import shutil
 from pathlib import Path
 
@@ -182,21 +181,12 @@ def test_getattr_empty_contract(tmp_project):
 
 @skip_if_plugin_installed("vyper", "solidity")
 def test_getattr_same_name_as_source_file(project_with_source_files_contract):
-    missing_exts = set()
-    for src_id in project_with_source_files_contract.sources:
-        if (
-            Path(src_id).suffix
-            not in project_with_source_files_contract.compiler_manager.registered_compilers
-        ):
-            missing_exts.add(Path(src_id).suffix)
-
     expected = (
         r"'LocalProject' object has no attribute 'ContractA'\. "
         r"Also checked extra\(s\) 'contracts'\. "
         r"However, there is a source file named 'ContractA\.sol', "
         r"did you mean to reference a contract name from this source file\? "
-        r"Else, could it be from one of the missing compilers for extensions: "
-        rf'{re.escape(", ".join(sorted(list(missing_exts))))}\?'
+        r"Else, could it be from one of the missing compilers for extensions: ."
     )
     with pytest.raises(AttributeError, match=expected):
         _ = project_with_source_files_contract.ContractA
@@ -369,6 +359,8 @@ def test_load_contracts_after_deleting_same_named_contract(tmp_project, compiler
 
     result = tmp_project.load_contracts()
     assert "foo" not in result  # Was deleted.
+    # Also ensure it is gone from paths.
+    assert "foo.__mock__" not in [x.name for x in tmp_project.sources.paths]
 
     # Create a new contract with the same name.
     new_contract = tmp_project.contracts_folder / "bar.__mock__"

@@ -208,7 +208,7 @@ def test_can_access_contracts(project, clean_cache):
 @skip_projects_except("multiple-interfaces")
 @pytest.mark.parametrize(
     "contract_path",
-    ("Interface", "Interface.json", "contracts/Interface", "contracts/Interface.json"),
+    ("Interface.json", "Interface", "contracts/Interface.json", "contracts/Interface"),
 )
 def test_compile_specified_contracts(ape_cli, runner, project, contract_path, clean_cache):
     arguments = ("compile", contract_path, "--project", f"{project.path}")

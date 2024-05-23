@@ -39,7 +39,7 @@ from ape.utils.os import (
 )
 
 
-def path_to_source_id(path: Path, root_path: Path) -> str:
+def _path_to_source_id(path: Path, root_path: Path) -> str:
     return f"{get_relative_path(path.absolute(), root_path.absolute())}"
 
 
@@ -65,6 +65,7 @@ class SourceManager(BaseManager):
         self.get_contracts_path = get_contracts_path
         self.exclude_globs = exclude_globs or set()
         self._sources: dict[str, Source] = {}
+        self._exclude_cache: dict[str, bool] = {}
 
     @log_instead_of_fail(default="<LocalSources>")
     def __repr__(self) -> str:
@@ -155,39 +156,29 @@ class SourceManager(BaseManager):
 
         return False
 
+    @cached_property
+    def _all_files(self) -> list[Path]:
+        contracts_folder = self.get_contracts_path()
+        if not contracts_folder.is_dir():
+            return []
+
+        return get_all_files_in_directory(contracts_folder)
+
     @property
     def paths(self) -> Iterator[Path]:
         """
         All contract sources paths.
         """
-        if self._path_cache is not None:
-            yield from [p for p in self._path_cache if p.is_file()]
-            return
-
-        cache: list[Path] = []
-        for path in self._get_paths():
-            cache.append(path)
-            yield path
-
-        self._path_cache = cache
-
-    def _get_paths(self) -> Iterator[Path]:
-        # Yield for first time.
-        contracts_folder = self.get_contracts_path()
-        cache: list[Path] = []
-        if not contracts_folder.is_dir():
-            return
-
-        all_files = get_all_files_in_directory(contracts_folder)
-        for path in all_files:
+        for path in self._all_files:
             if self.is_excluded(path):
                 continue
 
-            cache.append(path)
             yield path
 
-        # Helps `self.paths` be faster.
-        self._path_cache = cache
+        # Caching is only for during this calculation.
+        # We can't cache after in case files change.
+        if "_all_files" in self.__dict__:
+            del self.__dict__["_all_files"]
 
     def is_excluded(self, path: Path) -> bool:
         """
@@ -200,25 +191,46 @@ class SourceManager(BaseManager):
         Returns:
             bool
         """
+        source_id = self._get_source_id(path)
+        if source_id in self._exclude_cache:
+            return self._exclude_cache[source_id]
 
-        for excl in self.exclude_globs:
-            source_id = self._get_source_id(path)
-            options = (str(path), path.name, source_id)
-            for opt in options:
-                if path_match(opt, excl):
-                    return True
-
-        registered = self.compiler_manager.registered_compilers
+        # Non-files and hidden files are ignored.
         is_file = path.is_file()
-        suffix = get_full_extension(path)
-        if is_file and suffix in registered:
-            return False
-
-        elif is_file and path.name.startswith("."):
+        if not is_file or path.name.startswith("."):
             # Ignore random hidden files if they are known source types.
+            self._exclude_cache[source_id] = True
             return True
 
-        # Likely from a source that doesn't have an installed compiler.
+        # Files with missing compiler extensions are also ignored.
+        suffix = get_full_extension(path)
+        registered = self.compiler_manager.registered_compilers
+        if suffix not in registered:
+            self._exclude_cache[source_id] = True
+            return True
+
+        # If we get here, we have a matching compiler and this source exists.
+        # Check if is excluded.
+        source_id = self._get_source_id(path)
+        options = (str(path), path.name, source_id)
+        parent_dir_name = path.parent.name
+
+        for excl in self.exclude_globs:
+            # perf: Check parent directory first to exclude faster by marking them all.
+            if path_match(parent_dir_name, excl):
+                self._exclude_cache[source_id] = True
+                for sub in get_all_files_in_directory(path.parent):
+                    sub_source_id = self._get_source_id(sub)
+                    self._exclude_cache[sub_source_id] = True
+
+                return True
+
+            for opt in options:
+                if path_match(opt, excl):
+                    self._exclude_cache[source_id] = True
+                    return True
+
+        self._exclude_cache[source_id] = False
         return False
 
     def lookup(self, path_id: Union[str, Path]) -> Optional[Path]:
@@ -290,7 +302,7 @@ class SourceManager(BaseManager):
         return find_in_dir(self.root_path, relative_path)
 
     def _get_source_id(self, path: Path) -> str:
-        return path_to_source_id(path, self.root_path)
+        return _path_to_source_id(path, self.root_path)
 
     def _get_path(self, source_id: str) -> Path:
         return self.root_path / source_id
@@ -344,7 +356,14 @@ class ContractManager(BaseManager):
         existing_types = self.project.manifest.contract_types or {}
         if contract_type := existing_types.get(name):
             source_id = contract_type.source_id or ""
-            if source_id in self.sources and self._detect_change(source_id):
+            ext = get_full_extension(source_id)
+
+            # Allow us to still get previously-compiled contracts if don't
+            # have the compiler plugin installed at this time.
+            if ext not in self.compiler_manager.registered_compilers:
+                return ContractContainer(contract_type)
+
+            elif source_id in self.sources and self._detect_change(source_id):
                 # Previous cache is outdated.
                 compiled = {
                     ct.name: ct
@@ -362,7 +381,7 @@ class ContractManager(BaseManager):
 
         if compile_missing:
             # Try again after compiling all missing.
-            self._compile_missing_contracts(self.sources._get_paths())
+            self._compile_missing_contracts(self.sources.paths)
             return self.get(name, compile_missing=False)
 
         return None
@@ -411,7 +430,7 @@ class ContractManager(BaseManager):
 
     def _compile_all(self, use_cache: bool = True) -> Iterator[ContractContainer]:
         if sources := self.sources:
-            paths = sources._get_paths()
+            paths = sources.paths
             yield from self._compile(paths, use_cache=use_cache)
 
     def _compile(
@@ -424,12 +443,11 @@ class ContractManager(BaseManager):
         path_ls_final = []
         for path in path_ls:
             path = Path(path)
-            if path.is_absolute():
+            if path.is_file() and path.is_absolute():
                 path_ls_final.append(path)
-            elif (self.project.path / path).exists():
+            elif (self.project.path / path).is_file():
                 path_ls_final.append(self.project.path / path)
-            else:
-                raise FileNotFoundError(str(path))
+            # else: is no longer a file (deleted).
 
         # Compile necessary contracts.
         if needs_compile := list(
@@ -438,7 +456,7 @@ class ContractManager(BaseManager):
             self._compile_contracts(needs_compile)
 
         src_ids = [
-            (f"{get_relative_path(Path(p).absolute(), self.project.path)}") for p in path_ls_final
+            f"{get_relative_path(Path(p).absolute(), self.project.path)}" for p in path_ls_final
         ]
         for contract_type in (self.project.manifest.contract_types or {}).values():
             if contract_type.source_id and contract_type.source_id in src_ids:
@@ -460,6 +478,9 @@ class ContractManager(BaseManager):
             x.source_id for x in existing_types if x.source_id
         ):
             return True  # New file.
+
+        elif not path.is_file():
+            return False  # No longer exists.
 
         # ethpm_types strips trailing white space and ensures
         # a newline at the end so content so `splitlines()` works.
@@ -620,6 +641,7 @@ class Dependency(BaseManager, ExtraAttributesMixin):
 
             # Either never fetched, it is missing but present in manifest, or we are forcing.
             if not unpacked:
+                logger.info(f"Fetching {self.api.package_id} {self.api.version_id}")
                 # No sources found! Fetch the project.
                 shutil.rmtree(self.project_path, ignore_errors=True)
                 self.project_path.parent.mkdir(parents=True, exist_ok=True)
@@ -1338,8 +1360,8 @@ class Project(ProjectManager):
             message = getattr(err, "message", str(err))
             did_append = False
 
-            for src_id in self.sources or {}:
-                path = Path(src_id)
+            all_files = get_all_files_in_directory(self.contracts_folder)
+            for path in all_files:
                 # Possibly, the user was trying to use a file name instead.
                 if path.stem != item:
                     continue
@@ -1355,10 +1377,10 @@ class Project(ProjectManager):
 
             if isinstance(self, LocalProject):
                 missing_exts = set()
-                for src_id in self.sources:
-                    if ext := src_id.split(".")[-1]:
-                        if f".{ext}" not in self.compiler_manager.registered_compilers:
-                            missing_exts.add(f".{ext}")
+                for path in all_files:
+                    if ext := get_full_extension(path):
+                        if ext not in self.compiler_manager.registered_compilers:
+                            missing_exts.add(ext)
 
                 if missing_exts:
                     start = "Else, could" if did_append else "Could"
@@ -1616,7 +1638,7 @@ class Project(ProjectManager):
         }
         compiled_source_ids = {ct.source_id for ct in result.values() if ct.source_id}
         source_iter: Iterable = source_ids or list(self.manifest.sources or {})
-        source_iter = [x if isinstance(x, str) else f"{x}" for x in source_iter]
+        source_iter = [f"{x}" for x in source_iter]
         missing_sources = set()
         for src_id in source_iter:
             if src_id not in compiled_source_ids:
@@ -2134,16 +2156,24 @@ class LocalProject(Project):
     def load_contracts(
         self, *source_ids: Union[str, Path], use_cache: bool = True
     ) -> dict[str, ContractContainer]:
-        paths = (
-            [(self.path / src_id) for src_id in source_ids]
-            if source_ids
-            else self.sources._get_paths()
-        )
-        return {
+        paths: Iterable[Path]
+        starting: dict[str, ContractContainer] = {}
+        if source_ids:
+            paths = [(self.path / src_id) for src_id in source_ids]
+        else:
+            starting = {
+                n: ContractContainer(ct)
+                for n, ct in (self.manifest.contract_types or {}).items()
+                if ct.source_id and (self.path / ct.source_id).is_file()
+            }
+            paths = self.sources.paths
+
+        new_types = {
             c.contract_type.name: c
             for c in self.contracts._compile(paths, use_cache=use_cache)
             if c.contract_type.name
         }
+        return {**starting, **new_types}
 
     def extract_manifest(self) -> PackageManifest:
         """
@@ -2206,9 +2236,6 @@ class LocalProject(Project):
             return None
 
     def _update_contract_types(self, contract_types: dict[str, ContractType]):
-        # First, ensure paths are up to date.
-        _ = self.sources._get_paths()
-
         super()._update_contract_types(contract_types)
 
         if "ABI" in [x.value for x in self.config.compile.output_extra]:
