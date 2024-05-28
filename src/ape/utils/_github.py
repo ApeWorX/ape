@@ -172,8 +172,9 @@ class _GithubClient:
             raise ValueError(f"Scheme '{scheme}' not supported.")
 
         target_path = Path(target_path)
+        target_path.parent.mkdir(parents=True, exist_ok=True)
         if target_path.exists():
-            # Else, cloning will fail!
+            # Target repo cannot exist.
             target_path = target_path / repo_name
 
         self.git.clone(url, branch=branch, target_path=target_path)

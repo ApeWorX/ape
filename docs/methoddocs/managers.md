@@ -72,31 +72,7 @@
 ## Project
 
 ```{eval-rst}
-.. automodule:: ape.managers.project.manager
-    :members:
-    :special-members:
-```
-
-```{eval-rst}
-.. automodule:: ape.managers.project.dependency
-    :members:
-    :special-members:
-```
-
-```{eval-rst}
-.. autoclass:: ape.managers.project.types.BaseProject
-    :members:
-    :special-members:
-```
-
-```{eval-rst}
-.. autoclass:: ape.managers.project.types.ApeProject
-    :members:
-    :special-members:
-```
-
-```{eval-rst}
-.. autoclass:: ape.managers.project.types.BrownieProject
+.. automodule:: ape.managers.project
     :members:
     :special-members:
 ```

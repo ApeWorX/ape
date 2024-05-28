@@ -16,7 +16,7 @@ Once your project has successfully compiled, you will have the start of your `Pa
 
 ## Tracking Deployments
 
-If your project contains deployments that you wish to include in its package manifest, use the [track_deployment()](../methoddocs/managers.html#ape.managers.project.manager.ProjectManager.track_deployment) method.
+If your project contains deployments that you wish to include in its package manifest, use the [project.deployments.track](../methoddocs/managers.html#ape.managers.project.manager.DeploymentManager.track) method.
 Example:
 
 ```python
@@ -26,7 +26,7 @@ account = accounts.load("mainnet-account")
 
 # Assume your project has a contract named 'MyContract' with constructor that accepts argument '123'.
 contract = project.MyContract.deploy(123, sender=account)
-project.track_deployment(contract)
+project.deployments.track(contract)
 ```
 
 If the contract is already deployed, you can use [Contract](../methoddocs/ape.html#ape.Contract) to get a contract instance:
@@ -35,7 +35,7 @@ If the contract is already deployed, you can use [Contract](../methoddocs/ape.ht
 from ape import Contract, project
 
 contract = Contract("0x12c17f958d2ee523a2206206994597c13d831e34")
-project.track_deployment(contract)
+project.deployments.track(contract)
 ```
 
 For more information on accessing contract instances, follow [this guide](./contracts.html).

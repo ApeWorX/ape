@@ -5,6 +5,7 @@ import pytest
 
 from ape.api import ProviderAPI
 from ape.exceptions import NetworkError, ProviderNotFoundError
+from ape_ethereum import EthereumConfig
 from ape_ethereum.transactions import TransactionType
 
 
@@ -33,31 +34,32 @@ def test_get_provider_ipc(ethereum):
     assert actual.network.name == "sepolia"
 
 
-def test_get_provider_custom_network(custom_networks_config, ethereum):
-    network = ethereum.apenet
-    actual = network.get_provider("node")
-    assert isinstance(actual, ProviderAPI)
-    assert actual.name == "node"
+def test_get_provider_custom_network(project, custom_networks_config_dict, ethereum):
+    with project.temp_config(**custom_networks_config_dict):
+        network = ethereum.apenet
+        actual = network.get_provider("node")
+        assert isinstance(actual, ProviderAPI)
+        assert actual.name == "node"
 
 
 def test_block_times(ethereum):
     assert ethereum.sepolia.block_time == 15
 
 
-def test_set_default_provider_not_exists(temp_config, ape_caplog, ethereum):
+def test_set_default_provider_not_exists(ape_caplog, ethereum):
     bad_provider = "NOT_EXISTS"
     expected = f"Provider '{bad_provider}' not found in network 'ethereum:sepolia'."
     with pytest.raises(NetworkError, match=expected):
         ethereum.sepolia.set_default_provider(bad_provider)
 
 
-def test_gas_limits(ethereum, config, project_with_source_files_contract):
+def test_gas_limits(ethereum, project, custom_networks_config_dict):
     """
     Test the default gas limit configurations for local and live networks.
     """
-    _ = project_with_source_files_contract  # Ensure use of project with default config
-    assert ethereum.sepolia.gas_limit == "auto"
-    assert ethereum.local.gas_limit == "max"
+    with project.temp_config(**custom_networks_config_dict):
+        assert ethereum.sepolia.gas_limit == "auto"
+        assert ethereum.local.gas_limit == "max"
 
 
 def test_base_fee_multiplier(ethereum):
@@ -67,6 +69,7 @@ def test_base_fee_multiplier(ethereum):
 
 def test_forked_networks(ethereum):
     mainnet_fork = ethereum.mainnet_fork
+    ethereum.mainnet._default_provider = "node"  # In case changed elsewhere in env.
     assert mainnet_fork.upstream_network.name == "mainnet"
     assert mainnet_fork.upstream_chain_id == 1
     # Just make sure it doesn't fail when trying to access.
@@ -81,12 +84,12 @@ def test_forked_networks(ethereum):
     assert cfg.max_receipt_retries == 20
 
 
-def test_forked_network_with_config(temp_config, ethereum):
+def test_forked_network_with_config(project, ethereum):
     data = {
         "ethereum": {"mainnet_fork": {"default_transaction_type": TransactionType.STATIC.value}}
     }
-    with temp_config(data):
-        cfg = ethereum.mainnet_fork.ecosystem_config.mainnet_fork
+    with project.temp_config(**data):
+        cfg = ethereum.mainnet_fork.config
         assert cfg.default_transaction_type == TransactionType.STATIC
         assert cfg.block_time == 0
         assert cfg.default_provider is None
@@ -102,24 +105,25 @@ def test_data_folder_custom_network(custom_network, ethereum, custom_network_nam
     assert actual == expected
 
 
-def test_config_custom_networks_default(ethereum, custom_networks_config):
+def test_config_custom_networks_default(ethereum, project, custom_networks_config_dict):
     """
     Shows you don't get AttributeError when custom network config is not
     present.
     """
-    network = ethereum.apenet
-    cfg = network.ecosystem_config.apenet
-    assert cfg.default_transaction_type == TransactionType.DYNAMIC
+    with project.temp_config(**custom_networks_config_dict):
+        network = ethereum.apenet
+        cfg = network.config
+        assert cfg.default_transaction_type == TransactionType.DYNAMIC
 
 
 def test_config_custom_networks(
-    ethereum, custom_networks_config_dict, temp_config, custom_network_name_0
+    ethereum, custom_networks_config_dict, project, custom_network_name_0
 ):
     data = copy.deepcopy(custom_networks_config_dict)
     data["ethereum"] = {
         custom_network_name_0: {"default_transaction_type": TransactionType.STATIC.value}
     }
-    with temp_config(data):
+    with project.temp_config(**data):
         network = ethereum.apenet
         ethereum_config = network.ecosystem_config
         cfg_by_attr = ethereum_config.apenet
@@ -132,7 +136,7 @@ def test_config_custom_networks(
 
 
 def test_config_networks_from_custom_ecosystem(
-    networks, custom_networks_config_dict, temp_config, custom_network_name_0
+    networks, custom_networks_config_dict, project, custom_network_name_0
 ):
     data = copy.deepcopy(custom_networks_config_dict)
     data["networks"]["custom"][0]["ecosystem"] = "custom-ecosystem"
@@ -140,17 +144,30 @@ def test_config_networks_from_custom_ecosystem(
     data["custom-ecosystem"] = {
         custom_network_name_0: {"default_transaction_type": TransactionType.STATIC.value}
     }
-    with temp_config(data):
+    with project.temp_config(**data):
         custom_ecosystem = networks.get_ecosystem("custom-ecosystem")
         network = custom_ecosystem.get_network("apenet")
-        ethereum_config = network.ecosystem_config
-        cfg_by_attr = ethereum_config.apenet
-        assert cfg_by_attr.default_transaction_type == TransactionType.STATIC
+        ecosystem_config = network.ecosystem_config
+        network_by_attr = ecosystem_config.apenet
+        network_by_get = ecosystem_config.get("apenet")
 
-        assert "apenet" in ethereum_config
-        cfg_by_get = ethereum_config.get("apenet")
-        assert cfg_by_get is not None
-        assert cfg_by_get.default_transaction_type == TransactionType.STATIC
+    assert custom_ecosystem.name == "custom-ecosystem"
+
+    # Show .get_network() works (raises when not found).
+    assert network.name == "apenet"
+
+    # Show custom ecosystems have a config.
+    assert isinstance(ecosystem_config, EthereumConfig)
+
+    # Show contains works.
+    assert "apenet" in ecosystem_config
+
+    # Show dot-access works (raise AttrError when not found).
+    assert network_by_attr.default_transaction_type == TransactionType.STATIC
+
+    # Show .get() works (returns None when not found).
+    assert network_by_get is not None
+    assert network_by_get.default_transaction_type == TransactionType.STATIC
 
 
 def test_use_provider_using_provider_instance(eth_tester_provider):
