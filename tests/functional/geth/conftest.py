@@ -84,7 +84,7 @@ def geth_vyper_receipt(geth_vyper_contract, owner):
 def custom_network_connection(
     geth_provider,
     ethereum,
-    temp_config,
+    project,
     custom_network_name_0,
     custom_networks_config_dict,
     networks,
@@ -97,7 +97,7 @@ def custom_network_connection(
         **data,
     }
     actual = geth_provider.network
-    with temp_config(config):
+    with project.temp_config(**config):
         geth_provider.network = ethereum.apenet
         try:
             with networks.ethereum.apenet.use_provider("node"):

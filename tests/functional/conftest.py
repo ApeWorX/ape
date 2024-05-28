@@ -177,8 +177,8 @@ def address():
 
 
 @pytest.fixture
-def second_keyfile_account(sender, keyparams, temp_accounts_path, temp_keyfile_account_ctx):
-    with temp_keyfile_account_ctx(temp_accounts_path, ALIAS_2, keyparams, sender) as account:
+def second_keyfile_account(sender, keyparams, temp_keyfile_account_ctx):
+    with temp_keyfile_account_ctx(ALIAS_2, keyparams, sender) as account:
         # Ensure starts off locked.
         account.lock()
         yield account
@@ -305,25 +305,21 @@ def ds_note_test_contract(eth_tester_provider, vyper_contract_type, owner, get_c
     return contract_container.deploy(sender=owner)
 
 
-@pytest.fixture
-def project_with_contract(temp_config):
-    with temp_config() as project:
-        copytree(str(APE_PROJECT_FOLDER), str(project.path), dirs_exist_ok=True)
-        project.local_project._cached_manifest = None  # Clean manifest
-        project.config_manager.load(force_reload=True)  # Reload after copying config file.
-
+@pytest.fixture(scope="session")
+def project_with_contract():
+    with ape.Project(APE_PROJECT_FOLDER).isolate_in_tempdir() as project:
         yield project
 
 
-@pytest.fixture
-def project_with_source_files_contract(temp_config):
+@pytest.fixture(scope="session")
+def project_with_source_files_contract(project_with_contract):
     bases_source_dir = BASE_SOURCES_DIRECTORY
-    project_source_dir = APE_PROJECT_FOLDER
+    project_source_dir = project_with_contract.path
 
-    with temp_config() as project:
-        copytree(str(project_source_dir), str(project.path), dirs_exist_ok=True)
-        copytree(str(bases_source_dir), f"{project.path}/contracts/", dirs_exist_ok=True)
-        yield project
+    with ape.Project.create_temporary_project() as tmp_project:
+        copytree(project_source_dir, str(tmp_project.path), dirs_exist_ok=True)
+        copytree(bases_source_dir, tmp_project.path / "contracts", dirs_exist_ok=True)
+        yield tmp_project
 
 
 @pytest.fixture
@@ -335,8 +331,9 @@ def clean_contracts_cache(chain):
 
 
 @pytest.fixture
-def project_with_dependency_config(temp_config):
+def project_with_dependency_config(project):
     dependencies_config = {
+        "contracts_folder": "functional/data/contracts/local",
         "dependencies": [
             {
                 "local": str(PROJECT_WITH_LONG_CONTRACTS_FOLDER),
@@ -344,11 +341,12 @@ def project_with_dependency_config(temp_config):
                 "config_override": {
                     "contracts_folder": "source/v0.1",
                 },
+                "version": "releases/v6",  # Testing having a slash in version.
             }
-        ]
+        ],
     }
-    with temp_config(dependencies_config) as project:
-        yield project
+    with project.isolate_in_tempdir(**dependencies_config) as tmp_project:
+        yield tmp_project
 
 
 @pytest.fixture(scope="session")
@@ -681,9 +679,11 @@ def mock_compiler(mocker):
     mock = mocker.MagicMock()
     mock.name = "mock"
     mock.ext = ".__mock__"
+    mock.tracked_settings = []
 
-    def mock_compile(paths, base_path=None):
-        mock.tracked_settings.append(mock.compiler_settings)
+    def mock_compile(paths, project=None, settings=None):
+        settings = settings or {}
+        mock.tracked_settings.append(settings)
         result = []
         for path in paths:
             if path.suffix == mock.ext:
@@ -693,7 +693,7 @@ def mock_compiler(mocker):
                     "contractName": name,
                     "abi": [],
                     "deploymentBytecode": code,
-                    "sourceId": path.name,
+                    "sourceId": f"{project.contracts_folder.name}/{path.name}",
                 }
 
                 # Check for mocked overrides
@@ -759,7 +759,6 @@ def mock_fork_provider(mocker, ethereum, mock_sepolia):
     ethereum.sepolia_fork._default_provider = "mock"
     ethereum.sepolia_fork.__dict__["providers"] = {"mock": fake_partial}
     yield mock_provider
-
     if initial_providers:
         ethereum.sepolia_fork.__dict__["providers"] = initial_providers
     if initial_default:

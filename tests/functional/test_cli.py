@@ -1,5 +1,6 @@
 import copy
 import shutil
+from pathlib import Path
 
 import click
 import pytest
@@ -15,6 +16,7 @@ from ape.cli import (
     existing_alias_argument,
     network_option,
     non_existing_alias_argument,
+    project_option,
     select_account,
     verbosity_option,
 )
@@ -35,13 +37,13 @@ def keyfile_swap_paths(config):
 
 
 @pytest.fixture
-def one_keyfile_account(keyfile_swap_paths, keyfile_account, temp_config):
+def one_keyfile_account(keyfile_swap_paths, keyfile_account, project):
     src_path, dest_path = keyfile_swap_paths
     existing_keyfiles = [x for x in src_path.iterdir() if x.is_file()]
     test_data = {"test": {"number_of_accounts": 0}}
     if existing_keyfiles == [keyfile_account.keyfile_path]:
         # Already only has the 1 account
-        with temp_config(test_data):
+        with project.temp_config(**test_data):
             yield keyfile_account
 
     else:
@@ -55,7 +57,7 @@ def one_keyfile_account(keyfile_swap_paths, keyfile_account, temp_config):
             shutil.copy(keyfile, dest_path / keyfile.name)
             keyfile.unlink()
 
-        with temp_config(test_data):
+        with project.temp_config(**test_data):
             yield keyfile_account
 
         for file in dest_path.iterdir():
@@ -79,7 +81,9 @@ def contracts_paths_cmd():
 
     @click.command()
     @contract_file_paths_argument()
-    def cmd(file_paths):
+    @project_option()
+    def cmd(file_paths, project):
+        _ = project  # used in `contract_file_paths_argument`
         output = ", ".join(x.name for x in sorted(file_paths))
         click.echo(expected.format(output))
 
@@ -104,18 +108,18 @@ def _teardown_numb_acct_change(accounts):
 
 
 @pytest.fixture
-def no_accounts(accounts, empty_data_folder, temp_config):
+def no_accounts(accounts, empty_data_folder, project):
     data = _setup_temp_acct_number_change(accounts, 0)
-    with temp_config(data):
+    with project.temp_config(**data):
         yield
 
     _teardown_numb_acct_change(accounts)
 
 
 @pytest.fixture
-def one_account(accounts, empty_data_folder, temp_config, test_accounts):
+def one_account(accounts, empty_data_folder, project, test_accounts):
     data = _setup_temp_acct_number_change(accounts, 1)
-    with temp_config(data):
+    with project.temp_config(**data):
         yield test_accounts[0]
 
     _teardown_numb_acct_change(accounts)
@@ -294,22 +298,24 @@ def test_network_option_specified_none(runner):
 
 
 @pytest.mark.parametrize("network_name", ("apenet", "apenet1"))
-def test_network_option_specify_custom_network(runner, custom_networks_config, network_name):
+def test_network_option_specify_custom_network(
+    runner, project, custom_networks_config_dict, network_name
+):
     network_part = ("--network", f"ethereum:{network_name}:node")
+    with project.temp_config(**custom_networks_config_dict):
+        # NOTE: Also testing network filter with a custom network
+        #  But this is also required to work around LRU cache
+        #  giving us the wrong networks because click is running
+        #  the tester in-process after re-configuring networks,
+        #  which shouldn't happen IRL.
 
-    # NOTE: Also testing network filter with a custom network
-    #  But this is also required to work around LRU cache
-    #  giving us the wrong networks because click is running
-    #  the tester in-process after re-configuring networks,
-    #  which shouldn't happen IRL.
+        @click.command()
+        @network_option(network=network_name)
+        def cmd(network):
+            click.echo(f"Value is '{network.name}'")
 
-    @click.command()
-    @network_option(network=network_name)
-    def cmd(network):
-        click.echo(f"Value is '{network.name}'")
-
-    result = runner.invoke(cmd, network_part)
-    assert f"Value is '{network_name}'" in result.output
+        result = runner.invoke(cmd, network_part)
+        assert f"Value is '{network_name}'" in result.output
 
 
 def test_account_option(runner, keyfile_account):
@@ -428,26 +434,33 @@ def test_contract_file_paths_argument_given_source_id(
     project_with_source_files_contract, runner, contracts_paths_cmd
 ):
     pm = project_with_source_files_contract
-    src_id = next(iter(pm.sources))
-    result = runner.invoke(contracts_paths_cmd, src_id)
-    assert f"EXPECTED {src_id}" in result.output
+    src_id = next(x for x in pm.sources if Path(x).suffix == ".json")
+    arguments = (src_id, "--project", f"{pm.path}")
+    result = runner.invoke(contracts_paths_cmd, arguments)
+
+    assert f"EXPECTED {src_id.split('/')[-1]}" in result.output
 
 
 def test_contract_file_paths_argument_given_name(
     project_with_source_files_contract, runner, contracts_paths_cmd
 ):
     pm = project_with_source_files_contract
-    src_stem = next(iter(pm.sources)).split(".")[0]
-    result = runner.invoke(contracts_paths_cmd, src_stem)
-    assert f"EXPECTED {src_stem}" in result.output
+    src_stem = next(x for x in pm.sources if Path(x).suffix == ".json").split(".")[0]
+    arguments = (src_stem, "--project", f"{pm.path}")
+    result = runner.invoke(contracts_paths_cmd, arguments)
+
+    assert f"EXPECTED {src_stem.split('/')[-1]}" in result.output
 
 
 def test_contract_file_paths_argument_given_contracts_folder(
     project_with_contract, runner, contracts_paths_cmd
 ):
     pm = project_with_contract
-    result = runner.invoke(contracts_paths_cmd, pm.contracts_folder.as_posix())
-    all_paths = ", ".join(x.name for x in sorted(pm.source_paths) if "Excl" not in x.name)
+    contracts_dirname = pm.contracts_folder.as_posix()
+    arguments = (contracts_dirname, "--project", f"{pm.path}")
+    result = runner.invoke(contracts_paths_cmd, arguments)
+    all_paths = ", ".join(x.name for x in sorted(pm.sources.paths))
+
     assert f"EXPECTED {all_paths}" in result.output
 
 
@@ -455,13 +468,18 @@ def test_contract_file_paths_argument_given_contracts_folder_name(
     project_with_contract, runner, contracts_paths_cmd
 ):
     pm = project_with_contract
-    result = runner.invoke(contracts_paths_cmd, "contracts")
-    all_paths = ", ".join(x.name for x in sorted(pm.source_paths) if "Excl" not in x.name)
+    arguments = ("contracts", "--project", f"{pm.path}")
+    result = runner.invoke(contracts_paths_cmd, arguments)
+    all_paths = ", ".join(x.name for x in sorted(pm.sources.paths))
+
     assert f"EXPECTED {all_paths}" in result.output
 
 
-def test_contract_file_paths_handles_exclude(project_with_contract, runner, contracts_paths_cmd):
-    cfg = project_with_contract.config_manager.get_config("compile")
+def test_contract_file_paths_argument_handles_exclude(
+    project_with_contract, runner, contracts_paths_cmd
+):
+    pm = project_with_contract
+    cfg = pm.config.get_config("compile")
     failmsg = "Setup failed - missing exclude config (set in ape-config.yaml)."
     assert "*Excl*" in cfg.exclude, failmsg
 
@@ -482,12 +500,11 @@ def test_contract_file_paths_argument_given_subdir_relative_to_path(
     project_with_contract, runner, contracts_paths_cmd, name
 ):
     pm = project_with_contract
-    result = runner.invoke(contracts_paths_cmd, name)
-    all_paths = ", ".join(
-        x.name
-        for x in sorted(pm.source_paths)
-        if x.parent.name == "subdir" and "Excl" not in x.name
-    )
+    arguments = (name, "--project", f"{pm.path}")
+    result = runner.invoke(contracts_paths_cmd, arguments)
+    paths = sorted(pm.sources.paths)
+
+    all_paths = ", ".join(x.name for x in paths if x.parent.name == "subdir")
     assert f"EXPECTED {all_paths}" in result.output
 
 
@@ -496,7 +513,10 @@ def test_contract_file_paths_argument_missing_vyper(
     project_with_source_files_contract, runner, contracts_paths_cmd
 ):
     name = "VyperContract"
-    result = runner.invoke(contracts_paths_cmd, name)
+    pm = project_with_source_files_contract
+    arguments = (name, "--project", f"{pm.path}")
+    result = runner.invoke(contracts_paths_cmd, arguments)
+
     expected = (
         "Missing compilers for the following file types: '.vy'. "
         "Possibly, a compiler plugin is not installed or is installed "
@@ -510,12 +530,29 @@ def test_contract_file_paths_argument_missing_solidity(
     project_with_source_files_contract, runner, contracts_paths_cmd
 ):
     name = "SolidityContract"
-    result = runner.invoke(contracts_paths_cmd, name)
+    pm = project_with_source_files_contract
+    with pm.isolate_in_tempdir() as tmp_project:
+        arguments = (name, "--project", f"{tmp_project.path}")
+        result = runner.invoke(contracts_paths_cmd, arguments)
+
     expected = (
         "Missing compilers for the following file types: '.sol'. "
         "Possibly, a compiler plugin is not installed or is installed "
         "but not loading correctly. Is 'ape-solidity' installed?"
     )
+    assert expected in result.output
+
+
+def test_contract_file_paths_argument_contract_does_not_exist(
+    project_with_source_files_contract, runner, contracts_paths_cmd
+):
+    name = "MadeUp"
+    pm = project_with_source_files_contract
+    with pm.isolate_in_tempdir() as tmp_project:
+        arguments = (name, "--project", f"{tmp_project.path}")
+        result = runner.invoke(contracts_paths_cmd, arguments)
+
+    expected = f"Source file '{name}' not found."
     assert expected in result.output
 
 
@@ -774,7 +811,7 @@ def test_network_choice_custom_adhoc_network(prefix):
     assert actual.network.name == "custom"
 
 
-def test_network_choice_custom_config_network(custom_networks_config_dict, temp_config):
+def test_network_choice_custom_config_network(custom_networks_config_dict, project):
     data = copy.deepcopy(custom_networks_config_dict)
 
     # Was a bug where couldn't have this name.
@@ -783,7 +820,7 @@ def test_network_choice_custom_config_network(custom_networks_config_dict, temp_
     _get_networks_sequence_from_cache.cache_clear()
 
     network_choice = NetworkChoice()
-    with temp_config(data):
+    with project.temp_config(**data):
         actual = network_choice.convert("ethereum:custom", None, None)
 
     assert actual.network.name == "custom"

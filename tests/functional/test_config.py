@@ -4,76 +4,87 @@ from typing import Optional, Union
 import pytest
 from pydantic_settings import SettingsConfigDict
 
-from ape.api import ConfigEnum, PluginConfig
-from ape.api.networks import LOCAL_NETWORK_NAME
-from ape.managers.config import (
-    CONFIG_FILE_NAME,
-    ConfigManager,
-    DeploymentConfigCollection,
-    merge_configs,
-)
+from ape.api.config import ApeConfig, ConfigEnum, PluginConfig
+from ape.exceptions import ConfigError
+from ape.managers.config import CONFIG_FILE_NAME, merge_configs
 from ape.types import GasLimit
-from ape.utils import create_tempdir
 from ape_ethereum.ecosystem import NetworkConfig
 from ape_networks import CustomNetwork
 from tests.functional.conftest import PROJECT_WITH_LONG_CONTRACTS_FOLDER
 
 
-def test_deployments(networks_connected_to_tester, owner, vyper_contract_container, config):
-    networks = networks_connected_to_tester  # Connection needs to lookup config.
+def test_model_validate_empty():
+    data: dict = {}
+    cfg = ApeConfig.model_validate(data)
+    assert cfg.contracts_folder is None
+
+
+def test_model_validate():
+    data = {"contracts_folder": "src"}
+    cfg = ApeConfig.model_validate(data)
+    assert cfg.contracts_folder == "src"
+
+
+def test_model_validate_none_contracts_folder():
+    data = {"contracts_folder": None}
+    cfg = ApeConfig.model_validate(data)
+    assert cfg.contracts_folder is None
+
+
+def test_model_validate_path_contracts_folder():
+    path = Path.home() / "contracts"
+    data = {"contracts_folder": path}
+    cfg = ApeConfig.model_validate(data)
+    assert cfg.contracts_folder == str(path)
+
+
+def test_deployments(networks_connected_to_tester, owner, vyper_contract_container, project):
+    _ = networks_connected_to_tester  # Connection needs to lookup config.
 
     # First, obtain a "previously-deployed" contract.
     instance = vyper_contract_container.deploy(1000200000, sender=owner)
     address = instance.address
 
     # Create a config using this new contract for a "later time".
-    data = {
+    deploys = {
         **_create_deployments(address=address, contract_name=instance.contract_type.name),
-        "valid_ecosystems": {"ethereum": networks.ethereum},
-        "valid_networks": [LOCAL_NETWORK_NAME],
     }
-    deploy_config = DeploymentConfigCollection(root=data)
-    assert deploy_config.root["ethereum"]["local"][0]["address"] == address
-
-    orig = config.deployments
-    config.deployments = deploy_config
-    try:
-        # Ensure we can reference the deployment on the contract.
+    with project.temp_config(**{"deployments": deploys}):
+        deploy_config = project.config.deployments
+        assert deploy_config["ethereum"]["local"][0]["address"] == address
         deployment = vyper_contract_container.deployments[0]
-    finally:
-        config.deployments = orig
 
     assert deployment.address == instance.address
 
 
-def test_deployments_integer_type_addresses(networks):
-    data = {
+def test_deployments_integer_type_addresses(networks, project):
+    deploys = {
         **_create_deployments(address=0x0C25212C557D00024B7CA3DF3238683A35541354),
-        "valid_ecosystems": {"ethereum": networks.ethereum},
-        "valid_networks": [LOCAL_NETWORK_NAME],
     }
-    config = DeploymentConfigCollection(root=data)
-    assert (
-        config.root["ethereum"]["local"][0]["address"]
-        == "0x0c25212c557d00024b7Ca3df3238683A35541354"
-    )
+    with project.temp_config(**{"deployments": deploys}):
+        deploy_config = project.config.deployments
+        assert (
+            deploy_config["ethereum"]["local"][0]["address"]
+            == "0x0c25212c557d00024b7Ca3df3238683A35541354"
+        )
 
 
-@pytest.mark.parametrize(
-    "ecosystem_names,network_names,err_part",
-    [(["ERRORS"], ["mainnet"], "ecosystem"), (["ethereum"], ["ERRORS"], "network")],
-)
-def test_deployments_bad_value(
-    ecosystem_names, network_names, err_part, ape_caplog, plugin_manager
-):
-    deployments = _create_deployments()
-    all_ecosystems = dict(plugin_manager.ecosystems)
-    ecosystem_dict = {e: all_ecosystems[e] for e in ecosystem_names if e in all_ecosystems}
-    data = {**deployments, "valid_ecosystems": ecosystem_dict, "valid_networks": network_names}
-    ape_caplog.assert_last_log_with_retries(
-        lambda: DeploymentConfigCollection(root=data),
-        f"Invalid {err_part}",
-    )
+def test_deployments_bad_ecosystem(project):
+    deployments = _create_deployments(ecosystem_name="madeup")
+    with project.temp_config(deployments=deployments):
+        with pytest.raises(
+            ConfigError, match=r"Invalid ecosystem 'madeup' in deployments config\."
+        ):
+            _ = project.config.deployments
+
+
+def test_deployments_bad_network(project):
+    deployments = _create_deployments(network_name="madeup")
+    with project.temp_config(deployments=deployments):
+        with pytest.raises(
+            ConfigError, match=r"Invalid network 'ethereum:madeup' in deployments config\."
+        ):
+            _ = project.config.deployments
 
 
 def _create_deployments(
@@ -94,9 +105,9 @@ def _create_deployments(
     }
 
 
-def test_ethereum_network_configs(config, temp_config):
+def test_ethereum_network_configs(config, project):
     eth_config = {"ethereum": {"sepolia": {"default_provider": "test"}}}
-    with temp_config(eth_config):
+    with project.temp_config(**eth_config):
         actual = config.get_config("ethereum")
         assert actual.sepolia.default_provider == "test"
 
@@ -123,11 +134,11 @@ def _sepolia_with_gas_limit(gas_limit: GasLimit) -> dict:
 
 
 @pytest.mark.parametrize("gas_limit", ("auto", "max"))
-def test_network_gas_limit_string_config(gas_limit, config, temp_config):
+def test_network_gas_limit_string_config(gas_limit, project):
     eth_config = _sepolia_with_gas_limit(gas_limit)
 
-    with temp_config(eth_config):
-        actual = config.get_config("ethereum")
+    with project.temp_config(**eth_config):
+        actual = project.config.get_config("ethereum")
 
         assert actual.sepolia.gas_limit == gas_limit
 
@@ -136,34 +147,33 @@ def test_network_gas_limit_string_config(gas_limit, config, temp_config):
 
 
 @pytest.mark.parametrize("gas_limit", (1234, "1234", 0x4D2, "0x4D2"))
-def test_network_gas_limit_numeric_config(gas_limit, config, temp_config):
+def test_network_gas_limit_numeric_config(gas_limit, project):
     eth_config = _sepolia_with_gas_limit(gas_limit)
-
-    with temp_config(eth_config):
-        actual = config.get_config("ethereum")
-
+    with project.temp_config(**eth_config):
+        actual = project.config.get_config("ethereum")
         assert actual.sepolia.gas_limit == 1234
 
         # Local configuration is unaffected
         assert actual.local.gas_limit == "max"
 
 
-def test_network_gas_limit_invalid_numeric_string(config, temp_config):
+def test_network_gas_limit_invalid_numeric_string(project):
     """
     Test that using hex strings for a network's gas_limit config must be
     prefixed with '0x'
     """
     eth_config = _sepolia_with_gas_limit("4D2")
-    with pytest.raises(ValueError, match="Gas limit hex str must include '0x' prefix."):
-        with temp_config(eth_config):
-            pass
+    with project.temp_config(**eth_config):
+        with pytest.raises(AttributeError, match="Gas limit hex str must include '0x' prefix."):
+            _ = project.config.ethereum
 
 
-def test_dependencies(project_with_dependency_config, config):
+def test_dependencies(project_with_dependency_config):
+    config = project_with_dependency_config.config
     assert len(config.dependencies) == 1
-    assert config.dependencies[0].name == "testdependency"
-    assert config.dependencies[0].config_override["contracts_folder"] == "source/v0.1"
-    assert config.dependencies[0].local == str(PROJECT_WITH_LONG_CONTRACTS_FOLDER)
+    assert config.dependencies[0]["name"] == "testdependency"
+    assert config.dependencies[0]["config_override"]["contracts_folder"] == "source/v0.1"
+    assert config.dependencies[0]["local"] == str(PROJECT_WITH_LONG_CONTRACTS_FOLDER)
 
 
 def test_config_access():
@@ -210,8 +220,8 @@ test:
   number_of_accounts: 11
 """.strip()
     config_file.write_text(config_content)
-    config.load(force_reload=True)
-    assert config.get_config("test").number_of_accounts == 11
+    global_config = config.load_global_config()
+    assert global_config.get_config("test").number_of_accounts == 11
     config_file.unlink(missing_ok=True)
 
 
@@ -288,48 +298,9 @@ def test_config_enum():
     assert actual.my_enum == MyEnum.FOO
 
 
-def test_config_manager_loads_on_init(config):
-    """
-    This is needed or else tools may interact with the config manager
-    before it has processed the config file.
-    """
-    name = "nametestvalidate"
-
-    with create_tempdir() as path:
-        config = f"name: {name}"
-        (path / "ape-config.yaml").write_text(config)
-        manager = ConfigManager(REQUEST_HEADER={}, DATA_FOLDER=Path.cwd(), PROJECT_FOLDER=path)
-        assert manager.name == name
-
-
-def test_load_does_not_call_project_manager(temp_config, config):
-    """
-    It is highly critical that `load()` does not call anything from
-    `project_manager` as it is not loaded yet in the manager access mixin.
-    """
-    orig = config.project_manager.path
-    path = Path("_should_not_be_in_parents_")
-    try:
-        with temp_config({"contracts_folder": "src"}):
-            config.project_manager.path = path
-            assert config.load(force_reload=True)
-            assert path.name not in [x.name for x in config.contracts_folder.parents]
-    finally:
-        config.project_manager.path = orig
-
-
-def test_contracts_folder_with_hyphen(temp_config):
-    with temp_config({"contracts-folder": "src"}) as project:
+def test_contracts_folder_with_hyphen(project):
+    with project.temp_config(**{"contracts-folder": "src"}):
         assert project.contracts_folder.name == "src"
-
-
-def test_compiler_cache_folder(temp_config):
-    with temp_config(
-        {"contracts_folder": "smarts", "compile": {"cache_folder": ".cash"}}
-    ) as project:
-        assert project.contracts_folder.name == "smarts"
-        assert project.compiler_cache_folder.name == ".cash"
-        assert str(project.contracts_folder) not in str(project.compiler_cache_folder)
 
 
 def test_custom_network():

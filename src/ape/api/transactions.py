@@ -555,7 +555,7 @@ class ReceiptAPI(ExtraAttributesMixin, BaseInterfaceModel):
             and (method := self.method_called)
         ):
             # Can only track top-level gas.
-            if contract := self.project_manager._create_contract_source(contract_type):
+            if contract := self.local_project._create_contract_source(contract_type):
                 self._test_runner.gas_tracker.append_toplevel_gas(contract, method, self.gas_used)
 
     def track_coverage(self):
@@ -587,5 +587,5 @@ class ReceiptAPI(ExtraAttributesMixin, BaseInterfaceModel):
             if not contract_type or not contract_type.source_id:
                 return
 
-            if contract := self.project_manager._create_contract_source(contract_type):
+            if contract := self.local_project._create_contract_source(contract_type):
                 tracker.hit_function(contract, method)
