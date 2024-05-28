@@ -51,7 +51,7 @@ class PytestApeRunner(ManagerAccessMixin):
 
         # Find the last traceback frame within the active project
         tb_frames: PytestTraceback = call.excinfo.traceback
-        base = self.project_manager.path.as_posix()
+        base = self.local_project.path.as_posix()
 
         if self.config_wrapper.show_internal:
             relevant_tb = list(tb_frames)
@@ -114,7 +114,7 @@ class PytestApeRunner(ManagerAccessMixin):
             click.echo("Starting interactive mode. Type `exit` to halt current test.")
 
             namespace = {"_callinfo": call, **globals_dict, **locals_dict}
-            console(extra_locals=namespace, project=self.project_manager, embed=True)
+            console(extra_locals=namespace, project=self.local_project, embed=True)
 
             if capman:
                 capman.resume_global_capture()

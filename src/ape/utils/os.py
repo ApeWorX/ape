@@ -6,7 +6,7 @@ from contextlib import contextmanager
 from fnmatch import fnmatch
 from pathlib import Path
 from re import Pattern
-from tempfile import TemporaryDirectory
+from tempfile import TemporaryDirectory, gettempdir
 from typing import Any, Optional, Union
 
 
@@ -145,12 +145,22 @@ class use_temp_sys_path:
                 sys.path.append(path)
 
 
-def get_full_extension(path: Path) -> str:
+def get_full_extension(path: Union[Path, str]) -> str:
     """
     For a path like ``Path("Contract.t.sol")``,
     returns ``.t.sol``, unlike the regular Path
     property ``.suffix`` which returns ``.sol``.
+
+    Args:
+        path (Path | str): The path with an extension.
+
+    Returns:
+        str: The full suffix
     """
+    if not path:
+        return ""
+
+    path = Path(path)
     if path.is_dir():
         return ""
 
@@ -206,14 +216,28 @@ def run_in_tempdir(
     Args:
         fn (Callable): A function that takes a path. It gets called
           with the resolved path to the temporary directory.
-        name (Optional[str]): Optionally provide a name for the temporary
-          directory.
+        name (Optional[str]): Optionally name the temporary directory.
 
     Returns:
         Any: The result of the function call.
     """
     with create_tempdir(name=name) as temp_dir:
         return fn(temp_dir)
+
+
+def in_tempdir(path: Path) -> bool:
+    """
+    Returns ``True`` when the given path is in a temporary directory.
+
+    Args:
+        path (Path): The path to check.
+
+    Returns:
+        bool
+    """
+    temp_dir = os.path.normpath(f"{Path(gettempdir()).resolve()}")
+    normalized_path = os.path.normpath(path)
+    return normalized_path.startswith(temp_dir)
 
 
 def path_match(path: Union[str, Path], *exclusions: str) -> bool:
@@ -254,6 +278,17 @@ def path_match(path: Union[str, Path], *exclusions: str) -> bool:
 
 
 def clean_path(path: Path) -> str:
+    """
+    Replace the home directory with key ``$HOME`` and return
+    the path as a str. This is used for outputting paths
+    with less doxxing.
+
+    Args:
+        path (Path): The path to sanitize.
+
+    Returns:
+        str: A sanitized path-str.
+    """
     home = Path.home()
     if path.is_relative_to(home):
         return f"$HOME{os.path.sep}{path.relative_to(home)}"

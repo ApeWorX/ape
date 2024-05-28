@@ -1,13 +1,14 @@
 import inspect
 from collections.abc import Callable
 from functools import partial
+from pathlib import Path
 from typing import NoReturn, Optional, Union
 
 import click
 from click import Option
 from ethpm_types import ContractType
 
-from ape.api import ProviderAPI
+from ape.api.providers import ProviderAPI
 from ape.cli.choices import (
     _ACCOUNT_TYPE_FILTER,
     _NONE_NETWORK,
@@ -362,7 +363,7 @@ def _load_contracts(ctx, param, value) -> Optional[Union[ContractType, list[Cont
     if not value:
         return None
 
-    if len(ManagerAccessMixin.project_manager.contracts) == 0:
+    if len(ManagerAccessMixin.local_project.contracts) == 0:
         raise ProjectError("Project has no contracts.")
 
     # If the user passed in `multiple=True`, then `value` is a list,
@@ -370,10 +371,10 @@ def _load_contracts(ctx, param, value) -> Optional[Union[ContractType, list[Cont
     is_multiple = isinstance(value, (tuple, list))
 
     def get_contract(contract_name: str) -> ContractType:
-        if contract_name not in ManagerAccessMixin.project_manager.contracts:
+        if contract_name not in ManagerAccessMixin.local_project.contracts:
             raise ProjectError(f"No contract named '{value}'")
 
-        return ManagerAccessMixin.project_manager.contracts[contract_name]
+        return ManagerAccessMixin.local_project.contracts[contract_name]
 
     return [get_contract(c) for c in value] if is_multiple else get_contract(value)
 
@@ -447,6 +448,41 @@ def incompatible_with(incompatible_opts) -> type[click.Option]:
             return super().handle_parse_result(ctx, opts, args)
 
     return IncompatibleOption
+
+
+def _project_callback(ctx, param, val):
+    pm = None
+    if not val:
+        pm = ManagerAccessMixin.local_project
+
+    else:
+        path = Path(val)
+        if path == ManagerAccessMixin.local_project.path:
+            pm = ManagerAccessMixin.local_project
+
+        else:
+            Project = ManagerAccessMixin.Project
+            if path.is_file() and path.suffix == ".json":
+                pm = Project.from_manifest(path)
+
+            elif path.is_dir():
+                pm = Project(path)
+
+    if pm is None:
+        raise click.BadOptionUsage("--project", "Not a valid project")
+
+    return pm
+
+
+def project_option(**kwargs):
+    return click.option(
+        "--project",
+        help="The path to a local project or manifest",
+        callback=_project_callback,
+        metavar="PATH",
+        is_eager=True,
+        **kwargs,
+    )
 
 
 def _json_option(name, help, **kwargs):

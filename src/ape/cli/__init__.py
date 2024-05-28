@@ -23,6 +23,7 @@ from ape.cli.options import (
     incompatible_with,
     network_option,
     output_format_option,
+    project_option,
     skip_confirmation_option,
     verbosity_option,
 )
@@ -49,6 +50,7 @@ __all__ = [
     "output_format_option",
     "OutputFormat",
     "Path",
+    "project_option",
     "PromptChoice",
     "select_account",
     "skip_confirmation_option",

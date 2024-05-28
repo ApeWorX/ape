@@ -73,7 +73,7 @@ class PytestApeFixtures(ManagerAccessMixin):
         Access contract types and dependencies.
         """
 
-        return self.project_manager
+        return self.local_project
 
     @pytest.fixture(scope="session")
     def Contract(self):

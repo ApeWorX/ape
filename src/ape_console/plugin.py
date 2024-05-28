@@ -12,7 +12,7 @@ import ape
 from ape._cli import cli
 from ape.exceptions import Abort, ApeException, handle_ape_exception
 from ape.logging import logger
-from ape.managers import ProjectManager
+from ape.managers.project import LocalProject
 from ape.types import AddressType
 from ape.utils import ManagerAccessMixin, cached_property
 from ape.utils.os import clean_path
@@ -80,12 +80,12 @@ class ApeConsoleMagics(Magics):
 
 def custom_exception_handler(self, etype, value, tb, tb_offset=None):
     project = self.user_ns["project"]
-    if isinstance(project, ProjectManager):
+    if isinstance(project, LocalProject):
         path = project.path
     else:
         # This happens if assigned the variable `project` in your session
         # to something other than ``ape.project``.
-        path = ManagerAccessMixin.project_manager.path
+        path = ManagerAccessMixin.local_project.path
 
     if not handle_ape_exception(value, [path]):
         logger.error(Abort.from_ape_exception(value).format_message())

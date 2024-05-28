@@ -309,10 +309,11 @@ class EcosystemAPI(ExtraAttributesMixin, BaseInterfaceModel):
             return network
 
         elif network := self.config.get("default_network"):
-            # Default found in config.
-            return network
+            # Default found in config. Ensure is an installed network.
+            if network in self.networks:
+                return network
 
-        elif LOCAL_NETWORK_NAME in self.networks:
+        if LOCAL_NETWORK_NAME in self.networks:
             # Default to the LOCAL_NETWORK_NAME, at last resort.
             return LOCAL_NETWORK_NAME
 

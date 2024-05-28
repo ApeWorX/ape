@@ -1,4 +1,3 @@
-from contextlib import contextmanager
 from importlib import import_module
 from pathlib import Path
 from shutil import copytree
@@ -6,7 +5,7 @@ from typing import Optional
 
 import pytest
 
-from ape.managers.config import CONFIG_FILE_NAME
+from ape import Project
 from tests.conftest import ApeSubprocessRunner
 
 from .test_plugins import ListResult
@@ -87,7 +86,7 @@ def pytest_collection_modifyitems(session, config, items):
 
 
 @pytest.fixture(autouse=True)
-def project_dir_map(project_folder):
+def project_dir_map():
     """
     Ensure only copying projects once to prevent `TooManyOpenFilesError`.
     """
@@ -96,16 +95,17 @@ def project_dir_map(project_folder):
         project_map: dict[str, Path] = {}
 
         def load(self, name: str) -> Path:
+            base_path = Path(__file__).parent / "projects"
             if name in self.project_map:
                 # Already copied.
                 return self.project_map[name]
 
             project_source_dir = __projects_directory__ / name
-            project_dest_dir = project_folder / project_source_dir.name
+            project_dest_dir = base_path / project_source_dir.name
             project_dest_dir.parent.mkdir(exist_ok=True, parents=True)
 
             if not project_dest_dir.is_dir():
-                copytree(str(project_source_dir), str(project_dest_dir))
+                copytree(project_source_dir, project_dest_dir)
 
             self.project_map[name] = project_dest_dir
             return self.project_map[name]
@@ -116,8 +116,10 @@ def project_dir_map(project_folder):
 @pytest.fixture(autouse=True, params=__project_names__)
 def project(request, config, project_dir_map):
     project_dir = project_dir_map.load(request.param)
-    with config.using_project(project_dir) as project:
-        yield project
+    root_project = Project(project_dir)
+    # Using tmp project so no .build folder get kept around.
+    with root_project.isolate_in_tempdir(name=request.param) as tmp_project:
+        yield tmp_project
 
 
 @pytest.fixture(scope="session")
@@ -140,71 +142,24 @@ def clean_cache(project):
     Use this fixture to ensure a project
     does not have a cached compilation.
     """
-    cache_file = project.local_project.manifest_cachefile
-    if cache_file.is_file():
-        cache_file.unlink()
-
-    project.local_project._cached_manifest = None
-
+    project.clean()
     yield
-
-    if cache_file.is_file():
-        cache_file.unlink()
-
-    project.local_project._cached_manifest = None
-
-
-@pytest.fixture
-def switch_config(config):
-    """
-    A config-context switcher for Integration tests.
-    It will change the contents of the active project's config file,
-    reload it, yield, and change it back. Useful for testing different
-    config scenarios without having to create entire new projects.
-    """
-
-    def replace_config(config_file, new_content: str):
-        if config_file.is_file():
-            config_file.unlink()
-
-        config_file.touch()
-        config_file.write_text(new_content)
-
-    @contextmanager
-    def switch(project, new_content: str):
-        config_file = project.path / CONFIG_FILE_NAME
-        original = config_file.read_text() if config_file.is_file() else None
-
-        try:
-            replace_config(config_file, new_content)
-            config.load(force_reload=True)
-            yield
-        finally:
-            if original:
-                replace_config(config_file, original)
-            elif config_file.is_file():
-                # Delete created config.
-                config_file.unlink()
-
-        # Reload back
-        config.load(force_reload=True)
-
-    return switch
+    project.clean()
 
 
 @pytest.fixture(scope="session")
-def ape_plugins_runner():
+def ape_plugins_runner(config):
     """
     Use subprocess runner so can manipulate site packages and see results.
     """
 
     class PluginSubprocessRunner(ApeSubprocessRunner):
         def __init__(self):
-            super().__init__(["plugins"])
+            super().__init__("plugins", data_folder=config.DATA_FOLDER)
 
         def invoke_list(self, arguments: Optional[list] = None):
             arguments = arguments or []
-            result = self.invoke(["list", *arguments])
+            result = self.invoke("list", *arguments)
             assert result.exit_code == 0, result.output
             return ListResult.parse_output(result.output)
 

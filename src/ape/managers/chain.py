@@ -952,8 +952,8 @@ class ContractCache(BaseManager):
             err = ContractNotFoundError(
                 address, self.provider.network.explorer is not None, self.provider.network_choice
             )
-            # Must raise IndexError.
-            raise IndexError(str(err))
+            # Must raise KeyError.
+            raise KeyError(str(err))
 
         return contract_type
 
@@ -1173,7 +1173,7 @@ class ContractCache(BaseManager):
                 # Handle both absolute and relative paths
                 abi_path = Path(abi)
                 if not abi_path.is_absolute():
-                    abi_path = self.project_manager.path / abi
+                    abi_path = self.local_project.path / abi
 
                 try:
                     abi = json.loads(abi_path.read_text())
@@ -1267,7 +1267,7 @@ class ContractCache(BaseManager):
             ecosystem_name = self.provider.network.ecosystem.name
             network_name = self.provider.network.name
             all_config_deployments = (
-                self.config_manager.deployments.root if self.config_manager.deployments else {}
+                self.config_manager.deployments if self.config_manager.deployments else {}
             )
             ecosystem_deployments = all_config_deployments.get(ecosystem_name, {})
             network_deployments = ecosystem_deployments.get(network_name, {})

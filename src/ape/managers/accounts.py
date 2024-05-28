@@ -100,7 +100,7 @@ class TestAccountManager(list, ManagerAccessMixin):
             account_id = self.conversion_manager.convert(account_str, AddressType)
         except ConversionError as err:
             message = message_fmt.format("ID", account_str)
-            raise IndexError(message) from err
+            raise KeyError(message) from err
 
         for account in self.accounts:
             if account.address == account_id:
@@ -113,12 +113,12 @@ class TestAccountManager(list, ManagerAccessMixin):
                 can_impersonate = self.provider.unlock_account(account_id)
             # else: fall through to `IndexError`
         except NotImplementedError as err:
-            raise IndexError(
+            raise KeyError(
                 f"Your provider does not support impersonating accounts:\n{err_message}"
             ) from err
 
         if not can_impersonate:
-            raise IndexError(err_message)
+            raise KeyError(err_message)
 
         if account_id not in self._impersonated_accounts:
             acct = ImpersonatedAccount(raw_address=account_id)
@@ -252,7 +252,7 @@ class AccountManager(BaseManager):
         Get an account by its alias.
 
         Raises:
-            IndexError: When there is no local account with the given alias.
+            KeyError: When there is no local account with the given alias.
 
         Returns:
             :class:`~ape.api.accounts.AccountAPI`
@@ -265,7 +265,7 @@ class AccountManager(BaseManager):
             if account.alias and account.alias == alias:
                 return account
 
-        raise IndexError(f"No account with alias '{alias}'.")
+        raise KeyError(f"No account with alias '{alias}'.")
 
     @singledispatchmethod
     def __getitem__(self, account_id) -> AccountAPI:
@@ -327,7 +327,7 @@ class AccountManager(BaseManager):
         accounts, this method will return an impersonated account at that address.
 
         Raises:
-            IndexError: When there is no local account with the given address.
+            KeyError: When there is no local account with the given address.
 
         Returns:
             :class:`~ape.api.accounts.AccountAPI`
@@ -342,7 +342,7 @@ class AccountManager(BaseManager):
             else:
                 suffix = "Do you have the necessary conversion plugins installed?"
 
-            raise IndexError(f"{prefix}. {suffix}") from err
+            raise KeyError(f"{prefix}. {suffix}") from err
 
         for container in self.containers.values():
             if account_id in container.accounts:
