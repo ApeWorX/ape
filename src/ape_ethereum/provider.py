@@ -461,7 +461,7 @@ class Web3Provider(ProviderAPI, ABC):
 
         if track_coverage and self._test_runner is not None and txn.receiver:
             if contract_type := self.chain_manager.contracts.get(txn.receiver):
-                if contract_src := self.project_manager._create_contract_source(contract_type):
+                if contract_src := self.local_project._create_contract_source(contract_type):
                     method_id = HexBytes(txn.data)
                     selector = (
                         contract_type.methods[method_id].selector
@@ -501,7 +501,7 @@ class Web3Provider(ProviderAPI, ABC):
             method_id = arguments[0].get("data", "")[:10] or None
             tb = None
             if contract_type and method_id:
-                if contract_src := self.project_manager._create_contract_source(contract_type):
+                if contract_src := self.local_project._create_contract_source(contract_type):
                     tb = SourceTraceback.create(contract_src, trace, method_id)
 
             raise self.get_virtual_machine_error(

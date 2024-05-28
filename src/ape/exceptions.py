@@ -847,7 +847,7 @@ def _get_custom_python_traceback(
     depth = None
     idx = len(ape_traceback) - 1
     frames = []
-    project_path = txn.project_manager.path.as_posix()
+    project_path = txn.local_project.path.as_posix()
     while tb is not None:
         if not tb.tb_frame.f_code.co_filename.startswith(project_path):
             # Ignore frames outside the project.

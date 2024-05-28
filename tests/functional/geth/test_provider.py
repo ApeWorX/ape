@@ -54,7 +54,7 @@ def test_uri_localhost_not_running_uses_random_default(config):
 
 
 @geth_process_test
-def test_uri_when_configured(geth_provider, temp_config, ethereum):
+def test_uri_when_configured(geth_provider, project, ethereum):
     settings = geth_provider.provider_settings
     geth_provider.provider_settings = {}
     value = "https://value/from/config"
@@ -63,7 +63,7 @@ def test_uri_when_configured(geth_provider, temp_config, ethereum):
     network = ethereum.get_network("mainnet")
 
     try:
-        with temp_config(config):
+        with project.temp_config(**config):
             # Assert we use the config value.
             actual_local_uri = geth_provider.uri
             # Assert provider settings takes precedence.
@@ -105,6 +105,15 @@ def test_repr_on_live_network_and_disconnected(networks):
     actual = repr(node)
     expected = "<Node chain_id=11155111>"
     assert actual == expected
+
+
+@geth_process_test
+def test_get_logs(geth_contract, geth_account):
+    geth_contract.setNumber(101010, sender=geth_account)
+    actual = geth_contract.NumberChange[-1]
+    assert actual.event_name == "NumberChange"
+    assert actual.contract_address == geth_contract.address
+    assert actual.event_arguments["newNum"] == 101010
 
 
 @geth_process_test

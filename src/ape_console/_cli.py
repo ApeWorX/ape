@@ -12,8 +12,9 @@ import click
 import IPython
 from IPython.terminal.ipapp import Config as IPythonConfig
 
-from ape.cli import ConnectedProviderCommand, ape_cli_context
-from ape.managers import ProjectManager
+from ape.cli.commands import ConnectedProviderCommand
+from ape.cli.options import ape_cli_context, project_option
+from ape.managers.project import ProjectManager
 from ape.utils.basemodel import ManagerAccessMixin
 from ape.utils.misc import _python_version
 from ape.version import version as ape_version
@@ -28,10 +29,11 @@ CONSOLE_EXTRAS_FILENAME = "ape_console_extras.py"
     context_settings=dict(ignore_unknown_options=True),
 )
 @ape_cli_context()
-def cli(cli_ctx):
+@project_option(hidden=True)  # Hidden as mostly used for test purposes.
+def cli(cli_ctx, project):
     """Opens a console for the local project."""
     verbose = cli_ctx.logger.level == logging.DEBUG
-    return console(verbose=verbose)
+    return console(project=project, verbose=verbose)
 
 
 def import_extras_file(file_path) -> ModuleType:
@@ -50,7 +52,7 @@ def import_extras_file(file_path) -> ModuleType:
 def load_console_extras(**namespace: Any) -> dict[str, Any]:
     """load and return namespace updates from ape_console_extras.py  files if
     they exist"""
-    pm = namespace.get("project", ManagerAccessMixin.project_manager)
+    pm = namespace.get("project", ManagerAccessMixin.local_project)
     global_extras = pm.config_manager.DATA_FOLDER.joinpath(CONSOLE_EXTRAS_FILENAME)
     project_extras = pm.path.joinpath(CONSOLE_EXTRAS_FILENAME)
 
@@ -96,7 +98,7 @@ def console(
 ):
     import ape
 
-    project = project or ManagerAccessMixin.project_manager
+    project = project or ManagerAccessMixin.local_project
     banner = ""
     if verbose:
         banner = """

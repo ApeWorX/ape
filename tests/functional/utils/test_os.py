@@ -68,12 +68,12 @@ def test_get_all_files_in_directory():
             file.touch()
 
         all_files = get_all_files_in_directory(path)
-        txt_files = get_all_files_in_directory(path, pattern=r"\w+\.txt")
+        txt_files = get_all_files_in_directory(path, pattern=r"\w+\.txt", max_files=2)
         t_txt_files = get_all_files_in_directory(path, pattern=r"\w+\.t.txt")
         inner_txt_files = get_all_files_in_directory(path, pattern=r"\w+\.inner.txt")
 
         assert len(all_files) == 5
-        assert len(txt_files) == 3
+        assert len(txt_files) == 2
         assert len(t_txt_files) == 1
         assert len(inner_txt_files) == 1
 

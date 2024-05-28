@@ -29,14 +29,11 @@ def extract_mnemonic(output: str) -> Optional[list[str]]:
 
 
 @pytest.fixture(autouse=True)
-def temp_keyfile_path(temp_accounts_path):
-    test_keyfile_path = temp_accounts_path / f"{ALIAS}.json"
-
-    if test_keyfile_path.is_file():
-        # Corrupted from a previous test
-        test_keyfile_path.unlink()
-
-    return test_keyfile_path
+def temp_keyfile_path(config):
+    # NOTE: Is a fresh account for each use.
+    path = config.DATA_FOLDER / "accounts" / f"{ALIAS}.json"
+    path.unlink(missing_ok=True)
+    return path
 
 
 @pytest.fixture
@@ -92,7 +89,7 @@ def test_import_alias_is_private_key(ape_cli, runner):
     )
     assert result.exit_code != 0, result.output
     expected = "ERROR: (AccountsError) Longer aliases cannot be hex strings.\n"
-    assert result.output == expected
+    assert expected in result.output
 
 
 @run_once

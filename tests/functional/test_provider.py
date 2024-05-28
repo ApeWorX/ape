@@ -203,13 +203,18 @@ def test_provider_get_balance(project, networks, accounts):
     assert balance == 1000000000000000000000000
 
 
-def test_set_timestamp(eth_tester_provider):
-    pending_at_start = eth_tester_provider.get_block("pending").timestamp
-    expected = pending_at_start + 100
-    eth_tester_provider.set_timestamp(expected)
-    eth_tester_provider.mine()
-    actual = eth_tester_provider.get_block("pending").timestamp
-    assert actual == expected + 1  # Mining adds another second.
+def test_set_timestamp(ethereum):
+    # NOTE: Using a different eth-tester for multi-processing ease.
+    with ethereum.local.use_provider(
+        "test", provider_settings={"chain_id": 919191912828283}
+    ) as provider:
+        pending_at_start = provider.get_block("pending").timestamp
+        new_ts = pending_at_start + 100
+        expected = new_ts + 1  # Mining adds another second.
+        provider.set_timestamp(new_ts)
+        provider.mine()
+        actual = provider.get_block("pending").timestamp
+        assert actual == expected
 
 
 def test_set_timestamp_to_same_time(eth_tester_provider):
@@ -390,7 +395,6 @@ def test_make_request_handles_http_error_method_not_allowed(eth_tester_provider,
     """
     real_web3 = eth_tester_provider._web3
     mock_web3.eth = real_web3.eth
-    eth_tester_provider._web3 = mock_web3
 
     def custom_make_request(rpc, params):
         if rpc == "ape_thisDoesNotExist":
@@ -399,11 +403,15 @@ def test_make_request_handles_http_error_method_not_allowed(eth_tester_provider,
         return real_web3.provider.make_request(rpc, params)
 
     mock_web3.provider.make_request.side_effect = custom_make_request
-    with pytest.raises(
-        APINotImplementedError,
-        match="RPC method 'ape_thisDoesNotExist' is not implemented by this node instance.",
-    ):
-        eth_tester_provider.make_request("ape_thisDoesNotExist")
+    eth_tester_provider._web3 = mock_web3
+    try:
+        with pytest.raises(
+            APINotImplementedError,
+            match="RPC method 'ape_thisDoesNotExist' is not implemented by this node instance.",
+        ):
+            eth_tester_provider.make_request("ape_thisDoesNotExist")
+    finally:
+        eth_tester_provider._web3 = real_web3
 
 
 def test_base_fee(eth_tester_provider):

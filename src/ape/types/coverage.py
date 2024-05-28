@@ -333,7 +333,7 @@ class ContractCoverage(BaseModel):
         if func:
             return func
 
-        raise IndexError(f"Function '{function_name}' not found.")
+        raise KeyError(f"Function '{function_name}' not found.")
 
     def model_dump(self, *args, **kwargs) -> dict:
         attribs = super().model_dump(*args, **kwargs)

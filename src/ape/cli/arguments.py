@@ -1,7 +1,7 @@
 from collections.abc import Iterable
 from functools import cached_property
 from pathlib import Path
-from typing import Union
+from typing import TYPE_CHECKING, Optional, Union
 
 import click
 from click import BadArgumentUsage
@@ -9,8 +9,11 @@ from click import BadArgumentUsage
 from ape.cli.choices import _ACCOUNT_TYPE_FILTER, Alias
 from ape.logging import logger
 from ape.utils.basemodel import ManagerAccessMixin
-from ape.utils.os import get_all_files_in_directory, get_full_extension, path_match
+from ape.utils.os import get_full_extension
 from ape.utils.validators import _validate_account_alias
+
+if TYPE_CHECKING:
+    from ape.managers.project import ProjectManager
 
 
 def _alias_callback(ctx, param, value):
@@ -48,18 +51,18 @@ class _ContractPaths(ManagerAccessMixin):
     Helper callback class for handling CLI-given contract paths.
     """
 
-    def __init__(self, value):
+    def __init__(self, value, project: Optional["ProjectManager"] = None):
         self.value = value
-        self._path_set = set()
-        self.missing_compilers = set()
-        self.exclude_list = {}
+        self.missing_compilers: set[str] = set()  # set of .ext
+        self.project = project or ManagerAccessMixin.local_project
 
     @classmethod
     def callback(cls, ctx, param, value) -> set[Path]:
         """
         Use this for click.option / argument callbacks.
         """
-        return cls(value).filtered_paths
+        project = ctx.params.get("project")
+        return cls(value, project=project).filtered_paths
 
     @cached_property
     def filtered_paths(self) -> set[Path]:
@@ -69,22 +72,18 @@ class _ContractPaths(ManagerAccessMixin):
         value = self.value
         contract_paths: Iterable[Path]
 
-        if value and isinstance(value, (list, tuple, set)):
-            # Given a single list of paths.
-            contract_paths = value
-
-        elif value and isinstance(value, (Path, str)):
+        if value and isinstance(value, (Path, str)):
             # Given single path.
             contract_paths = (Path(value),)
-
         elif not value or value == "*":
             # Get all file paths in the project.
-            contract_paths = get_all_files_in_directory(self.project_manager.contracts_folder)
-
+            return {p for p in self.project.sources.paths}
         else:
-            raise ValueError(f"Unknown contracts-paths value '{value}'.")
+            # Given a sequence of paths.
+            contract_paths = value
 
-        self.lookup(contract_paths)
+        # Convert source IDs or relative paths to absolute paths.
+        path_set = self.lookup(contract_paths)
 
         # Handle missing compilers.
         if self.missing_compilers:
@@ -102,24 +101,16 @@ class _ContractPaths(ManagerAccessMixin):
 
             logger.warning(message)
 
-        return self._path_set
+        return path_set
 
     @property
     def exclude_patterns(self) -> set[str]:
         return self.config_manager.get_config("compile").exclude or set()
 
     def do_exclude(self, path: Union[Path, str]) -> bool:
-        name = path if isinstance(path, str) else str(path)
-        if name not in self.exclude_list:
-            self.exclude_list[name] = path_match(name, *self.exclude_patterns)
-
-        return self.exclude_list[name]
+        return self.project.sources.is_excluded(path)
 
     def compiler_is_unknown(self, path: Union[Path, str]) -> bool:
-        path = Path(path)
-        if self.do_exclude(path):
-            return False
-
         ext = get_full_extension(path)
         unknown_compiler = ext and ext not in self.compiler_manager.registered_compilers
         if unknown_compiler and ext not in self.missing_compilers:
@@ -127,28 +118,31 @@ class _ContractPaths(ManagerAccessMixin):
 
         return bool(unknown_compiler)
 
-    def lookup(self, path_iter):
-        for path in path_iter:
-            path = Path(path)
-            if self.do_exclude(path):
-                continue
+    def lookup(self, path_iter: Iterable, path_set: Optional[set] = None) -> set[Path]:
+        path_set = path_set or set()
 
-            contracts_folder = self.project_manager.contracts_folder
+        for path_id in path_iter:
+            path = Path(path_id)
+            contracts_folder = self.project.contracts_folder
             if (
-                self.project_manager.path / path.name
+                self.project.path / path.name
             ) == contracts_folder or path.name == contracts_folder.name:
                 # Was given the path to the contracts folder.
-                self.lookup(p for p in self.project_manager.source_paths)
+                return {p for p in self.project.sources.paths}
 
-            elif (self.project_manager.path / path).is_dir():
+            elif (self.project.path / path).is_dir():
                 # Was given sub-dir in the project folder.
-                self.lookup(p for p in (self.project_manager.path / path).iterdir())
+                return self.lookup(
+                    (p for p in (self.project.path / path).iterdir()), path_set=path_set
+                )
 
             elif (contracts_folder / path.name).is_dir():
                 # Was given sub-dir in the contracts folder.
-                self.lookup(p for p in (contracts_folder / path.name).iterdir())
+                return self.lookup(
+                    (p for p in (contracts_folder / path.name).iterdir()), path_set=path_set
+                )
 
-            elif resolved_path := self.project_manager.lookup_path(path):
+            elif resolved_path := self.project.sources.lookup(path):
                 # Check compiler missing.
                 if self.compiler_is_unknown(resolved_path):
                     # NOTE: ^ Also tracks.
@@ -157,13 +151,15 @@ class _ContractPaths(ManagerAccessMixin):
                 suffix = get_full_extension(resolved_path)
                 if suffix in self.compiler_manager.registered_compilers:
                     # File exists and is compile-able.
-                    self._path_set.add(resolved_path)
+                    path_set.add(resolved_path)
 
                 elif suffix:
                     raise BadArgumentUsage(f"Source file '{resolved_path.name}' not found.")
 
             else:
                 raise BadArgumentUsage(f"Source file '{path.name}' not found.")
+
+        return path_set
 
 
 def contract_file_paths_argument():

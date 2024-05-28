@@ -146,7 +146,7 @@ def test_contracts_getitem_contract_not_found(chain, eth_tester_provider):
         "Try installing an explorer plugin using .*ape plugins install etherscan.*, "
         r"or using a network with explorer support\."
     )
-    with pytest.raises(IndexError, match=expected):
+    with pytest.raises(KeyError, match=expected):
         _ = chain.contracts[new_address]
 
 
@@ -330,7 +330,7 @@ def test_delete_contract(vyper_contract_instance, chain):
     assert vyper_contract_instance.address not in chain.contracts
 
     # Ensure we can't access it.
-    with pytest.raises(IndexError):
+    with pytest.raises(KeyError):
         _ = chain.contracts[vyper_contract_instance.address]
 
 
@@ -352,9 +352,9 @@ def test_delete_proxy(vyper_contract_instance, chain, ethereum, owner):
     assert proxy.address not in chain.contracts
 
     # Ensure we can't access it.
-    with pytest.raises(IndexError):
+    with pytest.raises(KeyError):
         _ = chain.contracts[proxy.address]
 
     # Ensure we can't access the target either.
-    with pytest.raises(IndexError):
+    with pytest.raises(KeyError):
         _ = chain.contracts[proxy_info.target]

@@ -106,21 +106,21 @@ def pytest_load_initial_conftests(early_config):
     Compile contracts before loading ``conftest.py``s.
     """
     capture_manager = early_config.pluginmanager.get_plugin("capturemanager")
+    pm = ManagerAccessMixin.local_project
 
-    if not ManagerAccessMixin.project_manager.sources_missing:
-        # Suspend stdout capture to display compilation data
-        capture_manager.suspend()
-        try:
-            ManagerAccessMixin.project_manager.load_contracts()
-        except Exception as err:
-            logger.log_debug_stack_trace()
-            message = "Unable to load project. "
-            if logger.level > LogLevel.DEBUG:
-                message = f"{message}Use `-v DEBUG` to see more info.\n"
+    # Suspend stdout capture to display compilation data
+    capture_manager.suspend()
+    try:
+        pm.load_contracts()
+    except Exception as err:
+        logger.log_debug_stack_trace()
+        message = "Unable to load project. "
+        if logger.level > LogLevel.DEBUG:
+            message = f"{message}Use `-v DEBUG` to see more info.\n"
 
-            err_type_name = getattr(type(err), "__name__", "Exception")
-            message = f"{message}Failure reason: ({err_type_name}) {err}"
-            raise pytest.UsageError(message)
+        err_type_name = getattr(type(err), "__name__", "Exception")
+        message = f"{message}Failure reason: ({err_type_name}) {err}"
+        raise pytest.UsageError(message)
 
-        finally:
-            capture_manager.resume()
+    finally:
+        capture_manager.resume()

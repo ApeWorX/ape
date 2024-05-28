@@ -760,7 +760,7 @@ class ContractTypeWrapper(ManagerAccessMixin):
         if not (source_id := self.contract_type.source_id):
             return None
 
-        base = self.base_path or self.project_manager.contracts_folder
+        base = self.base_path or self.local_project.path
         path = base / source_id
         return path if path.is_file() else None
 
@@ -1394,10 +1394,10 @@ class ContractContainer(ContractTypeWrapper, ExtraAttributesMixin):
         self.chain_manager.contracts.cache_deployment(instance)
 
         if publish:
-            self.project_manager.track_deployment(instance)
+            self.local_project.deployments.track(instance)
             self.provider.network.publish_contract(address)
 
-        instance.base_path = self.base_path or self.project_manager.contracts_folder
+        instance.base_path = self.base_path or self.local_project.contracts_folder
         return instance
 
     def _cache_wrap(self, function: Callable) -> ReceiptAPI:

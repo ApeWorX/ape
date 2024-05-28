@@ -81,8 +81,8 @@ def test_isolate(chain, vyper_contract_instance, owner):
         assert vyper_contract_instance.myNumber() == 333
         assert chain.blocks.height == start_head + 1
 
-    assert vyper_contract_instance.myNumber() == number_at_start
     assert chain.blocks.height == start_head
+    assert vyper_contract_instance.myNumber() == number_at_start
 
 
 def test_get_receipt_uses_cache(mocker, eth_tester_provider, chain, vyper_contract_instance, owner):
