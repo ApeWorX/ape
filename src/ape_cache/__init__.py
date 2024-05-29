@@ -16,3 +16,7 @@ def config_class():
 @plugins.register(plugins.QueryPlugin)
 def query_engines():
     return CacheQueryProvider
+
+__all__ = [
+    "CacheQueryProvider",
+]
