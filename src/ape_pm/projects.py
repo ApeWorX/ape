@@ -35,6 +35,7 @@ class BrownieProject(ProjectAPI):
             brownie_config_data = {}
 
         contracts_folder = brownie_config_data.get("contracts_folder", "contracts")
+        migrated_config_data["contracts_folder"] = contracts_folder
 
         # Migrate dependencies
         dependencies = []
@@ -82,13 +83,10 @@ class BrownieProject(ProjectAPI):
                         suffix = real_path_parts[1]
                         if "@" in suffix:
                             version_id = suffix.split("@")[1]
-                            key = f"{map_key}/{contracts_folder}"
                             entry = f"{dependency_name}/{version_id}"
-                            import_remapping.append(f"{key}={entry}")
+                            import_remapping.append(f"{map_key}={entry}")
                         else:
-                            import_remapping.append(
-                                f"{parts[0]}/{contracts_folder}={dependency_name}"
-                            )
+                            import_remapping.append(f"{map_key}={dependency_name}")
 
         if import_remapping or solidity_version:
             migrated_solidity_config: dict[str, Any] = {}

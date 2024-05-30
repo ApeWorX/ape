@@ -74,6 +74,12 @@ def test_repr_manifest_project():
     assert actual == expected
 
 
+def test_len(project):
+    actual = len(project.dependencies)
+    expected = len(project.config.dependencies)
+    assert actual == expected
+
+
 @pytest.mark.parametrize("ref", ("main", "v1.0.0", "1.0.0"))
 def test_decode_dependency_using_reference(ref, recwarn, project):
     dependency_config = {

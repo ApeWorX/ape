@@ -159,9 +159,6 @@ class SourceManager(BaseManager):
     @cached_property
     def _all_files(self) -> list[Path]:
         contracts_folder = self.get_contracts_path()
-        if not contracts_folder.is_dir():
-            return []
-
         return get_all_files_in_directory(contracts_folder)
 
     @property
@@ -876,18 +873,7 @@ class DependencyManager(BaseManager):
 
     def __len__(self) -> int:
         # NOTE: Using the config value keeps use lazy and fast.
-        path = self.packages_cache.api_folder
-        if not path.is_dir():
-            return 0
-
-        count = 0
-        for dep in self.packages_cache.api_folder.iterdir():
-            if not dep.is_dir():
-                continue
-
-            count += sum(f.is_file() and f.suffix == ".json" for f in dep.iterdir())
-
-        return count
+        return len(self.project.config.dependencies)
 
     def __getitem__(self, name: str) -> dict[str, "ProjectManager"]:
         result: dict[str, "ProjectManager"] = {}
@@ -1203,7 +1189,7 @@ class DependencyManager(BaseManager):
         self.packages_cache.cache_api(api)
 
         # Avoid infinite loop where Ape re-tries installing the dependency
-        # again and again in error situatuons.
+        # again and again in error situations.
         install_if_not_found = False
 
         try:
@@ -1354,43 +1340,7 @@ class Project(ProjectManager):
 
     @only_raise_attribute_error
     def __getattr__(self, item: str) -> Any:
-        try:
-            return get_attribute_with_extras(self, item)
-        except AttributeError as err:
-            message = getattr(err, "message", str(err))
-            did_append = False
-
-            all_files = get_all_files_in_directory(self.contracts_folder)
-            for path in all_files:
-                # Possibly, the user was trying to use a file name instead.
-                if path.stem != item:
-                    continue
-
-                message = (
-                    f"{message} However, there is a source file named '{path.name}', "
-                    "did you mean to reference a contract name from this source file?"
-                )
-                did_append = True
-                break
-
-            # Possibly, the user does not have compiler plugins installed or working.
-
-            if isinstance(self, LocalProject):
-                missing_exts = set()
-                for path in all_files:
-                    if ext := get_full_extension(path):
-                        if ext not in self.compiler_manager.registered_compilers:
-                            missing_exts.add(ext)
-
-                if missing_exts:
-                    start = "Else, could" if did_append else "Could"
-                    message = (
-                        f"{message} {start} it be from one of the "
-                        "missing compilers for extensions: " + f'{", ".join(sorted(missing_exts))}?'
-                    )
-
-            err.args = (message,)
-            raise  # The same exception (keep the stack the same height).
+        return get_attribute_with_extras(self, item)
 
     def __contains__(self, item):
         return item in self.contracts
@@ -1896,6 +1846,44 @@ class LocalProject(Project):
     def __contains__(self, name: str) -> bool:
         return name in dir(self) or name in self.contracts
 
+    @only_raise_attribute_error
+    def __getattr__(self, item: str) -> Any:
+        try:
+            return get_attribute_with_extras(self, item)
+        except AttributeError as err:
+            message = getattr(err, "message", str(err))
+            did_append = False
+
+            all_files = get_all_files_in_directory(self.contracts_folder)
+            for path in all_files:
+                # Possibly, the user was trying to use a file name instead.
+                if path.stem != item:
+                    continue
+
+                message = (
+                    f"{message} However, there is a source file named '{path.name}', "
+                    "did you mean to reference a contract name from this source file?"
+                )
+                did_append = True
+                break
+
+            # Possibly, the user does not have compiler plugins installed or working.
+            missing_exts = set()
+            for path in all_files:
+                if ext := get_full_extension(path):
+                    if ext not in self.compiler_manager.registered_compilers:
+                        missing_exts.add(ext)
+
+            if missing_exts:
+                start = "Else, could" if did_append else "Could"
+                message = (
+                    f"{message} {start} it be from one of the "
+                    "missing compilers for extensions: " + f'{", ".join(sorted(missing_exts))}?'
+                )
+
+            err.args = (message,)
+            raise  # The same exception (keep the stack the same height).
+
     @property
     def _contract_sources(self) -> list[ContractSource]:
         sources = []
@@ -2079,7 +2067,7 @@ class LocalProject(Project):
     def isolate_in_tempdir(self, **config_override) -> Iterator["LocalProject"]:
         """
         Clone this project to a temporary directory and return
-        its project.
+        its project.vers_settings["outputSelection"]
         """
         if self.in_tempdir:
             # Already in a tempdir.

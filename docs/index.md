@@ -59,14 +59,3 @@
    methoddocs/types.md
    methoddocs/utils.md
 ```
-
-```{eval-rst}
-.. toctree::
-   :caption: Plugin Python Reference
-   :maxdepth: 1
-
-   methoddocs/ape_accounts.md
-   methoddocs/ape_cache.md
-   methoddocs/ape_compile.md
-   methoddocs/ape_pm.md
-```

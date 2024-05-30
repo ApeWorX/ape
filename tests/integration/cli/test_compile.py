@@ -284,11 +284,11 @@ def test_compile_non_ape_project_deletes_ape_config_file(ape_cli, runner, projec
 @skip_projects_except("only-dependencies")
 def test_compile_only_dependency(ape_cli, runner, project, clean_cache, ape_caplog):
     expected_log_message = "Compiling sources/DependencyInProjectOnly.json"
+
+    # Compile w/o --include-dependencies flag (nothing happens but it doesn't fail).
     arguments: tuple[str, ...] = ("compile", "--force", "--project", f"{project.path}")
     result = runner.invoke(ape_cli, arguments, catch_exceptions=False)
     assert result.exit_code == 0, result.output
-
-    # Dependencies are not compiled automatically
     assert expected_log_message not in result.output
 
     # Now, actually compile (using --include-dependencies)

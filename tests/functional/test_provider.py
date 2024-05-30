@@ -203,13 +203,18 @@ def test_provider_get_balance(project, networks, accounts):
     assert balance == 1000000000000000000000000
 
 
-def test_set_timestamp(eth_tester_provider):
-    pending_at_start = eth_tester_provider.get_block("pending").timestamp
-    expected = pending_at_start + 100
-    eth_tester_provider.set_timestamp(expected)
-    eth_tester_provider.mine()
-    actual = eth_tester_provider.get_block("pending").timestamp
-    assert actual == expected + 1  # Mining adds another second.
+def test_set_timestamp(ethereum):
+    # NOTE: Using a different eth-tester for multi-processing ease.
+    with ethereum.local.use_provider(
+        "test", provider_settings={"chain_id": 919191912828283}
+    ) as provider:
+        pending_at_start = provider.get_block("pending").timestamp
+        new_ts = pending_at_start + 100
+        expected = new_ts + 1  # Mining adds another second.
+        provider.set_timestamp(new_ts)
+        provider.mine()
+        actual = provider.get_block("pending").timestamp
+        assert actual == expected
 
 
 def test_set_timestamp_to_same_time(eth_tester_provider):

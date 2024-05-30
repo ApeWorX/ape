@@ -958,12 +958,23 @@ def test_default_network_name_when_not_set_uses_local(project, ethereum):
 def test_default_network_name_when_not_set_and_no_local_uses_only(
     project, custom_networks_config_dict
 ):
-    ecosystem_name = "customeco"
-    data = copy.deepcopy(custom_networks_config_dict)
-    data["networks"]["custom"][0]["ecosystem"] = ecosystem_name
-    with project.temp_config(**data):
+    """
+    Tests a condition that is rare but when a default network is
+    not set but there is a single network. In this case, it
+    should use the single network by default.
+    """
+    net = copy.deepcopy(custom_networks_config_dict["networks"]["custom"][0])
+
+    # In a situation with an ecosystem with only a single network.
+    ecosystem_name = "acustomeco"
+    net["ecosystem"] = ecosystem_name
+
+    only_network = "onlynet"  # More obvious name for test.
+    net["name"] = only_network
+
+    with project.temp_config(networks={"custom": [net]}):
         ecosystem = project.network_manager.get_ecosystem(ecosystem_name)
-        assert ecosystem.default_network_name == "apenet"
+        assert ecosystem.default_network_name == only_network
 
 
 def test_decode_custom_error(chain, ethereum):

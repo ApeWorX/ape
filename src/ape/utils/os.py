@@ -90,7 +90,7 @@ def get_all_files_in_directory(
         return []
 
     # is dir
-    all_files = [p for p in list(path.rglob("*.*")) if p.is_file()]
+    all_files = [p for p in path.rglob("*.*") if p.is_file()]
     if pattern:
         if isinstance(pattern, str):
             pattern = re.compile(pattern)

@@ -552,10 +552,16 @@ class TestBrownieProject:
     def test_configure(self, config, brownie_project):
         config = brownie_project.extract_config()
 
+        # Ensure contracts_folder works.
+        assert config.contracts_folder == "contractsrenamed"
+
         # Ensure Solidity and dependencies configuration mapped correctly
         assert config.solidity.version == "0.6.12"
+
+        # NOTE: `contracts/` is not part of the import key as it is
+        # usually included in the import statements.
         assert [str(x) for x in config.solidity.import_remapping] == [
-            "@openzeppelin/contracts=openzeppelin/3.1.0"
+            "@openzeppelin=openzeppelin/3.1.0"
         ]
         assert config.dependencies[0]["name"] == "openzeppelin"
         assert config.dependencies[0]["github"] == "OpenZeppelin/openzeppelin-contracts"
