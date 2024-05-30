@@ -4,31 +4,27 @@ from ape.api.networks import LOCAL_NETWORK_NAME
 
 from ._converters import WeiConversions
 from .ecosystem import (
-    NETWORKS, 
-    Ethereum, 
-    EthereumConfig,
-    NetworkConfig,
-    ForkedNetworkConfig,
+    NETWORKS,
     BaseEthereumConfig,
     Block,
+    Ethereum,
+    EthereumConfig,
+    ForkedNetworkConfig,
+    NetworkConfig,
 )
-from .provider import (
-    assert_web3_provider_uri_env_var_not_set,
-    Web3Provider,
-    EthereumNodeProvider,
-)
+from .provider import EthereumNodeProvider, Web3Provider, assert_web3_provider_uri_env_var_not_set
 from .query import EthereumQueryProvider
-from .trace import Trace, TransactionTrace, CallTrace
+from .trace import CallTrace, Trace, TransactionTrace
 from .transactions import (
-    TransactionStatusEnum,
-    TransactionType,
-    BaseTransaction,
-    StaticFeeTransaction,
     AccessListTransaction,
+    BaseTransaction,
     DynamicFeeTransaction,
-    SharedBlobTransaction,
     Receipt,
     SharedBlobReceipt,
+    SharedBlobTransaction,
+    StaticFeeTransaction,
+    TransactionStatusEnum,
+    TransactionType,
 )
 
 
@@ -60,6 +56,7 @@ def networks():
 @plugins.register(plugins.QueryPlugin)
 def query_engines():
     yield EthereumQueryProvider
+
 
 __all__ = [
     "Ethereum",

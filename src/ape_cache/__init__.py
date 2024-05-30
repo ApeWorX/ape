@@ -17,6 +17,7 @@ def config_class():
 def query_engines():
     return CacheQueryProvider
 
+
 __all__ = [
     "CacheQueryProvider",
 ]
