@@ -70,4 +70,5 @@
    methoddocs/ape_ethereum.md
    methoddocs/ape_node.md
    methoddocs/ape_pm.md
+   methoddocs/ape_test.md
 ```
