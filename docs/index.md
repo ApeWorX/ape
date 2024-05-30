@@ -64,9 +64,10 @@
 .. toctree::
    :caption: Plugin Python Reference
    :maxdepth: 1
-   
+
    methoddocs/ape_accounts.md
    methoddocs/ape_compile.md
    methoddocs/ape_ethereum.md
+   methoddocs/ape_node.md
    methoddocs/ape_pm.md
 ```
