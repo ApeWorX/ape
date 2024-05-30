@@ -106,7 +106,7 @@ def pytest_load_initial_conftests(early_config):
     Compile contracts before loading ``conftest.py``s.
     """
     capture_manager = early_config.pluginmanager.get_plugin("capturemanager")
-    
+
     # Suspend stdout capture to display compilation data
     capture_manager.suspend()
     try:
