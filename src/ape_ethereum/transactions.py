@@ -400,7 +400,7 @@ class Receipt(ReceiptAPI):
 
 class SharedBlobReceipt(Receipt):
     """
-    An `EIP-4844 <https://eips.ethereum.org/EIPS/eip-4844#blob-transaction>`__"
+    An `EIP-4844 <https://eips.ethereum.org/EIPS/eip-4844#blob-transaction>`
     blob transaction.
     """
 
