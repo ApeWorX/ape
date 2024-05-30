@@ -81,6 +81,7 @@ NETWORKS = {
     # chain_id, network_id
     "mainnet": (1, 1),
     "sepolia": (11155111, 11155111),
+    "holesky": (17000, 17000),
 }
 BLUEPRINT_HEADER = HexBytes("0xfe71")
 
