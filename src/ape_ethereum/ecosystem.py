@@ -310,6 +310,7 @@ class BaseEthereumConfig(PluginConfig):
 
 class EthereumConfig(BaseEthereumConfig):
     mainnet: NetworkConfig = create_network_config(block_time=13)
+    holesky: NetworkConfig = create_network_config(block_time=13)
     sepolia: NetworkConfig = create_network_config(block_time=15)
 
 
