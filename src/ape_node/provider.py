@@ -1,14 +1,12 @@
 import atexit
 import shutil
-from itertools import tee
 from pathlib import Path
 from subprocess import DEVNULL, PIPE, Popen
-from typing import Any, Dict, List, Optional, Union
+from typing import Optional, Union
 
 from eth_pydantic_types import HexBytes
 from eth_typing import HexStr
 from eth_utils import add_0x_prefix, to_hex, to_wei
-from evm_trace import CallType, get_calltree_from_geth_trace
 from evmchains import get_random_rpc
 from geth.accounts import ensure_account_exists  # type: ignore
 from geth.chain import initialize_chain  # type: ignore
@@ -19,10 +17,9 @@ from requests.exceptions import ConnectionError
 from web3.middleware import geth_poa_middleware
 from yarl import URL
 
-from ape.api import PluginConfig, SubprocessProvider, TestProviderAPI, TransactionAPI
-from ape.exceptions import ProviderError
+from ape.api import PluginConfig, SubprocessProvider, TestProviderAPI
 from ape.logging import LogLevel, logger
-from ape.types import BlockID, CallTreeNode, SnapshotID, SourceTraceback
+from ape.types import SnapshotID
 from ape.utils import (
     DEFAULT_NUMBER_OF_TEST_ACCOUNTS,
     DEFAULT_TEST_CHAIN_ID,
@@ -58,12 +55,12 @@ class GethDevProcess(BaseGethProcess):
         initial_balance: Union[str, int] = to_wei(10000, "ether"),
         executable: Optional[str] = None,
         auto_disconnect: bool = True,
-        extra_funded_accounts: Optional[List[str]] = None,
+        extra_funded_accounts: Optional[list[str]] = None,
         hd_path: Optional[str] = DEFAULT_TEST_HD_PATH,
     ):
         executable = executable or "geth"
         if not shutil.which(executable):
-            raise GethNotInstalledError()
+            raise NodeSoftwareNotInstalledError()
 
         self.data_dir = data_dir
         self._hostname = hostname
@@ -97,7 +94,7 @@ class GethDevProcess(BaseGethProcess):
         addresses.extend(extra_funded_accounts or [])
         bal_dict = {"balance": str(initial_balance)}
         alloc = {a: bal_dict for a in addresses}
-        genesis_data: Dict = {
+        genesis_data: dict = {
             "overwrite": True,
             "coinbase": "0x0000000000000000000000000000000000000000",
             "difficulty": "0x0",
@@ -195,19 +192,19 @@ class GethDevProcess(BaseGethProcess):
         self.proc.wait(*args, **kwargs)
 
 
-class GethNetworkConfig(PluginConfig):
+class EthereumNetworkConfig(PluginConfig):
     # Make sure you are running the right networks when you try for these
-    mainnet: Dict = {"uri": get_random_rpc("ethereum", "mainnet")}
-    sepolia: Dict = {"uri": get_random_rpc("ethereum", "sepolia")}
-    holesky: Dict = {"uri": get_random_rpc("ethereum", "holesky")}
+    mainnet: dict = {"uri": get_random_rpc("ethereum", "mainnet")}
+    holesky: dict = {"uri": get_random_rpc("ethereum", "holesky")}
+    sepolia: dict = {"uri": get_random_rpc("ethereum", "sepolia")}
     # Make sure to run via `geth --dev` (or similar)
-    local: Dict = {**DEFAULT_SETTINGS.copy(), "chain_id": DEFAULT_TEST_CHAIN_ID}
+    local: dict = {**DEFAULT_SETTINGS.copy(), "chain_id": DEFAULT_TEST_CHAIN_ID}
 
     model_config = SettingsConfigDict(extra="allow")
 
 
-class GethConfig(PluginConfig):
-    ethereum: GethNetworkConfig = GethNetworkConfig()
+class EthereumNodeConfig(PluginConfig):
+    ethereum: EthereumNetworkConfig = EthereumNetworkConfig()
     executable: Optional[str] = None
     ipc_path: Optional[Path] = None
     data_dir: Optional[Path] = None
@@ -215,11 +212,10 @@ class GethConfig(PluginConfig):
     model_config = SettingsConfigDict(extra="allow")
 
 
-# TODO: 0.8 rename exception.
-class GethNotInstalledError(ConnectionError):
+class NodeSoftwareNotInstalledError(ConnectionError):
     def __init__(self):
         super().__init__(
-            "No node found and 'ape-geth' is unable to start one.\n"
+            "No node found and 'ape-node' is unable to start one.\n"
             "Things you can do:\n"
             "\t1. Check your connection URL, if trying to connect remotely.\n"
             "\t2. Install node software (geth), if trying to run a local node.\n"
@@ -230,8 +226,7 @@ class GethNotInstalledError(ConnectionError):
 # NOTE: Using EthereumNodeProvider because of it's geth-derived default behavior.
 class GethDev(EthereumNodeProvider, TestProviderAPI, SubprocessProvider):
     _process: Optional[GethDevProcess] = None
-    name: str = "geth"
-    can_use_parity_traces: Optional[bool] = False
+    name: str = "node"
 
     @property
     def process_name(self) -> str:
@@ -243,12 +238,22 @@ class GethDev(EthereumNodeProvider, TestProviderAPI, SubprocessProvider):
 
     @property
     def data_dir(self) -> Path:
-        # Overridden from BaseGeth class for placing debug logs in ape data folder.
-        return self.settings.data_dir or self.data_folder / self.name
+        # Overridden from base class for placing debug logs in ape data folder.
+        return self.settings.data_dir or self.config_manager.DATA_FOLDER / self.name
 
-    @log_instead_of_fail(default="<geth>")
+    @log_instead_of_fail(default="<node>")
     def __repr__(self) -> str:
-        return f"<geth chain_id={self.chain_id}>"
+        client_version = self.client_version
+        client_version_str = f" ({client_version}) " if client_version else " "
+        return f"<Node{client_version_str}chain_id={self.chain_id}>"
+
+    @property
+    def auto_mine(self) -> bool:
+        return self.make_request("eth_mining", [])
+
+    @auto_mine.setter
+    def auto_mine(self, value):
+        raise NotImplementedError("'auto_mine' setter not implemented.")
 
     def connect(self):
         self._set_web3()
@@ -273,7 +278,7 @@ class GethDev(EthereumNodeProvider, TestProviderAPI, SubprocessProvider):
         # Include extra accounts to allocated funds to at genesis.
         extra_accounts = self.settings.ethereum.local.get("extra_funded_accounts", [])
         extra_accounts.extend(self.provider_settings.get("extra_funded_accounts", []))
-        extra_accounts = list(set([HexBytes(a).hex().lower() for a in extra_accounts]))
+        extra_accounts = list({HexBytes(a).hex().lower() for a in extra_accounts})
         test_config["extra_funded_accounts"] = extra_accounts
 
         process = GethDevProcess.from_uri(self.uri, self.data_dir, **test_config)
@@ -314,7 +319,7 @@ class GethDev(EthereumNodeProvider, TestProviderAPI, SubprocessProvider):
     def snapshot(self) -> SnapshotID:
         return self.get_block("latest").number or 0
 
-    def revert(self, snapshot_id: SnapshotID):
+    def restore(self, snapshot_id: SnapshotID):
         if isinstance(snapshot_id, int):
             block_number_int = snapshot_id
             block_number_hex_str = str(to_hex(snapshot_id))
@@ -333,7 +338,7 @@ class GethDev(EthereumNodeProvider, TestProviderAPI, SubprocessProvider):
             logger.error("Unable to set head to future block.")
             return
 
-        self._make_request("debug_setHead", [block_number_hex_str])
+        self.make_request("debug_setHead", [block_number_hex_str])
 
     @raises_not_implemented
     def set_timestamp(self, new_timestamp: int):
@@ -343,126 +348,12 @@ class GethDev(EthereumNodeProvider, TestProviderAPI, SubprocessProvider):
     def mine(self, num_blocks: int = 1):
         pass
 
-    def send_call(
-        self,
-        txn: TransactionAPI,
-        block_id: Optional[BlockID] = None,
-        state: Optional[Dict] = None,
-        **kwargs: Any,
-    ) -> HexBytes:
-        if block_id is not None:
-            kwargs["block_identifier"] = block_id
-
-        if state is not None:
-            kwargs["state_override"] = state
-
-        skip_trace = kwargs.pop("skip_trace", False)
-        arguments = self._prepare_call(txn, **kwargs)
-        if skip_trace:
-            return self._eth_call(arguments)
-
-        show_gas = kwargs.pop("show_gas_report", False)
-        show_trace = kwargs.pop("show_trace", False)
-
-        if self._test_runner is not None:
-            track_gas = self._test_runner.gas_tracker.enabled
-            track_coverage = self._test_runner.coverage_tracker.enabled
-        else:
-            track_gas = False
-            track_coverage = False
-
-        needs_trace = track_gas or track_coverage or show_gas or show_trace
-        if not needs_trace:
-            return self._eth_call(arguments)
-
-        # The user is requesting information related to a call's trace,
-        # such as gas usage data.
-
-        result, trace_frames = self._trace_call(arguments)
-        trace_frames, frames_copy = tee(trace_frames)
-        return_value = HexBytes(result["returnValue"])
-        root_node_kwargs = {
-            "gas_cost": result.get("gas", 0),
-            "address": txn.receiver,
-            "calldata": txn.data,
-            "value": txn.value,
-            "call_type": CallType.CALL,
-            "failed": False,
-            "returndata": return_value,
-        }
-
-        evm_call_tree = get_calltree_from_geth_trace(trace_frames, **root_node_kwargs)
-
-        # NOTE: Don't pass txn_hash here, as it will fail (this is not a real txn).
-        call_tree = self._create_call_tree_node(evm_call_tree)
-
-        if track_gas and show_gas and not show_trace and call_tree:
-            # Optimization to enrich early and in_place=True.
-            call_tree.enrich()
-
-        if track_gas and call_tree and self._test_runner is not None and txn.receiver:
-            # Gas report being collected, likely for showing a report
-            # at the end of a test run.
-            # Use `in_place=False` in case also `show_trace=True`
-            enriched_call_tree = call_tree.enrich(in_place=False)
-            self._test_runner.gas_tracker.append_gas(enriched_call_tree, txn.receiver)
-
-        if track_coverage and self._test_runner is not None and txn.receiver:
-            contract_type = self.chain_manager.contracts.get(txn.receiver)
-            if contract_type:
-                traceframes = (self._create_trace_frame(x) for x in frames_copy)
-                method_id = HexBytes(txn.data)
-                selector = (
-                    contract_type.methods[method_id].selector
-                    if method_id in contract_type.methods
-                    else None
-                )
-                source_traceback = SourceTraceback.create(contract_type, traceframes, method_id)
-                self._test_runner.coverage_tracker.cover(
-                    source_traceback, function=selector, contract=contract_type.name
-                )
-
-        if show_gas:
-            enriched_call_tree = call_tree.enrich(in_place=False)
-            self.chain_manager._reports.show_gas(enriched_call_tree)
-
-        if show_trace:
-            call_tree = call_tree.enrich(use_symbol_for_tokens=True)
-            self.chain_manager._reports.show_trace(call_tree)
-
-        return return_value
-
-    def _eth_call(self, arguments: List) -> HexBytes:
-        try:
-            result = self._make_request("eth_call", arguments)
-        except Exception as err:
-            trace, trace2 = tee(self._create_trace_frame(x) for x in self._trace_call(arguments)[1])
-            contract_address = arguments[0]["to"]
-            contract_type = self.chain_manager.contracts.get(contract_address)
-            method_id = arguments[0].get("data", "")[:10] or None
-            tb = (
-                SourceTraceback.create(contract_type, trace, method_id)
-                if method_id and contract_type
-                else None
-            )
-            raise self.get_virtual_machine_error(
-                err, trace=trace2, contract_address=contract_address, source_traceback=tb
-            ) from err
-
-        if "error" in result:
-            raise ProviderError(result["error"]["message"])
-
-        return HexBytes(result)
-
-    def get_call_tree(self, txn_hash: str, **root_node_kwargs) -> CallTreeNode:
-        return self._get_geth_call_tree(txn_hash, **root_node_kwargs)
-
-    def build_command(self) -> List[str]:
+    def build_command(self) -> list[str]:
         return self._process.command if self._process else []
 
 
 # NOTE: The default behavior of EthereumNodeBehavior assumes geth.
-class Geth(EthereumNodeProvider):
+class Node(EthereumNodeProvider):
     @property
     def uri(self) -> str:
         if "uri" in self.provider_settings:

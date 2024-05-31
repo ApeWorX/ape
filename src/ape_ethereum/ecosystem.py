@@ -1,8 +1,8 @@
 import re
-from copy import deepcopy
+from collections.abc import Iterator, Sequence
 from decimal import Decimal
 from functools import cached_property
-from typing import Any, ClassVar, Dict, Iterator, List, Optional, Sequence, Tuple, Type, Union, cast
+from typing import Any, ClassVar, Optional, Union, cast
 
 from eth_abi import decode, encode
 from eth_abi.exceptions import InsufficientDataBytes, NonEmptyPaddingBytes
@@ -22,7 +22,7 @@ from ethpm_types.abi import ABIType, ConstructorABI, EventABI, MethodABI
 from pydantic import Field, computed_field, field_validator, model_validator
 from pydantic_settings import SettingsConfigDict
 
-from ape.api import BlockAPI, EcosystemAPI, PluginConfig, ReceiptAPI, TransactionAPI
+from ape.api import BlockAPI, EcosystemAPI, PluginConfig, ReceiptAPI, TraceAPI, TransactionAPI
 from ape.api.networks import LOCAL_NETWORK_NAME
 from ape.contracts.base import ContractCall
 from ape.exceptions import (
@@ -37,7 +37,6 @@ from ape.managers.config import merge_configs
 from ape.types import (
     AddressType,
     AutoGasLimit,
-    CallTreeNode,
     ContractLog,
     GasLimit,
     RawAddress,
@@ -65,6 +64,7 @@ from ape_ethereum.proxies import (
     ProxyInfo,
     ProxyType,
 )
+from ape_ethereum.trace import _REVERT_PREFIX, Trace, TransactionTrace
 from ape_ethereum.transactions import (
     AccessListTransaction,
     BaseTransaction,
@@ -93,7 +93,7 @@ class NetworkConfig(PluginConfig):
     considering a transaction 'confirmed'.
     """
 
-    default_provider: Optional[str] = "geth"
+    default_provider: Optional[str] = "node"
     """
     The default provider to use. If set to ``None``, ape will rely on
     an external plugin supplying the provider implementation, such as
@@ -186,7 +186,7 @@ def create_local_network_config(
 def create_network_config(
     required_confirmations: int = 2,
     base_fee_multiplier: float = DEFAULT_LIVE_NETWORK_BASE_FEE_MULTIPLIER,
-    cls: Type = NetworkConfig,
+    cls: type = NetworkConfig,
     **kwargs,
 ) -> NetworkConfig:
     return cls(
@@ -203,18 +203,18 @@ class BaseEthereumConfig(PluginConfig):
 
     DEFAULT_TRANSACTION_TYPE: ClassVar[int] = TransactionType.DYNAMIC.value
     DEFAULT_LOCAL_GAS_LIMIT: ClassVar[GasLimit] = "max"
-    NETWORKS: ClassVar[Dict[str, Tuple[int, int]]] = NETWORKS
+    NETWORKS: ClassVar[dict[str, tuple[int, int]]] = NETWORKS
 
     default_network: str = LOCAL_NETWORK_NAME
-    _forked_configs: Dict[str, ForkedNetworkConfig] = {}
-    _custom_networks: Dict[str, NetworkConfig] = {}
+    _forked_configs: dict[str, ForkedNetworkConfig] = {}
+    _custom_networks: dict[str, NetworkConfig] = {}
 
     model_config = SettingsConfigDict(extra="allow")
 
     @model_validator(mode="before")
     @classmethod
     def load_network_configs(cls, values):
-        cfg_forks: Dict[str, ForkedNetworkConfig] = {}
+        cfg_forks: dict[str, ForkedNetworkConfig] = {}
         custom_networks = {}
         for name, obj in values.items():
             if name.startswith("_"):
@@ -325,6 +325,7 @@ class Block(BlockAPI):
     base_fee: int = Field(0, alias="baseFeePerGas")
     difficulty: int = 0
     total_difficulty: int = Field(0, alias="totalDifficulty")
+    uncles: list[HexBytes] = []
 
     # Type re-declares.
     hash: Optional[HexBytes] = None
@@ -347,12 +348,33 @@ class Block(BlockAPI):
     def validate_ints(cls, value):
         return to_int(value) if value else 0
 
+    @computed_field()  # type: ignore[misc]
+    @property
+    def size(self) -> int:
+        if self._size is not None:
+            # The size was provided with the rest of the model
+            # (normal).
+            return self._size
+
+        number = self.number
+        if number is None:
+            raise APINotImplementedError()
+
+        # Try to get it from the provider.
+        elif provider := self.network_manager.active_provider:
+            block = provider.get_block(number)
+            size = block._size
+            if size is not None and size > -1:
+                self._size = size
+                return size
+
+        raise APINotImplementedError()
+
 
 class Ethereum(EcosystemAPI):
     # NOTE: `default_transaction_type` should be overridden
     #   if the chain doesn't support EIP-1559.
 
-    name: str = "ethereum"
     fee_token_symbol: str = "ETH"
 
     @property
@@ -369,11 +391,11 @@ class Ethereum(EcosystemAPI):
 
         for name in networks_to_check:
             network = self.get_network(name)
-            ecosystem_config = network.config
+            ecosystem_config = network.ecosystem_config
             ecosystem_default = ecosystem_config.get(
                 "default_transaction_type", DEFAULT_TRANSACTION_TYPE
             )
-            result: int = network._network_config.get("default_transaction_type", ecosystem_default)
+            result: int = network.config.get("default_transaction_type", ecosystem_default)
             return TransactionType(result)
 
         return TransactionType(DEFAULT_TRANSACTION_TYPE)
@@ -386,7 +408,7 @@ class Ethereum(EcosystemAPI):
     def encode_address(cls, address: AddressType) -> RawAddress:
         return str(address)
 
-    def decode_transaction_type(self, transaction_type_id: Any) -> Type[TransactionAPI]:
+    def decode_transaction_type(self, transaction_type_id: Any) -> type[TransactionAPI]:
         if isinstance(transaction_type_id, TransactionType):
             tx_type = transaction_type_id
         elif isinstance(transaction_type_id, int):
@@ -514,7 +536,7 @@ class Ethereum(EcosystemAPI):
 
         return None
 
-    def decode_receipt(self, data: Dict) -> ReceiptAPI:
+    def decode_receipt(self, data: dict) -> ReceiptAPI:
         status = data.get("status")
         if status is not None:
             status = self.conversion_manager.convert(status, int)
@@ -553,7 +575,7 @@ class Ethereum(EcosystemAPI):
             transaction=self.create_transaction(**data),
         )
 
-        receipt_cls: Type[Receipt]
+        receipt_cls: type[Receipt]
         if any(
             x in data
             for x in ("blobGasPrice", "blobGasUsed", "blobVersionedHashes", "maxFeePerBlobGas")
@@ -566,7 +588,7 @@ class Ethereum(EcosystemAPI):
 
         return receipt_cls.model_validate(receipt_kwargs)
 
-    def decode_block(self, data: Dict) -> BlockAPI:
+    def decode_block(self, data: dict) -> BlockAPI:
         data["hash"] = HexBytes(data["hash"]) if data.get("hash") else None
         if "gas_limit" in data:
             data["gasLimit"] = data.pop("gas_limit")
@@ -585,14 +607,9 @@ class Ethereum(EcosystemAPI):
         if "transactions" in data:
             data["num_transactions"] = len(data["transactions"])
 
-        if "size" not in data:
-            # NOTE: Due to an issue with `eth_subscribe:newHeads` on Infura
-            # https://github.com/ApeWorX/ape-infura/issues/72
-            data["size"] = -1  # HACK: use an unrealistic sentinel value
-
         return Block.model_validate(data)
 
-    def _python_type_for_abi_type(self, abi_type: ABIType) -> Union[Type, Sequence]:
+    def _python_type_for_abi_type(self, abi_type: ABIType) -> Union[type, Sequence]:
         # NOTE: An array can be an array of tuples, so we start with an array check
         if str(abi_type.type).endswith("]"):
             # remove one layer of the potential onion of array
@@ -638,13 +655,13 @@ class Ethereum(EcosystemAPI):
         encoded_calldata = encode(input_types, converted_args)
         return HexBytes(encoded_calldata)
 
-    def decode_calldata(self, abi: Union[ConstructorABI, MethodABI], calldata: bytes) -> Dict:
+    def decode_calldata(self, abi: Union[ConstructorABI, MethodABI], calldata: bytes) -> dict:
         raw_input_types = [i.canonical_type for i in abi.inputs]
         input_types = [parse_type(i.model_dump()) for i in abi.inputs]
 
         try:
             raw_input_values = decode(raw_input_types, calldata, strict=False)
-        except InsufficientDataBytes as err:
+        except (InsufficientDataBytes, OverflowError, NonEmptyPaddingBytes) as err:
             raise DecodingError(str(err)) from err
 
         input_values = [
@@ -659,7 +676,7 @@ class Ethereum(EcosystemAPI):
 
         return arguments
 
-    def decode_returndata(self, abi: MethodABI, raw_data: bytes) -> Tuple[Any, ...]:
+    def decode_returndata(self, abi: MethodABI, raw_data: bytes) -> tuple[Any, ...]:
         output_types_str_ls = [o.canonical_type for o in abi.outputs]
 
         if raw_data:
@@ -728,7 +745,7 @@ class Ethereum(EcosystemAPI):
 
         elif isinstance(value, str) and is_hex_address(value):
             address = self.decode_address(value)
-            return self._enrich_address(address, **kwargs)
+            return self._enrich_contract_id(address, **kwargs)
 
         elif isinstance(value, str):
             # Surround non-address strings with quotes.
@@ -743,8 +760,8 @@ class Ethereum(EcosystemAPI):
         return value
 
     def decode_primitive_value(
-        self, value: Any, output_type: Union[str, Tuple, List]
-    ) -> Union[str, HexBytes, Tuple, List]:
+        self, value: Any, output_type: Union[str, tuple, list]
+    ) -> Union[str, HexBytes, tuple, list]:
         if output_type == "address":
             try:
                 return self.decode_address(value)
@@ -756,6 +773,10 @@ class Ethereum(EcosystemAPI):
 
         elif isinstance(output_type, str) and is_array(output_type):
             sub_type = "[".join(output_type.split("[")[:-1])
+
+            if not isinstance(value, (list, tuple)):
+                value = (value,)
+
             return [self.decode_primitive_value(v, sub_type) for v in value]
 
         elif isinstance(output_type, tuple):
@@ -837,7 +858,7 @@ class Ethereum(EcosystemAPI):
             tx_data["data"] = b""
 
         # Deduce the transaction type.
-        transaction_types: Dict[TransactionType, Type[TransactionAPI]] = {
+        transaction_types: dict[TransactionType, type[TransactionAPI]] = {
             TransactionType.STATIC: StaticFeeTransaction,
             TransactionType.ACCESS_LIST: AccessListTransaction,
             TransactionType.DYNAMIC: DynamicFeeTransaction,
@@ -908,7 +929,7 @@ class Ethereum(EcosystemAPI):
 
         return txn_class(**tx_data)
 
-    def decode_logs(self, logs: Sequence[Dict], *events: EventABI) -> Iterator["ContractLog"]:
+    def decode_logs(self, logs: Sequence[dict], *events: EventABI) -> Iterator["ContractLog"]:
         if not logs:
             return
 
@@ -939,7 +960,7 @@ class Ethereum(EcosystemAPI):
 
             # Since LogABICollection does not have access to the Ecosystem,
             # the rest of the decoding must happen here.
-            converted_arguments: Dict = {}
+            converted_arguments: dict = {}
 
             for item in abi.abi.inputs:
                 _type, key, value = item.canonical_type, item.name, event_arguments[item.name]
@@ -982,87 +1003,136 @@ class Ethereum(EcosystemAPI):
                 ),
             )
 
-    def enrich_calltree(self, call: CallTreeNode, **kwargs) -> CallTreeNode:
-        kwargs["use_symbol_for_tokens"] = kwargs.get("use_symbol_for_tokens", False)
-        kwargs["in_place"] = kwargs.get("in_place", True)
+    def enrich_trace(self, trace: TraceAPI, **kwargs) -> TraceAPI:
+        kwargs["trace"] = trace
+        if not isinstance(trace, Trace):
+            return trace
 
-        if call.txn_hash:
-            receipt = self.chain_manager.get_receipt(call.txn_hash)
-            kwargs["sender"] = receipt.sender
-
-        # Enrich subcalls before any _return_ statement.
-        enriched_call = call if kwargs["in_place"] else deepcopy(call)
-        enriched_call.calls = [self.enrich_calltree(c, **kwargs) for c in enriched_call.calls]
-
-        not_address_type: bool = not self.conversion_manager.is_type(
-            enriched_call.contract_id, AddressType
-        )
-        if not_address_type and is_hex_address(enriched_call.contract_id):
-            enriched_call.contract_id = self.decode_address(enriched_call.contract_id)
-
-        elif not_address_type:
+        elif trace._enriched_calltree is not None:
             # Already enriched.
-            return enriched_call
+            return trace
 
-        # Collapse pre-compile address calls
-        address = cast(AddressType, enriched_call.contract_id)
-        address_int = int(address, 16)
-        if 1 <= address_int <= 9:
-            sub_calls = [self.enrich_calltree(c, **kwargs) for c in enriched_call.calls]
-            if len(sub_calls) == 1:
-                return sub_calls[0]
+        if sender := trace.transaction.get("from"):
+            kwargs["sender"] = sender
 
-            intermediary_node = CallTreeNode(contract_id=f"{address_int}")
-            for sub_tree in sub_calls:
-                intermediary_node.add(sub_tree)
+        # Get the un-enriched calltree.
+        data = trace.get_calltree().model_dump(mode="json", by_alias=True)
 
-            return intermediary_node
+        if isinstance(trace, TransactionTrace):
+            return_value = trace.__dict__.get("return_value") if data.get("depth", 0) == 0 else None
+            if return_value is not None:
+                # Return value was discovered already.
+                kwargs["return_value"] = return_value
+
+        enriched_calltree = self._enrich_calltree(data, **kwargs)
+
+        # Cache the result back on the trace.
+        trace._enriched_calltree = enriched_calltree
+
+        return trace
+
+    def _enrich_calltree(self, call: dict, **kwargs) -> dict:
+        if "contract_id" in call:
+            # Already enriched.
+            return call
+
+        if self._test_runner and self._test_runner.gas_tracker.enabled:
+            default_symbol_for_tokens = not self._test_runner.gas_tracker.enabled
+        else:
+            default_symbol_for_tokens = True
+
+        kwargs["use_symbol_for_tokens"] = kwargs.get(
+            "use_symbol_for_tokens", default_symbol_for_tokens
+        )
+        call_type = call.get("call_type", "")
+        is_create = "CREATE" in call_type
+
+        # Enrich sub-calls first.
+        if subcalls := call.get("calls"):
+            call["calls"] = [self._enrich_calltree(c, **kwargs) for c in subcalls]
+
+        # Figure out the contract.
+        address = call.pop("address", "")
+        try:
+            call["contract_id"] = address = kwargs["contract_address"] = str(
+                self.decode_address(address)
+            )
+        except Exception:
+            # Tx was made with a weird address.
+            call["contract_id"] = address
+
+        if calldata := call.get("calldata"):
+            calldata_bytes = HexBytes(calldata)
+            call["method_id"] = calldata_bytes[:4].hex()
+            call["calldata"] = calldata if is_create else calldata_bytes[4:].hex()
+
+        else:
+            call["method_id"] = "0x"
+
+        try:
+            address_int = int(address, 16)
+        except Exception:
+            pass
+        else:
+            # Collapse pre-compile address calls
+            if 1 <= address_int <= 9:
+                if len(call.get("calls", [])) == 1:
+                    return call["calls"][0]
+
+                return {"contract_id": f"{address_int}", "calls": call["calls"]}
+
+        depth = call.get("depth", 0)
+        if depth == 0 and address in self.account_manager:
+            call["contract_id"] = f"__{self.fee_token_symbol}_transfer__"
+        else:
+            call["contract_id"] = self._enrich_contract_id(call["contract_id"], **kwargs)
 
         if not (contract_type := self.chain_manager.contracts.get(address)):
-            return enriched_call
+            # Without a contract, we can enrich no further.
+            return call
 
-        enriched_call.contract_id = self._enrich_address(address, **kwargs)
         method_abi: Optional[Union[MethodABI, ConstructorABI]] = None
-        if "CREATE" in (enriched_call.call_type or ""):
+        if is_create:
             method_abi = contract_type.constructor
             name = "__new__"
 
-        elif enriched_call.method_id is None:
-            name = enriched_call.method_id or "0x"
-
-        else:
-            method_id_bytes = HexBytes(enriched_call.method_id)
+        elif call["method_id"] != "0x":
+            method_id_bytes = HexBytes(call["method_id"])
             if method_id_bytes in contract_type.methods:
                 method_abi = contract_type.methods[method_id_bytes]
                 assert isinstance(method_abi, MethodABI)  # For mypy
 
                 # Check if method name duplicated. If that is the case, use selector.
                 times = len([x for x in contract_type.methods if x.name == method_abi.name])
-                name = (
-                    method_abi.name if times == 1 else method_abi.selector
-                ) or enriched_call.method_id
-                enriched_call = self._enrich_calldata(
-                    enriched_call, method_abi, contract_type, **kwargs
-                )
-            else:
-                name = enriched_call.method_id or "0x"
+                name = (method_abi.name if times == 1 else method_abi.selector) or call["method_id"]
+                call = self._enrich_calldata(call, method_abi, contract_type, **kwargs)
 
-        enriched_call.method_id = name
+            else:
+                name = call["method_id"]
+        else:
+            name = call.get("method_id") or "0x"
+
+        call["method_id"] = name
 
         if method_abi:
-            enriched_call = self._enrich_calldata(
-                enriched_call, method_abi, contract_type, **kwargs
-            )
+            call = self._enrich_calldata(call, method_abi, contract_type, **kwargs)
 
-            if isinstance(method_abi, MethodABI):
-                enriched_call = self._enrich_returndata(enriched_call, method_abi, **kwargs)
+            if kwargs.get("return_value"):
+                # Return value was separately enriched.
+                call["returndata"] = kwargs["return_value"]
+            elif isinstance(method_abi, MethodABI):
+                call = self._enrich_returndata(call, method_abi, **kwargs)
             else:
                 # For constructors, don't include outputs, as it is likely a large amount of bytes.
-                enriched_call.outputs = None
+                call["returndata"] = None
 
-        return enriched_call
+        elif "revert_message" not in call:
+            # Method not found but perhaps we still know the error.
+            call = self._enrich_revert_message(call)
 
-    def _enrich_address(self, address: AddressType, **kwargs) -> str:
+        return call
+
+    def _enrich_contract_id(self, address: AddressType, **kwargs) -> str:
         if address and address == kwargs.get("sender"):
             return "tx.origin"
 
@@ -1094,22 +1164,16 @@ class Ethereum(EcosystemAPI):
                     return str(symbol)
 
         name = contract_type.name.strip() if contract_type.name else None
-        return name or self._get_contract_id_from_address(address)
-
-    def _get_contract_id_from_address(self, address: "AddressType") -> str:
-        if address in self.account_manager:
-            return f"Transferring {self.fee_token_symbol}"
-
-        return address
+        return name or address
 
     def _enrich_calldata(
         self,
-        call: CallTreeNode,
+        call: dict,
         method_abi: Union[MethodABI, ConstructorABI],
         contract_type: ContractType,
         **kwargs,
-    ) -> CallTreeNode:
-        calldata = call.inputs
+    ) -> dict:
+        calldata = call["calldata"]
         if isinstance(calldata, (str, bytes, int)):
             calldata_arg = HexBytes(calldata)
         else:
@@ -1117,7 +1181,7 @@ class Ethereum(EcosystemAPI):
             # Mostly for mypy's sake.
             return call
 
-        if call.call_type and "CREATE" in call.call_type:
+        if call.get("call_type") and "CREATE" in call.get("call_type", ""):
             # Strip off bytecode
             bytecode = (
                 contract_type.deployment_bytecode.to_bytes()
@@ -1128,26 +1192,52 @@ class Ethereum(EcosystemAPI):
             calldata_arg = HexBytes(calldata_arg.split(bytecode)[-1])
 
         try:
-            call.inputs = self.decode_calldata(method_abi, calldata_arg)
+            call["calldata"] = self.decode_calldata(method_abi, calldata_arg)
         except DecodingError:
-            call.inputs = ["<?>" for _ in method_abi.inputs]
+            call["calldata"] = ["<?>" for _ in method_abi.inputs]
         else:
-            call.inputs = {k: self._enrich_value(v, **kwargs) for k, v in call.inputs.items()}
+            call["calldata"] = {
+                k: self._enrich_value(v, **kwargs) for k, v in call["calldata"].items()
+            }
 
         return call
 
-    def _enrich_returndata(
-        self, call: CallTreeNode, method_abi: MethodABI, **kwargs
-    ) -> CallTreeNode:
-        if call.call_type and "CREATE" in call.call_type:
-            call.outputs = ""
+    def _enrich_returndata(self, call: dict, method_abi: MethodABI, **kwargs) -> dict:
+        if "CREATE" in call.get("call_type", ""):
+            call["returndata"] = ""
+            return call
+
+        elif "revert_message" in call:
+            # Already enriched, in a sense..
             return call
 
         default_return_value = "<?>"
-        if (isinstance(call.outputs, str) and is_0x_prefixed(call.outputs)) or isinstance(
-            call.outputs, (int, bytes)
-        ):
-            return_value_bytes = HexBytes(call.outputs)
+        returndata = call.get("returndata", "")
+        is_hexstr = isinstance(returndata, str) and is_0x_prefixed(returndata)
+        return_value_bytes = None
+
+        # Check if return is only a revert string.
+        call = self._enrich_revert_message(call)
+        if "revert_message" in call:
+            return call
+
+        elif is_hexstr:
+            return_value_bytes = HexBytes(returndata)
+
+            # Check if custom-error.
+            if "trace" in kwargs and "contract_address" in kwargs:
+                address = kwargs["contract_address"]
+                try:
+                    instance = self.decode_custom_error(return_value_bytes, address, **kwargs)
+                except NotImplementedError:
+                    pass
+                else:
+                    if instance is not None:
+                        call["revert_message"] = repr(instance)
+                        return call
+
+        elif is_hexstr or isinstance(returndata, (int, bytes)):
+            return_value_bytes = HexBytes(returndata)
         else:
             return_value_bytes = None
 
@@ -1159,13 +1249,16 @@ class Ethereum(EcosystemAPI):
             try:
                 return_values = (
                     self.decode_returndata(method_abi, return_value_bytes)
-                    if not call.failed
+                    if not call.get("failed")
                     else None
                 )
             except DecodingError:
                 if return_value_bytes == HexBytes("0x"):
                     # Empty result, but it failed decoding because of its length.
                     return_values = ("",)
+
+            # Cache un-enriched return_value in trace.
+            call["unenriched_return_values"] = return_values
 
             values = (
                 tuple([default_return_value for _ in method_abi.outputs])
@@ -1182,10 +1275,20 @@ class Ethereum(EcosystemAPI):
         ):
             output_val = ""
 
-        call.outputs = output_val
+        call["returndata"] = output_val
         return call
 
-    def get_python_types(self, abi_type: ABIType) -> Union[Type, Sequence]:
+    def _enrich_revert_message(self, call: dict) -> dict:
+        returndata = call.get("returndata", "")
+        is_hexstr = isinstance(returndata, str) and is_0x_prefixed(returndata)
+        if is_hexstr and returndata.startswith(_REVERT_PREFIX):
+            # The returndata is the revert-str.
+            decoded_result = decode(("string",), HexBytes(returndata)[4:])
+            call["revert_message"] = decoded_result[0] if len(decoded_result) == 1 else ""
+
+        return call
+
+    def get_python_types(self, abi_type: ABIType) -> Union[type, Sequence]:
         return self._python_type_for_abi_type(abi_type)
 
     def decode_custom_error(
@@ -1203,55 +1306,47 @@ class Ethereum(EcosystemAPI):
         selector = data[:4]
         input_data = data[4:]
 
-        abi = None
-        if selector not in contract.contract_type.errors:
-            # ABI not found. Try looking at the "last" contract.
-            if not (tx := kwargs.get("txn")) or not self.network_manager.active_provider:
-                return None
+        if selector in contract.contract_type.errors:
+            abi = contract.contract_type.errors[selector]
+            error_cls = contract.get_error_by_signature(abi.signature)
+            inputs = self.decode_calldata(abi, input_data)
+            kwargs["contract_address"] = address
+            error_kwargs = {
+                k: v
+                for k, v in kwargs.items()
+                if k in ("trace", "txn", "contract_address", "source_traceback")
+            }
+            return error_cls(abi, inputs, **error_kwargs)
 
-            try:
-                tx_hash = tx.txn_hash
-            except SignatureError:
-                return None
-
-            if not (last_addr := self._get_last_address_from_trace(tx_hash)):
-                return None
-
-            if last_addr == address:
-                # Avoid checking same address twice.
-                return None
-
-            try:
-                if not (cerr := self.decode_custom_error(data, last_addr)):
-                    return cerr
-            except NotImplementedError:
-                return None
-
-            # error never found.
+        # ABI not found. Try looking at the "last" contract.
+        if not (tx := kwargs.get("txn")) or not self.network_manager.active_provider:
             return None
 
-        abi = contract.contract_type.errors[selector]
-        error_cls = contract.get_error_by_signature(abi.signature)
-        inputs = self.decode_calldata(abi, input_data)
-        kwargs["contract_address"] = address
-        return error_cls(abi, inputs, **kwargs)
-
-    def _get_last_address_from_trace(self, txn_hash: Union[str, HexBytes]) -> Optional[AddressType]:
         try:
-            trace = list(self.chain_manager.provider.get_transaction_trace(txn_hash))
-        except Exception:
+            tx_hash = tx.txn_hash
+        except SignatureError:
             return None
 
-        for frame in trace[::-1]:
-            if not (addr := frame.contract_address):
-                continue
+        trace = kwargs.get("trace") or self.provider.get_transaction_trace(tx_hash)
+        if not (last_addr := next(trace.get_addresses_used(reverse=True), None)):
+            return None
 
-            return addr
+        if last_addr == address:
+            # Avoid checking same address twice.
+            return None
 
+        try:
+            if cerr := self.decode_custom_error(data, last_addr, **kwargs):
+                return cerr
+
+        except NotImplementedError:
+            return None
+
+        # error never found.
         return None
 
 
-def parse_type(type_: Dict[str, Any]) -> Union[str, Tuple, List]:
+def parse_type(type_: dict[str, Any]) -> Union[str, tuple, list]:
     if "tuple" not in type_["type"]:
         return type_["type"]
 
@@ -1259,7 +1354,7 @@ def parse_type(type_: Dict[str, Any]) -> Union[str, Tuple, List]:
     return [result] if is_array(type_["type"]) else result
 
 
-def _correct_key(key: str, data: Dict, alt_keys: Tuple[str, ...]) -> Dict:
+def _correct_key(key: str, data: dict, alt_keys: tuple[str, ...]) -> dict:
     if key in data:
         return data
 

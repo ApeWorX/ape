@@ -1,6 +1,5 @@
 import inspect
-import warnings
-from typing import Any, List, Optional
+from typing import Any, Optional
 
 import click
 from click import Context
@@ -65,7 +64,7 @@ class ConnectedProviderCommand(click.Command):
         self._network_callback = kwargs.pop("network_callback", None)
         super().__init__(*args, **kwargs)
 
-    def parse_args(self, ctx: Context, args: List[str]) -> List[str]:
+    def parse_args(self, ctx: Context, args: list[str]) -> list[str]:
         arguments = args  # Renamed for better pdb support.
         base_type = ProviderAPI if self._use_cls_types else str
         if existing_option := next(
@@ -134,17 +133,3 @@ class ConnectedProviderCommand(click.Command):
             ctx.params["network"] = provider.network_choice
 
         return ctx.invoke(self.callback or (lambda: None), **ctx.params)
-
-
-# TODO: 0.8 delete
-class NetworkBoundCommand(ConnectedProviderCommand):
-    def __init__(self, *args, **kwargs):
-        warnings.warn(
-            "'NetworkBoundCommand' is deprecated. Use 'ConnectedProviderCommand'.",
-            DeprecationWarning,
-        )
-
-        # Disable the advanced network class types so it behaves legacy.
-        kwargs["use_cls_types"] = False
-
-        super().__init__(*args, **kwargs)

@@ -1,8 +1,10 @@
 from pathlib import Path
-from typing import List
 
 import pytest
+from ethpm_types.source import ContractSource, Source
 
+from ape.pytest.config import ConfigWrapper
+from ape.pytest.coverage import CoverageData, CoverageTracker
 from ape.types.coverage import (
     ContractCoverage,
     ContractSourceCoverage,
@@ -22,7 +24,7 @@ def statements():
     return create_statements(20, 21, 21)
 
 
-def create_statements(*pcs) -> List[CoverageStatement]:
+def create_statements(*pcs) -> list[CoverageStatement]:
     return [
         CoverageStatement(pcs={pcs[0]}, hit_count=STMT_0_HIT),
         CoverageStatement(pcs={pcs[1]}, hit_count=STMT_1_HIT),
@@ -157,3 +159,38 @@ class TestCoverageReport:
 
     def test_line_rate(self, coverage_report):
         assert coverage_report.line_rate == 2 / 3
+
+
+class TestCoverageData:
+    @pytest.fixture(scope="class")
+    def src(self):
+        return Source.model_validate("test")
+
+    @pytest.fixture(scope="class")
+    def contract_source(self, vyper_contract_type, src):
+        return ContractSource(contract_type=vyper_contract_type, source=src)
+
+    @pytest.fixture(scope="class")
+    def coverage_data(self, project, contract_source):
+        return CoverageData(project.path, (contract_source,))
+
+    def test_report(self, coverage_data):
+        actual = coverage_data.report
+        assert isinstance(actual, CoverageReport)
+
+
+class TestCoverageTracker:
+    @pytest.fixture
+    def pytest_config(self, mocker):
+        return mocker.MagicMock()
+
+    @pytest.fixture(scope="class")
+    def config_wrapper(self, pytest_config):
+        return ConfigWrapper(pytest_config)
+
+    def test_data(self, pytest_config):
+        tracker = CoverageTracker(pytest_config)
+        assert tracker.data is not None
+        actual = tracker.data.base_path
+        expected = tracker.local_project.path
+        assert actual == expected

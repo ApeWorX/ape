@@ -1,5 +1,7 @@
 import contextlib
-from typing import ContextManager, Dict, Generator, Iterator, List, Optional, Type, Union
+from collections.abc import Generator, Iterator
+from contextlib import AbstractContextManager as ContextManager
+from typing import Optional, Union
 
 from eth_utils import is_hex
 
@@ -15,7 +17,7 @@ from ape.managers.base import BaseManager
 from ape.types import AddressType
 from ape.utils import ManagerAccessMixin, cached_property, log_instead_of_fail, singledispatchmethod
 
-_DEFAULT_SENDERS: List[AccountAPI] = []
+_DEFAULT_SENDERS: list[AccountAPI] = []
 
 
 @contextlib.contextmanager
@@ -32,7 +34,7 @@ def _use_sender(
 class TestAccountManager(list, ManagerAccessMixin):
     __test__ = False
 
-    _impersonated_accounts: Dict[AddressType, ImpersonatedAccount] = {}
+    _impersonated_accounts: dict[AddressType, ImpersonatedAccount] = {}
 
     @log_instead_of_fail(default="<TestAccountManager>")
     def __repr__(self) -> str:
@@ -40,14 +42,13 @@ class TestAccountManager(list, ManagerAccessMixin):
         return f"[{accounts_str}]"
 
     @cached_property
-    def containers(self) -> Dict[str, TestAccountContainerAPI]:
+    def containers(self) -> dict[str, TestAccountContainerAPI]:
         containers = {}
         account_types = [
             t for t in self.plugin_manager.account_types if issubclass(t[1][1], TestAccountAPI)
         ]
         for plugin_name, (container_type, account_type) in account_types:
-            # Pydantic validation won't allow passing None for data_folder/required attr
-            containers[plugin_name] = container_type(data_folder="", account_type=account_type)
+            containers[plugin_name] = container_type(name=plugin_name, account_type=account_type)
 
         return containers
 
@@ -99,7 +100,7 @@ class TestAccountManager(list, ManagerAccessMixin):
             account_id = self.conversion_manager.convert(account_str, AddressType)
         except ConversionError as err:
             message = message_fmt.format("ID", account_str)
-            raise IndexError(message) from err
+            raise KeyError(message) from err
 
         for account in self.accounts:
             if account.address == account_id:
@@ -112,12 +113,12 @@ class TestAccountManager(list, ManagerAccessMixin):
                 can_impersonate = self.provider.unlock_account(account_id)
             # else: fall through to `IndexError`
         except NotImplementedError as err:
-            raise IndexError(
+            raise KeyError(
                 f"Your provider does not support impersonating accounts:\n{err_message}"
             ) from err
 
         if not can_impersonate:
-            raise IndexError(err_message)
+            raise KeyError(err_message)
 
         if account_id not in self._impersonated_accounts:
             acct = ImpersonatedAccount(raw_address=account_id)
@@ -157,7 +158,7 @@ class AccountManager(BaseManager):
         return _DEFAULT_SENDERS[-1] if _DEFAULT_SENDERS else None
 
     @cached_property
-    def containers(self) -> Dict[str, AccountContainerAPI]:
+    def containers(self) -> dict[str, AccountContainerAPI]:
         """
         A dict of all :class:`~ape.api.accounts.AccountContainerAPI` instances
         across all installed plugins.
@@ -174,11 +175,7 @@ class AccountManager(BaseManager):
             if issubclass(account_type, TestAccountAPI):
                 continue
 
-            accounts_folder = data_folder / plugin_name
-            accounts_folder.mkdir(exist_ok=True)
-            containers[plugin_name] = container_type(
-                data_folder=accounts_folder, account_type=account_type
-            )
+            containers[plugin_name] = container_type(name=plugin_name, account_type=account_type)
 
         return containers
 
@@ -197,16 +194,16 @@ class AccountManager(BaseManager):
         for container in self.containers.values():
             yield from container.aliases
 
-    def get_accounts_by_type(self, type_: Type[AccountAPI]) -> List[AccountAPI]:
+    def get_accounts_by_type(self, type_: type[AccountAPI]) -> list[AccountAPI]:
         """
         Get a list of accounts by their type.
 
         Args:
-            type_ (Type[:class:`~ape.api.accounts.AccountAPI`]): The type of account
+            type_ (type[:class:`~ape.api.accounts.AccountAPI`]): The type of account
               to get.
 
         Returns:
-            List[:class:`~ape.api.accounts.AccountAPI`]
+            list[:class:`~ape.api.accounts.AccountAPI`]
         """
 
         return [acc for acc in self if isinstance(acc, type_)]
@@ -255,7 +252,7 @@ class AccountManager(BaseManager):
         Get an account by its alias.
 
         Raises:
-            IndexError: When there is no local account with the given alias.
+            KeyError: When there is no local account with the given alias.
 
         Returns:
             :class:`~ape.api.accounts.AccountAPI`
@@ -268,7 +265,7 @@ class AccountManager(BaseManager):
             if account.alias and account.alias == alias:
                 return account
 
-        raise IndexError(f"No account with alias '{alias}'.")
+        raise KeyError(f"No account with alias '{alias}'.")
 
     @singledispatchmethod
     def __getitem__(self, account_id) -> AccountAPI:
@@ -311,7 +308,7 @@ class AccountManager(BaseManager):
         :meth:`~ape.managers.accounts.AccountManager.__getitem_str`.
 
         Returns:
-            List[:class:`~ape.api.accounts.AccountAPI`]
+            list[:class:`~ape.api.accounts.AccountAPI`]
         """
 
         start_idx = account_id.start or 0
@@ -330,7 +327,7 @@ class AccountManager(BaseManager):
         accounts, this method will return an impersonated account at that address.
 
         Raises:
-            IndexError: When there is no local account with the given address.
+            KeyError: When there is no local account with the given address.
 
         Returns:
             :class:`~ape.api.accounts.AccountAPI`
@@ -345,7 +342,7 @@ class AccountManager(BaseManager):
             else:
                 suffix = "Do you have the necessary conversion plugins installed?"
 
-            raise IndexError(f"{prefix}. {suffix}") from err
+            raise KeyError(f"{prefix}. {suffix}") from err
 
         for container in self.containers.values():
             if account_id in container.accounts:

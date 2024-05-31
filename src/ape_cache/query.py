@@ -1,5 +1,6 @@
+from collections.abc import Iterator
 from pathlib import Path
-from typing import Any, Dict, Iterator, List, Optional, cast
+from typing import Any, Optional, cast
 
 from sqlalchemy import create_engine, func
 from sqlalchemy.engine import CursorResult
@@ -326,7 +327,7 @@ class CacheQueryProvider(QueryAPI):
             )
 
     @perform_query.register
-    def _perform_transaction_query(self, query: BlockTransactionQuery) -> Iterator[Dict]:
+    def _perform_transaction_query(self, query: BlockTransactionQuery) -> Iterator[dict]:
         with self.database_connection as conn:
             result = conn.execute(
                 select([Transactions]).where(Transactions.block_hash == query.block_id)
@@ -395,7 +396,7 @@ class CacheQueryProvider(QueryAPI):
     @singledispatchmethod
     def _get_cache_data(
         self, query: QueryType, result: Iterator[BaseInterfaceModel]
-    ) -> Optional[List[Dict[str, Any]]]:
+    ) -> Optional[list[dict[str, Any]]]:
         raise QueryEngineError(
             """
             Not a compatible QueryType. For more details see our docs
@@ -406,19 +407,16 @@ class CacheQueryProvider(QueryAPI):
     @_get_cache_data.register
     def _get_block_cache_data(
         self, query: BlockQuery, result: Iterator[BaseInterfaceModel]
-    ) -> Optional[List[Dict[str, Any]]]:
-        # NOTE: Using JSON-mode for maximum DB compatibility.
+    ) -> Optional[list[dict[str, Any]]]:
         return [m.model_dump(mode="json", by_alias=False) for m in result]
 
     @_get_cache_data.register
     def _get_block_txns_data(
         self, query: BlockTransactionQuery, result: Iterator[BaseInterfaceModel]
-    ) -> Optional[List[Dict[str, Any]]]:
+    ) -> Optional[list[dict[str, Any]]]:
         new_result = []
         table_columns = [c.key for c in Transactions.__table__.columns]  # type: ignore
-        txns: List[TransactionAPI] = cast(List[TransactionAPI], result)
-
-        # NOTE: Using JSON mode for maximum DB compatibility.
+        txns: list[TransactionAPI] = cast(list[TransactionAPI], result)
         for val in [m for m in txns]:
             new_dict = {
                 k: v
@@ -446,8 +444,7 @@ class CacheQueryProvider(QueryAPI):
     @_get_cache_data.register
     def _get_cache_events_data(
         self, query: ContractEventQuery, result: Iterator[BaseInterfaceModel]
-    ) -> Optional[List[Dict[str, Any]]]:
-        # NOTE: Using JSON mode for maximum DB compatibility.
+    ) -> Optional[list[dict[str, Any]]]:
         return [m.model_dump(mode="json", by_alias=False) for m in result]
 
     def update_cache(self, query: QueryType, result: Iterator[BaseInterfaceModel]):

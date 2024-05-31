@@ -1,8 +1,9 @@
 import json
 import warnings
+from collections.abc import Iterator
 from os import environ
 from pathlib import Path
-from typing import Any, Dict, Iterator, Optional, Tuple
+from typing import Any, Optional
 
 import click
 from eip712.messages import EIP712Message
@@ -33,7 +34,7 @@ class InvalidPasswordError(AccountsError):
 
 
 class AccountContainer(AccountContainerAPI):
-    loaded_accounts: Dict[str, "KeyfileAccount"] = {}
+    loaded_accounts: dict[str, "KeyfileAccount"] = {}
 
     @property
     def _keyfiles(self) -> Iterator[Path]:
@@ -297,7 +298,7 @@ def _write_and_return_account(alias: str, passphrase: str, account: LocalAccount
 
 def generate_account(
     alias: str, passphrase: str, hd_path: str = ETHEREUM_DEFAULT_PATH, word_count: int = 12
-) -> Tuple[KeyfileAccount, str]:
+) -> tuple[KeyfileAccount, str]:
     """
     Generate a new account.
 

@@ -7,11 +7,12 @@ import shutil
 import sys
 import time
 import warnings
+from collections.abc import Iterable, Iterator
 from logging import FileHandler, Formatter, Logger, getLogger
 from pathlib import Path
 from signal import SIGINT, SIGTERM, signal
 from subprocess import DEVNULL, PIPE, Popen
-from typing import Any, Dict, Iterator, List, Optional, Union, cast
+from typing import Any, Optional, Union, cast
 
 from eth_pydantic_types import HexBytes
 from ethpm_types.abi import EventABI
@@ -20,26 +21,19 @@ from pydantic import Field, computed_field, model_validator
 from ape.api.config import PluginConfig
 from ape.api.networks import NetworkAPI
 from ape.api.query import BlockTransactionQuery
+from ape.api.trace import TraceAPI
 from ape.api.transactions import ReceiptAPI, TransactionAPI
 from ape.exceptions import (
     APINotImplementedError,
     ProviderError,
+    QueryEngineError,
     RPCTimeoutError,
     SubprocessError,
     SubprocessTimeoutError,
     VirtualMachineError,
 )
 from ape.logging import LogLevel, logger
-from ape.types import (
-    AddressType,
-    BlockID,
-    CallTreeNode,
-    ContractCode,
-    ContractLog,
-    LogFilter,
-    SnapshotID,
-    TraceFrame,
-)
+from ape.types import AddressType, BlockID, ContractCode, ContractLog, LogFilter, SnapshotID
 from ape.utils import BaseInterfaceModel, JoinableQueue, abstractmethod, cached_property, spawn
 from ape.utils.misc import (
     EMPTY_BYTES32,
@@ -57,17 +51,45 @@ class BlockAPI(BaseInterfaceModel):
     # NOTE: All fields in this class (and it's subclasses) should not be `Optional`
     #       except the edge cases noted below
 
+    """
+    The number of transactions in the block.
+    """
     num_transactions: int = 0
+
+    """
+    The block hash identifier.
+    """
     hash: Optional[Any] = None  # NOTE: pending block does not have a hash
+
+    """
+    The block number identifier.
+    """
     number: Optional[int] = None  # NOTE: pending block does not have a number
+
+    """
+    The preceeding block's hash.
+    """
     parent_hash: Any = Field(
         EMPTY_BYTES32, alias="parentHash"
     )  # NOTE: genesis block has no parent hash
-    size: int
+
+    """
+    The timestamp the block was produced.
+    NOTE: The pending block uses the current timestamp.
+    """
     timestamp: int
+
+    _size: Optional[int] = None
+
+    @log_instead_of_fail(default="<BlockAPI>")
+    def __repr__(self) -> str:
+        return super().__repr__()
 
     @property
     def datetime(self) -> datetime.datetime:
+        """
+        The block timestamp as a datetime object.
+        """
         return datetime.datetime.fromtimestamp(self.timestamp, tz=datetime.timezone.utc)
 
     @model_validator(mode="before")
@@ -77,11 +99,58 @@ class BlockAPI(BaseInterfaceModel):
         data["parentHash"] = parent_hash
         return data
 
+    @model_validator(mode="wrap")
+    @classmethod
+    def validate_size(cls, values, handler):
+        """
+        A validator for handling non-computed size.
+        Saves it to a private member on this class and
+        gets returned in computed field "size".
+        """
+
+        if not hasattr(values, "pop"):
+            # Handle weird AttributeDict missing pop method.
+            # https://github.com/ethereum/web3.py/issues/3326
+            values = {**values}
+
+        size = values.pop("size", None)
+        model = handler(values)
+        if size is not None:
+            model._size = size
+
+        return model
+
     @computed_field()  # type: ignore[misc]
     @cached_property
-    def transactions(self) -> List[TransactionAPI]:
-        query = BlockTransactionQuery(columns=["*"], block_id=self.hash)
-        return cast(List[TransactionAPI], list(self.query_manager.query(query)))
+    def transactions(self) -> list[TransactionAPI]:
+        """
+        All transactions in a block.
+        """
+        try:
+            query = BlockTransactionQuery(columns=["*"], block_id=self.hash)
+            return cast(list[TransactionAPI], list(self.query_manager.query(query)))
+        except QueryEngineError as err:
+            # NOTE: Re-raising a better error here because was confusing
+            #  when doing anything with fields, and this would fail.
+            raise ProviderError(f"Unable to find block transactions: {err}") from err
+
+    @computed_field()  # type: ignore[misc]
+    @cached_property
+    def size(self) -> int:
+        """
+        The size of the block in gas. Most of the time,
+        this field is passed to the model at validation time,
+        but occassionally it is missing (like in `eth_subscribe:newHeads`),
+        in which case it gets calculated if and only if the user
+        requests it (or during serialization of this model to disk).
+        """
+
+        if self._size is not None:
+            # The size was provided with the rest of the model
+            # (normal).
+            return self._size
+
+        raise APINotImplementedError()
 
 
 class ProviderAPI(BaseInterfaceModel):
@@ -97,13 +166,10 @@ class ProviderAPI(BaseInterfaceModel):
     network: NetworkAPI
     """A reference to the network this provider provides."""
 
-    provider_settings: Dict = {}
+    provider_settings: dict = {}
     """The settings for the provider, as overrides to the configuration."""
 
-    data_folder: Path
-    """The path to the ``.ape`` directory."""
-
-    request_header: Dict
+    request_header: dict
     """A header to set on HTTP/RPC requests."""
 
     block_page_size: int = 100
@@ -116,6 +182,14 @@ class ProviderAPI(BaseInterfaceModel):
     """
     How many parallel threads to use when fetching logs.
     """
+
+    @property
+    def data_folder(self) -> Path:
+        """
+        The path to the provider's data,
+        e.g. ``$HOME/.api/{self.name}`` unless overridden.
+        """
+        return self.config_manager.DATA_FOLDER / self.name
 
     @property
     @abstractmethod
@@ -191,13 +265,13 @@ class ProviderAPI(BaseInterfaceModel):
         return f"{self.network_choice}:{chain_id}"
 
     @abstractmethod
-    def update_settings(self, new_settings: Dict):
+    def update_settings(self, new_settings: dict):
         """
         Change a provider's setting, such as configure a new port to run on.
         May require a reconnect.
 
         Args:
-            new_settings (Dict): The new provider settings.
+            new_settings (dict): The new provider settings.
         """
 
     @property
@@ -250,6 +324,30 @@ class ProviderAPI(BaseInterfaceModel):
             raise ProviderError("Custom network provider missing `connection_str`.")
 
         return f"{self.network.choice}:{self.name}"
+
+    @abstractmethod
+    def make_request(self, rpc: str, parameters: Optional[Iterable] = None) -> Any:
+        """
+        Make a raw RPC request to the provider.
+        Advanced featues such as tracing may utilize this to by-pass unnecessary
+        class-serializations.
+        """
+
+    @raises_not_implemented
+    def stream_request(  # type: ignore[empty-body]
+        self, method: str, params: Iterable, iter_path: str = "result.item"
+    ) -> Iterator[Any]:
+        """
+        Stream a request, great for large requests like events or traces.
+
+        Args:
+            method (str): The RPC method to call.
+            params (Iterable): Parameters for the method.s
+            iter_path (str): The response dict-path to the items.
+
+        Returns:
+            An iterator of items.
+        """
 
     def get_storage_at(self, *args, **kwargs) -> HexBytes:
         warnings.warn(
@@ -384,7 +482,7 @@ class ProviderAPI(BaseInterfaceModel):
         self,
         txn: TransactionAPI,
         block_id: Optional[BlockID] = None,
-        state: Optional[Dict] = None,
+        state: Optional[dict] = None,
         **kwargs,
     ) -> HexBytes:  # Return value of function
         """
@@ -396,7 +494,7 @@ class ProviderAPI(BaseInterfaceModel):
             block_id (Optional[:class:`~ape.types.BlockID`]): The block ID
                 to use to send a call at a historical point of a contract.
                 Useful for checking a past estimation cost of a transaction.
-            state (Optional[Dict]): Modify the state of the blockchain
+            state (Optional[dict]): Modify the state of the blockchain
                 prior to sending the call, for testing purposes.
             **kwargs: Provider-specific extra kwargs.
 
@@ -444,27 +542,6 @@ class ProviderAPI(BaseInterfaceModel):
             account (:class:`~ape.types.address.AddressType`): The address of the account.
             start_nonce (int): The nonce of the account to start the search with.
             stop_nonce (int): The nonce of the account to stop the search with.
-
-        Returns:
-            Iterator[:class:`~ape.api.transactions.ReceiptAPI`]
-        """
-
-    @raises_not_implemented
-    def get_contract_creation_receipts(  # type: ignore[empty-body]
-        self,
-        address: AddressType,
-        start_block: int = 0,
-        stop_block: int = -1,
-        contract_code: Optional[HexBytes] = None,
-    ) -> Iterator[ReceiptAPI]:
-        """
-        Get all receipts where a contract address was created or re-created.
-
-        Args:
-            address (:class:`~ape.types.address.AddressType`): The address of the account.
-            start_block (int): The block number to start the search with.
-            stop_block (int): The block number to stop the search with.
-            contract_code (Optional[bytes]): The code of the contract at the stop block.
 
         Returns:
             Iterator[:class:`~ape.api.transactions.ReceiptAPI`]
@@ -535,7 +612,7 @@ class ProviderAPI(BaseInterfaceModel):
         """
 
     @raises_not_implemented
-    def revert(self, snapshot_id: SnapshotID):
+    def restore(self, snapshot_id: SnapshotID):
         """
         Defined to make the ``ProviderAPI`` interchangeable with a
         :class:`~ape.api.providers.TestProviderAPI`, as in
@@ -579,13 +656,7 @@ class ProviderAPI(BaseInterfaceModel):
 
     @log_instead_of_fail(default="<ProviderAPI>")
     def __repr__(self) -> str:
-        try:
-            chain_id = self.chain_id
-        except Exception as err:
-            logger.error(str(err))
-            chain_id = None
-
-        return f"<{self.name} chain_id={self.chain_id}>" if chain_id else f"<{self.name}>"
+        return f"<{self.name.capitalize()} chain_id={self.chain_id}>"
 
     @raises_not_implemented
     def set_code(  # type: ignore[empty-body]
@@ -634,15 +705,16 @@ class ProviderAPI(BaseInterfaceModel):
     @raises_not_implemented
     def get_transaction_trace(  # type: ignore[empty-body]
         self, txn_hash: Union[HexBytes, str]
-    ) -> Iterator[TraceFrame]:
+    ) -> TraceAPI:
         """
         Provide a detailed description of opcodes.
 
         Args:
-            txn_hash (str): The hash of a transaction to trace.
+            transaction_hash (Union[HexBytes, str]): The hash of a transaction
+              to trace.
 
         Returns:
-            Iterator(:class:`~ape.type.trace.TraceFrame`): Transaction execution trace.
+            :class:`~ape.api.trace.TraceAPI`: A transaction trace.
         """
 
     @raises_not_implemented
@@ -681,10 +753,10 @@ class ProviderAPI(BaseInterfaceModel):
         self,
         stop_block: Optional[int] = None,
         address: Optional[AddressType] = None,
-        topics: Optional[List[Union[str, List[str]]]] = None,
+        topics: Optional[list[Union[str, list[str]]]] = None,
         required_confirmations: Optional[int] = None,
         new_block_timeout: Optional[int] = None,
-        events: Optional[List[EventABI]] = None,
+        events: Optional[list[EventABI]] = None,
     ) -> Iterator[ContractLog]:
         """
         Poll new blocks. Optionally set a start block to include historical blocks.
@@ -701,7 +773,7 @@ class ProviderAPI(BaseInterfaceModel):
               Defaults to never-ending.
             address (Optional[str]): The address of the contract to filter logs by.
               Defaults to all addresses.
-            topics (Optional[List[Union[str, List[str]]]]): The topics to filter logs by.
+            topics (Optional[list[Union[str, list[str]]]]): The topics to filter logs by.
               Defaults to all topics.
             required_confirmations (Optional[int]): The amount of confirmations to wait
               before yielding the block. The more confirmations, the less likely a reorg will occur.
@@ -709,23 +781,10 @@ class ProviderAPI(BaseInterfaceModel):
             new_block_timeout (Optional[int]): The amount of time to wait for a new block before
               quitting. Defaults to 10 seconds for local networks or ``50 * block_time`` for live
               networks.
-            events (Optional[List[``EventABI``]]): An optional list of events to listen on.
+            events (Optional[list[``EventABI``]]): An optional list of events to listen on.
 
         Returns:
             Iterator[:class:`~ape.types.ContractLog`]
-        """
-
-    @raises_not_implemented
-    def get_call_tree(self, txn_hash: str) -> CallTreeNode:  # type: ignore[empty-body]
-        """
-        Create a tree structure of calls for a transaction.
-
-        Args:
-            txn_hash (str): The hash of a transaction to trace.
-
-        Returns:
-            :class:`~ape.types.trace.CallTreeNode`: Transaction execution
-            call-tree objects.
         """
 
     def prepare_transaction(self, txn: TransactionAPI) -> TransactionAPI:
@@ -778,7 +837,7 @@ class TestProviderAPI(ProviderAPI):
         """
 
     @abstractmethod
-    def revert(self, snapshot_id: SnapshotID):
+    def restore(self, snapshot_id: SnapshotID):
         """
         Regress the current call using the given snapshot ID.
         Allows developers to go back to a previous state.
@@ -808,6 +867,20 @@ class TestProviderAPI(ProviderAPI):
             num_blocks (int): The number of blocks allotted to mine. Defaults to ``1``.
         """
 
+    @property
+    @abstractmethod
+    def auto_mine(self) -> bool:
+        """
+        Whether automine is enabled.
+        """
+
+    @auto_mine.setter
+    @abstractmethod
+    def auto_mine(self) -> bool:
+        """
+        Enable or disbale automine.
+        """
+
     def _increment_call_func_coverage_hit_count(self, txn: TransactionAPI):
         """
         A helper method for incrementing a method call function hit count in a
@@ -821,7 +894,7 @@ class TestProviderAPI(ProviderAPI):
             return
 
         if not (contract_type := self.chain_manager.contracts.get(txn.receiver)) or not (
-            contract_src := self.project_manager._create_contract_source(contract_type)
+            contract_src := self.local_project._create_contract_source(contract_type)
         ):
             return
 
@@ -855,13 +928,13 @@ class SubprocessProvider(ProviderAPI):
         """The name of the process, such as ``Hardhat node``."""
 
     @abstractmethod
-    def build_command(self) -> List[str]:
+    def build_command(self) -> list[str]:
         """
         Get the command as a list of ``str``.
         Subclasses should override and add command arguments if needed.
 
         Returns:
-            List[str]: The command to pass to ``subprocess.Popen``.
+            list[str]: The command to pass to ``subprocess.Popen``.
         """
 
     @property

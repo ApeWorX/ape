@@ -1,8 +1,9 @@
 import re
 from ast import literal_eval
+from collections.abc import Iterator
 from functools import cached_property
 from re import Pattern
-from typing import Any, Dict, Iterator, Optional, cast
+from typing import Any, Optional, cast
 
 from eth.exceptions import HeaderNotFound
 from eth_pydantic_types import HexBytes
@@ -55,7 +56,7 @@ class LocalProvider(TestProviderAPI, Web3Provider):
     def tester(self):
         chain_id = self.settings.chain_id
         if self._web3 is not None:
-            connected_chain_id = self._make_request("eth_chainId")
+            connected_chain_id = self.make_request("eth_chainId")
             if connected_chain_id == chain_id:
                 # Is already connected and settings have not changed.
                 return
@@ -98,7 +99,7 @@ class LocalProvider(TestProviderAPI, Web3Provider):
         self._evm_backend = None
         self.provider_settings = {}
 
-    def update_settings(self, new_settings: Dict):
+    def update_settings(self, new_settings: dict):
         self.provider_settings = {**self.provider_settings, **new_settings}
         self.disconnect()
         self.connect()
@@ -150,10 +151,14 @@ class LocalProvider(TestProviderAPI, Web3Provider):
             {**self.config.provider.model_dump(), **self.provider_settings}
         )
 
+    @property
+    def supports_tracing(self) -> bool:
+        return False
+
     @cached_property
     def chain_id(self) -> int:
         try:
-            result = self._make_request("eth_chainId")
+            result = self.make_request("eth_chainId")
         except ProviderNotConnectedError:
             result = self.settings.chain_id
 
@@ -180,14 +185,14 @@ class LocalProvider(TestProviderAPI, Web3Provider):
         self,
         txn: TransactionAPI,
         block_id: Optional[BlockID] = None,
-        state: Optional[Dict] = None,
+        state: Optional[dict] = None,
         **kwargs,
     ) -> HexBytes:
         # NOTE: Using JSON mode since used as request data.
         data = txn.model_dump(mode="json", exclude_none=True)
 
         state = kwargs.pop("state_override", None)
-        call_kwargs: Dict = {"block_identifier": block_id, "state_override": state}
+        call_kwargs: dict = {"block_identifier": block_id, "state_override": state}
 
         # Remove unneeded properties
         data.pop("gas", None)
@@ -244,7 +249,7 @@ class LocalProvider(TestProviderAPI, Web3Provider):
     def snapshot(self) -> SnapshotID:
         return self.evm_backend.take_snapshot()
 
-    def revert(self, snapshot_id: SnapshotID):
+    def restore(self, snapshot_id: SnapshotID):
         if snapshot_id:
             current_hash = self.get_block("latest").hash
             if current_hash != snapshot_id:

@@ -1,7 +1,8 @@
 import difflib
 import time
+from collections.abc import Iterator
 from itertools import tee
-from typing import Dict, Iterator, Optional
+from typing import Optional
 
 from ape.api import QueryAPI, QueryType, ReceiptAPI, TransactionAPI
 from ape.api.query import (
@@ -9,7 +10,6 @@ from ape.api.query import (
     BaseInterfaceModel,
     BlockQuery,
     BlockTransactionQuery,
-    ContractCreationQuery,
     ContractEventQuery,
 )
 from ape.contracts.base import ContractLog, LogFilter
@@ -25,6 +25,9 @@ class DefaultQueryProvider(QueryAPI):
     Allows for the query of blockchain data using connected provider.
     """
 
+    def __init__(self):
+        self.supports_contract_creation = None
+
     @singledispatchmethod
     def estimate_query(self, query: QueryType) -> Optional[int]:  # type: ignore
         return None  # can't handle this query
@@ -38,12 +41,6 @@ class DefaultQueryProvider(QueryAPI):
     def estimate_block_transaction_query(self, query: BlockTransactionQuery) -> int:
         # NOTE: Very loose estimate of 1000ms per block for this query.
         return self.provider.get_block(query.block_id).num_transactions * 100
-
-    @estimate_query.register
-    def estimate_contract_creation_query(self, query: ContractCreationQuery) -> int:
-        # NOTE: Extremely expensive query, involves binary search of all blocks in a chain
-        #       Very loose estimate of 5s per transaction for this query.
-        return 5000
 
     @estimate_query.register
     def estimate_contract_events_query(self, query: ContractEventQuery) -> int:
@@ -74,14 +71,6 @@ class DefaultQueryProvider(QueryAPI):
         self, query: BlockTransactionQuery
     ) -> Iterator[TransactionAPI]:
         return self.provider.get_transactions_by_block(query.block_id)
-
-    @perform_query.register
-    def perform_contract_creation_query(self, query: ContractCreationQuery) -> Iterator[ReceiptAPI]:
-        yield from self.provider.get_contract_creation_receipts(
-            address=query.contract,
-            start_block=query.start_block,
-            stop_block=query.stop_block,
-        )
 
     @perform_query.register
     def perform_contract_events_query(self, query: ContractEventQuery) -> Iterator[ContractLog]:
@@ -120,7 +109,7 @@ class QueryManager(ManagerAccessMixin):
     """
 
     @cached_property
-    def engines(self) -> Dict[str, QueryAPI]:
+    def engines(self) -> dict[str, QueryAPI]:
         """
         A dict of all :class:`~ape.api.query.QueryAPI` instances across all
         installed plugins.
@@ -129,7 +118,7 @@ class QueryManager(ManagerAccessMixin):
             dict[str, :class:`~ape.api.query.QueryAPI`]
         """
 
-        engines: Dict[str, QueryAPI] = {"__default__": DefaultQueryProvider()}
+        engines: dict[str, QueryAPI] = {"__default__": DefaultQueryProvider()}
 
         for plugin_name, engine_class in self.plugin_manager.query_engines:
             engine_name = clean_plugin_name(plugin_name)
@@ -151,7 +140,8 @@ class QueryManager(ManagerAccessMixin):
             engine_to_use (Optional[str]): Short-circuit selection logic using
               a specific engine. Defaults is set by performance-based selection logic.
 
-        Raises: :class:`~ape.exceptions.QueryEngineError`: When given an invalid or
+        Raises:
+            :class:`~ape.exceptions.QueryEngineError`: When given an invalid or
           inaccessible ``engine_to_use`` value.
 
         Returns:

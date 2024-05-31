@@ -19,7 +19,6 @@ from ape.utils.basemodel import (
     injected_before_use,
     only_raise_attribute_error,
 )
-from ape.utils.github import GithubClient, github_client
 from ape.utils.misc import (
     DEFAULT_LIVE_NETWORK_BASE_FEE_MULTIPLIER,
     DEFAULT_LOCAL_TRANSACTION_ACCEPTANCE_TIMEOUT,
@@ -48,11 +47,13 @@ from ape.utils.misc import (
     to_int,
 )
 from ape.utils.os import (
+    clean_path,
     create_tempdir,
     expand_environment_variables,
     get_all_files_in_directory,
     get_full_extension,
     get_relative_path,
+    in_tempdir,
     path_match,
     run_in_tempdir,
     use_temp_sys_path,
@@ -75,6 +76,7 @@ __all__ = [
     "BaseInterface",
     "BaseInterfaceModel",
     "cached_property",
+    "clean_path",
     "create_tempdir",
     "DEFAULT_LIVE_NETWORK_BASE_FEE_MULTIPLIER",
     "DEFAULT_LOCAL_TRANSACTION_ACCEPTANCE_TIMEOUT",
@@ -91,14 +93,13 @@ __all__ = [
     "get_relative_path",
     "gas_estimation_error_message",
     "get_package_version",
-    "GithubClient",
-    "github_client",
     "GeneratedDevAccount",
     "generate_dev_accounts",
     "get_all_files_in_directory",
     "get_current_timestamp_ms",
     "get_full_extension",
     "pragma_str_to_specifier_set",
+    "in_tempdir",
     "injected_before_use",
     "is_array",
     "is_dynamic_sized_type",

@@ -1,19 +1,8 @@
 import inspect
 from abc import ABC
+from collections.abc import Callable, Iterator, Sequence
 from sys import getrecursionlimit
-from typing import (
-    TYPE_CHECKING,
-    Any,
-    Callable,
-    ClassVar,
-    Dict,
-    Iterator,
-    List,
-    Optional,
-    Sequence,
-    Union,
-    cast,
-)
+from typing import TYPE_CHECKING, Any, ClassVar, Optional, Union, cast
 
 from ethpm_types import BaseModel as EthpmTypesBaseModel
 from pydantic import BaseModel as RootBaseModel
@@ -34,7 +23,7 @@ if TYPE_CHECKING:
     from ape.managers.converters import ConversionManager
     from ape.managers.networks import NetworkManager
     from ape.managers.plugins import PluginManager
-    from ape.managers.project import DependencyManager, ProjectManager
+    from ape.managers.project import ProjectManager
     from ape.managers.query import QueryManager
     from ape.pytest.runners import PytestApeRunner
 
@@ -53,8 +42,8 @@ class _RecursionChecker:
 
     def __init__(self):
         self.THRESHOLD: int = getrecursionlimit()
-        self.getattr_checking: Dict[str, int] = {}
-        self.getattr_errors: Dict[str, Exception] = {}
+        self.getattr_checking: dict[str, int] = {}
+        self.getattr_errors: dict[str, Exception] = {}
 
     @log_instead_of_fail(default="<_RecursionChecker>")
     def __repr__(self) -> str:
@@ -132,15 +121,13 @@ class ManagerAccessMixin:
         "ConversionManager", injected_before_use()
     )
 
-    dependency_manager: ClassVar["DependencyManager"] = cast(
-        "DependencyManager", injected_before_use()
-    )
-
     network_manager: ClassVar["NetworkManager"] = cast("NetworkManager", injected_before_use())
 
     plugin_manager: ClassVar["PluginManager"] = cast("PluginManager", injected_before_use())
 
-    project_manager: ClassVar["ProjectManager"] = cast("ProjectManager", injected_before_use())
+    local_project: ClassVar["ProjectManager"] = cast("ProjectManager", injected_before_use())
+
+    Project: ClassVar[type["ProjectManager"]] = cast(type["ProjectManager"], injected_before_use())
 
     query_manager: ClassVar["QueryManager"] = cast("QueryManager", injected_before_use())
 
@@ -326,7 +313,7 @@ class BaseModel(EthpmTypesBaseModel):
     def model_copy(
         self: "Model",
         *,
-        update: Optional[Dict[str, Any]] = None,
+        update: Optional[dict[str, Any]] = None,
         deep: bool = False,
         cache_clear: Optional[Sequence[str]] = None,
     ) -> "Model":
@@ -512,7 +499,7 @@ class BaseInterfaceModel(BaseInterface, BaseModel):
 
     model_config = ConfigDict(arbitrary_types_allowed=True)
 
-    def __dir__(self) -> List[str]:
+    def __dir__(self) -> list[str]:
         """
         **NOTE**: Should integrate options in IPython tab-completion.
         https://ipython.readthedocs.io/en/stable/config/integrating.html

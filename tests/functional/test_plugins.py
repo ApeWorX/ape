@@ -1,9 +1,9 @@
-from typing import Set
 from unittest import mock
 
 import pytest
 
 from ape.api import TransactionAPI
+from ape.exceptions import PluginVersionError
 from ape.logging import LogLevel
 from ape.managers.plugins import _get_unimplemented_methods_warning
 from ape.plugins._utils import (
@@ -16,7 +16,6 @@ from ape.plugins._utils import (
     _filter_plugins_from_dists,
     ape_version,
 )
-from ape_plugins.exceptions import PluginVersionError
 
 CORE_PLUGINS = ("run",)
 AVAILABLE_PLUGINS = ("available", "installed")
@@ -75,7 +74,7 @@ def plugin_test_env(mocker, mock_installed_packages):
 
 
 @pytest.fixture
-def package_names() -> Set[str]:
+def package_names() -> set[str]:
     return {
         f"ape-{x}" for x in [*CORE_PLUGINS, *AVAILABLE_PLUGINS, *INSTALLED_PLUGINS, *THIRD_PARTY]
     }

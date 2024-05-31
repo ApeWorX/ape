@@ -1,11 +1,12 @@
-from typing import Dict, List, Optional
+from typing import Optional
 
 from ethpm_types.abi import MethodABI
 from ethpm_types.source import ContractSource
 from evm_trace.gas import merge_reports
 
+from ape.api import TraceAPI
 from ape.pytest.config import ConfigWrapper
-from ape.types import AddressType, CallTreeNode, ContractFunctionPath, GasReport
+from ape.types import AddressType, ContractFunctionPath, GasReport
 from ape.utils import parse_gas_table
 from ape.utils.basemodel import ManagerAccessMixin
 from ape.utils.trace import _exclude_gas
@@ -26,7 +27,7 @@ class GasTracker(ManagerAccessMixin):
         return self.config_wrapper.track_gas
 
     @property
-    def gas_exclusions(self) -> List[ContractFunctionPath]:
+    def gas_exclusions(self) -> list[ContractFunctionPath]:
         return self.config_wrapper.gas_exclusions
 
     def show_session_gas(self) -> bool:
@@ -37,17 +38,13 @@ class GasTracker(ManagerAccessMixin):
         self.chain_manager._reports.echo(*tables)
         return True
 
-    def append_gas(
-        self,
-        call_tree: CallTreeNode,
-        contract_address: AddressType,
-    ):
+    def append_gas(self, trace: TraceAPI, contract_address: AddressType):
         contract_type = self.chain_manager.contracts.get(contract_address)
         if not contract_type:
             # Skip unknown contracts.
             return
 
-        report = call_tree.get_gas_report(exclude=self.gas_exclusions)
+        report = trace.get_gas_report(exclude=self.gas_exclusions)
         self._merge(report)
 
     def append_toplevel_gas(self, contract: ContractSource, method: MethodABI, gas_cost: int):
@@ -57,6 +54,6 @@ class GasTracker(ManagerAccessMixin):
         ):
             self._merge({contract_id: {method.selector: [gas_cost]}})
 
-    def _merge(self, report: Dict):
+    def _merge(self, report: dict):
         session_report = self.session_gas_report or {}
         self.session_gas_report = merge_reports(session_report, report)

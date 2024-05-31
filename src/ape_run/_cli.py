@@ -5,7 +5,7 @@ import traceback
 from contextlib import contextmanager
 from pathlib import Path
 from runpy import run_module
-from typing import Any, Dict, Union
+from typing import Any, Union
 
 import click
 from click import Command, Context, Option
@@ -82,7 +82,7 @@ class ScriptCommand(click.MultiCommand, ManagerAccessMixin):
                 with self.network_manager.parse_network_choice(
                     network_value, disconnect_on_exit=False
                 ):
-                    path = ctx.obj.project_manager.path
+                    path = ctx.obj.local_project.path
                     assert isinstance(path, Path)  # For mypy.
                     if not isinstance(err, ApeException) or not handle_ape_exception(err, (path,)):
                         err_info = traceback.format_exc()
@@ -94,7 +94,7 @@ class ScriptCommand(click.MultiCommand, ManagerAccessMixin):
                 raise
 
     def _get_command(self, filepath: Path) -> Union[click.Command, click.Group, None]:
-        relative_filepath = get_relative_path(filepath, ManagerAccessMixin.project_manager.path)
+        relative_filepath = get_relative_path(filepath, ManagerAccessMixin.local_project.path)
 
         # First load the code module by compiling it
         # NOTE: This does not execute the module
@@ -171,14 +171,14 @@ class ScriptCommand(click.MultiCommand, ManagerAccessMixin):
             return call
 
     @property
-    def commands(self) -> Dict[str, Union[click.Command, click.Group]]:
-        if not self.project_manager.scripts_folder.is_dir():
+    def commands(self) -> dict[str, Union[click.Command, click.Group]]:
+        if not self.local_project.scripts_folder.is_dir():
             return {}
 
-        return self._get_cli_commands(self.project_manager.scripts_folder)
+        return self._get_cli_commands(self.local_project.scripts_folder)
 
-    def _get_cli_commands(self, base_path: Path) -> Dict:
-        commands: Dict[str, Command] = {}
+    def _get_cli_commands(self, base_path: Path) -> dict:
+        commands: dict[str, Command] = {}
 
         for filepath in base_path.iterdir():
             if filepath.stem.startswith("_"):
@@ -222,7 +222,7 @@ class ScriptCommand(click.MultiCommand, ManagerAccessMixin):
     def _launch_console(self):
         trace = inspect.trace()
         trace_frames = [
-            x for x in trace if x.filename.startswith(str(self.project_manager.scripts_folder))
+            x for x in trace if x.filename.startswith(str(self.local_project.scripts_folder))
         ]
         if not trace_frames:
             # Error from Ape internals; avoid launching console.
@@ -244,7 +244,7 @@ class ScriptCommand(click.MultiCommand, ManagerAccessMixin):
             if frame:
                 del frame
 
-        return console(project=self.project_manager, extra_locals=extra_locals, embed=True)
+        return console(project=self.local_project, extra_locals=extra_locals, embed=True)
 
 
 @click.command(

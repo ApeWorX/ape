@@ -1,5 +1,3 @@
-from typing import List, Tuple
-
 import pytest
 
 from tests.integration.cli.utils import github_xfail, run_once
@@ -9,7 +7,7 @@ TEST_PLUGIN_NAME_2 = "optimism"
 
 
 class PluginsList(list):
-    def __init__(self, header: str, lines: List[str]):
+    def __init__(self, header: str, lines: list[str]):
         self.header = header
         self.contains_version = len(lines[0].split(" ")) > 1 if lines else False
         names = [x.split(" ")[0].strip() for x in lines]
@@ -21,7 +19,7 @@ class ListResult:
     INSTALLED_KEY = "Installed Plugins"
     AVAILABLE_KEY = "Available Plugins"
 
-    def __init__(self, lines: List[str]):
+    def __init__(self, lines: list[str]):
         self._lines = lines
 
     @classmethod
@@ -70,11 +68,11 @@ class ListResult:
         plugins = _clean(self._lines[start:])
         return PluginsList(self.AVAILABLE_KEY, plugins)
 
-    def _get_next_index(self, start_options: Tuple[str, ...], default: int = 0) -> int:
+    def _get_next_index(self, start_options: tuple[str, ...], default: int = 0) -> int:
         return _get_next_index(self._lines, start_options=start_options, default=default)
 
 
-def _get_next_index(lines: List[str], start_options: Tuple[str, ...], default: int = 0) -> int:
+def _get_next_index(lines: list[str], start_options: tuple[str, ...], default: int = 0) -> int:
     for index, line in enumerate(lines):
         if line in start_options:
             return index
@@ -117,7 +115,7 @@ def test_list_excludes_core_plugins(ape_plugins_runner):
     assert not result.available_plugins
     assert "console" not in result.installed_plugins, message("console")
     assert "networks" not in result.installed_plugins, message("networks")
-    assert "geth" not in result.installed_plugins, message("geth")
+    assert "node" not in result.installed_plugins, message("node")
 
 
 @github_xfail()
