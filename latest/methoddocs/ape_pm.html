@@ -27,7 +27,8 @@
   </script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="prev" title="ape-compile" href="ape_compile.html" /> 
+    <link rel="next" title="ape-test" href="ape_test.html" />
+    <link rel="prev" title="ape-node" href="ape_node.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -49,6 +50,7 @@
               <option value="">Select version...</option>
               <option value="latest">latest</option>
               <option value="stable">stable</option>
+                <option value="v0.8.0">v0.8.0</option>
                 <option value="v0.7.23">v0.7.23</option>
                 <option value="v0.7.22">v0.7.22</option>
                 <option value="v0.7.21">v0.7.21</option>
@@ -199,17 +201,18 @@
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="ape_accounts.html">ape-accounts</a></li>
 <li class="toctree-l1"><a class="reference internal" href="ape_compile.html">ape-compile</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ape_ethereum.html">ape-ethereum</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ape_ethereum.html#module-ape_ethereum.multicall">ape-ethereum.multicall</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ape_node.html">ape-node</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">ape-pm</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#ape_pm.BrownieProject"><code class="docutils literal notranslate"><span class="pre">BrownieProject</span></code></a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#ape_pm.BrownieProject.extract_config"><code class="docutils literal notranslate"><span class="pre">BrownieProject.extract_config()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ape_pm.BrownieProject.is_valid"><code class="docutils literal notranslate"><span class="pre">BrownieProject.is_valid</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="#ape_pm.BrownieProject.model_computed_fields"><code class="docutils literal notranslate"><span class="pre">BrownieProject.model_computed_fields</span></code></a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="#ape_pm.GithubDependency"><code class="docutils literal notranslate"><span class="pre">GithubDependency</span></code></a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#ape_pm.GithubDependency.fetch"><code class="docutils literal notranslate"><span class="pre">GithubDependency.fetch()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ape_pm.GithubDependency.github"><code class="docutils literal notranslate"><span class="pre">GithubDependency.github</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="#ape_pm.GithubDependency.model_computed_fields"><code class="docutils literal notranslate"><span class="pre">GithubDependency.model_computed_fields</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ape_pm.GithubDependency.package_id"><code class="docutils literal notranslate"><span class="pre">GithubDependency.package_id</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ape_pm.GithubDependency.ref"><code class="docutils literal notranslate"><span class="pre">GithubDependency.ref</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ape_pm.GithubDependency.uri"><code class="docutils literal notranslate"><span class="pre">GithubDependency.uri</span></code></a></li>
@@ -220,14 +223,12 @@
 <li class="toctree-l2"><a class="reference internal" href="#ape_pm.InterfaceCompiler"><code class="docutils literal notranslate"><span class="pre">InterfaceCompiler</span></code></a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#ape_pm.InterfaceCompiler.compile"><code class="docutils literal notranslate"><span class="pre">InterfaceCompiler.compile()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ape_pm.InterfaceCompiler.enrich_error"><code class="docutils literal notranslate"><span class="pre">InterfaceCompiler.enrich_error()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="#ape_pm.InterfaceCompiler.model_computed_fields"><code class="docutils literal notranslate"><span class="pre">InterfaceCompiler.model_computed_fields</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ape_pm.InterfaceCompiler.name"><code class="docutils literal notranslate"><span class="pre">InterfaceCompiler.name</span></code></a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="#ape_pm.LocalDependency"><code class="docutils literal notranslate"><span class="pre">LocalDependency</span></code></a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#ape_pm.LocalDependency.fetch"><code class="docutils literal notranslate"><span class="pre">LocalDependency.fetch()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ape_pm.LocalDependency.local"><code class="docutils literal notranslate"><span class="pre">LocalDependency.local</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="#ape_pm.LocalDependency.model_computed_fields"><code class="docutils literal notranslate"><span class="pre">LocalDependency.model_computed_fields</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ape_pm.LocalDependency.package_id"><code class="docutils literal notranslate"><span class="pre">LocalDependency.package_id</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ape_pm.LocalDependency.uri"><code class="docutils literal notranslate"><span class="pre">LocalDependency.uri</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ape_pm.LocalDependency.version"><code class="docutils literal notranslate"><span class="pre">LocalDependency.version</span></code></a></li>
@@ -236,7 +237,6 @@
 </li>
 <li class="toctree-l2"><a class="reference internal" href="#ape_pm.NpmDependency"><code class="docutils literal notranslate"><span class="pre">NpmDependency</span></code></a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#ape_pm.NpmDependency.fetch"><code class="docutils literal notranslate"><span class="pre">NpmDependency.fetch()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="#ape_pm.NpmDependency.model_computed_fields"><code class="docutils literal notranslate"><span class="pre">NpmDependency.model_computed_fields</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ape_pm.NpmDependency.npm"><code class="docutils literal notranslate"><span class="pre">NpmDependency.npm</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ape_pm.NpmDependency.package_id"><code class="docutils literal notranslate"><span class="pre">NpmDependency.package_id</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ape_pm.NpmDependency.uri"><code class="docutils literal notranslate"><span class="pre">NpmDependency.uri</span></code></a></li>
@@ -248,6 +248,7 @@
 </li>
 </ul>
 </li>
+<li class="toctree-l1"><a class="reference internal" href="ape_test.html">ape-test</a></li>
 </ul>
 
         </div>
@@ -304,12 +305,6 @@ Ape understands the dependencies and how to compile everything.</p>
 <dd><p>Return <code class="docutils literal notranslate"><span class="pre">True</span></code> when detecting a project of this type.</p>
 </dd></dl>
 
-<dl class="py attribute">
-<dt class="sig sig-object py" id="ape_pm.BrownieProject.model_computed_fields">
-<span class="sig-name descname"><span class="pre">model_computed_fields</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ClassVar</span><span class="p"><span class="pre">[</span></span><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ComputedFieldInfo</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{}</span></em><a class="headerlink" href="#ape_pm.BrownieProject.model_computed_fields" title="Permalink to this definition"></a></dt>
-<dd><p>A dictionary of computed field names and their corresponding <cite>ComputedFieldInfo</cite> objects.</p>
-</dd></dl>
-
 </dd></dl>
 
 <dl class="py class">
@@ -342,12 +337,6 @@ files.</p>
 <span class="sig-name descname"><span class="pre">github</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#ape_pm.GithubDependency.github" title="Permalink to this definition"></a></dt>
 <dd><p>The Github repo ID e.g. the organization name followed by the repo name,
 such as <code class="docutils literal notranslate"><span class="pre">dapphub/erc20</span></code>.</p>
-</dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="ape_pm.GithubDependency.model_computed_fields">
-<span class="sig-name descname"><span class="pre">model_computed_fields</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ClassVar</span><span class="p"><span class="pre">[</span></span><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ComputedFieldInfo</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{}</span></em><a class="headerlink" href="#ape_pm.GithubDependency.model_computed_fields" title="Permalink to this definition"></a></dt>
-<dd><p>A dictionary of computed field names and their corresponding <cite>ComputedFieldInfo</cite> objects.</p>
 </dd></dl>
 
 <dl class="py property">
@@ -436,12 +425,6 @@ to enrich.</p>
 </dl>
 </dd></dl>
 
-<dl class="py attribute">
-<dt class="sig sig-object py" id="ape_pm.InterfaceCompiler.model_computed_fields">
-<span class="sig-name descname"><span class="pre">model_computed_fields</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ClassVar</span><span class="p"><span class="pre">[</span></span><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ComputedFieldInfo</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{}</span></em><a class="headerlink" href="#ape_pm.InterfaceCompiler.model_computed_fields" title="Permalink to this definition"></a></dt>
-<dd><p>A dictionary of computed field names and their corresponding <cite>ComputedFieldInfo</cite> objects.</p>
-</dd></dl>
-
 <dl class="py property">
 <dt class="sig sig-object py" id="ape_pm.InterfaceCompiler.name">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">name</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#ape_pm.InterfaceCompiler.name" title="Permalink to this definition"></a></dt>
@@ -471,12 +454,6 @@ files.</p>
 <dt class="sig sig-object py" id="ape_pm.LocalDependency.local">
 <span class="sig-name descname"><span class="pre">local</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Path</span></em><a class="headerlink" href="#ape_pm.LocalDependency.local" title="Permalink to this definition"></a></dt>
 <dd><p>The root path (and API defining key) to the dependency files.</p>
-</dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="ape_pm.LocalDependency.model_computed_fields">
-<span class="sig-name descname"><span class="pre">model_computed_fields</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ClassVar</span><span class="p"><span class="pre">[</span></span><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ComputedFieldInfo</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{}</span></em><a class="headerlink" href="#ape_pm.LocalDependency.model_computed_fields" title="Permalink to this definition"></a></dt>
-<dd><p>A dictionary of computed field names and their corresponding <cite>ComputedFieldInfo</cite> objects.</p>
 </dd></dl>
 
 <dl class="py property">
@@ -529,12 +506,6 @@ download the files to the destination.</p>
 files.</p>
 </dd>
 </dl>
-</dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="ape_pm.NpmDependency.model_computed_fields">
-<span class="sig-name descname"><span class="pre">model_computed_fields</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ClassVar</span><span class="p"><span class="pre">[</span></span><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ComputedFieldInfo</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{}</span></em><a class="headerlink" href="#ape_pm.NpmDependency.model_computed_fields" title="Permalink to this definition"></a></dt>
-<dd><p>A dictionary of computed field names and their corresponding <cite>ComputedFieldInfo</cite> objects.</p>
 </dd></dl>
 
 <dl class="py attribute">
@@ -594,7 +565,8 @@ Most often, this is either a version number or a branch name.</p>
            </div>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="ape_compile.html" class="btn btn-neutral float-left" title="ape-compile" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="ape_node.html" class="btn btn-neutral float-left" title="ape-node" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="ape_test.html" class="btn btn-neutral float-right" title="ape-test" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>

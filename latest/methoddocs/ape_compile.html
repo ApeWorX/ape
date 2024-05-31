@@ -27,7 +27,7 @@
   </script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="ape-pm" href="ape_pm.html" />
+    <link rel="next" title="ape-ethereum" href="ape_ethereum.html" />
     <link rel="prev" title="ape-accounts" href="ape_accounts.html" /> 
 </head>
 
@@ -50,6 +50,7 @@
               <option value="">Select version...</option>
               <option value="latest">latest</option>
               <option value="stable">stable</option>
+                <option value="v0.8.0">v0.8.0</option>
                 <option value="v0.7.23">v0.7.23</option>
                 <option value="v0.7.22">v0.7.22</option>
                 <option value="v0.7.21">v0.7.21</option>
@@ -203,7 +204,6 @@
 <li class="toctree-l2"><a class="reference internal" href="#ape_compile.Config"><code class="docutils literal notranslate"><span class="pre">Config</span></code></a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#ape_compile.Config.exclude"><code class="docutils literal notranslate"><span class="pre">Config.exclude</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ape_compile.Config.include_dependencies"><code class="docutils literal notranslate"><span class="pre">Config.include_dependencies</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="#ape_compile.Config.model_computed_fields"><code class="docutils literal notranslate"><span class="pre">Config.model_computed_fields</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ape_compile.Config.output_extra"><code class="docutils literal notranslate"><span class="pre">Config.output_extra</span></code></a></li>
 </ul>
 </li>
@@ -213,7 +213,11 @@
 </li>
 </ul>
 </li>
+<li class="toctree-l1"><a class="reference internal" href="ape_ethereum.html">ape-ethereum</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ape_ethereum.html#module-ape_ethereum.multicall">ape-ethereum.multicall</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ape_node.html">ape-node</a></li>
 <li class="toctree-l1"><a class="reference internal" href="ape_pm.html">ape-pm</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ape_test.html">ape-test</a></li>
 </ul>
 
         </div>
@@ -267,12 +271,6 @@ should configure <code class="docutils literal notranslate"><span class="pre">in
 </dd></dl>
 
 <dl class="py attribute">
-<dt class="sig sig-object py" id="ape_compile.Config.model_computed_fields">
-<span class="sig-name descname"><span class="pre">model_computed_fields</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ClassVar</span><span class="p"><span class="pre">[</span></span><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ComputedFieldInfo</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{}</span></em><a class="headerlink" href="#ape_compile.Config.model_computed_fields" title="Permalink to this definition"></a></dt>
-<dd><p>A dictionary of computed field names and their corresponding <cite>ComputedFieldInfo</cite> objects.</p>
-</dd></dl>
-
-<dl class="py attribute">
 <dt class="sig sig-object py" id="ape_compile.Config.output_extra">
 <span class="sig-name descname"><span class="pre">output_extra</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#ape_compile.OutputExtras" title="ape_compile.OutputExtras"><span class="pre">ape_compile.OutputExtras</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#ape_compile.Config.output_extra" title="Permalink to this definition"></a></dt>
 <dd><p>Extra selections to output. Outputs to <code class="docutils literal notranslate"><span class="pre">.build/{key.lower()}</span></code>.</p>
@@ -302,7 +300,7 @@ for web-apps.</p>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
         <a href="ape_accounts.html" class="btn btn-neutral float-left" title="ape-accounts" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="ape_pm.html" class="btn btn-neutral float-right" title="ape-pm" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="ape_ethereum.html" class="btn btn-neutral float-right" title="ape-ethereum" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>

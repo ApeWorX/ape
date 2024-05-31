@@ -50,6 +50,7 @@
               <option value="">Select version...</option>
               <option value="latest">latest</option>
               <option value="stable">stable</option>
+                <option value="v0.8.0">v0.8.0</option>
                 <option value="v0.7.23">v0.7.23</option>
                 <option value="v0.7.22">v0.7.22</option>
                 <option value="v0.7.21">v0.7.21</option>
@@ -238,7 +239,6 @@
 <li class="toctree-l4"><a class="reference internal" href="#ape.managers.chain.AccountHistory.__len__"><code class="docutils literal notranslate"><span class="pre">AccountHistory.__len__()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.managers.chain.AccountHistory.address"><code class="docutils literal notranslate"><span class="pre">AccountHistory.address</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.managers.chain.AccountHistory.append"><code class="docutils literal notranslate"><span class="pre">AccountHistory.append()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#ape.managers.chain.AccountHistory.model_computed_fields"><code class="docutils literal notranslate"><span class="pre">AccountHistory.model_computed_fields</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.managers.chain.AccountHistory.outgoing"><code class="docutils literal notranslate"><span class="pre">AccountHistory.outgoing</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.managers.chain.AccountHistory.query"><code class="docutils literal notranslate"><span class="pre">AccountHistory.query()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.managers.chain.AccountHistory.revert_to_block"><code class="docutils literal notranslate"><span class="pre">AccountHistory.revert_to_block()</span></code></a></li>
@@ -305,19 +305,16 @@
 <li class="toctree-l3"><a class="reference internal" href="#ape.managers.converters.AccountIntConverter"><code class="docutils literal notranslate"><span class="pre">AccountIntConverter</span></code></a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#ape.managers.converters.AccountIntConverter.convert"><code class="docutils literal notranslate"><span class="pre">AccountIntConverter.convert()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.managers.converters.AccountIntConverter.is_convertible"><code class="docutils literal notranslate"><span class="pre">AccountIntConverter.is_convertible()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#ape.managers.converters.AccountIntConverter.model_computed_fields"><code class="docutils literal notranslate"><span class="pre">AccountIntConverter.model_computed_fields</span></code></a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="#ape.managers.converters.AddressAPIConverter"><code class="docutils literal notranslate"><span class="pre">AddressAPIConverter</span></code></a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#ape.managers.converters.AddressAPIConverter.convert"><code class="docutils literal notranslate"><span class="pre">AddressAPIConverter.convert()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.managers.converters.AddressAPIConverter.is_convertible"><code class="docutils literal notranslate"><span class="pre">AddressAPIConverter.is_convertible()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#ape.managers.converters.AddressAPIConverter.model_computed_fields"><code class="docutils literal notranslate"><span class="pre">AddressAPIConverter.model_computed_fields</span></code></a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="#ape.managers.converters.BytesAddressConverter"><code class="docutils literal notranslate"><span class="pre">BytesAddressConverter</span></code></a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#ape.managers.converters.BytesAddressConverter.convert"><code class="docutils literal notranslate"><span class="pre">BytesAddressConverter.convert()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.managers.converters.BytesAddressConverter.is_convertible"><code class="docutils literal notranslate"><span class="pre">BytesAddressConverter.is_convertible()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#ape.managers.converters.BytesAddressConverter.model_computed_fields"><code class="docutils literal notranslate"><span class="pre">BytesAddressConverter.model_computed_fields</span></code></a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="#ape.managers.converters.ConversionManager"><code class="docutils literal notranslate"><span class="pre">ConversionManager</span></code></a><ul>
@@ -328,43 +325,36 @@
 <li class="toctree-l3"><a class="reference internal" href="#ape.managers.converters.HexAddressConverter"><code class="docutils literal notranslate"><span class="pre">HexAddressConverter</span></code></a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#ape.managers.converters.HexAddressConverter.convert"><code class="docutils literal notranslate"><span class="pre">HexAddressConverter.convert()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.managers.converters.HexAddressConverter.is_convertible"><code class="docutils literal notranslate"><span class="pre">HexAddressConverter.is_convertible()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#ape.managers.converters.HexAddressConverter.model_computed_fields"><code class="docutils literal notranslate"><span class="pre">HexAddressConverter.model_computed_fields</span></code></a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="#ape.managers.converters.HexConverter"><code class="docutils literal notranslate"><span class="pre">HexConverter</span></code></a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#ape.managers.converters.HexConverter.convert"><code class="docutils literal notranslate"><span class="pre">HexConverter.convert()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.managers.converters.HexConverter.is_convertible"><code class="docutils literal notranslate"><span class="pre">HexConverter.is_convertible()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#ape.managers.converters.HexConverter.model_computed_fields"><code class="docutils literal notranslate"><span class="pre">HexConverter.model_computed_fields</span></code></a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="#ape.managers.converters.HexIntConverter"><code class="docutils literal notranslate"><span class="pre">HexIntConverter</span></code></a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#ape.managers.converters.HexIntConverter.convert"><code class="docutils literal notranslate"><span class="pre">HexIntConverter.convert()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.managers.converters.HexIntConverter.is_convertible"><code class="docutils literal notranslate"><span class="pre">HexIntConverter.is_convertible()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#ape.managers.converters.HexIntConverter.model_computed_fields"><code class="docutils literal notranslate"><span class="pre">HexIntConverter.model_computed_fields</span></code></a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="#ape.managers.converters.IntAddressConverter"><code class="docutils literal notranslate"><span class="pre">IntAddressConverter</span></code></a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#ape.managers.converters.IntAddressConverter.convert"><code class="docutils literal notranslate"><span class="pre">IntAddressConverter.convert()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.managers.converters.IntAddressConverter.is_convertible"><code class="docutils literal notranslate"><span class="pre">IntAddressConverter.is_convertible()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#ape.managers.converters.IntAddressConverter.model_computed_fields"><code class="docutils literal notranslate"><span class="pre">IntAddressConverter.model_computed_fields</span></code></a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="#ape.managers.converters.StringDecimalConverter"><code class="docutils literal notranslate"><span class="pre">StringDecimalConverter</span></code></a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#ape.managers.converters.StringDecimalConverter.convert"><code class="docutils literal notranslate"><span class="pre">StringDecimalConverter.convert()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.managers.converters.StringDecimalConverter.is_convertible"><code class="docutils literal notranslate"><span class="pre">StringDecimalConverter.is_convertible()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#ape.managers.converters.StringDecimalConverter.model_computed_fields"><code class="docutils literal notranslate"><span class="pre">StringDecimalConverter.model_computed_fields</span></code></a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="#ape.managers.converters.StringIntConverter"><code class="docutils literal notranslate"><span class="pre">StringIntConverter</span></code></a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#ape.managers.converters.StringIntConverter.convert"><code class="docutils literal notranslate"><span class="pre">StringIntConverter.convert()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.managers.converters.StringIntConverter.is_convertible"><code class="docutils literal notranslate"><span class="pre">StringIntConverter.is_convertible()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#ape.managers.converters.StringIntConverter.model_computed_fields"><code class="docutils literal notranslate"><span class="pre">StringIntConverter.model_computed_fields</span></code></a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="#ape.managers.converters.TimestampConverter"><code class="docutils literal notranslate"><span class="pre">TimestampConverter</span></code></a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#ape.managers.converters.TimestampConverter.convert"><code class="docutils literal notranslate"><span class="pre">TimestampConverter.convert()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.managers.converters.TimestampConverter.is_convertible"><code class="docutils literal notranslate"><span class="pre">TimestampConverter.is_convertible()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#ape.managers.converters.TimestampConverter.model_computed_fields"><code class="docutils literal notranslate"><span class="pre">TimestampConverter.model_computed_fields</span></code></a></li>
 </ul>
 </li>
 </ul>
@@ -491,7 +481,11 @@
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="ape_accounts.html">ape-accounts</a></li>
 <li class="toctree-l1"><a class="reference internal" href="ape_compile.html">ape-compile</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ape_ethereum.html">ape-ethereum</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ape_ethereum.html#module-ape_ethereum.multicall">ape-ethereum.multicall</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ape_node.html">ape-node</a></li>
 <li class="toctree-l1"><a class="reference internal" href="ape_pm.html">ape-pm</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ape_test.html">ape-test</a></li>
 </ul>
 
         </div>
@@ -952,12 +946,6 @@ to compiler API classes.</p>
 <dd class="field-odd"><p><strong>receipt</strong> (<a class="reference internal" href="api.html#ape.api.transactions.ReceiptAPI" title="ape.api.transactions.ReceiptAPI"><code class="xref py py-class docutils literal notranslate"><span class="pre">ReceiptAPI</span></code></a>) – The receipt to append.</p>
 </dd>
 </dl>
-</dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="ape.managers.chain.AccountHistory.model_computed_fields">
-<span class="sig-name descname"><span class="pre">model_computed_fields</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ClassVar</span><span class="p"><span class="pre">[</span></span><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ComputedFieldInfo</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{}</span></em><a class="headerlink" href="#ape.managers.chain.AccountHistory.model_computed_fields" title="Permalink to this definition"></a></dt>
-<dd><p>A dictionary of computed field names and their corresponding <cite>ComputedFieldInfo</cite> objects.</p>
 </dd></dl>
 
 <dl class="py property">
@@ -1714,12 +1702,6 @@ when the item fails to convert properly.</p>
 </dl>
 </dd></dl>
 
-<dl class="py attribute">
-<dt class="sig sig-object py" id="ape.managers.converters.AccountIntConverter.model_computed_fields">
-<span class="sig-name descname"><span class="pre">model_computed_fields</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ClassVar</span><span class="p"><span class="pre">[</span></span><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ComputedFieldInfo</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{}</span></em><a class="headerlink" href="#ape.managers.converters.AccountIntConverter.model_computed_fields" title="Permalink to this definition"></a></dt>
-<dd><p>A dictionary of computed field names and their corresponding <cite>ComputedFieldInfo</cite> objects.</p>
-</dd></dl>
-
 </dd></dl>
 
 <dl class="py class">
@@ -1763,12 +1745,6 @@ to a :class`~ape.types.address.AddressType`.</p>
 </dl>
 </dd></dl>
 
-<dl class="py attribute">
-<dt class="sig sig-object py" id="ape.managers.converters.AddressAPIConverter.model_computed_fields">
-<span class="sig-name descname"><span class="pre">model_computed_fields</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ClassVar</span><span class="p"><span class="pre">[</span></span><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ComputedFieldInfo</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{}</span></em><a class="headerlink" href="#ape.managers.converters.AddressAPIConverter.model_computed_fields" title="Permalink to this definition"></a></dt>
-<dd><p>A dictionary of computed field names and their corresponding <cite>ComputedFieldInfo</cite> objects.</p>
-</dd></dl>
-
 </dd></dl>
 
 <dl class="py class">
@@ -1799,12 +1775,6 @@ when the item fails to convert properly.</p>
 <dd class="field-odd"><p>bool</p>
 </dd>
 </dl>
-</dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="ape.managers.converters.BytesAddressConverter.model_computed_fields">
-<span class="sig-name descname"><span class="pre">model_computed_fields</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ClassVar</span><span class="p"><span class="pre">[</span></span><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ComputedFieldInfo</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{}</span></em><a class="headerlink" href="#ape.managers.converters.BytesAddressConverter.model_computed_fields" title="Permalink to this definition"></a></dt>
-<dd><p>A dictionary of computed field names and their corresponding <cite>ComputedFieldInfo</cite> objects.</p>
 </dd></dl>
 
 </dd></dl>
@@ -1909,12 +1879,6 @@ that it is checksummed.</p>
 </dl>
 </dd></dl>
 
-<dl class="py attribute">
-<dt class="sig sig-object py" id="ape.managers.converters.HexAddressConverter.model_computed_fields">
-<span class="sig-name descname"><span class="pre">model_computed_fields</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ClassVar</span><span class="p"><span class="pre">[</span></span><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ComputedFieldInfo</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{}</span></em><a class="headerlink" href="#ape.managers.converters.HexAddressConverter.model_computed_fields" title="Permalink to this definition"></a></dt>
-<dd><p>A dictionary of computed field names and their corresponding <cite>ComputedFieldInfo</cite> objects.</p>
-</dd></dl>
-
 </dd></dl>
 
 <dl class="py class">
@@ -1954,12 +1918,6 @@ NOTE: This utility converter ensures that all bytes args can accept hex too</p>
 </dl>
 </dd></dl>
 
-<dl class="py attribute">
-<dt class="sig sig-object py" id="ape.managers.converters.HexConverter.model_computed_fields">
-<span class="sig-name descname"><span class="pre">model_computed_fields</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ClassVar</span><span class="p"><span class="pre">[</span></span><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ComputedFieldInfo</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{}</span></em><a class="headerlink" href="#ape.managers.converters.HexConverter.model_computed_fields" title="Permalink to this definition"></a></dt>
-<dd><p>A dictionary of computed field names and their corresponding <cite>ComputedFieldInfo</cite> objects.</p>
-</dd></dl>
-
 </dd></dl>
 
 <dl class="py class">
@@ -1991,12 +1949,6 @@ when the item fails to convert properly.</p>
 <dd class="field-odd"><p>bool</p>
 </dd>
 </dl>
-</dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="ape.managers.converters.HexIntConverter.model_computed_fields">
-<span class="sig-name descname"><span class="pre">model_computed_fields</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ClassVar</span><span class="p"><span class="pre">[</span></span><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ComputedFieldInfo</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{}</span></em><a class="headerlink" href="#ape.managers.converters.HexIntConverter.model_computed_fields" title="Permalink to this definition"></a></dt>
-<dd><p>A dictionary of computed field names and their corresponding <cite>ComputedFieldInfo</cite> objects.</p>
 </dd></dl>
 
 </dd></dl>
@@ -2031,12 +1983,6 @@ when the item fails to convert properly.</p>
 </dl>
 </dd></dl>
 
-<dl class="py attribute">
-<dt class="sig sig-object py" id="ape.managers.converters.IntAddressConverter.model_computed_fields">
-<span class="sig-name descname"><span class="pre">model_computed_fields</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ClassVar</span><span class="p"><span class="pre">[</span></span><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ComputedFieldInfo</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{}</span></em><a class="headerlink" href="#ape.managers.converters.IntAddressConverter.model_computed_fields" title="Permalink to this definition"></a></dt>
-<dd><p>A dictionary of computed field names and their corresponding <cite>ComputedFieldInfo</cite> objects.</p>
-</dd></dl>
-
 </dd></dl>
 
 <dl class="py class">
@@ -2067,12 +2013,6 @@ when the item fails to convert properly.</p>
 <dd class="field-odd"><p>bool</p>
 </dd>
 </dl>
-</dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="ape.managers.converters.StringDecimalConverter.model_computed_fields">
-<span class="sig-name descname"><span class="pre">model_computed_fields</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ClassVar</span><span class="p"><span class="pre">[</span></span><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ComputedFieldInfo</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{}</span></em><a class="headerlink" href="#ape.managers.converters.StringDecimalConverter.model_computed_fields" title="Permalink to this definition"></a></dt>
-<dd><p>A dictionary of computed field names and their corresponding <cite>ComputedFieldInfo</cite> objects.</p>
 </dd></dl>
 
 </dd></dl>
@@ -2106,12 +2046,6 @@ when the item fails to convert properly.</p>
 </dl>
 </dd></dl>
 
-<dl class="py attribute">
-<dt class="sig sig-object py" id="ape.managers.converters.StringIntConverter.model_computed_fields">
-<span class="sig-name descname"><span class="pre">model_computed_fields</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ClassVar</span><span class="p"><span class="pre">[</span></span><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ComputedFieldInfo</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{}</span></em><a class="headerlink" href="#ape.managers.converters.StringIntConverter.model_computed_fields" title="Permalink to this definition"></a></dt>
-<dd><p>A dictionary of computed field names and their corresponding <cite>ComputedFieldInfo</cite> objects.</p>
-</dd></dl>
-
 </dd></dl>
 
 <dl class="py class">
@@ -2143,12 +2077,6 @@ when the item fails to convert properly.</p>
 <dd class="field-odd"><p>bool</p>
 </dd>
 </dl>
-</dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="ape.managers.converters.TimestampConverter.model_computed_fields">
-<span class="sig-name descname"><span class="pre">model_computed_fields</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ClassVar</span><span class="p"><span class="pre">[</span></span><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ComputedFieldInfo</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{}</span></em><a class="headerlink" href="#ape.managers.converters.TimestampConverter.model_computed_fields" title="Permalink to this definition"></a></dt>
-<dd><p>A dictionary of computed field names and their corresponding <cite>ComputedFieldInfo</cite> objects.</p>
 </dd></dl>
 
 </dd></dl>
