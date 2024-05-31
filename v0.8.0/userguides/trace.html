@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Traces &mdash; ape  documentation</title>
+      <link rel="stylesheet" href="/ape/latest/_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="/ape/latest/_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="/ape/latest/_static/custom.css" type="text/css" />
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+    <link rel="canonical" href="/ape/userguides/trace.html" />
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/doctools.js"></script>
+        <script src="../_static/sphinx_highlight.js"></script>
+        <script data-domain="docs.apeworx.io" defer="defer" src="https://plausible.io/js/script.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <script src="../_static/custom.js"></script>
+  <script>
+      var PROJECT = "ape";
+  </script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="accounts" href="../commands/accounts.html" />
+    <link rel="prev" title="Logging" href="logging.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            ape
+              <img src="../_static/logo.gif" class="logo" alt="Logo"/>
+          </a>
+
+          <div class="version">
+            <label for="version-picker" id="version-picker-label">Version:</label>
+            <select id="version-picker">
+              <option value="">Select version...</option>
+              <option value="latest">latest</option>
+              <option value="stable">stable</option>
+                <option value="v0.7.23">v0.7.23</option>
+                <option value="v0.7.22">v0.7.22</option>
+                <option value="v0.7.21">v0.7.21</option>
+                <option value="v0.7.20">v0.7.20</option>
+                <option value="v0.7.19">v0.7.19</option>
+                <option value="v0.7.18">v0.7.18</option>
+                <option value="v0.7.17">v0.7.17</option>
+                <option value="v0.7.16">v0.7.16</option>
+                <option value="v0.7.15">v0.7.15</option>
+                <option value="v0.7.14">v0.7.14</option>
+                <option value="v0.7.12">v0.7.12</option>
+                <option value="v0.7.11">v0.7.11</option>
+                <option value="v0.7.10">v0.7.10</option>
+                <option value="v0.7.9">v0.7.9</option>
+                <option value="v0.7.8">v0.7.8</option>
+                <option value="v0.7.7">v0.7.7</option>
+                <option value="v0.7.6">v0.7.6</option>
+                <option value="v0.7.5">v0.7.5</option>
+                <option value="v0.7.4">v0.7.4</option>
+                <option value="v0.7.3">v0.7.3</option>
+                <option value="v0.7.2">v0.7.2</option>
+                <option value="v0.7.1">v0.7.1</option>
+                <option value="v0.7.0">v0.7.0</option>
+                <option value="v0.6.27">v0.6.27</option>
+                <option value="v0.6.26">v0.6.26</option>
+                <option value="v0.6.25">v0.6.25</option>
+                <option value="v0.6.24">v0.6.24</option>
+                <option value="v0.6.23">v0.6.23</option>
+                <option value="v0.6.22">v0.6.22</option>
+                <option value="v0.6.21">v0.6.21</option>
+                <option value="v0.6.20">v0.6.20</option>
+                <option value="v0.6.19">v0.6.19</option>
+                <option value="v0.6.18">v0.6.18</option>
+                <option value="v0.6.17">v0.6.17</option>
+                <option value="v0.6.16">v0.6.16</option>
+                <option value="v0.6.15">v0.6.15</option>
+                <option value="v0.6.14">v0.6.14</option>
+                <option value="v0.6.13">v0.6.13</option>
+                <option value="v0.6.12">v0.6.12</option>
+                <option value="v0.6.11">v0.6.11</option>
+                <option value="v0.6.10">v0.6.10</option>
+                <option value="v0.6.9">v0.6.9</option>
+                <option value="v0.6.8">v0.6.8</option>
+                <option value="v0.6.7">v0.6.7</option>
+                <option value="v0.6.6">v0.6.6</option>
+                <option value="v0.6.5">v0.6.5</option>
+                <option value="v0.6.4">v0.6.4</option>
+                <option value="v0.6.3">v0.6.3</option>
+                <option value="v0.6.2">v0.6.2</option>
+                <option value="v0.6.1">v0.6.1</option>
+                <option value="v0.6.0">v0.6.0</option>
+                <option value="v0.5.9">v0.5.9</option>
+                <option value="v0.5.8">v0.5.8</option>
+                <option value="v0.5.7">v0.5.7</option>
+                <option value="v0.5.6">v0.5.6</option>
+                <option value="v0.5.5">v0.5.5</option>
+                <option value="v0.5.4">v0.5.4</option>
+                <option value="v0.5.3">v0.5.3</option>
+                <option value="v0.5.2">v0.5.2</option>
+                <option value="v0.5.1">v0.5.1</option>
+                <option value="v0.5.0">v0.5.0</option>
+                <option value="v0.4.5">v0.4.5</option>
+                <option value="v0.4.4">v0.4.4</option>
+                <option value="v0.4.3">v0.4.3</option>
+                <option value="v0.4.2">v0.4.2</option>
+                <option value="v0.4.1">v0.4.1</option>
+                <option value="v0.4.0">v0.4.0</option>
+                <option value="v0.3.5">v0.3.5</option>
+                <option value="v0.3.4">v0.3.4</option>
+                <option value="v0.3.3">v0.3.3</option>
+                <option value="v0.3.2">v0.3.2</option>
+                <option value="v0.3.1">v0.3.1</option>
+                <option value="v0.3.0">v0.3.0</option>
+                <option value="v0.2.8">v0.2.8</option>
+                <option value="v0.2.7">v0.2.7</option>
+                <option value="v0.2.6">v0.2.6</option>
+                <option value="v0.2.5">v0.2.5</option>
+                <option value="v0.2.4">v0.2.4</option>
+                <option value="v0.2.3">v0.2.3</option>
+                <option value="v0.2.2">v0.2.2</option>
+                <option value="v0.2.1">v0.2.1</option>
+                <option value="v0.2.0">v0.2.0</option>
+                <option value="v0.1.6">v0.1.6</option>
+                <option value="v0.1.5">v0.1.5</option>
+                <option value="v0.1.4">v0.1.4</option>
+                <option value="v0.1.3">v0.1.3</option>
+                <option value="v0.1.1">v0.1.1</option>
+                <option value="v0.1.0">v0.1.0</option>
+            </select>
+          </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">User Guides</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="quickstart.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="accounts.html">Accounts</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installing_plugins.html">Plugins</a></li>
+<li class="toctree-l1"><a class="reference internal" href="projects.html">Developing Projects with Ape</a></li>
+<li class="toctree-l1"><a class="reference internal" href="dependencies.html">Dependencies</a></li>
+<li class="toctree-l1"><a class="reference internal" href="compile.html">Compile</a></li>
+<li class="toctree-l1"><a class="reference internal" href="clis.html">CLIs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="data.html">Querying Data</a></li>
+<li class="toctree-l1"><a class="reference internal" href="networks.html">Networks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="forking_networks.html">Forking Networks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="developing_plugins.html">Developing Plugins</a></li>
+<li class="toctree-l1"><a class="reference internal" href="config.html">Configure Ape</a></li>
+<li class="toctree-l1"><a class="reference internal" href="transactions.html">Making Transactions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="console.html">Ape Console</a></li>
+<li class="toctree-l1"><a class="reference internal" href="contracts.html">Contracts</a></li>
+<li class="toctree-l1"><a class="reference internal" href="proxy.html">Proxy Contracts</a></li>
+<li class="toctree-l1"><a class="reference internal" href="testing.html">Testing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="scripts.html">Scripting</a></li>
+<li class="toctree-l1"><a class="reference internal" href="publishing.html">Publishing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="logging.html">Logging</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Traces</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#tracing-calls">Tracing Calls</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#gas-reports">Gas Reports</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">CLI Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../commands/accounts.html">accounts</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../commands/compile.html">compile</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../commands/pm.html">pm</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../commands/console.html">console</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../commands/init.html">init</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../commands/networks.html">networks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../commands/plugins.html">plugins</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../commands/run.html">run</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../commands/test.html">test</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Core Python Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../methoddocs/ape.html">ape</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../methoddocs/api.html">ape.api</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../methoddocs/cli.html">ape.cli</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../methoddocs/contracts.html">ape.contracts</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../methoddocs/exceptions.html">ape.exceptions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../methoddocs/managers.html">ape.managers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../methoddocs/plugins.html">ape.plugins</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../methoddocs/types.html">ape.types</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../methoddocs/utils.html">ape.utils</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Plugin Python Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../methoddocs/ape_accounts.html">ape-accounts</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../methoddocs/ape_compile.html">ape-compile</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../methoddocs/ape_pm.html">ape-pm</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">ape</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Traces</li>
+      <li class="wy-breadcrumbs-aside">
+              <a href="https://github.com/ApeWorX/ape/blob/main/docs/userguides/trace.md" class="fa fa-github"> Edit on GitHub</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="traces">
+<h1>Traces<a class="headerlink" href="#traces" title="Permalink to this heading"></a></h1>
+<p>A transaction’s trace frames are the individual steps the transaction took.
+Using traces, Ape is able to offer features like:</p>
+<ol class="arabic simple">
+<li><p>Showing a pretty call-tree from a transaction receipt</p></li>
+<li><p>Gas reporting in <code class="docutils literal notranslate"><span class="pre">ape</span> <span class="pre">test</span></code></p></li>
+<li><p>Coverage tools in <code class="docutils literal notranslate"><span class="pre">ape</span> <span class="pre">test</span></code></p></li>
+</ol>
+<p>Some network providers, such as Alchemy and Foundry, implement <code class="docutils literal notranslate"><span class="pre">debug_traceTransaction</span></code> and Parity’s <code class="docutils literal notranslate"><span class="pre">trace_transaction</span></code> affording tracing capabilities in Ape.
+<strong>WARN</strong>: Without RPCs for obtaining traces, some features such as gas-reporting and coverage are limited.</p>
+<p>To see a transaction trace, use the <a class="reference external" href="../methoddocs/api.html#ape.api.transactions.ReceiptAPI.show_trace">show_trace()</a> method on a receipt API object.</p>
+<p>Here is an example using <code class="docutils literal notranslate"><span class="pre">show_trace()</span></code> in Python code to print out a transaction’s trace.
+<strong>NOTE</strong>: This code runs assuming you are connected to <code class="docutils literal notranslate"><span class="pre">ethereum:mainnet</span></code> using a provider with tracing RPCs.
+To learn more about networks in Ape, see the <a class="reference external" href="./networks.html">networks guide</a>.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">ape</span> <span class="kn">import</span> <span class="n">chain</span>
+
+<span class="n">tx</span> <span class="o">=</span> <span class="n">chain</span><span class="o">.</span><span class="n">provider</span><span class="o">.</span><span class="n">get_receipt</span><span class="p">(</span><span class="s1">&#39;0xb7d7f1d5ce7743e821d3026647df486f517946ef1342a1ae93c96e4a8016eab7&#39;</span><span class="p">)</span>
+
+<span class="c1"># Show the steps the transaction took.</span>
+<span class="n">tx</span><span class="o">.</span><span class="n">show_trace</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>You should see a (less-abridged) trace like:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Call trace for &#39;0xb7d7f1d5ce7743e821d3026647df486f517946ef1342a1ae93c96e4a8016eab7&#39;
+tx.origin=0x5668EAd1eDB8E2a4d724C8fb9cB5fFEabEB422dc
+DSProxy.execute(_target=LoanShifterTaker, _data=0x35..0000) -&gt; &quot;&quot; [1421947 gas]
+└── (delegate) LoanShifterTaker.moveLoan(
+      _exchangeData=[
+        0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE,
+        ZERO_ADDRESS,
+        
+        ...
+        # Abridged because is super long #
+        ...
+ 
+
+    │                   └── LendingRateOracle.getMarketBorrowRate(_asset=DAI) -&gt; 
+    │                       35000000000000000000000000 [1164 gas]
+    ├── DSProxy.authority() -&gt; DSGuard [1291 gas]
+    ├── DSGuard.forbid(src=LoanShifterReceiver, dst=DSProxy, sig=0x1c..0000) [5253 gas]
+    └── DefisaverLogger.Log(
+          _contract=DSProxy, 
+          _caller=tx.origin, 
+          _logName=&quot;LoanShifter&quot;, 
+          _data=0x00..0000
+        ) [6057 gas]                                                                              
+</pre></div>
+</div>
+<p>Similarly, you can use the provider directly to get a trace.
+This is useful if you want to interact with the trace or change some parameters for creating the trace.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">ape</span> <span class="kn">import</span> <span class="n">chain</span>
+
+<span class="c1"># Change the `debug_traceTransaction` parameter dictionary</span>
+<span class="n">trace</span> <span class="o">=</span> <span class="n">chain</span><span class="o">.</span><span class="n">provider</span><span class="o">.</span><span class="n">get_transaction_trace</span><span class="p">(</span>
+    <span class="s2">&quot;0x...&quot;</span><span class="p">,</span> <span class="n">debug_trace_transaction_parameters</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;enableMemory&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">}</span>
+<span class="p">)</span>
+
+<span class="c1"># You can still print the pretty call-trace (as we did in the example above)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">trace</span><span class="p">)</span>
+
+<span class="c1"># Interact with low-level logs for deeper analysis.</span>
+<span class="n">struct_logs</span> <span class="o">=</span> <span class="n">trace</span><span class="o">.</span><span class="n">get_raw_frames</span><span class="p">()</span>
+</pre></div>
+</div>
+<section id="tracing-calls">
+<h2>Tracing Calls<a class="headerlink" href="#tracing-calls" title="Permalink to this heading"></a></h2>
+<p>Some network providers trace calls in addition to transactions.
+EVM-based providers best achieve this by implementing the <code class="docutils literal notranslate"><span class="pre">debug_traceCall</span></code> RPC.</p>
+<p>If you want to see the trace of call when making the call, use the <code class="docutils literal notranslate"><span class="pre">show_trace=</span></code> flag:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">token</span><span class="o">.</span><span class="n">balanceOf</span><span class="p">(</span><span class="n">account</span><span class="p">,</span> <span class="n">show_trace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+<p><strong>WARN</strong>: If your provider does not properly support call-tracing (e.g. doesn’t implement <code class="docutils literal notranslate"><span class="pre">debug_traceCall</span></code>), traces are limited to the top-level call.</p>
+<p>Ape traces calls automatically when using <code class="docutils literal notranslate"><span class="pre">--gas</span></code> or <code class="docutils literal notranslate"><span class="pre">--coverage</span></code> in tests to build reports.
+Learn more about testing in Ape in the <a class="reference external" href="./testing.html">testing guide</a> and in the following sections.</p>
+</section>
+<section id="gas-reports">
+<h2>Gas Reports<a class="headerlink" href="#gas-reports" title="Permalink to this heading"></a></h2>
+<p>To view the gas report of a transaction receipt, use the <a class="reference external" href="../methoddocs/api.html?highlight=receiptapi#ape.api.transactions.ReceiptAPI.show_gas_report">ReceiptAPI.show_gas_report()</a> method:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">ape</span> <span class="kn">import</span> <span class="n">networks</span>
+
+<span class="n">txn_hash</span> <span class="o">=</span> <span class="s2">&quot;0x053cba5c12172654d894f66d5670bab6215517a94189a9ffc09bc40a589ec04d&quot;</span>
+<span class="n">receipt</span> <span class="o">=</span> <span class="n">networks</span><span class="o">.</span><span class="n">provider</span><span class="o">.</span><span class="n">get_receipt</span><span class="p">(</span><span class="n">txn_hash</span><span class="p">)</span>
+<span class="n">receipt</span><span class="o">.</span><span class="n">show_gas_report</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>It outputs tables of contracts and methods with gas usages that look like this:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>                            DAI Gas
+
+  Method           Times called    Min.    Max.    Mean   Median
+ ────────────────────────────────────────────────────────────────
+  balanceOf                   4   1302    13028   1302    1302
+  allowance                   2   1377    1377    1337    1337
+│ approve                     1   22414   22414   22414   22414
+│ burn                        1   11946   11946   11946   11946
+│ mint                        1   25845   25845   25845   25845
+</pre></div>
+</div>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="logging.html" class="btn btn-neutral float-left" title="Logging" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../commands/accounts.html" class="btn btn-neutral float-right" title="accounts" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, ApeWorX LTD.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+  
+      <li><a href="https://github.com/ApeWorX/ape
+      /blob/main//docs/userguides/trace.rst">
+      Show on GitHub</a></li>
+  
+
+</body>
+</html>
