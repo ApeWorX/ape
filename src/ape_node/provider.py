@@ -195,6 +195,7 @@ class GethDevProcess(BaseGethProcess):
 class EthereumNetworkConfig(PluginConfig):
     # Make sure you are running the right networks when you try for these
     mainnet: dict = {"uri": get_random_rpc("ethereum", "mainnet")}
+    holesky: dict = {"uri": get_random_rpc("ethereum", "holesky")}
     sepolia: dict = {"uri": get_random_rpc("ethereum", "sepolia")}
     # Make sure to run via `geth --dev` (or similar)
     local: dict = {**DEFAULT_SETTINGS.copy(), "chain_id": DEFAULT_TEST_CHAIN_ID}

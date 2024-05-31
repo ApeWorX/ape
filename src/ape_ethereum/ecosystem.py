@@ -81,6 +81,7 @@ NETWORKS = {
     # chain_id, network_id
     "mainnet": (1, 1),
     "sepolia": (11155111, 11155111),
+    "holesky": (17000, 17000),
 }
 BLUEPRINT_HEADER = HexBytes("0xfe71")
 
@@ -310,6 +311,7 @@ class BaseEthereumConfig(PluginConfig):
 
 class EthereumConfig(BaseEthereumConfig):
     mainnet: NetworkConfig = create_network_config(block_time=13)
+    holesky: NetworkConfig = create_network_config(block_time=13)
     sepolia: NetworkConfig = create_network_config(block_time=15)
 
 
