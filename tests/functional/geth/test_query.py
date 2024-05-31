@@ -1,33 +1,33 @@
-from typing import List, Tuple
-
-from ape.exceptions import ChainError
 from tests.conftest import geth_process_test
 
 
 @geth_process_test
-def test_get_contract_creation_receipts(mock_geth, geth_contract, chain, networks, geth_provider):
-    geth_provider.__dict__["explorer"] = None
-    provider = networks.active_provider
+def test_get_contract_metadata(
+    mock_geth, geth_contract, geth_account, chain, networks, geth_provider
+):
     networks.active_provider = mock_geth
-    mock_geth._web3.eth.get_block.side_effect = (
-        lambda bid, *args, **kwargs: geth_provider.get_block(bid)
-    )
+    actual = chain.contracts.get_creation_metadata(geth_contract.address)
+    assert actual.deployer == geth_account.address
 
+    # hold onto block, setup mock.
+    block = geth_provider.get_block(actual.block)
+    del chain.contracts._local_contract_creation[geth_contract.address]
+    mock_geth.web3.eth.get_block.return_value = block
+
+    orig_web3 = chain.network_manager.active_provider._web3
+    chain.network_manager.active_provider._web3 = mock_geth.web3
     try:
-        mock_geth._web3.eth.get_code.return_value = b"123"
-
-        # NOTE: Due to mocks, this next part may not actually find the contract.
-        #  but that is ok but we mostly want to make sure it tries OTS. There
-        #  are other tests for the brute-force logic.
-        try:
-            next(chain.contracts.get_creation_receipt(geth_contract.address), None)
-        except ChainError:
-            pass
-
-        # Ensure we tried using OTS.
-        actual = mock_geth._web3.provider.make_request.call_args
-        expected: Tuple[str, List] = ("ots_getApiLevel", [])
-        assert any(arguments == expected for arguments in actual)
-
+        for client in ("geth", "erigon"):
+            chain.network_manager.active_provider._client_version = client
+            _ = chain.contracts.get_creation_metadata(geth_contract.address)
     finally:
-        networks.active_provider = provider
+        chain.network_manager.active_provider._web3 = orig_web3
+
+    call_args = mock_geth._web3.provider.make_request.call_args_list
+
+    # geth
+    assert call_args[-2][0][0] == "debug_traceBlockByNumber"
+    assert call_args[-2][0][1][1] == {"tracer": "callTracer"}
+    # parity
+    assert call_args[-1][0][0] == "trace_replayBlockTransactions"
+    assert call_args[-1][0][1][1] == ["trace"]

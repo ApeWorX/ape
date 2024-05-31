@@ -146,7 +146,7 @@ def test_contracts_getitem_contract_not_found(chain, eth_tester_provider):
         "Try installing an explorer plugin using .*ape plugins install etherscan.*, "
         r"or using a network with explorer support\."
     )
-    with pytest.raises(IndexError, match=expected):
+    with pytest.raises(KeyError, match=expected):
         _ = chain.contracts[new_address]
 
 
@@ -311,14 +311,14 @@ def test_cache_non_checksum_address(chain, vyper_contract_instance):
     assert chain.contracts[vyper_contract_instance.address] == vyper_contract_instance.contract_type
 
 
-def test_get_contract_receipt(chain, vyper_contract_instance):
+def test_get_creation_metadata(chain, vyper_contract_instance, owner):
     address = vyper_contract_instance.address
-    receipt = chain.contracts.get_creation_receipt(address)
-    assert receipt.contract_address == address
+    creation = chain.contracts.get_creation_metadata(address)
+    assert creation.deployer == owner.address
 
     chain.mine()
-    receipt = chain.contracts.get_creation_receipt(address)
-    assert receipt.contract_address == address
+    creation = chain.contracts.get_creation_metadata(address)
+    assert creation.deployer == owner.address
 
 
 def test_delete_contract(vyper_contract_instance, chain):
@@ -330,7 +330,7 @@ def test_delete_contract(vyper_contract_instance, chain):
     assert vyper_contract_instance.address not in chain.contracts
 
     # Ensure we can't access it.
-    with pytest.raises(IndexError):
+    with pytest.raises(KeyError):
         _ = chain.contracts[vyper_contract_instance.address]
 
 
@@ -352,9 +352,9 @@ def test_delete_proxy(vyper_contract_instance, chain, ethereum, owner):
     assert proxy.address not in chain.contracts
 
     # Ensure we can't access it.
-    with pytest.raises(IndexError):
+    with pytest.raises(KeyError):
         _ = chain.contracts[proxy.address]
 
     # Ensure we can't access the target either.
-    with pytest.raises(IndexError):
+    with pytest.raises(KeyError):
         _ = chain.contracts[proxy_info.target]

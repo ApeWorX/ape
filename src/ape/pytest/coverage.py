@@ -1,5 +1,6 @@
+from collections.abc import Iterable
 from pathlib import Path
-from typing import Iterable, List, Optional, Set, Tuple
+from typing import Optional
 
 import click
 from ethpm_types.abi import MethodABI
@@ -14,13 +15,10 @@ from ape.types import (
     CoverageReport,
     SourceTraceback,
 )
-from ape.utils import (
-    ManagerAccessMixin,
-    get_current_timestamp_ms,
-    get_relative_path,
-    parse_coverage_tables,
-)
-from ape.utils.os import get_full_extension
+from ape.utils.basemodel import ManagerAccessMixin
+from ape.utils.misc import get_current_timestamp_ms
+from ape.utils.os import get_full_extension, get_relative_path
+from ape.utils.trace import parse_coverage_tables
 
 
 class CoverageData(ManagerAccessMixin):
@@ -62,7 +60,7 @@ class CoverageData(ManagerAccessMixin):
         timestamp = get_current_timestamp_ms()
         report = CoverageReport(
             projects=[project_coverage],
-            source_folders=[self.project_manager.contracts_folder],
+            source_folders=[self.local_project.contracts_folder],
             timestamp=timestamp,
         )
 
@@ -75,14 +73,14 @@ class CoverageData(ManagerAccessMixin):
 
     def cover(
         self, src_path: Path, pcs: Iterable[int], inc_fn_hits: bool = True
-    ) -> Tuple[Set[int], List[str]]:
+    ) -> tuple[set[int], list[str]]:
         source_id = str(get_relative_path(src_path.absolute(), self.base_path))
         if source_id not in self.report.sources:
             # The source is not tracked for coverage.
             return set(), []
 
         handled_pcs = set()
-        functions_incremented: List[str] = []
+        functions_incremented: list[str] = []
         for pc in pcs:
             if pc < 0:
                 continue
@@ -124,10 +122,10 @@ class CoverageData(ManagerAccessMixin):
 class CoverageTracker(ManagerAccessMixin):
     def __init__(self, config_wrapper: ConfigWrapper):
         self.config_wrapper = config_wrapper
-        sources = self.project_manager._contract_sources
+        sources = self.local_project._contract_sources
 
         self.data: Optional[CoverageData] = (
-            CoverageData(self.project_manager.contracts_folder, sources)
+            CoverageData(self.local_project.path, sources)
             if self.config_wrapper.track_coverage
             else None
         )
@@ -137,7 +135,7 @@ class CoverageTracker(ManagerAccessMixin):
         return self.config_wrapper.track_coverage
 
     @property
-    def exclusions(self) -> List[ContractFunctionPath]:
+    def exclusions(self) -> list[ContractFunctionPath]:
         return self.config_wrapper.coverage_exclusions
 
     def reset(self):
@@ -168,7 +166,7 @@ class CoverageTracker(ManagerAccessMixin):
             return
 
         last_path: Optional[Path] = None
-        last_pcs: Set[int] = set()
+        last_pcs: set[int] = set()
         last_call: Optional[str] = None
         main_fn = None
 
@@ -182,7 +180,7 @@ class CoverageTracker(ManagerAccessMixin):
                 for src in project.sources:
                     # NOTE: We will allow this check to skip if there is no source is the
                     # traceback. This helps increment methods that are missing from the source map.
-                    path = self.project_manager.contracts_folder / src.source_id
+                    path = self.local_project.contracts_folder / src.source_id
                     if source_path is not None and path != source_path:
                         continue
 
@@ -225,9 +223,9 @@ class CoverageTracker(ManagerAccessMixin):
         self,
         control_flow: ControlFlow,
         last_path: Optional[Path] = None,
-        last_pcs: Optional[Set[int]] = None,
+        last_pcs: Optional[set[int]] = None,
         last_call: Optional[str] = None,
-    ) -> Tuple[Set[int], List[str]]:
+    ) -> tuple[set[int], list[str]]:
         if not self.data or control_flow.source_path is None:
             return set(), []
 
@@ -281,7 +279,7 @@ class CoverageTracker(ManagerAccessMixin):
 
         # Reports are set in ape-config.yaml.
         reports = self.config_wrapper.ape_test_config.coverage.reports
-        out_folder = self.project_manager.local_project._cache_folder
+        out_folder = self.local_project.manifest_path.parent
         if reports.terminal:
             verbose = (
                 reports.terminal.get("verbose", False)

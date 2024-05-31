@@ -37,7 +37,7 @@ Also handy for querying data about the chain and managing local caches.
 accounts = _ManagerAccessMixin.account_manager
 """Manages accounts for the current project. See :class:`ape.managers.accounts.AccountManager`."""
 
-project = _ManagerAccessMixin.project_manager
+project = _ManagerAccessMixin.local_project
 """The currently active project. See :class:`ape.managers.project.ProjectManager`."""
 
 Contract = chain.contracts.instance_at

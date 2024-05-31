@@ -19,23 +19,23 @@ class NewChainID:
 chain_id_factory = NewChainID()
 
 DEFAULT_CHOICES = {
-    "::geth",
+    "::node",
     "::test",
     ":sepolia",
-    ":sepolia:geth",
+    ":sepolia:node",
     ":local",
     ":mainnet",
-    ":mainnet:geth",
+    ":mainnet:node",
     "ethereum",
     "ethereum::test",
-    "ethereum::geth",
+    "ethereum::node",
     "ethereum:sepolia",
-    "ethereum:sepolia:geth",
+    "ethereum:sepolia:node",
     "ethereum:local",
-    "ethereum:local:geth",
+    "ethereum:local:node",
     "ethereum:local:test",
     "ethereum:mainnet",
-    "ethereum:mainnet:geth",
+    "ethereum:mainnet:node",
 }
 
 
@@ -108,10 +108,10 @@ def test_get_network_choices_filter_network(networks):
     actual = {c for c in networks.get_network_choices(network_filter="mainnet")}
     mainnet_choices = {
         ":mainnet",
-        ":mainnet:geth",
+        ":mainnet:node",
         "ethereum",
         "ethereum:mainnet",
-        "ethereum:mainnet:geth",
+        "ethereum:mainnet:node",
     }
     assert mainnet_choices.issubset(actual)
 
@@ -132,7 +132,7 @@ def test_get_provider_when_no_default(network_with_no_providers):
 
 def test_repr_connected_to_local(networks_connected_to_tester):
     actual = repr(networks_connected_to_tester)
-    expected = f"<NetworkManager active_provider=<test chain_id={DEFAULT_TEST_CHAIN_ID}>>"
+    expected = f"<NetworkManager active_provider=<Test chain_id={DEFAULT_TEST_CHAIN_ID}>>"
     assert actual == expected
 
     # Check individual network
@@ -152,7 +152,7 @@ def test_get_provider_from_choice_custom_provider(networks_connected_to_tester):
     uri = "https://geth:1234567890abcdef@geth.foo.bar/"
     provider = networks_connected_to_tester.get_provider_from_choice(f"ethereum:local:{uri}")
     assert uri in provider.connection_id
-    assert provider.name == "geth"
+    assert provider.name == "node"
     assert provider.uri == uri
     assert provider.network.name == "local"  # Network was specified to be local!
     assert provider.network.ecosystem.name == "ethereum"
@@ -161,7 +161,7 @@ def test_get_provider_from_choice_custom_provider(networks_connected_to_tester):
 def test_get_provider_from_choice_custom_adhoc_ecosystem(networks_connected_to_tester):
     uri = "https://geth:1234567890abcdef@geth.foo.bar/"
     provider = networks_connected_to_tester.get_provider_from_choice(uri)
-    assert provider.name == "geth"
+    assert provider.name == "node"
     assert provider.uri == uri
     assert provider.network.name == "custom"
     assert provider.network.ecosystem.name == "ethereum"
@@ -222,7 +222,7 @@ def test_parse_network_choice_multiple_contexts(
     assert (
         eth_tester_provider.chain_id == DEFAULT_TEST_CHAIN_ID
     ), "Test setup failed - expecting to start on default chain ID"
-    assert eth_tester_provider._make_request("eth_chainId") == DEFAULT_TEST_CHAIN_ID
+    assert eth_tester_provider.make_request("eth_chainId") == DEFAULT_TEST_CHAIN_ID
 
     with first_context:
         start_count = len(first_context.connected_providers)
@@ -234,7 +234,7 @@ def test_parse_network_choice_multiple_contexts(
             assert len(second_context.connected_providers) == expected_next_count
 
     assert eth_tester_provider.chain_id == DEFAULT_TEST_CHAIN_ID
-    assert eth_tester_provider._make_request("eth_chainId") == DEFAULT_TEST_CHAIN_ID
+    assert eth_tester_provider.make_request("eth_chainId") == DEFAULT_TEST_CHAIN_ID
 
 
 def test_getattr_ecosystem_with_hyphenated_name(networks, ethereum):
@@ -243,11 +243,11 @@ def test_getattr_ecosystem_with_hyphenated_name(networks, ethereum):
     del networks.ecosystems["hyphen-in-name"]
 
 
-def test_getattr_custom_ecosystem(networks, custom_networks_config_dict, temp_config):
+def test_getattr_custom_ecosystem(networks, custom_networks_config_dict, project):
     data = copy.deepcopy(custom_networks_config_dict)
     data["networks"]["custom"][0]["ecosystem"] = "custom-ecosystem"
 
-    with temp_config(data):
+    with project.temp_config(**data):
         actual = getattr(networks, "custom_ecosystem")
         assert isinstance(actual, EcosystemAPI)
 
@@ -279,10 +279,10 @@ def test_ecosystems(networks):
     assert actual["ethereum"].name == "ethereum"
 
 
-def test_ecosystems_include_custom(networks, custom_networks_config_dict, temp_config):
+def test_ecosystems_include_custom(networks, custom_networks_config_dict, project):
     data = copy.deepcopy(custom_networks_config_dict)
     data["networks"]["custom"][0]["ecosystem"] = "custom-ecosystem"
-    with temp_config(data):
+    with project.temp_config(**data):
         actual = networks.ecosystems
 
     assert "custom-ecosystem" in actual

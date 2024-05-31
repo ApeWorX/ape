@@ -1,7 +1,7 @@
 import sys
 from enum import Enum, IntEnum
 from functools import cached_property
-from typing import IO, Any, Dict, List, Optional, Tuple, Union
+from typing import IO, Any, Optional, Union
 
 from eth_abi import decode
 from eth_account import Account as EthAccount
@@ -10,18 +10,18 @@ from eth_account._utils.legacy_transactions import (
     serializable_unsigned_transaction_from_dict,
 )
 from eth_pydantic_types import HexBytes
-from eth_utils import decode_hex, encode_hex, keccak, to_hex, to_int
+from eth_utils import decode_hex, encode_hex, keccak, to_int
 from ethpm_types import ContractType
 from ethpm_types.abi import EventABI, MethodABI
 from pydantic import BaseModel, Field, field_validator, model_validator
 
 from ape.api import ReceiptAPI, TransactionAPI
 from ape.contracts import ContractEvent
-from ape.exceptions import APINotImplementedError, OutOfGasError, SignatureError, TransactionError
+from ape.exceptions import OutOfGasError, SignatureError, TransactionError
 from ape.logging import logger
-from ape.types import AddressType, CallTreeNode, ContractLog, ContractLogContainer, SourceTraceback
+from ape.types import AddressType, ContractLog, ContractLogContainer, SourceTraceback
 from ape.utils import ZERO_ADDRESS
-from ape_ethereum._print import extract_debug_logs
+from ape_ethereum.trace import Trace
 
 
 class TransactionStatusEnum(IntEnum):
@@ -53,7 +53,7 @@ class TransactionType(Enum):
 
 class AccessList(BaseModel):
     address: AddressType
-    storage_keys: List[HexBytes] = Field(default_factory=list, alias="storageKeys")
+    storage_keys: list[HexBytes] = Field(default_factory=list, alias="storageKeys")
 
 
 class BaseTransaction(TransactionAPI):
@@ -122,7 +122,7 @@ class StaticFeeTransaction(BaseTransaction):
 
     @model_validator(mode="before")
     @classmethod
-    def calculate_read_only_max_fee(cls, values) -> Dict:
+    def calculate_read_only_max_fee(cls, values) -> dict:
         # NOTE: Work-around, Pydantic doesn't handle calculated fields well.
         values["max_fee"] = cls.conversion_manager.convert(
             values.get("gas_limit", 0), int
@@ -138,7 +138,7 @@ class AccessListTransaction(StaticFeeTransaction):
 
     gas_price: Optional[int] = Field(None, alias="gasPrice")
     type: int = Field(TransactionType.ACCESS_LIST.value)
-    access_list: List[AccessList] = Field(default_factory=list, alias="accessList")
+    access_list: list[AccessList] = Field(default_factory=list, alias="accessList")
 
     @field_validator("type")
     @classmethod
@@ -155,7 +155,7 @@ class DynamicFeeTransaction(BaseTransaction):
     max_priority_fee: Optional[int] = Field(None, alias="maxPriorityFeePerGas")  # type: ignore
     max_fee: Optional[int] = Field(None, alias="maxFeePerGas")  # type: ignore
     type: int = Field(TransactionType.DYNAMIC.value)
-    access_list: List[AccessList] = Field(default_factory=list, alias="accessList")
+    access_list: list[AccessList] = Field(default_factory=list, alias="accessList")
 
     @field_validator("type")
     @classmethod
@@ -169,7 +169,7 @@ class SharedBlobTransaction(DynamicFeeTransaction):
     """
 
     max_fee_per_blob_gas: int = Field(0, alias="maxFeePerBlobGas")
-    blob_versioned_hashes: List[HexBytes] = Field([], alias="blobVersionedHashes")
+    blob_versioned_hashes: list[HexBytes] = Field([], alias="blobVersionedHashes")
 
     """
     Overridden because EIP-4844 states it cannot be nil.
@@ -205,27 +205,22 @@ class Receipt(ReceiptAPI):
         return self.status != TransactionStatusEnum.NO_ERROR
 
     @cached_property
-    def call_tree(self) -> Optional[CallTreeNode]:
-        return self.provider.get_call_tree(self.txn_hash)
-
-    @cached_property
-    def debug_logs_typed(self) -> List[Tuple[Any]]:
+    def debug_logs_typed(self) -> list[tuple[Any]]:
         """
         Extract messages to console outputted by contracts via print() or console.log() statements
         """
-
         try:
-            self.call_tree
-        # Some providers do not implement this, so skip
-        except APINotImplementedError:
+            trace = self.trace
+        # Some providers do not implement this, so skip.
+        except NotImplementedError:
             logger.debug("Call tree not available, skipping debug log extraction")
-            return list()
+            return []
 
-        # If the call tree is not available, no logs are available
-        if self.call_tree is None:
-            return list()
+        # If the trace is not available, no logs are available.
+        if trace is None or not isinstance(trace, Trace):
+            return []
 
-        return list(extract_debug_logs(self.call_tree))
+        return list(trace.debug_logs)
 
     @cached_property
     def contract_type(self) -> Optional[ContractType]:
@@ -248,12 +243,14 @@ class Receipt(ReceiptAPI):
     @cached_property
     def source_traceback(self) -> SourceTraceback:
         if contract_type := self.contract_type:
-            try:
-                return SourceTraceback.create(contract_type, self.trace, HexBytes(self.data))
-            except Exception as err:
-                # Failing to get a traceback should not halt an Ape application.
-                # Sometimes, a node crashes and we are left with nothing.
-                logger.error(f"Problem retrieving traceback: {err}")
+            if contract_src := self.local_project._create_contract_source(contract_type):
+                try:
+                    return SourceTraceback.create(contract_src, self.trace, HexBytes(self.data))
+                except Exception as err:
+                    # Failing to get a traceback should not halt an Ape application.
+                    # Sometimes, a node crashes and we are left with nothing.
+                    logger.error(f"Problem retrieving traceback: {err}")
+                    pass
 
         return SourceTraceback.model_validate([])
 
@@ -266,68 +263,10 @@ class Receipt(ReceiptAPI):
             raise TransactionError(f"Transaction '{txn_hash}' failed.", txn=self)
 
     def show_trace(self, verbose: bool = False, file: IO[str] = sys.stdout):
-        if not (call_tree := self.call_tree):
-            return
-
-        call_tree.enrich(use_symbol_for_tokens=True)
-        revert_message = None
-
-        if call_tree.failed:
-            default_message = "reverted without message"
-            returndata = HexBytes(call_tree.raw["returndata"])
-            if to_hex(returndata).startswith(
-                "0x08c379a00000000000000000000000000000000000000000000000000000000000000020"
-            ):
-                # Extra revert-message
-                decoded_result = decode(("string",), returndata[4:])
-                if len(decoded_result) == 1:
-                    revert_message = f'reverted with message: "{decoded_result[0]}"'
-                else:
-                    revert_message = default_message
-
-            elif address := (self.receiver or self.contract_address):
-                # Try to enrich revert error using ABI.
-                if provider := self.network_manager.active_provider:
-                    ecosystem = provider.network.ecosystem
-                else:
-                    # Default to Ethereum.
-                    ecosystem = self.network_manager.ethereum
-
-                try:
-                    instance = ecosystem.decode_custom_error(returndata, address)
-                except NotImplementedError:
-                    pass
-                else:
-                    revert_message = repr(instance)
-
-        self.chain_manager._reports.show_trace(
-            call_tree,
-            sender=self.sender,
-            transaction_hash=self.txn_hash,
-            revert_message=revert_message,
-            verbose=verbose,
-            file=file,
-        )
+        self.trace.show(verbose=verbose, file=file)
 
     def show_gas_report(self, file: IO[str] = sys.stdout):
-        if not (call_tree := self.call_tree):
-            return
-
-        call_tree.enrich()
-
-        # Enrich transfers.
-        if (
-            call_tree.contract_id.startswith("Transferring ")
-            and self.receiver is not None
-            and self.receiver in self.account_manager
-        ):
-            receiver_id = self.account_manager[self.receiver].alias or self.receiver
-            call_tree.method_id = f"to:{receiver_id}"
-
-        elif call_tree.contract_id.startswith("Transferring "):
-            call_tree.method_id = f"to:{self.receiver}"
-
-        self.chain_manager._reports.show_gas(call_tree, file=file)
+        self.trace.show_gas_report(file=file)
 
     def show_source_traceback(self, file: IO[str] = sys.stdout):
         self.chain_manager._reports.show_source_traceback(
@@ -337,7 +276,7 @@ class Receipt(ReceiptAPI):
     def decode_logs(
         self,
         abi: Optional[
-            Union[List[Union[EventABI, "ContractEvent"]], Union[EventABI, "ContractEvent"]]
+            Union[list[Union[EventABI, "ContractEvent"]], Union[EventABI, "ContractEvent"]]
         ] = None,
     ) -> ContractLogContainer:
         if not self.logs:
@@ -348,7 +287,7 @@ class Receipt(ReceiptAPI):
             if not isinstance(abi, (list, tuple)):
                 abi = [abi]
 
-            event_abis: List[EventABI] = [a.abi if not isinstance(a, EventABI) else a for a in abi]
+            event_abis: list[EventABI] = [a.abi if not isinstance(a, EventABI) else a for a in abi]
             return ContractLogContainer(
                 self.provider.network.ecosystem.decode_logs(self.logs, *event_abis)
             )
@@ -364,7 +303,7 @@ class Receipt(ReceiptAPI):
             }
 
             def get_default_log(
-                _log: Dict, logs: ContractLogContainer, evt_name: Optional[str] = None
+                _log: dict, logs: ContractLogContainer, evt_name: Optional[str] = None
             ) -> ContractLog:
                 log_index = _log.get("logIndex", logs[-1].log_index + 1 if logs else 0)
 
@@ -422,7 +361,7 @@ class Receipt(ReceiptAPI):
 
             return decoded_logs
 
-    def _decode_ds_note(self, log: Dict) -> Optional[ContractLog]:
+    def _decode_ds_note(self, log: dict) -> Optional[ContractLog]:
         # The first topic encodes the function selector
         selector, tail = log["topics"][0][:4], log["topics"][0][4:]
         if sum(tail):

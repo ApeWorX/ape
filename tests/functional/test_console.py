@@ -71,5 +71,5 @@ def test_custom_exception_handler_handles_non_ape_project(mocker):
     custom_exception_handler(session, None, err, None)
 
     # We are expecting the local project's path in the handler.
-    expected_path = ManagerAccessMixin.project_manager.path
+    expected_path = ManagerAccessMixin.local_project.path
     handler_patch.assert_called_once_with(err, [expected_path])

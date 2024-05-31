@@ -1,69 +1,86 @@
 import json
+from collections.abc import Iterable, Iterator
+from json import JSONDecodeError
 from pathlib import Path
-from typing import List, Optional, Sequence, Set
+from typing import Optional
 
 from eth_pydantic_types import HexBytes
 from eth_utils import is_0x_prefixed
 from ethpm_types import ContractType
 
-from ape.api import CompilerAPI
+from ape.api.compiler import CompilerAPI
 from ape.exceptions import CompilerError, ContractLogicError
 from ape.logging import logger
-from ape.utils import get_relative_path
+from ape.managers.project import ProjectManager
+from ape.utils.os import get_relative_path
 
 
 class InterfaceCompiler(CompilerAPI):
+    """
+    A compiler plugin for interface JSONs (ABIs). Also, this
+    compiler can "compile" already-compiled ``ContractType``
+    JSON files.
+    """
+
     @property
     def name(self) -> str:
         return "ethpm"
 
-    def get_versions(self, all_paths: Sequence[Path]) -> Set[str]:
+    def get_versions(self, all_paths: Iterable[Path]) -> set[str]:
         # NOTE: This bypasses the serialization of this compiler into the package manifest's
         #       ``compilers`` field. You should not do this with a real compiler plugin.
         return set()
 
     def compile(
-        self, filepaths: Sequence[Path], base_path: Optional[Path] = None
-    ) -> List[ContractType]:
-        contract_types: List[ContractType] = []
-        for path in filepaths:
-            source_path = (
-                get_relative_path(path, base_path) if base_path and path.is_absolute() else path
-            )
-            source_id = str(source_path)
-            code = path.read_text()
-            if not code:
-                continue
+        self,
+        contract_filepaths: Iterable[Path],
+        project: Optional["ProjectManager"],
+        settings: Optional[dict] = None,
+    ) -> Iterator[ContractType]:
+        project = project or self.local_project
+        source_ids = {
+            p: f"{get_relative_path(p, project.path.absolute())}" if p.is_absolute() else str(p)
+            for p in contract_filepaths
+        }
+        logger.info(f"Compiling {', '.join(source_ids.values())}.")
+        for path in contract_filepaths:
+            if not path.is_file() and (project.path / path).is_file():
+                # Was given a relative path.
+                src_path = project.path / path
+            elif not path.is_file():
+                raise CompilerError(f"'{path}' is not a file.")
+            else:
+                src_path = path
 
+            code = src_path.read_text()
+            source_id = source_ids[path]
             try:
                 # NOTE: Always set the source ID to the source of the JSON file
                 #   to avoid manifest corruptions later on.
-                contract_type = self.compile_code(
-                    code,
-                    base_path=base_path,
-                    sourceId=source_id,
+                contract_type = self.compile_code(code, project=project, sourceId=source_id)
+            except CompilerError as err:
+                logger.warning(
+                    f"Unable to parse {ContractType.__name__} from '{source_id}'. Reason: {err}"
                 )
-
-                # NOTE: Try getting name/ ID from code-JSON first.
-                #   That's why this is not part of `contract_type_overrides`.
-                if not contract_type.name:
-                    contract_type.name = path.stem
-
-            except CompilerError:
-                logger.warning(f"Unable to parse {ContractType.__name__} from '{source_id}'.")
                 continue
 
-            contract_types.append(contract_type)
-
-        return contract_types
+            # NOTE: Try getting name/ ID from code-JSON first.
+            #   That's why this is not part of `**kwargs` in `compile_code()`.
+            contract_type.name = contract_type.name or src_path.stem
+            yield contract_type
 
     def compile_code(
         self,
         code: str,
-        base_path: Optional[Path] = None,
+        project: Optional[ProjectManager] = None,
         **kwargs,
     ) -> ContractType:
-        data = json.loads(code)
+        code = code or "[]"
+        try:
+            data = json.loads(code)
+        except JSONDecodeError as err:
+            raise CompilerError(str(err)) from err
+
         if isinstance(data, list):
             # ABI JSON list
             contract_type_data = {"abi": data, **kwargs}

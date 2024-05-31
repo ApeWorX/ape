@@ -1,609 +1,343 @@
-import os
-import random
+import json
 import shutil
-import string
 from pathlib import Path
 
 import pytest
-import yaml
-from ethpm_types import Compiler
-from ethpm_types import ContractInstance as EthPMContractInstance
-from ethpm_types import ContractType, Source
-from ethpm_types.manifest import PackageManifest
+from ethpm_types import Compiler, ContractType, PackageManifest, Source
+from ethpm_types.manifest import PackageName
+from pydantic_core import Url
 
-from ape import Contract
+from ape import Project
+from ape.contracts import ContractContainer
 from ape.exceptions import ProjectError
 from ape.logging import LogLevel
-from ape.managers.project import BrownieProject
-from ape.utils import create_tempdir
-
-WITH_DEPS_PROJECT = (
-    Path(__file__).parent.parent / "integration" / "cli" / "projects" / "with-dependencies"
-)
+from ape_pm import BrownieProject
+from tests.conftest import skip_if_plugin_installed
 
 
 @pytest.fixture
-def ape_project(project):
-    return project.local_project
+def project_with_contracts(with_dependencies_project_path):
+    return Project(with_dependencies_project_path)
 
 
 @pytest.fixture
-def bip122_chain_id(eth_tester_provider):
-    return eth_tester_provider.get_block(0).hash.hex()
+def tmp_project(with_dependencies_project_path):
+    real_project = Project(with_dependencies_project_path)
+    # Copies contracts and stuff into a temp folder
+    # and returns a project around the temp folder.
+    with real_project.isolate_in_tempdir() as tmp_project:
+        yield tmp_project
 
 
 @pytest.fixture
-def base_deployments_path(project, bip122_chain_id):
-    return project._package_deployments_folder / bip122_chain_id
+def contract_type():
+    return make_contract("FooContractFromManifest")
 
 
 @pytest.fixture
-def deployment_path(vyper_contract_instance, base_deployments_path):
-    file_name = f"{vyper_contract_instance.contract_type.name}.json"
-    return base_deployments_path / file_name
+def manifest(contract_type):
+    return make_manifest(contract_type)
 
 
 @pytest.fixture
 def contract_block_hash(eth_tester_provider, vyper_contract_instance):
-    block_number = vyper_contract_instance.receipt.block_number
+    block_number = vyper_contract_instance.creation_metadata.block
     return eth_tester_provider.get_block(block_number).hash.hex()
 
 
 @pytest.fixture
-def clean_deployments(base_deployments_path):
-    if base_deployments_path.is_dir():
-        shutil.rmtree(str(base_deployments_path))
-
-    yield
+def project_from_manifest(manifest):
+    return Project.from_manifest(manifest)
 
 
-@pytest.fixture
-def existing_manifest(ape_project):
-    return ape_project.create_manifest()
-
-
-@pytest.fixture(scope="session")
-def contract_type_0(vyper_contract_type):
-    return _make_new_contract(vyper_contract_type, "NewContract_0")
-
-
-@pytest.fixture(scope="session")
-def contract_type_1(vyper_contract_type):
-    return _make_new_contract(vyper_contract_type, "NewContract_1")
-
-
-@pytest.fixture(scope="session")
-def existing_source_path(vyper_contract_type, contract_type_0, contracts_folder):
-    source_path = contracts_folder / "NewContract_0.json"
-    source_path.touch()
-    source_path.write_text(contract_type_0.model_dump_json())
-    yield source_path
-    if source_path.is_file():
-        source_path.unlink()
-
-
-@pytest.fixture
-def manifest_with_non_existent_sources(
-    existing_manifest, existing_source_path, contract_type_0, contract_type_1
-):
-    manifest = existing_manifest.model_copy()
-    manifest.contract_types["NewContract_0"] = contract_type_0
-    manifest.contract_types["NewContract_1"] = contract_type_1
-    # Previous refs shouldn't interfere (bugfix related)
-    manifest.sources["NewContract_0.json"] = Source(
-        content=contract_type_0.model_dump_json(), references=["NewContract_1.json"]
+def make_contract(name: str = "test") -> ContractType:
+    return ContractType.model_validate(
+        {
+            "contractName": name,
+            "sourceId": f"contracts/{name}.json",
+            "abi": [],
+        }
     )
-    manifest.sources["NewContract_1.json"] = Source(content=contract_type_1.model_dump_json())
-    return manifest
 
 
-@pytest.fixture
-def project_without_deployments(project):
-    if project._package_deployments_folder.is_dir():
-        shutil.rmtree(project._package_deployments_folder)
+def make_manifest(*contracts: ContractType, include_contract_type: bool = True) -> PackageManifest:
+    sources = {
+        ct.source_id: Source(content=ct.model_dump_json(by_alias=True, mode="json"))
+        for ct in contracts
+    }
+    model: dict = {"sources": sources}
+    if include_contract_type:
+        contract_types = {c.name: c for c in contracts}
+        model["contractTypes"] = contract_types
 
-    return project
-
-
-def _make_new_contract(existing_contract: ContractType, name: str):
-    source_text = existing_contract.model_dump_json()
-    source_text = source_text.replace(f"{existing_contract.name}.vy", f"{name}.json")
-    source_text = source_text.replace(existing_contract.name or "", name)
-    return ContractType.model_validate_json(source_text)
+    return PackageManifest.model_validate(model)
 
 
-def test_extract_manifest(project_with_dependency_config):
-    # NOTE: Only setting dependency_config to ensure existence of project.
-    manifest = project_with_dependency_config.extract_manifest()
+def test_path(project):
+    assert project.path is not None
+
+
+def test_name(project):
+    assert project.name == project.path.name
+
+
+def test_name_from_config(project):
+    with project.temp_config(name="foo-bar"):
+        assert project.name == "foo-bar"
+
+
+def test_repr(project):
+    actual = repr(project)
+    # NOTE: tmp path is NOT relative to home.
+    expected_project_path = str(project.path).replace(str(Path.home()), "$HOME")
+    expected = f"<ProjectManager {expected_project_path}>"
+    assert actual == expected
+
+
+@pytest.mark.parametrize("name", ("contracts", "sources"))
+def test_contracts_folder_from_config(project, name):
+    with project.temp_config(contracts_folder=name):
+        assert project.contracts_folder == project.path / name
+
+
+def test_contracts_folder_same_as_root_path(project):
+    with project.temp_config(contracts_folder="."):
+        assert project.contracts_folder == project.path
+
+
+def test_contracts_folder_deduced(tmp_project):
+    new_project_path = tmp_project.path / "new"
+    new_project_path.mkdir()
+    contracts_folder = new_project_path / "sources"
+    contracts_folder.mkdir()
+    contract = contracts_folder / "tryme.json"
+    abi = [{"name": "foo", "type": "fallback", "stateMutability": "nonpayable"}]
+    contract.write_text(json.dumps(abi))
+    new_project = Project(new_project_path)
+    actual = new_project.contracts_folder
+    assert actual == contracts_folder
+
+
+def test_reconfigure(project):
+    project.reconfigure(compile={"exclude": ["first", "second"]})
+    assert {"first", "second"}.issubset(set(project.config.compile.exclude))
+
+
+def test_isolate_in_tempdir(project):
+    # Purposely not using `tmp_project` fixture.
+    with project.isolate_in_tempdir() as tmp_project:
+        assert tmp_project.path != project.path
+        assert tmp_project.in_tempdir
+        # Manifest should have been created by default.
+        assert not tmp_project.manifest_path.is_file()
+
+
+def test_in_tempdir(project, tmp_project):
+    assert not project.in_tempdir
+    assert tmp_project.in_tempdir
+
+
+def test_getattr(tmp_project):
+    actual = tmp_project.Other
+    assert type(actual) is ContractContainer
+
+
+def test_getattr_not_exists(tmp_project):
+    with pytest.raises(AttributeError):
+        _ = tmp_project.nope
+
+
+def test_getattr_detects_changes(tmp_project):
+    source_id = tmp_project.Other.contract_type.source_id
+    new_abi = {
+        "inputs": [],
+        "name": "retrieve",
+        "outputs": [{"internalType": "uint256", "name": "", "type": "uint256"}],
+        "stateMutability": "view",
+        "type": "function",
+    }
+    content = json.dumps([new_abi])
+    path = tmp_project.sources.lookup(source_id)
+    assert path
+    path.unlink(missing_ok=True)
+    path.write_text(content)
+    # Should have re-compiled.
+    contract = tmp_project.Other
+    assert "retrieve" in contract.contract_type.methods
+
+
+def test_getattr_empty_contract(tmp_project):
+    """
+    Tests against a condition where would infinitely compile.
+    """
+    source_id = tmp_project.Other.contract_type.source_id
+    path = tmp_project.sources.lookup(source_id)
+    path.unlink(missing_ok=True)
+    path.write_text("")
+    # Should have re-compiled.
+    contract = tmp_project.Other
+    assert not contract.contract_type.methods
+
+
+@skip_if_plugin_installed("vyper", "solidity")
+def test_getattr_same_name_as_source_file(project_with_source_files_contract):
+    expected = (
+        r"'LocalProject' object has no attribute 'ContractA'\. "
+        r"Also checked extra\(s\) 'contracts'\. "
+        r"However, there is a source file named 'ContractA\.sol', "
+        r"did you mean to reference a contract name from this source file\? "
+        r"Else, could it be from one of the missing compilers for extensions: ."
+    )
+    with pytest.raises(AttributeError, match=expected):
+        _ = project_with_source_files_contract.ContractA
+
+
+@pytest.mark.parametrize("iypthon_attr_name", ("_repr_mimebundle_", "_ipython_display_"))
+def test_getattr_ipython(tmp_project, iypthon_attr_name):
+    # Remove contract types, if there for some reason is any.
+    tmp_project.manifest.contract_types = {}
+    getattr(tmp_project, iypthon_attr_name)
+    # Prove it did not compile looking for these names.
+    assert not tmp_project.manifest.contract_types
+
+
+def test_getattr_ipython_canary_check(tmp_project):
+    # Remove contract types, if there for some reason is any.
+    tmp_project.manifest.contract_types = {}
+    with pytest.raises(AttributeError):
+        getattr(tmp_project, "_ipython_canary_method_should_not_exist_")
+
+    # Prove it did not compile looking for this.
+    assert not tmp_project.manifest.contract_types
+
+
+def test_getitem(tmp_project):
+    actual = tmp_project["Project"]
+    assert type(actual) is ContractContainer
+
+
+def test_meta(project):
+    meta_config = {
+        "meta": {
+            "authors": ["Apealicious Jones"],
+            "license": "MIT",
+            "description": "Zoologist meme protocol",
+            "keywords": ["Indiana", "Knight's Templar"],
+            "links": {"apeworx.io": "https://apeworx.io"},
+        }
+    }
+    with project.temp_config(**meta_config):
+        assert project.meta.authors == ["Apealicious Jones"]
+        assert project.meta.license == "MIT"
+        assert project.meta.description == "Zoologist meme protocol"
+        assert project.meta.keywords == ["Indiana", "Knight's Templar"]
+        assert project.meta.links == {"apeworx.io": Url("https://apeworx.io")}
+
+
+def test_extract_manifest(tmp_project, mock_sepolia, vyper_contract_instance):
+    contract_type = vyper_contract_instance.contract_type
+    tmp_project.manifest.contract_types = {contract_type.name: contract_type}
+    tmp_project.deployments.track(vyper_contract_instance)
+
+    manifest = tmp_project.extract_manifest()
     assert type(manifest) is PackageManifest
-    assert type(manifest.compilers) is list
-    assert manifest.meta == project_with_dependency_config.meta
-    assert manifest.compilers == project_with_dependency_config.compiler_data
-    assert manifest.deployments == project_with_dependency_config.tracked_deployments
+    assert manifest.meta == tmp_project.meta
+    assert PackageName("manifest-dependency") in (manifest.dependencies or {})
+    bip122_chain_id = tmp_project.provider.get_block(0).hash.hex()
+    expected_uri = f"blockchain://{bip122_chain_id[2:]}"
+    for key in manifest.deployments or {}:
+        if key.startswith(expected_uri):
+            return
+
+    assert False, "Failed to find expected deployment URI"
 
 
-def test_cached_manifest_when_sources_missing(
-    ape_project, manifest_with_non_existent_sources, existing_source_path, ape_caplog
-):
+def test_extract_manifest_when_sources_missing(tmp_project):
     """
     Show that if a source is missing, it is OK. This happens when changing branches
     after compiling and sources are only present on one of the branches.
     """
-    cache_location = ape_project._cache_folder / "__local__.json"
-    if cache_location.is_file():
-        cache_location.unlink()
+    contract = make_contract("notreallyhere")
+    tmp_project.manifest.contract_types = {contract.name: contract}
+    manifest = tmp_project.extract_manifest()
 
-    cache_location.touch()
-    name = "NOTEXISTS"
-    source_id = f"{name}.json"
-    contract_type = ContractType.model_validate(
-        {"contractName": name, "abi": [], "sourceId": source_id}
-    )
-    path = ape_project._cache_folder / source_id
-    path.write_text(contract_type.model_dump_json())
-    cache_location.write_text(manifest_with_non_existent_sources.model_dump_json())
-
-    manifest = ape_project.cached_manifest
-
-    # Show the contract type does not get added and we don't get the corrupted manifest.
-    assert not any(ct.name == name for ct in manifest.contract_types.values())
-    assert not any("corrupted. Re-building" in msg for msg in ape_caplog.messages)
+    # Source is skipped because missing.
+    assert "notreallyhere" not in manifest.contract_types
 
 
-def test_create_manifest_when_file_changed_with_cached_references_that_no_longer_exist(
-    ape_project, manifest_with_non_existent_sources, existing_source_path
-):
-    """
-    This test is for the condition when you have a cached manifest containing references
-    from a source file however those references no longer exist and the source file has changes.
-    """
-
-    cache_location = ape_project._cache_folder / "__local__.json"
-    if cache_location.is_file():
-        cache_location.unlink()
-
-    ape_project._cache_folder.mkdir(exist_ok=True)
-    cache_location.touch()
-    cache_location.write_text(manifest_with_non_existent_sources.model_dump_json())
-
-    # Change content
-    source_text = existing_source_path.read_text()
-    existing_source_path.unlink()
-    source_text = source_text.replace("uint256[20]", "uint256[25]")
-    existing_source_path.write_text(source_text)
-
-    manifest = ape_project.create_manifest()
-    assert manifest
-
-
-def test_create_manifest_empty_files(compilers, mock_compiler, config, ape_caplog):
-    """
-    Tests again a bug where empty contracts would infinitely compile.
-    """
-
-    # Using a random name to prevent async conflicts.
-    letters = string.ascii_letters
-    name = "".join(random.choice(letters) for _ in range(10))
-
-    with create_tempdir() as temp_dir:
-        contracts = temp_dir / "contracts"
-        contracts.mkdir()
-        file_1 = contracts / f"{name}.__mock__"
-        file_1.write_text("")
-
-        with config.using_project(temp_dir) as proj:
-            compilers.registered_compilers[".__mock__"] = mock_compiler
-
-            # NOTE: Set levels as close to the operation as possible
-            #  to lessen chance of caplog race conditions.
-            ape_caplog.set_levels(caplog_level=LogLevel.INFO)
-
-            # Run twice to show use_cache=False works.
-            proj.local_project.create_manifest()
-            manifest = proj.local_project.create_manifest(use_cache=False)
-
-            assert name in manifest.contract_types
-            assert f"{name}.__mock__" in manifest.sources
-
-            ape_caplog.assert_last_log(f"Compiling '{name}.__mock__'.")
-            ape_caplog.clear()
-
-            # Ensure is not double compiled!
-            proj.local_project.create_manifest()
-            assert f"Compiling '{name}.__mock__'." not in ape_caplog.head
-
-
-def test_create_manifest_excludes_cache(ape_project):
-    cachefile = ape_project.contracts_folder / ".cache" / "CacheFile.json"
-    cachefile2 = ape_project.contracts_folder / ".cache" / "subdir" / "Cache2.json"
+def test_extract_manifest_excludes_cache(tmp_project):
+    cachefile = tmp_project.contracts_folder / ".cache" / "CacheFile.json"
+    cachefile2 = tmp_project.contracts_folder / ".cache" / "subdir" / "Cache2.json"
     cachefile2.parent.mkdir(parents=True)
     cachefile.write_text("Doesn't matter")
     cachefile2.write_text("Doesn't matter")
-    manifest = ape_project.create_manifest()
+    manifest = tmp_project.extract_manifest()
     assert isinstance(manifest, PackageManifest)
     assert ".cache/CacheFile.json" not in (manifest.sources or {})
     assert ".cache/subdir/CacheFile.json" not in (manifest.sources or {})
 
 
-def test_meta(temp_config, project):
-    meta_config = {
-        "meta": {
-            "authors": ["Test Testerson"],
-            "license": "MIT",
-            "description": "test",
-            "keywords": ["testing"],
-            "links": {"apeworx.io": "https://apeworx.io"},
-        }
-    }
-    with temp_config(meta_config):
-        assert project.meta.authors == ["Test Testerson"]
-        assert project.meta.license == "MIT"
-        assert project.meta.description == "test"
-        assert project.meta.keywords == ["testing"]
-
-        link = project.meta.links["apeworx.io"]
-        assert link.host == "apeworx.io"
-        assert link.scheme == "https"
-
-
-def test_brownie_project_configure(config, base_projects_directory):
-    project_path = base_projects_directory / "BrownieProject"
-    expected_config_file = project_path / "ape-config.yaml"
-    if expected_config_file.is_file():
-        # Left from previous run
-        expected_config_file.unlink()
-
-    project = BrownieProject(path=project_path, contracts_folder=Path("contracts"))
-    project.process_config_file()
-    assert expected_config_file.is_file()
-
-    with open(expected_config_file) as ape_config_file:
-        mapped_config_data = yaml.safe_load(ape_config_file)
-
-    # Ensure Solidity and dependencies configuration mapped correctly
-    assert mapped_config_data["solidity"]["version"] == "0.6.12"
-    assert mapped_config_data["solidity"]["import_remapping"] == [
-        "@openzeppelin/contracts=OpenZeppelin/3.1.0"
-    ]
-    assert mapped_config_data["dependencies"][0]["name"] == "OpenZeppelin"
-    assert mapped_config_data["dependencies"][0]["github"] == "OpenZeppelin/openzeppelin-contracts"
-    assert mapped_config_data["dependencies"][0]["version"] == "3.1.0"
-
-    expected_config_file.unlink()
-
-
-def test_track_deployment(
-    clean_deployments,
-    project_without_deployments,
-    vyper_contract_instance,
-    eth_tester_provider,
-    deployment_path,
-    contract_block_hash,
-    dummy_live_network,
-    bip122_chain_id,
-):
-    contract = vyper_contract_instance
-    receipt = contract.receipt
-    name = contract.contract_type.name
-    address = vyper_contract_instance.address
-
-    # Even though deployments should be 0, do this to in case x-dist affects it.
-    num_deployments_before = len(project_without_deployments.tracked_deployments)
-
-    project_without_deployments.track_deployment(vyper_contract_instance)
-
-    expected_block_hash = eth_tester_provider.get_block(receipt.block_number).hash.hex()
-    expected_uri = f"blockchain://{bip122_chain_id}/block/{expected_block_hash}"
-    expected_name = contract.contract_type.name
-    expected_code = contract.contract_type.runtime_bytecode
-    actual_from_file = EthPMContractInstance.model_validate_json(deployment_path.read_text())
-    actual_from_class = project_without_deployments.tracked_deployments[expected_uri][name]
-
-    assert actual_from_file.address == actual_from_class.address == address
-    assert actual_from_file.contract_type == actual_from_class.contract_type == expected_name
-    assert actual_from_file.transaction == actual_from_class.transaction == receipt.txn_hash
-    assert actual_from_file.runtime_bytecode == actual_from_class.runtime_bytecode == expected_code
-
-    # Use >= to handle xdist.
-    assert len(project_without_deployments.tracked_deployments) >= num_deployments_before + 1
-
-
-def test_track_deployment_from_previously_deployed_contract(
-    clean_deployments,
-    project_without_deployments,
-    vyper_contract_container,
-    eth_tester_provider,
-    dummy_live_network,
-    owner,
-    base_deployments_path,
-    bip122_chain_id,
-):
-    receipt = owner.deploy(vyper_contract_container, 0, required_confirmations=0).receipt
-    address = receipt.contract_address
-    contract = Contract(address, txn_hash=receipt.txn_hash)
-    name = contract.contract_type.name
-
-    # Even though deployments should be 0, do this to in case x-dist affects it.
-    num_deployments_before = len(project_without_deployments.tracked_deployments)
-
-    project_without_deployments.track_deployment(contract)
-
-    path = base_deployments_path / f"{contract.contract_type.name}.json"
-    expected_block_hash = eth_tester_provider.get_block(receipt.block_number).hash.hex()
-    expected_uri = f"blockchain://{bip122_chain_id}/block/{expected_block_hash}"
-    expected_name = contract.contract_type.name
-    expected_code = contract.contract_type.runtime_bytecode
-    actual_from_file = EthPMContractInstance.model_validate_json(path.read_text())
-    actual_from_class = project_without_deployments.tracked_deployments[expected_uri][name]
-    assert actual_from_file.address == actual_from_class.address == address
-    assert actual_from_file.contract_type == actual_from_class.contract_type == expected_name
-    assert actual_from_file.transaction == actual_from_class.transaction == receipt.txn_hash
-    assert actual_from_file.runtime_bytecode == actual_from_class.runtime_bytecode == expected_code
-
-    # Use >= to handle xdist.
-    assert len(project_without_deployments.tracked_deployments) >= num_deployments_before + 1
-
-
-def test_track_deployment_from_unknown_contract_missing_txn_hash(
-    clean_deployments,
-    dummy_live_network,
-    owner,
-    vyper_contract_container,
-    chain,
-    project,
-):
-    snapshot = chain.snapshot()
-    contract = owner.deploy(vyper_contract_container, 0, required_confirmations=0)
-    chain.restore(snapshot)
-
-    contract = Contract(contract.address)
-    with pytest.raises(
-        ProjectError,
-        match=f"Contract '{contract.contract_type.name}' transaction receipt is unknown.",
-    ):
-        project.track_deployment(contract)
-
-
-def test_track_deployment_from_unknown_contract_given_txn_hash(
-    clean_deployments,
-    project,
-    vyper_contract_instance,
-    dummy_live_network,
-    base_deployments_path,
-):
-    address = vyper_contract_instance.address
-    txn_hash = vyper_contract_instance.txn_hash
-    contract = Contract(address, txn_hash=txn_hash)
-    project.track_deployment(contract)
-    path = base_deployments_path / f"{contract.contract_type.name}.json"
-    actual = EthPMContractInstance.model_validate_json(path.read_text())
-    assert actual.address == address
-    assert actual.contract_type == contract.contract_type.name
-    assert actual.transaction == txn_hash
-    assert actual.runtime_bytecode == contract.contract_type.runtime_bytecode
-
-
-def test_compiler_data_and_update_cache(config, project_path, contracts_folder):
-    with config.using_project(project_path, contracts_folder=contracts_folder) as project:
-        compiler = Compiler(name="comp", version="1.0.0")
-        project.local_project.update_manifest(compilers=[compiler])
-        assert project.local_project.manifest.compilers == [compiler]
-        assert project.compiler_data == [compiler]
-
-
-def test_get_project_without_contracts_path(project):
-    project_path = WITH_DEPS_PROJECT / "default"
-    project = project.get_project(project_path)
-    assert project.contracts_folder == project_path / "contracts"
-
-
-def test_get_project_with_contracts_path(project):
-    project_path = WITH_DEPS_PROJECT / "renamed_contracts_folder_specified_in_config"
-    project = project.get_project(project_path, project_path / "my_contracts")
-    assert project.contracts_folder == project_path / "my_contracts"
-
-
-def test_get_project_figure_out_contracts_path(project):
-    """
-    Tests logic where `contracts` is not the contracts folder but it still is able
-    to figure it out.
-    """
-    project_path = WITH_DEPS_PROJECT / "renamed_contracts_folder"
-    (project_path / "ape-config.yaml").unlink(missing_ok=True)  # Clean from prior.
-
-    project = project.get_project(project_path)
-    assert project.contracts_folder == project_path / "sources"
-
-
-def test_lookup_path(project_with_source_files_contract):
-    project = project_with_source_files_contract
-    actual_from_str = project.lookup_path("ContractA.sol")
-    actual_from_path = project.lookup_path(Path("ContractA.sol"))
-    expected = project.contracts_folder / "ContractA.sol"
-    assert actual_from_str == actual_from_path == expected
-
-
-def test_lookup_path_closest_match(project_with_source_files_contract):
-    pm = project_with_source_files_contract
-    source_path = pm.contracts_folder / "Contract.json"
-    temp_dir_a = pm.contracts_folder / "temp"
-    temp_dir_b = temp_dir_a / "tempb"
-    nested_source_a = temp_dir_a / "Contract.json"
-    nested_source_b = temp_dir_b / "Contract.json"
-
-    def clean():
-        # NOTE: Will also delete temp_dir_b.
-        if temp_dir_a.is_dir():
-            shutil.rmtree(temp_dir_a)
-
-    clean()
-
-    # NOTE: Will also make temp_dir_a.
-    temp_dir_b.mkdir(parents=True)
-
-    try:
-        # Duplicate contract so that there are multiple with the same name.
-        for nested_src in (nested_source_a, nested_source_b):
-            nested_src.touch()
-            nested_src.write_text(source_path.read_text())
-
-        # Top-level match.
-        for base in (source_path, str(source_path), "Contract", "Contract.json"):
-            assert pm.lookup_path(base) == source_path, f"Failed to lookup {base}"
-
-        # Nested: 1st level
-        for closest in (
-            nested_source_a,
-            str(nested_source_a),
-            "temp/Contract",
-            "temp/Contract.json",
-        ):
-            assert pm.lookup_path(closest) == nested_source_a, f"Failed to lookup {closest}"
-
-        # Nested: 2nd level
-        for closest in (
-            nested_source_b,
-            str(nested_source_b),
-            "temp/tempb/Contract",
-            "temp/tempb/Contract.json",
-        ):
-            assert pm.lookup_path(closest) == nested_source_b, f"Failed to lookup {closest}"
-
-    finally:
-        clean()
-
-
-def test_lookup_path_includes_contracts_prefix(project_with_source_files_contract):
-    """
-    Show we can include the `contracts/` prefix.
-    """
-    project = project_with_source_files_contract
-    actual_from_str = project.lookup_path("contracts/ContractA.sol")
-    actual_from_path = project.lookup_path(Path("contracts/ContractA.sol"))
-    expected = project.contracts_folder / "ContractA.sol"
-    assert actual_from_str == actual_from_path == expected
-    assert actual_from_str.is_absolute()
-    assert actual_from_path.is_absolute()
-
-
-def test_sources(project_with_source_files_contract):
-    project = project_with_source_files_contract
-    assert "ApeContract0.json" in project.sources
-    assert project.sources["ApeContract0.json"].content
-
-
-def test_contracts_folder(project, config):
-    # Relaxed to handle xdist resource sharing.
-    assert project.contracts_folder.name in ("contracts", "src")
-
-    # Show that even when None in the config, it won't be None here.
-    config.contracts_folder = None
-    assert config.contracts_folder is None
-    assert project.contracts_folder is not None
-
-
-def test_getattr_contract_not_exists(project):
-    expected = (
-        r"ProjectManager has no attribute or contract named "
-        r"'ThisIsNotAContractThatExists'. However, there is a source "
-        r"file named 'ThisIsNotAContractThatExists\.foo', did you mean to "
-        r"reference a contract name from this source file\? "
-        r"Else, could it be from one of the missing compilers for extensions:.*\?"
-    )
-    project.contracts_folder.mkdir(exist_ok=True)
-    contract = project.contracts_folder / "ThisIsNotAContractThatExists.foo"
-    contract.touch()
-    with pytest.raises(AttributeError, match=expected):
-        _ = project.ThisIsNotAContractThatExists
-
-
-@pytest.mark.parametrize("iypthon_attr_name", ("_repr_mimebundle_", "_ipython_display_"))
-def test_getattr_ipython(mocker, project, iypthon_attr_name):
-    spy = mocker.spy(project, "_get_contract")
-    getattr(project, iypthon_attr_name)
-    # Ensure it does not try to do anything with contracts.
-    assert spy.call_count == 0
-
-
-def test_getattr_ipython_canary_check(mocker, project):
-    spy = mocker.spy(project, "_get_contract")
-    with pytest.raises(AttributeError):
-        getattr(project, "_ipython_canary_method_should_not_exist_")
-
-    # Ensure it does not try to do anything with contracts.
-    assert spy.call_count == 0
-
-
-def test_build_file_only_modified_once(project_with_contract):
-    project = project_with_contract
-    artifact = project.path / ".build" / "__local__.json"
-    _ = project.contracts  # Ensure compiled.
-
-    # NOTE: This is how re-create the bug. Delete the underscore-prefixed
-    #  cached object and attempt to re-compile. Previously, the ProjectManager
-    #  was relying on an internal cache rather than the external one, and thus
-    #  caused the file to get unnecessarily re-made (modified).
-    project.local_project._cached_manifest = None
-
-    # Prove the file is not unnecessarily modified.
-    time_before = os.path.getmtime(artifact)
-    _ = project.contracts
-    time_after = os.path.getmtime(artifact)
-    assert time_before == time_after
-
-
-def test_source_paths_excludes_cached_dependencies(project_with_contract):
-    """
-    Dependencies are ignored from the project's sources.
-    Their used sources are imported and part of the final output,
-    but just not the input.
-    """
-    contracts_folder = project_with_contract.contracts_folder
-    cache_dir = contracts_folder / ".cache"
-    cache_dir.mkdir(exist_ok=True)
-    cache_dep_folder = cache_dir / "dep" / "1.0.0"
-    cache_dep_folder.mkdir(parents=True, exist_ok=True)
-    contract = next(
-        x
-        for x in contracts_folder.iterdir()
-        if x.is_file() and x.suffix == ".json" and not x.stem.startswith("_")
-    )
-    dep_contract = cache_dep_folder / "contract.json"
-    shutil.copy(contract, dep_contract)
-    actual = project_with_contract.source_paths
-    assert dep_contract not in actual
-
-
-def test_update_manifest_compilers(project):
+def test_exclusions(tmp_project):
+    exclusions = ["Other.json", "*Excl*"]
+    exclude_config = {"compile": {"exclude": exclusions}}
+    with tmp_project.temp_config(**exclude_config):
+        for exclusion in exclusions:
+            assert exclusion in tmp_project.exclusions
+
+
+def test_update_manifest(tmp_project):
     compiler = Compiler(name="comp", version="1.0.0", contractTypes=["foo.txt"])
-    project.local_project.update_manifest(compilers=[compiler])
-    actual = project.local_project.manifest.compilers
+    tmp_project.update_manifest(compilers=[compiler])
+    actual = tmp_project.manifest.compilers
     assert actual == [compiler]
 
-    project.local_project.update_manifest(name="test", version="1.0.0")
-    assert project.local_project.manifest.name == "test"
-    assert project.local_project.manifest.version == "1.0.0"
+    tmp_project.update_manifest(name="test", version="1.0.0")
+    assert tmp_project.manifest.name == "test"
+    assert tmp_project.manifest.version == "1.0.0"
 
     # The compilers should not have changed.
-    actual = project.local_project.manifest.compilers
+    actual = tmp_project.manifest.compilers
     assert actual == [compiler]
 
-    # Add a new one.
-    # NOTE: `update_cache()` will override the fields entirely.
-    #   You must include existing fields if you want to merge.
-    compiler_2 = Compiler(name="test", version="2.0.0", contractTypes=["bar.txt"])
-    project.local_project.update_manifest(compilers=[compiler_2])
-    actual = project.local_project.manifest.compilers
-    assert actual == [compiler_2]
 
-
-def test_load_contracts(project_with_contract):
-    contracts = project_with_contract.load_contracts()
+def test_load_contracts(tmp_project):
+    contracts = tmp_project.load_contracts()
+    assert tmp_project.manifest_path.is_file()
     assert len(contracts) > 0
-    assert contracts == project_with_contract.contracts
+    contracts_forced = tmp_project.load_contracts(use_cache=False)
+    assert contracts_forced == contracts
 
 
-def test_load_contracts_after_deleting_same_named_contract(config, compilers, mock_compiler):
+def test_load_contracts_detect_change(tmp_project, ape_caplog):
+    path = tmp_project.contracts_folder / "Other.json"
+    content = path.read_text()
+    assert "foo" in content, "Test setup failed. Unexpected file content."
+
+    # Must be compiled first.
+    with ape_caplog.at_level(LogLevel.INFO):
+        contracts = tmp_project.load_contracts()
+        assert "Other" in contracts
+        ape_caplog.assert_last_log("Compiling")
+
+        ape_caplog.clear()
+
+        # No logs as it doesn't need to re-compile.
+        tmp_project.load_contracts()
+        assert not ape_caplog.head
+
+        # Make a change to the file.
+        new_content = content.replace("foo", "bar")
+        assert "bar" in new_content, "Test setup failed. Unexpected file content."
+        path.unlink()
+        path.write_text(new_content)
+
+        # Prove re-compiles.
+        contracts = tmp_project.load_contracts()
+        assert "Other" in contracts
+        ape_caplog.assert_last_log("Compiling")
+
+
+def test_load_contracts_after_deleting_same_named_contract(tmp_project, compilers, mock_compiler):
     """
     Tests against a scenario where you:
 
@@ -614,27 +348,52 @@ def test_load_contracts_after_deleting_same_named_contract(config, compilers, mo
     Test such that we are able to compile successfully and not get a misleading
     collision error from deleted files.
     """
+    init_contract = tmp_project.contracts_folder / "foo.__mock__"
+    init_contract.write_text("LALA")
+    compilers.registered_compilers[".__mock__"] = mock_compiler
+    result = tmp_project.load_contracts()
+    assert "foo" in result
 
-    with create_tempdir() as path:
-        contracts = path / "contracts"
-        contracts.mkdir()
-        init_contract = contracts / "foo.__mock__"
-        init_contract.write_text("LALA")
-        with config.using_project(path) as proj:
-            compilers.registered_compilers[".__mock__"] = mock_compiler
-            result = proj.load_contracts()
-            assert "foo" in result
+    # Goodbye.
+    init_contract.unlink()
 
-            # Delete file
-            init_contract.unlink()
+    result = tmp_project.load_contracts()
+    assert "foo" not in result  # Was deleted.
+    # Also ensure it is gone from paths.
+    assert "foo.__mock__" not in [x.name for x in tmp_project.sources.paths]
 
-            # Create new contract that yields same name as deleted one.
-            new_contract = contracts / "bar.__mock__"
-            new_contract.write_text("BAZ")
-            mock_compiler.overrides = {"contractName": "foo"}
+    # Create a new contract with the same name.
+    new_contract = tmp_project.contracts_folder / "bar.__mock__"
+    new_contract.write_text("BAZ")
+    mock_compiler.overrides = {"contractName": "foo"}
+    result = tmp_project.load_contracts()
+    assert "foo" in result
 
-            result = proj.load_contracts()
-            assert "foo" in result
+
+def test_load_contracts_output_abi(tmp_project):
+    cfg = {"output_extra": ["ABI"]}
+    with tmp_project.temp_config(compile=cfg):
+        _ = tmp_project.load_contracts()
+        abi_folder = tmp_project.manifest_path.parent / "abi"
+        assert abi_folder.is_dir()
+        files = [x for x in abi_folder.iterdir()]
+        assert len(files) > 0
+        for file in files:
+            assert file.suffix == ".json"
+
+
+def test_manifest_path(tmp_project):
+    assert tmp_project.manifest_path == tmp_project.path / ".build" / "__local__.json"
+
+
+def test_clean(tmp_project):
+    tmp_project.load_contracts()
+    assert tmp_project.manifest_path.is_file()
+
+    tmp_project.clean()
+    assert not tmp_project.manifest_path.is_file()
+    assert tmp_project._manifest.contract_types is None
+    assert tmp_project.sources._path_cache is None
 
 
 def test_add_compiler_data(project_with_dependency_config):
@@ -644,7 +403,7 @@ def test_add_compiler_data(project_with_dependency_config):
 
     # Load contracts so that any compilers that may exist are present.
     project.load_contracts()
-    start_compilers = project.local_project.manifest.compilers or []
+    start_compilers = project.manifest.compilers or []
 
     # NOTE: Pre-defining things to lessen chance of race condition.
     compiler = Compiler(
@@ -668,7 +427,6 @@ def test_add_compiler_data(project_with_dependency_config):
         settings={"outputSelection": {"path/to/Bar.vy": "*"}},
     )
 
-    proj = project.local_project
     argument = [compiler]
     second_arg = [compiler_2]
     third_arg = [compiler_3]
@@ -678,46 +436,309 @@ def test_add_compiler_data(project_with_dependency_config):
     # Ensure types are in manifest for type-source-id lookup.
     bar = ContractType(contractName="bar", sourceId="path/to/Bar.vy")
     foo = ContractType(contractName="foo", sourceId="path/to/Foo.sol")
-    proj._cached_manifest = PackageManifest(
+    project._manifest = PackageManifest(
         contractTypes={"bar": bar, "foo": foo},
         sources={"path/to/Bar.vy": Source(), "path/to/Foo.vy": Source()},
     )
-    proj._contracts = proj._cached_manifest.contract_types
-    assert proj.cached_manifest.contract_types, "Setup failed - need manifest contract types"
+    project._contracts = project._manifest.contract_types
+    assert project._manifest.contract_types, "Setup failed - need manifest contract types"
 
     # Add twice to show it's only added once.
-    proj.add_compiler_data(argument)
-    proj.add_compiler_data(argument)
-    assert proj.manifest.compilers == first_exp
+    project.add_compiler_data(argument)
+    project.add_compiler_data(argument)
+    assert project.manifest.compilers == first_exp
 
     # NOTE: `add_compiler_data()` will not override existing compilers.
     #   Use `update_cache()` for that.
-    proj.add_compiler_data(second_arg)
-    assert proj.manifest.compilers == final_exp
-
-    # `bar` has moved to a new compiler.
-    proj.add_compiler_data(third_arg)
-    comp = [c for c in proj.manifest.compilers if c.name == "test" and c.version == "2.0.0"][0]
+    project.add_compiler_data(second_arg)
+    assert project.manifest.compilers == final_exp
+    project.add_compiler_data(third_arg)
+    comp = [c for c in project.manifest.compilers if c.name == "test" and c.version == "2.0.0"][0]
     assert "bar" not in comp.contractTypes
     assert "path/to/Bar.vy" not in comp.settings["outputSelection"]
-    new_comp = [c for c in proj.manifest.compilers if c.name == "test" and c.version == "3.0.0"][0]
+    new_comp = [c for c in project.manifest.compilers if c.name == "test" and c.version == "3.0.0"][
+        0
+    ]
     assert "bar" in new_comp.contractTypes
     assert "path/to/Bar.vy" in new_comp.settings["outputSelection"]
 
     # Show that compilers without contract types go away.
     (compiler_3.contractTypes or []).append("stay")
-    proj.add_compiler_data(third_arg)
-    comp_check = [c for c in proj.manifest.compilers if c.name == "test" and c.version == "2.0.0"]
+    project.add_compiler_data(third_arg)
+    comp_check = [
+        c for c in project.manifest.compilers if c.name == "test" and c.version == "2.0.0"
+    ]
     assert not comp_check
 
     # Show error on multiple of same compiler.
     compiler_4 = Compiler(name="test123", version="3.0.0", contractTypes=["bar"])
     compiler_5 = Compiler(name="test123", version="3.0.0", contractTypes=["baz"])
     with pytest.raises(ProjectError, match=r".*was given multiple of the same compiler.*"):
-        proj.add_compiler_data([compiler_4, compiler_5])
+        project.add_compiler_data([compiler_4, compiler_5])
 
     # Show error when contract type collision (only happens with inputs, else latter replaces).
     compiler_4 = Compiler(name="test321", version="3.0.0", contractTypes=["bar"])
     compiler_5 = Compiler(name="test456", version="9.0.0", contractTypes=["bar"])
     with pytest.raises(ProjectError, match=r".*'bar' collision across compilers.*"):
-        proj.add_compiler_data([compiler_4, compiler_5])
+        project.add_compiler_data([compiler_4, compiler_5])
+
+
+class TestProject:
+    """
+    All tests related to ``ape.Project``.
+    """
+
+    def test_init(self, with_dependencies_project_path):
+        # Purpose not using `project_with_contracts` fixture.
+        project = Project(with_dependencies_project_path)
+        project.manifest_path.unlink(missing_ok=True)
+        assert project.path == with_dependencies_project_path
+        # Manifest should have been created by default.
+        assert not project.manifest_path.is_file()
+
+    def test_config_override(self, with_dependencies_project_path):
+        contracts_folder = with_dependencies_project_path / "my_contracts"
+        config = {"contracts_folder": contracts_folder.name}
+        project = Project(with_dependencies_project_path, config_override=config)
+        assert project.contracts_folder == contracts_folder
+
+    def test_from_manifest(self, manifest):
+        # Purposely not using `project_from_manifest` fixture.
+        project = Project.from_manifest(manifest)
+        assert isinstance(project, Project)
+        assert project.manifest == manifest
+
+    def test_from_manifest_contracts_iter(self, contract_type, project_from_manifest):
+        actual = set(iter(project_from_manifest.contracts))
+        assert actual == {"FooContractFromManifest"}
+
+    def test_from_manifest_getattr(self, contract_type, project_from_manifest):
+        expected = ContractContainer(contract_type)
+        actual = project_from_manifest.FooContractFromManifest
+        assert isinstance(actual, ContractContainer)
+        assert actual == expected
+
+    def test_from_manifest_getitem(self, contract_type, project_from_manifest):
+        expected = ContractContainer(contract_type)
+        assert project_from_manifest["FooContractFromManifest"] == expected
+
+    def test_from_manifest_load_contracts(self, contract_type):
+        """
+        Show if contract-types are missing but sources set,
+        compiling will add contract-types.
+        """
+        manifest = make_manifest(contract_type, include_contract_type=False)
+        project = Project.from_manifest(manifest)
+        assert not project.manifest.contract_types, "Setup failed"
+
+        # Returns containers, not types.
+        actual = project.load_contracts()
+        assert actual[contract_type.name].contract_type == contract_type
+
+        # Also, show it got set on the manifest.
+        assert project.manifest.contract_types == {contract_type.name: contract_type}
+
+
+class TestBrownieProject:
+    """
+    Tests related to the brownie implementation of the ProjectAPI.
+    """
+
+    @pytest.fixture
+    def brownie_project(self, base_projects_directory):
+        project_path = base_projects_directory / "BrownieProject"
+        return BrownieProject(path=project_path)
+
+    def test_configure(self, config, brownie_project):
+        config = brownie_project.extract_config()
+
+        # Ensure contracts_folder works.
+        assert config.contracts_folder == "contractsrenamed"
+
+        # Ensure Solidity and dependencies configuration mapped correctly
+        assert config.solidity.version == "0.6.12"
+
+        # NOTE: `contracts/` is not part of the import key as it is
+        # usually included in the import statements.
+        assert [str(x) for x in config.solidity.import_remapping] == [
+            "@openzeppelin=openzeppelin/3.1.0"
+        ]
+        assert config.dependencies[0]["name"] == "openzeppelin"
+        assert config.dependencies[0]["github"] == "OpenZeppelin/openzeppelin-contracts"
+        assert config.dependencies[0]["version"] == "3.1.0"
+
+
+class TestSourceManager:
+    def test_lookup(self, tmp_project):
+        source_id = tmp_project.Other.contract_type.source_id
+        path = tmp_project.sources.lookup(source_id)
+        assert path == tmp_project.path / source_id
+
+    def test_lookup_missing_extension(self, tmp_project):
+        source_id = tmp_project.Other.contract_type.source_id
+        source_id_wo_ext = ".".join(source_id.split(".")[:-1])
+        path = tmp_project.sources.lookup(source_id_wo_ext)
+        assert path == tmp_project.path / source_id
+
+    def test_lookup_mismatched_extension(self, tmp_project):
+        source_id = tmp_project.Other.contract_type.source_id
+        source_id = source_id.replace(".json", ".js")
+        path = tmp_project.sources.lookup(source_id)
+        assert path is None
+
+    def test_lookup_closest_match(self, project_with_source_files_contract):
+        pm = project_with_source_files_contract
+        source_path = pm.contracts_folder / "Contract.json"
+        temp_dir_a = pm.contracts_folder / "temp"
+        temp_dir_b = temp_dir_a / "tempb"
+        nested_source_a = temp_dir_a / "Contract.json"
+        nested_source_b = temp_dir_b / "Contract.json"
+
+        def clean():
+            # NOTE: Will also delete temp_dir_b.
+            if temp_dir_a.is_dir():
+                shutil.rmtree(temp_dir_a)
+
+        clean()
+
+        # NOTE: Will also make temp_dir_a.
+        temp_dir_b.mkdir(parents=True)
+
+        try:
+            # Duplicate contract so that there are multiple with the same name.
+            for nested_src in (nested_source_a, nested_source_b):
+                nested_src.touch()
+                nested_src.write_text(source_path.read_text())
+
+            # Top-level match.
+            for base in (source_path, str(source_path), "Contract", "Contract.json"):
+                assert pm.sources.lookup(base) == source_path, f"Failed to lookup {base}"
+
+            # Nested: 1st level
+            for closest in (
+                nested_source_a,
+                str(nested_source_a),
+                "temp/Contract",
+                "temp/Contract.json",
+            ):
+                actual = pm.sources.lookup(closest)
+                expected = nested_source_a
+                assert actual == expected, f"Failed to lookup {closest}"
+
+            # Nested: 2nd level
+            for closest in (
+                nested_source_b,
+                str(nested_source_b),
+                "temp/tempb/Contract",
+                "temp/tempb/Contract.json",
+            ):
+                actual = pm.sources.lookup(closest)
+                expected = nested_source_b
+                assert actual == expected, f"Failed to lookup {closest}"
+
+        finally:
+            clean()
+
+    def test_lookup_not_found(self, tmp_project):
+        assert tmp_project.sources.lookup("madeup.json") is None
+
+    def test_lookup_missing_contracts_prefix(self, project_with_source_files_contract):
+        """
+        Show we can exclude the `contracts/` prefix in a source ID.
+        """
+        project = project_with_source_files_contract
+        actual_from_str = project.sources.lookup("ContractA.sol")
+        actual_from_path = project.sources.lookup(Path("ContractA.sol"))
+        expected = project.contracts_folder / "ContractA.sol"
+        assert actual_from_str == actual_from_path == expected
+        assert actual_from_str.is_absolute()
+        assert actual_from_path.is_absolute()
+
+    def test_paths_exclude(self, tmp_project):
+        exclude_config = {"compile": {"exclude": ["Other.json"]}}
+        with tmp_project.temp_config(**exclude_config):
+            # Show default excludes also work, such as a .DS_Store file.
+            ds_store = tmp_project.contracts_folder / ".DS_Store"
+            ds_store.write_bytes(b"asdfasf")
+
+            # Show anything in compiler-cache is ignored.
+            cache = tmp_project.contracts_folder / ".cache"
+            cache.mkdir(exist_ok=True)
+            random_file = cache / "dontmindme.json"
+            random_file.write_text("what, this isn't json?!")
+
+            path_ids = {
+                f"{tmp_project.contracts_folder.name}/{src.name}"
+                for src in tmp_project.sources.paths
+            }
+            excluded = {".DS_Store", "Other.json", ".cache/dontmindme.json"}
+            for actual in (path_ids, tmp_project.sources):
+                for exclusion in excluded:
+                    expected = f"{tmp_project.contracts_folder.name}/{exclusion}"
+                    assert expected not in actual
+
+    def test_is_excluded(self, project_with_contracts):
+        exclude_cfg = {"compile": {"exclude": ["exclude_dir/*", "Excl*.json"]}}
+        source_ids = ("contracts/exclude_dir/UnwantedContract.json", "contracts/Exclude.json")
+        with project_with_contracts.temp_config(**exclude_cfg):
+            for source_id in source_ids:
+                path = project_with_contracts.path / source_id
+                assert project_with_contracts.sources.is_excluded(path)
+
+    def test_items(self, project_with_contracts):
+        actual = list(project_with_contracts.sources.items())
+        assert len(actual) > 0
+        assert isinstance(actual[0], tuple)
+        assert "contracts/Other.json" in [x[0] for x in actual]
+        assert isinstance(actual[0][1], Source)
+
+    def test_keys(self, project_with_contracts):
+        actual = list(project_with_contracts.sources.keys())
+        assert "contracts/Other.json" in actual
+
+    def test_values(self, project_with_contracts):
+        actual = list(project_with_contracts.sources.values())
+        assert all(isinstance(x, Source) for x in actual)
+
+
+class TestContractManager:
+    def test_iter(self, tmp_project):
+        actual = set(iter(tmp_project.contracts))
+        assert actual == {"Project", "Other"}
+
+    def test_compile(self, tmp_project):
+        actual = list(tmp_project.contracts._compile("contracts/Project.json"))
+        assert len(actual) == 1
+        assert actual[0].contract_type.name == "Project"
+
+        # Show it can happen again.
+        actual = list(tmp_project.contracts._compile("contracts/Project.json"))
+        assert len(actual) == 1
+        assert actual[0].contract_type.name == "Project"
+
+
+class TestDeploymentManager:
+    @pytest.fixture
+    def project(self, tmp_project, vyper_contract_instance, mock_sepolia):
+        contract_type = vyper_contract_instance.contract_type
+        tmp_project.manifest.contract_types = {contract_type.name: contract_type}
+        return tmp_project
+
+    def test_track(self, project, vyper_contract_instance, mock_sepolia):
+        project.deployments.track(vyper_contract_instance)
+        deployment = next(iter(project.deployments), None)
+        contract_type = vyper_contract_instance.contract_type
+        assert deployment is not None
+        assert deployment.contract_type == f"{contract_type.source_id}:{contract_type.name}"
+
+    def test_instance_map(self, project, vyper_contract_instance, mock_sepolia):
+        project.deployments.track(vyper_contract_instance)
+        assert project.deployments.instance_map != {}
+
+        bip122_chain_id = project.provider.get_block(0).hash.hex()
+        expected_uri = f"blockchain://{bip122_chain_id[2:]}/block/"
+        for key in project.deployments.instance_map.keys():
+            if key.startswith(expected_uri):
+                return
+
+        assert False, "Failed to find expected URI"

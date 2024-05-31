@@ -1,5 +1,7 @@
+import os
+from collections.abc import Iterator
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Iterator, List, Optional, Type, Union
+from typing import TYPE_CHECKING, Any, Optional, Union
 
 import click
 from eip712.messages import EIP712Message
@@ -31,12 +33,12 @@ class AccountAPI(BaseInterfaceModel, BaseAddress):
     An API class representing an account.
     """
 
-    def __dir__(self) -> List[str]:
+    def __dir__(self) -> list[str]:
         """
         Display methods to IPython on ``a.[TAB]`` tab completion.
 
         Returns:
-            List[str]: Method names that IPython uses for tab completion.
+            list[str]: Method names that IPython uses for tab completion.
         """
         base_value_excludes = ("code", "codesize", "is_contract")  # Not needed for accounts
         base_values = [v for v in self._base_dir_values if v not in base_value_excludes]
@@ -278,10 +280,10 @@ class AccountAPI(BaseInterfaceModel, BaseAddress):
         self.chain_manager.contracts.cache_deployment(instance)
 
         if publish:
-            self.project_manager.track_deployment(instance)
+            self.local_project.deployments.track(instance)
             self.provider.network.publish_contract(address)
 
-        instance.base_path = contract.base_path or self.project_manager.contracts_folder
+        instance.base_path = contract.base_path or self.local_project.path
         return instance
 
     def declare(self, contract: "ContractContainer", *args, **kwargs) -> ReceiptAPI:
@@ -402,12 +404,14 @@ class AccountContainerAPI(BaseInterfaceModel):
     instances.
     """
 
-    data_folder: Path
+    name: str
     """
-    The path to the account's data.
+    The name of the account container.
+    For example, the ``ape-ledger`` plugin
+    uses ``"ledger"`` as its name.
     """
 
-    account_type: Type[AccountAPI]
+    account_type: type[AccountAPI]
     """
     The type of account in this container.
     See :class:`~ape.api.accounts.AccountAPI`.
@@ -433,6 +437,16 @@ class AccountContainerAPI(BaseInterfaceModel):
             Iterator[:class:`~ape.api.accounts.AccountAPI`]
         """
 
+    @property
+    def data_folder(self) -> Path:
+        """
+        The path to the account data files.
+        Defaults to ``$HOME/.ape/<plugin_name>`` unless overriden.
+        """
+        path = self.config_manager.DATA_FOLDER / self.name
+        path.mkdir(parents=True, exist_ok=True)
+        return path
+
     @abstractmethod
     def __len__(self) -> int:
         """
@@ -448,7 +462,7 @@ class AccountContainerAPI(BaseInterfaceModel):
               `ChecksumAddress <https://eth-typing.readthedocs.io/en/latest/types.html#checksumaddress>`__.  # noqa: E501
 
         Raises:
-            IndexError: When there is no local account with the given address.
+            KeyError: When there is no local account with the given address.
 
         Returns:
             :class:`~ape.api.accounts.AccountAPI`
@@ -457,7 +471,7 @@ class AccountContainerAPI(BaseInterfaceModel):
             if account.address == address:
                 return account
 
-        raise IndexError(f"No local account {address}.")
+        raise KeyError(f"No local account {address}.")
 
     def append(self, account: AccountAPI):
         """
@@ -527,7 +541,7 @@ class AccountContainerAPI(BaseInterfaceModel):
             self.__getitem__(address)
             return True
 
-        except (IndexError, AttributeError):
+        except (IndexError, KeyError, AttributeError):
             return False
 
     def _verify_account_type(self, account):
@@ -552,6 +566,19 @@ class TestAccountContainerAPI(AccountContainerAPI):
     :class:`~ape.utils.GeneratedDevAccounts`) should implement this API instead of
     ``AccountContainerAPI`` directly. Then, they show up in the ``accounts`` test fixture.
     """
+
+    @property
+    def data_folder(self) -> Path:
+        """
+        **NOTE**: Test account containers do not touch
+        persistant data. By default and unless overriden,
+        this property returns the path to ``/dev/null`` and
+        it is not used for anything.
+        """
+        if os.name == "posix":
+            return Path("/dev/null")
+
+        return Path("NUL")
 
     @abstractmethod
     def generate_account(self) -> "TestAccountAPI":

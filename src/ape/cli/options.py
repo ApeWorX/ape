@@ -1,12 +1,14 @@
 import inspect
+from collections.abc import Callable
 from functools import partial
-from typing import Callable, Dict, List, NoReturn, Optional, Type, Union
+from pathlib import Path
+from typing import NoReturn, Optional, Union
 
 import click
 from click import Option
 from ethpm_types import ContractType
 
-from ape.api import ProviderAPI
+from ape.api.providers import ProviderAPI
 from ape.cli.choices import (
     _ACCOUNT_TYPE_FILTER,
     _NONE_NETWORK,
@@ -66,7 +68,7 @@ def verbosity_option(
 
 def _create_verbosity_kwargs(
     _logger: Optional[ApeLogger] = None, default: str = DEFAULT_LOG_LEVEL
-) -> Dict:
+) -> dict:
     cli_logger = _logger or logger
 
     def set_level(ctx, param, value):
@@ -85,7 +87,7 @@ def _create_verbosity_kwargs(
 
 
 def ape_cli_context(
-    default_log_level: str = DEFAULT_LOG_LEVEL, obj_type: Type = ApeCliContextObject
+    default_log_level: str = DEFAULT_LOG_LEVEL, obj_type: type = ApeCliContextObject
 ) -> Callable:
     """
     A ``click`` context object with helpful utilities.
@@ -171,9 +173,9 @@ class NetworkOption(Option):
 
 def network_option(
     default: Optional[Union[str, Callable]] = "auto",
-    ecosystem: Optional[Union[List[str], str]] = None,
-    network: Optional[Union[List[str], str]] = None,
-    provider: Optional[Union[List[str], str]] = None,
+    ecosystem: Optional[Union[list[str], str]] = None,
+    network: Optional[Union[list[str], str]] = None,
+    provider: Optional[Union[list[str], str]] = None,
     required: bool = False,
     **kwargs,
 ) -> Callable:
@@ -184,11 +186,11 @@ def network_option(
         default (Optional[str]): Optionally, change which network to
           use as the default. Defaults to how ``ape`` normally
           selects a default network unless ``required=True``, then defaults to ``None``.
-        ecosystem (Optional[Union[List[str], str]]): Filter the options by ecosystem.
+        ecosystem (Optional[Union[list[str], str]]): Filter the options by ecosystem.
           Defaults to getting all ecosystems.
-        network (Optional[Union[List[str], str]]): Filter the options by network.
+        network (Optional[Union[list[str], str]]): Filter the options by network.
           Defaults to getting all networks in ecosystems.
-        provider (Optional[Union[List[str], str]]): Filter the options by provider.
+        provider (Optional[Union[list[str], str]]): Filter the options by provider.
           Defaults to getting all providers in networks.
         required (bool): Whether the option is required. Defaults to ``False``.
           When set to ``True``, the default value is ``None``.
@@ -273,7 +275,7 @@ def network_option(
             return value if user_callback is None else user_callback(ctx, param, value)
 
         # Prevent argument errors but initializing callback to use None placeholders.
-        partial_kwargs: Dict = {}
+        partial_kwargs: dict = {}
         for arg_type in network_object_names:
             if arg_type in requested_network_objects:
                 partial_kwargs[arg_type] = None
@@ -357,11 +359,11 @@ def account_option(account_type: _ACCOUNT_TYPE_FILTER = None) -> Callable:
     )
 
 
-def _load_contracts(ctx, param, value) -> Optional[Union[ContractType, List[ContractType]]]:
+def _load_contracts(ctx, param, value) -> Optional[Union[ContractType, list[ContractType]]]:
     if not value:
         return None
 
-    if len(ManagerAccessMixin.project_manager.contracts) == 0:
+    if len(ManagerAccessMixin.local_project.contracts) == 0:
         raise ProjectError("Project has no contracts.")
 
     # If the user passed in `multiple=True`, then `value` is a list,
@@ -369,10 +371,10 @@ def _load_contracts(ctx, param, value) -> Optional[Union[ContractType, List[Cont
     is_multiple = isinstance(value, (tuple, list))
 
     def get_contract(contract_name: str) -> ContractType:
-        if contract_name not in ManagerAccessMixin.project_manager.contracts:
+        if contract_name not in ManagerAccessMixin.local_project.contracts:
             raise ProjectError(f"No contract named '{value}'")
 
-        return ManagerAccessMixin.project_manager.contracts[contract_name]
+        return ManagerAccessMixin.local_project.contracts[contract_name]
 
     return [get_contract(c) for c in value] if is_multiple else get_contract(value)
 
@@ -409,7 +411,7 @@ def output_format_option(default: OutputFormat = OutputFormat.TREE) -> Callable:
     )
 
 
-def incompatible_with(incompatible_opts) -> Type[click.Option]:
+def incompatible_with(incompatible_opts) -> type[click.Option]:
     """
     Factory for creating custom ``click.Option`` subclasses that
     enforce incompatibility with the option strings passed to this function.
@@ -446,6 +448,41 @@ def incompatible_with(incompatible_opts) -> Type[click.Option]:
             return super().handle_parse_result(ctx, opts, args)
 
     return IncompatibleOption
+
+
+def _project_callback(ctx, param, val):
+    pm = None
+    if not val:
+        pm = ManagerAccessMixin.local_project
+
+    else:
+        path = Path(val)
+        if path == ManagerAccessMixin.local_project.path:
+            pm = ManagerAccessMixin.local_project
+
+        else:
+            Project = ManagerAccessMixin.Project
+            if path.is_file() and path.suffix == ".json":
+                pm = Project.from_manifest(path)
+
+            elif path.is_dir():
+                pm = Project(path)
+
+    if pm is None:
+        raise click.BadOptionUsage("--project", "Not a valid project")
+
+    return pm
+
+
+def project_option(**kwargs):
+    return click.option(
+        "--project",
+        help="The path to a local project or manifest",
+        callback=_project_callback,
+        metavar="PATH",
+        is_eager=True,
+        **kwargs,
+    )
 
 
 def _json_option(name, help, **kwargs):

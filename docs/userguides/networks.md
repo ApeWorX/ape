@@ -1,6 +1,6 @@
 # Networks
 
-When interacting with a blockchain, you will have to select an ecosystem (e.g. Ethereum, Arbitrum, or Fantom), a network (e.g. Mainnet or Sepolia) and a provider (e.g. Eth-Tester, Geth, or Alchemy).
+When interacting with a blockchain, you will have to select an ecosystem (e.g. Ethereum, Arbitrum, or Fantom), a network (e.g. Mainnet or Sepolia) and a provider (e.g. Eth-Tester, Node (Geth), or Alchemy).
 Networks are part of ecosystems and typically defined in plugins.
 For example, the `ape-ethereum` plugin comes with Ape and can be used for handling EVM-like behavior.
 
@@ -15,7 +15,7 @@ No matter what type of network you are using in Ape, you specify the network usi
 
 Where `ecosystem-name` refers to the ecosystem, e.g. `ethereum`, `polygon`, `fantom`, or any valid ecosystem plugin name.
 The `network-name` refers to a network such as `mainnet`, `local`, or something else defined by your ecosystem or custom network config.
-And `provider-name` refers to the provider plugin in Ape, such as `geth` for a generic node or `foundry` if the network is more Anvil-based, or a different plugin altogether.
+And `provider-name` refers to the provider plugin in Ape, such as `node` for a generic node or `foundry` if the network is more Anvil-based, or a different plugin altogether.
 
 Commonly, the network triplet value is specified via the `--network` option in Ape CLI commands.
 The following is a list of common Ape commands that can use the `--network` option:
@@ -79,10 +79,10 @@ Here is a list of all L2 network plugins supported by Ape:
 
 **NOTE**: If you are connecting an L2 network or any other network that does not have a plugin, you can use the custom network support, which is described in the [next section](#custom-network-connection).
 
-Once you have the L2 network plugin installed, you can configure its node's URI by setting the values in the `geth` (default node) core plugin via your `ape-config.yaml` file:
+Once you have the L2 network plugin installed, you can configure its node's URI by setting the values in the `node` core plugin via your `ape-config.yaml` file:
 
 ```yaml
-geth:
+node:
   <ecosystem-name>:
     <network-name>:
       uri: https://path.to.node.example.com
@@ -120,7 +120,7 @@ networks:
        chain_id: 109                   # Required
        ecosystem: shibarium            # The ecosystem name, can either be new or an existing
        base_ecosystem_plugin: polygon  # The ecosystem base-class, defaults to the default ecosystem
-       default_provider: geth          # Default is the generic node provider
+       default_provider: node          # Default is the generic node provider
 ```
 
 The following paragraphs explain the different parameters of the custom network config.
@@ -168,13 +168,13 @@ networks:
       base_ecosystem_plugin: polygon  # Closest base class.
       chain_id: 109  # This must be correct or txns will fail.
 
-geth:
+node:
   shibarium:
     mainnet:
       uri: https://www.shibrpc.com
 ```
 
-Now, when using `ethereum:apenet:geth`, it will connect to the RPC URL `https://apenet.example.com/rpc`.
+Now, when using `ethereum:apenet:node`, it will connect to the RPC URL `https://apenet.example.com/rpc`.
 
 #### Explorer URL
 
@@ -186,7 +186,7 @@ networks:
   custom:
     - name: customnetwork
       chain_id: 31337
-      default_provider: geth
+      default_provider: node
 ```
 
 To add a corresponding entry in `ape-etherscan` (assuming you are using `ape-etherscan` as your explorer plugin), add the following to your `ape-config.yaml` file:
@@ -195,7 +195,7 @@ To add a corresponding entry in `ape-etherscan` (assuming you are using `ape-eth
 etherscan:
   ethereum:
     rate_limit: 15  # Configure a rate limit that makes sense for retry logic.
-    
+
     # The name of the entry is the same as your custom network!
     customnetwork:
       uri: https://custom.scan              # URL used for showing transactions
@@ -314,24 +314,24 @@ It is meant for running tests and debugging contracts.
 Out-of-the-box, Ape ships with two development providers you can use for the `local` network:
 
 - [EthTester](https://github.com/ethereum/eth-tester)
-- An Ephemeral Geth process
+- An Ephemeral Node (defaults to Geth) process
 
 ```bash
 ape test --network ::test
-ape test --network ::geth  # Launch a local development geth process
+ape test --network ::node  # Launch a local development node (geth) process
 ```
 
 To learn more about testing in ape, follow [this guide](./testing.html).
 
 ## Live Networks
 
-Use the core plugin `ape-geth` to connect to local or remote nodes via URI.
-The geth plugin is abstract in that it represents any node, not just geth nodes.
+Use the core plugin `ape-node` to connect to local or remote nodes via URI.
+The node plugin is abstract in that it represents any node.
 However, it will work best when connected to a geth node.
-To configure network URIs in geth, you can use the `ape-config.yaml` file:
+To configure network URIs in `node`, you can use the `ape-config.yaml` file:
 
 ```yaml
-geth:
+node:
   ethereum:
     mainnet:
       uri: https://foo.node.bar
@@ -360,9 +360,9 @@ ethereum:
     # Most networks use 120 seconds (2 minutes).
     transaction_acceptance_timeout: 60
 
-    # The amount of times to retry fetching a receipt. This is useful 
-    # because decentralized systems may show the transaction accepted 
-    # on some nodes but not on others, and potentially RPC requests 
+    # The amount of times to retry fetching a receipt. This is useful
+    # because decentralized systems may show the transaction accepted
+    # on some nodes but not on others, and potentially RPC requests
     # won't return a receipt immediately after sending its transaction.
     # This config accounts for such delay. The default is `20`.
     max_receipt_retries: 10
@@ -371,13 +371,13 @@ ethereum:
     # estimates gas. Note: local networks tend to use "max" here
     # by default.
     gas_limit: auto
-    
+
     # Base-fee multipliers are useful for times when the base fee changes
     # before a transaction is sent but after the base fee was derived,
     # thus causing rejection. A multiplier reduces the chance of
     # rejection. The default for live networks is `1.4` times the base fee.
     base_fee_multiplier: 1.2
-    
+
     # The block time helps Ape make decisions about
     # polling chain data.
     block_time: 10
@@ -391,7 +391,7 @@ To run a network with a process, use the `ape networks run` command:
 ape networks run
 ```
 
-By default, `ape networks run` runs a development Geth process.
+By default, `ape networks run` runs a development Node (geth) process.
 To use a different network, such as `hardhat` or Anvil nodes, use the `--network` flag:
 
 ```shell
@@ -423,7 +423,7 @@ from ape import chain, networks
 
 def main():
     start_provider = chain.provider.name
-    with networks.ethereum.mainnet.use_provider("geth") as provider:
+    with networks.ethereum.mainnet.use_provider("node") as provider:
         # We are using a different provider than the one we started with.
         assert start_provider != provider.name
 ```
@@ -436,9 +436,9 @@ from ape import networks
 
 @click.command()
 def cli():
-    with networks.polygon.mainnet.use_provider("geth"):
+    with networks.polygon.mainnet.use_provider("node"):
         ...
-    with networks.ethereum.mainnet.use_provider("geth"):
+    with networks.ethereum.mainnet.use_provider("node"):
         ...
 ```
 

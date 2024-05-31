@@ -1,15 +1,19 @@
 import json
+from collections.abc import Collection, Iterator
 from concurrent.futures import ThreadPoolExecutor
 from contextlib import contextmanager
 from functools import partial
 from pathlib import Path
-from typing import IO, Collection, Dict, Iterator, List, Optional, Set, Type, Union, cast
+from statistics import mean, median
+from typing import IO, Optional, Union, cast
 
 import pandas as pd
 from eth_pydantic_types import HexBytes
 from ethpm_types import ABI, ContractType
 from rich import get_console
+from rich.box import SIMPLE
 from rich.console import Console as RichConsole
+from rich.table import Table
 
 from ape.api import BlockAPI, ReceiptAPI
 from ape.api.address import BaseAddress
@@ -17,6 +21,7 @@ from ape.api.networks import NetworkAPI, ProxyInfoAPI
 from ape.api.query import (
     AccountTransactionQuery,
     BlockQuery,
+    ContractCreation,
     ContractCreationQuery,
     extract_fields,
     validate_and_expand_columns,
@@ -30,14 +35,16 @@ from ape.exceptions import (
     CustomError,
     ProviderNotConnectedError,
     QueryEngineError,
+    TransactionNotFoundError,
     UnknownSnapshotError,
 )
 from ape.logging import logger
 from ape.managers.base import BaseManager
-from ape.types import AddressType, BlockID, CallTreeNode, SnapshotID, SourceTraceback
+from ape.types import AddressType, GasReport, SnapshotID, SourceTraceback
 from ape.utils import (
     BaseInterfaceModel,
-    TraceStyles,
+    is_evm_precompile,
+    is_zero_hex,
     log_instead_of_fail,
     nonreentrant,
     singledispatchmethod,
@@ -62,7 +69,7 @@ class BlockContainer(BaseManager):
         The latest block.
         """
 
-        return self._get_block("latest")
+        return self.provider.get_block("latest")
 
     @property
     def height(self) -> int:
@@ -94,7 +101,7 @@ class BlockContainer(BaseManager):
         if block_number < 0:
             block_number = len(self) + block_number
 
-        return self._get_block(block_number)
+        return self.provider.get_block(block_number)
 
     def __len__(self) -> int:
         """
@@ -171,7 +178,7 @@ class BlockContainer(BaseManager):
         )
 
         blocks = self.query_manager.query(query, engine_to_use=engine_to_use)
-        columns: List[str] = validate_and_expand_columns(  # type: ignore
+        columns: list[str] = validate_and_expand_columns(  # type: ignore
             columns, self.head.__class__
         )
         extraction = partial(extract_fields, columns=columns)
@@ -299,9 +306,6 @@ class BlockContainer(BaseManager):
             new_block_timeout=new_block_timeout,
         )
 
-    def _get_block(self, block_id: BlockID) -> BlockAPI:
-        return self.provider.get_block(block_id)
-
 
 class AccountHistory(BaseInterfaceModel):
     """
@@ -313,7 +317,7 @@ class AccountHistory(BaseInterfaceModel):
     The address to get history for.
     """
 
-    sessional: List[ReceiptAPI] = []
+    sessional: list[ReceiptAPI] = []
     """
     The receipts from the current Python session.
     """
@@ -438,7 +442,7 @@ class AccountHistory(BaseInterfaceModel):
             raise IndexError(f"index {index} out of range") from e
 
     @__getitem__.register
-    def __getitem_slice(self, indices: slice) -> List[ReceiptAPI]:
+    def __getitem_slice(self, indices: slice) -> list[ReceiptAPI]:
         start, stop, step = (
             indices.start or 0,
             indices.stop or len(self),
@@ -460,7 +464,7 @@ class AccountHistory(BaseInterfaceModel):
             return []  # nothing to query
 
         return cast(
-            List[ReceiptAPI],
+            list[ReceiptAPI],
             list(
                 self.query_manager.query(
                     AccountTransactionQuery(
@@ -501,8 +505,8 @@ class TransactionHistory(BaseManager):
     A container mapping Transaction History to the transaction from the active session.
     """
 
-    _account_history_cache: Dict[AddressType, AccountHistory] = {}
-    _hash_to_receipt_map: Dict[str, ReceiptAPI] = {}
+    _account_history_cache: dict[AddressType, AccountHistory] = {}
+    _hash_to_receipt_map: dict[str, ReceiptAPI] = {}
 
     @singledispatchmethod
     def __getitem__(self, key):
@@ -615,14 +619,15 @@ class ContractCache(BaseManager):
     it will be cached to disk for faster look-up next time.
     """
 
-    _local_contract_types: Dict[AddressType, ContractType] = {}
-    _local_proxies: Dict[AddressType, ProxyInfoAPI] = {}
-    _local_blueprints: Dict[str, ContractType] = {}
-    _local_deployments_mapping: Dict[str, Dict] = {}
+    _local_contract_types: dict[AddressType, ContractType] = {}
+    _local_proxies: dict[AddressType, ProxyInfoAPI] = {}
+    _local_blueprints: dict[str, ContractType] = {}
+    _local_deployments_mapping: dict[str, dict] = {}
+    _local_contract_creation: dict[str, ContractCreation] = {}
 
     # chain_id -> address -> custom_err
     # Cached to prevent calling `new_class` multiple times with conflicts.
-    _custom_error_types: Dict[int, Dict[AddressType, Set[Type[CustomError]]]] = {}
+    _custom_error_types: dict[int, dict[AddressType, set[type[CustomError]]]] = {}
 
     @property
     def _network(self) -> NetworkAPI:
@@ -664,7 +669,11 @@ class ContractCache(BaseManager):
         return self._network_cache / "blueprints"
 
     @property
-    def _full_deployments(self) -> Dict:
+    def _contract_creation_cache(self) -> Path:
+        return self._network_cache / "contract_creation"
+
+    @property
+    def _full_deployments(self) -> dict:
         deployments = self._local_deployments_mapping
         if self._is_live_network:
             deployments = {**deployments, **self._load_deployments_cache()}
@@ -672,7 +681,7 @@ class ContractCache(BaseManager):
         return deployments
 
     @property
-    def _deployments(self) -> Dict:
+    def _deployments(self) -> dict:
         if not self.network_manager.active_provider:
             return {}
 
@@ -768,7 +777,7 @@ class ContractCache(BaseManager):
         contract_type = contract_instance.contract_type
 
         # Cache contract type in memory before proxy check,
-        # in case it is needed somewhere. It may get overriden.
+        # in case it is needed somewhere. It may get overridden.
         self._local_contract_types[address] = contract_type
 
         proxy_info = self.provider.network.ecosystem.get_proxy_info(address)
@@ -836,6 +845,41 @@ class ContractCache(BaseManager):
 
         return self._local_proxies.get(address) or self._get_proxy_info_from_disk(address)
 
+    def get_creation_metadata(self, address: AddressType) -> Optional[ContractCreation]:
+        """
+        Get contract creation metadata containing txn_hash, deployer, factory, block.
+
+        Args:
+            address (AddressType): The address of the contract.
+
+        Returns:
+            Optional[:class:`~ape.api.query.ContractCreation`]
+        """
+        if creation := self._local_contract_creation.get(address):
+            return creation
+
+        # read from disk
+        elif creation := self._get_contract_creation_from_disk(address):
+            self._local_contract_creation[address] = creation
+            return creation
+
+        # query and cache
+        query = ContractCreationQuery(columns=["*"], contract=address)
+        get_creation = self.query_manager.query(query)
+
+        try:
+            if not (creation := next(get_creation, None)):  # type: ignore[arg-type]
+                return None
+
+        except QueryEngineError:
+            return None
+
+        if self._is_live_network:
+            self._cache_contract_creation_to_disk(address, creation)
+
+        self._local_contract_creation[address] = creation
+        return creation
+
     def get_blueprint(self, blueprint_id: str) -> Optional[ContractType]:
         """
         Get a cached blueprint contract type.
@@ -854,7 +898,7 @@ class ContractCache(BaseManager):
 
     def _get_errors(
         self, address: AddressType, chain_id: Optional[int] = None
-    ) -> Set[Type[CustomError]]:
+    ) -> set[type[CustomError]]:
         if chain_id is None and self.network_manager.active_provider is not None:
             chain_id = self.provider.chain_id
         elif chain_id is None:
@@ -870,7 +914,7 @@ class ContractCache(BaseManager):
         return set()
 
     def _cache_error(
-        self, address: AddressType, error: Type[CustomError], chain_id: Optional[int] = None
+        self, address: AddressType, error: type[CustomError], chain_id: Optional[int] = None
     ):
         if chain_id is None and self.network_manager.active_provider is not None:
             chain_id = self.provider.chain_id
@@ -908,24 +952,24 @@ class ContractCache(BaseManager):
             err = ContractNotFoundError(
                 address, self.provider.network.explorer is not None, self.provider.network_choice
             )
-            # Must raise IndexError.
-            raise IndexError(str(err))
+            # Must raise KeyError.
+            raise KeyError(str(err))
 
         return contract_type
 
     def get_multiple(
         self, addresses: Collection[AddressType], concurrency: Optional[int] = None
-    ) -> Dict[AddressType, ContractType]:
+    ) -> dict[AddressType, ContractType]:
         """
         Get contract types for all given addresses.
 
         Args:
-            addresses (List[AddressType): A list of addresses to get contract types for.
+            addresses (list[AddressType): A list of addresses to get contract types for.
             concurrency (Optional[int]): The number of threads to use. Defaults to
               ``min(4, len(addresses))``.
 
         Returns:
-            Dict[AddressType, ContractType]: A mapping of addresses to their respective
+            dict[AddressType, ContractType]: A mapping of addresses to their respective
             contract types.
         """
         if not addresses:
@@ -942,7 +986,7 @@ class ContractCache(BaseManager):
             else:
                 return addr, ct
 
-        converted_addresses: List[AddressType] = []
+        converted_addresses: list[AddressType] = []
         for address in converted_addresses:
             if not self.conversion_manager.is_type(address, AddressType):
                 converted_address = self.conversion_manager.convert(address, AddressType)
@@ -1076,7 +1120,7 @@ class ContractCache(BaseManager):
         address: Union[str, AddressType],
         contract_type: Optional[ContractType] = None,
         txn_hash: Optional[Union[str, HexBytes]] = None,
-        abi: Optional[Union[List[ABI], Dict, str, Path]] = None,
+        abi: Optional[Union[list[ABI], dict, str, Path]] = None,
     ) -> ContractInstance:
         """
         Get a contract at the given address. If the contract type of the contract is known,
@@ -1096,7 +1140,7 @@ class ContractCache(BaseManager):
               in case it is not already known.
             txn_hash (Optional[Union[str, HexBytes]]): The hash of the transaction responsible for
               deploying the contract, if known. Useful for publishing. Defaults to ``None``.
-            abi (Optional[Union[List[ABI], Dict, str, Path]]): Use an ABI str, dict, path,
+            abi (Optional[Union[list[ABI], dict, str, Path]]): Use an ABI str, dict, path,
               or ethpm models to create a contract instance class.
 
         Returns:
@@ -1129,7 +1173,7 @@ class ContractCache(BaseManager):
                 # Handle both absolute and relative paths
                 abi_path = Path(abi)
                 if not abi_path.is_absolute():
-                    abi_path = self.project_manager.path / abi
+                    abi_path = self.local_project.path / abi
 
                 try:
                     abi = json.loads(abi_path.read_text())
@@ -1157,7 +1201,7 @@ class ContractCache(BaseManager):
 
             else:
                 raise TypeError(
-                    f"Invalid ABI type '{type(abi)}', expecting str, List[ABI] or a JSON file."
+                    f"Invalid ABI type '{type(abi)}', expecting str, list[ABI] or a JSON file."
                 )
 
         if not contract_type:
@@ -1197,7 +1241,7 @@ class ContractCache(BaseManager):
         # NOTE: Mostly just needed this method to avoid a local import.
         return ContractInstance.from_receipt(receipt, contract_type)
 
-    def get_deployments(self, contract_container: ContractContainer) -> List[ContractInstance]:
+    def get_deployments(self, contract_container: ContractContainer) -> list[ContractInstance]:
         """
         Retrieves previous deployments of a contract container or contract type.
         Locally deployed contracts are saved for the duration of the script and read from
@@ -1209,7 +1253,7 @@ class ContractCache(BaseManager):
               ``ContractContainer`` with deployments.
 
         Returns:
-            List[:class:`~ape.contracts.ContractInstance`]: Returns a list of contracts that
+            list[:class:`~ape.contracts.ContractInstance`]: Returns a list of contracts that
             have been deployed.
         """
 
@@ -1223,7 +1267,7 @@ class ContractCache(BaseManager):
             ecosystem_name = self.provider.network.ecosystem.name
             network_name = self.provider.network.name
             all_config_deployments = (
-                self.config_manager.deployments.root if self.config_manager.deployments else {}
+                self.config_manager.deployments if self.config_manager.deployments else {}
             )
             ecosystem_deployments = all_config_deployments.get(ecosystem_name, {})
             network_deployments = ecosystem_deployments.get(network_name, {})
@@ -1235,7 +1279,7 @@ class ContractCache(BaseManager):
         if not deployments:
             return []
 
-        instances: List[ContractInstance] = []
+        instances: list[ContractInstance] = []
         for deployment in deployments:
             address = deployment["address"]
             txn_hash = deployment.get("transaction_hash")
@@ -1252,6 +1296,7 @@ class ContractCache(BaseManager):
         self._local_proxies = {}
         self._local_blueprints = {}
         self._local_deployments_mapping = {}
+        self._local_creation_metadata = {}
 
     def _get_contract_type_from_disk(self, address: AddressType) -> Optional[ContractType]:
         address_file = self._contract_types_cache / f"{address}.json"
@@ -1290,6 +1335,13 @@ class ContractCache(BaseManager):
 
         return contract_type
 
+    def _get_contract_creation_from_disk(self, address: AddressType) -> Optional[ContractCreation]:
+        path = self._contract_creation_cache / f"{address}.json"
+        if not path.is_file():
+            return None
+
+        return ContractCreation.model_validate_json(path.read_text())
+
     def _cache_contract_to_disk(self, address: AddressType, contract_type: ContractType):
         self._contract_types_cache.mkdir(exist_ok=True, parents=True)
         address_file = self._contract_types_cache / f"{address}.json"
@@ -1305,52 +1357,22 @@ class ContractCache(BaseManager):
         blueprint_file = self._blueprint_cache / f"{blueprint_id}.json"
         blueprint_file.write_text(contract_type.model_dump_json())
 
-    def _load_deployments_cache(self) -> Dict:
+    def _cache_contract_creation_to_disk(self, address: AddressType, creation: ContractCreation):
+        self._contract_creation_cache.mkdir(exist_ok=True, parents=True)
+        path = self._contract_creation_cache / f"{address}.json"
+        path.write_text(creation.model_dump_json())
+
+    def _load_deployments_cache(self) -> dict:
         return (
             json.loads(self._deployments_mapping_cache.read_text())
             if self._deployments_mapping_cache.is_file()
             else {}
         )
 
-    def _write_deployments_mapping(self, deployments_map: Dict):
+    def _write_deployments_mapping(self, deployments_map: dict):
         self._deployments_mapping_cache.parent.mkdir(exist_ok=True, parents=True)
         with self._deployments_mapping_cache.open("w") as fp:
             json.dump(deployments_map, fp, sort_keys=True, indent=2, default=sorted)
-
-    def get_creation_receipt(
-        self, address: AddressType, start_block: int = 0, stop_block: Optional[int] = None
-    ) -> ReceiptAPI:
-        """
-        Get the receipt responsible for the initial creation of the contract.
-
-        Args:
-            address (:class:`~ape.types.address.AddressType`): The address of the contract.
-            start_block (int): The block to start looking from.
-            stop_block (Optional[int]): The block to stop looking at.
-
-        Returns:
-            :class:`~ape.apt.transactions.ReceiptAPI`
-        """
-        if stop_block is None:
-            stop_block = self.chain_manager.blocks.height
-
-        query = ContractCreationQuery(
-            columns=["*"],
-            contract=address,
-            start_block=start_block,
-            stop_block=stop_block,
-        )
-        creation_receipts = cast(Iterator[ReceiptAPI], self.query_manager.query(query))
-
-        if tx := next(creation_receipts, None):
-            return tx
-
-        raise ChainError(
-            f"Failed to find a contract-creation receipt for '{address}'. "
-            "Note that it may be the case that the backend used cannot detect contracts "
-            "deployed by other contracts, and you may receive better results by installing "
-            "a plugin that supports it, like Etherscan."
-        )
 
 
 class ReportManager(BaseManager):
@@ -1361,31 +1383,46 @@ class ReportManager(BaseManager):
     **NOTE**: This class is not part of the public API.
     """
 
-    rich_console_map: Dict[str, RichConsole] = {}
+    rich_console_map: dict[str, RichConsole] = {}
 
-    def show_trace(
-        self,
-        call_tree: CallTreeNode,
-        sender: Optional[AddressType] = None,
-        transaction_hash: Optional[str] = None,
-        revert_message: Optional[str] = None,
-        file: Optional[IO[str]] = None,
-        verbose: bool = False,
-    ):
-        root = call_tree.as_rich_tree(verbose=verbose)
-        console = self._get_console(file)
+    def show_gas(self, report: GasReport, file: Optional[IO[str]] = None):
+        tables: list[Table] = []
 
-        if transaction_hash:
-            console.print(f"Call trace for [bold blue]'{transaction_hash}'[/]")
-        if revert_message:
-            console.print(f"[bold red]{revert_message}[/]")
-        if sender:
-            console.print(f"tx.origin=[{TraceStyles.CONTRACTS}]{sender}[/]")
+        for contract_id, method_calls in report.items():
+            title = f"{contract_id} Gas"
+            table = Table(title=title, box=SIMPLE)
+            table.add_column("Method")
+            table.add_column("Times called", justify="right")
+            table.add_column("Min.", justify="right")
+            table.add_column("Max.", justify="right")
+            table.add_column("Mean", justify="right")
+            table.add_column("Median", justify="right")
+            has_at_least_1_row = False
 
-        console.print(root)
+            for method_call, gases in sorted(method_calls.items()):
+                if not gases:
+                    continue
 
-    def show_gas(self, call_tree: CallTreeNode, file: Optional[IO[str]] = None):
-        tables = call_tree.as_gas_tables()
+                if not method_call or is_zero_hex(method_call) or is_evm_precompile(method_call):
+                    continue
+
+                elif method_call == "__new__":
+                    # Looks better in the gas report.
+                    method_call = "__init__"
+
+                has_at_least_1_row = True
+                table.add_row(
+                    method_call,
+                    f"{len(gases)}",
+                    f"{min(gases)}",
+                    f"{max(gases)}",
+                    f"{int(round(mean(gases)))}",
+                    f"{int(round(median(gases)))}",
+                )
+
+            if has_at_least_1_row:
+                tables.append(table)
+
         self.echo(*tables, file=file)
 
     def echo(self, *rich_items, file: Optional[IO[str]] = None):
@@ -1422,10 +1459,10 @@ class ChainManager(BaseManager):
         from ape import chain
     """
 
-    _snapshots: List[SnapshotID] = []
-    _chain_id_map: Dict[str, int] = {}
-    _block_container_map: Dict[int, BlockContainer] = {}
-    _transaction_history_map: Dict[int, TransactionHistory] = {}
+    _snapshots: list[SnapshotID] = []
+    _chain_id_map: dict[str, int] = {}
+    _block_container_map: dict[int, BlockContainer] = {}
+    _transaction_history_map: dict[int, TransactionHistory] = {}
     contracts: ContractCache = ContractCache()
     _reports: ReportManager = ReportManager()
 
@@ -1507,7 +1544,7 @@ class ChainManager(BaseManager):
 
     @pending_timestamp.setter
     def pending_timestamp(self, new_value: str):
-        self.provider.set_timestamp(self.conversion_manager.convert(value=new_value, type=int))
+        self.provider.set_timestamp(self.conversion_manager.convert(new_value, int))
 
     @log_instead_of_fail(default="<ChainManager>")
     def __repr__(self) -> str:
@@ -1559,7 +1596,7 @@ class ChainManager(BaseManager):
             snapshot_index = self._snapshots.index(snapshot_id)
             self._snapshots = self._snapshots[:snapshot_index]
 
-        self.provider.revert(snapshot_id)
+        self.provider.restore(snapshot_id)
         self.history.revert_to_block(self.blocks.height)
 
     @contextmanager
@@ -1667,6 +1704,6 @@ class ChainManager(BaseManager):
         """
         receipt = self.chain_manager.history[transaction_hash]
         if not isinstance(receipt, ReceiptAPI):
-            raise ChainError(f"No receipt found with hash '{transaction_hash}'.")
+            raise TransactionNotFoundError(transaction_hash=transaction_hash)
 
         return receipt
