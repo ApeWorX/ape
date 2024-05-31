@@ -23,3 +23,12 @@ def providers():
 @plugins.register(plugins.QueryPlugin)
 def query_engines():
     yield OtterscanQueryEngine
+
+
+__all__ = [
+    "EthereumNetworkConfig",
+    "EthereumNodeConfig",
+    "GethDev",
+    "Node",
+    "OtterscanQueryEngine",
+]
