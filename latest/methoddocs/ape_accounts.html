@@ -27,8 +27,8 @@
   </script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="ape.api" href="api.html" />
-    <link rel="prev" title="ape" href="ape.html" /> 
+    <link rel="next" title="ape-compile" href="ape_compile.html" />
+    <link rel="prev" title="ape.utils" href="utils.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -170,6 +170,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../userguides/scripts.html">Scripting</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../userguides/publishing.html">Publishing</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../userguides/logging.html">Logging</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../userguides/trace.html">Traces</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">CLI Reference</span></p>
 <ul>
@@ -183,9 +184,20 @@
 <li class="toctree-l1"><a class="reference internal" href="../commands/run.html">run</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../commands/test.html">test</a></li>
 </ul>
-<p class="caption" role="heading"><span class="caption-text">Python Reference</span></p>
-<ul class="current">
+<p class="caption" role="heading"><span class="caption-text">Core Python Reference</span></p>
+<ul>
 <li class="toctree-l1"><a class="reference internal" href="ape.html">ape</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api.html">ape.api</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cli.html">ape.cli</a></li>
+<li class="toctree-l1"><a class="reference internal" href="contracts.html">ape.contracts</a></li>
+<li class="toctree-l1"><a class="reference internal" href="exceptions.html">ape.exceptions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="managers.html">ape.managers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="plugins.html">ape.plugins</a></li>
+<li class="toctree-l1"><a class="reference internal" href="types.html">ape.types</a></li>
+<li class="toctree-l1"><a class="reference internal" href="utils.html">ape.utils</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Plugin Python Reference</span></p>
+<ul class="current">
 <li class="toctree-l1 current"><a class="current reference internal" href="#">ape-accounts</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#ape_accounts.AccountContainer"><code class="docutils literal notranslate"><span class="pre">AccountContainer</span></code></a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#ape_accounts.AccountContainer.accounts"><code class="docutils literal notranslate"><span class="pre">AccountContainer.accounts</span></code></a></li>
@@ -208,14 +220,8 @@
 <li class="toctree-l2"><a class="reference internal" href="#ape_accounts.import_account_from_private_key"><code class="docutils literal notranslate"><span class="pre">import_account_from_private_key()</span></code></a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="api.html">ape.api</a></li>
-<li class="toctree-l1"><a class="reference internal" href="cli.html">ape.cli</a></li>
-<li class="toctree-l1"><a class="reference internal" href="contracts.html">ape.contracts</a></li>
-<li class="toctree-l1"><a class="reference internal" href="exceptions.html">ape.exceptions</a></li>
-<li class="toctree-l1"><a class="reference internal" href="managers.html">ape.managers</a></li>
-<li class="toctree-l1"><a class="reference internal" href="plugins.html">ape.plugins</a></li>
-<li class="toctree-l1"><a class="reference internal" href="types.html">ape.types</a></li>
-<li class="toctree-l1"><a class="reference internal" href="utils.html">ape.utils</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ape_compile.html">ape-compile</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ape_pm.html">ape-pm</a></li>
 </ul>
 
         </div>
@@ -246,7 +252,7 @@
 <span id="ape-accounts"></span><h1>ape-accounts<a class="headerlink" href="#module-ape_accounts" title="Permalink to this heading"></a></h1>
 <dl class="py class">
 <dt class="sig sig-object py" id="ape_accounts.AccountContainer">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ape_accounts.</span></span><span class="sig-name descname"><span class="pre">AccountContainer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_folder</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">account_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Type</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="api.html#ape.api.accounts.AccountAPI" title="ape.api.accounts.AccountAPI"><span class="pre">AccountAPI</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">loaded_accounts</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="#ape_accounts.KeyfileAccount" title="ape_accounts.accounts.KeyfileAccount"><span class="pre">KeyfileAccount</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape_accounts.AccountContainer" title="Permalink to this definition"></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ape_accounts.</span></span><span class="sig-name descname"><span class="pre">AccountContainer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">account_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">type</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="api.html#ape.api.accounts.AccountAPI" title="ape.api.accounts.AccountAPI"><span class="pre">ape.api.accounts.AccountAPI</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">loaded_accounts</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'KeyfileAccount'</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape_accounts.AccountContainer" title="Permalink to this definition"></a></dt>
 <dd><dl class="py property">
 <dt class="sig sig-object py" id="ape_accounts.AccountContainer.accounts">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">accounts</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Iterator</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="api.html#ape.api.accounts.AccountAPI" title="ape.api.accounts.AccountAPI"><span class="pre">AccountAPI</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#ape_accounts.AccountContainer.accounts" title="Permalink to this definition"></a></dt>
@@ -386,7 +392,7 @@ Returns <code class="docutils literal notranslate"><span class="pre">None</span>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="ape_accounts.generate_account">
-<span class="sig-prename descclassname"><span class="pre">ape_accounts.</span></span><span class="sig-name descname"><span class="pre">generate_account</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">alias</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">passphrase</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hd_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">&quot;m/44'/60'/0'/0/0&quot;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">word_count</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">12</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#ape_accounts.KeyfileAccount" title="ape_accounts.accounts.KeyfileAccount"><span class="pre">KeyfileAccount</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#ape_accounts.generate_account" title="Permalink to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">ape_accounts.</span></span><span class="sig-name descname"><span class="pre">generate_account</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">alias</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">passphrase</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hd_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">&quot;m/44'/60'/0'/0/0&quot;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">word_count</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">12</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#ape_accounts.KeyfileAccount" title="ape_accounts.accounts.KeyfileAccount"><span class="pre">ape_accounts.accounts.KeyfileAccount</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#ape_accounts.generate_account" title="Permalink to this definition"></a></dt>
 <dd><p>Generate a new account.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -449,8 +455,8 @@ Defaults to <cite>m/44’/60’/0’/0/0</cite>.</p></li>
            </div>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="ape.html" class="btn btn-neutral float-left" title="ape" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="api.html" class="btn btn-neutral float-right" title="ape.api" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="utils.html" class="btn btn-neutral float-left" title="ape.utils" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="ape_compile.html" class="btn btn-neutral float-right" title="ape-compile" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>

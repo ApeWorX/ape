@@ -170,6 +170,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../userguides/scripts.html">Scripting</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../userguides/publishing.html">Publishing</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../userguides/logging.html">Logging</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../userguides/trace.html">Traces</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">CLI Reference</span></p>
 <ul class="current">
@@ -187,10 +188,9 @@
 <li class="toctree-l1"><a class="reference internal" href="run.html">run</a></li>
 <li class="toctree-l1"><a class="reference internal" href="test.html">test</a></li>
 </ul>
-<p class="caption" role="heading"><span class="caption-text">Python Reference</span></p>
+<p class="caption" role="heading"><span class="caption-text">Core Python Reference</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../methoddocs/ape.html">ape</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../methoddocs/ape_accounts.html">ape-accounts</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../methoddocs/api.html">ape.api</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../methoddocs/cli.html">ape.cli</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../methoddocs/contracts.html">ape.contracts</a></li>
@@ -199,6 +199,12 @@
 <li class="toctree-l1"><a class="reference internal" href="../methoddocs/plugins.html">ape.plugins</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../methoddocs/types.html">ape.types</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../methoddocs/utils.html">ape.utils</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Plugin Python Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../methoddocs/ape_accounts.html">ape-accounts</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../methoddocs/ape_compile.html">ape-compile</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../methoddocs/ape_pm.html">ape-pm</a></li>
 </ul>
 
         </div>
@@ -271,7 +277,7 @@
 <dd><p>Filter the results by network</p>
 <dl class="field-list simple">
 <dt class="field-odd">Options<span class="colon">:</span></dt>
-<dd class="field-odd"><p>sepolia | mainnet-fork | local | sepolia-fork | mainnet</p>
+<dd class="field-odd"><p>mainnet-fork | sepolia | local | mainnet | sepolia-fork</p>
 </dd>
 </dl>
 </dd></dl>
@@ -282,7 +288,7 @@
 <dd><p>Filter the results by provider</p>
 <dl class="field-list simple">
 <dt class="field-odd">Options<span class="colon">:</span></dt>
-<dd class="field-odd"><p>test | geth</p>
+<dd class="field-odd"><p>node | test</p>
 </dd>
 </dl>
 </dd></dl>
@@ -308,7 +314,7 @@ and stream stdout and stderr.</p>
 <dd><p>Override the default network and provider. (see <cite>ape networks list</cite> for options)</p>
 <dl class="field-list simple">
 <dt class="field-odd">Options<span class="colon">:</span></dt>
-<dd class="field-odd"><p>:mainnet:geth | ethereum:mainnet:geth | :mainnet | ethereum:mainnet | :sepolia:geth | ethereum:sepolia:geth | :sepolia | ethereum:sepolia | ::geth | :local:geth | ethereum::geth | ethereum:local:geth | ::test | :local:test | ethereum::test | ethereum:local:test | :local | ethereum:local | ethereum</p>
+<dd class="field-odd"><p>:mainnet:node | ethereum:mainnet:node | :mainnet | ethereum:mainnet | :sepolia:node | ethereum:sepolia:node | :sepolia | ethereum:sepolia | ::node | :local:node | ethereum::node | ethereum:local:node | ::test | :local:test | ethereum::test | ethereum:local:test | :local | ethereum:local | ethereum</p>
 </dd>
 </dl>
 </dd></dl>

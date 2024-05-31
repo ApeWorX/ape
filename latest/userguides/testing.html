@@ -179,7 +179,10 @@
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="#ape-testing-commands">Ape testing commands</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#test-providers">Test Providers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#test-providers">Test Providers</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#mining">Mining</a></li>
+</ul>
+</li>
 <li class="toctree-l2"><a class="reference internal" href="#advanced-testing-tips">Advanced Testing Tips</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#testing-transaction-failures">Testing Transaction Failures</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#expected-message"><code class="docutils literal notranslate"><span class="pre">expected_message</span></code></a></li>
@@ -202,6 +205,7 @@
 <li class="toctree-l1"><a class="reference internal" href="scripts.html">Scripting</a></li>
 <li class="toctree-l1"><a class="reference internal" href="publishing.html">Publishing</a></li>
 <li class="toctree-l1"><a class="reference internal" href="logging.html">Logging</a></li>
+<li class="toctree-l1"><a class="reference internal" href="trace.html">Traces</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">CLI Reference</span></p>
 <ul>
@@ -215,10 +219,9 @@
 <li class="toctree-l1"><a class="reference internal" href="../commands/run.html">run</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../commands/test.html">test</a></li>
 </ul>
-<p class="caption" role="heading"><span class="caption-text">Python Reference</span></p>
+<p class="caption" role="heading"><span class="caption-text">Core Python Reference</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../methoddocs/ape.html">ape</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../methoddocs/ape_accounts.html">ape-accounts</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../methoddocs/api.html">ape.api</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../methoddocs/cli.html">ape.cli</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../methoddocs/contracts.html">ape.contracts</a></li>
@@ -227,6 +230,12 @@
 <li class="toctree-l1"><a class="reference internal" href="../methoddocs/plugins.html">ape.plugins</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../methoddocs/types.html">ape.types</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../methoddocs/utils.html">ape.utils</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Plugin Python Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../methoddocs/ape_accounts.html">ape-accounts</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../methoddocs/ape_compile.html">ape-compile</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../methoddocs/ape_pm.html">ape-pm</a></li>
 </ul>
 
         </div>
@@ -456,8 +465,9 @@ Access each <a class="reference external" href="../methoddocs/api.html?highlight
 </section>
 <section id="test-providers">
 <h2>Test Providers<a class="headerlink" href="#test-providers" title="Permalink to this heading"></a></h2>
-<p>Out-of-the-box, your tests run using the <code class="docutils literal notranslate"><span class="pre">eth-tester</span></code> provider, which comes bundled with ape. If you have <code class="docutils literal notranslate"><span class="pre">geth</span></code> installed, you can use the <code class="docutils literal notranslate"><span class="pre">ape-geth</span></code> plugin that also comes with ape.</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>ape<span class="w"> </span><span class="nb">test</span><span class="w"> </span>--network<span class="w"> </span>ethereum:local:geth
+<p>Out-of-the-box, your tests run using the <code class="docutils literal notranslate"><span class="pre">eth-tester</span></code> provider, which comes bundled with ape.
+If you have Ethereum node software installed, you can use the <code class="docutils literal notranslate"><span class="pre">ape-node</span></code> plugin that also comes with ape.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>ape<span class="w"> </span><span class="nb">test</span><span class="w"> </span>--network<span class="w"> </span>ethereum:local:node
 </pre></div>
 </div>
 <p>Each testing plugin should work the same way. You will have access to the same test accounts.</p>
@@ -465,6 +475,31 @@ Access each <a class="reference external" href="../methoddocs/api.html?highlight
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>ape<span class="w"> </span>plugins<span class="w"> </span>install<span class="w"> </span>hardhat
 </pre></div>
 </div>
+<section id="mining">
+<h3>Mining<a class="headerlink" href="#mining" title="Permalink to this heading"></a></h3>
+<p>Test providers allow you to control mining.
+For example, mine an empty block using the <a class="reference external" href="../methoddocs/api.html#ape.api.providers.TestProviderAPI.mine">mine</a> method:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">ape</span> <span class="kn">import</span> <span class="n">chain</span>
+
+<span class="n">chain</span><span class="o">.</span><span class="n">provider</span><span class="o">.</span><span class="n">mine</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>You can also pass it a number of blocks to mine:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">ape</span> <span class="kn">import</span> <span class="n">chain</span>
+
+<span class="n">chain</span><span class="o">.</span><span class="n">provider</span><span class="o">.</span><span class="n">mine</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>By default, testing providers automatically mine after sending transactions.
+However, you can disable this feature by setting the property.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">ape</span> <span class="kn">import</span> <span class="n">chain</span>
+
+<span class="n">chain</span><span class="o">.</span><span class="n">provider</span><span class="o">.</span><span class="n">auto_mine</span> <span class="o">=</span> <span class="kc">False</span>
+<span class="c1"># You can also re-enable</span>
+<span class="n">chain</span><span class="o">.</span><span class="n">provider</span><span class="o">.</span><span class="n">auto_mine</span> <span class="o">=</span> <span class="kc">True</span>
+</pre></div>
+</div>
+</section>
 </section>
 <section id="advanced-testing-tips">
 <h2>Advanced Testing Tips<a class="headerlink" href="#advanced-testing-tips" title="Permalink to this heading"></a></h2>
@@ -490,7 +525,9 @@ Access each <a class="reference external" href="../methoddocs/api.html?highlight
 <h2>Testing Transaction Failures<a class="headerlink" href="#testing-transaction-failures" title="Permalink to this heading"></a></h2>
 <p>Similar to <code class="docutils literal notranslate"><span class="pre">pytest.raises()</span></code>, you can use <code class="docutils literal notranslate"><span class="pre">ape.reverts()</span></code> to assert that contract transactions fail and revert.</p>
 <p>From our earlier example we can see this in action:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">test_authorization</span><span class="p">(</span><span class="n">my_contract</span><span class="p">,</span> <span class="n">owner</span><span class="p">,</span> <span class="n">not_owner</span><span class="p">):</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">ape</span>
+
+<span class="k">def</span> <span class="nf">test_authorization</span><span class="p">(</span><span class="n">my_contract</span><span class="p">,</span> <span class="n">owner</span><span class="p">,</span> <span class="n">not_owner</span><span class="p">):</span>
     <span class="n">my_contract</span><span class="o">.</span><span class="n">set_owner</span><span class="p">(</span><span class="n">sender</span><span class="o">=</span><span class="n">owner</span><span class="p">)</span>
     <span class="k">assert</span> <span class="n">owner</span> <span class="o">==</span> <span class="n">my_contract</span><span class="o">.</span><span class="n">owner</span><span class="p">()</span>
 
@@ -504,7 +541,10 @@ Access each <a class="reference external" href="../methoddocs/api.html?highlight
 <p>This is the expected revert reason given when the transaction fails.
 If the message in the <code class="docutils literal notranslate"><span class="pre">ContractLogicError</span></code> raised by the transaction failure is empty or does not match the <code class="docutils literal notranslate"><span class="pre">expected_message</span></code>, then <code class="docutils literal notranslate"><span class="pre">ape.reverts()</span></code> will raise an <code class="docutils literal notranslate"><span class="pre">AssertionError</span></code>.</p>
 <p>You may also supply an <code class="docutils literal notranslate"><span class="pre">re.Pattern</span></code> object to assert on a message pattern, rather than on an exact match.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Matches explicitly &quot;foo&quot; or &quot;bar&quot;</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">ape</span>
+<span class="kn">import</span> <span class="nn">re</span>
+
+<span class="c1"># Matches explicitly &quot;foo&quot; or &quot;bar&quot;</span>
 <span class="k">with</span> <span class="n">ape</span><span class="o">.</span><span class="n">reverts</span><span class="p">(</span><span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;^(foo|bar)$&quot;</span><span class="p">)):</span>
     <span class="o">...</span>
 </pre></div>
@@ -528,7 +568,9 @@ These can be helpful in optimizing for gas usage and keeping revert reason strin
 </pre></div>
 </div>
 <p>We can explicitly cause a transaction revert and check the failed line by supplying an expected <code class="docutils literal notranslate"><span class="pre">dev_message</span></code>:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">test_authorization</span><span class="p">(</span><span class="n">my_contract</span><span class="p">,</span> <span class="n">owner</span><span class="p">):</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">ape</span>
+
+<span class="k">def</span> <span class="nf">test_authorization</span><span class="p">(</span><span class="n">my_contract</span><span class="p">,</span> <span class="n">owner</span><span class="p">):</span>
     <span class="k">with</span> <span class="n">ape</span><span class="o">.</span><span class="n">reverts</span><span class="p">(</span><span class="n">dev_message</span><span class="o">=</span><span class="s2">&quot;dev: invalid value&quot;</span><span class="p">):</span>
         <span class="n">my_contract</span><span class="o">.</span><span class="n">check_value</span><span class="p">(</span><span class="n">sender</span><span class="o">=</span><span class="n">owner</span><span class="p">)</span>
 </pre></div>
@@ -542,7 +584,9 @@ These can be helpful in optimizing for gas usage and keeping revert reason strin
 </ul>
 <p>Because <code class="docutils literal notranslate"><span class="pre">dev_message</span></code> relies on transaction tracing to function, you must use a provider like <a class="reference external" href="https://github.com/ApeWorX/ape-hardhat">ape-hardhat</a> when testing with <code class="docutils literal notranslate"><span class="pre">dev_message</span></code>.</p>
 <p>You may also supply an <code class="docutils literal notranslate"><span class="pre">re.Pattern</span></code> object to assert on a dev message pattern, rather than on an exact match.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Matches explictly &quot;dev: foo&quot; or &quot;dev: bar&quot;</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">ape</span>
+
+<span class="c1"># Matches explictly &quot;dev: foo&quot; or &quot;dev: bar&quot;</span>
 <span class="k">with</span> <span class="n">ape</span><span class="o">.</span><span class="n">reverts</span><span class="p">(</span><span class="n">dev_message</span><span class="o">=</span><span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;^dev: (foo|bar)$&quot;</span><span class="p">)):</span>
     <span class="o">...</span>
 </pre></div>
@@ -664,11 +708,9 @@ Here is an example of what that may look like:</p>
 <p>To run an entire test using a specific network / provider combination, use the <code class="docutils literal notranslate"><span class="pre">use_network</span></code> pytest marker:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">pytest</span>
 
-
 <span class="nd">@pytest</span><span class="o">.</span><span class="n">mark</span><span class="o">.</span><span class="n">use_network</span><span class="p">(</span><span class="s2">&quot;fantom:local:test&quot;</span><span class="p">)</span>
 <span class="k">def</span> <span class="nf">test_my_fantom_test</span><span class="p">(</span><span class="n">chain</span><span class="p">):</span>
     <span class="k">assert</span> <span class="n">chain</span><span class="o">.</span><span class="n">provider</span><span class="o">.</span><span class="n">network</span><span class="o">.</span><span class="n">ecosystem</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="s2">&quot;fantom&quot;</span>
-
 
 <span class="nd">@pytest</span><span class="o">.</span><span class="n">mark</span><span class="o">.</span><span class="n">use_network</span><span class="p">(</span><span class="s2">&quot;ethereum:local:test&quot;</span><span class="p">)</span>
 <span class="k">def</span> <span class="nf">test_my_ethereum_test</span><span class="p">(</span><span class="n">chain</span><span class="p">):</span>
@@ -693,12 +735,10 @@ Here is an example of what that may look like:</p>
 This is useful if certain fixtures must run in certain networks.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">pytest</span>
 
-
 <span class="nd">@pytest</span><span class="o">.</span><span class="n">fixture</span>
 <span class="k">def</span> <span class="nf">stark_contract</span><span class="p">(</span><span class="n">networks</span><span class="p">,</span> <span class="n">project</span><span class="p">):</span>
     <span class="k">with</span> <span class="n">networks</span><span class="o">.</span><span class="n">parse_network_choice</span><span class="p">(</span><span class="s2">&quot;starknet:local&quot;</span><span class="p">):</span>
         <span class="k">yield</span> <span class="n">project</span><span class="o">.</span><span class="n">MyStarknetContract</span><span class="o">.</span><span class="n">deploy</span><span class="p">()</span>
-
 
 <span class="k">def</span> <span class="nf">test_starknet_thing</span><span class="p">(</span><span class="n">stark_contract</span><span class="p">,</span> <span class="n">stark_account</span><span class="p">):</span>
     <span class="c1"># Uses the starknet connection via the stark_contract fixture</span>
@@ -714,8 +754,9 @@ Thus, you can enter and exit a provider’s context as much as you need in tests
 <section id="gas-reporting">
 <h2>Gas Reporting<a class="headerlink" href="#gas-reporting" title="Permalink to this heading"></a></h2>
 <p>To include a gas report at the end of your tests, you can use the <code class="docutils literal notranslate"><span class="pre">--gas</span></code> flag.
-<strong>NOTE</strong>: This feature requires using a provider with tracing support, such as <a class="reference external" href="https://github.com/ApeWorX/ape-hardhat">ape-hardhat</a>.</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>ape<span class="w"> </span><span class="nb">test</span><span class="w"> </span>--network<span class="w"> </span>ethereum:local:hardhat<span class="w"> </span>--gas
+<strong>NOTE</strong>: This feature works best when using a provider with tracing support, such as <a class="reference external" href="https://github.com/ApeWorX/ape-foundry">ape-foundry</a>.
+When not using a provider with adequate tracing support, such as <code class="docutils literal notranslate"><span class="pre">EthTester</span></code>, gas reporting is limited to receipt-level data.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>ape<span class="w"> </span><span class="nb">test</span><span class="w"> </span>--network<span class="w"> </span>ethereum:local:foundry<span class="w"> </span>--gas
 </pre></div>
 </div>
 <p>At the end of test suite, you will see tables such as:</p>
@@ -727,12 +768,6 @@ Thus, you can enter and exit a provider’s context as much as you need in tests
 <span class="w">  </span>withdraw<span class="w">                    </span><span class="m">2</span><span class="w">   </span><span class="m">28307</span><span class="w">   </span><span class="m">38679</span><span class="w">   </span><span class="m">33493</span><span class="w">    </span><span class="m">33493</span>
 <span class="w">  </span>changeOnStatus<span class="w">              </span><span class="m">2</span><span class="w">   </span><span class="m">23827</span><span class="w">   </span><span class="m">45739</span><span class="w">   </span><span class="m">34783</span><span class="w">    </span><span class="m">34783</span>
 <span class="w">  </span>getSecret<span class="w">                   </span><span class="m">1</span><span class="w">   </span><span class="m">24564</span><span class="w">   </span><span class="m">24564</span><span class="w">   </span><span class="m">24564</span><span class="w">    </span><span class="m">24564</span>
-
-<span class="w">                  </span>Transferring<span class="w"> </span>ETH<span class="w"> </span>Gas
-
-<span class="w">  </span>Method<span class="w">     </span>Times<span class="w"> </span>called<span class="w">   </span>Min.<span class="w">   </span>Max.<span class="w">   </span>Mean<span class="w">   </span>Median
-<span class="w"> </span>───────────────────────────────────────────────────────
-<span class="w">  </span>to:test0<span class="w">              </span><span class="m">2</span><span class="w">   </span><span class="m">2400</span><span class="w">   </span><span class="m">9100</span><span class="w">   </span><span class="m">5750</span><span class="w">     </span><span class="m">5750</span>
 
 <span class="w">                     </span>TestContract<span class="w"> </span>Gas
 
@@ -782,7 +817,8 @@ or changed, then the <code class="docutils literal notranslate"><span class="pre
 <div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>ape<span class="w"> </span><span class="nb">test</span><span class="w"> </span>--coverage
 </pre></div>
 </div>
-<p><strong>NOTE</strong>: Some types of coverage require using a provider that supports transaction tracing, such as <code class="docutils literal notranslate"><span class="pre">ape-hardhat</span></code> or <code class="docutils literal notranslate"><span class="pre">ape-foundry</span></code>.</p>
+<p><strong>NOTE</strong>: Some types of coverage require using a provider that supports transaction tracing, such as <code class="docutils literal notranslate"><span class="pre">ape-hardhat</span></code> or <code class="docutils literal notranslate"><span class="pre">ape-foundry</span></code>.
+Without using a provider with adequate tracing support, coverage is limited to receipt-level data.</p>
 <p>Afterwards, you should see a coverage report looking something like:</p>
 <div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span class="o">=============================================</span><span class="w"> </span>Coverage<span class="w"> </span><span class="nv">Profile</span><span class="w"> </span><span class="o">=============================================</span>
 <span class="w">               </span>Contract<span class="w"> </span>Coverage<span class="w">               </span>

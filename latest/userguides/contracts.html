@@ -192,6 +192,7 @@
 <li class="toctree-l1"><a class="reference internal" href="scripts.html">Scripting</a></li>
 <li class="toctree-l1"><a class="reference internal" href="publishing.html">Publishing</a></li>
 <li class="toctree-l1"><a class="reference internal" href="logging.html">Logging</a></li>
+<li class="toctree-l1"><a class="reference internal" href="trace.html">Traces</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">CLI Reference</span></p>
 <ul>
@@ -205,10 +206,9 @@
 <li class="toctree-l1"><a class="reference internal" href="../commands/run.html">run</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../commands/test.html">test</a></li>
 </ul>
-<p class="caption" role="heading"><span class="caption-text">Python Reference</span></p>
+<p class="caption" role="heading"><span class="caption-text">Core Python Reference</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../methoddocs/ape.html">ape</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../methoddocs/ape_accounts.html">ape-accounts</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../methoddocs/api.html">ape.api</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../methoddocs/cli.html">ape.cli</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../methoddocs/contracts.html">ape.contracts</a></li>
@@ -217,6 +217,12 @@
 <li class="toctree-l1"><a class="reference internal" href="../methoddocs/plugins.html">ape.plugins</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../methoddocs/types.html">ape.types</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../methoddocs/utils.html">ape.utils</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Plugin Python Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../methoddocs/ape_accounts.html">ape-accounts</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../methoddocs/ape_compile.html">ape-compile</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../methoddocs/ape_pm.html">ape-pm</a></li>
 </ul>
 
         </div>
@@ -452,7 +458,7 @@ For this guide, assume we are using the default transaction type in Ape for Ethe
 </pre></div>
 </div>
 <p>Notice that transacting returns a <a class="reference external" href="../methoddocs/api.html#ape.api.transactions.ReceiptAPI">ReceiptAPI</a> object which contains all the receipt data, such as <code class="docutils literal notranslate"><span class="pre">gas_used</span></code>.</p>
-<p><strong>NOTE</strong>: If you need the <code class="docutils literal notranslate"><span class="pre">return_value</span></code> from a transaction, you have to either treat transaction as a call (see the section below!) or use a provider with tracing-features enabled (such as <code class="docutils literal notranslate"><span class="pre">ape-foundry</span></code> or <code class="docutils literal notranslate"><span class="pre">ape-geth</span></code>) and access the <a class="reference external" href="../methoddocs/api.html#ape.api.transactions.ReceiptAPI.return_value">return_value</a> property on the receipt.</p>
+<p><strong>NOTE</strong>: If you need the <code class="docutils literal notranslate"><span class="pre">return_value</span></code> from a transaction, you have to either treat transaction as a call (see the section below!) or use a provider with tracing-features enabled (such as <code class="docutils literal notranslate"><span class="pre">ape-foundry</span></code> or <code class="docutils literal notranslate"><span class="pre">ape-node</span></code>) and access the <a class="reference external" href="../methoddocs/api.html#ape.api.transactions.ReceiptAPI.return_value">return_value</a> property on the receipt.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">assert</span> <span class="n">receipt</span><span class="o">.</span><span class="n">return_value</span> <span class="o">==</span> <span class="mi">123</span>
 </pre></div>
 </div>

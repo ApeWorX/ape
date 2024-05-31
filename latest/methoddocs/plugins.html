@@ -170,6 +170,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../userguides/scripts.html">Scripting</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../userguides/publishing.html">Publishing</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../userguides/logging.html">Logging</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../userguides/trace.html">Traces</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">CLI Reference</span></p>
 <ul>
@@ -183,10 +184,9 @@
 <li class="toctree-l1"><a class="reference internal" href="../commands/run.html">run</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../commands/test.html">test</a></li>
 </ul>
-<p class="caption" role="heading"><span class="caption-text">Python Reference</span></p>
+<p class="caption" role="heading"><span class="caption-text">Core Python Reference</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="ape.html">ape</a></li>
-<li class="toctree-l1"><a class="reference internal" href="ape_accounts.html">ape-accounts</a></li>
 <li class="toctree-l1"><a class="reference internal" href="api.html">ape.api</a></li>
 <li class="toctree-l1"><a class="reference internal" href="cli.html">ape.cli</a></li>
 <li class="toctree-l1"><a class="reference internal" href="contracts.html">ape.contracts</a></li>
@@ -269,6 +269,12 @@
 <li class="toctree-l1"><a class="reference internal" href="types.html">ape.types</a></li>
 <li class="toctree-l1"><a class="reference internal" href="utils.html">ape.utils</a></li>
 </ul>
+<p class="caption" role="heading"><span class="caption-text">Plugin Python Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="ape_accounts.html">ape-accounts</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ape_compile.html">ape-compile</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ape_pm.html">ape-pm</a></li>
+</ul>
 
         </div>
       </div>
@@ -298,7 +304,7 @@
 <span id="ape-plugins"></span><h1>ape.plugins<a class="headerlink" href="#module-ape.plugins" title="Permalink to this heading"></a></h1>
 <dl class="py function">
 <dt class="sig sig-object py" id="ape.plugins.register">
-<span class="sig-prename descclassname"><span class="pre">ape.plugins.</span></span><span class="sig-name descname"><span class="pre">register</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">plugin_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Type</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#ape.plugins.pluggy_patch.PluginType" title="ape.plugins.pluggy_patch.PluginType"><span class="pre">PluginType</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">hookimpl_kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Callable</span></span></span><a class="headerlink" href="#ape.plugins.register" title="Permalink to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">ape.plugins.</span></span><span class="sig-name descname"><span class="pre">register</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">plugin_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">type</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#ape.plugins.pluggy_patch.PluginType" title="ape.plugins.pluggy_patch.PluginType"><span class="pre">ape.plugins.pluggy_patch.PluginType</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">hookimpl_kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Callable</span></span></span><a class="headerlink" href="#ape.plugins.register" title="Permalink to this definition"></a></dt>
 <dd><p>Register your plugin to ape. You must call this decorator to get your plugins
 included in ape’s plugin ecosystem.</p>
 <p>Usage example:</p>
@@ -310,7 +316,7 @@ included in ape’s plugin ecosystem.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>plugin_type</strong> (Type[<a class="reference internal" href="#ape.plugins.pluggy_patch.PluginType" title="ape.plugins.pluggy_patch.PluginType"><code class="xref py py-class docutils literal notranslate"><span class="pre">PluginType</span></code></a>]) – The plugin
+<li><p><strong>plugin_type</strong> (type[<a class="reference internal" href="#ape.plugins.pluggy_patch.PluginType" title="ape.plugins.pluggy_patch.PluginType"><code class="xref py py-class docutils literal notranslate"><span class="pre">PluginType</span></code></a>]) – The plugin
 type to register.</p></li>
 <li><p><strong>hookimpl_kwargs</strong> – Return-values required by the plugin type.</p></li>
 </ul>
@@ -351,7 +357,7 @@ an <a class="reference internal" href="api.html#ape.api.accounts.AccountContaine
 <a class="reference internal" href="api.html#ape.api.accounts.AccountAPI" title="ape.api.accounts.AccountAPI"><code class="xref py py-class docutils literal notranslate"><span class="pre">ape.api.accounts.AccountAPI</span></code></a>.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="ape.plugins.account.AccountPlugin.account_types">
-<span class="sig-name descname"><span class="pre">account_types</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">Type</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="api.html#ape.api.accounts.AccountContainerAPI" title="ape.api.accounts.AccountContainerAPI"><span class="pre">AccountContainerAPI</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Type</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="api.html#ape.api.accounts.AccountAPI" title="ape.api.accounts.AccountAPI"><span class="pre">AccountAPI</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#ape.plugins.account.AccountPlugin.account_types" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">account_types</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">type</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="api.html#ape.api.accounts.AccountContainerAPI" title="ape.api.accounts.AccountContainerAPI"><span class="pre">ape.api.accounts.AccountContainerAPI</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">type</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="api.html#ape.api.accounts.AccountAPI" title="ape.api.accounts.AccountAPI"><span class="pre">ape.api.accounts.AccountAPI</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#ape.plugins.account.AccountPlugin.account_types" title="Permalink to this definition"></a></dt>
 <dd><p>A hook for returning a tuple of an account container and an account type.
 Each account-base plugin defines and returns their own types here.</p>
 <p>Usage example:</p>
@@ -362,8 +368,8 @@ Each account-base plugin defines and returns their own types here.</p>
 </div>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>Tuple[Type[<a class="reference internal" href="api.html#ape.api.accounts.AccountContainerAPI" title="ape.api.accounts.AccountContainerAPI"><code class="xref py py-class docutils literal notranslate"><span class="pre">AccountContainerAPI</span></code></a>],
-Type[<a class="reference internal" href="api.html#ape.api.accounts.AccountAPI" title="ape.api.accounts.AccountAPI"><code class="xref py py-class docutils literal notranslate"><span class="pre">AccountAPI</span></code></a>]]</p>
+<dd class="field-odd"><p>tuple[type[<a class="reference internal" href="api.html#ape.api.accounts.AccountContainerAPI" title="ape.api.accounts.AccountContainerAPI"><code class="xref py py-class docutils literal notranslate"><span class="pre">AccountContainerAPI</span></code></a>],
+type[<a class="reference internal" href="api.html#ape.api.accounts.AccountAPI" title="ape.api.accounts.AccountAPI"><code class="xref py py-class docutils literal notranslate"><span class="pre">AccountAPI</span></code></a>]]</p>
 </dd>
 </dl>
 </dd></dl>
@@ -382,7 +388,7 @@ as the <a class="reference external" href="https://github.com/ApeWorX/ape-solidi
 or the <a class="reference external" href="https://github.com/ApeWorX/ape-vyper">ape-vyper plugin</a>.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="ape.plugins.compiler.CompilerPlugin.register_compiler">
-<span class="sig-name descname"><span class="pre">register_compiler</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Type</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="api.html#ape.api.compiler.CompilerAPI" title="ape.api.compiler.CompilerAPI"><span class="pre">CompilerAPI</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#ape.plugins.compiler.CompilerPlugin.register_compiler" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">register_compiler</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">type</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="api.html#ape.api.compiler.CompilerAPI" title="ape.api.compiler.CompilerAPI"><span class="pre">ape.api.compiler.CompilerAPI</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#ape.plugins.compiler.CompilerPlugin.register_compiler" title="Permalink to this definition"></a></dt>
 <dd><p>A hook for returning the set of file extensions the plugin handles
 and the compiler class that can be used to compile them.</p>
 <p>Usage example:</p>
@@ -393,7 +399,7 @@ and the compiler class that can be used to compile them.</p>
 </div>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>Tuple[Tuple[str], Type[<code class="xref py py-class docutils literal notranslate"><span class="pre">CompilerAPI</span></code>]]</p>
+<dd class="field-odd"><p>tuple[tuple[str], type[<code class="xref py py-class docutils literal notranslate"><span class="pre">CompilerAPI</span></code>]]</p>
 </dd>
 </dl>
 </dd></dl>
@@ -413,7 +419,7 @@ See the <a class="reference internal" href="managers.html#ape.managers.config.Co
 information on the <code class="docutils literal notranslate"><span class="pre">ape-config.yaml</span></code>.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="ape.plugins.config.Config.config_class">
-<span class="sig-name descname"><span class="pre">config_class</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Type</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="api.html#ape.api.config.PluginConfig" title="ape.api.config.PluginConfig"><span class="pre">PluginConfig</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#ape.plugins.config.Config.config_class" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">config_class</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">type</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="api.html#ape.api.config.PluginConfig" title="ape.api.config.PluginConfig"><span class="pre">ape.api.config.PluginConfig</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#ape.plugins.config.Config.config_class" title="Permalink to this definition"></a></dt>
 <dd><p>A hook that returns a <a class="reference internal" href="api.html#ape.api.config.PluginConfig" title="ape.api.config.PluginConfig"><code class="xref py py-class docutils literal notranslate"><span class="pre">PluginConfig</span></code></a> parser class that can be
 used to deconstruct the user config options for this plugins.</p>
 <p><strong>NOTE</strong>: If none are specified, all injected <a class="reference internal" href="api.html#ape.api.config.PluginConfig" title="ape.api.config.PluginConfig"><code class="xref py py-class docutils literal notranslate"><span class="pre">ape.api.config.PluginConfig</span></code></a>’s
@@ -426,7 +432,7 @@ are empty.</p>
 </div>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>Type[<a class="reference internal" href="api.html#ape.api.config.PluginConfig" title="ape.api.config.PluginConfig"><code class="xref py py-class docutils literal notranslate"><span class="pre">PluginConfig</span></code></a>]</p>
+<dd class="field-odd"><p>type[<a class="reference internal" href="api.html#ape.api.config.PluginConfig" title="ape.api.config.PluginConfig"><code class="xref py py-class docutils literal notranslate"><span class="pre">PluginConfig</span></code></a>]</p>
 </dd>
 </dl>
 </dd></dl>
@@ -444,7 +450,7 @@ are empty.</p>
 plugin is an example of a conversion-plugin.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="ape.plugins.converter.ConversionPlugin.converters">
-<span class="sig-name descname"><span class="pre">converters</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Iterator</span><span class="p"><span class="pre">[</span></span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Type</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="api.html#ape.api.convert.ConverterAPI" title="ape.api.convert.ConverterAPI"><span class="pre">ConverterAPI</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#ape.plugins.converter.ConversionPlugin.converters" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">converters</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Iterator</span><span class="p"><span class="pre">[</span></span><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">type</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="api.html#ape.api.convert.ConverterAPI" title="ape.api.convert.ConverterAPI"><span class="pre">ape.api.convert.ConverterAPI</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#ape.plugins.converter.ConversionPlugin.converters" title="Permalink to this definition"></a></dt>
 <dd><p>A hook that returns an iterator of tuples of a string ABI type and a
 <code class="docutils literal notranslate"><span class="pre">ConverterAPI</span></code> subclass.</p>
 <p>Usage example:</p>
@@ -455,7 +461,7 @@ plugin is an example of a conversion-plugin.</p>
 </div>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>Iterator[tuple[str, Type[<a class="reference internal" href="api.html#ape.api.convert.ConverterAPI" title="ape.api.convert.ConverterAPI"><code class="xref py py-class docutils literal notranslate"><span class="pre">ConverterAPI</span></code></a>]]]</p>
+<dd class="field-odd"><p>Iterator[tuple[str, type[<a class="reference internal" href="api.html#ape.api.convert.ConverterAPI" title="ape.api.convert.ConverterAPI"><code class="xref py py-class docutils literal notranslate"><span class="pre">ConverterAPI</span></code></a>]]]</p>
 </dd>
 </dl>
 </dd></dl>
@@ -474,7 +480,7 @@ plugin is an example of a conversion-plugin.</p>
 what is required to implement an ecosystem plugin.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="ape.plugins.network.EcosystemPlugin.ecosystems">
-<span class="sig-name descname"><span class="pre">ecosystems</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Iterator</span><span class="p"><span class="pre">[</span></span><span class="pre">Type</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="api.html#ape.api.networks.EcosystemAPI" title="ape.api.networks.EcosystemAPI"><span class="pre">EcosystemAPI</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#ape.plugins.network.EcosystemPlugin.ecosystems" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">ecosystems</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Iterator</span><span class="p"><span class="pre">[</span></span><span class="pre">type</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="api.html#ape.api.networks.EcosystemAPI" title="ape.api.networks.EcosystemAPI"><span class="pre">ape.api.networks.EcosystemAPI</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#ape.plugins.network.EcosystemPlugin.ecosystems" title="Permalink to this definition"></a></dt>
 <dd><p>A hook that must return an iterator of <a class="reference internal" href="api.html#ape.api.networks.EcosystemAPI" title="ape.api.networks.EcosystemAPI"><code class="xref py py-class docutils literal notranslate"><span class="pre">ape.api.networks.EcosystemAPI</span></code></a>
 subclasses.</p>
 <p>Usage example:</p>
@@ -485,7 +491,7 @@ subclasses.</p>
 </div>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>Iterator[Type[<a class="reference internal" href="api.html#ape.api.networks.EcosystemAPI" title="ape.api.networks.EcosystemAPI"><code class="xref py py-class docutils literal notranslate"><span class="pre">EcosystemAPI</span></code></a>]]</p>
+<dd class="field-odd"><p>Iterator[type[<a class="reference internal" href="api.html#ape.api.networks.EcosystemAPI" title="ape.api.networks.EcosystemAPI"><code class="xref py py-class docutils literal notranslate"><span class="pre">EcosystemAPI</span></code></a>]]</p>
 </dd>
 </dl>
 </dd></dl>
@@ -500,7 +506,7 @@ subclasses.</p>
 <a class="reference external" href="https://github.com/ApeWorX/ape-etherscan">ape-etherscan</a>.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="ape.plugins.network.ExplorerPlugin.explorers">
-<span class="sig-name descname"><span class="pre">explorers</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Iterator</span><span class="p"><span class="pre">[</span></span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Type</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="api.html#ape.api.explorers.ExplorerAPI" title="ape.api.explorers.ExplorerAPI"><span class="pre">ExplorerAPI</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#ape.plugins.network.ExplorerPlugin.explorers" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">explorers</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Iterator</span><span class="p"><span class="pre">[</span></span><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">type</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="api.html#ape.api.explorers.ExplorerAPI" title="ape.api.explorers.ExplorerAPI"><span class="pre">ape.api.explorers.ExplorerAPI</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#ape.plugins.network.ExplorerPlugin.explorers" title="Permalink to this definition"></a></dt>
 <dd><p>A hook that must return an iterator of tuples of:</p>
 <ul class="simple">
 <li><p>the target ecosystem plugin’s name</p></li>
@@ -515,7 +521,7 @@ subclasses.</p>
 </div>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>Iterator[tuple[str, str, Type[<a class="reference internal" href="api.html#ape.api.explorers.ExplorerAPI" title="ape.api.explorers.ExplorerAPI"><code class="xref py py-class docutils literal notranslate"><span class="pre">ape.api.explorers.ExplorerAPI</span></code></a>]]]</p>
+<dd class="field-odd"><p>Iterator[tuple[str, str, type[<a class="reference internal" href="api.html#ape.api.explorers.ExplorerAPI" title="ape.api.explorers.ExplorerAPI"><code class="xref py py-class docutils literal notranslate"><span class="pre">ape.api.explorers.ExplorerAPI</span></code></a>]]]</p>
 </dd>
 </dl>
 </dd></dl>
@@ -531,7 +537,7 @@ will happen soon after registering the ecosystem, as an ecosystem requires
 networks.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="ape.plugins.network.NetworkPlugin.networks">
-<span class="sig-name descname"><span class="pre">networks</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Iterator</span><span class="p"><span class="pre">[</span></span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Type</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="api.html#ape.api.networks.NetworkAPI" title="ape.api.networks.NetworkAPI"><span class="pre">NetworkAPI</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#ape.plugins.network.NetworkPlugin.networks" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">networks</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Iterator</span><span class="p"><span class="pre">[</span></span><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">type</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="api.html#ape.api.networks.NetworkAPI" title="ape.api.networks.NetworkAPI"><span class="pre">ape.api.networks.NetworkAPI</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#ape.plugins.network.NetworkPlugin.networks" title="Permalink to this definition"></a></dt>
 <dd><p>A hook that must return an iterator of tuples of:</p>
 <ul class="simple">
 <li><p>the target ecosystem plugin’s name</p></li>
@@ -546,7 +552,7 @@ networks.</p>
 </div>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>Iterator[tuple[str, str, Type[<a class="reference internal" href="api.html#ape.api.networks.NetworkAPI" title="ape.api.networks.NetworkAPI"><code class="xref py py-class docutils literal notranslate"><span class="pre">NetworkAPI</span></code></a>]]]</p>
+<dd class="field-odd"><p>Iterator[tuple[str, str, type[<a class="reference internal" href="api.html#ape.api.networks.NetworkAPI" title="ape.api.networks.NetworkAPI"><code class="xref py py-class docutils literal notranslate"><span class="pre">NetworkAPI</span></code></a>]]]</p>
 </dd>
 </dl>
 </dd></dl>
@@ -563,7 +569,7 @@ include <a class="reference external" href="https://github.com/ApeWorX/ape-infur
 <a class="reference external" href="https://github.com/ApeWorX/ape-alchemy">ape-alchemy</a>.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="ape.plugins.network.ProviderPlugin.providers">
-<span class="sig-name descname"><span class="pre">providers</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Iterator</span><span class="p"><span class="pre">[</span></span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Type</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="api.html#ape.api.providers.ProviderAPI" title="ape.api.providers.ProviderAPI"><span class="pre">ProviderAPI</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#ape.plugins.network.ProviderPlugin.providers" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">providers</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Iterator</span><span class="p"><span class="pre">[</span></span><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">type</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="api.html#ape.api.providers.ProviderAPI" title="ape.api.providers.ProviderAPI"><span class="pre">ape.api.providers.ProviderAPI</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#ape.plugins.network.ProviderPlugin.providers" title="Permalink to this definition"></a></dt>
 <dd><p>A hook that must return an iterator of tuples of:</p>
 <ul class="simple">
 <li><p>the target ecosystem plugin’s name</p></li>
@@ -578,7 +584,7 @@ include <a class="reference external" href="https://github.com/ApeWorX/ape-infur
 </div>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>Iterator[tuple[str, str, Type[<a class="reference internal" href="api.html#ape.api.providers.ProviderAPI" title="ape.api.providers.ProviderAPI"><code class="xref py py-class docutils literal notranslate"><span class="pre">ProviderAPI</span></code></a>]]]</p>
+<dd class="field-odd"><p>Iterator[tuple[str, str, type[<a class="reference internal" href="api.html#ape.api.providers.ProviderAPI" title="ape.api.providers.ProviderAPI"><code class="xref py py-class docutils literal notranslate"><span class="pre">ProviderAPI</span></code></a>]]]</p>
 </dd>
 </dl>
 </dd></dl>
@@ -596,7 +602,7 @@ include <a class="reference external" href="https://github.com/ApeWorX/ape-infur
 <a class="reference internal" href="#ape.plugins.project.ProjectPlugin" title="ape.plugins.project.ProjectPlugin"><code class="xref py py-class docutils literal notranslate"><span class="pre">ProjectPlugin</span></code></a> implementations.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="ape.plugins.project.DependencyPlugin.dependencies">
-<span class="sig-name descname"><span class="pre">dependencies</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Type</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="api.html#ape.api.projects.DependencyAPI" title="ape.api.projects.DependencyAPI"><span class="pre">DependencyAPI</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#ape.plugins.project.DependencyPlugin.dependencies" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">dependencies</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">type</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="api.html#ape.api.projects.DependencyAPI" title="ape.api.projects.DependencyAPI"><span class="pre">ape.api.projects.DependencyAPI</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#ape.plugins.project.DependencyPlugin.dependencies" title="Permalink to this definition"></a></dt>
 <dd><p>A hook that returns a <a class="reference internal" href="api.html#ape.api.projects.DependencyAPI" title="ape.api.projects.DependencyAPI"><code class="xref py py-class docutils literal notranslate"><span class="pre">DependencyAPI</span></code></a> mapped
 to its <code class="docutils literal notranslate"><span class="pre">ape-config.yaml</span></code> file dependencies special key. For example,
 when configuring GitHub dependencies, you set the <code class="docutils literal notranslate"><span class="pre">github</span></code> key in
@@ -604,7 +610,7 @@ the <code class="docutils literal notranslate"><span class="pre">dependencies:</
 will automatically use this <code class="docutils literal notranslate"><span class="pre">DependencyAPI</span></code> implementation.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>Type[<a class="reference internal" href="api.html#ape.api.projects.DependencyAPI" title="ape.api.projects.DependencyAPI"><code class="xref py py-class docutils literal notranslate"><span class="pre">DependencyAPI</span></code></a>]</p>
+<dd class="field-odd"><p>type[<a class="reference internal" href="api.html#ape.api.projects.DependencyAPI" title="ape.api.projects.DependencyAPI"><code class="xref py py-class docutils literal notranslate"><span class="pre">DependencyAPI</span></code></a>]</p>
 </dd>
 </dl>
 </dd></dl>
@@ -616,17 +622,17 @@ will automatically use this <code class="docutils literal notranslate"><span cla
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ape.plugins.project.</span></span><span class="sig-name descname"><span class="pre">ProjectPlugin</span></span><a class="headerlink" href="#ape.plugins.project.ProjectPlugin" title="Permalink to this definition"></a></dt>
 <dd><p>Bases: <a class="reference internal" href="#ape.plugins.pluggy_patch.PluginType" title="ape.plugins.pluggy_patch.PluginType"><code class="xref py py-class docutils literal notranslate"><span class="pre">PluginType</span></code></a></p>
 <p>A plugin for converting files to a <code class="docutils literal notranslate"><span class="pre">PackageManifest</span></code>.
-The default project plugin is the <code class="xref py py-class docutils literal notranslate"><span class="pre">ApeProject</span></code>.
+The default project plugin is the <a class="reference internal" href="api.html#ape.api.projects.ApeProject" title="ape.api.projects.ApeProject"><code class="xref py py-class docutils literal notranslate"><span class="pre">ApeProject</span></code></a>.
 Otherwise, you can define your own project implementation for converting
 a set of files to a <code class="docutils literal notranslate"><span class="pre">PackageManifest</span></code>, such as one that resolves dependencies
 via <code class="docutils literal notranslate"><span class="pre">.gitmodules</span></code>.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="ape.plugins.project.ProjectPlugin.projects">
-<span class="sig-name descname"><span class="pre">projects</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Iterator</span><span class="p"><span class="pre">[</span></span><span class="pre">Type</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="api.html#ape.api.projects.ProjectAPI" title="ape.api.projects.ProjectAPI"><span class="pre">ProjectAPI</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#ape.plugins.project.ProjectPlugin.projects" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">projects</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Iterator</span><span class="p"><span class="pre">[</span></span><span class="pre">type</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="api.html#ape.api.projects.ProjectAPI" title="ape.api.projects.ProjectAPI"><span class="pre">ape.api.projects.ProjectAPI</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#ape.plugins.project.ProjectPlugin.projects" title="Permalink to this definition"></a></dt>
 <dd><p>A hook that returns a <a class="reference internal" href="api.html#ape.api.projects.ProjectAPI" title="ape.api.projects.ProjectAPI"><code class="xref py py-class docutils literal notranslate"><span class="pre">ProjectAPI</span></code></a> subclass type.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>Type[<a class="reference internal" href="api.html#ape.api.projects.ProjectAPI" title="ape.api.projects.ProjectAPI"><code class="xref py py-class docutils literal notranslate"><span class="pre">ProjectAPI</span></code></a>]</p>
+<dd class="field-odd"><p>type[<a class="reference internal" href="api.html#ape.api.projects.ProjectAPI" title="ape.api.projects.ProjectAPI"><code class="xref py py-class docutils literal notranslate"><span class="pre">ProjectAPI</span></code></a>]</p>
 </dd>
 </dl>
 </dd></dl>
@@ -643,7 +649,7 @@ via <code class="docutils literal notranslate"><span class="pre">.gitmodules</sp
 <p>A plugin for querying chains.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="ape.plugins.query.QueryPlugin.query_engines">
-<span class="sig-name descname"><span class="pre">query_engines</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Iterator</span><span class="p"><span class="pre">[</span></span><span class="pre">Type</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="api.html#ape.api.query.QueryAPI" title="ape.api.query.QueryAPI"><span class="pre">QueryAPI</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#ape.plugins.query.QueryPlugin.query_engines" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">query_engines</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Iterator</span><span class="p"><span class="pre">[</span></span><span class="pre">type</span><span class="p"><span class="pre">[</span></span><span class="s"><span class="pre">'QueryAPI'</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#ape.plugins.query.QueryPlugin.query_engines" title="Permalink to this definition"></a></dt>
 <dd><p>A hook that returns an iterator of types of a <code class="docutils literal notranslate"><span class="pre">QueryAPI</span></code> subclasses</p>
 <p>Usage example:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nd">@plugins</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">plugins</span><span class="o">.</span><span class="n">QueryPlugin</span><span class="p">)</span>
@@ -653,7 +659,7 @@ via <code class="docutils literal notranslate"><span class="pre">.gitmodules</sp
 </div>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>Iterator[Type[<a class="reference internal" href="api.html#ape.api.query.QueryAPI" title="ape.api.query.QueryAPI"><code class="xref py py-class docutils literal notranslate"><span class="pre">QueryAPI</span></code></a>]]</p>
+<dd class="field-odd"><p>Iterator[type[<a class="reference internal" href="api.html#ape.api.query.QueryAPI" title="ape.api.query.QueryAPI"><code class="xref py py-class docutils literal notranslate"><span class="pre">QueryAPI</span></code></a>]]</p>
 </dd>
 </dl>
 </dd></dl>

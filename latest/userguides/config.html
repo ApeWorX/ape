@@ -180,6 +180,7 @@
 <li class="toctree-l1"><a class="reference internal" href="scripts.html">Scripting</a></li>
 <li class="toctree-l1"><a class="reference internal" href="publishing.html">Publishing</a></li>
 <li class="toctree-l1"><a class="reference internal" href="logging.html">Logging</a></li>
+<li class="toctree-l1"><a class="reference internal" href="trace.html">Traces</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">CLI Reference</span></p>
 <ul>
@@ -193,10 +194,9 @@
 <li class="toctree-l1"><a class="reference internal" href="../commands/run.html">run</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../commands/test.html">test</a></li>
 </ul>
-<p class="caption" role="heading"><span class="caption-text">Python Reference</span></p>
+<p class="caption" role="heading"><span class="caption-text">Core Python Reference</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../methoddocs/ape.html">ape</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../methoddocs/ape_accounts.html">ape-accounts</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../methoddocs/api.html">ape.api</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../methoddocs/cli.html">ape.cli</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../methoddocs/contracts.html">ape.contracts</a></li>
@@ -205,6 +205,12 @@
 <li class="toctree-l1"><a class="reference internal" href="../methoddocs/plugins.html">ape.plugins</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../methoddocs/types.html">ape.types</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../methoddocs/utils.html">ape.utils</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Plugin Python Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../methoddocs/ape_accounts.html">ape-accounts</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../methoddocs/ape_compile.html">ape-compile</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../methoddocs/ape_pm.html">ape-pm</a></li>
 </ul>
 
         </div>
@@ -315,8 +321,8 @@ For example, to change the URI for an Ethereum network, do:</p>
 <span class="w">      </span><span class="nt">uri</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">http://localhost:5030</span>
 </pre></div>
 </div>
-<p>Now, the <code class="docutils literal notranslate"><span class="pre">ape-geth</span></code> core plugin will use the URL <code class="docutils literal notranslate"><span class="pre">http://localhost:5030</span></code> to connect and make requests.</p>
-<p><strong>WARN</strong>: Instead of using <code class="docutils literal notranslate"><span class="pre">ape-geth</span></code> to connect to an Infura or Alchemy node, use the <a class="reference external" href="https://github.com/ApeWorX/ape-infura">ape-infura</a> or <a class="reference external" href="https://github.com/ApeWorX/ape-alchemy">ape-alchemy</a> provider plugins instead, which have their own way of managing API keys via environment variables.</p>
+<p>Now, the <code class="docutils literal notranslate"><span class="pre">ape-node</span></code> core plugin will use the URL <code class="docutils literal notranslate"><span class="pre">http://localhost:5030</span></code> to connect and make requests.</p>
+<p><strong>WARN</strong>: Instead of using <code class="docutils literal notranslate"><span class="pre">ape-node</span></code> to connect to an Infura or Alchemy node, use the <a class="reference external" href="https://github.com/ApeWorX/ape-infura">ape-infura</a> or <a class="reference external" href="https://github.com/ApeWorX/ape-alchemy">ape-alchemy</a> provider plugins instead, which have their own way of managing API keys via environment variables.</p>
 <p>For more information on networking as a whole, see <a class="reference external" href="./networks.html">this guide</a>.</p>
 </section>
 <section id="networks">

@@ -177,6 +177,7 @@
 </li>
 <li class="toctree-l1"><a class="reference internal" href="publishing.html">Publishing</a></li>
 <li class="toctree-l1"><a class="reference internal" href="logging.html">Logging</a></li>
+<li class="toctree-l1"><a class="reference internal" href="trace.html">Traces</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">CLI Reference</span></p>
 <ul>
@@ -190,10 +191,9 @@
 <li class="toctree-l1"><a class="reference internal" href="../commands/run.html">run</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../commands/test.html">test</a></li>
 </ul>
-<p class="caption" role="heading"><span class="caption-text">Python Reference</span></p>
+<p class="caption" role="heading"><span class="caption-text">Core Python Reference</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../methoddocs/ape.html">ape</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../methoddocs/ape_accounts.html">ape-accounts</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../methoddocs/api.html">ape.api</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../methoddocs/cli.html">ape.cli</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../methoddocs/contracts.html">ape.contracts</a></li>
@@ -202,6 +202,12 @@
 <li class="toctree-l1"><a class="reference internal" href="../methoddocs/plugins.html">ape.plugins</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../methoddocs/types.html">ape.types</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../methoddocs/utils.html">ape.utils</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Plugin Python Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../methoddocs/ape_accounts.html">ape-accounts</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../methoddocs/ape_compile.html">ape-compile</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../methoddocs/ape_pm.html">ape-pm</a></li>
 </ul>
 
         </div>
@@ -290,11 +296,11 @@ To learn more about how to control the network-context in Ape Pythonically, see 
 
 <span class="nd">@click</span><span class="o">.</span><span class="n">command</span><span class="p">()</span>
 <span class="nd">@ape_cli_context</span><span class="p">()</span>
-<span class="k">def</span> <span class="nf">cli</span><span class="p">(</span><span class="n">cli_ctx</span><span class="p">):</span>        
+<span class="k">def</span> <span class="nf">cli</span><span class="p">(</span><span class="n">cli_ctx</span><span class="p">):</span>
     <span class="c1"># There is no connection yet at this point.</span>
     <span class="n">testnets</span> <span class="o">=</span> <span class="p">{</span>
         <span class="s2">&quot;ethereum&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;sepolia&quot;</span><span class="p">],</span>
-        <span class="s2">&quot;polygon&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;mumbai&quot;</span><span class="p">]</span>
+        <span class="s2">&quot;polygon&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;amoy&quot;</span><span class="p">]</span>
     <span class="p">}</span>
     <span class="n">nm</span> <span class="o">=</span> <span class="n">cli_ctx</span><span class="o">.</span><span class="n">network_manager</span>
 
@@ -346,7 +352,7 @@ Therefore, they are not ideal for multi-chain scripts.
 </div>
 <p>Without specifying <code class="docutils literal notranslate"><span class="pre">--network</span></code>, the script with connect to your default network.
 Else, specify the network using the <code class="docutils literal notranslate"><span class="pre">--network</span></code> flag:</p>
-<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>ape<span class="w"> </span>run<span class="w"> </span>foobar<span class="w"> </span>--network<span class="w"> </span>polygon:mumbai:alchemy
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>ape<span class="w"> </span>run<span class="w"> </span>foobar<span class="w"> </span>--network<span class="w"> </span>polygon:amoy:alchemy
 </pre></div>
 </div>
 <p>You can also change networks within the script using the <code class="docutils literal notranslate"><span class="pre">ProviderContextManager</span></code> (see examples in the CLI-script section above).

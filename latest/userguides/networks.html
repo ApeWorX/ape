@@ -194,6 +194,7 @@
 <li class="toctree-l1"><a class="reference internal" href="scripts.html">Scripting</a></li>
 <li class="toctree-l1"><a class="reference internal" href="publishing.html">Publishing</a></li>
 <li class="toctree-l1"><a class="reference internal" href="logging.html">Logging</a></li>
+<li class="toctree-l1"><a class="reference internal" href="trace.html">Traces</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">CLI Reference</span></p>
 <ul>
@@ -207,10 +208,9 @@
 <li class="toctree-l1"><a class="reference internal" href="../commands/run.html">run</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../commands/test.html">test</a></li>
 </ul>
-<p class="caption" role="heading"><span class="caption-text">Python Reference</span></p>
+<p class="caption" role="heading"><span class="caption-text">Core Python Reference</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../methoddocs/ape.html">ape</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../methoddocs/ape_accounts.html">ape-accounts</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../methoddocs/api.html">ape.api</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../methoddocs/cli.html">ape.cli</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../methoddocs/contracts.html">ape.contracts</a></li>
@@ -219,6 +219,12 @@
 <li class="toctree-l1"><a class="reference internal" href="../methoddocs/plugins.html">ape.plugins</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../methoddocs/types.html">ape.types</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../methoddocs/utils.html">ape.utils</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Plugin Python Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../methoddocs/ape_accounts.html">ape-accounts</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../methoddocs/ape_compile.html">ape-compile</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../methoddocs/ape_pm.html">ape-pm</a></li>
 </ul>
 
         </div>
@@ -247,7 +253,7 @@
              
   <section id="networks">
 <h1>Networks<a class="headerlink" href="#networks" title="Permalink to this heading"></a></h1>
-<p>When interacting with a blockchain, you will have to select an ecosystem (e.g. Ethereum, Arbitrum, or Fantom), a network (e.g. Mainnet or Sepolia) and a provider (e.g. Eth-Tester, Geth, or Alchemy).
+<p>When interacting with a blockchain, you will have to select an ecosystem (e.g. Ethereum, Arbitrum, or Fantom), a network (e.g. Mainnet or Sepolia) and a provider (e.g. Eth-Tester, Node (Geth), or Alchemy).
 Networks are part of ecosystems and typically defined in plugins.
 For example, the <code class="docutils literal notranslate"><span class="pre">ape-ethereum</span></code> plugin comes with Ape and can be used for handling EVM-like behavior.</p>
 <section id="selecting-a-network">
@@ -259,7 +265,7 @@ No matter what type of network you are using in Ape, you specify the network usi
 </div>
 <p>Where <code class="docutils literal notranslate"><span class="pre">ecosystem-name</span></code> refers to the ecosystem, e.g. <code class="docutils literal notranslate"><span class="pre">ethereum</span></code>, <code class="docutils literal notranslate"><span class="pre">polygon</span></code>, <code class="docutils literal notranslate"><span class="pre">fantom</span></code>, or any valid ecosystem plugin name.
 The <code class="docutils literal notranslate"><span class="pre">network-name</span></code> refers to a network such as <code class="docutils literal notranslate"><span class="pre">mainnet</span></code>, <code class="docutils literal notranslate"><span class="pre">local</span></code>, or something else defined by your ecosystem or custom network config.
-And <code class="docutils literal notranslate"><span class="pre">provider-name</span></code> refers to the provider plugin in Ape, such as <code class="docutils literal notranslate"><span class="pre">geth</span></code> for a generic node or <code class="docutils literal notranslate"><span class="pre">foundry</span></code> if the network is more Anvil-based, or a different plugin altogether.</p>
+And <code class="docutils literal notranslate"><span class="pre">provider-name</span></code> refers to the provider plugin in Ape, such as <code class="docutils literal notranslate"><span class="pre">node</span></code> for a generic node or <code class="docutils literal notranslate"><span class="pre">foundry</span></code> if the network is more Anvil-based, or a different plugin altogether.</p>
 <p>Commonly, the network triplet value is specified via the <code class="docutils literal notranslate"><span class="pre">--network</span></code> option in Ape CLI commands.
 The following is a list of common Ape commands that can use the <code class="docutils literal notranslate"><span class="pre">--network</span></code> option:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>ape<span class="w"> </span><span class="nb">test</span><span class="w"> </span>--network<span class="w"> </span>ethereum:local:foundry
@@ -330,8 +336,8 @@ This logic does not have to live in the base <code class="docutils literal notra
 </tbody>
 </table>
 <p><strong>NOTE</strong>: If you are connecting an L2 network or any other network that does not have a plugin, you can use the custom network support, which is described in the <a class="reference external" href="#custom-network-connection">next section</a>.</p>
-<p>Once you have the L2 network plugin installed, you can configure its node’s URI by setting the values in the <code class="docutils literal notranslate"><span class="pre">geth</span></code> (default node) core plugin via your <code class="docutils literal notranslate"><span class="pre">ape-config.yaml</span></code> file:</p>
-<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">geth</span><span class="p">:</span>
+<p>Once you have the L2 network plugin installed, you can configure its node’s URI by setting the values in the <code class="docutils literal notranslate"><span class="pre">node</span></code> core plugin via your <code class="docutils literal notranslate"><span class="pre">ape-config.yaml</span></code> file:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">node</span><span class="p">:</span>
 <span class="w">  </span><span class="nt">&lt;ecosystem-name&gt;</span><span class="p">:</span>
 <span class="w">    </span><span class="nt">&lt;network-name&gt;</span><span class="p">:</span>
 <span class="w">      </span><span class="nt">uri</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">https://path.to.node.example.com</span>
@@ -364,7 +370,7 @@ More information about configuring Ape (in general) can be found <a class="refer
 <span class="w">       </span><span class="nt">chain_id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">109</span><span class="w">                   </span><span class="c1"># Required</span>
 <span class="w">       </span><span class="nt">ecosystem</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">shibarium</span><span class="w">            </span><span class="c1"># The ecosystem name, can either be new or an existing</span>
 <span class="w">       </span><span class="nt">base_ecosystem_plugin</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">polygon</span><span class="w">  </span><span class="c1"># The ecosystem base-class, defaults to the default ecosystem</span>
-<span class="w">       </span><span class="nt">default_provider</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">geth</span><span class="w">          </span><span class="c1"># Default is the generic node provider</span>
+<span class="w">       </span><span class="nt">default_provider</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">node</span><span class="w">          </span><span class="c1"># Default is the generic node provider</span>
 </pre></div>
 </div>
 <p>The following paragraphs explain the different parameters of the custom network config.</p>
@@ -404,13 +410,13 @@ For example, if the RPC URL is <code class="docutils literal notranslate"><span 
 <span class="w">      </span><span class="nt">base_ecosystem_plugin</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">polygon</span><span class="w">  </span><span class="c1"># Closest base class.</span>
 <span class="w">      </span><span class="nt">chain_id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">109</span><span class="w">  </span><span class="c1"># This must be correct or txns will fail.</span>
 
-<span class="nt">geth</span><span class="p">:</span>
+<span class="nt">node</span><span class="p">:</span>
 <span class="w">  </span><span class="nt">shibarium</span><span class="p">:</span>
 <span class="w">    </span><span class="nt">mainnet</span><span class="p">:</span>
 <span class="w">      </span><span class="nt">uri</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">https://www.shibrpc.com</span>
 </pre></div>
 </div>
-<p>Now, when using <code class="docutils literal notranslate"><span class="pre">ethereum:apenet:geth</span></code>, it will connect to the RPC URL <code class="docutils literal notranslate"><span class="pre">https://apenet.example.com/rpc</span></code>.</p>
+<p>Now, when using <code class="docutils literal notranslate"><span class="pre">ethereum:apenet:node</span></code>, it will connect to the RPC URL <code class="docutils literal notranslate"><span class="pre">https://apenet.example.com/rpc</span></code>.</p>
 </section>
 <section id="explorer-url">
 <h4>Explorer URL<a class="headerlink" href="#explorer-url" title="Permalink to this heading"></a></h4>
@@ -420,14 +426,14 @@ For example, let’s say you added the following network:</p>
 <span class="w">  </span><span class="nt">custom</span><span class="p">:</span>
 <span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">customnetwork</span>
 <span class="w">      </span><span class="nt">chain_id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">31337</span>
-<span class="w">      </span><span class="nt">default_provider</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">geth</span>
+<span class="w">      </span><span class="nt">default_provider</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">node</span>
 </pre></div>
 </div>
 <p>To add a corresponding entry in <code class="docutils literal notranslate"><span class="pre">ape-etherscan</span></code> (assuming you are using <code class="docutils literal notranslate"><span class="pre">ape-etherscan</span></code> as your explorer plugin), add the following to your <code class="docutils literal notranslate"><span class="pre">ape-config.yaml</span></code> file:</p>
 <div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">etherscan</span><span class="p">:</span>
 <span class="w">  </span><span class="nt">ethereum</span><span class="p">:</span>
 <span class="w">    </span><span class="nt">rate_limit</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">15</span><span class="w">  </span><span class="c1"># Configure a rate limit that makes sense for retry logic.</span>
-<span class="w">    </span>
+
 <span class="w">    </span><span class="c1"># The name of the entry is the same as your custom network!</span>
 <span class="w">    </span><span class="nt">customnetwork</span><span class="p">:</span>
 <span class="w">      </span><span class="nt">uri</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">https://custom.scan</span><span class="w">              </span><span class="c1"># URL used for showing transactions</span>
@@ -531,21 +537,21 @@ It is meant for running tests and debugging contracts.
 Out-of-the-box, Ape ships with two development providers you can use for the <code class="docutils literal notranslate"><span class="pre">local</span></code> network:</p>
 <ul class="simple">
 <li><p><a class="reference external" href="https://github.com/ethereum/eth-tester">EthTester</a></p></li>
-<li><p>An Ephemeral Geth process</p></li>
+<li><p>An Ephemeral Node (defaults to Geth) process</p></li>
 </ul>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>ape<span class="w"> </span><span class="nb">test</span><span class="w"> </span>--network<span class="w"> </span>::test
-ape<span class="w"> </span><span class="nb">test</span><span class="w"> </span>--network<span class="w"> </span>::geth<span class="w">  </span><span class="c1"># Launch a local development geth process</span>
+ape<span class="w"> </span><span class="nb">test</span><span class="w"> </span>--network<span class="w"> </span>::node<span class="w">  </span><span class="c1"># Launch a local development node (geth) process</span>
 </pre></div>
 </div>
 <p>To learn more about testing in ape, follow <a class="reference external" href="./testing.html">this guide</a>.</p>
 </section>
 <section id="live-networks">
 <h2>Live Networks<a class="headerlink" href="#live-networks" title="Permalink to this heading"></a></h2>
-<p>Use the core plugin <code class="docutils literal notranslate"><span class="pre">ape-geth</span></code> to connect to local or remote nodes via URI.
-The geth plugin is abstract in that it represents any node, not just geth nodes.
+<p>Use the core plugin <code class="docutils literal notranslate"><span class="pre">ape-node</span></code> to connect to local or remote nodes via URI.
+The node plugin is abstract in that it represents any node.
 However, it will work best when connected to a geth node.
-To configure network URIs in geth, you can use the <code class="docutils literal notranslate"><span class="pre">ape-config.yaml</span></code> file:</p>
-<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">geth</span><span class="p">:</span>
+To configure network URIs in <code class="docutils literal notranslate"><span class="pre">node</span></code>, you can use the <code class="docutils literal notranslate"><span class="pre">ape-config.yaml</span></code> file:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">node</span><span class="p">:</span>
 <span class="w">  </span><span class="nt">ethereum</span><span class="p">:</span>
 <span class="w">    </span><span class="nt">mainnet</span><span class="p">:</span>
 <span class="w">      </span><span class="nt">uri</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">https://foo.node.bar</span>
@@ -573,9 +579,9 @@ The following example shows how to do this.
 <span class="w">    </span><span class="c1"># Most networks use 120 seconds (2 minutes).</span>
 <span class="w">    </span><span class="nt">transaction_acceptance_timeout</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">60</span>
 
-<span class="w">    </span><span class="c1"># The amount of times to retry fetching a receipt. This is useful </span>
-<span class="w">    </span><span class="c1"># because decentralized systems may show the transaction accepted </span>
-<span class="w">    </span><span class="c1"># on some nodes but not on others, and potentially RPC requests </span>
+<span class="w">    </span><span class="c1"># The amount of times to retry fetching a receipt. This is useful</span>
+<span class="w">    </span><span class="c1"># because decentralized systems may show the transaction accepted</span>
+<span class="w">    </span><span class="c1"># on some nodes but not on others, and potentially RPC requests</span>
 <span class="w">    </span><span class="c1"># won&#39;t return a receipt immediately after sending its transaction.</span>
 <span class="w">    </span><span class="c1"># This config accounts for such delay. The default is `20`.</span>
 <span class="w">    </span><span class="nt">max_receipt_retries</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">10</span>
@@ -584,13 +590,13 @@ The following example shows how to do this.
 <span class="w">    </span><span class="c1"># estimates gas. Note: local networks tend to use &quot;max&quot; here</span>
 <span class="w">    </span><span class="c1"># by default.</span>
 <span class="w">    </span><span class="nt">gas_limit</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">auto</span>
-<span class="w">    </span>
+
 <span class="w">    </span><span class="c1"># Base-fee multipliers are useful for times when the base fee changes</span>
 <span class="w">    </span><span class="c1"># before a transaction is sent but after the base fee was derived,</span>
 <span class="w">    </span><span class="c1"># thus causing rejection. A multiplier reduces the chance of</span>
 <span class="w">    </span><span class="c1"># rejection. The default for live networks is `1.4` times the base fee.</span>
 <span class="w">    </span><span class="nt">base_fee_multiplier</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1.2</span>
-<span class="w">    </span>
+
 <span class="w">    </span><span class="c1"># The block time helps Ape make decisions about</span>
 <span class="w">    </span><span class="c1"># polling chain data.</span>
 <span class="w">    </span><span class="nt">block_time</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">10</span>
@@ -603,7 +609,7 @@ The following example shows how to do this.
 <div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>ape<span class="w"> </span>networks<span class="w"> </span>run
 </pre></div>
 </div>
-<p>By default, <code class="docutils literal notranslate"><span class="pre">ape</span> <span class="pre">networks</span> <span class="pre">run</span></code> runs a development Geth process.
+<p>By default, <code class="docutils literal notranslate"><span class="pre">ape</span> <span class="pre">networks</span> <span class="pre">run</span></code> runs a development Node (geth) process.
 To use a different network, such as <code class="docutils literal notranslate"><span class="pre">hardhat</span></code> or Anvil nodes, use the <code class="docutils literal notranslate"><span class="pre">--network</span></code> flag:</p>
 <div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>ape<span class="w"> </span>networks<span class="w"> </span>run<span class="w"> </span>--network<span class="w"> </span>ethereum:local:foundry
 </pre></div>
@@ -630,7 +636,7 @@ When entering a network for the first time, it will connect to that network.
 
 <span class="k">def</span> <span class="nf">main</span><span class="p">():</span>
     <span class="n">start_provider</span> <span class="o">=</span> <span class="n">chain</span><span class="o">.</span><span class="n">provider</span><span class="o">.</span><span class="n">name</span>
-    <span class="k">with</span> <span class="n">networks</span><span class="o">.</span><span class="n">ethereum</span><span class="o">.</span><span class="n">mainnet</span><span class="o">.</span><span class="n">use_provider</span><span class="p">(</span><span class="s2">&quot;geth&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">provider</span><span class="p">:</span>
+    <span class="k">with</span> <span class="n">networks</span><span class="o">.</span><span class="n">ethereum</span><span class="o">.</span><span class="n">mainnet</span><span class="o">.</span><span class="n">use_provider</span><span class="p">(</span><span class="s2">&quot;node&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">provider</span><span class="p">:</span>
         <span class="c1"># We are using a different provider than the one we started with.</span>
         <span class="k">assert</span> <span class="n">start_provider</span> <span class="o">!=</span> <span class="n">provider</span><span class="o">.</span><span class="n">name</span>
 </pre></div>
@@ -641,9 +647,9 @@ When entering a network for the first time, it will connect to that network.
 
 <span class="nd">@click</span><span class="o">.</span><span class="n">command</span><span class="p">()</span>
 <span class="k">def</span> <span class="nf">cli</span><span class="p">():</span>
-    <span class="k">with</span> <span class="n">networks</span><span class="o">.</span><span class="n">polygon</span><span class="o">.</span><span class="n">mainnet</span><span class="o">.</span><span class="n">use_provider</span><span class="p">(</span><span class="s2">&quot;geth&quot;</span><span class="p">):</span>
+    <span class="k">with</span> <span class="n">networks</span><span class="o">.</span><span class="n">polygon</span><span class="o">.</span><span class="n">mainnet</span><span class="o">.</span><span class="n">use_provider</span><span class="p">(</span><span class="s2">&quot;node&quot;</span><span class="p">):</span>
         <span class="o">...</span>
-    <span class="k">with</span> <span class="n">networks</span><span class="o">.</span><span class="n">ethereum</span><span class="o">.</span><span class="n">mainnet</span><span class="o">.</span><span class="n">use_provider</span><span class="p">(</span><span class="s2">&quot;geth&quot;</span><span class="p">):</span>
+    <span class="k">with</span> <span class="n">networks</span><span class="o">.</span><span class="n">ethereum</span><span class="o">.</span><span class="n">mainnet</span><span class="o">.</span><span class="n">use_provider</span><span class="p">(</span><span class="s2">&quot;node&quot;</span><span class="p">):</span>
         <span class="o">...</span>
 </pre></div>
 </div>

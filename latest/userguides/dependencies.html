@@ -164,7 +164,7 @@
 <li class="toctree-l2"><a class="reference internal" href="#package-management-cli">Package Management CLI</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#list">list</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#install">install</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#remove">remove</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#uninstall">uninstall</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#compile">compile</a></li>
 </ul>
 </li>
@@ -193,6 +193,7 @@
 <li class="toctree-l1"><a class="reference internal" href="scripts.html">Scripting</a></li>
 <li class="toctree-l1"><a class="reference internal" href="publishing.html">Publishing</a></li>
 <li class="toctree-l1"><a class="reference internal" href="logging.html">Logging</a></li>
+<li class="toctree-l1"><a class="reference internal" href="trace.html">Traces</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">CLI Reference</span></p>
 <ul>
@@ -206,10 +207,9 @@
 <li class="toctree-l1"><a class="reference internal" href="../commands/run.html">run</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../commands/test.html">test</a></li>
 </ul>
-<p class="caption" role="heading"><span class="caption-text">Python Reference</span></p>
+<p class="caption" role="heading"><span class="caption-text">Core Python Reference</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../methoddocs/ape.html">ape</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../methoddocs/ape_accounts.html">ape-accounts</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../methoddocs/api.html">ape.api</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../methoddocs/cli.html">ape.cli</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../methoddocs/contracts.html">ape.contracts</a></li>
@@ -218,6 +218,12 @@
 <li class="toctree-l1"><a class="reference internal" href="../methoddocs/plugins.html">ape.plugins</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../methoddocs/types.html">ape.types</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../methoddocs/utils.html">ape.utils</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Plugin Python Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../methoddocs/ape_accounts.html">ape-accounts</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../methoddocs/ape_compile.html">ape-compile</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../methoddocs/ape_pm.html">ape-pm</a></li>
 </ul>
 
         </div>
@@ -246,10 +252,18 @@
              
   <section id="dependencies">
 <h1>Dependencies<a class="headerlink" href="#dependencies" title="Permalink to this heading"></a></h1>
-<p>Ape downloads and caches dependencies in the <code class="docutils literal notranslate"><span class="pre">.ape/packages/&lt;name&gt;/&lt;version-id&gt;</span></code> directory where <code class="docutils literal notranslate"><span class="pre">&lt;name&gt;</span></code> refers to the name of the dependency and <code class="docutils literal notranslate"><span class="pre">&lt;version-id&gt;</span></code> refers to the version or branch of the package.
-When first downloading dependencies, Ape only places the source contents in the <code class="docutils literal notranslate"><span class="pre">sources</span></code> field of the <code class="docutils literal notranslate"><span class="pre">PackageManifest</span></code> and leaves the <code class="docutils literal notranslate"><span class="pre">contract_types</span></code> field untouched.
-This is because dependencies may not compile by Ape’s standard out-of-the-box but their contract types can still be used in projects that do.</p>
-<p>To use dependencies in your projects, you must configure them in your <code class="docutils literal notranslate"><span class="pre">ape-config.yaml</span></code> file.</p>
+<p>Ape downloads and caches dependencies in the <code class="docutils literal notranslate"><span class="pre">.ape/packages</span></code> folder.
+There are three sub-folders in <code class="docutils literal notranslate"><span class="pre">.ape/packages</span></code> for dependencies:</p>
+<ol class="arabic simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">projects/</span></code> - contains the raw project files for each dependency in subsequent <code class="docutils literal notranslate"><span class="pre">/&lt;name&gt;/&lt;version-id&gt;</span></code> directories (where <code class="docutils literal notranslate"><span class="pre">&lt;name&gt;</span></code> refers to the path-ified full-name of the dependency, e.g. <code class="docutils literal notranslate"><span class="pre">&quot;OpenZeppelin_openzeppelin-contracts&quot;</span></code>, and <code class="docutils literal notranslate"><span class="pre">&lt;version-id&gt;</span></code> refers to the version or branch of the package).
+This location is where local project compilation looks for additional sources from import statements.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">manifests/</span></code> - much like your local projects’ <code class="docutils literal notranslate"><span class="pre">.build/__local__.json</span></code>, this is where dependencies cache their manifests.
+When you compile a dependency, the contract types are stored in the dependency manifest’s JSON file.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">api/</span></code> - for caching the API data placed in <code class="docutils literal notranslate"><span class="pre">dependencies:</span></code> config or <code class="docutils literal notranslate"><span class="pre">ape</span> <span class="pre">pm</span> <span class="pre">install</span></code> commands, allowing dependency usage and management from anywhere in the file system.</p></li>
+</ol>
+<p><em>NOTE</em>: You can install dependencies that don’t compile out-of-the-box.
+Sometimes, dependencies are only collections of source files not meant to compile on their own but instead be used in projects via import statements.
+You can change the settings of a dependency using <code class="docutils literal notranslate"><span class="pre">config_override:</span></code> to compile dependencies after installed, if needed, and the <code class="docutils literal notranslate"><span class="pre">api/</span></code> cache always refers to the latest used during installation or compilation.</p>
 <section id="types-of-dependencies">
 <h2>Types of Dependencies<a class="headerlink" href="#types-of-dependencies" title="Permalink to this heading"></a></h2>
 <p>There are few dependency types that come with Ape.
@@ -325,20 +339,13 @@ Then, add the following to your config so that Ape can find the dependency:</p>
 <p>You can also install and / or compile dependencies using the <code class="docutils literal notranslate"><span class="pre">pm</span></code> CLI.</p>
 <section id="list">
 <h3>list<a class="headerlink" href="#list" title="Permalink to this heading"></a></h3>
-<p>To list information about the dependencies in your local project, run:</p>
+<p>To list information about installed dependencies, run:</p>
 <div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>ape<span class="w"> </span>pm<span class="w"> </span>list
 </pre></div>
 </div>
-<p>To list information about all installed dependencies across all projects, run:</p>
-<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>ape<span class="w"> </span>pm<span class="w"> </span>list<span class="w"> </span>--all
-</pre></div>
-</div>
 <p>You should see information like:</p>
-<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>Packages:
-<span class="w">  </span>OpenZeppelin<span class="w"> </span>v4.6.0,<span class="w"> </span>compiled!
-<span class="w">  </span>vault<span class="w"> </span>master
-<span class="w">  </span>vault<span class="w"> </span>v0.4.5
-<span class="w">  </span>gnosis<span class="w"> </span>v1.3.0
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>NAME<span class="w">          </span>VERSION<span class="w">  </span>COMPILED
+openzeppelin<span class="w">  </span><span class="m">4</span>.9.3<span class="w">    </span>-
 </pre></div>
 </div>
 </section>
@@ -367,20 +374,28 @@ For local dependencies, you give it a path to the local dependency.
 <span class="w">  </span>--config-override<span class="w"> </span><span class="s1">&#39;{&quot;solidity&quot;: {&quot;version&quot;: &quot;0.8.12&quot;}}&#39;</span>
 </pre></div>
 </div>
+<p>You can also use Python to install dependencies, using <code class="docutils literal notranslate"><span class="pre">**kwargs</span></code> as the same fields you put in your <code class="docutils literal notranslate"><span class="pre">dependencies:</span></code> config:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">ape</span> <span class="kn">import</span> <span class="n">project</span>
+
+<span class="n">project</span><span class="o">.</span><span class="n">dependencies</span><span class="o">.</span><span class="n">install</span><span class="p">(</span>
+   <span class="n">github</span><span class="o">=</span><span class="s2">&quot;OpenZeppelin/openzeppelin-contracts&quot;</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;openzeppelin&quot;</span><span class="p">,</span> <span class="n">version</span><span class="o">=</span><span class="s2">&quot;4.4.2&quot;</span>
+<span class="p">)</span>
+</pre></div>
+</div>
 </section>
-<section id="remove">
-<h3>remove<a class="headerlink" href="#remove" title="Permalink to this heading"></a></h3>
-<p>Remove previously installed packages using the <code class="docutils literal notranslate"><span class="pre">remove</span></code> command:</p>
-<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>ape<span class="w"> </span>pm<span class="w"> </span>remove<span class="w"> </span>OpenZeppelin
+<section id="uninstall">
+<h3>uninstall<a class="headerlink" href="#uninstall" title="Permalink to this heading"></a></h3>
+<p>Remove previously installed packages using the <code class="docutils literal notranslate"><span class="pre">uninstall</span></code> command:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>ape<span class="w"> </span>pm<span class="w"> </span>uninstall<span class="w"> </span>OpenZeppelin
 </pre></div>
 </div>
 <p>If there is a single version installed, the command will remove the single version.
 If multiple versions are installed, pass additional arguments specifying the version(s) to be removed:</p>
-<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>ape<span class="w"> </span>pm<span class="w"> </span>remove<span class="w"> </span>OpenZeppelin<span class="w"> </span><span class="m">4</span>.5.0<span class="w"> </span><span class="m">4</span>.6.0
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>ape<span class="w"> </span>pm<span class="w"> </span>uninstall<span class="w"> </span>OpenZeppelin<span class="w"> </span><span class="m">4</span>.5.0<span class="w"> </span><span class="m">4</span>.6.0
 </pre></div>
 </div>
 <p>To skip the confirmation prompts, use the <code class="docutils literal notranslate"><span class="pre">--yes</span></code> flag (abbreviated as <code class="docutils literal notranslate"><span class="pre">-y</span></code>):</p>
-<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>ape<span class="w"> </span>pm<span class="w"> </span>remove<span class="w"> </span>OpenZeppelin<span class="w"> </span>all<span class="w"> </span>--yes
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>ape<span class="w"> </span>pm<span class="w"> </span>uninstall<span class="w"> </span>OpenZeppelin<span class="w"> </span>all<span class="w"> </span>--yes
 </pre></div>
 </div>
 <p><strong>NOTE</strong>: Additionally, use the <code class="docutils literal notranslate"><span class="pre">all</span></code> special version key to delete all versions.</p>
@@ -481,7 +496,8 @@ You can achieve this using the project manager:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">ape</span> <span class="kn">import</span> <span class="n">accounts</span><span class="p">,</span> <span class="n">project</span>
 
 <span class="c1"># NOTE: This will compile the dependency</span>
-<span class="n">dependency_contract</span> <span class="o">=</span> <span class="n">project</span><span class="o">.</span><span class="n">dependencies</span><span class="p">[</span><span class="s2">&quot;my_dependency&quot;</span><span class="p">][</span><span class="s2">&quot;1.0.0&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">DependencyContractType</span>
+<span class="n">dependency_project</span> <span class="o">=</span> <span class="n">project</span><span class="o">.</span><span class="n">dependencies</span><span class="p">[</span><span class="s2">&quot;my_dependency&quot;</span><span class="p">][</span><span class="s2">&quot;1.0.0&quot;</span><span class="p">]</span>
+<span class="n">dependency_contract</span> <span class="o">=</span> <span class="n">dependency_project</span><span class="o">.</span><span class="n">DependencyContractType</span> 
 <span class="n">my_account</span> <span class="o">=</span> <span class="n">accounts</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;alias&quot;</span><span class="p">)</span>
 <span class="n">deployed_contract</span> <span class="o">=</span> <span class="n">my_account</span><span class="o">.</span><span class="n">deploy</span><span class="p">(</span><span class="n">dependency_contract</span><span class="p">,</span> <span class="s2">&quot;argument&quot;</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="n">deployed_contract</span><span class="o">.</span><span class="n">address</span><span class="p">)</span>
