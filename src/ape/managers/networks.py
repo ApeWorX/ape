@@ -1,3 +1,4 @@
+import copy
 from collections.abc import Collection, Iterator
 from functools import cached_property
 from typing import Optional, Union
@@ -170,7 +171,9 @@ class NetworkManager(BaseManager, ExtraAttributesMixin):
         """
         All the registered ecosystems in ``ape``, such as ``ethereum``.
         """
-        plugin_ecosystems = self._plugin_ecosystems
+
+        # Use copy to avoid modifying the cached dict.
+        plugin_ecosystems = copy.deepcopy(self._plugin_ecosystems)
 
         # Load config.
         custom_networks: list = self.config_manager.get_config("networks").get("custom", [])
