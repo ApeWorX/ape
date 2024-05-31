@@ -392,7 +392,8 @@ def test_get_unimplemented_methods_warning_list_containing_plugin(abstract_metho
 
 
 def test_core_plugins():
-    # In case any of these happen to be installed, it will fail.
+    # In case any of these happen to be installed, and this feature
+    # is broken, it will fail. If none are installed, the test will always pass.
     non_core_plugins = ("ape_arbitrum", "ape_vyper", "ape_solidity", "ape_ens")
     assert not any(p in CORE_PLUGINS_LIST for p in non_core_plugins)
     assert "ape_ethereum" in CORE_PLUGINS_LIST
