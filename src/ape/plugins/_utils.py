@@ -38,6 +38,10 @@ def clean_plugin_name(name: str) -> str:
     return name.replace("_", "-").replace("ape-", "")
 
 
+def get_plugin_dists():
+    return _filter_plugins_from_dists(_get_distributions())
+
+
 def _filter_plugins_from_dists(dists: Iterable) -> Iterator[str]:
     for dist in dists:
         if name := getattr(dist, "name", ""):
@@ -384,7 +388,7 @@ class PluginMetadata(BaseInterfaceModel):
         if not use_cache:
             _get_distributions.cache_clear()
 
-        return any(n == self.package_name for n in _filter_plugins_from_dists(_get_distributions()))
+        return any(n == self.package_name for n in get_plugin_dists())
 
     def _prepare_install(
         self, upgrade: bool = False, skip_confirmation: bool = False

@@ -4,10 +4,10 @@ from typing import Any, Optional
 
 from ape.exceptions import ApeAttributeError
 from ape.logging import logger
-from ape.plugins._utils import CORE_PLUGINS, _filter_plugins_from_dists, clean_plugin_name
+from ape.plugins._utils import CORE_PLUGINS, clean_plugin_name, get_plugin_dists
 from ape.plugins.pluggy_patch import plugin_manager as pluggy_manager
 from ape.utils.basemodel import _assert_not_ipython_check, only_raise_attribute_error
-from ape.utils.misc import _get_distributions, log_instead_of_fail
+from ape.utils.misc import log_instead_of_fail
 
 
 def valid_impl(api_class: Any) -> bool:
@@ -122,9 +122,7 @@ class PluginManager:
         if self.__registered:
             return
 
-        plugins = list(
-            {n.replace("-", "_") for n in _filter_plugins_from_dists(_get_distributions())}
-        )
+        plugins = list({n.replace("-", "_") for n in get_plugin_dists()})
         locals = [p for p in CORE_PLUGINS if p != "ape"]
         plugin_modules = tuple([*plugins, *locals])
 
