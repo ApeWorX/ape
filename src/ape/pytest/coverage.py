@@ -64,7 +64,7 @@ class CoverageData(ManagerAccessMixin):
             timestamp=timestamp,
         )
 
-        # Remove emptys.
+        # Remove empties.
         for project in report.projects:
             project.sources = [x for x in project.sources if len(x.statements) > 0]
 
@@ -180,7 +180,7 @@ class CoverageTracker(ManagerAccessMixin):
                 for src in project.sources:
                     # NOTE: We will allow this check to skip if there is no source is the
                     # traceback. This helps increment methods that are missing from the source map.
-                    path = self.local_project.contracts_folder / src.source_id
+                    path = self.local_project.path / src.source_id
                     if source_path is not None and path != source_path:
                         continue
 
