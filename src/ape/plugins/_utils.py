@@ -3,7 +3,6 @@ import sys
 from collections.abc import Iterable, Iterator, Sequence
 from enum import Enum
 from functools import cached_property
-from pathlib import Path
 from shutil import which
 from typing import Any, Optional
 
@@ -25,12 +24,18 @@ from ape.version import version as ape_version_str
 PIP_COMMAND = ["uv", "pip"] if which("uv") else [sys.executable, "-m", "pip"]
 PLUGIN_PATTERN = re.compile(r"\bape_\w+(?!\S)")
 CORE_PLUGINS = [
-    "ape",
-    *[
-        f.name
-        for f in Path(__file__).parent.parent.parent.iterdir()
-        if f.name.startswith("ape_") and f.is_dir() and re.match(PLUGIN_PATTERN, f.name)
-    ],
+    "ape_accounts",
+    "ape_cache",
+    "ape_compile",
+    "ape_console",
+    "ape_ethereum",
+    "ape_node",
+    "ape_init",
+    "ape_networks",
+    "ape_plugins",
+    "ape_pm",
+    "ape_run",
+    "ape_test",
 ]
 
 

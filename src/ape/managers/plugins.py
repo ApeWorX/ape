@@ -123,15 +123,14 @@ class PluginManager:
             return
 
         plugins = list({n.replace("-", "_") for n in get_plugin_dists()})
-        locals = [p for p in CORE_PLUGINS if p != "ape"]
-        plugin_modules = tuple([*plugins, *locals])
+        plugin_modules = tuple([*plugins, *CORE_PLUGINS])
 
         for module_name in plugin_modules:
             try:
                 module = importlib.import_module(module_name)
                 pluggy_manager.register(module)
             except Exception as err:
-                if module_name in CORE_PLUGINS:
+                if module_name in CORE_PLUGINS or module_name == "ape":
                     # Always raise core plugin registration errors.
                     raise
 
