@@ -3,8 +3,29 @@ from ape.api import ForkedNetworkAPI, NetworkAPI, create_network_type
 from ape.api.networks import LOCAL_NETWORK_NAME
 
 from ._converters import WeiConversions
-from .ecosystem import NETWORKS, Ethereum, EthereumConfig
+from .ecosystem import (
+    NETWORKS,
+    BaseEthereumConfig,
+    Block,
+    Ethereum,
+    EthereumConfig,
+    ForkedNetworkConfig,
+    NetworkConfig,
+)
+from .provider import EthereumNodeProvider, Web3Provider, assert_web3_provider_uri_env_var_not_set
 from .query import EthereumQueryProvider
+from .trace import CallTrace, Trace, TransactionTrace
+from .transactions import (
+    AccessListTransaction,
+    BaseTransaction,
+    DynamicFeeTransaction,
+    Receipt,
+    SharedBlobReceipt,
+    SharedBlobTransaction,
+    StaticFeeTransaction,
+    TransactionStatusEnum,
+    TransactionType,
+)
 
 
 @plugins.register(plugins.Config)
@@ -35,3 +56,28 @@ def networks():
 @plugins.register(plugins.QueryPlugin)
 def query_engines():
     yield EthereumQueryProvider
+
+
+__all__ = [
+    "Ethereum",
+    "EthereumConfig",
+    "NetworkConfig",
+    "ForkedNetworkConfig",
+    "BaseEthereumConfig",
+    "Block",
+    "assert_web3_provider_uri_env_var_not_set",
+    "Web3Provider",
+    "EthereumNodeProvider",
+    "Trace",
+    "TransactionTrace",
+    "CallTrace",
+    "TransactionStatusEnum",
+    "TransactionType",
+    "BaseTransaction",
+    "StaticFeeTransaction",
+    "AccessListTransaction",
+    "DynamicFeeTransaction",
+    "SharedBlobTransaction",
+    "Receipt",
+    "SharedBlobReceipt",
+]

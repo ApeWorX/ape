@@ -178,7 +178,7 @@ def export(cli_ctx, alias):
     private_key = EthAccount.decrypt(account, password)
     address = to_checksum_address(account["address"])
     cli_ctx.logger.success(
-        f"Account {address} private key: {click.style(private_key.hex(), bold=True)})"
+        f"Account {address} private key: {click.style(private_key.hex(), bold=True)}"
     )
 
 
