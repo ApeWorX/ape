@@ -15,10 +15,10 @@ from ape.plugins._utils import (
     PluginMetadata,
     PluginMetadataList,
     PluginType,
-    _filter_plugins_from_dists,
     ape_version,
+    get_plugin_dists,
 )
-from ape.utils.misc import _get_distributions, load_config
+from ape.utils.misc import load_config
 
 
 @click.group(short_help="Manage ape plugins")
@@ -273,7 +273,7 @@ def _change_version(spec: str):
     # NOTE: It is possible plugins may depend on each other and may update in
     #   an order causing some error codes to pop-up, so we ignore those for now.
     plugin_retcode = 0
-    for plugin in _filter_plugins_from_dists(_get_distributions()):
+    for plugin in get_plugin_dists():
         logger.info(f"Updating {plugin} ...")
         name = plugin.split("=")[0].strip()
         retcode = _install(name, spec, exit_on_fail=False)
