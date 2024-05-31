@@ -221,7 +221,7 @@ class ApeConfig(ExtraAttributesMixin, BaseSettings, ManagerAccessMixin):
             if fixed_deps:
                 fixed_model["dependencies"] = fixed_deps
 
-        # field: contracs_folder: Handle if given Path object.
+        # field: contracts_folder: Handle if given Path object.
         if "contracts_folder" in fixed_model and isinstance(fixed_model["contracts_folder"], Path):
             fixed_model["contracts_folder"] = str(fixed_model["contracts_folder"])
 
@@ -330,9 +330,9 @@ class ApeConfig(ExtraAttributesMixin, BaseSettings, ManagerAccessMixin):
             # Already decoded.
             return cfg
 
-        for plugin_name, config_class in self.plugin_manager.config_class:
+        for plugin_name, config_class in self._get_config_plugin_classes():
             cls: type[PluginConfig] = config_class  # type: ignore
-            if plugin_name != name:
+            if plugin_name.replace("-", "_") != name:
                 continue
 
             if cls != ConfigDict:
@@ -346,6 +346,10 @@ class ApeConfig(ExtraAttributesMixin, BaseSettings, ManagerAccessMixin):
             return config
 
         return None
+
+    def _get_config_plugin_classes(self):
+        # NOTE: Abstracted for easily mocking in tests.
+        return self.plugin_manager.config_class
 
     def get_custom_ecosystem_config(self, name: str) -> Optional[PluginConfig]:
         name = name.replace("-", "_")

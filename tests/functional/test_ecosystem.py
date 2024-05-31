@@ -974,7 +974,21 @@ def test_default_network_name_when_not_set_and_no_local_uses_only(
 
     with project.temp_config(networks={"custom": [net]}):
         ecosystem = project.network_manager.get_ecosystem(ecosystem_name)
-        assert ecosystem.default_network_name == only_network
+        actual = ecosystem.default_network_name
+
+        if actual == LOCAL_NETWORK_NAME:
+            # For some reason, this test is flake-y. Offer more info
+            # to try and debug when this happens (intermittent CI failure).
+            all_nets = ", ".join([x.name for x in ecosystem.networks])
+            pytest.fail(
+                f"assert '{LOCAL_NETWORK_NAME}' == '{only_network}'. More info below:\n"
+                f"ecosystem_name={ecosystem.name}\n"
+                f"networks={all_nets}\n"
+                f"type={type(ecosystem)}"
+            )
+        else:
+            # This should pass.
+            assert ecosystem.default_network_name == only_network
 
 
 def test_decode_custom_error(chain, ethereum):
