@@ -8,7 +8,7 @@ from ape.api.config import ApeConfig, ConfigEnum, PluginConfig
 from ape.exceptions import ConfigError
 from ape.managers.config import CONFIG_FILE_NAME, merge_configs
 from ape.types import GasLimit
-from ape_ethereum.ecosystem import NetworkConfig
+from ape_ethereum.ecosystem import EthereumConfig, NetworkConfig
 from ape_networks import CustomNetwork
 from tests.functional.conftest import PROJECT_WITH_LONG_CONTRACTS_FOLDER
 
@@ -314,3 +314,35 @@ def test_custom_network():
     assert network.name == "mytestnet"
     assert network.chain_id == chain_id
     assert network.ecosystem == "ethereum"
+
+
+def test_get_config(config):
+    actual = config.get_config("ethereum")
+    assert isinstance(actual, EthereumConfig)
+
+
+def test_get_config_hyphen_in_plugin_name(config):
+    """
+    Tests against a bug noticed with ape-polygon-zkevm installed
+    on Ape 0.8.0 release where the config no longer worked.
+    """
+
+    class CustomConfig(PluginConfig):
+        x: int = 123
+
+    mock_cfg_with_hyphens = CustomConfig
+    original_method = config.local_project.config._get_config_plugin_classes
+
+    # Hack in the fake plugin to test the behavior.
+    def hacked_in_method():
+        yield from [*list(original_method()), ("mock-plugin", mock_cfg_with_hyphens)]
+
+    config.local_project.config._get_config_plugin_classes = hacked_in_method
+
+    try:
+        cfg = config.get_config("mock-plugin")
+        assert isinstance(cfg, CustomConfig)
+        assert cfg.x == 123
+
+    finally:
+        config.local_project.config._get_config_plugin_classes = original_method
