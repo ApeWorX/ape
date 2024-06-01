@@ -297,7 +297,6 @@ class CoverageTracker(ManagerAccessMixin):
 
         # Reports are set in ape-config.yaml.
         reports = self.config_wrapper.ape_test_config.coverage.reports
-        out_folder = self._project.manifest_path.parent
         if reports.terminal:
             verbose = (
                 reports.terminal.get("verbose", False)
@@ -326,9 +325,9 @@ class CoverageTracker(ManagerAccessMixin):
                     click.echo()
 
         if self.config_wrapper.xml_coverage:
-            self.data.report.write_xml(out_folder)
+            self.data.report.write_xml(self._output_path)
         if value := self.config_wrapper.html_coverage:
             verbose = value.get("verbose", False) if isinstance(value, dict) else False
-            self.data.report.write_html(out_folder, verbose=verbose)
+            self.data.report.write_html(self._output_path, verbose=verbose)
 
         return True
