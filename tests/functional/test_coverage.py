@@ -175,7 +175,7 @@ class TestCoverageData:
 
     @pytest.fixture(scope="class")
     def coverage_data(self, project, contract_source):
-        return CoverageData(project.path, (contract_source,))
+        return CoverageData(project, (contract_source,))
 
     def test_report(self, coverage_data):
         actual = coverage_data.report
