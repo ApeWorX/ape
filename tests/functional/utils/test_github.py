@@ -91,3 +91,10 @@ class TestGithubClient:
         expected_uri = "https://api.github.com/repos/test/path/releases/tags"
         assert calls[0][0] == ("GET", f"{expected_uri}/{version}")
         assert calls[1][0] == ("GET", f"{expected_uri}/{opposite}")
+
+    def test_get_org_repos(self, github_client, mock_session):
+        _ = list(github_client.get_org_repos())
+        call = mock_session.method_calls[-1]
+        params = call.kwargs["params"]
+        # Show we are fetching more than the default 30 per page.
+        assert params == {"per_page": 100, "page": 1}
