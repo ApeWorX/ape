@@ -680,6 +680,8 @@ def mock_compiler(mocker):
     mock.name = "mock"
     mock.ext = ".__mock__"
     mock.tracked_settings = []
+    mock.ast = None
+    mock.pcmap = None
 
     def mock_compile(paths, project=None, settings=None):
         settings = settings or {}
@@ -691,10 +693,14 @@ def mock_compiler(mocker):
                 code = HexBytes(123).hex()
                 data = {
                     "contractName": name,
-                    "abi": [],
+                    "abi": mock.abi,
                     "deploymentBytecode": code,
                     "sourceId": f"{project.contracts_folder.name}/{path.name}",
                 }
+                if ast := mock.ast:
+                    data["ast"] = ast
+                if pcmap := mock.pcmap:
+                    data["pcmap"] = pcmap
 
                 # Check for mocked overrides
                 overrides = mock.overrides

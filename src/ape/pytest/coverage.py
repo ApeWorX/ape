@@ -7,6 +7,7 @@ from ethpm_types.abi import MethodABI
 from ethpm_types.source import ContractSource
 
 from ape.logging import logger
+from ape.managers import ProjectManager
 from ape.pytest.config import ConfigWrapper
 from ape.types import (
     ContractFunctionPath,
@@ -22,8 +23,8 @@ from ape.utils.trace import parse_coverage_tables
 
 
 class CoverageData(ManagerAccessMixin):
-    def __init__(self, base_path: Path, sources: Iterable[ContractSource]):
-        self.base_path = base_path
+    def __init__(self, project: ProjectManager, sources: Iterable[ContractSource]):
+        self.project = project
         self.sources = list(sources)
         self._report: Optional[CoverageReport] = None
         self._init_coverage_profile()  # Inits self._report.
@@ -43,7 +44,7 @@ class CoverageData(ManagerAccessMixin):
         self,
     ) -> CoverageReport:
         # source_id -> pc(s) -> times hit
-        project_coverage = CoverageProject(name=self.config_manager.name or "__local__")
+        project_coverage = CoverageProject(name=self.project.name or "__local__")
 
         for src in self.sources:
             source_cov = project_coverage.include(src)
@@ -60,7 +61,7 @@ class CoverageData(ManagerAccessMixin):
         timestamp = get_current_timestamp_ms()
         report = CoverageReport(
             projects=[project_coverage],
-            source_folders=[self.local_project.contracts_folder],
+            source_folders=[self.project.contracts_folder],
             timestamp=timestamp,
         )
 
@@ -74,7 +75,11 @@ class CoverageData(ManagerAccessMixin):
     def cover(
         self, src_path: Path, pcs: Iterable[int], inc_fn_hits: bool = True
     ) -> tuple[set[int], list[str]]:
-        source_id = str(get_relative_path(src_path.absolute(), self.base_path))
+        if hasattr(self.project, "path"):
+            source_id = str(get_relative_path(src_path.absolute(), self.project.path))
+        else:
+            source_id = str(src_path)
+
         if source_id not in self.report.sources:
             # The source is not tracked for coverage.
             return set(), []
@@ -120,14 +125,27 @@ class CoverageData(ManagerAccessMixin):
 
 
 class CoverageTracker(ManagerAccessMixin):
-    def __init__(self, config_wrapper: ConfigWrapper):
+    def __init__(
+        self,
+        config_wrapper: ConfigWrapper,
+        project: Optional[ProjectManager] = None,
+        output_path: Optional[Path] = None,
+    ):
         self.config_wrapper = config_wrapper
-        sources = self.local_project._contract_sources
+        self._project = project or self.local_project
+
+        if output_path:
+            self._output_path = output_path
+        elif hasattr(self._project, "manifest_path"):
+            # Local project.
+            self._output_path = self._project.manifest_path.parent
+        else:
+            self._output_path = Path.cwd()
+
+        sources = self._project._contract_sources
 
         self.data: Optional[CoverageData] = (
-            CoverageData(self.local_project.path, sources)
-            if self.config_wrapper.track_coverage
-            else None
+            CoverageData(self._project, sources) if self.config_wrapper.track_coverage else None
         )
 
     @property
@@ -180,7 +198,7 @@ class CoverageTracker(ManagerAccessMixin):
                 for src in project.sources:
                     # NOTE: We will allow this check to skip if there is no source is the
                     # traceback. This helps increment methods that are missing from the source map.
-                    path = self.local_project.path / src.source_id
+                    path = self._project.path / src.source_id
                     if source_path is not None and path != source_path:
                         continue
 
@@ -279,7 +297,7 @@ class CoverageTracker(ManagerAccessMixin):
 
         # Reports are set in ape-config.yaml.
         reports = self.config_wrapper.ape_test_config.coverage.reports
-        out_folder = self.local_project.manifest_path.parent
+        out_folder = self._project.manifest_path.parent
         if reports.terminal:
             verbose = (
                 reports.terminal.get("verbose", False)
