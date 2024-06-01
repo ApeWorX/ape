@@ -3,6 +3,7 @@ import shutil
 import subprocess
 import tempfile
 import zipfile
+from collections.abc import Iterator
 from io import BytesIO
 from pathlib import Path
 from typing import Any, Optional, Union
@@ -99,8 +100,17 @@ class _GithubClient:
             if not repo.get("private", False) and repo["name"].startswith(f"{self.FRAMEWORK_NAME}-")
         }
 
-    def get_org_repos(self) -> list[dict]:
-        return self._get(f"orgs/{self.ORGANIZATION_NAME}/repos")
+    def get_org_repos(self) -> Iterator[dict]:
+        params = {"per_page": 100, "page": 1}
+        while True:
+            response = self._get(f"orgs/{self.ORGANIZATION_NAME}/repos", params=params)
+            repository_count = len(response)
+
+            if repository_count == 0:
+                break
+
+            yield from response
+            params["page"] += 1
 
     def get_release(self, org_name: str, repo_name: str, version: str) -> dict:
         if version == "latest":
@@ -207,8 +217,8 @@ class _GithubClient:
             for source_file in package_path.iterdir():
                 shutil.move(str(source_file), str(target_path))
 
-    def _get(self, url: str) -> Any:
-        return self._request("GET", url)
+    def _get(self, url: str, params: Optional[dict] = None) -> Any:
+        return self._request("GET", url, params=params)
 
     def _request(self, method: str, url: str, **kwargs) -> Any:
         url = f"{self.API_URL_PREFIX}/{url}"
