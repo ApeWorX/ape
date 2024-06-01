@@ -1,10 +1,13 @@
 from pathlib import Path
 
 import pytest
+from ethpm_types import MethodABI
 from ethpm_types.source import ContractSource, Source
 
+import ape
 from ape.pytest.config import ConfigWrapper
 from ape.pytest.coverage import CoverageData, CoverageTracker
+from ape.types import SourceTraceback
 from ape.types.coverage import (
     ContractCoverage,
     ContractSourceCoverage,
@@ -172,7 +175,7 @@ class TestCoverageData:
 
     @pytest.fixture(scope="class")
     def coverage_data(self, project, contract_source):
-        return CoverageData(project.path, (contract_source,))
+        return CoverageData(project, (contract_source,))
 
     def test_report(self, coverage_data):
         actual = coverage_data.report
@@ -184,13 +187,87 @@ class TestCoverageTracker:
     def pytest_config(self, mocker):
         return mocker.MagicMock()
 
-    @pytest.fixture(scope="class")
+    @pytest.fixture
     def config_wrapper(self, pytest_config):
         return ConfigWrapper(pytest_config)
 
-    def test_data(self, pytest_config):
-        tracker = CoverageTracker(pytest_config)
+    @pytest.fixture
+    def tracker(self, pytest_config):
+        return CoverageTracker(pytest_config)
+
+    def test_data(self, tracker):
         assert tracker.data is not None
-        actual = tracker.data.base_path
-        expected = tracker.local_project.path
+        actual = tracker.data.project
+        expected = tracker.local_project
         assert actual == expected
+
+    def test_cover(self, mocker, pytest_config, compilers, mock_compiler):
+        """
+        Ensure coverage of a call works.
+        """
+        filestem = "atest"
+        filename = f"{filestem}.__mock__"
+        fn_name = "_a_method"
+
+        # Set up the mock compiler.
+        mock_compiler.abi = [MethodABI(name=fn_name)]
+        mock_compiler.ast = {
+            "src": "0:112:0",
+            "name": filename,
+            "end_lineno": 7,
+            "lineno": 1,
+            "ast_type": "Module",
+        }
+        mock_compiler.pcmap = {"0": {"location": (1, 7, 1, 7)}}
+        mock_contract = mocker.MagicMock()
+        mock_contract.name = filename
+        mock_statement = mocker.MagicMock()
+        mock_statement.pcs = {20}
+        mock_statement.hit_count = 0
+        mock_function = mocker.MagicMock()
+        mock_function.name = fn_name
+        mock_function.statements = [mock_statement]
+        mock_contract.functions = [mock_function]
+        mock_contract.statements = [mock_statement]
+
+        def init_profile(source_cov, src):
+            source_cov.contracts = [mock_contract]
+
+        mock_compiler.init_coverage_profile.side_effect = init_profile
+
+        stmt = {"type": "dev: Cannot send ether to non-payable function", "pcs": [20]}
+        fn_name = "_a_method"
+        tb_data = {
+            "statements": [stmt],
+            "closure": {"name": fn_name, "full_name": f"{fn_name}()"},
+            "depth": 0,
+        }
+
+        with ape.Project.create_temporary_project() as tmp:
+            # Create a source file.
+            file = tmp.path / "contracts" / filename
+            file.parent.mkdir(exist_ok=True, parents=True)
+            file.write_text("testing")
+
+            # Ensure the TB refers to this source.
+            tb_data["source_path"] = f"{tmp.path}/contracts/{filename}"
+            call_tb = SourceTraceback.model_validate([tb_data])
+
+            try:
+                # Hack in our mock compiler.
+                _ = compilers.registered_compilers  # Ensure cache is exists.
+                compilers.__dict__["registered_compilers"][mock_compiler.ext] = mock_compiler
+
+                # Ensure our coverage tracker is using our new tmp project w/ the new src
+                # as well is set _after_ our new compiler plugin is added.
+                tracker = CoverageTracker(pytest_config, project=tmp)
+
+                tracker.cover(call_tb, contract=filestem, function=f"{fn_name}()")
+                assert mock_statement.hit_count > 0
+
+            finally:
+                if (
+                    "registered_compilers" in compilers.__dict__
+                    and mock_compiler.ext in compilers.__dict__["registered_compilers"]
+                ):
+                    del compilers.__dict__["registered_compilers"][mock_compiler.ext]
