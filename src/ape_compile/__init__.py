@@ -1,3 +1,7 @@
+import re
+from re import Pattern
+from typing import Union
+
 from pydantic import field_validator
 
 from ape import plugins
@@ -24,9 +28,11 @@ class Config(PluginConfig):
     Configure general compiler settings.
     """
 
-    exclude: set[str] = set()
+    exclude: set[Union[str, Pattern]] = set()
     """
-    Source exclusion globs across all file types.
+    Source exclusion globs or regex patterns across all file types.
+    To use regex, start your values with ``r"`` and they'll be turned
+    into regex pattern objects.
 
     **NOTE**: ``ape.utils.misc.SOURCE_EXCLUDE_PATTERNS`` are automatically
     included in this set.
@@ -51,7 +57,22 @@ class Config(PluginConfig):
     @field_validator("exclude", mode="before")
     @classmethod
     def validate_exclude(cls, value):
-        return {*(value or []), *SOURCE_EXCLUDE_PATTERNS}
+        given_values = []
+
+        # Convert regex to Patterns.
+        for given in value or []:
+            if (given.startswith('r"') and given.endswith('"')) or (
+                given.startswith("r'") and given.endswith("'")
+            ):
+                value_clean = given[2:-1]
+                pattern = re.compile(value_clean)
+                given_values.append(pattern)
+
+            else:
+                given_values.append(given)
+
+        # Include defaults.
+        return {*given_values, *SOURCE_EXCLUDE_PATTERNS}
 
 
 @plugins.register(plugins.Config)

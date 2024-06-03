@@ -5,6 +5,7 @@ from collections.abc import Callable, Iterable, Iterator
 from contextlib import contextmanager
 from functools import cached_property, singledispatchmethod
 from pathlib import Path
+from re import Pattern
 from typing import Any, Optional, Union, cast
 
 from eth_typing import HexStr
@@ -59,7 +60,7 @@ class SourceManager(BaseManager):
         self,
         root_path: Path,
         get_contracts_path: Callable,
-        exclude_globs: Optional[set[str]] = None,
+        exclude_globs: Optional[set[Union[str, Pattern]]] = None,
     ):
         self.root_path = root_path
         self.get_contracts_path = get_contracts_path
@@ -213,19 +214,26 @@ class SourceManager(BaseManager):
         parent_dir_name = path.parent.name
 
         for excl in self.exclude_globs:
-            # perf: Check parent directory first to exclude faster by marking them all.
-            if path_match(parent_dir_name, excl):
-                self._exclude_cache[source_id] = True
-                for sub in get_all_files_in_directory(path.parent):
-                    sub_source_id = self._get_source_id(sub)
-                    self._exclude_cache[sub_source_id] = True
+            if isinstance(excl, Pattern):
+                for opt in options:
+                    if excl.match(opt):
+                        self._exclude_cache[source_id] = True
+                        return True
 
-                return True
-
-            for opt in options:
-                if path_match(opt, excl):
+            else:
+                # perf: Check parent directory first to exclude faster by marking them all.
+                if path_match(parent_dir_name, excl):
                     self._exclude_cache[source_id] = True
+                    for sub in get_all_files_in_directory(path.parent):
+                        sub_source_id = self._get_source_id(sub)
+                        self._exclude_cache[sub_source_id] = True
+
                     return True
+
+                for opt in options:
+                    if path_match(opt, excl):
+                        self._exclude_cache[source_id] = True
+                        return True
 
         self._exclude_cache[source_id] = False
         return False
@@ -2042,7 +2050,7 @@ class LocalProject(Project):
         return DeploymentManager(self)
 
     @property
-    def exclusions(self) -> set[str]:
+    def exclusions(self) -> set[Union[str, Pattern]]:
         """
         Source-file exclusion glob patterns.
         """
