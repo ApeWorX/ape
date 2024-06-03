@@ -15,7 +15,7 @@ Most of the features in this guide are documented more-fully elsewhere in the us
 
 However, here is a list of common-use cases requiring the `ape-config.yaml` file to help you:
 
-1. Setting up a custom node RPC: See the [geth](#geth) section.
+1. Setting up a custom node RPC: See the [node](#node) section.
 2. Setting up project dependencies: See the [dependencies](#dependencies) section.
 3. Declaring your project's plugins: See the [plugins](#plugins) section.
 
@@ -87,13 +87,13 @@ contract = project.MyContract.deployments[0]
 
 **NOTE**: Ape does not add or edit deployments in your `ape-config.yaml` file.
 
-## Geth
+## Node
 
-When using the `geth` provider, you can customize its settings.
+When using the `node` provider, you can customize its settings.
 For example, to change the URI for an Ethereum network, do:
 
 ```yaml
-geth:
+node:
   ethereum:
     mainnet:
       uri: http://localhost:5030
