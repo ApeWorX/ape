@@ -53,6 +53,7 @@ def test_compile(ape_cli, runner, project, clean_cache):
     # in the test project!
     excluded = (
         "Exclude.json",
+        "IgnoreUsingRegex.json",
         "UnwantedContract.json",
         "tsconfig.json",
         "package.json",
@@ -324,6 +325,7 @@ def test_raw_compiler_output_bytecode(project):
 def test_compile_exclude(ape_cli, runner):
     result = runner.invoke(ape_cli, ("compile", "--force"), catch_exceptions=False)
     assert "Compiling 'Exclude.json'" not in result.output
+    assert "Compiling 'IgnoreUsingRegex.json'" not in result.output
     assert "Compiling 'exclude_dir/UnwantedContract.json'" not in result.output
 
 
