@@ -19,3 +19,4 @@ compile:
   exclude:
     - exclude_dir
     - Excl*.json
+    - r"Ignore\w*\.json"
