@@ -269,8 +269,8 @@ signature = account.sign_message(message)
 
 ```{note}
 Ape's `sign_message` API intentionally accepts `Any` as the message argument type.
-Account plugins decide what data-types to support.
 ```
+Account plugins decide what data-types to support.
 Most Ethereum account plugins, such as `ape-account`, are able to sign messages like the example above.
 However, you can also provide other types, such as a `str` directly:
 
