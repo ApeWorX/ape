@@ -22,7 +22,7 @@ def deploy():
     return account.deploy(project.MyContract)
 ```
 
-To get the receipt of a `deploy` transaction, use the [ContractInstance.receipt](../methoddocs/contracts.html#ape.contracts.base.ContractInstance.receipt) property:
+To get the receipt of a `deploy` transaction, use the [ContractInstance.creation_metadata](../methoddocs/contracts.html#ape.contracts.base.ContractInstance.creation_metadata) property:
 
 ```python
 from ape import accounts, project
@@ -31,7 +31,7 @@ dev = accounts.load("dev")
 contract = project.MyContract.deploy(sender=dev)
 
 # The receipt is available on the contract instance and has the expected sender.
-receipt = contract.receipt
+receipt = contract.creation_metadata.receipt
 assert receipt.sender == dev
 ```
 
