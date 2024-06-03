@@ -32,7 +32,9 @@ For example, assuming we have script `<project>/scripts/hello/helloworld.py`, we
 ape run hello helloworld
 ```
 
-**Note**: By default, `cli` scripts do not have [`ape.cli.network_option`](../methoddocs/cli.html?highlight=options#ape.cli.options.network_option) installed, giving you more flexibility in how you define your scripts.
+```{note}
+By default, `cli` scripts do not have [`ape.cli.network_option`](../methoddocs/cli.html?highlight=options#ape.cli.options.network_option) installed, giving you more flexibility in how you define your scripts.
+```
 However, you can add the `network_option` or `ConnectedProviderCommand` to your scripts by importing them from the `ape.cli` namespace:
 
 ```python
@@ -110,9 +112,11 @@ def main():
     print("Hello world!")
 ```
 
-**NOTE**: main-method scripts will always provide a `--network` option and run in a connected-context.
+```{note}
+main-method scripts will always provide a `--network` option and run in a connected-context.
 Therefore, they are not ideal for multi-chain scripts.
 `main`-method scripts work best for quick, single-network, connection-based workflows.
+```
 
 To demonstrate, use the following script:
 

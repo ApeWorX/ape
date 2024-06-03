@@ -85,7 +85,9 @@ from ape import project
 contract = project.MyContract.deployments[0]
 ```
 
-**NOTE**: Ape does not add or edit deployments in your `ape-config.yaml` file.
+```{note}
+Ape does not add or edit deployments in your `ape-config.yaml` file.
+```
 
 ## Node
 
@@ -148,7 +150,9 @@ For the local network configuration, the default is `"max"`. Otherwise, it is `"
 
 Set which `ape` plugins you want to always use.
 
-**NOTE**: The `ape-` prefix is not needed and shouldn't be included here.
+```{note}
+The `ape-` prefix is not needed and shouldn't be included here.
+```
 
 ```yaml
 plugins:

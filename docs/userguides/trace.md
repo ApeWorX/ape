@@ -13,7 +13,9 @@ Some network providers, such as Alchemy and Foundry, implement `debug_traceTrans
 To see a transaction trace, use the [show_trace()](../methoddocs/api.html#ape.api.transactions.ReceiptAPI.show_trace) method on a receipt API object.
 
 Here is an example using `show_trace()` in Python code to print out a transaction's trace.
-**NOTE**: This code runs assuming you are connected to `ethereum:mainnet` using a provider with tracing RPCs.
+```{note}
+This code runs assuming you are connected to `ethereum:mainnet` using a provider with tracing RPCs.
+```
 To learn more about networks in Ape, see the [networks guide](./networks.html).
 
 ```python

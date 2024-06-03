@@ -15,7 +15,9 @@ source venv/bin/activate
 pip install -e .'[dev]'
 ```
 
-**NOTE**: You might run into issues where you have a local install and are trying to work with a plugin pinned to a specific version.
+```{note}
+You might run into issues where you have a local install and are trying to work with a plugin pinned to a specific version.
+```
 
 [The easiest solution](https://github.com/ApeWorX/ape/issues/90) to this is to fetch the tags via `git fetch upstream --tags` and reinstall via `pip install .`.
 You will then have the correct version.
@@ -66,7 +68,9 @@ python -m http.server --directory "docs/_build/" --bind 127.0.0.1 1337
 ```
 
 Then, open your browser to `127.0.0.1:1337` and click the `ape` directory link.
-NOTE: Serving from `"docs/_build/"` rather than `"docs/_build/ape"` is necessary to make routing work.
+```{note}
+Serving from `"docs/_build/"` rather than `"docs/_build/ape"` is necessary to make routing work.
+```
 
 ## Pull Requests
 

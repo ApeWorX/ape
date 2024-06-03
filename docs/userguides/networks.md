@@ -77,7 +77,9 @@ Here is a list of all L2 network plugins supported by Ape:
 | ape-polygon       | [ApeWorX/ape-polygon](https://github.com/ApeWorX/ape-polygon)             |
 | ape-polygon-zkevm | [ApeWorX/ape-polygon-zkevm](https://github.com/ApeWorX/ape-polygon-zkevm) |
 
-**NOTE**: If you are connecting an L2 network or any other network that does not have a plugin, you can use the custom network support, which is described in the [next section](#custom-network-connection).
+```{note}
+If you are connecting an L2 network or any other network that does not have a plugin, you can use the custom network support, which is described in the [next section](#custom-network-connection).
+```
 
 Once you have the L2 network plugin installed, you can configure its node's URI by setting the values in the `node` core plugin via your `ape-config.yaml` file:
 
@@ -202,8 +204,10 @@ etherscan:
       api_uri: https://api.custom.scan/api  # URL used for making API requests.
 ```
 
-**NOTE**: Every explorer plugin may be different in how you configure custom networks.
+```{note}
+Every explorer plugin may be different in how you configure custom networks.
 Consult the plugin's README to clarify.
+```
 
 #### Block time, transaction type, and more config
 
@@ -222,7 +226,9 @@ ethereum:
 
 For a full list of network configurations like this (for both custom and plugin-based networks), [see this section](#configuring-networks).
 
-**NOTE**: This also works if configuring a custom ecosystem.
+```{note}
+This also works if configuring a custom ecosystem.
+```
 If using a custom ecosystem, use the custom ecosystem name as the top-level config key instead:
 
 ```yaml
