@@ -354,6 +354,7 @@ def raises_not_implemented(fn):
 
     def inner(*args, **kwargs):
         raise _create_raises_not_implemented_error(fn)
+
     inner.__doc__ = fn.__doc__
     return inner
 
