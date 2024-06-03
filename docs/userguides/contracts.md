@@ -11,7 +11,7 @@ Deploy contracts from your project using the `project` root-level object.
 You deploy contracts using Python functions such as [AccountAPI.deploy](../methoddocs/api.html#ape.api.accounts.AccountAPI.deploy) or [ContractContainer.deploy](../methoddocs/contracts.html#ape.contracts.base.ContractContainer.deploy).
 
 ```{note}
-You can run Ape's deploy functions from anywhere you run Python!
+You can run Ape's deploy functions anywhere you run Python!
 ```
 
 You need both an account and a contract in order to deploy a contract, as the deployment process requires a transaction to submit the contract data to the blockchain.

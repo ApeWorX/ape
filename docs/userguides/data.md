@@ -64,7 +64,8 @@ ape cache init --network <ecosystem-name>:<network-name>
 ```
 
 ```{note}
-Caching only works for permanently available networks. It will not work with local development networks.
+Caching only works for permanently available networks. 
+It will not work with local development networks.
 ```
 
 For example, to initialize the cache database for the Ethereum mainnet network, you would do the following:

@@ -173,7 +173,7 @@ for log in contract.FooEvent.from_receipt(receipt):
 ```
 
 ```{note}
-If you have more than event with the same name in your contract type's ABI, you can access the events by using the [get_event_by_signature()](../methoddocs/contracts.html?highlight=contractinstance#ape.contracts.base.ContractInstance.get_event_by_signature) method:
+If you have more than one event with the same name in your contract type's ABI, you can access the events by using the [get_event_by_signature()](../methoddocs/contracts.html?highlight=contractinstance#ape.contracts.base.ContractInstance.get_event_by_signature) method:
 ```
 
 ```python
