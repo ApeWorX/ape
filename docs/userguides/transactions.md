@@ -24,6 +24,12 @@ def deploy():
 
 To get the receipt of a `deploy` transaction, use the [ContractInstance.creation_metadata](../methoddocs/contracts.html#ape.contracts.base.ContractInstance.creation_metadata) property:
 
+Additionally, you can find the `.deployer`, `.proxy` and whatever else on the creaton metadata which may come in handy.
+
+```{note} 
+Use `ape-etherscan` or a node with Otterscan for increased support for these features.
+```
+
 ```python
 from ape import accounts, project
 
