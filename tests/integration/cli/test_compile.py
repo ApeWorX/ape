@@ -324,9 +324,9 @@ def test_raw_compiler_output_bytecode(project):
 @skip_projects_except("with-contracts")
 def test_compile_exclude(ape_cli, runner):
     result = runner.invoke(ape_cli, ("compile", "--force"), catch_exceptions=False)
-    assert "Compiling 'Exclude.json'" not in result.output
-    assert "Compiling 'IgnoreUsingRegex.json'" not in result.output
-    assert "Compiling 'exclude_dir/UnwantedContract.json'" not in result.output
+    assert "Compiling 'contracts/Exclude.json'" not in result.output
+    assert "Compiling 'contracts/IgnoreUsingRegex.json'" not in result.output
+    assert "Compiling 'contracts/exclude_dir/UnwantedContract.json'" not in result.output
 
 
 @skip_projects_except("with-contracts")
@@ -338,4 +338,4 @@ def test_compile_config_override(ape_cli, runner):
         '{"compile": {"exclude": ["*ContractA*"]}}',
     )
     result = runner.invoke(ape_cli, arguments, catch_exceptions=False)
-    assert "Compiling 'ContractA.json'" not in result.output
+    assert "Compiling 'contracts/ContractA.json'" not in result.output
