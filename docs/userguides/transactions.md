@@ -26,7 +26,7 @@ To get the receipt of a `deploy` transaction, use the [ContractInstance.creation
 
 Additionally, you can find the `.deployer`, `.proxy` and whatever else on the creaton metadata which may come in handy.
 
-```{note} 
+```{note}
 Use `ape-etherscan` or a node with Otterscan for increased support for these features.
 ```
 
@@ -188,6 +188,7 @@ Otherwise, you will get an `AttributeError`.
 ```{note}
 For longer running scripts, you may need to increase the transaction acceptance timeout.
 ```
+
 The default value is 2 minutes for live networks and 20 seconds for local networks.
 In your `ape-config.yaml` file, add the following:
 

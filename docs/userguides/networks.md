@@ -229,6 +229,7 @@ For a full list of network configurations like this (for both custom and plugin-
 ```{note}
 This also works if configuring a custom ecosystem.
 ```
+
 If using a custom ecosystem, use the custom ecosystem name as the top-level config key instead:
 
 ```yaml

@@ -46,6 +46,7 @@ Out[1]: <NetworkManager active_provider=<test chain_id=61>>
 ```{note}
 To change the network of the active console, use the `--network` option.
 ```
+
 Follow [this guide](./networks.html) for more information on networks in Ape.
 
 ## Namespace Extras

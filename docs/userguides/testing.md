@@ -494,6 +494,7 @@ def test_error_on_deploy(account, project):
 ```
 
 Alternatively, you can attempt to use the address from the revert error to find the error type.
+
 ```{note}
 The address will only exist for transactions that were published (e.g. not for failures during estimating gas), and this may only work on certain providers.
 ```
@@ -574,6 +575,7 @@ Thus, you can enter and exit a provider's context as much as you need in tests.
 ## Gas Reporting
 
 To include a gas report at the end of your tests, you can use the `--gas` flag.
+
 ```{note}
 This feature works best when using a provider with tracing support, such as [ape-foundry](https://github.com/ApeWorX/ape-foundry).
 When not using a provider with adequate tracing support, such as `EthTester`, gas reporting is limited to receipt-level data.
@@ -657,6 +659,7 @@ ape test --coverage
 ```{note}
 Some types of coverage require using a provider that supports transaction tracing, such as `ape-hardhat` or `ape-foundry`.
 ```
+
 Without using a provider with adequate tracing support, coverage is limited to receipt-level data.
 
 Afterwards, you should see a coverage report looking something like:
@@ -716,6 +719,7 @@ The HTML report also supports `verbose: true` and it will show similar tables.
 ```{note}
 You may notice methods with zero statements.
 ```
+
 One example of a method with zero statements may be from an auto-generated getter method for a public variable; certain versions of Vyper do not contain source mappings for these methods.
 However, Ape will still check to see if this method has been called in your tests.
 To get 100% coverage, you must call these methods in your tests.
@@ -723,6 +727,7 @@ To get 100% coverage, you must call these methods in your tests.
 ```{note}
 Notice some methods use the full selector while others don't.
 ```
+
 Methods that use the selector mean that their short name is shared with other methods.
 This happens in Vyper from auto-generated kwarg-based methods.
 Thus, the full selector is used to distinguish the methods in the coverage (and gas) reports.

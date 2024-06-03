@@ -12,6 +12,7 @@ There are three sub-folders in `.ape/packages` for dependencies:
 ```{note}
 You can install dependencies that don't compile out-of-the-box.
 ```
+
 Sometimes, dependencies are only collections of source files not meant to compile on their own but instead be used in projects via import statements.
 You can change the settings of a dependency using `config_override:` to compile dependencies after installed, if needed, and the `api/` cache always refers to the latest used during installation or compilation.
 
@@ -39,6 +40,7 @@ Then, follow the guide below about `remappings` to use the dependency.
 **An important WARNING about the `version:` key for GitHub dependencies:**
 The `version:` config first attempts to use an official GitHub release, but if the release is not found, it will check the release tags.
 ```
+
 If you know the version is not available as an official release, bypass the original check by using the `ref:` key.
 The `ref:` key is also used for installing branches.
 

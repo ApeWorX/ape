@@ -68,6 +68,7 @@ python -m http.server --directory "docs/_build/" --bind 127.0.0.1 1337
 ```
 
 Then, open your browser to `127.0.0.1:1337` and click the `ape` directory link.
+
 ```{note}
 Serving from `"docs/_build/"` rather than `"docs/_build/ape"` is necessary to make routing work.
 ```

@@ -35,6 +35,7 @@ ape run hello helloworld
 ```{note}
 By default, `cli` scripts do not have [`ape.cli.network_option`](../methoddocs/cli.html?highlight=options#ape.cli.options.network_option) installed, giving you more flexibility in how you define your scripts.
 ```
+
 However, you can add the `network_option` or `ConnectedProviderCommand` to your scripts by importing them from the `ape.cli` namespace:
 
 ```python
