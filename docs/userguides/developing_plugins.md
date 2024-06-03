@@ -17,7 +17,9 @@ The following is a list of example plugins to use as a reference when developing
 
 As previously mentioned, a plugin project is merely a python project.
 However, you can optionally use this [project template](https://github.com/ApeWorX/project-template) for initializing your plugin.
-**NOTE**: this template is primarily designed for plugins built within the ApeWorX team organization; not everything may apply.
+```{note}
+This template is primarily designed for plugins built within the ApeWorX team organization; not everything may apply.
+```
 It is okay to delete anything that does not work or that you don't find helpful.
 The template may be good to follow if you want to keep your plugin of similar quality to plugins developed by the ApeWorX team.
 
@@ -98,7 +100,9 @@ entry_points={
 ...
 ```
 
-**NOTE**: Typically, a `_cli.py` module is used instead of a `__init__.py` module for the location of the Click CLI group because it is logically separate from the Python module loading process.
+```{note}
+Typically, a `_cli.py` module is used instead of a `__init__.py` module for the location of the Click CLI group because it is logically separate from the Python module loading process.
+```
 If you try to define them together and use `ape` as a library as well, there is a race condition in the loading process that will prevent the CLI plugin from working.
 
 For common `click` usages, use the `ape.cli` namespace.
@@ -135,7 +139,9 @@ Similarly, if you implemented a `ProviderAPI`, that provider is now accessible i
 ape console my_script --network ethereum:local:my_provider_plugin
 ```
 
-**NOTE**: The `--network` option is available on the commands `test` and `console` as well as any CLI command that uses the [network option decorator](../methoddocs/cli.html?highlight=network_option#ape.cli.options.network_option).
+```{note}
+The `--network` option is available on the commands `test` and `console` as well as any CLI command that uses the [network option decorator](../methoddocs/cli.html?highlight=network_option#ape.cli.options.network_option).
+```
 To learn more about networks in Ape, follow [this guide](./networks.html).
 
 When creating the CLI-based plugins, you should see your CLI command as a top-level command in the `ape --help` output:

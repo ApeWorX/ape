@@ -13,8 +13,10 @@ The following log levels are available with Ape:
 | WARNING   | 30            | Indicates a potential issue    | Yellow |
 | ERROR     | 40            | An error occurred              | Red    |
 
-**NOTE**: `SUCCESS` is a non-standard verbosity level custom to the framework.
+```{note}
+`SUCCESS` is a non-standard verbosity level custom to the framework.
 It is shown during `INFO` but not shown if set to `WARNING` or above.
+```
 
 ## CLI Logging
 
