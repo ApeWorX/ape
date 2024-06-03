@@ -260,7 +260,9 @@ This uses the default Ethereum ecosystem class.
 ape run script --network https://foo.bar
 ```
 
-**WARNING**: The recommended approach is to use an L2 plugin when one exists, as it will integrate better in the Ape ecosystem.
+```{warning}
+The recommended approach is to use an L2 plugin when one exists, as it will integrate better in the Ape ecosystem.
+```
 
 Here are some general reason why Network plugins are recommended:
 

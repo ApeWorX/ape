@@ -35,8 +35,10 @@ dependencies:
 
 Then, follow the guide below about `remappings` to use the dependency.
 
+```{warning}
 **An important WARNING about the `version:` key for GitHub dependencies:**
 The `version:` config first attempts to use an official GitHub release, but if the release is not found, it will check the release tags.
+```
 If you know the version is not available as an official release, bypass the original check by using the `ref:` key.
 The `ref:` key is also used for installing branches.
 

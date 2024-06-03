@@ -28,7 +28,9 @@ A benefit of the plugin system is that each plugin can implement these however t
 Two plugins with the same API may do entirely different things and yet be interchangeable in their usage.
 
 To implement an API, import its class and use it as a base-class in your implementation class.
-**WARNING**: The plugin will fail to work properly if you do not implement all the abstract methods.
+```{warning}
+The plugin will fail to work properly if you do not implement all the abstract methods.
+```
 
 ```python
 from ape.api import ProviderAPI

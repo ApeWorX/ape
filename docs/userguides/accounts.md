@@ -46,7 +46,9 @@ test:
   number_of_accounts: 5
 ```
 
-**WARN**: NEVER put a seed phrase with real funds here.
+```{warning}
+NEVER put a seed phrase with real funds here.
+```
 The accounts generated from this seed are solely for testing and debugging purposes.
 
 ### Creating new test accounts
