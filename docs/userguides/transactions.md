@@ -202,7 +202,7 @@ ethereum:
 
 Transaction traces are the steps in the contract the transaction took.
 Traces both power a myriad of features in Ape as well are themselves a tool for developers to use to debug transactions.
-To learn more about traces, see the [traces userguide](./trace.md).
+To learn more about traces, see the [traces userguide](./trace.html).
 
 ## Estimate Gas Cost
 
