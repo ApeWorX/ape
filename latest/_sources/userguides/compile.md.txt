@@ -58,6 +58,7 @@ compile:
   exclude:
     - "examples"  # Exclude all files in the examples/ directory
     - "*Mock.sol"  # Exclude all files ending in Mock.sol
+    - r"(?!.*_mock\.vy$)"  # You can also use regex instead of globs (prefix with `r`).
 ```
 
 You can also exclude files using the `--config-override` CLI option:

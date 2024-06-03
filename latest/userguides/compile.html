@@ -296,6 +296,7 @@ To append file-globs to the exclusions list, edit your <code class="docutils lit
 <span class="w">  </span><span class="nt">exclude</span><span class="p">:</span>
 <span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&quot;examples&quot;</span><span class="w">  </span><span class="c1"># Exclude all files in the examples/ directory</span>
 <span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&quot;*Mock.sol&quot;</span><span class="w">  </span><span class="c1"># Exclude all files ending in Mock.sol</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">r&quot;(?!.*_mock\.vy$)&quot;</span><span class="w">  </span><span class="c1"># You can also use regex instead of globs (prefix with `r`).</span>
 </pre></div>
 </div>
 <p>You can also exclude files using the <code class="docutils literal notranslate"><span class="pre">--config-override</span></code> CLI option:</p>
