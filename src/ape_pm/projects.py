@@ -1,4 +1,11 @@
-import tomllib
+import sys
+
+if sys.version_info.minor >= 11:
+    # 3.11 or greater
+    import tomllib
+else:
+    import toml as tomllib  # type: ignore[no-redef]
+
 from pathlib import Path
 from typing import Any
 
