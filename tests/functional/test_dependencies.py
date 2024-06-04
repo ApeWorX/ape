@@ -163,6 +163,18 @@ def test_get_versions(project_with_downloaded_dependencies):
     assert len(actual) == 2
 
 
+def test_getitem_and_contains_and_get(project_with_downloaded_dependencies):
+    dm = project_with_downloaded_dependencies.dependencies
+    name = "openzeppelin"
+    versions = dm[name]
+    assert "3.1.0" in versions
+    assert "v3.1.0" in versions  # Also allows v-prefix.
+    assert (
+        versions["3.1.0"] == versions["v3.1.0"] == versions.get("3.1.0") == versions.get("v3.1.0")
+    )
+    assert isinstance(versions["3.1.0"], LocalProject)
+
+
 def test_add(project):
     with project.isolate_in_tempdir() as tmp_project:
         contracts_path = tmp_project.path / "src"
