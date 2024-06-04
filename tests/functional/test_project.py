@@ -583,24 +583,57 @@ remappings = [
     'forge-std/=lib/forge-std/src/',
     '@openzeppelin/=lib/openzeppelin-contracts/',
 ]
-"""
+""".lstrip()
 
-    def test_extract_config(self, toml):
+    @pytest.fixture(scope="class")
+    def gitmodules(self):
+        return """
+[submodule "lib/forge-std"]
+    path = lib/forge-std
+    url = https://github.com/foundry-rs/forge-std
+    branch = v1.5.2
+[submodule "lib/openzeppelin-contracts"]
+    path = lib/openzeppelin-contracts
+    url = https://github.com/OpenZeppelin/openzeppelin-contracts
+    release = v4.9.5
+    branch = v4.9.5
+""".lstrip().replace(
+            "    ", "\t"
+        )
+
+    def test_extract_config(self, toml, gitmodules):
         with ape.Project.create_temporary_project() as temp_project:
             cfg_file = temp_project.path / "foundry.toml"
             cfg_file.write_text(toml)
+            gitmodules_file = temp_project.path / ".gitmodules"
+            gitmodules_file.write_text(gitmodules)
 
             api = temp_project.project_api
             assert isinstance(api, FoundryProject)
 
+            # Ensure solidity config migrated.
             actual = temp_project.config  # Is result of ``api.extract_config()``.
             assert actual["contracts_folder"] == "src"
+            assert "solidity" in actual, "Solidity failed to migrate"
             actual_sol = actual["solidity"]
             assert actual_sol["import_remappings"] == [
-                "forge-std/=lib/forge-std/src/",
-                "@openzeppelin/=lib/openzeppelin-contracts/",
+                "forge-std/=forge-std/src/",
+                "@openzeppelin/=openzeppelin-contracts/",
             ]
             assert actual_sol["version"] == "0.8.18"
+
+            # Ensure dependencies migrated from .gitmodules.
+            assert "dependencies" in actual, "Dependencies failed to migrate"
+            actual_dependencies = actual["dependencies"]
+            expected_dependencies = [
+                {"github": "foundry-rs/forge-std", "name": "forge-std", "ref": "v1.5.2"},
+                {
+                    "github": "OpenZeppelin/openzeppelin-contracts",
+                    "name": "openzeppelin",
+                    "version": "v4.9.5",
+                },
+            ]
+            assert actual_dependencies == expected_dependencies
 
 
 class TestSourceManager:

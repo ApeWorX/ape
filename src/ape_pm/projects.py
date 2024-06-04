@@ -1,3 +1,4 @@
+import os
 import sys
 
 if sys.version_info.minor >= 11:
@@ -124,6 +125,10 @@ class FoundryProject(ProjectAPI):
         return self.path / "foundry.toml"
 
     @property
+    def submodules_file(self) -> Path:
+        return self.path / ".gitmodules"
+
+    @property
     def is_valid(self) -> bool:
         return self.foundry_config_file.is_file()
 
@@ -138,6 +143,9 @@ class FoundryProject(ProjectAPI):
         #  instead of `contracts`, hence the default.
         ape_cfg["contracts_folder"] = root_data.get("src", "src")
 
+        # Used for seeing which remappings are comings from dependencies.
+        lib_paths = root_data.get("libs", ("lib",))
+
         # Handle all ape-solidity configuration.
         solidity_data: dict = {}
         if solc_version := (root_data.get("solc") or root_data.get("solc_version")):
@@ -151,4 +159,95 @@ class FoundryProject(ProjectAPI):
         if soldata := solidity_data:
             ape_cfg["solidity"] = soldata
 
+        # Foundry used .gitmodules for dependencies.
+        dependencies: list[dict] = []
+        if self.submodules_file.is_file():
+            module_data = _parse_gitmodules(self.submodules_file)
+            for module in module_data:
+                if not (url := module.get("url")):
+                    continue
+                elif not url.startswith("https://github.com/"):
+                    # Not from GitHub.
+                    continue
+
+                path_name = module.get("path")
+                github = url.replace("https://github.com/", "")
+                gh_dependency = {"github": github}
+
+                # Check for short-name in remappings.
+                fixed_remappings: list[str] = []
+                for remapping in ape_cfg.get("solidity", {}).get("import_remappings", []):
+                    parts = remapping.split("=")
+                    value = parts[1]
+                    found = False
+                    for lib_path in lib_paths:
+                        if not value.startswith(path_name):
+                            continue
+
+                        new_value = value.replace(f"{lib_path}{os.path.sep}", "")
+                        fixed_remappings.append(f"{parts[0]}={new_value}")
+                        gh_dependency["name"] = parts[0].strip(" /\\@")
+                        found = True
+                        break
+
+                    if not found:
+                        # Append remapping as-is.
+                        fixed_remappings.append(remapping)
+
+                if fixed_remappings:
+                    ape_cfg["solidity"]["import_remappings"] = fixed_remappings
+
+                if "name" not in gh_dependency and path_name:
+                    found = False
+                    for lib_path in lib_paths:
+                        if not path_name.startswith(f"{lib_path}{os.path.sep}"):
+                            continue
+
+                        name = path_name.replace(f"{lib_path}{os.path.sep}", "")
+                        gh_dependency["name"] = name
+                        found = True
+                        break
+
+                    if not found:
+                        name = path_name.replace("/\\_", "-").lower()
+                        gh_dependency["name"] = name
+
+                if "release" in module:
+                    gh_dependency["version"] = module["release"]
+                elif "branch" in module:
+                    gh_dependency["ref"] = module["branch"]
+
+                dependencies.append(gh_dependency)
+
+        if deps := dependencies:
+            ape_cfg["dependencies"] = deps
+
         return ApeConfig.model_validate(ape_cfg)
+
+
+def _parse_gitmodules(file_path: Path) -> list[dict[str, str]]:
+    submodules: list[dict[str, str]] = []
+    submodule: dict[str, str] = {}
+    content = Path(file_path).read_text()
+
+    for line in content.splitlines():
+        line = line.strip()
+        if line.startswith("[submodule"):
+            # Add the submodule we have been building to the list
+            # if it exists. This happens on submodule after the first one.
+            if submodule:
+                submodules.append(submodule)
+                submodule = {}
+
+        for key in ("path", "url", "release", "branch"):
+            if not line.startswith(f"{key} ="):
+                continue
+
+            submodule[key] = line.split("=")[1].strip()
+            break  # No need to try the rest.
+
+    # Add the last submodule.
+    if submodule:
+        submodules.append(submodule)
+
+    return submodules
