@@ -7,11 +7,12 @@ from ethpm_types import Compiler, ContractType, PackageManifest, Source
 from ethpm_types.manifest import PackageName
 from pydantic_core import Url
 
+import ape
 from ape import Project
 from ape.contracts import ContractContainer
 from ape.exceptions import ProjectError
 from ape.logging import LogLevel
-from ape_pm import BrownieProject
+from ape_pm import BrownieProject, FoundryProject
 from tests.conftest import skip_if_plugin_installed
 
 
@@ -549,7 +550,7 @@ class TestBrownieProject:
         project_path = base_projects_directory / "BrownieProject"
         return BrownieProject(path=project_path)
 
-    def test_configure(self, config, brownie_project):
+    def test_extract_config(self, config, brownie_project):
         config = brownie_project.extract_config()
 
         # Ensure contracts_folder works.
@@ -566,6 +567,83 @@ class TestBrownieProject:
         assert config.dependencies[0]["name"] == "openzeppelin"
         assert config.dependencies[0]["github"] == "OpenZeppelin/openzeppelin-contracts"
         assert config.dependencies[0]["version"] == "3.1.0"
+
+
+class TestFoundryProject:
+    @pytest.fixture
+    def mock_github(self, mocker):
+        return mocker.MagicMock()
+
+    @pytest.fixture(scope="class")
+    def toml(self):
+        return """
+[profile.default]
+src = 'src'
+out = 'out'
+libs = ['lib']
+solc = "0.8.18"
+
+remappings = [
+    'forge-std/=lib/forge-std/src/',
+    '@openzeppelin/=lib/openzeppelin-contracts/',
+]
+""".lstrip()
+
+    @pytest.fixture(scope="class")
+    def gitmodules(self):
+        return """
+[submodule "lib/forge-std"]
+    path = lib/forge-std
+    url = https://github.com/foundry-rs/forge-std
+    branch = v1.5.2
+[submodule "lib/openzeppelin-contracts"]
+    path = lib/openzeppelin-contracts
+    url = https://github.com/OpenZeppelin/openzeppelin-contracts
+    release = v4.9.5
+    branch = v4.9.5
+[submodule "lib/erc4626-tests"]
+    path = lib/erc4626-tests
+    url = https://github.com/a16z/erc4626-tests.git
+""".lstrip().replace(
+            "    ", "\t"
+        )
+
+    def test_extract_config(self, toml, gitmodules, mock_github):
+        with ape.Project.create_temporary_project() as temp_project:
+            cfg_file = temp_project.path / "foundry.toml"
+            cfg_file.write_text(toml)
+            gitmodules_file = temp_project.path / ".gitmodules"
+            gitmodules_file.write_text(gitmodules)
+
+            api = temp_project.project_api
+            mock_github.get_repo.return_value = {"default_branch": "main"}
+            api._github_client = mock_github  # type: ignore
+            assert isinstance(api, FoundryProject)
+
+            # Ensure solidity config migrated.
+            actual = temp_project.config  # Is result of ``api.extract_config()``.
+            assert actual["contracts_folder"] == "src"
+            assert "solidity" in actual, "Solidity failed to migrate"
+            actual_sol = actual["solidity"]
+            assert actual_sol["import_remappings"] == [
+                "forge-std/=forge-std/src/",
+                "@openzeppelin/=openzeppelin-contracts/",
+            ]
+            assert actual_sol["version"] == "0.8.18"
+
+            # Ensure dependencies migrated from .gitmodules.
+            assert "dependencies" in actual, "Dependencies failed to migrate"
+            actual_dependencies = actual["dependencies"]
+            expected_dependencies = [
+                {"github": "foundry-rs/forge-std", "name": "forge-std", "ref": "v1.5.2"},
+                {
+                    "github": "OpenZeppelin/openzeppelin-contracts",
+                    "name": "openzeppelin",
+                    "version": "v4.9.5",
+                },
+                {"github": "a16z/erc4626-tests", "name": "erc4626-tests", "ref": "main"},
+            ]
+            assert actual_dependencies == expected_dependencies
 
 
 class TestSourceManager:

@@ -2,7 +2,7 @@ from ape import plugins
 
 from .compiler import InterfaceCompiler
 from .dependency import GithubDependency, LocalDependency, NpmDependency
-from .projects import BrownieProject
+from .projects import BrownieProject, FoundryProject
 
 
 @plugins.register(plugins.CompilerPlugin)
@@ -20,10 +20,12 @@ def dependencies():
 @plugins.register(plugins.ProjectPlugin)
 def projects():
     yield BrownieProject
+    yield FoundryProject
 
 
 __all__ = [
     "BrownieProject",
+    "FoundryProject",
     "GithubDependency",
     "InterfaceCompiler",
     "LocalDependency",
