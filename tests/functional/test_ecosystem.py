@@ -979,7 +979,7 @@ def test_default_network_name_when_not_set_and_no_local_uses_only(
         if actual == LOCAL_NETWORK_NAME:
             # For some reason, this test is flake-y. Offer more info
             # to try and debug when this happens (intermittent CI failure).
-            all_nets = ", ".join([x.name for x in ecosystem.networks])
+            all_nets = ", ".join([x for x in ecosystem.networks.keys()])
             pytest.fail(
                 f"assert '{LOCAL_NETWORK_NAME}' == '{only_network}'. More info below:\n"
                 f"ecosystem_name={ecosystem.name}\n"
