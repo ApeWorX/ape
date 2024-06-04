@@ -7,11 +7,12 @@ from ethpm_types import Compiler, ContractType, PackageManifest, Source
 from ethpm_types.manifest import PackageName
 from pydantic_core import Url
 
+import ape
 from ape import Project
 from ape.contracts import ContractContainer
 from ape.exceptions import ProjectError
 from ape.logging import LogLevel
-from ape_pm import BrownieProject
+from ape_pm import BrownieProject, FoundryProject
 from tests.conftest import skip_if_plugin_installed
 
 
@@ -549,7 +550,7 @@ class TestBrownieProject:
         project_path = base_projects_directory / "BrownieProject"
         return BrownieProject(path=project_path)
 
-    def test_configure(self, config, brownie_project):
+    def test_extract_config(self, config, brownie_project):
         config = brownie_project.extract_config()
 
         # Ensure contracts_folder works.
@@ -566,6 +567,40 @@ class TestBrownieProject:
         assert config.dependencies[0]["name"] == "openzeppelin"
         assert config.dependencies[0]["github"] == "OpenZeppelin/openzeppelin-contracts"
         assert config.dependencies[0]["version"] == "3.1.0"
+
+
+class TestFoundryProject:
+    @pytest.fixture(scope="class")
+    def toml(self):
+        return """
+[profile.default]
+src = 'src'
+out = 'out'
+libs = ['lib']
+solc = "0.8.18"
+
+remappings = [
+    'forge-std/=lib/forge-std/src/',
+    '@openzeppelin/=lib/openzeppelin-contracts/',
+]
+"""
+
+    def test_extract_config(self, toml):
+        with ape.Project.create_temporary_project() as temp_project:
+            cfg_file = temp_project.path / "foundry.toml"
+            cfg_file.write_text(toml)
+
+            api = temp_project.project_api
+            assert isinstance(api, FoundryProject)
+
+            actual = temp_project.config  # Is result of ``api.extract_config()``.
+            assert actual["contracts_folder"] == "src"
+            actual_sol = actual["solidity"]
+            assert actual_sol["import_remappings"] == [
+                "forge-std/=lib/forge-std/src/",
+                "@openzeppelin/=lib/openzeppelin-contracts/",
+            ]
+            assert actual_sol["version"] == "0.8.18"
 
 
 class TestSourceManager:

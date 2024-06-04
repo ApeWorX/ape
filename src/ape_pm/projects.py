@@ -1,3 +1,4 @@
+import tomllib
 from pathlib import Path
 from typing import Any
 
@@ -101,3 +102,45 @@ class BrownieProject(ProjectAPI):
 
         model = {**migrated_config_data, **overrides}
         return ApeConfig.model_validate(model)
+
+
+class FoundryProject(ProjectAPI):
+    """
+    Helps Ape read configurations from a foundry projects
+    and lessen the needs of ``config_override:`` for projects
+    that are foundry-based.
+    """
+
+    @property
+    def foundry_config_file(self) -> Path:
+        return self.path / "foundry.toml"
+
+    @property
+    def is_valid(self) -> bool:
+        return self.foundry_config_file.is_file()
+
+    def extract_config(self, **overrides) -> "ApeConfig":
+        ape_cfg: dict = {}
+        data = tomllib.loads(self.foundry_config_file.read_text())
+        profile = data.get("profile", {})
+        root_data = profile.get("default", {})
+
+        # Handle root project configuration.
+        # NOTE: The default contracts folder name is `src` in foundry
+        #  instead of `contracts`, hence the default.
+        ape_cfg["contracts_folder"] = root_data.get("src", "src")
+
+        # Handle all ape-solidity configuration.
+        solidity_data: dict = {}
+        if solc_version := (root_data.get("solc") or root_data.get("solc_version")):
+            solidity_data["version"] = solc_version
+        if remappings := root_data.get("remappings"):
+            solidity_data["import_remappings"] = remappings
+        if "optimizer" in root_data:
+            solidity_data["optimize"] = root_data["optimizer"]
+        if runs := solidity_data.get("optimizer_runs"):
+            solidity_data["optimization_runs"] = runs
+        if soldata := solidity_data:
+            ape_cfg["solidity"] = soldata
+
+        return ApeConfig.model_validate(ape_cfg)
