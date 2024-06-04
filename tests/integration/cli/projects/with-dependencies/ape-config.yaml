@@ -20,3 +20,6 @@ dependencies:
 
   - name: manifest-dependency
     local: ./manifest_dependency.json
+
+  - name: empty-dependency
+    local: ./empty_dependency

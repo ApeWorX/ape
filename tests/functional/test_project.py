@@ -582,6 +582,7 @@ src = 'src'
 out = 'out'
 libs = ['lib']
 solc = "0.8.18"
+evm_version = 'cancun'
 
 remappings = [
     'forge-std/=lib/forge-std/src/',
@@ -630,6 +631,7 @@ remappings = [
                 "@openzeppelin/=openzeppelin-contracts/",
             ]
             assert actual_sol["version"] == "0.8.18"
+            assert actual_sol["evm_version"] == "cancun"
 
             # Ensure dependencies migrated from .gitmodules.
             assert "dependencies" in actual, "Dependencies failed to migrate"

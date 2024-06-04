@@ -267,6 +267,14 @@ def test_unpack_dependencies_of_dependencies(project, with_dependencies_project_
         assert "sub-dependency" in subdirs
 
 
+def test_unpack_no_contracts_folder(project, with_dependencies_project_path):
+    dep = project.dependencies.install(local=with_dependencies_project_path, name="wdep")
+    with create_tempdir() as tempdir:
+        list(dep.unpack(tempdir))
+        subdirs = [x.name for x in tempdir.iterdir() if x.is_dir()]
+        assert "empty-dependency" in subdirs
+
+
 class TestPackagesCache:
     @pytest.fixture
     def cache(self):
