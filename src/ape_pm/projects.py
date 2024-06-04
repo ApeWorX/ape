@@ -149,7 +149,7 @@ class FoundryProject(ProjectAPI):
         # Handle root project configuration.
         # NOTE: The default contracts folder name is `src` in foundry
         #  instead of `contracts`, hence the default.
-        ape_cfg["contracts_folder"] = root_data.get("src", "src")
+        ape_cfg["contracts_folder"] = root_data.get("src")
 
         # Used for seeing which remappings are comings from dependencies.
         lib_paths = root_data.get("libs", ("lib",))
