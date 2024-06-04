@@ -909,31 +909,36 @@ class DependencyVersionMap(dict[str, "ProjectManager"]):
         keys = ",".join(list(self.keys()))
         return f"<{self._name} versions='{keys}'>"
 
-    def __contains__(self, version: str) -> bool:
+    def __contains__(self, version: Any) -> bool:
+        if not isinstance(version, str):
+            return False
+
         options = _version_to_options(version)
-        return any(dict.__contains__(self, v) for v in options)
+        return any(dict.__contains__(self, v) for v in options)  # type: ignore
 
     def __getitem__(self, version: str) -> "ProjectManager":
         options = _version_to_options(version)
         for vers in options:
-            if not dict.__contains__(self, vers):
+            if not dict.__contains__(self, vers):  # type: ignore
                 continue
 
             # Found.
-            return dict.__getitem__(self, vers)
+            return dict.__getitem__(self, vers)  # type: ignore
 
         raise KeyError(version)
 
-    def get(self, version: str):
+    def get(  # type: ignore
+        self, version: str, default: Optional["ProjectManager"] = None
+    ) -> Optional["ProjectManager"]:
         options = _version_to_options(version)
         for vers in options:
-            if not dict.__contains__(self, vers):
+            if not dict.__contains__(self, vers):  # type: ignore
                 continue
 
             # Found.
-            return dict.get(self, vers)
+            return dict.get(self, vers)  # type: ignore
 
-        return None
+        return default
 
     def extend(self, data: dict):
         for key, val in data.items():
