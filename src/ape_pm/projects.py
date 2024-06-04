@@ -173,6 +173,9 @@ class FoundryProject(ProjectAPI):
             solidity_data["optimize"] = root_data["optimizer"]
         if runs := solidity_data.get("optimizer_runs"):
             solidity_data["optimization_runs"] = runs
+        if evm_version := root_data.get("evm_version"):
+            solidity_data["evm_version"] = evm_version
+
         if soldata := solidity_data:
             ape_cfg["solidity"] = soldata
 
