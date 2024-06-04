@@ -355,6 +355,7 @@ def raises_not_implemented(fn):
     def inner(*args, **kwargs):
         raise _create_raises_not_implemented_error(fn)
 
+    # This is necessary for doc strings to show up with sphinx
     inner.__doc__ = fn.__doc__
     return inner
 
