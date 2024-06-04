@@ -2,7 +2,8 @@ import sys
 
 if sys.version_info.minor >= 11:
     # 3.11 or greater
-    import tomllib
+    # NOTE: type-ignore is for when running mypy on python versions < 3.11
+    import tomllib  # type: ignore[import-not-found]
 else:
     import toml as tomllib  # type: ignore[no-redef]
 
