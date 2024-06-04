@@ -974,6 +974,7 @@ def test_default_network_name_when_not_set_and_no_local_uses_only(
 
     with project.temp_config(networks={"custom": [net]}):
         ecosystem = project.network_manager.get_ecosystem(ecosystem_name)
+        ecosystem._default_network = None
         actual = ecosystem.default_network_name
 
         if actual == LOCAL_NETWORK_NAME:

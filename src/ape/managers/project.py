@@ -882,6 +882,69 @@ class PackagesCache(ManagerAccessMixin):
         manifest_file.unlink(missing_ok=True)
 
 
+def _version_to_options(version: str) -> tuple[str, ...]:
+    if version.startswith("v"):
+        # with the v, without
+        return (version, version[1:])
+
+    elif version and version[0].isnumeric():
+        # without the v, and with.
+        return (version, f"v{version}")
+
+    return (version,)
+
+
+class DependencyVersionMap(dict[str, "ProjectManager"]):
+    """
+    A mapping of versions to dependencies.
+    This class exists to allow both v-prefixed versions
+    as well none v-prefixed versions.
+    """
+
+    def __init__(self, name: str):
+        self._name = name
+
+    @log_instead_of_fail(default="<DependencyVersionMap>")
+    def __repr__(self) -> str:
+        keys = ",".join(list(self.keys()))
+        return f"<{self._name} versions='{keys}'>"
+
+    def __contains__(self, version: Any) -> bool:
+        if not isinstance(version, str):
+            return False
+
+        options = _version_to_options(version)
+        return any(dict.__contains__(self, v) for v in options)  # type: ignore
+
+    def __getitem__(self, version: str) -> "ProjectManager":
+        options = _version_to_options(version)
+        for vers in options:
+            if not dict.__contains__(self, vers):  # type: ignore
+                continue
+
+            # Found.
+            return dict.__getitem__(self, vers)  # type: ignore
+
+        raise KeyError(version)
+
+    def get(  # type: ignore
+        self, version: str, default: Optional["ProjectManager"] = None
+    ) -> Optional["ProjectManager"]:
+        options = _version_to_options(version)
+        for vers in options:
+            if not dict.__contains__(self, vers):  # type: ignore
+                continue
+
+            # Found.
+            return dict.get(self, vers)  # type: ignore
+
+        return default
+
+    def extend(self, data: dict):
+        for key, val in data.items():
+            self[key] = val
+
+
 class DependencyManager(BaseManager):
     """
     Manage dependencies for an Ape project.
@@ -912,22 +975,23 @@ class DependencyManager(BaseManager):
         # NOTE: Using the config value keeps use lazy and fast.
         return len(self.project.config.dependencies)
 
-    def __getitem__(self, name: str) -> dict[str, "ProjectManager"]:
-        result: dict[str, "ProjectManager"] = {}
+    def __getitem__(self, name: str) -> DependencyVersionMap:
+        result = DependencyVersionMap(name)
+
+        # Always ensure the specified are included, even if not yet installed.
+        if versions := {d.version: d.project for d in self._get_specified(name=name)}:
+            result.extend(versions)
+
+        # Add other dependencies of the same package (different versions)
+        # that are also installed.
         for dependency in self.installed:
             if dependency.name != name:
                 continue
 
-            result[dependency.version] = dependency.project
+            if dependency.version not in result:
+                result[dependency.version] = dependency.project
 
-        if result:
-            return result
-
-        # Try installing specified.
-        if versions := {d.version: d.project for d in self._get_specified(name=name)}:
-            return versions
-
-        return {}
+        return result
 
     def __contains__(self, name: str) -> bool:
         for dependency in self.installed:
@@ -1164,12 +1228,7 @@ class DependencyManager(BaseManager):
         Returns:
             class:`~ape.managers.project.Dependency`
         """
-        version_options = [version]
-        if version.startswith("v"):
-            version_options.append(version[1:])
-        elif version and version[0].isnumeric():
-            # All try a v-prefix if using a numeric-like version.
-            version_options.append(f"v{version}")
+        version_options = _version_to_options(version)
 
         # Also try the lower of the name
         # so ``OpenZeppelin`` would give you ``openzeppelin``.
