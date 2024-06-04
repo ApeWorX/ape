@@ -262,9 +262,9 @@ def test_unpack(project_with_downloaded_dependencies):
 def test_unpack_dependencies_of_dependencies(project, with_dependencies_project_path):
     dep = project.dependencies.install(local=with_dependencies_project_path, name="wdep")
     with create_tempdir() as tempdir:
-        dep.unpack(tempdir)
-
-        # TODO: Check for dependency of dependency!
+        list(dep.unpack(tempdir))
+        subdirs = [x.name for x in tempdir.iterdir() if x.is_dir()]
+        assert "sub-dependency" in subdirs
 
 
 class TestPackagesCache:
