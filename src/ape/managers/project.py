@@ -779,7 +779,8 @@ class Dependency(BaseManager, ExtraAttributesMixin):
             )
             destination = folder / contracts_folder_id
             destination.parent.mkdir(parents=True, exist_ok=True)
-            shutil.copytree(self.project.contracts_folder, destination)
+            if self.project.contracts_folder.is_dir():
+                shutil.copytree(self.project.contracts_folder, destination)
 
         # self is done!
         yield self
