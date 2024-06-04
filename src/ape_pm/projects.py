@@ -149,7 +149,7 @@ class FoundryProject(ProjectAPI):
         # Handle root project configuration.
         # NOTE: The default contracts folder name is `src` in foundry
         #  instead of `contracts`, hence the default.
-        ape_cfg["contracts_folder"] = root_data.get("src", "src")
+        ape_cfg["contracts_folder"] = root_data.get("src")
 
         # Used for seeing which remappings are comings from dependencies.
         lib_paths = root_data.get("libs", ("lib",))
@@ -173,6 +173,9 @@ class FoundryProject(ProjectAPI):
             solidity_data["optimize"] = root_data["optimizer"]
         if runs := solidity_data.get("optimizer_runs"):
             solidity_data["optimization_runs"] = runs
+        if evm_version := root_data.get("evm_version"):
+            solidity_data["evm_version"] = evm_version
+
         if soldata := solidity_data:
             ape_cfg["solidity"] = soldata
 

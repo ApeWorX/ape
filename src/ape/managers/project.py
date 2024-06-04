@@ -774,12 +774,19 @@ class Dependency(BaseManager, ExtraAttributesMixin):
 
         if not folder.is_dir():
             # Not yet unpacked.
-            contracts_folder_id = get_relative_path(
-                self.project.contracts_folder, self.project.path
-            )
-            destination = folder / contracts_folder_id
-            destination.parent.mkdir(parents=True, exist_ok=True)
-            shutil.copytree(self.project.contracts_folder, destination)
+            if isinstance(self.project, LocalProject):
+                contracts_folder_id = get_relative_path(
+                    self.project.contracts_folder, self.project.path
+                )
+                destination = folder / contracts_folder_id
+                destination.parent.mkdir(parents=True, exist_ok=True)
+                if self.project.contracts_folder.is_dir():
+                    shutil.copytree(self.project.contracts_folder, destination)
+
+            else:
+                # Will create contracts folder from source IDs.
+                folder.parent.mkdir(parents=True, exist_ok=True)
+                self.project.manifest.unpack_sources(folder)
 
         # self is done!
         yield self
