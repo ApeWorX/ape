@@ -365,10 +365,126 @@ class TestNpmDependency:
 
 
 class TestGitHubDependency:
+    @pytest.fixture
+    def mock_client(self, mocker):
+        return mocker.MagicMock()
+
     def test_ref_or_version_is_required(self):
         expected = r"GitHub dependency must have either ref or version specified"
         with pytest.raises(ValidationError, match=expected):
             _ = GithubDependency(name="foo", github="asdf")
+
+    def test_fetch(self, mock_client):
+        dependency = GithubDependency(
+            github="ApeWorX/ApeNotAThing", version="3.0.0", name="apetestdep"
+        )
+        dependency._github_client = mock_client
+        with create_tempdir() as path:
+            dependency.fetch(path)
+
+        mock_client.download_package.assert_called_once_with(
+            "ApeWorX", "ApeNotAThing", "3.0.0", path
+        )
+
+    def test_fetch_missing_v_prefix(self, mock_client):
+        """
+        Show if the version expects a v-prefix but you don't
+        provide one that it still works.
+        """
+        dependency = GithubDependency(
+            github="ApeWorX/ApeNotAThing", version="3.0.0", name="apetestdep"
+        )
+        dependency._github_client = mock_client
+
+        # Simulate only v-prefix succeeding from GH
+        def only_want_v(n0, n1, vers, pth):
+            if not vers.startswith("v"):
+                raise ValueError("nope")
+
+        mock_client.download_package.side_effect = only_want_v
+
+        with create_tempdir() as path:
+            dependency.fetch(path)
+
+        calls = mock_client.download_package.call_args_list
+        assert mock_client.download_package.call_count == 2
+        # Show it first tried w/o v
+        assert calls[0][0] == ("ApeWorX", "ApeNotAThing", "3.0.0", path)
+        # The second call has the v!
+        assert calls[1][0] == ("ApeWorX", "ApeNotAThing", "v3.0.0", path)
+
+    def test_fetch_unneeded_v_prefix(self, mock_client):
+        """
+        Show if the version expects not to have a v-prefix but you
+        provide one that it still works.
+        """
+        dependency = GithubDependency(
+            github="ApeWorX/ApeNotAThing", version="v3.0.0", name="apetestdep"
+        )
+        dependency._github_client = mock_client
+
+        # Simulate only non-v-prefix succeeding from GH
+        def only_want_non_v(n0, n1, vers, pth):
+            if vers.startswith("v"):
+                raise ValueError("nope")
+
+        mock_client.download_package.side_effect = only_want_non_v
+
+        with create_tempdir() as path:
+            dependency.fetch(path)
+
+        calls = mock_client.download_package.call_args_list
+        assert mock_client.download_package.call_count == 2
+        # Show it first tried with the v
+        assert calls[0][0] == ("ApeWorX", "ApeNotAThing", "v3.0.0", path)
+        # The second call does not have the v!
+        assert calls[1][0] == ("ApeWorX", "ApeNotAThing", "3.0.0", path)
+
+    def test_fetch_given_version_but_expects_reference(self, mock_client):
+        """
+        Show that if a user configures `version:`, but version fails, it
+        tries `ref:` instead as a backup.
+        """
+        dependency = GithubDependency(
+            github="ApeWorX/ApeNotAThing", version="v3.0.0", name="apetestdep"
+        )
+        dependency._github_client = mock_client
+        # Simulate no versions ever found on GH Api.
+        mock_client.download_package.side_effect = ValueError("nope")
+
+        # Simulate only the non-v prefix ref working (for a fuller flow)
+        def needs_non_v_prefix_ref(n0, n1, path, branch):
+            if branch.startswith("v"):
+                raise ValueError("nope")
+
+        mock_client.clone_repo.side_effect = needs_non_v_prefix_ref
+
+        with create_tempdir() as path:
+            dependency.fetch(path)
+
+        calls = mock_client.clone_repo.call_args_list
+        assert mock_client.clone_repo.call_count == 2
+        # Show it first tried with the v
+        assert calls[0][0] == ("ApeWorX", "ApeNotAThing", path)
+        assert calls[0][1] == {"branch": "v3.0.0"}
+        # The second call does not have the v!
+        assert calls[1][0] == ("ApeWorX", "ApeNotAThing", path)
+        assert calls[1][1] == {"branch": "3.0.0"}
+
+    def test_fetch_ref(self, mock_client):
+        """
+        When specifying ref, it does not try version API at all.
+        """
+        dependency = GithubDependency(github="ApeWorX/ApeNotAThing", ref="3.0.0", name="apetestdep")
+        dependency._github_client = mock_client
+
+        with create_tempdir() as path:
+            dependency.fetch(path)
+
+        assert mock_client.download_package.call_count == 0
+        mock_client.clone_repo.assert_called_once_with(
+            "ApeWorX", "ApeNotAThing", path, branch="3.0.0"
+        )
 
 
 class TestDependency:

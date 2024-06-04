@@ -11,8 +11,9 @@ from pydantic import model_validator
 from ape.api.projects import DependencyAPI
 from ape.exceptions import ProjectError
 from ape.logging import logger
+from ape.managers.project import _version_to_options
 from ape.utils import clean_path, in_tempdir
-from ape.utils._github import github_client
+from ape.utils._github import _GithubClient, github_client
 
 
 class LocalDependency(DependencyAPI):
@@ -125,6 +126,9 @@ class GithubDependency(DependencyAPI):
     **NOTE**: Will be ignored if given a 'ref'.
     """
 
+    # Exists as property so can be changed for testing.
+    _github_client: _GithubClient = github_client
+
     @model_validator(mode="before")
     @classmethod
     def branch_to_ref(cls, model):
@@ -154,7 +158,7 @@ class GithubDependency(DependencyAPI):
         elif self.version and self.version != "latest":
             return self.version
 
-        latest_release = github_client.get_latest_release(self.org_name, self.repo_name)
+        latest_release = self._github_client.get_latest_release(self.org_name, self.repo_name)
         return latest_release["tag_name"]
 
     @cached_property
@@ -182,29 +186,70 @@ class GithubDependency(DependencyAPI):
 
     def fetch(self, destination: Path):
         destination.parent.mkdir(exist_ok=True, parents=True)
-        if self.ref:
-            # NOTE: Destination path should not exist at this point!
-            github_client.clone_repo(self.org_name, self.repo_name, destination, branch=self.ref)
-
+        if ref := self.ref:
+            # Fetch using git-clone approach (by git-reference).
+            # NOTE: destination path does not exist at this point.
+            self._fetch_ref(ref, destination)
         else:
-            destination.mkdir(exist_ok=True)  # parents already made.
+            # Fetch using Version API from GitHub.
+            version = self.version or "latest"
             try:
-                github_client.download_package(
-                    self.org_name, self.repo_name, self.version or "latest", destination
-                )
-            except Exception as err:
+                self._fetch_version(version, destination)
+            except Exception as err_from_version_approach:
                 logger.warning(
-                    f"No official release found for version '{self.version}'. "
+                    f"No official release found for version '{version}'. "
                     "Use `ref:` instead of `version:` for release tags. "
                     "Checking for matching tags..."
                 )
                 try:
-                    github_client.clone_repo(
-                        self.org_name, self.repo_name, destination, branch=self.version
-                    )
+                    self._fetch_ref(version, destination)
                 except Exception:
-                    # Raise the UnknownVersionError.
-                    raise err
+                    # NOTE: Ignore this error, it was merely a last attempt.
+                    raise err_from_version_approach
+
+    def _fetch_ref(self, ref: str, destination: Path):
+        options = _version_to_options(ref)
+        attempt = 0
+        num_attempts = len(options)
+        for ref in options:
+            attempt += 1
+            try:
+                self._github_client.clone_repo(
+                    self.org_name, self.repo_name, destination, branch=ref
+                )
+            except Exception:
+                if attempt == num_attempts:
+                    raise  # This error!
+
+                # Try another option.
+                continue
+
+            else:
+                # Was successful! Don't try anymore.
+                break
+
+    def _fetch_version(self, version: str, destination: Path):
+        destination.mkdir(parents=True, exist_ok=True)
+        options = _version_to_options(version)
+        attempt = 0
+        max_attempts = len(options)
+
+        for vers in options:
+            attempt += 1
+            try:
+                self._github_client.download_package(
+                    self.org_name, self.repo_name, vers, destination
+                )
+            except Exception:
+                if attempt == max_attempts:
+                    raise  # This error!
+
+                # Try another option.
+                continue
+
+            else:
+                # Was successful! Don't try anymore.
+                break
 
 
 class NpmDependency(DependencyAPI):
