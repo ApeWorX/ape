@@ -423,6 +423,12 @@
 <li class="toctree-l4"><a class="reference internal" href="#ape.managers.project.DependencyManager.uri_map"><code class="docutils literal notranslate"><span class="pre">DependencyManager.uri_map</span></code></a></li>
 </ul>
 </li>
+<li class="toctree-l3"><a class="reference internal" href="#ape.managers.project.DependencyVersionMap"><code class="docutils literal notranslate"><span class="pre">DependencyVersionMap</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#ape.managers.project.DependencyVersionMap.__contains__"><code class="docutils literal notranslate"><span class="pre">DependencyVersionMap.__contains__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ape.managers.project.DependencyVersionMap.__getitem__"><code class="docutils literal notranslate"><span class="pre">DependencyVersionMap.__getitem__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ape.managers.project.DependencyVersionMap.get"><code class="docutils literal notranslate"><span class="pre">DependencyVersionMap.get()</span></code></a></li>
+</ul>
+</li>
 <li class="toctree-l3"><a class="reference internal" href="#ape.managers.project.LocalProject"><code class="docutils literal notranslate"><span class="pre">LocalProject</span></code></a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#ape.managers.project.LocalProject.config"><code class="docutils literal notranslate"><span class="pre">LocalProject.config</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.managers.project.LocalProject.contracts"><code class="docutils literal notranslate"><span class="pre">LocalProject.contracts</span></code></a></li>
@@ -2686,6 +2692,32 @@ NOTE: Only uses specified dependencies! Make sure
 you are specifying all the needed dependencies in your
 config file instead of only relying on globally-installed
 packages.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ape.managers.project.DependencyVersionMap">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ape.managers.project.</span></span><span class="sig-name descname"><span class="pre">DependencyVersionMap</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.managers.project.DependencyVersionMap" title="Permalink to this definition"></a></dt>
+<dd><p>A mapping of versions to dependencies.
+This class exists to allow both v-prefixed versions
+as well none v-prefixed versions.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="ape.managers.project.DependencyVersionMap.__contains__">
+<span class="sig-name descname"><span class="pre">__contains__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">version</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="headerlink" href="#ape.managers.project.DependencyVersionMap.__contains__" title="Permalink to this definition"></a></dt>
+<dd><p>True if the dictionary has the specified key, else False.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ape.managers.project.DependencyVersionMap.__getitem__">
+<span class="sig-name descname"><span class="pre">__getitem__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">version</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#ape.managers.project.ProjectManager" title="ape.managers.project.ProjectManager"><span class="pre">ProjectManager</span></a></span></span><a class="headerlink" href="#ape.managers.project.DependencyVersionMap.__getitem__" title="Permalink to this definition"></a></dt>
+<dd><p>x.__getitem__(y) &lt;==&gt; x[y]</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ape.managers.project.DependencyVersionMap.get">
+<span class="sig-name descname"><span class="pre">get</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">version</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">default</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#ape.managers.project.ProjectManager" title="ape.managers.project.ProjectManager"><span class="pre">ProjectManager</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#ape.managers.project.ProjectManager" title="ape.managers.project.ProjectManager"><span class="pre">ProjectManager</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></span><a class="headerlink" href="#ape.managers.project.DependencyVersionMap.get" title="Permalink to this definition"></a></dt>
+<dd><p>Return the value for key if key is in the dictionary, else default.</p>
 </dd></dl>
 
 </dd></dl>
