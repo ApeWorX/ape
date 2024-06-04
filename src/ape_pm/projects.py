@@ -113,9 +113,9 @@ class BrownieProject(ProjectAPI):
 
 class FoundryProject(ProjectAPI):
     """
-    Helps Ape read configurations from a foundry projects
-    and lessen the needs of ``config_override:`` for projects
-    that are foundry-based.
+    Helps Ape read configurations from foundry projects
+    and lessens the need of specifying ``config_override:``
+    for foundry-based dependencies.
     """
 
     @property
