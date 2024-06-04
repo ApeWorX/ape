@@ -265,9 +265,12 @@ This guide is intended to assist in both of those use cases.</p>
 <section id="initialize-a-plugin-project">
 <h2>Initialize a Plugin Project<a class="headerlink" href="#initialize-a-plugin-project" title="Permalink to this heading"></a></h2>
 <p>As previously mentioned, a plugin project is merely a python project.
-However, you can optionally use this <a class="reference external" href="https://github.com/ApeWorX/project-template">project template</a> for initializing your plugin.
-<strong>NOTE</strong>: this template is primarily designed for plugins built within the ApeWorX team organization; not everything may apply.
-It is okay to delete anything that does not work or that you don’t find helpful.
+However, you can optionally use this <a class="reference external" href="https://github.com/ApeWorX/project-template">project template</a> for initializing your plugin.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>This template is primarily designed for plugins built within the ApeWorX team organization; not everything may apply.</p>
+</div>
+<p>It is okay to delete anything that does not work or that you don’t find helpful.
 The template may be good to follow if you want to keep your plugin of similar quality to plugins developed by the ApeWorX team.</p>
 </section>
 <section id="implementing-api-classes">
@@ -275,8 +278,11 @@ The template may be good to follow if you want to keep your plugin of similar qu
 <p>API classes (classes from the <code class="docutils literal notranslate"><span class="pre">ape.api</span></code> namespace) are primarily composed of abstract methods and properties that plugins must implement.
 A benefit of the plugin system is that each plugin can implement these however they need, so long as they conform to the API interface.
 Two plugins with the same API may do entirely different things and yet be interchangeable in their usage.</p>
-<p>To implement an API, import its class and use it as a base-class in your implementation class.
-<strong>WARNING</strong>: The plugin will fail to work properly if you do not implement all the abstract methods.</p>
+<p>To implement an API, import its class and use it as a base-class in your implementation class.</p>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>The plugin will fail to work properly if you do not implement all the abstract methods.</p>
+</div>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">ape.api</span> <span class="kn">import</span> <span class="n">ProviderAPI</span>
 <span class="kn">from</span> <span class="nn">web3</span> <span class="kn">import</span> <span class="n">Web3</span><span class="p">,</span> <span class="n">HTTPProvider</span>
 
@@ -334,8 +340,11 @@ To create a CLI plugin, create any type of <code class="docutils literal notrans
 <span class="o">...</span>
 </pre></div>
 </div>
-<p><strong>NOTE</strong>: Typically, a <code class="docutils literal notranslate"><span class="pre">_cli.py</span></code> module is used instead of a <code class="docutils literal notranslate"><span class="pre">__init__.py</span></code> module for the location of the Click CLI group because it is logically separate from the Python module loading process.
-If you try to define them together and use <code class="docutils literal notranslate"><span class="pre">ape</span></code> as a library as well, there is a race condition in the loading process that will prevent the CLI plugin from working.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Typically, a <code class="docutils literal notranslate"><span class="pre">_cli.py</span></code> module is used instead of a <code class="docutils literal notranslate"><span class="pre">__init__.py</span></code> module for the location of the Click CLI group because it is logically separate from the Python module loading process.</p>
+</div>
+<p>If you try to define them together and use <code class="docutils literal notranslate"><span class="pre">ape</span></code> as a library as well, there is a race condition in the loading process that will prevent the CLI plugin from working.</p>
 <p>For common <code class="docutils literal notranslate"><span class="pre">click</span></code> usages, use the <code class="docutils literal notranslate"><span class="pre">ape.cli</span></code> namespace.
 For example, use the <a class="reference external" href="../methoddocs/cli.html#ape.cli.arguments.existing_alias_argument">&#64;existing_alias_argument() decorator</a>) when you need a CLI argument for specifying an existing account alias:
 Follow <a class="reference external" href="./clis.html">this guide</a> to learn more about what you can do with the utilities found in <code class="docutils literal notranslate"><span class="pre">ape.cli</span></code>.</p>
@@ -366,8 +375,11 @@ classes are indifferent about the source of the plugin.</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>ape<span class="w"> </span>console<span class="w"> </span>my_script<span class="w"> </span>--network<span class="w"> </span>ethereum:local:my_provider_plugin
 </pre></div>
 </div>
-<p><strong>NOTE</strong>: The <code class="docutils literal notranslate"><span class="pre">--network</span></code> option is available on the commands <code class="docutils literal notranslate"><span class="pre">test</span></code> and <code class="docutils literal notranslate"><span class="pre">console</span></code> as well as any CLI command that uses the <a class="reference external" href="../methoddocs/cli.html?highlight=network_option#ape.cli.options.network_option">network option decorator</a>.
-To learn more about networks in Ape, follow <a class="reference external" href="./networks.html">this guide</a>.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">--network</span></code> option is available on the commands <code class="docutils literal notranslate"><span class="pre">test</span></code> and <code class="docutils literal notranslate"><span class="pre">console</span></code> as well as any CLI command that uses the <a class="reference external" href="../methoddocs/cli.html?highlight=network_option#ape.cli.options.network_option">network option decorator</a>.</p>
+</div>
+<p>To learn more about networks in Ape, follow <a class="reference external" href="./networks.html">this guide</a>.</p>
 <p>When creating the CLI-based plugins, you should see your CLI command as a top-level command in the <code class="docutils literal notranslate"><span class="pre">ape</span> <span class="pre">--help</span></code> output:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Commands</span><span class="p">:</span>
   <span class="o">...</span>

@@ -284,14 +284,21 @@ This is how you would query the args from an event:</p>
 </section>
 <section id="using-the-cache">
 <h2>Using the Cache<a class="headerlink" href="#using-the-cache" title="Permalink to this heading"></a></h2>
-<p><strong>Note</strong>: This is in Beta release.
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>This is in Beta release.
 This functionality is in constant development and many features are in planning stages.
 Use the cache plugin to store provider data in a sqlite database.</p>
+</div>
 <p>To use the cache, first you must initialize it for each network you plan on caching data for:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>ape<span class="w"> </span>cache<span class="w"> </span>init<span class="w"> </span>--network<span class="w"> </span>&lt;ecosystem-name&gt;:&lt;network-name&gt;
 </pre></div>
 </div>
-<p><strong>Note</strong>: Caching only works for permanently available networks. It will not work with local development networks.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Caching only works for permanently available networks.
+It will not work with local development networks.</p>
+</div>
 <p>For example, to initialize the cache database for the Ethereum mainnet network, you would do the following:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>ape<span class="w"> </span>cache<span class="w"> </span>init<span class="w"> </span>--network<span class="w"> </span>ethereum:mainnet
 </pre></div>

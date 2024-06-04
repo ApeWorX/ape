@@ -286,13 +286,9 @@ Live network accounts are for interacting with live blockchains and should be se
 <section id="use-test-accounts-outside-of-tests">
 <h3>Use test accounts outside of tests<a class="headerlink" href="#use-test-accounts-outside-of-tests" title="Permalink to this heading"></a></h3>
 <p>To access the same prefunded accounts in your scripts or console, use the root <code class="docutils literal notranslate"><span class="pre">accounts</span></code> object and the <a class="reference external" href="../methoddocs/managers.html#ape.managers.accounts.AccountManager.test_accounts">test_accounts</a> property:</p>
-<div class="highlight-pycon notranslate"><div class="highlight"><pre><span></span>
-</pre></div>
-</div>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">ape</span> <span class="kn">import</span> <span class="n">accounts</span>
-</pre></div>
-</div>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">sender</span> <span class="o">=</span> <span class="n">accounts</span><span class="o">.</span><span class="n">test_accounts</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+<div class="highlight-pycon notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">ape</span> <span class="kn">import</span> <span class="n">accounts</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">sender</span> <span class="o">=</span> <span class="n">accounts</span><span class="o">.</span><span class="n">test_accounts</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
 </pre></div>
 </div>
 <p>You can configure your test accounts using your <code class="docutils literal notranslate"><span class="pre">ape-config.yaml</span></code> file:</p>
@@ -301,22 +297,24 @@ Live network accounts are for interacting with live blockchains and should be se
 <span class="w">  </span><span class="nt">number_of_accounts</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">5</span>
 </pre></div>
 </div>
-<p><strong>WARN</strong>: NEVER put a seed phrase with real funds here.
-The accounts generated from this seed are solely for testing and debugging purposes.</p>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>NEVER put a seed phrase with real funds here.</p>
+</div>
+<p>The accounts generated from this seed are solely for testing and debugging purposes.</p>
 </section>
 <section id="creating-new-test-accounts">
 <h3>Creating new test accounts<a class="headerlink" href="#creating-new-test-accounts" title="Permalink to this heading"></a></h3>
 <p>You can create a new test account by doing the following:</p>
-<div class="highlight-pycon notranslate"><div class="highlight"><pre><span></span>
+<div class="highlight-pycon notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">ape</span> <span class="kn">import</span> <span class="n">accounts</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">account</span> <span class="o">=</span> <span class="n">accounts</span><span class="o">.</span><span class="n">test_accounts</span><span class="o">.</span><span class="n">generate_test_account</span><span class="p">()</span>
 </pre></div>
 </div>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">ape</span> <span class="kn">import</span> <span class="n">accounts</span>
-</pre></div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Creating a new test account means it will be unfunded by default.</p>
 </div>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">account</span> <span class="o">=</span> <span class="n">accounts</span><span class="o">.</span><span class="n">test_accounts</span><span class="o">.</span><span class="n">generate_test_account</span><span class="p">()</span>
-</pre></div>
-</div>
-<p><strong>NOTE</strong>: Creating a new test account means it will be unfunded by default.</p>
 <p>Learn more about test accounts from the <a class="reference external" href="./testing.html#accounts-fixture">testing guide</a>.</p>
 <p>If your testing provider supports this feature, it is possible to directly set the balances of any address by performing the following action:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">account</span><span class="o">.</span><span class="n">balance</span> <span class="o">+=</span> <span class="nb">int</span><span class="p">(</span><span class="mf">1e18</span><span class="p">)</span>  <span class="c1"># Gives `account` 1 Ether</span>
@@ -486,8 +484,11 @@ To do this, use the <a class="reference external" href="../methoddocs/api.html#a
 <span class="n">signature</span> <span class="o">=</span> <span class="n">account</span><span class="o">.</span><span class="n">sign_message</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
 </pre></div>
 </div>
-<p><strong>NOTE</strong>: Ape’s <code class="docutils literal notranslate"><span class="pre">sign_message</span></code> API intentionally accepts <code class="docutils literal notranslate"><span class="pre">Any</span></code> as the message argument type.
-Account plugins decide what data-types to support.
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Ape’s <code class="docutils literal notranslate"><span class="pre">sign_message</span></code> API intentionally accepts <code class="docutils literal notranslate"><span class="pre">Any</span></code> as the message argument type.</p>
+</div>
+<p>Account plugins decide what data-types to support.
 Most Ethereum account plugins, such as <code class="docutils literal notranslate"><span class="pre">ape-account</span></code>, are able to sign messages like the example above.
 However, you can also provide other types, such as a <code class="docutils literal notranslate"><span class="pre">str</span></code> directly:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">ape</span> <span class="kn">import</span> <span class="n">accounts</span>
@@ -566,7 +567,10 @@ Now, you can use your account to make any transactions without subsequently prov
 <span class="n">signature</span> <span class="o">=</span> <span class="n">account</span><span class="o">.</span><span class="n">sign_message</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
 </pre></div>
 </div>
-<p><strong>NOTE</strong>: Alternatively, you may use the <code class="docutils literal notranslate"><span class="pre">passphrase=</span></code> kwarg on methods <code class="docutils literal notranslate"><span class="pre">account.set_autosign()</span></code> and <code class="docutils literal notranslate"><span class="pre">account.unlock()</span></code>, but we highly recommend using the environment variable approach to avoid accidentally leaking your passphrase.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Alternatively, you may use the <code class="docutils literal notranslate"><span class="pre">passphrase=</span></code> kwarg on methods <code class="docutils literal notranslate"><span class="pre">account.set_autosign()</span></code> and <code class="docutils literal notranslate"><span class="pre">account.unlock()</span></code>, but we highly recommend using the environment variable approach to avoid accidentally leaking your passphrase.</p>
+</div>
 </section>
 <section id="hardware-wallets">
 <h2>Hardware Wallets<a class="headerlink" href="#hardware-wallets" title="Permalink to this heading"></a></h2>

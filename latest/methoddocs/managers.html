@@ -241,6 +241,7 @@
 <li class="toctree-l4"><a class="reference internal" href="#ape.managers.chain.AccountHistory.__len__"><code class="docutils literal notranslate"><span class="pre">AccountHistory.__len__()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.managers.chain.AccountHistory.address"><code class="docutils literal notranslate"><span class="pre">AccountHistory.address</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.managers.chain.AccountHistory.append"><code class="docutils literal notranslate"><span class="pre">AccountHistory.append()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ape.managers.chain.AccountHistory.model_config"><code class="docutils literal notranslate"><span class="pre">AccountHistory.model_config</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.managers.chain.AccountHistory.outgoing"><code class="docutils literal notranslate"><span class="pre">AccountHistory.outgoing</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.managers.chain.AccountHistory.query"><code class="docutils literal notranslate"><span class="pre">AccountHistory.query()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.managers.chain.AccountHistory.revert_to_block"><code class="docutils literal notranslate"><span class="pre">AccountHistory.revert_to_block()</span></code></a></li>
@@ -294,8 +295,6 @@
 </li>
 <li class="toctree-l2"><a class="reference internal" href="#module-ape.managers.config">Config</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#ape.managers.config.ConfigManager"><code class="docutils literal notranslate"><span class="pre">ConfigManager</span></code></a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#ape.managers.config.ConfigManager.__ape_extra_attributes__"><code class="docutils literal notranslate"><span class="pre">ConfigManager.__ape_extra_attributes__()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#ape.managers.config.ConfigManager.__str__"><code class="docutils literal notranslate"><span class="pre">ConfigManager.__str__()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.managers.config.ConfigManager.extract_config"><code class="docutils literal notranslate"><span class="pre">ConfigManager.extract_config()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.managers.config.ConfigManager.get_config"><code class="docutils literal notranslate"><span class="pre">ConfigManager.get_config()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.managers.config.ConfigManager.global_config"><code class="docutils literal notranslate"><span class="pre">ConfigManager.global_config</span></code></a></li>
@@ -307,16 +306,19 @@
 <li class="toctree-l3"><a class="reference internal" href="#ape.managers.converters.AccountIntConverter"><code class="docutils literal notranslate"><span class="pre">AccountIntConverter</span></code></a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#ape.managers.converters.AccountIntConverter.convert"><code class="docutils literal notranslate"><span class="pre">AccountIntConverter.convert()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.managers.converters.AccountIntConverter.is_convertible"><code class="docutils literal notranslate"><span class="pre">AccountIntConverter.is_convertible()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ape.managers.converters.AccountIntConverter.model_config"><code class="docutils literal notranslate"><span class="pre">AccountIntConverter.model_config</span></code></a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="#ape.managers.converters.AddressAPIConverter"><code class="docutils literal notranslate"><span class="pre">AddressAPIConverter</span></code></a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#ape.managers.converters.AddressAPIConverter.convert"><code class="docutils literal notranslate"><span class="pre">AddressAPIConverter.convert()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.managers.converters.AddressAPIConverter.is_convertible"><code class="docutils literal notranslate"><span class="pre">AddressAPIConverter.is_convertible()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ape.managers.converters.AddressAPIConverter.model_config"><code class="docutils literal notranslate"><span class="pre">AddressAPIConverter.model_config</span></code></a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="#ape.managers.converters.BytesAddressConverter"><code class="docutils literal notranslate"><span class="pre">BytesAddressConverter</span></code></a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#ape.managers.converters.BytesAddressConverter.convert"><code class="docutils literal notranslate"><span class="pre">BytesAddressConverter.convert()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.managers.converters.BytesAddressConverter.is_convertible"><code class="docutils literal notranslate"><span class="pre">BytesAddressConverter.is_convertible()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ape.managers.converters.BytesAddressConverter.model_config"><code class="docutils literal notranslate"><span class="pre">BytesAddressConverter.model_config</span></code></a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="#ape.managers.converters.ConversionManager"><code class="docutils literal notranslate"><span class="pre">ConversionManager</span></code></a><ul>
@@ -327,36 +329,43 @@
 <li class="toctree-l3"><a class="reference internal" href="#ape.managers.converters.HexAddressConverter"><code class="docutils literal notranslate"><span class="pre">HexAddressConverter</span></code></a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#ape.managers.converters.HexAddressConverter.convert"><code class="docutils literal notranslate"><span class="pre">HexAddressConverter.convert()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.managers.converters.HexAddressConverter.is_convertible"><code class="docutils literal notranslate"><span class="pre">HexAddressConverter.is_convertible()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ape.managers.converters.HexAddressConverter.model_config"><code class="docutils literal notranslate"><span class="pre">HexAddressConverter.model_config</span></code></a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="#ape.managers.converters.HexConverter"><code class="docutils literal notranslate"><span class="pre">HexConverter</span></code></a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#ape.managers.converters.HexConverter.convert"><code class="docutils literal notranslate"><span class="pre">HexConverter.convert()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.managers.converters.HexConverter.is_convertible"><code class="docutils literal notranslate"><span class="pre">HexConverter.is_convertible()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ape.managers.converters.HexConverter.model_config"><code class="docutils literal notranslate"><span class="pre">HexConverter.model_config</span></code></a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="#ape.managers.converters.HexIntConverter"><code class="docutils literal notranslate"><span class="pre">HexIntConverter</span></code></a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#ape.managers.converters.HexIntConverter.convert"><code class="docutils literal notranslate"><span class="pre">HexIntConverter.convert()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.managers.converters.HexIntConverter.is_convertible"><code class="docutils literal notranslate"><span class="pre">HexIntConverter.is_convertible()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ape.managers.converters.HexIntConverter.model_config"><code class="docutils literal notranslate"><span class="pre">HexIntConverter.model_config</span></code></a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="#ape.managers.converters.IntAddressConverter"><code class="docutils literal notranslate"><span class="pre">IntAddressConverter</span></code></a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#ape.managers.converters.IntAddressConverter.convert"><code class="docutils literal notranslate"><span class="pre">IntAddressConverter.convert()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.managers.converters.IntAddressConverter.is_convertible"><code class="docutils literal notranslate"><span class="pre">IntAddressConverter.is_convertible()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ape.managers.converters.IntAddressConverter.model_config"><code class="docutils literal notranslate"><span class="pre">IntAddressConverter.model_config</span></code></a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="#ape.managers.converters.StringDecimalConverter"><code class="docutils literal notranslate"><span class="pre">StringDecimalConverter</span></code></a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#ape.managers.converters.StringDecimalConverter.convert"><code class="docutils literal notranslate"><span class="pre">StringDecimalConverter.convert()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.managers.converters.StringDecimalConverter.is_convertible"><code class="docutils literal notranslate"><span class="pre">StringDecimalConverter.is_convertible()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ape.managers.converters.StringDecimalConverter.model_config"><code class="docutils literal notranslate"><span class="pre">StringDecimalConverter.model_config</span></code></a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="#ape.managers.converters.StringIntConverter"><code class="docutils literal notranslate"><span class="pre">StringIntConverter</span></code></a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#ape.managers.converters.StringIntConverter.convert"><code class="docutils literal notranslate"><span class="pre">StringIntConverter.convert()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.managers.converters.StringIntConverter.is_convertible"><code class="docutils literal notranslate"><span class="pre">StringIntConverter.is_convertible()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ape.managers.converters.StringIntConverter.model_config"><code class="docutils literal notranslate"><span class="pre">StringIntConverter.model_config</span></code></a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="#ape.managers.converters.TimestampConverter"><code class="docutils literal notranslate"><span class="pre">TimestampConverter</span></code></a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#ape.managers.converters.TimestampConverter.convert"><code class="docutils literal notranslate"><span class="pre">TimestampConverter.convert()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.managers.converters.TimestampConverter.is_convertible"><code class="docutils literal notranslate"><span class="pre">TimestampConverter.is_convertible()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ape.managers.converters.TimestampConverter.model_config"><code class="docutils literal notranslate"><span class="pre">TimestampConverter.model_config</span></code></a></li>
 </ul>
 </li>
 </ul>
@@ -389,7 +398,6 @@
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="#ape.managers.project.Dependency"><code class="docutils literal notranslate"><span class="pre">Dependency</span></code></a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#ape.managers.project.Dependency.__ape_extra_attributes__"><code class="docutils literal notranslate"><span class="pre">Dependency.__ape_extra_attributes__()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.managers.project.Dependency.__eq__"><code class="docutils literal notranslate"><span class="pre">Dependency.__eq__()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.managers.project.Dependency.__hash__"><code class="docutils literal notranslate"><span class="pre">Dependency.__hash__()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.managers.project.Dependency.compile"><code class="docutils literal notranslate"><span class="pre">Dependency.compile()</span></code></a></li>
@@ -434,7 +442,6 @@
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="#ape.managers.project.Project"><code class="docutils literal notranslate"><span class="pre">Project</span></code></a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#ape.managers.project.Project.__ape_extra_attributes__"><code class="docutils literal notranslate"><span class="pre">Project.__ape_extra_attributes__()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.managers.project.Project.add_compiler_data"><code class="docutils literal notranslate"><span class="pre">Project.add_compiler_data()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.managers.project.Project.dependencies"><code class="docutils literal notranslate"><span class="pre">Project.dependencies</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.managers.project.Project.from_manifest"><code class="docutils literal notranslate"><span class="pre">Project.from_manifest()</span></code></a></li>
@@ -446,8 +453,6 @@
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="#ape.managers.project.ProjectManager"><code class="docutils literal notranslate"><span class="pre">ProjectManager</span></code></a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#ape.managers.project.ProjectManager.__ape_extra_attributes__"><code class="docutils literal notranslate"><span class="pre">ProjectManager.__ape_extra_attributes__()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#ape.managers.project.ProjectManager.__new__"><code class="docutils literal notranslate"><span class="pre">ProjectManager.__new__()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.managers.project.ProjectManager.from_manifest"><code class="docutils literal notranslate"><span class="pre">ProjectManager.from_manifest()</span></code></a></li>
 </ul>
 </li>
@@ -948,6 +953,12 @@ to compiler API classes.</p>
 <dd class="field-odd"><p><strong>receipt</strong> (<a class="reference internal" href="api.html#ape.api.transactions.ReceiptAPI" title="ape.api.transactions.ReceiptAPI"><code class="xref py py-class docutils literal notranslate"><span class="pre">ReceiptAPI</span></code></a>) – The receipt to append.</p>
 </dd>
 </dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ape.managers.chain.AccountHistory.model_config">
+<span class="sig-name descname"><span class="pre">model_config</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ClassVar</span><span class="p"><span class="pre">[</span></span><span class="pre">ConfigDict</span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'arbitrary_types_allowed':</span> <span class="pre">True}</span></em><a class="headerlink" href="#ape.managers.chain.AccountHistory.model_config" title="Permalink to this definition"></a></dt>
+<dd><p>Configuration for the model, should be a dictionary conforming to [<cite>ConfigDict</cite>][pydantic.config.ConfigDict].</p>
 </dd></dl>
 
 <dl class="py property">
@@ -1606,29 +1617,6 @@ files. <strong>NOTE</strong>: This is a singleton wrapper class that
 points to the local project’s config. For the config field
 definitions, see <a class="reference internal" href="api.html#ape.api.config.ApeConfig" title="ape.api.config.ApeConfig"><code class="xref py py-class docutils literal notranslate"><span class="pre">ApeConfig</span></code></a>.</p>
 <dl class="py method">
-<dt class="sig sig-object py" id="ape.managers.config.ConfigManager.__ape_extra_attributes__">
-<span class="sig-name descname"><span class="pre">__ape_extra_attributes__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ape.managers.config.ConfigManager.__ape_extra_attributes__" title="Permalink to this definition"></a></dt>
-<dd><p>Override this method to supply extra attributes
-to a model in Ape; this allow more properties
-to be available when invoking <code class="docutils literal notranslate"><span class="pre">__getattr__</span></code>.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>A
-series of instances defining extra model attributes.</p>
-</dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p>Iterator[<a class="reference internal" href="utils.html#ape.utils.ExtraModelAttributes" title="ape.utils.basemodel.ExtraModelAttributes"><code class="xref py py-class docutils literal notranslate"><span class="pre">ExtraModelAttributes</span></code></a>]</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="ape.managers.config.ConfigManager.__str__">
-<span class="sig-name descname"><span class="pre">__str__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="headerlink" href="#ape.managers.config.ConfigManager.__str__" title="Permalink to this definition"></a></dt>
-<dd><p>Return str(self).</p>
-</dd></dl>
-
-<dl class="py method">
 <dt class="sig sig-object py" id="ape.managers.config.ConfigManager.extract_config">
 <em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">extract_config</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">manifest</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">PackageManifest</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">overrides</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="api.html#ape.api.config.ApeConfig" title="ape.api.config.ApeConfig"><span class="pre">ApeConfig</span></a></span></span><a class="headerlink" href="#ape.managers.config.ConfigManager.extract_config" title="Permalink to this definition"></a></dt>
 <dd><p>Calculate the ape-config data from a package manifest.</p>
@@ -1704,6 +1692,12 @@ when the item fails to convert properly.</p>
 </dl>
 </dd></dl>
 
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ape.managers.converters.AccountIntConverter.model_config">
+<span class="sig-name descname"><span class="pre">model_config</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ClassVar</span><span class="p"><span class="pre">[</span></span><span class="pre">ConfigDict</span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'arbitrary_types_allowed':</span> <span class="pre">True}</span></em><a class="headerlink" href="#ape.managers.converters.AccountIntConverter.model_config" title="Permalink to this definition"></a></dt>
+<dd><p>Configuration for the model, should be a dictionary conforming to [<cite>ConfigDict</cite>][pydantic.config.ConfigDict].</p>
+</dd></dl>
+
 </dd></dl>
 
 <dl class="py class">
@@ -1747,6 +1741,12 @@ to a :class`~ape.types.address.AddressType`.</p>
 </dl>
 </dd></dl>
 
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ape.managers.converters.AddressAPIConverter.model_config">
+<span class="sig-name descname"><span class="pre">model_config</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ClassVar</span><span class="p"><span class="pre">[</span></span><span class="pre">ConfigDict</span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'arbitrary_types_allowed':</span> <span class="pre">True}</span></em><a class="headerlink" href="#ape.managers.converters.AddressAPIConverter.model_config" title="Permalink to this definition"></a></dt>
+<dd><p>Configuration for the model, should be a dictionary conforming to [<cite>ConfigDict</cite>][pydantic.config.ConfigDict].</p>
+</dd></dl>
+
 </dd></dl>
 
 <dl class="py class">
@@ -1777,6 +1777,12 @@ when the item fails to convert properly.</p>
 <dd class="field-odd"><p>bool</p>
 </dd>
 </dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ape.managers.converters.BytesAddressConverter.model_config">
+<span class="sig-name descname"><span class="pre">model_config</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ClassVar</span><span class="p"><span class="pre">[</span></span><span class="pre">ConfigDict</span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'arbitrary_types_allowed':</span> <span class="pre">True}</span></em><a class="headerlink" href="#ape.managers.converters.BytesAddressConverter.model_config" title="Permalink to this definition"></a></dt>
+<dd><p>Configuration for the model, should be a dictionary conforming to [<cite>ConfigDict</cite>][pydantic.config.ConfigDict].</p>
 </dd></dl>
 
 </dd></dl>
@@ -1881,6 +1887,12 @@ that it is checksummed.</p>
 </dl>
 </dd></dl>
 
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ape.managers.converters.HexAddressConverter.model_config">
+<span class="sig-name descname"><span class="pre">model_config</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ClassVar</span><span class="p"><span class="pre">[</span></span><span class="pre">ConfigDict</span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'arbitrary_types_allowed':</span> <span class="pre">True}</span></em><a class="headerlink" href="#ape.managers.converters.HexAddressConverter.model_config" title="Permalink to this definition"></a></dt>
+<dd><p>Configuration for the model, should be a dictionary conforming to [<cite>ConfigDict</cite>][pydantic.config.ConfigDict].</p>
+</dd></dl>
+
 </dd></dl>
 
 <dl class="py class">
@@ -1920,6 +1932,12 @@ NOTE: This utility converter ensures that all bytes args can accept hex too</p>
 </dl>
 </dd></dl>
 
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ape.managers.converters.HexConverter.model_config">
+<span class="sig-name descname"><span class="pre">model_config</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ClassVar</span><span class="p"><span class="pre">[</span></span><span class="pre">ConfigDict</span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'arbitrary_types_allowed':</span> <span class="pre">True}</span></em><a class="headerlink" href="#ape.managers.converters.HexConverter.model_config" title="Permalink to this definition"></a></dt>
+<dd><p>Configuration for the model, should be a dictionary conforming to [<cite>ConfigDict</cite>][pydantic.config.ConfigDict].</p>
+</dd></dl>
+
 </dd></dl>
 
 <dl class="py class">
@@ -1951,6 +1969,12 @@ when the item fails to convert properly.</p>
 <dd class="field-odd"><p>bool</p>
 </dd>
 </dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ape.managers.converters.HexIntConverter.model_config">
+<span class="sig-name descname"><span class="pre">model_config</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ClassVar</span><span class="p"><span class="pre">[</span></span><span class="pre">ConfigDict</span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'arbitrary_types_allowed':</span> <span class="pre">True}</span></em><a class="headerlink" href="#ape.managers.converters.HexIntConverter.model_config" title="Permalink to this definition"></a></dt>
+<dd><p>Configuration for the model, should be a dictionary conforming to [<cite>ConfigDict</cite>][pydantic.config.ConfigDict].</p>
 </dd></dl>
 
 </dd></dl>
@@ -1985,6 +2009,12 @@ when the item fails to convert properly.</p>
 </dl>
 </dd></dl>
 
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ape.managers.converters.IntAddressConverter.model_config">
+<span class="sig-name descname"><span class="pre">model_config</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ClassVar</span><span class="p"><span class="pre">[</span></span><span class="pre">ConfigDict</span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'arbitrary_types_allowed':</span> <span class="pre">True}</span></em><a class="headerlink" href="#ape.managers.converters.IntAddressConverter.model_config" title="Permalink to this definition"></a></dt>
+<dd><p>Configuration for the model, should be a dictionary conforming to [<cite>ConfigDict</cite>][pydantic.config.ConfigDict].</p>
+</dd></dl>
+
 </dd></dl>
 
 <dl class="py class">
@@ -2015,6 +2045,12 @@ when the item fails to convert properly.</p>
 <dd class="field-odd"><p>bool</p>
 </dd>
 </dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ape.managers.converters.StringDecimalConverter.model_config">
+<span class="sig-name descname"><span class="pre">model_config</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ClassVar</span><span class="p"><span class="pre">[</span></span><span class="pre">ConfigDict</span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'arbitrary_types_allowed':</span> <span class="pre">True}</span></em><a class="headerlink" href="#ape.managers.converters.StringDecimalConverter.model_config" title="Permalink to this definition"></a></dt>
+<dd><p>Configuration for the model, should be a dictionary conforming to [<cite>ConfigDict</cite>][pydantic.config.ConfigDict].</p>
 </dd></dl>
 
 </dd></dl>
@@ -2048,6 +2084,12 @@ when the item fails to convert properly.</p>
 </dl>
 </dd></dl>
 
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ape.managers.converters.StringIntConverter.model_config">
+<span class="sig-name descname"><span class="pre">model_config</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ClassVar</span><span class="p"><span class="pre">[</span></span><span class="pre">ConfigDict</span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'arbitrary_types_allowed':</span> <span class="pre">True}</span></em><a class="headerlink" href="#ape.managers.converters.StringIntConverter.model_config" title="Permalink to this definition"></a></dt>
+<dd><p>Configuration for the model, should be a dictionary conforming to [<cite>ConfigDict</cite>][pydantic.config.ConfigDict].</p>
+</dd></dl>
+
 </dd></dl>
 
 <dl class="py class">
@@ -2079,6 +2121,12 @@ when the item fails to convert properly.</p>
 <dd class="field-odd"><p>bool</p>
 </dd>
 </dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ape.managers.converters.TimestampConverter.model_config">
+<span class="sig-name descname"><span class="pre">model_config</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ClassVar</span><span class="p"><span class="pre">[</span></span><span class="pre">ConfigDict</span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'arbitrary_types_allowed':</span> <span class="pre">True}</span></em><a class="headerlink" href="#ape.managers.converters.TimestampConverter.model_config" title="Permalink to this definition"></a></dt>
+<dd><p>Configuration for the model, should be a dictionary conforming to [<cite>ConfigDict</cite>][pydantic.config.ConfigDict].</p>
 </dd></dl>
 
 </dd></dl>
@@ -2391,23 +2439,6 @@ re-compiled regardless of this flag.</p></li>
 <dd><p>A wrapper around a dependency.
 Users will not create this class directly but access
 them from <code class="docutils literal notranslate"><span class="pre">project.dependencies</span></code>.</p>
-<dl class="py method">
-<dt class="sig sig-object py" id="ape.managers.project.Dependency.__ape_extra_attributes__">
-<span class="sig-name descname"><span class="pre">__ape_extra_attributes__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Iterator</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="utils.html#ape.utils.ExtraModelAttributes" title="ape.utils.basemodel.ExtraModelAttributes"><span class="pre">ExtraModelAttributes</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#ape.managers.project.Dependency.__ape_extra_attributes__" title="Permalink to this definition"></a></dt>
-<dd><p>Override this method to supply extra attributes
-to a model in Ape; this allow more properties
-to be available when invoking <code class="docutils literal notranslate"><span class="pre">__getattr__</span></code>.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>A
-series of instances defining extra model attributes.</p>
-</dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p>Iterator[<a class="reference internal" href="utils.html#ape.utils.ExtraModelAttributes" title="ape.utils.basemodel.ExtraModelAttributes"><code class="xref py py-class docutils literal notranslate"><span class="pre">ExtraModelAttributes</span></code></a>]</p>
-</dd>
-</dl>
-</dd></dl>
-
 <dl class="py method">
 <dt class="sig sig-object py" id="ape.managers.project.Dependency.__eq__">
 <span class="sig-name descname"><span class="pre">__eq__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">other</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="headerlink" href="#ape.managers.project.Dependency.__eq__" title="Permalink to this definition"></a></dt>
@@ -2796,23 +2827,6 @@ to a local one.</p>
 <dd><p>Base class for projects. Projects can come from either
 manifests or local source-paths.</p>
 <dl class="py method">
-<dt class="sig sig-object py" id="ape.managers.project.Project.__ape_extra_attributes__">
-<span class="sig-name descname"><span class="pre">__ape_extra_attributes__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Iterator</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="utils.html#ape.utils.ExtraModelAttributes" title="ape.utils.basemodel.ExtraModelAttributes"><span class="pre">ExtraModelAttributes</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#ape.managers.project.Project.__ape_extra_attributes__" title="Permalink to this definition"></a></dt>
-<dd><p>Override this method to supply extra attributes
-to a model in Ape; this allow more properties
-to be available when invoking <code class="docutils literal notranslate"><span class="pre">__getattr__</span></code>.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>A
-series of instances defining extra model attributes.</p>
-</dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p>Iterator[<a class="reference internal" href="utils.html#ape.utils.ExtraModelAttributes" title="ape.utils.basemodel.ExtraModelAttributes"><code class="xref py py-class docutils literal notranslate"><span class="pre">ExtraModelAttributes</span></code></a>]</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
 <dt class="sig sig-object py" id="ape.managers.project.Project.add_compiler_data">
 <span class="sig-name descname"><span class="pre">add_compiler_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">compiler_data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><span class="pre">Compiler</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">ethpm_types.source.Compiler</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#ape.managers.project.Project.add_compiler_data" title="Permalink to this definition"></a></dt>
 <dd><p>Add compiler data to the existing cached manifest.</p>
@@ -2904,28 +2918,6 @@ to a local one.</p>
 <dt class="sig sig-object py" id="ape.managers.project.ProjectManager">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ape.managers.project.</span></span><span class="sig-name descname"><span class="pre">ProjectManager</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.managers.project.ProjectManager" title="Permalink to this definition"></a></dt>
 <dd><p>The root project manager in Ape that can also create other projects.</p>
-<dl class="py method">
-<dt class="sig sig-object py" id="ape.managers.project.ProjectManager.__ape_extra_attributes__">
-<span class="sig-name descname"><span class="pre">__ape_extra_attributes__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Iterator</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="utils.html#ape.utils.ExtraModelAttributes" title="ape.utils.basemodel.ExtraModelAttributes"><span class="pre">ExtraModelAttributes</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#ape.managers.project.ProjectManager.__ape_extra_attributes__" title="Permalink to this definition"></a></dt>
-<dd><p>Override this method to supply extra attributes
-to a model in Ape; this allow more properties
-to be available when invoking <code class="docutils literal notranslate"><span class="pre">__getattr__</span></code>.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>A
-series of instances defining extra model attributes.</p>
-</dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p>Iterator[<a class="reference internal" href="utils.html#ape.utils.ExtraModelAttributes" title="ape.utils.basemodel.ExtraModelAttributes"><code class="xref py py-class docutils literal notranslate"><span class="pre">ExtraModelAttributes</span></code></a>]</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="ape.managers.project.ProjectManager.__new__">
-<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">__new__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cls</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.managers.project.ProjectManager.__new__" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
-
 <dl class="py method">
 <dt class="sig sig-object py" id="ape.managers.project.ProjectManager.from_manifest">
 <em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_manifest</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">manifest</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">PackageManifest</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Path</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">config_override</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#ape.managers.project.Project" title="ape.managers.project.Project"><span class="pre">Project</span></a></span></span><a class="headerlink" href="#ape.managers.project.ProjectManager.from_manifest" title="Permalink to this definition"></a></dt>

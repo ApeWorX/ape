@@ -30,12 +30,12 @@ def test_my_contract_method(accounts):
 To access the same prefunded accounts in your scripts or console, use the root `accounts` object and the [test_accounts](../methoddocs/managers.html#ape.managers.accounts.AccountManager.test_accounts) property:
 
 ```{eval-rst}
-
 .. doctest::
 
->>> from ape import accounts
+  >>> from ape import accounts
 
->>> sender = accounts.test_accounts[0]
+  >>> sender = accounts.test_accounts[0]
+
 ```
 
 You can configure your test accounts using your `ape-config.yaml` file:
@@ -46,7 +46,10 @@ test:
   number_of_accounts: 5
 ```
 
-**WARN**: NEVER put a seed phrase with real funds here.
+```{warning}
+NEVER put a seed phrase with real funds here.
+```
+
 The accounts generated from this seed are solely for testing and debugging purposes.
 
 ### Creating new test accounts
@@ -54,15 +57,16 @@ The accounts generated from this seed are solely for testing and debugging purpo
 You can create a new test account by doing the following:
 
 ```{eval-rst}
-
 .. doctest::
 
->>> from ape import accounts
+  >>> from ape import accounts
 
->>> account = accounts.test_accounts.generate_test_account()
+  >>> account = accounts.test_accounts.generate_test_account()
 ```
 
-**NOTE**: Creating a new test account means it will be unfunded by default.
+```{note}
+Creating a new test account means it will be unfunded by default.
+```
 
 Learn more about test accounts from the [testing guide](./testing.html#accounts-fixture).
 
@@ -264,7 +268,10 @@ message = encode_defunct(text="Hello Apes!")
 signature = account.sign_message(message)
 ```
 
-**NOTE**: Ape's `sign_message` API intentionally accepts `Any` as the message argument type.
+```{note}
+Ape's `sign_message` API intentionally accepts `Any` as the message argument type.
+```
+
 Account plugins decide what data-types to support.
 Most Ethereum account plugins, such as `ape-account`, are able to sign messages like the example above.
 However, you can also provide other types, such as a `str` directly:
@@ -351,7 +358,9 @@ message = encode_defunct(text="Hello Apes!")
 signature = account.sign_message(message)
 ```
 
-**NOTE**: Alternatively, you may use the `passphrase=` kwarg on methods `account.set_autosign()` and `account.unlock()`, but we highly recommend using the environment variable approach to avoid accidentally leaking your passphrase.
+```{note}
+Alternatively, you may use the `passphrase=` kwarg on methods `account.set_autosign()` and `account.unlock()`, but we highly recommend using the environment variable approach to avoid accidentally leaking your passphrase.
+```
 
 ## Hardware Wallets
 

@@ -268,9 +268,12 @@ This location is where local project compilation looks for additional sources fr
 When you compile a dependency, the contract types are stored in the dependency manifest’s JSON file.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">api/</span></code> - for caching the API data placed in <code class="docutils literal notranslate"><span class="pre">dependencies:</span></code> config or <code class="docutils literal notranslate"><span class="pre">ape</span> <span class="pre">pm</span> <span class="pre">install</span></code> commands, allowing dependency usage and management from anywhere in the file system.</p></li>
 </ol>
-<p><em>NOTE</em>: You can install dependencies that don’t compile out-of-the-box.
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>You can install dependencies that don’t compile out-of-the-box.
 Sometimes, dependencies are only collections of source files not meant to compile on their own but instead be used in projects via import statements.
 You can change the settings of a dependency using <code class="docutils literal notranslate"><span class="pre">config_override:</span></code> to compile dependencies after installed, if needed, and the <code class="docutils literal notranslate"><span class="pre">api/</span></code> cache always refers to the latest used during installation or compilation.</p>
+</div>
 <section id="types-of-dependencies">
 <h2>Types of Dependencies<a class="headerlink" href="#types-of-dependencies" title="Permalink to this heading"></a></h2>
 <p>There are few dependency types that come with Ape.
@@ -287,9 +290,12 @@ To use Open Zeppelin version 4.4.2 in your Ape Solidity project, add the followi
 </pre></div>
 </div>
 <p>Then, follow the guide below about <code class="docutils literal notranslate"><span class="pre">remappings</span></code> to use the dependency.</p>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
 <p><strong>An important WARNING about the <code class="docutils literal notranslate"><span class="pre">version:</span></code> key for GitHub dependencies:</strong>
-The <code class="docutils literal notranslate"><span class="pre">version:</span></code> config first attempts to use an official GitHub release, but if the release is not found, it will check the release tags.
-If you know the version is not available as an official release, bypass the original check by using the <code class="docutils literal notranslate"><span class="pre">ref:</span></code> key.
+The <code class="docutils literal notranslate"><span class="pre">version:</span></code> config first attempts to use an official GitHub release, but if the release is not found, it will check the release tags.</p>
+</div>
+<p>If you know the version is not available as an official release, bypass the original check by using the <code class="docutils literal notranslate"><span class="pre">ref:</span></code> key.
 The <code class="docutils literal notranslate"><span class="pre">ref:</span></code> key is also used for installing branches.</p>
 <p>For example, to install a version available as a <code class="docutils literal notranslate"><span class="pre">git</span></code> tag, do the following:</p>
 <div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">dependencies</span><span class="p">:</span>
@@ -370,10 +376,13 @@ openzeppelin<span class="w">  </span><span class="m">4</span>.9.3<span class="w"
 <div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>ape<span class="w"> </span>pm<span class="w"> </span>install<span class="w"> </span>gh:OpenZeppelin/openzeppelin-contracts<span class="w"> </span>--name<span class="w"> </span>openzeppelin<span class="w"> </span>--version<span class="w"> </span><span class="s2">&quot;4.6.0&quot;</span>
 </pre></div>
 </div>
-<p><strong>NOTE</strong>: The <code class="docutils literal notranslate"><span class="pre">gh:</span></code> prefix is used because this dependency is from GitHub.
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">gh:</span></code> prefix is used because this dependency is from GitHub.
 For <code class="docutils literal notranslate"><span class="pre">npm</span></code> dependencies, you use an <code class="docutils literal notranslate"><span class="pre">npm:</span></code> prefix.
 For local dependencies, you give it a path to the local dependency.
 <code class="docutils literal notranslate"><span class="pre">--version</span></code> is not required when using a local dependency.</p>
+</div>
 <p>To change the config of a dependency when installing, use the <code class="docutils literal notranslate"><span class="pre">--config-override</span></code> CLI option:</p>
 <div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>ape<span class="w"> </span>pm<span class="w"> </span>install<span class="w"> </span>gh:OpenZeppelin/openzeppelin-contracts<span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--name<span class="w"> </span>openzeppelin<span class="w"> </span><span class="se">\</span>
@@ -405,7 +414,10 @@ If multiple versions are installed, pass additional arguments specifying the ver
 <div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>ape<span class="w"> </span>pm<span class="w"> </span>uninstall<span class="w"> </span>OpenZeppelin<span class="w"> </span>all<span class="w"> </span>--yes
 </pre></div>
 </div>
-<p><strong>NOTE</strong>: Additionally, use the <code class="docutils literal notranslate"><span class="pre">all</span></code> special version key to delete all versions.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Additionally, use the <code class="docutils literal notranslate"><span class="pre">all</span></code> special version key to delete all versions.</p>
+</div>
 </section>
 <section id="compile">
 <h3>compile<a class="headerlink" href="#compile" title="Permalink to this heading"></a></h3>
@@ -419,8 +431,11 @@ You can use the CLI to recompile.</p>
 <div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>ape<span class="w"> </span>pm<span class="w"> </span>compile<span class="w"> </span>OpenZeppelin<span class="w"> </span>--version<span class="w"> </span><span class="m">4</span>.6.0<span class="w"> </span>--force
 </pre></div>
 </div>
-<p><strong>NOTE</strong>: You only need to specify a version if you have more than one version of a dependency installed.
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>You only need to specify a version if you have more than one version of a dependency installed.
 Otherwise, you just give it the name.</p>
+</div>
 <p>To compile all dependencies in your local project, run the command with no arguments while in your project:</p>
 <div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>ape<span class="w"> </span>pm<span class="w"> </span>compile
 </pre></div>

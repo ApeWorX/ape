@@ -288,7 +288,10 @@ The following is an example test:</p>
     <span class="k">assert</span> <span class="mi">1</span> <span class="o">+</span> <span class="mi">1</span> <span class="o">==</span> <span class="mi">2</span>
 </pre></div>
 </div>
-<p><strong>NOTE</strong>: <code class="docutils literal notranslate"><span class="pre">pytest</span></code> assumes the <em>actual</em> value is on the left and the <em>expected</em> value is on the right.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><code class="docutils literal notranslate"><span class="pre">pytest</span></code> assumes the <em>actual</em> value is on the left and the <em>expected</em> value is on the right.</p>
+</div>
 </section>
 <section id="test-pattern">
 <h2>Test Pattern<a class="headerlink" href="#test-pattern" title="Permalink to this heading"></a></h2>
@@ -689,8 +692,11 @@ Here is an example of what that may look like:</p>
         <span class="n">ape</span><span class="o">.</span><span class="n">project</span><span class="o">.</span><span class="n">HasError</span><span class="o">.</span><span class="n">deploy</span><span class="p">(</span><span class="n">sender</span><span class="o">=</span><span class="n">account</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>Alternatively, you can attempt to use the address from the revert error to find the error type.
-<strong>NOTE</strong>: The address will only exist for transactions that were published (e.g. not for failures during estimating gas), and this may only work on certain providers.</p>
+<p>Alternatively, you can attempt to use the address from the revert error to find the error type.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The address will only exist for transactions that were published (e.g. not for failures during estimating gas), and this may only work on certain providers.</p>
+</div>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">ape</span>
 
 <span class="k">def</span> <span class="nf">test_error_on_deploy</span><span class="p">(</span><span class="n">account</span><span class="p">):</span>
@@ -760,9 +766,12 @@ Thus, you can enter and exit a provider’s context as much as you need in tests
 </section>
 <section id="gas-reporting">
 <h2>Gas Reporting<a class="headerlink" href="#gas-reporting" title="Permalink to this heading"></a></h2>
-<p>To include a gas report at the end of your tests, you can use the <code class="docutils literal notranslate"><span class="pre">--gas</span></code> flag.
-<strong>NOTE</strong>: This feature works best when using a provider with tracing support, such as <a class="reference external" href="https://github.com/ApeWorX/ape-foundry">ape-foundry</a>.
+<p>To include a gas report at the end of your tests, you can use the <code class="docutils literal notranslate"><span class="pre">--gas</span></code> flag.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>This feature works best when using a provider with tracing support, such as <a class="reference external" href="https://github.com/ApeWorX/ape-foundry">ape-foundry</a>.
 When not using a provider with adequate tracing support, such as <code class="docutils literal notranslate"><span class="pre">EthTester</span></code>, gas reporting is limited to receipt-level data.</p>
+</div>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>ape<span class="w"> </span><span class="nb">test</span><span class="w"> </span>--network<span class="w"> </span>ethereum:local:foundry<span class="w"> </span>--gas
 </pre></div>
 </div>
@@ -824,8 +833,11 @@ or changed, then the <code class="docutils literal notranslate"><span class="pre
 <div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>ape<span class="w"> </span><span class="nb">test</span><span class="w"> </span>--coverage
 </pre></div>
 </div>
-<p><strong>NOTE</strong>: Some types of coverage require using a provider that supports transaction tracing, such as <code class="docutils literal notranslate"><span class="pre">ape-hardhat</span></code> or <code class="docutils literal notranslate"><span class="pre">ape-foundry</span></code>.
-Without using a provider with adequate tracing support, coverage is limited to receipt-level data.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Some types of coverage require using a provider that supports transaction tracing, such as <code class="docutils literal notranslate"><span class="pre">ape-hardhat</span></code> or <code class="docutils literal notranslate"><span class="pre">ape-foundry</span></code>.</p>
+</div>
+<p>Without using a provider with adequate tracing support, coverage is limited to receipt-level data.</p>
 <p>Afterwards, you should see a coverage report looking something like:</p>
 <div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span class="o">=============================================</span><span class="w"> </span>Coverage<span class="w"> </span><span class="nv">Profile</span><span class="w"> </span><span class="o">=============================================</span>
 <span class="w">               </span>Contract<span class="w"> </span>Coverage<span class="w">               </span>
@@ -871,12 +883,18 @@ Without using a provider with adequate tracing support, coverage is limited to r
 </div>
 <p>This is useful when trying to find the missing areas to cover.
 The HTML report also supports <code class="docutils literal notranslate"><span class="pre">verbose:</span> <span class="pre">true</span></code> and it will show similar tables.</p>
-<p><strong>NOTE</strong>: You may notice methods with zero statements.
-One example of a method with zero statements may be from an auto-generated getter method for a public variable; certain versions of Vyper do not contain source mappings for these methods.
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>You may notice methods with zero statements.</p>
+</div>
+<p>One example of a method with zero statements may be from an auto-generated getter method for a public variable; certain versions of Vyper do not contain source mappings for these methods.
 However, Ape will still check to see if this method has been called in your tests.
 To get 100% coverage, you must call these methods in your tests.</p>
-<p><strong>NOTE</strong>: Notice some methods use the full selector while others don’t.
-Methods that use the selector mean that their short name is shared with other methods.
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Notice some methods use the full selector while others don’t.</p>
+</div>
+<p>Methods that use the selector mean that their short name is shared with other methods.
 This happens in Vyper from auto-generated kwarg-based methods.
 Thus, the full selector is used to distinguish the methods in the coverage (and gas) reports.</p>
 <p>Much like gas reporting, you can also exclude contracts and methods from tracking coverage using your <code class="docutils literal notranslate"><span class="pre">ape-config.yaml</span></code> file.

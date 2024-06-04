@@ -213,7 +213,6 @@
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="#ape.contracts.base.ContractContainer"><code class="docutils literal notranslate"><span class="pre">ContractContainer</span></code></a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#ape.contracts.base.ContractContainer.__ape_extra_attributes__"><code class="docutils literal notranslate"><span class="pre">ContractContainer.__ape_extra_attributes__()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ape.contracts.base.ContractContainer.__call__"><code class="docutils literal notranslate"><span class="pre">ContractContainer.__call__()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ape.contracts.base.ContractContainer.__eq__"><code class="docutils literal notranslate"><span class="pre">ContractContainer.__eq__()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ape.contracts.base.ContractContainer.__hash__"><code class="docutils literal notranslate"><span class="pre">ContractContainer.__hash__</span></code></a></li>
@@ -226,6 +225,7 @@
 <li class="toctree-l3"><a class="reference internal" href="#ape.contracts.base.ContractEvent.__call__"><code class="docutils literal notranslate"><span class="pre">ContractEvent.__call__()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ape.contracts.base.ContractEvent.__iter__"><code class="docutils literal notranslate"><span class="pre">ContractEvent.__iter__()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ape.contracts.base.ContractEvent.from_receipt"><code class="docutils literal notranslate"><span class="pre">ContractEvent.from_receipt()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#ape.contracts.base.ContractEvent.model_config"><code class="docutils literal notranslate"><span class="pre">ContractEvent.model_config</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ape.contracts.base.ContractEvent.name"><code class="docutils literal notranslate"><span class="pre">ContractEvent.name</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ape.contracts.base.ContractEvent.poll_logs"><code class="docutils literal notranslate"><span class="pre">ContractEvent.poll_logs()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ape.contracts.base.ContractEvent.query"><code class="docutils literal notranslate"><span class="pre">ContractEvent.query()</span></code></a></li>
@@ -496,23 +496,6 @@ are using this class.</p>
 </pre></div>
 </div>
 <dl class="py method">
-<dt class="sig sig-object py" id="ape.contracts.base.ContractContainer.__ape_extra_attributes__">
-<span class="sig-name descname"><span class="pre">__ape_extra_attributes__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Iterator</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="utils.html#ape.utils.ExtraModelAttributes" title="ape.utils.basemodel.ExtraModelAttributes"><span class="pre">ExtraModelAttributes</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#ape.contracts.base.ContractContainer.__ape_extra_attributes__" title="Permalink to this definition"></a></dt>
-<dd><p>Override this method to supply extra attributes
-to a model in Ape; this allow more properties
-to be available when invoking <code class="docutils literal notranslate"><span class="pre">__getattr__</span></code>.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>A
-series of instances defining extra model attributes.</p>
-</dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p>Iterator[<a class="reference internal" href="utils.html#ape.utils.ExtraModelAttributes" title="ape.utils.basemodel.ExtraModelAttributes"><code class="xref py py-class docutils literal notranslate"><span class="pre">ExtraModelAttributes</span></code></a>]</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
 <dt class="sig sig-object py" id="ape.contracts.base.ContractContainer.__call__">
 <span class="sig-name descname"><span class="pre">__call__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="api.html#ape.api.transactions.TransactionAPI" title="ape.api.transactions.TransactionAPI"><span class="pre">TransactionAPI</span></a></span></span><a class="headerlink" href="#ape.contracts.base.ContractContainer.__call__" title="Permalink to this definition"></a></dt>
 <dd><p>Call self as a function.</p>
@@ -622,6 +605,12 @@ Use the event types via <code class="docutils literal notranslate"><span class="
 <dd class="field-even"><p>list[<code class="xref py py-class docutils literal notranslate"><span class="pre">ContractLog</span></code>]</p>
 </dd>
 </dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ape.contracts.base.ContractEvent.model_config">
+<span class="sig-name descname"><span class="pre">model_config</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ClassVar</span><span class="p"><span class="pre">[</span></span><span class="pre">ConfigDict</span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'arbitrary_types_allowed':</span> <span class="pre">True}</span></em><a class="headerlink" href="#ape.contracts.base.ContractEvent.model_config" title="Permalink to this definition"></a></dt>
+<dd><p>Configuration for the model, should be a dictionary conforming to [<cite>ConfigDict</cite>][pydantic.config.ConfigDict].</p>
 </dd></dl>
 
 <dl class="py property">

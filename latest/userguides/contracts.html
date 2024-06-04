@@ -266,7 +266,10 @@ The other way is to initialize an already-deployed contract using its address.</
 <h2>From Deploy<a class="headerlink" href="#from-deploy" title="Permalink to this heading"></a></h2>
 <p>Deploy contracts from your project using the <code class="docutils literal notranslate"><span class="pre">project</span></code> root-level object.
 You deploy contracts using Python functions such as <a class="reference external" href="../methoddocs/api.html#ape.api.accounts.AccountAPI.deploy">AccountAPI.deploy</a> or <a class="reference external" href="../methoddocs/contracts.html#ape.contracts.base.ContractContainer.deploy">ContractContainer.deploy</a>.</p>
-<p><strong>NOTE</strong>: You can run Ape’s deploy functions from anywhere you run Python!</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>You can run Ape’s deploy functions anywhere you run Python!</p>
+</div>
 <p>You need both an account and a contract in order to deploy a contract, as the deployment process requires a transaction to submit the contract data to the blockchain.
 To learn about accounts and how to use them, see the <a class="reference external" href="./accounts.html">Accounts Guide</a>.
 You also need the contract.
@@ -465,7 +468,10 @@ For this guide, assume we are using the default transaction type in Ape for Ethe
 </pre></div>
 </div>
 <p>Notice that transacting returns a <a class="reference external" href="../methoddocs/api.html#ape.api.transactions.ReceiptAPI">ReceiptAPI</a> object which contains all the receipt data, such as <code class="docutils literal notranslate"><span class="pre">gas_used</span></code>.</p>
-<p><strong>NOTE</strong>: If you need the <code class="docutils literal notranslate"><span class="pre">return_value</span></code> from a transaction, you have to either treat transaction as a call (see the section below!) or use a provider with tracing-features enabled (such as <code class="docutils literal notranslate"><span class="pre">ape-foundry</span></code> or <code class="docutils literal notranslate"><span class="pre">ape-node</span></code>) and access the <a class="reference external" href="../methoddocs/api.html#ape.api.transactions.ReceiptAPI.return_value">return_value</a> property on the receipt.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>If you need the <code class="docutils literal notranslate"><span class="pre">return_value</span></code> from a transaction, you have to either treat transaction as a call (see the section below!) or use a provider with tracing-features enabled (such as <code class="docutils literal notranslate"><span class="pre">ape-foundry</span></code> or <code class="docutils literal notranslate"><span class="pre">ape-node</span></code>) and access the <a class="reference external" href="../methoddocs/api.html#ape.api.transactions.ReceiptAPI.return_value">return_value</a> property on the receipt.</p>
+</div>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">assert</span> <span class="n">receipt</span><span class="o">.</span><span class="n">return_value</span> <span class="o">==</span> <span class="mi">123</span>
 </pre></div>
 </div>

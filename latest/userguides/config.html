@@ -169,7 +169,7 @@
 <li class="toctree-l2"><a class="reference internal" href="#default-ecosystem">Default Ecosystem</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#dependencies">Dependencies</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#deployments">Deployments</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#geth">Geth</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#node">Node</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#networks">Networks</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#plugins">Plugins</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#testing">Testing</a></li>
@@ -258,7 +258,7 @@ This guide is <strong>PURPOSELY</strong> alphabetized to facilitate easier look-
 <p>Most of the features in this guide are documented more-fully elsewhere in the user-guides.</p>
 <p>However, here is a list of common-use cases requiring the <code class="docutils literal notranslate"><span class="pre">ape-config.yaml</span></code> file to help you:</p>
 <ol class="arabic simple">
-<li><p>Setting up a custom node RPC: See the <a class="reference external" href="#geth">geth</a> section.</p></li>
+<li><p>Setting up a custom node RPC: See the <a class="reference external" href="#node">node</a> section.</p></li>
 <li><p>Setting up project dependencies: See the <a class="reference external" href="#dependencies">dependencies</a> section.</p></li>
 <li><p>Declaring your project’s plugins: See the <a class="reference external" href="#plugins">plugins</a> section.</p></li>
 </ol>
@@ -316,20 +316,26 @@ To learn more about dependencies, see <a class="reference external" href="./depe
 <span class="n">contract</span> <span class="o">=</span> <span class="n">project</span><span class="o">.</span><span class="n">MyContract</span><span class="o">.</span><span class="n">deployments</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
 </pre></div>
 </div>
-<p><strong>NOTE</strong>: Ape does not add or edit deployments in your <code class="docutils literal notranslate"><span class="pre">ape-config.yaml</span></code> file.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Ape does not add or edit deployments in your <code class="docutils literal notranslate"><span class="pre">ape-config.yaml</span></code> file.</p>
+</div>
 </section>
-<section id="geth">
-<h2>Geth<a class="headerlink" href="#geth" title="Permalink to this heading"></a></h2>
-<p>When using the <code class="docutils literal notranslate"><span class="pre">geth</span></code> provider, you can customize its settings.
+<section id="node">
+<h2>Node<a class="headerlink" href="#node" title="Permalink to this heading"></a></h2>
+<p>When using the <code class="docutils literal notranslate"><span class="pre">node</span></code> provider, you can customize its settings.
 For example, to change the URI for an Ethereum network, do:</p>
-<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">geth</span><span class="p">:</span>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">node</span><span class="p">:</span>
 <span class="w">  </span><span class="nt">ethereum</span><span class="p">:</span>
 <span class="w">    </span><span class="nt">mainnet</span><span class="p">:</span>
 <span class="w">      </span><span class="nt">uri</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">http://localhost:5030</span>
 </pre></div>
 </div>
 <p>Now, the <code class="docutils literal notranslate"><span class="pre">ape-node</span></code> core plugin will use the URL <code class="docutils literal notranslate"><span class="pre">http://localhost:5030</span></code> to connect and make requests.</p>
-<p><strong>WARN</strong>: Instead of using <code class="docutils literal notranslate"><span class="pre">ape-node</span></code> to connect to an Infura or Alchemy node, use the <a class="reference external" href="https://github.com/ApeWorX/ape-infura">ape-infura</a> or <a class="reference external" href="https://github.com/ApeWorX/ape-alchemy">ape-alchemy</a> provider plugins instead, which have their own way of managing API keys via environment variables.</p>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>Instead of using <code class="docutils literal notranslate"><span class="pre">ape-node</span></code> to connect to an Infura or Alchemy node, use the <a class="reference external" href="https://github.com/ApeWorX/ape-infura">ape-infura</a> or <a class="reference external" href="https://github.com/ApeWorX/ape-alchemy">ape-alchemy</a> provider plugins instead, which have their own way of managing API keys via environment variables.</p>
+</div>
 <p>For more information on networking as a whole, see <a class="reference external" href="./networks.html">this guide</a>.</p>
 </section>
 <section id="networks">
@@ -368,7 +374,10 @@ For example, to change the URI for an Ethereum network, do:</p>
 <section id="plugins">
 <h2>Plugins<a class="headerlink" href="#plugins" title="Permalink to this heading"></a></h2>
 <p>Set which <code class="docutils literal notranslate"><span class="pre">ape</span></code> plugins you want to always use.</p>
-<p><strong>NOTE</strong>: The <code class="docutils literal notranslate"><span class="pre">ape-</span></code> prefix is not needed and shouldn’t be included here.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">ape-</span></code> prefix is not needed and shouldn’t be included here.</p>
+</div>
 <div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">plugins</span><span class="p">:</span>
 <span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">solidity</span><span class="w"> </span><span class="c1"># ape-solidity plugin</span>
 <span class="w">    </span><span class="nt">version</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0.1.0b2</span>
