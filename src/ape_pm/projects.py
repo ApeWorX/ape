@@ -1,6 +1,8 @@
 import os
 import sys
 
+from ape.utils._github import _GithubClient, github_client
+
 if sys.version_info.minor >= 11:
     # 3.11 or greater
     # NOTE: type-ignore is for when running mypy on python versions < 3.11
@@ -120,6 +122,8 @@ class FoundryProject(ProjectAPI):
     for foundry-based dependencies.
     """
 
+    _github_client: _GithubClient = github_client
+
     @property
     def foundry_config_file(self) -> Path:
         return self.path / "foundry.toml"
@@ -127,6 +131,10 @@ class FoundryProject(ProjectAPI):
     @property
     def submodules_file(self) -> Path:
         return self.path / ".gitmodules"
+
+    @property
+    def remapping_file(self) -> Path:
+        return self.path / "remapping.txt"
 
     @property
     def is_valid(self) -> bool:
@@ -150,8 +158,17 @@ class FoundryProject(ProjectAPI):
         solidity_data: dict = {}
         if solc_version := (root_data.get("solc") or root_data.get("solc_version")):
             solidity_data["version"] = solc_version
-        if remappings := root_data.get("remappings"):
+
+        # Handle remappings, including remapping.txt
+        remappings_cfg: list[str] = []
+        if remappings_from_cfg := root_data.get("remappings"):
+            remappings_cfg.extend(remappings_from_cfg)
+        if self.remapping_file.is_file():
+            remappings_from_file = self.remapping_file.read_text().splitlines()
+            remappings_cfg.extend(remappings_from_file)
+        if remappings := remappings_cfg:
             solidity_data["import_remappings"] = remappings
+
         if "optimizer" in root_data:
             solidity_data["optimize"] = root_data["optimizer"]
         if runs := solidity_data.get("optimizer_runs"):
@@ -171,7 +188,7 @@ class FoundryProject(ProjectAPI):
                     continue
 
                 path_name = module.get("path")
-                github = url.replace("https://github.com/", "")
+                github = url.replace("https://github.com/", "").replace(".git", "")
                 gh_dependency = {"github": github}
 
                 # Check for short-name in remappings.
@@ -216,6 +233,19 @@ class FoundryProject(ProjectAPI):
                     gh_dependency["version"] = module["release"]
                 elif "branch" in module:
                     gh_dependency["ref"] = module["branch"]
+
+                if "version" not in gh_dependency and "ref" not in gh_dependency:
+
+                    gh_parts = github.split("/")
+                    if len(gh_parts) != 2:
+                        # Likely not possible, but just try `main`.
+                        gh_dependency["ref"] = "main"
+
+                    else:
+                        # Use the default branch of the repo.
+                        org_name, repo_name = github.split("/")
+                        repo = self._github_client.get_repo(org_name, repo_name)
+                        gh_dependency["ref"] = repo.get("default_branch", "main")
 
                 dependencies.append(gh_dependency)
 

@@ -570,6 +570,10 @@ class TestBrownieProject:
 
 
 class TestFoundryProject:
+    @pytest.fixture
+    def mock_github(self, mocker):
+        return mocker.MagicMock()
+
     @pytest.fixture(scope="class")
     def toml(self):
         return """
@@ -597,11 +601,14 @@ remappings = [
     url = https://github.com/OpenZeppelin/openzeppelin-contracts
     release = v4.9.5
     branch = v4.9.5
+[submodule "lib/erc4626-tests"]
+    path = lib/erc4626-tests
+    url = https://github.com/a16z/erc4626-tests.git
 """.lstrip().replace(
             "    ", "\t"
         )
 
-    def test_extract_config(self, toml, gitmodules):
+    def test_extract_config(self, toml, gitmodules, mock_github):
         with ape.Project.create_temporary_project() as temp_project:
             cfg_file = temp_project.path / "foundry.toml"
             cfg_file.write_text(toml)
@@ -609,6 +616,8 @@ remappings = [
             gitmodules_file.write_text(gitmodules)
 
             api = temp_project.project_api
+            mock_github.get_repo.return_value = {"default_branch": "main"}
+            api._github_client = mock_github  # type: ignore
             assert isinstance(api, FoundryProject)
 
             # Ensure solidity config migrated.
@@ -632,6 +641,7 @@ remappings = [
                     "name": "openzeppelin",
                     "version": "v4.9.5",
                 },
+                {"github": "a16z/erc4626-tests", "name": "erc4626-tests", "ref": "main"},
             ]
             assert actual_dependencies == expected_dependencies
 
