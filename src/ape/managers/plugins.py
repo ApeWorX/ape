@@ -107,7 +107,7 @@ class PluginManager:
                 if validated_plugin:
                     yield validated_plugin
             else:
-                # Only if it's an iterator, provider results as a series
+                # Only if it's an iterator, provide results as a series
                 for result in results:
                     validated_plugin = self._validate_plugin(plugin_name, result)
                     if validated_plugin:
