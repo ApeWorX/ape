@@ -213,6 +213,12 @@
 <li class="toctree-l3"><a class="reference internal" href="#ape_pm.BrownieProject.model_config"><code class="docutils literal notranslate"><span class="pre">BrownieProject.model_config</span></code></a></li>
 </ul>
 </li>
+<li class="toctree-l2"><a class="reference internal" href="#ape_pm.FoundryProject"><code class="docutils literal notranslate"><span class="pre">FoundryProject</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#ape_pm.FoundryProject.extract_config"><code class="docutils literal notranslate"><span class="pre">FoundryProject.extract_config()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#ape_pm.FoundryProject.is_valid"><code class="docutils literal notranslate"><span class="pre">FoundryProject.is_valid</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#ape_pm.FoundryProject.model_config"><code class="docutils literal notranslate"><span class="pre">FoundryProject.model_config</span></code></a></li>
+</ul>
+</li>
 <li class="toctree-l2"><a class="reference internal" href="#ape_pm.GithubDependency"><code class="docutils literal notranslate"><span class="pre">GithubDependency</span></code></a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#ape_pm.GithubDependency.fetch"><code class="docutils literal notranslate"><span class="pre">GithubDependency.fetch()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ape_pm.GithubDependency.github"><code class="docutils literal notranslate"><span class="pre">GithubDependency.github</span></code></a></li>
@@ -317,6 +323,41 @@ Ape understands the dependencies and how to compile everything.</p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="ape_pm.BrownieProject.model_config">
 <span class="sig-name descname"><span class="pre">model_config</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ClassVar</span><span class="p"><span class="pre">[</span></span><span class="pre">ConfigDict</span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'arbitrary_types_allowed':</span> <span class="pre">True}</span></em><a class="headerlink" href="#ape_pm.BrownieProject.model_config" title="Permalink to this definition"></a></dt>
+<dd><p>Configuration for the model, should be a dictionary conforming to [<cite>ConfigDict</cite>][pydantic.config.ConfigDict].</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ape_pm.FoundryProject">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ape_pm.</span></span><span class="sig-name descname"><span class="pre">FoundryProject</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Path</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape_pm.FoundryProject" title="Permalink to this definition"></a></dt>
+<dd><p>Helps Ape read configurations from foundry projects
+and lessens the need of specifying <code class="docutils literal notranslate"><span class="pre">config_override:</span></code>
+for foundry-based dependencies.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="ape_pm.FoundryProject.extract_config">
+<span class="sig-name descname"><span class="pre">extract_config</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">overrides</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="api.html#ape.api.config.ApeConfig" title="ape.api.config.ApeConfig"><span class="pre">ApeConfig</span></a></span></span><a class="headerlink" href="#ape_pm.FoundryProject.extract_config" title="Permalink to this definition"></a></dt>
+<dd><p>Extra configuration from the project so that
+Ape understands the dependencies and how to compile everything.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>**overrides</strong> – Config overrides.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">ApeConfig</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="ape_pm.FoundryProject.is_valid">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">is_valid</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><a class="headerlink" href="#ape_pm.FoundryProject.is_valid" title="Permalink to this definition"></a></dt>
+<dd><p>Return <code class="docutils literal notranslate"><span class="pre">True</span></code> when detecting a project of this type.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ape_pm.FoundryProject.model_config">
+<span class="sig-name descname"><span class="pre">model_config</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ClassVar</span><span class="p"><span class="pre">[</span></span><span class="pre">ConfigDict</span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'arbitrary_types_allowed':</span> <span class="pre">True}</span></em><a class="headerlink" href="#ape_pm.FoundryProject.model_config" title="Permalink to this definition"></a></dt>
 <dd><p>Configuration for the model, should be a dictionary conforming to [<cite>ConfigDict</cite>][pydantic.config.ConfigDict].</p>
 </dd></dl>
 
