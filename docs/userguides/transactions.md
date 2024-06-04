@@ -24,6 +24,12 @@ def deploy():
 
 To get the receipt of a `deploy` transaction, use the [ContractInstance.creation_metadata](../methoddocs/contracts.html#ape.contracts.base.ContractInstance.creation_metadata) property:
 
+Additionally, you can find the `.deployer`, `.proxy` and whatever else on the creaton metadata which may come in handy.
+
+```{note}
+Use `ape-etherscan` or a node with Otterscan for increased support for these features.
+```
+
 ```python
 from ape import accounts, project
 
@@ -95,7 +101,9 @@ One way to use a static-fee transaction is by specifying the `gas_price` as a ke
 contract.startAuction(gas_price="100 gwei", sender=sender)
 ```
 
-**NOTE**: Miners prioritize static-fee transactions based on the highest `gas_price`.
+```{note}
+Miners prioritize static-fee transactions based on the highest `gas_price`.
+```
 
 Another way to use a static-fee transaction (without having to provide `gas_price`) is to set the key-value
 argument `type` equal to `0x00`.
@@ -164,7 +172,9 @@ for log in contract.FooEvent.from_receipt(receipt):
     print(log.amount)  # Assuming 'amount' is a property on the event.
 ```
 
-**NOTE**: If you have more than event with the same name in your contract type's ABI, you can access the events by using the [get_event_by_signature()](../methoddocs/contracts.html?highlight=contractinstance#ape.contracts.base.ContractInstance.get_event_by_signature) method:
+```{note}
+If you have more than one event with the same name in your contract type's ABI, you can access the events by using the [get_event_by_signature()](../methoddocs/contracts.html?highlight=contractinstance#ape.contracts.base.ContractInstance.get_event_by_signature) method:
+```
 
 ```python
 event_type = contract.get_event_by_signature("FooEvent(uint256 bar, uint256 baz)")
@@ -175,7 +185,10 @@ Otherwise, you will get an `AttributeError`.
 
 ## Transaction Acceptance Timeout
 
-**NOTE** For longer running scripts, you may need to increase the transaction acceptance timeout.
+```{note}
+For longer running scripts, you may need to increase the transaction acceptance timeout.
+```
+
 The default value is 2 minutes for live networks and 20 seconds for local networks.
 In your `ape-config.yaml` file, add the following:
 
@@ -189,7 +202,7 @@ ethereum:
 
 Transaction traces are the steps in the contract the transaction took.
 Traces both power a myriad of features in Ape as well are themselves a tool for developers to use to debug transactions.
-To learn more about traces, see the [traces userguide](./trace.md).
+To learn more about traces, see the [traces userguide](./trace.html).
 
 ## Estimate Gas Cost
 

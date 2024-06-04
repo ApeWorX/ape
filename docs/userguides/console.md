@@ -9,8 +9,10 @@ In [1]: chain.blocks.head.timestamp
 Out[1]: 1647323479
 ```
 
-WARNING: Contract changes are not reflected in the active console session.
+```{warning}
+Contract changes are not reflected in the active console session.
 If you need to make changes to your contract, you must re-start your console session for the compiler to handle the changes.
+```
 
 ## Ape Namespace
 
@@ -41,7 +43,10 @@ In [1]: networks
 Out[1]: <NetworkManager active_provider=<test chain_id=61>>
 ```
 
-**NOTE**: To change the network of the active console, use the `--network` option.
+```{note}
+To change the network of the active console, use the `--network` option.
+```
+
 Follow [this guide](./networks.html) for more information on networks in Ape.
 
 ## Namespace Extras

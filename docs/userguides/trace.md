@@ -8,12 +8,19 @@ Using traces, Ape is able to offer features like:
 3. Coverage tools in `ape test`
 
 Some network providers, such as Alchemy and Foundry, implement `debug_traceTransaction` and Parity's `trace_transaction` affording tracing capabilities in Ape.
-**WARN**: Without RPCs for obtaining traces, some features such as gas-reporting and coverage are limited.
+
+```{warning}
+Without RPCs for obtaining traces, some features such as gas-reporting and coverage are limited.
+```
 
 To see a transaction trace, use the [show_trace()](../methoddocs/api.html#ape.api.transactions.ReceiptAPI.show_trace) method on a receipt API object.
 
 Here is an example using `show_trace()` in Python code to print out a transaction's trace.
-**NOTE**: This code runs assuming you are connected to `ethereum:mainnet` using a provider with tracing RPCs.
+
+```{note}
+This code runs assuming you are connected to `ethereum:mainnet` using a provider with tracing RPCs.
+```
+
 To learn more about networks in Ape, see the [networks guide](./networks.html).
 
 ```python
@@ -82,7 +89,9 @@ If you want to see the trace of call when making the call, use the `show_trace=`
 token.balanceOf(account, show_trace=True)
 ```
 
-**WARN**: If your provider does not properly support call-tracing (e.g. doesn't implement `debug_traceCall`), traces are limited to the top-level call.
+```{warning}
+If your provider does not properly support call-tracing (e.g. doesn't implement `debug_traceCall`), traces are limited to the top-level call.
+```
 
 Ape traces calls automatically when using `--gas` or `--coverage` in tests to build reports.
 Learn more about testing in Ape in the [testing guide](./testing.html) and in the following sections.

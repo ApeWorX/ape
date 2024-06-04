@@ -51,9 +51,11 @@ See [this guide](../userguides/contracts.html) for more information how to deplo
 
 ## Using the Cache
 
-**Note**: This is in Beta release.
+```{note}
+This is in Beta release.
 This functionality is in constant development and many features are in planning stages.
 Use the cache plugin to store provider data in a sqlite database.
+```
 
 To use the cache, first you must initialize it for each network you plan on caching data for:
 
@@ -61,7 +63,10 @@ To use the cache, first you must initialize it for each network you plan on cach
 ape cache init --network <ecosystem-name>:<network-name>
 ```
 
-**Note**: Caching only works for permanently available networks. It will not work with local development networks.
+```{note}
+Caching only works for permanently available networks. 
+It will not work with local development networks.
+```
 
 For example, to initialize the cache database for the Ethereum mainnet network, you would do the following:
 

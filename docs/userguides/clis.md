@@ -150,12 +150,12 @@ And when invoking the command from the CLI, it would look like the following:
 
 ```shell
 <prefix> cmd  # Use the default account.
-<prefix> cmd --account 0  # Use first account that would show up in `get_user_selected_account()`.
+<prefix> cmd --account 0  # Use first account that would show up in `select_account()`.
 <prefix> cmd --account metamask  # Use account with alias "metamask".
 <prefix> cmd --account TEST::0  # Use the test account at index 0.
 ```
 
-Alternatively, you can call the [get_user_selected_account()](../methoddocs/cli.html#ape.cli.choices.get_user_selected_account) directly to have more control of when the account gets selected:
+Alternatively, you can call the [select_account()](../methoddocs/cli.html#ape.cli.choices.select_account) directly to have more control of when the account gets selected:
 
 ```python
 import click
@@ -197,7 +197,7 @@ Use `account_type` to filter the choices by specific types of [AccountAPI](../me
 ```python
 import click
 from ape import accounts
-from ape.cli import existing_alias_argument, get_user_selected_account
+from ape.cli import existing_alias_argument, select_account
 from ape_accounts.accounts import KeyfileAccount
 
 # NOTE: This is just an example and not anything specific or recommended.
@@ -215,7 +215,7 @@ def cli_1(alias):
 
 # Select from the given accounts directly.
 my_accounts = [accounts.load("me"), accounts.load("me2")]
-selected_account = get_user_selected_account(account_type=my_accounts)
+selected_account = select_account(account_type=my_accounts)
 ```
 
 ## Contract File Paths
