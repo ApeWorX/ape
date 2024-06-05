@@ -167,7 +167,7 @@ class FoundryProject(ProjectAPI):
             remappings_from_file = self.remapping_file.read_text().splitlines()
             remappings_cfg.extend(remappings_from_file)
         if remappings := remappings_cfg:
-            solidity_data["import_remappings"] = remappings
+            solidity_data["import_remapping"] = remappings
 
         if "optimizer" in root_data:
             solidity_data["optimize"] = root_data["optimizer"]
@@ -196,7 +196,7 @@ class FoundryProject(ProjectAPI):
 
                 # Check for short-name in remappings.
                 fixed_remappings: list[str] = []
-                for remapping in ape_cfg.get("solidity", {}).get("import_remappings", []):
+                for remapping in ape_cfg.get("solidity", {}).get("import_remapping", []):
                     parts = remapping.split("=")
                     value = parts[1]
                     found = False
@@ -215,7 +215,7 @@ class FoundryProject(ProjectAPI):
                         fixed_remappings.append(remapping)
 
                 if fixed_remappings:
-                    ape_cfg["solidity"]["import_remappings"] = fixed_remappings
+                    ape_cfg["solidity"]["import_remapping"] = fixed_remappings
 
                 if "name" not in gh_dependency and path_name:
                     found = False
@@ -238,7 +238,6 @@ class FoundryProject(ProjectAPI):
                     gh_dependency["ref"] = module["branch"]
 
                 if "version" not in gh_dependency and "ref" not in gh_dependency:
-
                     gh_parts = github.split("/")
                     if len(gh_parts) != 2:
                         # Likely not possible, but just try `main`.

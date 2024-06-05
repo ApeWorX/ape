@@ -626,7 +626,7 @@ remappings = [
             assert actual["contracts_folder"] == "src"
             assert "solidity" in actual, "Solidity failed to migrate"
             actual_sol = actual["solidity"]
-            assert actual_sol["import_remappings"] == [
+            assert actual_sol["import_remapping"] == [
                 "forge-std/=forge-std/src/",
                 "@openzeppelin/=openzeppelin-contracts/",
             ]
