@@ -2057,6 +2057,13 @@ class LocalProject(Project):
         The 'type' of project this is, such as an Ape project
         or a Brownie project (or something else).
         """
+        default_project = self._get_ape_project_api()
+
+        # If an ape-config.yaml file, exists stop now.
+        if default_project and default_project.config_file.is_file():
+            return default_project
+
+        # ape-config.yaml does no exist. Check for another ProjectAPI type.
         project_classes: list[type[ProjectAPI]] = [
             t[1] for t in list(self.plugin_manager.projects)  # type: ignore
         ]
@@ -2065,11 +2072,20 @@ class LocalProject(Project):
             if instance := api.attempt_validate(path=self.path):
                 return instance
 
-        # Try 'ApeProject' last, in case there was a more specific one earlier.
+        # If no other APIs worked but we have a default Ape project, use that!
+        # It should work in most cases (hopefully!).
+        if default_project:
+            return default_project
+
+        # For some reason we were just not able to create a project here.
+        # I am not sure this is even possible.
+        raise ProjectError(f"'{self.path.name}' is not recognized as a project.")
+
+    def _get_ape_project_api(self) -> Optional[ProjectAPI]:
         if instance := ApeProject.attempt_validate(path=self.path):
             return instance
 
-        raise ProjectError(f"'{self.path.name}' is not recognized as a project.")
+        return None
 
     @property
     def name(self) -> str:
