@@ -1,5 +1,5 @@
-import os
 import sys
+from collections.abc import Iterable
 
 from ape.utils._github import _GithubClient, github_client
 
@@ -11,7 +11,7 @@ else:
     import toml as tomllib  # type: ignore[no-redef]
 
 from pathlib import Path
-from typing import Any
+from typing import Any, Optional
 
 from yaml import safe_load
 
@@ -129,7 +129,7 @@ class FoundryProject(ProjectAPI):
         return self.path / "foundry.toml"
 
     @property
-    def submodules_file(self) -> Path:
+    def gitmodules_file(self) -> Path:
         return self.path / ".gitmodules"
 
     @property
@@ -142,144 +142,218 @@ class FoundryProject(ProjectAPI):
 
     def extract_config(self, **overrides) -> "ApeConfig":
         ape_cfg: dict = {}
-        data = tomllib.loads(self.foundry_config_file.read_text())
-        profile = data.get("profile", {})
-        root_data = profile.get("default", {})
+
+        root_data = self._parse_foundry_toml()
 
         # Handle root project configuration.
         # NOTE: The default contracts folder name is `src` in foundry
         #  instead of `contracts`, hence the default.
-        ape_cfg["contracts_folder"] = root_data.get("src")
+        contracts_folder = root_data.get("src")
 
-        # Used for seeing which remappings are comings from dependencies.
+        if not contracts_folder:
+            if (self.foundry_config_file.parent / "src").is_dir():
+                contracts_folder = "src"
+            elif (self.foundry_config_file.parent / "contracts").is_dir():
+                contracts_folder = "contracts"
+
+        if contracts_folder:
+            ape_cfg["contracts_folder"] = contracts_folder
+
+        # Foundry uses git-submodules for dependencies.
+        if dependencies := self._parse_dependencies_from_gitmodules():
+            ape_cfg["dependencies"] = dependencies
+
         lib_paths = root_data.get("libs", ("lib",))
+        if solidity := self._parse_solidity_config(
+            root_data, dependencies, lib_paths, contracts_folder=contracts_folder
+        ):
+            ape_cfg["solidity"] = solidity
 
-        # Handle all ape-solidity configuration.
-        solidity_data: dict = {}
-        if solc_version := (root_data.get("solc") or root_data.get("solc_version")):
-            solidity_data["version"] = solc_version
+        return ApeConfig.model_validate({**ape_cfg, **overrides})
 
-        # Handle remappings, including remapping.txt
-        remappings_cfg: list[str] = []
-        if remappings_from_cfg := root_data.get("remappings"):
-            remappings_cfg.extend(remappings_from_cfg)
-        if self.remapping_file.is_file():
-            remappings_from_file = self.remapping_file.read_text().splitlines()
-            remappings_cfg.extend(remappings_from_file)
-        if remappings := remappings_cfg:
-            solidity_data["import_remapping"] = remappings
+    def _parse_foundry_toml(self) -> dict:
+        data = tomllib.loads(self.foundry_config_file.read_text())
+        profile = data.get("profile", {})
+        return profile.get("default", {})
 
-        if "optimizer" in root_data:
-            solidity_data["optimize"] = root_data["optimizer"]
-        if runs := solidity_data.get("optimizer_runs"):
-            solidity_data["optimization_runs"] = runs
-        if evm_version := root_data.get("evm_version"):
-            solidity_data["evm_version"] = evm_version
+    def _parse_dependencies_from_gitmodules(self) -> list[dict]:
+        if not self.gitmodules_file.is_file():
+            return []
 
-        if soldata := solidity_data:
-            ape_cfg["solidity"] = soldata
-
-        # Foundry used .gitmodules for dependencies.
         dependencies: list[dict] = []
-        if self.submodules_file.is_file():
-            module_data = _parse_gitmodules(self.submodules_file)
-            for module in module_data:
-                if not (url := module.get("url")):
-                    continue
-                elif not url.startswith("https://github.com/"):
-                    # Not from GitHub.
-                    continue
-
-                path_name = module.get("path")
-                github = url.replace("https://github.com/", "").replace(".git", "")
-                gh_dependency = {"github": github}
-
-                # Check for short-name in remappings.
-                fixed_remappings: list[str] = []
-                for remapping in ape_cfg.get("solidity", {}).get("import_remapping", []):
-                    parts = remapping.split("=")
-                    value = parts[1]
-                    found = False
-                    for lib_path in lib_paths:
-                        if not value.startswith(path_name):
-                            continue
-
-                        new_value = value.replace(f"{lib_path}{os.path.sep}", "")
-                        fixed_remappings.append(f"{parts[0]}={new_value}")
-                        gh_dependency["name"] = parts[0].strip(" /\\@")
-                        found = True
-                        break
-
-                    if not found:
-                        # Append remapping as-is.
-                        fixed_remappings.append(remapping)
-
-                if fixed_remappings:
-                    ape_cfg["solidity"]["import_remapping"] = fixed_remappings
-
-                if "name" not in gh_dependency and path_name:
-                    found = False
-                    for lib_path in lib_paths:
-                        if not path_name.startswith(f"{lib_path}{os.path.sep}"):
-                            continue
-
-                        name = path_name.replace(f"{lib_path}{os.path.sep}", "")
-                        gh_dependency["name"] = name
-                        found = True
-                        break
-
-                    if not found:
-                        name = path_name.replace("/\\_", "-").lower()
-                        gh_dependency["name"] = name
-
-                if "release" in module:
-                    gh_dependency["version"] = module["release"]
-                elif "branch" in module:
-                    gh_dependency["ref"] = module["branch"]
-
-                if "version" not in gh_dependency and "ref" not in gh_dependency:
-                    gh_parts = github.split("/")
-                    if len(gh_parts) != 2:
-                        # Likely not possible, but just try `main`.
-                        gh_dependency["ref"] = "main"
-
-                    else:
-                        # Use the default branch of the repo.
-                        org_name, repo_name = github.split("/")
-                        repo = self._github_client.get_repo(org_name, repo_name)
-                        gh_dependency["ref"] = repo.get("default_branch", "main")
-
-                dependencies.append(gh_dependency)
-
-        if deps := dependencies:
-            ape_cfg["dependencies"] = deps
-
-        return ApeConfig.model_validate(ape_cfg)
-
-
-def _parse_gitmodules(file_path: Path) -> list[dict[str, str]]:
-    submodules: list[dict[str, str]] = []
-    submodule: dict[str, str] = {}
-    content = Path(file_path).read_text()
-
-    for line in content.splitlines():
-        line = line.strip()
-        if line.startswith("[submodule"):
-            # Add the submodule we have been building to the list
-            # if it exists. This happens on submodule after the first one.
-            if submodule:
-                submodules.append(submodule)
-                submodule = {}
-
-        for key in ("path", "url", "release", "branch"):
-            if not line.startswith(f"{key} ="):
+        module_data = self._parse_gitmodules()
+        for module in module_data:
+            if not (url := module.get("url")):
+                continue
+            elif not url.startswith("https://github.com/"):
+                # Not from GitHub.
                 continue
 
-            submodule[key] = line.split("=")[1].strip()
-            break  # No need to try the rest.
+            github = url.replace("https://github.com/", "").replace(".git", "")
+            dependency = {"github": github}
+            version_type, version = self._parse_version_from_module(module)
+            dependency[version_type] = version
+            dependency["name"] = github.split("/")[-1].lower().replace("_", "-")
+            dependencies.append(dependency)
 
-    # Add the last submodule.
-    if submodule:
-        submodules.append(submodule)
+        return dependencies
 
-    return submodules
+    def _parse_gitmodules(self) -> list[dict[str, str]]:
+        submodules: list[dict[str, str]] = []
+        submodule: dict[str, str] = {}
+        content = Path(self.gitmodules_file).read_text()
+
+        for line in content.splitlines():
+            line = line.strip()
+            if line.startswith("[submodule"):
+                # Add the submodule we have been building to the list
+                # if it exists. This happens on submodule after the first one.
+                if submodule:
+                    submodules.append(submodule)
+                    submodule = {}
+
+            for key in ("path", "url", "release", "branch"):
+                if not line.startswith(f"{key} ="):
+                    continue
+
+                submodule[key] = line.split("=")[1].strip()
+                break  # No need to try the rest.
+
+        # Add the last submodule.
+        if submodule:
+            submodules.append(submodule)
+
+        return submodules
+
+    def _parse_version_from_module(
+        self, module: dict, default_version: str = "main"
+    ) -> tuple[str, str]:
+        if "release" in module:
+            # Use GitHub version API.
+            return ("version", module["release"])
+
+        elif "branch" in module:
+            # Use clone-by-reference.
+            return ("ref", module["branch"])
+
+        elif "url" not in module:
+            return ("ref", default_version)
+
+        url = module["url"]
+        github = url.replace("https://github.com/", "").replace(".git", "")
+        gh_parts = github.split("/")
+        if len(gh_parts) != 2:
+            # Likely not possible, but just try `main`.
+            return ("ref", default_version)
+
+        # Use the default branch of the repo.
+        org_name, repo_name = github.split("/")
+        repo = self._github_client.get_repo(org_name, repo_name)
+        return ("ref", repo.get("default_branch", default_version))
+
+    def _parse_solidity_config(
+        self,
+        data: dict,
+        dependencies: list[dict],
+        lib_paths: Iterable[str],
+        contracts_folder: Optional[str] = None,
+    ) -> dict:
+        sol_cfg: dict = {}
+
+        # Different foundry versions use a different key for the solc version.
+        if version := (data.get("solc") or data.get("solc_version")):
+            sol_cfg["version"] = version
+
+        if evm_version := data.get("evm_version"):
+            sol_cfg["evm_version"] = evm_version
+
+        foundry_remappings = [*data.get("remappings", []), *self._parse_remappings_file()]
+        if remappings := self._parse_remappings(
+            foundry_remappings, dependencies, lib_paths, contracts_folder=contracts_folder
+        ):
+            sol_cfg["import_remapping"] = remappings
+
+        return sol_cfg
+
+    def _parse_remappings_file(self) -> list[str]:
+        if not self.remapping_file.is_file():
+            return []
+
+        return self.remapping_file.read_text(encoding="utf8").splitlines()
+
+    def _parse_remappings(
+        self,
+        foundry_remappings: list[str],
+        dependencies: list[dict],
+        lib_paths: Iterable[str],
+        contracts_folder: Optional[str] = None,
+    ) -> list[str]:
+        ape_sol_remappings: set[str] = set()
+
+        for f_remap in foundry_remappings:
+            key, value = f_remap.split("=")
+            sep = "\\" if "\\" in value else "/"
+            real_key = key.rstrip(sep)
+            clean_key = real_key.lstrip("@")
+
+            # Check if is from one of the dependencies.
+            is_dep = False
+            repo = value
+            for lib_path in lib_paths:
+                if not value.startswith(f"{lib_path}{sep}"):
+                    continue
+
+                # Dependency found.
+                is_dep = True
+                repo = value.replace(f"{lib_path}{sep}", "").strip(sep)
+                break
+
+            if not is_dep:
+                # Append as-is.
+                ape_sol_remappings.add(f_remap)
+                continue
+
+            # Setup remapping to a dependency in a way Ape expects.
+            # Also, change the name of the dependencies to be the short name
+            # from the remapping (also what Ape expects).
+            dep_found = False
+            for dependency in dependencies:
+                # NOTE: There appears to be no rhyme or reason to
+                # dependency short-names in foundry.
+                if (
+                    not dependency["github"].endswith(clean_key)
+                    and dependency["name"] != clean_key
+                    and dependency["name"] != repo
+                ):
+                    continue
+
+                # Matching dependency found.
+                dependency["name"] = clean_key
+                version = dependency.get("version") or dependency.get("ref")
+                prefix = f"{sep}.cache{sep}"
+                if contracts_folder:
+                    prefix = f"{contracts_folder}{prefix}"
+
+                value_without_lib_path = value
+                for lib_path in lib_paths:
+                    if f"{lib_path}{sep}" not in value:
+                        continue
+
+                    value_without_lib_path = value.replace(f"{lib_path}{sep}", "")
+
+                # Sometimes, contracts-folder name is included.
+                suffix = ""
+                if f"{clean_key}{sep}" in value_without_lib_path:
+                    suffix = value_without_lib_path.replace(f"{clean_key}{sep}", "").rstrip(sep)
+
+                new_value = f"{prefix}{clean_key}{sep}{version}{sep}{suffix}"
+                new_remapping = f"{real_key}={new_value}"
+                ape_sol_remappings.add(new_remapping)
+                dep_found = True
+                break
+
+            if not dep_found:
+                # Item seems like a dependency but not found in `dependencies`.
+                ape_sol_remappings.add(f_remap)
+
+        return sorted(list(ape_sol_remappings))

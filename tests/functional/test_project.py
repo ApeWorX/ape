@@ -622,13 +622,15 @@ remappings = [
             assert isinstance(api, FoundryProject)
 
             # Ensure solidity config migrated.
-            actual = temp_project.config  # Is result of ``api.extract_config()``.
+            actual = temp_project.config.model_dump(
+                by_alias=True
+            )  # Is result of ``api.extract_config()``.
             assert actual["contracts_folder"] == "src"
             assert "solidity" in actual, "Solidity failed to migrate"
             actual_sol = actual["solidity"]
             assert actual_sol["import_remapping"] == [
-                "forge-std/=forge-std/src/",
-                "@openzeppelin/=openzeppelin-contracts/",
+                "@openzeppelin=src/.cache/openzeppelin/v4.9.5/",
+                "forge-std=src/.cache/forge-std/v1.5.2/src",
             ]
             assert actual_sol["version"] == "0.8.18"
             assert actual_sol["evm_version"] == "cancun"
