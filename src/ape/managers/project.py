@@ -626,7 +626,6 @@ class Dependency(BaseManager, ExtraAttributesMixin):
         config_override = {**(self.api.config_override or {}), **(config_override or {})}
         project = None
         did_fetch = False
-
         if self._installation is not None and use_cache:
             if config_override:
                 self._installation.reconfigure(**config_override)
@@ -1363,15 +1362,15 @@ class DependencyManager(BaseManager):
         use_cache: bool = dependency.pop("use_cache", False)
         if dependency:
             return self.install_dependency(dependency, use_cache=use_cache)
-        else:
-            # Install all project's.
-            result: list[Dependency] = []
 
-            # Log the errors as they happen but don't crash the full install.
-            for dep in self._get_specified():
-                result.append(dep)
+        # Install all project's.
+        result: list[Dependency] = []
 
-            return result
+        # Log the errors as they happen but don't crash the full install.
+        for dep in self._get_specified(use_cache=use_cache):
+            result.append(dep)
+
+        return result
 
     def install_dependency(
         self,

@@ -213,7 +213,7 @@ def test_add_dependency_with_dependencies(project, with_dependencies_project_pat
     assert actual.version == "local"
 
 
-def test_install(project):
+def test_install(project, mocker):
     with project.isolate_in_tempdir() as tmp_project:
         contracts_path = tmp_project.path / "src"
         contracts_path.mkdir(exist_ok=True, parents=True)
@@ -234,6 +234,11 @@ def test_install(project):
         project = dependency.install()
         assert isinstance(project, ProjectManager)
         assert dependency.project_path.is_dir()  # Was re-created from manifest sources.
+
+        # Force install and prove it actually does the re-install.
+        spy = mocker.spy(tmp_project.dependencies, "_get_specified")
+        tmp_project.dependencies.install(use_cache=False)
+        spy.assert_called_once_with(use_cache=False)
 
 
 def test_install_dependencies_of_dependencies(project, with_dependencies_project_path):
