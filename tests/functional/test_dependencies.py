@@ -219,10 +219,14 @@ def test_install(project, mocker):
         contracts_path.mkdir(exist_ok=True, parents=True)
         (contracts_path / "contract.json").write_text('{"abi": []}')
         data = {"name": "FooBar", "local": f"{tmp_project.path}"}
+        get_spec_spy = mocker.spy(tmp_project.dependencies, "_get_specified")
+        install_dep_spy = mocker.spy(tmp_project.dependencies, "install_dependency")
 
         # Show can install from DependencyManager.
         dependency = tmp_project.dependencies.install(**data)
         assert isinstance(dependency, Dependency)
+        # NOTE: Here, we are mostly testing that `use_cache=False` was not passed.
+        install_dep_spy.assert_called_once_with(dependency)
 
         # Show can install from Dependency.
         project = dependency.install()
@@ -236,9 +240,8 @@ def test_install(project, mocker):
         assert dependency.project_path.is_dir()  # Was re-created from manifest sources.
 
         # Force install and prove it actually does the re-install.
-        spy = mocker.spy(tmp_project.dependencies, "_get_specified")
         tmp_project.dependencies.install(use_cache=False)
-        spy.assert_called_once_with(use_cache=False)
+        get_spec_spy.assert_called_once_with(use_cache=False)
 
 
 def test_install_dependencies_of_dependencies(project, with_dependencies_project_path):

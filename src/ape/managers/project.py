@@ -1359,7 +1359,7 @@ class DependencyManager(BaseManager):
             :class:`~ape.managers.project.Dependency` when given data else a list
             of them, one for each specified.
         """
-        use_cache: bool = dependency.pop("use_cache", False)
+        use_cache: bool = dependency.pop("use_cache", True)
         if dependency:
             return self.install_dependency(dependency, use_cache=use_cache)
 
