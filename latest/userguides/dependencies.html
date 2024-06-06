@@ -175,7 +175,7 @@
 <li class="toctree-l3"><a class="reference internal" href="#config-override">Config Override</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#custom-contracts-folder">Custom Contracts Folder</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#file-exclusions">File Exclusions</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#solidity-remappings">Solidity Remappings</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#solidity-import-remapping">Solidity Import Remapping</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#compiling-dependencies">Compiling Dependencies</a></li>
 </ul>
 </li>
@@ -492,22 +492,28 @@ Otherwise, you just give it the name.</p>
 </pre></div>
 </div>
 </section>
-<section id="solidity-remappings">
-<h3>Solidity Remappings<a class="headerlink" href="#solidity-remappings" title="Permalink to this heading"></a></h3>
+<section id="solidity-import-remapping">
+<h3>Solidity Import Remapping<a class="headerlink" href="#solidity-import-remapping" title="Permalink to this heading"></a></h3>
 <p>A common use-case for dependencies involves the Solidity plugin.
-To use your dependencies in the <code class="docutils literal notranslate"><span class="pre">ape-solidity</span></code> plugin, configure <code class="docutils literal notranslate"><span class="pre">import_remappings</span></code> to refer to them:</p>
+By default, the <code class="docutils literal notranslate"><span class="pre">ape-solidity</span></code> plugin knows to look at installed dependencies for potential remapping-values and will use those when it notices you are importing them.
+For example, if you are using dependencies like:</p>
 <div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">dependencies</span><span class="p">:</span>
 <span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">OpenZeppelin</span>
 <span class="w">    </span><span class="nt">github</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">OpenZeppelin/openzeppelin-contracts</span>
 <span class="w">    </span><span class="nt">version</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">4.4.2</span>
-
-<span class="nt">solidity</span><span class="p">:</span><span class="w"> </span>
-<span class="w">  </span><span class="nt">import_remapping</span><span class="p">:</span>
-<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&quot;@openzeppelin=OpenZeppelin/4.4.2&quot;</span>
 </pre></div>
 </div>
-<p>Now, in your solidity files, import <code class="docutils literal notranslate"><span class="pre">OpenZeppelin</span></code> sources via:</p>
-<div class="highlight-solidity notranslate"><div class="highlight"><pre><span></span><span class="kt">import</span><span class="w"> </span><span class="s2">&quot;@openzeppelin/token/ERC721/ERC721.sol&quot;</span><span class="p">;</span>
+<p>And your source files import from <code class="docutils literal notranslate"><span class="pre">openzeppelin</span></code> this way:</p>
+<div class="highlight-solidity notranslate"><div class="highlight"><pre><span></span><span class="kt">import</span><span class="w"> </span><span class="s2">&quot;@openzeppelin/contracts/token/ERC721/ERC721.sol&quot;</span><span class="p">;</span>
+</pre></div>
+</div>
+<p>Ape knows how to resolve the <code class="docutils literal notranslate"><span class="pre">&#64;openzeppelin</span></code> value and find the correct source.</p>
+<p>If you want to override this behavior or add new remappings that are not dependencies, you can add them to your <code class="docutils literal notranslate"><span class="pre">ape-config.yaml</span></code> under the <code class="docutils literal notranslate"><span class="pre">solidity:</span></code> key.
+For example, let’s say you have downloaded <code class="docutils literal notranslate"><span class="pre">openzeppelin</span></code> somewhere and do not have it installed in Ape.
+You can map to your local install of <code class="docutils literal notranslate"><span class="pre">openzeppelin</span></code> this way:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">solidity</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">import_remapping</span><span class="p">:</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&quot;@openzeppelin=path/to/openzeppelin&quot;</span>
 </pre></div>
 </div>
 </section>
