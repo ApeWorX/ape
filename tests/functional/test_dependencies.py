@@ -156,7 +156,14 @@ def test_get_dependency_by_name(project_with_downloaded_dependencies):
     assert actual.package_id == "OpenZeppelin/openzeppelin-contracts"
 
 
-def test_get_versions(project_with_downloaded_dependencies):
+def test_get_versions_using_package_id(project_with_downloaded_dependencies):
+    dm = project_with_downloaded_dependencies.dependencies
+    package_id = "OpenZeppelin/openzeppelin-contracts"
+    actual = list(dm.get_versions(package_id))
+    assert len(actual) == 2
+
+
+def test_get_versions_using_name(project_with_downloaded_dependencies):
     dm = project_with_downloaded_dependencies.dependencies
     name = "openzeppelin"
     actual = list(dm.get_versions(name))

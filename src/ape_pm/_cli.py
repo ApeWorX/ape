@@ -8,6 +8,7 @@ from ape.cli.options import ape_cli_context, config_override_option
 from ape.exceptions import ProjectError
 from ape.logging import logger
 from ape.managers.project import Dependency
+from ape_pm import LocalDependency
 
 
 @click.group()
@@ -38,8 +39,16 @@ def _list(cli_ctx, list_all):
             # Project may not even be installed right.
             is_compiled = False
 
+        # For local dependencies, use the short name.
+        # This is mostly because it looks nicer than very long paths.
+        name = (
+            dependency.name
+            if isinstance(dependency.api, LocalDependency)
+            else dependency.package_id
+        )
+
         item = {
-            "name": dependency.package_id,
+            "name": name,
             "version": dependency.version,
             "compiled": is_compiled,
         }
