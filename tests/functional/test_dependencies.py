@@ -156,7 +156,14 @@ def test_get_dependency_by_name(project_with_downloaded_dependencies):
     assert actual.package_id == "OpenZeppelin/openzeppelin-contracts"
 
 
-def test_get_versions(project_with_downloaded_dependencies):
+def test_get_versions_using_package_id(project_with_downloaded_dependencies):
+    dm = project_with_downloaded_dependencies.dependencies
+    package_id = "OpenZeppelin/openzeppelin-contracts"
+    actual = list(dm.get_versions(package_id))
+    assert len(actual) == 2
+
+
+def test_get_versions_using_name(project_with_downloaded_dependencies):
     dm = project_with_downloaded_dependencies.dependencies
     name = "openzeppelin"
     actual = list(dm.get_versions(name))
@@ -206,7 +213,7 @@ def test_add_dependency_with_dependencies(project, with_dependencies_project_pat
     assert actual.version == "local"
 
 
-def test_install(project):
+def test_install(project, mocker):
     with project.isolate_in_tempdir() as tmp_project:
         contracts_path = tmp_project.path / "src"
         contracts_path.mkdir(exist_ok=True, parents=True)
@@ -227,6 +234,11 @@ def test_install(project):
         project = dependency.install()
         assert isinstance(project, ProjectManager)
         assert dependency.project_path.is_dir()  # Was re-created from manifest sources.
+
+        # Force install and prove it actually does the re-install.
+        spy = mocker.spy(tmp_project.dependencies, "_get_specified")
+        tmp_project.dependencies.install(use_cache=False)
+        spy.assert_called_once_with(use_cache=False)
 
 
 def test_install_dependencies_of_dependencies(project, with_dependencies_project_path):

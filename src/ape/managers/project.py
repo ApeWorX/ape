@@ -626,7 +626,6 @@ class Dependency(BaseManager, ExtraAttributesMixin):
         config_override = {**(self.api.config_override or {}), **(config_override or {})}
         project = None
         did_fetch = False
-
         if self._installation is not None and use_cache:
             if config_override:
                 self._installation.reconfigure(**config_override)
@@ -732,7 +731,7 @@ class Dependency(BaseManager, ExtraAttributesMixin):
 
         Args:
             use_cache (bool): Set to ``False`` to force a re-compile.
-            config_override (Optional[dict]): Optionall override the configuration,
+            config_override (Optional[dict]): Optionally override the configuration,
               which may be needed for compiling.
 
         Returns:
@@ -797,10 +796,15 @@ class Dependency(BaseManager, ExtraAttributesMixin):
                 yield unpacked_dep
 
 
-def _get_cache_suffix(package_id: str, version: str, suffix: str = "") -> Path:
+def _get_cache_versions_suffix(package_id) -> Path:
     package_id_name = package_id.replace("/", "_")
+    return Path(package_id_name)
+
+
+def _get_cache_suffix(package_id: str, version: str, suffix: str = "") -> Path:
+    package_id_path = _get_cache_versions_suffix(package_id)
     version_name = f"{version.replace('.', '_').replace('/', '_')}{suffix}"
-    return Path(package_id_name) / version_name
+    return package_id_path / version_name
 
 
 class PackagesCache(ManagerAccessMixin):
@@ -830,6 +834,12 @@ class PackagesCache(ManagerAccessMixin):
     @property
     def installed_package_names(self) -> set[str]:
         return {x.name for x in self.projects_folder.iterdir()}
+
+    def get_project_versions_path(self, package_id: str) -> Path:
+        """
+        The path to all the versions (projects) of a dependency.
+        """
+        return self.projects_folder / _get_cache_versions_suffix(package_id)
 
     def get_project_path(self, package_id: str, version: str) -> Path:
         """
@@ -989,12 +999,8 @@ class DependencyManager(BaseManager):
         if versions := {d.version: d.project for d in self._get_specified(name=name)}:
             result.extend(versions)
 
-        # Add other dependencies of the same package (different versions)
-        # that are also installed.
-        for dependency in self.installed:
-            if dependency.name != name:
-                continue
-
+        # Add remaining installed versions.
+        for dependency in self.get_versions(name):
             if dependency.version not in result:
                 result[dependency.version] = dependency.project
 
@@ -1199,13 +1205,32 @@ class DependencyManager(BaseManager):
             versions_yielded.add(dependency.version)
 
         # Yield any remaining installed.
+        using_package_id = False
         for dependency in self.installed:
-            if dependency.name == name:
-                if dependency.version in versions_yielded:
-                    continue
+            if dependency.package_id != name:
+                continue
 
-                yield dependency
-                versions_yielded.add(dependency.version)
+            using_package_id = True
+            if dependency.version in versions_yielded:
+                continue
+
+            yield dependency
+            versions_yielded.add(dependency.version)
+
+        if using_package_id:
+            # Done.
+            return
+
+        # Never yield. Check if using short-name.
+        for dependency in self.installed:
+            if dependency.name != name:
+                continue
+
+            elif dependency.version in versions_yielded:
+                continue
+
+            yield dependency
+            versions_yielded.add(dependency.version)
 
     def _create_dependency(self, api: DependencyAPI) -> Dependency:
         if api in self._cache:
@@ -1337,15 +1362,15 @@ class DependencyManager(BaseManager):
         use_cache: bool = dependency.pop("use_cache", False)
         if dependency:
             return self.install_dependency(dependency, use_cache=use_cache)
-        else:
-            # Install all project's.
-            result: list[Dependency] = []
 
-            # Log the errors as they happen but don't crash the full install.
-            for dep in self._get_specified():
-                result.append(dep)
+        # Install all project's.
+        result: list[Dependency] = []
 
-            return result
+        # Log the errors as they happen but don't crash the full install.
+        for dep in self._get_specified(use_cache=use_cache):
+            result.append(dep)
+
+        return result
 
     def install_dependency(
         self,
@@ -2057,6 +2082,13 @@ class LocalProject(Project):
         The 'type' of project this is, such as an Ape project
         or a Brownie project (or something else).
         """
+        default_project = self._get_ape_project_api()
+
+        # If an ape-config.yaml file, exists stop now.
+        if default_project and default_project.config_file.is_file():
+            return default_project
+
+        # ape-config.yaml does no exist. Check for another ProjectAPI type.
         project_classes: list[type[ProjectAPI]] = [
             t[1] for t in list(self.plugin_manager.projects)  # type: ignore
         ]
@@ -2065,11 +2097,20 @@ class LocalProject(Project):
             if instance := api.attempt_validate(path=self.path):
                 return instance
 
-        # Try 'ApeProject' last, in case there was a more specific one earlier.
-        if instance := ApeProject.attempt_validate(path=self.path):
-            return instance
+        # If no other APIs worked but we have a default Ape project, use that!
+        # It should work in most cases (hopefully!).
+        if default_project:
+            return default_project
 
+        # For some reason we were just not able to create a project here.
+        # I am not sure this is even possible.
         raise ProjectError(f"'{self.path.name}' is not recognized as a project.")
+
+    def _get_ape_project_api(self) -> Optional[ApeProject]:
+        if instance := ApeProject.attempt_validate(path=self.path):
+            return cast(ApeProject, instance)
+
+        return None
 
     @property
     def name(self) -> str:

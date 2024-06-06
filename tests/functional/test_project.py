@@ -9,6 +9,7 @@ from pydantic_core import Url
 
 import ape
 from ape import Project
+from ape.api.projects import ApeProject
 from ape.contracts import ContractContainer
 from ape.exceptions import ProjectError
 from ape.logging import LogLevel
@@ -49,6 +50,23 @@ def contract_block_hash(eth_tester_provider, vyper_contract_instance):
 @pytest.fixture
 def project_from_manifest(manifest):
     return Project.from_manifest(manifest)
+
+
+@pytest.fixture(scope="module")
+def foundry_toml():
+    return """
+[profile.default]
+src = 'src'
+out = 'out'
+libs = ['lib']
+solc = "0.8.18"
+evm_version = 'cancun'
+
+remappings = [
+    'forge-std/=lib/forge-std/src/',
+    '@openzeppelin/=lib/openzeppelin-contracts/',
+]
+""".lstrip()
 
 
 def make_contract(name: str = "test") -> ContractType:
@@ -484,6 +502,23 @@ def test_add_compiler_data(project_with_dependency_config):
         project.add_compiler_data([compiler_4, compiler_5])
 
 
+def test_project_api_foundry_and_ape_config_found(foundry_toml):
+    """
+    If a project is both a Foundry project and an Ape project,
+    ensure Ape treats it as an Ape project.
+    """
+    with ape.Project.create_temporary_project() as temp_project:
+        foundry_cfg_file = temp_project.path / "foundry.toml"
+        foundry_cfg_file.write_text(foundry_toml)
+
+        ape_cfg_file = temp_project.path / "ape-config.yaml"
+        ape_cfg_file.write_text("name: testfootestfootestfoo")
+
+        actual = temp_project.project_api
+        assert isinstance(actual, ApeProject)
+        assert not isinstance(actual, FoundryProject)
+
+
 class TestProject:
     """
     All tests related to ``ape.Project``.
@@ -575,22 +610,6 @@ class TestFoundryProject:
         return mocker.MagicMock()
 
     @pytest.fixture(scope="class")
-    def toml(self):
-        return """
-[profile.default]
-src = 'src'
-out = 'out'
-libs = ['lib']
-solc = "0.8.18"
-evm_version = 'cancun'
-
-remappings = [
-    'forge-std/=lib/forge-std/src/',
-    '@openzeppelin/=lib/openzeppelin-contracts/',
-]
-""".lstrip()
-
-    @pytest.fixture(scope="class")
     def gitmodules(self):
         return """
 [submodule "lib/forge-std"]
@@ -609,10 +628,10 @@ remappings = [
             "    ", "\t"
         )
 
-    def test_extract_config(self, toml, gitmodules, mock_github):
+    def test_extract_config(self, foundry_toml, gitmodules, mock_github):
         with ape.Project.create_temporary_project() as temp_project:
             cfg_file = temp_project.path / "foundry.toml"
-            cfg_file.write_text(toml)
+            cfg_file.write_text(foundry_toml)
             gitmodules_file = temp_project.path / ".gitmodules"
             gitmodules_file.write_text(gitmodules)
 
@@ -622,13 +641,15 @@ remappings = [
             assert isinstance(api, FoundryProject)
 
             # Ensure solidity config migrated.
-            actual = temp_project.config  # Is result of ``api.extract_config()``.
+            actual = temp_project.config.model_dump(
+                by_alias=True
+            )  # Is result of ``api.extract_config()``.
             assert actual["contracts_folder"] == "src"
             assert "solidity" in actual, "Solidity failed to migrate"
             actual_sol = actual["solidity"]
-            assert actual_sol["import_remappings"] == [
-                "forge-std/=forge-std/src/",
-                "@openzeppelin/=openzeppelin-contracts/",
+            assert actual_sol["import_remapping"] == [
+                "@openzeppelin=src/.cache/openzeppelin/v4.9.5/",
+                "forge-std=src/.cache/forge-std/v1.5.2/src",
             ]
             assert actual_sol["version"] == "0.8.18"
             assert actual_sol["evm_version"] == "cancun"
