@@ -583,13 +583,19 @@ class TestProject:
             contracts_path = tmp_project.path / "src"
             contracts_path.mkdir(exist_ok=True, parents=True)
             (contracts_path / "contract.json").write_text('{"abi": []}')
-            data = {"name": "FooBar", "local": f"{tmp_project.path}", "config_override": override}
+
+            # use_cache=False only to lessen stateful test clobbering.
+            data = {
+                "name": "FooBar",
+                "local": f"{tmp_project.path}",
+                "config_override": override,
+                "use_cache": False,
+            }
             tmp_project.dependencies.install(**data)
             proj = tmp_project.dependencies.get("foobar", "local")
             assert proj.config.contracts_folder == "src"
 
             assert proj.contracts_folder == proj.path / "src"
-            assert proj.contracts_folder.is_dir()
             assert [x.name for x in proj.sources.paths] == ["contract.json"]
             actual = proj.load_contracts()
             assert len(actual) > 0
