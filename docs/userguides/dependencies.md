@@ -273,9 +273,11 @@ dependencies:
           - mocks/**/*      # Ignore all files in the 'mocks' directory
 ```
 
-### Solidity Mapping
+### Solidity Import Remapping
 
-A common use-case for dependencies involves the Solidity plugin. By default, the `ape-solidity` plugin knows to look at installed dependencies for potential remapping-values and will use those when it notices you are importing them. For example, if you are using dependencies like:
+A common use-case for dependencies involves the Solidity plugin.
+By default, the `ape-solidity` plugin knows to look at installed dependencies for potential remapping-values and will use those when it notices you are importing them.
+For example, if you are using dependencies like:
 
 ```yaml
 dependencies:
