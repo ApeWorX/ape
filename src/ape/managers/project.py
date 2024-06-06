@@ -732,7 +732,7 @@ class Dependency(BaseManager, ExtraAttributesMixin):
 
         Args:
             use_cache (bool): Set to ``False`` to force a re-compile.
-            config_override (Optional[dict]): Optionall override the configuration,
+            config_override (Optional[dict]): Optionally override the configuration,
               which may be needed for compiling.
 
         Returns:
@@ -797,10 +797,15 @@ class Dependency(BaseManager, ExtraAttributesMixin):
                 yield unpacked_dep
 
 
-def _get_cache_suffix(package_id: str, version: str, suffix: str = "") -> Path:
+def _get_cache_versions_suffix(package_id) -> Path:
     package_id_name = package_id.replace("/", "_")
+    return Path(package_id_name)
+
+
+def _get_cache_suffix(package_id: str, version: str, suffix: str = "") -> Path:
+    package_id_path = _get_cache_versions_suffix(package_id)
     version_name = f"{version.replace('.', '_').replace('/', '_')}{suffix}"
-    return Path(package_id_name) / version_name
+    return package_id_path / version_name
 
 
 class PackagesCache(ManagerAccessMixin):
@@ -830,6 +835,12 @@ class PackagesCache(ManagerAccessMixin):
     @property
     def installed_package_names(self) -> set[str]:
         return {x.name for x in self.projects_folder.iterdir()}
+
+    def get_project_versions_path(self, package_id: str) -> Path:
+        """
+        The path to all the versions (projects) of a dependency.
+        """
+        return self.projects_folder / _get_cache_versions_suffix(package_id)
 
     def get_project_path(self, package_id: str, version: str) -> Path:
         """
@@ -989,12 +1000,8 @@ class DependencyManager(BaseManager):
         if versions := {d.version: d.project for d in self._get_specified(name=name)}:
             result.extend(versions)
 
-        # Add other dependencies of the same package (different versions)
-        # that are also installed.
-        for dependency in self.installed:
-            if dependency.name != name:
-                continue
-
+        # Add remaining installed versions.
+        for dependency in self.get_versions(name):
             if dependency.version not in result:
                 result[dependency.version] = dependency.project
 
@@ -1199,13 +1206,32 @@ class DependencyManager(BaseManager):
             versions_yielded.add(dependency.version)
 
         # Yield any remaining installed.
+        using_package_id = False
         for dependency in self.installed:
-            if dependency.name == name:
-                if dependency.version in versions_yielded:
-                    continue
+            if dependency.package_id != name:
+                continue
 
-                yield dependency
-                versions_yielded.add(dependency.version)
+            using_package_id = True
+            if dependency.version in versions_yielded:
+                continue
+
+            yield dependency
+            versions_yielded.add(dependency.version)
+
+        if using_package_id:
+            # Done.
+            return
+
+        # Never yield. Check if using short-name.
+        for dependency in self.installed:
+            if dependency.name != name:
+                continue
+
+            elif dependency.version in versions_yielded:
+                continue
+
+            yield dependency
+            versions_yielded.add(dependency.version)
 
     def _create_dependency(self, api: DependencyAPI) -> Dependency:
         if api in self._cache:

@@ -29,7 +29,7 @@ def _list(cli_ctx, list_all):
     packages = []
     dependencies = [*list(pm.dependencies.specified)]
     if list_all:
-        dependencies = list(set([*dependencies, *pm.dependencies.installed]))
+        dependencies = list({*dependencies, *pm.dependencies.installed})
 
     for dependency in dependencies:
         try:
@@ -39,7 +39,7 @@ def _list(cli_ctx, list_all):
             is_compiled = False
 
         item = {
-            "name": dependency.name,
+            "name": dependency.package_id,
             "version": dependency.version,
             "compiled": is_compiled,
         }
