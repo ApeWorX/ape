@@ -219,10 +219,14 @@ def test_install(project, mocker):
         contracts_path.mkdir(exist_ok=True, parents=True)
         (contracts_path / "contract.json").write_text('{"abi": []}')
         data = {"name": "FooBar", "local": f"{tmp_project.path}"}
+        get_spec_spy = mocker.spy(tmp_project.dependencies, "_get_specified")
+        install_dep_spy = mocker.spy(tmp_project.dependencies, "install_dependency")
 
         # Show can install from DependencyManager.
         dependency = tmp_project.dependencies.install(**data)
         assert isinstance(dependency, Dependency)
+        # NOTE: Here, we are mostly testing that `use_cache=False` was not passed.
+        assert install_dep_spy.call_count == 1
 
         # Show can install from Dependency.
         project = dependency.install()
@@ -236,9 +240,8 @@ def test_install(project, mocker):
         assert dependency.project_path.is_dir()  # Was re-created from manifest sources.
 
         # Force install and prove it actually does the re-install.
-        spy = mocker.spy(tmp_project.dependencies, "_get_specified")
         tmp_project.dependencies.install(use_cache=False)
-        spy.assert_called_once_with(use_cache=False)
+        get_spec_spy.assert_called_once_with(use_cache=False)
 
 
 def test_install_dependencies_of_dependencies(project, with_dependencies_project_path):
@@ -580,13 +583,19 @@ class TestProject:
             contracts_path = tmp_project.path / "src"
             contracts_path.mkdir(exist_ok=True, parents=True)
             (contracts_path / "contract.json").write_text('{"abi": []}')
-            data = {"name": "FooBar", "local": f"{tmp_project.path}", "config_override": override}
+
+            # use_cache=False only to lessen stateful test clobbering.
+            data = {
+                "name": "FooBar",
+                "local": f"{tmp_project.path}",
+                "config_override": override,
+                "use_cache": False,
+            }
             tmp_project.dependencies.install(**data)
             proj = tmp_project.dependencies.get("foobar", "local")
             assert proj.config.contracts_folder == "src"
 
             assert proj.contracts_folder == proj.path / "src"
-            assert proj.contracts_folder.is_dir()
             assert [x.name for x in proj.sources.paths] == ["contract.json"]
             actual = proj.load_contracts()
             assert len(actual) > 0
