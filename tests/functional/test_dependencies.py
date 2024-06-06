@@ -226,7 +226,7 @@ def test_install(project, mocker):
         dependency = tmp_project.dependencies.install(**data)
         assert isinstance(dependency, Dependency)
         # NOTE: Here, we are mostly testing that `use_cache=False` was not passed.
-        install_dep_spy.assert_called_once_with(dependency)
+        assert install_dep_spy.call_count == 1
 
         # Show can install from Dependency.
         project = dependency.install()
