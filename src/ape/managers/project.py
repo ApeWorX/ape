@@ -2081,9 +2081,9 @@ class LocalProject(Project):
         # I am not sure this is even possible.
         raise ProjectError(f"'{self.path.name}' is not recognized as a project.")
 
-    def _get_ape_project_api(self) -> Optional[ProjectAPI]:
+    def _get_ape_project_api(self) -> Optional[ApeProject]:
         if instance := ApeProject.attempt_validate(path=self.path):
-            return instance
+            return cast(ApeProject, instance)
 
         return None
 
