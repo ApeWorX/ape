@@ -101,8 +101,15 @@ doctest_default_flags = (
 
 doctest_global_setup = """
 from ape import *
-"""
+from pathlib import Path
+from ethpm_types import ContractType
 
+contract_path = Path("tests/functional/data/contracts/ethereum/local/VyperContract.json")
+contract_json = contract_path.read_text()
+
+contract = ContractType.model_validate_json(contract_json)
+# project._cached_projects["MyContract"] = contract
+"""
 
 def fixpath(path: str) -> str:
     """
