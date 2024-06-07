@@ -4,6 +4,7 @@ import pytest
 
 from ape.utils.misc import SOURCE_EXCLUDE_PATTERNS
 from ape.utils.os import (
+    clean_path,
     create_tempdir,
     get_all_files_in_directory,
     get_full_extension,
@@ -67,12 +68,12 @@ def test_get_all_files_in_directory():
             file.touch()
 
         all_files = get_all_files_in_directory(path)
-        txt_files = get_all_files_in_directory(path, pattern=r"\w+\.txt")
+        txt_files = get_all_files_in_directory(path, pattern=r"\w+\.txt", max_files=2)
         t_txt_files = get_all_files_in_directory(path, pattern=r"\w+\.t.txt")
         inner_txt_files = get_all_files_in_directory(path, pattern=r"\w+\.inner.txt")
 
         assert len(all_files) == 5
-        assert len(txt_files) == 3
+        assert len(txt_files) == 2
         assert len(t_txt_files) == 1
         assert len(inner_txt_files) == 1
 
@@ -209,3 +210,18 @@ def test_path_match_recurse_dir(path):
     """
     excl = "exclude_dir/**"
     assert path_match(path, excl)
+
+
+def test_clean_path_relative_to_home():
+    name = "__canary_ape_test__"
+    path = Path.home() / name
+    actual = clean_path(path)
+    expected = f"$HOME/{name}"
+    assert actual == expected
+
+
+def test_clean_path_not_relative_to_home():
+    name = "__canary_ape_test__"
+    path = Path(name)
+    actual = clean_path(path)
+    assert actual == name

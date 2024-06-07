@@ -25,7 +25,7 @@ def test_init_success(ape_cli, runner, project):
     os.chdir(str(project_folder_path))
 
     try:
-        result = runner.invoke(ape_cli, ["init"], input="\n".join(["init_success"]))
+        result = runner.invoke(ape_cli, ("init",), input="\n".join(["init_success"]))
 
         assert result.exit_code == 0, result.output
         # checks if the directory exist
@@ -63,7 +63,7 @@ def test_fail_all_files_and_folders_exist(ape_cli, runner, project):
             if not folder.exists():
                 folder.mkdir(exist_ok=False)
 
-        result = runner.invoke(ape_cli, ["init"], input="\n".join(["init_fail"]))
+        result = runner.invoke(ape_cli, ("init",), input="\n".join(["init_fail"]))
         # checks if the directory existence
         assert result.exit_code == 0, result.output
         assert "contracts' exists" in result.output

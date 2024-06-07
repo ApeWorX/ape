@@ -1,19 +1,7 @@
+from collections.abc import Collection, Iterator, Sequence
 from functools import partial
 from pathlib import Path
-from typing import (
-    TYPE_CHECKING,
-    Any,
-    ClassVar,
-    Collection,
-    Dict,
-    Iterator,
-    List,
-    Optional,
-    Sequence,
-    Tuple,
-    Type,
-    Union,
-)
+from typing import TYPE_CHECKING, Any, ClassVar, Optional, Union
 
 from eth_account import Account as EthAccount
 from eth_account._utils.legacy_transactions import (
@@ -35,7 +23,7 @@ from ape.exceptions import (
     SignatureError,
 )
 from ape.logging import logger
-from ape.types import AddressType, AutoGasLimit, CallTreeNode, ContractLog, GasLimit, RawAddress
+from ape.types import AddressType, AutoGasLimit, ContractLog, GasLimit, RawAddress
 from ape.utils import (
     DEFAULT_TRANSACTION_ACCEPTANCE_TIMEOUT,
     BaseInterfaceModel,
@@ -53,6 +41,7 @@ from .config import PluginConfig
 if TYPE_CHECKING:
     from .explorers import ExplorerAPI
     from .providers import BlockAPI, ProviderAPI, UpstreamProvider
+    from .trace import TraceAPI
     from .transactions import ReceiptAPI, TransactionAPI
 
 
@@ -78,10 +67,7 @@ class EcosystemAPI(ExtraAttributesMixin, BaseInterfaceModel):
     The name of the ecosystem. This should be set the same name as the plugin.
     """
 
-    data_folder: Path
-    """The path to the ``.ape`` directory."""
-
-    request_header: Dict
+    request_header: dict
     """A shareable HTTP header for network requests."""
 
     fee_token_symbol: str
@@ -96,6 +82,14 @@ class EcosystemAPI(ExtraAttributesMixin, BaseInterfaceModel):
     @log_instead_of_fail(default="<EcosystemAPI>")
     def __repr__(self) -> str:
         return f"<{self.name}>"
+
+    @property
+    def data_folder(self) -> Path:
+        """
+        The path to the ecosystem's data folder,
+        e.g. ``$HOME/.ape/{self.name}`` unless overridden.
+        """
+        return self.config_manager.DATA_FOLDER / self.name
 
     @cached_property
     def custom_network(self) -> "NetworkAPI":
@@ -114,18 +108,13 @@ class EcosystemAPI(ExtraAttributesMixin, BaseInterfaceModel):
             raise NetworkError("Core Ethereum plugin missing.")
 
         request_header = self.config_manager.REQUEST_HEADER
-        init_kwargs = {
-            "name": "ethereum",
-            "data_folder": self.data_folder,
-            "request_header": request_header,
-        }
+        init_kwargs = {"name": "ethereum", "request_header": request_header}
         ethereum = ethereum_class(**init_kwargs)  # type: ignore
         return NetworkAPI(
             name="custom",
             ecosystem=ethereum,
-            data_folder=self.data_folder / "custom",
             request_header=request_header,
-            _default_provider="geth",
+            _default_provider="node",
             _is_custom=True,
         )
 
@@ -203,7 +192,7 @@ class EcosystemAPI(ExtraAttributesMixin, BaseInterfaceModel):
         return signed_txn
 
     @abstractmethod
-    def decode_receipt(self, data: Dict) -> "ReceiptAPI":
+    def decode_receipt(self, data: dict) -> "ReceiptAPI":
         """
         Convert data to :class:`~ape.api.transactions.ReceiptAPI`.
 
@@ -215,7 +204,7 @@ class EcosystemAPI(ExtraAttributesMixin, BaseInterfaceModel):
         """
 
     @abstractmethod
-    def decode_block(self, data: Dict) -> "BlockAPI":
+    def decode_block(self, data: dict) -> "BlockAPI":
         """
         Decode data to a :class:`~ape.api.providers.BlockAPI`.
 
@@ -235,16 +224,15 @@ class EcosystemAPI(ExtraAttributesMixin, BaseInterfaceModel):
         Returns:
             :class:`ape.api.config.PluginConfig`
         """
-
         return self.config_manager.get_config(self.name)
 
     @property
-    def networks(self) -> Dict[str, "NetworkAPI"]:
+    def networks(self) -> dict[str, "NetworkAPI"]:
         """
         A dictionary of network names mapped to their API implementation.
 
         Returns:
-            Dict[str, :class:`~ape.api.networks.NetworkAPI`]
+            dict[str, :class:`~ape.api.networks.NetworkAPI`]
         """
         networks = {**self._networks_from_plugins}
 
@@ -261,7 +249,6 @@ class EcosystemAPI(ExtraAttributesMixin, BaseInterfaceModel):
                 )
 
             network_data = custom_net.model_dump(by_alias=True, exclude=("default_provider",))
-            network_data["data_folder"] = self.data_folder / custom_net.name
             network_data["ecosystem"] = self
             network_type = create_network_type(custom_net.chain_id, custom_net.chain_id)
             network_api = network_type.model_validate(network_data)
@@ -272,13 +259,10 @@ class EcosystemAPI(ExtraAttributesMixin, BaseInterfaceModel):
         return networks
 
     @cached_property
-    def _networks_from_plugins(self) -> Dict[str, "NetworkAPI"]:
+    def _networks_from_plugins(self) -> dict[str, "NetworkAPI"]:
         return {
             network_name: network_class(
-                name=network_name,
-                ecosystem=self,
-                data_folder=self.data_folder / network_name,
-                request_header=self.request_header,
+                name=network_name, ecosystem=self, request_header=self.request_header
             )
             for _, (ecosystem_name, network_name, network_class) in self.plugin_manager.networks
             if ecosystem_name == self.name
@@ -325,10 +309,11 @@ class EcosystemAPI(ExtraAttributesMixin, BaseInterfaceModel):
             return network
 
         elif network := self.config.get("default_network"):
-            # Default found in config.
-            return network
+            # Default found in config. Ensure is an installed network.
+            if network in self.networks:
+                return network
 
-        elif LOCAL_NETWORK_NAME in self.networks:
+        if LOCAL_NETWORK_NAME in self.networks:
             # Default to the LOCAL_NETWORK_NAME, at last resort.
             return LOCAL_NETWORK_NAME
 
@@ -396,7 +381,7 @@ class EcosystemAPI(ExtraAttributesMixin, BaseInterfaceModel):
         """
 
     @abstractmethod
-    def decode_logs(self, logs: Sequence[Dict], *events: EventABI) -> Iterator["ContractLog"]:
+    def decode_logs(self, logs: Sequence[dict], *events: EventABI) -> Iterator["ContractLog"]:
         """
         Decode any contract logs that match the given event ABI from the raw log data.
 
@@ -410,8 +395,8 @@ class EcosystemAPI(ExtraAttributesMixin, BaseInterfaceModel):
 
     @raises_not_implemented
     def decode_primitive_value(  # type: ignore[empty-body]
-        self, value: Any, output_type: Union[str, Tuple, List]
-    ) -> Union[str, HexBytes, Tuple]:
+        self, value: Any, output_type: Union[str, tuple, list]
+    ) -> Union[str, HexBytes, tuple]:
         """
         Decode a primitive value-type given its ABI type as a ``str``
         and the value itself. This method is a hook for converting
@@ -420,10 +405,10 @@ class EcosystemAPI(ExtraAttributesMixin, BaseInterfaceModel):
 
         Args:
             value (Any): The value to decode.
-            output_type (Union[str, Tuple, List]): The value type.
+            output_type (Union[str, tuple, list]): The value type.
 
         Returns:
-            Union[str, HexBytes, Tuple]
+            Union[str, HexBytes, tuple]
         """
 
     @abstractmethod
@@ -439,7 +424,7 @@ class EcosystemAPI(ExtraAttributesMixin, BaseInterfaceModel):
         """
 
     @abstractmethod
-    def decode_calldata(self, abi: Union[ConstructorABI, MethodABI], calldata: bytes) -> Dict:
+    def decode_calldata(self, abi: Union[ConstructorABI, MethodABI], calldata: bytes) -> dict:
         """
         Decode method calldata.
 
@@ -506,7 +491,7 @@ class EcosystemAPI(ExtraAttributesMixin, BaseInterfaceModel):
 
     def get_network_data(
         self, network_name: str, provider_filter: Optional[Collection[str]] = None
-    ) -> Dict:
+    ) -> dict:
         """
         Get a dictionary of data about providers in the network.
 
@@ -521,7 +506,7 @@ class EcosystemAPI(ExtraAttributesMixin, BaseInterfaceModel):
         Returns:
             dict: A dictionary containing the providers in a network.
         """
-        data: Dict[str, Any] = {"name": str(network_name)}
+        data: dict[str, Any] = {"name": str(network_name)}
 
         # Only add isDefault key when True
         if network_name == self.default_network_name:
@@ -537,7 +522,7 @@ class EcosystemAPI(ExtraAttributesMixin, BaseInterfaceModel):
             if provider_filter and provider_name not in provider_filter:
                 continue
 
-            provider_data: Dict = {"name": str(provider_name)}
+            provider_data: dict = {"name": str(provider_name)}
 
             # Only add isDefault key when True
             if provider_name == network.default_provider_name:
@@ -584,23 +569,24 @@ class EcosystemAPI(ExtraAttributesMixin, BaseInterfaceModel):
 
         return HexBytes(keccak(text=abi.selector)[:4])
 
-    def enrich_calltree(self, call: CallTreeNode, **kwargs) -> CallTreeNode:
+    def enrich_trace(self, trace: "TraceAPI", **kwargs) -> "TraceAPI":
         """
         Enhance the data in the call tree using information about the ecosystem.
 
         Args:
-            call (:class:`~ape.types.trace.CallTreeNode`): The call tree node to enrich.
-            kwargs: Additional kwargs to help with enrichment.
+            trace (:class:`~ape.api.trace.TraceAPI`): The trace to enrich.
+            **kwargs: Additional kwargs to control enrichment, defined at the
+              plugin level.
 
         Returns:
-            :class:`~ape.types.trace.CallTreeNode`
+            :class:`~ape.api.trace.TraceAPI`
         """
-        return call
+        return trace
 
     @raises_not_implemented
     def get_python_types(  # type: ignore[empty-body]
         self, abi_type: ABIType
-    ) -> Union[Type, Sequence]:
+    ) -> Union[type, Sequence]:
         """
         Get the Python types for a given ABI type.
 
@@ -658,9 +644,9 @@ class ProviderContextManager(ManagerAccessMixin):
             ...
     """
 
-    connected_providers: Dict[str, "ProviderAPI"] = {}
-    provider_stack: List[str] = []
-    disconnect_map: Dict[str, bool] = {}
+    connected_providers: dict[str, "ProviderAPI"] = {}
+    provider_stack: list[str] = []
+    disconnect_map: dict[str, bool] = {}
 
     # We store a provider object at the class level for use when disconnecting
     # due to an exception, when interactive mode is set. If we don't hold on
@@ -783,10 +769,7 @@ class NetworkAPI(BaseInterfaceModel):
     ecosystem: EcosystemAPI
     """The ecosystem of the network."""
 
-    data_folder: Path  # For caching any data that might need caching
-    """The path to the ``.ape`` directory."""
-
-    request_header: Dict
+    request_header: dict
     """A shareable network HTTP header."""
 
     # See ``.default_provider`` which is the proper field.
@@ -816,7 +799,16 @@ class NetworkAPI(BaseInterfaceModel):
             return f"<{name}>" if name else f"{type(self)}"
 
     @property
-    def config(self) -> PluginConfig:
+    def data_folder(self) -> Path:
+        """
+        The path to the network's data folder,
+        e.g. ``$HOME/.ape/{self.ecosystem_name}/{self.name}`` unless
+        overridden.
+        """
+        return self.ecosystem.data_folder / self.name
+
+    @property
+    def ecosystem_config(self) -> PluginConfig:
         """
         The configuration of the network. See :class:`~ape.managers.config.ConfigManager`
         for more information on plugin configurations.
@@ -824,11 +816,11 @@ class NetworkAPI(BaseInterfaceModel):
         return self.config_manager.get_config(self.ecosystem.name)
 
     @property
-    def _network_config(self) -> PluginConfig:
+    def config(self) -> PluginConfig:
         name_options = {self.name, self.name.replace("-", "_"), self.name.replace("_", "-")}
         cfg: Any
         for opt in name_options:
-            if cfg := self.config.get(opt):
+            if cfg := self.ecosystem_config.get(opt):
                 if isinstance(cfg, dict):
                     return cfg
                 elif isinstance(cfg, PluginConfig):
@@ -840,7 +832,7 @@ class NetworkAPI(BaseInterfaceModel):
 
     @cached_property
     def gas_limit(self) -> GasLimit:
-        return self._network_config.get("gas_limit", "auto")
+        return self.config.get("gas_limit", "auto")
 
     @cached_property
     def auto_gas_multiplier(self) -> float:
@@ -854,7 +846,7 @@ class NetworkAPI(BaseInterfaceModel):
         """
         A multiplier to apply to a transaction base fee.
         """
-        return self._network_config.get("base_fee_multiplier", 1.0)
+        return self.config.get("base_fee_multiplier", 1.0)
 
     @property
     def chain_id(self) -> int:
@@ -885,7 +877,7 @@ class NetworkAPI(BaseInterfaceModel):
         refer to the number of blocks that have been added since the
         transaction's block.
         """
-        return self._network_config.get("required_confirmations", 0)
+        return self.config.get("required_confirmations", 0)
 
     @property
     def block_time(self) -> int:
@@ -900,7 +892,7 @@ class NetworkAPI(BaseInterfaceModel):
                 block_time: 15
         """
 
-        return self._network_config.get("block_time", 0)
+        return self.config.get("block_time", 0)
 
     @property
     def transaction_acceptance_timeout(self) -> int:
@@ -909,7 +901,7 @@ class NetworkAPI(BaseInterfaceModel):
         Does not include waiting for block-confirmations. Defaults to two minutes.
         Local networks use smaller timeouts.
         """
-        return self._network_config.get(
+        return self.config.get(
             "transaction_acceptance_timeout", DEFAULT_TRANSACTION_ACCEPTANCE_TIMEOUT
         )
 
@@ -974,12 +966,12 @@ class NetworkAPI(BaseInterfaceModel):
         return self.name == "custom" and not self._is_custom
 
     @cached_property
-    def providers(self):  # -> Dict[str, Partial[ProviderAPI]]
+    def providers(self):  # -> dict[str, Partial[ProviderAPI]]
         """
-        The providers of the network, such as Infura, Alchemy, or Geth.
+        The providers of the network, such as Infura, Alchemy, or Node.
 
         Returns:
-            Dict[str, partial[:class:`~ape.api.providers.ProviderAPI`]]
+            dict[str, partial[:class:`~ape.api.providers.ProviderAPI`]]
         """
 
         from ape.plugins._utils import clean_plugin_name
@@ -1000,8 +992,6 @@ class NetworkAPI(BaseInterfaceModel):
                     provider_class,
                     name=provider_name,
                     network=self,
-                    # NOTE: No need to have separate folder, caching should be interoperable
-                    data_folder=self.data_folder,
                     request_header=self.request_header,
                 )
 
@@ -1010,7 +1000,7 @@ class NetworkAPI(BaseInterfaceModel):
     def get_provider(
         self,
         provider_name: Optional[str] = None,
-        provider_settings: Optional[Dict] = None,
+        provider_settings: Optional[dict] = None,
     ):
         """
         Get a provider for the given name. If given ``None``, returns the default provider.
@@ -1041,11 +1031,11 @@ class NetworkAPI(BaseInterfaceModel):
         if ":" in provider_name:
             # NOTE: Shortcut that allows `--network ecosystem:network:http://...` to work
             provider_settings["uri"] = provider_name
-            provider_name = "geth"
+            provider_name = "node"
 
         elif provider_name.endswith(".ipc"):
             provider_settings["ipc_path"] = provider_name
-            provider_name = "geth"
+            provider_name = "node"
 
         if provider_name in self.providers:
             provider = self.providers[provider_name](provider_settings=provider_settings)
@@ -1071,7 +1061,7 @@ class NetworkAPI(BaseInterfaceModel):
     def use_provider(
         self,
         provider: Union[str, "ProviderAPI"],
-        provider_settings: Optional[Dict] = None,
+        provider_settings: Optional[dict] = None,
         disconnect_after: bool = False,
         disconnect_on_exit: bool = True,
     ) -> ProviderContextManager:
@@ -1133,7 +1123,7 @@ class NetworkAPI(BaseInterfaceModel):
             # Was set programmatically.
             return provider
 
-        elif provider_from_config := self._network_config.get("default_provider"):
+        elif provider_from_config := self.config.get("default_provider"):
             # The default is found in the Network's config class.
             return provider_from_config
 
@@ -1173,7 +1163,7 @@ class NetworkAPI(BaseInterfaceModel):
 
     def use_default_provider(
         self,
-        provider_settings: Optional[Dict] = None,
+        provider_settings: Optional[dict] = None,
         disconnect_after: bool = False,
     ) -> ProviderContextManager:
         """
@@ -1259,7 +1249,7 @@ class ForkedNetworkAPI(NetworkAPI):
         exists.
         """
 
-        config_choice: str = self._network_config.get("upstream_provider")
+        config_choice: str = self.config.get("upstream_provider")
         if provider_name := config_choice or self.upstream_network.default_provider_name:
             return self.upstream_network.get_provider(provider_name)
 
@@ -1286,7 +1276,7 @@ class ForkedNetworkAPI(NetworkAPI):
         return self.upstream_network.use_provider(self.upstream_provider)
 
 
-def create_network_type(chain_id: int, network_id: int) -> Type[NetworkAPI]:
+def create_network_type(chain_id: int, network_id: int) -> type[NetworkAPI]:
     """
     Easily create a :class:`~ape.api.networks.NetworkAPI` subclass.
     """

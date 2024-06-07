@@ -1,11 +1,13 @@
+from collections.abc import Iterable
 from pathlib import Path
-from typing import Iterable, List, Optional, Set, Tuple
+from typing import Optional
 
 import click
 from ethpm_types.abi import MethodABI
 from ethpm_types.source import ContractSource
 
 from ape.logging import logger
+from ape.managers import ProjectManager
 from ape.pytest.config import ConfigWrapper
 from ape.types import (
     ContractFunctionPath,
@@ -14,18 +16,15 @@ from ape.types import (
     CoverageReport,
     SourceTraceback,
 )
-from ape.utils import (
-    ManagerAccessMixin,
-    get_current_timestamp_ms,
-    get_relative_path,
-    parse_coverage_tables,
-)
-from ape.utils.os import get_full_extension
+from ape.utils.basemodel import ManagerAccessMixin
+from ape.utils.misc import get_current_timestamp_ms
+from ape.utils.os import get_full_extension, get_relative_path
+from ape.utils.trace import parse_coverage_tables
 
 
 class CoverageData(ManagerAccessMixin):
-    def __init__(self, base_path: Path, sources: Iterable[ContractSource]):
-        self.base_path = base_path
+    def __init__(self, project: ProjectManager, sources: Iterable[ContractSource]):
+        self.project = project
         self.sources = list(sources)
         self._report: Optional[CoverageReport] = None
         self._init_coverage_profile()  # Inits self._report.
@@ -45,7 +44,7 @@ class CoverageData(ManagerAccessMixin):
         self,
     ) -> CoverageReport:
         # source_id -> pc(s) -> times hit
-        project_coverage = CoverageProject(name=self.config_manager.name or "__local__")
+        project_coverage = CoverageProject(name=self.project.name or "__local__")
 
         for src in self.sources:
             source_cov = project_coverage.include(src)
@@ -62,11 +61,11 @@ class CoverageData(ManagerAccessMixin):
         timestamp = get_current_timestamp_ms()
         report = CoverageReport(
             projects=[project_coverage],
-            source_folders=[self.project_manager.contracts_folder],
+            source_folders=[self.project.contracts_folder],
             timestamp=timestamp,
         )
 
-        # Remove emptys.
+        # Remove empties.
         for project in report.projects:
             project.sources = [x for x in project.sources if len(x.statements) > 0]
 
@@ -75,14 +74,18 @@ class CoverageData(ManagerAccessMixin):
 
     def cover(
         self, src_path: Path, pcs: Iterable[int], inc_fn_hits: bool = True
-    ) -> Tuple[Set[int], List[str]]:
-        source_id = str(get_relative_path(src_path.absolute(), self.base_path))
+    ) -> tuple[set[int], list[str]]:
+        if hasattr(self.project, "path"):
+            source_id = str(get_relative_path(src_path.absolute(), self.project.path))
+        else:
+            source_id = str(src_path)
+
         if source_id not in self.report.sources:
             # The source is not tracked for coverage.
             return set(), []
 
         handled_pcs = set()
-        functions_incremented: List[str] = []
+        functions_incremented: list[str] = []
         for pc in pcs:
             if pc < 0:
                 continue
@@ -122,14 +125,27 @@ class CoverageData(ManagerAccessMixin):
 
 
 class CoverageTracker(ManagerAccessMixin):
-    def __init__(self, config_wrapper: ConfigWrapper):
+    def __init__(
+        self,
+        config_wrapper: ConfigWrapper,
+        project: Optional[ProjectManager] = None,
+        output_path: Optional[Path] = None,
+    ):
         self.config_wrapper = config_wrapper
-        sources = self.project_manager._contract_sources
+        self._project = project or self.local_project
+
+        if output_path:
+            self._output_path = output_path
+        elif hasattr(self._project, "manifest_path"):
+            # Local project.
+            self._output_path = self._project.manifest_path.parent
+        else:
+            self._output_path = Path.cwd()
+
+        sources = self._project._contract_sources
 
         self.data: Optional[CoverageData] = (
-            CoverageData(self.project_manager.contracts_folder, sources)
-            if self.config_wrapper.track_coverage
-            else None
+            CoverageData(self._project, sources) if self.config_wrapper.track_coverage else None
         )
 
     @property
@@ -137,7 +153,7 @@ class CoverageTracker(ManagerAccessMixin):
         return self.config_wrapper.track_coverage
 
     @property
-    def exclusions(self) -> List[ContractFunctionPath]:
+    def exclusions(self) -> list[ContractFunctionPath]:
         return self.config_wrapper.coverage_exclusions
 
     def reset(self):
@@ -168,7 +184,7 @@ class CoverageTracker(ManagerAccessMixin):
             return
 
         last_path: Optional[Path] = None
-        last_pcs: Set[int] = set()
+        last_pcs: set[int] = set()
         last_call: Optional[str] = None
         main_fn = None
 
@@ -182,7 +198,7 @@ class CoverageTracker(ManagerAccessMixin):
                 for src in project.sources:
                     # NOTE: We will allow this check to skip if there is no source is the
                     # traceback. This helps increment methods that are missing from the source map.
-                    path = self.project_manager.contracts_folder / src.source_id
+                    path = self._project.path / src.source_id
                     if source_path is not None and path != source_path:
                         continue
 
@@ -225,9 +241,9 @@ class CoverageTracker(ManagerAccessMixin):
         self,
         control_flow: ControlFlow,
         last_path: Optional[Path] = None,
-        last_pcs: Optional[Set[int]] = None,
+        last_pcs: Optional[set[int]] = None,
         last_call: Optional[str] = None,
-    ) -> Tuple[Set[int], List[str]]:
+    ) -> tuple[set[int], list[str]]:
         if not self.data or control_flow.source_path is None:
             return set(), []
 
@@ -281,7 +297,6 @@ class CoverageTracker(ManagerAccessMixin):
 
         # Reports are set in ape-config.yaml.
         reports = self.config_wrapper.ape_test_config.coverage.reports
-        out_folder = self.project_manager.local_project._cache_folder
         if reports.terminal:
             verbose = (
                 reports.terminal.get("verbose", False)
@@ -310,9 +325,9 @@ class CoverageTracker(ManagerAccessMixin):
                     click.echo()
 
         if self.config_wrapper.xml_coverage:
-            self.data.report.write_xml(out_folder)
+            self.data.report.write_xml(self._output_path)
         if value := self.config_wrapper.html_coverage:
             verbose = value.get("verbose", False) if isinstance(value, dict) else False
-            self.data.report.write_html(out_folder, verbose=verbose)
+            self.data.report.write_html(self._output_path, verbose=verbose)
 
         return True

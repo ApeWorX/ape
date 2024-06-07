@@ -39,7 +39,9 @@ contract.my_method()
 3. **Raw Compiler Output**: If you have an artifact with binary compiled elsewhere, you can include it in your project.
    This is useful if you want to use contracts from much larger projects as dependency for your test cases.
 
-**WARN**: You may have to adjust name and source ID similarly to raw contract-type output.
+```{warning}
+You may have to adjust name and source ID similarly to raw contract-type output.
+```
 
 ## Other Compiler Plugins
 
@@ -58,6 +60,7 @@ compile:
   exclude:
     - "examples"  # Exclude all files in the examples/ directory
     - "*Mock.sol"  # Exclude all files ending in Mock.sol
+    - r"(?!.*_mock\.vy$)"  # You can also use regex instead of globs (prefix with `r`).
 ```
 
 You can also exclude files using the `--config-override` CLI option:
@@ -87,23 +90,8 @@ compile:
 ## Settings
 
 Generally, configure compiler plugins using your `ape-config.yaml` file.
-One setting that applies to many compiler plugins is `cache_folder`, which holds dependency source files the compiler uses when compiling your contracts.
-By default, the folder is in your `contracts/.cache` folder but there are times you may want to move this to another location.
-Paths are relative to the project directory.
-For instance, to move the dependency cache to the root project directory:
 
-```yaml
-compile:
-   cache_folder: .cache
-```
-
-```{caution}
-Changing the location of the dependency cache folder may alter the the output bytecode of your contracts from some compilers.
-Specifically, the [solc compiler will apend a hash of the input metadata to the contract bytecode](https://docs.soliditylang.org/en/latest/metadata.html#encoding-of-the-metadata-hash-in-the-bytecode) which will change with contract path or compiler settings changes.
-This may impact things like contract verification on existing projects.
-```
-
-As another example, when using the `vyper` plugin, you can configure settings under the `vyper` key:
+For example, when using the `vyper` plugin, you can configure settings under the `vyper` key:
 
 ```yaml
 vyper:
@@ -158,3 +146,19 @@ owner = accounts.test_accounts[0]
 
 instance = container.deploy(sender=owner)
 ```
+
+## Output Extra
+
+Sometimes, there are extra output styles you may want.
+For example, to output minified ABI JSONs, use the following config:
+
+```yaml
+compile:
+  output_extra:
+     - ABI
+```
+
+Then, after compiling, you should notice minified ABI json files in your `.build/abi` folder.
+This is useful if hosting these files on a web-server.
+
+To see the full list of supported output-extra, see [the OutpuExtra enum documentation](../methoddocs/ape_compile.html#ape_compile.OutputExtras).

@@ -2,10 +2,11 @@ import difflib
 import re
 import sys
 import warnings
+from collections.abc import Iterable
 from gettext import gettext
 from importlib.metadata import entry_points
 from pathlib import Path
-from typing import Any, Dict, Iterable, List, Optional, Tuple
+from typing import Any, Optional
 
 import click
 import yaml
@@ -27,7 +28,7 @@ def display_config(ctx, param, value):
     click.echo("# Current configuration")
 
     # NOTE: Using json-mode as yaml.dump requires JSON-like structure.
-    model = ManagerAccessMixin.project_manager.config_manager.model_dump(mode="json")
+    model = ManagerAccessMixin.local_project.config_manager.model_dump(mode="json")
 
     click.echo(yaml.dump(model))
 
@@ -35,7 +36,7 @@ def display_config(ctx, param, value):
 
 
 class ApeCLI(click.MultiCommand):
-    _commands: Optional[Dict] = None
+    _commands: Optional[dict] = None
     _CLI_GROUP_NAME = "ape_cli_subcommands"
 
     def format_commands(self, ctx, formatter) -> None:
@@ -52,7 +53,7 @@ class ApeCLI(click.MultiCommand):
             limit = formatter.width - 6 - max(len(cmd[0]) for cmd in commands)
 
             # Split the commands into 3 sections.
-            sections: Dict[str, List[Tuple[str, str]]] = {
+            sections: dict[str, list[tuple[str, str]]] = {
                 "Core": [],
                 "Plugin": [],
                 "3rd-Party Plugin": [],
@@ -88,7 +89,7 @@ class ApeCLI(click.MultiCommand):
         except click.UsageError as err:
             self._suggest_cmd(err)
         except ApeException as err:
-            path = ctx.obj.project_manager.path
+            path = ctx.obj.local_project.path
 
             # NOTE: isinstance check for type-checkers.
             if isinstance(path, Path) and handle_ape_exception(err, (path,)):
@@ -122,7 +123,7 @@ class ApeCLI(click.MultiCommand):
         raise usage_error
 
     @property
-    def commands(self) -> Dict:
+    def commands(self) -> dict:
         if self._commands:
             return self._commands
 
@@ -135,12 +136,12 @@ class ApeCLI(click.MultiCommand):
             # Python 3.9. Can remove once we drop support.
             with warnings.catch_warnings():
                 warnings.simplefilter("ignore")
-                eps = _entry_points.get(self._CLI_GROUP_NAME, [])
+                eps = _entry_points.get(self._CLI_GROUP_NAME, [])  # type: ignore
 
         self._commands = {clean_plugin_name(cmd.name): cmd.load for cmd in eps}
         return self._commands
 
-    def list_commands(self, ctx) -> List[str]:
+    def list_commands(self, ctx) -> list[str]:
         return list(sorted(self.commands))
 
     def get_command(self, ctx, name) -> Optional[click.Command]:

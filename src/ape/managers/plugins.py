@@ -1,13 +1,13 @@
 import importlib
-from typing import Any, Generator, Iterable, Iterator, List, Optional, Set, Tuple
+from collections.abc import Generator, Iterable, Iterator
+from typing import Any, Optional
 
-from ape.__modules__ import __modules__
 from ape.exceptions import ApeAttributeError
 from ape.logging import logger
-from ape.plugins._utils import _filter_plugins_from_dists, clean_plugin_name
+from ape.plugins._utils import CORE_PLUGINS, clean_plugin_name, get_plugin_dists
 from ape.plugins.pluggy_patch import plugin_manager as pluggy_manager
 from ape.utils.basemodel import _assert_not_ipython_check, only_raise_attribute_error
-from ape.utils.misc import _get_distributions, log_instead_of_fail
+from ape.utils.misc import log_instead_of_fail
 
 
 def valid_impl(api_class: Any) -> bool:
@@ -33,7 +33,7 @@ def valid_impl(api_class: Any) -> bool:
 
 
 def _get_unimplemented_methods_warning(api, plugin_name: str) -> str:
-    unimplemented_methods: List[str] = []
+    unimplemented_methods: list[str] = []
 
     # Find the best API name to warn about.
     if isinstance(api, (list, tuple)):
@@ -73,7 +73,7 @@ def _get_unimplemented_methods(api) -> Iterable[str]:
 
 
 class PluginManager:
-    _unimplemented_plugins: List[str] = []
+    _unimplemented_plugins: list[str] = []
 
     def __init__(self) -> None:
         self.__registered = False
@@ -83,7 +83,7 @@ class PluginManager:
         return f"<{PluginManager.__name__}>"
 
     @only_raise_attribute_error
-    def __getattr__(self, attr_name: str) -> Iterator[Tuple[str, Tuple]]:
+    def __getattr__(self, attr_name: str) -> Iterator[tuple[str, tuple]]:
         _assert_not_ipython_check(attr_name)
 
         # NOTE: The first time this method is called, the actual
@@ -107,14 +107,14 @@ class PluginManager:
                 if validated_plugin:
                     yield validated_plugin
             else:
-                # Only if it's an iterator, provider results as a series
+                # Only if it's an iterator, provide results as a series
                 for result in results:
                     validated_plugin = self._validate_plugin(plugin_name, result)
                     if validated_plugin:
                         yield validated_plugin
 
     @property
-    def registered_plugins(self) -> Set[str]:
+    def registered_plugins(self) -> set[str]:
         self._register_plugins()
         return {x[0] for x in pluggy_manager.list_name_plugin()}
 
@@ -122,18 +122,15 @@ class PluginManager:
         if self.__registered:
             return
 
-        plugins = list(
-            {n.replace("-", "_") for n in _filter_plugins_from_dists(_get_distributions())}
-        )
-        locals = [p for p in __modules__ if p != "ape"]
-        plugin_modules = tuple([*plugins, *locals])
+        plugins = list({n.replace("-", "_") for n in get_plugin_dists()})
+        plugin_modules = tuple([*plugins, *CORE_PLUGINS])
 
         for module_name in plugin_modules:
             try:
                 module = importlib.import_module(module_name)
                 pluggy_manager.register(module)
             except Exception as err:
-                if module_name in __modules__:
+                if module_name in CORE_PLUGINS or module_name == "ape":
                     # Always raise core plugin registration errors.
                     raise
 
@@ -141,7 +138,7 @@ class PluginManager:
 
         self.__registered = True
 
-    def _validate_plugin(self, plugin_name: str, plugin_cls) -> Optional[Tuple[str, Tuple]]:
+    def _validate_plugin(self, plugin_name: str, plugin_cls) -> Optional[tuple[str, tuple]]:
         if valid_impl(plugin_cls):
             return clean_plugin_name(plugin_name), plugin_cls
         else:

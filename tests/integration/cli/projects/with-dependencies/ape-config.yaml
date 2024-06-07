@@ -4,11 +4,13 @@ dependencies:
 
   - name: renamed-contracts-folder
     local: ./renamed_contracts_folder
-    contracts_folder: sources
+    config_override:
+     contracts_folder: sources
 
   - name: renamed-complex-contracts-folder
     local: ./renamed_complex_contracts_folder
-    contracts_folder: contracts/src/v0.1
+    config_override:
+      contracts_folder: contracts/src/v0.1
 
   - name: containing-sub-dependencies
     local: ./containing_sub_dependencies
@@ -18,3 +20,6 @@ dependencies:
 
   - name: manifest-dependency
     local: ./manifest_dependency.json
+
+  - name: empty-dependency
+    local: ./empty_dependency

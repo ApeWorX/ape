@@ -15,7 +15,7 @@ Most of the features in this guide are documented more-fully elsewhere in the us
 
 However, here is a list of common-use cases requiring the `ape-config.yaml` file to help you:
 
-1. Setting up a custom node RPC: See the [geth](#geth) section.
+1. Setting up a custom node RPC: See the [node](#node) section.
 2. Setting up project dependencies: See the [dependencies](#dependencies) section.
 3. Declaring your project's plugins: See the [plugins](#plugins) section.
 
@@ -85,23 +85,27 @@ from ape import project
 contract = project.MyContract.deployments[0]
 ```
 
-**NOTE**: Ape does not add or edit deployments in your `ape-config.yaml` file.
+```{note}
+Ape does not add or edit deployments in your `ape-config.yaml` file.
+```
 
-## Geth
+## Node
 
-When using the `geth` provider, you can customize its settings.
+When using the `node` provider, you can customize its settings.
 For example, to change the URI for an Ethereum network, do:
 
 ```yaml
-geth:
+node:
   ethereum:
     mainnet:
       uri: http://localhost:5030
 ```
 
-Now, the `ape-geth` core plugin will use the URL `http://localhost:5030` to connect and make requests.
+Now, the `ape-node` core plugin will use the URL `http://localhost:5030` to connect and make requests.
 
-**WARN**: Instead of using `ape-geth` to connect to an Infura or Alchemy node, use the [ape-infura](https://github.com/ApeWorX/ape-infura) or [ape-alchemy](https://github.com/ApeWorX/ape-alchemy) provider plugins instead, which have their own way of managing API keys via environment variables.
+```{warning}
+Instead of using `ape-node` to connect to an Infura or Alchemy node, use the [ape-infura](https://github.com/ApeWorX/ape-infura) or [ape-alchemy](https://github.com/ApeWorX/ape-alchemy) provider plugins instead, which have their own way of managing API keys via environment variables.
+```
 
 For more information on networking as a whole, see [this guide](./networks.html).
 
@@ -148,7 +152,9 @@ For the local network configuration, the default is `"max"`. Otherwise, it is `"
 
 Set which `ape` plugins you want to always use.
 
-**NOTE**: The `ape-` prefix is not needed and shouldn't be included here.
+```{note}
+The `ape-` prefix is not needed and shouldn't be included here.
+```
 
 ```yaml
 plugins:

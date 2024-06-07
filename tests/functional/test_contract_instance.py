@@ -1,5 +1,4 @@
 import re
-from typing import List, Tuple
 
 import pytest
 from eth_pydantic_types import HexBytes
@@ -295,13 +294,13 @@ def test_nested_structs_in_tuples(contract_instance, owner, chain):
 
 def test_get_empty_dyn_array_of_structs(contract_instance):
     actual = contract_instance.getEmptyDynArrayOfStructs()
-    expected: List = []
+    expected: list = []
     assert actual == expected
 
 
 def test_get_empty_tuple_of_dyn_array_structs(contract_instance):
     actual = contract_instance.getEmptyTupleOfDynArrayStructs()
-    expected: Tuple[List, List] = ([], [])
+    expected: tuple[list, list] = ([], [])
     assert actual == expected
 
 
@@ -326,7 +325,7 @@ def test_get_tuple_of_int_and_struct_array(contract_instance):
 
 def test_get_empty_tuple_of_int_and_dyn_array(contract_instance):
     actual = contract_instance.getEmptyTupleOfIntAndDynArray()
-    expected: Tuple[List, List] = ([], [])
+    expected: tuple[list, list] = ([], [])
     assert actual == expected
 
 
@@ -539,21 +538,12 @@ def test_call_transact(vyper_contract_instance, owner):
     assert receipt.status == TransactionStatusEnum.NO_ERROR
 
 
-def test_receipt(contract_instance, owner):
-    receipt = contract_instance.receipt
+def test_creation_receipt(contract_instance, owner):
+    assert contract_instance.creation_metadata is not None
+    receipt = contract_instance.creation_metadata.receipt
     assert receipt.txn_hash == contract_instance.txn_hash
     assert receipt.contract_address == contract_instance.address
     assert receipt.sender == owner
-
-
-def test_receipt_when_needs_brute_force(vyper_contract_instance, owner):
-    # Force it to use the brute-force approach.
-    vyper_contract_instance._cached_receipt = None
-    vyper_contract_instance.txn_hash = None
-
-    actual = vyper_contract_instance.receipt.contract_address
-    expected = vyper_contract_instance.address
-    assert actual == expected
 
 
 def test_from_receipt_when_receipt_not_deploy(contract_instance, owner):
@@ -595,18 +585,18 @@ def test_dir(vyper_contract_instance):
         # From base class
         "address",
         "balance",
+        "call_view_method",
         "code",
         "contract_type",
         "codesize",
-        "nonce",
-        "is_contract",
-        "provider",
-        "receipt",
-        "txn_hash",
+        "creation_metadata",
         "decode_input",
         "get_event_by_signature",
         "invoke_transaction",
-        "call_view_method",
+        "is_contract",
+        "nonce",
+        "provider",
+        "txn_hash",
         *vyper_contract_instance._events_,
         *vyper_contract_instance._mutable_methods_,
         *vyper_contract_instance._view_methods_,
@@ -771,14 +761,12 @@ def test_identifier_lookup(vyper_contract_instance):
 
 
 def test_source_path(project_with_contract, owner):
-    contracts_folder = project_with_contract.contracts_folder
-    contracts = project_with_contract.load_contracts()
-    contract = contracts["Contract"]
-    contract_instance = owner.deploy(project_with_contract.get_contract("Contract"))
-    expected = contracts_folder / contract.source_id
+    contract = project_with_contract.get_contract("Contract")
+    instance = owner.deploy(contract)
+    expected = project_with_contract.path / contract.source_id
 
-    assert contract_instance.source_path.is_file()
-    assert contract_instance.source_path == expected
+    assert instance.source_path.is_file()
+    assert instance.source_path == expected
 
 
 def test_fallback(fallback_contract, owner):

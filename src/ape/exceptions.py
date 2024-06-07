@@ -3,22 +3,12 @@ import sys
 import tempfile
 import time
 import traceback
+from collections.abc import Collection, Iterable
 from functools import cached_property
 from inspect import getframeinfo, stack
 from pathlib import Path
 from types import CodeType, TracebackType
-from typing import (
-    TYPE_CHECKING,
-    Any,
-    Collection,
-    Dict,
-    Iterable,
-    Iterator,
-    List,
-    Optional,
-    Union,
-    cast,
-)
+from typing import TYPE_CHECKING, Any, Optional, Union, cast
 
 import click
 from eth_typing import Hash32
@@ -32,8 +22,9 @@ from ape.logging import LogLevel, logger
 if TYPE_CHECKING:
     from ape.api.networks import NetworkAPI
     from ape.api.providers import SubprocessProvider
+    from ape.api.trace import TraceAPI
     from ape.api.transactions import ReceiptAPI, TransactionAPI
-    from ape.types import AddressType, BlockID, SnapshotID, SourceTraceback, TraceFrame
+    from ape.types import AddressType, BlockID, SnapshotID, SourceTraceback
 
 
 FailedTxn = Union["TransactionAPI", "ReceiptAPI"]
@@ -114,7 +105,7 @@ class ArgumentsLengthError(ContractDataError):
     def __init__(
         self,
         arguments_length: int,
-        inputs: Union[MethodABI, ConstructorABI, int, List, None] = None,
+        inputs: Union[MethodABI, ConstructorABI, int, list, None] = None,
         **kwargs,
     ):
         prefix = (
@@ -125,7 +116,7 @@ class ArgumentsLengthError(ContractDataError):
             super().__init__(f"{prefix}.")
             return
 
-        inputs_ls: List[Union[MethodABI, ConstructorABI, int]] = (
+        inputs_ls: list[Union[MethodABI, ConstructorABI, int]] = (
             inputs if isinstance(inputs, list) else [inputs]
         )
         if not inputs_ls:
@@ -184,7 +175,7 @@ class TransactionError(ApeException):
         base_err: Optional[Exception] = None,
         code: Optional[int] = None,
         txn: Optional[FailedTxn] = None,
-        trace: Optional[Iterator["TraceFrame"]] = None,
+        trace: Optional["TraceAPI"] = None,
         contract_address: Optional["AddressType"] = None,
         source_traceback: Optional["SourceTraceback"] = None,
     ):
@@ -262,7 +253,7 @@ class ContractLogicError(VirtualMachineError):
         self,
         revert_message: Optional[str] = None,
         txn: Optional[FailedTxn] = None,
-        trace: Optional[Iterator["TraceFrame"]] = None,
+        trace: Optional["TraceAPI"] = None,
         contract_address: Optional["AddressType"] = None,
         source_traceback: Optional["SourceTraceback"] = None,
         base_err: Optional[Exception] = None,
@@ -497,9 +488,13 @@ class TransactionNotFoundError(ProviderError):
     Raised when unable to find a transaction.
     """
 
-    def __init__(self, txn_hash: str, error_messsage: Optional[str] = None):
-        message = f"Transaction '{txn_hash}' not found."
-        suffix = f" Error: {error_messsage}" if error_messsage else ""
+    def __init__(self, transaction_hash: Optional[str] = None, error_message: Optional[str] = None):
+        message = (
+            f"Transaction '{transaction_hash}' not found."
+            if transaction_hash
+            else "Transaction not found"
+        )
+        suffix = f" Error: {error_message}" if error_message else ""
         super().__init__(f"{message}{suffix}")
 
 
@@ -686,6 +681,29 @@ class RPCTimeoutError(SubprocessTimeoutError):
         super().__init__(provider, *args, **kwargs)
 
 
+class PluginInstallError(ApeException):
+    """
+    An error to use when installing a plugin fails.
+    """
+
+
+class PluginVersionError(PluginInstallError):
+    """
+    An error related to specified plugin version.
+    """
+
+    def __init__(
+        self, operation: str, reason: Optional[str] = None, resolution: Optional[str] = None
+    ):
+        message = f"Unable to {operation} plugin."
+        if reason:
+            message = f"{message}\nReason: {reason}"
+        if resolution:
+            message = f"{message}\nTo resolve: {resolution}"
+
+        super().__init__(message)
+
+
 def handle_ape_exception(err: ApeException, base_paths: Iterable[Path]) -> bool:
     """
     Handle a transaction error by showing relevant stack frames,
@@ -762,9 +780,9 @@ class CustomError(ContractLogicError):
     def __init__(
         self,
         abi: ErrorABI,
-        inputs: Dict[str, Any],
+        inputs: dict[str, Any],
         txn: Optional[FailedTxn] = None,
-        trace: Optional[Iterator["TraceFrame"]] = None,
+        trace: Optional["TraceAPI"] = None,
         contract_address: Optional["AddressType"] = None,
         base_err: Optional[Exception] = None,
         source_traceback: Optional["SourceTraceback"] = None,
@@ -829,7 +847,7 @@ def _get_custom_python_traceback(
     depth = None
     idx = len(ape_traceback) - 1
     frames = []
-    project_path = txn.project_manager.path.as_posix()
+    project_path = txn.local_project.path.as_posix()
     while tb is not None:
         if not tb.tb_frame.f_code.co_filename.startswith(project_path):
             # Ignore frames outside the project.

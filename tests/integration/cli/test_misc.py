@@ -23,7 +23,7 @@ def test_invocation(ape_cli, runner, args):
 def test_help(ape_cli, runner):
     result = runner.invoke(ape_cli, "--help")
     assert result.exit_code == 0, result.output
-    anything = r"[.\n\s\w`/\-,\)\(:\]\[]*"
+    anything = r"[.\n\s\w`/\-,\)\(:\]\[']*"
     expected = (
         rf"{anything}Core Commands:\n  accounts  "
         rf"Manage local accounts{anything}  "

@@ -1,10 +1,14 @@
-import json
+import sys
 from pathlib import Path
-from typing import Dict, Optional, Tuple
+from typing import Optional
 
 import click
 
-from ape.cli import ape_cli_context, config_override_option
+from ape.cli.options import ape_cli_context, config_override_option
+from ape.exceptions import ProjectError
+from ape.logging import logger
+from ape.managers.project import Dependency
+from ape_pm import LocalDependency
 
 
 @click.group()
@@ -14,64 +18,44 @@ def cli():
     """
 
 
-def _echo_no_packages(project: bool):
-    message = "No packages installed"
-    if project:
-        message = f"{message} for this project"
-
-    click.echo(f"{message}.")
-
-
 @cli.command("list")
 @ape_cli_context()
-@click.option(
-    "_all", "--all", is_flag=True, help="Include packages not referenced by the local project"
-)
-def _list(cli_ctx, _all):
+@click.option("--all", "list_all", help="List all installed dependencies", is_flag=True)
+def _list(cli_ctx, list_all):
     """
     List installed packages
     """
 
+    pm = cli_ctx.local_project
     packages = []
-    packages_folder = cli_ctx.dependency_manager.DATA_FOLDER / "packages"
-    if _all:
-        if not packages_folder.is_dir():
-            _echo_no_packages(False)
-            return
+    dependencies = [*list(pm.dependencies.specified)]
+    if list_all:
+        dependencies = list({*dependencies, *pm.dependencies.installed})
 
-        for dependency in packages_folder.iterdir():
-            base_item = {"name": dependency.name}
-            for version_dir in dependency.iterdir():
-                item = {
-                    "version": version_dir.name,
-                    **base_item,
-                    "compiled": _check_compiled(version_dir),
-                }
-                packages.append(item)
+    for dependency in dependencies:
+        try:
+            is_compiled = dependency.project.is_compiled
+        except ProjectError:
+            # Project may not even be installed right.
+            is_compiled = False
 
-    else:
-        # Limit to local project.
-        for dependency in cli_ctx.config_manager.dependencies:
-            item = {"name": dependency.name, "version": dependency.version_id, "compiled": False}
+        # For local dependencies, use the short name.
+        # This is mostly because it looks nicer than very long paths.
+        name = (
+            dependency.name
+            if isinstance(dependency.api, LocalDependency)
+            else dependency.package_id
+        )
 
-            # Check if compiled.
-            if packages_folder.is_dir():
-                for package_dir in packages_folder.iterdir():
-                    if package_dir.is_dir() and package_dir.name == dependency.name:
-                        for version_dir in package_dir.iterdir():
-                            versions = [dependency.version_id]
-                            if versions[0].startswith("v"):
-                                versions.append(dependency.version_id[1:])
-                            else:
-                                versions.append(f"v{dependency.version_id}")
-
-                            if version_dir.is_dir() and version_dir.name in versions:
-                                item["compiled"] = _check_compiled(version_dir)
-
-            packages.append(item)
+        item = {
+            "name": name,
+            "version": dependency.version,
+            "compiled": is_compiled,
+        }
+        packages.append(item)
 
     if not packages:
-        _echo_no_packages(not _all)
+        click.echo("No packages installed.")
         return
 
     # Output gathered packages.
@@ -94,7 +78,7 @@ def _list(cli_ctx, _all):
 
     def rows():
         yield f"NAME{header_name_space}VERSION{version_name_space}COMPILED\n"
-        for _package in packages:
+        for _package in sorted(packages, key=lambda p: f"{p['name']}{p['version']}"):
             yield f"{get_package_str(_package)}\n"
 
     if len(packages) > 16:
@@ -104,16 +88,7 @@ def _list(cli_ctx, _all):
             click.echo(row.strip())
 
 
-def _check_compiled(version_dir: Path) -> bool:
-    file = next(version_dir.iterdir(), None)
-    return (
-        bool(json.loads(file.read_text()).get("contractTypes"))
-        if file and file.is_file()
-        else False
-    )
-
-
-def _handle_package_path(path: Path, original_value: Optional[str] = None) -> Dict:
+def _handle_package_path(path: Path, original_value: Optional[str] = None) -> dict:
     if not path.exists():
         value = original_value or path.as_posix()
         raise click.BadArgumentUsage(f"Unknown package '{value}'.")
@@ -139,7 +114,7 @@ def _package_callback(ctx, param, value):
 
     elif value.startswith("npm:"):
         # Is an NPM style dependency
-        return {"npm:": value[4:]}
+        return {"npm": value[4:]}
 
     elif value == ".":
         return value
@@ -162,7 +137,7 @@ def _package_callback(ctx, param, value):
 
 @cli.command()
 @ape_cli_context()
-@click.argument("package", nargs=1, required=False, callback=_package_callback)
+@click.argument("package", required=False, callback=_package_callback)
 @click.option("--name", help="The name of the dependency", metavar="NAME")
 @click.option("--version", help="The dependency's version", metavar="VERSION")
 @click.option(
@@ -177,73 +152,47 @@ def install(cli_ctx, package, name, version, ref, force, config_override):
     Download and cache packages
     """
 
-    log_name = None
-
+    pm = cli_ctx.local_project
     if not package or package == ".":
-        if config_override:
-            # TODO: Handle correctly in project-refactor for feat/08
-            cli_ctx.abort("Cannot provide 'config_override' option without specific package(s).")
+        if version:
+            cli_ctx.abort("Cannot specify version when installing from config.")
 
-        # `ape pm install`: Load all dependencies from current package.
-        try:
-            cli_ctx.project_manager.load_dependencies(use_cache=not force)
-        except Exception as err:
-            cli_ctx.logger.log_debug_stack_trace()
-            cli_ctx.abort(f"Failed loading dependencies: {err}")
+        pm.dependencies.install(use_cache=not force)
+        message = "All project packages installed."
+        if not force:
+            message = f"{message} Use `--force` to re-install."
 
-    elif name:
-        # `ape pm install <package>`: Is a specific package.
-        data = {"name": name, **package}
-        if version is not None:
-            data["version"] = version
-        if ref is not None:
-            data["ref"] = ref
-        if config_override:
-            data["config_override"] = config_override
+        cli_ctx.logger.success(message)
+        return
 
-        try:
-            dependency_obj = cli_ctx.dependency_manager.decode_dependency(data)
-        except Exception as err:
-            try:
-                data_str = ", ".join([f"{k}={v}" for k, v in data.items()])
-            except Exception:
-                try:
-                    data_str = f"{data}"
-                except Exception:
-                    data_str = ""
+    if name:
+        package["name"] = name
+    if ref:
+        package["ref"] = ref
+    if version:
+        package["version"] = version
+    if config_override:
+        package["config_override"] = config_override
 
-            message = "Issue with dependency data"
-            if data_str:
-                message = f"{message}: {data_str}"
-
-            message = f"{message}. Err={err}"
-            cli_ctx.abort(message)
-
-        else:
-            dependency_obj.extract_manifest(use_cache=not force)
-            log_name = f"{dependency_obj.name}@{dependency_obj.version_id}"
-
+    try:
+        dependency = pm.dependencies.install(**package, use_cache=not force)
+    except Exception as err:
+        cli_ctx.logger.log_error(err)
     else:
-        # This is **not** the local project, but no --name was given.
-        # NOTE: `--version` is not required when using local dependencies.
-        cli_ctx.abort("Must provide --name")
-
-    if log_name:
-        cli_ctx.logger.success(f"Package '{log_name}' installed.")
-    else:
-        cli_ctx.logger.success("All project packages installed.")
+        assert isinstance(dependency, Dependency)  # for mypy
+        cli_ctx.logger.success(f"Package '{dependency.name}@{dependency.version}' installed.")
 
 
 @cli.command()
 @ape_cli_context()
-@click.argument("package", nargs=1, required=True)
+@click.argument("name", required=False)
 @click.argument("versions", nargs=-1, required=False)
 @click.option(
     "-y", "--yes", is_flag=True, help="Automatically confirm the removal of the package(s)"
 )
-def remove(cli_ctx, package, versions, yes):
+def uninstall(cli_ctx, name, versions, yes):
     """
-    Remove a package
+    Uninstall a package
 
     This command removes a package from the installed packages.
 
@@ -256,60 +205,75 @@ def remove(cli_ctx, package, versions, yes):
     - Prompt to choose versions: ape pm remove <PackageName>\n
     - Remove all versions: ape pm remove <PackageName> -y
     """
-    package_dir = cli_ctx.dependency_manager.DATA_FOLDER / "packages" / package
-    if not package_dir.is_dir():
-        cli_ctx.abort(f"Package '{package}' is not installed.")
 
-    # Remove multiple versions if no version is specified
-    versions_to_remove = versions if versions else []
-    if len(versions_to_remove) == 1 and versions_to_remove[0] == "all":
-        versions_to_remove = [d.name for d in package_dir.iterdir() if d.is_dir()]
+    pm = cli_ctx.local_project
 
-    elif not versions_to_remove:
-        available_versions = [d.name for d in package_dir.iterdir() if d.is_dir()]
-        if not available_versions:
-            cli_ctx.abort(f"No installed versions of package '{package}' found.")
+    # NOTE: Purposely don't call `get_dependency` or anything so we for sure
+    #   are only checking the installed.
+    installed = {d for d in pm.dependencies.installed}
 
-        # If there is only one version, use that.
-        if len(available_versions) == 1 or yes:
-            versions_to_remove = available_versions
+    did_error = False
+    did_find = False
 
+    if not name or name == ".":
+        if versions:
+            cli_ctx.abort("Cannot specify version when uninstalling from config.")
+
+        # Uninstall all dependencies from the config.
+        for cfg in pm.config.dependencies:
+            api = pm.dependencies.decode_dependency(**cfg)
+            for dependency in installed:
+                if dependency.name != api.name or dependency.version != api.version_id:
+                    continue
+
+                did_find = True
+                res = _uninstall(dependency, yes=yes)
+                if res is False:
+                    did_error = True
+
+    else:
+        deps_to_remove = {
+            d for d in installed if d.name == name and (d.version in versions if versions else True)
+        }
+        for dependency in deps_to_remove:
+            did_find = True
+            res = _uninstall(dependency, yes=yes)
+            if res is False:
+                did_error = True
+
+    if not did_find:
+        if name:
+            name = ", ".join([f"{name}={v}" for v in versions]) if versions else name
+            cli_ctx.logger.error(f"Package(s) '{name}' not installed.")
         else:
-            version_prompt = (
-                f"Which versions of package '{package}' do you want to remove? "
-                f"{available_versions} (separate multiple versions with comma, or 'all')"
+            cli_ctx.logger.error(
+                "No package(s) installed in local project. "
+                "Please specify a package to uninstall or go to a local project."
             )
-            versions_input = click.prompt(version_prompt)
-            if versions_input.strip() == "all":
-                versions_to_remove = available_versions
-            else:
-                versions_to_remove = [v.strip() for v in versions_input.split(",") if v.strip()]
 
-            # Prevents a double-prompt.
-            yes = True
+        did_error = True
 
-    if not versions_to_remove:
-        cli_ctx.logger.info("No versions selected for removal.")
-        return
+    sys.exit(int(did_error))
 
-    # Remove all the versions specified
-    for version in versions_to_remove:
-        if not (package_dir / version).is_dir() and not (package_dir / f"v{version}").is_dir():
-            cli_ctx.logger.warning(
-                f"Version '{version}' of package '{package_dir.name}' is not installed."
-            )
-            continue
 
-        elif yes or click.confirm(
-            f"Are you sure you want to remove version '{version}' of package '{package}'?"
-        ):
-            cli_ctx.project_manager.remove_dependency(package_dir.name, versions=[version])
-            cli_ctx.logger.success(f"Version '{version}' of package '{package_dir.name}' removed.")
+def _uninstall(dependency: Dependency, yes: bool = False) -> bool:
+    key = f"{dependency.name}={dependency.version}"
+    if not yes and not click.confirm(f"Remove '{key}'"):
+        return True  # Not an error.
+
+    try:
+        dependency.uninstall()
+    except Exception as err:
+        logger.error(f"Failed uninstalling '{key}': {err}")
+        return False
+
+    logger.success(f"Uninstalled '{key}'.")
+    return True
 
 
 @cli.command()
 @ape_cli_context()
-@click.argument("name", nargs=1, required=False)
+@click.argument("name", required=False)
 @click.option("--version", help="The dependency version", metavar="VERSION")
 @click.option("--force", "-f", help="Force a re-compile", is_flag=True)
 @config_override_option()
@@ -317,68 +281,50 @@ def compile(cli_ctx, name, version, force, config_override):
     """
     Compile a package
     """
+    pm = cli_ctx.local_project
+    if not name or name == ".":
+        if version:
+            cli_ctx.abort("Cannot specify 'version' without 'name'.")
 
-    if not name:
-        # Compile all local project dependencies.
-        for dep_name, versions in cli_ctx.project_manager.dependencies.items():
-            for version, dependency in versions.items():
-                log_line = dep_name
-                if version != "local":
-                    log_line += f"@{version}"
+        # Compile all from config.
+        did_error = False
+        for cfg in pm.config.dependencies:
+            if config_override:
+                cfg["config_override"] = config_override
 
-                if config_override:
-                    dependency.config_override = config_override
-                try:
-                    dependency.compile(use_cache=not force)
-                except Exception as err:
-                    cli_ctx.logger.error(err)
-                else:
-                    cli_ctx.logger.success(f"Package '{log_line}' compiled.")
+            dependency = pm.dependencies.install(**cfg)
+            try:
+                dependency.compile(use_cache=not force)
+            except Exception as err:
+                cli_ctx.logger.error(str(err))
+                continue
+            else:
+                cli_ctx.logger.success(
+                    f"Package '{dependency.name}@{dependency.version}' compiled."
+                )
+
+        if did_error:
+            sys.exit(1)
 
         return
 
-    elif name not in cli_ctx.project_manager.dependencies:
-        cli_ctx.abort(f"Dependency '{name}' unknown. Is it installed?")
-
-    if not (versions := cli_ctx.project_manager.dependencies[name]):
-        # This shouldn't happen.
-        cli_ctx.abort("No versions.")
-
-    if not version and len(versions) == 1:
-        # Version is not specified but we can use the only existing version.
-        version = list(versions.keys())[0]
-
-    elif not version:
-        cli_ctx.abort("Please specify --version.")
-
-    version_opts: Tuple
-    if version == "local":
-        version_opts = (version,)
-    elif version.startswith("v"):
-        version_opts = (f"v{version}", str(version))
+    if version:
+        to_compile = [pm.dependencies.get_dependency(name, version)]
     else:
-        version_opts = (str(version), str(version[1:]))
+        to_compile = [d for d in pm.dependencies.get_versions(name)]
 
-    version_found = None
-    for version_i in version_opts:
-        if version_i in versions:
-            version_found = version_i
-            break
+    if not to_compile:
+        key = f"{name}@{version}" if version else name
+        cli_ctx.abort(f"Dependency '{key}' unknown. Is it installed?")
 
-    if not version_found:
-        cli_ctx.abort(f"Version '{version}' for dependency '{name}' not found. Is it installed?")
+    for dependency in to_compile:
+        if config_override:
+            dependency.api.config_override = config_override
 
-    dependency = versions[version_found]
-    if config_override:
-        dependency.config_override = config_override
-
-    try:
-        dependency.compile(use_cache=not force)
-    except Exception as err:
-        cli_ctx.logger.error(err)
-    else:
-        log_line = name
-        if version_found and version_found != "local":
-            log_line = f"{log_line}@{version_found}"
-
-        cli_ctx.logger.success(f"Package '{log_line}' compiled.")
+        try:
+            dependency.compile(use_cache=not force)
+        except Exception as err:
+            cli_ctx.logger.error(str(err))
+            continue
+        else:
+            cli_ctx.logger.success(f"Package '{dependency.name}@{dependency.version}' compiled.")

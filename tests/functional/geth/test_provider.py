@@ -4,6 +4,7 @@ from typing import cast
 import pytest
 from eth_pydantic_types import HashBytes32
 from eth_typing import HexStr
+from eth_utils import keccak
 from evmchains import PUBLIC_CHAIN_META
 from hexbytes import HexBytes
 from web3.exceptions import ContractLogicError as Web3ContractLogicError
@@ -13,19 +14,22 @@ from web3.middleware import geth_poa_middleware
 from ape.exceptions import (
     APINotImplementedError,
     BlockNotFoundError,
+    ContractLogicError,
     NetworkMismatchError,
     TransactionError,
     TransactionNotFoundError,
 )
+from ape.utils import to_int
 from ape_ethereum.ecosystem import Block
 from ape_ethereum.provider import DEFAULT_SETTINGS, EthereumNodeProvider
 from ape_ethereum.transactions import (
     AccessList,
     AccessListTransaction,
+    DynamicFeeTransaction,
     TransactionStatusEnum,
     TransactionType,
 )
-from ape_geth.provider import GethDevProcess, GethNotInstalledError
+from ape_node.provider import GethDevProcess, NodeSoftwareNotInstalledError
 from tests.conftest import GETH_URI, geth_process_test
 
 
@@ -43,27 +47,27 @@ def test_uri(geth_provider):
 
 @geth_process_test
 def test_uri_localhost_not_running_uses_random_default(config):
-    cfg = config.get_config("geth").ethereum.mainnet
+    cfg = config.get_config("node").ethereum.mainnet
     assert cfg["uri"] in PUBLIC_CHAIN_META["ethereum"]["mainnet"]["rpc"]
-    cfg = config.get_config("geth").ethereum.sepolia
+    cfg = config.get_config("node").ethereum.sepolia
     assert cfg["uri"] in PUBLIC_CHAIN_META["ethereum"]["sepolia"]["rpc"]
 
 
 @geth_process_test
-def test_uri_when_configured(geth_provider, temp_config, ethereum):
+def test_uri_when_configured(geth_provider, project, ethereum):
     settings = geth_provider.provider_settings
     geth_provider.provider_settings = {}
     value = "https://value/from/config"
-    config = {"geth": {"ethereum": {"local": {"uri": value}, "mainnet": {"uri": value}}}}
+    config = {"node": {"ethereum": {"local": {"uri": value}, "mainnet": {"uri": value}}}}
     expected = DEFAULT_SETTINGS["uri"]
     network = ethereum.get_network("mainnet")
 
     try:
-        with temp_config(config):
+        with project.temp_config(**config):
             # Assert we use the config value.
             actual_local_uri = geth_provider.uri
             # Assert provider settings takes precedence.
-            provider = network.get_provider("geth", provider_settings={"uri": expected})
+            provider = network.get_provider("node", provider_settings={"uri": expected})
             actual_mainnet_uri = provider.uri
 
     finally:
@@ -75,19 +79,32 @@ def test_uri_when_configured(geth_provider, temp_config, ethereum):
 
 @geth_process_test
 def test_repr_connected(geth_provider):
-    assert repr(geth_provider) == "<geth chain_id=1337>"
+    actual = repr(geth_provider)
+    expected = f"<Node ({geth_provider.client_version}) chain_id=1337>"
+    assert actual == expected
 
 
 @geth_process_test
 def test_repr_on_local_network_and_disconnected(networks):
-    geth = networks.get_provider_from_choice("ethereum:local:geth")
-    assert repr(geth) == "<geth chain_id=1337>"
+    node = networks.get_provider_from_choice("ethereum:local:node")
+    # Ensure disconnected.
+    if w3 := node._web3:
+        node._web3 = None
+
+    actual = repr(node)
+    expected = "<Node chain_id=1337>"
+    assert actual == expected
+
+    if w3:
+        node._web3 = w3
 
 
 @geth_process_test
 def test_repr_on_live_network_and_disconnected(networks):
-    geth = networks.get_provider_from_choice("ethereum:sepolia:geth")
-    assert repr(geth) == "<geth chain_id=11155111>"
+    node = networks.get_provider_from_choice("ethereum:sepolia:node")
+    actual = repr(node)
+    expected = "<Node chain_id=11155111>"
+    assert actual == expected
 
 
 @geth_process_test
@@ -106,8 +123,8 @@ def test_chain_id_when_connected(geth_provider):
 
 @geth_process_test
 def test_chain_id_live_network_not_connected(networks):
-    geth = networks.get_provider_from_choice("ethereum:sepolia:geth")
-    assert geth.chain_id == 11155111
+    node = networks.get_provider_from_choice("ethereum:sepolia:node")
+    assert node.chain_id == 11155111
 
 
 @geth_process_test
@@ -159,7 +176,7 @@ def test_connect_to_chain_that_started_poa(mock_web3, web3_factory, ethereum):
     mock_web3.eth.get_block.side_effect = ExtraDataLengthError
     mock_web3.eth.chain_id = ethereum.sepolia.chain_id
     web3_factory.return_value = mock_web3
-    provider = ethereum.sepolia.get_provider("geth")
+    provider = ethereum.sepolia.get_provider("node")
     provider.provider_settings = {"uri": "http://node.example.com"}  # fake
     provider.connect()
 
@@ -188,10 +205,33 @@ def test_get_block_not_found(geth_provider):
 
 
 @geth_process_test
-def test_get_receipt_not_exists_with_timeout(geth_provider, txn_hash):
+def test_get_block_pending(geth_provider, geth_account, geth_second_account, accounts):
+    """
+    Pending timestamps can be weird.
+    This ensures we can check those are various strange states of geth.
+    """
+    actual = geth_provider.get_block("latest")
+    assert isinstance(actual, Block)
+
+    snap = geth_provider.snapshot()
+
+    # Transact to increase block
+    geth_account.transfer(geth_second_account, "1 gwei")
+    actual = geth_provider.get_block("latest")
+    assert isinstance(actual, Block)
+
+    # Restore state before transaction
+    geth_provider.restore(snap)
+    actual = geth_provider.get_block("latest")
+    assert isinstance(actual, Block)
+
+
+@geth_process_test
+def test_get_receipt_not_exists_with_timeout(geth_provider):
+    txn_hash = "0x0123"
     expected = (
         f"Transaction '{txn_hash}' not found. "
-        rf"Error: Transaction HexBytes\('{txn_hash}'\) "
+        rf"Error: Transaction '{txn_hash}' "
         "is not in the chain after 0 seconds"
     )
     with pytest.raises(TransactionNotFoundError, match=expected):
@@ -219,7 +259,7 @@ def test_snapshot_and_revert(geth_provider, geth_account, geth_contract):
     assert actual_block_number == expected_block_number
     assert actual_nonce == expected_nonce
 
-    geth_provider.revert(snapshot)
+    geth_provider.restore(snapshot)
 
     actual_block_number = geth_provider.get_block("latest").number
     expected_block_number = snapshot
@@ -277,7 +317,7 @@ def test_get_pending_block(geth_provider, geth_account, geth_second_account, acc
     assert isinstance(actual, Block)
 
     # Restore state before transaction
-    geth_provider.revert(snap)
+    geth_provider.restore(snap)
     actual = geth_provider.get_block("latest")
     assert isinstance(actual, Block)
 
@@ -349,9 +389,26 @@ def test_send_transaction_when_no_error_and_receipt_fails(
 
 
 @geth_process_test
+def test_send_call(geth_provider, ethereum, geth_contract):
+    txn = DynamicFeeTransaction.model_validate(
+        {
+            "chainId": 1337,
+            "to": geth_contract.address,
+            "gas": 4716984,
+            "value": 0,
+            "data": HexBytes(keccak(text="myNumber()")[:4]),
+            "type": 2,
+            "accessList": [],
+        }
+    )
+    actual = geth_provider.send_call(txn)
+    assert to_int(actual) == 0
+
+
+@geth_process_test
 def test_network_choice(geth_provider):
     actual = geth_provider.network_choice
-    expected = "ethereum:local:geth"
+    expected = "ethereum:local:node"
     assert actual == expected
 
 
@@ -373,12 +430,12 @@ def test_make_request_not_exists(geth_provider):
         APINotImplementedError,
         match="RPC method 'ape_thisDoesNotExist' is not implemented by this node instance.",
     ):
-        geth_provider._make_request("ape_thisDoesNotExist")
+        geth_provider.make_request("ape_thisDoesNotExist")
 
 
-def test_geth_not_found():
+def test_geth_bin_not_found():
     bin_name = "__NOT_A_REAL_EXECUTABLE_HOPEFULLY__"
-    with pytest.raises(GethNotInstalledError):
+    with pytest.raises(NodeSoftwareNotInstalledError):
         _ = GethDevProcess(Path.cwd(), executable=bin_name)
 
 
@@ -418,17 +475,24 @@ def test_base_fee_no_history(geth_provider, mocker, ret):
 
 
 @geth_process_test
-def test_estimate_gas(geth_contract, geth_provider, geth_account):
+def test_estimate_gas_cost(geth_contract, geth_provider, geth_account):
     txn = geth_contract.setNumber.as_transaction(900, sender=geth_account)
     estimate = geth_provider.estimate_gas_cost(txn)
     assert estimate > 0
 
 
 @geth_process_test
-def test_estimate_gas_of_static_fee_txn(geth_contract, geth_provider, geth_account):
+def test_estimate_gas_cost_of_static_fee_txn(geth_contract, geth_provider, geth_account):
     txn = geth_contract.setNumber.as_transaction(900, sender=geth_account, type=0)
     estimate = geth_provider.estimate_gas_cost(txn)
     assert estimate > 0
+
+
+@geth_process_test
+def test_estimate_gas_cost_reverts(geth_contract, geth_provider, geth_second_account):
+    txn = geth_contract.setNumber.as_transaction(900, sender=geth_second_account, type=0)
+    with pytest.raises(ContractLogicError):
+        geth_provider.estimate_gas_cost(txn)
 
 
 @geth_process_test
@@ -470,7 +534,7 @@ def test_create_access_list(geth_provider, geth_contract, geth_account):
 def test_send_call_base_class_block_id(networks, ethereum, mocker):
     """
     Testing a case where was a bug in the base class for most providers.
-    Note: can't use ape-geth as-is, as it overrides `send_call()`.
+    Note: can't use ape-node as-is, as it overrides `send_call()`.
     """
 
     provider = mocker.MagicMock()
@@ -485,10 +549,10 @@ def test_send_call_base_class_block_id(networks, ethereum, mocker):
 
     orig = networks.active_provider
     networks.active_provider = provider
-    _ = provider.send_call(tx, block_id=block_id) == HexStr("0x")
+    _ = provider.send_call(tx, block_id=block_id, skip_trace=True) == HexStr("0x")
     networks.active_provider = orig  # put back ASAP
 
-    actual = provider._send_call.call_args[-1]["block_identifier"]
+    actual = provider._prepare_call.call_args[-1]["block_identifier"]
     assert actual == block_id
 
 

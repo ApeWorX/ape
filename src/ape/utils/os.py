@@ -1,11 +1,13 @@
 import os
 import re
 import sys
+from collections.abc import Callable, Iterator
 from contextlib import contextmanager
 from fnmatch import fnmatch
 from pathlib import Path
-from tempfile import TemporaryDirectory
-from typing import Any, Callable, Iterator, List, Optional, Pattern, Union
+from re import Pattern
+from tempfile import TemporaryDirectory, gettempdir
+from typing import Any, Optional, Union
 
 
 def is_relative_to(path: Path, target: Path) -> bool:
@@ -61,8 +63,8 @@ def get_relative_path(target: Path, anchor: Path) -> Path:
 
 
 def get_all_files_in_directory(
-    path: Path, pattern: Optional[Union[Pattern, str]] = None
-) -> List[Path]:
+    path: Path, pattern: Optional[Union[Pattern, str]] = None, max_files: Optional[int] = None
+) -> list[Path]:
     """
     Returns all the files in a directory structure (recursive).
 
@@ -78,24 +80,32 @@ def get_all_files_in_directory(
         path (pathlib.Path): A directory containing files of interest.
         pattern (Optional[Union[Pattern, str]]): Optionally provide a regex
           pattern to match.
+        max_files (Optional[int]): Optionally set a max file count. This is useful
+          because huge file structures will be very slow.
 
     Returns:
-        List[pathlib.Path]: A list of files in the given directory.
+        list[pathlib.Path]: A list of files in the given directory.
     """
     if path.is_file():
         return [path]
     elif not path.is_dir():
         return []
 
+    pattern_obj: Optional[Pattern] = None
+    if isinstance(pattern, str):
+        pattern_obj = re.compile(pattern)
+    elif pattern is not None:
+        pattern_obj = pattern
+
     # is dir
-    all_files = [p for p in list(path.rglob("*.*")) if p.is_file()]
-    if pattern:
-        if isinstance(pattern, str):
-            pattern = re.compile(pattern)
+    result: list[Path] = []
+    for file in (p for p in path.rglob("*.*") if p.is_file()):
+        if (max_files is None or max_files is not None and len(result) < max_files) and (
+            pattern_obj is None or pattern_obj.match(file.name)
+        ):
+            result.append(file)
 
-        return [f for f in all_files if pattern.match(f.name)]
-
-    return all_files
+    return result
 
 
 def expand_environment_variables(contents: str) -> str:
@@ -119,7 +129,7 @@ class use_temp_sys_path:
     a user's sys paths without permanently modifying it.
     """
 
-    def __init__(self, path: Path, exclude: Optional[List[Path]] = None):
+    def __init__(self, path: Path, exclude: Optional[list[Path]] = None):
         self.temp_path = str(path)
         self.exclude = [str(p) for p in exclude or []]
 
@@ -143,12 +153,22 @@ class use_temp_sys_path:
                 sys.path.append(path)
 
 
-def get_full_extension(path: Path) -> str:
+def get_full_extension(path: Union[Path, str]) -> str:
     """
     For a path like ``Path("Contract.t.sol")``,
     returns ``.t.sol``, unlike the regular Path
     property ``.suffix`` which returns ``.sol``.
+
+    Args:
+        path (Path | str): The path with an extension.
+
+    Returns:
+        str: The full suffix
     """
+    if not path:
+        return ""
+
+    path = Path(path)
     if path.is_dir():
         return ""
 
@@ -204,13 +224,28 @@ def run_in_tempdir(
     Args:
         fn (Callable): A function that takes a path. It gets called
           with the resolved path to the temporary directory.
-        name (str): Optionally name the temporary directory.
+        name (Optional[str]): Optionally name the temporary directory.
 
     Returns:
         Any: The result of the function call.
     """
     with create_tempdir(name=name) as temp_dir:
         return fn(temp_dir)
+
+
+def in_tempdir(path: Path) -> bool:
+    """
+    Returns ``True`` when the given path is in a temporary directory.
+
+    Args:
+        path (Path): The path to check.
+
+    Returns:
+        bool
+    """
+    temp_dir = os.path.normpath(f"{Path(gettempdir()).resolve()}")
+    normalized_path = os.path.normpath(path)
+    return normalized_path.startswith(temp_dir)
 
 
 def path_match(path: Union[str, Path], *exclusions: str) -> bool:
@@ -248,3 +283,22 @@ def path_match(path: Union[str, Path], *exclusions: str) -> bool:
                     return True
 
     return False
+
+
+def clean_path(path: Path) -> str:
+    """
+    Replace the home directory with key ``$HOME`` and return
+    the path as a str. This is used for outputting paths
+    with less doxxing.
+
+    Args:
+        path (Path): The path to sanitize.
+
+    Returns:
+        str: A sanitized path-str.
+    """
+    home = Path.home()
+    if path.is_relative_to(home):
+        return f"$HOME{os.path.sep}{path.relative_to(home)}"
+
+    return f"{path}"

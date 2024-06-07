@@ -19,7 +19,10 @@ ape plugins list --all
 
 Normally, the `ape plugins list` command shows you all the plugins you have installed.
 However, when you include the `--all` flag, it shows the core plugins and the available plugins as well.
-**NOTE**: The available plugins list is trusted and from the ApeWorX organization, however you can install third-party plugins from other sources as well.
+
+```{note}
+The available plugins list is trusted and from the ApeWorX organization, however you can install third-party plugins from other sources as well.
+```
 
 ## Installing Plugins
 

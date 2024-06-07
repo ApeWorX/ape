@@ -21,7 +21,9 @@ def test_add():
     assert 1 + 1 == 2
 ```
 
-**NOTE**: `pytest` assumes the *actual* value is on the left and the *expected* value is on the right.
+```{note}
+`pytest` assumes the *actual* value is on the left and the *expected* value is on the right.
+```
 
 ## Test Pattern
 
@@ -235,10 +237,11 @@ ape test test_my_contract -I -s
 
 ## Test Providers
 
-Out-of-the-box, your tests run using the `eth-tester` provider, which comes bundled with ape. If you have `geth` installed, you can use the `ape-geth` plugin that also comes with ape.
+Out-of-the-box, your tests run using the `eth-tester` provider, which comes bundled with ape.
+If you have Ethereum node software installed, you can use the `ape-node` plugin that also comes with ape.
 
 ```bash
-ape test --network ethereum:local:geth
+ape test --network ethereum:local:node
 ```
 
 Each testing plugin should work the same way. You will have access to the same test accounts.
@@ -247,6 +250,36 @@ Another option for testing providers is the [ape-hardhat](https://github.com/Ape
 
 ```bash
 ape plugins install hardhat
+```
+
+### Mining
+
+Test providers allow you to control mining.
+For example, mine an empty block using the [mine](../methoddocs/api.html#ape.api.providers.TestProviderAPI.mine) method:
+
+```python
+from ape import chain
+
+chain.provider.mine()
+```
+
+You can also pass it a number of blocks to mine:
+
+```python
+from ape import chain
+
+chain.provider.mine(5)
+```
+
+By default, testing providers automatically mine after sending transactions.
+However, you can disable this feature by setting the property.
+
+```python
+from ape import chain
+
+chain.provider.auto_mine = False
+# You can also re-enable
+chain.provider.auto_mine = True
 ```
 
 ## Advanced Testing Tips
@@ -279,6 +312,8 @@ Similar to `pytest.raises()`, you can use `ape.reverts()` to assert that contrac
 From our earlier example we can see this in action:
 
 ```python
+import ape
+
 def test_authorization(my_contract, owner, not_owner):
     my_contract.set_owner(sender=owner)
     assert owner == my_contract.owner()
@@ -297,6 +332,9 @@ If the message in the `ContractLogicError` raised by the transaction failure is 
 You may also supply an `re.Pattern` object to assert on a message pattern, rather than on an exact match.
 
 ```python
+import ape
+import re
+
 # Matches explicitly "foo" or "bar"
 with ape.reverts(re.compile(r"^(foo|bar)$")):
     ...
@@ -327,6 +365,8 @@ def check_value(_value: uint256) -> bool:
 We can explicitly cause a transaction revert and check the failed line by supplying an expected `dev_message`:
 
 ```python
+import ape
+
 def test_authorization(my_contract, owner):
     with ape.reverts(dev_message="dev: invalid value"):
         my_contract.check_value(sender=owner)
@@ -345,6 +385,8 @@ Because `dev_message` relies on transaction tracing to function, you must use a 
 You may also supply an `re.Pattern` object to assert on a dev message pattern, rather than on an exact match.
 
 ```python
+import ape
+
 # Matches explictly "dev: foo" or "dev: bar"
 with ape.reverts(dev_message=re.compile(r"^dev: (foo|bar)$")):
     ...
@@ -452,7 +494,10 @@ def test_error_on_deploy(account, project):
 ```
 
 Alternatively, you can attempt to use the address from the revert error to find the error type.
-**NOTE**: The address will only exist for transactions that were published (e.g. not for failures during estimating gas), and this may only work on certain providers.
+
+```{note}
+The address will only exist for transactions that were published (e.g. not for failures during estimating gas), and this may only work on certain providers.
+```
 
 ```python
 import ape
@@ -480,11 +525,9 @@ To run an entire test using a specific network / provider combination, use the `
 ```python
 import pytest
 
-
 @pytest.mark.use_network("fantom:local:test")
 def test_my_fantom_test(chain):
     assert chain.provider.network.ecosystem.name == "fantom"
-
 
 @pytest.mark.use_network("ethereum:local:test")
 def test_my_ethereum_test(chain):
@@ -513,12 +556,10 @@ This is useful if certain fixtures must run in certain networks.
 ```python
 import pytest
 
-
 @pytest.fixture
 def stark_contract(networks, project):
     with networks.parse_network_choice("starknet:local"):
         yield project.MyStarknetContract.deploy()
-
 
 def test_starknet_thing(stark_contract, stark_account):
     # Uses the starknet connection via the stark_contract fixture
@@ -534,10 +575,14 @@ Thus, you can enter and exit a provider's context as much as you need in tests.
 ## Gas Reporting
 
 To include a gas report at the end of your tests, you can use the `--gas` flag.
-**NOTE**: This feature requires using a provider with tracing support, such as [ape-hardhat](https://github.com/ApeWorX/ape-hardhat).
+
+```{note}
+This feature works best when using a provider with tracing support, such as [ape-foundry](https://github.com/ApeWorX/ape-foundry).
+When not using a provider with adequate tracing support, such as `EthTester`, gas reporting is limited to receipt-level data.
+```
 
 ```bash
-ape test --network ethereum:local:hardhat --gas
+ape test --network ethereum:local:foundry --gas
 ```
 
 At the end of test suite, you will see tables such as:
@@ -551,12 +596,6 @@ At the end of test suite, you will see tables such as:
   withdraw                    2   28307   38679   33493    33493
   changeOnStatus              2   23827   45739   34783    34783
   getSecret                   1   24564   24564   24564    24564
-
-                  Transferring ETH Gas
-
-  Method     Times called   Min.   Max.   Mean   Median
- ───────────────────────────────────────────────────────
-  to:test0              2   2400   9100   5750     5750
 
                      TestContract Gas
 
@@ -617,7 +656,11 @@ To get contract coverage, use the `--coverage` flag when running `ape test`:
 ape test --coverage
 ```
 
-**NOTE**: Some types of coverage require using a provider that supports transaction tracing, such as `ape-hardhat` or `ape-foundry`.
+```{note}
+Some types of coverage require using a provider that supports transaction tracing, such as `ape-hardhat` or `ape-foundry`.
+```
+
+Without using a provider with adequate tracing support, coverage is limited to receipt-level data.
 
 Afterwards, you should see a coverage report looking something like:
 
@@ -673,12 +716,18 @@ Then, you will see table outputs like this:
 This is useful when trying to find the missing areas to cover.
 The HTML report also supports `verbose: true` and it will show similar tables.
 
-**NOTE**: You may notice methods with zero statements.
+```{note}
+You may notice methods with zero statements.
+```
+
 One example of a method with zero statements may be from an auto-generated getter method for a public variable; certain versions of Vyper do not contain source mappings for these methods.
 However, Ape will still check to see if this method has been called in your tests.
 To get 100% coverage, you must call these methods in your tests.
 
-**NOTE**: Notice some methods use the full selector while others don't.
+```{note}
+Notice some methods use the full selector while others don't.
+```
+
 Methods that use the selector mean that their short name is shared with other methods.
 This happens in Vyper from auto-generated kwarg-based methods.
 Thus, the full selector is used to distinguish the methods in the coverage (and gas) reports.

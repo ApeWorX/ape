@@ -1,30 +1,50 @@
+import re
 import sys
+from collections.abc import Iterable, Iterator, Sequence
 from enum import Enum
 from functools import cached_property
 from shutil import which
-from typing import Any, Dict, Iterable, Iterator, List, Optional, Sequence, Tuple
+from typing import Any, Optional
 
 import click
 from packaging.specifiers import SpecifierSet
 from packaging.version import Version
 from pydantic import field_validator, model_validator
 
-from ape.__modules__ import __modules__
+from ape.exceptions import PluginVersionError
 from ape.logging import logger
-from ape.utils import BaseInterfaceModel, get_package_version, github_client, log_instead_of_fail
+from ape.utils import BaseInterfaceModel, get_package_version, log_instead_of_fail
+from ape.utils._github import github_client
 from ape.utils.basemodel import BaseModel
 from ape.utils.misc import _get_distributions
 from ape.version import version as ape_version_str
-from ape_plugins.exceptions import PluginVersionError
 
 # Plugins maintained OSS by ApeWorX (and trusted)
-CORE_PLUGINS = {p for p in __modules__ if p != "ape"}
 # Use `uv pip` if installed, otherwise `python -m pip`
 PIP_COMMAND = ["uv", "pip"] if which("uv") else [sys.executable, "-m", "pip"]
+PLUGIN_PATTERN = re.compile(r"\bape_\w+(?!\S)")
+CORE_PLUGINS = [
+    "ape_accounts",
+    "ape_cache",
+    "ape_compile",
+    "ape_console",
+    "ape_ethereum",
+    "ape_node",
+    "ape_init",
+    "ape_networks",
+    "ape_plugins",
+    "ape_pm",
+    "ape_run",
+    "ape_test",
+]
 
 
 def clean_plugin_name(name: str) -> str:
     return name.replace("_", "-").replace("ape-", "")
+
+
+def get_plugin_dists():
+    return _filter_plugins_from_dists(_get_distributions())
 
 
 def _filter_plugins_from_dists(dists: Iterable) -> Iterator[str]:
@@ -224,7 +244,7 @@ class PluginMetadata(BaseInterfaceModel):
     version: Optional[str] = None
     """The version requested, if there is one."""
 
-    pip_command: List[str] = PIP_COMMAND
+    pip_command: list[str] = PIP_COMMAND
     """
     The pip base command to use.
     (NOTE: is a field mainly for testing purposes).
@@ -373,11 +393,11 @@ class PluginMetadata(BaseInterfaceModel):
         if not use_cache:
             _get_distributions.cache_clear()
 
-        return any(n == self.package_name for n in _filter_plugins_from_dists(_get_distributions()))
+        return any(n == self.package_name for n in get_plugin_dists())
 
     def _prepare_install(
         self, upgrade: bool = False, skip_confirmation: bool = False
-    ) -> Optional[Dict[str, Any]]:
+    ) -> Optional[dict[str, Any]]:
         # NOTE: Internal and only meant to be called by the CLI.
         if self.in_core:
             logger.error(f"Cannot install core 'ape' plugin '{self.name}'.")
@@ -428,7 +448,7 @@ class PluginMetadata(BaseInterfaceModel):
             )
             return None
 
-    def _get_uninstall_args(self) -> List[str]:
+    def _get_uninstall_args(self) -> list[str]:
         arguments = [*self.pip_command, "uninstall"]
 
         if self.pip_command[0] != "uv":
@@ -499,7 +519,7 @@ class ModifyPluginResultHandler:
         logger.error(f"Failed to {verb} plugin '{self._plugin}.")
 
 
-def _split_name_and_version(value: str) -> Tuple[str, Optional[str]]:
+def _split_name_and_version(value: str) -> tuple[str, Optional[str]]:
     if "@" in value:
         parts = [x for x in value.split("@") if x]
         return parts[0], "@".join(parts[1:])
@@ -517,7 +537,7 @@ class PluginGroup(BaseModel):
     """
 
     plugin_type: PluginType
-    plugins: Dict[str, PluginMetadata] = {}
+    plugins: dict[str, PluginMetadata] = {}
 
     def __bool__(self) -> bool:
         return len(self.plugins) > 0
@@ -543,7 +563,7 @@ class PluginGroup(BaseModel):
         return self.plugin_type_str.capitalize()
 
     @property
-    def plugin_names(self) -> List[str]:
+    def plugin_names(self) -> list[str]:
         return [x.name for x in self.plugins.values()]
 
     def to_str(self, max_length: Optional[int] = None, include_version: bool = True) -> str:

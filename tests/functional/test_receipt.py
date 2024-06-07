@@ -1,19 +1,34 @@
 import pytest
+from rich.table import Table
+from rich.tree import Tree
 
 from ape.api import ReceiptAPI
-from ape.exceptions import APINotImplementedError, ContractLogicError, OutOfGasError
+from ape.exceptions import ContractLogicError, OutOfGasError
 from ape.utils import ManagerAccessMixin
 from ape_ethereum.transactions import DynamicFeeTransaction, Receipt, TransactionStatusEnum
 
 
 @pytest.fixture
 def deploy_receipt(vyper_contract_instance):
-    return vyper_contract_instance.receipt
+    return vyper_contract_instance.creation_metadata.receipt
 
 
 @pytest.fixture
 def invoke_receipt(vyper_contract_instance, owner):
     return vyper_contract_instance.setNumber(1, sender=owner)
+
+
+@pytest.fixture
+def trace_print_capture(mocker, chain):
+    console_factory = mocker.MagicMock()
+    capture = mocker.MagicMock()
+    console_factory.return_value = capture
+    orig = chain._reports._get_console
+    chain._reports._get_console = console_factory
+    try:
+        yield capture.print
+    finally:
+        chain._reports._get_console = orig
 
 
 def test_receipt_properties(chain, invoke_receipt):
@@ -22,16 +37,21 @@ def test_receipt_properties(chain, invoke_receipt):
     assert invoke_receipt.datetime == chain.blocks.head.datetime
 
 
-def test_show_trace(invoke_receipt):
-    # See trace-supported provider plugin tests for better tests (e.g. ape-hardhat)
-    with pytest.raises(APINotImplementedError):
-        invoke_receipt.show_trace()
+def test_show_trace(trace_print_capture, invoke_receipt):
+    invoke_receipt.show_trace()
+    actual = trace_print_capture.call_args[0][0]
+    assert isinstance(actual, Tree)
+    label = f"{actual.label}"
+    assert "VyperContract" in label
+    assert "setNumber" in label
+    assert f"[{invoke_receipt.gas_used} gas]" in label
 
 
-def test_show_gas_report(invoke_receipt):
-    # See trace-supported provider plugin tests for better tests (e.g. ape-hardhat)
-    with pytest.raises(APINotImplementedError):
-        invoke_receipt.show_gas_report()
+def test_show_gas_report(trace_print_capture, invoke_receipt):
+    invoke_receipt.show_gas_report()
+    actual = trace_print_capture.call_args[0][0]
+    assert isinstance(actual, Table)
+    assert actual.title == "VyperContract Gas"
 
 
 def test_decode_logs_specify_abi(invoke_receipt, vyper_contract_instance):
@@ -210,3 +230,15 @@ def test_transaction_validated_from_dict(ethereum, owner, deploy_receipt):
     assert receipt.transaction.sender == owner.address
     assert receipt.transaction.value == 123
     assert receipt.transaction.data == b"hello"
+
+
+def test_return_value(owner, vyper_contract_instance):
+    """
+    ``.return_value`` still works when using EthTester provider!
+    It works by using eth_call to get the result rather than
+    tracing-RPCs.
+    """
+    receipt = vyper_contract_instance.getNestedArrayMixedDynamic.transact(sender=owner)
+    actual = receipt.return_value
+    assert len(actual) == 5
+    assert actual[1][1] == [[0], [0, 1], [0, 1, 2]]

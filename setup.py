@@ -1,17 +1,18 @@
 #!/usr/bin/env python
+import re
 from pathlib import Path
-from typing import Dict
 
 from setuptools import find_packages, setup
 
-here = Path(__file__).parent.absolute()
-packages_data: Dict = {}
-with open(here / "src" / "ape" / "__modules__.py", encoding="utf8") as modules_file:
-    exec(modules_file.read(), packages_data)
+_HERE = Path(__file__).parent.absolute()
+_CORE_PLUGIN_PATTERN = re.compile(r"\bape_\w+(?!\S)")
+_PACKAGES = find_packages("src")
+_MODULES = {p for p in _PACKAGES if re.match(_CORE_PLUGIN_PATTERN, p)}
+_MODULES.add("ape")
 
 extras_require = {
     "test": [  # `test` GitHub Action jobs uses this
-        "pytest-xdist>=3.5.0,<4",  # Multi-process runner
+        "pytest-xdist>=3.6.1,<4",  # Multi-process runner
         "pytest-cov>=4.0.0,<5",  # Coverage analyzer plugin
         "pytest-mock",  # For creating mocks
         "pytest-timeout>=2.2.0,<3",  # For avoiding timing out during tests
@@ -25,6 +26,7 @@ extras_require = {
         "types-requests",  # Needed due to mypy typeshed
         "types-setuptools",  # Needed due to mypy typeshed
         "pandas-stubs>=2.2.1.240316",  # Needed due to mypy typeshed
+        "types-toml",  # Needed due to mypy typeshed
         "types-SQLAlchemy>=1.4.49",  # Needed due to mypy typeshed
         "types-python-dateutil",  # Needed due to mypy typeshed
         "flake8>=7.0.0,<8",  # Style linter
@@ -52,7 +54,7 @@ extras_require = {
     ],
     "dev": [
         # commitizen: Manage commits and publishing releases
-        (here / "cz-requirement.txt").read_text().strip(),
+        (_HERE / "cz-requirement.txt").read_text().strip(),
         "pre-commit",  # Ensure that linters are run prior to committing
         "pytest-watch",  # `ptw` test watcher/runner
         "ipdb",  # Debugger (Must use `export PYTHONBREAKPOINT=ipdb.set_trace`)
@@ -60,7 +62,7 @@ extras_require = {
     # NOTE: These are extras that someone can install to get up and running quickly w/ ape
     #       They should be kept up to date with what works and what doesn't out of the box
     #       Usage example: `pipx install eth-ape[recommended-plugins]`
-    "recommended-plugins": (here / "recommended-plugins.txt").read_text().splitlines(),
+    "recommended-plugins": (_HERE / "recommended-plugins.txt").read_text().splitlines(),
 }
 
 # NOTE: `pip install -e .[dev]` to install package
@@ -98,20 +100,20 @@ setup(
     install_requires=[
         "click>=8.1.6,<9",
         "ijson>=3.1.4,<4",
-        "ipython>=8.5.0,<9",
+        "ipython>=8.18.1,<9",
         "lazyasd>=0.1.4",
         "packaging>=23.0,<24",
         "pandas>=1.3.0,<2",
         "pluggy>=1.3,<2",
-        "pydantic>=2.5.2,<3",
+        "pydantic>=2.6.4,<3",
         "pydantic-settings>=2.0.3,<3",
-        "PyGithub>=1.59,<2",
-        "pytest>=6.0,<8.0",
+        "pytest>=8.0,<9.0",
         "python-dateutil>=2.8.2,<3",
         "PyYAML>=5.0,<7",
         "requests>=2.28.1,<3",
         "rich>=12.5.1,<14",
         "SQLAlchemy>=1.4.35",
+        "toml; python_version<'3.11'",
         "tqdm>=4.62.3,<5.0",
         "traitlets>=5.3.0",
         "urllib3>=2.0.0,<3",
@@ -121,6 +123,7 @@ setup(
         "eth-account>=0.11.2,<0.12",
         "eth-typing>=3.5.2,<4",
         "eth-utils>=2.3.1,<3",
+        "hexbytes",  # Peer
         "py-geth>=4.4.0,<5",
         "trie>=3.0.0,<4",  # Peer: stricter pin needed for uv support.
         "web3[tester]>=6.17.2,<7",
@@ -128,7 +131,7 @@ setup(
         "eip712>=0.2.7,<0.3",
         "ethpm-types>=0.6.9,<0.7",
         "eth_pydantic_types>=0.1.0,<0.2",
-        "evmchains>=0.0.6,<0.1",
+        "evmchains>=0.0.9,<0.1",
         "evm-trace>=0.1.5,<0.2",
     ],
     entry_points={
@@ -147,15 +150,15 @@ setup(
             "ape_pm=ape_pm._cli:cli",
         ],
     },
-    python_requires=">=3.8,<4",
+    python_requires=">=3.9,<4",
     extras_require=extras_require,
-    py_modules=packages_data["__modules__"],
+    py_modules=list(_MODULES),
     license="Apache-2.0",
     zip_safe=False,
     keywords="ethereum",
-    packages=find_packages("src"),
+    packages=_PACKAGES,
     package_dir={"": "src"},
-    package_data={p: ["py.typed"] for p in packages_data["__modules__"]},
+    package_data={p: ["py.typed"] for p in _MODULES},
     classifiers=[
         "Development Status :: 5 - Production/Stable",
         "Intended Audience :: Developers",
@@ -164,7 +167,6 @@ setup(
         "Operating System :: MacOS",
         "Operating System :: POSIX",
         "Programming Language :: Python :: 3",
-        "Programming Language :: Python :: 3.8",
         "Programming Language :: Python :: 3.9",
         "Programming Language :: Python :: 3.10",
         "Programming Language :: Python :: 3.11",

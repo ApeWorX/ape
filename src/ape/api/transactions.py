@@ -1,7 +1,8 @@
 import sys
 import time
+from collections.abc import Iterator
 from datetime import datetime
-from typing import IO, TYPE_CHECKING, Any, Iterator, List, NoReturn, Optional, Tuple, Union
+from typing import IO, TYPE_CHECKING, Any, NoReturn, Optional, Union
 
 from eth_pydantic_types import HexBytes
 from eth_utils import is_0x_prefixed, is_hex, to_int
@@ -24,7 +25,6 @@ from ape.types import (
     AutoGasLimit,
     ContractLogContainer,
     SourceTraceback,
-    TraceFrame,
     TransactionSignature,
 )
 from ape.utils import (
@@ -39,6 +39,7 @@ from ape.utils import (
 
 if TYPE_CHECKING:
     from ape.api.providers import BlockAPI
+    from ape.api.trace import TraceAPI
     from ape.contracts import ContractEvent
 
 
@@ -157,7 +158,7 @@ class TransactionAPI(BaseInterfaceModel):
             return None
 
     @property
-    def trace(self) -> Iterator[TraceFrame]:
+    def trace(self) -> "TraceAPI":
         """
         The transaction trace. Only works if this transaction was published
         and you are using a provider that support tracing.
@@ -269,7 +270,7 @@ class ReceiptAPI(ExtraAttributesMixin, BaseInterfaceModel):
     contract_address: Optional[AddressType] = None
     block_number: int
     gas_used: int
-    logs: List[dict] = []
+    logs: list[dict] = []
     status: int
     txn_hash: str
     transaction: TransactionAPI
@@ -306,17 +307,13 @@ class ReceiptAPI(ExtraAttributesMixin, BaseInterfaceModel):
     def validate_txn_hash(cls, value):
         return HexBytes(value).hex()
 
-    @property
-    def call_tree(self) -> Optional[Any]:
-        return None
-
     @cached_property
-    def debug_logs_typed(self) -> List[Tuple[Any]]:
+    def debug_logs_typed(self) -> list[tuple[Any]]:
         """Return any debug log data outputted by the transaction."""
         return []
 
     @cached_property
-    def debug_logs_lines(self) -> List[str]:
+    def debug_logs_lines(self) -> list[str]:
         """
         Return any debug log data outputted by the transaction as strings suitable for printing
         """
@@ -358,11 +355,11 @@ class ReceiptAPI(ExtraAttributesMixin, BaseInterfaceModel):
         """
 
     @property
-    def trace(self) -> Iterator[TraceFrame]:
+    def trace(self) -> "TraceAPI":
         """
-        The trace of the transaction, if available from your provider.
+        The :class:`~ape.api.trace.TraceAPI` of the transaction.
         """
-        return self.provider.get_transaction_trace(txn_hash=self.txn_hash)
+        return self.provider.get_transaction_trace(self.txn_hash)
 
     @property
     def _explorer(self) -> Optional[ExplorerAPI]:
@@ -405,7 +402,7 @@ class ReceiptAPI(ExtraAttributesMixin, BaseInterfaceModel):
     def decode_logs(
         self,
         abi: Optional[
-            Union[List[Union[EventABI, "ContractEvent"]], Union[EventABI, "ContractEvent"]]
+            Union[list[Union[EventABI, "ContractEvent"]], Union[EventABI, "ContractEvent"]]
         ] = None,
     ) -> ContractLogContainer:
         """
@@ -415,7 +412,7 @@ class ReceiptAPI(ExtraAttributesMixin, BaseInterfaceModel):
             abi (``EventABI``): The ABI of the event to decode into logs.
 
         Returns:
-            List[:class:`~ape.types.ContractLog`]
+            list[:class:`~ape.types.ContractLog`]
         """
 
     def raise_for_status(self) -> Optional[NoReturn]:
@@ -497,21 +494,11 @@ class ReceiptAPI(ExtraAttributesMixin, BaseInterfaceModel):
         since this is not available from the receipt object.
         """
 
-        if not (call_tree := self.call_tree) or not (method_abi := self.method_called):
-            return None
+        if trace := self.trace:
+            ret_val = trace.return_value
+            return ret_val[0] if isinstance(ret_val, tuple) and len(ret_val) == 1 else ret_val
 
-        if isinstance(call_tree.outputs, (str, HexBytes, int)):
-            output = self.provider.network.ecosystem.decode_returndata(
-                method_abi, HexBytes(call_tree.outputs)
-            )
-        else:
-            # Already enriched.
-            output = call_tree.outputs
-
-        if isinstance(output, tuple) and len(output) < 2:
-            output = output[0] if len(output) == 1 else None
-
-        return output
+        return None
 
     @property
     @raises_not_implemented
@@ -558,9 +545,9 @@ class ReceiptAPI(ExtraAttributesMixin, BaseInterfaceModel):
         if not address or not self._test_runner:
             return
 
-        if self.provider.supports_tracing and (call_tree := self.call_tree):
+        if self.provider.supports_tracing and (trace := self.trace):
             tracker = self._test_runner.gas_tracker
-            tracker.append_gas(call_tree.enrich(in_line=False), address)
+            tracker.append_gas(trace, address)
 
         elif (
             (contract_type := self.chain_manager.contracts.get(address))
@@ -568,7 +555,7 @@ class ReceiptAPI(ExtraAttributesMixin, BaseInterfaceModel):
             and (method := self.method_called)
         ):
             # Can only track top-level gas.
-            if contract := self.project_manager._create_contract_source(contract_type):
+            if contract := self.local_project._create_contract_source(contract_type):
                 self._test_runner.gas_tracker.append_toplevel_gas(contract, method, self.gas_used)
 
     def track_coverage(self):
@@ -600,5 +587,5 @@ class ReceiptAPI(ExtraAttributesMixin, BaseInterfaceModel):
             if not contract_type or not contract_type.source_id:
                 return
 
-            if contract := self.project_manager._create_contract_source(contract_type):
+            if contract := self.local_project._create_contract_source(contract_type):
                 tracker.hit_function(contract, method)

@@ -25,6 +25,7 @@
    userguides/scripts
    userguides/publishing
    userguides/logging
+   userguides/trace
 ```
 
 ```{eval-rst}
@@ -45,11 +46,10 @@
 
 ```{eval-rst}
 .. toctree::
-   :caption: Python Reference
+   :caption: Core Python Reference
    :maxdepth: 1
 
    methoddocs/ape.md
-   methoddocs/ape_accounts.md
    methoddocs/api.md
    methoddocs/cli.md
    methoddocs/contracts.md
@@ -58,4 +58,17 @@
    methoddocs/plugins.md
    methoddocs/types.md
    methoddocs/utils.md
+```
+
+```{eval-rst}
+.. toctree::
+   :caption: Plugin Python Reference
+   :maxdepth: 1
+
+   methoddocs/ape_accounts.md
+   methoddocs/ape_compile.md
+   methoddocs/ape_ethereum.md
+   methoddocs/ape_node.md
+   methoddocs/ape_pm.md
+   methoddocs/ape_test.md
 ```

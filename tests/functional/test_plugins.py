@@ -1,11 +1,12 @@
-from typing import Set
 from unittest import mock
 
 import pytest
 
 from ape.api import TransactionAPI
+from ape.exceptions import PluginVersionError
 from ape.logging import LogLevel
 from ape.managers.plugins import _get_unimplemented_methods_warning
+from ape.plugins._utils import CORE_PLUGINS as CORE_PLUGINS_LIST
 from ape.plugins._utils import (
     ApePluginsRepr,
     ModifyPluginResultHandler,
@@ -16,7 +17,6 @@ from ape.plugins._utils import (
     _filter_plugins_from_dists,
     ape_version,
 )
-from ape_plugins.exceptions import PluginVersionError
 
 CORE_PLUGINS = ("run",)
 AVAILABLE_PLUGINS = ("available", "installed")
@@ -75,7 +75,7 @@ def plugin_test_env(mocker, mock_installed_packages):
 
 
 @pytest.fixture
-def package_names() -> Set[str]:
+def package_names() -> set[str]:
     return {
         f"ape-{x}" for x in [*CORE_PLUGINS, *AVAILABLE_PLUGINS, *INSTALLED_PLUGINS, *THIRD_PARTY]
     }
@@ -389,3 +389,11 @@ def test_get_unimplemented_methods_warning_list_containing_plugin(abstract_metho
         "Remaining abstract methods: 'serialize_transaction, txn_hash'."
     )
     assert actual == expected
+
+
+def test_core_plugins():
+    # In case any of these happen to be installed, and this feature
+    # is broken, it will fail. If none are installed, the test will always pass.
+    non_core_plugins = ("ape_arbitrum", "ape_vyper", "ape_solidity", "ape_ens")
+    assert not any(p in CORE_PLUGINS_LIST for p in non_core_plugins)
+    assert "ape_ethereum" in CORE_PLUGINS_LIST

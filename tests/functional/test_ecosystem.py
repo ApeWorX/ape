@@ -1,5 +1,5 @@
 import copy
-from typing import Any, ClassVar, Dict, List, cast
+from typing import Any, ClassVar, cast
 
 import pytest
 from eth_pydantic_types import HashBytes32, HexBytes
@@ -7,18 +7,11 @@ from eth_typing import HexAddress, HexStr
 from ethpm_types import ContractType, ErrorABI
 from ethpm_types.abi import ABIType, EventABI, MethodABI
 
-from ape.api import PluginConfig
 from ape.api.networks import LOCAL_NETWORK_NAME, NetworkAPI
 from ape.exceptions import CustomError, DecodingError, NetworkError, NetworkNotFoundError
 from ape.types import AddressType
 from ape.utils import DEFAULT_LOCAL_TRANSACTION_ACCEPTANCE_TIMEOUT
-from ape_ethereum.ecosystem import (
-    BLUEPRINT_HEADER,
-    BaseEthereumConfig,
-    Block,
-    Ethereum,
-    EthereumConfig,
-)
+from ape_ethereum.ecosystem import BLUEPRINT_HEADER, BaseEthereumConfig, Block
 from ape_ethereum.transactions import (
     DynamicFeeTransaction,
     Receipt,
@@ -52,8 +45,8 @@ def event_abi(vyper_contract_instance):
 
 
 @pytest.fixture
-def custom_ecosystem_config(
-    custom_networks_config_dict, temp_config, networks, custom_network_name_0
+def configured_custom_ecosystem(
+    custom_networks_config_dict, project, networks, custom_network_name_0
 ):
     data = copy.deepcopy(custom_networks_config_dict)
     data["networks"]["custom"][0]["ecosystem"] = CUSTOM_ECOSYSTEM_NAME
@@ -62,7 +55,7 @@ def custom_ecosystem_config(
     # it were from a plugin.
     data[CUSTOM_ECOSYSTEM_NAME] = {"default_network": custom_network_name_0}
 
-    with temp_config(data):
+    with project.temp_config(**data):
         yield
 
 
@@ -70,7 +63,7 @@ def test_name(ethereum):
     assert ethereum.name == "ethereum"
 
 
-def test_name_when_custom(custom_ecosystem_config, networks):
+def test_name_when_custom(configured_custom_ecosystem, networks):
     ecosystem = networks.get_ecosystem(CUSTOM_ECOSYSTEM_NAME)
     actual = ecosystem.name
     expected = CUSTOM_ECOSYSTEM_NAME
@@ -261,14 +254,14 @@ def test_block_handles_snake_case_parent_hash(eth_tester_provider, sender, recei
     assert redefined_block.parent_hash == latest_block.parent_hash
 
 
-def test_transaction_acceptance_timeout(temp_config, config, networks):
+def test_transaction_acceptance_timeout(project, networks):
     assert (
         networks.provider.network.transaction_acceptance_timeout
         == DEFAULT_LOCAL_TRANSACTION_ACCEPTANCE_TIMEOUT
     )
     new_value = DEFAULT_LOCAL_TRANSACTION_ACCEPTANCE_TIMEOUT + 1
     timeout_config = {"ethereum": {"local": {"transaction_acceptance_timeout": new_value}}}
-    with temp_config(timeout_config):
+    with project.temp_config(**timeout_config):
         assert networks.provider.network.transaction_acceptance_timeout == new_value
 
 
@@ -365,7 +358,7 @@ def test_decode_logs_with_struct_from_interface(ethereum):
 
 def test_decode_block_when_hash_is_none(ethereum):
     # When using some providers, such as hardhat, the hash of the pending block is None
-    block_data_with_none_hash: Dict[str, Any] = {
+    block_data_with_none_hash: dict[str, Any] = {
         "number": None,
         "hash": None,
         "parentHash": HexBytes(
@@ -604,14 +597,12 @@ def test_decode_receipt_shared_blob(ethereum, blob_gas_used):
         assert actual.blob_gas_used == 0
 
 
-def test_default_transaction_type_not_connected_used_default_network(
-    temp_config, ethereum, networks
-):
+def test_default_transaction_type_not_connected_used_default_network(project, ethereum, networks):
     value = TransactionType.STATIC.value
     config_dict = {"ethereum": {"mainnet_fork": {"default_transaction_type": value}}}
     assert ethereum.default_transaction_type == TransactionType.DYNAMIC
 
-    with temp_config(config_dict):
+    with project.temp_config(**config_dict):
         ethereum._default_network = "mainnet-fork"
         provider = networks.active_provider
 
@@ -626,12 +617,12 @@ def test_default_transaction_type_not_connected_used_default_network(
 
 
 def test_default_transaction_type_configured_from_local_network(
-    eth_tester_provider, ethereum, temp_config
+    eth_tester_provider, ethereum, project
 ):
     _ = eth_tester_provider  # Connection required so 'ethereum' knows the network.
     value = TransactionType.STATIC.value
     config = {"ethereum": {LOCAL_NETWORK_NAME: {"default_transaction_type": value}}}
-    with temp_config(config):
+    with project.temp_config(**config):
         assert ethereum.default_transaction_type == TransactionType.STATIC
 
 
@@ -640,10 +631,10 @@ def test_default_transaction_type_changed_at_class_level(ethereum):
     Simulates an L2 plugin changing the default at the definition-level.
     """
 
-    class Subconfig(BaseEthereumConfig):
+    class L2NetworkConfig(BaseEthereumConfig):
         DEFAULT_TRANSACTION_TYPE: ClassVar[int] = TransactionType.STATIC.value
 
-    config = Subconfig()
+    config = L2NetworkConfig()
     assert config.local.default_transaction_type.value == 0
     assert config.mainnet.default_transaction_type.value == 0
     assert config.mainnet_fork.default_transaction_type.value == 0
@@ -880,21 +871,24 @@ def test_networks(ethereum):
 
 
 def test_networks_includes_custom_networks(
-    ethereum, custom_networks_config, custom_network_name_0, custom_network_name_1
+    ethereum, custom_networks_config_dict, project, custom_network_name_0, custom_network_name_1
 ):
-    actual = ethereum.networks
-    for net in (
-        "sepolia",
-        "mainnet",
-        LOCAL_NETWORK_NAME,
-        custom_network_name_0,
-        custom_network_name_1,
-    ):
-        assert net in actual
-        assert isinstance(actual[net], NetworkAPI)
+    with project.temp_config(**custom_networks_config_dict):
+        actual = ethereum.networks
+        for net in (
+            "sepolia",
+            "mainnet",
+            LOCAL_NETWORK_NAME,
+            custom_network_name_0,
+            custom_network_name_1,
+        ):
+            assert net in actual
+            assert isinstance(actual[net], NetworkAPI)
 
 
-def test_networks_when_custom_ecosystem(custom_ecosystem_config, networks, custom_network_name_0):
+def test_networks_when_custom_ecosystem(
+    configured_custom_ecosystem, networks, custom_network_name_0
+):
     obj = networks.custom_ecosystem
     actual = obj.networks
     assert obj.name == CUSTOM_ECOSYSTEM_NAME
@@ -902,13 +896,11 @@ def test_networks_when_custom_ecosystem(custom_ecosystem_config, networks, custo
     assert "mainnet" not in actual
 
 
-def test_networks_multiple_networks_with_same_name(
-    temp_config, custom_networks_config_dict, ethereum
-):
+def test_networks_multiple_networks_with_same_name(custom_networks_config_dict, ethereum, project):
     data = copy.deepcopy(custom_networks_config_dict)
     data["networks"]["custom"][0]["name"] = "mainnet"  # There already is a mainnet in "ethereum".
     expected = ".*More than one network named 'mainnet' in ecosystem 'ethereum'.*"
-    with temp_config(data):
+    with project.temp_config(**data):
         with pytest.raises(NetworkError, match=expected):
             _ = ethereum.networks
 
@@ -918,10 +910,13 @@ def test_getattr(ethereum):
     assert isinstance(ethereum.mainnet, NetworkAPI)
 
 
-def test_getattr_custom_networks(ethereum, custom_networks_config, custom_network_name_0):
-    actual = getattr(ethereum, custom_network_name_0)
-    assert actual.name == custom_network_name_0
-    assert isinstance(actual, NetworkAPI)
+def test_getattr_custom_networks(
+    ethereum, custom_networks_config_dict, project, custom_network_name_0
+):
+    with project.temp_config(**custom_networks_config_dict):
+        actual = getattr(ethereum, custom_network_name_0)
+        assert actual.name == custom_network_name_0
+        assert isinstance(actual, NetworkAPI)
 
 
 def test_default_network(ethereum):
@@ -929,7 +924,7 @@ def test_default_network(ethereum):
 
 
 def test_default_network_when_custom_and_set_in_config(
-    custom_ecosystem_config, networks, custom_network_name_0
+    configured_custom_ecosystem, networks, custom_network_name_0
 ):
     ecosystem = networks.get_ecosystem(CUSTOM_ECOSYSTEM_NAME)
     # Force it to use config value (in case was set from previous test)
@@ -943,50 +938,58 @@ def test_default_network_name_set_programmatically(ethereum):
     ethereum._default_network = None
 
 
-def test_default_network_name_from_config(config, ethereum):
-    orig = config._plugin_configs["ethereum"]
-    data = {"default_network": "testnet"}
-    config._plugin_configs["ethereum"] = EthereumConfig.model_validate(data)
+def test_default_network_name_from_config(project, ethereum):
+    cfg = {"ethereum": {"default_network": "sepolia"}}
     ethereum._default_network = None
-    assert ethereum.default_network_name == "testnet"
-    config._plugin_configs["ethereum"] = orig
+    with project.temp_config(**cfg):
+        assert ethereum.default_network_name == "sepolia"
 
 
-def test_default_network_name_when_not_set_uses_local(config, ethereum):
-    orig = config._plugin_configs["ethereum"]
+def test_default_network_name_when_not_set_uses_local(project, ethereum):
+    orig = project.config.ethereum
     data = orig if isinstance(orig, dict) else orig.model_dump()
     data = {k: v for k, v in data.items() if k not in ("default_network",)}
     data["default_network"] = None
-    config._plugin_configs["ethereum"] = data
-    ethereum._default_network = None
-    assert ethereum.default_network_name == LOCAL_NETWORK_NAME
-    config._plugin_configs["ethereum"] = orig
+    with project.temp_config(**data):
+        ethereum._default_network = None
+        assert ethereum.default_network_name == LOCAL_NETWORK_NAME
 
 
-def test_default_network_name_when_not_set_and_no_local_uses_only(mocker, config, ethereum):
-    # Delete cache.
-    if "_networks_from_plugins" in ethereum.__dict__:
-        del ethereum.__dict__["_networks_from_plugins"]
+def test_default_network_name_when_not_set_and_no_local_uses_only(
+    project, custom_networks_config_dict
+):
+    """
+    Tests a condition that is rare but when a default network is
+    not set but there is a single network. In this case, it
+    should use the single network by default.
+    """
+    net = copy.deepcopy(custom_networks_config_dict["networks"]["custom"][0])
 
-    orig_eth = config._plugin_configs["ethereum"]
-    orig_pm = ethereum.plugin_manager
+    # In a situation with an ecosystem with only a single network.
+    ecosystem_name = "acustomeco"
+    net["ecosystem"] = ecosystem_name
 
-    net_name = "onlynet"
-    config._plugin_configs["ethereum"] = PluginConfig()
-    mock_pm = mocker.MagicMock()
-    mock_net = mocker.MagicMock()
-    mock_net.name = net_name
-    mock_pm.networks = ((None, ("ethereum", net_name, lambda *args, **kwargs: mock_net)),)
-    Ethereum.plugin_manager = mock_pm
-    ethereum._default_network = None
+    only_network = "onlynet"  # More obvious name for test.
+    net["name"] = only_network
 
-    try:
-        assert ethereum.default_network_name == net_name
-    finally:
-        config._plugin_configs["ethereum"] = orig_eth
-        Ethereum.plugin_manager = orig_pm
-        if "_networks_from_plugins" in ethereum.__dict__:
-            del ethereum.__dict__["_networks_from_plugins"]
+    with project.temp_config(networks={"custom": [net]}):
+        ecosystem = project.network_manager.get_ecosystem(ecosystem_name)
+        ecosystem._default_network = None
+        actual = ecosystem.default_network_name
+
+        if actual == LOCAL_NETWORK_NAME:
+            # For some reason, this test is flake-y. Offer more info
+            # to try and debug when this happens (intermittent CI failure).
+            all_nets = ", ".join([x for x in ecosystem.networks.keys()])
+            pytest.fail(
+                f"assert '{LOCAL_NETWORK_NAME}' == '{only_network}'. More info below:\n"
+                f"ecosystem_name={ecosystem.name}\n"
+                f"networks={all_nets}\n"
+                f"type={type(ecosystem)}"
+            )
+        else:
+            # This should pass.
+            assert ecosystem.default_network_name == only_network
 
 
 def test_decode_custom_error(chain, ethereum):
@@ -1018,9 +1021,9 @@ def test_decode_custom_error_tx_unsigned(ethereum):
     assert actual is None
 
 
-def test_decode_custom_error_selector_not_found(mocker, chain, ethereum):
+def test_decode_custom_error_selector_not_found(chain, ethereum):
     data = HexBytes("0x6a12f104")
-    abi: List = []
+    abi: list = []
     contract_type = ContractType(abi=abi)
     addr = cast(AddressType, "0x3fC91A3afd70395Cd496C647d5a6CC9D4B2b7FAD")
 

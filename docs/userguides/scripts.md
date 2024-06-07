@@ -32,7 +32,10 @@ For example, assuming we have script `<project>/scripts/hello/helloworld.py`, we
 ape run hello helloworld
 ```
 
-**Note**: By default, `cli` scripts do not have [`ape.cli.network_option`](../methoddocs/cli.html?highlight=options#ape.cli.options.network_option) installed, giving you more flexibility in how you define your scripts.
+```{note}
+By default, `cli` scripts do not have [`ape.cli.network_option`](../methoddocs/cli.html?highlight=options#ape.cli.options.network_option) installed, giving you more flexibility in how you define your scripts.
+```
+
 However, you can add the `network_option` or `ConnectedProviderCommand` to your scripts by importing them from the `ape.cli` namespace:
 
 ```python
@@ -74,11 +77,11 @@ from ape.cli import ape_cli_context
 
 @click.command()
 @ape_cli_context()
-def cli(cli_ctx):        
+def cli(cli_ctx):
     # There is no connection yet at this point.
     testnets = {
         "ethereum": ["sepolia"],
-        "polygon": ["mumbai"]
+        "polygon": ["amoy"]
     }
     nm = cli_ctx.network_manager
 
@@ -110,9 +113,11 @@ def main():
     print("Hello world!")
 ```
 
-**NOTE**: main-method scripts will always provide a `--network` option and run in a connected-context.
+```{note}
+main-method scripts will always provide a `--network` option and run in a connected-context.
 Therefore, they are not ideal for multi-chain scripts.
 `main`-method scripts work best for quick, single-network, connection-based workflows.
+```
 
 To demonstrate, use the following script:
 
@@ -137,7 +142,7 @@ Without specifying `--network`, the script with connect to your default network.
 Else, specify the network using the `--network` flag:
 
 ```shell
-ape run foobar --network polygon:mumbai:alchemy
+ape run foobar --network polygon:amoy:alchemy
 ```
 
 You can also change networks within the script using the `ProviderContextManager` (see examples in the CLI-script section above).

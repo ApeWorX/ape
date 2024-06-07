@@ -4,13 +4,8 @@ from pathlib import Path
 import pytest
 
 from ape.contracts import ContractContainer
-from ape_geth.provider import Geth
+from ape_node.provider import Node
 from tests.functional.data.python import TRACE_RESPONSE
-
-
-@pytest.fixture
-def txn_hash():
-    return "0x053cba5c12172654d894f66d5670bab6215517a94189a9ffc09bc40a589ec04d"
 
 
 @pytest.fixture
@@ -62,8 +57,8 @@ def middle_contract_geth(geth_provider, owner, leaf_contract_geth, get_contract_
 
 @pytest.fixture
 def mock_geth(geth_provider, mock_web3):
-    provider = Geth(
-        name="geth",
+    provider = Node(
+        name="node",
         network=geth_provider.network,
         provider_settings={},
         data_folder=Path("."),
@@ -89,7 +84,7 @@ def geth_vyper_receipt(geth_vyper_contract, owner):
 def custom_network_connection(
     geth_provider,
     ethereum,
-    temp_config,
+    project,
     custom_network_name_0,
     custom_networks_config_dict,
     networks,
@@ -102,10 +97,10 @@ def custom_network_connection(
         **data,
     }
     actual = geth_provider.network
-    with temp_config(config):
+    with project.temp_config(**config):
         geth_provider.network = ethereum.apenet
         try:
-            with networks.ethereum.apenet.use_provider("geth"):
+            with networks.ethereum.apenet.use_provider("node"):
                 yield
 
         finally:

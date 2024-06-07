@@ -3,12 +3,12 @@ import re
 import sys
 import time
 from abc import ABC
+from collections.abc import Iterable, Iterator
 from concurrent.futures import ThreadPoolExecutor
 from copy import copy
 from functools import cached_property, wraps
-from itertools import tee
 from pathlib import Path
-from typing import Any, Dict, Iterator, List, Optional, Tuple, Union, cast
+from typing import Any, Optional, Union, cast
 
 import ijson  # type: ignore
 import requests
@@ -16,14 +16,6 @@ from eth_pydantic_types import HexBytes
 from eth_typing import BlockNumber, HexStr
 from eth_utils import add_0x_prefix, is_hex, to_hex
 from ethpm_types import EventABI
-from evm_trace import CallTreeNode as EvmCallTreeNode
-from evm_trace import ParityTraceList
-from evm_trace import TraceFrame as EvmTraceFrame
-from evm_trace import (
-    create_trace_frames,
-    get_calltree_from_geth_call_trace,
-    get_calltree_from_parity_trace,
-)
 from pydantic.dataclasses import dataclass
 from requests import HTTPError
 from web3 import HTTPProvider, IPCProvider, Web3
@@ -41,8 +33,7 @@ from web3.providers import AutoProvider
 from web3.providers.auto import load_provider_from_environment
 from web3.types import FeeHistory, RPCEndpoint, TxParams
 
-from ape.api import Address, BlockAPI, ProviderAPI, ReceiptAPI, TransactionAPI
-from ape.api.networks import LOCAL_NETWORK_NAME
+from ape.api import Address, BlockAPI, ProviderAPI, ReceiptAPI, TraceAPI, TransactionAPI
 from ape.exceptions import (
     ApeException,
     APINotImplementedError,
@@ -62,16 +53,15 @@ from ape.types import (
     AddressType,
     AutoGasLimit,
     BlockID,
-    CallTreeNode,
     ContractCode,
     ContractLog,
     LogFilter,
     SourceTraceback,
-    TraceFrame,
 )
 from ape.utils import gas_estimation_error_message, to_int
 from ape.utils.misc import DEFAULT_MAX_RETRIES_TX
-from ape_ethereum._print import CONSOLE_CONTRACT_ID, console_contract
+from ape_ethereum._print import CONSOLE_ADDRESS, console_contract
+from ape_ethereum.trace import CallTrace, TraceApproach, TransactionTrace
 from ape_ethereum.transactions import AccessList, AccessListTransaction
 
 DEFAULT_PORT = 8545
@@ -133,6 +123,14 @@ class Web3Provider(ProviderAPI, ABC):
 
     _web3: Optional[Web3] = None
     _client_version: Optional[str] = None
+
+    _call_trace_approach: Optional[TraceApproach] = None
+    """
+    Is ``None`` until known.
+    NOTE: This gets set in `ape_ethereum.trace.Trace`.
+    """
+
+    _supports_debug_trace_call: Optional[bool] = None
 
     def __new__(cls, *args, **kwargs):
         assert_web3_provider_uri_env_var_not_set()
@@ -272,12 +270,12 @@ class Web3Provider(ProviderAPI, ABC):
     def supports_tracing(self) -> bool:
         try:
             # NOTE: Txn hash is purposely not a real hash.
-            # If we get any exception besides not implemented error,
-            # then we support tracing on this provider.
-            self.get_call_tree("__CHECK_IF_SUPPORTS_TRACING__")
-        except APINotImplementedError:
+            self.make_request("debug_traceTransaction", ["__CHECK_IF_SUPPORTS_TRACING__"])
+        except NotImplementedError:
             return False
+
         except Exception:
+            # We know tracing works because we didn't get a NotImplementedError.
             return True
 
         return True
@@ -310,35 +308,18 @@ class Web3Provider(ProviderAPI, ABC):
         except (ValueError, Web3ContractLogicError) as err:
             # NOTE: Try to use debug_traceCall to obtain a trace.
             #  And the RPC can be very picky with inputs.
-            tx_to_trace: Dict = {}
+            tx_to_trace: dict = {}
             for key, val in txn_params.items():
                 if isinstance(val, int):
                     tx_to_trace[key] = hex(val)
                 else:
                     tx_to_trace[key] = val
 
-            try:
-                call_trace = self._trace_call([tx_to_trace, "latest"])
-            except Exception:
-                call_trace = None
-
-            traces = None
-            tb = None
-            if call_trace and txn_params.get("to"):
-                traces = (self._create_trace_frame(t) for t in call_trace[1])
-                try:
-                    if contract_type := self.chain_manager.contracts.get(txn_params["to"]):
-                        tb = SourceTraceback.create(
-                            contract_type, traces, HexBytes(txn_params["data"])
-                        )
-                except ProviderNotConnectedError:
-                    pass
-
+            trace = CallTrace(tx=txn)
             tx_error = self.get_virtual_machine_error(
                 err,
                 txn=txn,
-                trace=traces,
-                source_traceback=tb,
+                trace=trace,
             )
 
             # If this is the cause of a would-be revert,
@@ -351,22 +332,10 @@ class Web3Provider(ProviderAPI, ABC):
                 message, base_err=tx_error, txn=txn, source_traceback=tx_error.source_traceback
             ) from err
 
-    def _trace_call(self, arguments: List[Any]) -> Tuple[Dict, Iterator[EvmTraceFrame]]:
-        result = self._make_request("debug_traceCall", arguments)
-        trace_data = result.get("structLogs", [])
-        return result, create_trace_frames(trace_data)
-
     @cached_property
     def chain_id(self) -> int:
         default_chain_id = None
-        if (
-            self.network.name
-            not in (
-                "custom",
-                LOCAL_NETWORK_NAME,
-            )
-            and not self.network.is_fork
-        ):
+        if self.network.name != "custom" and not self.network.is_dev:
             # If using a live network, the chain ID is hardcoded.
             default_chain_id = self.network.chain_id
 
@@ -435,95 +404,84 @@ class Web3Provider(ProviderAPI, ABC):
 
             raise  # Raise original error
 
+    def get_transaction_trace(self, transaction_hash: str, **kwargs) -> TraceAPI:
+        if "call_trace_approach" not in kwargs:
+            kwargs["call_trace_approach"] = self._call_trace_approach
+
+        return TransactionTrace(transaction_hash=transaction_hash, **kwargs)
+
     def send_call(
         self,
         txn: TransactionAPI,
         block_id: Optional[BlockID] = None,
-        state: Optional[Dict] = None,
-        **kwargs,
+        state: Optional[dict] = None,
+        **kwargs: Any,
     ) -> HexBytes:
         if block_id is not None:
             kwargs["block_identifier"] = block_id
-        if kwargs.pop("skip_trace", False):
-            return self._send_call(txn, **kwargs)
-        elif self._test_runner is not None:
+
+        if state is not None:
+            kwargs["state_override"] = state
+
+        skip_trace = kwargs.pop("skip_trace", False)
+        arguments = self._prepare_call(txn, **kwargs)
+        if skip_trace:
+            return self._eth_call(arguments)
+
+        show_gas = kwargs.pop("show_gas_report", False)
+        show_trace = kwargs.pop("show_trace", False)
+
+        if self._test_runner is not None:
             track_gas = self._test_runner.gas_tracker.enabled
             track_coverage = self._test_runner.coverage_tracker.enabled
         else:
             track_gas = False
             track_coverage = False
 
-        show_trace = kwargs.pop("show_trace", False)
-        show_gas = kwargs.pop("show_gas_report", False)
-        needs_trace = track_gas or track_coverage or show_trace or show_gas
-        if not needs_trace or not self.provider.supports_tracing or not txn.receiver:
-            return self._send_call(txn, **kwargs)
+        needs_trace = track_gas or track_coverage or show_gas or show_trace
+        if not needs_trace:
+            return self._eth_call(arguments)
 
         # The user is requesting information related to a call's trace,
         # such as gas usage data.
-        try:
-            with self.chain_manager.isolate():
-                return self._send_call_as_txn(
-                    txn,
-                    track_gas=track_gas,
-                    track_coverage=track_coverage,
-                    show_trace=show_trace,
-                    show_gas=show_gas,
-                    **kwargs,
-                )
 
-        except APINotImplementedError:
-            return self._send_call(txn, **kwargs)
+        # When looking at gas, we cannot use token symbols in enrichment.
+        # Else, the table is difficult to understand.
+        use_symbol_for_tokens = track_gas or show_gas
 
-    def _send_call_as_txn(
-        self,
-        txn: TransactionAPI,
-        track_gas: bool = False,
-        track_coverage: bool = False,
-        show_trace: bool = False,
-        show_gas: bool = False,
-        **kwargs,
-    ) -> HexBytes:
-        account = self.account_manager.test_accounts[0]
-        receipt = account.call(txn, **kwargs)
-        if not (call_tree := receipt.call_tree):
-            return self._send_call(txn, **kwargs)
+        trace = CallTrace(
+            tx=arguments[0],
+            arguments=arguments[1:],
+            use_symbol_for_tokens=use_symbol_for_tokens,
+            supports_debug_trace_call=self._supports_debug_trace_call,
+        )
 
-        # Grab raw returndata before enrichment
-        returndata = call_tree.outputs
+        if track_gas and self._test_runner is not None and txn.receiver:
+            self._test_runner.gas_tracker.append_gas(trace, txn.receiver)
 
-        if (track_gas or track_coverage) and show_gas and not show_trace:
-            # Optimization to enrich early and in_place=True.
-            call_tree.enrich()
-
-        if track_gas:
-            # in_place=False in case show_trace is True
-            receipt.track_gas()
-
-        if track_coverage:
-            receipt.track_coverage()
+        if track_coverage and self._test_runner is not None and txn.receiver:
+            if contract_type := self.chain_manager.contracts.get(txn.receiver):
+                if contract_src := self.local_project._create_contract_source(contract_type):
+                    method_id = HexBytes(txn.data)
+                    selector = (
+                        contract_type.methods[method_id].selector
+                        if method_id in contract_type.methods
+                        else None
+                    )
+                    source_traceback = SourceTraceback.create(contract_src, trace, method_id)
+                    self._test_runner.coverage_tracker.cover(
+                        source_traceback, function=selector, contract=contract_type.name
+                    )
 
         if show_gas:
-            # in_place=False in case show_trace is True
-            self.chain_manager._reports.show_gas(call_tree.enrich(in_place=False))
+            trace.show_gas_report()
 
         if show_trace:
-            call_tree = call_tree.enrich(use_symbol_for_tokens=True)
-            self.chain_manager._reports.show_trace(call_tree)
+            trace.show()
 
-        return HexBytes(returndata)
+        return HexBytes(trace.return_value)
 
-    def _send_call(self, txn: TransactionAPI, **kwargs) -> HexBytes:
-        arguments = self._prepare_call(txn, **kwargs)
-        try:
-            return self._eth_call(arguments)
-        except TransactionError as err:
-            if not err.txn:
-                err.txn = txn
-
-            raise  # The tx error
-
-    def _eth_call(self, arguments: List) -> HexBytes:
+    def _eth_call(self, arguments: list) -> HexBytes:
         # Force the usage of hex-type to support a wider-range of nodes.
         txn_dict = copy(arguments[0])
         if isinstance(txn_dict.get("type"), int):
@@ -533,20 +491,33 @@ class Web3Provider(ProviderAPI, ABC):
         txn_dict.pop("chainId", None)
 
         arguments[0] = txn_dict
+
         try:
-            result = self._make_request("eth_call", arguments)
+            result = self.make_request("eth_call", arguments)
         except Exception as err:
-            receiver = txn_dict.get("to")
-            raise self.get_virtual_machine_error(err, contract_address=receiver) from err
+            trace = CallTrace(tx=arguments[0], arguments=arguments[1:], use_tokens_for_symbols=True)
+            contract_address = arguments[0]["to"]
+            contract_type = self.chain_manager.contracts.get(contract_address)
+            method_id = arguments[0].get("data", "")[:10] or None
+            tb = None
+            if contract_type and method_id:
+                if contract_src := self.local_project._create_contract_source(contract_type):
+                    tb = SourceTraceback.create(contract_src, trace, method_id)
+
+            raise self.get_virtual_machine_error(
+                err, trace=trace, contract_address=contract_address, source_traceback=tb
+            ) from err
 
         if "error" in result:
             raise ProviderError(result["error"]["message"])
 
         return HexBytes(result)
 
-    def _prepare_call(self, txn: TransactionAPI, **kwargs) -> List:
-        # NOTE: Using JSON mode since used as request data.
-        txn_dict = txn.model_dump(by_alias=True, mode="json")
+    def _prepare_call(self, txn: Union[dict, TransactionAPI], **kwargs) -> list:
+        # NOTE: Using mode="json" because used in request data.
+        txn_dict = (
+            txn.model_dump(by_alias=True, mode="json") if isinstance(txn, TransactionAPI) else txn
+        )
         fields_to_convert = ("data", "chainId", "value")
         for field in fields_to_convert:
             value = txn_dict.get(field)
@@ -588,10 +559,16 @@ class Web3Provider(ProviderAPI, ABC):
         try:
             receipt_data = self.web3.eth.wait_for_transaction_receipt(hex_hash, timeout=timeout)
         except TimeExhausted as err:
-            raise TransactionNotFoundError(txn_hash, error_messsage=str(err)) from err
+            msg_str = str(err)
+            if f"HexBytes('{txn_hash}')" in msg_str:
+                msg_str = msg_str.replace(f"HexBytes('{txn_hash}')", f"'{txn_hash}'")
 
-        ecosystem_config = self.network.config.model_dump(by_alias=True)
-        network_config: Dict = ecosystem_config.get(self.network.name, {})
+            raise TransactionNotFoundError(
+                transaction_hash=txn_hash, error_message=msg_str
+            ) from err
+
+        ecosystem_config = self.network.ecosystem_config.model_dump(by_alias=True)
+        network_config: dict = ecosystem_config.get(self.network.name, {})
         max_retries = network_config.get("max_get_transaction_retries", DEFAULT_MAX_RETRIES_TX)
         txn = {}
         for attempt in range(max_retries):
@@ -621,7 +598,7 @@ class Web3Provider(ProviderAPI, ABC):
             if block_id.isnumeric():
                 block_id = add_0x_prefix(block_id)
 
-        block = cast(Dict, self.web3.eth.get_block(block_id, full_transactions=True))
+        block = cast(dict, self.web3.eth.get_block(block_id, full_transactions=True))
         for transaction in block.get("transactions", []):
             yield self.network.ecosystem.create_transaction(**transaction)
 
@@ -727,7 +704,7 @@ class Web3Provider(ProviderAPI, ABC):
         fake_last_block = self.get_block(self.web3.eth.block_number - required_confirmations)
         last_num = fake_last_block.number or 0
         last_hash = fake_last_block.hash or HexBytes(0)
-        last = YieldAction(number=last_num, hash=last_hash, time=time.time())
+        last: YieldAction = YieldAction(number=last_num, hash=last_hash, time=time.time())
 
         # A helper method for various points of ensuring we didn't timeout.
         def assert_chain_activity():
@@ -801,10 +778,10 @@ class Web3Provider(ProviderAPI, ABC):
         self,
         stop_block: Optional[int] = None,
         address: Optional[AddressType] = None,
-        topics: Optional[List[Union[str, List[str]]]] = None,
+        topics: Optional[list[Union[str, list[str]]]] = None,
         required_confirmations: Optional[int] = None,
         new_block_timeout: Optional[int] = None,
-        events: Optional[List[EventABI]] = None,
+        events: Optional[list[EventABI]] = None,
     ) -> Iterator[ContractLog]:
         events = events or []
         if required_confirmations is None:
@@ -818,7 +795,7 @@ class Web3Provider(ProviderAPI, ABC):
             if block.number is None:
                 raise ValueError("Block number cannot be None")
 
-            log_params: Dict[str, Any] = {
+            log_params: dict[str, Any] = {
                 "start_block": block.number,
                 "stop_block": block.number,
                 "events": events,
@@ -841,55 +818,6 @@ class Web3Provider(ProviderAPI, ABC):
             stop_block = min(stop, start_block + page - 1)
             yield start_block, stop_block
 
-    def get_contract_creation_receipts(
-        self,
-        address: AddressType,
-        start_block: int = 0,
-        stop_block: Optional[int] = None,
-        contract_code: Optional[HexBytes] = None,
-    ) -> Iterator[ReceiptAPI]:
-        if stop_block is None:
-            stop_block = self.chain_manager.blocks.height
-
-        if contract_code is None:
-            contract_code = HexBytes(self.get_code(address))
-
-        mid_block = (stop_block - start_block) // 2 + start_block
-        # NOTE: biased towards mid_block == start_block
-
-        if start_block == mid_block:
-            for tx in self.chain_manager.blocks[mid_block].transactions:
-                if (receipt := tx.receipt) and receipt.contract_address == address:
-                    yield receipt
-
-            if mid_block + 1 <= stop_block:
-                yield from self.get_contract_creation_receipts(
-                    address,
-                    start_block=mid_block + 1,
-                    stop_block=stop_block,
-                    contract_code=contract_code,
-                )
-
-        # TODO: Handle when code is nonzero but doesn't match
-        # TODO: Handle when code is empty after it's not (re-init)
-        elif HexBytes(self.get_code(address, block_id=mid_block)) == contract_code:
-            # If the code exists, we need to look backwards.
-            yield from self.get_contract_creation_receipts(
-                address,
-                start_block=start_block,
-                stop_block=mid_block,
-                contract_code=contract_code,
-            )
-
-        elif mid_block + 1 <= stop_block:
-            # The code does not exist yet, we need to look ahead.
-            yield from self.get_contract_creation_receipts(
-                address,
-                start_block=mid_block + 1,
-                stop_block=stop_block,
-                contract_code=contract_code,
-            )
-
     def get_contract_logs(self, log_filter: LogFilter) -> Iterator[ContractLog]:
         height = self.chain_manager.blocks.height
         start_block = log_filter.start_block
@@ -904,8 +832,7 @@ class Web3Provider(ProviderAPI, ABC):
 
             # NOTE: Using JSON mode since used as request data.
             filter_params = page_filter.model_dump(mode="json")
-
-            logs = self._make_request("eth_getLogs", [filter_params])
+            logs = self.make_request("eth_getLogs", [filter_params])
             return self.network.ecosystem.decode_logs(logs, *log_filter.events)
 
         with ThreadPoolExecutor(self.concurrency) as pool:
@@ -1029,63 +956,17 @@ class Web3Provider(ProviderAPI, ABC):
 
     def _post_connect(self):
         # Register the console contract for trace enrichment
-        self.chain_manager.contracts._cache_contract_type(CONSOLE_CONTRACT_ID, console_contract)
+        self.chain_manager.contracts._cache_contract_type(CONSOLE_ADDRESS, console_contract)
 
-    def _create_call_tree_node(
-        self, evm_call: EvmCallTreeNode, txn_hash: Optional[str] = None
-    ) -> CallTreeNode:
-        address = evm_call.address
-        try:
-            contract_id = str(self.provider.network.ecosystem.decode_address(address))
-        except ValueError:
-            # Use raw value since it is not a real address.
-            contract_id = address.hex()
-
-        call_type = evm_call.call_type.value
-        return CallTreeNode(
-            calls=[self._create_call_tree_node(x, txn_hash=txn_hash) for x in evm_call.calls],
-            call_type=call_type,
-            contract_id=contract_id,
-            failed=evm_call.failed,
-            gas_cost=evm_call.gas_cost,
-            inputs=evm_call.calldata if "CREATE" in call_type else evm_call.calldata[4:].hex(),
-            method_id=evm_call.calldata[:4].hex(),
-            outputs=evm_call.returndata.hex(),
-            raw=evm_call.model_dump(by_alias=True),
-            txn_hash=txn_hash,
-        )
-
-    def _create_trace_frame(self, evm_frame: EvmTraceFrame) -> TraceFrame:
-        address_bytes = evm_frame.address
-        try:
-            address = (
-                self.network.ecosystem.decode_address(address_bytes.hex())
-                if address_bytes
-                else None
-            )
-        except ValueError:
-            # Might not be a real address.
-            address = cast(AddressType, address_bytes.hex()) if address_bytes else None
-
-        return TraceFrame(
-            pc=evm_frame.pc,
-            op=evm_frame.op,
-            gas=evm_frame.gas,
-            gas_cost=evm_frame.gas_cost,
-            depth=evm_frame.depth,
-            contract_address=address,
-            raw=evm_frame.model_dump(by_alias=True),
-        )
-
-    def _make_request(self, endpoint: str, parameters: Optional[List] = None) -> Any:
+    def make_request(self, rpc: str, parameters: Optional[Iterable] = None) -> Any:
         parameters = parameters or []
 
         try:
-            result = self.web3.provider.make_request(RPCEndpoint(endpoint), parameters)
+            result = self.web3.provider.make_request(RPCEndpoint(rpc), parameters)
         except HTTPError as err:
             if "method not allowed" in str(err).lower():
                 raise APINotImplementedError(
-                    f"RPC method '{endpoint}' is not implemented by this node instance."
+                    f"RPC method '{rpc}' is not implemented by this node instance."
                 )
 
             raise ProviderError(str(err)) from err
@@ -1103,7 +984,7 @@ class Web3Provider(ProviderAPI, ABC):
                 or "RPC Endpoint has not been implemented" in message
             ):
                 raise APINotImplementedError(
-                    f"RPC method '{endpoint}' is not implemented by this node instance."
+                    f"RPC method '{rpc}' is not implemented by this node instance."
                 )
 
             raise ProviderError(message)
@@ -1113,9 +994,24 @@ class Web3Provider(ProviderAPI, ABC):
 
         return result
 
+    def stream_request(self, method: str, params: Iterable, iter_path: str = "result.item"):
+        if not (uri := self.http_uri):
+            raise ProviderError("This provider has no HTTP URI and is unable to stream requests.")
+
+        payload = {"jsonrpc": "2.0", "id": 1, "method": method, "params": params}
+        results = ijson.sendable_list()
+        coroutine = ijson.items_coro(results, iter_path)
+        resp = requests.post(uri, json=payload, stream=True)
+        resp.raise_for_status()
+
+        for chunk in resp.iter_content(chunk_size=2**17):
+            coroutine.send(chunk)
+            yield from results
+            del results[:]
+
     def create_access_list(
         self, transaction: TransactionAPI, block_id: Optional[BlockID] = None
-    ) -> List[AccessList]:
+    ) -> list[AccessList]:
         """
         Get the access list for a transaction use ``eth_createAccessList``.
 
@@ -1126,7 +1022,7 @@ class Web3Provider(ProviderAPI, ABC):
               ID. Defaults to using the latest block.
 
         Returns:
-            List[:class:`~ape_ethereum.transactions.AccessList`]
+            list[:class:`~ape_ethereum.transactions.AccessList`]
         """
         # NOTE: Using JSON mode since used in request data.
         tx_dict = transaction.model_dump(by_alias=True, mode="json", exclude=("chain_id",))
@@ -1149,7 +1045,7 @@ class Web3Provider(ProviderAPI, ABC):
         if block_id is not None:
             arguments.append(block_id)
 
-        result = self._make_request("eth_createAccessList", arguments)
+        result = self.make_request("eth_createAccessList", arguments)
         return [AccessList.model_validate(x) for x in result.get("accessList", [])]
 
     def get_virtual_machine_error(self, exception: Exception, **kwargs) -> VirtualMachineError:
@@ -1187,7 +1083,7 @@ class Web3Provider(ProviderAPI, ABC):
         self,
         exception: Union[Exception, str],
         txn: Optional[TransactionAPI] = None,
-        trace: Optional[Iterator[TraceFrame]] = None,
+        trace: Optional[TraceAPI] = None,
         contract_address: Optional[AddressType] = None,
         source_traceback: Optional[SourceTraceback] = None,
     ) -> ContractLogicError:
@@ -1198,7 +1094,7 @@ class Web3Provider(ProviderAPI, ABC):
             message = str(exception).split(":")[-1].strip()
             data = None
 
-        params: Dict = {
+        params: dict = {
             "trace": trace,
             "contract_address": contract_address,
             "source_traceback": source_traceback,
@@ -1206,35 +1102,21 @@ class Web3Provider(ProviderAPI, ABC):
         no_reason = message == "execution reverted"
 
         if isinstance(exception, Web3ContractLogicError) and no_reason:
-            if data is None:
-                # Check for custom exception data and use that as the message instead.
-                # This allows compiler exception enrichment to function.
-                err_trace = None
-                try:
-                    if trace:
-                        trace, err_trace = tee(trace)
-                    elif txn:
-                        err_trace = self.provider.get_transaction_trace(txn.txn_hash.hex())
-
-                    try:
-                        trace_ls: List[TraceFrame] = list(err_trace) if err_trace else []
-                    except Exception as err:
-                        logger.error(f"Failed getting traceback: {err}")
-                        trace_ls = []
-
-                    data = trace_ls[-1].raw if len(trace_ls) > 0 else {}
-                    memory = data.get("memory", [])
-                    return_value = "".join([x[2:] for x in memory[4:]])
-                    if return_value:
-                        message = f"0x{return_value}"
-                        no_reason = False
-
-                except (ApeException, NotImplementedError):
-                    # Either provider does not support or isn't a custom exception.
-                    pass
-
-            elif data != "no data" and is_hex(data):
+            # Check for custom exception data and use that as the message instead.
+            # This allows compiler exception enrichment to function.
+            if data != "no data" and is_hex(data):
                 message = add_0x_prefix(data)
+
+            else:
+                if trace is None and txn is not None:
+                    trace = self.provider.get_transaction_trace(txn.txn_hash.hex())
+
+                if trace is not None and (revert_message := trace.revert_message):
+                    message = revert_message
+                    no_reason = False
+                    if revert_message := trace.revert_message:
+                        message = revert_message
+                        no_reason = False
 
         result = (
             ContractLogicError(txn=txn, **params)
@@ -1264,10 +1146,7 @@ class EthereumNodeProvider(Web3Provider, ABC):
     block_page_size: int = 5000
     concurrency: int = 16
 
-    name: str = "geth"
-
-    can_use_parity_traces: Optional[bool] = None
-    """Is ``None`` until known."""
+    name: str = "node"
 
     @property
     def uri(self) -> str:
@@ -1322,7 +1201,7 @@ class EthereumNodeProvider(Web3Provider, ABC):
     def _ots_api_level(self) -> Optional[int]:
         # NOTE: Returns None when OTS namespace is not enabled.
         try:
-            result = self._make_request("ots_getApiLevel")
+            result = self.make_request("ots_getApiLevel")
         except (NotImplementedError, ApeException, ValueError):
             return None
 
@@ -1391,69 +1270,9 @@ class EthereumNodeProvider(Web3Provider, ABC):
         self.network.verify_chain_id(chain_id)
 
     def disconnect(self):
-        self.can_use_parity_traces = None
+        self._call_trace_approach = None
         self._web3 = None
         self._client_version = None
-
-    def get_transaction_trace(self, txn_hash: Union[HexBytes, str]) -> Iterator[TraceFrame]:
-        if isinstance(txn_hash, HexBytes):
-            txn_hash_str = str(to_hex(txn_hash))
-        else:
-            txn_hash_str = txn_hash
-
-        frames = self._stream_request(
-            "debug_traceTransaction",
-            [txn_hash_str, {"enableMemory": True}],
-            "result.structLogs.item",
-        )
-        for frame in create_trace_frames(frames):
-            yield self._create_trace_frame(frame)
-
-    def _get_transaction_trace_using_call_tracer(self, txn_hash: str) -> Dict:
-        return self._make_request(
-            "debug_traceTransaction", [txn_hash, {"enableMemory": True, "tracer": "callTracer"}]
-        )
-
-    def get_call_tree(self, txn_hash: str) -> CallTreeNode:
-        if self.can_use_parity_traces is True:
-            return self._get_parity_call_tree(txn_hash)
-
-        elif self.can_use_parity_traces is False:
-            return self._get_geth_call_tree(txn_hash)
-
-        elif "erigon" in self.client_version.lower():
-            tree = self._get_parity_call_tree(txn_hash)
-            self.can_use_parity_traces = True
-            return tree
-
-        try:
-            # Try the Parity traces first, in case node client supports it.
-            tree = self._get_parity_call_tree(txn_hash)
-        except (ValueError, APINotImplementedError, ProviderError):
-            self.can_use_parity_traces = False
-            return self._get_geth_call_tree(txn_hash)
-        except Exception as err:
-            logger.error(f"Unknown exception while checking for Parity-trace support: {err} ")
-            self.can_use_parity_traces = False
-            return self._get_geth_call_tree(txn_hash)
-
-        # Parity style works.
-        self.can_use_parity_traces = True
-        return tree
-
-    def _get_parity_call_tree(self, txn_hash: str) -> CallTreeNode:
-        result = self._make_request("trace_transaction", [txn_hash])
-        if not result:
-            raise ProviderError(f"Failed to get trace for '{txn_hash}'.")
-
-        traces = ParityTraceList.model_validate(result)
-        evm_call = get_calltree_from_parity_trace(traces)
-        return self._create_call_tree_node(evm_call, txn_hash=txn_hash)
-
-    def _get_geth_call_tree(self, txn_hash: str) -> CallTreeNode:
-        calls = self._get_transaction_trace_using_call_tracer(txn_hash)
-        evm_call = get_calltree_from_geth_call_trace(calls)
-        return self._create_call_tree_node(evm_call, txn_hash=txn_hash)
 
     def _log_connection(self, client_name: str):
         msg = f"Connecting to existing {client_name.strip()} node at"
@@ -1464,11 +1283,11 @@ class EthereumNodeProvider(Web3Provider, ABC):
         )
         logger.info(f"{msg} {suffix}.")
 
-    def ots_get_contract_creator(self, address: AddressType) -> Optional[Dict]:
+    def ots_get_contract_creator(self, address: AddressType) -> Optional[dict]:
         if self._ots_api_level is None:
             return None
 
-        result = self._make_request("ots_getContractCreator", [address])
+        result = self.make_request("ots_getContractCreator", [address])
         if result is None:
             # NOTE: Skip the explorer part of the error message via `has_explorer=True`.
             raise ContractNotFoundError(address, has_explorer=True, provider_name=self.name)
@@ -1481,18 +1300,6 @@ class EthereumNodeProvider(Web3Provider, ABC):
             return self.get_receipt(tx_hash)
 
         return None
-
-    def _stream_request(self, method: str, params: List, iter_path="result.item"):
-        payload = {"jsonrpc": "2.0", "id": 1, "method": method, "params": params}
-        results = ijson.sendable_list()
-        coroutine = ijson.items_coro(results, iter_path)
-        resp = requests.post(self.uri, json=payload, stream=True)
-        resp.raise_for_status()
-
-        for chunk in resp.iter_content(chunk_size=2**17):
-            coroutine.send(chunk)
-            yield from results
-            del results[:]
 
     def connect(self):
         self._set_web3()

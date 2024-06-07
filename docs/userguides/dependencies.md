@@ -1,10 +1,19 @@
 # Dependencies
 
-Ape downloads and caches dependencies in the `.ape/packages/<name>/<version-id>` directory where `<name>` refers to the name of the dependency and `<version-id>` refers to the version or branch of the package.
-When first downloading dependencies, Ape only places the source contents in the `sources` field of the `PackageManifest` and leaves the `contract_types` field untouched.
-This is because dependencies may not compile by Ape's standard out-of-the-box but their contract types can still be used in projects that do.
+Ape downloads and caches dependencies in the `.ape/packages` folder.
+There are three sub-folders in `.ape/packages` for dependencies:
 
-To use dependencies in your projects, you must configure them in your `ape-config.yaml` file.
+1. `projects/` - contains the raw project files for each dependency in subsequent `/<name>/<version-id>` directories (where `<name>` refers to the path-ified full-name of the dependency, e.g. `"OpenZeppelin_openzeppelin-contracts"`, and `<version-id>` refers to the version or branch of the package).
+   This location is where local project compilation looks for additional sources from import statements.
+2. `manifests/` - much like your local projects' `.build/__local__.json`, this is where dependencies cache their manifests.
+   When you compile a dependency, the contract types are stored in the dependency manifest's JSON file.
+3. `api/` - for caching the API data placed in `dependencies:` config or `ape pm install` commands, allowing dependency usage and management from anywhere in the file system.
+
+```{note}
+You can install dependencies that don't compile out-of-the-box.
+Sometimes, dependencies are only collections of source files not meant to compile on their own but instead be used in projects via import statements.
+You can change the settings of a dependency using `config_override:` to compile dependencies after installed, if needed, and the `api/` cache always refers to the latest used during installation or compilation.
+```
 
 ## Types of Dependencies
 
@@ -26,8 +35,11 @@ dependencies:
 
 Then, follow the guide below about `remappings` to use the dependency.
 
+```{warning}
 **An important WARNING about the `version:` key for GitHub dependencies:**
 The `version:` config first attempts to use an official GitHub release, but if the release is not found, it will check the release tags.
+```
+
 If you know the version is not available as an official release, bypass the original check by using the `ref:` key.
 The `ref:` key is also used for installing branches.
 
@@ -93,26 +105,17 @@ You can also install and / or compile dependencies using the `pm` CLI.
 
 ### list
 
-To list information about the dependencies in your local project, run:
+To list information about installed dependencies, run:
 
 ```shell
 ape pm list
 ```
 
-To list information about all installed dependencies across all projects, run:
-
-```shell
-ape pm list --all
-```
-
 You should see information like:
 
 ```shell
-Packages:
-  OpenZeppelin v4.6.0, compiled!
-  vault master
-  vault v0.4.5
-  gnosis v1.3.0
+NAME          VERSION  COMPILED
+openzeppelin  4.9.3    -
 ```
 
 ### install
@@ -135,10 +138,12 @@ To install a dependency that is not in your config, you can specify it directly 
 ape pm install gh:OpenZeppelin/openzeppelin-contracts --name openzeppelin --version "4.6.0"
 ```
 
-**NOTE**: The `gh:` prefix is used because this dependency is from GitHub.
+```{note}
+The `gh:` prefix is used because this dependency is from GitHub.
 For `npm` dependencies, you use an `npm:` prefix.
 For local dependencies, you give it a path to the local dependency.
 `--version` is not required when using a local dependency.
+```
 
 To change the config of a dependency when installing, use the `--config-override` CLI option:
 
@@ -149,28 +154,40 @@ ape pm install gh:OpenZeppelin/openzeppelin-contracts \
   --config-override '{"solidity": {"version": "0.8.12"}}'
 ```
 
-### remove
+You can also use Python to install dependencies, using `**kwargs` as the same fields you put in your `dependencies:` config:
 
-Remove previously installed packages using the `remove` command:
+```python
+from ape import project
+
+project.dependencies.install(
+   github="OpenZeppelin/openzeppelin-contracts", name="openzeppelin", version="4.4.2"
+)
+```
+
+### uninstall
+
+Remove previously installed packages using the `uninstall` command:
 
 ```shell
-ape pm remove OpenZeppelin
+ape pm uninstall OpenZeppelin
 ```
 
 If there is a single version installed, the command will remove the single version.
 If multiple versions are installed, pass additional arguments specifying the version(s) to be removed:
 
 ```shell
-ape pm remove OpenZeppelin 4.5.0 4.6.0
+ape pm uninstall OpenZeppelin 4.5.0 4.6.0
 ```
 
 To skip the confirmation prompts, use the `--yes` flag (abbreviated as `-y`):
 
 ```shell
-ape pm remove OpenZeppelin all --yes
+ape pm uninstall OpenZeppelin all --yes
 ```
 
-**NOTE**: Additionally, use the `all` special version key to delete all versions.
+```{note}
+Additionally, use the `all` special version key to delete all versions.
+```
 
 ### compile
 
@@ -186,8 +203,10 @@ You can use the CLI to recompile.
 ape pm compile OpenZeppelin --version 4.6.0 --force
 ```
 
-**NOTE**: You only need to specify a version if you have more than one version of a dependency installed.
+```{note}
+You only need to specify a version if you have more than one version of a dependency installed.
 Otherwise, you just give it the name.
+```
 
 To compile all dependencies in your local project, run the command with no arguments while in your project:
 
@@ -254,26 +273,35 @@ dependencies:
           - mocks/**/*      # Ignore all files in the 'mocks' directory
 ```
 
-### Solidity Remappings
+### Solidity Import Remapping
 
 A common use-case for dependencies involves the Solidity plugin.
-To use your dependencies in the `ape-solidity` plugin, configure `import_remappings` to refer to them:
+By default, the `ape-solidity` plugin knows to look at installed dependencies for potential remapping-values and will use those when it notices you are importing them.
+For example, if you are using dependencies like:
 
 ```yaml
 dependencies:
   - name: OpenZeppelin
     github: OpenZeppelin/openzeppelin-contracts
     version: 4.4.2
-
-solidity: 
-  import_remapping:
-    - "@openzeppelin=OpenZeppelin/4.4.2"
 ```
 
-Now, in your solidity files, import `OpenZeppelin` sources via:
+And your source files import from `openzeppelin` this way:
 
 ```solidity
-import "@openzeppelin/token/ERC721/ERC721.sol";
+import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
+```
+
+Ape knows how to resolve the `@openzeppelin` value and find the correct source.
+
+If you want to override this behavior or add new remappings that are not dependencies, you can add them to your `ape-config.yaml` under the `solidity:` key.
+For example, let's say you have downloaded `openzeppelin` somewhere and do not have it installed in Ape.
+You can map to your local install of `openzeppelin` this way:
+
+```yaml
+solidity:
+  import_remapping:
+    - "@openzeppelin=path/to/openzeppelin"
 ```
 
 ### Compiling Dependencies
@@ -285,7 +313,8 @@ You can achieve this using the project manager:
 from ape import accounts, project
 
 # NOTE: This will compile the dependency
-dependency_contract = project.dependencies["my_dependency"]["1.0.0"].DependencyContractType
+dependency_project = project.dependencies["my_dependency"]["1.0.0"]
+dependency_contract = dependency_project.DependencyContractType 
 my_account = accounts.load("alias")
 deployed_contract = my_account.deploy(dependency_contract, "argument")
 print(deployed_contract.address)

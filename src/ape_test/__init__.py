@@ -1,6 +1,6 @@
-from typing import Dict, List, NewType, Optional, Union
+from typing import NewType, Optional, Union
 
-from pydantic import NonNegativeInt
+from pydantic import NonNegativeInt, field_validator
 
 from ape import plugins
 from ape.api import PluginConfig
@@ -23,12 +23,7 @@ class GasConfig(PluginConfig):
     Configuration related to test gas reports.
     """
 
-    show: bool = False
-    """
-    Set to ``True`` to always show gas.
-    """
-
-    exclude: List[GasExclusion] = []
+    exclude: list[GasExclusion] = []
     """
     Contract methods patterns to skip. Specify ``contract_name:`` and not
     ``method_name:`` to skip all methods in the contract. Only specify
@@ -37,8 +32,29 @@ class GasConfig(PluginConfig):
     use ``prefix_*`` to skip all items with a certain prefix.
     """
 
+    reports: list[str] = []
+    """
+    Report-types to use. Currently, only supports `terminal`.
+    """
 
-_ReportType = Union[bool, Dict]
+    @field_validator("reports", mode="before")
+    @classmethod
+    def validate_reports(cls, values):
+        values = list(set(values or []))
+        valid = ("terminal",)
+        for val in values:
+            if val not in valid:
+                valid_str = ", ".join(valid)
+                raise ValueError(f"Invalid gas-report format '{val}'. Valid: {valid_str}")
+
+        return values
+
+    @property
+    def show(self) -> bool:
+        return "terminal" in self.reports
+
+
+_ReportType = Union[bool, dict]
 """Dict is for extra report settings."""
 
 
@@ -83,7 +99,7 @@ class CoverageConfig(PluginConfig):
     Enable reports.
     """
 
-    exclude: List[CoverageExclusion] = []
+    exclude: list[CoverageExclusion] = []
     """
     Contract methods patterns to skip. Specify ``contract_name:`` and not
     ``method_name:`` to skip all methods in the contract. Only specify
@@ -143,3 +159,16 @@ def account_types():
 @plugins.register(plugins.ProviderPlugin)
 def providers():
     yield "ethereum", LOCAL_NETWORK_NAME, LocalProvider
+
+
+__all__ = [
+    "TestAccountContainer",
+    "TestAccount",
+    "EthTesterProviderConfig",
+    "LocalProvider",
+    "GasExclusion",
+    "GasConfig",
+    "CoverageReportsConfig",
+    "CoverageConfig",
+    "ApeTestConfig",
+]
