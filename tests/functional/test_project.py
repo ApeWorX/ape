@@ -421,7 +421,7 @@ def test_unpack(project_with_source_files_contract):
         project_with_source_files_contract.unpack(path)
         assert (path / "contracts" / "Contract.json").is_file()
 
-        # Show that even non-sources ends up with the unpacked destination.
+        # Show that even non-sources end up in the unpacked destination.
         assert (path / "contracts" / "Path.with.sub.json").is_file()
 
 
