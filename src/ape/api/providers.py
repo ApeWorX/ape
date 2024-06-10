@@ -108,12 +108,17 @@ class BlockAPI(BaseInterfaceModel):
         gets returned in computed field "size".
         """
 
-        if not hasattr(values, "pop"):
-            # Handle weird AttributeDict missing pop method.
-            # https://github.com/ethereum/web3.py/issues/3326
-            values = {**values}
+        if isinstance(values, BlockAPI):
+            size = values.size
 
-        size = values.pop("size", None)
+        else:
+            if not hasattr(values, "pop"):
+                # Handle weird AttributeDict missing pop method.
+                # https://github.com/ethereum/web3.py/issues/3326
+                values = {**values}
+
+            size = values.pop("size", None)
+
         model = handler(values)
         if size is not None:
             model._size = size

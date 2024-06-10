@@ -1,5 +1,6 @@
 import pytest
 from eth_pydantic_types import HexBytes
+from web3.types import BlockData
 
 from ape_ethereum.ecosystem import Block
 
@@ -73,3 +74,21 @@ def test_block_uncles(block):
     data["uncles"] = uncles
     actual = Block.model_validate(data)
     assert actual.uncles == uncles
+
+
+def test_model_dump_and_validate(block):
+    model_dump = block.model_dump(by_alias=True)
+    model_validate = Block.model_validate(model_dump)
+    assert model_validate == block
+    # Validate existing model.
+    model_validate_from_model = Block.model_validate(block)
+    assert model_validate_from_model == block
+
+
+def test_model_validate_web3_block():
+    """
+    Show we have good compatability with web3.py native types.
+    """
+    data = BlockData(number=123, timestamp=123, gasLimit=123, gasUsed=100)  # type: ignore
+    actual = Block.model_validate(data)
+    assert actual.number == 123
