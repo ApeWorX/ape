@@ -2246,7 +2246,16 @@ class LocalProject(Project):
                 yield project
 
     def unpack(self, destination: Path, config_override: Optional[dict] = None) -> "LocalProject":
-        project = super().unpack(destination, config_override=config_override)
+        config_override = {**self._config_override, **(config_override or {})}
+
+        # Unpack contracts.
+        if self.contracts_folder.is_dir():
+            contracts_path = get_relative_path(self.contracts_folder, self.path)
+            contracts_destination = destination / contracts_path
+            shutil.copytree(self.contracts_folder, contracts_destination, dirs_exist_ok=True)
+
+        # Unpack config file.
+        self.config.write_to_disk(destination / "ape-config.yaml")
 
         # Unpack scripts folder.
         if self.scripts_folder.is_dir():
@@ -2265,7 +2274,7 @@ class LocalProject(Project):
             interfaces_destination.parent.mkdir(parents=True, exist_ok=True)
             shutil.copytree(self.interfaces_folder, interfaces_destination, dirs_exist_ok=True)
 
-        return project
+        return LocalProject(destination, config_override=config_override)
 
     def load_manifest(self) -> PackageManifest:
         """
