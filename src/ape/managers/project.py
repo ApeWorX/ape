@@ -1788,6 +1788,7 @@ class Project(ProjectManager):
 
     def clean(self):
         self._manifest.contract_types = None
+        self._config_override = {}
 
 
 class DeploymentManager(ManagerAccessMixin):
