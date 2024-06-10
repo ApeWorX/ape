@@ -190,6 +190,8 @@ class KeyfileAccount(AccountAPI):
             # Message Data
             display_msg += "Message\n"
             for field, value in msg._body_["message"].items():
+                if isinstance(value, bytes):
+                    value = HexBytes(value).hex()
                 display_msg += f"\t{field}: {value}\n"
 
             # Convert EIP712Message to SignableMessage for handling below
