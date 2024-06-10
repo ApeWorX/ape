@@ -4,6 +4,7 @@ import shutil
 import pytest
 
 from ape.contracts import ContractContainer
+from ape.utils import get_full_extension
 
 from .utils import skip_projects, skip_projects_except
 
@@ -66,7 +67,7 @@ def test_compile(ape_cli, runner, project, clean_cache):
         and f.is_file()
         and not f.name.startswith(".")
         and f.name not in excluded
-        and f.suffix == ".json"
+        and get_full_extension(f) == ".json"
         and ".cache" not in [p.name for p in f.parents]
     ]
     unexpected_files = [f for f in all_files if f not in expected_files]
@@ -74,7 +75,7 @@ def test_compile(ape_cli, runner, project, clean_cache):
     # Extract manifest (note: same project is used in 2 instances here).
     manifest = project.extract_manifest()
 
-    non_json = [f for f in expected_files if f.suffix != ".json"]
+    non_json = [f for f in expected_files if get_full_extension(f) != ".json"]
     if len(non_json) > 0:
         assert manifest.compilers
     for file in expected_files:

@@ -122,7 +122,6 @@ class CompilerManager(BaseManager, ExtraAttributesMixin):
 
         pm = project or self.local_project
         files_by_ext = defaultdict(list)
-
         if isinstance(contract_filepaths, (str, Path)):
             contract_filepaths = (contract_filepaths,)
 

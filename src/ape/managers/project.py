@@ -77,7 +77,7 @@ class SourceManager(BaseManager):
         if self._path_cache is not None:
             return len(self._path_cache)
 
-        # Will set _path_cache, eliminates need to iterte (perf).
+        # Will set _path_cache, eliminates need to iterate (perf).
         return len(list(self.paths))
 
     def __iter__(self) -> Iterator[str]:
@@ -216,9 +216,11 @@ class SourceManager(BaseManager):
         for excl in self.exclude_globs:
             if isinstance(excl, Pattern):
                 for opt in options:
-                    if excl.match(opt):
-                        self._exclude_cache[source_id] = True
-                        return True
+                    if not excl.match(opt):
+                        continue
+
+                    self._exclude_cache[source_id] = True
+                    return True
 
             else:
                 # perf: Check parent directory first to exclude faster by marking them all.
@@ -2255,7 +2257,8 @@ class LocalProject(Project):
             shutil.copytree(self.contracts_folder, contracts_destination, dirs_exist_ok=True)
 
         # Unpack config file.
-        self.config.write_to_disk(destination / "ape-config.yaml")
+        if not (destination / "ape-config.yaml").is_file():
+            self.config.write_to_disk(destination / "ape-config.yaml")
 
         # Unpack scripts folder.
         if self.scripts_folder.is_dir():
