@@ -1,4 +1,5 @@
 import copy
+import re
 from typing import Any, ClassVar, cast
 
 import pytest
@@ -6,11 +7,13 @@ from eth_pydantic_types import HashBytes32, HexBytes
 from eth_typing import HexAddress, HexStr
 from ethpm_types import ContractType, ErrorABI
 from ethpm_types.abi import ABIType, EventABI, MethodABI
+from evm_trace import CallTreeNode, CallType
 
 from ape.api.networks import LOCAL_NETWORK_NAME, NetworkAPI
 from ape.exceptions import CustomError, DecodingError, NetworkError, NetworkNotFoundError
 from ape.types import AddressType
 from ape.utils import DEFAULT_LOCAL_TRANSACTION_ACCEPTANCE_TIMEOUT
+from ape_ethereum import TransactionTrace
 from ape_ethereum.ecosystem import BLUEPRINT_HEADER, BaseEthereumConfig, Block
 from ape_ethereum.transactions import (
     DynamicFeeTransaction,
@@ -1033,3 +1036,38 @@ def test_decode_custom_error_selector_not_found(chain, ethereum):
     tx = ethereum.create_transaction()
     actual = ethereum.decode_custom_error(data, addr, txn=tx)
     assert actual is None
+
+
+def test_enrich_trace(ethereum, vyper_contract_instance, owner):
+    tx = vyper_contract_instance.setNumber(96247783, sender=owner)
+    trace = TransactionTrace(transaction_hash=tx.txn_hash)
+    actual = ethereum.enrich_trace(trace)
+    assert isinstance(actual, TransactionTrace)
+    assert actual._enriched_calltree is not None
+    assert re.match(r"VyperContract\.setNumber\(num=\d*\) \[\d* gas]", repr(actual))
+
+
+def test_enrich_trace_handles_call_type_enum(ethereum, vyper_contract_instance, owner):
+    """
+    Testing a custom trace who's call tree uses an Enum type instead of a str.
+    """
+
+    class PluginTxTrace(TransactionTrace):
+        def get_calltree(self) -> CallTreeNode:
+            call = super().get_calltree()
+            # Force enum value instead of str.
+            call.call_type = CallType.CALL
+            return call
+
+    tx = vyper_contract_instance.setNumber(96247783, sender=owner)
+    trace = PluginTxTrace(transaction_hash=tx.txn_hash)
+    actual = ethereum.enrich_trace(trace)
+    assert isinstance(actual, PluginTxTrace)
+    assert actual._enriched_calltree is not None
+    assert re.match(r"VyperContract\.setNumber\(num=\d*\) \[\d* gas]", repr(actual))
+
+    # Hook into helper method hackily with an enum.
+    # Notice the mode is Python and not JSON here.
+    call = trace.get_calltree().model_dump(by_alias=True)
+    actual = ethereum._enrich_calltree(call)
+    assert actual["call_type"] == CallType.CALL.value
