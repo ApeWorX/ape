@@ -1016,6 +1016,7 @@ class Ethereum(EcosystemAPI):
             kwargs["sender"] = sender
 
         # Get the un-enriched calltree.
+        # NOTE: Using JSON mode so Enums are all str types.
         data = trace.get_calltree().model_dump(mode="json", by_alias=True)
 
         if isinstance(trace, TransactionTrace):
@@ -1044,7 +1045,12 @@ class Ethereum(EcosystemAPI):
         kwargs["use_symbol_for_tokens"] = kwargs.get(
             "use_symbol_for_tokens", default_symbol_for_tokens
         )
+
+        # Handle if for some reason this is still an Enum.
         call_type = call.get("call_type", "")
+        if call_type and not isinstance(call_type, str):
+            call["call_type"] = call_type = call_type.value
+
         is_create = "CREATE" in call_type
 
         # Enrich sub-calls first.
