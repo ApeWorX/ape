@@ -1,5 +1,4 @@
 from collections.abc import Iterable
-from functools import cached_property
 from pathlib import Path
 from typing import TYPE_CHECKING, Optional, Union
 
@@ -64,7 +63,7 @@ class _ContractPaths(ManagerAccessMixin):
         project = ctx.params.get("project")
         return cls(value, project=project).filtered_paths
 
-    @cached_property
+    @property
     def filtered_paths(self) -> set[Path]:
         """
         Get the filtered set of paths.
