@@ -68,9 +68,9 @@ def path_check():
 
 
 @pytest.fixture(autouse=True)
-def load_dependencies(project):
+def load_dependencies(integ_project):
     """Ensure these are loaded before setting up pytester."""
-    project.dependencies.install()
+    integ_project.dependencies.install()
 
 
 @pytest.fixture
@@ -172,9 +172,9 @@ def run_gas_test(
 
 
 @skip_projects_except("test", "with-contracts")
-def test_test(setup_pytester, project, pytester, eth_tester_provider):
+def test_test(setup_pytester, integ_project, pytester, eth_tester_provider):
     _ = eth_tester_provider  # Ensure using EthTester for this test.
-    passed, failed = setup_pytester(project)
+    passed, failed = setup_pytester(integ_project)
     from ape.logging import logger
 
     logger.set_level("DEBUG")
@@ -186,9 +186,9 @@ def test_test(setup_pytester, project, pytester, eth_tester_provider):
 
 
 @skip_projects_except("with-contracts")
-def test_uncaught_txn_err(setup_pytester, project, pytester, eth_tester_provider):
+def test_uncaught_txn_err(setup_pytester, integ_project, pytester, eth_tester_provider):
     _ = eth_tester_provider  # Ensure using EthTester for this test.
-    setup_pytester(project)
+    setup_pytester(integ_project)
     result = pytester.runpytest_subprocess()
     expected = """
     contract_in_test.setNumber(5, sender=owner)
@@ -198,9 +198,9 @@ E   ape.exceptions.ContractLogicError: Transaction failed.
 
 
 @skip_projects_except("with-contracts")
-def test_show_internal(setup_pytester, project, pytester, eth_tester_provider):
+def test_show_internal(setup_pytester, integ_project, pytester, eth_tester_provider):
     _ = eth_tester_provider  # Ensure using EthTester for this test.
-    setup_pytester(project)
+    setup_pytester(integ_project)
     result = pytester.runpytest_subprocess("--show-internal")
     expected = """
     raise vm_err from err
@@ -210,16 +210,16 @@ E   ape.exceptions.ContractLogicError: Transaction failed.
 
 
 @skip_projects_except("test", "with-contracts")
-def test_test_isolation_disabled(setup_pytester, project, pytester, eth_tester_provider):
+def test_test_isolation_disabled(setup_pytester, integ_project, pytester, eth_tester_provider):
     # check the disable isolation option actually disables built-in isolation
     _ = eth_tester_provider  # Ensure using EthTester for this test.
-    setup_pytester(project)
+    setup_pytester(integ_project)
     result = pytester.runpytest_subprocess("--disable-isolation", "--setup-show")
     assert "F _function_isolation" not in "\n".join(result.outlines)
 
 
 @skip_projects_except("test", "with-contracts")
-def test_fixture_docs(setup_pytester, project, pytester, eth_tester_provider):
+def test_fixture_docs(setup_pytester, integ_project, pytester, eth_tester_provider):
     _ = eth_tester_provider  # Ensure using EthTester for this test.
     result = pytester.runpytest_subprocess("-q", "--fixtures")
     actual = "\n".join(result.outlines)
@@ -233,10 +233,10 @@ def test_fixture_docs(setup_pytester, project, pytester, eth_tester_provider):
 
 
 @skip_projects_except("with-contracts")
-def test_gas_flag_when_not_supported(setup_pytester, project, pytester, eth_tester_provider):
+def test_gas_flag_when_not_supported(setup_pytester, integ_project, pytester, eth_tester_provider):
     _ = eth_tester_provider  # Ensure using EthTester for this test.
-    setup_pytester(project)
-    path = f"{project.path}/tests/test_contract.py::test_contract_interaction_in_tests"
+    setup_pytester(integ_project)
+    path = f"{integ_project.path}/tests/test_contract.py::test_contract_interaction_in_tests"
     result = pytester.runpytest(path, "--gas")
     actual = "\n".join(result.outlines)
     expected = (
@@ -248,36 +248,38 @@ def test_gas_flag_when_not_supported(setup_pytester, project, pytester, eth_test
 
 @geth_process_test
 @skip_projects_except("geth")
-def test_gas_flag_in_tests(geth_provider, setup_pytester, project, pytester, owner):
+def test_gas_flag_in_tests(geth_provider, setup_pytester, integ_project, pytester, owner):
     owner.transfer(owner, "1 wei")  # Do this to force a clean slate.
-    passed, failed = setup_pytester(project)
+    passed, failed = setup_pytester(integ_project)
     result = pytester.runpytest_subprocess("--gas", "--network", "ethereum:local:node")
     run_gas_test(result, passed, failed)
 
 
 @geth_process_test
 @skip_projects_except("geth")
-def test_gas_flag_set_in_config(geth_provider, setup_pytester, project, pytester, geth_account):
+def test_gas_flag_set_in_config(
+    geth_provider, setup_pytester, integ_project, pytester, geth_account
+):
     geth_account.transfer(geth_account, "1 wei")  # Force a clean block.
-    cfg = project.config.model_dump(by_alias=True, mode="json")
+    cfg = integ_project.config.model_dump(by_alias=True, mode="json")
     cfg["test"]["gas"] = {"reports": ["terminal"]}
-    with project.temp_config(**cfg):
-        passed, failed = setup_pytester(project)
+    with integ_project.temp_config(**cfg):
+        passed, failed = setup_pytester(integ_project)
         result = pytester.runpytest_subprocess("--network", "ethereum:local:node")
         run_gas_test(result, passed, failed)
 
 
 @geth_process_test
 @skip_projects_except("geth")
-def test_gas_when_estimating(geth_provider, setup_pytester, project, pytester, geth_account):
+def test_gas_when_estimating(geth_provider, setup_pytester, integ_project, pytester, geth_account):
     """
     Shows that gas reports still work when estimating gas.
     """
-    cfg = project.config.model_dump(by_alias=True, mode="json")
+    cfg = integ_project.config.model_dump(by_alias=True, mode="json")
     cfg["test"]["gas"] = {"reports": ["terminal"]}
     geth_account.transfer(geth_account, "1 wei")  # Force a clean block.
-    with project.temp_config(**cfg):
-        passed, failed = setup_pytester(project)
+    with integ_project.temp_config(**cfg):
+        passed, failed = setup_pytester(integ_project)
         result = pytester.runpytest_subprocess()
         run_gas_test(result, passed, failed)
 
@@ -285,10 +287,10 @@ def test_gas_when_estimating(geth_provider, setup_pytester, project, pytester, g
 @geth_process_test
 @skip_projects_except("geth")
 def test_gas_flag_exclude_using_cli_option(
-    geth_provider, setup_pytester, project, pytester, geth_account
+    geth_provider, setup_pytester, integ_project, pytester, geth_account
 ):
     geth_account.transfer(geth_account, "1 wei")  # Force a clean block.
-    passed, failed = setup_pytester(project)
+    passed, failed = setup_pytester(integ_project)
     # NOTE: Includes both a mutable and a view method.
     expected = filter_expected_methods("fooAndBar", "myNumber")
     # Also ensure can filter out whole class
@@ -306,14 +308,14 @@ def test_gas_flag_exclude_using_cli_option(
 @geth_process_test
 @skip_projects_except("geth")
 def test_gas_flag_exclusions_set_in_config(
-    geth_provider, setup_pytester, project, pytester, geth_account
+    geth_provider, setup_pytester, integ_project, pytester, geth_account
 ):
     geth_account.transfer(geth_account, "1 wei")  # Force a clean block.
     # NOTE: Includes both a mutable and a view method.
     expected = filter_expected_methods("fooAndBar", "myNumber")
     # Also ensure can filter out whole class
     expected = expected.replace(TOKEN_B_GAS_REPORT, "")
-    cfg = project.config.model_dump(by_alias=True, mode="json")
+    cfg = integ_project.config.model_dump(by_alias=True, mode="json")
     cfg["test"]["gas"] = {
         "exclude": [
             {"method_name": "fooAndBar"},
@@ -321,8 +323,8 @@ def test_gas_flag_exclusions_set_in_config(
             {"contract_name": "TokenB"},
         ]
     }
-    with project.temp_config(**cfg):
-        passed, failed = setup_pytester(project)
+    with integ_project.temp_config(**cfg):
+        passed, failed = setup_pytester(integ_project)
         result = pytester.runpytest_subprocess("--gas", "--network", "ethereum:local:node")
         run_gas_test(result, passed, failed, expected_report=expected)
 
@@ -330,10 +332,10 @@ def test_gas_flag_exclusions_set_in_config(
 @geth_process_test
 @skip_projects_except("geth")
 def test_gas_flag_excluding_contracts(
-    geth_provider, setup_pytester, project, pytester, geth_account
+    geth_provider, setup_pytester, integ_project, pytester, geth_account
 ):
     geth_account.transfer(geth_account, "1 wei")  # Force a clean block.
-    passed, failed = setup_pytester(project)
+    passed, failed = setup_pytester(integ_project)
     result = pytester.runpytest_subprocess(
         "--gas", "--gas-exclude", "VyperContract,TokenA", "--network", "ethereum:local:node"
     )
@@ -342,7 +344,7 @@ def test_gas_flag_excluding_contracts(
 
 @geth_process_test
 @skip_projects_except("geth")
-def test_coverage(geth_provider, setup_pytester, project, pytester, geth_account):
+def test_coverage(geth_provider, setup_pytester, integ_project, pytester, geth_account):
     """
     Ensures the --coverage flag works.
     For better coverage tests, see ape-vyper because the Vyper
@@ -350,7 +352,7 @@ def test_coverage(geth_provider, setup_pytester, project, pytester, geth_account
     of the coverage work.
     """
     geth_account.transfer(geth_account, "1 wei")  # Force a clean block.
-    passed, failed = setup_pytester(project)
+    passed, failed = setup_pytester(integ_project)
     result = pytester.runpytest_subprocess(
         "--coverage", "--show-internal", "--network", "ethereum:local:node"
     )
@@ -358,7 +360,7 @@ def test_coverage(geth_provider, setup_pytester, project, pytester, geth_account
 
 
 @skip_projects_except("with-contracts")
-def test_interactive(eth_tester_provider, project, pytester, monkeypatch):
+def test_interactive(eth_tester_provider, integ_project, pytester, monkeypatch):
     secret = "__ 123 super secret 123 __"
     test = f"""
 def test_fails():

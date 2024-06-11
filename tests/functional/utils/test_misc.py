@@ -1,3 +1,5 @@
+import asyncio
+
 import pytest
 from eth_pydantic_types import HexBytes
 from packaging.version import Version
@@ -73,6 +75,8 @@ def test_run_until_complete_coroutine():
     async def foo():
         return 3
 
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
     actual = run_until_complete(foo())
     assert actual == 3
 
@@ -84,6 +88,8 @@ def test_run_until_complete_multiple_coroutines():
     async def bar():
         return 4
 
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
     actual = run_until_complete(foo(), bar())
     assert actual == [3, 4]
 

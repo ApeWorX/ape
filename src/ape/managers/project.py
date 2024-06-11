@@ -77,7 +77,7 @@ class SourceManager(BaseManager):
         if self._path_cache is not None:
             return len(self._path_cache)
 
-        # Will set _path_cache, eliminates need to iterte (perf).
+        # Will set _path_cache, eliminates need to iterate (perf).
         return len(list(self.paths))
 
     def __iter__(self) -> Iterator[str]:
@@ -216,9 +216,11 @@ class SourceManager(BaseManager):
         for excl in self.exclude_globs:
             if isinstance(excl, Pattern):
                 for opt in options:
-                    if excl.match(opt):
-                        self._exclude_cache[source_id] = True
-                        return True
+                    if not excl.match(opt):
+                        continue
+
+                    self._exclude_cache[source_id] = True
+                    return True
 
             else:
                 # perf: Check parent directory first to exclude faster by marking them all.
@@ -280,13 +282,10 @@ class SourceManager(BaseManager):
                     for file in full_path.parent.iterdir():
                         if not file.is_file():
                             continue
-                        elif not (file_ext := get_full_extension(file)):
-                            continue
 
                         # Check exact match w/o extension.
-                        prefix = file_ext.join(str(file).split(file_ext)[:-1])
-
-                        if str(full_path) == prefix:
+                        prefix = str(file.with_suffix("")).strip(" /\\")
+                        if str(full_path).strip(" /\\") == prefix:
                             return file
 
                 # Look for stem-only matches (last resort).
@@ -1786,6 +1785,7 @@ class Project(ProjectManager):
 
     def clean(self):
         self._manifest.contract_types = None
+        self._config_override = {}
 
 
 class DeploymentManager(ManagerAccessMixin):
@@ -2246,7 +2246,17 @@ class LocalProject(Project):
                 yield project
 
     def unpack(self, destination: Path, config_override: Optional[dict] = None) -> "LocalProject":
-        project = super().unpack(destination, config_override=config_override)
+        config_override = {**self._config_override, **(config_override or {})}
+
+        # Unpack contracts.
+        if self.contracts_folder.is_dir():
+            contracts_path = get_relative_path(self.contracts_folder, self.path)
+            contracts_destination = destination / contracts_path
+            shutil.copytree(self.contracts_folder, contracts_destination, dirs_exist_ok=True)
+
+        # Unpack config file.
+        if not (destination / "ape-config.yaml").is_file():
+            self.config.write_to_disk(destination / "ape-config.yaml")
 
         # Unpack scripts folder.
         if self.scripts_folder.is_dir():
@@ -2265,7 +2275,7 @@ class LocalProject(Project):
             interfaces_destination.parent.mkdir(parents=True, exist_ok=True)
             shutil.copytree(self.interfaces_folder, interfaces_destination, dirs_exist_ok=True)
 
-        return project
+        return LocalProject(destination, config_override=config_override)
 
     def load_manifest(self) -> PackageManifest:
         """

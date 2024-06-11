@@ -13,6 +13,7 @@ from ape.api.projects import ApeProject
 from ape.contracts import ContractContainer
 from ape.exceptions import ProjectError
 from ape.logging import LogLevel
+from ape.utils import create_tempdir
 from ape_pm import BrownieProject, FoundryProject
 from tests.conftest import skip_if_plugin_installed
 
@@ -413,6 +414,15 @@ def test_clean(tmp_project):
     assert not tmp_project.manifest_path.is_file()
     assert tmp_project._manifest.contract_types is None
     assert tmp_project.sources._path_cache is None
+
+
+def test_unpack(project_with_source_files_contract):
+    with create_tempdir() as path:
+        project_with_source_files_contract.unpack(path)
+        assert (path / "contracts" / "Contract.json").is_file()
+
+        # Show that even non-sources end up in the unpacked destination.
+        assert (path / "contracts" / "Path.with.sub.json").is_file()
 
 
 def test_add_compiler_data(project_with_dependency_config):

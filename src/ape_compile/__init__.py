@@ -2,7 +2,7 @@ import re
 from re import Pattern
 from typing import Union
 
-from pydantic import field_validator
+from pydantic import field_serializer, field_validator
 
 from ape import plugins
 from ape.api.config import ConfigEnum, PluginConfig
@@ -73,6 +73,21 @@ class Config(PluginConfig):
 
         # Include defaults.
         return {*given_values, *SOURCE_EXCLUDE_PATTERNS}
+
+    @field_serializer("exclude", when_used="json")
+    def serialize_exclude(self, exclude, info):
+        """
+        Exclude is put back with the weird r-prefix so we can
+        go to-and-from.
+        """
+        result: list[str] = []
+        for excl in exclude:
+            if isinstance(excl, Pattern):
+                result.append(f'r"{excl.pattern}"')
+            else:
+                result.append(excl)
+
+        return result
 
 
 @plugins.register(plugins.Config)

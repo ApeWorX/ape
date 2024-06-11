@@ -6,6 +6,7 @@ from ethpm_types import ContractType
 
 from ape.cli.arguments import contract_file_paths_argument
 from ape.cli.options import ape_cli_context, config_override_option, project_option
+from ape.utils.os import clean_path
 
 
 def _include_dependencies_callback(ctx, param, value):
@@ -92,7 +93,8 @@ def cli(
                 _display_byte_code_sizes(cli_ctx, contract_types)
 
     if not compiled:
-        cli_ctx.logger.warning("Nothing to compile.")
+        folder = clean_path(project.contracts_folder)
+        cli_ctx.logger.warning(f"Nothing to compile ({folder}).")
 
     if errored:
         # Ensure exit code.

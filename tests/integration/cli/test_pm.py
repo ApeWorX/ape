@@ -27,7 +27,7 @@ def test_install_path_not_exists(pm_runner):
 
 
 @run_once
-def test_install_path_to_local_package(pm_runner, project):
+def test_install_path_to_local_package(pm_runner, integ_project):
     project_name = "with-contracts"
     path = Path(__file__).parent / "projects" / project_name
     name = path.stem
@@ -36,7 +36,7 @@ def test_install_path_to_local_package(pm_runner, project):
     assert f"Package '{path.as_posix()}' installed."
 
     # Ensure was installed correctly.
-    assert project.dependencies[name]["local"]
+    assert integ_project.dependencies[name]["local"]
 
 
 @run_once
@@ -65,7 +65,7 @@ def test_install_force(pm_runner):
 
 @run_once
 @github_xfail()
-def test_install_github_dependency_with_version(pm_runner, project):
+def test_install_github_dependency_with_version(pm_runner):
     result = pm_runner.invoke(
         "install",
         "gh:OpenZeppelin/openzeppelin-contracts",
@@ -96,11 +96,11 @@ def test_install_github_dependency_with_ref(pm_runner):
 
 
 @skip_projects_except("with-contracts")
-def test_install_config_override(pm_runner, project):
+def test_install_config_override(pm_runner, integ_project):
     actual_dep = Path(__file__).parent / "projects" / "with-contracts" / "dep"
-    shutil.copytree(actual_dep, project.path / "dep")
+    shutil.copytree(actual_dep, integ_project.path / "dep")
     config_override = '{"contracts_folder": "src"}'
-    dep_path = project.path / "dep"
+    dep_path = integ_project.path / "dep"
     name = "foodep2"
     pm_runner.invoke(
         "install",
@@ -111,13 +111,13 @@ def test_install_config_override(pm_runner, project):
         config_override,
         "--force",
     )
-    actual = project.dependencies["foodep2"]["local"].config.contracts_folder
+    actual = integ_project.dependencies["foodep2"]["local"].config.contracts_folder
     assert actual == "src"
 
 
 @run_once
-def test_compile_package_not_exists(pm_runner, project):
-    pm_runner.project = project
+def test_compile_package_not_exists(pm_runner, integ_project):
+    pm_runner.project = integ_project
     name = "NOT_EXISTS"
     result = pm_runner.invoke("compile", name)
     expected = f"Dependency '{name}' unknown. Is it installed?"
@@ -126,13 +126,13 @@ def test_compile_package_not_exists(pm_runner, project):
 
 
 @skip_projects_except("with-contracts", "with-dependencies")
-def test_compile(pm_runner, project):
-    pm_runner.project = project
+def test_compile(pm_runner, integ_project):
+    pm_runner.project = integ_project
     result = pm_runner.invoke("compile", "--force")
     output = result.output or str(result._completed_process.stderr)
     assert result.exit_code == 0, output
 
-    if project.path.as_posix().endswith("contracts"):
+    if integ_project.path.as_posix().endswith("contracts"):
         assert "Package 'foodep@local' compiled." in output, output
     else:
         # Tests against a bug where we couldn't have hyphens in
@@ -141,8 +141,8 @@ def test_compile(pm_runner, project):
 
 
 @skip_projects_except("with-contracts")
-def test_compile_config_override(pm_runner, project):
-    pm_runner.project = project
+def test_compile_config_override(pm_runner, integ_project):
+    pm_runner.project = integ_project
     cmd = ("compile", "--force", "--config-override", '{"contracts_folder": "src"}')
     result = pm_runner.invoke(*cmd)
     output = result.output or str(result._completed_process.stderr)
@@ -150,8 +150,8 @@ def test_compile_config_override(pm_runner, project):
 
 
 @skip_projects_except("with-contracts")
-def test_compile_dependency(pm_runner, project):
-    pm_runner.project = project
+def test_compile_dependency(pm_runner, integ_project):
+    pm_runner.project = integ_project
     name = "foodep"
     result = pm_runner.invoke("compile", name, "--force")
     assert result.exit_code == 0, result.output
@@ -159,8 +159,8 @@ def test_compile_dependency(pm_runner, project):
 
 
 @skip_projects_except("only-dependencies")
-def test_uninstall(pm_runner, project):
-    pm_runner.project = project
+def test_uninstall(pm_runner, integ_project):
+    pm_runner.project = integ_project
     package_name = "dependency-in-project-only"
 
     # Install packages
@@ -172,8 +172,8 @@ def test_uninstall(pm_runner, project):
 
 
 @skip_projects_except("only-dependencies")
-def test_uninstall_not_exists(pm_runner, project):
-    pm_runner.project = project
+def test_uninstall_not_exists(pm_runner, integ_project):
+    pm_runner.project = integ_project
     package_name = "_this_does_not_exist_"
     result = pm_runner.invoke("uninstall", package_name, "--yes")
     expected_message = f"ERROR: Package(s) '{package_name}' not installed."
@@ -182,8 +182,8 @@ def test_uninstall_not_exists(pm_runner, project):
 
 
 @skip_projects_except("only-dependencies")
-def test_uninstall_specific_version(pm_runner, project):
-    pm_runner.project = project
+def test_uninstall_specific_version(pm_runner, integ_project):
+    pm_runner.project = integ_project
     package_name = "dependency-in-project-only"
     version = "local"
 
@@ -196,8 +196,8 @@ def test_uninstall_specific_version(pm_runner, project):
 
 
 @skip_projects_except("only-dependencies")
-def test_uninstall_all_versions(pm_runner, project):
-    pm_runner.project = project
+def test_uninstall_all_versions(pm_runner, integ_project):
+    pm_runner.project = integ_project
     # Install packages
     pm_runner.invoke("install", ".", "--force")
     package_name = "dependency-in-project-only"
@@ -208,16 +208,16 @@ def test_uninstall_all_versions(pm_runner, project):
 
 
 @skip_projects_except("only-dependencies")
-def test_uninstall_invalid_version(pm_runner, project):
-    pm_runner.project = project
+def test_uninstall_invalid_version(pm_runner, integ_project):
+    pm_runner.project = integ_project
     package_name = "dependency-in-project-only"
 
     # Install packages
     pm_runner.invoke("install", ".", "--force")
 
     # Ensure was installed correctly.
-    assert package_name in project.dependencies
-    assert project.dependencies[package_name]["local"]
+    assert package_name in integ_project.dependencies
+    assert integ_project.dependencies[package_name]["local"]
 
     invalid_version = "0.0.0"
     result = pm_runner.invoke("uninstall", package_name, invalid_version, "--yes")
@@ -228,8 +228,8 @@ def test_uninstall_invalid_version(pm_runner, project):
 
 
 @skip_projects_except("only-dependencies")
-def test_uninstall_cancel(pm_runner, project):
-    pm_runner.project = project
+def test_uninstall_cancel(pm_runner, integ_project):
+    pm_runner.project = integ_project
     package_name = "dependency-in-project-only"
     version = "local"
 
@@ -243,8 +243,8 @@ def test_uninstall_cancel(pm_runner, project):
 
 
 @skip_projects_except("only-dependencies")
-def test_list(pm_runner, project):
-    pm_runner.project = project
+def test_list(pm_runner, integ_project):
+    pm_runner.project = integ_project
     package_name = "dependency-in-project-only"
     result = pm_runner.invoke("list")
     assert result.exit_code == 0, result.output

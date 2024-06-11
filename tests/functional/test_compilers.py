@@ -1,4 +1,5 @@
 from pathlib import Path
+from re import Pattern
 from typing import cast
 
 import pytest
@@ -7,6 +8,7 @@ from ethpm_types import ContractType, ErrorABI
 from ape.contracts import ContractContainer
 from ape.exceptions import APINotImplementedError, CompilerError, ContractLogicError, CustomError
 from ape.types import AddressType
+from ape_compile import Config
 
 
 def test_get_imports(project, compilers):
@@ -162,3 +164,21 @@ def test_enrich_error_custom_error_with_inputs(compilers, setup_custom_error):
     assert actual.__class__.__name__ == "AllowanceExpired"
     assert actual.inputs["deadline"] == deadline
     assert repr(actual) == f"AllowanceExpired(deadline={deadline})"
+
+
+def test_config_exclude_regex_serialize():
+    """
+    Show we can to-and-fro with exclude regexes.
+    """
+    raw_value = 'r"FooBar"'
+    cfg = Config(exclude=[raw_value])
+    excl = [x for x in cfg.exclude if isinstance(x, Pattern)]
+    assert len(excl) == 1
+    assert excl[0].pattern == "FooBar"
+    # NOTE: Use json mode to ensure we can go from most minimum value back.
+    model_dump = cfg.model_dump(mode="json", by_alias=True)
+    assert raw_value in model_dump.get("exclude", [])
+    new_cfg = Config.model_validate(cfg.model_dump(mode="json", by_alias=True))
+    excl = [x for x in new_cfg.exclude if isinstance(x, Pattern)]
+    assert len(excl) == 1
+    assert excl[0].pattern == "FooBar"

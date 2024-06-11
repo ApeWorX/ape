@@ -79,8 +79,8 @@ def validate_cwd(start_dir):
         os.chdir(start_dir)
 
 
-@pytest.fixture(scope="session")
-def project(config):
+@pytest.fixture
+def project():
     path = "functional/data/contracts/local"
     with ape.project.temp_config(contracts_folder=path):
         yield ape.project

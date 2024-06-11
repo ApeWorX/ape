@@ -1,5 +1,4 @@
 from collections.abc import Iterable
-from functools import cached_property
 from pathlib import Path
 from typing import TYPE_CHECKING, Optional, Union
 
@@ -64,7 +63,7 @@ class _ContractPaths(ManagerAccessMixin):
         project = ctx.params.get("project")
         return cls(value, project=project).filtered_paths
 
-    @cached_property
+    @property
     def filtered_paths(self) -> set[Path]:
         """
         Get the filtered set of paths.
@@ -78,9 +77,10 @@ class _ContractPaths(ManagerAccessMixin):
         elif not value or value == "*":
             # Get all file paths in the project.
             return {p for p in self.project.sources.paths}
-        else:
-            # Given a sequence of paths.
+        elif isinstance(value, Iterable):
             contract_paths = value
+        else:
+            raise BadArgumentUsage(f"Not a path or iter[Path]: {value}")
 
         # Convert source IDs or relative paths to absolute paths.
         path_set = self.lookup(contract_paths)
@@ -120,8 +120,9 @@ class _ContractPaths(ManagerAccessMixin):
 
     def lookup(self, path_iter: Iterable, path_set: Optional[set] = None) -> set[Path]:
         path_set = path_set or set()
+        given_paths = [p for p in path_iter]  # Handle iterators w/o losing it.
 
-        for path_id in path_iter:
+        for path_id in given_paths:
             path = Path(path_id)
             contracts_folder = self.project.contracts_folder
             if (
@@ -148,13 +149,8 @@ class _ContractPaths(ManagerAccessMixin):
                     # NOTE: ^ Also tracks.
                     continue
 
-                suffix = get_full_extension(resolved_path)
-                if suffix in self.compiler_manager.registered_compilers:
-                    # File exists and is compile-able.
-                    path_set.add(resolved_path)
-
-                elif suffix:
-                    raise BadArgumentUsage(f"Source file '{resolved_path.name}' not found.")
+                # We know here that the compiler is known.
+                path_set.add(resolved_path)
 
             else:
                 raise BadArgumentUsage(f"Source file '{path.name}' not found.")
