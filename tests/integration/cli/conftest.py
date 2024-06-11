@@ -117,7 +117,7 @@ def project_dir_map():
 
 
 @pytest.fixture(autouse=True, params=__project_names__)
-def project(request, project_dir_map):
+def integ_project(request, project_dir_map):
     project_dir = project_dir_map.load(request.param)
     if not project_dir.is_dir():
         # Should not happen because of logic in fixture,

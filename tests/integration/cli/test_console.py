@@ -7,11 +7,11 @@ from tests.integration.cli.utils import skip_projects, skip_projects_except
 
 
 @pytest.fixture(params=("path", "root"))
-def extras_base_path(project, request):
+def extras_base_path(integ_project, request):
     if request.param == "path":
-        yield project.path
+        yield integ_project.path
     else:
-        yield project.config_manager.DATA_FOLDER
+        yield integ_project.config_manager.DATA_FOLDER
 
 
 # Simple single namespace example
@@ -99,9 +99,9 @@ def test_console(ape_cli, runner, item, project):
 
 
 @skip_projects("geth")
-def test_console_extras(project, extras_base_path, ape_cli, runner):
+def test_console_extras(integ_project, extras_base_path, ape_cli, runner):
     write_ape_console_extras(extras_base_path, EXTRAS_SCRIPT_1)
-    arguments = ("console", "--project", f"{project.path}")
+    arguments = ("console", "--project", f"{integ_project.path}")
 
     result = runner.invoke(
         ape_cli,
@@ -123,9 +123,9 @@ def test_console_extras(project, extras_base_path, ape_cli, runner):
 
 
 @skip_projects("geth")
-def test_console_init_extras(project, extras_base_path, ape_cli, runner):
+def test_console_init_extras(integ_project, extras_base_path, ape_cli, runner):
     write_ape_console_extras(extras_base_path, EXTRAS_SCRIPT_2)
-    arguments = ("console", "--project", f"{project.path}")
+    arguments = ("console", "--project", f"{integ_project.path}")
     result = runner.invoke(
         ape_cli,
         arguments,
@@ -137,18 +137,18 @@ def test_console_init_extras(project, extras_base_path, ape_cli, runner):
 
 
 @skip_projects("geth")
-def test_console_init_extras_kwargs(project, extras_base_path, ape_cli, runner):
+def test_console_init_extras_kwargs(integ_project, extras_base_path, ape_cli, runner):
     write_ape_console_extras(extras_base_path, EXTRAS_SCRIPT_3)
-    arguments = ("console", "--project", f"{project.path}")
+    arguments = ("console", "--project", f"{integ_project.path}")
     result = runner.invoke(ape_cli, arguments, input="exit\n", catch_exceptions=False)
     assert result.exit_code == 0, result.output
     assert no_console_error(result), result.output
 
 
 @skip_projects("geth")
-def test_console_init_extras_return(project, extras_base_path, ape_cli, runner):
+def test_console_init_extras_return(integ_project, extras_base_path, ape_cli, runner):
     write_ape_console_extras(extras_base_path, EXTRAS_SCRIPT_4)
-    arguments = ("console", "--project", f"{project.path}")
+    arguments = ("console", "--project", f"{integ_project.path}")
 
     # Test asserts returned A exists and B is not overwritten
     result = runner.invoke(
@@ -170,7 +170,7 @@ def test_console_init_extras_return(project, extras_base_path, ape_cli, runner):
 
 
 @skip_projects_except("only-dependencies")
-def test_console_import_local_path(project, ape_cli, runner):
+def test_console_import_local_path(integ_project, ape_cli, runner):
     # NOTE: Don't use temp-path! Temp-path projects do not copy Python modules.
     path = Path(__file__).parent / "projects" / "only-dependencies"
     arguments = ("console", "--project", f"{path}")
@@ -185,7 +185,7 @@ def test_console_import_local_path(project, ape_cli, runner):
 
 
 @skip_projects_except("only-dependencies")
-def test_console_import_local_path_in_extras_file(project, extras_base_path, ape_cli, runner):
+def test_console_import_local_path_in_extras_file(integ_project, extras_base_path, ape_cli, runner):
     # NOTE: Don't use tmp path! Temp projects do not copy Python modules.
     path = Path(__file__).parent / "projects" / "only-dependencies"
     write_ape_console_extras(extras_base_path, EXTRAS_SCRIPT_5)
@@ -201,8 +201,8 @@ def test_console_import_local_path_in_extras_file(project, extras_base_path, ape
 
 
 @skip_projects_except("only-dependencies")
-def test_console_ape_magic(project, ape_cli, runner):
-    arguments = ("console", "--project", f"{project.path}")
+def test_console_ape_magic(integ_project, ape_cli, runner):
+    arguments = ("console", "--project", f"{integ_project.path}")
     result = runner.invoke(
         ape_cli,
         arguments,
@@ -214,8 +214,8 @@ def test_console_ape_magic(project, ape_cli, runner):
 
 
 @skip_projects_except("only-dependencies")
-def test_console_bal_magic(project, ape_cli, runner, keyfile_account):
-    arguments = ("console", "--project", f"{project.path}")
+def test_console_bal_magic(integ_project, ape_cli, runner, keyfile_account):
+    arguments = ("console", "--project", f"{integ_project.path}")
     cases = (
         "%load_ext ape_console.plugin",
         "%bal acct",
@@ -236,7 +236,7 @@ def test_console_bal_magic(project, ape_cli, runner, keyfile_account):
 
 
 @skip_projects_except("with-contracts")
-def test_uncaught_txn_err(project, ape_cli, runner, mocker):
+def test_uncaught_txn_err(integ_project, ape_cli, runner, mocker):
     # For some reason, not showing in result.output, so captured another way.
     handler = mocker.patch("ape_console.plugin.handle_ape_exception")
     cmd_ls = [
@@ -248,7 +248,7 @@ def test_uncaught_txn_err(project, ape_cli, runner, mocker):
         "exit",
     ]
     cmd_str = "\n".join(cmd_ls)
-    arguments = ("console", "--project", f"{project.path}")
+    arguments = ("console", "--project", f"{integ_project.path}")
     runner.invoke(
         ape_cli,
         arguments,
@@ -259,7 +259,7 @@ def test_uncaught_txn_err(project, ape_cli, runner, mocker):
     assert str(err) == "Transaction failed."
 
 
-def test_console_none_network(project, ape_cli, runner):
-    arguments = ("console", "--project", f"{project.path}", "--network", "None")
+def test_console_none_network(integ_project, ape_cli, runner):
+    arguments = ("console", "--project", f"{integ_project.path}", "--network", "None")
     result = runner.invoke(ape_cli, arguments, input="exit\n", catch_exceptions=False)
     assert result.exit_code == 0

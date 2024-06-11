@@ -175,8 +175,8 @@ def test_list_filter_providers(ape_cli, runner, networks):
 
 
 @skip_projects_except("geth")
-def test_list_custom_networks(project, networks_runner):
-    networks_runner.project = project
+def test_list_custom_networks(integ_project, networks_runner):
+    networks_runner.project = integ_project
     result = networks_runner.invoke("list")
     assert result.exit_code == 0
     actual = "ethereum  (default)\n" + "".join(result.output.split("ethereum  (default)\n")[-1])
@@ -203,8 +203,8 @@ def test_run_custom_network(ape_cli, runner):
 
 @geth_process_test
 @skip_projects_except("geth")
-def test_run_already_running(networks_runner, project, geth_provider):
-    networks_runner.project = project
+def test_run_already_running(networks_runner, integ_project, geth_provider):
+    networks_runner.project = integ_project
     cmd = ("run", "--network", f"ethereum:{LOCAL_NETWORK_NAME}:node")
     result = networks_runner.invoke(*cmd)
     assert result.exit_code != 0

@@ -15,13 +15,14 @@ ape-config.yaml
 
 
 @run_once
-def test_init_success(ape_cli, runner, project):
-    # Successfull creation of project
+def test_init_success(ape_cli, runner, integ_project):
+    # Successful creation of project
     # ape init command
 
     # Changes cwd to a temporary directory
-    project_folder_path = project.path / "init_success"
+    project_folder_path = integ_project.path / "init_success"
     project_folder_path.mkdir()
+    start_path = os.curdir
     os.chdir(str(project_folder_path))
 
     try:
@@ -43,16 +44,17 @@ def test_init_success(ape_cli, runner, project):
         assert "init_success" in config.read_text()
 
     finally:
-        os.chdir(project.path)
+        os.chdir(start_path)
 
 
 @run_once
-def test_fail_all_files_and_folders_exist(ape_cli, runner, project):
+def test_fail_all_files_and_folders_exist(ape_cli, runner, integ_project):
     # failed to create all folders because they exist
     # ape init command
 
     # add project folder and directories
-    project_folder_path = project.path / "init_fail"
+    start_path = os.curdir
+    project_folder_path = integ_project.path / "init_fail"
     project_folder_path.mkdir()
     os.chdir(str(project_folder_path))
 
@@ -71,4 +73,4 @@ def test_fail_all_files_and_folders_exist(ape_cli, runner, project):
         assert "tests' exists" in result.output
 
     finally:
-        os.chdir(project.path)
+        os.chdir(start_path)
