@@ -212,7 +212,7 @@ def test_can_access_contracts(project, clean_cache):
     "contract_path",
     ("Interface.json", "Interface", "contracts/Interface.json", "contracts/Interface"),
 )
-def test_compile_specified_contracts(ape_cli, runner, project, contract_path, clean_cache):
+def test_compile_specified_contracts(clean_cache, ape_cli, runner, project, contract_path):
     arguments = ("compile", contract_path, "--project", f"{project.path}")
     result = runner.invoke(ape_cli, arguments, catch_exceptions=False)
     assert result.exit_code == 0, result.output
