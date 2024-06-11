@@ -402,10 +402,10 @@ class ApeConfig(ExtraAttributesMixin, BaseSettings, ManagerAccessMixin):
                 yaml.safe_dump(data, file)
 
         elif destination.suffix == ".json":
-            destination.write_text(self.model_dump_json(by_alias=True))
+            destination.write_text(self.model_dump_json(by_alias=True), encoding="utf8")
 
         else:
-            raise ValueError(f"Unsupported destination file type {destination}.")
+            raise ConfigError(f"Unsupported destination file type '{destination}'.")
 
 
 def _get_compile_configs_from_manifest(manifest: PackageManifest) -> dict[str, dict]:
