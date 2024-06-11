@@ -147,13 +147,9 @@ class _ContractPaths(ManagerAccessMixin):
                     # NOTE: ^ Also tracks.
                     continue
 
+                # We know here that the compiler is known.
                 suffix = get_full_extension(resolved_path)
-                if suffix in self.compiler_manager.registered_compilers:
-                    # File exists and is compile-able.
-                    path_set.add(resolved_path)
-
-                elif suffix:
-                    raise BadArgumentUsage(f"Source file '{resolved_path.name}' not found.")
+                path_set.add(resolved_path)
 
             else:
                 raise BadArgumentUsage(f"Source file '{path.name}' not found.")
