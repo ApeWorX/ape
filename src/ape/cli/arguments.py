@@ -77,9 +77,10 @@ class _ContractPaths(ManagerAccessMixin):
         elif not value or value == "*":
             # Get all file paths in the project.
             return {p for p in self.project.sources.paths}
-        else:
-            # Given a sequence of paths.
+        elif isinstance(value, Iterable):
             contract_paths = value
+        else:
+            raise BadArgumentUsage(f"Not a path or iter[Path]: {value}")
 
         # Convert source IDs or relative paths to absolute paths.
         path_set = self.lookup(contract_paths)
