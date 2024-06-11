@@ -23,7 +23,7 @@ from pydantic import field_validator
 from rich.tree import Tree
 
 from ape.api import EcosystemAPI, TraceAPI, TransactionAPI
-from ape.exceptions import ProviderError, TransactionNotFoundError
+from ape.exceptions import ContractLogicError, ProviderError, TransactionNotFoundError
 from ape.logging import logger
 from ape.types import AddressType, ContractFunctionPath, GasReport
 from ape.utils import ZERO_ADDRESS, is_evm_precompile, is_zero_hex
@@ -433,8 +433,14 @@ class TransactionTrace(Trace):
 
         # Figure out the 'returndata' using 'eth_call' RPC.
         tx = receipt.transaction.model_copy(update={"nonce": None})
-        return_value = self.provider.send_call(tx, block_id=receipt.block_number)
-        init_kwargs["returndata"] = return_value
+
+        try:
+            return_value = self.provider.send_call(tx, block_id=receipt.block_number)
+        except ContractLogicError:
+            # Unable to get the return value because even as a call, it fails.
+            pass
+        else:
+            init_kwargs["returndata"] = return_value
 
         return CallTreeNode(**init_kwargs)
 

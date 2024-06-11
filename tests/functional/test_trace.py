@@ -5,7 +5,8 @@ import pytest
 from evm_trace import CallTreeNode, CallType
 from hexbytes import HexBytes
 
-from ape_ethereum.trace import CallTrace, Trace, TransactionTrace, parse_rich_tree
+from ape.exceptions import ContractLogicError
+from ape_ethereum.trace import CallTrace, Trace, TraceApproach, TransactionTrace, parse_rich_tree
 from tests.functional.data.python import (
     TRACE_MISSING_GAS,
     TRACE_WITH_CUSTOM_ERROR,
@@ -156,6 +157,34 @@ VyperContract\.getNestedArrayMixedDynamic\(\) -> \[
 \] \[\d+ gas\]
 """
     assert re.match(expected.strip(), actual.strip())
+
+
+def test_transaction_trace_basic_approach_on_failed_call(chain, vyper_contract_instance, not_owner):
+    """
+    Show we can use the basic approach for failed calls.
+    """
+    # Get a failed tx
+    tx = None
+    try:
+        vyper_contract_instance.setNumber(0, sender=not_owner)
+    except ContractLogicError as err:
+        tx = err.txn
+
+    assert tx is not None, "Setup failed - could not get a failed txn."
+
+    trace = TransactionTrace.model_validate(
+        {
+            "call_trace_approach": None,
+            "debug_trace_transaction_parameters": {"enableMemory": True},
+            "transaction_hash": tx.txn_hash,
+            "transaction": tx,
+        }
+    )
+    trace.call_trace_approach = TraceApproach.BASIC
+    actual = trace.get_calltree()
+    # Mostly just checking that it did not fail!
+    assert actual is not None
+    assert isinstance(actual, CallTreeNode)
 
 
 def test_call_trace_debug_trace_call_not_supported(owner, vyper_contract_instance):

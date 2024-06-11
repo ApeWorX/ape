@@ -340,8 +340,14 @@ class ContractManager(BaseManager):
         self._compile_missing_contracts(self.sources.paths)
         if contract_types := self.project.manifest.contract_types:
             for ct in contract_types.values():
-                if ct.name:
-                    yield ct.name
+                if not ct.name or not ct.source_id:
+                    continue
+
+                # Ensure was not deleted.
+                elif not (self.project.path / ct.source_id).is_file():
+                    continue
+
+                yield ct.name
 
     def get(self, name: str, compile_missing: bool = True) -> Optional[ContractContainer]:
         """
