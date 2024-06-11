@@ -173,7 +173,7 @@ class TestCoverageData:
     def contract_source(self, vyper_contract_type, src):
         return ContractSource(contract_type=vyper_contract_type, source=src)
 
-    @pytest.fixture(scope="class")
+    @pytest.fixture
     def coverage_data(self, project, contract_source):
         return CoverageData(project, (contract_source,))
 
