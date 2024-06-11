@@ -824,7 +824,7 @@ def _get_ape_traceback_from_tx(txn: FailedTxn) -> Optional["SourceTraceback"]:
     try:
         receipt: "ReceiptAPI" = txn if isinstance(txn, ReceiptAPI) else txn.receipt  # type: ignore
     except Exception:
-        # Receipt not real enough, maybe was re-played call.
+        # Receipt not real enough, maybe was a re-played call.
         return None
 
     if not receipt:

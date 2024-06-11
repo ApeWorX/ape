@@ -23,7 +23,7 @@ from pydantic import field_validator
 from rich.tree import Tree
 
 from ape.api import EcosystemAPI, TraceAPI, TransactionAPI
-from ape.exceptions import ProviderError, TransactionNotFoundError, ContractLogicError
+from ape.exceptions import ContractLogicError, ProviderError, TransactionNotFoundError
 from ape.logging import logger
 from ape.types import AddressType, ContractFunctionPath, GasReport
 from ape.utils import ZERO_ADDRESS, is_evm_precompile, is_zero_hex
