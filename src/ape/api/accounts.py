@@ -9,6 +9,7 @@ from eip712.messages import SignableMessage as EIP712SignableMessage
 from eth_account import Account
 from eth_account.messages import encode_defunct
 from eth_pydantic_types import HexBytes
+from ethpm_types import ContractType
 
 from ape.api.address import BaseAddress
 from ape.api.transactions import ReceiptAPI, TransactionAPI
@@ -249,10 +250,15 @@ class AccountAPI(BaseInterfaceModel, BaseAddress):
         """
         from ape.contracts import ContractContainer
 
+        if isinstance(contract, ContractType):
+            # Hack to allow deploying ContractTypes w/o being
+            # wrapped in a container first.
+            contract = ContractContainer(contract)
+
         # NOTE: It is important to type check here to prevent cases where user
         #    may accidentally pass in a ContractInstance, which has a very
         #    different implementation for __call__ than ContractContainer.
-        if not isinstance(contract, ContractContainer):
+        elif not isinstance(contract, ContractContainer):
             raise TypeError(
                 "contract argument must be a ContractContainer type, "
                 "such as 'project.MyContract' where 'MyContract' is the name of "
