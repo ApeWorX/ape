@@ -85,7 +85,7 @@ def pytest_collection_modifyitems(session, config, items):
     items[:] = modified_items
 
 
-@pytest.fixture(autouse=True)
+@pytest.fixture(autouse=True, scope="session")
 def project_dir_map():
     """
     Ensure only copying projects once to prevent `TooManyOpenFilesError`.
@@ -97,9 +97,12 @@ def project_dir_map():
         def load(self, name: str) -> Path:
             base_path = Path(__file__).parent / "projects"
             if name in self.project_map:
-                # Already copied.
-                return self.project_map[name]
+                res = self.project_map[name]
+                if res.is_dir():
+                    # Already copied and still exists!
+                    return res
 
+            # Either re-copy or copy for the first time.
             project_source_dir = __projects_directory__ / name
             project_dest_dir = base_path / project_source_dir.name
             project_dest_dir.parent.mkdir(exist_ok=True, parents=True)
@@ -114,11 +117,17 @@ def project_dir_map():
 
 
 @pytest.fixture(autouse=True, params=__project_names__)
-def project(request, config, project_dir_map):
+def project(request, project_dir_map):
     project_dir = project_dir_map.load(request.param)
+    if not project_dir.is_dir():
+        # Should not happen because of logic in fixture,
+        # but just in case!
+        pytest.fail("Setup failed - project dir not exists.")
+
     root_project = Project(project_dir)
     # Using tmp project so no .build folder get kept around.
     with root_project.isolate_in_tempdir(name=request.param) as tmp_project:
+        assert tmp_project.path.is_dir(), "Setup failed - tmp-project dir not exists"
         yield tmp_project
 
 
