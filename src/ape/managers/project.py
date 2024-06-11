@@ -282,13 +282,10 @@ class SourceManager(BaseManager):
                     for file in full_path.parent.iterdir():
                         if not file.is_file():
                             continue
-                        elif not (file_ext := get_full_extension(file)):
-                            continue
 
                         # Check exact match w/o extension.
-                        prefix = file_ext.join(str(file).split(file_ext)[:-1])
-
-                        if str(full_path) == prefix:
+                        prefix = str(file.with_suffix("")).strip(" /\\")
+                        if str(full_path).strip(" /\\") == prefix:
                             return file
 
                 # Look for stem-only matches (last resort).
