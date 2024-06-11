@@ -458,12 +458,6 @@ def test_contract_file_paths_argument_given_contracts_folder(
     pm = project_with_contract
     contracts_dirname = pm.contracts_folder.as_posix()
     arguments = (contracts_dirname, "--project", f"{pm.path}")
-
-    # Really ensure the project is in the context for the test
-    # (helps weird multi-process snake races).
-    ctx = click.get_current_context()
-    ctx.obj["project"] = pm
-
     result = runner.invoke(contracts_paths_cmd, arguments)
     all_paths = ", ".join(x.name for x in sorted(pm.sources.paths))
 
