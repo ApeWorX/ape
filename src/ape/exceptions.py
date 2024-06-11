@@ -206,12 +206,6 @@ class TransactionError(ApeException):
 
         return receiver
 
-        return (
-            self.contract_address
-            or getattr(self.txn, "receiver", None)
-            or getattr(self.txn, "contract_address", None)
-        )
-
     @cached_property
     def contract_type(self) -> Optional[ContractType]:
         if not (address := self.address):
@@ -821,7 +815,12 @@ class CustomError(ContractLogicError):
 def _get_ape_traceback_from_tx(txn: FailedTxn) -> Optional["SourceTraceback"]:
     from ape.api.transactions import ReceiptAPI
 
-    receipt: "ReceiptAPI" = txn if isinstance(txn, ReceiptAPI) else txn.receipt  # type: ignore
+    try:
+        receipt: "ReceiptAPI" = txn if isinstance(txn, ReceiptAPI) else txn.receipt  # type: ignore
+    except Exception:
+        # Receipt not real enough, maybe was a re-played call.
+        return None
+
     if not receipt:
         return None
 
