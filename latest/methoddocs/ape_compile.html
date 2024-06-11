@@ -209,6 +209,7 @@
 <li class="toctree-l3"><a class="reference internal" href="#ape_compile.Config.include_dependencies"><code class="docutils literal notranslate"><span class="pre">Config.include_dependencies</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ape_compile.Config.model_config"><code class="docutils literal notranslate"><span class="pre">Config.model_config</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ape_compile.Config.output_extra"><code class="docutils literal notranslate"><span class="pre">Config.output_extra</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#ape_compile.Config.serialize_exclude"><code class="docutils literal notranslate"><span class="pre">Config.serialize_exclude()</span></code></a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="#ape_compile.OutputExtras"><code class="docutils literal notranslate"><span class="pre">OutputExtras</span></code></a><ul>
@@ -286,6 +287,13 @@ should configure <code class="docutils literal notranslate"><span class="pre">in
 <dt class="sig sig-object py" id="ape_compile.Config.output_extra">
 <span class="sig-name descname"><span class="pre">output_extra</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#ape_compile.OutputExtras" title="ape_compile.OutputExtras"><span class="pre">ape_compile.OutputExtras</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#ape_compile.Config.output_extra" title="Permalink to this definition"></a></dt>
 <dd><p>Extra selections to output. Outputs to <code class="docutils literal notranslate"><span class="pre">.build/{key.lower()}</span></code>.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ape_compile.Config.serialize_exclude">
+<span class="sig-name descname"><span class="pre">serialize_exclude</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">exclude</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">info</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape_compile.Config.serialize_exclude" title="Permalink to this definition"></a></dt>
+<dd><p>Exclude is put back with the weird r-prefix so we can
+go to-and-from.</p>
 </dd></dl>
 
 </dd></dl>
