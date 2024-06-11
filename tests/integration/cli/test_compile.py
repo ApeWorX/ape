@@ -213,6 +213,8 @@ def test_can_access_contracts(project, clean_cache):
     ("Interface", "Interface.json", "contracts/Interface.json", "contracts/Interface"),
 )
 def test_compile_specified_contracts(clean_cache, ape_cli, runner, project, contract_path):
+    assert project.path.is_file(), "Setup failed - project missing."
+
     arguments = ("compile", contract_path, "--project", f"{project.path}")
     result = runner.invoke(ape_cli, arguments, catch_exceptions=False)
     assert result.exit_code == 0, result.output
