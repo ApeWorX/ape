@@ -149,7 +149,6 @@ class _ContractPaths(ManagerAccessMixin):
                     continue
 
                 # We know here that the compiler is known.
-                suffix = get_full_extension(resolved_path)
                 path_set.add(resolved_path)
 
             else:
