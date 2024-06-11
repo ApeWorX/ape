@@ -2,7 +2,7 @@ import re
 
 from ape.api import ReceiptAPI
 from ape.exceptions import Abort, NetworkNotFoundError, TransactionError
-from ape_ethereum.transactions import Receipt
+from ape_ethereum.transactions import DynamicFeeTransaction, Receipt
 
 
 class TestAbort:
@@ -45,7 +45,7 @@ class TestTransactionError:
 
         receipt = contract.creation_metadata.receipt
         data = receipt.model_dump(exclude=("transaction",))
-        # Show when receier is zero_address, it still picks contract address.
+        # Show when receiver is zero_address, it still picks contract address.
         data["transaction"] = ethereum.create_transaction(receiver=zero_address)
 
         tx = Receipt.model_validate(data)
@@ -53,6 +53,27 @@ class TestTransactionError:
 
         err = TransactionError(txn=tx)
         assert err.address == contract.address
+
+    def test_call(self):
+        """
+        Simulating a failing-call, making sure it doesn't
+        blow up if it doesn't get a source-tb.
+        """
+        data = {
+            "chainId": 1337,
+            "to": "0x5FbDB2315678afecb367f032d93F642f64180aa3",
+            "from": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
+            "gas": 30029122,
+            "value": 0,
+            "data": "0xce50aa7d00000000000000000000000070997970c51812dc3a010c7d01b50e0d17dc79c80000000000000000000000000000000000000000000000000000000000000001",  # noqa: E501
+            "type": 2,
+            "maxFeePerGas": 875000000,
+            "maxPriorityFeePerGas": 0,
+            "accessList": [],
+        }
+        failing_call = DynamicFeeTransaction.model_validate(data)
+        err = TransactionError(txn=failing_call)
+        assert err.source_traceback is None
 
 
 class TestNetworkNotFoundError:
