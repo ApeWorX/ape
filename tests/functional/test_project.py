@@ -535,6 +535,17 @@ def test_project_api_foundry_and_ape_config_found(foundry_toml):
         assert not isinstance(actual, FoundryProject)
 
 
+def test_get_contract(project_with_contracts):
+    actual = project_with_contracts.get_contract("Other")
+    assert isinstance(actual, ContractContainer)
+    assert actual.contract_type.name == "Other"
+
+
+def test_get_contract_not_exists(project):
+    actual = project.get_contract("this is not a contract")
+    assert actual is None
+
+
 class TestProject:
     """
     All tests related to ``ape.Project``.
