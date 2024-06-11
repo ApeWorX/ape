@@ -327,6 +327,12 @@ def test_load_contracts(tmp_project):
     contracts_forced = tmp_project.load_contracts(use_cache=False)
     assert contracts_forced == contracts
 
+    # Delete a file and ensure it is does not show up in dict.
+    contract_to_rm = next(iter(contracts.values()))
+    (tmp_project.path / contract_to_rm.source_id).unlink()
+    contracts = tmp_project.load_contracts()
+    assert contract_to_rm.name not in contracts
+
 
 def test_load_contracts_detect_change(tmp_project, ape_caplog):
     path = tmp_project.contracts_folder / "Other.json"
@@ -826,6 +832,20 @@ class TestContractManager:
         actual = list(tmp_project.contracts._compile("contracts/Project.json"))
         assert len(actual) == 1
         assert actual[0].contract_type.name == "Project"
+
+    def test_values(self, tmp_project):
+        contracts = [c for c in tmp_project.contracts.values()]
+        actual = {x.name for x in contracts}
+        assert len(actual) == 2
+        assert actual == {"Other", "Project"}
+        # Delete a file and try again, as a test.
+        file = tmp_project.path / contracts[0].source_id
+        file.unlink()
+
+        contracts = [c for c in tmp_project.contracts.values()]
+        actual = {x.name for x in contracts}
+        assert len(actual) == 1
+        assert file.name not in actual
 
 
 class TestDeploymentManager:
