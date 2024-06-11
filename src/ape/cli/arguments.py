@@ -119,8 +119,9 @@ class _ContractPaths(ManagerAccessMixin):
 
     def lookup(self, path_iter: Iterable, path_set: Optional[set] = None) -> set[Path]:
         path_set = path_set or set()
+        given_paths = [p for p in path_iter]  # Handle iterators w/o losing it.
 
-        for path_id in path_iter:
+        for path_id in given_paths:
             path = Path(path_id)
             contracts_folder = self.project.contracts_folder
             if (
@@ -153,6 +154,10 @@ class _ContractPaths(ManagerAccessMixin):
 
             else:
                 raise BadArgumentUsage(f"Source file '{path.name}' not found.")
+
+        if not path_set and given_paths:
+            source_files_str = ", ".join(given_paths)
+            raise BadArgumentUsage(f"Source files not found: {source_files_str}")
 
         return path_set
 
