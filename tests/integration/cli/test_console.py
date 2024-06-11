@@ -62,7 +62,7 @@ def no_console_error(result):
 
 def write_ape_console_extras(base_path, contents):
     extras_file = base_path.joinpath("ape_console_extras.py")
-    extras_file.write_text(contents)
+    extras_file.write_text(contents, encoding="utf8")
     return extras_file
 
 

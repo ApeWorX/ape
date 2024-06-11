@@ -812,7 +812,7 @@ class CoverageReport(BaseModel):
             path = path / "coverage.xml"
 
         path.unlink(missing_ok=True)
-        path.write_text(xml)
+        path.write_text(xml, encoding="utf8")
 
     def write_html(self, path: Path, verbose: bool = False):
         if not (html := self.get_html(verbose=verbose)):
@@ -833,7 +833,7 @@ class CoverageReport(BaseModel):
         # Create new index.html.
         index = html_path / "index.html"
         index.unlink(missing_ok=True)
-        index.write_text(html)
+        index.write_text(html, encoding="utf8")
 
         favicon = html_path / "favicon.ico"
         if not favicon.is_file():
@@ -862,7 +862,7 @@ class CoverageReport(BaseModel):
 
             css = html_path / "styles.css"
             css.unlink(missing_ok=True)
-            css.write_text(_CSS)
+            css.write_text(_CSS, encoding="utf8")
 
     def get_html(self, verbose: bool = False) -> str:
         """

@@ -220,7 +220,7 @@ def test_global_config(data_folder, config):
 test:
   number_of_accounts: 11
 """.strip()
-    config_file.write_text(config_content)
+    config_file.write_text(config_content, encoding="utf8")
     global_config = config.load_global_config()
     assert global_config.get_config("test").number_of_accounts == 11
     config_file.unlink(missing_ok=True)

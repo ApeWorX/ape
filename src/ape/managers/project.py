@@ -877,7 +877,7 @@ class PackagesCache(ManagerAccessMixin):
             exclude_defaults=True,
         )
 
-        api_file.write_text(json_text)
+        api_file.write_text(json_text, encoding="utf8")
         return api_file
 
     def remove(self, package_id: str, version: str):
@@ -1599,7 +1599,7 @@ class Project(ProjectManager):
         for source_id, src in sources.items():
             path = destination / source_id
             path.parent.mkdir(parents=True, exist_ok=True)
-            path.write_text(str(src.content))
+            path.write_text(str(src.content), encoding="utf8")
 
         # Unpack config file.
         self.config.write_to_disk(destination / "ape-config.yaml")
@@ -1893,7 +1893,7 @@ class DeploymentManager(ManagerAccessMixin):
             # NOTE: missing_ok=True to handle race condition.
             destination.unlink(missing_ok=True)
 
-        destination.write_text(artifact.model_dump_json())
+        destination.write_text(artifact.model_dump_json(), encoding="utf8")
 
     def __iter__(self) -> Iterator[EthPMContractInstance]:
         """
@@ -2312,7 +2312,7 @@ class LocalProject(Project):
         self.manifest_path.unlink(missing_ok=True)
         manifest_text = self.manifest.model_dump_json(mode="json", by_alias=True)
         self.manifest_path.parent.mkdir(parents=True, exist_ok=True)
-        self.manifest_path.write_text(manifest_text)
+        self.manifest_path.write_text(manifest_text, encoding="utf8")
 
     def load_contracts(
         self, *source_ids: Union[str, Path], use_cache: bool = True
@@ -2408,7 +2408,7 @@ class LocalProject(Project):
                 abi_json = json.dumps(
                     [x.model_dump_json(by_alias=True, mode="json") for x in ct.abi]
                 )
-                file.write_text(abi_json)
+                file.write_text(abi_json, encoding="utf8")
 
 
 def _find_directory_with_extension(

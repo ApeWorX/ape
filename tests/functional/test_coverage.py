@@ -247,7 +247,7 @@ class TestCoverageTracker:
             # Create a source file.
             file = tmp.path / "contracts" / filename
             file.parent.mkdir(exist_ok=True, parents=True)
-            file.write_text("testing")
+            file.write_text("testing", encoding="utf8")
 
             # Ensure the TB refers to this source.
             tb_data["source_path"] = f"{tmp.path}/contracts/{filename}"

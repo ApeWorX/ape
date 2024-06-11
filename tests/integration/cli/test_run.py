@@ -206,7 +206,7 @@ def test_run_recompiles_if_needed(runner, ape_cli, scripts_runner, integ_project
     method_name = integ_project.VyperContract.contract_type.view_methods[0].name
     new_method_name = f"f__{method_name}__"
     new_contract_text = contract.read_text().replace(method_name, new_method_name)
-    contract.write_text(new_contract_text)
+    contract.write_text(new_contract_text, encoding="utf8")
 
     # Run the script. It better recompile first!
     result = scripts_runner.invoke("output_contract_view_methods")

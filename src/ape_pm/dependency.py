@@ -85,7 +85,7 @@ class LocalDependency(DependencyAPI):
 
             destination.unlink(missing_ok=True)
             destination.parent.mkdir(parents=True, exist_ok=True)
-            destination.write_text(self.local.read_text())
+            destination.write_text(self.local.read_text(), encoding="utf8")
 
 
 class GithubDependency(DependencyAPI):

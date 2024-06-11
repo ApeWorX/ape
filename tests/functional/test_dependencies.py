@@ -40,14 +40,14 @@ def project_with_downloaded_dependencies(project, oz_dependencies_config):
         manifest_source = oz_manifests / version / "openzeppelin.json"
         manifest_dest = oz_manifests_dest / f"{version.replace('.', '_')}.json"
         manifest_dest.unlink(missing_ok=True)
-        manifest_dest.write_text(manifest_source.read_text())
+        manifest_dest.write_text(manifest_source.read_text(), encoding="utf8")
 
         # Also, copy in the API data
         api_dest = base.api_folder / package_id / f"{version.replace('.', '_')}.json"
         api_dest.unlink(missing_ok=True)
         cfg = [x for x in oz_dependencies_config["dependencies"] if x["version"] == version][0]
         api_dest.parent.mkdir(exist_ok=True, parents=True)
-        api_dest.write_text(json.dumps(cfg))
+        api_dest.write_text(json.dumps(cfg), encoding="utf8")
 
     with project.temp_config(**oz_dependencies_config):
         yield project
@@ -125,7 +125,7 @@ def test_decode_dependency_with_config_override(project):
         base_path = tmp_project.path / path
         contracts_path = base_path / "contracts"
         contracts_path.mkdir(parents=True, exist_ok=True)
-        (contracts_path / "contract.json").write_text('{"abi": []}')
+        (contracts_path / "contract.json").write_text('{"abi": []}', encoding="utf8")
 
         data = {"name": "FooBar", "local": path, "config_override": settings}
         dependency = tmp_project.dependencies.decode_dependency(**data)
@@ -186,7 +186,7 @@ def test_add(project):
     with project.isolate_in_tempdir() as tmp_project:
         contracts_path = tmp_project.path / "src"
         contracts_path.mkdir(exist_ok=True, parents=True)
-        (contracts_path / "contract.json").write_text('{"abi": []}')
+        (contracts_path / "contract.json").write_text('{"abi": []}', encoding="utf8")
         data = {"name": "FooBar", "local": f"{tmp_project.path}"}
 
         dependency = project.dependencies.add(data)
@@ -217,7 +217,7 @@ def test_install(project, mocker):
     with project.isolate_in_tempdir() as tmp_project:
         contracts_path = tmp_project.path / "src"
         contracts_path.mkdir(exist_ok=True, parents=True)
-        (contracts_path / "contract.json").write_text('{"abi": []}')
+        (contracts_path / "contract.json").write_text('{"abi": []}', encoding="utf8")
         data = {"name": "FooBar", "local": f"{tmp_project.path}"}
         get_spec_spy = mocker.spy(tmp_project.dependencies, "_get_specified")
         install_dep_spy = mocker.spy(tmp_project.dependencies, "install_dependency")
@@ -369,10 +369,10 @@ class TestNpmDependency:
         contracts_folder = package_folder / "contracts"
         contracts_folder.mkdir(parents=True)
         package_json = package_folder / "package.json"
-        package_json.write_text(f'{{"version": "{self.VERSION}"}}')
+        package_json.write_text(f'{{"version": "{self.VERSION}"}}', encoding="utf8")
         file = contracts_folder / "contract.json"
         source_content = '{"abi": []}'
-        file.write_text(source_content)
+        file.write_text(source_content, encoding="utf8")
         yield base
 
     def test_fetch(self, node_modules_path, project_with_npm_dependency):
@@ -582,7 +582,7 @@ class TestProject:
             override = {"contracts_folder": "src"}
             contracts_path = tmp_project.path / "src"
             contracts_path.mkdir(exist_ok=True, parents=True)
-            (contracts_path / "contract.json").write_text('{"abi": []}')
+            (contracts_path / "contract.json").write_text('{"abi": []}', encoding="utf8")
 
             # use_cache=False only to lessen stateful test clobbering.
             data = {

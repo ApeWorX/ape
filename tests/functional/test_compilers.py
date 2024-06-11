@@ -85,7 +85,7 @@ def test_contract_type_collision(compilers, project_with_contract, mock_compiler
         new_contract = project_with_contract.path / existing_contract.source_id.replace(
             ".json", mock_compiler.ext
         )
-        new_contract.write_text("foobar")
+        new_contract.write_text("foobar", encoding="utf8")
         to_compile = [existing_path, new_contract]
         compile = compilers.compile(to_compile, project=project_with_contract)
 
@@ -100,7 +100,7 @@ def test_contract_type_collision(compilers, project_with_contract, mock_compiler
 
 def test_compile_with_settings(mock_compiler, compilers, project_with_contract):
     new_contract = project_with_contract.path / f"AMockContract{mock_compiler.ext}"
-    new_contract.write_text("foobar")
+    new_contract.write_text("foobar", encoding="utf8")
     settings = {"mock": {"foo": "bar"}}
 
     _ = compilers.registered_compilers  # Ensures cached property is set.

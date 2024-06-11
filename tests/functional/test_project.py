@@ -132,7 +132,7 @@ def test_contracts_folder_deduced(tmp_project):
     contracts_folder.mkdir()
     contract = contracts_folder / "tryme.json"
     abi = [{"name": "foo", "type": "fallback", "stateMutability": "nonpayable"}]
-    contract.write_text(json.dumps(abi))
+    contract.write_text(json.dumps(abi), encoding="utf8")
     new_project = Project(new_project_path)
     actual = new_project.contracts_folder
     assert actual == contracts_folder
@@ -180,7 +180,7 @@ def test_getattr_detects_changes(tmp_project):
     path = tmp_project.sources.lookup(source_id)
     assert path
     path.unlink(missing_ok=True)
-    path.write_text(content)
+    path.write_text(content, encoding="utf8")
     # Should have re-compiled.
     contract = tmp_project.Other
     assert "retrieve" in contract.contract_type.methods
@@ -193,7 +193,7 @@ def test_getattr_empty_contract(tmp_project):
     source_id = tmp_project.Other.contract_type.source_id
     path = tmp_project.sources.lookup(source_id)
     path.unlink(missing_ok=True)
-    path.write_text("")
+    path.write_text("", encoding="utf8")
     # Should have re-compiled.
     contract = tmp_project.Other
     assert not contract.contract_type.methods
@@ -289,8 +289,8 @@ def test_extract_manifest_excludes_cache(tmp_project):
     cachefile = tmp_project.contracts_folder / ".cache" / "CacheFile.json"
     cachefile2 = tmp_project.contracts_folder / ".cache" / "subdir" / "Cache2.json"
     cachefile2.parent.mkdir(parents=True)
-    cachefile.write_text("Doesn't matter")
-    cachefile2.write_text("Doesn't matter")
+    cachefile.write_text("Doesn't matter", encoding="utf8")
+    cachefile2.write_text("Doesn't matter", encoding="utf8")
     manifest = tmp_project.extract_manifest()
     assert isinstance(manifest, PackageManifest)
     assert ".cache/CacheFile.json" not in (manifest.sources or {})
@@ -349,7 +349,7 @@ def test_load_contracts_detect_change(tmp_project, ape_caplog):
         new_content = content.replace("foo", "bar")
         assert "bar" in new_content, "Test setup failed. Unexpected file content."
         path.unlink()
-        path.write_text(new_content)
+        path.write_text(new_content, encoding="utf8")
 
         # Prove re-compiles.
         contracts = tmp_project.load_contracts()
@@ -369,7 +369,7 @@ def test_load_contracts_after_deleting_same_named_contract(tmp_project, compiler
     collision error from deleted files.
     """
     init_contract = tmp_project.contracts_folder / "foo.__mock__"
-    init_contract.write_text("LALA")
+    init_contract.write_text("LALA", encoding="utf8")
     compilers.registered_compilers[".__mock__"] = mock_compiler
     result = tmp_project.load_contracts()
     assert "foo" in result
@@ -384,7 +384,7 @@ def test_load_contracts_after_deleting_same_named_contract(tmp_project, compiler
 
     # Create a new contract with the same name.
     new_contract = tmp_project.contracts_folder / "bar.__mock__"
-    new_contract.write_text("BAZ")
+    new_contract.write_text("BAZ", encoding="utf8")
     mock_compiler.overrides = {"contractName": "foo"}
     result = tmp_project.load_contracts()
     assert "foo" in result
@@ -519,10 +519,10 @@ def test_project_api_foundry_and_ape_config_found(foundry_toml):
     """
     with ape.Project.create_temporary_project() as temp_project:
         foundry_cfg_file = temp_project.path / "foundry.toml"
-        foundry_cfg_file.write_text(foundry_toml)
+        foundry_cfg_file.write_text(foundry_toml, encoding="utf8")
 
         ape_cfg_file = temp_project.path / "ape-config.yaml"
-        ape_cfg_file.write_text("name: testfootestfootestfoo")
+        ape_cfg_file.write_text("name: testfootestfootestfoo", encoding="utf8")
 
         actual = temp_project.project_api
         assert isinstance(actual, ApeProject)
@@ -652,9 +652,9 @@ class TestFoundryProject:
     def test_extract_config(self, foundry_toml, gitmodules, mock_github):
         with ape.Project.create_temporary_project() as temp_project:
             cfg_file = temp_project.path / "foundry.toml"
-            cfg_file.write_text(foundry_toml)
+            cfg_file.write_text(foundry_toml, encoding="utf8")
             gitmodules_file = temp_project.path / ".gitmodules"
-            gitmodules_file.write_text(gitmodules)
+            gitmodules_file.write_text(gitmodules, encoding="utf8")
 
             api = temp_project.project_api
             mock_github.get_repo.return_value = {"default_branch": "main"}
@@ -730,7 +730,7 @@ class TestSourceManager:
             # Duplicate contract so that there are multiple with the same name.
             for nested_src in (nested_source_a, nested_source_b):
                 nested_src.touch()
-                nested_src.write_text(source_path.read_text())
+                nested_src.write_text(source_path.read_text(), encoding="utf8")
 
             # Top-level match.
             for base in (source_path, str(source_path), "Contract", "Contract.json"):
@@ -787,7 +787,7 @@ class TestSourceManager:
             cache = tmp_project.contracts_folder / ".cache"
             cache.mkdir(exist_ok=True)
             random_file = cache / "dontmindme.json"
-            random_file.write_text("what, this isn't json?!")
+            random_file.write_text("what, this isn't json?!", encoding="utf8")
 
             path_ids = {
                 f"{tmp_project.contracts_folder.name}/{src.name}"
