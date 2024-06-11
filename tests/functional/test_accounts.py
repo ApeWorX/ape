@@ -331,6 +331,12 @@ def test_deploy_no_deployment_bytecode(owner, bytecode):
         owner.deploy(contract)
 
 
+def test_deploy_contract_type(owner, vyper_contract_type, chain, clean_contracts_cache):
+    contract = owner.deploy(vyper_contract_type, 0)
+    assert contract.address
+    assert contract.txn_hash
+
+
 def test_send_transaction_with_bad_nonce(sender, receiver):
     # Bump the nonce so we can set one that is too low.
     sender.transfer(receiver, "1 gwei", type=0)
