@@ -206,12 +206,6 @@ class TransactionError(ApeException):
 
         return receiver
 
-        return (
-            self.contract_address
-            or getattr(self.txn, "receiver", None)
-            or getattr(self.txn, "contract_address", None)
-        )
-
     @cached_property
     def contract_type(self) -> Optional[ContractType]:
         if not (address := self.address):
