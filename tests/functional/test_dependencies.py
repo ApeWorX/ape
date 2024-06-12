@@ -559,7 +559,7 @@ class TestDependency:
     @skip_if_plugin_installed("vyper", "solidity")
     def test_compile_missing_compilers(self, project, ape_caplog):
         with create_tempdir() as path:
-            api = LocalDependency(local=path, name="ooga", version="1.0.0")
+            api = LocalDependency(local=path, name="ooga2", version="1.1.0")
             dependency = Dependency(api, project)
             sol_path = dependency.project.contracts_folder / "Sol.sol"
             sol_path.write_text("// Sol")
