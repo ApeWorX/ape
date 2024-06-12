@@ -368,3 +368,21 @@ def test_write_to_disk_txt(config):
         path = base_path / "config.txt"
         with pytest.raises(ConfigError, match=f"Unsupported destination file type '{path}'."):
             config.write_to_disk(path)
+
+
+def test_dependencies_not_list_of_dicts(project):
+    # NOTE: `project:` is a not a user-facing config, only
+    #   for internal Ape.
+    data = {"dependencies": 123, "project": str(project.path)}
+    expected = "Expecting dependencies: to be iterable. Received: int"
+    with pytest.raises(ConfigError, match=expected):
+        _ = ApeConfig.model_validate(data)
+
+
+def test_dependencies_list_of_non_dicts(project):
+    # NOTE: `project:` is a not a user-facing config, only
+    #   for internal Ape.
+    data = {"dependencies": [123, 123], "project": str(project.path)}
+    expected = "Expecting mapping for dependency. Received: int."
+    with pytest.raises(ConfigError, match=expected):
+        _ = ApeConfig.model_validate(data)

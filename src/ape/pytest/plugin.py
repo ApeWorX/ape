@@ -21,9 +21,9 @@ def pytest_addoption(parser):
             name_str = ", ".join(names)
             if "already added" in str(err):
                 raise ConfigError(
-                    f"Another pytest plugin besides `ape_test` uses an option with "
+                    "Another pytest plugin besides `ape_test` uses an option with "
                     f"one of '{name_str}'. Note that Ape does not support being "
-                    f"installed alongside Brownie; please use separate environments!"
+                    "installed alongside Brownie; please use separate environments!"
                 )
 
             raise ConfigError(f"Failed adding option {name_str}: {err}") from err

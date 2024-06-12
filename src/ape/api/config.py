@@ -1,5 +1,5 @@
 import os
-from collections.abc import Iterator
+from collections.abc import Iterable, Iterator
 from enum import Enum
 from functools import cached_property
 from pathlib import Path
@@ -197,7 +197,7 @@ class ApeConfig(ExtraAttributesMixin, BaseSettings, ManagerAccessMixin):
     @classmethod
     def validate_model(cls, model):
         model = model or {}
-        fixed_model = {}
+        fixed_model: dict = {}
         for key, val in model.items():
             # Allows hyphens to work anywhere where underscores are.
             fixed_model[key.replace("-", "_")] = val
@@ -207,6 +207,13 @@ class ApeConfig(ExtraAttributesMixin, BaseSettings, ManagerAccessMixin):
             # problems when moving the project around (as happens in local
             # dependencies).
             fixed_deps = []
+            dependencies_list = fixed_model.get("dependencies", [])
+            if not isinstance(dependencies_list, Iterable):
+                raise ConfigError(
+                    "Expecting dependencies: to be iterable. "
+                    f"Received: {type(dependencies_list).__name__}"
+                )
+
             for dep in fixed_model.get("dependencies", []):
                 if not isinstance(dep, dict):
                     raise ConfigError(
