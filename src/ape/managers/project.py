@@ -837,6 +837,26 @@ def _get_cache_suffix(package_id: str, version: str, suffix: str = "") -> Path:
     return package_id_path / version_name
 
 
+def _get_cache_path(
+    base_path: Path, package_id: str, version: str, is_dir: bool = False, suffix: str = ""
+) -> Path:
+    options = _version_to_options(version)
+    original = None
+    for option in options:
+        path = base_path / _get_cache_suffix(package_id, option, suffix=suffix)
+
+        if original is None:
+            # The 'original' is the first option.
+            original = path
+
+        if (is_dir and path.is_dir()) or (not is_dir and path.is_file()):
+            return path
+
+    # Return original - may no be created yet!
+    assert original is not None  # For mypy.
+    return original
+
+
 class PackagesCache(ManagerAccessMixin):
     def __init__(self):
         self._api_cache: dict[str, DependencyAPI] = {}
@@ -875,21 +895,21 @@ class PackagesCache(ManagerAccessMixin):
         """
         Path to the dir of the cached project.
         """
-        return self.projects_folder / _get_cache_suffix(package_id, version)
+        return _get_cache_path(self.projects_folder, package_id, version, is_dir=True)
 
     def get_manifest_path(self, package_id: str, version: str) -> Path:
         """
         Path to the manifest filepath the dependency project uses
         as a base.
         """
-        return self.manifests_folder / _get_cache_suffix(package_id, version, suffix=".json")
+        return _get_cache_path(self.manifests_folder, package_id, version, suffix=".json")
 
     def get_api_path(self, package_id: str, version: str) -> Path:
         """
         Path to the manifest filepath the dependency project uses
         as a base.
         """
-        return self.api_folder / _get_cache_suffix(package_id, version, suffix=".json")
+        return _get_cache_path(self.api_folder, package_id, version, suffix=".json")
 
     def cache_api(self, api: DependencyAPI) -> Path:
         """
