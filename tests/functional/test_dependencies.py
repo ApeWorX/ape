@@ -322,6 +322,74 @@ class TestPackagesCache:
         actual = json.loads(path.read_text())
         assert actual == {"name": "depabc", "local": "depabc"}
 
+    def test_cache_api_when_v_prefix_exists(self, cache):
+        # First, cache the v-prefix
+        dep = LocalDependency(name="depabc", local=Path("depabc"), version="v1.0.0")
+        path0 = cache.cache_api(dep)
+        assert path0.is_file()
+
+        # Now, try to cache again w/o v prefix
+        dep.version = "1.0.0"
+        path1 = cache.cache_api(dep)
+        assert path1 == path0
+
+    def test_cache_api_when_non_v_prefix_exists(self, cache):
+        # First, cache the non-v-prefix
+        dep = LocalDependency(name="depabc", local=Path("depabc"), version="1.0.0")
+        path0 = cache.cache_api(dep)
+        assert path0.is_file()
+
+        # Now, try to cache again with the v prefix
+        dep.version = "v1.0.0"
+        path1 = cache.cache_api(dep)
+        assert path1 == path0
+
+    def test_get_manifest_path(self, cache, data_folder):
+        package_id = "this/is/my_package-ID"
+        version = "version12/5.54"
+        actual = cache.get_manifest_path(package_id, version)
+        expected = (
+            data_folder / "packages" / "manifests" / "this_is_my_package-ID" / "version12_5_54.json"
+        )
+        assert actual == expected
+
+    def test_get_manifest_path_v_prefix_exists(self, cache, data_folder):
+        file = data_folder / "packages" / "manifests" / "manifest-pkg-test-1" / "v1_0_0.json"
+        file.parent.mkdir(parents=True, exist_ok=True)
+        file.touch()
+
+        # Requesting w/o v-prefix. Should still work.
+        path = cache.get_manifest_path("manifest-pkg-test-1", "1.0.0")
+        assert path == file
+
+    def test_get_manifest_path_non_v_prefix_exists(self, cache, data_folder):
+        file = data_folder / "packages" / "manifests" / "manifest-pkg-test-2" / "1_0_0.json"
+        file.parent.mkdir(parents=True, exist_ok=True)
+        file.touch()
+
+        # Requesting w/o v-prefix. Should still work.
+        path = cache.get_manifest_path("manifest-pkg-test-2", "v1.0.0")
+        assert path == file
+
+    def test_get_project_path(self, cache, data_folder):
+        path = data_folder / "packages" / "projects" / "project-test-1" / "local"
+        actual = cache.get_project_path("project-test-1", "local")
+        assert actual == path
+
+    def test_get_project_path_missing_v_prefix(self, cache, data_folder):
+        path = data_folder / "packages" / "projects" / "project-test-1" / "v1_0_0"
+        path.mkdir(parents=True, exist_ok=True)
+        # Missing v-prefix on request.
+        actual = cache.get_project_path("project-test-1", "1.0.0")
+        assert actual == path
+
+    def test_get_project_path_unneeded_v_prefix(self, cache, data_folder):
+        path = data_folder / "packages" / "projects" / "project-test-2" / "1_0_0"
+        path.mkdir(parents=True, exist_ok=True)
+        # Unneeded v-prefix on request.
+        actual = cache.get_project_path("project-test-2", "v1.0.0")
+        assert actual == path
+
 
 class TestLocalDependency:
     NAME = "testlocaldep"

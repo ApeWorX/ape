@@ -812,6 +812,24 @@ def _get_cache_suffix(package_id: str, version: str, suffix: str = "") -> Path:
     return package_id_path / version_name
 
 
+def _get_cache_file_path(base_path: Path, package_id: str, version: str) -> Path:
+    options = _version_to_options(version)
+    original = None
+    for option in options:
+        path = base_path / _get_cache_suffix(package_id, option, suffix=".json")
+
+        if original is None:
+            # The 'original' is the first option.
+            original = path
+
+        if path.is_file():
+            return path
+
+    # Return original - may no be created yet!
+    assert original is not None  # For mypy.
+    return original
+
+
 class PackagesCache(ManagerAccessMixin):
     def __init__(self):
         self._api_cache: dict[str, DependencyAPI] = {}
@@ -850,21 +868,34 @@ class PackagesCache(ManagerAccessMixin):
         """
         Path to the dir of the cached project.
         """
-        return self.projects_folder / _get_cache_suffix(package_id, version)
+        options = _version_to_options(version)
+        original = None
+        for option in options:
+            path = self.projects_folder / _get_cache_suffix(package_id, option)
+            if original is None:
+                # The original is the first one.
+                # It may not exist yet.
+                original = path
+
+            if path.is_dir():
+                return path
+
+        assert original is not None  # For mypy
+        return original
 
     def get_manifest_path(self, package_id: str, version: str) -> Path:
         """
         Path to the manifest filepath the dependency project uses
         as a base.
         """
-        return self.manifests_folder / _get_cache_suffix(package_id, version, suffix=".json")
+        return _get_cache_file_path(self.manifests_folder, package_id, version)
 
     def get_api_path(self, package_id: str, version: str) -> Path:
         """
         Path to the manifest filepath the dependency project uses
         as a base.
         """
-        return self.api_folder / _get_cache_suffix(package_id, version, suffix=".json")
+        return _get_cache_file_path(self.api_folder, package_id, version)
 
     def cache_api(self, api: DependencyAPI) -> Path:
         """
