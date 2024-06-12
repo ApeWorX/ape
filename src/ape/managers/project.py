@@ -2356,7 +2356,7 @@ class LocalProject(Project):
             starting = {
                 n: ContractContainer(ct)
                 for n, ct in (self.manifest.contract_types or {}).items()
-                if ct.source_id and (self.path / ct.source_id).is_file()
+                if use_cache and ct.source_id and (self.path / ct.source_id).is_file()
             }
             paths = self.sources.paths
 
