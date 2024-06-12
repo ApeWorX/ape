@@ -15,6 +15,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 from ape.exceptions import ConfigError
 from ape.logging import logger
 from ape.types import AddressType
+from ape.utils import clean_path
 from ape.utils.basemodel import (
     ExtraAttributesMixin,
     ExtraModelAttributes,
@@ -283,7 +284,7 @@ class ApeConfig(ExtraAttributesMixin, BaseSettings, ManagerAccessMixin):
                 # TODO: Support JSON configs here.
                 raise  # The validation error as-is
 
-            # Several errors may have been collected from he config.
+            # Several errors may have been collected from the config.
             all_errors = err.errors()
             # Attempt to find line numbers in the config matching.
             cfg_content = Source(content=path.read_text(encoding="utf8")).content
@@ -315,7 +316,7 @@ class ApeConfig(ExtraAttributesMixin, BaseSettings, ManagerAccessMixin):
 
                 if lineno is not None and loc_idx >= depth:
                     err_map[lineno] = error
-                # else: we looped through whole file and didn't find.
+                # else: we looped through the whole file and didn't find anything.
 
             if not err_map:
                 # raise ValidationError as-is (no line numbers found for some reason).
@@ -340,7 +341,7 @@ class ApeConfig(ExtraAttributesMixin, BaseSettings, ManagerAccessMixin):
             # NOTE: Using reversed because later pydantic errors
             #   appear earlier in the list.
             final_msg = "\n".join(reversed(error_strs)).strip()
-            final_msg = f"'{path.name}' is invalid!\n{final_msg}"
+            final_msg = f"'{clean_path(path)}' is invalid!\n{final_msg}"
             rich.print(final_msg)
 
             # Exit now or else you can get very strange issues.
