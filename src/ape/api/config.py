@@ -208,6 +208,11 @@ class ApeConfig(ExtraAttributesMixin, BaseSettings, ManagerAccessMixin):
             # dependencies).
             fixed_deps = []
             for dep in fixed_model.get("dependencies", []):
+                if not isinstance(dep, dict):
+                    raise ConfigError(
+                        f"Expecting mapping for dependency. Received: {type(dep).__name__}."
+                    )
+
                 fixed_dep = {**dep}
                 if "project" not in fixed_dep:
                     fixed_dep["project"] = project
