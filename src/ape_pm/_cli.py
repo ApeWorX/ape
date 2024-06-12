@@ -7,7 +7,8 @@ import click
 from ape.cli.options import ape_cli_context, config_override_option
 from ape.exceptions import ProjectError
 from ape.logging import logger
-from ape.managers.project import Dependency
+from ape.managers.project import Dependency, LocalProject
+from ape.utils import get_all_files_in_directory, get_full_extension
 from ape_pm import LocalDependency
 
 
@@ -293,15 +294,7 @@ def compile(cli_ctx, name, version, force, config_override):
                 cfg["config_override"] = config_override
 
             dependency = pm.dependencies.install(**cfg)
-            try:
-                dependency.compile(use_cache=not force)
-            except Exception as err:
-                cli_ctx.logger.error(str(err))
-                continue
-            else:
-                cli_ctx.logger.success(
-                    f"Package '{dependency.name}@{dependency.version}' compiled."
-                )
+            _compile_dependency(cli_ctx, dependency, force)
 
         if did_error:
             sys.exit(1)
@@ -321,10 +314,38 @@ def compile(cli_ctx, name, version, force, config_override):
         if config_override:
             dependency.api.config_override = config_override
 
-        try:
-            dependency.compile(use_cache=not force)
-        except Exception as err:
-            cli_ctx.logger.error(str(err))
-            continue
-        else:
+        _compile_dependency(cli_ctx, dependency, force)
+
+
+def _compile_dependency(cli_ctx, dependency: Dependency, force: bool):
+    try:
+        result = dependency.compile(use_cache=not force)
+    except Exception as err:
+        cli_ctx.logger.error(str(err))
+    else:
+        if result:
             cli_ctx.logger.success(f"Package '{dependency.name}@{dependency.version}' compiled.")
+        else:
+            dep_project = dependency.project
+            contracts_folder = dep_project.contracts_folder
+            message = "Compiling dependency produced no contract types."
+            if isinstance(dep_project, LocalProject):
+                all_files = [x.name for x in get_all_files_in_directory(contracts_folder)]
+                has_solidity_sources = any(get_full_extension(Path(x)) == ".sol" for x in all_files)
+                has_vyper_sources = any(
+                    get_full_extension(Path(x)) in (".vy", ".vyi") for x in all_files
+                )
+                compilers = cli_ctx.compiler_manager.register_compilers
+                warn_sol = has_solidity_sources and ".sol" not in compilers
+                warn_vyper = has_vyper_sources and ".vy" not in compilers
+                suffix = ""
+                if warn_sol:
+                    suffix = "Try installing 'ape-solidity'"
+                if warn_vyper and warn_sol:
+                    suffix += " or 'ape-vyper'"
+                elif warn_vyper:
+                    suffix = "Try installing 'ape-vyper'"
+                if suffix:
+                    message = f"{message} {suffix}."
+
+            cli_ctx.logger.warning(message)

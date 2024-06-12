@@ -3,7 +3,7 @@ from pathlib import Path
 
 import pytest
 
-from tests.conftest import ApeSubprocessRunner
+from tests.conftest import ApeSubprocessRunner, skip_if_plugin_installed
 from tests.integration.cli.utils import github_xfail, run_once, skip_projects_except
 
 EXPECTED_FAIL_MESSAGE = "Unknown package '{}'."
@@ -156,6 +156,23 @@ def test_compile_dependency(pm_runner, integ_project):
     result = pm_runner.invoke("compile", name, "--force")
     assert result.exit_code == 0, result.output
     assert f"Package '{name}@local' compiled." in result.output
+
+
+@skip_if_plugin_installed("vyper", "solidity")
+@skip_projects_except("with-contracts")
+def test_compile_missing_compiler_plugins(pm_runner, integ_project, compilers):
+    pm_runner.project = integ_project
+    name = "depwithunregisteredcontracts"
+    result = pm_runner.invoke("compile", name, "--force")
+    expected = (
+        "Compiling dependency produced no contract types. "
+        "Try installing 'ape-solidity' or 'ape-vyper'"
+    )
+    assert expected in result.output
+
+    # Also show it happens when installing _all_.
+    result = pm_runner.invoke("compile", ".", "--force")
+    assert expected in result.output
 
 
 @skip_projects_except("only-dependencies")

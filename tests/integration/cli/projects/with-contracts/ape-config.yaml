@@ -11,6 +11,9 @@ dependencies:
     config_override:
       contracts_folder: .
 
+  - name: depwithunregisteredcontracts
+    local: ./dep_with_sol_and_vy
+
 test:
   # `false` because running pytest within pytest.
   disconnect_providers_after: false
