@@ -157,6 +157,11 @@ def test_compile_dependency(pm_runner, integ_project):
     assert result.exit_code == 0, result.output
     assert f"Package '{name}@local' compiled." in result.output
 
+    # Show it can happen more than once. (no --force this time).
+    result = pm_runner.invoke("compile", name)
+    assert result.exit_code == 0, result.output
+    assert f"Package '{name}@local' compiled." in result.output
+
 
 @skip_if_plugin_installed("vyper", "solidity")
 @skip_projects_except("with-contracts")
