@@ -293,15 +293,7 @@ def compile(cli_ctx, name, version, force, config_override):
                 cfg["config_override"] = config_override
 
             dependency = pm.dependencies.install(**cfg)
-            try:
-                dependency.compile(use_cache=not force)
-            except Exception as err:
-                cli_ctx.logger.error(str(err))
-                continue
-            else:
-                cli_ctx.logger.success(
-                    f"Package '{dependency.name}@{dependency.version}' compiled."
-                )
+            _compile_dependency(cli_ctx, dependency, force)
 
         if did_error:
             sys.exit(1)
@@ -321,10 +313,16 @@ def compile(cli_ctx, name, version, force, config_override):
         if config_override:
             dependency.api.config_override = config_override
 
-        try:
-            dependency.compile(use_cache=not force)
-        except Exception as err:
-            cli_ctx.logger.error(str(err))
-            continue
-        else:
+        _compile_dependency(cli_ctx, dependency, force)
+
+
+def _compile_dependency(cli_ctx, dependency: Dependency, force: bool):
+    try:
+        result = dependency.compile(use_cache=not force)
+    except Exception as err:
+        cli_ctx.logger.error(str(err))
+    else:
+        if result:
             cli_ctx.logger.success(f"Package '{dependency.name}@{dependency.version}' compiled.")
+        # else: user should have received warning from `dependency.compile()` if there
+        # was no result.

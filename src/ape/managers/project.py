@@ -749,7 +749,32 @@ class Dependency(BaseManager, ExtraAttributesMixin):
             self.project.reconfigure(**override)
             self._cache.cache_api(self.api)
 
-        return self.project.load_contracts(use_cache=use_cache)
+        result = self.project.load_contracts(use_cache=use_cache)
+        if not result:
+            contracts_folder = self.project.contracts_folder
+            message = "Compiling dependency produced no contract types."
+            if isinstance(self.project, LocalProject):
+                all_files = [x.name for x in get_all_files_in_directory(contracts_folder)]
+                has_solidity_sources = any(get_full_extension(Path(x)) == ".sol" for x in all_files)
+                has_vyper_sources = any(
+                    get_full_extension(Path(x)) in (".vy", ".vyi") for x in all_files
+                )
+                compilers = self.compiler_manager.registered_compilers
+                warn_sol = has_solidity_sources and ".sol" not in compilers
+                warn_vyper = has_vyper_sources and ".vy" not in compilers
+                suffix = ""
+                if warn_sol:
+                    suffix = "Try installing 'ape-solidity'"
+                if warn_vyper and warn_sol:
+                    suffix += " or 'ape-vyper'"
+                elif warn_vyper:
+                    suffix = "Try installing 'ape-vyper'"
+                if suffix:
+                    message = f"{message} {suffix}."
+
+            logger.warning(message)
+
+        return result
 
     def unpack(self, path: Path) -> Iterator["Dependency"]:
         """
@@ -2351,7 +2376,7 @@ class LocalProject(Project):
             starting = {
                 n: ContractContainer(ct)
                 for n, ct in (self.manifest.contract_types or {}).items()
-                if ct.source_id and (self.path / ct.source_id).is_file()
+                if use_cache and ct.source_id and (self.path / ct.source_id).is_file()
             }
             paths = self.sources.paths
 

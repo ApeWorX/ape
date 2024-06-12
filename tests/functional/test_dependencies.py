@@ -10,6 +10,7 @@ import ape
 from ape.managers.project import Dependency, LocalProject, PackagesCache, Project, ProjectManager
 from ape.utils import create_tempdir
 from ape_pm.dependency import GithubDependency, LocalDependency, NpmDependency
+from tests.conftest import skip_if_plugin_installed
 
 
 @pytest.fixture
@@ -610,6 +611,35 @@ class TestDependency:
         name = dependency.api.package_id.replace("/", "_")
         expected = data_folder / "packages" / "manifests" / name / "1_0_0.json"
         assert actual == expected
+
+    def test_compile(self, project):
+        with create_tempdir() as path:
+            api = LocalDependency(local=path, name="ooga", version="1.0.0")
+            dependency = Dependency(api, project)
+            contract_path = dependency.project.contracts_folder / "CCC.json"
+            contract_path.write_text(
+                '[{"name":"foo","type":"fallback", "stateMutability":"nonpayable"}]'
+            )
+            result = dependency.compile()
+            assert len(result) == 1
+            assert result["CCC"].name == "CCC"
+
+    @skip_if_plugin_installed("vyper", "solidity")
+    def test_compile_missing_compilers(self, project, ape_caplog):
+        with create_tempdir() as path:
+            api = LocalDependency(local=path, name="ooga2", version="1.1.0")
+            dependency = Dependency(api, project)
+            sol_path = dependency.project.contracts_folder / "Sol.sol"
+            sol_path.write_text("// Sol")
+            vy_path = dependency.project.contracts_folder / "Vy.vy"
+            vy_path.write_text("# Vy")
+            expected = (
+                "Compiling dependency produced no contract types. "
+                "Try installing 'ape-solidity' or 'ape-vyper'."
+            )
+            result = dependency.compile()
+            assert len(result) == 0
+            assert expected in ape_caplog.head
 
 
 class TestProject:
