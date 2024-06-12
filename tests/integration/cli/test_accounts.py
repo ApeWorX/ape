@@ -38,7 +38,7 @@ def temp_keyfile_path(config):
 
 @pytest.fixture
 def temp_keyfile(temp_keyfile_path, keyparams):
-    temp_keyfile_path.write_text(json.dumps(keyparams))
+    temp_keyfile_path.write_text(json.dumps(keyparams), encoding="utf8")
 
     yield temp_keyfile_path
 

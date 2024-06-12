@@ -1345,22 +1345,22 @@ class ContractCache(BaseManager):
     def _cache_contract_to_disk(self, address: AddressType, contract_type: ContractType):
         self._contract_types_cache.mkdir(exist_ok=True, parents=True)
         address_file = self._contract_types_cache / f"{address}.json"
-        address_file.write_text(contract_type.model_dump_json())
+        address_file.write_text(contract_type.model_dump_json(), encoding="utf8")
 
     def _cache_proxy_info_to_disk(self, address: AddressType, proxy_info: ProxyInfoAPI):
         self._proxy_info_cache.mkdir(exist_ok=True, parents=True)
         address_file = self._proxy_info_cache / f"{address}.json"
-        address_file.write_text(proxy_info.model_dump_json())
+        address_file.write_text(proxy_info.model_dump_json(), encoding="utf8")
 
     def _cache_blueprint_to_disk(self, blueprint_id: str, contract_type: ContractType):
         self._blueprint_cache.mkdir(exist_ok=True, parents=True)
         blueprint_file = self._blueprint_cache / f"{blueprint_id}.json"
-        blueprint_file.write_text(contract_type.model_dump_json())
+        blueprint_file.write_text(contract_type.model_dump_json(), encoding="utf8")
 
     def _cache_contract_creation_to_disk(self, address: AddressType, creation: ContractCreation):
         self._contract_creation_cache.mkdir(exist_ok=True, parents=True)
         path = self._contract_creation_cache / f"{address}.json"
-        path.write_text(creation.model_dump_json())
+        path.write_text(creation.model_dump_json(), encoding="utf8")
 
     def _load_deployments_cache(self) -> dict:
         return (

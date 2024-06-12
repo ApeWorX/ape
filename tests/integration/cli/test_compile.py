@@ -126,7 +126,7 @@ def test_compile_when_sources_change(ape_cli, runner, integ_project, clean_cache
     modified_source_text = source_path.read_text().replace("bar", "foo")
     source_path.unlink()
     source_path.touch()
-    source_path.write_text(modified_source_text)
+    source_path.write_text(modified_source_text, encoding="utf8")
     result = runner.invoke(
         ape_cli, ("compile", "--project", f"{integ_project.path}"), catch_exceptions=False
     )
@@ -160,7 +160,7 @@ def test_compile_when_contract_type_collision(ape_cli, runner, integ_project, cl
     temp_dir.mkdir()
     try:
         source_copy.touch()
-        source_copy.write_text(source_path.read_text())
+        source_copy.write_text(source_path.read_text(), encoding="utf8")
         result = runner.invoke(
             ape_cli, ("compile", "--project", f"{integ_project.path}"), catch_exceptions=False
         )
@@ -190,7 +190,7 @@ def test_compile_when_source_contains_return_characters(
     modified_source_text = f"{source_path.read_text()}\r"
     source_path.unlink()
     source_path.touch()
-    source_path.write_text(modified_source_text)
+    source_path.write_text(modified_source_text, encoding="utf8")
     arguments = ("compile", "--project", f"{integ_project.path}")
     result = runner.invoke(ape_cli, arguments, catch_exceptions=False)
     assert result.exit_code == 0, result.output

@@ -115,7 +115,7 @@ class KeyfileAccount(AccountAPI):
         key_file_data = self.keyfile
         key_file_data["public_key"] = publicKey[2:]
 
-        self.keyfile_path.write_text(json.dumps(key_file_data))
+        self.keyfile_path.write_text(json.dumps(key_file_data), encoding="utf8")
 
         return HexBytes(bytes.fromhex(publicKey[2:]))
 
@@ -148,7 +148,9 @@ class KeyfileAccount(AccountAPI):
         key = self.__key
 
         passphrase = self._prompt_for_passphrase("Create new passphrase", confirmation_prompt=True)
-        self.keyfile_path.write_text(json.dumps(EthAccount.encrypt(key, passphrase)))
+        self.keyfile_path.write_text(
+            json.dumps(EthAccount.encrypt(key, passphrase)), encoding="utf8"
+        )
 
     def delete(self):
         passphrase = self._prompt_for_passphrase(
@@ -293,7 +295,7 @@ def _write_and_return_account(alias: str, passphrase: str, account: LocalAccount
     path = ManagerAccessMixin.account_manager.containers["accounts"].data_folder.joinpath(
         f"{alias}.json"
     )
-    path.write_text(json.dumps(EthAccount.encrypt(account.key, passphrase)))
+    path.write_text(json.dumps(EthAccount.encrypt(account.key, passphrase)), encoding="utf8")
 
     return KeyfileAccount(keyfile_path=path)
 

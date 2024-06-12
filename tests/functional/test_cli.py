@@ -486,7 +486,7 @@ def test_contract_file_paths_argument_handles_exclude(
     # make a .cache file to show it is ignored.
     cache_file = project_with_contract.contracts_folder / ".cache" / "thing.json"
     cache_file.parent.mkdir(parents=True, exist_ok=True)
-    cache_file.write_text("FAILS IF LOADED")
+    cache_file.write_text("FAILS IF LOADED", encoding="utf8")
 
     result = runner.invoke(contracts_paths_cmd, "contracts")
     assert "Exclude.json" not in result.output

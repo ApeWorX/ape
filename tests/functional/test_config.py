@@ -8,6 +8,7 @@ from ape.api.config import ApeConfig, ConfigEnum, PluginConfig
 from ape.exceptions import ConfigError
 from ape.managers.config import CONFIG_FILE_NAME, merge_configs
 from ape.types import GasLimit
+from ape.utils import create_tempdir
 from ape_ethereum.ecosystem import EthereumConfig, NetworkConfig
 from ape_networks import CustomNetwork
 from tests.functional.conftest import PROJECT_WITH_LONG_CONTRACTS_FOLDER
@@ -219,7 +220,7 @@ def test_global_config(data_folder, config):
 test:
   number_of_accounts: 11
 """.strip()
-    config_file.write_text(config_content)
+    config_file.write_text(config_content, encoding="utf8")
     global_config = config.load_global_config()
     assert global_config.get_config("test").number_of_accounts == 11
     config_file.unlink(missing_ok=True)
@@ -346,3 +347,24 @@ def test_get_config_hyphen_in_plugin_name(config):
 
     finally:
         config.local_project.config._get_config_plugin_classes = original_method
+
+
+def test_write_to_disk_json(config):
+    with create_tempdir() as base_path:
+        path = base_path / "config.json"
+        config.write_to_disk(path)
+        assert path.is_file()
+
+
+def test_write_to_disk_yaml(config):
+    with create_tempdir() as base_path:
+        path = base_path / "config.yaml"
+        config.write_to_disk(path)
+        assert path.is_file()
+
+
+def test_write_to_disk_txt(config):
+    with create_tempdir() as base_path:
+        path = base_path / "config.txt"
+        with pytest.raises(ConfigError, match=f"Unsupported destination file type '{path}'."):
+            config.write_to_disk(path)

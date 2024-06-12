@@ -356,7 +356,7 @@ def _make_keyfile_account(base_path: Path, alias: str, params: dict, funder):
         # Corrupted from a previous test
         test_keyfile_path.unlink()
 
-    test_keyfile_path.write_text(json.dumps(params))
+    test_keyfile_path.write_text(json.dumps(params), encoding="utf8")
     acct = ape.accounts.load(alias)
     funder.transfer(acct, "25 ETH")  # Auto-fund this account
     return acct
