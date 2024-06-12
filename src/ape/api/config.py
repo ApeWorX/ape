@@ -1,13 +1,15 @@
 import os
+import sys
 from collections.abc import Iterable, Iterator
 from enum import Enum
 from functools import cached_property
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Optional, TypeVar, cast
 
+import rich
 import yaml
-from ethpm_types import PackageManifest, PackageMeta
-from pydantic import ConfigDict, Field, model_validator
+from ethpm_types import PackageManifest, PackageMeta, Source
+from pydantic import ConfigDict, Field, ValidationError, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 from ape.exceptions import ConfigError
@@ -274,7 +276,75 @@ class ApeConfig(ExtraAttributesMixin, BaseSettings, ManagerAccessMixin):
         #  relative from.
         data["project"] = path.parent
 
-        return cls.model_validate(data)
+        try:
+            return cls.model_validate(data)
+        except ValidationError as err:
+            if path.suffix == ".json":
+                # TODO: Support JSON configs here.
+                raise  # The validation error as-is
+
+            # Several errors may have been collected from he config.
+            all_errors = err.errors()
+            # Attempt to find line numbers in the config matching.
+            cfg_content = Source(content=path.read_text(encoding="utf8")).content
+            if not cfg_content:
+                # Likely won't happen?
+                raise  # The validation error as-is
+
+            err_map: dict = {}
+            for error in all_errors:
+                if not (location := error.get("loc")):
+                    continue
+
+                lineno = None
+                loc_idx = 0
+                depth = len(location)
+                for no, line in cfg_content.items():
+                    loc = location[loc_idx]
+                    if not line.lstrip().startswith(f"{loc}:"):
+                        continue
+
+                    # Look for the next location up the tree.
+                    loc_idx += 1
+                    if loc_idx < depth:
+                        continue
+
+                    # Found.
+                    lineno = no
+                    break
+
+                if lineno is not None and loc_idx >= depth:
+                    err_map[lineno] = error
+                # else: we looped through whole file and didn't find.
+
+            if not err_map:
+                # raise ValidationError as-is (no line numbers found for some reason).
+                raise
+
+            error_strs: list[str] = []
+            for line_no, cfg_err in err_map.items():
+                sub_message = cfg_err.get("msg", cfg_err)
+                line_before = line_no - 1 if line_no > 1 else None
+                line_after = line_no + 1 if line_no < len(cfg_content) else None
+                lines = []
+                if line_before is not None:
+                    lines.append(f"   {line_before}: {cfg_content[line_before]}")
+                lines.append(f"-->{line_no}: {cfg_content[line_no]}")
+                if line_after is not None:
+                    lines.append(f"   {line_after}: {cfg_content[line_after]}")
+
+                file_preview = "\n".join(lines)
+                sub_message = f"{sub_message}\n{file_preview}\n"
+                error_strs.append(sub_message)
+
+            # NOTE: Using reversed because later pydantic errors
+            #   appear earlier in the list.
+            final_msg = "\n".join(reversed(error_strs)).strip()
+            final_msg = f"'{path.name}' is invalid!\n{final_msg}"
+            rich.print(final_msg)
+
+            # Exit now or else you can get very strange issues.
+            sys.exit(1)
 
     @classmethod
     def from_manifest(cls, manifest: PackageManifest, **overrides) -> "ApeConfig":
