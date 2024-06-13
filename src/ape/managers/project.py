@@ -744,16 +744,17 @@ class Dependency(BaseManager, ExtraAttributesMixin):
         """
         override = {**self.api.config_override, **(config_override or {})}
         self.api.config_override = override
+        project = self.project
         if override:
             # Ensure is using most up-to-date config override.
-            self.project.reconfigure(**override)
+            project.reconfigure(**override)
             self._cache.cache_api(self.api)
 
-        result = self.project.load_contracts(use_cache=use_cache)
+        result = project.load_contracts(use_cache=use_cache)
         if not result:
-            contracts_folder = self.project.contracts_folder
+            contracts_folder = project.contracts_folder
             message = "Compiling dependency produced no contract types."
-            if isinstance(self.project, LocalProject):
+            if isinstance(project, LocalProject):
                 all_files = [x.name for x in get_all_files_in_directory(contracts_folder)]
                 has_solidity_sources = any(get_full_extension(Path(x)) == ".sol" for x in all_files)
                 has_vyper_sources = any(
@@ -765,10 +766,16 @@ class Dependency(BaseManager, ExtraAttributesMixin):
                 suffix = ""
                 if warn_sol:
                     suffix = "Try installing 'ape-solidity'"
-                if warn_vyper and warn_sol:
-                    suffix += " or 'ape-vyper'"
+                    if warn_vyper:
+                        suffix += " or 'ape-vyper'"
                 elif warn_vyper:
                     suffix = "Try installing 'ape-vyper'"
+
+                elif len(all_files) == 0:
+                    suffix = (
+                        f"No source files found! (contracts_folder={clean_path(contracts_folder)})"
+                    )
+
                 if suffix:
                     message = f"{message} {suffix}."
 
@@ -2058,6 +2065,8 @@ class LocalProject(Project):
                 if path.stem != item:
                     continue
 
+                if message and message[-1] not in (".", "?", "!"):
+                    message = f"{message}."
                 message = (
                     f"{message} However, there is a source file named '{path.name}', "
                     "did you mean to reference a contract name from this source file?"
