@@ -444,9 +444,14 @@ def get_attribute_with_extras(obj: Any, name: str) -> Any:
         extras_str = ", ".join(sorted(extras_checked))
         suffix = f"Also checked extra(s) '{extras_str}'"
         if suffix not in message:
+            if message and message[-1] not in (".", "?", "!"):
+                message = f"{message}."
             message = f"{message} {suffix}"
 
     _recursion_checker.reset(name)
+    if message and message[-1] not in (".", "?", "!"):
+        message = f"{message}."
+
     attr_err = ApeAttributeError(message)
     if base_err:
         raise attr_err from base_err

@@ -2013,6 +2013,8 @@ class LocalProject(Project):
                 if path.stem != item:
                     continue
 
+                if message and message[-1] not in (".", "?", "!"):
+                    message = f"{message}."
                 message = (
                     f"{message} However, there is a source file named '{path.name}', "
                     "did you mean to reference a contract name from this source file?"
