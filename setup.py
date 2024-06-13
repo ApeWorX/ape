@@ -103,7 +103,7 @@ setup(
         "ipython>=8.18.1,<9",
         "lazyasd>=0.1.4",
         "packaging>=23.0,<24",
-        "pandas>=1.3.0,<2",
+        "pandas>=2.2.2,<3",
         "pluggy>=1.3,<2",
         "pydantic>=2.6.4,<3",
         "pydantic-settings>=2.0.3,<3",
