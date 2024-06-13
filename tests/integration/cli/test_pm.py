@@ -168,6 +168,10 @@ def test_compile_dependency(pm_runner, integ_project):
 def test_compile_missing_compiler_plugins(pm_runner, integ_project, compilers):
     pm_runner.project = integ_project
     name = "depwithunregisteredcontracts"
+
+    # Stateful clean up (just in case?)
+    pm_runner.invoke("uninstall", name, "--yes")
+
     result = pm_runner.invoke("compile", name, "--force")
     expected = (
         "Compiling dependency produced no contract types. "
@@ -177,6 +181,8 @@ def test_compile_missing_compiler_plugins(pm_runner, integ_project, compilers):
 
     # Also show it happens when installing _all_.
     result = pm_runner.invoke("compile", ".", "--force")
+    pm_runner.invoke("uninstall", name, "--yes")
+
     assert expected in result.output
 
 
