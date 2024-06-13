@@ -87,7 +87,7 @@ def test_model_dump_and_validate(block):
 
 def test_model_validate_web3_block():
     """
-    Show we have good compatability with web3.py native types.
+    Show we have good compatibility with web3.py native types.
     """
     data = BlockData(number=123, timestamp=123, gasLimit=123, gasUsed=100)  # type: ignore
     actual = Block.model_validate(data)

@@ -3,7 +3,7 @@ import os
 from tests.integration.cli.utils import run_once
 
 """
-The purpose of this unit test is to test the funcationality of `ape init`
+The purpose of this unit test is to test the functionality of `ape init`
 
 It should test the creation of directories, config.yaml, and .gitginore:
 contracts
