@@ -2431,6 +2431,20 @@ class LocalProject(Project):
             self._manifest = PackageManifest()
 
         self.sources._path_cache = None
+        self._clear_cached_config()
+
+    def reload_config(self):
+        """
+        Reload the local ape-config.yaml file.
+        This is useful if the file was modified in the
+        active python session.
+        """
+        self._clear_cached_config()
+        _ = self.config
+
+    def _clear_cached_config(self):
+        if "config" in self.__dict__:
+            del self.__dict__["config"]
 
     def _create_contract_source(self, contract_type: ContractType) -> Optional[ContractSource]:
         if not (source_id := contract_type.source_id):

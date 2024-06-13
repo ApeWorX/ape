@@ -9,10 +9,11 @@ from pathlib import Path
 from typing import Any, Optional
 
 import click
+import rich
 import yaml
 
 from ape.cli import ape_cli_context
-from ape.exceptions import Abort, ApeException, handle_ape_exception
+from ape.exceptions import Abort, ApeException, ConfigError, handle_ape_exception
 from ape.logging import logger
 from ape.plugins._utils import PluginMetadataList, clean_plugin_name
 from ape.utils.basemodel import ManagerAccessMixin
@@ -35,9 +36,24 @@ def display_config(ctx, param, value):
     ctx.exit()  # NOTE: Must exit to bypass running ApeCLI
 
 
+def _validate_config():
+    try:
+        _ = ManagerAccessMixin.local_project.config
+    except ConfigError as err:
+        rich.print(err)
+        # Exit now to avoid weird problems.
+        sys.exit(1)
+
+
 class ApeCLI(click.MultiCommand):
     _commands: Optional[dict] = None
     _CLI_GROUP_NAME = "ape_cli_subcommands"
+
+    def __init__(self, *args, **kwargs):
+        # Validate the config before any argument parsing,
+        # as arguments may utilize config.
+        _validate_config()
+        super().__init__(*args, **kwargs)
 
     def format_commands(self, ctx, formatter) -> None:
         commands = []
