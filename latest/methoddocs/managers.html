@@ -50,6 +50,7 @@
               <option value="">Select version...</option>
               <option value="latest">latest</option>
               <option value="stable">stable</option>
+                <option value="v0.8.4">v0.8.4</option>
                 <option value="v0.8.3">v0.8.3</option>
                 <option value="v0.8.2">v0.8.2</option>
                 <option value="v0.8.1">v0.8.1</option>
@@ -443,6 +444,7 @@
 <li class="toctree-l4"><a class="reference internal" href="#ape.managers.project.LocalProject.load_manifest"><code class="docutils literal notranslate"><span class="pre">LocalProject.load_manifest()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.managers.project.LocalProject.meta"><code class="docutils literal notranslate"><span class="pre">LocalProject.meta</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.managers.project.LocalProject.project_api"><code class="docutils literal notranslate"><span class="pre">LocalProject.project_api</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ape.managers.project.LocalProject.reload_config"><code class="docutils literal notranslate"><span class="pre">LocalProject.reload_config()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.managers.project.LocalProject.sources"><code class="docutils literal notranslate"><span class="pre">LocalProject.sources</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.managers.project.LocalProject.unpack"><code class="docutils literal notranslate"><span class="pre">LocalProject.unpack()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.managers.project.LocalProject.update_manifest"><code class="docutils literal notranslate"><span class="pre">LocalProject.update_manifest()</span></code></a></li>
@@ -2825,6 +2827,14 @@ Use when publishing your package manifest.</p>
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">project_api</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="api.html#ape.api.projects.ProjectAPI" title="ape.api.projects.ProjectAPI"><span class="pre">ProjectAPI</span></a></em><a class="headerlink" href="#ape.managers.project.LocalProject.project_api" title="Permalink to this definition"></a></dt>
 <dd><p>The ‘type’ of project this is, such as an Ape project
 or a Brownie project (or something else).</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ape.managers.project.LocalProject.reload_config">
+<span class="sig-name descname"><span class="pre">reload_config</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ape.managers.project.LocalProject.reload_config" title="Permalink to this definition"></a></dt>
+<dd><p>Reload the local ape-config.yaml file.
+This is useful if the file was modified in the
+active python session.</p>
 </dd></dl>
 
 <dl class="py property">
