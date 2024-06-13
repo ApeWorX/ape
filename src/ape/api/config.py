@@ -1,12 +1,10 @@
 import os
-import sys
 from collections.abc import Iterable, Iterator
 from enum import Enum
 from functools import cached_property
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Optional, TypeVar, cast
 
-import rich
 import yaml
 from ethpm_types import PackageManifest, PackageMeta, Source
 from pydantic import ConfigDict, Field, ValidationError, model_validator
@@ -342,10 +340,7 @@ class ApeConfig(ExtraAttributesMixin, BaseSettings, ManagerAccessMixin):
             #   appear earlier in the list.
             final_msg = "\n".join(reversed(error_strs)).strip()
             final_msg = f"'{clean_path(path)}' is invalid!\n{final_msg}"
-            rich.print(final_msg)
-
-            # Exit now or else you can get very strange issues.
-            sys.exit(1)
+            raise ConfigError(final_msg)
 
     @classmethod
     def from_manifest(cls, manifest: PackageManifest, **overrides) -> "ApeConfig":
