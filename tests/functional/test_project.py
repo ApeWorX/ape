@@ -206,7 +206,7 @@ def test_getattr_same_name_as_source_file(project_with_source_files_contract):
         r"Also checked extra\(s\) 'contracts'\. "
         r"However, there is a source file named 'ContractA\.sol', "
         r"did you mean to reference a contract name from this source file\? "
-        r"Else, could it be from one of the missing compilers for extensions: ."
+        r"Else, could it be from one of the missing compilers for extensions: .*"
     )
     with pytest.raises(AttributeError, match=expected):
         _ = project_with_source_files_contract.ContractA
