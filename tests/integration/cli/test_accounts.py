@@ -99,7 +99,7 @@ def test_import_alias_is_really_long(ape_cli, runner):
     must ensure long aliases are supported.
     """
 
-    long_alias = "this is a long alias that i am going to use and you cant stop me"
+    long_alias = "this is a long alias that i am going to use and you can't stop me"
     result = runner.invoke(
         ape_cli,
         ("accounts", "import", long_alias),
