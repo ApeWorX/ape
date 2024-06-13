@@ -153,6 +153,10 @@ def test_compile_config_override(pm_runner, integ_project):
 def test_compile_dependency(pm_runner, integ_project):
     pm_runner.project = integ_project
     name = "foodep"
+
+    # Show staring from a clean slate.
+    pm_runner.invoke("uninstall", name, "--yes")
+
     result = pm_runner.invoke("compile", name, "--force")
     assert result.exit_code == 0, result.output
     assert f"Package '{name}@local' compiled." in result.output
@@ -161,6 +165,9 @@ def test_compile_dependency(pm_runner, integ_project):
     result = pm_runner.invoke("compile", name)
     assert result.exit_code == 0, result.output
     assert f"Package '{name}@local' compiled." in result.output
+
+    # Clean for next tests.
+    pm_runner.invoke("uninstall", name, "--yes")
 
 
 @skip_if_plugin_installed("vyper", "solidity")
