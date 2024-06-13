@@ -749,7 +749,32 @@ class Dependency(BaseManager, ExtraAttributesMixin):
             self.project.reconfigure(**override)
             self._cache.cache_api(self.api)
 
-        return self.project.load_contracts(use_cache=use_cache)
+        result = self.project.load_contracts(use_cache=use_cache)
+        if not result:
+            contracts_folder = self.project.contracts_folder
+            message = "Compiling dependency produced no contract types."
+            if isinstance(self.project, LocalProject):
+                all_files = [x.name for x in get_all_files_in_directory(contracts_folder)]
+                has_solidity_sources = any(get_full_extension(Path(x)) == ".sol" for x in all_files)
+                has_vyper_sources = any(
+                    get_full_extension(Path(x)) in (".vy", ".vyi") for x in all_files
+                )
+                compilers = self.compiler_manager.registered_compilers
+                warn_sol = has_solidity_sources and ".sol" not in compilers
+                warn_vyper = has_vyper_sources and ".vy" not in compilers
+                suffix = ""
+                if warn_sol:
+                    suffix = "Try installing 'ape-solidity'"
+                if warn_vyper and warn_sol:
+                    suffix += " or 'ape-vyper'"
+                elif warn_vyper:
+                    suffix = "Try installing 'ape-vyper'"
+                if suffix:
+                    message = f"{message} {suffix}."
+
+            logger.warning(message)
+
+        return result
 
     def unpack(self, path: Path) -> Iterator["Dependency"]:
         """
@@ -812,6 +837,26 @@ def _get_cache_suffix(package_id: str, version: str, suffix: str = "") -> Path:
     return package_id_path / version_name
 
 
+def _get_cache_path(
+    base_path: Path, package_id: str, version: str, is_dir: bool = False, suffix: str = ""
+) -> Path:
+    options = _version_to_options(version)
+    original = None
+    for option in options:
+        path = base_path / _get_cache_suffix(package_id, option, suffix=suffix)
+
+        if original is None:
+            # The 'original' is the first option.
+            original = path
+
+        if (is_dir and path.is_dir()) or (not is_dir and path.is_file()):
+            return path
+
+    # Return original - may no be created yet!
+    assert original is not None  # For mypy.
+    return original
+
+
 class PackagesCache(ManagerAccessMixin):
     def __init__(self):
         self._api_cache: dict[str, DependencyAPI] = {}
@@ -850,21 +895,21 @@ class PackagesCache(ManagerAccessMixin):
         """
         Path to the dir of the cached project.
         """
-        return self.projects_folder / _get_cache_suffix(package_id, version)
+        return _get_cache_path(self.projects_folder, package_id, version, is_dir=True)
 
     def get_manifest_path(self, package_id: str, version: str) -> Path:
         """
         Path to the manifest filepath the dependency project uses
         as a base.
         """
-        return self.manifests_folder / _get_cache_suffix(package_id, version, suffix=".json")
+        return _get_cache_path(self.manifests_folder, package_id, version, suffix=".json")
 
     def get_api_path(self, package_id: str, version: str) -> Path:
         """
         Path to the manifest filepath the dependency project uses
         as a base.
         """
-        return self.api_folder / _get_cache_suffix(package_id, version, suffix=".json")
+        return _get_cache_path(self.api_folder, package_id, version, suffix=".json")
 
     def cache_api(self, api: DependencyAPI) -> Path:
         """
@@ -2333,7 +2378,7 @@ class LocalProject(Project):
             starting = {
                 n: ContractContainer(ct)
                 for n, ct in (self.manifest.contract_types or {}).items()
-                if ct.source_id and (self.path / ct.source_id).is_file()
+                if use_cache and ct.source_id and (self.path / ct.source_id).is_file()
             }
             paths = self.sources.paths
 
