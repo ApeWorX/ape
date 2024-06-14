@@ -868,9 +868,19 @@ def test_set_default_network_not_exists(ethereum):
 
 def test_networks(ethereum):
     actual = ethereum.networks
-    for net in ("sepolia", "mainnet", LOCAL_NETWORK_NAME):
+
+    with_forks = ("sepolia", "mainnet")
+    without_forks = (LOCAL_NETWORK_NAME,)
+
+    def assert_net(net: str):
         assert net in actual
         assert isinstance(actual[net], NetworkAPI)
+
+    for net in with_forks:
+        assert_net(net)
+        assert_net(f"{net}-fork")
+    for net in without_forks:
+        assert_net(net)
 
 
 def test_networks_includes_custom_networks(
