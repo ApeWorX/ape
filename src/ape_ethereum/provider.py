@@ -16,6 +16,7 @@ from eth_pydantic_types import HexBytes
 from eth_typing import BlockNumber, HexStr
 from eth_utils import add_0x_prefix, is_hex, to_hex
 from ethpm_types import EventABI
+from evmchains import get_random_rpc
 from pydantic.dataclasses import dataclass
 from requests import HTTPError
 from web3 import HTTPProvider, IPCProvider, Web3
@@ -1152,14 +1153,15 @@ class EthereumNodeProvider(Web3Provider, ABC):
     def uri(self) -> str:
         if "url" in self.provider_settings:
             raise ConfigError("Unknown provider setting 'url'. Did you mean 'uri'?")
-
         elif "uri" in self.provider_settings:
             # Use adhoc, scripted value
             return self.provider_settings["uri"]
 
         config = self.config.model_dump().get(self.network.ecosystem.name, None)
         if config is None:
-            if self.network.is_dev:
+            if rpc := self._get_random_rpc():
+                return rpc
+            elif self.network.is_dev:
                 return DEFAULT_SETTINGS["uri"]
 
             # We have no way of knowing what URL the user wants.
@@ -1170,6 +1172,9 @@ class EthereumNodeProvider(Web3Provider, ABC):
 
         if "url" in network_config:
             raise ConfigError("Unknown provider setting 'url'. Did you mean 'uri'?")
+        elif "uri" not in network_config:
+            if rpc := self._get_random_rpc():
+                return rpc
 
         settings_uri = network_config.get("uri", DEFAULT_SETTINGS["uri"])
         if _is_url(settings_uri):
@@ -1177,6 +1182,19 @@ class EthereumNodeProvider(Web3Provider, ABC):
 
         # Likely was an IPC Path and will connect that way.
         return ""
+
+    def _get_random_rpc(self) -> Optional[str]:
+        if self.network.is_dev:
+            return None
+
+        ecosystem = self.network.ecosystem.name
+        network = self.network.name
+
+        # Use public RPC if available
+        try:
+            return get_random_rpc(ecosystem, network)
+        except KeyError:
+            return None
 
     @property
     def connection_str(self) -> str:
