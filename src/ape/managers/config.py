@@ -134,13 +134,14 @@ class ConfigManager(ExtraAttributesMixin, BaseManager):
             # Already isolated.
             yield original_data_folder
 
-        try:
-            with create_tempdir() as temp_data_folder:
-                self.DATA_FOLDER = temp_data_folder
-                yield temp_data_folder
+        else:
+            try:
+                with create_tempdir() as temp_data_folder:
+                    self.DATA_FOLDER = temp_data_folder
+                    yield temp_data_folder
 
-        finally:
-            self.DATA_FOLDER = original_data_folder
+            finally:
+                self.DATA_FOLDER = original_data_folder
 
 
 def merge_configs(*cfgs: dict) -> dict:
