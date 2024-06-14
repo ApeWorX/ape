@@ -131,12 +131,12 @@ setup(
         "eip712>=0.2.7,<0.3",
         "ethpm-types>=0.6.9,<0.7",
         "eth_pydantic_types>=0.1.0,<0.2",
-        "evmchains>=0.0.9,<0.1",
+        "evmchains>=0.0.10,<0.1",
         "evm-trace>=0.1.5,<0.2",
     ],
     entry_points={
         "console_scripts": ["ape=ape._cli:cli"],
-        "pytest11": ["ape_test=ape.pytest.plugin"],
+        "pytest11": ["ape_test  =ape.pytest.plugin"],
         "ape_cli_subcommands": [
             "ape_accounts=ape_accounts._cli:cli",
             "ape_cache=ape_cache._cli:cli",

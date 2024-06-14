@@ -78,19 +78,33 @@ def test_uri_when_configured(geth_provider, project, ethereum):
     assert actual_mainnet_uri == expected
 
 
-def test_uri_non_dev_and_not_configured(ethereum):
+def test_uri_non_dev_and_not_configured(mocker, ethereum):
     """
     If the URI was not configured and we are not using a dev
     network (local or -fork), then it should fail, rather than
     use local-host.
     """
     network = ethereum.sepolia.model_copy(deep=True)
+
+    # NOTE: This may fail if using real network names that evmchains would
+    #  know about.
     network.name = "gorillanet"
     network.ecosystem.name = "gorillas"
+
     provider = Node.model_construct(network=network, request_header={})
 
     with pytest.raises(ProviderError):
         _ = provider.uri
+
+    # Show that if an evm-chains _does_ exist, it will use that.
+    patch = mocker.patch("ape_ethereum.provider.get_random_rpc")
+
+    # The following URL is made up (please keep example.com).
+    expected = "https://gorillas.example.com/v1/rpc"
+    patch.return_value = "https://gorillas.example.com/v1/rpc"
+
+    actual = provider.uri
+    assert actual == expected
 
 
 @geth_process_test

@@ -6,7 +6,6 @@ from abc import ABC
 from collections.abc import Iterable, Iterator
 from concurrent.futures import ThreadPoolExecutor
 from copy import copy
-from evmchains import get_random_rpc
 from functools import cached_property, wraps
 from pathlib import Path
 from typing import Any, Optional, Union, cast
@@ -17,6 +16,7 @@ from eth_pydantic_types import HexBytes
 from eth_typing import BlockNumber, HexStr
 from eth_utils import add_0x_prefix, is_hex, to_hex
 from ethpm_types import EventABI
+from evmchains import get_random_rpc
 from pydantic.dataclasses import dataclass
 from requests import HTTPError
 from web3 import HTTPProvider, IPCProvider, Web3
