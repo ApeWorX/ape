@@ -18,6 +18,7 @@ from web3.middleware import geth_poa_middleware
 from yarl import URL
 
 from ape.api import PluginConfig, SubprocessProvider, TestProviderAPI
+from ape.exceptions import ProviderError
 from ape.logging import LogLevel, logger
 from ape.types import SnapshotID
 from ape.utils import (
@@ -354,29 +355,4 @@ class GethDev(EthereumNodeProvider, TestProviderAPI, SubprocessProvider):
 
 # NOTE: The default behavior of EthereumNodeBehavior assumes geth.
 class Node(EthereumNodeProvider):
-    @property
-    def uri(self) -> str:
-        if "uri" in self.provider_settings:
-            # If specifying in Python, use no matter what.
-            return self.provider_settings["uri"]
-
-        uri = super().uri
-        ecosystem = self.network.ecosystem.name
-        network = self.network.name
-
-        # If we didn't find one in config, look for a public RPC.
-        if not uri or uri == DEFAULT_SETTINGS["uri"]:
-            # Do not override explicit configuration
-            if ecosystem in self.config:
-                # Shape of this is odd. Pydantic model containing dicts
-                if network_config := self.config[ecosystem].get(network):
-                    if "uri" in network_config:
-                        return network_config["uri"]
-
-            # Use public RPC if available
-            try:
-                uri = get_random_rpc(ecosystem, network)
-            except KeyError:
-                pass
-
-        return uri
+    pass
