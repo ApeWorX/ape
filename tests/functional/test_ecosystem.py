@@ -894,6 +894,9 @@ def test_networks_includes_custom_networks(
             LOCAL_NETWORK_NAME,
             custom_network_name_0,
             custom_network_name_1,
+            # Show custom networks are auto-forked!
+            f"{custom_network_name_0}-fork",
+            f"{custom_network_name_1}-fork",
         ):
             assert net in actual
             assert isinstance(actual[net], NetworkAPI)
