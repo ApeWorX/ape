@@ -1072,8 +1072,8 @@ class NetworkAPI(BaseInterfaceModel):
             provider_settings["ipc_path"] = provider_name
             provider_name = "node"
 
-        # Assuming any installed forking plugin can at least for Ethereum mainnet.
-        # NOTE: This is a bit limiting for non-EVM custom forked networks.
+        # If it can fork Ethereum (and we are asking for it) assume it can fork this one.
+        # TODO: Refactor this approach to work for custom-forked non-EVM networks.
         common_forking_providers = self.network_manager.ethereum.mainnet_fork.providers
 
         if provider_name in self.providers:

@@ -462,7 +462,6 @@ class NetworkManager(BaseManager, ExtraAttributesMixin):
                 self.get_ecosystem(ecosystem_name) if ecosystem_name else self.default_ecosystem
             )
             network = ecosystem.get_network(network_name or ecosystem.default_network_name)
-
             return network.get_provider(
                 provider_name=provider_name, provider_settings=provider_settings
             )

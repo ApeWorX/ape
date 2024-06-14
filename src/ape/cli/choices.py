@@ -361,8 +361,8 @@ class NetworkChoice(click.Choice):
                 choice = super().convert(value, param, ctx)
             except BadParameter as err:
                 # Attempt to get the provider anyway.
-                # Some plugins will handle networks anyway,
-                # such as forked-custom networks.
+                # Sometimes, depending on the provider, it'll still work.
+                # (as-is the case for custom-forked networks).
                 try:
                     return networks.get_provider_from_choice(network_choice=value)
                 except Exception:
