@@ -300,6 +300,7 @@
 <li class="toctree-l4"><a class="reference internal" href="#ape.managers.config.ConfigManager.extract_config"><code class="docutils literal notranslate"><span class="pre">ConfigManager.extract_config()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.managers.config.ConfigManager.get_config"><code class="docutils literal notranslate"><span class="pre">ConfigManager.get_config()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.managers.config.ConfigManager.global_config"><code class="docutils literal notranslate"><span class="pre">ConfigManager.global_config</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ape.managers.config.ConfigManager.isolate_data_folder"><code class="docutils literal notranslate"><span class="pre">ConfigManager.isolate_data_folder()</span></code></a></li>
 </ul>
 </li>
 </ul>
@@ -1665,6 +1666,14 @@ definitions, see <a class="reference internal" href="api.html#ape.api.config.Ape
 <dd><p>Root-level configurations, loaded from the
 data folder. <strong>NOTE</strong>: This only needs to load
 once and applies to all projects.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ape.managers.config.ConfigManager.isolate_data_folder">
+<span class="sig-name descname"><span class="pre">isolate_data_folder</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Iterator</span><span class="p"><span class="pre">[</span></span><span class="pre">Path</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#ape.managers.config.ConfigManager.isolate_data_folder" title="Permalink to this definition"></a></dt>
+<dd><p>Change Ape’s DATA_FOLDER to point a temporary path,
+in a context, for testing purposes. Any data
+cached to disk will not persist.</p>
 </dd></dl>
 
 </dd></dl>
