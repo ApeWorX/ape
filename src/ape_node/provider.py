@@ -18,7 +18,6 @@ from web3.middleware import geth_poa_middleware
 from yarl import URL
 
 from ape.api import PluginConfig, SubprocessProvider, TestProviderAPI
-from ape.exceptions import ProviderError
 from ape.logging import LogLevel, logger
 from ape.types import SnapshotID
 from ape.utils import (
