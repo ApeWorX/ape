@@ -3,7 +3,6 @@ import os
 import shutil
 import subprocess
 import sys
-import tempfile
 import time
 from collections.abc import Callable, Sequence
 from contextlib import contextmanager
@@ -30,7 +29,9 @@ geth_process_test = pytest.mark.xdist_group(name="geth-tests")
 explorer_test = pytest.mark.xdist_group(name="explorer-tests")
 
 # Ensure we don't persist any .ape data or using existing.
-DATA_FOLDER = Path(tempfile.mkdtemp()).resolve()
+
+_DATA_FOLDER_CTX = ape.config.isolate_data_folder()
+DATA_FOLDER = _DATA_FOLDER_CTX.__enter__()
 ape.config.DATA_FOLDER = DATA_FOLDER
 
 
@@ -59,7 +60,7 @@ def setenviron(monkeypatch):
 @pytest.fixture(scope="session", autouse=True)
 def clean_temp_data_folder():
     yield
-    shutil.rmtree(DATA_FOLDER)
+    _DATA_FOLDER_CTX.__exit__(None, None, None)
 
 
 @pytest.fixture(scope="session", autouse=True)
