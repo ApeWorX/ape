@@ -16,6 +16,7 @@ from ape.exceptions import (
     BlockNotFoundError,
     ContractLogicError,
     NetworkMismatchError,
+    ProviderError,
     TransactionError,
     TransactionNotFoundError,
 )
@@ -29,7 +30,7 @@ from ape_ethereum.transactions import (
     TransactionStatusEnum,
     TransactionType,
 )
-from ape_node.provider import GethDevProcess, NodeSoftwareNotInstalledError
+from ape_node.provider import GethDevProcess, Node, NodeSoftwareNotInstalledError
 from tests.conftest import GETH_URI, geth_process_test
 
 
@@ -75,6 +76,21 @@ def test_uri_when_configured(geth_provider, project, ethereum):
 
     assert actual_local_uri == value
     assert actual_mainnet_uri == expected
+
+
+def test_uri_non_dev_and_not_configured(ethereum):
+    """
+    If the URI was not configured and we are not using a dev
+    network (local or -fork), then it should fail, rather than
+    use local-host.
+    """
+    network = ethereum.sepolia.model_copy(deep=True)
+    network.name = "gorillanet"
+    network.ecosystem.name = "gorillas"
+    provider = Node.model_construct(network=network, request_header={})
+
+    with pytest.raises(ProviderError):
+        _ = provider.uri
 
 
 @geth_process_test
