@@ -1,4 +1,6 @@
 import os
+from collections.abc import Iterator
+from contextlib import contextmanager
 from functools import cached_property
 from pathlib import Path
 from typing import Any, Optional
@@ -8,7 +10,7 @@ from ethpm_types import PackageManifest
 from ape.api import PluginConfig
 from ape.api.config import ApeConfig
 from ape.managers.base import BaseManager
-from ape.utils import log_instead_of_fail
+from ape.utils import create_tempdir, in_tempdir, log_instead_of_fail
 from ape.utils.basemodel import (
     ExtraAttributesMixin,
     ExtraModelAttributes,
@@ -119,6 +121,26 @@ class ConfigManager(ExtraAttributesMixin, BaseManager):
         except AttributeError:
             # Empty config.
             return PluginConfig()
+
+    @contextmanager
+    def isolate_data_folder(self) -> Iterator[Path]:
+        """
+        Change Ape's DATA_FOLDER to point a temporary path,
+        in a context, for testing purposes. Any data
+        cached to disk will not persist.
+        """
+        original_data_folder = self.DATA_FOLDER
+        if in_tempdir(original_data_folder):
+            # Already isolated.
+            yield original_data_folder
+
+        try:
+            with create_tempdir() as temp_data_folder:
+                self.DATA_FOLDER = temp_data_folder
+                yield temp_data_folder
+
+        finally:
+            self.DATA_FOLDER = original_data_folder
 
 
 def merge_configs(*cfgs: dict) -> dict:
