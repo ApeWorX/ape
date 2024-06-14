@@ -237,20 +237,44 @@ class EcosystemAPI(ExtraAttributesMixin, BaseInterfaceModel):
         networks = {**self._networks_from_plugins}
 
         # Include configured custom networks.
-        custom_networks = [
+        custom_networks: list = [
             n
             for n in self.config_manager.get_config("networks").custom
             if (n.ecosystem or self.network_manager.default_ecosystem.name) == self.name
         ]
+
+        # Ensure forks are added automatically for custom networks.
+        forked_custom_networks = []
+        for net in custom_networks:
+            if net.name.endswith("-fork"):
+                # Already a fork.
+                continue
+
+            fork_network_name = f"{net.name}-fork"
+            if any(x.name == fork_network_name for x in custom_networks):
+                # The forked version of this network is already known.
+                continue
+
+            # Create a forked network mirroring the custom network.
+            forked_net = net.model_copy(deep=True)
+            forked_net.name = fork_network_name
+            forked_custom_networks.append(forked_net)
+
+        # NOTE: Forked custom networks are still custom networks.
+        custom_networks.extend(forked_custom_networks)
+
         for custom_net in custom_networks:
             if custom_net.name in networks:
                 raise NetworkError(
                     f"More than one network named '{custom_net.name}' in ecosystem '{self.name}'."
                 )
 
+            is_fork = custom_net.name.endswith("-fork")
             network_data = custom_net.model_dump(by_alias=True, exclude=("default_provider",))
             network_data["ecosystem"] = self
-            network_type = create_network_type(custom_net.chain_id, custom_net.chain_id)
+            network_type = create_network_type(
+                custom_net.chain_id, custom_net.chain_id, is_fork=is_fork
+            )
             network_api = network_type.model_validate(network_data)
             network_api._default_provider = custom_net.default_provider
             network_api._is_custom = True
@@ -758,6 +782,17 @@ class ProviderContextManager(ManagerAccessMixin):
         self.connected_providers = {}
 
 
+def _set_provider(provider: "ProviderAPI") -> "ProviderAPI":
+    connection_id = provider.connection_id
+    if connection_id in ProviderContextManager.connected_providers:
+        # Likely multi-chain testing or utilizing multiple on-going connections.
+        provider = ProviderContextManager.connected_providers[connection_id]
+        if not provider.is_connected:
+            provider.connect()
+
+    return provider
+
+
 class NetworkAPI(BaseInterfaceModel):
     """
     A wrapper around a provider for a specific ecosystem.
@@ -1037,26 +1072,27 @@ class NetworkAPI(BaseInterfaceModel):
             provider_settings["ipc_path"] = provider_name
             provider_name = "node"
 
+        # Assuming any installed forking plugin can at least for Ethereum mainnet.
+        # NOTE: This is a bit limiting for non-EVM custom forked networks.
+        common_forking_providers = self.network_manager.ethereum.mainnet_fork.providers
+
         if provider_name in self.providers:
             provider = self.providers[provider_name](provider_settings=provider_settings)
-            connection_id = provider.connection_id
-            if connection_id in ProviderContextManager.connected_providers:
-                # Likely multi-chain testing or utilizing multiple on-going connections.
-                provider = ProviderContextManager.connected_providers[connection_id]
-                if not provider.is_connected:
-                    provider.connect()
+            return _set_provider(provider)
 
-                return provider
-
-            return provider
-
-        else:
-            raise ProviderNotFoundError(
-                provider_name,
-                network=self.name,
-                ecosystem=self.ecosystem.name,
-                options=self.providers,
+        elif self.name.endswith("-fork") and provider_name in common_forking_providers:
+            provider = common_forking_providers[provider_name](
+                provider_settings=provider_settings,
+                network=self,
             )
+            return _set_provider(provider)
+
+        raise ProviderNotFoundError(
+            provider_name,
+            network=self.name,
+            ecosystem=self.ecosystem.name,
+            options=self.providers,
+        )
 
     def use_provider(
         self,
@@ -1276,12 +1312,13 @@ class ForkedNetworkAPI(NetworkAPI):
         return self.upstream_network.use_provider(self.upstream_provider)
 
 
-def create_network_type(chain_id: int, network_id: int) -> type[NetworkAPI]:
+def create_network_type(chain_id: int, network_id: int, is_fork: bool = False) -> type[NetworkAPI]:
     """
     Easily create a :class:`~ape.api.networks.NetworkAPI` subclass.
     """
+    BaseNetwork = ForkedNetworkAPI if is_fork else NetworkAPI
 
-    class network_def(NetworkAPI):
+    class network_def(BaseNetwork):  # type: ignore
         @property
         def chain_id(self) -> int:
             return chain_id
