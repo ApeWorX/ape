@@ -1159,7 +1159,11 @@ class EthereumNodeProvider(Web3Provider, ABC):
 
         config = self.config.model_dump().get(self.network.ecosystem.name, None)
         if config is None:
-            return DEFAULT_SETTINGS["uri"]
+            if self.network.is_dev:
+                return DEFAULT_SETTINGS["uri"]
+
+            # We have no way of knowing what URL the user wants.
+            raise ProviderError(f"Please configure a URL for '{self.network_choice}'.")
 
         # Use value from config file
         network_config = config.get(self.network.name) or DEFAULT_SETTINGS
