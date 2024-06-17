@@ -3,6 +3,7 @@ from pathlib import Path
 from typing import Optional, Union
 
 import pytest
+from pydantic import ValidationError
 from pydantic_settings import SettingsConfigDict
 
 from ape.api.config import ApeConfig, ConfigEnum, PluginConfig
@@ -375,6 +376,28 @@ def test_get_config_hyphen_in_plugin_name(config):
 
     finally:
         config.local_project.config._get_config_plugin_classes = original_method
+
+
+def test_get_config_unknown_plugin(config):
+    """
+    Simulating reading plugin configs w/o those plugins installed.
+    """
+    actual = config.get_config("thisshouldnotbeinstalled")
+    assert isinstance(actual, PluginConfig)
+
+
+def test_get_config_invalid_plugin_config(project):
+    with project.temp_config(node={"ethereum": [1, 2]}):
+        # Show project's ApeConfig model works.
+        with pytest.raises(ValidationError):
+            project.config.get_config("node")
+
+        # Show the manager-wrapper also works
+        # (simple wrapper for local project's config,
+        # but at one time pointlessly overrode the `get_config()`
+        # which caused issues).
+        with pytest.raises(ValidationError):
+            project.config_manager.get_config("node")
 
 
 def test_write_to_disk_json(config):
