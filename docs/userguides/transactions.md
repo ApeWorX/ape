@@ -1,4 +1,4 @@
-# Making Transactions
+# Transactions
 
 Regardless of how you are using `ape`, you will likely be making transactions.
 There are various types of transactions you can make with `ape`. A simple example is deploying a contract.
@@ -15,30 +15,10 @@ The following example demonstrates a simple deployment script:
 ```python
 from ape import accounts, project
 
-
 def deploy():
     account = accounts.load("MyAccount")
     # Assume you have a contract named `MyContract` in your project's contracts folder.
     return account.deploy(project.MyContract)
-```
-
-To get the receipt of a `deploy` transaction, use the [ContractInstance.creation_metadata](../methoddocs/contracts.html#ape.contracts.base.ContractInstance.creation_metadata) property:
-
-Additionally, you can find the `.deployer`, `.proxy` and whatever else on the creaton metadata which may come in handy.
-
-```{note}
-Use `ape-etherscan` or a node with Otterscan for increased support for these features.
-```
-
-```python
-from ape import accounts, project
-
-dev = accounts.load("dev")
-contract = project.MyContract.deploy(sender=dev)
-
-# The receipt is available on the contract instance and has the expected sender.
-receipt = contract.creation_metadata.receipt
-assert receipt.sender == dev
 ```
 
 ### Deployment from Ape Console
@@ -58,6 +38,27 @@ In [3]: token.contract_method_defined_in_contract()
 ```
 
 For an in depth tutorial on how to deploy, please visit [ApeAcademy](https://academy.apeworx.io/).
+
+### Deployment Metadata
+
+To get the receipt of a `deploy` transaction, use the [ContractInstance.creation_metadata](../methoddocs/contracts.html#ape.contracts.base.ContractInstance.creation_metadata) property:
+
+```{note}
+Use `ape-etherscan` or a node with Otterscan for increased support for these features.
+```
+
+```python
+from ape import accounts, project
+
+dev = accounts.load("dev")
+contract = project.MyContract.deploy(sender=dev)
+
+# The receipt is available on the contract instance and has the expected sender.
+receipt = contract.creation_metadata.receipt
+assert receipt.sender == dev
+```
+
+**NOTE**: The `creation_metadata` contains other information as well, such as `.factory` for factory-deployed contracts.
 
 ## Dynamic-Fee Transactions
 
