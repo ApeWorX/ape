@@ -169,6 +169,7 @@
 <li class="toctree-l2"><a class="reference internal" href="#custom-network-connection">Custom Network Connection</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#custom-networks-by-config">Custom Networks By Config</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#rpc-url">RPC URL</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#forking-custom-networks">Forking Custom Networks</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#explorer-url">Explorer URL</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#block-time-transaction-type-and-more-config">Block time, transaction type, and more config</a></li>
 </ul>
@@ -317,23 +318,29 @@ This logic does not have to live in the base <code class="docutils literal notra
 <table class="docutils align-default">
 <thead>
 <tr class="row-odd"><th class="head"><p>Name</p></th>
-<th class="head"><p>GitHub Path</p></th>
+<th class="head"><p>GitHub</p></th>
 </tr>
 </thead>
 <tbody>
-<tr class="row-even"><td><p>ape-avalanche</p></td>
-<td><p><a class="reference external" href="https://github.com/ApeWorX/ape-avalanche">ApeWorX/ape-avalanche</a></p></td>
-</tr>
-<tr class="row-odd"><td><p>ape-arbitrum</p></td>
+<tr class="row-even"><td><p>ape-arbitrum</p></td>
 <td><p><a class="reference external" href="https://github.com/ApeWorX/ape-arbitrum">ApeWorX/ape-arbitrum</a></p></td>
+</tr>
+<tr class="row-odd"><td><p>ape-avalanche</p></td>
+<td><p><a class="reference external" href="https://github.com/ApeWorX/ape-avalanche">ApeWorX/ape-avalanche</a></p></td>
 </tr>
 <tr class="row-even"><td><p>ape-base</p></td>
 <td><p><a class="reference external" href="https://github.com/ApeWorX/ape-base">ApeWorX/ape-base</a></p></td>
 </tr>
+<tr class="row-odd"><td><p>ape-blast</p></td>
+<td><p><a class="reference external" href="https://github.com/ApeWorX/ape-blast">ApeWorX/ape-base</a></p></td>
+</tr>
+<tr class="row-even"><td><p>ape-bsc</p></td>
+<td><p><a class="reference external" href="https://github.com/ApeWorX/ape-bsc">ApeWorX/ape-base</a></p></td>
+</tr>
 <tr class="row-odd"><td><p>ape-fantom</p></td>
 <td><p><a class="reference external" href="https://github.com/ApeWorX/ape-fantom">ApeWorX/ape-fantom</a></p></td>
 </tr>
-<tr class="row-even"><td><p>ape-optmism</p></td>
+<tr class="row-even"><td><p>ape-optimism</p></td>
 <td><p><a class="reference external" href="https://github.com/ApeWorX/ape-optimism">ApeWorX/ape-optimism</a></p></td>
 </tr>
 <tr class="row-odd"><td><p>ape-polygon</p></td>
@@ -429,6 +436,24 @@ For example, if the RPC URL is <code class="docutils literal notranslate"><span 
 </pre></div>
 </div>
 <p>Now, when using <code class="docutils literal notranslate"><span class="pre">ethereum:apenet:node</span></code>, it will connect to the RPC URL <code class="docutils literal notranslate"><span class="pre">https://apenet.example.com/rpc</span></code>.</p>
+</section>
+<section id="forking-custom-networks">
+<h4>Forking Custom Networks<a class="headerlink" href="#forking-custom-networks" title="Permalink to this heading"></a></h4>
+<p>You can fork custom networks using providers that support forking, such as <code class="docutils literal notranslate"><span class="pre">ape-foundry</span></code> or <code class="docutils literal notranslate"><span class="pre">ape-hardhat</span></code>.
+To fork a custom network, first ensure the custom network is set-up by following the sections above.
+Once you can successfully connect to a custom network in Ape, you can fork it.</p>
+<p>To fork the network, launch an Ape command with the <code class="docutils literal notranslate"><span class="pre">--network</span></code> option with your custom network name suffixed with <code class="docutils literal notranslate"><span class="pre">-fork</span></code> and use one of the forking providers (such as <code class="docutils literal notranslate"><span class="pre">ape-foundry</span></code>):</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">ape</span> <span class="o">&lt;</span><span class="n">cmd</span><span class="o">&gt;</span> <span class="o">--</span><span class="n">network</span> <span class="n">shibarium</span><span class="p">:</span><span class="n">puppynet</span><span class="o">-</span><span class="n">fork</span><span class="p">:</span><span class="n">foundry</span>
+</pre></div>
+</div>
+<p>Configure the forked network in the plugin the same way you configure other forked networks:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">foundry</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">fork</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">shibarium</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">puppynet</span><span class="p">:</span>
+<span class="w">        </span><span class="nt">block_number</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">500</span>
+</pre></div>
+</div>
 </section>
 <section id="explorer-url">
 <h4>Explorer URL<a class="headerlink" href="#explorer-url" title="Permalink to this heading"></a></h4>
