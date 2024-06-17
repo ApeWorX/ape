@@ -9,7 +9,7 @@ from ethpm_types import ContractType, ErrorABI
 from ethpm_types.abi import ABIType, EventABI, MethodABI
 from evm_trace import CallTreeNode, CallType
 
-from ape.api.networks import LOCAL_NETWORK_NAME, NetworkAPI
+from ape.api.networks import LOCAL_NETWORK_NAME, ForkedNetworkAPI, NetworkAPI
 from ape.exceptions import CustomError, DecodingError, NetworkError, NetworkNotFoundError
 from ape.types import AddressType
 from ape.utils import DEFAULT_LOCAL_TRANSACTION_ACCEPTANCE_TIMEOUT
@@ -868,9 +868,22 @@ def test_set_default_network_not_exists(ethereum):
 
 def test_networks(ethereum):
     actual = ethereum.networks
-    for net in ("sepolia", "mainnet", LOCAL_NETWORK_NAME):
+
+    with_forks = ("sepolia", "mainnet")
+    without_forks = (LOCAL_NETWORK_NAME,)
+
+    def assert_net(
+        net: str,
+    ):
         assert net in actual
-        assert isinstance(actual[net], NetworkAPI)
+        base_class = ForkedNetworkAPI if net.endswith("-fork") else NetworkAPI
+        assert isinstance(actual[net], base_class)
+
+    for net in with_forks:
+        assert_net(net)
+        assert_net(f"{net}-fork")
+    for net in without_forks:
+        assert_net(net)
 
 
 def test_networks_includes_custom_networks(
@@ -884,6 +897,9 @@ def test_networks_includes_custom_networks(
             LOCAL_NETWORK_NAME,
             custom_network_name_0,
             custom_network_name_1,
+            # Show custom networks are auto-forked!
+            f"{custom_network_name_0}-fork",
+            f"{custom_network_name_1}-fork",
         ):
             assert net in actual
             assert isinstance(actual[net], NetworkAPI)

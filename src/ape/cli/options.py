@@ -296,7 +296,7 @@ def network_option(
             # No network kwargs are used. No need for partial wrapper.
             wrapped_f = f
 
-        # Use NetworkChoice option.    Raises:
+        # Use NetworkChoice option.
         kwargs["type"] = None
 
         # Set this to false to avoid click passing in a str value for network.

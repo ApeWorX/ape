@@ -301,7 +301,6 @@ def test_network_option_specified_none(runner):
 def test_network_option_specify_custom_network(
     runner, project, custom_networks_config_dict, network_name
 ):
-    network_part = ("--network", f"ethereum:{network_name}:node")
     with project.temp_config(**custom_networks_config_dict):
         # NOTE: Also testing network filter with a custom network
         #  But this is also required to work around LRU cache
@@ -312,10 +311,12 @@ def test_network_option_specify_custom_network(
         @click.command()
         @network_option(network=network_name)
         def cmd(network):
-            click.echo(f"Value is '{network.name}'")
+            click.echo(f"Value is '{getattr(network, 'name', network)}'")
 
-        result = runner.invoke(cmd, network_part)
+        result = runner.invoke(cmd, ("--network", f"ethereum:{network_name}:node"))
         assert f"Value is '{network_name}'" in result.output
+        result = runner.invoke(cmd, ("--network", f"ethereum:{network_name}-fork:node"))
+        assert f"Value is '{network_name}-fork'" in result.output
 
 
 def test_account_option(runner, keyfile_account):

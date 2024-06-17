@@ -335,15 +335,15 @@ class NetworkChoice(click.Choice):
 
         self.base_type = base_type
         self.callback = callback
-        super().__init__(
-            get_networks(ecosystem=ecosystem, network=network, provider=provider), case_sensitive
-        )
+        networks = get_networks(ecosystem=ecosystem, network=network, provider=provider)
+        super().__init__(networks, case_sensitive)
 
     def get_metavar(self, param):
         return "[ecosystem-name][:[network-name][:[provider-name]]]"
 
     def convert(self, value: Any, param: Optional[Parameter], ctx: Optional[Context]) -> Any:
         choice: Optional[Union[str, ProviderAPI]]
+        networks = ManagerAccessMixin.network_manager
         if not value:
             choice = None
 
@@ -359,12 +359,18 @@ class NetworkChoice(click.Choice):
             try:
                 # Validate result.
                 choice = super().convert(value, param, ctx)
-            except BadParameter as err:
-                # If an error was not raised for some reason, raise a simpler error.
-                # NOTE: Still avoid showing the massive network options list.
-                raise click.BadParameter(
-                    "Invalid network choice. Use `ape networks list` to see options."
-                ) from err
+            except BadParameter:
+                # Attempt to get the provider anyway.
+                # Sometimes, depending on the provider, it'll still work.
+                # (as-is the case for custom-forked networks).
+                try:
+                    choice = networks.get_provider_from_choice(network_choice=value)
+                except Exception as err:
+                    # If an error was not raised for some reason, raise a simpler error.
+                    # NOTE: Still avoid showing the massive network options list.
+                    raise click.BadParameter(
+                        "Invalid network choice. Use `ape networks list` to see options."
+                    ) from err
 
         if (
             choice not in (None, _NONE_NETWORK)
@@ -372,10 +378,7 @@ class NetworkChoice(click.Choice):
             and issubclass(self.base_type, ProviderAPI)
         ):
             # Return the provider.
-
-            choice = ManagerAccessMixin.network_manager.get_provider_from_choice(
-                network_choice=value
-            )
+            choice = networks.get_provider_from_choice(network_choice=value)
 
         return self.callback(ctx, param, choice) if self.callback else choice
 

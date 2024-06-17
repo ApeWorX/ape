@@ -27,6 +27,13 @@ class CustomNetwork(PluginConfig):
     request_header: dict = {}
     """The HTTP request header."""
 
+    @property
+    def is_fork(self) -> bool:
+        """
+        ``True`` when the name of the network ends in ``"-fork"``.
+        """
+        return self.name.endswith("-fork")
+
 
 class NetworksConfig(PluginConfig):
     custom: list[CustomNetwork] = []

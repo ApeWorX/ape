@@ -67,13 +67,15 @@ Here are some examples of changes L2 plugins make that allow improved support fo
 
 Here is a list of all L2 network plugins supported by Ape:
 
-| Name              | GitHub Path                                                               |
+| Name              | GitHub                                                                    |
 | ----------------- | ------------------------------------------------------------------------- |
-| ape-avalanche     | [ApeWorX/ape-avalanche](https://github.com/ApeWorX/ape-avalanche)         |
 | ape-arbitrum      | [ApeWorX/ape-arbitrum](https://github.com/ApeWorX/ape-arbitrum)           |
+| ape-avalanche     | [ApeWorX/ape-avalanche](https://github.com/ApeWorX/ape-avalanche)         |
 | ape-base          | [ApeWorX/ape-base](https://github.com/ApeWorX/ape-base)                   |
+| ape-blast         | [ApeWorX/ape-base](https://github.com/ApeWorX/ape-blast)                  |
+| ape-bsc           | [ApeWorX/ape-base](https://github.com/ApeWorX/ape-bsc)                    |
 | ape-fantom        | [ApeWorX/ape-fantom](https://github.com/ApeWorX/ape-fantom)               |
-| ape-optmism       | [ApeWorX/ape-optimism](https://github.com/ApeWorX/ape-optimism)           |
+| ape-optimism      | [ApeWorX/ape-optimism](https://github.com/ApeWorX/ape-optimism)           |
 | ape-polygon       | [ApeWorX/ape-polygon](https://github.com/ApeWorX/ape-polygon)             |
 | ape-polygon-zkevm | [ApeWorX/ape-polygon-zkevm](https://github.com/ApeWorX/ape-polygon-zkevm) |
 
@@ -177,6 +179,28 @@ node:
 ```
 
 Now, when using `ethereum:apenet:node`, it will connect to the RPC URL `https://apenet.example.com/rpc`.
+
+#### Forking Custom Networks
+
+You can fork custom networks using providers that support forking, such as `ape-foundry` or `ape-hardhat`.
+To fork a custom network, first ensure the custom network is set-up by following the sections above.
+Once you can successfully connect to a custom network in Ape, you can fork it.
+
+To fork the network, launch an Ape command with the `--network` option with your custom network name suffixed with `-fork` and use one of the forking providers (such as `ape-foundry`):
+
+```
+ape <cmd> --network shibarium:puppynet-fork:foundry
+```
+
+Configure the forked network in the plugin the same way you configure other forked networks:
+
+```yaml
+foundry:
+  fork:
+    shibarium:
+      puppynet:
+        block_number: 500
+```
 
 #### Explorer URL
 

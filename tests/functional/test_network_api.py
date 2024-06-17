@@ -3,7 +3,8 @@ from pathlib import Path
 
 import pytest
 
-from ape.api import ProviderAPI
+from ape.api.networks import ForkedNetworkAPI, NetworkAPI, create_network_type
+from ape.api.providers import ProviderAPI
 from ape.exceptions import NetworkError, ProviderNotFoundError
 from ape_ethereum import EthereumConfig
 from ape_ethereum.transactions import TransactionType
@@ -181,3 +182,16 @@ def test_use_provider_previously_used_and_not_connected(eth_tester_provider):
     eth_tester_provider.disconnect()
     with network.use_provider("test") as provider:
         assert provider.is_connected
+
+
+def test_create_network_type():
+    chain_id = 123321123321123321
+    actual = create_network_type(chain_id, chain_id)
+    assert issubclass(actual, NetworkAPI)
+
+
+def test_create_network_type_fork():
+    chain_id = 123321123321123322
+    actual = create_network_type(chain_id, chain_id, is_fork=True)
+    assert issubclass(actual, NetworkAPI)
+    assert issubclass(actual, ForkedNetworkAPI)
