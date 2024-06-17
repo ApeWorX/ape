@@ -216,7 +216,7 @@ def load_config(path: Path, expand_envars=True, must_exist=False) -> dict:
                                 and is able to be load.
 
     Returns:
-        Dict (dict): Configured settings parsed from a config file.
+        dict: Configured settings parsed from a config file.
     """
     if path.is_file():
         contents = path.read_text()
