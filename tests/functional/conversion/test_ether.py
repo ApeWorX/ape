@@ -18,9 +18,12 @@ from ape_ethereum._converters import ETHER_UNITS
     unit=st.sampled_from(list(ETHER_UNITS.keys())),
 )
 def test_ether_conversions(value, unit, convert):
-    actual = convert(f"{value} {unit}", int)
+    currency_str = f"{value} {unit}"
+    actual = convert(currency_str, int)
     expected = int(value * ETHER_UNITS[unit])
     assert actual == expected
+    # Also show can compare directly with str.
+    assert actual == currency_str
 
 
 def test_bad_type(convert):

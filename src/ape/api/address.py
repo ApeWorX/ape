@@ -3,7 +3,7 @@ from typing import TYPE_CHECKING, Any
 from eth_pydantic_types import HexBytes
 
 from ape.exceptions import ConversionError
-from ape.types import AddressType, ContractCode
+from ape.types import AddressType, ContractCode, CurrencyValue
 from ape.utils import BaseInterface, abstractmethod, cached_property, log_instead_of_fail
 
 if TYPE_CHECKING:
@@ -119,8 +119,10 @@ class BaseAddress(BaseInterface):
         """
         The total balance of the account.
         """
-
-        return self.provider.get_balance(self.address)
+        bal = self.provider.get_balance(self.address)
+        # By using CurrencyValue, we can compare with
+        # strings like "1 ether".
+        return CurrencyValue(bal)
 
     # @balance.setter
     # NOTE: commented out because of failure noted within `__setattr__`
