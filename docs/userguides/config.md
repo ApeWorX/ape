@@ -19,6 +19,16 @@ However, here is a list of common-use cases requiring the `ape-config.yaml` file
 2. Setting up project dependencies: See the [dependencies](#dependencies) section.
 3. Declaring your project's plugins: See the [plugins](#plugins) section.
 
+**Environment Variables**: `ape-config.yaml` files support environment-variable expansion.
+Simply include environment variables (with the `$` prefix) in your config file and Ape will automatically expand them.
+
+```yaml
+plugin:
+  secret_rpc: $MY_SECRET_RPC
+```
+
+This helps keep your secrets out of Ape!
+
 ## Contracts Folder
 
 Specify a different path to your `contracts/` directory.
