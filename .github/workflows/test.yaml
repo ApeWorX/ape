@@ -85,7 +85,7 @@ jobs:
 
         - name: Install Geth
           # TODO: use `gacts/install-geth-tools@v1` once
-          #   https://github.com/gacts/install-geth-tools/pull/68 merges
+          #   https://github.com/gacts/install-geth-tools/pull/68 merges.
           uses: antazoey/install-geth-tools@feat/macos-arm
           with:
             version: 1.13.11
