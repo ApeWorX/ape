@@ -67,7 +67,7 @@ Here are some examples of changes L2 plugins make that allow improved support fo
 
 Here is a list of all L2 network plugins supported by Ape:
 
-| Name              | GitHub                                                               |
+| Name              | GitHub                                                                    |
 | ----------------- | ------------------------------------------------------------------------- |
 | ape-arbitrum      | [ApeWorX/ape-arbitrum](https://github.com/ApeWorX/ape-arbitrum)           |
 | ape-avalanche     | [ApeWorX/ape-avalanche](https://github.com/ApeWorX/ape-avalanche)         |
