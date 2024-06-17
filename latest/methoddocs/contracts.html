@@ -167,7 +167,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../userguides/forking_networks.html">Forking Networks</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../userguides/developing_plugins.html">Developing Plugins</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../userguides/config.html">Configure Ape</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../userguides/transactions.html">Making Transactions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../userguides/transactions.html">Transactions</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../userguides/console.html">Ape Console</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../userguides/contracts.html">Contracts</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../userguides/proxy.html">Proxy Contracts</a></li>
@@ -407,7 +407,11 @@ or <code class="docutils literal notranslate"><span class="pre">balance</span></
 <dl class="py property">
 <dt class="sig sig-object py" id="ape.contracts.base.ContractInstance.creation_metadata">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">creation_metadata</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="api.html#ape.api.query.ContractCreation" title="ape.api.query.ContractCreation"><span class="pre">ContractCreation</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#ape.contracts.base.ContractInstance.creation_metadata" title="Permalink to this definition"></a></dt>
-<dd><p>txn_hash, block, deployer, factory, receipt.</p>
+<dd><p>txn_hash, block, deployer, factory, receipt.
+See <a class="reference internal" href="api.html#ape.api.query.ContractCreation" title="ape.api.query.ContractCreation"><code class="xref py py-class docutils literal notranslate"><span class="pre">ContractCreation</span></code></a> for more details.
+<strong>NOTE</strong>: Must be either connected to a node that provides this data,
+such as a node with the <code class="docutils literal notranslate"><span class="pre">ots_</span></code> namespace enabled, or have a query-plugin
+installed that can fetch this data, such as <code class="docutils literal notranslate"><span class="pre">ape-etherscan</span></code>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>Contract creation details</p>

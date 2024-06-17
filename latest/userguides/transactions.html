@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Making Transactions &mdash; ape  documentation</title>
+  <title>Transactions &mdash; ape  documentation</title>
       <link rel="stylesheet" href="/ape/latest/_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="/ape/latest/_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="/ape/latest/_static/custom.css" type="text/css" />
@@ -167,9 +167,10 @@
 <li class="toctree-l1"><a class="reference internal" href="forking_networks.html">Forking Networks</a></li>
 <li class="toctree-l1"><a class="reference internal" href="developing_plugins.html">Developing Plugins</a></li>
 <li class="toctree-l1"><a class="reference internal" href="config.html">Configure Ape</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">Making Transactions</a><ul>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Transactions</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#deployment">Deployment</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#deployment-from-ape-console">Deployment from Ape Console</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#deployment-metadata">Deployment Metadata</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="#dynamic-fee-transactions">Dynamic-Fee Transactions</a></li>
@@ -240,7 +241,7 @@
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
       <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
-      <li class="breadcrumb-item active">Making Transactions</li>
+      <li class="breadcrumb-item active">Transactions</li>
       <li class="wy-breadcrumbs-aside">
               <a href="https://github.com/ApeWorX/ape/blob/main/docs/userguides/transactions.md" class="fa fa-github"> Edit on GitHub</a>
       </li>
@@ -250,8 +251,8 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <section id="making-transactions">
-<h1>Making Transactions<a class="headerlink" href="#making-transactions" title="Permalink to this heading"></a></h1>
+  <section id="transactions">
+<h1>Transactions<a class="headerlink" href="#transactions" title="Permalink to this heading"></a></h1>
 <p>Regardless of how you are using <code class="docutils literal notranslate"><span class="pre">ape</span></code>, you will likely be making transactions.
 There are various types of transactions you can make with <code class="docutils literal notranslate"><span class="pre">ape</span></code>. A simple example is deploying a contract.</p>
 <section id="deployment">
@@ -263,27 +264,10 @@ as we care about the contract instance. That is why the return value from
 <p>The following example demonstrates a simple deployment script:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">ape</span> <span class="kn">import</span> <span class="n">accounts</span><span class="p">,</span> <span class="n">project</span>
 
-
 <span class="k">def</span> <span class="nf">deploy</span><span class="p">():</span>
     <span class="n">account</span> <span class="o">=</span> <span class="n">accounts</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;MyAccount&quot;</span><span class="p">)</span>
     <span class="c1"># Assume you have a contract named `MyContract` in your project&#39;s contracts folder.</span>
     <span class="k">return</span> <span class="n">account</span><span class="o">.</span><span class="n">deploy</span><span class="p">(</span><span class="n">project</span><span class="o">.</span><span class="n">MyContract</span><span class="p">)</span>
-</pre></div>
-</div>
-<p>To get the receipt of a <code class="docutils literal notranslate"><span class="pre">deploy</span></code> transaction, use the <a class="reference external" href="../methoddocs/contracts.html#ape.contracts.base.ContractInstance.creation_metadata">ContractInstance.creation_metadata</a> property:</p>
-<p>Additionally, you can find the <code class="docutils literal notranslate"><span class="pre">.deployer</span></code>, <code class="docutils literal notranslate"><span class="pre">.proxy</span></code> and whatever else on the creaton metadata which may come in handy.</p>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>Use <code class="docutils literal notranslate"><span class="pre">ape-etherscan</span></code> or a node with Otterscan for increased support for these features.</p>
-</div>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">ape</span> <span class="kn">import</span> <span class="n">accounts</span><span class="p">,</span> <span class="n">project</span>
-
-<span class="n">dev</span> <span class="o">=</span> <span class="n">accounts</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;dev&quot;</span><span class="p">)</span>
-<span class="n">contract</span> <span class="o">=</span> <span class="n">project</span><span class="o">.</span><span class="n">MyContract</span><span class="o">.</span><span class="n">deploy</span><span class="p">(</span><span class="n">sender</span><span class="o">=</span><span class="n">dev</span><span class="p">)</span>
-
-<span class="c1"># The receipt is available on the contract instance and has the expected sender.</span>
-<span class="n">receipt</span> <span class="o">=</span> <span class="n">contract</span><span class="o">.</span><span class="n">creation_metadata</span><span class="o">.</span><span class="n">receipt</span>
-<span class="k">assert</span> <span class="n">receipt</span><span class="o">.</span><span class="n">sender</span> <span class="o">==</span> <span class="n">dev</span>
 </pre></div>
 </div>
 <section id="deployment-from-ape-console">
@@ -299,6 +283,25 @@ as we care about the contract instance. That is why the return value from
 </pre></div>
 </div>
 <p>For an in depth tutorial on how to deploy, please visit <a class="reference external" href="https://academy.apeworx.io/">ApeAcademy</a>.</p>
+</section>
+<section id="deployment-metadata">
+<h3>Deployment Metadata<a class="headerlink" href="#deployment-metadata" title="Permalink to this heading"></a></h3>
+<p>To get the receipt of a <code class="docutils literal notranslate"><span class="pre">deploy</span></code> transaction, use the <a class="reference external" href="../methoddocs/contracts.html#ape.contracts.base.ContractInstance.creation_metadata">ContractInstance.creation_metadata</a> property:</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Use <code class="docutils literal notranslate"><span class="pre">ape-etherscan</span></code> or a node with Otterscan for increased support for these features.</p>
+</div>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">ape</span> <span class="kn">import</span> <span class="n">accounts</span><span class="p">,</span> <span class="n">project</span>
+
+<span class="n">dev</span> <span class="o">=</span> <span class="n">accounts</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;dev&quot;</span><span class="p">)</span>
+<span class="n">contract</span> <span class="o">=</span> <span class="n">project</span><span class="o">.</span><span class="n">MyContract</span><span class="o">.</span><span class="n">deploy</span><span class="p">(</span><span class="n">sender</span><span class="o">=</span><span class="n">dev</span><span class="p">)</span>
+
+<span class="c1"># The receipt is available on the contract instance and has the expected sender.</span>
+<span class="n">receipt</span> <span class="o">=</span> <span class="n">contract</span><span class="o">.</span><span class="n">creation_metadata</span><span class="o">.</span><span class="n">receipt</span>
+<span class="k">assert</span> <span class="n">receipt</span><span class="o">.</span><span class="n">sender</span> <span class="o">==</span> <span class="n">dev</span>
+</pre></div>
+</div>
+<p><strong>NOTE</strong>: The <code class="docutils literal notranslate"><span class="pre">creation_metadata</span></code> contains other information as well, such as <code class="docutils literal notranslate"><span class="pre">.factory</span></code> for factory-deployed contracts.</p>
 </section>
 </section>
 <section id="dynamic-fee-transactions">

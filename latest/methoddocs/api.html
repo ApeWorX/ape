@@ -167,7 +167,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../userguides/forking_networks.html">Forking Networks</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../userguides/developing_plugins.html">Developing Plugins</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../userguides/config.html">Configure Ape</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../userguides/transactions.html">Making Transactions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../userguides/transactions.html">Transactions</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../userguides/console.html">Ape Console</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../userguides/contracts.html">Contracts</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../userguides/proxy.html">Proxy Contracts</a></li>
@@ -587,7 +587,13 @@
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="#ape.api.query.ContractCreation"><code class="docutils literal notranslate"><span class="pre">ContractCreation</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#ape.api.query.ContractCreation.block"><code class="docutils literal notranslate"><span class="pre">ContractCreation.block</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ape.api.query.ContractCreation.deployer"><code class="docutils literal notranslate"><span class="pre">ContractCreation.deployer</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ape.api.query.ContractCreation.factory"><code class="docutils literal notranslate"><span class="pre">ContractCreation.factory</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ape.api.query.ContractCreation.from_receipt"><code class="docutils literal notranslate"><span class="pre">ContractCreation.from_receipt()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.query.ContractCreation.model_config"><code class="docutils literal notranslate"><span class="pre">ContractCreation.model_config</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ape.api.query.ContractCreation.receipt"><code class="docutils literal notranslate"><span class="pre">ContractCreation.receipt</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ape.api.query.ContractCreation.txn_hash"><code class="docutils literal notranslate"><span class="pre">ContractCreation.txn_hash</span></code></a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="#ape.api.query.ContractCreationQuery"><code class="docutils literal notranslate"><span class="pre">ContractCreationQuery</span></code></a><ul>
@@ -4123,10 +4129,62 @@ transactions collected inside the <code class="docutils literal notranslate"><sp
 <dt class="sig sig-object py" id="ape.api.query.ContractCreation">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ape.api.query.</span></span><span class="sig-name descname"><span class="pre">ContractCreation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">txn_hash</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">block</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">deployer</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ChecksumAddress</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">factory</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ChecksumAddress</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.api.query.ContractCreation" title="Permalink to this definition"></a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">BaseModel</span></code>, <a class="reference internal" href="utils.html#ape.utils.BaseInterface" title="ape.utils.basemodel.BaseInterface"><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseInterface</span></code></a></p>
+<p>Contract-creation metadata, such as the transaction
+and deployer. Useful for contract-verification,
+<code class="docutils literal notranslate"><span class="pre">block_identifier=</span></code> usage, and other use-cases.</p>
+<p>To get contract-creation metadata, you need a query engine
+that can provide it, such as the <code class="docutils literal notranslate"><span class="pre">ape-etherscan</span></code> plugin
+or a node connected to the OTS namespace.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ape.api.query.ContractCreation.block">
+<span class="sig-name descname"><span class="pre">block</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="headerlink" href="#ape.api.query.ContractCreation.block" title="Permalink to this definition"></a></dt>
+<dd><p>The block number of the deploy transaction.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ape.api.query.ContractCreation.deployer">
+<span class="sig-name descname"><span class="pre">deployer</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ChecksumAddress</span></em><a class="headerlink" href="#ape.api.query.ContractCreation.deployer" title="Permalink to this definition"></a></dt>
+<dd><p>The contract deployer address.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ape.api.query.ContractCreation.factory">
+<span class="sig-name descname"><span class="pre">factory</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ChecksumAddress</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#ape.api.query.ContractCreation.factory" title="Permalink to this definition"></a></dt>
+<dd><p>The address of the factory contract, if there is one
+and it is known (depends on the query provider!).</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ape.api.query.ContractCreation.from_receipt">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_receipt</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">receipt</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#ape.api.transactions.ReceiptAPI" title="ape.api.transactions.ReceiptAPI"><span class="pre">ReceiptAPI</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#ape.api.query.ContractCreation" title="ape.api.query.ContractCreation"><span class="pre">ContractCreation</span></a></span></span><a class="headerlink" href="#ape.api.query.ContractCreation.from_receipt" title="Permalink to this definition"></a></dt>
+<dd><p>Create a metadata class.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>receipt</strong> (<a class="reference internal" href="#ape.api.transactions.ReceiptAPI" title="ape.api.transactions.ReceiptAPI"><code class="xref py py-class docutils literal notranslate"><span class="pre">ReceiptAPI</span></code></a>) – The receipt
+of the deploy transaction.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference internal" href="#ape.api.query.ContractCreation" title="ape.api.query.ContractCreation"><code class="xref py py-class docutils literal notranslate"><span class="pre">ContractCreation</span></code></a></p>
+</dd>
+</dl>
+</dd></dl>
+
 <dl class="py attribute">
 <dt class="sig sig-object py" id="ape.api.query.ContractCreation.model_config">
 <span class="sig-name descname"><span class="pre">model_config</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ClassVar</span><span class="p"><span class="pre">[</span></span><span class="pre">ConfigDict</span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'arbitrary_types_allowed':</span> <span class="pre">True}</span></em><a class="headerlink" href="#ape.api.query.ContractCreation.model_config" title="Permalink to this definition"></a></dt>
 <dd><p>Configuration for the model, should be a dictionary conforming to [<cite>ConfigDict</cite>][pydantic.config.ConfigDict].</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="ape.api.query.ContractCreation.receipt">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">receipt</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#ape.api.transactions.ReceiptAPI" title="ape.api.transactions.ReceiptAPI"><span class="pre">ReceiptAPI</span></a></em><a class="headerlink" href="#ape.api.query.ContractCreation.receipt" title="Permalink to this definition"></a></dt>
+<dd><p>The deploy transaction <a class="reference internal" href="#ape.api.transactions.ReceiptAPI" title="ape.api.transactions.ReceiptAPI"><code class="xref py py-class docutils literal notranslate"><span class="pre">ReceiptAPI</span></code></a>.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ape.api.query.ContractCreation.txn_hash">
+<span class="sig-name descname"><span class="pre">txn_hash</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#ape.api.query.ContractCreation.txn_hash" title="Permalink to this definition"></a></dt>
+<dd><p>The transaction hash of the deploy transaction.</p>
 </dd></dl>
 
 </dd></dl>
