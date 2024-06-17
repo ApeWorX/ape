@@ -886,6 +886,10 @@ class ContractInstance(BaseAddress, ContractTypeWrapper):
     def creation_metadata(self) -> Optional[ContractCreation]:
         """
         Contract creation details: txn_hash, block, deployer, factory, receipt.
+        See :class:`~ape.api.query.ContractCreation` for more details.
+        **NOTE**: Must be either connected to a node that provides this data,
+        such as a node with the ``ots_`` namespace enabled, or have a query-plugin
+        installed that can fetch this data, such as ``ape-etherscan``.
         """
         return self.chain_manager.contracts.get_creation_metadata(self.address)
 

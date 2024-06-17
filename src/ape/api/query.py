@@ -170,17 +170,56 @@ class ContractCreationQuery(_BaseQuery):
 
 
 class ContractCreation(BaseModel, BaseInterface):
+    """
+    Contract-creation metadata, such as the transaction
+    and deployer. Useful for contract-verification,
+    ``block_identifier=`` usage, and other use-cases.
+
+    To get contract-creation metadata, you need a query engine
+    that can provide it, such as the ``ape-etherscan`` plugin
+    or a node connected to the OTS namespace.
+    """
+
     txn_hash: str
+    """
+    The transaction hash of the deploy transaction.
+    """
+
     block: int
+    """
+    The block number of the deploy transaction.
+    """
+
     deployer: AddressType
+    """
+    The contract deployer address.
+    """
+
     factory: Optional[AddressType] = None
+    """
+    The address of the factory contract, if there is one
+    and it is known (depends on the query provider!).
+    """
 
     @property
-    def receipt(self):
+    def receipt(self) -> ReceiptAPI:
+        """
+        The deploy transaction :class:`~ape.api.transactions.ReceiptAPI`.
+        """
         return self.chain_manager.get_receipt(self.txn_hash)
 
     @classmethod
-    def from_receipt(cls, receipt: ReceiptAPI):
+    def from_receipt(cls, receipt: ReceiptAPI) -> "ContractCreation":
+        """
+        Create a metadata class.
+
+        Args:
+            receipt (:class:`~ape.api.transactions.ReceiptAPI`): The receipt
+              of the deploy transaction.
+
+        Returns:
+            :class:`~ape.api.query.ContractCreation`
+        """
         return cls(
             txn_hash=receipt.txn_hash,
             block=receipt.block_number,
