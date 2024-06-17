@@ -187,11 +187,11 @@ def test_use_provider_previously_used_and_not_connected(eth_tester_provider):
 def test_create_network_type():
     chain_id = 123321123321123321
     actual = create_network_type(chain_id, chain_id)
-    assert isinstance(actual, NetworkAPI)
+    assert issubclass(actual, NetworkAPI)
 
 
 def test_create_network_type_fork():
     chain_id = 123321123321123322
     actual = create_network_type(chain_id, chain_id, is_fork=True)
-    assert isinstance(actual, NetworkAPI)
-    assert isinstance(actual, ForkedNetworkAPI)
+    assert issubclass(actual, NetworkAPI)
+    assert issubclass(actual, ForkedNetworkAPI)
