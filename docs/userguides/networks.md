@@ -182,7 +182,7 @@ Now, when using `ethereum:apenet:node`, it will connect to the RPC URL `https://
 
 #### Forking Custom Networks
 
-You can fork your custom network using provider with forked-network support such as `ape-foundry` or `ape-hardhat`.
+You can fork custom networks using providers that support forking, such as `ape-foundry` or `ape-hardhat`.
 To fork a custom network, first ensure the custom network is set-up by following the sections above.
 Once you can successfully connect to a custom network in Ape, you can fork it.
 
