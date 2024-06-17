@@ -264,6 +264,13 @@ This guide is <strong>PURPOSELY</strong> alphabetized to facilitate easier look-
 <li><p>Setting up project dependencies: See the <a class="reference external" href="#dependencies">dependencies</a> section.</p></li>
 <li><p>Declaring your project’s plugins: See the <a class="reference external" href="#plugins">plugins</a> section.</p></li>
 </ol>
+<p><strong>Environment Variables</strong>: <code class="docutils literal notranslate"><span class="pre">ape-config.yaml</span></code> files support environment-variable expansion.
+Simply include environment variables (with the <code class="docutils literal notranslate"><span class="pre">$</span></code> prefix) in your config file and Ape will automatically expand them.</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">plugin</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">secret_rpc</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">$MY_SECRET_RPC</span>
+</pre></div>
+</div>
+<p>This helps keep your secrets out of Ape!</p>
 <section id="contracts-folder">
 <h2>Contracts Folder<a class="headerlink" href="#contracts-folder" title="Permalink to this heading"></a></h2>
 <p>Specify a different path to your <code class="docutils literal notranslate"><span class="pre">contracts/</span></code> directory.
