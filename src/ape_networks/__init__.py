@@ -30,7 +30,7 @@ class CustomNetwork(PluginConfig):
     @property
     def is_fork(self) -> bool:
         """
-        True when the name of the network ends in "-fork".
+        ``True`` when the name of the network ends in ``"-fork"``.
         """
         return self.name.endswith("-fork")
 

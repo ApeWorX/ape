@@ -234,7 +234,6 @@ class EcosystemAPI(ExtraAttributesMixin, BaseInterfaceModel):
         Returns:
             dict[str, :class:`~ape.api.networks.NetworkAPI`]
         """
-
         networks = {**self._networks_from_plugins}
 
         # Include configured custom networks.
