@@ -1,3 +1,4 @@
+import os
 from pathlib import Path
 from typing import Optional, Union
 
@@ -37,6 +38,33 @@ def test_model_validate_path_contracts_folder():
     data = {"contracts_folder": path}
     cfg = ApeConfig.model_validate(data)
     assert cfg.contracts_folder == str(path)
+
+
+def test_validate_file():
+    value = "pathtowherever"
+    with create_tempdir() as temp_dir:
+        file = temp_dir / "ape-config.yaml"
+        file.write_text(f"contracts_folder: {value}")
+        actual = ApeConfig.validate_file(file)
+
+    assert actual.contracts_folder == value
+
+
+def test_validate_file_expands_env_vars():
+    secret = "mycontractssecretfolder"
+    env_var_name = "APE_TEST_CONFIG_SECRET_CONTRACTS_FOLDER"
+    os.environ[env_var_name] = secret
+
+    try:
+        with create_tempdir() as temp_dir:
+            file = temp_dir / "ape-config.yaml"
+            file.write_text(f"contracts_folder: ${env_var_name}")
+
+            actual = ApeConfig.validate_file(file)
+            assert actual.contracts_folder == secret
+    finally:
+        if env_var_name in os.environ:
+            del os.environ[env_var_name]
 
 
 def test_deployments(networks_connected_to_tester, owner, vyper_contract_container, project):
