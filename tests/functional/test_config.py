@@ -388,8 +388,16 @@ def test_get_config_unknown_plugin(config):
 
 def test_get_config_invalid_plugin_config(project):
     with project.temp_config(node={"ethereum": [1, 2]}):
+        # Show project's ApeConfig model works.
         with pytest.raises(ValidationError):
             project.config.get_config("node")
+
+        # Show the manager-wrapper also works
+        # (simple wrapper for local project's config,
+        # but at one time pointlessly overrode the `get_config()`
+        # which caused issues).
+        with pytest.raises(ValidationError):
+            project.config_manager.get_config("node")
 
 
 def test_write_to_disk_json(config):
