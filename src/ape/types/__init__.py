@@ -36,6 +36,7 @@ from ape.utils import (
     BaseInterfaceModel,
     ExtraAttributesMixin,
     ExtraModelAttributes,
+    ManagerAccessMixin,
     cached_property,
 )
 from ape.utils.misc import ZERO_ADDRESS, log_instead_of_fail, to_int
@@ -470,6 +471,23 @@ class _LazySequence(Sequence[_T]):
         yield from self._generator
 
 
+class CurrencyValue(int):
+    """
+    An integer you can compare with currency-value
+    strings, such as ``"1 ether"``.
+    """
+
+    def __eq__(self, other: Any) -> bool:
+        if isinstance(other, int):
+            return super().__eq__(other)
+        elif isinstance(other, str):
+            other_value = ManagerAccessMixin.conversion_manager.convert(other, int)
+            return super().__eq__(other_value)
+
+        # Try from the other end, if hasn't already.
+        return NotImplemented
+
+
 __all__ = [
     "ABI",
     "AddressType",
@@ -487,6 +505,7 @@ __all__ = [
     "CoverageProject",
     "CoverageReport",
     "CoverageStatement",
+    "CurrencyValue",
     "GasReport",
     "MessageSignature",
     "PackageManifest",

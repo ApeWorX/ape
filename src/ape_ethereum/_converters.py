@@ -1,6 +1,7 @@
 from decimal import Decimal
 
-from ape.api import ConverterAPI
+from ape.api.convert import ConverterAPI
+from ape.types import CurrencyValue
 
 ETHER_UNITS = {
     "eth": int(1e18),
@@ -35,5 +36,5 @@ class WeiConversions(ConverterAPI):
 
     def convert(self, value: str) -> int:
         value, unit = value.split(" ")
-
-        return int(Decimal(value) * ETHER_UNITS[unit.lower()])
+        converted_value = int(Decimal(value) * ETHER_UNITS[unit.lower()])
+        return CurrencyValue(converted_value)

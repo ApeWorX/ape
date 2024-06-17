@@ -1,7 +1,7 @@
 import pytest
 from pydantic import BaseModel
 
-from ape.api.address import BaseAddress
+from ape.api.address import Address, BaseAddress
 from ape.types import AddressType
 
 
@@ -31,3 +31,12 @@ def test_address_type_in_model(zero_address):
 
     model = CustomModel(address=zero_address)
     assert model.address == zero_address
+
+
+def test_balance(zero_address):
+    address = Address(zero_address)
+    actual = address.balance
+    expected = 0
+    assert actual == expected
+    # Also show can compare directly to currency-str.
+    assert actual == "0 ETH"

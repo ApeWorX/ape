@@ -87,6 +87,11 @@ BLUEPRINT_HEADER = HexBytes("0xfe71")
 
 
 class NetworkConfig(PluginConfig):
+    """
+    The Ethereum network config base class for each
+    network, e.g. ``"mainnet"``, ```"local"``, etc.
+    """
+
     required_confirmations: int = 0
     """
     The amount of blocks to wait before
