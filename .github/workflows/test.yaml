@@ -102,12 +102,6 @@ jobs:
         - name: Run Integration Tests
           run: pytest tests/integration -m "not fuzzing" -s --cov=src --cov-append -n auto --dist loadgroup
 
-        - name: Combine Coverage Data
-          run: coverage combine
-
-        - name: Generate Coverage Report
-          run: coverage report
-
     fuzzing:
         runs-on: ubuntu-latest
 
