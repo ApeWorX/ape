@@ -7,7 +7,6 @@ from typing import Any, Optional
 
 from ethpm_types import PackageManifest
 
-from ape.api import PluginConfig
 from ape.api.config import ApeConfig
 from ape.managers.base import BaseManager
 from ape.utils import create_tempdir, in_tempdir, log_instead_of_fail
@@ -67,7 +66,6 @@ class ConfigManager(ExtraAttributesMixin, BaseManager):
         See :class:`~ape.api.config.ApeConfig` for field definitions
         and model-related controls.
         """
-
         return get_attribute_with_extras(self, name)
 
     def __getitem__(self, name: str) -> Any:
@@ -105,22 +103,6 @@ class ConfigManager(ExtraAttributesMixin, BaseManager):
             :class:`~ape.managers.config.ApeConfig`: Config data.
         """
         return ApeConfig.from_manifest(manifest, **overrides)
-
-    def get_config(self, plugin_name: str) -> PluginConfig:
-        """
-        Get the config for a plugin.
-
-        Args:
-            plugin_name (str): The name of the plugin.
-
-        Returns:
-            :class:`~ape.api.config.PluginConfig`
-        """
-        try:
-            return self.__getattr__(plugin_name)
-        except AttributeError:
-            # Empty config.
-            return PluginConfig()
 
     @contextmanager
     def isolate_data_folder(self) -> Iterator[Path]:
