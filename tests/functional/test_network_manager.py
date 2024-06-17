@@ -4,6 +4,7 @@ from pathlib import Path
 import pytest
 
 from ape.api import EcosystemAPI
+from ape.api.networks import LOCAL_NETWORK_NAME
 from ape.exceptions import NetworkError, ProviderNotFoundError
 from ape.utils import DEFAULT_TEST_CHAIN_ID
 
@@ -388,3 +389,14 @@ def test_getitem(networks):
     ethereum = networks["ethereum"]
     assert ethereum.name == "ethereum"
     assert isinstance(ethereum, EcosystemAPI)
+
+
+def test_network_names(networks, custom_networks_config_dict, project):
+    data = copy.deepcopy(custom_networks_config_dict)
+    with project.temp_config(**data):
+        actual = networks.network_names
+        assert LOCAL_NETWORK_NAME in actual
+        assert "mainnet" in actual  # Normal
+        assert "mainnet-fork" in actual  # Forked
+        assert "apenet" in actual  # Custom
+        assert "apenet-fork" in actual  # Custom forked

@@ -359,20 +359,18 @@ class NetworkChoice(click.Choice):
             try:
                 # Validate result.
                 choice = super().convert(value, param, ctx)
-            except BadParameter as err:
+            except BadParameter:
                 # Attempt to get the provider anyway.
                 # Sometimes, depending on the provider, it'll still work.
                 # (as-is the case for custom-forked networks).
                 try:
-                    return networks.get_provider_from_choice(network_choice=value)
-                except Exception:
-                    pass  # Pretend this never happened and raise BadParam.
-
-                # If an error was not raised for some reason, raise a simpler error.
-                # NOTE: Still avoid showing the massive network options list.
-                raise click.BadParameter(
-                    "Invalid network choice. Use `ape networks list` to see options."
-                ) from err
+                    choice = networks.get_provider_from_choice(network_choice=value)
+                except Exception as err:
+                    # If an error was not raised for some reason, raise a simpler error.
+                    # NOTE: Still avoid showing the massive network options list.
+                    raise click.BadParameter(
+                        "Invalid network choice. Use `ape networks list` to see options."
+                    ) from err
 
         if (
             choice not in (None, _NONE_NETWORK)

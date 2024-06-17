@@ -9,7 +9,7 @@ from ethpm_types import ContractType, ErrorABI
 from ethpm_types.abi import ABIType, EventABI, MethodABI
 from evm_trace import CallTreeNode, CallType
 
-from ape.api.networks import LOCAL_NETWORK_NAME, NetworkAPI
+from ape.api.networks import LOCAL_NETWORK_NAME, ForkedNetworkAPI, NetworkAPI
 from ape.exceptions import CustomError, DecodingError, NetworkError, NetworkNotFoundError
 from ape.types import AddressType
 from ape.utils import DEFAULT_LOCAL_TRANSACTION_ACCEPTANCE_TIMEOUT
@@ -872,9 +872,12 @@ def test_networks(ethereum):
     with_forks = ("sepolia", "mainnet")
     without_forks = (LOCAL_NETWORK_NAME,)
 
-    def assert_net(net: str):
+    def assert_net(
+        net: str,
+    ):
         assert net in actual
-        assert isinstance(actual[net], NetworkAPI)
+        base_class = ForkedNetworkAPI if net.endswith("-fork") else NetworkAPI
+        assert isinstance(actual[net], base_class)
 
     for net in with_forks:
         assert_net(net)

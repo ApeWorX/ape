@@ -234,6 +234,7 @@ class EcosystemAPI(ExtraAttributesMixin, BaseInterfaceModel):
         Returns:
             dict[str, :class:`~ape.api.networks.NetworkAPI`]
         """
+
         networks = {**self._networks_from_plugins}
 
         # Include configured custom networks.
@@ -269,7 +270,7 @@ class EcosystemAPI(ExtraAttributesMixin, BaseInterfaceModel):
                     f"More than one network named '{custom_net.name}' in ecosystem '{self.name}'."
                 )
 
-            is_fork = custom_net.name.endswith("-fork")
+            is_fork = custom_net.is_fork
             network_data = custom_net.model_dump(by_alias=True, exclude=("default_provider",))
             network_data["ecosystem"] = self
             network_type = create_network_type(
@@ -1080,7 +1081,7 @@ class NetworkAPI(BaseInterfaceModel):
             provider = self.providers[provider_name](provider_settings=provider_settings)
             return _set_provider(provider)
 
-        elif self.name.endswith("-fork") and provider_name in common_forking_providers:
+        elif self.is_fork and provider_name in common_forking_providers:
             provider = common_forking_providers[provider_name](
                 provider_settings=provider_settings,
                 network=self,
