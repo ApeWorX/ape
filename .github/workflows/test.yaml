@@ -57,7 +57,7 @@ jobs:
         - name: Run MyPy
           run: mypy .
 
-    functional:
+    test:
         runs-on: ${{ matrix.os }}
 
         strategy:
@@ -96,8 +96,17 @@ jobs:
             pip uninstall eth-ape --yes
             pip install .[test]
 
-        - name: Run Tests
-          run: pytest -m "not fuzzing" -s --cov=src -n auto --dist loadgroup
+        - name: Run Functional Tests
+          run: pytest tests/functional -m "not fuzzing" -s --cov=src --cov-append -n auto --dist loadgroup
+
+        - name: Run Integration Tests
+          run: pytest tests/integration -m "not fuzzing" -s --cov=src --cov-append -n auto --dist loadgroup
+
+        - name: Combine Coverage Data
+          run: coverage combine
+
+        - name: Generate Coverage Report
+          run: coverage report
 
     fuzzing:
         runs-on: ubuntu-latest
