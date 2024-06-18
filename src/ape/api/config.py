@@ -74,7 +74,11 @@ class PluginConfig(BaseSettings):
 
             return root
 
-        return cls(**update(default_values, overrides))
+        data = update(default_values, overrides)
+        try:
+            return cls.model_validate(data)
+        except ValidationError as err:
+            raise ConfigError(str(err)) from err
 
     @only_raise_attribute_error
     def __getattr__(self, attr_name: str) -> Any:
