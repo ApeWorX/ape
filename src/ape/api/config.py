@@ -157,9 +157,6 @@ def _get_problem_with_config(errors: list, path: Path) -> Optional[str]:
         for no, line in cfg_content.items():
             loc = location[loc_idx]
 
-            if isinstance(loc, int):
-                breakpoint()
-
             if not line.lstrip().startswith(f"{loc}:"):
                 continue
 

@@ -68,6 +68,21 @@ def test_validate_file_expands_env_vars():
             del os.environ[env_var_name]
 
 
+def test_validate_file_shows_linenos():
+    with create_tempdir() as temp_dir:
+        file = temp_dir / "ape-config.yaml"
+        file.write_text("name: {'test': 123}")
+
+        expected = (
+            f"'{temp_dir / 'ape-config.yaml'}' is invalid!"
+            "\nInput should be a valid string\n-->1: name: {'test': 123}"
+        )
+        with pytest.raises(ConfigError) as err:
+            _ = ApeConfig.validate_file(file)
+
+        assert expected in str(err.value)
+
+
 def test_deployments(networks_connected_to_tester, owner, vyper_contract_container, project):
     _ = networks_connected_to_tester  # Connection needs to lookup config.
 
