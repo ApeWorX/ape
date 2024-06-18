@@ -55,10 +55,6 @@ class PluginConfig(BaseSettings):
     A base plugin configuration class. Each plugin that includes
     a config API must register a subclass of this class.
     """
-
-    # NOTE: This is probably partially initialized at the time of assignment
-    _config_manager: Optional["ConfigManager"]
-
     model_config = SettingsConfigDict(extra="allow")
 
     @classmethod
