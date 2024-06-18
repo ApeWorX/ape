@@ -300,6 +300,15 @@ def test_merge_configs_short_circuits():
     assert merge_configs(ex, {}) == merge_configs({}, ex) == ex
 
 
+def test_merge_configs_wrong_type():
+    cfg_0 = {"foo": 123}
+    cfg_1 = {"foo": {"bar": 123}}
+    actual = merge_configs(cfg_0, cfg_1)
+    assert actual["foo"] == {"bar": 123}
+    actual = merge_configs(cfg_1, cfg_0)
+    assert actual["foo"] == 123
+
+
 def test_plugin_config_getattr_and_getitem(config):
     config = config.get_config("ethereum")
     assert config.mainnet is not None
