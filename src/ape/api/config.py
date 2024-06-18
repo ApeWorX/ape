@@ -154,22 +154,41 @@ def _get_problem_with_config(errors: list, path: Path) -> Optional[str]:
         lineno = None
         loc_idx = 0
         depth = len(location)
+        list_counter = 0
         for no, line in cfg_content.items():
             loc = location[loc_idx]
+            clean_line = line.lstrip()
 
-            if not line.lstrip().startswith(f"{loc}:"):
+            if isinstance(loc, int):
+                if not clean_line.startswith("- "):
+                    # Not a list item.
+                    continue
+
+                elif list_counter != loc:
+                    # Still search for index.
+                    list_counter += 1
+                    continue
+
+                # If we get here, we have found the index.
+                list_counter = 0
+
+            elif not clean_line.startswith(f"{loc}:"):
                 continue
 
             # Look for the next location up the tree.
             loc_idx += 1
+
+            # Even if we don't find the full path for some reason
+            # (perhaps it's missing), we still have the last lineno noticed.
+            lineno = no
+
             if loc_idx < depth:
                 continue
 
             # Found.
-            lineno = no
             break
 
-        if lineno is not None and loc_idx >= depth:
+        if lineno is not None:
             err_map[lineno] = error
         # else: we looped through the whole file and didn't find anything.
 

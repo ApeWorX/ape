@@ -83,6 +83,18 @@ def test_validate_file_shows_linenos():
         assert expected in str(err.value)
 
 
+def test_validate_file_shows_linenos_handles_lists():
+    with create_tempdir() as temp_dir:
+        file = temp_dir / "ape-config.yaml"
+        file.write_text("deployments:\n  ethereum:\n   sepolia:\n      - foo: bar")
+        with pytest.raises(ConfigError) as err:
+            _ = ApeConfig.validate_file(file)
+
+        assert str(file) in str(err.value)
+        assert "sepolia:" in str(err.value)
+        assert "-->4" in str(err.value)
+
+
 def test_deployments(networks_connected_to_tester, owner, vyper_contract_container, project):
     _ = networks_connected_to_tester  # Connection needs to lookup config.
 
