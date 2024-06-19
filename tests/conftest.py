@@ -380,7 +380,7 @@ def skip_if_plugin_installed(*plugin_names: str):
                 compiler = ape.compilers.get_compiler(name)
                 if compiler:
 
-                    def test_skip_from_compiler():
+                    def test_skip_from_compiler(*args, **kwargs):
                         pytest.mark.skip(msg_f.format(name))
 
                     # NOTE: By returning a function, we avoid a collection warning.

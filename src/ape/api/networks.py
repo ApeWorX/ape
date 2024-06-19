@@ -1,3 +1,4 @@
+import copy
 from collections.abc import Collection, Iterator, Sequence
 from functools import partial
 from pathlib import Path
@@ -237,48 +238,52 @@ class EcosystemAPI(ExtraAttributesMixin, BaseInterfaceModel):
         networks = {**self._networks_from_plugins}
 
         # Include configured custom networks.
-        custom_networks: list = [
+        custom_networks: list[dict] = [
             n
-            for n in self.config_manager.get_config("networks").custom
-            if (n.ecosystem or self.network_manager.default_ecosystem.name) == self.name
+            for n in self.network_manager.custom_networks
+            if n.get("ecosystem", self.network_manager.default_ecosystem.name) == self.name
         ]
 
         # Ensure forks are added automatically for custom networks.
         forked_custom_networks = []
         for net in custom_networks:
-            if net.name.endswith("-fork"):
+            if net["name"].endswith("-fork"):
                 # Already a fork.
                 continue
 
-            fork_network_name = f"{net.name}-fork"
-            if any(x.name == fork_network_name for x in custom_networks):
+            fork_network_name = f"{net['name']}-fork"
+            if any(x["name"] == fork_network_name for x in custom_networks):
                 # The forked version of this network is already known.
                 continue
 
             # Create a forked network mirroring the custom network.
-            forked_net = net.model_copy(deep=True)
-            forked_net.name = fork_network_name
+            forked_net = copy.deepcopy(net)
+            forked_net["name"] = fork_network_name
             forked_custom_networks.append(forked_net)
 
         # NOTE: Forked custom networks are still custom networks.
         custom_networks.extend(forked_custom_networks)
 
         for custom_net in custom_networks:
-            if custom_net.name in networks:
+            model_data = copy.deepcopy(custom_net)
+            net_name = custom_net["name"]
+            if net_name in networks:
                 raise NetworkError(
-                    f"More than one network named '{custom_net.name}' in ecosystem '{self.name}'."
+                    f"More than one network named '{net_name}' in ecosystem '{self.name}'."
                 )
 
-            is_fork = custom_net.is_fork
-            network_data = custom_net.model_dump(by_alias=True, exclude=("default_provider",))
-            network_data["ecosystem"] = self
+            is_fork = net_name.endswith("-fork")
+            model_data["ecosystem"] = self
             network_type = create_network_type(
-                custom_net.chain_id, custom_net.chain_id, is_fork=is_fork
+                custom_net["chain_id"], custom_net["chain_id"], is_fork=is_fork
             )
-            network_api = network_type.model_validate(network_data)
-            network_api._default_provider = custom_net.default_provider
+            if "request_header" not in model_data:
+                model_data["request_header"] = self.request_header
+
+            network_api = network_type.model_validate(model_data)
+            network_api._default_provider = custom_net.get("default_provider", "node")
             network_api._is_custom = True
-            networks[custom_net.name] = network_api
+            networks[net_name] = network_api
 
         return networks
 
@@ -503,15 +508,16 @@ class EcosystemAPI(ExtraAttributesMixin, BaseInterfaceModel):
         """
 
         names = {network_name, network_name.replace("-", "_"), network_name.replace("_", "-")}
+        networks = self.networks
         for name in names:
-            if name in self.networks:
-                return self.networks[name]
+            if name in networks:
+                return networks[name]
 
             elif name == "custom":
                 # Is an adhoc-custom network NOT from config.
                 return self.custom_network
 
-        raise NetworkNotFoundError(network_name, ecosystem=self.name, options=self.networks)
+        raise NetworkNotFoundError(network_name, ecosystem=self.name, options=networks)
 
     def get_network_data(
         self, network_name: str, provider_filter: Optional[Collection[str]] = None

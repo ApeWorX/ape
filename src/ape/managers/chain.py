@@ -334,10 +334,14 @@ class AccountHistory(BaseInterfaceModel):
         # TODO: Add ephemeral network sessional history to `ape-cache` instead,
         #       and remove this (replace with `yield from iter(self[:len(self)])`)
         for receipt in self.sessional:
-            if receipt.nonce < start_nonce:
+            if receipt.nonce is None:
+                # Not an on-chain receipt? idk - has only seen as anomaly in tests.
+                continue
+
+            elif receipt.nonce < start_nonce:
                 raise QueryEngineError("Sessional history corrupted")
 
-            if receipt.nonce > start_nonce:
+            elif receipt.nonce > start_nonce:
                 # NOTE: There's a gap in our sessional history, so fetch from query engine
                 yield from iter(self[start_nonce : receipt.nonce + 1])  # noqa: E203
 

@@ -617,8 +617,10 @@ class TestDependency:
             api = LocalDependency(local=path, name="ooga", version="1.0.0")
             dependency = Dependency(api, project)
             contract_path = dependency.project.contracts_folder / "CCC.json"
+            contract_path.parent.mkdir(exist_ok=True, parents=True)
             contract_path.write_text(
-                '[{"name":"foo","type":"fallback", "stateMutability":"nonpayable"}]'
+                '[{"name":"foo","type":"fallback", "stateMutability":"nonpayable"}]',
+                encoding="utf8",
             )
             result = dependency.compile()
             assert len(result) == 1
@@ -630,9 +632,10 @@ class TestDependency:
             api = LocalDependency(local=path, name="ooga2", version="1.1.0")
             dependency = Dependency(api, project)
             sol_path = dependency.project.contracts_folder / "Sol.sol"
-            sol_path.write_text("// Sol")
+            sol_path.parent.mkdir(exist_ok=True, parents=True)
+            sol_path.write_text("// Sol", encoding="utf8")
             vy_path = dependency.project.contracts_folder / "Vy.vy"
-            vy_path.write_text("# Vy")
+            vy_path.write_text("# Vy", encoding="utf8")
             expected = (
                 "Compiling dependency produced no contract types. "
                 "Try installing 'ape-solidity' or 'ape-vyper'."
