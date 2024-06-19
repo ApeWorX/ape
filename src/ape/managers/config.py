@@ -151,14 +151,14 @@ def _merge_configs(base: dict, secondary: dict) -> dict:
         if key not in secondary:
             result[key] = value
 
-        elif not isinstance(value, dict):
+        elif not isinstance(value, dict) or not isinstance(secondary[key], dict):
             # Is a primitive value found in both configs.
             # Must use the second one.
             result[key] = secondary[key]
 
         else:
             # Merge the dictionaries.
-            sub = _merge_configs(base[key], secondary[key])
+            sub = _merge_configs(value, secondary[key])
             result[key] = sub
 
     # Add missed keys from secondary.
