@@ -3,7 +3,7 @@ from collections.abc import Iterable, Iterator
 from enum import Enum
 from functools import cached_property
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Optional, TypeVar, cast
+from typing import Any, Optional, TypeVar, cast
 
 import yaml
 from ethpm_types import PackageManifest, PackageMeta, Source
@@ -23,9 +23,6 @@ from ape.utils.basemodel import (
     only_raise_attribute_error,
 )
 from ape.utils.misc import load_config
-
-if TYPE_CHECKING:
-    from ape.managers.config import ConfigManager
 
 ConfigItemType = TypeVar("ConfigItemType")
 
@@ -55,6 +52,7 @@ class PluginConfig(BaseSettings):
     A base plugin configuration class. Each plugin that includes
     a config API must register a subclass of this class.
     """
+
     model_config = SettingsConfigDict(extra="allow")
 
     @classmethod
