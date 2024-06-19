@@ -3,7 +3,6 @@ from pathlib import Path
 from typing import Optional, Union
 
 import pytest
-from pydantic import ValidationError
 from pydantic_settings import SettingsConfigDict
 
 from ape.api.config import ApeConfig, ConfigEnum, PluginConfig
@@ -66,6 +65,33 @@ def test_validate_file_expands_env_vars():
     finally:
         if env_var_name in os.environ:
             del os.environ[env_var_name]
+
+
+def test_validate_file_shows_linenos():
+    with create_tempdir() as temp_dir:
+        file = temp_dir / "ape-config.yaml"
+        file.write_text("name: {'test': 123}")
+
+        expected = (
+            f"'{temp_dir / 'ape-config.yaml'}' is invalid!"
+            "\nInput should be a valid string\n-->1: name: {'test': 123}"
+        )
+        with pytest.raises(ConfigError) as err:
+            _ = ApeConfig.validate_file(file)
+
+        assert expected in str(err.value)
+
+
+def test_validate_file_shows_linenos_handles_lists():
+    with create_tempdir() as temp_dir:
+        file = temp_dir / "ape-config.yaml"
+        file.write_text("deployments:\n  ethereum:\n   sepolia:\n      - foo: bar")
+        with pytest.raises(ConfigError) as err:
+            _ = ApeConfig.validate_file(file)
+
+        assert str(file) in str(err.value)
+        assert "sepolia:" in str(err.value)
+        assert "-->4" in str(err.value)
 
 
 def test_deployments(networks_connected_to_tester, owner, vyper_contract_container, project):
@@ -300,6 +326,15 @@ def test_merge_configs_short_circuits():
     assert merge_configs(ex, {}) == merge_configs({}, ex) == ex
 
 
+def test_merge_configs_wrong_type():
+    cfg_0 = {"foo": 123}
+    cfg_1 = {"foo": {"bar": 123}}
+    actual = merge_configs(cfg_0, cfg_1)
+    assert actual["foo"] == {"bar": 123}
+    actual = merge_configs(cfg_1, cfg_0)
+    assert actual["foo"] == 123
+
+
 def test_plugin_config_getattr_and_getitem(config):
     config = config.get_config("ethereum")
     assert config.mainnet is not None
@@ -389,14 +424,14 @@ def test_get_config_unknown_plugin(config):
 def test_get_config_invalid_plugin_config(project):
     with project.temp_config(node={"ethereum": [1, 2]}):
         # Show project's ApeConfig model works.
-        with pytest.raises(ValidationError):
+        with pytest.raises(ConfigError):
             project.config.get_config("node")
 
         # Show the manager-wrapper also works
         # (simple wrapper for local project's config,
         # but at one time pointlessly overrode the `get_config()`
         # which caused issues).
-        with pytest.raises(ValidationError):
+        with pytest.raises(ConfigError):
             project.config_manager.get_config("node")
 
 
