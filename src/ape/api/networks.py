@@ -265,12 +265,13 @@ class EcosystemAPI(ExtraAttributesMixin, BaseInterfaceModel):
         custom_networks.extend(forked_custom_networks)
 
         for custom_net in custom_networks:
-            if custom_net["name"] in networks:
+            net_name = custom_net["name"]
+            if net_name in networks:
                 raise NetworkError(
-                    f"More than one network named '{custom_net['name']}' in ecosystem '{self.name}'."
+                    f"More than one network named '{net_name}' in ecosystem '{self.name}'."
                 )
 
-            is_fork = custom_net["name"].endswith("-fork")
+            is_fork = net_name.endswith("-fork")
             custom_net["ecosystem"] = self
             network_type = create_network_type(
                 custom_net["chain_id"], custom_net["chain_id"], is_fork=is_fork
@@ -278,7 +279,7 @@ class EcosystemAPI(ExtraAttributesMixin, BaseInterfaceModel):
             network_api = network_type.model_validate(custom_net)
             network_api._default_provider = custom_net["default_provider"]
             network_api._is_custom = True
-            networks[custom_net["name"]] = network_api
+            networks[net_name] = network_api
 
         return networks
 
