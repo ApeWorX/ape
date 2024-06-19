@@ -2042,6 +2042,11 @@ class LocalProject(Project):
             if data:
                 self.update_manifest(**data)
 
+        # Ensure any custom networks will work, otherwise Ape's network manager
+        # only knows about the "local" project's.
+        if custom_nets := (config_override or {}).get("networks", {}).get("custom", []):
+            self.network_manager._custom_networks.extend(custom_nets)
+
     @log_instead_of_fail(default="<ProjectManager>")
     def __repr__(self):
         path = f" {clean_path(self.path)}"

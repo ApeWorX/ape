@@ -34,6 +34,10 @@ class NetworkManager(BaseManager, ExtraAttributesMixin):
     _active_provider: Optional[ProviderAPI] = None
     _default_ecosystem_name: Optional[str] = None
 
+    # For adhoc adding custom networks, or incorporating some defined
+    # in other projects' configs.
+    _custom_networks: list[dict] = []
+
     @log_instead_of_fail(default="<NetworkManager>")
     def __repr__(self) -> str:
         provider = self.active_provider
@@ -166,16 +170,28 @@ class NetworkManager(BaseManager, ExtraAttributesMixin):
         )
 
     @property
+    def custom_networks(self) -> list[dict]:
+        return [
+            *[
+                n.model_dump(by_alias=True)
+                for n in self.config_manager.get_config("networks").get("custom", [])
+            ],
+            *self._custom_networks,
+        ]
+
+    @property
     def ecosystems(self) -> dict[str, EcosystemAPI]:
         """
         All the registered ecosystems in ``ape``, such as ``ethereum``.
         """
         plugin_ecosystems = self._plugin_ecosystems
 
-        # Load config.
-        custom_networks: list = self.config_manager.get_config("networks").get("custom", [])
+        # Load config-based custom ecosystems.
+        # NOTE: Non-local projects will automatically add their custom networks
+        #   to `self.custom_networks`.
+        custom_networks: list = self.custom_networks
         for custom_network in custom_networks:
-            ecosystem_name = custom_network.ecosystem
+            ecosystem_name = custom_network["ecosystem"]
             if ecosystem_name in plugin_ecosystems:
                 # Already included in previous network.
                 continue

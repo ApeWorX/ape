@@ -239,8 +239,8 @@ class EcosystemAPI(ExtraAttributesMixin, BaseInterfaceModel):
         # Include configured custom networks.
         custom_networks: list = [
             n
-            for n in self.config_manager.get_config("networks").custom
-            if (n.ecosystem or self.network_manager.default_ecosystem.name) == self.name
+            for n in self.network_manager.custom_networks
+            if (n["ecosystem"] or self.network_manager.default_ecosystem.name) == self.name
         ]
 
         # Ensure forks are added automatically for custom networks.
