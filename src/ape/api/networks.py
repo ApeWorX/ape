@@ -272,7 +272,7 @@ class EcosystemAPI(ExtraAttributesMixin, BaseInterfaceModel):
                 )
 
             is_fork = net_name.endswith("-fork")
-            custom_net["ecosystem"] = self
+            custom_net["ecosystem"] = self.name
             network_type = create_network_type(
                 custom_net["chain_id"], custom_net["chain_id"], is_fork=is_fork
             )
