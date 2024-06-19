@@ -171,6 +171,10 @@ class NetworkManager(BaseManager, ExtraAttributesMixin):
 
     @property
     def custom_networks(self) -> list[dict]:
+        """
+        Custom network data defined in various ape-config files
+        or added adhoc to the network manager.
+        """
         return [
             *[
                 n.model_dump(by_alias=True)
