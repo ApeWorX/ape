@@ -265,6 +265,7 @@ class EcosystemAPI(ExtraAttributesMixin, BaseInterfaceModel):
         custom_networks.extend(forked_custom_networks)
 
         for custom_net in custom_networks:
+            model_data = copy.deepcopy(custom_net)
             net_name = custom_net["name"]
             if net_name in networks:
                 raise NetworkError(
@@ -272,14 +273,14 @@ class EcosystemAPI(ExtraAttributesMixin, BaseInterfaceModel):
                 )
 
             is_fork = net_name.endswith("-fork")
-            custom_net["ecosystem"] = self
+            model_data["ecosystem"] = self
             network_type = create_network_type(
                 custom_net["chain_id"], custom_net["chain_id"], is_fork=is_fork
             )
-            if "request_header" not in custom_net:
-                custom_net["request_header"] = self.request_header
+            if "request_header" not in model_data:
+                model_data["request_header"] = self.request_header
 
-            network_api = network_type.model_validate(custom_net)
+            network_api = network_type.model_validate(model_data)
             network_api._default_provider = custom_net.get("default_provider", "node")
             network_api._is_custom = True
             networks[net_name] = network_api
