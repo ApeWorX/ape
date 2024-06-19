@@ -218,10 +218,9 @@ def test_network_gas_limit_invalid_numeric_string(project):
     Test that using hex strings for a network's gas_limit config must be
     prefixed with '0x'
     """
-    eth_config = _sepolia_with_gas_limit("4D2")
-    with project.temp_config(**eth_config):
-        with pytest.raises(AttributeError, match="Gas limit hex str must include '0x' prefix."):
-            _ = project.config.ethereum
+    sep_cfg = _sepolia_with_gas_limit("4D2")["ethereum"]["sepolia"]
+    with pytest.raises(ValidationError, match="Gas limit hex str must include '0x' prefix."):
+        NetworkConfig.model_validate(sep_cfg)
 
 
 def test_dependencies(project_with_dependency_config):

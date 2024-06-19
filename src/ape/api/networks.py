@@ -241,7 +241,7 @@ class EcosystemAPI(ExtraAttributesMixin, BaseInterfaceModel):
         custom_networks: list[dict] = [
             n
             for n in self.network_manager.custom_networks
-            if (n["ecosystem"] or self.network_manager.default_ecosystem.name) == self.name
+            if n.get("ecosystem", self.network_manager.default_ecosystem.name) == self.name
         ]
 
         # Ensure forks are added automatically for custom networks.
@@ -276,8 +276,11 @@ class EcosystemAPI(ExtraAttributesMixin, BaseInterfaceModel):
             network_type = create_network_type(
                 custom_net["chain_id"], custom_net["chain_id"], is_fork=is_fork
             )
+            if "request_header" not in custom_net:
+                custom_net["request_header"] = self.request_header
+
             network_api = network_type.model_validate(custom_net)
-            network_api._default_provider = custom_net["default_provider"]
+            network_api._default_provider = custom_net.get("default_provider", "node")
             network_api._is_custom = True
             networks[net_name] = network_api
 
@@ -504,15 +507,16 @@ class EcosystemAPI(ExtraAttributesMixin, BaseInterfaceModel):
         """
 
         names = {network_name, network_name.replace("-", "_"), network_name.replace("_", "-")}
+        networks = self.networks
         for name in names:
-            if name in self.networks:
-                return self.networks[name]
+            if name in networks:
+                return networks[name]
 
             elif name == "custom":
                 # Is an adhoc-custom network NOT from config.
                 return self.custom_network
 
-        raise NetworkNotFoundError(network_name, ecosystem=self.name, options=self.networks)
+        raise NetworkNotFoundError(network_name, ecosystem=self.name, options=networks)
 
     def get_network_data(
         self, network_name: str, provider_filter: Optional[Collection[str]] = None
