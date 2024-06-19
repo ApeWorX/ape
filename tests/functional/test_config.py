@@ -3,6 +3,7 @@ from pathlib import Path
 from typing import Optional, Union
 
 import pytest
+from pydantic import ValidationError
 from pydantic_settings import SettingsConfigDict
 
 from ape.api.config import ApeConfig, ConfigEnum, PluginConfig
