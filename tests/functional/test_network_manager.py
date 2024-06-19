@@ -3,6 +3,7 @@ from pathlib import Path
 
 import pytest
 
+import ape
 from ape.api import EcosystemAPI
 from ape.api.networks import LOCAL_NETWORK_NAME
 from ape.exceptions import NetworkError, ProviderNotFoundError
@@ -400,3 +401,23 @@ def test_network_names(networks, custom_networks_config_dict, project):
         assert "mainnet-fork" in actual  # Forked
         assert "apenet" in actual  # Custom
         assert "apenet-fork" in actual  # Custom forked
+
+
+def test_custom_networks_defined_in_non_local_project(custom_networks_config_dict):
+    """
+    Showing we can read and use custom networks that are not defined
+    in the local project.
+    """
+    # Ensure we are using a name that is not used anywhere else, for accurte testing.
+    net_name = "customnetdefinedinnonlocalproj"
+    eco_name = "customecosystemnotdefinedyet"
+    custom_networks = copy.deepcopy(custom_networks_config_dict)
+    custom_networks["networks"]["custom"][0]["name"] = net_name
+    custom_networks["networks"]["custom"][0]["ecosystem"] = eco_name
+
+    with ape.Project.create_temporary_project(config_override=custom_networks) as temp_project:
+        nm = temp_project.network_manager
+        ecosystem = nm.get_ecosystem(eco_name)
+        assert ecosystem.name == eco_name
+        network = ecosystem.get_network(net_name)
+        assert network.name == net_name

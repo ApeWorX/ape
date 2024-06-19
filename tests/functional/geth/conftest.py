@@ -91,6 +91,7 @@ def custom_network_connection(
 ):
     data = copy.deepcopy(custom_networks_config_dict)
     data["networks"]["custom"][0]["chain_id"] = geth_provider.chain_id
+
     config = {
         ethereum.name: {custom_network_name_0: {"default_transaction_type": 0}},
         geth_provider.name: {ethereum.name: {custom_network_name_0: {"uri": geth_provider.uri}}},
