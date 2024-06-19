@@ -707,147 +707,147 @@ def test_connected_provider_command_use_custom_options(runner):
     result = run(with_arg, extra_args=[argument])
     assert "test" in result.output
     assert argument in result.output
-#
-#
-# @geth_process_test
-# def test_connected_provider_command_with_network_option(runner, geth_provider):
-#     _ = geth_provider  # Ensure already running, to avoid clashing later on.
-#
-#     @click.command(cls=ConnectedProviderCommand)
-#     @network_option()
-#     def cmd(provider):
-#         click.echo(provider.name)
-#
-#     # NOTE: Must use a network that is not the default.
-#     spec = ("--network", "ethereum:local:node")
-#     res = runner.invoke(cmd, spec, catch_exceptions=False)
-#     assert res.exit_code == 0, res.output
-#     assert "node" in res.output
-#
-#
-# @geth_process_test
-# def test_connected_provider_command_with_network_option_and_cls_types_false(runner, geth_provider):
-#     _ = geth_provider  # Ensure already running, to avoid clashing later on.
-#
-#     @click.command(cls=ConnectedProviderCommand, use_cls_types=False)
-#     @network_option()
-#     def cmd(network):
-#         assert isinstance(network, str)
-#         assert network == "ethereum:local:node"
-#
-#     # NOTE: Must use a network that is not the default.
-#     spec = ("--network", "ethereum:local:node")
-#     res = runner.invoke(cmd, spec, catch_exceptions=False)
-#     assert res.exit_code == 0, res.output
-#
-#
-# def test_connected_provider_command_none_network(runner):
-#     @click.command(cls=ConnectedProviderCommand)
-#     def cmd(network, provider):
-#         click.echo(network)
-#         click.echo(provider)
-#
-#     spec = ("--network", "None")
-#     res = runner.invoke(cmd, spec, catch_exceptions=False)
-#     assert res.exit_code == 0, res.output
-#
-#
-# def test_get_param_from_ctx(mocker):
-#     mock_ctx = mocker.MagicMock()
-#     mock_ctx.params = {"foo": "bar"}
-#     mock_ctx.parent = mocker.MagicMock()
-#     mock_ctx.parent.params = {"interactive": True}
-#     actual = get_param_from_ctx(mock_ctx, "interactive")
-#     assert actual is True
-#
-#
-# def test_parse_network_when_interactive_and_no_param(mocker):
-#     ctx = mocker.MagicMock()
-#     ctx.params = {"interactive": True}
-#     ctx.parent = None
-#     network_ctx = parse_network(ctx)
-#     assert network_ctx is not None
-#     assert network_ctx.provider.name == "test"
-#     assert network_ctx._disconnect_on_exit is False  # Because of interactive: True
-#
-#
-# def test_parse_network_when_interactive_and_str_param(mocker):
-#     ctx = mocker.MagicMock()
-#     ctx.params = {"interactive": True, "network": "ethereum:local:test"}
-#     network_ctx = parse_network(ctx)
-#     assert network_ctx is not None
-#     assert network_ctx.provider.name == "test"
-#     assert network_ctx._disconnect_on_exit is False  # Because of interactive: True
-#
-#
-# def test_parse_network_when_interactive_and_class_param(mocker, eth_tester_provider):
-#     ctx = mocker.MagicMock()
-#     ctx.params = {"interactive": True, "network": eth_tester_provider}
-#     network_ctx = parse_network(ctx)
-#     assert network_ctx is not None
-#     assert network_ctx.provider.name == "test"
-#     assert network_ctx._disconnect_on_exit is False  # Because of interactive: True
-#
-#
-# def test_parse_network_when_explicit_none(mocker):
-#     ctx = mocker.MagicMock()
-#     ctx.params = {"network": _NONE_NETWORK}
-#     network_ctx = parse_network(ctx)
-#     assert network_ctx is None
-#
-#
-# def test_network_choice():
-#     network_choice = NetworkChoice()
-#     actual = network_choice.convert("ethereum:local:test", None, None)
-#     assert actual.name == "test"
-#     assert actual.network.name == "local"
-#
-#
-# @pytest.mark.parametrize("prefix", ("", "ethereum:custom:"))
-# def test_network_choice_custom_adhoc_network(prefix):
-#     network_choice = NetworkChoice()
-#     uri = "https://example.com"
-#     actual = network_choice.convert(f"{prefix}{uri}", None, None)
-#     assert actual.uri == uri
-#     assert actual.network.name == "custom"
-#
-#
-# def test_network_choice_custom_config_network(custom_networks_config_dict, project):
-#     data = copy.deepcopy(custom_networks_config_dict)
-#
-#     # Was a bug where couldn't have this name.
-#     data["networks"]["custom"][0]["name"] = "custom"
-#
-#     _get_networks_sequence_from_cache.cache_clear()
-#
-#     network_choice = NetworkChoice()
-#     with project.temp_config(**data):
-#         actual = network_choice.convert("ethereum:custom", None, None)
-#
-#     assert actual.network.name == "custom"
-#
-#
-# def test_network_choice_when_custom_local_network():
-#     network_choice = NetworkChoice()
-#     uri = "https://example.com"
-#     actual = network_choice.convert(f"ethereum:local:{uri}", None, None)
-#     assert actual.uri == uri
-#     assert actual.network.name == "local"
-#
-#
-# def test_network_choice_explicit_none():
-#     network_choice = NetworkChoice()
-#     actual = network_choice.convert("None", None, None)
-#     assert actual == _NONE_NETWORK
-#
-#
-# def test_config_override_option(runner):
-#     @click.command()
-#     @config_override_option()
-#     def cli(config_override):
-#         assert isinstance(config_override, dict)
-#         assert config_override["foo"] == "bar"
-#
-#     result = runner.invoke(cli, ("--config-override", '{"foo": "bar"}'))
-#     assert result.exit_code == 0
-#     assert not result.exception
+
+
+@geth_process_test
+def test_connected_provider_command_with_network_option(runner, geth_provider):
+    _ = geth_provider  # Ensure already running, to avoid clashing later on.
+
+    @click.command(cls=ConnectedProviderCommand)
+    @network_option()
+    def cmd(provider):
+        click.echo(provider.name)
+
+    # NOTE: Must use a network that is not the default.
+    spec = ("--network", "ethereum:local:node")
+    res = runner.invoke(cmd, spec, catch_exceptions=False)
+    assert res.exit_code == 0, res.output
+    assert "node" in res.output
+
+
+@geth_process_test
+def test_connected_provider_command_with_network_option_and_cls_types_false(runner, geth_provider):
+    _ = geth_provider  # Ensure already running, to avoid clashing later on.
+
+    @click.command(cls=ConnectedProviderCommand, use_cls_types=False)
+    @network_option()
+    def cmd(network):
+        assert isinstance(network, str)
+        assert network == "ethereum:local:node"
+
+    # NOTE: Must use a network that is not the default.
+    spec = ("--network", "ethereum:local:node")
+    res = runner.invoke(cmd, spec, catch_exceptions=False)
+    assert res.exit_code == 0, res.output
+
+
+def test_connected_provider_command_none_network(runner):
+    @click.command(cls=ConnectedProviderCommand)
+    def cmd(network, provider):
+        click.echo(network)
+        click.echo(provider)
+
+    spec = ("--network", "None")
+    res = runner.invoke(cmd, spec, catch_exceptions=False)
+    assert res.exit_code == 0, res.output
+
+
+def test_get_param_from_ctx(mocker):
+    mock_ctx = mocker.MagicMock()
+    mock_ctx.params = {"foo": "bar"}
+    mock_ctx.parent = mocker.MagicMock()
+    mock_ctx.parent.params = {"interactive": True}
+    actual = get_param_from_ctx(mock_ctx, "interactive")
+    assert actual is True
+
+
+def test_parse_network_when_interactive_and_no_param(mocker):
+    ctx = mocker.MagicMock()
+    ctx.params = {"interactive": True}
+    ctx.parent = None
+    network_ctx = parse_network(ctx)
+    assert network_ctx is not None
+    assert network_ctx.provider.name == "test"
+    assert network_ctx._disconnect_on_exit is False  # Because of interactive: True
+
+
+def test_parse_network_when_interactive_and_str_param(mocker):
+    ctx = mocker.MagicMock()
+    ctx.params = {"interactive": True, "network": "ethereum:local:test"}
+    network_ctx = parse_network(ctx)
+    assert network_ctx is not None
+    assert network_ctx.provider.name == "test"
+    assert network_ctx._disconnect_on_exit is False  # Because of interactive: True
+
+
+def test_parse_network_when_interactive_and_class_param(mocker, eth_tester_provider):
+    ctx = mocker.MagicMock()
+    ctx.params = {"interactive": True, "network": eth_tester_provider}
+    network_ctx = parse_network(ctx)
+    assert network_ctx is not None
+    assert network_ctx.provider.name == "test"
+    assert network_ctx._disconnect_on_exit is False  # Because of interactive: True
+
+
+def test_parse_network_when_explicit_none(mocker):
+    ctx = mocker.MagicMock()
+    ctx.params = {"network": _NONE_NETWORK}
+    network_ctx = parse_network(ctx)
+    assert network_ctx is None
+
+
+def test_network_choice():
+    network_choice = NetworkChoice()
+    actual = network_choice.convert("ethereum:local:test", None, None)
+    assert actual.name == "test"
+    assert actual.network.name == "local"
+
+
+@pytest.mark.parametrize("prefix", ("", "ethereum:custom:"))
+def test_network_choice_custom_adhoc_network(prefix):
+    network_choice = NetworkChoice()
+    uri = "https://example.com"
+    actual = network_choice.convert(f"{prefix}{uri}", None, None)
+    assert actual.uri == uri
+    assert actual.network.name == "custom"
+
+
+def test_network_choice_custom_config_network(custom_networks_config_dict, project):
+    data = copy.deepcopy(custom_networks_config_dict)
+
+    # Was a bug where couldn't have this name.
+    data["networks"]["custom"][0]["name"] = "custom"
+
+    _get_networks_sequence_from_cache.cache_clear()
+
+    network_choice = NetworkChoice()
+    with project.temp_config(**data):
+        actual = network_choice.convert("ethereum:custom", None, None)
+
+    assert actual.network.name == "custom"
+
+
+def test_network_choice_when_custom_local_network():
+    network_choice = NetworkChoice()
+    uri = "https://example.com"
+    actual = network_choice.convert(f"ethereum:local:{uri}", None, None)
+    assert actual.uri == uri
+    assert actual.network.name == "local"
+
+
+def test_network_choice_explicit_none():
+    network_choice = NetworkChoice()
+    actual = network_choice.convert("None", None, None)
+    assert actual == _NONE_NETWORK
+
+
+def test_config_override_option(runner):
+    @click.command()
+    @config_override_option()
+    def cli(config_override):
+        assert isinstance(config_override, dict)
+        assert config_override["foo"] == "bar"
+
+    result = runner.invoke(cli, ("--config-override", '{"foo": "bar"}'))
+    assert result.exit_code == 0
+    assert not result.exception
