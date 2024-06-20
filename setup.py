@@ -102,10 +102,8 @@ setup(
         "ijson>=3.1.4,<4",
         "ipython>=8.18.1,<9",
         "lazyasd>=0.1.4",
-        # Numpy is a peer-dependency (pandas) but apparently
-        # numpy broke pandas and now it MY responsibility to
-        # pin it in Ape (•̀o•́)ง
-        "numpy==1.26.4",
+        # Pandas peer-dep: Numpy 2.0 causes issues for some users.
+        "numpy<2",
         "packaging>=23.0,<24",
         "pandas>=2.2.2,<3",
         "pluggy>=1.3,<2",
