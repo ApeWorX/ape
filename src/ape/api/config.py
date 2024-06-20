@@ -69,7 +69,9 @@ class PluginConfig(BaseSettings):
     model_config = SettingsConfigDict(extra="allow")
 
     @classmethod
-    def from_overrides(cls, overrides: dict, plugin_name: Optional[str] = None) -> "PluginConfig":
+    def from_overrides(
+        cls, overrides: dict, plugin_name: Optional[str] = None, project_path: Optional[Path] = None
+    ) -> "PluginConfig":
         default_values = cls().model_dump()
 
         def update(root: dict, value_map: dict):
@@ -92,7 +94,9 @@ class PluginConfig(BaseSettings):
                 raise ConfigError(str(err)) from err
 
     @classmethod
-    def _find_plugin_config_problems(cls, err: ValidationError, plugin_name: str) -> Optional[str]:
+    def _find_plugin_config_problems(
+        cls, err: ValidationError, plugin_name: str, project_path: Optional[Path] = None
+    ) -> Optional[str]:
         # Attempt showing line-nos for failed plugin config validation.
         # This is trickier than root-level data since by this time, we
         # no longer are aware of which files are responsible for which config.
@@ -113,7 +117,8 @@ class PluginConfig(BaseSettings):
         # No issues found with global; try the local project.
         # NOTE: No need to isolate project-data w/o root-data because we have already
         #  determined root-level data is OK.
-        if problems := cls._find_plugin_config_problems_from_file(err, ape.local_project.path):
+        project_path = project_path or ape.local_project.path
+        if problems := cls._find_plugin_config_problems_from_file(err, project_path):
             return problems
 
         return None
@@ -498,7 +503,9 @@ class ApeConfig(ExtraAttributesMixin, BaseSettings, ManagerAccessMixin):
 
             if cls != ConfigDict:
                 # NOTE: Will raise if improperly provided keys
-                config = cls.from_overrides(cfg, plugin_name=plugin_name)
+                config = cls.from_overrides(
+                    cfg, plugin_name=plugin_name, project_path=self._project_path
+                )
             else:
                 # NOTE: Just use it directly as a dict if `ConfigDict` is passed
                 config = cfg
@@ -531,7 +538,9 @@ class ApeConfig(ExtraAttributesMixin, BaseSettings, ManagerAccessMixin):
             from ape_ethereum import EthereumConfig
 
             ethereum = cast(EthereumConfig, self.get_plugin_config("ethereum"))
-            return ethereum.from_overrides(override, plugin_name=name)
+            return ethereum.from_overrides(
+                override, plugin_name=name, project_path=self._project_path
+            )
 
         return None
 
@@ -539,7 +548,9 @@ class ApeConfig(ExtraAttributesMixin, BaseSettings, ManagerAccessMixin):
         # This happens when a plugin is not installed but still configured.
         result = (self.__pydantic_extra__ or {}).get(name, PluginConfig())
         if isinstance(result, dict):
-            return PluginConfig.from_overrides(result, plugin_name=name)
+            return PluginConfig.from_overrides(
+                result, plugin_name=name, project_path=self._project_path
+            )
 
         return result
 
