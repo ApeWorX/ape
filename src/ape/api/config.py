@@ -116,6 +116,8 @@ class PluginConfig(BaseSettings):
         if problems := cls._find_plugin_config_problems_from_file(err, ape.local_project.path):
             return problems
 
+        return None
+
     @classmethod
     def _find_plugin_config_problems_from_file(
         cls, err: ValidationError, base_path: Path
