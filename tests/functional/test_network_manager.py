@@ -294,7 +294,7 @@ def test_ecosystems_when_custom_has_bad_base_ecosystem(
     networks, custom_networks_config_dict, project
 ):
     data = copy.deepcopy(custom_networks_config_dict)
-    eco_name = "custom-ecosystem"
+    eco_name = "custom-ecosystem-bad"
     eco_plugin_name = "plugin-ecosystem-not-installed"
     # Only hits error if ecosystem is custom because it is unknown.
     data["networks"]["custom"][0]["ecosystem"] = eco_name
