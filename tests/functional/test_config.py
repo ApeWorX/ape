@@ -243,7 +243,15 @@ def test_config_access():
     )
 
 
-def test_plugin_config_updates_when_default_is_empty_dict():
+def test_from_overrides():
+    class MyConfig(PluginConfig):
+        foo: int = 0
+
+    actual = MyConfig.from_overrides({"foo": 1})
+    assert actual.foo == 1
+
+
+def test_from_overrides_updates_when_default_is_empty_dict():
     class SubConfig(PluginConfig):
         foo: int = 0
         bar: int = 1
@@ -254,6 +262,22 @@ def test_plugin_config_updates_when_default_is_empty_dict():
     overrides = {"sub": {"baz": {"test": {"foo": 5}}}}
     actual = MyConfig.from_overrides(overrides)
     assert actual.sub == {"baz": {"test": SubConfig(foo=5, bar=1)}}
+
+
+def test_from_overrides_shows_errors_in_project_config():
+    class MyConfig(PluginConfig):
+        foo: int = 0
+
+    with create_tempdir() as tmp_path:
+        file = tmp_path / "ape-config.yaml"
+        file.write_text("foo: [1,2,3]")
+
+        with pytest.raises(ConfigError) as err:
+            _ = MyConfig.from_overrides({"foo": [1, 2, 3]}, project_path=tmp_path)
+
+        # TODO
+        assert err
+        # assert "asfaf" in str(err)
 
 
 @pytest.mark.parametrize("override_0,override_1", [(True, {"foo": 0}), ({"foo": 0}, True)])

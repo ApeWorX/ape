@@ -276,6 +276,12 @@ class ApeConfig(ExtraAttributesMixin, BaseSettings, ManagerAccessMixin):
     The top-level config.
     """
 
+    def __init__(self, *args, **kwargs):
+        project_path = kwargs.get("project")
+        super(BaseSettings, self).__init__(*args, **kwargs)
+        # NOTE: Cannot reference `self` at all until after super init.
+        self._project_path = project_path
+
     contracts_folder: Optional[str] = None
     """
     The path to the folder containing the contract source files.
