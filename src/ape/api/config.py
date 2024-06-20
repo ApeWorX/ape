@@ -88,7 +88,9 @@ class PluginConfig(BaseSettings):
             return cls.model_validate(data)
         except ValidationError as err:
             plugin_name = plugin_name or cls.__name__.replace("Config", "").lower()
-            if problems := cls._find_plugin_config_problems(err, plugin_name):
+            if problems := cls._find_plugin_config_problems(
+                err, plugin_name, project_path=project_path
+            ):
                 raise ConfigError(problems) from err
             else:
                 raise ConfigError(str(err)) from err

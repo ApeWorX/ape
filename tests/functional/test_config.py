@@ -275,9 +275,7 @@ def test_from_overrides_shows_errors_in_project_config():
         with pytest.raises(ConfigError) as err:
             _ = MyConfig.from_overrides({"foo": [1, 2, 3]}, project_path=tmp_path)
 
-        # TODO
-        assert err
-        # assert "asfaf" in str(err)
+        assert "-->1: foo: [1,2,3]" in str(err.value)
 
 
 @pytest.mark.parametrize("override_0,override_1", [(True, {"foo": 0}), ({"foo": 0}, True)])
