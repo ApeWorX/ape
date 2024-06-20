@@ -290,6 +290,27 @@ def test_ecosystems_include_custom(networks, custom_networks_config_dict, projec
     assert "custom-ecosystem" in actual
 
 
+def test_ecosystems_when_custom_has_bad_base_ecosystem(
+    networks, custom_networks_config_dict, project
+):
+    data = copy.deepcopy(custom_networks_config_dict)
+    eco_name = "custom-ecosystem-bad"
+    eco_plugin_name = "plugin-ecosystem-not-installed"
+    # Only hits error if ecosystem is custom because it is unknown.
+    data["networks"]["custom"][0]["ecosystem"] = eco_name
+    # The plugin base is for the class-implementation. If it is not a real plugin,
+    # it should fail nicely.
+    data["networks"]["custom"][0]["base_ecosystem_plugin"] = eco_plugin_name
+    expected = (
+        rf"Custom network '{eco_name}:apenet' specified unknown "
+        rf"base-ecosystem class '{eco_plugin_name}'\. "
+        rf"Are you missing plugin 'ape-{eco_plugin_name}'\?"
+    )
+    with project.temp_config(**data):
+        with pytest.raises(NetworkError, match=expected):
+            _ = networks.ecosystems
+
+
 def test_fork_network_not_forkable(networks, eth_tester_provider):
     """
     Show correct failure when trying to fork the local network.

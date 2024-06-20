@@ -197,12 +197,24 @@ class NetworkManager(BaseManager, ExtraAttributesMixin):
         for custom_network in custom_networks:
             ecosystem_name = custom_network["ecosystem"]
             if ecosystem_name in plugin_ecosystems:
-                # Already included in previous network.
+                # Already included in a prior network.
                 continue
 
             base_ecosystem_name = (
                 custom_network.get("base_ecosystem_plugin") or self.default_ecosystem_name
             )
+
+            if base_ecosystem_name not in plugin_ecosystems:
+                name = custom_network.get("name", "?")
+                if eco := custom_network.get("ecosystem"):
+                    name = f"{eco}:{name}"
+
+                msg = (
+                    f"Custom network '{name}' specified unknown base-ecosystem class "
+                    f"'{base_ecosystem_name}'. Are you missing plugin 'ape-{base_ecosystem_name}'?"
+                )
+                raise NetworkError(msg)
+
             existing_cls = plugin_ecosystems[base_ecosystem_name]
             ecosystem_cls = existing_cls.model_copy(
                 update={"name": ecosystem_name}, cache_clear=("_networks_from_plugins",)
