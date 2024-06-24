@@ -757,6 +757,9 @@ class Ethereum(EcosystemAPI):
             # Surround non-address strings with quotes.
             return f'"{value}"'
 
+        elif isinstance(value, int):
+            return int(value)  # Eliminate int-base classes.
+
         elif isinstance(value, (list, tuple)):
             return [self._enrich_value(v, **kwargs) for v in value]
 
@@ -767,7 +770,7 @@ class Ethereum(EcosystemAPI):
 
     def decode_primitive_value(
         self, value: Any, output_type: Union[str, tuple, list]
-    ) -> Union[str, HexBytes, tuple, list, int]:
+    ) -> Union[str, HexBytes, int, tuple, list]:
         if output_type == "address":
             try:
                 return self.decode_address(value)
