@@ -17,7 +17,7 @@ from ape.exceptions import APINotImplementedError, ProviderNotConnectedError, Un
 from ape.logging import LogLevel, logger
 from ape.pytest.config import ConfigWrapper
 from ape.pytest.gas import GasTracker
-from ape.types import AddressType
+from ape.types import AddressType, CurrencyValue
 from ape.utils import DEFAULT_TEST_CHAIN_ID, ZERO_ADDRESS
 from ape.utils.basemodel import only_raise_attribute_error
 
@@ -33,6 +33,10 @@ explorer_test = pytest.mark.xdist_group(name="explorer-tests")
 _DATA_FOLDER_CTX = ape.config.isolate_data_folder()
 DATA_FOLDER = _DATA_FOLDER_CTX.__enter__()
 ape.config.DATA_FOLDER = DATA_FOLDER
+
+
+EXPECTED_MYSTRUCT_C = 244
+"""Hardcoded everywhere in contracts."""
 
 
 def pytest_addoption(parser):
@@ -170,6 +174,11 @@ def not_owner(test_accounts):
 @pytest.fixture(scope="session")
 def helper(test_accounts):
     return test_accounts[4]
+
+
+@pytest.fixture(scope="session")
+def mystruct_c():
+    return CurrencyValue(EXPECTED_MYSTRUCT_C)
 
 
 @pytest.fixture

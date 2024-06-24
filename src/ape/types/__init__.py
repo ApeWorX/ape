@@ -20,6 +20,7 @@ from ethpm_types import (
 from ethpm_types.abi import EventABI
 from ethpm_types.source import Closure
 from pydantic import BaseModel, field_validator, model_validator
+from typing_extensions import TypeAlias
 from web3.types import FilterParams
 
 from ape.types.address import AddressType, RawAddress
@@ -471,7 +472,7 @@ class _LazySequence(Sequence[_T]):
         yield from self._generator
 
 
-class CurrencyValue(int):
+class CurrencyValueComparable(int):
     """
     An integer you can compare with currency-value
     strings, such as ``"1 ether"``.
@@ -486,6 +487,14 @@ class CurrencyValue(int):
 
         # Try from the other end, if hasn't already.
         return NotImplemented
+
+
+CurrencyValue: TypeAlias = CurrencyValueComparable
+"""
+An alias to :class:`~ape.types.CurrencyValueComparable` for
+situations when you know for sure the type is a currency-value
+(and not just comparable to one).
+"""
 
 
 __all__ = [
@@ -506,6 +515,7 @@ __all__ = [
     "CoverageReport",
     "CoverageStatement",
     "CurrencyValue",
+    "CurrencyValueComparable",
     "GasReport",
     "MessageSignature",
     "PackageManifest",
