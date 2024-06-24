@@ -23,6 +23,7 @@ from pydantic import BaseModel, field_validator, model_validator
 from typing_extensions import TypeAlias
 from web3.types import FilterParams
 
+from ape.exceptions import ConversionError
 from ape.types.address import AddressType, RawAddress
 from ape.types.coverage import (
     ContractCoverage,
@@ -481,8 +482,14 @@ class CurrencyValueComparable(int):
     def __eq__(self, other: Any) -> bool:
         if isinstance(other, int):
             return super().__eq__(other)
+
         elif isinstance(other, str):
-            other_value = ManagerAccessMixin.conversion_manager.convert(other, int)
+            try:
+                other_value = ManagerAccessMixin.conversion_manager.convert(other, int)
+            except ConversionError:
+                # Not a currency-value, it's ok.
+                return False
+
             return super().__eq__(other_value)
 
         # Try from the other end, if hasn't already.
