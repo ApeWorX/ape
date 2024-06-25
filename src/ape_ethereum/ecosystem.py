@@ -1118,7 +1118,9 @@ class Ethereum(EcosystemAPI):
             return call
 
         if events := call.get("events"):
-            call["events"] = self._enrich_trace_events(events, contract_type, address)
+            call["events"] = self._enrich_trace_events(
+                events, address=address, contract_type=contract_type
+            )
 
         method_abi: Optional[Union[MethodABI, ConstructorABI]] = None
         if is_create:
@@ -1308,19 +1310,45 @@ class Ethereum(EcosystemAPI):
         return call
 
     def _enrich_trace_events(
-        self, events: list[dict], contract_type: ContractType, address: AddressType
+        self,
+        events: list[dict],
+        address: Optional[AddressType] = None,
+        contract_type: Optional[ContractType] = None,
     ) -> list[dict]:
-        return [self._enrich_trace_event(e, contract_type, address) for e in events]
+        return [
+            self._enrich_trace_event(e, address=address, contract_type=contract_type)
+            for e in events
+        ]
 
     def _enrich_trace_event(
-        self, event: dict, contract_type: ContractType, address: AddressType
+        self,
+        event: dict,
+        address: Optional[AddressType] = None,
+        contract_type: Optional[ContractType] = None,
     ) -> dict:
         if "topics" not in event or len(event["topics"]) < 1:
             # Already enriched or wrong.
             return event
 
+        elif not address:
+            address = event.get("address")
+            if not address:
+                # Cannot enrich further w/o an address.
+                return event
+
+        if not contract_type:
+            try:
+                contract_type = self.chain_manager.contracts.get(address)
+            except Exception as err:
+                logger.debug(f"Error getting contract type during event enrichment: {err}")
+                return event
+
+            if not contract_type:
+                # Cannot enrich further w/o an contract type.
+                return event
+
         # The selector is always the first topic.
-        selector = event["topics"][0]
+        selector = event["topics"][0].hex()
 
         if selector not in contract_type.identifier_lookup:
             # Unable to enrich using this contract type.

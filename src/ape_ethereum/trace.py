@@ -1,6 +1,7 @@
 import json
 import sys
 from abc import abstractmethod
+from collections import defaultdict
 from collections.abc import Iterable, Iterator, Sequence
 from enum import Enum
 from functools import cached_property
@@ -218,9 +219,7 @@ class Trace(TraceAPI):
 
     def show(self, verbose: bool = False, file: IO[str] = sys.stdout):
         call = self.enriched_calltree
-
-        # If the trace-approach was struct-logs, the events emitted
-        # are present in their calls.
+        approaches_handling_events = (TraceApproach.GETH_STRUCT_LOG_PARSE,)
 
         failed = call.get("failed", False)
         revert_message = None
@@ -243,6 +242,42 @@ class Trace(TraceAPI):
 
         if sender := self.transaction.get("from"):
             console.print(f"tx.origin=[{TraceStyles.CONTRACTS}]{sender}[/]")
+
+        if self.call_trace_approach not in approaches_handling_events and hasattr(
+            self._ecosystem, "_enrich_trace_events"
+        ):
+            # We must manually attach the contract logs.
+            # TODO: Figure out how to inject in the correct spots
+            #   in the call tree.
+            if logs := self.transaction.get("logs", []):
+                enriched_events = self._ecosystem._enrich_trace_events(logs)
+                event_counter = defaultdict(list)
+                for evt in enriched_events:
+                    name = evt.get("name")
+                    calldata = evt.get("calldata")
+
+                    if not name or not calldata:
+                        continue
+
+                    tuple_key = (
+                        name,
+                        ",".join(f"{k}={v}" for k, v in calldata.items()),
+                    )
+                    event_counter[tuple_key].append(evt)
+
+                if event_counter:
+                    console.print("Events emitted:")
+
+                for evt_tup, events in event_counter.items():
+                    count = len(events)
+
+                    # NOTE: Using similar style to gas-cost on purpose.
+                    suffix = f"[[{TraceStyles.GAS_COST}]x{count}[/]]" if count > 1 else ""
+
+                    evt_tree = _create_event_tree(events[0], suffix=suffix)
+                    console.print(evt_tree)
+
+        # else: the events are already included in the right spots.
 
         console.print(root)
 
@@ -541,8 +576,8 @@ def parse_rich_tree(call: dict, verbose: bool = False) -> Tree:
     return tree
 
 
-def _create_event_tree(event: dict) -> Tree:
-    signature = _event_to_str(event, stylize=True)
+def _create_event_tree(event: dict, suffix: str = "") -> Tree:
+    signature = _event_to_str(event, stylize=True, suffix=suffix)
     return Tree(signature)
 
 
@@ -605,10 +640,13 @@ def _call_to_str(call: dict, stylize: bool = False, verbose: bool = False) -> st
     return signature
 
 
-def _event_to_str(event: dict, stylize: bool = False) -> str:
-    name = event["name"]
+def _event_to_str(event: dict, stylize: bool = False, suffix: str = "") -> str:
+    # NOTE: Some of the styles are matching others parts of the trace,
+    #  even though the 'name' is a bit misleading.
+    name = f"[{TraceStyles.METHODS}]{event['name']}[/]" if stylize else event["name"]
     arguments_str = _get_inputs_str(event.get("calldata"), stylize=stylize)
-    return f"emit {name}{arguments_str}"
+    prefix = f"[{TraceStyles.CONTRACTS}]log[/]" if stylize else "log"
+    return f"{prefix} {name}{arguments_str}{suffix}"
 
 
 def _create_tree(call: dict, verbose: bool = False) -> Tree:
