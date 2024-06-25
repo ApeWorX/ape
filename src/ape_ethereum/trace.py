@@ -218,6 +218,10 @@ class Trace(TraceAPI):
 
     def show(self, verbose: bool = False, file: IO[str] = sys.stdout):
         call = self.enriched_calltree
+
+        # If the trace-approach was struct-logs, the events emitted
+        # are present in their calls.
+
         failed = call.get("failed", False)
         revert_message = None
         if failed:

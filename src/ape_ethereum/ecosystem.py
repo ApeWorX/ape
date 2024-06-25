@@ -1116,6 +1116,9 @@ class Ethereum(EcosystemAPI):
             # Without a contract, we can enrich no further.
             return call
 
+        if events := call.get("events"):
+            self["events"] = self._enrich_trace_events(events, contract_type, address)
+
         method_abi: Optional[Union[MethodABI, ConstructorABI]] = None
         if is_create:
             method_abi = contract_type.constructor
@@ -1302,6 +1305,40 @@ class Ethereum(EcosystemAPI):
 
         call["returndata"] = output_val
         return call
+
+    def _enrich_trace_events(
+        self, events: list[dict], contract_type: ContractType, address: AddressType
+    ) -> list[dict]:
+        return [self._enrich_trace_event(e, contract_type, address) for e in events]
+
+    def _enrich_trace_event(
+        self, event: dict, contract_type: ContractType, address: AddressType
+    ) -> dict:
+        if "selector" not in event:
+            # Already enriched.
+            return event
+
+        selector = event["selector"]
+        if selector not in contract_type.identifier_lookup:
+            # Unable to enrich using this contract type.
+            # Selector unknown.
+            return event
+
+        abi = contract_type.identifier_lookup[selector]
+        assert isinstance(abi, EventABI)  # For mypy.
+        log_data = {
+            "topics": [selector, *event["topics"]],
+            "data": HexBytes(b"".join([HexBytes(d) for d in event["data"]])),
+            "address": address,
+        }
+        contract_logs = [log for log in self.decode_logs([log_data], abi)]
+        if not contract_logs:
+            # Not sure if this is a likely condition.
+            return event
+
+        # Enrich the event-node data using the Ape ContractLog object.
+        log = contract_logs[0]
+        event[""]
 
     def _enrich_revert_message(self, call: dict) -> dict:
         returndata = call.get("returndata", "")
