@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.2;
 
-contract TestContractSol {
+contract SolidityContract {
     address public owner;
     uint256 public myNumber;
     uint256 public prevNumber;

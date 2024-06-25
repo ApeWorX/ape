@@ -27,7 +27,9 @@ def data_object(owner):
     class DataObject(BaseModel):
         a: AddressType = owner.address
         b: HexBytes = HexBytes(123)
-        c: str = "GETS IGNORED"
+        c: int = 888
+        # Showing that extra keys don't matter.
+        extra_key: str = "GETS IGNORED"
 
     return DataObject()
 
@@ -49,7 +51,12 @@ def test_contract_interaction(eth_tester_provider, owner, vyper_contract_instanc
     assert receipt.gas_limit == max_gas
 
     # Show contract state changed.
-    assert vyper_contract_instance.myNumber() == 102
+    num_val = vyper_contract_instance.myNumber()
+    assert num_val == 102
+
+    # Show that numbers from contract-return values are always currency-value
+    # comparable.
+    assert num_val == "102 WEI"
 
     # Verify the estimate gas RPC was not used (since we are using max_gas).
     assert estimate_gas_spy.call_count == 0
@@ -213,9 +220,9 @@ def test_repr(vyper_contract_instance):
     )
 
 
-def test_structs(contract_instance, owner, chain):
+def test_structs(contract_instance, owner, chain, mystruct_c):
     actual = contract_instance.getStruct()
-    actual_sender, actual_prev_block = actual
+    actual_sender, actual_prev_block, actual_c = actual
     tx_hash = chain.blocks[-2].hash
 
     # Expected: a == msg.sender
@@ -226,24 +233,27 @@ def test_structs(contract_instance, owner, chain):
     assert actual.b == actual["b"] == actual[1] == actual_prev_block == tx_hash
     assert isinstance(actual.b, bytes)
 
-    expected_dict = {"a": owner, "b": tx_hash}
+    # Expected: c == 244
+    assert actual.c == actual["c"] == actual_c == mystruct_c == f"{mystruct_c} wei"
+
+    expected_dict = {"a": owner, "b": tx_hash, "c": mystruct_c}
     assert actual == expected_dict
 
-    expected_tuple = (owner, tx_hash)
+    expected_tuple = (owner, tx_hash, mystruct_c)
     assert actual == expected_tuple
 
-    expected_list = [owner, tx_hash]
+    expected_list = [owner, tx_hash, mystruct_c]
     assert actual == expected_list
 
     expected_struct = contract_instance.getStruct()
     assert actual == expected_struct
 
 
-def test_nested_structs(contract_instance, owner, chain):
+def test_nested_structs(contract_instance, owner, chain, mystruct_c):
     actual_1 = contract_instance.getNestedStruct1()
     actual_2 = contract_instance.getNestedStruct2()
-    actual_sender_1, actual_prev_block_1 = actual_1.t
-    actual_sender_2, actual_prev_block_2 = actual_2.t
+    actual_sender_1, actual_prev_block_1, actual_c_1 = actual_1.t
+    actual_sender_2, actual_prev_block_2, actual_c_2 = actual_2.t
 
     # Expected: t.a == msg.sender
     assert actual_1.t.a == actual_1.t["a"] == actual_1.t[0] == actual_sender_1 == owner
@@ -275,6 +285,9 @@ def test_nested_structs(contract_instance, owner, chain):
     assert isinstance(actual_2.t.b, bytes)
     assert isinstance(actual_2.t.b, HexBytes)
 
+    # Expected: t.c == 244
+    assert actual_c_1 == actual_c_2 == mystruct_c == f"{mystruct_c} wei"
+
 
 def test_nested_structs_in_tuples(contract_instance, owner, chain):
     result_1 = contract_instance.getNestedStructWithTuple1()
@@ -305,13 +318,18 @@ def test_get_empty_tuple_of_dyn_array_structs(contract_instance):
 
 
 def test_get_empty_tuple_of_array_of_structs_and_dyn_array_of_structs(
-    contract_instance, zero_address
+    contract_instance,
+    zero_address,
 ):
     actual = contract_instance.getEmptyTupleOfArrayOfStructsAndDynArrayOfStructs()
+
+    # empty address, bytes, and int.
     expected_fixed_array = (
         zero_address,
         HexBytes("0x0000000000000000000000000000000000000000000000000000000000000000"),
+        0,
     )
+
     assert actual[0] == [expected_fixed_array, expected_fixed_array, expected_fixed_array]
     assert actual[1] == []
 
@@ -693,7 +711,8 @@ def test_obj_as_struct_input(contract_instance, owner, data_object):
 
 
 def test_dict_as_struct_input(contract_instance, owner):
-    data = {"a": owner, "b": HexBytes(123), "c": "GETS IGNORED"}
+    # NOTE: Also showing extra keys like "extra_key" don't matter and are ignored.
+    data = {"a": owner, "b": HexBytes(123), "c": 999, "extra_key": "GETS_IGNORED"}
     assert contract_instance.setStruct(data) is None
 
 
@@ -708,7 +727,8 @@ def test_obj_list_as_struct_array_input(contract_instance, data_object, sequence
 
 @pytest.mark.parametrize("sequence_type", (list, tuple))
 def test_dict_list_as_struct_array_input(contract_instance, owner, sequence_type):
-    data = {"a": owner, "b": HexBytes(123), "c": "GETS IGNORED"}
+    # NOTE: Also showing extra keys like "extra_key" don't matter and are ignored.
+    data = {"a": owner, "b": HexBytes(123), "c": 444, "extra_key": "GETS IGNORED"}
     parameter = sequence_type([data, data])
     actual = contract_instance.setStructArray(parameter)
     # The function is pure and doesn't return anything.

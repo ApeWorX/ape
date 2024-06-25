@@ -99,7 +99,7 @@ def setBalance(_address: address, bal: uint256):
 @view
 @external
 def getStruct() -> MyStruct:
-    return MyStruct({a: msg.sender, b: block.prevhash})
+    return MyStruct({a: msg.sender, b: block.prevhash, c: 244})
 
 @view
 @external

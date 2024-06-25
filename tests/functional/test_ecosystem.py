@@ -11,7 +11,7 @@ from evm_trace import CallTreeNode, CallType
 
 from ape.api.networks import LOCAL_NETWORK_NAME, ForkedNetworkAPI, NetworkAPI
 from ape.exceptions import CustomError, DecodingError, NetworkError, NetworkNotFoundError
-from ape.types import AddressType
+from ape.types import AddressType, CurrencyValueComparable
 from ape.utils import DEFAULT_LOCAL_TRANSACTION_ACCEPTANCE_TIMEOUT
 from ape_ethereum import TransactionTrace
 from ape_ethereum.ecosystem import BLUEPRINT_HEADER, BaseEthereumConfig, Block
@@ -40,6 +40,20 @@ LOG = {
     ],
 }
 CUSTOM_ECOSYSTEM_NAME = "custom-ecosystem"
+
+
+def make_method_abi(name: str, inputs=None, outputs=None) -> MethodABI:
+    inputs = inputs or []
+    outputs = outputs or []
+    return MethodABI.model_validate(
+        {
+            "type": "function",
+            "name": name,
+            "stateMutability": "nonpayable",
+            "inputs": inputs,
+            "outputs": outputs,
+        }
+    )
 
 
 @pytest.fixture
@@ -94,9 +108,8 @@ def test_encode_address(ethereum):
 
 
 def test_encode_calldata(ethereum, address):
-    abi = MethodABI(
-        type="function",
-        name="callMe",
+    abi = make_method_abi(
+        "callMe",
         inputs=[
             ABIType(name="a", type="bytes4"),
             ABIType(name="b", type="address"),
@@ -138,14 +151,9 @@ def test_encode_calldata_byte_array(ethereum, sequence_type, item_type):
     Tests against a bug where we could not pass a tuple of HexStr
     for a byte-array.
     """
-    raw_abi = {
-        "type": "function",
-        "name": "mint",
-        "stateMutability": "nonpayable",
-        "inputs": [{"name": "leaf", "type": "bytes32"}, {"name": "proof", "type": "bytes32[]"}],
-        "outputs": [],
-    }
-    abi = MethodABI.model_validate(raw_abi)
+    abi = make_method_abi(
+        "mint", inputs=[{"name": "leaf", "type": "bytes32"}, {"name": "proof", "type": "bytes32[]"}]
+    )
     hexstr_array = sequence_type(
         (
             item_type("0xfadbd3"),
@@ -158,10 +166,8 @@ def test_encode_calldata_byte_array(ethereum, sequence_type, item_type):
 
 
 def test_encode_calldata_nested_structs(ethereum):
-    abi = MethodABI(
-        type="function",
-        name="check",
-        stateMutability="view",
+    abi = make_method_abi(
+        "check",
         inputs=[
             ABIType(
                 name="data",
@@ -672,15 +678,7 @@ def test_encode_blueprint_contract(ethereum, vyper_contract_type):
 
 
 def test_decode_returndata(ethereum):
-    abi = MethodABI.model_validate(
-        {
-            "type": "function",
-            "name": "doThing",
-            "stateMutability": "nonpayable",
-            "inputs": [],
-            "outputs": [{"name": "", "type": "bool"}],
-        }
-    )
+    abi = make_method_abi("doThing", outputs=[{"name": "", "type": "bool"}])
     data = HashBytes32.__eth_pydantic_validate__(0)
     actual = ethereum.decode_returndata(abi, data)
     assert actual == (False,)
@@ -692,32 +690,20 @@ def test_decode_returndata_non_empty_padding_bytes(ethereum):
         "000000000000000000000000000000000000000000000000000000000000012696e73756666"
         "696369656e742066756e64730000000000000000000000000000"
     )
-    abi = MethodABI.model_validate(
-        {
-            "type": "function",
-            "name": "transfer",
-            "stateMutability": "nonpayable",
-            "inputs": [
-                {"name": "receiver", "type": "address"},
-                {"name": "amount", "type": "uint256"},
-            ],
-            "outputs": [{"name": "", "type": "bool"}],
-        }
+    abi = make_method_abi(
+        "transfer",
+        inputs=[
+            {"name": "receiver", "type": "address"},
+            {"name": "amount", "type": "uint256"},
+        ],
+        outputs=[{"name": "", "type": "bool"}],
     )
     with pytest.raises(DecodingError):
         ethereum.decode_returndata(abi, raw_data)
 
 
 def test_decode_returndata_no_bytes_returns_zero(ethereum):
-    abi = MethodABI.model_validate(
-        {
-            "type": "function",
-            "name": "doThing",
-            "stateMutability": "nonpayable",
-            "inputs": [],
-            "outputs": [{"name": "", "type": "bool"}],
-        }
-    )
+    abi = make_method_abi("doThing", outputs=[{"name": "", "type": "bool"}])
     actual = ethereum.decode_returndata(abi, b"")
     assert actual == (0,)
 
@@ -727,11 +713,8 @@ def test_decode_returndata_list_with_1_struct(ethereum):
     Tests a condition where an array of a list with 1 struct
     would be turned into a raw tuple instead of the Struct class.
     """
-    abi = MethodABI(
-        type="function",
-        name="getArrayOfStructs",
-        stateMutability="view",
-        inputs=[],
+    abi = make_method_abi(
+        "getArrayOfStructs",
         outputs=[
             ABIType(
                 name="",
@@ -761,6 +744,17 @@ def test_decode_returndata_list_with_1_struct(ethereum):
     assert actual[0][0].b == HexBytes(
         "0xfd91dc47b758f65fd0f6fe511566770c0ae3f94ff9999ceb23bfec3ac9fdc168"
     )
+
+
+def test_decode_returndata_returns_str_comparable_ints(ethereum):
+    abi = make_method_abi(
+        "gimmeInts",
+        outputs=[ABIType(name="", type="int", components=None, internal_type="int")],
+    )
+    raw_data = HexBytes("0x000000000000000000000000000000000000000000000000000000000000002")
+    actual = ethereum.decode_returndata(abi, raw_data)
+    assert isinstance(actual[0], int)
+    assert isinstance(actual[0], CurrencyValueComparable)
 
 
 @pytest.mark.parametrize("tx_type", TransactionType)
@@ -1009,7 +1003,7 @@ def test_default_network_name_when_not_set_and_no_local_uses_only(
 
 def test_decode_custom_error(chain, ethereum):
     data = HexBytes("0x6a12f104")
-    abi = [ErrorABI(type="error", name="InsufficientETH", inputs=[])]
+    abi = [ErrorABI(type="error", name="InsufficientETH")]
     contract_type = ContractType(abi=abi)
     addr = cast(AddressType, "0x3fC91A3afd70395Cd496C647d5a6CC9D4B2b7FAD")
 

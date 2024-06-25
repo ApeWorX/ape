@@ -20,8 +20,10 @@ from ethpm_types import (
 from ethpm_types.abi import EventABI
 from ethpm_types.source import Closure
 from pydantic import BaseModel, field_validator, model_validator
+from typing_extensions import TypeAlias
 from web3.types import FilterParams
 
+from ape.exceptions import ConversionError
 from ape.types.address import AddressType, RawAddress
 from ape.types.coverage import (
     ContractCoverage,
@@ -471,7 +473,7 @@ class _LazySequence(Sequence[_T]):
         yield from self._generator
 
 
-class CurrencyValue(int):
+class CurrencyValueComparable(int):
     """
     An integer you can compare with currency-value
     strings, such as ``"1 ether"``.
@@ -480,12 +482,26 @@ class CurrencyValue(int):
     def __eq__(self, other: Any) -> bool:
         if isinstance(other, int):
             return super().__eq__(other)
+
         elif isinstance(other, str):
-            other_value = ManagerAccessMixin.conversion_manager.convert(other, int)
+            try:
+                other_value = ManagerAccessMixin.conversion_manager.convert(other, int)
+            except ConversionError:
+                # Not a currency-value, it's ok.
+                return False
+
             return super().__eq__(other_value)
 
         # Try from the other end, if hasn't already.
         return NotImplemented
+
+
+CurrencyValue: TypeAlias = CurrencyValueComparable
+"""
+An alias to :class:`~ape.types.CurrencyValueComparable` for
+situations when you know for sure the type is a currency-value
+(and not just comparable to one).
+"""
 
 
 __all__ = [
@@ -506,6 +522,7 @@ __all__ = [
     "CoverageReport",
     "CoverageStatement",
     "CurrencyValue",
+    "CurrencyValueComparable",
     "GasReport",
     "MessageSignature",
     "PackageManifest",

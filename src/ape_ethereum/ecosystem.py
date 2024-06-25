@@ -38,6 +38,7 @@ from ape.types import (
     AddressType,
     AutoGasLimit,
     ContractLog,
+    CurrencyValueComparable,
     GasLimit,
     RawAddress,
     TransactionSignature,
@@ -723,7 +724,7 @@ class Ethereum(EcosystemAPI):
                     ],
                 )
                 if issubclass(type(output_values[0]), Struct)
-                else ([o for o in output_values[0]],)
+                else ([o for o in output_values[0]],)  # type: ignore[union-attr]
             )
 
         elif returns_array(abi):
@@ -756,6 +757,9 @@ class Ethereum(EcosystemAPI):
             # Surround non-address strings with quotes.
             return f'"{value}"'
 
+        elif isinstance(value, int):
+            return int(value)  # Eliminate int-base classes.
+
         elif isinstance(value, (list, tuple)):
             return [self._enrich_value(v, **kwargs) for v in value]
 
@@ -766,7 +770,7 @@ class Ethereum(EcosystemAPI):
 
     def decode_primitive_value(
         self, value: Any, output_type: Union[str, tuple, list]
-    ) -> Union[str, HexBytes, tuple, list]:
+    ) -> Union[str, HexBytes, int, tuple, list]:
         if output_type == "address":
             try:
                 return self.decode_address(value)
@@ -775,6 +779,11 @@ class Ethereum(EcosystemAPI):
 
         elif isinstance(value, bytes):
             return HexBytes(value)
+
+        elif isinstance(value, int):
+            # Wrap integers in a special type that allows us to compare
+            # them with currency-value strings.
+            return CurrencyValueComparable(value)
 
         elif isinstance(output_type, str) and is_array(output_type):
             sub_type = "[".join(output_type.split("[")[:-1])
@@ -988,6 +997,11 @@ class Ethereum(EcosystemAPI):
                     converted_arguments[key] = (
                         [self.decode_address(v) for v in value] if sub_type == "address" else value
                     )
+
+                elif isinstance(value, int):
+                    # This allows integers to be comparable with currency-value
+                    # strings, such as "1 ETH".
+                    converted_arguments[key] = CurrencyValueComparable(value)
 
                 else:
                     # No change.

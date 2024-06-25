@@ -18,6 +18,7 @@ def assert_log_values(owner, chain):
         expected_previous_number = number - 1 if previous_number is None else previous_number
         assert log.prevNum == expected_previous_number, "Event param 'prevNum' has unexpected value"
         assert log.newNum == number, "Event param 'newNum' has unexpected value"
+        assert log.newNum == f"{number} wei", "string comparison with number not working"
         assert log.dynData == "Dynamic"
         assert log.dynIndexed == HexBytes(
             "0x9f3d45ac20ccf04b45028b8080bb191eab93e29f7898ed43acf480dd80bba94d"
@@ -321,10 +322,12 @@ def test_filter_events_with_same_abi(
     assert result_c == [leaf_contract.OneOfMany(addr=contract_with_call_depth.address)]
 
 
-def test_structs_in_events(contract_instance, owner):
+def test_structs_in_events(contract_instance, owner, mystruct_c):
     tx = contract_instance.logStruct(sender=owner)
     expected_bytes = HexBytes(0x1234567890ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF)
-    expected = contract_instance.EventWithStruct(a_struct={"a": owner, "b": expected_bytes})
+    expected = contract_instance.EventWithStruct(
+        a_struct={"a": owner, "b": expected_bytes, "c": mystruct_c}
+    )
     assert tx.events == [expected]
 
 
