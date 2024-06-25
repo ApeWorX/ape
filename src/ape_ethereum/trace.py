@@ -608,7 +608,7 @@ def _call_to_str(call: dict, stylize: bool = False, verbose: bool = False) -> st
 def _event_to_str(event: dict, stylize: bool = False) -> str:
     name = event["name"]
     arguments_str = _get_inputs_str(event.get("calldata"), stylize=stylize)
-    return f"{name}{arguments_str}"
+    return f"emit {name}{arguments_str}"
 
 
 def _create_tree(call: dict, verbose: bool = False) -> Tree:
