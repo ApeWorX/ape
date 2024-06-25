@@ -33,6 +33,7 @@ from ape.exceptions import (
     DecodingError,
     SignatureError,
 )
+from ape.logging import logger
 from ape.managers.config import merge_configs
 from ape.types import (
     AddressType,
@@ -1117,7 +1118,7 @@ class Ethereum(EcosystemAPI):
             return call
 
         if events := call.get("events"):
-            self["events"] = self._enrich_trace_events(events, contract_type, address)
+            call["events"] = self._enrich_trace_events(events, contract_type, address)
 
         method_abi: Optional[Union[MethodABI, ConstructorABI]] = None
         if is_create:
@@ -1314,11 +1315,13 @@ class Ethereum(EcosystemAPI):
     def _enrich_trace_event(
         self, event: dict, contract_type: ContractType, address: AddressType
     ) -> dict:
-        if "selector" not in event:
-            # Already enriched.
+        if "topics" not in event or len(event["topics"]) < 1:
+            # Already enriched or wrong.
             return event
 
-        selector = event["selector"]
+        # The selector is always the first topic.
+        selector = event["topics"][0]
+
         if selector not in contract_type.identifier_lookup:
             # Unable to enrich using this contract type.
             # Selector unknown.
@@ -1327,18 +1330,24 @@ class Ethereum(EcosystemAPI):
         abi = contract_type.identifier_lookup[selector]
         assert isinstance(abi, EventABI)  # For mypy.
         log_data = {
-            "topics": [selector, *event["topics"]],
+            "topics": event["topics"],
             "data": HexBytes(b"".join([HexBytes(d) for d in event["data"]])),
             "address": address,
         }
-        contract_logs = [log for log in self.decode_logs([log_data], abi)]
+
+        try:
+            contract_logs = [log for log in self.decode_logs([log_data], abi)]
+        except Exception as err:
+            logger.debug(f"Failed decoding logs from trace data: {err}")
+            return event
+
         if not contract_logs:
             # Not sure if this is a likely condition.
             return event
 
         # Enrich the event-node data using the Ape ContractLog object.
-        log = contract_logs[0]
-        event[""]
+        log: ContractLog = contract_logs[0]
+        return {"name": log.event_name, "calldata": log.event_arguments}
 
     def _enrich_revert_message(self, call: dict) -> dict:
         returndata = call.get("returndata", "")

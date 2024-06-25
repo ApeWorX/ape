@@ -530,11 +530,20 @@ class CallTrace(Trace):
 
 def parse_rich_tree(call: dict, verbose: bool = False) -> Tree:
     tree = _create_tree(call, verbose=verbose)
+    for event in call.get("events", []):
+        event_tree = _create_event_tree(event)
+        tree.add(event_tree)
+
     for sub_call in call["calls"]:
         sub_tree = parse_rich_tree(sub_call, verbose=verbose)
         tree.add(sub_tree)
 
     return tree
+
+
+def _create_event_tree(event: dict) -> Tree:
+    signature = _event_to_str(event, stylize=True)
+    return Tree(signature)
 
 
 def _call_to_str(call: dict, stylize: bool = False, verbose: bool = False) -> str:
@@ -594,6 +603,12 @@ def _call_to_str(call: dict, stylize: bool = False, verbose: bool = False) -> st
         signature = f"{signature}\n{extra}"
 
     return signature
+
+
+def _event_to_str(event: dict, stylize: bool = False) -> str:
+    name = event["name"]
+    arguments_str = _get_inputs_str(event.get("calldata"), stylize=stylize)
+    return f"{name}{arguments_str}"
 
 
 def _create_tree(call: dict, verbose: bool = False) -> Tree:
