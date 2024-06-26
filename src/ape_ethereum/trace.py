@@ -278,7 +278,7 @@ class Trace(TraceAPI):
                 event_trees = _events_to_trees(enriched_events)
                 if event_trees:
                     console.print()
-                    self.chain_manager._reports.show_events(event_trees, file=file)
+                    self.chain_manager._reports.show_events(event_trees, console=console)
                     console.print()
 
         # else: the events are already included in the right spots in the call tree.
