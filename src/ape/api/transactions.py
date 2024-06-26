@@ -534,6 +534,12 @@ class ReceiptAPI(ExtraAttributesMixin, BaseInterfaceModel):
         like in local projects.
         """
 
+    @raises_not_implemented
+    def show_events(self):
+        """
+        Show the events from the receipt.
+        """
+
     def track_gas(self):
         """
         Track this receipt's gas in the on-going session gas-report.

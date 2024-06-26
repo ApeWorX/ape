@@ -273,6 +273,15 @@ class Receipt(ReceiptAPI):
             self.source_traceback, file=file, failing=self.failed
         )
 
+    def show_events(self):
+        if provider := self.network_manager.active_provider:
+            ecosystem = provider.network.ecosystem
+        else:
+            ecosystem = self.network_manager.ethereum
+
+        events = ecosystem._enrich_trace_events(self.logs)
+        self.chain_manager._reports.show_events(events)
+
     def decode_logs(
         self,
         abi: Optional[

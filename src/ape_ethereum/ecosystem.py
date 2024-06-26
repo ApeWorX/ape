@@ -1227,11 +1227,12 @@ class Ethereum(EcosystemAPI):
         except DecodingError:
             call["calldata"] = ["<?>" for _ in method_abi.inputs]
         else:
-            call["calldata"] = {
-                k: self._enrich_value(v, **kwargs) for k, v in call["calldata"].items()
-            }
+            call["calldata"] = self._enrich_calldata_dict(call["calldata"], **kwargs)
 
         return call
+
+    def _enrich_calldata_dict(self, calldata: dict, **kwargs) -> dict:
+        return {k: self._enrich_value(v, **kwargs) for k, v in calldata.items()}
 
     def _enrich_returndata(self, call: dict, method_abi: MethodABI, **kwargs) -> dict:
         if "CREATE" in call.get("call_type", ""):
@@ -1375,7 +1376,8 @@ class Ethereum(EcosystemAPI):
 
         # Enrich the event-node data using the Ape ContractLog object.
         log: ContractLog = contract_logs[0]
-        return {"name": log.event_name, "calldata": log.event_arguments}
+        calldata = self._enrich_calldata_dict(log.event_arguments)
+        return {"name": log.event_name, "calldata": calldata}
 
     def _enrich_revert_message(self, call: dict) -> dict:
         returndata = call.get("returndata", "")

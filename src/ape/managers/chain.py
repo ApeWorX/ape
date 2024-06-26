@@ -1440,6 +1440,10 @@ class ReportManager(BaseManager):
         style = "red" if failing else None
         console.print(str(traceback), style=style)
 
+    def show_events(self, events: dict, file: Optional[IO[str]] = None):
+        console = self._get_console(file)
+        console.print(events)
+
     def _get_console(self, file: Optional[IO[str]] = None) -> RichConsole:
         if not file:
             return get_console()
