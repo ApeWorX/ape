@@ -231,3 +231,14 @@ def test_enriched_calltree_adds_missing_gas(simple_trace_cls):
     trace = trace_cls.model_validate(TRACE_API_DATA)
     actual = trace.enriched_calltree
     assert actual["gas_cost"] == compute_gas
+
+
+class TestTraceApproach:
+    @pytest.mark.parametrize("key", ("geth", "geth-struct-log", "GETH_STRUCT_LOGS"))
+    def test_from_key_geth_struct_log(self, key):
+        actual = TraceApproach.from_key(key)
+        assert actual == TraceApproach.GETH_STRUCT_LOG_PARSE
+
+    def test_from_key_parity(self):
+        actual = TraceApproach.from_key("parity")
+        assert actual == TraceApproach.PARITY

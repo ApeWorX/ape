@@ -55,6 +55,21 @@ class TraceApproach(Enum):
     NOT RECOMMENDED.
     """
 
+    @classmethod
+    def from_key(cls, key: str) -> "TraceApproach":
+        key = key.replace("-", "_").upper()
+
+        # Allow shorter, nicer values for the geth-struct-log approach.
+        if key in ("GETH", "GETH_STRUCT_LOG", "GETH_STRUCT_LOGS"):
+            key = "GETH_STRUCT_LOG_PARSE"
+
+        for member in cls:
+            if member.name == key:
+                return member
+
+        # Try it as a value.
+        return cls(key)
+
 
 class Trace(TraceAPI):
     """
