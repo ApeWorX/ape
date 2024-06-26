@@ -204,10 +204,35 @@ class EthereumNetworkConfig(PluginConfig):
 
 
 class EthereumNodeConfig(PluginConfig):
+    """
+    Configure your ``node:`` in Ape, the default provider
+    plugin for live-network nodes. Also, ``ape node`` can
+    start-up a local development node for testing purposes.
+    """
+
     ethereum: EthereumNetworkConfig = EthereumNetworkConfig()
+    """
+    Configure the Ethereum network settings for the ``ape node`` provider,
+    such as which URIs to use for each network.
+    """
+
     executable: Optional[str] = None
-    ipc_path: Optional[Path] = None
+    """
+    For starting nodes, select the executable. Defaults to using
+    ``shutil.which("geth")``.
+    """
+
     data_dir: Optional[Path] = None
+    """
+    For node-management, choose where the geth data directory shall
+    be located. Defaults to using a location within Ape's DATA_FOLDER.
+    """
+
+    ipc_path: Optional[Path] = None
+    """
+    For IPC connections, select the IPC path. If managing a process,
+    web3.py can determine the IPC w/o needing to manually configure.
+    """
 
     model_config = SettingsConfigDict(extra="allow")
 
