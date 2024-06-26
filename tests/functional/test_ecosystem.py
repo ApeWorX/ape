@@ -1077,3 +1077,19 @@ def test_enrich_trace_handles_call_type_enum(ethereum, vyper_contract_instance, 
     call = trace.get_calltree().model_dump(by_alias=True)
     actual = ethereum._enrich_calltree(call)
     assert actual["call_type"] == CallType.CALL.value
+
+
+def test_enrich_trace_handles_events(ethereum):
+    class MyTrace(TransactionTrace):
+        def get_calltree(self) -> CallTreeNode:
+            return CallTreeNode.model_validate(CALL_TREE_NODE)
+
+        # @property
+        # def transaction(self) -> dict:
+        #     return TRANSACTION_DICT
+
+    trace = MyTrace(
+        transaction_hash="0x430674d92a4825cb07abc352f0e06cdd12b5e641d1f6005676c0be8ca9f9dba4"
+    )
+    actual = ethereum.enrich_trace(trace)
+    breakpoint()

@@ -1024,6 +1024,7 @@ class Ethereum(EcosystemAPI):
             )
 
     def enrich_trace(self, trace: TraceAPI, **kwargs) -> TraceAPI:
+        breakpoint()
         kwargs["trace"] = trace
         if not isinstance(trace, Trace):
             return trace
@@ -1349,7 +1350,9 @@ class Ethereum(EcosystemAPI):
                 return event
 
         # The selector is always the first topic.
-        selector = event["topics"][0].hex()
+        selector = event["topics"][0]
+        if not isinstance(selector, str):
+            selector = selector.hex()
 
         if selector not in contract_type.identifier_lookup:
             # Unable to enrich using this contract type.

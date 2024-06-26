@@ -54,6 +54,16 @@ def test_show_gas_report(trace_print_capture, invoke_receipt):
     assert actual.title == "VyperContract Gas"
 
 
+def test_show_events(trace_print_capture, invoke_receipt):
+    invoke_receipt.show_events()
+    actual = trace_print_capture.call_args[0][0]
+    assert isinstance(actual, Tree)
+    # Formatted and enriched signature string.
+    assert "[bright_green]NumberChange" in actual.label
+    assert 'dynData=[bright_magenta]"Dynamic"' in actual.label
+    assert "newNum=[bright_magenta]1" in actual.label
+
+
 def test_decode_logs_specify_abi(invoke_receipt, vyper_contract_instance):
     abi = vyper_contract_instance.NumberChange.abi
     logs = invoke_receipt.decode_logs(abi=abi)

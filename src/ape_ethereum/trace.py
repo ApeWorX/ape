@@ -60,7 +60,7 @@ class TraceApproach(Enum):
         return cls(cls._validate(key))
 
     @classmethod
-    def _validate(cls, key: Any) -> int:
+    def _validate(cls, key: Any) -> "TraceApproach":
         if isinstance(key, TraceApproach):
             return key
         elif isinstance(key, int) or (isinstance(key, str) and key.isnumeric()):
@@ -271,38 +271,14 @@ class Trace(TraceAPI):
             self._ecosystem, "_enrich_trace_events"
         ):
             # We must manually attach the contract logs.
-            # TODO: Figure out how to inject in the correct spots
-            #   in the call tree.
+            # NOTE: With these approaches, we don't know where they appear
+            #   in the call-tree so we have to put them at the top.
             if logs := self.transaction.get("logs", []):
                 enriched_events = self._ecosystem._enrich_trace_events(logs)
-                event_counter = defaultdict(list)
-                for evt in enriched_events:
-                    name = evt.get("name")
-                    calldata = evt.get("calldata")
-
-                    if not name or not calldata:
-                        continue
-
-                    tuple_key = (
-                        name,
-                        ",".join(f"{k}={v}" for k, v in calldata.items()),
-                    )
-                    event_counter[tuple_key].append(evt)
-
-                if event_counter:
-                    console.print("\nEvents emitted:")
-
-                for evt_tup, events in event_counter.items():
-                    count = len(events)
-
-                    # NOTE: Using similar style to gas-cost on purpose.
-                    suffix = f"[[{TraceStyles.GAS_COST}]x{count}[/]]" if count > 1 else ""
-
-                    evt_tree = _create_event_tree(events[0], suffix=suffix)
-                    console.print(evt_tree)
-
-                if event_counter:
-                    # Keep the events-block in its section for easier reading.
+                event_trees = _events_to_trees(enriched_events)
+                if event_trees:
+                    console.print()
+                    self.chain_manager._reports.show_events(event_trees, file=file)
                     console.print()
 
         # else: the events are already included in the right spots in the call tree.
@@ -602,6 +578,32 @@ def parse_rich_tree(call: dict, verbose: bool = False) -> Tree:
         tree.add(sub_tree)
 
     return tree
+
+
+def _events_to_trees(events: list[dict]) -> list[Tree]:
+    event_counter = defaultdict(list)
+    for evt in events:
+        name = evt.get("name")
+        calldata = evt.get("calldata")
+
+        if not name or not calldata:
+            continue
+
+        tuple_key = (
+            name,
+            ",".join(f"{k}={v}" for k, v in calldata.items()),
+        )
+        event_counter[tuple_key].append(evt)
+
+    result = []
+    for evt_tup, events in event_counter.items():
+        count = len(events)
+        # NOTE: Using similar style to gas-cost on purpose.
+        suffix = f"[[{TraceStyles.GAS_COST}]x{count}[/]]" if count > 1 else ""
+        evt_tree = _create_event_tree(events[0], suffix=suffix)
+        result.append(evt_tree)
+
+    return result
 
 
 def _create_event_tree(event: dict, suffix: str = "") -> Tree:
