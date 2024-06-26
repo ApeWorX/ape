@@ -57,6 +57,16 @@ class TraceApproach(Enum):
 
     @classmethod
     def from_key(cls, key: str) -> "TraceApproach":
+        return cls(cls._validate(key))
+
+    @classmethod
+    def _validate(cls, key: Any) -> int:
+        if isinstance(key, TraceApproach):
+            return key
+        elif isinstance(key, int) or (isinstance(key, str) and key.isnumeric()):
+            return int(key)
+
+        # Check if given a name.
         key = key.replace("-", "_").upper()
 
         # Allow shorter, nicer values for the geth-struct-log approach.
@@ -67,8 +77,7 @@ class TraceApproach(Enum):
             if member.name == key:
                 return member
 
-        # Try it as a value.
-        return cls(key)
+        raise ValueError(f"No enum named '{key}'.")
 
 
 class Trace(TraceAPI):

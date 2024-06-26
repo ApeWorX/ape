@@ -234,11 +234,22 @@ def test_enriched_calltree_adds_missing_gas(simple_trace_cls):
 
 
 class TestTraceApproach:
-    @pytest.mark.parametrize("key", ("geth", "geth-struct-log", "GETH_STRUCT_LOGS"))
+    @pytest.mark.parametrize(
+        "key",
+        ("geth", "geth-struct-log", "GETH_STRUCT_LOGS", TraceApproach.GETH_STRUCT_LOG_PARSE.value),
+    )
     def test_from_key_geth_struct_log(self, key):
         actual = TraceApproach.from_key(key)
         assert actual == TraceApproach.GETH_STRUCT_LOG_PARSE
 
+        # Show also works during init.
+        actual = TraceApproach(key)
+        assert actual == TraceApproach.GETH_STRUCT_LOG_PARSE
+
     def test_from_key_parity(self):
         actual = TraceApproach.from_key("parity")
+        assert actual == TraceApproach.PARITY
+
+        # Show also works during init.
+        actual = TraceApproach("parity")
         assert actual == TraceApproach.PARITY
