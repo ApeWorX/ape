@@ -266,7 +266,7 @@ class Trace(TraceAPI):
                     event_counter[tuple_key].append(evt)
 
                 if event_counter:
-                    console.print("Events emitted:")
+                    console.print("\nEvents emitted:")
 
                 for evt_tup, events in event_counter.items():
                     count = len(events)
@@ -277,7 +277,11 @@ class Trace(TraceAPI):
                     evt_tree = _create_event_tree(events[0], suffix=suffix)
                     console.print(evt_tree)
 
-        # else: the events are already included in the right spots.
+                if event_counter:
+                    # Keep the events-block in its section for easier reading.
+                    console.print()
+
+        # else: the events are already included in the right spots in the call tree.
 
         console.print(root)
 
