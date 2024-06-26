@@ -1024,7 +1024,6 @@ class Ethereum(EcosystemAPI):
             )
 
     def enrich_trace(self, trace: TraceAPI, **kwargs) -> TraceAPI:
-        breakpoint()
         kwargs["trace"] = trace
         if not isinstance(trace, Trace):
             return trace
@@ -1363,7 +1362,7 @@ class Ethereum(EcosystemAPI):
         assert isinstance(abi, EventABI)  # For mypy.
         log_data = {
             "topics": event["topics"],
-            "data": HexBytes(b"".join([HexBytes(d) for d in event["data"]])),
+            "data": event["data"],
             "address": address,
         }
 
