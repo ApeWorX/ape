@@ -134,7 +134,7 @@ setup(
         "ethpm-types>=0.6.9,<0.7",
         "eth_pydantic_types>=0.1.0,<0.2",
         "evmchains>=0.0.10,<0.1",
-        "evm-trace>=0.1.5,<0.2",
+        "evm-trace>=0.2.0,<0.3",
     ],
     entry_points={
         "console_scripts": ["ape=ape._cli:cli"],

@@ -1110,6 +1110,7 @@ def test_enrich_trace_handles_events(ethereum, vyper_contract_instance, owner):
 
     trace = MyTrace(transaction_hash=tx.txn_hash)
     actual = ethereum.enrich_trace(trace)
+    assert "events" in actual._enriched_calltree, "is evm-trace updated?"
     events = actual._enriched_calltree["events"]
     expected = [
         {
