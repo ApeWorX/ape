@@ -58,10 +58,11 @@ def test_show_events(trace_print_capture, invoke_receipt):
     invoke_receipt.show_events()
     actual = trace_print_capture.call_args[0][0]
     assert isinstance(actual, Tree)
+    label = str(actual.label)
     # Formatted and enriched signature string.
-    assert "[bright_green]NumberChange" in actual.label
-    assert 'dynData=[bright_magenta]"Dynamic"' in actual.label
-    assert "newNum=[bright_magenta]1" in actual.label
+    assert "[bright_green]NumberChange" in label
+    assert 'dynData=[bright_magenta]"Dynamic"' in label
+    assert "newNum=[bright_magenta]1" in label
 
 
 def test_decode_logs_specify_abi(invoke_receipt, vyper_contract_instance):

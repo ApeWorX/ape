@@ -64,7 +64,7 @@ class TraceApproach(Enum):
         if isinstance(key, TraceApproach):
             return key
         elif isinstance(key, int) or (isinstance(key, str) and key.isnumeric()):
-            return int(key)
+            return cls(int(key))
 
         # Check if given a name.
         key = key.replace("-", "_").upper()
