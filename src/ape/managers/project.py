@@ -1,3 +1,4 @@
+import importlib.resources as resources
 import json
 import random
 import shutil
@@ -6,7 +7,6 @@ from contextlib import contextmanager
 from functools import cached_property, singledispatchmethod
 from pathlib import Path
 from re import Pattern
-from site import getsitepackages
 from typing import Any, Optional, Union, cast
 
 from eth_typing import HexStr
@@ -1538,18 +1538,12 @@ class ProjectManager(ExtraAttributesMixin, BaseManager):
         Returns:
             :class:`~ape.managers.project.LocalProject`
         """
-        for site_packages_path_str in getsitepackages():
-            site_packages_path = Path(site_packages_path_str).resolve()
-            pkg_path = None
-            for site_pkg in site_packages_path.iterdir():
-                if site_pkg.stem != package_name:
-                    continue
+        try:
+            file_result = resources.files(package_name)
+        except ModuleNotFoundError as err:
+            raise ProjectError(f"Package '{package_name}' not found in site-packages.") from err
 
-                pkg_path = site_pkg
-                break
-
-        if pkg_path is None:
-            raise ProjectError(f"Package '{package_name}' not found in site-packages.")
+        pkg_path = Path(str(file_result)).resolve()
 
         # Treat site-package as a local-project.
         return LocalProject(pkg_path, config_override=config_override)

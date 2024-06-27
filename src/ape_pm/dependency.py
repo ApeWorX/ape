@@ -1,10 +1,10 @@
+import importlib.resources as resources
 import json
 import os
 import shutil
 from collections.abc import Iterable
 from functools import cached_property
 from pathlib import Path
-from site import getsitepackages
 from typing import Optional, Union
 
 from pydantic import model_validator
@@ -408,12 +408,12 @@ class PythonDependency(DependencyAPI):
 
     @cached_property
     def path(self) -> Path:
-        for site_packages_path_str in getsitepackages():
-            base_path = Path(site_packages_path_str).resolve()
-            if (base_path / self.python).is_dir():
-                return base_path / self.python
+        try:
+            file_result = resources.files(self.python)
+        except ModuleNotFoundError as err:
+            raise ProjectError(f"Dependency '{self.python}' not found installed.") from err
 
-        raise ProjectError(f"Dependency '{self.python}' not installed.")
+        return Path(str(file_result)).resolve()
 
     @property
     def package_id(self) -> str:
