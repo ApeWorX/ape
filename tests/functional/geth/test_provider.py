@@ -23,6 +23,7 @@ from ape.exceptions import (
 from ape.utils import to_int
 from ape_ethereum.ecosystem import Block
 from ape_ethereum.provider import DEFAULT_SETTINGS, EthereumNodeProvider
+from ape_ethereum.trace import TraceApproach
 from ape_ethereum.transactions import (
     AccessList,
     AccessListTransaction,
@@ -592,3 +593,12 @@ def test_get_virtual_machine_error(geth_provider):
     error = Web3ContractLogicError(f"execution reverted: {expected}", "0x08c379a")
     actual = geth_provider.get_virtual_machine_error(error)
     assert actual.message == expected
+
+
+@geth_process_test
+def test_trace_approach_config(project):
+    node_cfg = project.config.node.model_dump(by_alias=True)
+    node_cfg["call_trace_approach"] = "geth"
+    with project.temp_config(node=node_cfg):
+        provider = project.network_manager.ethereum.local.get_provider("node")
+        assert provider.call_trace_approach is TraceApproach.GETH_STRUCT_LOG_PARSE

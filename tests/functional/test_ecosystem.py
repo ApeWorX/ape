@@ -1077,3 +1077,51 @@ def test_enrich_trace_handles_call_type_enum(ethereum, vyper_contract_instance, 
     call = trace.get_calltree().model_dump(by_alias=True)
     actual = ethereum._enrich_calltree(call)
     assert actual["call_type"] == CallType.CALL.value
+
+
+def test_enrich_trace_handles_events(ethereum, vyper_contract_instance, owner):
+    tx = vyper_contract_instance.setNumber(96247783, sender=owner)
+
+    # Used Hardhat to get the data.
+    events = [
+        {
+            "call_type": "EVENT",
+            "data": "0x3ee0dda47a082585c3c66434c4b5b1b4558581efb5f4ee60a59a58bc1201404b00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000060000000000000000000000000000000000000000000000000000000000000000744796e616d696300000000000000000000000000000000000000000000000000",  # noqa: E501
+            "depth": 1,
+            "topics": [
+                "0xa84473122c11e32cd505595f246a28418b8ecd6cf819f4e3915363fad1b8f968",
+                "0x000000000000000000000000000000000000000000000000000000000000007b",
+                "0x9f3d45ac20ccf04b45028b8080bb191eab93e29f7898ed43acf480dd80bba94d",
+            ],
+        }
+    ]
+
+    calldata = "0x3fb5c1cb000000000000000000000000000000000000000000000000000000000000007b"
+    call = {
+        "events": events,
+        "call_type": "CALL",
+        "address": vyper_contract_instance.address,
+        "calldata": calldata,
+    }
+
+    class MyTrace(TransactionTrace):
+        def get_calltree(self) -> CallTreeNode:
+            return CallTreeNode.model_validate(call)
+
+    trace = MyTrace(transaction_hash=tx.txn_hash)
+    actual = ethereum.enrich_trace(trace)
+    assert "events" in actual._enriched_calltree, "is evm-trace updated?"
+    events = actual._enriched_calltree["events"]
+    expected = [
+        {
+            "name": "NumberChange",
+            "calldata": {
+                "b": "0x3e..404b",
+                "prevNum": 0,
+                "dynData": '"Dynamic"',
+                "newNum": 123,
+                "dynIndexed": "0x9f..a94d",
+            },
+        }
+    ]
+    assert events == expected

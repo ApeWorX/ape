@@ -1,6 +1,7 @@
 import json
 import sys
 from abc import abstractmethod
+from collections import defaultdict
 from collections.abc import Iterable, Iterator, Sequence
 from enum import Enum
 from functools import cached_property
@@ -53,6 +54,30 @@ class TraceApproach(Enum):
     and sophisticated parsing from the evm-trace library.
     NOT RECOMMENDED.
     """
+
+    @classmethod
+    def from_key(cls, key: str) -> "TraceApproach":
+        return cls(cls._validate(key))
+
+    @classmethod
+    def _validate(cls, key: Any) -> "TraceApproach":
+        if isinstance(key, TraceApproach):
+            return key
+        elif isinstance(key, int) or (isinstance(key, str) and key.isnumeric()):
+            return cls(int(key))
+
+        # Check if given a name.
+        key = key.replace("-", "_").upper()
+
+        # Allow shorter, nicer values for the geth-struct-log approach.
+        if key in ("GETH", "GETH_STRUCT_LOG", "GETH_STRUCT_LOGS"):
+            key = "GETH_STRUCT_LOG_PARSE"
+
+        for member in cls:
+            if member.name == key:
+                return member
+
+        raise ValueError(f"No enum named '{key}'.")
 
 
 class Trace(TraceAPI):
@@ -218,6 +243,8 @@ class Trace(TraceAPI):
 
     def show(self, verbose: bool = False, file: IO[str] = sys.stdout):
         call = self.enriched_calltree
+        approaches_handling_events = (TraceApproach.GETH_STRUCT_LOG_PARSE,)
+
         failed = call.get("failed", False)
         revert_message = None
         if failed:
@@ -239,6 +266,22 @@ class Trace(TraceAPI):
 
         if sender := self.transaction.get("from"):
             console.print(f"tx.origin=[{TraceStyles.CONTRACTS}]{sender}[/]")
+
+        if self.call_trace_approach not in approaches_handling_events and hasattr(
+            self._ecosystem, "_enrich_trace_events"
+        ):
+            # We must manually attach the contract logs.
+            # NOTE: With these approaches, we don't know where they appear
+            #   in the call-tree so we have to put them at the top.
+            if logs := self.transaction.get("logs", []):
+                enriched_events = self._ecosystem._enrich_trace_events(logs)
+                event_trees = _events_to_trees(enriched_events)
+                if event_trees:
+                    console.print()
+                    self.chain_manager._reports.show_events(event_trees, console=console)
+                    console.print()
+
+        # else: the events are already included in the right spots in the call tree.
 
         console.print(root)
 
@@ -526,11 +569,46 @@ class CallTrace(Trace):
 
 def parse_rich_tree(call: dict, verbose: bool = False) -> Tree:
     tree = _create_tree(call, verbose=verbose)
+    for event in call.get("events", []):
+        event_tree = _create_event_tree(event)
+        tree.add(event_tree)
+
     for sub_call in call["calls"]:
         sub_tree = parse_rich_tree(sub_call, verbose=verbose)
         tree.add(sub_tree)
 
     return tree
+
+
+def _events_to_trees(events: list[dict]) -> list[Tree]:
+    event_counter = defaultdict(list)
+    for evt in events:
+        name = evt.get("name")
+        calldata = evt.get("calldata")
+
+        if not name or not calldata:
+            continue
+
+        tuple_key = (
+            name,
+            ",".join(f"{k}={v}" for k, v in calldata.items()),
+        )
+        event_counter[tuple_key].append(evt)
+
+    result = []
+    for evt_tup, events in event_counter.items():
+        count = len(events)
+        # NOTE: Using similar style to gas-cost on purpose.
+        suffix = f"[[{TraceStyles.GAS_COST}]x{count}[/]]" if count > 1 else ""
+        evt_tree = _create_event_tree(events[0], suffix=suffix)
+        result.append(evt_tree)
+
+    return result
+
+
+def _create_event_tree(event: dict, suffix: str = "") -> Tree:
+    signature = _event_to_str(event, stylize=True, suffix=suffix)
+    return Tree(signature)
 
 
 def _call_to_str(call: dict, stylize: bool = False, verbose: bool = False) -> str:
@@ -590,6 +668,15 @@ def _call_to_str(call: dict, stylize: bool = False, verbose: bool = False) -> st
         signature = f"{signature}\n{extra}"
 
     return signature
+
+
+def _event_to_str(event: dict, stylize: bool = False, suffix: str = "") -> str:
+    # NOTE: Some of the styles are matching others parts of the trace,
+    #  even though the 'name' is a bit misleading.
+    name = f"[{TraceStyles.METHODS}]{event['name']}[/]" if stylize else event["name"]
+    arguments_str = _get_inputs_str(event.get("calldata"), stylize=stylize)
+    prefix = f"[{TraceStyles.CONTRACTS}]log[/]" if stylize else "log"
+    return f"{prefix} {name}{arguments_str}{suffix}"
 
 
 def _create_tree(call: dict, verbose: bool = False) -> Tree:

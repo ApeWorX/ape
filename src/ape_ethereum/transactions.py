@@ -21,7 +21,7 @@ from ape.exceptions import OutOfGasError, SignatureError, TransactionError
 from ape.logging import logger
 from ape.types import AddressType, ContractLog, ContractLogContainer, SourceTraceback
 from ape.utils import ZERO_ADDRESS
-from ape_ethereum.trace import Trace
+from ape_ethereum.trace import Trace, _events_to_trees
 
 
 class TransactionStatusEnum(IntEnum):
@@ -272,6 +272,16 @@ class Receipt(ReceiptAPI):
         self.chain_manager._reports.show_source_traceback(
             self.source_traceback, file=file, failing=self.failed
         )
+
+    def show_events(self, file: IO[str] = sys.stdout):
+        if provider := self.network_manager.active_provider:
+            ecosystem = provider.network.ecosystem
+        else:
+            ecosystem = self.network_manager.ethereum
+
+        enriched_events = ecosystem._enrich_trace_events(self.logs)
+        event_trees = _events_to_trees(enriched_events)
+        self.chain_manager._reports.show_events(event_trees, file=file)
 
     def decode_logs(
         self,

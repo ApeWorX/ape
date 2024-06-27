@@ -31,6 +31,7 @@ event EventWithUintArray:
 struct MyStruct:
     a: address
     b: bytes32
+    c: uint256
 
 struct NestedStruct1:
     t: MyStruct
@@ -104,22 +105,22 @@ def getStruct() -> MyStruct:
 @view
 @external
 def getNestedStruct1() -> NestedStruct1:
-    return NestedStruct1({t: MyStruct({a: msg.sender, b: block.prevhash}), foo: 1})
+    return NestedStruct1({t: MyStruct({a: msg.sender, b: block.prevhash, c: 244}), foo: 1})
 
 @view
 @external
 def getNestedStruct2() -> NestedStruct2:
-    return NestedStruct2({foo: 2, t: MyStruct({a: msg.sender, b: block.prevhash})})
+    return NestedStruct2({foo: 2, t: MyStruct({a: msg.sender, b: block.prevhash, c: 244})})
 
 @view
 @external
 def getNestedStructWithTuple1() -> (NestedStruct1, uint256):
-    return (NestedStruct1({t: MyStruct({a: msg.sender, b: block.prevhash}), foo: 1}), 1)
+    return (NestedStruct1({t: MyStruct({a: msg.sender, b: block.prevhash, c: 244}), foo: 1}), 1)
 
 @view
 @external
 def getNestedStructWithTuple2() -> (uint256, NestedStruct2):
-    return (2, NestedStruct2({foo: 2, t: MyStruct({a: msg.sender, b: block.prevhash})}))
+    return (2, NestedStruct2({foo: 2, t: MyStruct({a: msg.sender, b: block.prevhash, c: 244})}))
 
 @pure
 @external
@@ -161,8 +162,8 @@ def getStructWithArray() -> WithArray:
         {
             foo: 1,
             arr: [
-                MyStruct({a: msg.sender, b: block.prevhash}),
-                MyStruct({a: msg.sender, b: block.prevhash})
+                MyStruct({a: msg.sender, b: block.prevhash, c: 244}),
+                MyStruct({a: msg.sender, b: block.prevhash, c: 244})
             ],
             bar: 2
         }
@@ -192,16 +193,16 @@ def getAddressArray() -> DynArray[address, 2]:
 @external
 def getDynamicStructArray() -> DynArray[NestedStruct1, 2]:
     return [
-        NestedStruct1({t: MyStruct({a: msg.sender, b: block.prevhash}), foo: 1}),
-        NestedStruct1({t: MyStruct({a: msg.sender, b: block.prevhash}), foo: 2})
+        NestedStruct1({t: MyStruct({a: msg.sender, b: block.prevhash, c: 244}), foo: 1}),
+        NestedStruct1({t: MyStruct({a: msg.sender, b: block.prevhash, c: 244}), foo: 2})
     ]
 
 @view
 @external
 def getStaticStructArray() -> NestedStruct2[2]:
     return [
-        NestedStruct2({foo: 1, t: MyStruct({a: msg.sender, b: block.prevhash})}),
-        NestedStruct2({foo: 2, t: MyStruct({a: msg.sender, b: block.prevhash})})
+        NestedStruct2({foo: 1, t: MyStruct({a: msg.sender, b: block.prevhash, c: 244})}),
+        NestedStruct2({foo: 2, t: MyStruct({a: msg.sender, b: block.prevhash, c: 244})})
     ]
 
 @pure
@@ -288,7 +289,8 @@ def logStruct():
     _bytes: bytes32 = 0x1234567890abcdef0123456789abcdef0123456789abcdef0123456789abcdef
     _struct: MyStruct = MyStruct({
         a: msg.sender,
-        b: _bytes
+        b: _bytes,
+        c: 244
     })
     log EventWithStruct(_struct)
 
