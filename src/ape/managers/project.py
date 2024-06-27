@@ -1,6 +1,7 @@
 import json
 import random
 import shutil
+import sys
 from collections.abc import Callable, Iterable, Iterator
 from contextlib import contextmanager
 from functools import cached_property, singledispatchmethod
@@ -1518,6 +1519,32 @@ class ProjectManager(ExtraAttributesMixin, BaseManager):
         config_override = config_override or {}
         manifest = _load_manifest(manifest) if isinstance(manifest, (Path, str)) else manifest
         return Project(manifest, config_override=config_override)
+
+    @classmethod
+    def from_python_library(cls, package_name: str, config_override: Optional[dict] = None):
+        site_packages_path = None
+        for sys_path in sys.path:
+            if sys_path.endswith("site-packages"):
+                site_packages_path = Path(sys_path)
+                break
+
+        if site_packages_path is None:
+            # Not sure how this would happen.
+            raise ProjectError("'site-packages' not found in sys.path.")
+
+        pkg_path = None
+        for site_pkg in site_packages_path.iterdir():
+            if site_pkg.stem != package_name:
+                continue
+
+            pkg_path = site_pkg
+            break
+
+        if pkg_path is None:
+            raise ProjectError(f"Package '{package_name}' not found in site-packages.")
+
+        # Treat site-package as a local-project.
+        return cls(pkg_path)
 
     @classmethod
     @contextmanager
