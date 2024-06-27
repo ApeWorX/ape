@@ -1515,7 +1515,9 @@ class ProjectManager(ExtraAttributesMixin, BaseManager):
         Returns:
             :class:`~ape.managers.project.ProjectManifest`
         """
-        return Project.from_manifest(manifest, config_override=config_override)
+        config_override = config_override or {}
+        manifest = _load_manifest(manifest) if isinstance(manifest, (Path, str)) else manifest
+        return Project(manifest, config_override=config_override)
 
     @classmethod
     @contextmanager
@@ -1580,14 +1582,6 @@ class Project(ProjectManager):
         ensure the compilation is up-to-date.
         """
         return (self._manifest.contract_types or None) is not None
-
-    @classmethod
-    def from_manifest(
-        cls, manifest: Union[PackageManifest, Path, str], config_override: Optional[dict] = None
-    ) -> "Project":
-        config_override = config_override or {}
-        manifest = _load_manifest(manifest) if isinstance(manifest, (Path, str)) else manifest
-        return Project(manifest, config_override=config_override)
 
     def __ape_extra_attributes__(self) -> Iterator[ExtraModelAttributes]:
         extras = (
