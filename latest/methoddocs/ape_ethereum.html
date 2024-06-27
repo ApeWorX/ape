@@ -306,6 +306,7 @@
 <li class="toctree-l3"><a class="reference internal" href="#ape_ethereum.Receipt.model_config"><code class="docutils literal notranslate"><span class="pre">Receipt.model_config</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ape_ethereum.Receipt.raise_for_status"><code class="docutils literal notranslate"><span class="pre">Receipt.raise_for_status()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ape_ethereum.Receipt.ran_out_of_gas"><code class="docutils literal notranslate"><span class="pre">Receipt.ran_out_of_gas</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#ape_ethereum.Receipt.show_events"><code class="docutils literal notranslate"><span class="pre">Receipt.show_events()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ape_ethereum.Receipt.show_gas_report"><code class="docutils literal notranslate"><span class="pre">Receipt.show_gas_report()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ape_ethereum.Receipt.show_source_traceback"><code class="docutils literal notranslate"><span class="pre">Receipt.show_source_traceback()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ape_ethereum.Receipt.show_trace"><code class="docutils literal notranslate"><span class="pre">Receipt.show_trace()</span></code></a></li>
@@ -360,6 +361,7 @@
 <li class="toctree-l2"><a class="reference internal" href="#ape_ethereum.TransactionType"><code class="docutils literal notranslate"><span class="pre">TransactionType</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#ape_ethereum.Web3Provider"><code class="docutils literal notranslate"><span class="pre">Web3Provider</span></code></a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#ape_ethereum.Web3Provider.base_fee"><code class="docutils literal notranslate"><span class="pre">Web3Provider.base_fee</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#ape_ethereum.Web3Provider.call_trace_approach"><code class="docutils literal notranslate"><span class="pre">Web3Provider.call_trace_approach</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ape_ethereum.Web3Provider.chain_id"><code class="docutils literal notranslate"><span class="pre">Web3Provider.chain_id</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ape_ethereum.Web3Provider.create_access_list"><code class="docutils literal notranslate"><span class="pre">Web3Provider.create_access_list()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ape_ethereum.Web3Provider.estimate_gas_cost"><code class="docutils literal notranslate"><span class="pre">Web3Provider.estimate_gas_cost()</span></code></a></li>
@@ -1156,6 +1158,12 @@ same amount of gas as the given <code class="docutils literal notranslate"><span
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="ape_ethereum.Receipt.show_events">
+<span class="sig-name descname"><span class="pre">show_events</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">file:</span> <span class="pre">~typing.IO[str]</span> <span class="pre">=</span> <span class="pre">&lt;_io.TextIOWrapper</span> <span class="pre">name='&lt;stdout&gt;'</span> <span class="pre">mode='w'</span> <span class="pre">encoding='utf-8'&gt;</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape_ethereum.Receipt.show_events" title="Permalink to this definition"></a></dt>
+<dd><p>Show the events from the receipt.</p>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="ape_ethereum.Receipt.show_gas_report">
 <span class="sig-name descname"><span class="pre">show_gas_report</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">file:</span> <span class="pre">~typing.IO[str]</span> <span class="pre">=</span> <span class="pre">&lt;_io.TextIOWrapper</span> <span class="pre">name='&lt;stdout&gt;'</span> <span class="pre">mode='w'</span> <span class="pre">encoding='utf-8'&gt;</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape_ethereum.Receipt.show_gas_report" title="Permalink to this definition"></a></dt>
 <dd><p>Display a gas report for the calls made in this transaction.</p>
@@ -1422,6 +1430,15 @@ will use this property.</p>
     <a class="reference external" href="https://eips.ethereum.org/EIPS/eip-1559">EIP-1559</a>.</p>
 </dd>
 </dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="ape_ethereum.Web3Provider.call_trace_approach">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">call_trace_approach</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">TraceApproach</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#ape_ethereum.Web3Provider.call_trace_approach" title="Permalink to this definition"></a></dt>
+<dd><p>The default tracing approach to use when building up a call-tree.
+By default, Ape attempts to use the faster approach. Meaning, if
+geth-call-tracer or parity are available, Ape will use one of those
+instead of building a call-trace entirely from struct-logs.</p>
 </dd></dl>
 
 <dl class="py property">
