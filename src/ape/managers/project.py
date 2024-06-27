@@ -3,10 +3,10 @@ import random
 import shutil
 from collections.abc import Callable, Iterable, Iterator
 from contextlib import contextmanager
-from distutils.sysconfig import get_python_lib
 from functools import cached_property, singledispatchmethod
 from pathlib import Path
 from re import Pattern
+from site import getsitepackages
 from typing import Any, Optional, Union, cast
 
 from eth_typing import HexStr
@@ -1538,14 +1538,15 @@ class ProjectManager(ExtraAttributesMixin, BaseManager):
         Returns:
             :class:`~ape.managers.project.LocalProject`
         """
-        site_packages_path = Path(get_python_lib()).resolve()
-        pkg_path = None
-        for site_pkg in site_packages_path.iterdir():
-            if site_pkg.stem != package_name:
-                continue
+        for site_packages_path_str in getsitepackages():
+            site_packages_path = Path(site_packages_path_str).resolve()
+            pkg_path = None
+            for site_pkg in site_packages_path.iterdir():
+                if site_pkg.stem != package_name:
+                    continue
 
-            pkg_path = site_pkg
-            break
+                pkg_path = site_pkg
+                break
 
         if pkg_path is None:
             raise ProjectError(f"Package '{package_name}' not found in site-packages.")

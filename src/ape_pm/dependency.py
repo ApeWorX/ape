@@ -2,9 +2,9 @@ import json
 import os
 import shutil
 from collections.abc import Iterable
-from distutils.sysconfig import get_python_lib
 from functools import cached_property
 from pathlib import Path
+from site import getsitepackages
 from typing import Optional, Union
 
 from pydantic import model_validator
@@ -406,16 +406,14 @@ class PythonDependency(DependencyAPI):
 
         return values
 
-    @property
-    def site_packages(self) -> Path:
-        """
-        The path to the site-packages folder.
-        """
-        return Path(get_python_lib()).resolve()
-
-    @property
+    @cached_property
     def path(self) -> Path:
-        return self.site_packages / self.python
+        for site_packages_path_str in getsitepackages():
+            base_path = Path(site_packages_path_str).resolve()
+            if (base_path / self.python).is_dir():
+                return base_path / self.python
+
+        raise ProjectError(f"Dependency '{self.python}' not installed.")
 
     @property
     def package_id(self) -> str:

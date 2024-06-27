@@ -582,7 +582,7 @@ class TestGitHubDependency:
 class TestPythonDependency:
     @pytest.fixture(scope="class")
     def web3_dependency(self):
-        return PythonDependency(python="web3")
+        return PythonDependency.model_validate({"python": "web3"})
 
     def test_name(self, web3_dependency):
         assert web3_dependency.name == "web3"
