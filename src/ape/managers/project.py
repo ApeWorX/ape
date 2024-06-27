@@ -1,9 +1,9 @@
 import json
 import random
 import shutil
-import sys
 from collections.abc import Callable, Iterable, Iterator
 from contextlib import contextmanager
+from distutils.sysconfig import get_python_lib
 from functools import cached_property, singledispatchmethod
 from pathlib import Path
 from re import Pattern
@@ -1538,16 +1538,7 @@ class ProjectManager(ExtraAttributesMixin, BaseManager):
         Returns:
             :class:`~ape.managers.project.LocalProject`
         """
-        site_packages_path = None
-        for sys_path in sys.path:
-            if sys_path.endswith("site-packages"):
-                site_packages_path = Path(sys_path)
-                break
-
-        if site_packages_path is None:
-            # Not sure how this would happen.
-            raise ProjectError("'site-packages' not found in sys.path.")
-
+        site_packages_path = Path(get_python_lib()).resolve()
         pkg_path = None
         for site_pkg in site_packages_path.iterdir():
             if site_pkg.stem != package_name:

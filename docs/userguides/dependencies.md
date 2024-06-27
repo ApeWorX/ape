@@ -57,6 +57,17 @@ Often times, the `v` prefix is required when using tags.
 However, if cloning the tag fails, `ape` will retry with a `v` prefix.
 Bypass the original failing attempt by including a `v` in your dependency config.
 
+### Python
+
+You can use dependencies to PyPI by using the `python:` keyed dependency type.
+
+```yaml
+dependencies:
+   - python: snekmate
+     config_override:
+       contracts_folder: .
+```
+
 ### Local
 
 You can use already-downloaded projects as dependencies by referencing them as local dependencies.

@@ -9,7 +9,7 @@ from pydantic import ValidationError
 import ape
 from ape.managers.project import Dependency, LocalProject, PackagesCache, Project, ProjectManager
 from ape.utils import create_tempdir
-from ape_pm.dependency import GithubDependency, LocalDependency, NpmDependency
+from ape_pm.dependency import GithubDependency, LocalDependency, NpmDependency, PythonDependency
 from tests.conftest import skip_if_plugin_installed
 
 
@@ -577,6 +577,21 @@ class TestGitHubDependency:
         mock_client.clone_repo.assert_called_once_with(
             "ApeWorX", "ApeNotAThing", path, branch="3.0.0"
         )
+
+
+class TestPythonDependency:
+    @pytest.fixture(scope="class")
+    def web3_dependency(self):
+        return PythonDependency(python="web3")
+
+    def test_name(self, web3_dependency):
+        assert web3_dependency.name == "web3"
+
+    def test_fetch(self, web3_dependency):
+        with create_tempdir() as temp_dir:
+            web3_dependency.fetch(temp_dir)
+            files = [x for x in temp_dir.iterdir()]
+            assert len(files) > 0
 
 
 class TestDependency:
