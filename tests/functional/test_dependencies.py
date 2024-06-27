@@ -587,6 +587,13 @@ class TestPythonDependency:
     def test_name(self, web3_dependency):
         assert web3_dependency.name == "web3"
 
+    def test_version_id(self, web3_dependency):
+        actual = web3_dependency.version_id
+        assert isinstance(actual, str)
+        assert len(actual) > 0
+        assert actual[0].isnumeric()
+        assert "." in actual  # sep from minor / major / patch
+
     def test_fetch(self, web3_dependency):
         with create_tempdir() as temp_dir:
             web3_dependency.fetch(temp_dir)

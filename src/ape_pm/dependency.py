@@ -1,9 +1,9 @@
-import importlib.resources as resources
 import json
 import os
 import shutil
 from collections.abc import Iterable
 from functools import cached_property
+from importlib import metadata, resources
 from pathlib import Path
 from typing import Optional, Union
 
@@ -398,6 +398,11 @@ class PythonDependency(DependencyAPI):
     The Python site-package name.
     """
 
+    version: Optional[str] = None
+    """
+    Optionally specify the version expected to be installed.
+    """
+
     @model_validator(mode="before")
     @classmethod
     def validate_model(cls, values):
@@ -421,7 +426,19 @@ class PythonDependency(DependencyAPI):
 
     @property
     def version_id(self) -> str:
-        return "python"
+        try:
+            vers = f"{metadata.version(self.python)}"
+        except metadata.PackageNotFoundError as err:
+            raise ProjectError(f"Dependency '{self.python}' not found installed.") from err
+
+        if spec_vers := self.version:
+            if spec_vers != vers:
+                raise ProjectError(
+                    "Dependency installed with mismatched version. "
+                    f"Expecting '{self.version}' but has '{vers}'"
+                )
+
+        return vers
 
     @property
     def uri(self) -> str:
