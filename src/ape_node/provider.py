@@ -76,7 +76,7 @@ def create_genesis_data(alloc: Alloc, chain_id: int) -> GenesisDataTypedDict:
         "coinbase": ZERO_ADDRESS,
         "difficulty": "0x0",
         "extraData": "0x",
-        "mixhash": "0x0000000000000000000000000000000000000000000000000000000000000000",
+        "mixHash": "0x0000000000000000000000000000000000000000000000000000000000000000",
         "nonce": "0x0",
         "timestamp": "0x0",
         "parentHash": "0x0000000000000000000000000000000000000000000000000000000000000000",
