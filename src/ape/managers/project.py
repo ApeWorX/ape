@@ -1521,7 +1521,23 @@ class ProjectManager(ExtraAttributesMixin, BaseManager):
         return Project(manifest, config_override=config_override)
 
     @classmethod
-    def from_python_library(cls, package_name: str, config_override: Optional[dict] = None):
+    def from_python_library(
+        cls, package_name: str, config_override: Optional[dict] = None
+    ) -> "LocalProject":
+        """
+        Create an Ape project instance from an installed Python package.
+        This is useful for when Ape or Vyper projects are published to
+        pypi.
+
+        Args:
+            package_name (str): The name of the package's folder that would
+              appear in site-packages.
+            config_override (dict | None): Optionally override the configuration
+              for this project.
+
+        Returns:
+            :class:`~ape.managers.project.LocalProject`
+        """
         site_packages_path = None
         for sys_path in sys.path:
             if sys_path.endswith("site-packages"):
@@ -1544,7 +1560,7 @@ class ProjectManager(ExtraAttributesMixin, BaseManager):
             raise ProjectError(f"Package '{package_name}' not found in site-packages.")
 
         # Treat site-package as a local-project.
-        return cls(pkg_path)
+        return LocalProject(pkg_path, config_override=config_override)
 
     @classmethod
     @contextmanager
