@@ -62,7 +62,7 @@ If you have installed a project using `pip` or alike and you wish to reference i
 ```python
 from ape import Project
 
-snekmate = Project.from_python_library("snekmate")
+snekmate = Project.from_python_library("snekmate", config_override={"contracts_folder": "."})
 ```
 
 ## Dependencies
