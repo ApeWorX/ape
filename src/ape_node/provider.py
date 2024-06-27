@@ -75,11 +75,13 @@ def create_genesis_data(alloc: Alloc, chain_id: int) -> GenesisDataTypedDict:
         },
         "coinbase": ZERO_ADDRESS,
         "difficulty": "0x0",
+        "gasLimit": "0x0",
         "extraData": "0x",
         "mixHash": "0x0000000000000000000000000000000000000000000000000000000000000000",
         "nonce": "0x0",
         "timestamp": "0x0",
         "parentHash": "0x0000000000000000000000000000000000000000000000000000000000000000",
+        "baseFeePerGas": "0x0",
     }
 
 
@@ -129,8 +131,6 @@ class GethDevProcess(BaseGethProcess):
         # Ensure a clean data-dir.
         self._clean()
 
-        # sealer = ensure_account_exists(**geth_kwargs).replace("0x", "")
-        # geth_kwargs["miner_etherbase"] = sealer
         geth_kwargs["dev_mode"] = True
         accounts = generate_dev_accounts(
             mnemonic, number_of_accounts=number_of_accounts, hd_path=hd_path or DEFAULT_TEST_HD_PATH
