@@ -2,16 +2,16 @@ import atexit
 import shutil
 from pathlib import Path
 from subprocess import DEVNULL, PIPE, Popen
-from typing import Optional, Union
+from typing import Any, Optional, Union
 
 from eth_pydantic_types import HexBytes
 from eth_typing import HexStr
 from eth_utils import add_0x_prefix, to_hex, to_wei
 from evmchains import get_random_rpc
-from geth.accounts import ensure_account_exists  # type: ignore
-from geth.chain import initialize_chain  # type: ignore
-from geth.process import BaseGethProcess  # type: ignore
-from geth.wrapper import construct_test_chain_kwargs  # type: ignore
+from geth.chain import initialize_chain
+from geth.process import BaseGethProcess
+from geth.types import GenesisDataTypedDict
+from geth.wrapper import construct_test_chain_kwargs
 from pydantic import field_validator
 from pydantic_settings import SettingsConfigDict
 from requests.exceptions import ConnectionError
@@ -26,6 +26,7 @@ from ape.utils import (
     DEFAULT_TEST_CHAIN_ID,
     DEFAULT_TEST_HD_PATH,
     DEFAULT_TEST_MNEMONIC,
+    ZERO_ADDRESS,
     JoinableQueue,
     generate_dev_accounts,
     log_instead_of_fail,
@@ -39,6 +40,47 @@ from ape_ethereum.provider import (
     EthereumNodeProvider,
 )
 from ape_ethereum.trace import TraceApproach
+
+Alloc = dict[str, dict[str, Any]]
+
+
+def create_genesis_data(alloc: Alloc, chain_id: int) -> GenesisDataTypedDict:
+    """
+    A wrapper around genesis data for py-geth that
+    fills in more defaults.
+    """
+    return {
+        "alloc": alloc,
+        "config": {
+            "arrowGlacierBlock": 0,
+            "berlinBlock": 0,
+            "byzantiumBlock": 0,
+            "cancunTime": 0,
+            "chainId": chain_id,
+            "constantinopleBlock": 0,
+            "daoForkBlock": 0,
+            "daoForkSupport": True,
+            "eip150Block": 0,
+            "eip155Block": 0,
+            "eip158Block": 0,
+            "ethash": {},
+            "grayGlacierBlock": 0,
+            "homesteadBlock": 0,
+            "istanbulBlock": 0,
+            "londonBlock": 0,
+            "petersburgBlock": 0,
+            "shanghaiTime": 0,
+            "terminalTotalDifficulty": 0,
+            "terminalTotalDifficultyPassed": True,
+        },
+        "coinbase": ZERO_ADDRESS,
+        "difficulty": "0x0",
+        "extraData": "0x",
+        "mixhash": "0x0000000000000000000000000000000000000000000000000000000000000000",
+        "nonce": "0x0",
+        "timestamp": "0x0",
+        "parentHash": "0x0000000000000000000000000000000000000000000000000000000000000000",
+    }
 
 
 class GethDevProcess(BaseGethProcess):
@@ -64,10 +106,10 @@ class GethDevProcess(BaseGethProcess):
         if not shutil.which(executable):
             raise NodeSoftwareNotInstalledError()
 
-        self.data_dir = data_dir
+        self._data_dir = data_dir
         self._hostname = hostname
         self._port = port
-        self.data_dir.mkdir(exist_ok=True, parents=True)
+        self._data_dir.mkdir(exist_ok=True, parents=True)
         self.is_running = False
         self._auto_disconnect = auto_disconnect
 
@@ -75,8 +117,8 @@ class GethDevProcess(BaseGethProcess):
             data_dir=self.data_dir,
             geth_executable=executable,
             rpc_addr=hostname,
-            rpc_port=port,
-            network_id=chain_id,
+            rpc_port=f"{port}",
+            network_id=f"{chain_id}",
             ws_enabled=False,
             ws_addr=None,
             ws_origins=None,
@@ -87,8 +129,9 @@ class GethDevProcess(BaseGethProcess):
         # Ensure a clean data-dir.
         self._clean()
 
-        sealer = ensure_account_exists(**geth_kwargs).decode().replace("0x", "")
-        geth_kwargs["miner_etherbase"] = sealer
+        # sealer = ensure_account_exists(**geth_kwargs).replace("0x", "")
+        # geth_kwargs["miner_etherbase"] = sealer
+        geth_kwargs["dev_mode"] = True
         accounts = generate_dev_accounts(
             mnemonic, number_of_accounts=number_of_accounts, hd_path=hd_path or DEFAULT_TEST_HD_PATH
         )
@@ -96,34 +139,9 @@ class GethDevProcess(BaseGethProcess):
         addresses.extend(extra_funded_accounts or [])
         bal_dict = {"balance": str(initial_balance)}
         alloc = {a: bal_dict for a in addresses}
-        genesis_data: dict = {
-            "overwrite": True,
-            "coinbase": "0x0000000000000000000000000000000000000000",
-            "difficulty": "0x0",
-            "extraData": f"0x{'0' * 64}{sealer}{'0' * 130}",
-            "config": {
-                "chainId": chain_id,
-                "gasLimit": 0,
-                "homesteadBlock": 0,
-                "difficulty": "0x0",
-                "eip150Block": 0,
-                "eip155Block": 0,
-                "eip158Block": 0,
-                "byzantiumBlock": 0,
-                "constantinopleBlock": 0,
-                "petersburgBlock": 0,
-                "istanbulBlock": 0,
-                "berlinBlock": 0,
-                "londonBlock": 0,
-                "parisBlock": 0,
-                "shanghaiTime": 0,
-                "clique": {"period": 0, "epoch": 30000},
-            },
-            "alloc": alloc,
-        }
-
-        initialize_chain(genesis_data, **geth_kwargs)
-        self.proc: Optional[Popen] = None
+        genesis = create_genesis_data(alloc, chain_id)
+        self._data_dir.mkdir(parents=True, exist_ok=True)
+        initialize_chain(genesis, self.data_dir)
         super().__init__(geth_kwargs)
 
     @classmethod
@@ -151,6 +169,10 @@ class GethDevProcess(BaseGethProcess):
             extra_funded_accounts=extra_accounts,
             hd_path=kwargs.get("hd_path", DEFAULT_TEST_HD_PATH),
         )
+
+    @property
+    def data_dir(self) -> str:
+        return f"{self._data_dir}"
 
     def connect(self, timeout: int = 60):
         home = str(Path.home())
@@ -184,8 +206,8 @@ class GethDevProcess(BaseGethProcess):
         self._clean()
 
     def _clean(self):
-        if self.data_dir.is_dir():
-            shutil.rmtree(self.data_dir)
+        if self._data_dir.is_dir():
+            shutil.rmtree(self._data_dir)
 
     def wait(self, *args, **kwargs):
         if self.proc is None:
