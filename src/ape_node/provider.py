@@ -12,6 +12,7 @@ from geth.accounts import ensure_account_exists  # type: ignore
 from geth.chain import initialize_chain  # type: ignore
 from geth.process import BaseGethProcess  # type: ignore
 from geth.wrapper import construct_test_chain_kwargs  # type: ignore
+from pydantic import field_validator
 from pydantic_settings import SettingsConfigDict
 from requests.exceptions import ConnectionError
 from web3.middleware import geth_poa_middleware
@@ -37,6 +38,7 @@ from ape_ethereum.provider import (
     DEFAULT_SETTINGS,
     EthereumNodeProvider,
 )
+from ape_ethereum.trace import TraceApproach
 
 
 class GethDevProcess(BaseGethProcess):
@@ -204,12 +206,49 @@ class EthereumNetworkConfig(PluginConfig):
 
 
 class EthereumNodeConfig(PluginConfig):
+    """
+    Configure your ``node:`` in Ape, the default provider
+    plugin for live-network nodes. Also, ``ape node`` can
+    start-up a local development node for testing purposes.
+    """
+
     ethereum: EthereumNetworkConfig = EthereumNetworkConfig()
+    """
+    Configure the Ethereum network settings for the ``ape node`` provider,
+    such as which URIs to use for each network.
+    """
+
     executable: Optional[str] = None
-    ipc_path: Optional[Path] = None
+    """
+    For starting nodes, select the executable. Defaults to using
+    ``shutil.which("geth")``.
+    """
+
     data_dir: Optional[Path] = None
+    """
+    For node-management, choose where the geth data directory shall
+    be located. Defaults to using a location within Ape's DATA_FOLDER.
+    """
+
+    ipc_path: Optional[Path] = None
+    """
+    For IPC connections, select the IPC path. If managing a process,
+    web3.py can determine the IPC w/o needing to manually configure.
+    """
+
+    call_trace_approach: Optional[TraceApproach] = None
+    """
+    Select the trace approach to use. Defaults to deducing one
+    based on your node's client-version and available RPCs.
+    """
 
     model_config = SettingsConfigDict(extra="allow")
+
+    @field_validator("call_trace_approach", mode="before")
+    @classmethod
+    def validate_trace_approach(cls, value):
+        # This handles nicer config values.
+        return None if value is None else TraceApproach.from_key(value)
 
 
 class NodeSoftwareNotInstalledError(ConnectionError):

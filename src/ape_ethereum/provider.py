@@ -241,6 +241,19 @@ class Web3Provider(ProviderAPI, ABC):
 
         return pending_base_fee
 
+    @property
+    def call_trace_approach(self) -> Optional[TraceApproach]:
+        """
+        The default tracing approach to use when building up a call-tree.
+        By default, Ape attempts to use the faster approach. Meaning, if
+        geth-call-tracer or parity are available, Ape will use one of those
+        instead of building a call-trace entirely from struct-logs.
+        """
+        if approach := self._call_trace_approach:
+            return approach
+
+        return self.settings.get("call_trace_approach")
+
     def _get_fee_history(self, block_number: int) -> FeeHistory:
         try:
             return self.web3.eth.fee_history(1, BlockNumber(block_number), reward_percentiles=[])
@@ -407,7 +420,7 @@ class Web3Provider(ProviderAPI, ABC):
 
     def get_transaction_trace(self, transaction_hash: str, **kwargs) -> TraceAPI:
         if "call_trace_approach" not in kwargs:
-            kwargs["call_trace_approach"] = self._call_trace_approach
+            kwargs["call_trace_approach"] = self.call_trace_approach
 
         return TransactionTrace(transaction_hash=transaction_hash, **kwargs)
 

@@ -1429,16 +1429,30 @@ class ReportManager(BaseManager):
 
         self.echo(*tables, file=file)
 
-    def echo(self, *rich_items, file: Optional[IO[str]] = None):
-        console = self._get_console(file=file)
+    def echo(
+        self, *rich_items, file: Optional[IO[str]] = None, console: Optional[RichConsole] = None
+    ):
+        console = console or self._get_console(file)
         console.print(*rich_items)
 
     def show_source_traceback(
-        self, traceback: SourceTraceback, file: Optional[IO[str]] = None, failing: bool = True
+        self,
+        traceback: SourceTraceback,
+        file: Optional[IO[str]] = None,
+        console: Optional[RichConsole] = None,
+        failing: bool = True,
     ):
-        console = self._get_console(file)
+        console = console or self._get_console(file)
         style = "red" if failing else None
         console.print(str(traceback), style=style)
+
+    def show_events(
+        self, events: list, file: Optional[IO[str]] = None, console: Optional[RichConsole] = None
+    ):
+        console = console or self._get_console(file)
+        console.print("Events emitted:")
+        for event in events:
+            console.print(event)
 
     def _get_console(self, file: Optional[IO[str]] = None) -> RichConsole:
         if not file:

@@ -39,9 +39,30 @@ def test_receipt_properties(chain, invoke_receipt):
 
 def test_show_trace(trace_print_capture, invoke_receipt):
     invoke_receipt.show_trace()
-    actual = trace_print_capture.call_args[0][0]
-    assert isinstance(actual, Tree)
-    label = f"{actual.label}"
+    call_args = trace_print_capture.call_args_list
+
+    # Trace title assertion.
+    actual_title = call_args[0][0][0]
+    assert actual_title == f"Call trace for [bold blue]'{invoke_receipt.txn_hash}'[/]"
+
+    # The origin comes below the title.
+    actual_origin = call_args[1][0][0]
+    assert actual_origin == f"tx.origin=[#ff8c00]{invoke_receipt.sender}[/]"
+
+    # Next are events.
+    events_title = call_args[3][0][0]
+    event_tree = call_args[4][0][0]
+    event_label = str(event_tree.label)
+    assert events_title == "Events emitted:"
+    assert isinstance(event_tree, Tree)
+    assert "[bright_green]NumberChange" in event_label
+    assert 'dynData=[bright_magenta]"Dynamic"' in event_label
+    assert "newNum=[bright_magenta]1" in event_label
+
+    # Assert stuff about actual call-tree now.
+    actual_calltree = call_args[6][0][0]
+    assert isinstance(actual_calltree, Tree)
+    label = f"{actual_calltree.label}"
     assert "VyperContract" in label
     assert "setNumber" in label
     assert f"[{invoke_receipt.gas_used} gas]" in label
@@ -52,6 +73,17 @@ def test_show_gas_report(trace_print_capture, invoke_receipt):
     actual = trace_print_capture.call_args[0][0]
     assert isinstance(actual, Table)
     assert actual.title == "VyperContract Gas"
+
+
+def test_show_events(trace_print_capture, invoke_receipt):
+    invoke_receipt.show_events()
+    actual = trace_print_capture.call_args[0][0]
+    assert isinstance(actual, Tree)
+    label = str(actual.label)
+    # Formatted and enriched signature string.
+    assert "[bright_green]NumberChange" in label
+    assert 'dynData=[bright_magenta]"Dynamic"' in label
+    assert "newNum=[bright_magenta]1" in label
 
 
 def test_decode_logs_specify_abi(invoke_receipt, vyper_contract_instance):

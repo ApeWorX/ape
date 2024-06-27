@@ -33,6 +33,7 @@ from ape.exceptions import (
     DecodingError,
     SignatureError,
 )
+from ape.logging import logger
 from ape.managers.config import merge_configs
 from ape.types import (
     AddressType,
@@ -1116,6 +1117,11 @@ class Ethereum(EcosystemAPI):
             # Without a contract, we can enrich no further.
             return call
 
+        if events := call.get("events"):
+            call["events"] = self._enrich_trace_events(
+                events, address=address, contract_type=contract_type
+            )
+
         method_abi: Optional[Union[MethodABI, ConstructorABI]] = None
         if is_create:
             method_abi = contract_type.constructor
@@ -1221,11 +1227,12 @@ class Ethereum(EcosystemAPI):
         except DecodingError:
             call["calldata"] = ["<?>" for _ in method_abi.inputs]
         else:
-            call["calldata"] = {
-                k: self._enrich_value(v, **kwargs) for k, v in call["calldata"].items()
-            }
+            call["calldata"] = self._enrich_calldata_dict(call["calldata"], **kwargs)
 
         return call
+
+    def _enrich_calldata_dict(self, calldata: dict, **kwargs) -> dict:
+        return {k: self._enrich_value(v, **kwargs) for k, v in calldata.items()}
 
     def _enrich_returndata(self, call: dict, method_abi: MethodABI, **kwargs) -> dict:
         if "CREATE" in call.get("call_type", ""):
@@ -1302,6 +1309,77 @@ class Ethereum(EcosystemAPI):
 
         call["returndata"] = output_val
         return call
+
+    def _enrich_trace_events(
+        self,
+        events: list[dict],
+        address: Optional[AddressType] = None,
+        contract_type: Optional[ContractType] = None,
+    ) -> list[dict]:
+        return [
+            self._enrich_trace_event(e, address=address, contract_type=contract_type)
+            for e in events
+        ]
+
+    def _enrich_trace_event(
+        self,
+        event: dict,
+        address: Optional[AddressType] = None,
+        contract_type: Optional[ContractType] = None,
+    ) -> dict:
+        if "topics" not in event or len(event["topics"]) < 1:
+            # Already enriched or wrong.
+            return event
+
+        elif not address:
+            address = event.get("address")
+            if not address:
+                # Cannot enrich further w/o an address.
+                return event
+
+        if not contract_type:
+            try:
+                contract_type = self.chain_manager.contracts.get(address)
+            except Exception as err:
+                logger.debug(f"Error getting contract type during event enrichment: {err}")
+                return event
+
+            if not contract_type:
+                # Cannot enrich further w/o an contract type.
+                return event
+
+        # The selector is always the first topic.
+        selector = event["topics"][0]
+        if not isinstance(selector, str):
+            selector = selector.hex()
+
+        if selector not in contract_type.identifier_lookup:
+            # Unable to enrich using this contract type.
+            # Selector unknown.
+            return event
+
+        abi = contract_type.identifier_lookup[selector]
+        assert isinstance(abi, EventABI)  # For mypy.
+        log_data = {
+            "topics": event["topics"],
+            "data": event["data"],
+            "address": address,
+        }
+
+        try:
+            contract_logs = [log for log in self.decode_logs([log_data], abi)]
+        except Exception as err:
+            logger.debug(f"Failed decoding logs from trace data: {err}")
+            return event
+
+        if not contract_logs:
+            # Not sure if this is a likely condition.
+            return event
+
+        # Enrich the event-node data using the Ape ContractLog object.
+        log: ContractLog = contract_logs[0]
+        calldata = self._enrich_calldata_dict(log.event_arguments)
+        return {"name": log.event_name, "calldata": calldata}
 
     def _enrich_revert_message(self, call: dict) -> dict:
         returndata = call.get("returndata", "")
