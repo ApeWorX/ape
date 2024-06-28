@@ -3,7 +3,7 @@ import os
 import shutil
 from collections.abc import Iterable
 from functools import cached_property
-from importlib import metadata, resources
+from importlib import metadata
 from pathlib import Path
 from typing import Optional, Union
 
@@ -13,7 +13,7 @@ from ape.api.projects import DependencyAPI
 from ape.exceptions import ProjectError
 from ape.logging import logger
 from ape.managers.project import _version_to_options
-from ape.utils import ManagerAccessMixin, clean_path, in_tempdir
+from ape.utils import ManagerAccessMixin, clean_path, get_package_path, in_tempdir
 from ape.utils._github import _GithubClient, github_client
 
 
@@ -414,11 +414,9 @@ class PythonDependency(DependencyAPI):
     @cached_property
     def path(self) -> Path:
         try:
-            file_result = resources.files(self.python)
-        except ModuleNotFoundError as err:
-            raise ProjectError(f"Dependency '{self.python}' not found installed.") from err
-
-        return Path(str(file_result)).resolve()
+            return get_package_path(self.python)
+        except ValueError as err:
+            raise ProjectError(str(err)) from err
 
     @property
     def package_id(self) -> str:

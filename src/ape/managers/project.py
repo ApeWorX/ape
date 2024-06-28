@@ -1,4 +1,3 @@
-import importlib.resources as resources
 import json
 import random
 import shutil
@@ -35,6 +34,7 @@ from ape.utils.os import (
     create_tempdir,
     get_all_files_in_directory,
     get_full_extension,
+    get_package_path,
     get_relative_path,
     in_tempdir,
     path_match,
@@ -1539,11 +1539,9 @@ class ProjectManager(ExtraAttributesMixin, BaseManager):
             :class:`~ape.managers.project.LocalProject`
         """
         try:
-            file_result = resources.files(package_name)
-        except ModuleNotFoundError as err:
-            raise ProjectError(f"Package '{package_name}' not found in site-packages.") from err
-
-        pkg_path = Path(str(file_result)).resolve()
+            pkg_path = get_package_path(package_name)
+        except ValueError as err:
+            raise ProjectError(str(err)) from err
 
         # Treat site-package as a local-project.
         return LocalProject(pkg_path, config_override=config_override)

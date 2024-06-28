@@ -4,6 +4,7 @@ import sys
 from collections.abc import Callable, Iterator
 from contextlib import contextmanager
 from fnmatch import fnmatch
+from importlib.resources import files
 from pathlib import Path
 from re import Pattern
 from tempfile import TemporaryDirectory, gettempdir
@@ -302,3 +303,33 @@ def clean_path(path: Path) -> str:
         return f"$HOME{os.path.sep}{path.relative_to(home)}"
 
     return f"{path}"
+
+
+def get_package_path(package_name: str) -> Path:
+    """
+    Get the path to a package from site-packages.
+
+    Args:
+        package_name (str): The name of the package.
+
+    Returns:
+        Path
+    """
+    try:
+        file_result = files(package_name)
+    except ModuleNotFoundError as err:
+        raise ValueError(f"Package '{package_name}' not found in site-packages.") from err
+
+    if not file_result:
+        raise ValueError(f"Package '{package_name}' not found in site-packages.")
+
+    # There is no easy way to get a real-path from a MultiplexedPath
+    for path in file_result.iterdir():
+        if not isinstance(path, Path):
+            continue
+
+        for parent in path.parents:
+            if parent.name == package_name:
+                return parent
+
+    raise ValueError(f"Unable to get package path for '{package_name}'.")
