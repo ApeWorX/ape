@@ -4,7 +4,7 @@ import sys
 from collections.abc import Callable, Iterator
 from contextlib import contextmanager
 from fnmatch import fnmatch
-from importlib.resources import files
+from importlib.metadata import PackageNotFoundError, distribution
 from pathlib import Path
 from re import Pattern
 from tempfile import TemporaryDirectory, gettempdir
@@ -316,20 +316,12 @@ def get_package_path(package_name: str) -> Path:
         Path
     """
     try:
-        file_result = files(package_name)
-    except ModuleNotFoundError as err:
+        dist = distribution(package_name)
+    except PackageNotFoundError as err:
         raise ValueError(f"Package '{package_name}' not found in site-packages.") from err
 
-    if not file_result:
+    package_path = Path(str(dist.locate_file(""))) / package_name
+    if not package_path.exists():
         raise ValueError(f"Package '{package_name}' not found in site-packages.")
 
-    # There is no easy way to get a real-path from a MultiplexedPath
-    for path in file_result.iterdir():
-        if not isinstance(path, Path):
-            continue
-
-        for parent in path.parents:
-            if parent.name == package_name:
-                return parent
-
-    raise ValueError(f"Unable to get package path for '{package_name}'.")
+    return package_path
