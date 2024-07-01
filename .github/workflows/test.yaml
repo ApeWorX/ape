@@ -24,7 +24,8 @@ jobs:
         - name: Install Dependencies
           run: |
             python -m pip install --upgrade pip
-            pip install .[lint]
+            pip install uv
+            uv pip install .[lint]
 
         - name: Run Black
           run: black --check .
@@ -52,7 +53,8 @@ jobs:
         - name: Install Dependencies
           run: |
             python -m pip install --upgrade pip
-            pip install .[lint,test]
+            pip install uv
+            uv pip install .[lint,test]
 
         - name: Run MyPy
           run: mypy .
@@ -91,8 +93,9 @@ jobs:
         - name: Install Dependencies
           run: |
             python -m pip install --upgrade pip
-            pip uninstall eth-ape --yes
-            pip install .[test]
+            pip install uv
+            uv uninstall eth-ape --yes
+            uv install .[test]
 
         - name: Run Functional Tests
           run: pytest tests/functional -m "not fuzzing" -s --cov=src --cov-append -n auto --dist loadgroup
@@ -117,7 +120,8 @@ jobs:
         - name: Install Dependencies
           run: |
             python -m pip install --upgrade pip
-            pip install .[test]
+            pip install uv
+            uv pip install .[test]
 
         - name: Run Tests
           run: pytest -m "fuzzing" --no-cov -s
