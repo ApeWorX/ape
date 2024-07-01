@@ -455,7 +455,6 @@
 <li class="toctree-l3"><a class="reference internal" href="#ape.managers.project.Project"><code class="docutils literal notranslate"><span class="pre">Project</span></code></a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#ape.managers.project.Project.add_compiler_data"><code class="docutils literal notranslate"><span class="pre">Project.add_compiler_data()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.managers.project.Project.dependencies"><code class="docutils literal notranslate"><span class="pre">Project.dependencies</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#ape.managers.project.Project.from_manifest"><code class="docutils literal notranslate"><span class="pre">Project.from_manifest()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.managers.project.Project.is_compiled"><code class="docutils literal notranslate"><span class="pre">Project.is_compiled</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.managers.project.Project.isolate_in_tempdir"><code class="docutils literal notranslate"><span class="pre">Project.isolate_in_tempdir()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.managers.project.Project.reconfigure"><code class="docutils literal notranslate"><span class="pre">Project.reconfigure()</span></code></a></li>
@@ -465,6 +464,7 @@
 </li>
 <li class="toctree-l3"><a class="reference internal" href="#ape.managers.project.ProjectManager"><code class="docutils literal notranslate"><span class="pre">ProjectManager</span></code></a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#ape.managers.project.ProjectManager.from_manifest"><code class="docutils literal notranslate"><span class="pre">ProjectManager.from_manifest()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ape.managers.project.ProjectManager.from_python_library"><code class="docutils literal notranslate"><span class="pre">ProjectManager.from_python_library()</span></code></a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="#ape.managers.project.SourceManager"><code class="docutils literal notranslate"><span class="pre">SourceManager</span></code></a><ul>
@@ -2895,24 +2895,6 @@ manifests or local source-paths.</p>
 <dd><p>Project dependencies.</p>
 </dd></dl>
 
-<dl class="py method">
-<dt class="sig sig-object py" id="ape.managers.project.Project.from_manifest">
-<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_manifest</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">manifest</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">PackageManifest</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Path</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">config_override</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#ape.managers.project.Project" title="ape.managers.project.Project"><span class="pre">Project</span></a></span></span><a class="headerlink" href="#ape.managers.project.Project.from_manifest" title="Permalink to this definition"></a></dt>
-<dd><p>Create an Ape project using only a manifest.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>manifest</strong> (<em>Union</em><em>[</em><em>PackageManifest</em><em>, </em><a class="reference internal" href="cli.html#ape.cli.paramtype.Path" title="ape.cli.paramtype.Path"><em>Path</em></a><em>, </em><em>str</em><em>]</em>) – Either a manifest or a
-path to a manifest file.</p></li>
-<li><p><strong>config_override</strong> (<em>Optional</em><em>[</em><em>Dict</em><em>]</em>) – Optionally provide a config override.</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">ProjectManifest</span></code></p>
-</dd>
-</dl>
-</dd></dl>
-
 <dl class="py property">
 <dt class="sig sig-object py" id="ape.managers.project.Project.is_compiled">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">is_compiled</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><a class="headerlink" href="#ape.managers.project.Project.is_compiled" title="Permalink to this definition"></a></dt>
@@ -2978,6 +2960,27 @@ path to a manifest file.</p></li>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">ProjectManifest</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ape.managers.project.ProjectManager.from_python_library">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_python_library</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">package_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">config_override</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#ape.managers.project.LocalProject" title="ape.managers.project.LocalProject"><span class="pre">LocalProject</span></a></span></span><a class="headerlink" href="#ape.managers.project.ProjectManager.from_python_library" title="Permalink to this definition"></a></dt>
+<dd><p>Create an Ape project instance from an installed Python package.
+This is useful for when Ape or Vyper projects are published to
+pypi.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>package_name</strong> (<em>str</em>) – The name of the package’s folder that would
+appear in site-packages.</p></li>
+<li><p><strong>config_override</strong> (<em>dict</em><em> | </em><em>None</em>) – Optionally override the configuration
+for this project.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference internal" href="#ape.managers.project.LocalProject" title="ape.managers.project.LocalProject"><code class="xref py py-class docutils literal notranslate"><span class="pre">LocalProject</span></code></a></p>
 </dd>
 </dl>
 </dd></dl>

@@ -264,6 +264,16 @@
 <li class="toctree-l3"><a class="reference internal" href="#ape_pm.NpmDependency.version_id"><code class="docutils literal notranslate"><span class="pre">NpmDependency.version_id</span></code></a></li>
 </ul>
 </li>
+<li class="toctree-l2"><a class="reference internal" href="#ape_pm.PythonDependency"><code class="docutils literal notranslate"><span class="pre">PythonDependency</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#ape_pm.PythonDependency.fetch"><code class="docutils literal notranslate"><span class="pre">PythonDependency.fetch()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#ape_pm.PythonDependency.model_config"><code class="docutils literal notranslate"><span class="pre">PythonDependency.model_config</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#ape_pm.PythonDependency.package_id"><code class="docutils literal notranslate"><span class="pre">PythonDependency.package_id</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#ape_pm.PythonDependency.python"><code class="docutils literal notranslate"><span class="pre">PythonDependency.python</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#ape_pm.PythonDependency.uri"><code class="docutils literal notranslate"><span class="pre">PythonDependency.uri</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#ape_pm.PythonDependency.version"><code class="docutils literal notranslate"><span class="pre">PythonDependency.version</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#ape_pm.PythonDependency.version_id"><code class="docutils literal notranslate"><span class="pre">PythonDependency.version_id</span></code></a></li>
+</ul>
+</li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="ape_test.html">ape-test</a></li>
@@ -677,6 +687,63 @@ Requires having run <cite>npm install</cite>.</p>
 <dl class="py property">
 <dt class="sig sig-object py" id="ape_pm.NpmDependency.version_id">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">version_id</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#ape_pm.NpmDependency.version_id" title="Permalink to this definition"></a></dt>
+<dd><p>The ID to use as the sub-directory in the download cache.
+Most often, this is either a version number or a branch name.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ape_pm.PythonDependency">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ape_pm.</span></span><span class="sig-name descname"><span class="pre">PythonDependency</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">config_override</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">python</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">version</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape_pm.PythonDependency" title="Permalink to this definition"></a></dt>
+<dd><p>A dependency installed from Python, such as files published to PyPI.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="ape_pm.PythonDependency.fetch">
+<span class="sig-name descname"><span class="pre">fetch</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">destination</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Path</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape_pm.PythonDependency.fetch" title="Permalink to this definition"></a></dt>
+<dd><p>Fetch the dependency. E.g. for GitHub dependency,
+download the files to the destination.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>destination</strong> (<a class="reference internal" href="cli.html#ape.cli.paramtype.Path" title="ape.cli.paramtype.Path"><em>Path</em></a>) – The destination for the dependency
+files.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ape_pm.PythonDependency.model_config">
+<span class="sig-name descname"><span class="pre">model_config</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ClassVar</span><span class="p"><span class="pre">[</span></span><span class="pre">ConfigDict</span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'arbitrary_types_allowed':</span> <span class="pre">True}</span></em><a class="headerlink" href="#ape_pm.PythonDependency.model_config" title="Permalink to this definition"></a></dt>
+<dd><p>Configuration for the model, should be a dictionary conforming to [<cite>ConfigDict</cite>][pydantic.config.ConfigDict].</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="ape_pm.PythonDependency.package_id">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">package_id</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#ape_pm.PythonDependency.package_id" title="Permalink to this definition"></a></dt>
+<dd><p>The full name of the package, used for storage.
+Example: <code class="docutils literal notranslate"><span class="pre">OpenZeppelin/openzepplin-contracts</span></code>.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ape_pm.PythonDependency.python">
+<span class="sig-name descname"><span class="pre">python</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#ape_pm.PythonDependency.python" title="Permalink to this definition"></a></dt>
+<dd><p>The Python site-package name.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="ape_pm.PythonDependency.uri">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">uri</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#ape_pm.PythonDependency.uri" title="Permalink to this definition"></a></dt>
+<dd><p>The URI for the package.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ape_pm.PythonDependency.version">
+<span class="sig-name descname"><span class="pre">version</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#ape_pm.PythonDependency.version" title="Permalink to this definition"></a></dt>
+<dd><p>Optionally specify the version expected to be installed.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="ape_pm.PythonDependency.version_id">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">version_id</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#ape_pm.PythonDependency.version_id" title="Permalink to this definition"></a></dt>
 <dd><p>The ID to use as the sub-directory in the download cache.
 Most often, this is either a version number or a branch name.</p>
 </dd></dl>

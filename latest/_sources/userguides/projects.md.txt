@@ -55,6 +55,16 @@ project = Project.from_manifest("path/to/manifest.json")
 _ = project.MyContract  # Do anything you can do to the root-level project.
 ```
 
+## Installed Python Projects
+
+If you have installed a project using `pip` or alike and you wish to reference its project, use the `Project.from_python_library()` class method.
+
+```python
+from ape import Project
+
+snekmate = Project.from_python_library("snekmate", config_override={"contracts_folder": "."})
+```
+
 ## Dependencies
 
 Use other projects as dependencies in Ape.

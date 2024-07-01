@@ -163,6 +163,7 @@
 <li class="toctree-l2"><a class="reference internal" href="#the-local-project">The Local Project</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#other-projects">Other Projects</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#project-manifests">Project Manifests</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#installed-python-projects">Installed Python Projects</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#dependencies">Dependencies</a></li>
 </ul>
 </li>
@@ -290,6 +291,15 @@ If that is the case, you can create a project directly from the manifest itself:
 <span class="c1"># Pass in a manifest (object or dictionary), or a path to a manifest&#39;s JSON file.</span>
 <span class="n">project</span> <span class="o">=</span> <span class="n">Project</span><span class="o">.</span><span class="n">from_manifest</span><span class="p">(</span><span class="s2">&quot;path/to/manifest.json&quot;</span><span class="p">)</span>
 <span class="n">_</span> <span class="o">=</span> <span class="n">project</span><span class="o">.</span><span class="n">MyContract</span>  <span class="c1"># Do anything you can do to the root-level project.</span>
+</pre></div>
+</div>
+</section>
+<section id="installed-python-projects">
+<h2>Installed Python Projects<a class="headerlink" href="#installed-python-projects" title="Permalink to this heading"></a></h2>
+<p>If you have installed a project using <code class="docutils literal notranslate"><span class="pre">pip</span></code> or alike and you wish to reference its project, use the <code class="docutils literal notranslate"><span class="pre">Project.from_python_library()</span></code> class method.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">ape</span> <span class="kn">import</span> <span class="n">Project</span>
+
+<span class="n">snekmate</span> <span class="o">=</span> <span class="n">Project</span><span class="o">.</span><span class="n">from_python_library</span><span class="p">(</span><span class="s2">&quot;snekmate&quot;</span><span class="p">,</span> <span class="n">config_override</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;contracts_folder&quot;</span><span class="p">:</span> <span class="s2">&quot;.&quot;</span><span class="p">})</span>
 </pre></div>
 </div>
 </section>
