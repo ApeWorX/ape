@@ -150,13 +150,16 @@ You can use all of these together or separately to control the way Ape creates a
 
 This same functionality is also scriptable with the same inputs as the `generate` command:
 
-```python
-from ape_accounts import generate_account
+```{eval-rst}
 
-account, mnemonic = generate_account("my-account", "mySecureP@ssphrase")
+.. doctest::
 
-print(f'Save your mnemonic: {mnemonic}')
-print(f'Your new account address is: {account.address}')
+  >>> from ape_accounts import generate_account
+
+  >>> account, mnemonic = generate_account("my-account", "mySecureP@ssphrase")
+
+  print(f'Save your mnemonic: {mnemonic}')
+  print(f'Your new account address is: {account.address}')
 ```
 
 See the [documentation for `generate_account()`](../methoddocs/ape_accounts.html#ape_accounts.generate_account) for more options.
@@ -190,16 +193,19 @@ If you do not use the `--hd-path` option, Ape will use the default HDPath of (Et
 
 You can import an account programmatically using a seed phrase [using `import_account_from_mnemonic()`](../methoddocs/ape_accounts.html#ape_accounts.import_account_from_mnemonic):
 
-```python
-from ape_accounts import import_account_from_mnemonic
+```{eval-rst}
 
-alias = "my-account"
-passphrase = "my$ecurePassphrase"
-mnemonic = "test test test test test test test test test test test junk"
+.. doctest::
 
-account = import_account_from_mnemonic(alias, passphrase, mnemonic)
+  >>> from ape_accounts import import_account_from_mnemonic
 
-print(f'Your imported account address is: {account.address}')
+  >>> alias = "my-account"
+  >>> passphrase = "my$ecurePassphrase"
+  >>> mnemonic = "test test test test test test test test test test test junk"
+  >>> account = import_account_from_mnemonic(alias, passphrase, mnemonic)
+
+  print(f'Your imported account address is: {account.address}')
+
 ```
 
 Or using a raw private key [using `import_account_from_private_key()`](../methoddocs/ape_accounts.html#ape_accounts.import_account_from_private_key):
