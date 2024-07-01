@@ -3,6 +3,7 @@ import os
 import shutil
 from collections.abc import Iterable
 from functools import cached_property
+from importlib import metadata
 from pathlib import Path
 from typing import Optional, Union
 
@@ -12,8 +13,22 @@ from ape.api.projects import DependencyAPI
 from ape.exceptions import ProjectError
 from ape.logging import logger
 from ape.managers.project import _version_to_options
-from ape.utils import clean_path, in_tempdir
+from ape.utils import ManagerAccessMixin, clean_path, get_package_path, in_tempdir
 from ape.utils._github import _GithubClient, github_client
+
+
+def _fetch_local(src: Path, destination: Path, config_override: Optional[dict] = None):
+    if src.is_dir():
+        project = ManagerAccessMixin.Project(src, config_override=config_override)
+        project.unpack(destination)
+    elif src.is_file() and src.suffix == ".json":
+        # Using a manifest directly as a dependency.
+        if not destination.suffix:
+            destination = destination / src.name
+
+        destination.unlink(missing_ok=True)
+        destination.parent.mkdir(parents=True, exist_ok=True)
+        destination.write_text(src.read_text(), encoding="utf8")
 
 
 class LocalDependency(DependencyAPI):
@@ -75,17 +90,7 @@ class LocalDependency(DependencyAPI):
         if destination.is_dir():
             destination = destination / self.name
 
-        if self.local.is_dir():
-            project = self.Project(self.local, config_override=self.config_override)
-            project.unpack(destination)
-        elif self.local.is_file() and self.local.suffix == ".json":
-            # Using a manifest directly as a dependency.
-            if not destination.suffix:
-                destination = destination / self.local.name
-
-            destination.unlink(missing_ok=True)
-            destination.parent.mkdir(parents=True, exist_ok=True)
-            destination.write_text(self.local.read_text(), encoding="utf8")
+        _fetch_local(self.local, destination, config_override=self.config_override)
 
 
 class GithubDependency(DependencyAPI):
@@ -381,3 +386,61 @@ def _get_version_from_package_json(
         return None
 
     return data.get("version")
+
+
+class PythonDependency(DependencyAPI):
+    """
+    A dependency installed from Python, such as files published to PyPI.
+    """
+
+    python: str
+    """
+    The Python site-package name.
+    """
+
+    version: Optional[str] = None
+    """
+    Optionally specify the version expected to be installed.
+    """
+
+    @model_validator(mode="before")
+    @classmethod
+    def validate_model(cls, values):
+        if "name" not in values and "python" in values:
+            values["name"] = values["python"]
+
+        return values
+
+    @cached_property
+    def path(self) -> Path:
+        try:
+            return get_package_path(self.python)
+        except ValueError as err:
+            raise ProjectError(str(err)) from err
+
+    @property
+    def package_id(self) -> str:
+        return self.python
+
+    @property
+    def version_id(self) -> str:
+        try:
+            vers = f"{metadata.version(self.python)}"
+        except metadata.PackageNotFoundError as err:
+            raise ProjectError(f"Dependency '{self.python}' not found installed.") from err
+
+        if spec_vers := self.version:
+            if spec_vers != vers:
+                raise ProjectError(
+                    "Dependency installed with mismatched version. "
+                    f"Expecting '{self.version}' but has '{vers}'"
+                )
+
+        return vers
+
+    @property
+    def uri(self) -> str:
+        return self.path.as_uri()
+
+    def fetch(self, destination: Path):
+        _fetch_local(self.path, destination, config_override=self.config_override)

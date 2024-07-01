@@ -34,6 +34,7 @@ from ape.utils.os import (
     create_tempdir,
     get_all_files_in_directory,
     get_full_extension,
+    get_package_path,
     get_relative_path,
     in_tempdir,
     path_match,
@@ -1515,7 +1516,35 @@ class ProjectManager(ExtraAttributesMixin, BaseManager):
         Returns:
             :class:`~ape.managers.project.ProjectManifest`
         """
-        return Project.from_manifest(manifest, config_override=config_override)
+        config_override = config_override or {}
+        manifest = _load_manifest(manifest) if isinstance(manifest, (Path, str)) else manifest
+        return Project(manifest, config_override=config_override)
+
+    @classmethod
+    def from_python_library(
+        cls, package_name: str, config_override: Optional[dict] = None
+    ) -> "LocalProject":
+        """
+        Create an Ape project instance from an installed Python package.
+        This is useful for when Ape or Vyper projects are published to
+        pypi.
+
+        Args:
+            package_name (str): The name of the package's folder that would
+              appear in site-packages.
+            config_override (dict | None): Optionally override the configuration
+              for this project.
+
+        Returns:
+            :class:`~ape.managers.project.LocalProject`
+        """
+        try:
+            pkg_path = get_package_path(package_name)
+        except ValueError as err:
+            raise ProjectError(str(err)) from err
+
+        # Treat site-package as a local-project.
+        return LocalProject(pkg_path, config_override=config_override)
 
     @classmethod
     @contextmanager
@@ -1580,14 +1609,6 @@ class Project(ProjectManager):
         ensure the compilation is up-to-date.
         """
         return (self._manifest.contract_types or None) is not None
-
-    @classmethod
-    def from_manifest(
-        cls, manifest: Union[PackageManifest, Path, str], config_override: Optional[dict] = None
-    ) -> "Project":
-        config_override = config_override or {}
-        manifest = _load_manifest(manifest) if isinstance(manifest, (Path, str)) else manifest
-        return Project(manifest, config_override=config_override)
 
     def __ape_extra_attributes__(self) -> Iterator[ExtraModelAttributes]:
         extras = (
