@@ -2277,16 +2277,6 @@ class LocalProject(Project):
         return in_tempdir(self.path)
 
     @property
-    def manifest(self) -> PackageManifest:
-        # Reloads to handle changes from other ongoing sessions.
-        # If don't need a reload, use `._manifest` instead.
-        if self.manifest_path.is_file():
-            reloaded = PackageManifest.model_validate_json(self.manifest_path.read_text())
-            self._manifest = reloaded
-
-        return self._manifest
-
-    @property
     def meta(self) -> PackageMeta:
         """
         Metadata about the active project as per EIP
@@ -2375,11 +2365,14 @@ class LocalProject(Project):
             return PackageManifest()
 
         try:
-            return _load_manifest(self.manifest_path)
+            manifest = _load_manifest(self.manifest_path)
         except Exception as err:
             logger.error(f"__local__.json manifest corrupted! Re-building.\nFull error: {err}.")
             self.manifest_path.unlink(missing_ok=True)
-            return PackageManifest()
+            manifest = PackageManifest()
+
+        self._manifest = manifest
+        return manifest
 
     def get_contract(self, name: str) -> Any:
         if name in dir(self):
