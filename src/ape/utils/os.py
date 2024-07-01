@@ -4,6 +4,7 @@ import sys
 from collections.abc import Callable, Iterator
 from contextlib import contextmanager
 from fnmatch import fnmatch
+from importlib.metadata import PackageNotFoundError, distribution
 from pathlib import Path
 from re import Pattern
 from tempfile import TemporaryDirectory, gettempdir
@@ -302,3 +303,25 @@ def clean_path(path: Path) -> str:
         return f"$HOME{os.path.sep}{path.relative_to(home)}"
 
     return f"{path}"
+
+
+def get_package_path(package_name: str) -> Path:
+    """
+    Get the path to a package from site-packages.
+
+    Args:
+        package_name (str): The name of the package.
+
+    Returns:
+        Path
+    """
+    try:
+        dist = distribution(package_name)
+    except PackageNotFoundError as err:
+        raise ValueError(f"Package '{package_name}' not found in site-packages.") from err
+
+    package_path = Path(str(dist.locate_file(""))) / package_name
+    if not package_path.exists():
+        raise ValueError(f"Package '{package_name}' not found in site-packages.")
+
+    return package_path

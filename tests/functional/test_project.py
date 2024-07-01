@@ -601,6 +601,12 @@ class TestProject:
         # Also, show it got set on the manifest.
         assert project.manifest.contract_types == {contract_type.name: contract_type}
 
+    def test_from_python_library(self):
+        # web3py as an ape-project dependency.
+        web3 = Project.from_python_library("web3")
+        assert "site-packages" in str(web3.path)
+        assert web3.path.name == "web3"
+
 
 class TestBrownieProject:
     """
