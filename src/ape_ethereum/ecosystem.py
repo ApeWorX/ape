@@ -781,7 +781,7 @@ class Ethereum(EcosystemAPI):
         elif isinstance(value, bytes):
             return HexBytes(value)
 
-        elif isinstance(value, int):
+        elif isinstance(value, int) and not isinstance(value, bool):
             # Wrap integers in a special type that allows us to compare
             # them with currency-value strings.
             return CurrencyValueComparable(value)

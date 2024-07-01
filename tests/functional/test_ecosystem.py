@@ -757,6 +757,19 @@ def test_decode_returndata_returns_str_comparable_ints(ethereum):
     assert isinstance(actual[0], CurrencyValueComparable)
 
 
+def test_decode_returndata_bool(ethereum):
+    abi = MethodABI(
+        type="function",
+        name="view_method",
+        stateMutability="view",
+        inputs=[],
+        outputs=[ABIType(name="", type="bool", components=None, internal_type=None)],
+    )
+    raw_data = HexBytes("0x000000000000000000000000000000000000000000000000000000000000001")
+    actual = ethereum.decode_returndata(abi, raw_data)[0]
+    assert isinstance(actual, bool)
+
+
 @pytest.mark.parametrize("tx_type", TransactionType)
 def test_create_transaction_uses_network_gas_limit(tx_type, ethereum, eth_tester_provider, owner):
     tx = ethereum.create_transaction(type=tx_type.value, sender=owner.address)
