@@ -223,7 +223,7 @@ def test_get_block(geth_provider, block_id):
 
     # Each parameter is the same as requesting the first block.
     assert block.number == 0
-    assert block.base_fee == 1000000000
+    assert block.base_fee == 0
     assert block.gas_used == 0
 
 
