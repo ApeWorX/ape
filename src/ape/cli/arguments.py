@@ -129,18 +129,22 @@ class _ContractPaths(ManagerAccessMixin):
                 self.project.path / path.name
             ) == contracts_folder or path.name == contracts_folder.name:
                 # Was given the path to the contracts folder.
-                return {p for p in self.project.sources.paths}
+                path_set = path_set.union({p for p in self.project.sources.paths})
 
             elif (self.project.path / path).is_dir():
                 # Was given sub-dir in the project folder.
-                return self.lookup(
-                    (p for p in (self.project.path / path).iterdir()), path_set=path_set
+                path_set = path_set.union(
+                    self.lookup(
+                        (p for p in (self.project.path / path).iterdir()), path_set=path_set
+                    )
                 )
 
             elif (contracts_folder / path.name).is_dir():
                 # Was given sub-dir in the contracts folder.
-                return self.lookup(
-                    (p for p in (contracts_folder / path.name).iterdir()), path_set=path_set
+                path_set = path_set.union(
+                    self.lookup(
+                        (p for p in (contracts_folder / path.name).iterdir()), path_set=path_set
+                    )
                 )
 
             elif resolved_path := self.project.sources.lookup(path):
