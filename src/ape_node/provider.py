@@ -111,7 +111,6 @@ class GethDevProcess(BaseGethProcess):
         self._data_dir = data_dir
         self._hostname = hostname
         self._port = port
-        self._data_dir.mkdir(exist_ok=True, parents=True)
         self.is_running = False
         self._auto_disconnect = auto_disconnect
 
@@ -140,7 +139,6 @@ class GethDevProcess(BaseGethProcess):
         bal_dict = {"balance": str(initial_balance)}
         alloc = {a: bal_dict for a in addresses}
         genesis = create_genesis_data(alloc, chain_id)
-        self._data_dir.mkdir(parents=True, exist_ok=True)
         initialize_chain(genesis, self.data_dir)
         super().__init__(geth_kwargs)
 
@@ -208,6 +206,9 @@ class GethDevProcess(BaseGethProcess):
     def _clean(self):
         if self._data_dir.is_dir():
             shutil.rmtree(self._data_dir)
+
+        # dir must exist when initializing chain.
+        self._data_dir.mkdir(parents=True, exist_ok=True)
 
     def wait(self, *args, **kwargs):
         if self.proc is None:
