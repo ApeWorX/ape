@@ -557,6 +557,24 @@ def test_contract_file_paths_argument_contract_does_not_exist(
     assert expected in result.output
 
 
+def test_contract_file_paths_argument_given_directory_and_file(
+    project_with_contract, runner, contracts_paths_cmd
+):
+    """
+    Tests against a bug where if given a directory AND a file together,
+    only the directory resolved and the file was lost.
+    """
+    pm = project_with_contract
+    src_stem = next(x for x in pm.sources if Path(x).suffix == ".json").split(".")[0]
+    arguments = ("subdir", src_stem, "--project", f"{pm.path}")
+    result = runner.invoke(contracts_paths_cmd, arguments)
+    paths = sorted(pm.sources.paths)
+
+    all_paths = ", ".join(x.name for x in paths if x.parent.name == "subdir")
+    assert f"{all_paths}" in result.output
+    assert f"{src_stem.split('/')[-1]}" in result.output
+
+
 def test_existing_alias_option(runner):
     @click.command()
     @existing_alias_argument()
