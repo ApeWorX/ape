@@ -111,7 +111,6 @@ class GethDevProcess(BaseGethProcess):
         self._data_dir = data_dir
         self._hostname = hostname
         self._port = port
-        self._data_dir.mkdir(exist_ok=True, parents=True)
         self.is_running = False
         self._auto_disconnect = auto_disconnect
 
