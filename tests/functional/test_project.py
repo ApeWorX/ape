@@ -779,7 +779,10 @@ class TestSourceManager:
             ):
                 actual = pm.sources.lookup(closest)
                 expected = nested_source_b
-                assert actual == expected, f"Failed to lookup {closest}"
+
+                # Using stem in case it returns `Contract.__mock__`, which is
+                # added / removed as part of other tests (running x-dist).
+                assert actual.stem == expected.stem, f"Failed to lookup {closest}"
 
         finally:
             clean()
