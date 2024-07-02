@@ -208,6 +208,9 @@ class GethDevProcess(BaseGethProcess):
         if self._data_dir.is_dir():
             shutil.rmtree(self._data_dir)
 
+        # dir must exist when initializing chain.
+        self._data_dir.mkdir(parents=True, exist_ok=True)
+
     def wait(self, *args, **kwargs):
         if self.proc is None:
             return
