@@ -43,6 +43,11 @@ def test_compile(ape_cli, runner, integ_project, clean_cache):
     cmd = ("compile", "--project", f"{integ_project.path}")
     result = runner.invoke(ape_cli, cmd, catch_exceptions=False)
     assert result.exit_code == 0, result.output
+
+    # We have to load the manifest again because normally we are not referencing
+    # the manifest in the same process as `ape compile`.
+    integ_project.load_manifest()
+
     assert integ_project.manifest.contract_types
 
     # First time it compiles, it compiles the files with registered compilers successfully.

@@ -540,6 +540,17 @@ def test_get_contract(project_with_contracts):
     assert isinstance(actual, ContractContainer)
     assert actual.contract_type.name == "Other"
 
+    # Ensure manifest is only loaded once by none-ing out the path.
+    # Otherwise, this can be a MAJOR performance hit.
+    manifest_path = project_with_contracts.manifest_path
+    project_with_contracts.manifest_path = None
+    try:
+        actual = project_with_contracts.get_contract("Other")
+        assert isinstance(actual, ContractContainer)
+        assert actual.contract_type.name == "Other"
+    finally:
+        project_with_contracts.manifest_path = manifest_path
+
 
 def test_get_contract_not_exists(project):
     actual = project.get_contract("this is not a contract")
