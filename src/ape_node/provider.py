@@ -140,7 +140,6 @@ class GethDevProcess(BaseGethProcess):
         bal_dict = {"balance": str(initial_balance)}
         alloc = {a: bal_dict for a in addresses}
         genesis = create_genesis_data(alloc, chain_id)
-
         initialize_chain(genesis, self.data_dir)
         super().__init__(geth_kwargs)
 
