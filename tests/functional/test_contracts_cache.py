@@ -275,7 +275,7 @@ def test_get_multiple_no_addresses(chain, caplog):
     assert "No addresses provided." in caplog.messages[-1]
 
 
-def test_get_all_include_non_contract_address(vyper_contract_instance, chain, owner):
+def test_get_multiple_include_non_contract_address(vyper_contract_instance, chain, owner):
     actual = chain.contracts.get_multiple((vyper_contract_instance.address, owner.address))
     assert len(actual) == 1
     assert actual[vyper_contract_instance.address] == vyper_contract_instance.contract_type
