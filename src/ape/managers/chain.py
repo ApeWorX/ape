@@ -1044,8 +1044,7 @@ class ContractCache(BaseManager):
             # In this case, it at least _looked_ like an address.
             return None
 
-        contract_type = self._local_contract_types.get(address_key)
-        if contract_type:
+        if contract_type := self._local_contract_types.get(address_key):
             if default and default != contract_type:
                 # Replacing contract type
                 self._local_contract_types[address_key] = default
@@ -1060,8 +1059,7 @@ class ContractCache(BaseManager):
 
             return default
 
-        contract_type = self._get_contract_type_from_disk(address_key)
-        if not contract_type:
+        if not (contract_type := self._get_contract_type_from_disk(address_key)):
             # Contract could be a minimal proxy
             proxy_info = self._local_proxies.get(address_key) or self._get_proxy_info_from_disk(
                 address_key
@@ -1341,7 +1339,7 @@ class ContractCache(BaseManager):
                 # any one specific reason, such as un-verified source code,
                 # which is potentially a scare for users.
                 message = (
-                    f"Attempted to retrieve contract type from explorer '{explorer_name}'"
+                    f"Attempted to retrieve contract type from explorer '{explorer_name}' "
                     f"from address '{address}' but encountered an exception: {err}\n"
                 )
 
