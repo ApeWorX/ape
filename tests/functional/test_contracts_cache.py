@@ -61,10 +61,15 @@ def test_instance_at_uses_given_contract_type_when_retrieval_fails(mocker, chain
 
         return existing_fn(addr, default=default)
 
-    chain.contracts.get = mocker.MagicMock()
-    chain.contracts.get.side_effect = fn
+    original_get = chain.contracts.get
+    mock_get = mocker.MagicMock()
+    mock_get.side_effect = fn
+    chain.contracts.get = mock_get
+    try:
+        actual = chain.contracts.instance_at(new_address, contract_type=expected_contract_type)
+    finally:
+        chain.contracts.get = original_get
 
-    actual = chain.contracts.instance_at(new_address, contract_type=expected_contract_type)
     ape_caplog.assert_last_log(expected_fail_message)
     assert actual.contract_type == expected_contract_type
 
@@ -275,7 +280,7 @@ def test_get_multiple_no_addresses(chain, caplog):
     assert "No addresses provided." in caplog.messages[-1]
 
 
-def test_get_all_include_non_contract_address(vyper_contract_instance, chain, owner):
+def test_get_multiple_include_non_contract_address(vyper_contract_instance, chain, owner):
     actual = chain.contracts.get_multiple((vyper_contract_instance.address, owner.address))
     assert len(actual) == 1
     assert actual[vyper_contract_instance.address] == vyper_contract_instance.contract_type
@@ -296,6 +301,99 @@ def test_get_attempts_to_convert(chain):
     with pytest.raises(ConversionError):
         # NOTE: using eth2 suffix so still works if ape-ens is installed.
         chain.contracts.get("test.eth2")
+
+
+@explorer_test
+def test_get_attempts_explorer(
+    mock_explorer, create_mock_sepolia, chain, owner, vyper_fallback_container
+):
+    contract = owner.deploy(vyper_fallback_container)
+
+    def get_contract_type(addr):
+        if addr == contract.address:
+            return contract.contract_type
+
+        raise ValueError("nope")
+
+    # Hack in a way to publish on this local network.
+    with create_mock_sepolia() as network:
+        mock_explorer.get_contract_type.side_effect = get_contract_type
+        network.__dict__["explorer"] = mock_explorer
+        del chain.contracts[contract.address]
+        try:
+            actual = chain.contracts.get(contract.address)
+        finally:
+            network.__dict__["explorer"] = None
+
+        assert actual == contract.contract_type
+        assert mock_explorer.get_contract_type.call_count > 0
+        mock_explorer.get_contract_type.reset_mock()
+
+
+@explorer_test
+def test_get_attempts_explorer_logs_errors_from_explorer(
+    mock_explorer, create_mock_sepolia, chain, owner, vyper_fallback_container, ape_caplog
+):
+    contract = owner.deploy(vyper_fallback_container)
+    check_error_str = "__CHECK_FOR_THIS_ERROR__"
+
+    def get_contract_type(addr):
+        if addr == contract.address:
+            raise ValueError(check_error_str)
+
+        raise ValueError("nope")
+
+    with create_mock_sepolia() as network:
+        mock_explorer.get_contract_type.side_effect = get_contract_type
+        network.__dict__["explorer"] = mock_explorer
+        expected_log = (
+            f"Attempted to retrieve contract type from explorer 'mock' "
+            f"from address '{contract.address}' but encountered an "
+            f"exception: {check_error_str}"
+        )
+        del chain.contracts[contract.address]
+        try:
+            actual = chain.contracts.get(contract.address)
+        finally:
+            network.__dict__["explorer"] = None
+
+        assert expected_log in ape_caplog.head
+        assert actual is None
+        mock_explorer.get_contract_type.reset_mock()
+
+
+@explorer_test
+def test_get_attempts_explorer_logs_rate_limit_error_from_explorer(
+    mock_explorer, create_mock_sepolia, chain, owner, vyper_fallback_container, ape_caplog
+):
+    contract = owner.deploy(vyper_fallback_container)
+
+    # Ensure is not cached locally.
+    del chain.contracts[contract.address]
+
+    check_error_str = "you have been rate limited"
+
+    def get_contract_type(addr):
+        if addr == contract.address:
+            raise ValueError(check_error_str)
+
+        raise ValueError("nope")
+
+    with create_mock_sepolia() as network:
+        mock_explorer.get_contract_type.side_effect = get_contract_type
+        network.__dict__["explorer"] = mock_explorer
+
+        # For rate limit errors, we don't show anything else,
+        # as it may be confusing.
+        expected_log = "you have been rate limited"
+        try:
+            actual = chain.contracts.get(contract.address)
+        finally:
+            network.__dict__["explorer"] = None
+
+        assert expected_log in ape_caplog.head
+        assert actual is None
+        mock_explorer.get_contract_type.reset_mock()
 
 
 def test_cache_non_checksum_address(chain, vyper_contract_instance):
