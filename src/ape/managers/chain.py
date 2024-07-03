@@ -1329,9 +1329,9 @@ class ContractCache(BaseManager):
             contract_type = self._network.explorer.get_contract_type(address)
         except Exception as err:
             explorer_name = self._network.explorer.name
-            if "rate limit" in str(err):
+            if "rate limit" in str(err).lower():
                 # Don't show any additional error message during rate limit errors,
-                # if it can be helped, as it may scare users  into thinking their
+                # if it can be helped, as it may scare users into thinking their
                 # contracts are not verified.
                 message = str(err)
             else:
@@ -1344,7 +1344,6 @@ class ContractCache(BaseManager):
                 )
 
             logger.error(message)
-
             return None
 
         if contract_type:
