@@ -1330,7 +1330,23 @@ class ContractCache(BaseManager):
         try:
             contract_type = self._network.explorer.get_contract_type(address)
         except Exception as err:
-            logger.error(f"Unable to fetch contract type at '{address}' from explorer.\n{err}")
+            explorer_name = self._network.explorer.name
+            if "rate limit" in str(err):
+                # Don't show any additional error message during rate limit errors,
+                # if it can be helped, as it may scare users  into thinking their
+                # contracts are not verified.
+                message = str(err)
+            else:
+                # Carefully word this message in a way that doesn't hint at
+                # any one specific reason, such as un-verified source code,
+                # which is potentially a scare for users.
+                message = (
+                    f"Attempted to retrieve contract type from explorer '{explorer_name}'"
+                    f"from address '{address}' but encountered an exception: {err}\n"
+                )
+
+            logger.error(message)
+
             return None
 
         if contract_type:
