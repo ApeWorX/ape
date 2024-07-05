@@ -118,7 +118,7 @@ def test_history_getitem_receipt(chain, vyper_contract_instance, owner):
 def test_history_getitem_account(chain, vyper_contract_instance, owner):
     actual = chain.history[owner.address]
     assert isinstance(actual, AccountHistory)
-    assert actual.adress == owner.address
+    assert actual.address == owner.address
 
 
 def test_history_getitem_account_ens(mocker, chain, vyper_contract_instance, owner):
