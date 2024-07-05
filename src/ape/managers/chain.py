@@ -540,6 +540,17 @@ class TransactionHistory(BaseManager):
             except Exception:
                 return None
 
+        is_account = False
+        if not account_or_hash.startswith("0x"):
+            # Attempt converting.
+            try:
+                account_or_hash = self.conversion_manager.convert(account_or_hash, AddressType)
+            except Exception:
+                # Pretend this never happened.
+                pass
+            else:
+                is_account = True
+
         try:
             address = self.provider.network.ecosystem.decode_address(account_or_hash)
             history = self._get_account_history(address)
@@ -547,13 +558,16 @@ class TransactionHistory(BaseManager):
                 return history
 
         except Exception as err:
+            msg = f"'{account_or_hash}' is not a known address or transaction hash."
+            if is_account:
+                raise ChainError(msg) from err
+
             # Try to treat as transaction hash.
-            if receipt := _get_receipt():
+            elif receipt := _get_receipt():
                 return receipt
 
-            raise ChainError(
-                f"'{account_or_hash}' is not a known address or transaction hash."
-            ) from err
+            # Not an account or tx hash (with success).
+            raise ChainError(msg) from err
 
         # No account history found. Check for transaction hash.
         if receipt := _get_receipt():
