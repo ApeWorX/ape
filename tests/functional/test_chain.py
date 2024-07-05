@@ -3,6 +3,8 @@ from datetime import datetime, timedelta
 import pytest
 
 from ape.exceptions import APINotImplementedError, ChainError
+from ape.managers.chain import AccountHistory
+from ape.types import AddressType
 
 
 def test_snapshot_and_restore(chain, owner, receiver, vyper_contract_instance):
@@ -85,7 +87,7 @@ def test_isolate(chain, vyper_contract_instance, owner):
     assert vyper_contract_instance.myNumber() == number_at_start
 
 
-def test_get_receipt_uses_cache(mocker, eth_tester_provider, chain, vyper_contract_instance, owner):
+def test_history_uses_cache(mocker, eth_tester_provider, chain, vyper_contract_instance, owner):
     expected = vyper_contract_instance.setNumber(3, sender=owner)
     eth = eth_tester_provider.web3.eth
     rpc_spy = mocker.spy(eth, "get_transaction")
@@ -105,12 +107,28 @@ def test_get_receipt_uses_cache(mocker, eth_tester_provider, chain, vyper_contra
     assert rpc_spy.call_count == 1  # Not changed
 
 
-def test_get_receipt_from_history(chain, vyper_contract_instance, owner):
+def test_history_getitem_receipt(chain, vyper_contract_instance, owner):
     expected = vyper_contract_instance.setNumber(3, sender=owner)
     actual = chain.history[expected.txn_hash]
     assert actual.txn_hash == expected.txn_hash
     assert actual.sender == expected.sender
     assert actual.receiver == expected.receiver
+
+
+def test_history_getitem_account(chain, vyper_contract_instance, owner):
+    actual = chain.history[owner.address]
+    assert isinstance(actual, AccountHistory)
+    assert actual.address == owner.address
+
+
+def test_history_getitem_account_ens(mocker, chain, vyper_contract_instance, owner):
+    conversion_spy = mocker.spy(chain.history.conversion_manager, "convert")
+    value = "this will not work, but would if given ens and using ape-ens"
+    expected_err = rf"'{value}' is not a known address or transaction hash\."
+    with pytest.raises(ChainError, match=expected_err):
+        _ = chain.history[value]
+
+    conversion_spy.assert_called_once_with(value, AddressType)
 
 
 def test_set_pending_timestamp(chain):
