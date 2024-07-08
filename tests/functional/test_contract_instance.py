@@ -726,8 +726,9 @@ def test_tuple_as_struct_input(contract_instance, owner):
 
 def test_named_tuple_as_struct_input(contract_instance, owner):
     # NOTE: Also showing extra keys like "extra_key" don't matter and are ignored.
-    MyStruct = namedtuple("MyStruct", {"a": AddressType, "b": HexBytes, "c": int, "extra_key": int})
-    data = MyStruct(owner, HexBytes(123), 999, 0)
+    values = {"a": AddressType, "b": HexBytes, "c": int, "extra_key": int}
+    MyStruct = namedtuple("MyStruct", values)  # type: ignore
+    data = MyStruct(owner, HexBytes(123), 999, 0)  # type: ignore
     assert contract_instance.setStruct(data) is None
 
 
