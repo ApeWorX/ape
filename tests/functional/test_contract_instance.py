@@ -1,9 +1,11 @@
 import re
+from collections import namedtuple
 
 import pytest
 from eth_pydantic_types import HexBytes
 from eth_utils import is_checksum_address, to_hex
 from ethpm_types import BaseModel, ContractType
+from web3._utils.abi import recursive_dict_to_namedtuple
 
 from ape.api import TransactionAPI
 from ape.contracts import ContractInstance
@@ -220,7 +222,7 @@ def test_repr(vyper_contract_instance):
     )
 
 
-def test_structs(contract_instance, owner, chain, mystruct_c):
+def test_structs_output(contract_instance, owner, chain, mystruct_c):
     actual = contract_instance.getStruct()
     actual_sender, actual_prev_block, actual_c = actual
     tx_hash = chain.blocks[-2].hash
@@ -714,6 +716,28 @@ def test_dict_as_struct_input(contract_instance, owner):
     # NOTE: Also showing extra keys like "extra_key" don't matter and are ignored.
     data = {"a": owner, "b": HexBytes(123), "c": 999, "extra_key": "GETS_IGNORED"}
     assert contract_instance.setStruct(data) is None
+
+
+def test_tuple_as_struct_input(contract_instance, owner):
+    # NOTE: Also showing extra keys like "extra_key" don't matter and are ignored.
+    data = (owner, HexBytes(123), 999, "GES_IGNORED")
+    assert contract_instance.setStruct(data) is None
+
+
+def test_named_tuple_as_struct_input(contract_instance, owner):
+    # NOTE: Also showing extra keys like "extra_key" don't matter and are ignored.
+    MyStruct = namedtuple("MyStruct", {"a": AddressType, "b": HexBytes, "c": int, "extra_key": int})
+    data = MyStruct(owner, HexBytes(123), 999, 0)
+    assert contract_instance.setStruct(data) is None
+
+
+def test_web3_named_tuple_as_struct_input(solidity_contract_instance, owner):
+    """
+    Show we integrate nicely with web3 contracts notion of namedtuples.
+    """
+    data = {"a": solidity_contract_instance.address, "b": HexBytes(123), "c": 321}
+    w3_named_tuple = recursive_dict_to_namedtuple(data)
+    assert solidity_contract_instance.setStruct(w3_named_tuple) is None
 
 
 @pytest.mark.parametrize("sequence_type", (list, tuple))
