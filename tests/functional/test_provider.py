@@ -20,7 +20,7 @@ from ape.exceptions import (
     TransactionNotFoundError,
 )
 from ape.types import LogFilter
-from ape.utils import DEFAULT_TEST_CHAIN_ID
+from ape.utils.testing import DEFAULT_TEST_ACCOUNT_BALANCE, DEFAULT_TEST_CHAIN_ID
 from ape_ethereum.provider import WEB3_PROVIDER_URI_ENV_VAR_NAME, Web3Provider, _sanitize_web3_url
 from ape_ethereum.transactions import TransactionStatusEnum, TransactionType
 from ape_test import LocalProvider
@@ -202,7 +202,7 @@ def test_provider_get_balance(project, networks, accounts):
     balance = networks.provider.get_balance(accounts.test_accounts[0].address)
 
     assert type(balance) is int
-    assert balance == 1000000000000000000000000
+    assert balance == DEFAULT_TEST_ACCOUNT_BALANCE
 
 
 def test_set_timestamp(ethereum):
