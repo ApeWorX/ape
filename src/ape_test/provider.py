@@ -62,10 +62,12 @@ class LocalProvider(TestProviderAPI, Web3Provider):
                 return
 
         hd_path = (self.config.hd_path or DEFAULT_TEST_HD_PATH).rstrip("/")
+        state_overrides = {"balance": self.test_config.balance}
         self._evm_backend = PyEVMBackend.from_mnemonic(
+            genesis_state_overrides=state_overrides,
+            hd_path=hd_path,
             mnemonic=self.config.mnemonic,
             num_accounts=self.config.number_of_accounts,
-            hd_path=hd_path,
         )
         endpoints = {**API_ENDPOINTS}
         endpoints["eth"] = merge(endpoints["eth"], {"chainId": static_return(chain_id)})

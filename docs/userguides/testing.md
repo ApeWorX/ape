@@ -117,12 +117,13 @@ def test_my_method(owner, receiver):
     ...
 ```
 
-You can configure your accounts by changing the `mnemonic` or `number_of_accounts` settings in the `test` section of your `ape-config.yaml` file:
+You can configure your accounts by changing the `mnemonic`, `number_of_accounts`, and `balance` in the `test` section of your `ape-config.yaml` file:
 
 ```yaml
 test:
   mnemonic: test test test test test test test test test test test junk
   number_of_accounts: 5
+  balance: 100_000 ETH
 ```
 
 If you are running tests against `anvil`, your generated test accounts may not correspond to the `anvil`'s default generated accounts despite using the same mnemonic. In such a case, you are able to specify a custom derivation path in `ape-config.yaml`:

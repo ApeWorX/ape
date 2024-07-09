@@ -6,7 +6,7 @@ from typing import Any, Optional, Union
 
 from eth_pydantic_types import HexBytes
 from eth_typing import HexStr
-from eth_utils import add_0x_prefix, to_hex, to_wei
+from eth_utils import add_0x_prefix, to_hex
 from evmchains import get_random_rpc
 from geth.chain import initialize_chain
 from geth.process import BaseGethProcess
@@ -21,17 +21,15 @@ from yarl import URL
 from ape.api import PluginConfig, SubprocessProvider, TestProviderAPI
 from ape.logging import LogLevel, logger
 from ape.types import SnapshotID
-from ape.utils import (
+from ape.utils.misc import ZERO_ADDRESS, log_instead_of_fail, raises_not_implemented
+from ape.utils.process import JoinableQueue, spawn
+from ape.utils.testing import (
     DEFAULT_NUMBER_OF_TEST_ACCOUNTS,
+    DEFAULT_TEST_ACCOUNT_BALANCE,
     DEFAULT_TEST_CHAIN_ID,
     DEFAULT_TEST_HD_PATH,
     DEFAULT_TEST_MNEMONIC,
-    ZERO_ADDRESS,
-    JoinableQueue,
     generate_dev_accounts,
-    log_instead_of_fail,
-    raises_not_implemented,
-    spawn,
 )
 from ape_ethereum.provider import (
     DEFAULT_HOSTNAME,
@@ -98,7 +96,7 @@ class GethDevProcess(BaseGethProcess):
         mnemonic: str = DEFAULT_TEST_MNEMONIC,
         number_of_accounts: int = DEFAULT_NUMBER_OF_TEST_ACCOUNTS,
         chain_id: int = DEFAULT_TEST_CHAIN_ID,
-        initial_balance: Union[str, int] = to_wei(10000, "ether"),
+        initial_balance: Union[str, int] = DEFAULT_TEST_ACCOUNT_BALANCE,
         executable: Optional[str] = None,
         auto_disconnect: bool = True,
         extra_funded_accounts: Optional[list[str]] = None,
@@ -131,8 +129,9 @@ class GethDevProcess(BaseGethProcess):
         self._clean()
 
         geth_kwargs["dev_mode"] = True
+        hd_path = hd_path or DEFAULT_TEST_HD_PATH
         accounts = generate_dev_accounts(
-            mnemonic, number_of_accounts=number_of_accounts, hd_path=hd_path or DEFAULT_TEST_HD_PATH
+            mnemonic, number_of_accounts=number_of_accounts, hd_path=hd_path
         )
         addresses = [a.address for a in accounts]
         addresses.extend(extra_funded_accounts or [])
@@ -152,20 +151,22 @@ class GethDevProcess(BaseGethProcess):
         port = parsed_uri.port if parsed_uri.port is not None else DEFAULT_PORT
         mnemonic = kwargs.get("mnemonic", DEFAULT_TEST_MNEMONIC)
         number_of_accounts = kwargs.get("number_of_accounts", DEFAULT_NUMBER_OF_TEST_ACCOUNTS)
+        balance = kwargs.get("initial_balance", DEFAULT_TEST_ACCOUNT_BALANCE)
         extra_accounts = [
             HexBytes(a).hex().lower() for a in kwargs.get("extra_funded_accounts", [])
         ]
 
         return cls(
             data_folder,
-            hostname=parsed_uri.host,
-            port=port,
-            mnemonic=mnemonic,
-            number_of_accounts=number_of_accounts,
-            executable=kwargs.get("executable"),
             auto_disconnect=kwargs.get("auto_disconnect", True),
+            executable=kwargs.get("executable"),
             extra_funded_accounts=extra_accounts,
             hd_path=kwargs.get("hd_path", DEFAULT_TEST_HD_PATH),
+            hostname=parsed_uri.host,
+            initial_balance=balance,
+            mnemonic=mnemonic,
+            number_of_accounts=number_of_accounts,
+            port=port,
         )
 
     @property
@@ -325,6 +326,30 @@ class GethDev(EthereumNodeProvider, TestProviderAPI, SubprocessProvider):
             self.start()
 
     def start(self, timeout: int = 20):
+        geth_dev = self._create_process()
+        geth_dev.connect(timeout=timeout)
+        if not self.web3.is_connected():
+            geth_dev.disconnect()
+            raise ConnectionError("Unable to connect to locally running geth.")
+        else:
+            self.web3.middleware_onion.inject(geth_poa_middleware, layer=0)
+
+        self._process = geth_dev
+
+        # For subprocess-provider
+        if self._process is not None and (process := self._process.proc):
+            self.stderr_queue = JoinableQueue()
+            self.stdout_queue = JoinableQueue()
+
+            self.process = process
+
+            # Start listening to output.
+            spawn(self.produce_stdout_queue)
+            spawn(self.produce_stderr_queue)
+            spawn(self.consume_stdout_queue)
+            spawn(self.consume_stderr_queue)
+
+    def _create_process(self) -> GethDevProcess:
         # NOTE: Using JSON mode to ensure types can be passed as CLI args.
         test_config = self.config_manager.get_config("test").model_dump(mode="json")
 
@@ -342,29 +367,9 @@ class GethDev(EthereumNodeProvider, TestProviderAPI, SubprocessProvider):
         extra_accounts.extend(self.provider_settings.get("extra_funded_accounts", []))
         extra_accounts = list({HexBytes(a).hex().lower() for a in extra_accounts})
         test_config["extra_funded_accounts"] = extra_accounts
+        test_config["initial_balance"] = self.test_config.balance
 
-        process = GethDevProcess.from_uri(self.uri, self.data_dir, **test_config)
-        process.connect(timeout=timeout)
-        if not self.web3.is_connected():
-            process.disconnect()
-            raise ConnectionError("Unable to connect to locally running geth.")
-        else:
-            self.web3.middleware_onion.inject(geth_poa_middleware, layer=0)
-
-        self._process = process
-
-        # For subprocess-provider
-        if self._process is not None and (process := self._process.proc):
-            self.stderr_queue = JoinableQueue()
-            self.stdout_queue = JoinableQueue()
-
-            self.process = process
-
-            # Start listening to output.
-            spawn(self.produce_stdout_queue)
-            spawn(self.produce_stderr_queue)
-            spawn(self.consume_stdout_queue)
-            spawn(self.consume_stderr_queue)
+        return GethDevProcess.from_uri(self.uri, self.data_dir, **test_config)
 
     def disconnect(self):
         # Must disconnect process first.

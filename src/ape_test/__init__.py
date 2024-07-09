@@ -5,7 +5,13 @@ from pydantic import NonNegativeInt, field_validator
 from ape import plugins
 from ape.api import PluginConfig
 from ape.api.networks import LOCAL_NETWORK_NAME
-from ape.utils import DEFAULT_NUMBER_OF_TEST_ACCOUNTS, DEFAULT_TEST_HD_PATH, DEFAULT_TEST_MNEMONIC
+from ape.utils.basemodel import ManagerAccessMixin
+from ape.utils.testing import (
+    DEFAULT_NUMBER_OF_TEST_ACCOUNTS,
+    DEFAULT_TEST_ACCOUNT_BALANCE,
+    DEFAULT_TEST_HD_PATH,
+    DEFAULT_TEST_MNEMONIC,
+)
 from ape_test.accounts import TestAccount, TestAccountContainer
 from ape_test.provider import EthTesterProviderConfig, LocalProvider
 
@@ -110,19 +116,9 @@ class CoverageConfig(PluginConfig):
 
 
 class ApeTestConfig(PluginConfig):
-    mnemonic: str = DEFAULT_TEST_MNEMONIC
+    balance: int = DEFAULT_TEST_ACCOUNT_BALANCE
     """
-    The mnemonic to use when generating the test accounts.
-    """
-
-    number_of_accounts: NonNegativeInt = DEFAULT_NUMBER_OF_TEST_ACCOUNTS
-    """
-    The number of test accounts to generate in the provider.
-    """
-
-    gas: GasConfig = GasConfig()
-    """
-    Configuration related to gas reporting.
+    The starting-balance of every test account in Wei (NOT Ether).
     """
 
     coverage: CoverageConfig = CoverageConfig()
@@ -135,15 +131,39 @@ class ApeTestConfig(PluginConfig):
     Set to ``False`` to keep providers connected at the end of the test run.
     """
 
+    gas: GasConfig = GasConfig()
+    """
+    Configuration related to gas reporting.
+    """
+
     hd_path: str = DEFAULT_TEST_HD_PATH
     """
     The hd_path to use when generating the test accounts.
+    """
+
+    mnemonic: str = DEFAULT_TEST_MNEMONIC
+    """
+    The mnemonic to use when generating the test accounts.
+    """
+
+    number_of_accounts: NonNegativeInt = DEFAULT_NUMBER_OF_TEST_ACCOUNTS
+    """
+    The number of test accounts to generate in the provider.
     """
 
     provider: EthTesterProviderConfig = EthTesterProviderConfig()
     """
     Settings for the provider.
     """
+
+    @field_validator("balance", mode="before")
+    @classmethod
+    def validate_balance(cls, value):
+        return (
+            value
+            if isinstance(value, int)
+            else ManagerAccessMixin.conversion_manager.convert(value, int)
+        )
 
 
 @plugins.register(plugins.Config)
