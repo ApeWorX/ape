@@ -6,6 +6,8 @@ from hypothesis import strategies as st
 from ape.exceptions import ConversionError
 from ape_ethereum._converters import ETHER_UNITS
 
+TEN_THOUSAND_ETHER_IN_WEI = 10_000_000_000_000_000_000_000
+
 
 @pytest.mark.fuzzing
 @given(
@@ -41,3 +43,15 @@ def test_no_registered_converter(convert):
         convert("something", ChecksumAddress)
 
     assert str(err.value) == "No conversion registered to handle 'something'."
+
+
+@pytest.mark.parametrize("sep", (",", "_"))
+def test_separaters(convert, sep):
+    """
+    Show that separates, such as commands and underscores, are OK
+    in currency-string values, e.g. "10,000 ETH" is valid.
+    """
+    currency_str = f"10{sep}000 ETHER"
+    actual = convert(currency_str, int)
+    expected = TEN_THOUSAND_ETHER_IN_WEI
+    assert actual == expected
