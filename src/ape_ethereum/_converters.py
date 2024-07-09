@@ -1,3 +1,4 @@
+import re
 from decimal import Decimal
 
 from ape.api.convert import ConverterAPI
@@ -18,6 +19,7 @@ ETHER_UNITS = {
     "babbage": int(1e3),
     "wei": 1,
 }
+NUMBER_PATTERN = re.compile(r"^-?\d{1,3}(?:[,_]?\d{3})*(?:\.\d+)?(?:[eE][+-]?\d+)?$")
 
 
 class WeiConversions(ConverterAPI):
@@ -30,11 +32,12 @@ class WeiConversions(ConverterAPI):
         if " " not in value or len(value.split(" ")) > 2:
             return False
 
-        _, unit = value.split(" ")
-
-        return unit.lower() in ETHER_UNITS
+        val, unit = value.split(" ")
+        return unit.lower() in ETHER_UNITS and bool(NUMBER_PATTERN.match(val))
 
     def convert(self, value: str) -> int:
         value, unit = value.split(" ")
-        converted_value = int(Decimal(value) * ETHER_UNITS[unit.lower()])
+        converted_value = int(
+            Decimal(value.replace("_", "").replace(",", "")) * ETHER_UNITS[unit.lower()]
+        )
         return CurrencyValue(converted_value)
