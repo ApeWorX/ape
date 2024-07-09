@@ -381,10 +381,11 @@ Access each <a class="reference external" href="../methoddocs/api.html?highlight
     <span class="o">...</span>
 </pre></div>
 </div>
-<p>You can configure your accounts by changing the <code class="docutils literal notranslate"><span class="pre">mnemonic</span></code> or <code class="docutils literal notranslate"><span class="pre">number_of_accounts</span></code> settings in the <code class="docutils literal notranslate"><span class="pre">test</span></code> section of your <code class="docutils literal notranslate"><span class="pre">ape-config.yaml</span></code> file:</p>
+<p>You can configure your accounts by changing the <code class="docutils literal notranslate"><span class="pre">mnemonic</span></code>, <code class="docutils literal notranslate"><span class="pre">number_of_accounts</span></code>, and <code class="docutils literal notranslate"><span class="pre">balance</span></code> in the <code class="docutils literal notranslate"><span class="pre">test</span></code> section of your <code class="docutils literal notranslate"><span class="pre">ape-config.yaml</span></code> file:</p>
 <div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">test</span><span class="p">:</span>
 <span class="w">  </span><span class="nt">mnemonic</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">test test test test test test test test test test test junk</span>
 <span class="w">  </span><span class="nt">number_of_accounts</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">5</span>
+<span class="w">  </span><span class="nt">balance</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">100_000 ETH</span>
 </pre></div>
 </div>
 <p>If you are running tests against <code class="docutils literal notranslate"><span class="pre">anvil</span></code>, your generated test accounts may not correspond to the <code class="docutils literal notranslate"><span class="pre">anvil</span></code>’s default generated accounts despite using the same mnemonic. In such a case, you are able to specify a custom derivation path in <code class="docutils literal notranslate"><span class="pre">ape-config.yaml</span></code>:</p>
