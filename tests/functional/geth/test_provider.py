@@ -602,3 +602,17 @@ def test_trace_approach_config(project):
     with project.temp_config(node=node_cfg):
         provider = project.network_manager.ethereum.local.get_provider("node")
         assert provider.call_trace_approach is TraceApproach.GETH_STRUCT_LOG_PARSE
+
+
+def test_start(mocker, convert, project, geth_provider):
+    amount = convert("100_000 ETH", int)
+    spy = mocker.spy(GethDevProcess, "from_uri")
+
+    with project.temp_config(test={"balance": amount}):
+        try:
+            geth_provider.start()
+        except Exception:
+            pass  # Exceptions are fine here.
+
+        actual = spy.call_args[1]["balance"]
+        assert actual == amount

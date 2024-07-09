@@ -1,5 +1,7 @@
 import pytest
 
+INITIAL_BALANCE = 1_000_1 * 10**18
+
 
 @pytest.fixture(scope="session")
 def alice(accounts):
@@ -27,10 +29,10 @@ def start_block_number(chain):
 
 def test_isolation_first(alice, bob, chain, start_block_number):
     assert chain.provider.get_block("latest").number == start_block_number
-    assert bob.balance == 1_000_001 * 10**18
+    assert bob.balance == INITIAL_BALANCE
     alice.transfer(bob, "1 ether")
 
 
 def test_isolation_second(bob, chain, start_block_number):
     assert chain.provider.get_block("latest").number == start_block_number
-    assert bob.balance == 1_000_001 * 10**18
+    assert bob.balance == INITIAL_BALANCE

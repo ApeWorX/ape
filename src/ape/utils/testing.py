@@ -9,6 +9,7 @@ DEFAULT_NUMBER_OF_TEST_ACCOUNTS = 10
 DEFAULT_TEST_MNEMONIC = "test test test test test test test test test test test junk"
 DEFAULT_TEST_HD_PATH = "m/44'/60'/0'/0"
 DEFAULT_TEST_CHAIN_ID = 1337
+DEFAULT_TEST_ACCOUNT_BALANCE = int(10e21)  # 10,000 Ether (in Wei)
 GeneratedDevAccount = namedtuple("GeneratedDevAccount", ("address", "private_key"))
 """
 An account key-pair generated from the test mnemonic. Set the test mnemonic

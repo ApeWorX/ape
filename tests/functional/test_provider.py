@@ -10,6 +10,7 @@ from hexbytes import HexBytes
 from requests import HTTPError
 from web3.exceptions import ContractPanicError
 
+from ape import convert
 from ape.exceptions import (
     APINotImplementedError,
     BlockNotFoundError,
@@ -19,9 +20,10 @@ from ape.exceptions import (
     TransactionNotFoundError,
 )
 from ape.types import LogFilter
-from ape.utils import DEFAULT_TEST_CHAIN_ID
+from ape.utils.testing import DEFAULT_TEST_ACCOUNT_BALANCE, DEFAULT_TEST_CHAIN_ID
 from ape_ethereum.provider import WEB3_PROVIDER_URI_ENV_VAR_NAME, Web3Provider, _sanitize_web3_url
 from ape_ethereum.transactions import TransactionStatusEnum, TransactionType
+from ape_test import LocalProvider
 
 
 def test_uri(eth_tester_provider):
@@ -200,7 +202,7 @@ def test_provider_get_balance(project, networks, accounts):
     balance = networks.provider.get_balance(accounts.test_accounts[0].address)
 
     assert type(balance) is int
-    assert balance == 1000000000000000000000000
+    assert balance == DEFAULT_TEST_ACCOUNT_BALANCE
 
 
 def test_set_timestamp(ethereum):
@@ -475,3 +477,19 @@ def test_new_when_web3_provider_uri_set():
     finally:
         if WEB3_PROVIDER_URI_ENV_VAR_NAME in os.environ:
             del os.environ[WEB3_PROVIDER_URI_ENV_VAR_NAME]
+
+
+def test_account_balance_state(project, eth_tester_provider, owner):
+    amount = convert("100_000 ETH", int)
+
+    with project.temp_config(test={"balance": amount}):
+        # NOTE: Purposely using a different instance of the provider
+        #   for better testing isolation.
+        provider = LocalProvider(
+            name="test",
+            network=eth_tester_provider.network,
+            request_header=eth_tester_provider.request_header,
+        )
+        provider.connect()
+        bal = provider.get_balance(owner.address)
+        assert bal == amount
