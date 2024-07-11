@@ -1478,6 +1478,11 @@ class ReportManager(BaseManager):
         for event in events:
             console.print(event)
 
+    def _get_console(self, *args, **kwargs):
+        # TODO: Delete this method in v0.9.
+        # It only exists for backwards compat.
+        return get_rich_console(*args, **kwargs)
+
 
 class ChainManager(BaseManager):
     """

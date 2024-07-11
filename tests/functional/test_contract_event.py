@@ -243,12 +243,14 @@ def test_poll_logs_timeout(vyper_contract_instance, eth_tester_provider, owner, 
 
 
 def test_contract_two_events_with_same_name(
-    owner, chain, networks_connected_to_tester, contracts_folder
+    owner, chain, networks_connected_to_tester, shared_contracts_folder
 ):
-    interface_path = contracts_folder / "Interface.json"
-    impl_path = contracts_folder / "InterfaceImplementation.json"
-    interface_contract_type = ContractType.model_validate_json(interface_path.read_text())
-    impl_contract_type = ContractType.model_validate_json(impl_path.read_text())
+    interface_path = shared_contracts_folder / "Interface.json"
+    impl_path = shared_contracts_folder / "InterfaceImplementation.json"
+    interface_text = interface_path.read_text(encoding="utf8")
+    impl_text = impl_path.read_text(encoding="utf8")
+    interface_contract_type = ContractType.model_validate_json(interface_text)
+    impl_contract_type = ContractType.model_validate_json(impl_text)
     event_name = "FooEvent"
 
     # Ensure test is setup correctly in case scenario-data changed on accident

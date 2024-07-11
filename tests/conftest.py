@@ -679,3 +679,8 @@ def vyper_contract_type(get_contract_type) -> ContractType:
 @pytest.fixture(scope="session")
 def vyper_contract_container(vyper_contract_type) -> ContractContainer:
     return ContractContainer(contract_type=vyper_contract_type)
+
+
+@pytest.fixture(scope="session")
+def shared_contracts_folder():
+    return SHARED_CONTRACTS_FOLDER
