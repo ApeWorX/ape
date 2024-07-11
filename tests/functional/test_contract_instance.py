@@ -772,6 +772,16 @@ def test_custom_error(error_contract, not_owner):
     assert err.value.inputs == {"addr": not_owner.address, "counter": 123}
 
 
+def test_custom_error_info(solidity_contract_instance):
+    error_type = solidity_contract_instance.ACustomError
+    actual = error_type.info
+    expected = """
+ACustomError()
+  @details This is a doc for an error
+""".strip()
+    assert actual == expected
+
+
 def test_get_error_by_signature(error_contract):
     """
     Helps in cases where multiple errors have same name.

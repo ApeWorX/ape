@@ -25,9 +25,9 @@ from rich.tree import Tree
 
 from ape.api import EcosystemAPI, TraceAPI, TransactionAPI
 from ape.exceptions import ContractLogicError, ProviderError, TransactionNotFoundError
-from ape.logging import logger
+from ape.logging import get_rich_console, logger
 from ape.types import AddressType, ContractFunctionPath, GasReport
-from ape.utils import ZERO_ADDRESS, is_evm_precompile, is_zero_hex
+from ape.utils import ZERO_ADDRESS, is_evm_precompile, is_zero_hex, log_instead_of_fail
 from ape.utils.trace import TraceStyles, _exclude_gas
 from ape_ethereum._print import extract_debug_logs
 
@@ -103,6 +103,7 @@ class Trace(TraceAPI):
     def __str__(self) -> str:
         return _call_to_str(self.enriched_calltree)
 
+    @log_instead_of_fail()
     def _repr_pretty_(self, *args, **kwargs):
         self.show()
 
@@ -256,7 +257,7 @@ class Trace(TraceAPI):
             )
 
         root = self._get_tree(verbose=verbose)
-        console = self.chain_manager._reports._get_console(file=file)
+        console = get_rich_console(file=file)
         if txn_hash := getattr(self, "transaction_hash", None):
             # Only works on TransactionTrace (not CallTrace).
             console.print(f"Call trace for [bold blue]'{txn_hash}'[/]")

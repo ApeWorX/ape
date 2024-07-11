@@ -343,3 +343,21 @@ def test_uint_arrays_in_events(contract_instance, owner):
     tx = contract_instance.logUintArray(sender=owner)
     expected = contract_instance.EventWithUintArray(agents=[1])
     assert tx.events == [expected]
+
+
+def test_info(solidity_contract_instance):
+    event_type = solidity_contract_instance.NumberChange
+    actual = event_type.info
+    header = (
+        "NumberChange(bytes32 b, uint256 prevNum, string dynData, "
+        "uint256 indexed newNum, string indexed dynIndexed)"
+    )
+    spec = (
+        "@details Emitted when number is changed. `newNum` is the new number "
+        "from the call. Expected every time number changes."
+    )
+    expected = f"""
+{header}
+  {spec}
+""".strip()
+    assert actual == expected
