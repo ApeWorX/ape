@@ -145,6 +145,10 @@ class ContractMethodHandler(ManagerAccessMixin):
         self.contract = contract
         self.abis = abis
 
+        # If there is a natspec, inject it as the "doc-str" for this method.
+        # This greatly helps integrate with IPython.
+        self.__doc__ = self.info
+
     @log_instead_of_fail(default="<ContractMethodHandler>")
     def __repr__(self) -> str:
         # `<ContractName 0x1234...AbCd>.method_name`
@@ -453,6 +457,13 @@ class ContractEvent(BaseInterfaceModel):
     contract: "ContractTypeWrapper"
     abi: EventABI
     _logs: Optional[list[ContractLog]] = None
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        # Inject the doc-str using the NatSpec to better integrate with IPython.
+        # NOTE: This must happen AFTER super().__init__().
+        self.__doc__ = self.info
 
     @log_instead_of_fail(default="<ContractEvent>")
     def __repr__(self) -> str:
@@ -890,7 +901,8 @@ class ContractTypeWrapper(ManagerAccessMixin):
         def repr_pretty_for_assignment(cls, *args, **kwargs):
             return _repr_pretty_(error_type, *args, **kwargs)
 
-        error_type.info = _get_info()  # type: ignore
+        info = _get_info()
+        error_type.info = error_type.__doc__ = info  # type: ignore
         error_type._repr_pretty_ = repr_pretty_for_assignment  # type: ignore
 
         # Register the dynamically-created type with IPython so it integrates.
