@@ -255,6 +255,7 @@
 </li>
 <li class="toctree-l2"><a class="reference internal" href="#ape.utils.add_padding_to_strings"><code class="docutils literal notranslate"><span class="pre">add_padding_to_strings()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#ape.utils.allow_disconnected"><code class="docutils literal notranslate"><span class="pre">allow_disconnected()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#ape.utils.as_our_module"><code class="docutils literal notranslate"><span class="pre">as_our_module()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#ape.utils.clean_path"><code class="docutils literal notranslate"><span class="pre">clean_path()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#ape.utils.create_tempdir"><code class="docutils literal notranslate"><span class="pre">create_tempdir()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#ape.utils.expand_environment_variables"><code class="docutils literal notranslate"><span class="pre">expand_environment_variables()</span></code></a></li>
@@ -652,6 +653,28 @@ warns and returns <code class="docutils literal notranslate"><span class="pre">N
     <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">chain</span><span class="o">.</span><span class="n">snapshot</span><span class="p">()</span>
 </pre></div>
 </div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ape.utils.as_our_module">
+<span class="sig-prename descclassname"><span class="pre">ape.utils.</span></span><span class="sig-name descname"><span class="pre">as_our_module</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cls_or_def</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">_MOD_T</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">doc_str</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">_MOD_T</span></span></span><a class="headerlink" href="#ape.utils.as_our_module" title="Permalink to this definition"></a></dt>
+<dd><p>Ape sometimes reclaims definitions from other packages, such as
+class:<cite>~ape.types.signatures.SignableMessage</cite>). When doing so, the doc str
+may be different than ours, and the module may still refer to
+the original package. This method steals the given class as-if
+it were ours. Logic borrowed from starknet-py.
+<a class="reference external" href="https://github.com/software-mansion/starknet.py/blob/0.10.1-alpha/starknet_py/utils/docs.py#L10-L24">https://github.com/software-mansion/starknet.py/blob/0.10.1-alpha/starknet_py/utils/docs.py#L10-L24</a></p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>cls_or_def</strong> (<em>_MOD_T</em>) – The class or definition to borrow.</p></li>
+<li><p><strong>doc_str</strong> (<em>str</em>) – Optionally change the doc string.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The borrowed-version of the class or definition.</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py function">
