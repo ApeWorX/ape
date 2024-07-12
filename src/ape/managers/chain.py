@@ -739,7 +739,8 @@ class ContractCache(BaseManager):
         self._cache_contract_type(address, contract_type)
 
         # NOTE: The txn_hash is not included when caching this way.
-        self._cache_deployment(address, contract_type)
+        if contract_type.name:
+            self._cache_deployment(address, contract_type)
 
     def __delitem__(self, address: AddressType):
         """
@@ -808,7 +809,8 @@ class ContractCache(BaseManager):
 
         txn_hash = contract_instance.txn_hash
         self._cache_contract_type(address, contract_type)
-        self._cache_deployment(address, contract_type, txn_hash)
+        if contract_type.name:
+            self._cache_deployment(address, contract_type, txn_hash)
 
     def cache_proxy_info(self, address: AddressType, proxy_info: ProxyInfoAPI):
         """
@@ -957,7 +959,7 @@ class ContractCache(BaseManager):
         self, address: AddressType, contract_type: ContractType, txn_hash: Optional[str] = None
     ):
         deployments = self._deployments
-        contract_deployments = deployments.get(contract_type.name, [])
+        contract_deployments = deployments.get(contract_type.name or "", [])
         new_deployment = {"address": address, "transaction_hash": txn_hash}
         contract_deployments.append(new_deployment)
         self._deployments = {**deployments, contract_type.name: contract_deployments}
@@ -1214,6 +1216,9 @@ class ContractCache(BaseManager):
             if isinstance(abi, list):
                 contract_type = ContractType(abi=abi)
 
+                # Ensure we cache the contract-types from ABI!
+                self[contract_address] = contract_type
+
             else:
                 raise TypeError(
                     f"Invalid ABI type '{type(abi)}', expecting str, list[ABI] or a JSON file."
@@ -1394,7 +1399,7 @@ class ContractCache(BaseManager):
 
     def _load_deployments_cache(self) -> dict:
         return (
-            json.loads(self._deployments_mapping_cache.read_text())
+            json.loads(self._deployments_mapping_cache.read_text(encoding="utf8"))
             if self._deployments_mapping_cache.is_file()
             else {}
         )
