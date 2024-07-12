@@ -772,7 +772,10 @@ def test_custom_error(error_contract, not_owner):
     assert err.value.inputs == {"addr": not_owner.address, "counter": 123}
 
 
-def test_custom_error_info(solidity_contract_instance):
+def test_custom_error_info(solidity_contract_instance, error_contract):
+    # Ensure there isn't clashing by having a couple custom errors at once.
+    _ = error_contract.Unauthorized
+
     error_type = solidity_contract_instance.ACustomError
     actual = error_type.info
     expected = """

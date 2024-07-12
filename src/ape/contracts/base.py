@@ -883,12 +883,13 @@ class ContractTypeWrapper(ManagerAccessMixin):
                 namespace[key] = val
 
         error_type = types.new_class(abi.name, (CustomError,), {}, exec_body)
+        natspecs = self.contract_type.natspecs
 
         def _get_info(enrich: bool = False) -> str:
-            if not (natspec := self.contract_type.natspecs.get(abi.selector)):
+            if not (natspec := natspecs.get(abi.selector)):
                 return ""
 
-            if enrich:
+            elif enrich:
                 natspec = _enrich_natspec(natspec)
 
             return f"{abi.signature}\n  {natspec}"
@@ -903,10 +904,11 @@ class ContractTypeWrapper(ManagerAccessMixin):
 
         info = _get_info()
         error_type.info = error_type.__doc__ = info  # type: ignore
-        error_type._repr_pretty_ = repr_pretty_for_assignment  # type: ignore
+        if info:
+            error_type._repr_pretty_ = repr_pretty_for_assignment  # type: ignore
 
-        # Register the dynamically-created type with IPython so it integrates.
-        for_type(type(error_type), _repr_pretty_)
+            # Register the dynamically-created type with IPython so it integrates.
+            for_type(type(error_type), _repr_pretty_)
 
         return error_type
 
