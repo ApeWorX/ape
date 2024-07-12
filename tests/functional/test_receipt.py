@@ -20,15 +20,12 @@ def invoke_receipt(vyper_contract_instance, owner):
 
 @pytest.fixture
 def trace_print_capture(mocker, chain):
-    console_factory = mocker.MagicMock()
-    capture = mocker.MagicMock()
-    console_factory.return_value = capture
-    orig = chain._reports._get_console
-    chain._reports._get_console = console_factory
-    try:
-        yield capture.print
-    finally:
-        chain._reports._get_console = orig
+    get_rich_console_patch_0 = mocker.patch("ape_ethereum.trace.get_rich_console")
+    get_rich_console_patch_1 = mocker.patch("ape.managers.chain.get_rich_console")
+    mock_console = mocker.MagicMock()
+    get_rich_console_patch_0.return_value = mock_console
+    get_rich_console_patch_1.return_value = mock_console
+    return mock_console.print
 
 
 def test_receipt_properties(chain, invoke_receipt):

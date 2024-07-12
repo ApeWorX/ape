@@ -1,5 +1,9 @@
 # @version 0.3.9
 
+# @dev Emitted when number is changed.
+#
+# `newNum` is the new number from the call.
+# Expected every time number changes.
 event NumberChange:
     b: bytes32
     prevNum: uint256
@@ -28,6 +32,7 @@ event EventWithAddressArray:
 event EventWithUintArray:
     agents: uint256[1]
 
+# @dev This is the doc for MyStruct
 struct MyStruct:
     a: address
     b: bytes32
@@ -82,6 +87,14 @@ def fooAndBar():
 
 @external
 def setNumber(num: uint256):
+    """
+    @notice Sets a new number, with restrictions and event emission
+    @dev Only the owner can call this function. The new number cannot be 5.
+    @param num The new number to be set
+    @custom:require num Must not be equal to 5
+    @custom:modifies Sets the `myNumber` state variable
+    @custom:emits Emits a `NumberChange` event with the previous number, the new number, and the previous block hash
+    """
     assert msg.sender == self.owner, "!authorized"
     assert num != 5
     self.prevNumber = self.myNumber

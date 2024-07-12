@@ -12,6 +12,7 @@ from ethpm_types.abi import ABIType, ConstructorABI, EventABI, EventABIType, Met
 from ape.logging import logger
 
 ARRAY_PATTERN = re.compile(r"[(*\w,? )]*\[\d*]")
+NATSPEC_KEY_PATTERN = re.compile(r"(@\w+)")
 
 
 def is_array(abi_type: Union[str, ABIType]) -> bool:
@@ -517,3 +518,9 @@ class LogInputABICollection:
         #  ecosystem API through the calling function.
 
         return value
+
+
+def _enrich_natspec(natspec: str) -> str:
+    # Ensure the natspec @-words are highlighted.
+    replacement = r"[bright_red]\1[/]"
+    return re.sub(NATSPEC_KEY_PATTERN, replacement, natspec)

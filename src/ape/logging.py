@@ -8,6 +8,7 @@ from pathlib import Path
 from typing import IO, Any, Optional, Union
 
 import click
+from rich.console import Console as RichConsole
 from yarl import URL
 
 
@@ -288,4 +289,33 @@ def sanitize_url(url: str) -> str:
 logger = ApeLogger.create()
 
 
-__all__ = ["DEFAULT_LOG_LEVEL", "logger", "LogLevel", "ApeLogger"]
+class _RichConsoleFactory:
+    rich_console_map: dict[str, RichConsole] = {}
+
+    def get_console(self, file: Optional[IO[str]] = None, **kwargs) -> RichConsole:
+        # Configure custom file console
+        file_id = str(file)
+        if file_id not in self.rich_console_map:
+            self.rich_console_map[file_id] = RichConsole(file=file, width=100, **kwargs)
+
+        return self.rich_console_map[file_id]
+
+
+_factory = _RichConsoleFactory()
+
+
+def get_rich_console(file: Optional[IO[str]] = None, **kwargs) -> RichConsole:
+    """
+    Get an Ape-configured rich console.
+
+    Args:
+        file (Optional[IO[str]]): The file to output to. Will default
+          to using stdout.
+
+    Returns:
+        ``rich.Console``.
+    """
+    return _factory.get_console(file)
+
+
+__all__ = ["DEFAULT_LOG_LEVEL", "logger", "LogLevel", "ApeLogger", "get_rich_console"]

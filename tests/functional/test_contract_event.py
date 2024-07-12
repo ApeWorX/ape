@@ -243,12 +243,14 @@ def test_poll_logs_timeout(vyper_contract_instance, eth_tester_provider, owner, 
 
 
 def test_contract_two_events_with_same_name(
-    owner, chain, networks_connected_to_tester, contracts_folder
+    owner, chain, networks_connected_to_tester, shared_contracts_folder
 ):
-    interface_path = contracts_folder / "Interface.json"
-    impl_path = contracts_folder / "InterfaceImplementation.json"
-    interface_contract_type = ContractType.model_validate_json(interface_path.read_text())
-    impl_contract_type = ContractType.model_validate_json(impl_path.read_text())
+    interface_path = shared_contracts_folder / "Interface.json"
+    impl_path = shared_contracts_folder / "InterfaceImplementation.json"
+    interface_text = interface_path.read_text(encoding="utf8")
+    impl_text = impl_path.read_text(encoding="utf8")
+    interface_contract_type = ContractType.model_validate_json(interface_text)
+    impl_contract_type = ContractType.model_validate_json(impl_text)
     event_name = "FooEvent"
 
     # Ensure test is setup correctly in case scenario-data changed on accident
@@ -343,3 +345,21 @@ def test_uint_arrays_in_events(contract_instance, owner):
     tx = contract_instance.logUintArray(sender=owner)
     expected = contract_instance.EventWithUintArray(agents=[1])
     assert tx.events == [expected]
+
+
+def test_info(solidity_contract_instance):
+    event_type = solidity_contract_instance.NumberChange
+    actual = event_type.info
+    header = (
+        "NumberChange(bytes32 b, uint256 prevNum, string dynData, "
+        "uint256 indexed newNum, string indexed dynIndexed)"
+    )
+    spec = (
+        "@details Emitted when number is changed. `newNum` is the new number "
+        "from the call. Expected every time number changes."
+    )
+    expected = f"""
+{header}
+  {spec}
+""".strip()
+    assert actual == expected
