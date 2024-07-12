@@ -554,6 +554,7 @@ def as_our_module(cls_or_def: _MOD_T, doc_str: Optional[str] = None) -> _MOD_T:
     may be different than ours, and the module may still refer to
     the original package. This method steals the given class as-if
     it were ours. Logic borrowed from starknet-py.
+    https://github.com/software-mansion/starknet.py/blob/0.10.1-alpha/starknet_py/utils/docs.py#L10-L24
 
     Args:
         cls_or_def (_MOD_T): The class or definition to borrow.
