@@ -1286,7 +1286,7 @@ class ContractInstance(BaseAddress, ContractTypeWrapper):
         }:
             # Didn't find anything that matches
             # NOTE: `__getattr__` *must* raise `AttributeError`
-            name = self.contract_type.name or ContractType.__name__
+            name = self.contract_type.name or ContractInstance.__name__
             raise ApeAttributeError(f"'{name}' has no attribute '{attr_name}'.")
 
         elif (
