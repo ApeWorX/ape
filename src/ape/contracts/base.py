@@ -887,7 +887,8 @@ class ContractTypeWrapper(ManagerAccessMixin):
 
         def _get_info(enrich: bool = False) -> str:
             if not (natspec := natspecs.get(abi.selector)):
-                return ""
+                # TODO: DEBUGGING FAILURE IN CI - UNDO THIS!
+                return f"{abi.selector} \n {natspecs}"
 
             elif enrich:
                 natspec = _enrich_natspec(natspec)
