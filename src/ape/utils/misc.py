@@ -549,12 +549,11 @@ _MOD_T = TypeVar("_MOD_T")
 
 def as_our_module(cls_or_def: _MOD_T, doc_str: Optional[str] = None) -> _MOD_T:
     """
-    Ape often reclaims definitions from other packages, to increase
-    the UX of Ape (such as :class:`~ape.types.SignableMessage`).
-    When doing so, the doc str may be different than ours, and the
-    module may still refer to the original package. This method
-    steals the given class as-if it were ours. Logic borrowed from
-    starknet-py.
+    Ape sometimes reclaims definitions from other packages, such as
+    class:`~ape.types.signatures.SignableMessage`). When doing so, the doc str
+    may be different than ours, and the module may still refer to
+    the original package. This method steals the given class as-if
+    it were ours. Logic borrowed from starknet-py.
 
     Args:
         cls_or_def (_MOD_T): The class or definition to borrow.

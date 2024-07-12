@@ -127,7 +127,8 @@ def recover_signer(msg: SignableMessage, sig: MessageSignature) -> AddressType:
     Get the address of the signer.
 
     Args:
-        msg (``SignableMessage``): A formatted and signable message.
+        msg (:class:`~ape.types.signatures.SignableMessage``): A formatted and signable
+          message.
         sig (:class:`~ape.types.signatures.MessageSignature`): Signature of the message.
 
     Returns:
