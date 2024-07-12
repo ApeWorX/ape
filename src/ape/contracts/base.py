@@ -12,6 +12,7 @@ from eth_pydantic_types import HexBytes
 from eth_utils import to_hex
 from ethpm_types.abi import ConstructorABI, ErrorABI, EventABI, MethodABI
 from ethpm_types.contract_type import ABI_W_SELECTOR_T, ContractType
+from IPython.lib.pretty import for_type
 
 from ape.api import AccountAPI, Address, ReceiptAPI, TransactionAPI
 from ape.api.address import BaseAddress
@@ -32,7 +33,7 @@ from ape.exceptions import (
     MethodNonPayableError,
     MissingDeploymentBytecodeError,
 )
-from ape.logging import logger
+from ape.logging import get_rich_console, logger
 from ape.types import AddressType, ContractLog, LogFilter, MockContractLog
 from ape.utils import (
     BaseInterfaceModel,
@@ -41,7 +42,7 @@ from ape.utils import (
     log_instead_of_fail,
     singledispatchmethod,
 )
-from ape.utils.abi import StructParser
+from ape.utils.abi import StructParser, _enrich_natspec
 from ape.utils.basemodel import (
     ExtraAttributesMixin,
     ExtraModelAttributes,
@@ -144,15 +145,64 @@ class ContractMethodHandler(ManagerAccessMixin):
         self.contract = contract
         self.abis = abis
 
+        # If there is a natspec, inject it as the "doc-str" for this method.
+        # This greatly helps integrate with IPython.
+        self.__doc__ = self.info
+
     @log_instead_of_fail(default="<ContractMethodHandler>")
     def __repr__(self) -> str:
         # `<ContractName 0x1234...AbCd>.method_name`
         return f"{self.contract.__repr__()}.{self.abis[-1].name}"
 
+    @log_instead_of_fail()
+    def _repr_pretty_(self, printer, cycle):
+        """
+        Show the NatSpec of a Method in any IPython console (including ``ape console``).
+        """
+        console = get_rich_console()
+        output = self._get_info(enrich=True) or "\n".join(abi.signature for abi in self.abis)
+        console.print(output)
+
     def __str__(self) -> str:
         # `method_name(type1 arg1, ...) -> return_type`
         abis = sorted(self.abis, key=lambda abi: len(abi.inputs or []))
         return abis[-1].signature
+
+    @property
+    def info(self) -> str:
+        """
+        The NatSpec documentation of the method, if one exists.
+        Else, returns the empty string.
+        """
+        return self._get_info()
+
+    def _get_info(self, enrich: bool = False) -> str:
+        infos: list[str] = []
+
+        for abi in self.abis:
+            if abi.selector not in self.contract.contract_type.natspecs:
+                continue
+
+            natspec = self.contract.contract_type.natspecs[abi.selector]
+            header = abi.signature
+            natspec_str = natspec.replace("\n", "\n  ")
+            infos.append(f"{header}\n  {natspec_str}")
+
+        if enrich:
+            infos = [_enrich_natspec(n) for n in infos]
+
+        # Same as number of ABIs, regardless of NatSpecs.
+        number_infos = len(infos)
+        if number_infos == 1:
+            return infos[0]
+
+        # Ensure some distinction of the infos using number-prefixes.
+        numeric_infos = []
+        for idx, info in enumerate(infos):
+            num_info = f"{idx + 1}: {info}"
+            numeric_infos.append(num_info)
+
+        return "\n\n".join(numeric_infos)
 
     def encode_input(self, *args) -> HexBytes:
         selected_abi = _select_method_abi(self.abis, args)
@@ -408,23 +458,48 @@ class ContractEvent(BaseInterfaceModel):
     abi: EventABI
     _logs: Optional[list[ContractLog]] = None
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        # Inject the doc-str using the NatSpec to better integrate with IPython.
+        # NOTE: This must happen AFTER super().__init__().
+        self.__doc__ = self.info
+
     @log_instead_of_fail(default="<ContractEvent>")
     def __repr__(self) -> str:
         return self.abi.signature
+
+    @log_instead_of_fail()
+    def _repr_pretty_(self, printer, cycle):
+        console = get_rich_console()
+        console.print(self._get_info(enrich=True))
 
     @property
     def name(self) -> str:
         """
         The name of the contract event, as defined in the contract.
         """
-
         return self.abi.name
+
+    @property
+    def info(self) -> str:
+        """
+        NatSpec info derived from the contract-type developer-documentation.
+        """
+        return self._get_info()
+
+    def _get_info(self, enrich: bool = False) -> str:
+        info_str = self.abi.signature
+        if spec := self.contract.contract_type.natspecs.get(self.abi.selector):
+            spec_indented = spec.replace("\n", "\n  ")
+            info_str = f"{info_str}\n  {spec_indented}"
+
+        return _enrich_natspec(info_str) if enrich else info_str
 
     def __iter__(self) -> Iterator[ContractLog]:  # type: ignore[override]
         """
         Get all logs that have occurred for this event.
         """
-
         yield from self.range(self.chain_manager.blocks.height + 1)
 
     @property
@@ -800,12 +875,42 @@ class ContractTypeWrapper(ManagerAccessMixin):
         input_dict = ecosystem.decode_calldata(method, rest_calldata)
         return method.selector, input_dict
 
-    def _create_custom_error_type(self, abi: ErrorABI) -> type[CustomError]:
+    def _create_custom_error_type(self, abi: ErrorABI, **kwargs) -> type[CustomError]:
         def exec_body(namespace):
             namespace["abi"] = abi
             namespace["contract"] = self
+            for key, val in kwargs.items():
+                namespace[key] = val
 
-        return types.new_class(abi.name, (CustomError,), {}, exec_body)
+        error_type = types.new_class(abi.name, (CustomError,), {}, exec_body)
+        natspecs = self.contract_type.natspecs
+
+        def _get_info(enrich: bool = False) -> str:
+            if not (natspec := natspecs.get(abi.selector)):
+                return ""
+
+            elif enrich:
+                natspec = _enrich_natspec(natspec)
+
+            return f"{abi.signature}\n  {natspec}"
+
+        def _repr_pretty_(cls, *args, **kwargs):
+            console = get_rich_console()
+            output = _get_info(enrich=True) or repr(cls)
+            console.print(output)
+
+        def repr_pretty_for_assignment(cls, *args, **kwargs):
+            return _repr_pretty_(error_type, *args, **kwargs)
+
+        info = _get_info()
+        error_type.info = error_type.__doc__ = info  # type: ignore
+        if info:
+            error_type._repr_pretty_ = repr_pretty_for_assignment  # type: ignore
+
+            # Register the dynamically-created type with IPython so it integrates.
+            for_type(type(error_type), _repr_pretty_)
+
+        return error_type
 
 
 class ContractInstance(BaseAddress, ContractTypeWrapper):
@@ -1063,7 +1168,7 @@ class ContractInstance(BaseAddress, ContractTypeWrapper):
             raise err
 
         for contract_err in options:
-            if contract_err.abi.signature == signature:
+            if contract_err.abi and contract_err.abi.signature == signature:
                 return contract_err
 
         raise err
@@ -1107,14 +1212,16 @@ class ContractInstance(BaseAddress, ContractTypeWrapper):
                 for abi in abi_list:
                     error_type = None
                     for existing_cls in prior_errors:
-                        if existing_cls.abi.signature == abi.signature:
+                        if existing_cls.abi and existing_cls.abi.signature == abi.signature:
                             # Error class was previously defined by contract at same address.
                             error_type = existing_cls
                             break
 
                     if error_type is None:
                         # Error class is being defined for the first time.
-                        error_type = self._create_custom_error_type(abi)
+                        error_type = self._create_custom_error_type(
+                            abi, contract_address=self.address
+                        )
                         self.chain_manager.contracts._cache_error(self.address, error_type)
 
                     errors_to_add.append(error_type)

@@ -11,8 +11,10 @@ from typing import Any, Optional, Union
 
 import pytest
 from click.testing import CliRunner
+from ethpm_types import ContractType
 
 import ape
+from ape.contracts import ContractContainer
 from ape.exceptions import APINotImplementedError, ProviderNotConnectedError, UnknownSnapshotError
 from ape.logging import LogLevel, logger
 from ape.pytest.config import ConfigWrapper
@@ -33,6 +35,9 @@ explorer_test = pytest.mark.xdist_group(name="explorer-tests")
 _DATA_FOLDER_CTX = ape.config.isolate_data_folder()
 DATA_FOLDER = _DATA_FOLDER_CTX.__enter__()
 ape.config.DATA_FOLDER = DATA_FOLDER
+SHARED_CONTRACTS_FOLDER = (
+    Path(__file__).parent / "functional" / "data" / "contracts" / "ethereum" / "local"
+)
 
 
 EXPECTED_MYSTRUCT_C = 244
@@ -645,3 +650,37 @@ def config_wrapper(mocker):
 @pytest.fixture
 def gas_tracker(config_wrapper):
     return GasTracker(config_wrapper)
+
+
+@pytest.fixture(scope="session")
+def solidity_contract_type(get_contract_type) -> ContractType:
+    return get_contract_type("SolidityContract")
+
+
+@pytest.fixture(scope="session")
+def get_contract_type():
+    def fn(name: str) -> ContractType:
+        content = (SHARED_CONTRACTS_FOLDER / f"{name}.json").read_text(encoding="utf8")
+        return ContractType.model_validate_json(content)
+
+    return fn
+
+
+@pytest.fixture(scope="session")
+def solidity_contract_container(solidity_contract_type) -> ContractContainer:
+    return ContractContainer(contract_type=solidity_contract_type)
+
+
+@pytest.fixture(scope="session")
+def vyper_contract_type(get_contract_type) -> ContractType:
+    return get_contract_type("VyperContract")
+
+
+@pytest.fixture(scope="session")
+def vyper_contract_container(vyper_contract_type) -> ContractContainer:
+    return ContractContainer(contract_type=vyper_contract_type)
+
+
+@pytest.fixture(scope="session")
+def shared_contracts_folder():
+    return SHARED_CONTRACTS_FOLDER

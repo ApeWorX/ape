@@ -772,6 +772,22 @@ def test_custom_error(error_contract, not_owner):
     assert err.value.inputs == {"addr": not_owner.address, "counter": 123}
 
 
+def test_custom_error_info(solidity_contract_type, owner, error_contract):
+    missing_doc_err = error_contract.Unauthorized
+    empty_info = missing_doc_err.info
+    assert empty_info == ""
+
+    # NOTE: deploying a new contract to eliminate clashing with other tests.
+    new_sol_contract = owner.deploy(solidity_contract_type, 26262626262)
+    error_with_doc = new_sol_contract.ACustomError
+    actual = error_with_doc.info
+    expected = """
+ACustomError()
+  @details This is a doc for an error
+""".strip()
+    assert actual == expected
+
+
 def test_get_error_by_signature(error_contract):
     """
     Helps in cases where multiple errors have same name.

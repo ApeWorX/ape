@@ -263,3 +263,53 @@ def test_console_none_network(integ_project, ape_cli, runner):
     arguments = ("console", "--project", f"{integ_project.path}", "--network", "None")
     result = runner.invoke(ape_cli, arguments, input="exit\n", catch_exceptions=False)
     assert result.exit_code == 0
+
+
+@skip_projects_except("with-contracts")
+def test_console_natspecs(integ_project, ape_cli, runner, solidity_contract_type):
+    """
+    This test shows that the various natspec integrations with ABI-backed
+    types work in ``ape console``.
+    """
+    contract_code = solidity_contract_type.model_dump_json(by_alias=True)
+    # flake8: noqa
+    cmd_ls = [
+        "%load_ext ape_console.plugin",
+        f"contract_container = compilers.ethpm.compile_code('{contract_code}')",
+        "account = accounts.test_accounts[0]",
+        "contract = account.deploy(contract_container, 123)",
+        "print('0: method')",
+        "contract.setNumber",
+        "print('1: event')",
+        "contract.NumberChange",
+        "print('2: error')",
+        "contract.ACustomError",
+        "exit",
+    ]
+    cmd_str = "\n".join(cmd_ls)
+    arguments = ("console", "--project", f"{integ_project.path}")
+    expected_method = """
+setNumber(uint256 num)
+  @custom:emits Emits a `NumberChange` event with the previous number, the new number, and the previous block hash
+  @custom:modifies Sets the `myNumber` state variable
+  @custom:require num Must not be equal to 5
+  @details Only the owner can call this function. The new number cannot be 5.
+  @param num uint256 The new number to be set
+""".strip()
+    expected_event = """
+NumberChange(bytes32 b, uint256 prevNum, string dynData, uint256 indexed newNum, string indexed dynIndexed)
+  @details Emitted when number is changed. `newNum` is the new number from the call. Expected every time number changes.
+""".strip()
+    # flake8: on
+    result = runner.invoke(
+        ape_cli,
+        arguments,
+        input=f"{cmd_str}\n",
+        catch_exceptions=False,
+    )
+
+    # Getting rid of newlines as terminal-breakage never consistent in tests.
+    actual = result.output.replace("\n", "")
+
+    assert all(ln in actual for ln in expected_method.splitlines())
+    assert all(ln in actual for ln in expected_event.splitlines())

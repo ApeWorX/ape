@@ -100,7 +100,7 @@ class ScriptCommand(click.MultiCommand, ManagerAccessMixin):
         # NOTE: This does not execute the module
         logger.debug(f"Parsing module: {relative_filepath}")
         try:
-            code = compile(filepath.read_text(), filepath, "exec")
+            code = compile(filepath.read_text(encoding="utf8"), filepath, "exec")
         except SyntaxError as e:
             logger.error_from_exception(e, f"Exception while parsing script: {relative_filepath}")
             return None  # Prevents stalling scripts

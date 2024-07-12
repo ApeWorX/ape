@@ -20,19 +20,6 @@ from ape.logging import logger as _logger
 from ape.types import AddressType, ContractLog
 from ape_ethereum.proxies import minimal_proxy as _minimal_proxy_container
 
-PROJECT_PATH = Path(__file__).parent
-CONTRACTS_FOLDER = PROJECT_PATH / "data" / "contracts" / "ethereum" / "local"
-
-
-@pytest.fixture(scope="session")
-def get_contract_type():
-    def fn(name: str) -> ContractType:
-        content = (CONTRACTS_FOLDER / f"{name}.json").read_text()
-        return ContractType.model_validate_json(content)
-
-    return fn
-
-
 ALIAS_2 = "__FUNCTIONAL_TESTS_ALIAS_2__"
 TEST_ADDRESS = cast(AddressType, "0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045")
 BASE_PROJECTS_DIRECTORY = (Path(__file__).parent / "data" / "projects").absolute()
@@ -162,16 +149,6 @@ def mock_transaction(mocker):
 
 
 @pytest.fixture(scope="session")
-def project_path():
-    return PROJECT_PATH
-
-
-@pytest.fixture(scope="session")
-def contracts_folder():
-    return CONTRACTS_FOLDER
-
-
-@pytest.fixture(scope="session")
 def address():
     return TEST_ADDRESS
 
@@ -184,26 +161,11 @@ def second_keyfile_account(sender, keyparams, temp_keyfile_account_ctx):
         yield account
 
 
-@pytest.fixture(scope="session")
-def solidity_contract_type(get_contract_type) -> ContractType:
-    return get_contract_type("SolidityContract")
-
-
-@pytest.fixture(scope="session")
-def solidity_contract_container(solidity_contract_type) -> ContractContainer:
-    return ContractContainer(contract_type=solidity_contract_type)
-
-
 @pytest.fixture
 def solidity_contract_instance(
     owner, solidity_contract_container, networks_connected_to_tester
 ) -> ContractInstance:
     return owner.deploy(solidity_contract_container, 0)
-
-
-@pytest.fixture(scope="session")
-def vyper_contract_type(get_contract_type) -> ContractType:
-    return get_contract_type("VyperContract")
 
 
 @pytest.fixture(scope="session")
@@ -214,11 +176,6 @@ def solidity_fallback_contract_type(get_contract_type) -> ContractType:
 @pytest.fixture(scope="session")
 def vyper_fallback_contract_type(get_contract_type) -> ContractType:
     return get_contract_type("VyDefault")
-
-
-@pytest.fixture(scope="session")
-def vyper_contract_container(vyper_contract_type) -> ContractContainer:
-    return ContractContainer(contract_type=vyper_contract_type)
 
 
 @pytest.fixture(scope="session")
@@ -782,12 +739,12 @@ def mock_fork_provider(mocker, ethereum, mock_sepolia):
 
 
 @pytest.fixture
-def delete_account_after(project_path):
+def delete_account_after():
     @contextmanager
     def delete_account_context(alias: str):
         yield
         account_path = ape.config.DATA_FOLDER / "accounts" / f"{alias}.json"
-        if account_path.exists():
+        if account_path.is_file():
             account_path.unlink()
 
     return delete_account_context

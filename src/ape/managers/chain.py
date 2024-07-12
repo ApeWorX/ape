@@ -10,7 +10,6 @@ from typing import IO, Optional, Union, cast
 import pandas as pd
 from eth_pydantic_types import HexBytes
 from ethpm_types import ABI, ContractType
-from rich import get_console
 from rich.box import SIMPLE
 from rich.console import Console as RichConsole
 from rich.table import Table
@@ -38,7 +37,7 @@ from ape.exceptions import (
     TransactionNotFoundError,
     UnknownSnapshotError,
 )
-from ape.logging import logger
+from ape.logging import get_rich_console, logger
 from ape.managers.base import BaseManager
 from ape.types import AddressType, GasReport, SnapshotID, SourceTraceback
 from ape.utils import (
@@ -1414,8 +1413,6 @@ class ReportManager(BaseManager):
     **NOTE**: This class is not part of the public API.
     """
 
-    rich_console_map: dict[str, RichConsole] = {}
-
     def show_gas(self, report: GasReport, file: Optional[IO[str]] = None):
         tables: list[Table] = []
 
@@ -1459,7 +1456,7 @@ class ReportManager(BaseManager):
     def echo(
         self, *rich_items, file: Optional[IO[str]] = None, console: Optional[RichConsole] = None
     ):
-        console = console or self._get_console(file)
+        console = console or get_rich_console(file)
         console.print(*rich_items)
 
     def show_source_traceback(
@@ -1469,28 +1466,22 @@ class ReportManager(BaseManager):
         console: Optional[RichConsole] = None,
         failing: bool = True,
     ):
-        console = console or self._get_console(file)
+        console = console or get_rich_console(file)
         style = "red" if failing else None
         console.print(str(traceback), style=style)
 
     def show_events(
         self, events: list, file: Optional[IO[str]] = None, console: Optional[RichConsole] = None
     ):
-        console = console or self._get_console(file)
+        console = console or get_rich_console(file)
         console.print("Events emitted:")
         for event in events:
             console.print(event)
 
-    def _get_console(self, file: Optional[IO[str]] = None) -> RichConsole:
-        if not file:
-            return get_console()
-
-        # Configure custom file console
-        file_id = str(file)
-        if file_id not in self.rich_console_map:
-            self.rich_console_map[file_id] = RichConsole(file=file, width=100)
-
-        return self.rich_console_map[file_id]
+    def _get_console(self, *args, **kwargs):
+        # TODO: Delete this method in v0.9.
+        # It only exists for backwards compat.
+        return get_rich_console(*args, **kwargs)
 
 
 class ChainManager(BaseManager):
