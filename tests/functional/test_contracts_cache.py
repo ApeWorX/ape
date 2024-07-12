@@ -88,6 +88,22 @@ def test_instance_at_contract_type_not_found(chain, eth_tester_provider):
         chain.contracts.instance_at(new_address)
 
 
+def test_instance_at_use_abi(chain, solidity_fallback_contract, owner):
+    new_instance = owner.deploy(solidity_fallback_contract.contract_type)
+    del chain.contracts[new_instance.address]
+    with pytest.raises(ContractNotFoundError):
+        _ = chain.contracts.instance_at(new_instance.address)
+
+    # Now, use only ABI and ensure it works and caches!
+    abi = solidity_fallback_contract.contract_type.abi
+    instance = chain.contracts.instance_at(new_instance.address, abi=abi)
+    assert instance.contract_type.abi
+
+    # `abi=` not needed this time.
+    instance2 = chain.contracts.instance_at(new_instance.address)
+    assert instance2.contract_type.abi == instance.contract_type.abi
+
+
 def test_cache_deployment_live_network(
     chain,
     vyper_contract_instance,

@@ -1215,6 +1215,9 @@ class ContractCache(BaseManager):
             if isinstance(abi, list):
                 contract_type = ContractType(abi=abi)
 
+                # Ensure we cache the contract-types from ABI!
+                self[address] = contract_type
+
             else:
                 raise TypeError(
                     f"Invalid ABI type '{type(abi)}', expecting str, list[ABI] or a JSON file."
