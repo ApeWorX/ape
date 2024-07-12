@@ -142,7 +142,7 @@ def console(
         ipy_config.HistoryManager.enabled = False
 
         # Required for click.testing.CliRunner support.
-        embed = False
+        embed = True
 
     _launch_console(namespace, ipy_config, embed, banner)
 
