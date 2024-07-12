@@ -1216,7 +1216,7 @@ class ContractCache(BaseManager):
                 contract_type = ContractType(abi=abi)
 
                 # Ensure we cache the contract-types from ABI!
-                self[address] = contract_type
+                self[contract_address] = contract_type
 
             else:
                 raise TypeError(
