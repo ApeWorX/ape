@@ -1,5 +1,6 @@
 import asyncio
 import functools
+import inspect
 import json
 import sys
 from asyncio import gather
@@ -9,7 +10,7 @@ from functools import cached_property, lru_cache, singledispatchmethod, wraps
 from importlib.metadata import PackageNotFoundError, distributions
 from importlib.metadata import version as version_metadata
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Optional, cast
+from typing import TYPE_CHECKING, Any, Optional, TypeVar, cast
 
 import requests
 import yaml
@@ -541,6 +542,38 @@ def log_instead_of_fail(default: Optional[Any] = None):
         return wrapped
 
     return wrapper
+
+
+_MOD_T = TypeVar("_MOD_T")
+
+
+def as_our_module(cls_or_def: _MOD_T, doc_str: Optional[str] = None) -> _MOD_T:
+    """
+    Ape often reclaims definitions from other packages, to increase
+    the UX of Ape (such as :class:`~ape.types.SignableMessage`).
+    When doing so, the doc str may be different than ours, and the
+    module may still refer to the original package. This method
+    steals the given class as-if it were ours. Logic borrowed from
+    starknet-py.
+
+    Args:
+        cls_or_def (_MOD_T): The class or definition to borrow.
+        doc_str (str): Optionally change the doc string.
+
+    Returns:
+        The borrowed-version of the class or definition.
+    """
+    if cls_or_def is None:
+        return cls_or_def
+
+    elif doc_str is not None:
+        cls_or_def.__doc__ = doc_str
+
+    frame = inspect.stack()[1]
+    if module := inspect.getmodule(frame[0]):
+        cls_or_def.__module__ = module.__name__
+
+    return cls_or_def
 
 
 __all__ = [
