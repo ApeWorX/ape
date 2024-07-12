@@ -7,7 +7,7 @@ from eth_pydantic_types import HexBytes
 from eth_utils import to_bytes, to_hex
 from pydantic.dataclasses import dataclass
 
-from ape.utils import log_instead_of_fail
+from ape.utils import as_our_module, log_instead_of_fail
 
 try:
     # Only on Python 3.11
@@ -18,8 +18,11 @@ except ImportError:
 from ape.types import AddressType
 
 # Fix 404 in doc link.
-SignableMessage.__doc__ = (SignableMessage.__doc__ or "").replace(
-    "EIP-191_", "`EIP-191 <https://eips.ethereum.org/EIPS/eip-191>`__"
+as_our_module(
+    SignableMessage,
+    doc_str=(SignableMessage.__doc__ or "").replace(
+        "EIP-191_", "`EIP-191 <https://eips.ethereum.org/EIPS/eip-191>`__"
+    ),
 )
 
 
@@ -124,7 +127,8 @@ def recover_signer(msg: SignableMessage, sig: MessageSignature) -> AddressType:
     Get the address of the signer.
 
     Args:
-        msg (``SignableMessage``): A formatted and signable message.
+        msg (:class:`~ape.types.signatures.SignableMessage`): A formatted and signable
+          message.
         sig (:class:`~ape.types.signatures.MessageSignature`): Signature of the message.
 
     Returns:
