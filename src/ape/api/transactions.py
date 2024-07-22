@@ -18,7 +18,6 @@ from ape.exceptions import (
     SignatureError,
     TransactionError,
     TransactionNotFoundError,
-    VirtualMachineError,
 )
 from ape.logging import logger
 from ape.types import (
@@ -289,7 +288,7 @@ class ReceiptAPI(ExtraAttributesMixin, BaseInterfaceModel):
     status: int
     txn_hash: str
     transaction: TransactionAPI
-    _error: Optional[VirtualMachineError] = None
+    _error: Optional[TransactionError] = None
 
     @log_instead_of_fail(default="<ReceiptAPI>")
     def __repr__(self) -> str:
@@ -336,11 +335,11 @@ class ReceiptAPI(ExtraAttributesMixin, BaseInterfaceModel):
         return [" ".join(map(str, ln)) for ln in self.debug_logs_typed]
 
     @property
-    def error(self) -> Optional[VirtualMachineError]:
+    def error(self) -> Optional[TransactionError]:
         return self._error
 
     @error.setter
-    def error(self, value: VirtualMachineError):
+    def error(self, value: TransactionError):
         self._error = value
 
     def show_debug_logs(self):

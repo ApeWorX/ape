@@ -257,22 +257,9 @@ assert receipt.return_value == 123
 ```
 
 Transactions may also fail.
-When a transaction fails, Ape (by default) raises the virtual machine error which may crash your script.
-You will see exception trace data like this:
-
-```
-  File "$HOME/ApeProjects/ape-playground/scripts/fail.py", line 7, in main
-    contract.setNumber(5, sender=owner)
-
-ERROR: (ContractLogicError) Transaction failed.
-```
-
-If you know a transaction is going to revert and you wish to allow it, use the `raise_on_revert=False` flag:
-
-```python
-receipt = contract.setNumber(5, sender=owner, raise_on_revert=False)
-assert receipt.failed
-```
+This is called a `revert`!
+When a transaction reverts, Ape (by default) raises the virtual machine error which may crash your script.
+To learn more reverts, see the [reverts guide](../reverts.html).
 
 For more general information on transactions in the Ape framework, see [this guide](./transactions.html).
 

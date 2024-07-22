@@ -255,7 +255,7 @@ class Receipt(ReceiptAPI):
         return SourceTraceback.model_validate([])
 
     def raise_for_status(self):
-        err = None
+        err: Optional[TransactionError] = None
         if self.gas_limit is not None and self.ran_out_of_gas:
             err = OutOfGasError(txn=self)
 
