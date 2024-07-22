@@ -268,11 +268,7 @@ class LocalProvider(TestProviderAPI, Web3Provider):
                 else:
                     receipt.error = vm_err
 
-            if txn.raise_on_revert:
-                # If we get here, for some reason the tx-replay did not produce
-                # a VM error.
-                receipt.raise_for_status()
-
+        receipt.raise_for_status()
         if receipt.error:
             logger.error(receipt.error)
 

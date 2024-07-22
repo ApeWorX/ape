@@ -67,8 +67,6 @@ class TransactionAPI(BaseInterfaceModel):
 
     signature: Optional[TransactionSignature] = Field(None, exclude=True)
 
-    _raise_on_revert: bool = True
-
     model_config = ConfigDict(populate_by_name=True)
 
     def __init__(self, *args, **kwargs):
