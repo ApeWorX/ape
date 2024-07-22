@@ -263,10 +263,9 @@ class LocalProvider(TestProviderAPI, Web3Provider):
                 self.web3.eth.call(txn_params)
             except (ValidationError, TransactionFailed) as err:
                 vm_err = self.get_virtual_machine_error(err, txn=receipt)
+                receipt.error = vm_err
                 if txn.raise_on_revert:
                     raise vm_err from err
-                else:
-                    receipt.error = vm_err
 
             if txn.raise_on_revert:
                 # If we get here, for some reason the tx-replay did not produce
