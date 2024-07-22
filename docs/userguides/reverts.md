@@ -1,7 +1,7 @@
 # Reverts
 
 Reverts occur when a transaction or call fails for any reason.
-In the case of EVM networks, reverts result in funds being returned to the sender (besides network-fees) and contract state changes rewinding.
+In the case of EVM networks, reverts result in funds being returned to the sender (besides network-fees) and contract state changes unwinding.
 Typically, in smart-contracts, user-defined reverts occur from `assert` statements in Vyper and `require` statements in Solidity.
 
 Here is a Vyper example of an `assert` statement:
@@ -56,11 +56,12 @@ except ContractLogicError as err:
 
 If you wish to allow reverts without having Ape raise exceptions, use the `raise_on_revert=False` flag:
 
-```shell
-receipt = contract.setNumber(123, sender=not_owner, raise_on_revert=False)
-print(receipt.failed)
-# Also, access the `error` on the receipt:
-print(receipt.error)
+```python
+>>> receipt = contract.setNumber(123, sender=not_owner, raise_on_revert=False)
+>>> receipt.failed
+True
+>>> receipt.error
+ContractLogicError('!authorized')
 ```
 
 ## Dev Messages
