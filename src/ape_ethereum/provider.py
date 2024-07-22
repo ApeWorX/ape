@@ -954,7 +954,6 @@ class Web3Provider(ProviderAPI, ABC):
         if receipt.failed:
             # NOTE: Using JSON mode since used as request data.
             txn_dict = receipt.transaction.model_dump(by_alias=True, mode="json")
-
             txn_params = cast(TxParams, txn_dict)
 
             # Replay txn to get revert reason
@@ -962,11 +961,15 @@ class Web3Provider(ProviderAPI, ABC):
                 self.web3.eth.call(txn_params)
             except Exception as err:
                 vm_err = self.get_virtual_machine_error(err, txn=txn)
-                raise vm_err from err
+                if txn.raise_on_revert:
+                    raise vm_err from err
+                else:
+                    receipt.error = vm_err
 
-            # If we get here, for some reason the tx-replay did not produce
-            # a VM error.
-            receipt.raise_for_status()
+            if txn.raise_on_revert:
+                # If we get here, for some reason the tx-replay did not produce
+                # a VM error.
+                receipt.raise_for_status()
 
         if receipt.error:
             logger.error(receipt.error)
