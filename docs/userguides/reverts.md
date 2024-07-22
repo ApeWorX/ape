@@ -1,18 +1,18 @@
 # Reverts
 
 Reverts occur when a transaction or call fails for any reason.
-In the case of EVM networks, reverts result in funds being returned to the sender (besides network-fees) and contract-state changes being undone.
+In the case of EVM networks, reverts result in funds being returned to the sender (besides network-fees) and contract state changes rewinding.
 Typically, in smart-contracts, user-defined reverts occur from `assert` statements in Vyper and `require` statements in Solidity.
 
-Here is a Vyper example of an `assert` statement that would cause a revert:
+Here is a Vyper example of an `assert` statement:
 
 ```python
 assert msg.sender == self.owner, "!authorized"
 ```
 
-The string `"!authorized"` after the assertion is the revert-message to forward to the user.
+The string `"!authorized"` after the assertion is the revert-message that gets forwarded to the user.
 
-In solidity, it might look like this:
+In solidity, a `require` statement looks like:
 
 ```solidity
 require(msg.sender == owner, "!authorized");
@@ -63,7 +63,7 @@ print(receipt.failed)
 print(receipt.error)
 ```
 
-## Dev Messsages
+## Dev Messages
 
 Dev messages allow smart-contract authors to save gas by avoiding revert-messages.
 If you are using a provider that supports tracing features and a compiler that can detect `dev` messages, and you encounter a revert without a revert-message but it has a dev-message, Ape will show the dev-message:
@@ -103,7 +103,7 @@ contract MyContract {
 }
 ```
 
-, and you have an instance of this contract on variable `contract`, you can reference the custom exception by doing:
+If you have an instance of this contract assigned to variable `contract`, you can reference the custom exception by doing:
 
 ```python
 contract.Unauthorized
@@ -119,7 +119,7 @@ contract.withdraw(sender=hacker)  # assuming 'hacker' refers to the account with
 
 Besides user-defined `ContractLogicError`s, there are also builtin-errors from compilers, such as bounds-checking of arrays or paying a non-payable method, etc.
 These are also `ContractLogicError` sub-classes.
-Sometimes, compiler plugins such as `ape-vyper` or `ape-solidity` exports these error classes for you to use.
+Sometimes, compiler plugins such as `ape-vyper` or `ape-solidity` export these error classes for you to use.
 
 ```python
 from ape import accounts, Contract
