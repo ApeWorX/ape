@@ -197,6 +197,8 @@ class LocalProvider(TestProviderAPI, Web3Provider):
         state = kwargs.pop("state_override", None)
         call_kwargs: dict = {"block_identifier": block_id, "state_override": state}
 
+        raise_on_revert = kwargs.get("raise_on_revert", txn.raise_on_revert)
+
         # Remove unneeded properties
         data.pop("gas", None)
         data.pop("gasLimit", None)
@@ -204,15 +206,27 @@ class LocalProvider(TestProviderAPI, Web3Provider):
         data.pop("maxPriorityFeePerGas", None)
 
         tx_params = cast(TxParams, data)
-
+        vm_err = None
         try:
             result = self.web3.eth.call(tx_params, **call_kwargs)
         except ValidationError as err:
-            raise VirtualMachineError(base_err=err) from err
+            vm_err = VirtualMachineError(base_err=err)
+            if raise_on_revert:
+                raise vm_err from err
+            else:
+                result = HexBytes("0x")
+
         except (TransactionFailed, ContractPanicError) as err:
-            raise self.get_virtual_machine_error(err, txn=txn) from err
+            vm_err = self.get_virtual_machine_error(err, txn=txn)
+            if raise_on_revert:
+                raise vm_err from err
+            else:
+                result = HexBytes("0x")
 
         self._increment_call_func_coverage_hit_count(txn)
+        if vm_err:
+            logger.error(vm_err)
+
         return HexBytes(result)
 
     def send_transaction(self, txn: TransactionAPI) -> ReceiptAPI:
@@ -221,7 +235,7 @@ class LocalProvider(TestProviderAPI, Web3Provider):
             txn_hash = self.web3.eth.send_raw_transaction(txn.serialize_transaction()).hex()
         except (ValidationError, TransactionFailed) as err:
             vm_err = self.get_virtual_machine_error(err, txn=txn)
-            if txn.fail_on_revert:
+            if txn.raise_on_revert:
                 raise vm_err from err
             else:
                 txn_hash = txn.txn_hash.hex()
@@ -249,12 +263,12 @@ class LocalProvider(TestProviderAPI, Web3Provider):
                 self.web3.eth.call(txn_params)
             except (ValidationError, TransactionFailed) as err:
                 vm_err = self.get_virtual_machine_error(err, txn=receipt)
-                if txn.fail_on_revert:
+                if txn.raise_on_revert:
                     raise vm_err from err
                 else:
                     receipt.error = vm_err
 
-            if txn.fail_on_revert:
+            if txn.raise_on_revert:
                 # If we get here, for some reason the tx-replay did not produce
                 # a VM error.
                 receipt.raise_for_status()

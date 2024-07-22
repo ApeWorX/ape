@@ -267,10 +267,10 @@ You will see exception trace data like this:
 ERROR: (ContractLogicError) Transaction failed.
 ```
 
-If you know a transaction is going to revert and you wish to allow it, use the `fail_on_revert=False` flag:
+If you know a transaction is going to revert and you wish to allow it, use the `raise_on_revert=False` flag:
 
 ```python
-receipt = contract.setNumber(5, sender=owner, fail_on_revert=False)
+receipt = contract.setNumber(5, sender=owner, raise_on_revert=False)
 assert receipt.failed
 ```
 

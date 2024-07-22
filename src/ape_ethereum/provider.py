@@ -437,10 +437,11 @@ class Web3Provider(ProviderAPI, ABC):
         if state is not None:
             kwargs["state_override"] = state
 
+        raise_on_revert = kwargs.get("raise_on_revert", txn.raise_on_revert)
         skip_trace = kwargs.pop("skip_trace", False)
         arguments = self._prepare_call(txn, **kwargs)
         if skip_trace:
-            return self._eth_call(arguments)
+            return self._eth_call(arguments, raise_on_revert=txn.raise_on_revert)
 
         show_gas = kwargs.pop("show_gas_report", False)
         show_trace = kwargs.pop("show_trace", False)
@@ -454,7 +455,7 @@ class Web3Provider(ProviderAPI, ABC):
 
         needs_trace = track_gas or track_coverage or show_gas or show_trace
         if not needs_trace:
-            return self._eth_call(arguments)
+            return self._eth_call(arguments, raise_on_revert=raise_on_revert)
 
         # The user is requesting information related to a call's trace,
         # such as gas usage data.
@@ -495,7 +496,7 @@ class Web3Provider(ProviderAPI, ABC):
 
         return HexBytes(trace.return_value)
 
-    def _eth_call(self, arguments: list) -> HexBytes:
+    def _eth_call(self, arguments: list, raise_on_revert: bool = True) -> HexBytes:
         # Force the usage of hex-type to support a wider-range of nodes.
         txn_dict = copy(arguments[0])
         if isinstance(txn_dict.get("type"), int):
@@ -505,7 +506,6 @@ class Web3Provider(ProviderAPI, ABC):
         txn_dict.pop("chainId", None)
 
         arguments[0] = txn_dict
-
         try:
             result = self.make_request("eth_call", arguments)
         except Exception as err:
@@ -518,9 +518,15 @@ class Web3Provider(ProviderAPI, ABC):
                 if contract_src := self.local_project._create_contract_source(contract_type):
                     tb = SourceTraceback.create(contract_src, trace, method_id)
 
-            raise self.get_virtual_machine_error(
+            vm_err = self.get_virtual_machine_error(
                 err, trace=trace, contract_address=contract_address, source_traceback=tb
-            ) from err
+            )
+            if raise_on_revert:
+                raise vm_err from err
+
+            else:
+                logger.error(vm_err)
+                result = "0x"
 
         if "error" in result:
             raise ProviderError(result["error"]["message"])
@@ -924,7 +930,7 @@ class Web3Provider(ProviderAPI, ABC):
 
         except (ValueError, Web3ContractLogicError) as err:
             vm_err = self.get_virtual_machine_error(err, txn=txn)
-            if txn.fail_on_revert:
+            if txn.raise_on_revert:
                 raise vm_err from err
             else:
                 txn_hash = txn.txn_hash.hex()

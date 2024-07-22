@@ -194,9 +194,12 @@ def test_revert_custom_exception(not_owner, error_contract):
 
 def test_revert_allow(not_owner, contract_instance):
     # 'sender' is not the owner so it will revert (with a message)
-    receipt = contract_instance.setNumber(5, sender=not_owner, fail_on_revert=False)
+    receipt = contract_instance.setNumber(5, sender=not_owner, raise_on_revert=False)
     assert receipt.error is not None
     assert str(receipt.error) == "!authorized"
+
+    # Ensure this also works for calls.
+    contract_instance.setNumber.call(5, raise_on_revert=False)
 
 
 def test_call_using_block_id(vyper_contract_instance, owner, chain, networks_connected_to_tester):
