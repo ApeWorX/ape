@@ -99,9 +99,11 @@ def test_revert_out_of_gas_error(geth_account, geth_second_account, geth_provide
     assert err.value.txn is not None
 
 
-def test_revert_allow(geth_second_account, geth_contract):
+def test_revert_allow(test_accounts, geth_contract):
+    not_owner = test_accounts[0]
+
     # 'sender' is not the owner so it will revert (with a message)
-    receipt = geth_contract.setNumber(5, sender=geth_second_account, raise_on_revert=False)
+    receipt = geth_contract.setNumber(100199, sender=not_owner, raise_on_revert=False)
     assert receipt.error is not None
     assert str(receipt.error) == "!authorized"
 
