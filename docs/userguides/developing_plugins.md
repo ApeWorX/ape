@@ -103,6 +103,18 @@ entry_points={
 ...
 ```
 
+If you're using `pyproject.toml` you can register the entry_point like this
+
+`pyproject.toml`:
+
+```yml
+[...]
+# Make it work with cli like ape myplugin
+[project.entry-points.ape_cli_subcommands]
+ape_myplugin = "ape_myplugin._cli:cli"
+[...]
+```
+
 ```{note}
 Typically, a `_cli.py` module is used instead of a `__init__.py` module for the location of the Click CLI group because it is logically separate from the Python module loading process.
 ```
