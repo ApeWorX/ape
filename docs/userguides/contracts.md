@@ -256,6 +256,24 @@ If you need the `return_value` from a transaction, you have to either treat tran
 assert receipt.return_value == 123
 ```
 
+Transactions may also fail.
+When a transaction fails, Ape (by default) raises the virtual machine error which may crash your script.
+You will see exception trace data like this:
+
+```
+  File "$HOME/ApeProjects/ape-playground/scripts/fail.py", line 7, in main
+    contract.setNumber(5, sender=owner)
+
+ERROR: (ContractLogicError) Transaction failed.
+```
+
+If you know a transaction is going to revert and you wish to allow it, use the `fail_on_revert=False` flag:
+
+```python
+receipt = contract.setNumber(5, sender=owner, fail_on_revert=False)
+assert receipt.failed
+```
+
 For more general information on transactions in the Ape framework, see [this guide](./transactions.html).
 
 ### Calls

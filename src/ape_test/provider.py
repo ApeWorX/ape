@@ -26,6 +26,7 @@ from ape.exceptions import (
     UnknownSnapshotError,
     VirtualMachineError,
 )
+from ape.logging import logger
 from ape.types import BlockID, ContractLog, LogFilter, SnapshotID
 from ape.utils import DEFAULT_TEST_CHAIN_ID, DEFAULT_TEST_HD_PATH, gas_estimation_error_message
 from ape_ethereum.provider import Web3Provider
@@ -215,15 +216,23 @@ class LocalProvider(TestProviderAPI, Web3Provider):
         return HexBytes(result)
 
     def send_transaction(self, txn: TransactionAPI) -> ReceiptAPI:
+        vm_err = None
         try:
-            txn_hash = self.web3.eth.send_raw_transaction(txn.serialize_transaction())
+            txn_hash = self.web3.eth.send_raw_transaction(txn.serialize_transaction()).hex()
         except (ValidationError, TransactionFailed) as err:
             vm_err = self.get_virtual_machine_error(err, txn=txn)
-            raise vm_err from err
+            if txn.fail_on_revert:
+                raise vm_err from err
+            else:
+                txn_hash = txn.txn_hash.hex()
 
-        receipt = self.get_receipt(
-            txn_hash.hex(), required_confirmations=txn.required_confirmations or 0
-        )
+        required_confirmations = txn.required_confirmations or 0
+        if vm_err:
+            receipt = self._create_receipt(
+                required_confirmations=required_confirmations, error=vm_err, txn_hash=txn_hash
+            )
+        else:
+            receipt = self.get_receipt(txn_hash, required_confirmations=required_confirmations)
 
         # NOTE: Caching must happen before error enrichment.
         self.chain_manager.history.append(receipt)
@@ -240,11 +249,18 @@ class LocalProvider(TestProviderAPI, Web3Provider):
                 self.web3.eth.call(txn_params)
             except (ValidationError, TransactionFailed) as err:
                 vm_err = self.get_virtual_machine_error(err, txn=receipt)
-                raise vm_err from err
+                if txn.fail_on_revert:
+                    raise vm_err from err
+                else:
+                    receipt.error = vm_err
 
-            # If we get here, for some reason the tx-replay did not produce
-            # a VM error.
-            receipt.raise_for_status()
+            if txn.fail_on_revert:
+                # If we get here, for some reason the tx-replay did not produce
+                # a VM error.
+                receipt.raise_for_status()
+
+        if receipt.error:
+            logger.error(receipt.error)
 
         return receipt
 

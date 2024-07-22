@@ -596,14 +596,13 @@ class Web3Provider(ProviderAPI, ABC):
                 else:  # if it was the last attempt
                     raise  # Re-raise the last exception.
 
-        data = {
-            "provider": self,
-            "required_confirmations": required_confirmations,
-            **txn,
-            **receipt_data,
-        }
-        receipt = self.network.ecosystem.decode_receipt(data)
+        data = {"required_confirmations": required_confirmations, **txn, **receipt_data}
+        receipt = self._create_receipt(**data)
         return receipt.await_confirmations()
+
+    def _create_receipt(self, **kwargs) -> ReceiptAPI:
+        data = {"provider": self, **kwargs}
+        return self.network.ecosystem.decode_receipt(data)
 
     def get_transactions_by_block(self, block_id: BlockID) -> Iterator[TransactionAPI]:
         if isinstance(block_id, str):
@@ -911,29 +910,36 @@ class Web3Provider(ProviderAPI, ABC):
         return txn
 
     def send_transaction(self, txn: TransactionAPI) -> ReceiptAPI:
+        vm_err = None
         try:
             if txn.signature or not txn.sender:
-                txn_hash = self.web3.eth.send_raw_transaction(txn.serialize_transaction())
+                txn_hash = self.web3.eth.send_raw_transaction(txn.serialize_transaction()).hex()
             else:
                 if txn.sender not in self.web3.eth.accounts:
                     self.chain_manager.provider.unlock_account(txn.sender)
 
                 # NOTE: Using JSON mode since used as request data.
                 txn_data = cast(TxParams, txn.model_dump(by_alias=True, mode="json"))
-                txn_hash = self.web3.eth.send_transaction(txn_data)
+                txn_hash = self.web3.eth.send_transaction(txn_data).hex()
 
         except (ValueError, Web3ContractLogicError) as err:
             vm_err = self.get_virtual_machine_error(err, txn=txn)
-            raise vm_err from err
+            if txn.fail_on_revert:
+                raise vm_err from err
+            else:
+                txn_hash = txn.txn_hash.hex()
 
-        receipt = self.get_receipt(
-            txn_hash.hex(),
-            required_confirmations=(
-                txn.required_confirmations
-                if txn.required_confirmations is not None
-                else self.network.required_confirmations
-            ),
+        required_confirmations = (
+            txn.required_confirmations
+            if txn.required_confirmations is not None
+            else self.network.required_confirmations
         )
+        if vm_err:
+            receipt = self._create_receipt(
+                required_confirmations=required_confirmations, error=vm_err, txn_hash=txn_hash
+            )
+        else:
+            receipt = self.get_receipt(txn_hash, required_confirmations=required_confirmations)
 
         # NOTE: Ensure to cache even the failed receipts.
         # NOTE: Caching must happen before error enrichment.
@@ -955,6 +961,9 @@ class Web3Provider(ProviderAPI, ABC):
             # If we get here, for some reason the tx-replay did not produce
             # a VM error.
             receipt.raise_for_status()
+
+        if receipt.error:
+            logger.error(receipt.error)
 
         return receipt
 

@@ -18,6 +18,7 @@ from ape.exceptions import (
     SignatureError,
     TransactionError,
     TransactionNotFoundError,
+    VirtualMachineError,
 )
 from ape.logging import logger
 from ape.types import (
@@ -67,7 +68,13 @@ class TransactionAPI(BaseInterfaceModel):
 
     signature: Optional[TransactionSignature] = Field(None, exclude=True)
 
+    _fail_on_revert: bool = True
+
     model_config = ConfigDict(populate_by_name=True)
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._fail_on_revert = kwargs.pop("fail_on_revert", True)
 
     @field_validator("gas_limit", mode="before")
     @classmethod
@@ -121,6 +128,14 @@ class TransactionAPI(BaseInterfaceModel):
             return int(value, 16)
 
         return int(value)
+
+    @property
+    def fail_on_revert(self) -> bool:
+        return self._fail_on_revert
+
+    @fail_on_revert.setter
+    def fail_on_revert(self, value):
+        self._fail_on_revert = value
 
     @property
     def total_transfer_value(self) -> int:
@@ -274,6 +289,7 @@ class ReceiptAPI(ExtraAttributesMixin, BaseInterfaceModel):
     status: int
     txn_hash: str
     transaction: TransactionAPI
+    _error: Optional[VirtualMachineError] = None
 
     @log_instead_of_fail(default="<ReceiptAPI>")
     def __repr__(self) -> str:
@@ -318,6 +334,14 @@ class ReceiptAPI(ExtraAttributesMixin, BaseInterfaceModel):
         Return any debug log data outputted by the transaction as strings suitable for printing
         """
         return [" ".join(map(str, ln)) for ln in self.debug_logs_typed]
+
+    @property
+    def error(self) -> Optional[VirtualMachineError]:
+        return self._error
+
+    @error.setter
+    def error(self, value: VirtualMachineError):
+        self._error = value
 
     def show_debug_logs(self):
         """
