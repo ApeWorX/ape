@@ -452,7 +452,6 @@ class ReceiptAPI(ExtraAttributesMixin, BaseInterfaceModel):
         Returns:
             :class:`~ape.api.ReceiptAPI`: The receipt that is now confirmed.
         """
-
         try:
             self.raise_for_status()
         except TransactionError:

@@ -255,12 +255,18 @@ class Receipt(ReceiptAPI):
         return SourceTraceback.model_validate([])
 
     def raise_for_status(self):
+        err = None
         if self.gas_limit is not None and self.ran_out_of_gas:
-            raise OutOfGasError(txn=self)
+            err = OutOfGasError(txn=self)
 
         elif self.status != TransactionStatusEnum.NO_ERROR:
             txn_hash = HexBytes(self.txn_hash).hex()
-            raise TransactionError(f"Transaction '{txn_hash}' failed.", txn=self)
+            err = TransactionError(f"Transaction '{txn_hash}' failed.", txn=self)
+
+        if err and self.transaction.raise_on_revert:
+            raise err
+        elif err:
+            self.error = err
 
     def show_trace(self, verbose: bool = False, file: IO[str] = sys.stdout):
         self.trace.show(verbose=verbose, file=file)
