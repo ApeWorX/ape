@@ -52,15 +52,17 @@ def get_relative_path(target: Path, anchor: Path) -> Path:
     if not anchor.is_absolute():
         raise ValueError("'anchor' must be an absolute path.")
 
-    anchor_copy = Path(str(anchor))
-    levels_deep = 0
-    while not is_relative_to(anchor_copy, target):
-        levels_deep += 1
-        anchor_copy = anchor_copy.parent
+    # Calculate common prefix length
+    common_parts = 0
+    for target_part, anchor_part in zip(target.parts, anchor.parts):
+        if target_part == anchor_part:
+            common_parts += 1
+        else:
+            break
 
-    return Path("/".join(".." for _ in range(levels_deep))).joinpath(
-        str(target.relative_to(anchor_copy))
-    )
+    # Calculate the relative path
+    relative_parts = [".."] * (len(anchor.parts) - common_parts) + list(target.parts[common_parts:])
+    return Path(*relative_parts)
 
 
 def get_all_files_in_directory(
