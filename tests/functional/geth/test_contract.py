@@ -99,6 +99,7 @@ def test_revert_out_of_gas_error(geth_account, geth_second_account, geth_provide
     assert err.value.txn is not None
 
 
+@geth_process_test
 def test_revert_allow(test_accounts, geth_contract):
     not_owner = test_accounts[0]
 
