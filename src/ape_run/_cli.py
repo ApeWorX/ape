@@ -216,7 +216,7 @@ class ScriptCommand(click.MultiCommand, ManagerAccessMixin):
 
         # NOTE: don't return anything so Click displays proper error
 
-    def result_callback(self, result, interactive):
+    def result_callback(self, result, interactive: bool):  # type: ignore[override]
         if interactive:
             return self._launch_console()
 
