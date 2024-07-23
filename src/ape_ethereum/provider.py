@@ -63,7 +63,7 @@ from ape.utils import gas_estimation_error_message, to_int
 from ape.utils.misc import DEFAULT_MAX_RETRIES_TX
 from ape_ethereum._print import CONSOLE_ADDRESS, console_contract
 from ape_ethereum.trace import CallTrace, TraceApproach, TransactionTrace
-from ape_ethereum.transactions import AccessList, AccessListTransaction
+from ape_ethereum.transactions import AccessList, AccessListTransaction, TransactionStatusEnum
 
 DEFAULT_PORT = 8545
 DEFAULT_HOSTNAME = "localhost"
@@ -940,9 +940,15 @@ class Web3Provider(ProviderAPI, ABC):
             if txn.required_confirmations is not None
             else self.network.required_confirmations
         )
+        txn_dict = txn.model_dump(by_alias=True, mode="json")
         if vm_err:
             receipt = self._create_receipt(
-                required_confirmations=required_confirmations, error=vm_err, txn_hash=txn_hash
+                block_number=-1,  # Not in a block.
+                error=vm_err,
+                required_confirmations=required_confirmations,
+                status=TransactionStatusEnum.FAILING,
+                txn_hash=txn_hash,
+                **txn_dict,
             )
         else:
             receipt = self.get_receipt(txn_hash, required_confirmations=required_confirmations)
@@ -953,7 +959,6 @@ class Web3Provider(ProviderAPI, ABC):
 
         if receipt.failed:
             # NOTE: Using JSON mode since used as request data.
-            txn_dict = receipt.transaction.model_dump(by_alias=True, mode="json")
             txn_params = cast(TxParams, txn_dict)
 
             # Replay txn to get revert reason
@@ -981,7 +986,14 @@ class Web3Provider(ProviderAPI, ABC):
         # TODO: Optional configuration?
         if tx.receiver and Address(tx.receiver).is_contract:
             # Look for and print any contract logging
-            receipt.show_debug_logs()
+            try:
+                receipt.show_debug_logs()
+            except TransactionNotFound:
+                # Receipt never published. Likely failed.
+                pass
+            except Exception as err:
+                # Avoid letting debug logs causes program crashes.
+                logger.debug(f"Unable to show debug logs: {err}")
 
         logger.info(f"Confirmed {receipt.txn_hash} (total fees paid = {receipt.total_fees_paid})")
 

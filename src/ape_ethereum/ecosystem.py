@@ -550,7 +550,14 @@ class Ethereum(EcosystemAPI):
             status = TransactionStatusEnum(status)
 
         txn_hash = None
-        hash_key_choices = ("hash", "txHash", "txnHash", "transactionHash", "transaction_hash")
+        hash_key_choices = (
+            "hash",
+            "txHash",
+            "txn_hash",
+            "txnHash",
+            "transactionHash",
+            "transaction_hash",
+        )
         for choice in hash_key_choices:
             if choice in data:
                 txn_hash = data[choice]
