@@ -350,7 +350,9 @@ class ContractManager(BaseManager):
 
                 yield ct.name
 
-    def get(self, name: str, compile_missing: bool = True) -> Optional[ContractContainer]:
+    def get(
+        self, name: str, compile_missing: bool = True, check_for_changes: bool = True
+    ) -> Optional[ContractContainer]:
         """
         Get a contract by name.
 
@@ -359,6 +361,8 @@ class ContractManager(BaseManager):
             compile_missing (bool): Set to ``False`` to not attempt compiling
               if the contract can't be found. Note: modified sources are
               re-compiled regardless of this flag.
+            check_for_changes (bool): Set to ``False`` if avoiding checking
+              for changes.
 
         Returns:
             ContractContainer | None
@@ -367,6 +371,12 @@ class ContractManager(BaseManager):
         existing_types = self.project.manifest.contract_types or {}
         if contract_type := existing_types.get(name):
             source_id = contract_type.source_id or ""
+            source_found = source_id in self.sources
+
+            # perf: This is a very common case.
+            if not check_for_changes and source_found:
+                return ContractContainer(contract_type)
+
             ext = get_full_extension(source_id)
 
             # Allow us to still get previously-compiled contracts if don't
@@ -374,19 +384,19 @@ class ContractManager(BaseManager):
             if ext not in self.compiler_manager.registered_compilers:
                 return ContractContainer(contract_type)
 
-            elif source_id in self.sources and self._detect_change(source_id):
-                # Previous cache is outdated.
-                compiled = {
-                    ct.name: ct
-                    for ct in self.compiler_manager.compile(source_id, project=self.project)
-                    if ct.name
-                }
-                if compiled:
-                    self.project._update_contract_types(compiled)
-                    if name in compiled:
-                        return ContractContainer(compiled[name])
+            if source_found:
+                if check_for_changes and self._detect_change(source_id):
+                    # Previous cache is outdated.
+                    compiled = {
+                        ct.name: ct
+                        for ct in self.compiler_manager.compile(source_id, project=self.project)
+                        if ct.name
+                    }
+                    if compiled:
+                        self.project._update_contract_types(compiled)
+                        if name in compiled:
+                            return ContractContainer(compiled[name])
 
-            elif source_id in self.sources:
                 # Cached and already compiled.
                 return ContractContainer(contract_type)
 
@@ -2025,8 +2035,9 @@ class LocalProject(Project):
         manifest_path: Optional[Path] = None,
         config_override: Optional[dict] = None,
     ) -> None:
-        # A local project uses a special manifest.
+        self._session_source_change_check: set[str] = set()
         self.path = Path(path).resolve()
+        # A local project uses a special manifest.
         self.manifest_path = manifest_path or self.path / ".build" / "__local__.json"
         manifest = self.load_manifest()
 
@@ -2375,14 +2386,12 @@ class LocalProject(Project):
         return manifest
 
     def get_contract(self, name: str) -> Any:
-        if name in dir(self):
-            return self.__getattribute__(name)
-
-        elif contract := self.contracts.get(name):
+        check_for_changes = name not in self._session_source_change_check
+        if contract := self.contracts.get(name, check_for_changes=check_for_changes):
             contract.base_path = self.path
-            return contract
 
-        return None
+        self._session_source_change_check.add(name)
+        return contract
 
     def update_manifest(self, **kwargs):
         # Update the manifest in memory.
