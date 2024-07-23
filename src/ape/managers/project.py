@@ -57,6 +57,9 @@ class SourceManager(BaseManager):
 
     _path_cache: Optional[list[Path]] = None
 
+    # perf: calculating paths from source Ids can be expensive.
+    _path_to_source_id: dict[Path, str] = {}
+
     def __init__(
         self,
         root_path: Path,
@@ -113,7 +116,7 @@ class SourceManager(BaseManager):
                 text: Union[str, dict]
                 if path.is_file():
                     try:
-                        text = path.read_text()
+                        text = path.read_text(encoding="utf8")
                     except Exception:
                         continue
 
@@ -158,7 +161,7 @@ class SourceManager(BaseManager):
 
         return False
 
-    @property
+    @cached_property
     def _all_files(self) -> list[Path]:
         try:
             contracts_folder = self.get_contracts_path()
@@ -307,7 +310,13 @@ class SourceManager(BaseManager):
         return find_in_dir(self.root_path, relative_path)
 
     def _get_source_id(self, path: Path) -> str:
-        return _path_to_source_id(path, self.root_path)
+        if src_id := self._path_to_source_id.get(path):
+            return src_id
+
+        # Cache because this can be expensive.
+        src_id = _path_to_source_id(path, self.root_path)
+        self._path_to_source_id[path] = src_id
+        return src_id
 
     def _get_path(self, source_id: str) -> Path:
         return self.root_path / source_id
@@ -367,41 +376,41 @@ class ContractManager(BaseManager):
         Returns:
             ContractContainer | None
         """
-
         existing_types = self.project.manifest.contract_types or {}
-        if contract_type := existing_types.get(name):
-            source_id = contract_type.source_id or ""
-            source_found = source_id in self.sources
+        contract_type = existing_types.get(name)
 
-            # perf: This is a very common case.
-            if not check_for_changes and source_found:
-                return ContractContainer(contract_type)
+        if not contract_type:
+            if compile_missing:
+                self._compile_missing_contracts(self.sources.paths)
+                return self.get(name, compile_missing=False)
 
-            ext = get_full_extension(source_id)
+            return None
 
-            # Allow us to still get previously-compiled contracts if don't
-            # have the compiler plugin installed at this time.
-            if ext not in self.compiler_manager.registered_compilers:
-                return ContractContainer(contract_type)
+        source_id = contract_type.source_id or ""
+        source_found = source_id in self.sources
 
-            if source_found:
-                if check_for_changes and self._detect_change(source_id):
-                    # Previous cache is outdated.
-                    compiled = {
-                        ct.name: ct
-                        for ct in self.compiler_manager.compile(source_id, project=self.project)
-                        if ct.name
-                    }
-                    if compiled:
-                        self.project._update_contract_types(compiled)
-                        if name in compiled:
-                            return ContractContainer(compiled[name])
+        if not check_for_changes and source_found:
+            return ContractContainer(contract_type)
 
-                # Cached and already compiled.
-                return ContractContainer(contract_type)
+        ext = get_full_extension(source_id)
+        if ext not in self.compiler_manager.registered_compilers:
+            return ContractContainer(contract_type)
+
+        if source_found:
+            if check_for_changes and self._detect_change(source_id):
+                compiled = {
+                    ct.name: ct
+                    for ct in self.compiler_manager.compile(source_id, project=self.project)
+                    if ct.name
+                }
+                if compiled:
+                    self.project._update_contract_types(compiled)
+                    if name in compiled:
+                        return ContractContainer(compiled[name])
+
+            return ContractContainer(contract_type)
 
         if compile_missing:
-            # Try again after compiling all missing.
             self._compile_missing_contracts(self.sources.paths)
             return self.get(name, compile_missing=False)
 
@@ -2386,11 +2395,16 @@ class LocalProject(Project):
         return manifest
 
     def get_contract(self, name: str) -> Any:
-        check_for_changes = name not in self._session_source_change_check
-        if contract := self.contracts.get(name, check_for_changes=check_for_changes):
+        if name in self._session_source_change_check:
+            check_for_changes = False
+        else:
+            check_for_changes = True
+            self._session_source_change_check.add(name)
+
+        contract = self.contracts.get(name, check_for_changes=check_for_changes)
+        if contract:
             contract.base_path = self.path
 
-        self._session_source_change_check.add(name)
         return contract
 
     def update_manifest(self, **kwargs):

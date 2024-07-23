@@ -22,13 +22,13 @@ def is_relative_to(path: Path, target: Path) -> bool:
     Returns:
         bool: ``True`` if the path is relative to the target path or ``False``.
     """
-    if hasattr(path, "is_relative_to"):
-        # NOTE: Only available ``>=3.9``
-        return target.is_relative_to(path)  # type: ignore
-
-    else:
+    try:
+        return target.is_relative_to(path)
+    except AttributeError:
+        # For Python versions < 3.9
         try:
-            return target.relative_to(path) is not None
+            target.relative_to(path)
+            return True
         except ValueError:
             return False
 
@@ -100,13 +100,15 @@ def get_all_files_in_directory(
     elif pattern is not None:
         pattern_obj = pattern
 
-    # is dir
     result: list[Path] = []
-    for file in (p for p in path.rglob("*.*") if p.is_file()):
-        if (max_files is None or max_files is not None and len(result) < max_files) and (
-            pattern_obj is None or pattern_obj.match(file.name)
-        ):
-            result.append(file)
+    append_result = result.append  # Local variable for faster access
+    for file in path.rglob("*.*"):
+        if not file.is_file() or (pattern_obj is not None and not pattern_obj.match(file.name)):
+            continue
+
+        append_result(file)
+        if max_files is not None and len(result) >= max_files:
+            break
 
     return result
 
@@ -172,17 +174,18 @@ def get_full_extension(path: Union[Path, str]) -> str:
         return ""
 
     path = Path(path)
-    if path.is_dir():
+    if path.is_dir() or path.suffix == "":
         return ""
 
-    parts = path.name.split(".")
-    start_idx = 2 if path.name.startswith(".") else 1
+    name = path.name
+    parts = name.split(".")
 
-    # NOTE: Handles when given just `.hiddenFile` since slice indices
-    #   may exceed their bounds.
-    suffix = ".".join(parts[start_idx:])
+    if len(parts) > 2 and name.startswith("."):
+        return "." + ".".join(parts[2:])
+    elif len(parts) > 1:
+        return "." + ".".join(parts[1:])
 
-    return f".{suffix}" if suffix and f".{suffix}" != f"{path.name}" else ""
+    return ""
 
 
 @contextmanager
