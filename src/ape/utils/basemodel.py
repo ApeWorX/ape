@@ -201,7 +201,7 @@ class _AttrLookup(dict):
     def __getitem__(self, item):
         return self._callback(item)
 
-    def get(self, item):
+    def get(self, item):  # type: ignore[override]
         return self._callback(item)
 
 
