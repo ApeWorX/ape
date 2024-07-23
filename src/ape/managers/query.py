@@ -128,6 +128,15 @@ class QueryManager(ManagerAccessMixin):
 
     def _suggest_engines(self, engine_selection):
         return difflib.get_close_matches(engine_selection, list(self.engines), cutoff=0.6)
+    
+    def _get_skip_caching_plugins(self):
+        """
+        Get the list of query plugins to skip caching for from the configuration.
+        """
+        try:
+            return self.config_manager.query.skip_caching
+        except AttributeError:
+            return []  # Return an empty list if the configuration doesn't exist
 
     def query(
         self,
