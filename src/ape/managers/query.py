@@ -203,13 +203,18 @@ class QueryManager(ManagerAccessMixin):
                 f" executed in {exec_time} ms (expected: {est_time} ms)"
             )
 
+        skip_caching_plugins = self._get_skip_caching_plugins()
+
         # Update any caches
-        for engine in self.engines.values():
+        for engine_name, engine in self.engines.items():
             if not isinstance(engine, sel_engine.__class__):
-                result, cache_data = tee(result)
-                try:
-                    engine.update_cache(query, cache_data)
-                except QueryEngineError as err:
-                    logger.error(str(err))
+                if engine_name not in skip_caching_plugins:
+                    result, cache_data = tee(result)
+                    try:
+                        engine.update_cache(query, cache_data)
+                    except QueryEngineError as err:
+                        logger.error(str(err))
+                else:
+                    logger.debug(f"Skipping cache update for plugin: {engine_name}")
 
         return result
