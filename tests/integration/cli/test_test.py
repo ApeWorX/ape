@@ -178,7 +178,7 @@ def test_test(setup_pytester, integ_project, pytester, eth_tester_provider):
     from ape.logging import logger
 
     logger.set_level("DEBUG")
-    result = pytester.runpytest_subprocess()
+    result = pytester.runpytest_subprocess(timeout=30)
     try:
         result.assert_outcomes(passed=passed, failed=failed), "\n".join(result.outlines)
     except ValueError:
@@ -189,7 +189,7 @@ def test_test(setup_pytester, integ_project, pytester, eth_tester_provider):
 def test_uncaught_txn_err(setup_pytester, integ_project, pytester, eth_tester_provider):
     _ = eth_tester_provider  # Ensure using EthTester for this test.
     setup_pytester(integ_project)
-    result = pytester.runpytest_subprocess()
+    result = pytester.runpytest_subprocess(timeout=30)
     expected = """
     contract_in_test.setNumber(5, sender=owner)
 E   ape.exceptions.ContractLogicError: Transaction failed.
@@ -280,7 +280,7 @@ def test_gas_when_estimating(geth_provider, setup_pytester, integ_project, pytes
     geth_account.transfer(geth_account, "1 wei")  # Force a clean block.
     with integ_project.temp_config(**cfg):
         passed, failed = setup_pytester(integ_project)
-        result = pytester.runpytest_subprocess()
+        result = pytester.runpytest_subprocess(timeout=30)
         run_gas_test(result, passed, failed)
 
 

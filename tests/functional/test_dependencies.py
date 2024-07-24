@@ -647,7 +647,7 @@ class TestDependency:
 
             # Since we are adding a file mid-session, we have to refresh so
             # it's picked up. Users typically don't have to do this.
-            dependency.project.refresh_files()
+            dependency.project.refresh_sources()
 
             result = dependency.compile()
             assert len(result) == 1
