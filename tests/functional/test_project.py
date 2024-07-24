@@ -383,6 +383,10 @@ def test_load_contracts_after_deleting_same_named_contract(tmp_project, compiler
     # Goodbye.
     init_contract.unlink()
 
+    # Since we are changing files mid-session, we need to refresh the project.
+    # Typically, users don't have to do this.
+    tmp_project.refresh_sources()
+
     result = tmp_project.load_contracts()
     assert "foo" not in result  # Was deleted.
     # Also ensure it is gone from paths.
@@ -391,6 +395,8 @@ def test_load_contracts_after_deleting_same_named_contract(tmp_project, compiler
     # Create a new contract with the same name.
     new_contract = tmp_project.contracts_folder / "bar.__mock__"
     new_contract.write_text("BAZ", encoding="utf8")
+    tmp_project.refresh_sources()
+
     mock_compiler.overrides = {"contractName": "foo"}
     result = tmp_project.load_contracts()
     assert "foo" in result

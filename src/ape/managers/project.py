@@ -309,6 +309,15 @@ class SourceManager(BaseManager):
         relative_path = input_path.relative_to(input_path.anchor)
         return find_in_dir(self.root_path, relative_path)
 
+    def refresh(self):
+        """
+        Reset file-caches to handle session-changes.
+        (Typically not needed to be called by users).
+        """
+        (self.__dict__ or {}).pop("_all_files", None)
+        self._path_to_source_id = {}
+        self._path_cache = None
+
     def _get_source_id(self, path: Path) -> str:
         if src_id := self._path_to_source_id.get(path):
             return src_id
@@ -2483,6 +2492,15 @@ class LocalProject(Project):
         """
         self._clear_cached_config()
         _ = self.config
+
+    def refresh_sources(self):
+        """
+        Check for file-changes. Typically, you don't need to call this method.
+        This method exists for when changing files mid-session, you can "refresh"
+        and Ape will know about the changes.
+        """
+        self._session_source_change_check = set()
+        self.sources.refresh()
 
     def _clear_cached_config(self):
         if "config" in self.__dict__:
