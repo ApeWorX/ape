@@ -451,6 +451,7 @@
 <li class="toctree-l4"><a class="reference internal" href="#ape.managers.project.LocalProject.load_manifest"><code class="docutils literal notranslate"><span class="pre">LocalProject.load_manifest()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.managers.project.LocalProject.meta"><code class="docutils literal notranslate"><span class="pre">LocalProject.meta</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.managers.project.LocalProject.project_api"><code class="docutils literal notranslate"><span class="pre">LocalProject.project_api</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ape.managers.project.LocalProject.refresh_sources"><code class="docutils literal notranslate"><span class="pre">LocalProject.refresh_sources()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.managers.project.LocalProject.reload_config"><code class="docutils literal notranslate"><span class="pre">LocalProject.reload_config()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.managers.project.LocalProject.sources"><code class="docutils literal notranslate"><span class="pre">LocalProject.sources</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.managers.project.LocalProject.unpack"><code class="docutils literal notranslate"><span class="pre">LocalProject.unpack()</span></code></a></li>
@@ -477,6 +478,7 @@
 <li class="toctree-l4"><a class="reference internal" href="#ape.managers.project.SourceManager.is_excluded"><code class="docutils literal notranslate"><span class="pre">SourceManager.is_excluded()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.managers.project.SourceManager.lookup"><code class="docutils literal notranslate"><span class="pre">SourceManager.lookup()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.managers.project.SourceManager.paths"><code class="docutils literal notranslate"><span class="pre">SourceManager.paths</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ape.managers.project.SourceManager.refresh"><code class="docutils literal notranslate"><span class="pre">SourceManager.refresh()</span></code></a></li>
 </ul>
 </li>
 </ul>
@@ -2431,7 +2433,7 @@ as the default.</p>
 <dd><p>Local contract-type loader. Only dict-like behavior is public.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="ape.managers.project.ContractManager.get">
-<span class="sig-name descname"><span class="pre">get</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">compile_missing</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="contracts.html#ape.contracts.base.ContractContainer" title="ape.contracts.base.ContractContainer"><span class="pre">ContractContainer</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></span><a class="headerlink" href="#ape.managers.project.ContractManager.get" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">get</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">compile_missing</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">check_for_changes</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="contracts.html#ape.contracts.base.ContractContainer" title="ape.contracts.base.ContractContainer"><span class="pre">ContractContainer</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></span><a class="headerlink" href="#ape.managers.project.ContractManager.get" title="Permalink to this definition"></a></dt>
 <dd><p>Get a contract by name.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -2440,6 +2442,8 @@ as the default.</p>
 <li><p><strong>compile_missing</strong> (<em>bool</em>) – Set to <code class="docutils literal notranslate"><span class="pre">False</span></code> to not attempt compiling
 if the contract can’t be found. Note: modified sources are
 re-compiled regardless of this flag.</p></li>
+<li><p><strong>check_for_changes</strong> (<em>bool</em>) – Set to <code class="docutils literal notranslate"><span class="pre">False</span></code> if avoiding checking
+for changes.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
@@ -2838,6 +2842,14 @@ or a Brownie project (or something else).</p>
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="ape.managers.project.LocalProject.refresh_sources">
+<span class="sig-name descname"><span class="pre">refresh_sources</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ape.managers.project.LocalProject.refresh_sources" title="Permalink to this definition"></a></dt>
+<dd><p>Check for file-changes. Typically, you don’t need to call this method.
+This method exists for when changing files mid-session, you can “refresh”
+and Ape will know about the changes.</p>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="ape.managers.project.LocalProject.reload_config">
 <span class="sig-name descname"><span class="pre">reload_config</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ape.managers.project.LocalProject.reload_config" title="Permalink to this definition"></a></dt>
 <dd><p>Reload the local ape-config.yaml file.
@@ -3052,6 +3064,13 @@ or a source ID.</p>
 <dt class="sig sig-object py" id="ape.managers.project.SourceManager.paths">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">paths</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Iterator</span><span class="p"><span class="pre">[</span></span><span class="pre">Path</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#ape.managers.project.SourceManager.paths" title="Permalink to this definition"></a></dt>
 <dd><p>All contract sources paths.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ape.managers.project.SourceManager.refresh">
+<span class="sig-name descname"><span class="pre">refresh</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ape.managers.project.SourceManager.refresh" title="Permalink to this definition"></a></dt>
+<dd><p>Reset file-caches to handle session-changes.
+(Typically not needed to be called by users).</p>
 </dd></dl>
 
 </dd></dl>
