@@ -175,6 +175,7 @@
 <li class="toctree-l1"><a class="reference internal" href="transactions.html">Transactions</a></li>
 <li class="toctree-l1"><a class="reference internal" href="console.html">Ape Console</a></li>
 <li class="toctree-l1"><a class="reference internal" href="contracts.html">Contracts</a></li>
+<li class="toctree-l1"><a class="reference internal" href="reverts.html">Reverts</a></li>
 <li class="toctree-l1"><a class="reference internal" href="proxy.html">Proxy Contracts</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Testing</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#pytest">Pytest</a></li>
@@ -194,7 +195,7 @@
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="#advanced-testing-tips">Advanced Testing Tips</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#testing-transaction-failures">Testing Transaction Failures</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#testing-transaction-reverts">Testing Transaction Reverts</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#expected-message"><code class="docutils literal notranslate"><span class="pre">expected_message</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#dev-message"><code class="docutils literal notranslate"><span class="pre">dev_message</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#caveats">Caveats</a><ul>
@@ -539,9 +540,10 @@ However, you can disable this feature by setting the property.</p>
 </pre></div>
 </div>
 </section>
-<section id="testing-transaction-failures">
-<h2>Testing Transaction Failures<a class="headerlink" href="#testing-transaction-failures" title="Permalink to this heading"></a></h2>
-<p>Similar to <code class="docutils literal notranslate"><span class="pre">pytest.raises()</span></code>, you can use <code class="docutils literal notranslate"><span class="pre">ape.reverts()</span></code> to assert that contract transactions fail and revert.</p>
+<section id="testing-transaction-reverts">
+<h2>Testing Transaction Reverts<a class="headerlink" href="#testing-transaction-reverts" title="Permalink to this heading"></a></h2>
+<p>Similar to <code class="docutils literal notranslate"><span class="pre">pytest.raises()</span></code>, you can use <code class="docutils literal notranslate"><span class="pre">ape.reverts()</span></code> to assert that contract transactions fail and revert.
+To learn more about reverts in Ape, see the <a class="reference external" href="./reverts.html">reverts guide</a>.</p>
 <p>From our earlier example we can see this in action:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">ape</span>
 
@@ -644,25 +646,11 @@ These can be helpful in optimizing for gas usage and keeping revert reason strin
 </section>
 <section id="custom-errors">
 <h3>Custom Errors<a class="headerlink" href="#custom-errors" title="Permalink to this heading"></a></h3>
-<p>As of Solidity 0.8.4, custom errors have been introduced to the ABI.
-To make assertions on custom errors, you can use the types defined on your contracts.</p>
-<p>For example, if I have a contract called <code class="docutils literal notranslate"><span class="pre">MyContract.sol</span></code>:</p>
-<div class="highlight-solidity notranslate"><div class="highlight"><pre><span></span><span class="c1">// SPDX-License-Identifier: GPL-3.0</span>
-<span class="k">pragma solidity</span><span class="w"> </span><span class="o">^</span><span class="k">0.8.4</span><span class="p">;</span>
-
-error<span class="w"> </span>Unauthorized<span class="p">(</span><span class="kt">address</span><span class="w"> </span><span class="nv">unauth_address</span><span class="p">);</span>
-
-<span class="k">contract</span><span class="w"> </span><span class="ni">MyContract</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="kt">address</span><span class="w"> </span><span class="nv">payable</span><span class="w"> </span>owner<span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kt">payable</span><span class="p">(</span><span class="k">msg.sender</span><span class="p">);</span>
-<span class="w">    </span><span class="kt">function</span><span class="w"> </span><span class="nv">withdraw</span><span class="p">()</span><span class="w"> </span><span class="kt">public</span><span class="w"> </span><span class="p">{</span>
-<span class="w">        </span><span class="kt">if</span><span class="w"> </span><span class="p">(</span><span class="k">msg.sender</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span>owner<span class="p">)</span>
-<span class="w">            </span>revert<span class="w"> </span>Unauthorized<span class="p">(</span><span class="k">msg.sender</span><span class="p">);</span>
-<span class="w">        </span>owner<span class="p">.</span>transfer<span class="p">(</span><span class="kt">address</span><span class="p">(</span><span class="kt">this</span><span class="p">).</span>balance<span class="p">);</span>
-<span class="w">    </span><span class="p">}</span>
-<span class="p">}</span>
-</pre></div>
-</div>
-<p>I can ensure unauthorized withdraws are disallowed by writing the following test:</p>
+<p>In your tests, you can make assertions about custom errors raised.
+(For more information on custom errors, <a class="reference external" href="./reverts.html#custom-errors">see reverts guide on custom errors</a>.)</p>
+<p>For example, assume a custom exception in a Solidity contract (variable <code class="docutils literal notranslate"><span class="pre">contract</span></code>) is called <code class="docutils literal notranslate"><span class="pre">Unauthorized</span></code>.
+It can be accessed via <code class="docutils literal notranslate"><span class="pre">contract.Unauthorized</span></code>.
+We can ensure unauthorized withdraws are disallowed by writing the following test:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">ape</span>
 <span class="kn">import</span> <span class="nn">pytest</span>
 

@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Reverts &mdash; ape  documentation</title>
+      <link rel="stylesheet" href="/ape/latest/_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="/ape/latest/_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="/ape/latest/_static/custom.css" type="text/css" />
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+    <link rel="canonical" href="/ape/userguides/reverts.html" />
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/doctools.js"></script>
+        <script src="../_static/sphinx_highlight.js"></script>
+        <script data-domain="docs.apeworx.io" defer="defer" src="https://plausible.io/js/script.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <script src="../_static/custom.js"></script>
+  <script>
+      var PROJECT = "ape";
+  </script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Proxy Contracts" href="proxy.html" />
+    <link rel="prev" title="Contracts" href="contracts.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            ape
+              <img src="../_static/logo.gif" class="logo" alt="Logo"/>
+          </a>
+
+          <div class="version">
+            <label for="version-picker" id="version-picker-label">Version:</label>
+            <select id="version-picker">
+              <option value="">Select version...</option>
+              <option value="latest">latest</option>
+              <option value="stable">stable</option>
+                <option value="v0.8.9">v0.8.9</option>
+                <option value="v0.8.8">v0.8.8</option>
+                <option value="v0.8.7">v0.8.7</option>
+                <option value="v0.8.6">v0.8.6</option>
+                <option value="v0.8.5">v0.8.5</option>
+                <option value="v0.8.4">v0.8.4</option>
+                <option value="v0.8.3">v0.8.3</option>
+                <option value="v0.8.2">v0.8.2</option>
+                <option value="v0.8.1">v0.8.1</option>
+                <option value="v0.8.0">v0.8.0</option>
+                <option value="v0.7.23">v0.7.23</option>
+                <option value="v0.7.22">v0.7.22</option>
+                <option value="v0.7.21">v0.7.21</option>
+                <option value="v0.7.20">v0.7.20</option>
+                <option value="v0.7.19">v0.7.19</option>
+                <option value="v0.7.18">v0.7.18</option>
+                <option value="v0.7.17">v0.7.17</option>
+                <option value="v0.7.16">v0.7.16</option>
+                <option value="v0.7.15">v0.7.15</option>
+                <option value="v0.7.14">v0.7.14</option>
+                <option value="v0.7.12">v0.7.12</option>
+                <option value="v0.7.11">v0.7.11</option>
+                <option value="v0.7.10">v0.7.10</option>
+                <option value="v0.7.9">v0.7.9</option>
+                <option value="v0.7.8">v0.7.8</option>
+                <option value="v0.7.7">v0.7.7</option>
+                <option value="v0.7.6">v0.7.6</option>
+                <option value="v0.7.5">v0.7.5</option>
+                <option value="v0.7.4">v0.7.4</option>
+                <option value="v0.7.3">v0.7.3</option>
+                <option value="v0.7.2">v0.7.2</option>
+                <option value="v0.7.1">v0.7.1</option>
+                <option value="v0.7.0">v0.7.0</option>
+                <option value="v0.6.27">v0.6.27</option>
+                <option value="v0.6.26">v0.6.26</option>
+                <option value="v0.6.25">v0.6.25</option>
+                <option value="v0.6.24">v0.6.24</option>
+                <option value="v0.6.23">v0.6.23</option>
+                <option value="v0.6.22">v0.6.22</option>
+                <option value="v0.6.21">v0.6.21</option>
+                <option value="v0.6.20">v0.6.20</option>
+                <option value="v0.6.19">v0.6.19</option>
+                <option value="v0.6.18">v0.6.18</option>
+                <option value="v0.6.17">v0.6.17</option>
+                <option value="v0.6.16">v0.6.16</option>
+                <option value="v0.6.15">v0.6.15</option>
+                <option value="v0.6.14">v0.6.14</option>
+                <option value="v0.6.13">v0.6.13</option>
+                <option value="v0.6.12">v0.6.12</option>
+                <option value="v0.6.11">v0.6.11</option>
+                <option value="v0.6.10">v0.6.10</option>
+                <option value="v0.6.9">v0.6.9</option>
+                <option value="v0.6.8">v0.6.8</option>
+                <option value="v0.6.7">v0.6.7</option>
+                <option value="v0.6.6">v0.6.6</option>
+                <option value="v0.6.5">v0.6.5</option>
+                <option value="v0.6.4">v0.6.4</option>
+                <option value="v0.6.3">v0.6.3</option>
+                <option value="v0.6.2">v0.6.2</option>
+                <option value="v0.6.1">v0.6.1</option>
+                <option value="v0.6.0">v0.6.0</option>
+                <option value="v0.5.9">v0.5.9</option>
+                <option value="v0.5.8">v0.5.8</option>
+                <option value="v0.5.7">v0.5.7</option>
+                <option value="v0.5.6">v0.5.6</option>
+                <option value="v0.5.5">v0.5.5</option>
+                <option value="v0.5.4">v0.5.4</option>
+                <option value="v0.5.3">v0.5.3</option>
+                <option value="v0.5.2">v0.5.2</option>
+                <option value="v0.5.1">v0.5.1</option>
+                <option value="v0.5.0">v0.5.0</option>
+                <option value="v0.4.5">v0.4.5</option>
+                <option value="v0.4.4">v0.4.4</option>
+                <option value="v0.4.3">v0.4.3</option>
+                <option value="v0.4.2">v0.4.2</option>
+                <option value="v0.4.1">v0.4.1</option>
+                <option value="v0.4.0">v0.4.0</option>
+                <option value="v0.3.5">v0.3.5</option>
+                <option value="v0.3.4">v0.3.4</option>
+                <option value="v0.3.3">v0.3.3</option>
+                <option value="v0.3.2">v0.3.2</option>
+                <option value="v0.3.1">v0.3.1</option>
+                <option value="v0.3.0">v0.3.0</option>
+                <option value="v0.2.8">v0.2.8</option>
+                <option value="v0.2.7">v0.2.7</option>
+                <option value="v0.2.6">v0.2.6</option>
+                <option value="v0.2.5">v0.2.5</option>
+                <option value="v0.2.4">v0.2.4</option>
+                <option value="v0.2.3">v0.2.3</option>
+                <option value="v0.2.2">v0.2.2</option>
+                <option value="v0.2.1">v0.2.1</option>
+                <option value="v0.2.0">v0.2.0</option>
+                <option value="v0.1.6">v0.1.6</option>
+                <option value="v0.1.5">v0.1.5</option>
+                <option value="v0.1.4">v0.1.4</option>
+                <option value="v0.1.3">v0.1.3</option>
+                <option value="v0.1.1">v0.1.1</option>
+                <option value="v0.1.0">v0.1.0</option>
+            </select>
+          </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">User Guides</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="quickstart.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="accounts.html">Accounts</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installing_plugins.html">Plugins</a></li>
+<li class="toctree-l1"><a class="reference internal" href="projects.html">Developing Projects with Ape</a></li>
+<li class="toctree-l1"><a class="reference internal" href="dependencies.html">Dependencies</a></li>
+<li class="toctree-l1"><a class="reference internal" href="compile.html">Compile</a></li>
+<li class="toctree-l1"><a class="reference internal" href="clis.html">CLIs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="data.html">Querying Data</a></li>
+<li class="toctree-l1"><a class="reference internal" href="networks.html">Networks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="forking_networks.html">Forking Networks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="developing_plugins.html">Developing Plugins</a></li>
+<li class="toctree-l1"><a class="reference internal" href="config.html">Configure Ape</a></li>
+<li class="toctree-l1"><a class="reference internal" href="transactions.html">Transactions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="console.html">Ape Console</a></li>
+<li class="toctree-l1"><a class="reference internal" href="contracts.html">Contracts</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Reverts</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#dev-messages">Dev Messages</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#custom-errors">Custom Errors</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#built-in-errors">Built-in Errors</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="proxy.html">Proxy Contracts</a></li>
+<li class="toctree-l1"><a class="reference internal" href="testing.html">Testing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="scripts.html">Scripting</a></li>
+<li class="toctree-l1"><a class="reference internal" href="publishing.html">Publishing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="logging.html">Logging</a></li>
+<li class="toctree-l1"><a class="reference internal" href="trace.html">Traces</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">CLI Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../commands/accounts.html">accounts</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../commands/compile.html">compile</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../commands/pm.html">pm</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../commands/console.html">console</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../commands/init.html">init</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../commands/networks.html">networks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../commands/plugins.html">plugins</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../commands/run.html">run</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../commands/test.html">test</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Core Python Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../methoddocs/ape.html">ape</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../methoddocs/api.html">ape.api</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../methoddocs/cli.html">ape.cli</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../methoddocs/contracts.html">ape.contracts</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../methoddocs/exceptions.html">ape.exceptions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../methoddocs/managers.html">ape.managers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../methoddocs/plugins.html">ape.plugins</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../methoddocs/types.html">ape.types</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../methoddocs/utils.html">ape.utils</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Plugin Python Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../methoddocs/ape_accounts.html">ape-accounts</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../methoddocs/ape_compile.html">ape-compile</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../methoddocs/ape_ethereum.html">ape-ethereum</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../methoddocs/ape_ethereum.html#module-ape_ethereum.multicall">ape-ethereum.multicall</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../methoddocs/ape_node.html">ape-node</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../methoddocs/ape_pm.html">ape-pm</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../methoddocs/ape_test.html">ape-test</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">ape</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Reverts</li>
+      <li class="wy-breadcrumbs-aside">
+              <a href="https://github.com/ApeWorX/ape/blob/main/docs/userguides/reverts.md" class="fa fa-github"> Edit on GitHub</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="reverts">
+<h1>Reverts<a class="headerlink" href="#reverts" title="Permalink to this heading"></a></h1>
+<p>Reverts occur when a transaction or call fails for any reason.
+In the case of EVM networks, reverts result in funds being returned to the sender (besides network-fees) and contract state changes unwinding.
+Typically, in smart-contracts, user-defined reverts occur from <code class="docutils literal notranslate"><span class="pre">assert</span></code> statements in Vyper and <code class="docutils literal notranslate"><span class="pre">require</span></code> statements in Solidity.</p>
+<p>Here is a Vyper example of an <code class="docutils literal notranslate"><span class="pre">assert</span></code> statement:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">assert</span> <span class="n">msg</span><span class="o">.</span><span class="n">sender</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">owner</span><span class="p">,</span> <span class="s2">&quot;!authorized&quot;</span>
+</pre></div>
+</div>
+<p>The string <code class="docutils literal notranslate"><span class="pre">&quot;!authorized&quot;</span></code> after the assertion is the revert-message that gets forwarded to the user.</p>
+<p>In solidity, a <code class="docutils literal notranslate"><span class="pre">require</span></code> statement looks like:</p>
+<div class="highlight-solidity notranslate"><div class="highlight"><pre><span></span><span class="kt">require</span><span class="p">(</span><span class="k">msg.sender</span><span class="w"> </span><span class="o">==</span><span class="w"> </span>owner<span class="p">,</span><span class="w"> </span><span class="s2">&quot;!authorized&quot;</span><span class="p">);</span>
+</pre></div>
+</div>
+<p>In Ape, reverts automatically become Python exceptions.
+When <a class="reference external" href="./contracts.html#contract-interaction">interacting with a contract</a> and encountering a revert, your program will crash and you will see a stacktrace showing you where the revert occurred.
+For example, assume you have contract instance variable <code class="docutils literal notranslate"><span class="pre">contract</span></code> with a Vyper method called <code class="docutils literal notranslate"><span class="pre">setNumber()</span></code>, and it reverts when the user is not the owner of the contract.
+Calling it may look like:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">receipt</span> <span class="o">=</span> <span class="n">contract</span><span class="o">.</span><span class="n">setNumber</span><span class="p">(</span><span class="mi">123</span><span class="p">,</span> <span class="n">sender</span><span class="o">=</span><span class="n">not_owner</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>And when it fails, Ape shows a stacktrace like this:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span class="w">  </span>File<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$HOME</span><span class="s2">/ApeProjects/ape-project/scripts/fail.py&quot;</span>,<span class="w"> </span>line<span class="w"> </span><span class="m">8</span>,<span class="w"> </span><span class="k">in</span><span class="w"> </span>main
+<span class="w">    </span><span class="nv">receipt</span><span class="w"> </span><span class="o">=</span><span class="w"> </span>contract.setNumber<span class="o">(</span><span class="m">5</span>,<span class="w"> </span><span class="nv">sender</span><span class="o">=</span>not_owner<span class="o">)</span>
+<span class="w">              </span>^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+<span class="w">  </span>File<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$HOME</span><span class="s2">/ApeProjects/ape-project/contracts/VyperContract.vy&quot;</span>,<span class="w"> </span>line<span class="w"> </span><span class="m">98</span>,<span class="w"> </span><span class="k">in</span><span class="w"> </span>
+setNumber
+<span class="w">    </span>assert<span class="w"> </span>msg.sender<span class="w"> </span><span class="o">==</span><span class="w"> </span>self.owner,<span class="w"> </span><span class="s2">&quot;!authorized&quot;</span>
+<span class="w">    </span>^^^^^^^^^^^^^^^^^^^^^^^
+
+ERROR:<span class="w"> </span><span class="o">(</span>ContractLogicError<span class="o">)</span><span class="w"> </span>!authorized
+</pre></div>
+</div>
+<p>One way to handle exceptions is to simply use <code class="docutils literal notranslate"><span class="pre">try:</span></code> / <code class="docutils literal notranslate"><span class="pre">except:</span></code> blocks:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">ape.exceptions</span> <span class="kn">import</span> <span class="n">ContractLogicError</span>
+
+<span class="k">try</span><span class="p">:</span>
+    <span class="n">receipt</span> <span class="o">=</span> <span class="n">contract</span><span class="o">.</span><span class="n">setNumber</span><span class="p">(</span><span class="mi">123</span><span class="p">,</span> <span class="n">sender</span><span class="o">=</span><span class="n">not_owner</span><span class="p">)</span>
+<span class="k">except</span> <span class="n">ContractLogicError</span> <span class="k">as</span> <span class="n">err</span><span class="p">:</span>
+    <span class="n">receipt</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;The transaction failed: </span><span class="si">{</span><span class="n">err</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="c1"># continue on!</span>
+</pre></div>
+</div>
+<p>If you wish to allow reverts without having Ape raise exceptions, use the <code class="docutils literal notranslate"><span class="pre">raise_on_revert=False</span></code> flag:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">receipt</span> <span class="o">=</span> <span class="n">contract</span><span class="o">.</span><span class="n">setNumber</span><span class="p">(</span><span class="mi">123</span><span class="p">,</span> <span class="n">sender</span><span class="o">=</span><span class="n">not_owner</span><span class="p">,</span> <span class="n">raise_on_revert</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">receipt</span><span class="o">.</span><span class="n">failed</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">receipt</span><span class="o">.</span><span class="n">error</span>
+<span class="go">ContractLogicError(&#39;!authorized&#39;)</span>
+</pre></div>
+</div>
+<section id="dev-messages">
+<h2>Dev Messages<a class="headerlink" href="#dev-messages" title="Permalink to this heading"></a></h2>
+<p>Dev messages allow smart-contract authors to save gas by avoiding revert-messages.
+If you are using a provider that supports tracing features and a compiler that can detect <code class="docutils literal notranslate"><span class="pre">dev</span></code> messages, and you encounter a revert without a revert-message but it has a dev-message, Ape will show the dev-message:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">assert</span> <span class="n">msg</span><span class="o">.</span><span class="n">sender</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">owner</span>  <span class="c1"># dev: !authorized&quot;</span>
+</pre></div>
+</div>
+<p>And you will see a similar stacktrace as if you had used a revert-message.</p>
+<p>In Solidity, it might look like this:</p>
+<div class="highlight-solidity notranslate"><div class="highlight"><pre><span></span><span class="kt">require</span><span class="p">(</span><span class="k">msg.sender</span><span class="w"> </span><span class="o">==</span><span class="w"> </span>owner<span class="p">);</span><span class="w">  </span><span class="c1">// @dev !authorized</span>
+</pre></div>
+</div>
+</section>
+<section id="custom-errors">
+<h2>Custom Errors<a class="headerlink" href="#custom-errors" title="Permalink to this heading"></a></h2>
+<p>As of Solidity 0.8.4, custom errors have been introduced to the ABI.
+In Ape, custom errors are available on contract-instances.
+For example, if you have a contract like:</p>
+<div class="highlight-solidity notranslate"><div class="highlight"><pre><span></span><span class="c1">// SPDX-License-Identifier: GPL-3.0</span>
+<span class="k">pragma solidity</span><span class="w"> </span><span class="o">^</span><span class="k">0.8.4</span><span class="p">;</span>
+
+error<span class="w"> </span>Unauthorized<span class="p">(</span><span class="kt">address</span><span class="w"> </span><span class="nv">unauth_address</span><span class="p">);</span>
+
+<span class="k">contract</span><span class="w"> </span><span class="ni">MyContract</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="kt">address</span><span class="w"> </span><span class="nv">payable</span><span class="w"> </span>owner<span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kt">payable</span><span class="p">(</span><span class="k">msg.sender</span><span class="p">);</span>
+<span class="w">    </span><span class="kt">function</span><span class="w"> </span><span class="nv">withdraw</span><span class="p">()</span><span class="w"> </span><span class="kt">public</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="kt">if</span><span class="w"> </span><span class="p">(</span><span class="k">msg.sender</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span>owner<span class="p">)</span>
+<span class="w">            </span>revert<span class="w"> </span>Unauthorized<span class="p">(</span><span class="k">msg.sender</span><span class="p">);</span>
+<span class="w">        </span>owner<span class="p">.</span>transfer<span class="p">(</span><span class="kt">address</span><span class="p">(</span><span class="kt">this</span><span class="p">).</span>balance<span class="p">);</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>And if you have an instance of this contract assigned to variable <code class="docutils literal notranslate"><span class="pre">contract</span></code>, you can reference the custom exception by doing:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">contract</span><span class="o">.</span><span class="n">Unauthorized</span>
+</pre></div>
+</div>
+<p>When invoking <code class="docutils literal notranslate"><span class="pre">withdraw()</span></code> with an unauthorized account using Ape, you will get an exception similar to those from <code class="docutils literal notranslate"><span class="pre">require()</span></code> statements, a subclass of <code class="docutils literal notranslate"><span class="pre">ContractLogicError</span></code>:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">contract</span><span class="o">.</span><span class="n">withdraw</span><span class="p">(</span><span class="n">sender</span><span class="o">=</span><span class="n">hacker</span><span class="p">)</span>  <span class="c1"># assuming &#39;hacker&#39; refers to the account without authorization.</span>
+</pre></div>
+</div>
+</section>
+<section id="built-in-errors">
+<h2>Built-in Errors<a class="headerlink" href="#built-in-errors" title="Permalink to this heading"></a></h2>
+<p>Besides user-defined <code class="docutils literal notranslate"><span class="pre">ContractLogicError</span></code>s, there are also builtin-errors from compilers, such as bounds-checking of arrays or paying a non-payable method, etc.
+These are also <code class="docutils literal notranslate"><span class="pre">ContractLogicError</span></code> sub-classes.
+Sometimes, compiler plugins such as <code class="docutils literal notranslate"><span class="pre">ape-vyper</span></code> or <code class="docutils literal notranslate"><span class="pre">ape-solidity</span></code> export these error classes for you to use.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">ape</span> <span class="kn">import</span> <span class="n">accounts</span><span class="p">,</span> <span class="n">Contract</span>
+<span class="kn">from</span> <span class="nn">ape_vyper.exceptions</span> <span class="kn">import</span> <span class="n">FallbackNotDefinedError</span>
+
+<span class="n">my_contract</span> <span class="o">=</span> <span class="n">Contract</span><span class="p">(</span><span class="s2">&quot;0x...&quot;</span><span class="p">)</span>
+<span class="n">account</span> <span class="o">=</span> <span class="n">accounts</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;test-account&quot;</span><span class="p">)</span>
+
+<span class="k">try</span><span class="p">:</span>
+    <span class="n">my_contract</span><span class="p">(</span><span class="n">sender</span><span class="o">=</span><span class="n">account</span><span class="p">)</span>
+<span class="k">except</span> <span class="n">FallbackNotDefinedError</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;fallback not defined&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Next, learn how to test your contracts’ errors using the <code class="docutils literal notranslate"><span class="pre">ape.reverts</span></code> context-manager in the <a class="reference external" href="./testing.html#testing-transaction-reverts">testing guide</a>.</p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="contracts.html" class="btn btn-neutral float-left" title="Contracts" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="proxy.html" class="btn btn-neutral float-right" title="Proxy Contracts" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, ApeWorX LTD.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+  
+      <li><a href="https://github.com/ApeWorX/ape
+      /blob/main//docs/userguides/reverts.rst">
+      Show on GitHub</a></li>
+  
+
+</body>
+</html>

@@ -27,7 +27,7 @@
   </script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="Proxy Contracts" href="proxy.html" />
+    <link rel="next" title="Reverts" href="reverts.html" />
     <link rel="prev" title="Ape Console" href="console.html" /> 
 </head>
 
@@ -197,6 +197,7 @@
 <li class="toctree-l2"><a class="reference internal" href="#multi-call-and-multi-transaction">Multi-Call and Multi-Transaction</a></li>
 </ul>
 </li>
+<li class="toctree-l1"><a class="reference internal" href="reverts.html">Reverts</a></li>
 <li class="toctree-l1"><a class="reference internal" href="proxy.html">Proxy Contracts</a></li>
 <li class="toctree-l1"><a class="reference internal" href="testing.html">Testing</a></li>
 <li class="toctree-l1"><a class="reference internal" href="scripts.html">Scripting</a></li>
@@ -482,6 +483,9 @@ For this guide, assume we are using the default transaction type in Ape for Ethe
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">assert</span> <span class="n">receipt</span><span class="o">.</span><span class="n">return_value</span> <span class="o">==</span> <span class="mi">123</span>
 </pre></div>
 </div>
+<p>Transactions may also fail, known as a “revert”.
+When a transaction reverts, Ape (by default) raises a subclass of <code class="docutils literal notranslate"><span class="pre">TransactionError</span></code>, which is a Python exception.
+To learn more reverts, see the <a class="reference external" href="./reverts.html">reverts guide</a>.</p>
 <p>For more general information on transactions in the Ape framework, see <a class="reference external" href="./transactions.html">this guide</a>.</p>
 </section>
 <section id="calls">
@@ -661,7 +665,7 @@ Multicall allows you to group function calls and transactions into a single call
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
         <a href="console.html" class="btn btn-neutral float-left" title="Ape Console" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="proxy.html" class="btn btn-neutral float-right" title="Proxy Contracts" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="reverts.html" class="btn btn-neutral float-right" title="Reverts" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>

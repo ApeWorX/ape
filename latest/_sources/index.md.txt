@@ -20,6 +20,7 @@
    userguides/transactions
    userguides/console
    userguides/contracts
+   userguides/reverts
    userguides/proxy
    userguides/testing
    userguides/scripts
