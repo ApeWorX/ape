@@ -196,7 +196,6 @@ class LocalProvider(TestProviderAPI, Web3Provider):
 
         state = kwargs.pop("state_override", None)
         call_kwargs: dict = {"block_identifier": block_id, "state_override": state}
-
         raise_on_revert = kwargs.get("raise_on_revert", txn.raise_on_revert)
 
         # Remove unneeded properties

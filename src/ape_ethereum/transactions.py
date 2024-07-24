@@ -263,10 +263,9 @@ class Receipt(ReceiptAPI):
             txn_hash = HexBytes(self.txn_hash).hex()
             err = TransactionError(f"Transaction '{txn_hash}' failed.", txn=self)
 
+        self.error = err
         if err and self.transaction.raise_on_revert:
             raise err
-        elif err:
-            self.error = err
 
     def show_trace(self, verbose: bool = False, file: IO[str] = sys.stdout):
         self.trace.show(verbose=verbose, file=file)

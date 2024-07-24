@@ -70,8 +70,9 @@ class TransactionAPI(BaseInterfaceModel):
     model_config = ConfigDict(populate_by_name=True)
 
     def __init__(self, *args, **kwargs):
+        raise_on_revert = kwargs.pop("raise_on_revert", True)
         super().__init__(*args, **kwargs)
-        self._raise_on_revert = kwargs.pop("raise_on_revert", True)
+        self._raise_on_revert = raise_on_revert
 
     @field_validator("gas_limit", mode="before")
     @classmethod
@@ -466,7 +467,10 @@ class ReceiptAPI(ExtraAttributesMixin, BaseInterfaceModel):
                 sender_nonce = self.provider.get_nonce(self.sender)
                 iteration += 1
                 if iteration == iterations_timeout:
-                    raise TransactionError("Timeout waiting for sender's nonce to increase.")
+                    tx_err = TransactionError("Timeout waiting for sender's nonce to increase.")
+                    self.error = tx_err
+                    if self.transaction.raise_on_revert:
+                        raise tx_err
 
         if self.required_confirmations == 0:
             # The transaction might not yet be confirmed but

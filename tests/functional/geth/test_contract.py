@@ -100,6 +100,13 @@ def test_revert_out_of_gas_error(geth_account, geth_second_account, geth_provide
 
 
 @geth_process_test
+def test_revert_out_of_gas_error_allow(geth_account, geth_second_account, geth_provider):
+    tx = geth_account.transfer(geth_second_account, 1, gas_limit=1, raise_on_revert=False)
+    assert tx.failed
+    assert isinstance(tx.error, OutOfGasError)
+
+
+@geth_process_test
 def test_revert_allow(test_accounts, geth_contract):
     not_owner = test_accounts[0]
 

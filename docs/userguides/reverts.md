@@ -27,7 +27,7 @@ Calling it may look like:
 receipt = contract.setNumber(123, sender=not_owner)
 ```
 
-And when it fails, you may see a stacktrace like this:
+And when it fails, Ape shows a stacktrace like this:
 
 ```shell
   File "$HOME/ApeProjects/ape-project/scripts/fail.py", line 8, in main
@@ -41,7 +41,7 @@ setNumber
 ERROR: (ContractLogicError) !authorized
 ```
 
-One way to allow exceptions is to simply use `try:` / `except:` blocks:
+One way to handle exceptions is to simply use `try:` / `except:` blocks:
 
 ```python
 from ape.exceptions import ContractLogicError
@@ -84,8 +84,7 @@ require(msg.sender == owner);  // @dev !authorized
 ## Custom Errors
 
 As of Solidity 0.8.4, custom errors have been introduced to the ABI.
-To make assertions on custom errors, you can use the types defined on your contracts.
-
+In Ape, custom errors are available on contract-instances.
 For example, if you have a contract like:
 
 ```solidity
@@ -104,7 +103,7 @@ contract MyContract {
 }
 ```
 
-If you have an instance of this contract assigned to variable `contract`, you can reference the custom exception by doing:
+And if you have an instance of this contract assigned to variable `contract`, you can reference the custom exception by doing:
 
 ```python
 contract.Unauthorized
@@ -134,3 +133,5 @@ try:
 except FallbackNotDefinedError:
     print("fallback not defined")
 ```
+
+Next, learn how to test your contracts' errors using the `ape.reverts` context-manager in the [testing guide](../testing.html#testing-transaction-rseverts).
