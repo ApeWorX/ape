@@ -63,7 +63,7 @@ from ape.utils import gas_estimation_error_message, to_int
 from ape.utils.misc import DEFAULT_MAX_RETRIES_TX
 from ape_ethereum._print import CONSOLE_ADDRESS, console_contract
 from ape_ethereum.trace import CallTrace, TraceApproach, TransactionTrace
-from ape_ethereum.transactions import AccessList, AccessListTransaction
+from ape_ethereum.transactions import AccessList, AccessListTransaction, TransactionStatusEnum
 
 DEFAULT_PORT = 8545
 DEFAULT_HOSTNAME = "localhost"
@@ -437,10 +437,11 @@ class Web3Provider(ProviderAPI, ABC):
         if state is not None:
             kwargs["state_override"] = state
 
+        raise_on_revert = kwargs.get("raise_on_revert", txn.raise_on_revert)
         skip_trace = kwargs.pop("skip_trace", False)
         arguments = self._prepare_call(txn, **kwargs)
         if skip_trace:
-            return self._eth_call(arguments)
+            return self._eth_call(arguments, raise_on_revert=txn.raise_on_revert)
 
         show_gas = kwargs.pop("show_gas_report", False)
         show_trace = kwargs.pop("show_trace", False)
@@ -454,7 +455,7 @@ class Web3Provider(ProviderAPI, ABC):
 
         needs_trace = track_gas or track_coverage or show_gas or show_trace
         if not needs_trace:
-            return self._eth_call(arguments)
+            return self._eth_call(arguments, raise_on_revert=raise_on_revert)
 
         # The user is requesting information related to a call's trace,
         # such as gas usage data.
@@ -495,7 +496,7 @@ class Web3Provider(ProviderAPI, ABC):
 
         return HexBytes(trace.return_value)
 
-    def _eth_call(self, arguments: list) -> HexBytes:
+    def _eth_call(self, arguments: list, raise_on_revert: bool = True) -> HexBytes:
         # Force the usage of hex-type to support a wider-range of nodes.
         txn_dict = copy(arguments[0])
         if isinstance(txn_dict.get("type"), int):
@@ -505,7 +506,6 @@ class Web3Provider(ProviderAPI, ABC):
         txn_dict.pop("chainId", None)
 
         arguments[0] = txn_dict
-
         try:
             result = self.make_request("eth_call", arguments)
         except Exception as err:
@@ -518,9 +518,15 @@ class Web3Provider(ProviderAPI, ABC):
                 if contract_src := self.local_project._create_contract_source(contract_type):
                     tb = SourceTraceback.create(contract_src, trace, method_id)
 
-            raise self.get_virtual_machine_error(
+            vm_err = self.get_virtual_machine_error(
                 err, trace=trace, contract_address=contract_address, source_traceback=tb
-            ) from err
+            )
+            if raise_on_revert:
+                raise vm_err from err
+
+            else:
+                logger.error(vm_err)
+                result = "0x"
 
         if "error" in result:
             raise ProviderError(result["error"]["message"])
@@ -596,14 +602,13 @@ class Web3Provider(ProviderAPI, ABC):
                 else:  # if it was the last attempt
                     raise  # Re-raise the last exception.
 
-        data = {
-            "provider": self,
-            "required_confirmations": required_confirmations,
-            **txn,
-            **receipt_data,
-        }
-        receipt = self.network.ecosystem.decode_receipt(data)
+        data = {"required_confirmations": required_confirmations, **txn, **receipt_data}
+        receipt = self._create_receipt(**data)
         return receipt.await_confirmations()
+
+    def _create_receipt(self, **kwargs) -> ReceiptAPI:
+        data = {"provider": self, **kwargs}
+        return self.network.ecosystem.decode_receipt(data)
 
     def get_transactions_by_block(self, block_id: BlockID) -> Iterator[TransactionAPI]:
         if isinstance(block_id, str):
@@ -911,29 +916,42 @@ class Web3Provider(ProviderAPI, ABC):
         return txn
 
     def send_transaction(self, txn: TransactionAPI) -> ReceiptAPI:
+        vm_err = None
         try:
             if txn.signature or not txn.sender:
-                txn_hash = self.web3.eth.send_raw_transaction(txn.serialize_transaction())
+                txn_hash = self.web3.eth.send_raw_transaction(txn.serialize_transaction()).hex()
             else:
                 if txn.sender not in self.web3.eth.accounts:
                     self.chain_manager.provider.unlock_account(txn.sender)
 
                 # NOTE: Using JSON mode since used as request data.
                 txn_data = cast(TxParams, txn.model_dump(by_alias=True, mode="json"))
-                txn_hash = self.web3.eth.send_transaction(txn_data)
+                txn_hash = self.web3.eth.send_transaction(txn_data).hex()
 
         except (ValueError, Web3ContractLogicError) as err:
             vm_err = self.get_virtual_machine_error(err, txn=txn)
-            raise vm_err from err
+            if txn.raise_on_revert:
+                raise vm_err from err
+            else:
+                txn_hash = txn.txn_hash.hex()
 
-        receipt = self.get_receipt(
-            txn_hash.hex(),
-            required_confirmations=(
-                txn.required_confirmations
-                if txn.required_confirmations is not None
-                else self.network.required_confirmations
-            ),
+        required_confirmations = (
+            txn.required_confirmations
+            if txn.required_confirmations is not None
+            else self.network.required_confirmations
         )
+        txn_dict = txn.model_dump(by_alias=True, mode="json")
+        if vm_err:
+            receipt = self._create_receipt(
+                block_number=-1,  # Not in a block.
+                error=vm_err,
+                required_confirmations=required_confirmations,
+                status=TransactionStatusEnum.FAILING,
+                txn_hash=txn_hash,
+                **txn_dict,
+            )
+        else:
+            receipt = self.get_receipt(txn_hash, required_confirmations=required_confirmations)
 
         # NOTE: Ensure to cache even the failed receipts.
         # NOTE: Caching must happen before error enrichment.
@@ -941,8 +959,6 @@ class Web3Provider(ProviderAPI, ABC):
 
         if receipt.failed:
             # NOTE: Using JSON mode since used as request data.
-            txn_dict = receipt.transaction.model_dump(by_alias=True, mode="json")
-
             txn_params = cast(TxParams, txn_dict)
 
             # Replay txn to get revert reason
@@ -950,11 +966,17 @@ class Web3Provider(ProviderAPI, ABC):
                 self.web3.eth.call(txn_params)
             except Exception as err:
                 vm_err = self.get_virtual_machine_error(err, txn=txn)
-                raise vm_err from err
+                receipt.error = vm_err
+                if txn.raise_on_revert:
+                    raise vm_err from err
 
-            # If we get here, for some reason the tx-replay did not produce
-            # a VM error.
-            receipt.raise_for_status()
+            if txn.raise_on_revert:
+                # If we get here, for some reason the tx-replay did not produce
+                # a VM error.
+                receipt.raise_for_status()
+
+        if receipt.error:
+            logger.error(receipt.error)
 
         return receipt
 
@@ -964,7 +986,14 @@ class Web3Provider(ProviderAPI, ABC):
         # TODO: Optional configuration?
         if tx.receiver and Address(tx.receiver).is_contract:
             # Look for and print any contract logging
-            receipt.show_debug_logs()
+            try:
+                receipt.show_debug_logs()
+            except TransactionNotFound:
+                # Receipt never published. Likely failed.
+                pass
+            except Exception as err:
+                # Avoid letting debug logs causes program crashes.
+                logger.debug(f"Unable to show debug logs: {err}")
 
         logger.info(f"Confirmed {receipt.txn_hash} (total fees paid = {receipt.total_fees_paid})")
 

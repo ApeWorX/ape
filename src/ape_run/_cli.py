@@ -68,6 +68,7 @@ class ScriptCommand(click.MultiCommand, ManagerAccessMixin):
         super().__init__(*args, **kwargs)
         self._namespace = {}
         self._command_called = None
+        self._has_warned_missing_hook: set[Path] = set()
 
     def invoke(self, ctx: Context) -> Any:
         try:
@@ -154,7 +155,9 @@ class ScriptCommand(click.MultiCommand, ManagerAccessMixin):
             return call
 
         else:
-            logger.warning(f"No 'main' method or 'cli' command in script: {relative_filepath}")
+            if relative_filepath not in self._has_warned_missing_hook:
+                logger.warning(f"No 'main' method or 'cli' command in script: {relative_filepath}")
+                self._has_warned_missing_hook.add(relative_filepath)
 
             @click.command(
                 cls=ConnectedProviderCommand,
@@ -213,7 +216,7 @@ class ScriptCommand(click.MultiCommand, ManagerAccessMixin):
 
         # NOTE: don't return anything so Click displays proper error
 
-    def result_callback(self, result, interactive):
+    def result_callback(self, result, interactive: bool):  # type: ignore[override]
         if interactive:
             return self._launch_console()
 

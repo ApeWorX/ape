@@ -97,3 +97,23 @@ def test_revert_out_of_gas_error(geth_account, geth_second_account, geth_provide
         geth_account.transfer(geth_second_account, 1, gas_limit=1)
 
     assert err.value.txn is not None
+
+
+@geth_process_test
+def test_revert_out_of_gas_error_allow(geth_account, geth_second_account, geth_provider):
+    tx = geth_account.transfer(geth_second_account, 1, gas_limit=1, raise_on_revert=False)
+    assert tx.failed
+    assert isinstance(tx.error, OutOfGasError)
+
+
+@geth_process_test
+def test_revert_allow(test_accounts, geth_contract):
+    not_owner = test_accounts[0]
+
+    # 'sender' is not the owner so it will revert (with a message)
+    receipt = geth_contract.setNumber(100199, sender=not_owner, raise_on_revert=False)
+    assert receipt.error is not None
+    assert str(receipt.error) == "!authorized"
+
+    # Ensure this also works for calls.
+    geth_contract.setNumber.call(5, raise_on_revert=False)

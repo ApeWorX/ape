@@ -550,7 +550,14 @@ class Ethereum(EcosystemAPI):
             status = TransactionStatusEnum(status)
 
         txn_hash = None
-        hash_key_choices = ("hash", "txHash", "txnHash", "transactionHash", "transaction_hash")
+        hash_key_choices = (
+            "hash",
+            "txHash",
+            "txn_hash",
+            "txnHash",
+            "transactionHash",
+            "transaction_hash",
+        )
         for choice in hash_key_choices:
             if choice in data:
                 txn_hash = data[choice]
@@ -593,7 +600,10 @@ class Ethereum(EcosystemAPI):
         else:
             receipt_cls = Receipt
 
-        return receipt_cls.model_validate(receipt_kwargs)
+        error = receipt_kwargs.pop("error", None)
+        receipt = receipt_cls.model_validate(receipt_kwargs)
+        receipt.error = error
+        return receipt
 
     def decode_block(self, data: dict) -> BlockAPI:
         data["hash"] = HexBytes(data["hash"]) if data.get("hash") else None
@@ -844,7 +854,6 @@ class Ethereum(EcosystemAPI):
         Returns:
             :class:`~ape.api.transactions.TransactionAPI`
         """
-
         # Handle all aliases.
         tx_data = dict(kwargs)
         tx_data = _correct_key(
