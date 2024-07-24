@@ -11,6 +11,8 @@ from tempfile import TemporaryDirectory, gettempdir
 from typing import Any, Optional, Union
 
 
+# TODO: This method is no longer needed since the dropping of 3.9
+#   Delete in Ape 0.9 release.
 def is_relative_to(path: Path, target: Path) -> bool:
     """
     Search a path and determine its relevancy.
@@ -22,15 +24,7 @@ def is_relative_to(path: Path, target: Path) -> bool:
     Returns:
         bool: ``True`` if the path is relative to the target path or ``False``.
     """
-    if hasattr(path, "is_relative_to"):
-        # NOTE: Only available ``>=3.9``
-        return target.is_relative_to(path)  # type: ignore
-
-    else:
-        try:
-            return target.relative_to(path) is not None
-        except ValueError:
-            return False
+    return target.is_relative_to(path)
 
 
 def get_relative_path(target: Path, anchor: Path) -> Path:
@@ -52,15 +46,17 @@ def get_relative_path(target: Path, anchor: Path) -> Path:
     if not anchor.is_absolute():
         raise ValueError("'anchor' must be an absolute path.")
 
-    anchor_copy = Path(str(anchor))
-    levels_deep = 0
-    while not is_relative_to(anchor_copy, target):
-        levels_deep += 1
-        anchor_copy = anchor_copy.parent
+    # Calculate common prefix length
+    common_parts = 0
+    for target_part, anchor_part in zip(target.parts, anchor.parts):
+        if target_part == anchor_part:
+            common_parts += 1
+        else:
+            break
 
-    return Path("/".join(".." for _ in range(levels_deep))).joinpath(
-        str(target.relative_to(anchor_copy))
-    )
+    # Calculate the relative path
+    relative_parts = [".."] * (len(anchor.parts) - common_parts) + list(target.parts[common_parts:])
+    return Path(*relative_parts)
 
 
 def get_all_files_in_directory(
@@ -98,13 +94,15 @@ def get_all_files_in_directory(
     elif pattern is not None:
         pattern_obj = pattern
 
-    # is dir
     result: list[Path] = []
-    for file in (p for p in path.rglob("*.*") if p.is_file()):
-        if (max_files is None or max_files is not None and len(result) < max_files) and (
-            pattern_obj is None or pattern_obj.match(file.name)
-        ):
-            result.append(file)
+    append_result = result.append  # Local variable for faster access
+    for file in path.rglob("*.*"):
+        if not file.is_file() or (pattern_obj is not None and not pattern_obj.match(file.name)):
+            continue
+
+        append_result(file)
+        if max_files is not None and len(result) >= max_files:
+            break
 
     return result
 
@@ -170,17 +168,18 @@ def get_full_extension(path: Union[Path, str]) -> str:
         return ""
 
     path = Path(path)
-    if path.is_dir():
+    if path.is_dir() or path.suffix == "":
         return ""
 
-    parts = path.name.split(".")
-    start_idx = 2 if path.name.startswith(".") else 1
+    name = path.name
+    parts = name.split(".")
 
-    # NOTE: Handles when given just `.hiddenFile` since slice indices
-    #   may exceed their bounds.
-    suffix = ".".join(parts[start_idx:])
+    if len(parts) > 2 and name.startswith("."):
+        return "." + ".".join(parts[2:])
+    elif len(parts) > 1:
+        return "." + ".".join(parts[1:])
 
-    return f".{suffix}" if suffix and f".{suffix}" != f"{path.name}" else ""
+    return ""
 
 
 @contextmanager

@@ -17,6 +17,7 @@ import ape
 from ape.contracts import ContractContainer
 from ape.exceptions import APINotImplementedError, ProviderNotConnectedError, UnknownSnapshotError
 from ape.logging import LogLevel, logger
+from ape.managers.project import Project
 from ape.pytest.config import ConfigWrapper
 from ape.pytest.gas import GasTracker
 from ape.types import AddressType, CurrencyValue
@@ -684,3 +685,8 @@ def vyper_contract_container(vyper_contract_type) -> ContractContainer:
 @pytest.fixture(scope="session")
 def shared_contracts_folder():
     return SHARED_CONTRACTS_FOLDER
+
+
+@pytest.fixture
+def project_with_contracts(with_dependencies_project_path):
+    return Project(with_dependencies_project_path)

@@ -644,6 +644,11 @@ class TestDependency:
                 '[{"name":"foo","type":"fallback", "stateMutability":"nonpayable"}]',
                 encoding="utf8",
             )
+
+            # Since we are adding a file mid-session, we have to refresh so
+            # it's picked up. Users typically don't have to do this.
+            dependency.project.refresh_sources()
+
             result = dependency.compile()
             assert len(result) == 1
             assert result["CCC"].name == "CCC"

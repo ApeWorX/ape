@@ -100,6 +100,9 @@ jobs:
         - name: Run Integration Tests
           run: pytest tests/integration -m "not fuzzing" -s --cov=src --cov-append -n auto --dist loadgroup
 
+        - name: Run Performance Tests
+          run: pytest tests/performance -s
+
     fuzzing:
         runs-on: ubuntu-latest
 

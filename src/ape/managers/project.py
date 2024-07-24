@@ -57,6 +57,9 @@ class SourceManager(BaseManager):
 
     _path_cache: Optional[list[Path]] = None
 
+    # perf: calculating paths from source Ids can be expensive.
+    _path_to_source_id: dict[Path, str] = {}
+
     def __init__(
         self,
         root_path: Path,
@@ -113,7 +116,7 @@ class SourceManager(BaseManager):
                 text: Union[str, dict]
                 if path.is_file():
                     try:
-                        text = path.read_text()
+                        text = path.read_text(encoding="utf8")
                     except Exception:
                         continue
 
@@ -158,7 +161,7 @@ class SourceManager(BaseManager):
 
         return False
 
-    @property
+    @cached_property
     def _all_files(self) -> list[Path]:
         try:
             contracts_folder = self.get_contracts_path()
@@ -306,8 +309,23 @@ class SourceManager(BaseManager):
         relative_path = input_path.relative_to(input_path.anchor)
         return find_in_dir(self.root_path, relative_path)
 
+    def refresh(self):
+        """
+        Reset file-caches to handle session-changes.
+        (Typically not needed to be called by users).
+        """
+        (self.__dict__ or {}).pop("_all_files", None)
+        self._path_to_source_id = {}
+        self._path_cache = None
+
     def _get_source_id(self, path: Path) -> str:
-        return _path_to_source_id(path, self.root_path)
+        if src_id := self._path_to_source_id.get(path):
+            return src_id
+
+        # Cache because this can be expensive.
+        src_id = _path_to_source_id(path, self.root_path)
+        self._path_to_source_id[path] = src_id
+        return src_id
 
     def _get_path(self, source_id: str) -> Path:
         return self.root_path / source_id
@@ -350,7 +368,9 @@ class ContractManager(BaseManager):
 
                 yield ct.name
 
-    def get(self, name: str, compile_missing: bool = True) -> Optional[ContractContainer]:
+    def get(
+        self, name: str, compile_missing: bool = True, check_for_changes: bool = True
+    ) -> Optional[ContractContainer]:
         """
         Get a contract by name.
 
@@ -359,23 +379,34 @@ class ContractManager(BaseManager):
             compile_missing (bool): Set to ``False`` to not attempt compiling
               if the contract can't be found. Note: modified sources are
               re-compiled regardless of this flag.
+            check_for_changes (bool): Set to ``False`` if avoiding checking
+              for changes.
 
         Returns:
             ContractContainer | None
         """
-
         existing_types = self.project.manifest.contract_types or {}
-        if contract_type := existing_types.get(name):
-            source_id = contract_type.source_id or ""
-            ext = get_full_extension(source_id)
+        contract_type = existing_types.get(name)
 
-            # Allow us to still get previously-compiled contracts if don't
-            # have the compiler plugin installed at this time.
-            if ext not in self.compiler_manager.registered_compilers:
-                return ContractContainer(contract_type)
+        if not contract_type:
+            if compile_missing:
+                self._compile_missing_contracts(self.sources.paths)
+                return self.get(name, compile_missing=False)
 
-            elif source_id in self.sources and self._detect_change(source_id):
-                # Previous cache is outdated.
+            return None
+
+        source_id = contract_type.source_id or ""
+        source_found = source_id in self.sources
+
+        if not check_for_changes and source_found:
+            return ContractContainer(contract_type)
+
+        ext = get_full_extension(source_id)
+        if ext not in self.compiler_manager.registered_compilers:
+            return ContractContainer(contract_type)
+
+        if source_found:
+            if check_for_changes and self._detect_change(source_id):
                 compiled = {
                     ct.name: ct
                     for ct in self.compiler_manager.compile(source_id, project=self.project)
@@ -386,12 +417,9 @@ class ContractManager(BaseManager):
                     if name in compiled:
                         return ContractContainer(compiled[name])
 
-            elif source_id in self.sources:
-                # Cached and already compiled.
-                return ContractContainer(contract_type)
+            return ContractContainer(contract_type)
 
         if compile_missing:
-            # Try again after compiling all missing.
             self._compile_missing_contracts(self.sources.paths)
             return self.get(name, compile_missing=False)
 
@@ -2025,8 +2053,9 @@ class LocalProject(Project):
         manifest_path: Optional[Path] = None,
         config_override: Optional[dict] = None,
     ) -> None:
-        # A local project uses a special manifest.
+        self._session_source_change_check: set[str] = set()
         self.path = Path(path).resolve()
+        # A local project uses a special manifest.
         self.manifest_path = manifest_path or self.path / ".build" / "__local__.json"
         manifest = self.load_manifest()
 
@@ -2375,14 +2404,17 @@ class LocalProject(Project):
         return manifest
 
     def get_contract(self, name: str) -> Any:
-        if name in dir(self):
-            return self.__getattribute__(name)
+        if name in self._session_source_change_check:
+            check_for_changes = False
+        else:
+            check_for_changes = True
+            self._session_source_change_check.add(name)
 
-        elif contract := self.contracts.get(name):
+        contract = self.contracts.get(name, check_for_changes=check_for_changes)
+        if contract:
             contract.base_path = self.path
-            return contract
 
-        return None
+        return contract
 
     def update_manifest(self, **kwargs):
         # Update the manifest in memory.
@@ -2460,6 +2492,15 @@ class LocalProject(Project):
         """
         self._clear_cached_config()
         _ = self.config
+
+    def refresh_sources(self):
+        """
+        Check for file-changes. Typically, you don't need to call this method.
+        This method exists for when changing files mid-session, you can "refresh"
+        and Ape will know about the changes.
+        """
+        self._session_source_change_check = set()
+        self.sources.refresh()
 
     def _clear_cached_config(self):
         if "config" in self.__dict__:

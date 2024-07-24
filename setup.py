@@ -15,6 +15,7 @@ extras_require = {
         "pytest-xdist>=3.6.1,<4",  # Multi-process runner
         "pytest-cov>=4.0.0,<5",  # Coverage analyzer plugin
         "pytest-mock",  # For creating mocks
+        "pytest-benchmark",  # For performance tests
         "pytest-timeout>=2.2.0,<3",  # For avoiding timing out during tests
         "hypothesis>=6.2.0,<7.0",  # Strategy-based fuzzer
         "hypothesis-jsonschema==0.19.0",  # JSON Schema fuzzer extension
