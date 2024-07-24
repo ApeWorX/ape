@@ -962,7 +962,7 @@ def test_sending_funds_to_non_payable_constructor_by_contractContainerDeploy(
 ):
     with pytest.raises(
         MethodNonPayableError,
-        match="Sending funds to a non-payable constructor.",
+        match=r"Sending funds to a non-payable constructor\.",
     ):
         solidity_contract_container.deploy(1, sender=owner, value="1 ether")
 
@@ -972,7 +972,7 @@ def test_sending_funds_to_non_payable_constructor_by_accountDeploy(
 ):
     with pytest.raises(
         MethodNonPayableError,
-        match="Sending funds to a non-payable constructor.",
+        match=r"Sending funds to a non-payable constructor\.",
     ):
         owner.deploy(solidity_contract_container, 1, value="1 ether")
 

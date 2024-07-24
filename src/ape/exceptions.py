@@ -24,6 +24,7 @@ if TYPE_CHECKING:
     from ape.api.providers import SubprocessProvider
     from ape.api.trace import TraceAPI
     from ape.api.transactions import ReceiptAPI, TransactionAPI
+    from ape.managers.project import ProjectManager
     from ape.types import AddressType, BlockID, SnapshotID, SourceTraceback
 
 
@@ -178,6 +179,7 @@ class TransactionError(ApeException):
         trace: Optional["TraceAPI"] = None,
         contract_address: Optional["AddressType"] = None,
         source_traceback: Optional["SourceTraceback"] = None,
+        project: Optional["ProjectManager"] = None,
     ):
         message = message or (str(base_err) if base_err else self.DEFAULT_MESSAGE)
         self.message = message
@@ -187,6 +189,7 @@ class TransactionError(ApeException):
         self.trace = trace
         self.contract_address = contract_address
         self.source_traceback: Optional["SourceTraceback"] = source_traceback
+        self._project = project
         ex_message = f"({code}) {message}" if code else message
 
         # Finalizes expected revert message.
@@ -224,10 +227,10 @@ class TransactionError(ApeException):
         if not self.source_traceback and self.txn:
             self.source_traceback = _get_ape_traceback_from_tx(self.txn)
 
-        if (src_tb := self.source_traceback) and self.txn is not None:
+        if src_tb := self.source_traceback:
             # Create a custom Pythonic traceback using lines from the sources
             # found from analyzing the trace of the transaction.
-            if py_tb := _get_custom_python_traceback(self, self.txn, src_tb):
+            if py_tb := _get_custom_python_traceback(self, src_tb, project=self._project):
                 self.__traceback__ = py_tb
 
 
@@ -836,19 +839,27 @@ def _get_ape_traceback_from_tx(txn: FailedTxn) -> Optional["SourceTraceback"]:
 
 
 def _get_custom_python_traceback(
-    err: TransactionError, txn: FailedTxn, ape_traceback: "SourceTraceback"
+    err: TransactionError,
+    ape_traceback: "SourceTraceback",
+    project: Optional["ProjectManager"] = None,
 ) -> Optional[TracebackType]:
     # Manipulate python traceback to show lines from contract.
     # Help received from Jinja lib:
     #  https://github.com/pallets/jinja/blob/main/src/jinja2/debug.py#L142
 
+    if project is None:
+        from ape import project
+
+    if not (base_path := getattr(project, "path", None)):
+        # TODO: Add support for manifest-projects.
+        return None
+
     _, exc_value, tb = sys.exc_info()
     depth = None
     idx = len(ape_traceback) - 1
     frames = []
-    project_path = txn.local_project.path.as_posix()
     while tb is not None:
-        if not tb.tb_frame.f_code.co_filename.startswith(project_path):
+        if not tb.tb_frame.f_code.co_filename.startswith(str(base_path)):
             # Ignore frames outside the project.
             # This allows both contract code an scripts to appear.
             tb = tb.tb_next
@@ -868,7 +879,6 @@ def _get_custom_python_traceback(
 
         # NOTE: Use the last lineno executed as "the line number".
         lineno = exec_item.begin_lineno if exec_item.end_lineno is None else exec_item.end_lineno
-
         if lineno is None:
             idx -= 1
             continue
@@ -879,7 +889,7 @@ def _get_custom_python_traceback(
             temp_file = tempfile.NamedTemporaryFile(prefix="unknown_contract_")
             filename = temp_file.name
         else:
-            filename = exec_item.source_path.as_posix()
+            filename = str(exec_item.source_path)
 
         # Raise an exception at the correct line number.
         py_code: CodeType = compile(
