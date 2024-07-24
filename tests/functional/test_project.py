@@ -19,11 +19,6 @@ from tests.conftest import skip_if_plugin_installed
 
 
 @pytest.fixture
-def project_with_contracts(with_dependencies_project_path):
-    return Project(with_dependencies_project_path)
-
-
-@pytest.fixture
 def tmp_project(with_dependencies_project_path):
     real_project = Project(with_dependencies_project_path)
     # Copies contracts and stuff into a temp folder
