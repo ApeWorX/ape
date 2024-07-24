@@ -11,7 +11,7 @@ from tempfile import TemporaryDirectory, gettempdir
 from typing import Any, Optional, Union
 
 
-# TODO: This method is no longer needed since we the dropping of 3.9
+# TODO: This method is no longer needed since the dropping of 3.9
 #   Delete in Ape 0.9 release.
 def is_relative_to(path: Path, target: Path) -> bool:
     """
