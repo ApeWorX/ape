@@ -19,7 +19,7 @@ require(msg.sender == owner, "!authorized");
 ```
 
 In Ape, reverts automatically become Python exceptions.
-When [interacting with a contract](../contracts.html#contract-interaction) and encountering a revert, your program will crash and you will see a stacktrace showing you where the revert occurred.
+When [interacting with a contract](./contracts.html#contract-interaction) and encountering a revert, your program will crash and you will see a stacktrace showing you where the revert occurred.
 For example, assume you have contract instance variable `contract` with a Vyper method called `setNumber()`, and it reverts when the user is not the owner of the contract.
 Calling it may look like:
 
@@ -134,4 +134,4 @@ except FallbackNotDefinedError:
     print("fallback not defined")
 ```
 
-Next, learn how to test your contracts' errors using the `ape.reverts` context-manager in the [testing guide](../testing.html#testing-transaction-rseverts).
+Next, learn how to test your contracts' errors using the `ape.reverts` context-manager in the [testing guide](./testing.html#testing-transaction-reverts).

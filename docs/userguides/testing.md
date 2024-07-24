@@ -309,7 +309,7 @@ def test_account_balance(project, owner, receiver, nft):
 ## Testing Transaction Reverts
 
 Similar to `pytest.raises()`, you can use `ape.reverts()` to assert that contract transactions fail and revert.
-To learn more about reverts in Ape, see the [reverts guide](../reverts.html).
+To learn more about reverts in Ape, see the [reverts guide](./reverts.html).
 
 From our earlier example we can see this in action:
 
@@ -431,7 +431,7 @@ def foo():
 ### Custom Errors
 
 In your tests, you can make assertions about custom errors raised.
-(For more information on custom errors, [see reverts guide on custom errors](../reverts.html#custom-errors).)
+(For more information on custom errors, [see reverts guide on custom errors](./reverts.html#custom-errors).)
 
 For example, assume a custom exception in a Solidity contract (variable `contract`) is called `Unauthorized`.
 It can be accessed via `contract.Unauthorized`.
