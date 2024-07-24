@@ -306,9 +306,10 @@ def test_account_balance(project, owner, receiver, nft):
     assert actual == expect
 ```
 
-## Testing Transaction Failures
+## Testing Transaction Reverts
 
 Similar to `pytest.raises()`, you can use `ape.reverts()` to assert that contract transactions fail and revert.
+To learn more about reverts in Ape, see the [reverts guide](./reverts.html).
 
 From our earlier example we can see this in action:
 
@@ -429,28 +430,12 @@ def foo():
 
 ### Custom Errors
 
-As of Solidity 0.8.4, custom errors have been introduced to the ABI.
-To make assertions on custom errors, you can use the types defined on your contracts.
+In your tests, you can make assertions about custom errors raised.
+(For more information on custom errors, [see reverts guide on custom errors](./reverts.html#custom-errors).)
 
-For example, if I have a contract called `MyContract.sol`:
-
-```solidity
-// SPDX-License-Identifier: GPL-3.0
-pragma solidity ^0.8.4;
-
-error Unauthorized(address unauth_address);
-
-contract MyContract {
-    address payable owner = payable(msg.sender);
-    function withdraw() public {
-        if (msg.sender != owner)
-            revert Unauthorized(msg.sender);
-        owner.transfer(address(this).balance);
-    }
-}
-```
-
-I can ensure unauthorized withdraws are disallowed by writing the following test:
+For example, assume a custom exception in a Solidity contract (variable `contract`) is called `Unauthorized`.
+It can be accessed via `contract.Unauthorized`.
+We can ensure unauthorized withdraws are disallowed by writing the following test:
 
 ```python
 import ape

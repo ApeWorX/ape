@@ -256,6 +256,10 @@ If you need the `return_value` from a transaction, you have to either treat tran
 assert receipt.return_value == 123
 ```
 
+Transactions may also fail, known as a "revert".
+When a transaction reverts, Ape (by default) raises a subclass of `TransactionError`, which is a Python exception.
+To learn more reverts, see the [reverts guide](./reverts.html).
+
 For more general information on transactions in the Ape framework, see [this guide](./transactions.html).
 
 ### Calls
