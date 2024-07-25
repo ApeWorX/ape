@@ -300,7 +300,7 @@ class CompilerManager(BaseManager, ExtraAttributesMixin):
               as a custom error.
 
         Returns:
-
+            Optional[:class:`~ape.exceptions.CustomError`]
         """
         message = err.revert_message
         if not message.startswith("0x"):
