@@ -701,7 +701,7 @@ class PluginVersionError(PluginInstallError):
         super().__init__(message)
 
 
-def handle_ape_exception(err: ApeException, base_paths: Iterable[Path]) -> bool:
+def handle_ape_exception(err: ApeException, base_paths: Iterable[Union[Path, str]]) -> bool:
     """
     Handle a transaction error by showing relevant stack frames,
     including custom contract frames added to the exception.
@@ -711,24 +711,31 @@ def handle_ape_exception(err: ApeException, base_paths: Iterable[Path]) -> bool:
     Args:
         err (:class:`~ape.exceptions.TransactionError`): The transaction error
           being handled.
-        base_paths (Optional[Iterable[Path]]): Optionally include additional
+        base_paths (Optional[Iterable[Union[Path, str]]]): Optionally include additional
           source-path prefixes to use when finding relevant frames.
 
     Returns:
         bool: ``True`` if outputted something.
     """
-
-    tb = traceback.extract_tb(sys.exc_info()[2])
-    if not (relevant_tb := [f for f in tb if any(str(p) in f.filename for p in base_paths)]):
+    home_str = str(Path.home())
+    if not (relevant_frames := _get_relevant_frames(base_paths)):
         return False
 
-    click.echo()
-    formatted_tb = traceback.format_list(relevant_tb)
-    rich_print("".join(formatted_tb))
+    formatted_tb = [x.replace(home_str, "$HOME") for x in relevant_frames]
+    rich_print(f"\n{''.join(formatted_tb)}")
 
-    # Prevent double logging traceback.
+    # Prevent double logging of a traceback by using `show_traceback=False`.
     logger.error(Abort.from_ape_exception(err, show_traceback=False))
     return True
+
+
+def _get_relevant_frames(base_paths: Iterable[Union[Path, str]]):
+    # Abstracted for testing easement.
+    tb = traceback.extract_tb(sys.exc_info()[2])
+    if relevant_tb := [f for f in tb if any(str(p) in f.filename for p in base_paths)]:
+        return [x for x in traceback.format_list(relevant_tb)]
+
+    return []
 
 
 class Abort(click.ClickException):
