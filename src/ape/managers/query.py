@@ -128,6 +128,15 @@ class QueryManager(ManagerAccessMixin):
 
     def _suggest_engines(self, engine_selection):
         return difflib.get_close_matches(engine_selection, list(self.engines), cutoff=0.6)
+    
+    def _get_skip_caching_plugins(self):
+        """
+        Get the list of query plugins to skip caching for from the configuration.
+        """
+        try:
+            return self.config_manager.query.skip_caching
+        except AttributeError:
+            return []  # Return an empty list if the configuration doesn't exist
 
     def query(
         self,
@@ -194,13 +203,18 @@ class QueryManager(ManagerAccessMixin):
                 f" executed in {exec_time} ms (expected: {est_time} ms)"
             )
 
+        skip_caching_plugins = self._get_skip_caching_plugins()
+
         # Update any caches
-        for engine in self.engines.values():
+        for engine_name, engine in self.engines.items():
             if not isinstance(engine, sel_engine.__class__):
-                result, cache_data = tee(result)
-                try:
-                    engine.update_cache(query, cache_data)
-                except QueryEngineError as err:
-                    logger.error(str(err))
+                if engine_name not in skip_caching_plugins:
+                    result, cache_data = tee(result)
+                    try:
+                        engine.update_cache(query, cache_data)
+                    except QueryEngineError as err:
+                        logger.error(str(err))
+                else:
+                    logger.debug(f"Skipping cache update for plugin: {engine_name}")
 
         return result
