@@ -31,6 +31,7 @@ from ape.exceptions import (
     ConversionError,
     CustomError,
     DecodingError,
+    ProviderError,
     SignatureError,
 )
 from ape.logging import logger
@@ -1417,7 +1418,6 @@ class Ethereum(EcosystemAPI):
 
         selector = data[:4]
         input_data = data[4:]
-
         if selector in contract.contract_type.errors:
             abi = contract.contract_type.errors[selector]
             error_cls = contract.get_error_by_signature(abi.signature)
@@ -1439,8 +1439,16 @@ class Ethereum(EcosystemAPI):
         except SignatureError:
             return None
 
-        trace = kwargs.get("trace") or self.provider.get_transaction_trace(tx_hash)
-        if not (last_addr := next(trace.get_addresses_used(reverse=True), None)):
+        try:
+            trace = kwargs.get("trace") or self.provider.get_transaction_trace(tx_hash)
+        except NotImplementedError:
+            return None
+
+        try:
+            if not (last_addr := next(trace.get_addresses_used(reverse=True), None)):
+                return None
+        except ProviderError:
+            # When unable to get trace-frames properly, such as eth-tester.
             return None
 
         if last_addr == address:
