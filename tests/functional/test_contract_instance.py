@@ -202,6 +202,15 @@ def test_revert_allow(not_owner, contract_instance):
     contract_instance.setNumber.call(5, raise_on_revert=False)
 
 
+def test_revert_handles_compiler_panic(owner, contract_instance):
+    # note: setBalance is a weird name - it actually adjust the balance.
+    # first, set it to be 1 less than an overflow.
+    contract_instance.setBalance(owner, 2**256 - 1, sender=owner)
+    # then, add 1 more, so it should no overflow and cause a compiler panic.
+    with pytest.raises(ContractLogicError):
+        contract_instance.setBalance(owner, 1, sender=owner)
+
+
 def test_call_using_block_id(vyper_contract_instance, owner, chain, networks_connected_to_tester):
     contract = vyper_contract_instance
     contract.setNumber(1, sender=owner)

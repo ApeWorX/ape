@@ -13,7 +13,7 @@ from eth_utils import is_0x_prefixed
 from eth_utils.exceptions import ValidationError
 from eth_utils.toolz import merge
 from web3 import EthereumTesterProvider, Web3
-from web3.exceptions import ContractPanicError
+from web3.exceptions import ContractLogicError as Web3ContractLogicError
 from web3.providers.eth_tester.defaults import API_ENDPOINTS, static_return
 from web3.types import TxParams
 
@@ -123,7 +123,7 @@ class LocalProvider(TestProviderAPI, Web3Provider):
 
         try:
             return estimate_gas(txn_data, block_identifier=block_id)
-        except (ValidationError, TransactionFailed) as err:
+        except (ValidationError, TransactionFailed, Web3ContractLogicError) as err:
             ape_err = self.get_virtual_machine_error(err, txn=txn)
             gas_match = self._INVALID_NONCE_PATTERN.match(str(ape_err))
             if gas_match:
@@ -215,7 +215,7 @@ class LocalProvider(TestProviderAPI, Web3Provider):
             else:
                 result = HexBytes("0x")
 
-        except (TransactionFailed, ContractPanicError) as err:
+        except (TransactionFailed, Web3ContractLogicError) as err:
             vm_err = self.get_virtual_machine_error(err, txn=txn)
             if raise_on_revert:
                 raise vm_err from err
@@ -232,7 +232,7 @@ class LocalProvider(TestProviderAPI, Web3Provider):
         vm_err = None
         try:
             txn_hash = self.web3.eth.send_raw_transaction(txn.serialize_transaction()).hex()
-        except (ValidationError, TransactionFailed) as err:
+        except (ValidationError, TransactionFailed, Web3ContractLogicError) as err:
             vm_err = self.get_virtual_machine_error(err, txn=txn)
             if txn.raise_on_revert:
                 raise vm_err from err
@@ -260,7 +260,7 @@ class LocalProvider(TestProviderAPI, Web3Provider):
             # Replay txn to get revert reason
             try:
                 self.web3.eth.call(txn_params)
-            except (ValidationError, TransactionFailed) as err:
+            except (ValidationError, TransactionFailed, Web3ContractLogicError) as err:
                 vm_err = self.get_virtual_machine_error(err, txn=receipt)
                 receipt.error = vm_err
                 if txn.raise_on_revert:
@@ -348,7 +348,7 @@ class LocalProvider(TestProviderAPI, Web3Provider):
             else:
                 return VirtualMachineError(base_err=exception, **kwargs)
 
-        elif isinstance(exception, ContractPanicError):
+        elif isinstance(exception, Web3ContractLogicError):
             # If the ape-solidity plugin is installed, we are able to enrich the data.
             message = exception.message
             raw_data = exception.data if isinstance(exception.data, str) else "0x"
