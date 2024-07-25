@@ -1,36 +1,11 @@
 import signal
 import threading
-import traceback
-import os
 
 if threading.current_thread() is threading.main_thread():
     # If we are in the main thread, we can safely set the signal handler
     signal.signal(signal.SIGINT, lambda s, f: _sys.exit(130))
 
 import sys as _sys
-
-
-_HOME_DIR = os.path.expanduser("~")
-
-
-def custom_exception_hook(exctype, value, tb):
-    # Format the traceback
-    formatted_traceback = traceback.format_exception(exctype, value, tb)
-
-    # Filter out the home directory from the traceback
-    filtered_traceback = []
-    for line in formatted_traceback:
-        if _HOME_DIR in line:
-            filtered_traceback.append(line.replace(_HOME_DIR, "$HOME"))
-        else:
-            filtered_traceback.append(line)
-
-    # Print the filtered traceback
-    for line in filtered_traceback:
-        _sys.stderr.write(line)
-
-# Set the custom exception hook
-_sys.excepthook = custom_exception_hook
 
 from ape.managers.project import ProjectManager as Project
 from ape.pytest.contextmanagers import RevertsContextManager

@@ -1,7 +1,14 @@
 import re
+from pathlib import Path
 
 from ape.api import ReceiptAPI
-from ape.exceptions import Abort, NetworkNotFoundError, TransactionError
+from ape.exceptions import (
+    Abort,
+    ContractLogicError,
+    NetworkNotFoundError,
+    TransactionError,
+    handle_ape_exception,
+)
 from ape_ethereum.transactions import DynamicFeeTransaction, Receipt
 
 
@@ -104,3 +111,21 @@ class TestNetworkNotFoundError:
         actual = str(error)
         expected = "No networks found."
         assert actual == expected
+
+
+def test_handle_ape_exception_hides_home_dir(mocker):
+    base_paths = ["this/is/base/path"]
+    mock_tb_get = mocker.patch("ape.exceptions._get_relevant_frames")
+    tb_str = f"""
+  File "{Path.home()}/this/is/base/path/myfile.vy", line 18, in setNumber2
+    setNumber(5)
+""".lstrip()
+    mock_tb_get.return_value = [tb_str]
+    print_watcher = mocker.patch("ape.exceptions.rich_print")
+    ape_exception = ContractLogicError()
+    assert handle_ape_exception(ape_exception, base_paths) is True
+    actual = print_watcher.call_args[0][0]
+
+    # We expect the same only the home dir has been hidden.
+    expected = "\n" + tb_str.replace(str(Path.home()), "$HOME")
+    assert actual == expected
