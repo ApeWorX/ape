@@ -408,6 +408,13 @@ def test_load_contracts_output_abi(tmp_project):
         for file in files:
             assert file.suffix == ".json"
 
+        # Ensure is usable.
+        data = json.loads(file.read_text(encoding="utf8"))
+        assert isinstance(data, list)
+        assert len(data) >= 1
+        # There was bug where this was a str.
+        assert isinstance(data[0], dict)
+
 
 def test_manifest_path(tmp_project):
     assert tmp_project.manifest_path == tmp_project.path / ".build" / "__local__.json"

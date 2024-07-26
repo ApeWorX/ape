@@ -2539,9 +2539,7 @@ class LocalProject(Project):
             abi_folder.mkdir(parents=True, exist_ok=True)
             for name, ct in (self.manifest.contract_types or {}).items():
                 file = abi_folder / f"{name}.json"
-                abi_json = json.dumps(
-                    [x.model_dump_json(by_alias=True, mode="json") for x in ct.abi]
-                )
+                abi_json = json.dumps([x.model_dump(by_alias=True, mode="json") for x in ct.abi])
                 file.write_text(abi_json, encoding="utf8")
 
 
