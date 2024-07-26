@@ -153,6 +153,8 @@ class AccountManager(BaseManager):
         my_accounts = accounts.load("dev")
     """
 
+    _alias_to_account_cache: dict[str, AccountAPI] = {}
+
     @property
     def default_sender(self) -> Optional[AccountAPI]:
         return _DEFAULT_SENDERS[-1] if _DEFAULT_SENDERS else None
@@ -257,12 +259,15 @@ class AccountManager(BaseManager):
         Returns:
             :class:`~ape.api.accounts.AccountAPI`
         """
-
         if alias == "":
             raise ValueError("Cannot use empty string as alias!")
 
+        elif alias in self._alias_to_account_cache:
+            return self._alias_to_account_cache[alias]
+
         for account in self:
             if account.alias and account.alias == alias:
+                self._alias_to_account_cache[alias] = account
                 return account
 
         raise KeyError(f"No account with alias '{alias}'.")
