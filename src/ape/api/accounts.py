@@ -597,7 +597,7 @@ class TestAccountContainerAPI(AccountContainerAPI):
         """
 
     @abstractmethod
-    def generate_account(self) -> "TestAccountAPI":
+    def generate_account(self, index: Optional[int] = None) -> "TestAccountAPI":
         """
         Generate a new test account.
         """

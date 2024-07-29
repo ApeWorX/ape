@@ -419,14 +419,15 @@ class GethDev(EthereumNodeProvider, TestProviderAPI, SubprocessProvider):
         return self._process.command if self._process else []
 
     def get_test_account(self, index: int) -> "TestAccountAPI":
-        # NOTE: No need to cache here because it happens at the TestAccountManager already.
-        if proc := self._process:
-            account = proc._dev_accounts[index]
-            return self.account_manager.init_test_account(
-                index, account.address, account.private_key
-            )
+        if self._process is None:
+            # Not managing the process. Use default approach.
+            test_container = self.account_manager.test_accounts.containers["test"]
+            return test_container.generate_account(index)
 
-        raise IndexError(f"Cannot get account at index '{index}'. Reason: Process not started.")
+        # perf: we avoid having to generate account keys twice by utilizing
+        #   the accounts generated for geth's genesis.json.
+        account = self._process._dev_accounts[index]
+        return self.account_manager.init_test_account(index, account.address, account.private_key)
 
 
 # NOTE: The default behavior of EthereumNodeBehavior assumes geth.
