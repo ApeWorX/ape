@@ -63,7 +63,7 @@ class TestAccountManager(list, ManagerAccessMixin):
                 yield account.alias
 
     def __len__(self) -> int:
-        return self.config_manager.get_config("test").number_of_accounts
+        return sum(len(c) for c in self.containers.values())
 
     def __iter__(self) -> Iterator[AccountAPI]:
         yield from self.accounts
@@ -81,7 +81,7 @@ class TestAccountManager(list, ManagerAccessMixin):
         if account_id < 0:
             account_id = len(self) + account_id
 
-        account = self.containers["test"].get_test_account(account_id)
+        account = self.containers["test"].get_test_account(account_id)  # type: ignore
         self._accounts_by_index[original_account_id] = account
         return account
 
@@ -147,8 +147,10 @@ class TestAccountManager(list, ManagerAccessMixin):
             index, address, private_key
         )
 
-    def _reset(self):
+    def reset(self):
         self._accounts_by_index = {}
+        for container in self.containers.values():
+            container.reset()
 
 
 class AccountManager(BaseManager):

@@ -368,7 +368,10 @@ def test_accounts_splice_access(test_accounts):
     assert b == test_accounts[1]
     c = test_accounts[-1]
     assert c == test_accounts[len(test_accounts) - 1]
-    assert len(test_accounts[::2]) == len(test_accounts) / 2
+    expected = (
+        (len(test_accounts) // 2) if len(test_accounts) % 2 == 0 else (len(test_accounts) // 2 + 1)
+    )
+    assert len(test_accounts[::2]) == expected
 
 
 def test_accounts_address_access(owner, accounts):

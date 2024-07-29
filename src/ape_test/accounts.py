@@ -20,14 +20,13 @@ from ape.utils import (
 
 
 class TestAccountContainer(TestAccountContainerAPI):
-    num_generated: int = 0
-    _accounts: list["TestAccount"] = []
+    generated_accounts: list["TestAccount"] = []
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
     def __len__(self) -> int:
-        return self.number_of_accounts
+        return self.number_of_accounts + len(self.generated_accounts)
 
     @property
     def config(self):
@@ -56,20 +55,26 @@ class TestAccountContainer(TestAccountContainerAPI):
             yield cast(TestAccount, self.get_test_account(index))
 
     def get_test_account(self, index: int) -> TestAccountAPI:
+        if index >= self.number_of_accounts:
+            new_index = index - self.number_of_accounts
+            return self.generated_accounts[new_index]
+
         try:
             return self.provider.get_test_account(index)
         except (NotImplementedError, ProviderNotConnectedError):
             return self.generate_account(index=index)
 
     def generate_account(self, index: Optional[int] = None) -> "TestAccountAPI":
-        new_index = self.number_of_accounts + self.num_generated if index is None else index
+        new_index = (
+            self.number_of_accounts + len(self.generated_accounts) if index is None else index
+        )
         generated_account = generate_dev_accounts(
             self.mnemonic, 1, hd_path=self.hd_path, start_index=new_index
         )[0]
         account = self.init_test_account(
             new_index, generated_account.address, generated_account.private_key
         )
-        self.num_generated += 1
+        self.generated_accounts.append(account)
         return account
 
     @classmethod
@@ -79,6 +84,9 @@ class TestAccountContainer(TestAccountContainerAPI):
             address_str=address,
             private_key=private_key,
         )
+
+    def reset(self):
+        self.generated_accounts = []
 
 
 class TestAccount(TestAccountAPI):

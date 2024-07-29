@@ -584,15 +584,27 @@ class TestAccountContainerAPI(AccountContainerAPI):
         """
         return Path("/dev/null" if os.name == "posix" else "NUL")
 
-    # TODO: 0.9 change this to abstractmethod
     @raises_not_implemented
     def get_test_account(self, index: int) -> "TestAccountAPI":  # type: ignore[empty-body]
-        pass
+        """
+        Get the test account at the given index.
+
+        Args:
+            index (int): The index of the test account.
+
+        Returns:
+            :class:`~ape.api.accounts.TestAccountAPI`
+        """
 
     @abstractmethod
     def generate_account(self) -> "TestAccountAPI":
         """
         Generate a new test account.
+        """
+
+    def reset(self):
+        """
+        Reset the account container to an original state.
         """
 
 

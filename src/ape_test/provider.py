@@ -351,6 +351,9 @@ class LocalProvider(TestProviderAPI, Web3Provider):
             private_key.to_hex(),
         )
 
+    def add_account(self, private_key: str):
+        self.evm_backend.add_account(private_key)
+
     def get_virtual_machine_error(self, exception: Exception, **kwargs) -> VirtualMachineError:
         if isinstance(exception, ValidationError):
             match = self._CANNOT_AFFORD_GAS_PATTERN.match(str(exception))

@@ -662,7 +662,6 @@ class ProviderAPI(BaseInterfaceModel):
             amount (int): The balance to set in the address.
         """
 
-    # TODO: In 0.9, add this to TestAccountAPI and make it abstractmethod.
     @raises_not_implemented
     def get_test_account(self, index: int) -> "TestAccountAPI":  # type: ignore[empty-body]
         """
