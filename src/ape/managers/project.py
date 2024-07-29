@@ -1887,6 +1887,8 @@ class Project(ProjectManager):
         self._config_override = overrides
         _ = self.config
 
+        self.account_manager.initialize_test_accounts()
+
     def extract_manifest(self) -> PackageManifest:
         return self.manifest
 

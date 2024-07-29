@@ -1,5 +1,6 @@
 import warnings
 from collections.abc import Iterator
+from functools import cached_property
 from typing import Any, Optional
 
 from eip712.messages import EIP712Message
@@ -11,14 +12,17 @@ from eth_utils import to_bytes
 from ape.api import TestAccountAPI, TestAccountContainerAPI, TransactionAPI
 from ape.exceptions import SignatureError
 from ape.types import AddressType, MessageSignature, TransactionSignature
-from ape.utils import GeneratedDevAccount, generate_dev_accounts
+from ape.utils import (
+    DEFAULT_NUMBER_OF_TEST_ACCOUNTS,
+    DEFAULT_TEST_HD_PATH,
+    DEFAULT_TEST_MNEMONIC,
+    GeneratedDevAccount,
+    generate_dev_accounts,
+)
 
 
 class TestAccountContainer(TestAccountContainerAPI):
     num_generated: int = 0
-    mnemonic: str = ""
-    num_of_accounts: int = 0
-    hd_path: str = ""
     _accounts: list["TestAccount"] = []
 
     def __init__(self, *args, **kwargs):
@@ -26,68 +30,60 @@ class TestAccountContainer(TestAccountContainerAPI):
         self.init()
 
     def init(self):
-        self.mnemonic = self.config["mnemonic"]
-        self.num_of_accounts = self.config["number_of_accounts"]
-        self.hd_path = self.config["hd_path"]
-        self._accounts = []
-
-        for index, account in enumerate(self._dev_accounts):
-            self._accounts.append(
-                TestAccount(
-                    index=index, address_str=account.address, private_key=account.private_key
-                )
-            )
+        self.__dict__.pop("_dev_accounts", None)  # Clear cache.
+        self._accounts = [
+            TestAccount(index=index, address_str=account.address, private_key=account.private_key)
+            for index, account in enumerate(self._dev_accounts)
+        ]
 
     def __len__(self) -> int:
-        return self.num_of_accounts
+        return self.number_of_accounts
 
     @property
     def config(self):
         return self.config_manager.get_config("test")
 
     @property
+    def mnemonic(self) -> str:
+        return self.config.get("mnemonic", DEFAULT_TEST_MNEMONIC)
+
+    @property
+    def number_of_accounts(self) -> int:
+        return self.config.get("number_of_accounts", DEFAULT_NUMBER_OF_TEST_ACCOUNTS)
+
+    @property
+    def hd_path(self) -> str:
+        return self.config.get("hd_path", DEFAULT_TEST_HD_PATH)
+
+    @cached_property
     def _dev_accounts(self) -> list[GeneratedDevAccount]:
         return generate_dev_accounts(
             self.mnemonic,
-            number_of_accounts=self.num_of_accounts,
+            number_of_accounts=self.number_of_accounts,
             hd_path=self.hd_path,
         )
 
     @property
     def aliases(self) -> Iterator[str]:
-        for index in range(self.num_of_accounts):
+        for index in range(self.number_of_accounts):
             yield f"TEST::{index}"
-
-    @property
-    def _is_config_changed(self):
-        current_mnemonic = self.config["mnemonic"]
-        current_number = self.config["number_of_accounts"]
-        current_hd_path = self.config["hd_path"]
-        return (
-            self.mnemonic != current_mnemonic
-            or self.num_of_accounts != current_number
-            or self.hd_path != current_hd_path
-        )
 
     @property
     def accounts(self) -> Iterator["TestAccount"]:
         # As TestAccountManager only uses accounts property this works!
-        if self._is_config_changed:
-            self.init()
         yield from self._accounts
 
     def generate_account(self) -> "TestAccountAPI":
-        new_index = self.num_of_accounts + self.num_generated
+        new_index = self.number_of_accounts + self.num_generated
         self.num_generated += 1
         generated_account = generate_dev_accounts(
             self.mnemonic, 1, hd_path=self.hd_path, start_index=new_index
         )[0]
-        acc = TestAccount(
+        return TestAccount(
             index=new_index,
             address_str=generated_account.address,
             private_key=generated_account.private_key,
         )
-        return acc
 
 
 class TestAccount(TestAccountAPI):

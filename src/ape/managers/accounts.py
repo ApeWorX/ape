@@ -35,6 +35,7 @@ class TestAccountManager(list, ManagerAccessMixin):
     __test__ = False
 
     _impersonated_accounts: dict[AddressType, ImpersonatedAccount] = {}
+    _accounts_by_index: dict[int, AccountAPI] = {}
 
     @log_instead_of_fail(default="<TestAccountManager>")
     def __repr__(self) -> str:
@@ -44,8 +45,7 @@ class TestAccountManager(list, ManagerAccessMixin):
     @cached_property
     def containers(self) -> dict[str, TestAccountContainerAPI]:
         account_types = filter(
-            lambda t: issubclass(t[1][1], TestAccountAPI),
-            self.plugin_manager.account_types
+            lambda t: issubclass(t[1][1], TestAccountAPI), self.plugin_manager.account_types
         )
         return {
             plugin_name: container_type(name=plugin_name, account_type=account_type)
@@ -74,10 +74,15 @@ class TestAccountManager(list, ManagerAccessMixin):
 
     @__getitem__.register
     def __getitem_int(self, account_id: int):
+        if account_id in self._accounts_by_index:
+            return self._accounts_by_index[account_id]
+
+        original_account_id = account_id
         if account_id < 0:
             account_id = len(self) + account_id
         for idx, account in enumerate(self.accounts):
             if account_id == idx:
+                self._accounts_by_index[original_account_id] = account
                 return account
 
         raise IndexError(f"No account at index '{account_id}'.")
@@ -135,6 +140,16 @@ class TestAccountManager(list, ManagerAccessMixin):
     def use_sender(self, account_id: Union[TestAccountAPI, AddressType, int]) -> ContextManager:
         account = account_id if isinstance(account_id, TestAccountAPI) else self[account_id]
         return _use_sender(account)
+
+    def initialize(self):
+        self._accounts_by_index = {}
+        for container in self.containers.values():
+            # NOTE: Using try/except over checking for attr for performance reasons.
+            # TODO: Create official API for this in 0.9.
+            try:
+                container.init()  # type: ignore[attr-defined]
+            except AttributeError:
+                continue
 
 
 class AccountManager(BaseManager):
@@ -366,7 +381,6 @@ class AccountManager(BaseManager):
         Returns:
             bool: ``True`` when the given address is found.
         """
-
         return (
             any(address in container for container in self.containers.values())
             or address in self.test_accounts
@@ -381,6 +395,12 @@ class AccountManager(BaseManager):
                 account = self[account_id]
             elif isinstance(account_id, str):  # alias
                 account = self.load(account_id)
+            else:
+                raise TypeError(account_id)
         else:
             account = account_id
+
         return _use_sender(account)
+
+    def initialize_test_accounts(self):
+        self.test_accounts.initialize()
