@@ -12,7 +12,7 @@ from logging import FileHandler, Formatter, Logger, getLogger
 from pathlib import Path
 from signal import SIGINT, SIGTERM, signal
 from subprocess import DEVNULL, PIPE, Popen
-from typing import Any, Optional, Union, cast
+from typing import TYPE_CHECKING, Any, Optional, Union, cast
 
 from eth_pydantic_types import HexBytes
 from ethpm_types.abi import EventABI
@@ -41,6 +41,9 @@ from ape.utils.misc import (
     log_instead_of_fail,
     raises_not_implemented,
 )
+
+if TYPE_CHECKING:
+    from ape.api.accounts import TestAccountAPI
 
 
 class BlockAPI(BaseInterfaceModel):
@@ -659,6 +662,14 @@ class ProviderAPI(BaseInterfaceModel):
             amount (int): The balance to set in the address.
         """
 
+    @raises_not_implemented
+    def get_test_account(self, index: int) -> "TestAccountAPI":  # type: ignore[empty-body]
+        pass  # Test account API
+
+    @raises_not_implemented
+    def generate_test_account(self):  # type: ignore[empty-body]
+        pass  # Test account API
+
     @log_instead_of_fail(default="<ProviderAPI>")
     def __repr__(self) -> str:
         return f"<{self.name.capitalize()} chain_id={self.chain_id}>"
@@ -907,6 +918,27 @@ class TestProviderAPI(ProviderAPI):
         if method_id in contract_type.view_methods:
             method = contract_type.methods[method_id]
             self._test_runner.coverage_tracker.hit_function(contract_src, method)
+
+    @raises_not_implemented
+    def get_test_account(self, index: int) -> "TestAccountAPI":  # type: ignore[empty-body]
+        """
+        Retrieve one of the provider-generated test accounts.
+
+        Args:
+            index (int): The index of the test accoun in the HD-Path.
+
+        Returns:
+            :class:`~ape.api.accounts.TestAccountAPI`
+        """
+
+    @raises_not_implemented
+    def generate_test_account(self) -> "TestAccountAPI":  # type: ignore[empty-body]
+        """
+        Generate a new test account.
+
+        Returns:
+            :class:`~ape.api.accounts.TestAccountAPI`
+        """
 
 
 class UpstreamProvider(ProviderAPI):

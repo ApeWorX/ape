@@ -24,7 +24,7 @@ from ape.exceptions import (
 )
 from ape.logging import logger
 from ape.types import AddressType, MessageSignature, SignableMessage
-from ape.utils import BaseInterfaceModel, abstractmethod
+from ape.utils import BaseInterfaceModel, abstractmethod, raises_not_implemented
 
 if TYPE_CHECKING:
     from ape.contracts import ContractContainer, ContractInstance
@@ -583,6 +583,11 @@ class TestAccountContainerAPI(AccountContainerAPI):
         it is not used for anything.
         """
         return Path("/dev/null" if os.name == "posix" else "NUL")
+
+    # TODO: 0.9 change this to abstractmethod
+    @raises_not_implemented
+    def get_test_account(self, index: int) -> "TestAccountAPI":  # type: ignore[empty-body]
+        pass
 
     @abstractmethod
     def generate_account(self) -> "TestAccountAPI":

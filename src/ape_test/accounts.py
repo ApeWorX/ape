@@ -1,6 +1,5 @@
 import warnings
 from collections.abc import Iterator
-from functools import cached_property
 from typing import Any, Optional
 
 from eip712.messages import EIP712Message
@@ -10,13 +9,12 @@ from eth_pydantic_types import HexBytes
 from eth_utils import to_bytes
 
 from ape.api import TestAccountAPI, TestAccountContainerAPI, TransactionAPI
-from ape.exceptions import SignatureError
+from ape.exceptions import ProviderNotConnectedError, SignatureError
 from ape.types import AddressType, MessageSignature, TransactionSignature
 from ape.utils import (
     DEFAULT_NUMBER_OF_TEST_ACCOUNTS,
     DEFAULT_TEST_HD_PATH,
     DEFAULT_TEST_MNEMONIC,
-    GeneratedDevAccount,
     generate_dev_accounts,
 )
 
@@ -27,14 +25,6 @@ class TestAccountContainer(TestAccountContainerAPI):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.init()
-
-    def init(self):
-        self.__dict__.pop("_dev_accounts", None)  # Clear cache.
-        self._accounts = [
-            TestAccount(index=index, address_str=account.address, private_key=account.private_key)
-            for index, account in enumerate(self._dev_accounts)
-        ]
 
     def __len__(self) -> int:
         return self.number_of_accounts
@@ -55,14 +45,6 @@ class TestAccountContainer(TestAccountContainerAPI):
     def hd_path(self) -> str:
         return self.config.get("hd_path", DEFAULT_TEST_HD_PATH)
 
-    @cached_property
-    def _dev_accounts(self) -> list[GeneratedDevAccount]:
-        return generate_dev_accounts(
-            self.mnemonic,
-            number_of_accounts=self.number_of_accounts,
-            hd_path=self.hd_path,
-        )
-
     @property
     def aliases(self) -> Iterator[str]:
         for index in range(self.number_of_accounts):
@@ -70,19 +52,40 @@ class TestAccountContainer(TestAccountContainerAPI):
 
     @property
     def accounts(self) -> Iterator["TestAccount"]:
-        # As TestAccountManager only uses accounts property this works!
-        yield from self._accounts
+        for index in range(self.number_of_accounts):
+            yield self.provider.get_test_account(index)
+
+    def get_test_account(self, index: int) -> TestAccountAPI:
+        try:
+            return self.provider.get_test_account(index)
+        except (NotImplementedError, ProviderNotConnectedError):
+            return self._generate_account_manually(index=index)
 
     def generate_account(self) -> "TestAccountAPI":
-        new_index = self.number_of_accounts + self.num_generated
+        try:
+            acct = self.provider.generate_test_account()
+        except (NotImplementedError, ProviderNotConnectedError):
+            acct = self._generate_account_manually()
+
         self.num_generated += 1
+        return acct
+
+    def _generate_account_manually(self, index: Optional[int] = None):
+        # Legacy method: will no longer be used once all providers implement.
+        new_index = self.number_of_accounts + self.num_generated if index is None else index
         generated_account = generate_dev_accounts(
             self.mnemonic, 1, hd_path=self.hd_path, start_index=new_index
         )[0]
+        return self.init_test_account(
+            new_index, generated_account.address, generated_account.private_key
+        )
+
+    @classmethod
+    def init_test_account(cls, index: int, address: AddressType, private_key: str) -> "TestAccount":
         return TestAccount(
-            index=new_index,
-            address_str=generated_account.address,
-            private_key=generated_account.private_key,
+            index=index,
+            address_str=address,
+            private_key=private_key,
         )
 
 

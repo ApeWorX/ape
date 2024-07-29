@@ -610,30 +610,35 @@ def test_is_not_contract(owner, keyfile_account):
     assert not keyfile_account.is_contract
 
 
-def test_using_different_hd_path(test_accounts, project):
+def test_using_different_hd_path(test_accounts, project, eth_tester_provider):
     test_config = {
         "test": {
-            "hd_path": "m/44'/60'/0'/{}",
+            "hd_path": "m/44'/60'/0/0",
         }
     }
 
-    old_first_account = test_accounts[0]
+    old_address = test_accounts[0].address
+    original_settings = eth_tester_provider.settings.model_dump(by_alias=True)
     with project.temp_config(**test_config):
-        new_first_account = test_accounts[0]
-        assert old_first_account.address != new_first_account.address
+        eth_tester_provider.update_settings(test_config["test"])
+        new_address = test_accounts[0].address
+
+    eth_tester_provider.update_settings(original_settings)
+    assert old_address != new_address
 
 
-def test_using_random_mnemonic(test_accounts, project):
-    test_config = {
-        "test": {
-            "mnemonic": "test_mnemonic_for_ape",
-        }
-    }
+def test_using_random_mnemonic(test_accounts, project, eth_tester_provider):
+    mnemonic = "candy maple cake sugar pudding cream honey rich smooth crumble sweet treat"
+    test_config = {"test": {"mnemonic": mnemonic}}
 
-    old_first_account = test_accounts[0]
+    old_address = test_accounts[0].address
+    original_settings = eth_tester_provider.settings.model_dump(by_alias=True)
     with project.temp_config(**test_config):
-        new_first_account = test_accounts[0]
-        assert old_first_account.address != new_first_account.address
+        eth_tester_provider.update_settings(test_config["test"])
+        new_address = test_accounts[0].address
+
+    eth_tester_provider.update_settings(original_settings)
+    assert old_address != new_address
 
 
 def test_iter_test_accounts(test_accounts):

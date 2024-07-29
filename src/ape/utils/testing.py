@@ -48,17 +48,19 @@ def generate_dev_accounts(
         list[:class:`~ape.utils.GeneratedDevAccount`]: List of development accounts.
     """
     seed = Mnemonic.to_seed(mnemonic)
-    accounts = []
+    hd_path_format = (
+        hd_path if "{}" in hd_path or "{0}" in hd_path else f"{hd_path.rstrip('/')}/{{}}"
+    )
+    return [
+        _generate_dev_account(hd_path_format, i, seed)
+        for i in range(start_index, start_index + number_of_accounts)
+    ]
 
-    if "{}" in hd_path or "{0}" in hd_path:
-        hd_path_format = hd_path
-    else:
-        hd_path_format = f"{hd_path.rstrip('/')}/{{}}"
 
-    for i in range(start_index, start_index + number_of_accounts):
-        hd_path_obj = HDPath(hd_path_format.format(i))
-        private_key = HexBytes(hd_path_obj.derive(seed)).hex()
-        address = Account.from_key(private_key).address
-        accounts.append(GeneratedDevAccount(address, private_key))
-
-    return accounts
+def _generate_dev_account(hd_path, index: int, seed: bytes) -> GeneratedDevAccount:
+    return GeneratedDevAccount(
+        address=Account.from_key(
+            private_key := HexBytes(HDPath(hd_path.format(index)).derive(seed)).hex()
+        ).address,
+        private_key=private_key,
+    )

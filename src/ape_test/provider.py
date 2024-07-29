@@ -3,7 +3,7 @@ from ast import literal_eval
 from collections.abc import Iterator
 from functools import cached_property
 from re import Pattern
-from typing import Any, Optional, cast
+from typing import TYPE_CHECKING, Any, Optional, cast
 
 from eth.exceptions import HeaderNotFound
 from eth_pydantic_types import HexBytes
@@ -27,9 +27,12 @@ from ape.exceptions import (
     VirtualMachineError,
 )
 from ape.logging import logger
-from ape.types import BlockID, ContractLog, LogFilter, SnapshotID
+from ape.types import AddressType, BlockID, ContractLog, LogFilter, SnapshotID
 from ape.utils import DEFAULT_TEST_CHAIN_ID, DEFAULT_TEST_HD_PATH, gas_estimation_error_message
 from ape_ethereum.provider import Web3Provider
+
+if TYPE_CHECKING:
+    from ape.api.accounts import TestAccountAPI
 
 
 class EthTesterProviderConfig(PluginConfig):
@@ -333,6 +336,24 @@ class LocalProvider(TestProviderAPI, Web3Provider):
             topics=log_filter.topic_filter,
         )
         yield from self.network.ecosystem.decode_logs(log_gen, *log_filter.events)
+
+    def get_test_account(self, index: int) -> "TestAccountAPI":
+        # NOTE: No need to cache here because it happens at the TestAccountManager already.
+        try:
+            private_key = self.evm_backend.account_keys[index]
+        except IndexError as err:
+            raise IndexError(f"No account at index '{index}'") from err
+
+        address = private_key.public_key.to_canonical_address()
+        return self.account_manager.init_test_account(
+            index,
+            cast(AddressType, f"0x{address.hex()}"),
+            private_key.to_hex(),
+        )
+
+    # def generate_test_account(self) -> "TestAccountAPI":
+    #     # TODO
+    #     return self.evm_backend.add_account()
 
     def get_virtual_machine_error(self, exception: Exception, **kwargs) -> VirtualMachineError:
         if isinstance(exception, ValidationError):

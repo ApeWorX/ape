@@ -63,7 +63,7 @@ class TestAccountManager(list, ManagerAccessMixin):
                 yield account.alias
 
     def __len__(self) -> int:
-        return len(list(self.accounts))
+        return self.config_manager.get_config("test").number_of_accounts
 
     def __iter__(self) -> Iterator[AccountAPI]:
         yield from self.accounts
@@ -80,12 +80,10 @@ class TestAccountManager(list, ManagerAccessMixin):
         original_account_id = account_id
         if account_id < 0:
             account_id = len(self) + account_id
-        for idx, account in enumerate(self.accounts):
-            if account_id == idx:
-                self._accounts_by_index[original_account_id] = account
-                return account
 
-        raise IndexError(f"No account at index '{account_id}'.")
+        account = self.containers["test"].get_test_account(account_id)
+        self._accounts_by_index[original_account_id] = account
+        return account
 
     @__getitem__.register
     def __getitem_slice(self, account_id: slice):
@@ -141,15 +139,16 @@ class TestAccountManager(list, ManagerAccessMixin):
         account = account_id if isinstance(account_id, TestAccountAPI) else self[account_id]
         return _use_sender(account)
 
-    def initialize(self):
+    def init_test_account(
+        self, index: int, address: AddressType, private_key: str
+    ) -> "TestAccountAPI":
+        container = self.containers["test"]
+        return container.init_test_account(  # type: ignore[attr-defined]
+            index, address, private_key
+        )
+
+    def _reset(self):
         self._accounts_by_index = {}
-        for container in self.containers.values():
-            # NOTE: Using try/except over checking for attr for performance reasons.
-            # TODO: Create official API for this in 0.9.
-            try:
-                container.init()  # type: ignore[attr-defined]
-            except AttributeError:
-                continue
 
 
 class AccountManager(BaseManager):
@@ -183,7 +182,6 @@ class AccountManager(BaseManager):
         Returns:
             dict[str, :class:`~ape.api.accounts.AccountContainerAPI`]
         """
-
         containers = {}
         data_folder = self.config_manager.DATA_FOLDER
         data_folder.mkdir(exist_ok=True)
@@ -232,7 +230,6 @@ class AccountManager(BaseManager):
         Returns:
             int
         """
-
         return sum(len(container) for container in self.containers.values())
 
     def __iter__(self) -> Iterator[AccountAPI]:
@@ -306,7 +303,6 @@ class AccountManager(BaseManager):
         Returns:
             :class:`~ape.api.accounts.AccountAPI`
         """
-
         if account_id < 0:
             account_id = len(self) + account_id
         for idx, account in enumerate(self):
@@ -402,5 +398,7 @@ class AccountManager(BaseManager):
 
         return _use_sender(account)
 
-    def initialize_test_accounts(self):
-        self.test_accounts.initialize()
+    def init_test_account(
+        self, index: int, address: AddressType, private_key: str
+    ) -> "TestAccountAPI":
+        return self.test_accounts.init_test_account(index, address, private_key)
