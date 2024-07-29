@@ -132,6 +132,9 @@ class TestAccountManager(list, ManagerAccessMixin):
     def __contains__(self, address: AddressType) -> bool:  # type: ignore
         return any(address in container for container in self.containers.values())
 
+    def generate_test_account(self, container_name: str = "test") -> TestAccountAPI:
+        return self.containers[container_name].generate_account()
+
     def use_sender(self, account_id: Union[TestAccountAPI, AddressType, int]) -> ContextManager:
         account = account_id if isinstance(account_id, TestAccountAPI) else self[account_id]
         return _use_sender(account)

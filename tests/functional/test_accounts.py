@@ -576,15 +576,15 @@ def test_account_comparison_to_non_account(core_account):
 
 def test_create_account(test_accounts):
     length_at_start = len(test_accounts)
-    created_acc = test_accounts.generate_test_account()
+    created_account = test_accounts.generate_test_account()
 
-    assert isinstance(created_acc, TestAccount)
-    assert created_acc.index == length_at_start
+    assert isinstance(created_account, TestAccount)
+    assert created_account.index == length_at_start
 
-    second_created_acc = test_accounts.generate_test_account()
+    second_created_account = test_accounts.generate_test_account()
 
-    assert created_acc.address != second_created_acc.address
-    assert second_created_acc.index == created_acc.index + 1
+    assert created_account.address != second_created_account.address
+    assert second_created_account.index == created_account.index + 1
 
 
 def test_dir(core_account):

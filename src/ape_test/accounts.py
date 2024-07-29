@@ -66,9 +66,11 @@ class TestAccountContainer(TestAccountContainerAPI):
         generated_account = generate_dev_accounts(
             self.mnemonic, 1, hd_path=self.hd_path, start_index=new_index
         )[0]
-        return self.init_test_account(
+        account = self.init_test_account(
             new_index, generated_account.address, generated_account.private_key
         )
+        self.num_generated += 1
+        return account
 
     @classmethod
     def init_test_account(cls, index: int, address: AddressType, private_key: str) -> "TestAccount":
