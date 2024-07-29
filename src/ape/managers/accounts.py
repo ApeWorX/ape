@@ -43,14 +43,14 @@ class TestAccountManager(list, ManagerAccessMixin):
 
     @cached_property
     def containers(self) -> dict[str, TestAccountContainerAPI]:
-        containers = {}
-        account_types = [
-            t for t in self.plugin_manager.account_types if issubclass(t[1][1], TestAccountAPI)
-        ]
-        for plugin_name, (container_type, account_type) in account_types:
-            containers[plugin_name] = container_type(name=plugin_name, account_type=account_type)
-
-        return containers
+        account_types = filter(
+            lambda t: issubclass(t[1][1], TestAccountAPI),
+            self.plugin_manager.account_types
+        )
+        return {
+            plugin_name: container_type(name=plugin_name, account_type=account_type)
+            for plugin_name, (container_type, account_type) in account_types
+        }
 
     @property
     def accounts(self) -> Iterator[AccountAPI]:
