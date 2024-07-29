@@ -881,3 +881,8 @@ def test_import_account_from_private_key_insecure_passphrase(delete_account_afte
     with delete_account_after(simple_alias):
         with pytest.warns(UserWarning, match="simple"):
             import_account_from_private_key(simple_alias, "simple", PRIVATE_KEY)
+
+
+def test_load(accounts, keyfile_account):
+    account = accounts.load(keyfile_account.alias)
+    assert account == keyfile_account
