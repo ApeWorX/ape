@@ -81,7 +81,7 @@ class TestAccountManager(list, ManagerAccessMixin):
         if account_id < 0:
             account_id = len(self) + account_id
 
-        account = self.containers["test"].get_test_account(account_id)  # type: ignore
+        account = self.containers["test"].get_test_account(account_id)
         self._accounts_by_index[original_account_id] = account
         return account
 

@@ -645,8 +645,11 @@ def test_using_random_mnemonic(test_accounts, project, eth_tester_provider):
 
 
 def test_iter_test_accounts(test_accounts):
-    actual = list(iter(test_accounts))
-    assert len(actual) == len(test_accounts)
+    test_accounts.reset()
+    accounts = list(iter(test_accounts))
+    actual = len(accounts)
+    expected = len(test_accounts)
+    assert actual == expected
 
 
 def test_declare(contract_container, sender):
