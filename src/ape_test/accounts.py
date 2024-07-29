@@ -1,6 +1,6 @@
 import warnings
 from collections.abc import Iterator
-from typing import Any, Optional
+from typing import Any, Optional, cast
 
 from eip712.messages import EIP712Message
 from eth_account import Account as EthAccount
@@ -53,25 +53,15 @@ class TestAccountContainer(TestAccountContainerAPI):
     @property
     def accounts(self) -> Iterator["TestAccount"]:
         for index in range(self.number_of_accounts):
-            yield self.provider.get_test_account(index)
+            yield cast(TestAccount, self.get_test_account(index))
 
     def get_test_account(self, index: int) -> TestAccountAPI:
         try:
             return self.provider.get_test_account(index)
         except (NotImplementedError, ProviderNotConnectedError):
-            return self._generate_account_manually(index=index)
+            return self.generate_account(index=index)
 
-    def generate_account(self) -> "TestAccountAPI":
-        try:
-            acct = self.provider.generate_test_account()
-        except (NotImplementedError, ProviderNotConnectedError):
-            acct = self._generate_account_manually()
-
-        self.num_generated += 1
-        return acct
-
-    def _generate_account_manually(self, index: Optional[int] = None):
-        # Legacy method: will no longer be used once all providers implement.
+    def generate_account(self, index: Optional[int] = None) -> "TestAccountAPI":
         new_index = self.number_of_accounts + self.num_generated if index is None else index
         generated_account = generate_dev_accounts(
             self.mnemonic, 1, hd_path=self.hd_path, start_index=new_index

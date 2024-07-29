@@ -662,13 +662,18 @@ class ProviderAPI(BaseInterfaceModel):
             amount (int): The balance to set in the address.
         """
 
+    # TODO: In 0.9, add this to TestAccountAPI and make it abstractmethod.
     @raises_not_implemented
     def get_test_account(self, index: int) -> "TestAccountAPI":  # type: ignore[empty-body]
-        pass  # Test account API
+        """
+        Retrieve one of the provider-generated test accounts.
 
-    @raises_not_implemented
-    def generate_test_account(self):  # type: ignore[empty-body]
-        pass  # Test account API
+        Args:
+            index (int): The index of the test account in the HD-Path.
+
+        Returns:
+            :class:`~ape.api.accounts.TestAccountAPI`
+        """
 
     @log_instead_of_fail(default="<ProviderAPI>")
     def __repr__(self) -> str:
@@ -918,27 +923,6 @@ class TestProviderAPI(ProviderAPI):
         if method_id in contract_type.view_methods:
             method = contract_type.methods[method_id]
             self._test_runner.coverage_tracker.hit_function(contract_src, method)
-
-    @raises_not_implemented
-    def get_test_account(self, index: int) -> "TestAccountAPI":  # type: ignore[empty-body]
-        """
-        Retrieve one of the provider-generated test accounts.
-
-        Args:
-            index (int): The index of the test accoun in the HD-Path.
-
-        Returns:
-            :class:`~ape.api.accounts.TestAccountAPI`
-        """
-
-    @raises_not_implemented
-    def generate_test_account(self) -> "TestAccountAPI":  # type: ignore[empty-body]
-        """
-        Generate a new test account.
-
-        Returns:
-            :class:`~ape.api.accounts.TestAccountAPI`
-        """
 
 
 class UpstreamProvider(ProviderAPI):
