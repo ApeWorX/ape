@@ -368,7 +368,10 @@ def test_accounts_splice_access(test_accounts):
     assert b == test_accounts[1]
     c = test_accounts[-1]
     assert c == test_accounts[len(test_accounts) - 1]
-    assert len(test_accounts[::2]) == len(test_accounts) / 2
+    expected = (
+        (len(test_accounts) // 2) if len(test_accounts) % 2 == 0 else (len(test_accounts) // 2 + 1)
+    )
+    assert len(test_accounts[::2]) == expected
 
 
 def test_accounts_address_access(owner, accounts):
@@ -576,15 +579,15 @@ def test_account_comparison_to_non_account(core_account):
 
 def test_create_account(test_accounts):
     length_at_start = len(test_accounts)
-    created_acc = test_accounts.generate_test_account()
+    created_account = test_accounts.generate_test_account()
 
-    assert isinstance(created_acc, TestAccount)
-    assert created_acc.index == length_at_start
+    assert isinstance(created_account, TestAccount)
+    assert created_account.index == length_at_start
 
-    second_created_acc = test_accounts.generate_test_account()
+    second_created_account = test_accounts.generate_test_account()
 
-    assert created_acc.address != second_created_acc.address
-    assert second_created_acc.index == created_acc.index + 1
+    assert created_account.address != second_created_account.address
+    assert second_created_account.index == created_account.index + 1
 
 
 def test_dir(core_account):
@@ -610,35 +613,43 @@ def test_is_not_contract(owner, keyfile_account):
     assert not keyfile_account.is_contract
 
 
-def test_using_different_hd_path(test_accounts, project):
+def test_using_different_hd_path(test_accounts, project, eth_tester_provider):
     test_config = {
         "test": {
-            "hd_path": "m/44'/60'/0'/{}",
+            "hd_path": "m/44'/60'/0/0",
         }
     }
 
-    old_first_account = test_accounts[0]
+    old_address = test_accounts[0].address
+    original_settings = eth_tester_provider.settings.model_dump(by_alias=True)
     with project.temp_config(**test_config):
-        new_first_account = test_accounts[0]
-        assert old_first_account.address != new_first_account.address
+        eth_tester_provider.update_settings(test_config["test"])
+        new_address = test_accounts[0].address
+
+    eth_tester_provider.update_settings(original_settings)
+    assert old_address != new_address
 
 
-def test_using_random_mnemonic(test_accounts, project):
-    test_config = {
-        "test": {
-            "mnemonic": "test_mnemonic_for_ape",
-        }
-    }
+def test_using_random_mnemonic(test_accounts, project, eth_tester_provider):
+    mnemonic = "candy maple cake sugar pudding cream honey rich smooth crumble sweet treat"
+    test_config = {"test": {"mnemonic": mnemonic}}
 
-    old_first_account = test_accounts[0]
+    old_address = test_accounts[0].address
+    original_settings = eth_tester_provider.settings.model_dump(by_alias=True)
     with project.temp_config(**test_config):
-        new_first_account = test_accounts[0]
-        assert old_first_account.address != new_first_account.address
+        eth_tester_provider.update_settings(test_config["test"])
+        new_address = test_accounts[0].address
+
+    eth_tester_provider.update_settings(original_settings)
+    assert old_address != new_address
 
 
 def test_iter_test_accounts(test_accounts):
-    actual = list(iter(test_accounts))
-    assert len(actual) == len(test_accounts)
+    test_accounts.reset()
+    accounts = list(iter(test_accounts))
+    actual = len(accounts)
+    expected = len(test_accounts)
+    assert actual == expected
 
 
 def test_declare(contract_container, sender):

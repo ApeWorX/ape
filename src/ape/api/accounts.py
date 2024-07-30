@@ -1,5 +1,6 @@
 import os
 from collections.abc import Iterator
+from functools import cached_property
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Optional, Union
 
@@ -23,7 +24,7 @@ from ape.exceptions import (
 )
 from ape.logging import logger
 from ape.types import AddressType, MessageSignature, SignableMessage
-from ape.utils import BaseInterfaceModel, abstractmethod
+from ape.utils import BaseInterfaceModel, abstractmethod, raises_not_implemented
 
 if TYPE_CHECKING:
     from ape.contracts import ContractContainer, ContractInstance
@@ -443,11 +444,11 @@ class AccountContainerAPI(BaseInterfaceModel):
             Iterator[:class:`~ape.api.accounts.AccountAPI`]
         """
 
-    @property
+    @cached_property
     def data_folder(self) -> Path:
         """
         The path to the account data files.
-        Defaults to ``$HOME/.ape/<plugin_name>`` unless overriden.
+        Defaults to ``$HOME/.ape/<plugin_name>`` unless overridden.
         """
         path = self.config_manager.DATA_FOLDER / self.name
         path.mkdir(parents=True, exist_ok=True)
@@ -573,23 +574,37 @@ class TestAccountContainerAPI(AccountContainerAPI):
     ``AccountContainerAPI`` directly. Then, they show up in the ``accounts`` test fixture.
     """
 
-    @property
+    @cached_property
     def data_folder(self) -> Path:
         """
         **NOTE**: Test account containers do not touch
-        persistant data. By default and unless overriden,
+        persistent data. By default and unless overridden,
         this property returns the path to ``/dev/null`` and
         it is not used for anything.
         """
-        if os.name == "posix":
-            return Path("/dev/null")
+        return Path("/dev/null" if os.name == "posix" else "NUL")
 
-        return Path("NUL")
+    @raises_not_implemented
+    def get_test_account(self, index: int) -> "TestAccountAPI":  # type: ignore[empty-body]
+        """
+        Get the test account at the given index.
+
+        Args:
+            index (int): The index of the test account.
+
+        Returns:
+            :class:`~ape.api.accounts.TestAccountAPI`
+        """
 
     @abstractmethod
-    def generate_account(self) -> "TestAccountAPI":
+    def generate_account(self, index: Optional[int] = None) -> "TestAccountAPI":
         """
         Generate a new test account.
+        """
+
+    def reset(self):
+        """
+        Reset the account container to an original state.
         """
 
 

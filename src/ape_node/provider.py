@@ -18,7 +18,7 @@ from requests.exceptions import ConnectionError
 from web3.middleware import geth_poa_middleware
 from yarl import URL
 
-from ape.api import PluginConfig, SubprocessProvider, TestProviderAPI
+from ape.api import PluginConfig, SubprocessProvider, TestAccountAPI, TestProviderAPI
 from ape.logging import LogLevel, logger
 from ape.types import SnapshotID
 from ape.utils.misc import ZERO_ADDRESS, log_instead_of_fail, raises_not_implemented
@@ -130,10 +130,10 @@ class GethDevProcess(BaseGethProcess):
 
         geth_kwargs["dev_mode"] = True
         hd_path = hd_path or DEFAULT_TEST_HD_PATH
-        accounts = generate_dev_accounts(
+        self._dev_accounts = generate_dev_accounts(
             mnemonic, number_of_accounts=number_of_accounts, hd_path=hd_path
         )
-        addresses = [a.address for a in accounts]
+        addresses = [a.address for a in self._dev_accounts]
         addresses.extend(extra_funded_accounts or [])
         bal_dict = {"balance": str(initial_balance)}
         alloc = {a: bal_dict for a in addresses}
@@ -417,6 +417,17 @@ class GethDev(EthereumNodeProvider, TestProviderAPI, SubprocessProvider):
 
     def build_command(self) -> list[str]:
         return self._process.command if self._process else []
+
+    def get_test_account(self, index: int) -> "TestAccountAPI":
+        if self._process is None:
+            # Not managing the process. Use default approach.
+            test_container = self.account_manager.test_accounts.containers["test"]
+            return test_container.generate_account(index)
+
+        # perf: we avoid having to generate account keys twice by utilizing
+        #   the accounts generated for geth's genesis.json.
+        account = self._process._dev_accounts[index]
+        return self.account_manager.init_test_account(index, account.address, account.private_key)
 
 
 # NOTE: The default behavior of EthereumNodeBehavior assumes geth.

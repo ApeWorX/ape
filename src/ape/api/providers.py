@@ -12,7 +12,7 @@ from logging import FileHandler, Formatter, Logger, getLogger
 from pathlib import Path
 from signal import SIGINT, SIGTERM, signal
 from subprocess import DEVNULL, PIPE, Popen
-from typing import Any, Optional, Union, cast
+from typing import TYPE_CHECKING, Any, Optional, Union, cast
 
 from eth_pydantic_types import HexBytes
 from ethpm_types.abi import EventABI
@@ -41,6 +41,9 @@ from ape.utils.misc import (
     log_instead_of_fail,
     raises_not_implemented,
 )
+
+if TYPE_CHECKING:
+    from ape.api.accounts import TestAccountAPI
 
 
 class BlockAPI(BaseInterfaceModel):
@@ -657,6 +660,18 @@ class ProviderAPI(BaseInterfaceModel):
         Args:
             address (AddressType): An address on the network.
             amount (int): The balance to set in the address.
+        """
+
+    @raises_not_implemented
+    def get_test_account(self, index: int) -> "TestAccountAPI":  # type: ignore[empty-body]
+        """
+        Retrieve one of the provider-generated test accounts.
+
+        Args:
+            index (int): The index of the test account in the HD-Path.
+
+        Returns:
+            :class:`~ape.api.accounts.TestAccountAPI`
         """
 
     @log_instead_of_fail(default="<ProviderAPI>")

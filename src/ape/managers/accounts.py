@@ -35,6 +35,7 @@ class TestAccountManager(list, ManagerAccessMixin):
     __test__ = False
 
     _impersonated_accounts: dict[AddressType, ImpersonatedAccount] = {}
+    _accounts_by_index: dict[int, AccountAPI] = {}
 
     @log_instead_of_fail(default="<TestAccountManager>")
     def __repr__(self) -> str:
@@ -43,14 +44,13 @@ class TestAccountManager(list, ManagerAccessMixin):
 
     @cached_property
     def containers(self) -> dict[str, TestAccountContainerAPI]:
-        containers = {}
-        account_types = [
-            t for t in self.plugin_manager.account_types if issubclass(t[1][1], TestAccountAPI)
-        ]
-        for plugin_name, (container_type, account_type) in account_types:
-            containers[plugin_name] = container_type(name=plugin_name, account_type=account_type)
-
-        return containers
+        account_types = filter(
+            lambda t: issubclass(t[1][1], TestAccountAPI), self.plugin_manager.account_types
+        )
+        return {
+            plugin_name: container_type(name=plugin_name, account_type=account_type)
+            for plugin_name, (container_type, account_type) in account_types
+        }
 
     @property
     def accounts(self) -> Iterator[AccountAPI]:
@@ -63,7 +63,7 @@ class TestAccountManager(list, ManagerAccessMixin):
                 yield account.alias
 
     def __len__(self) -> int:
-        return len(list(self.accounts))
+        return sum(len(c) for c in self.containers.values())
 
     def __iter__(self) -> Iterator[AccountAPI]:
         yield from self.accounts
@@ -74,13 +74,16 @@ class TestAccountManager(list, ManagerAccessMixin):
 
     @__getitem__.register
     def __getitem_int(self, account_id: int):
+        if account_id in self._accounts_by_index:
+            return self._accounts_by_index[account_id]
+
+        original_account_id = account_id
         if account_id < 0:
             account_id = len(self) + account_id
-        for idx, account in enumerate(self.accounts):
-            if account_id == idx:
-                return account
 
-        raise IndexError(f"No account at index '{account_id}'.")
+        account = self.containers["test"].get_test_account(account_id)
+        self._accounts_by_index[original_account_id] = account
+        return account
 
     @__getitem__.register
     def __getitem_slice(self, account_id: slice):
@@ -136,6 +139,19 @@ class TestAccountManager(list, ManagerAccessMixin):
         account = account_id if isinstance(account_id, TestAccountAPI) else self[account_id]
         return _use_sender(account)
 
+    def init_test_account(
+        self, index: int, address: AddressType, private_key: str
+    ) -> "TestAccountAPI":
+        container = self.containers["test"]
+        return container.init_test_account(  # type: ignore[attr-defined]
+            index, address, private_key
+        )
+
+    def reset(self):
+        self._accounts_by_index = {}
+        for container in self.containers.values():
+            container.reset()
+
 
 class AccountManager(BaseManager):
     """
@@ -168,7 +184,6 @@ class AccountManager(BaseManager):
         Returns:
             dict[str, :class:`~ape.api.accounts.AccountContainerAPI`]
         """
-
         containers = {}
         data_folder = self.config_manager.DATA_FOLDER
         data_folder.mkdir(exist_ok=True)
@@ -217,7 +232,6 @@ class AccountManager(BaseManager):
         Returns:
             int
         """
-
         return sum(len(container) for container in self.containers.values())
 
     def __iter__(self) -> Iterator[AccountAPI]:
@@ -291,7 +305,6 @@ class AccountManager(BaseManager):
         Returns:
             :class:`~ape.api.accounts.AccountAPI`
         """
-
         if account_id < 0:
             account_id = len(self) + account_id
         for idx, account in enumerate(self):
@@ -366,7 +379,6 @@ class AccountManager(BaseManager):
         Returns:
             bool: ``True`` when the given address is found.
         """
-
         return (
             any(address in container for container in self.containers.values())
             or address in self.test_accounts
@@ -381,6 +393,14 @@ class AccountManager(BaseManager):
                 account = self[account_id]
             elif isinstance(account_id, str):  # alias
                 account = self.load(account_id)
+            else:
+                raise TypeError(account_id)
         else:
             account = account_id
+
         return _use_sender(account)
+
+    def init_test_account(
+        self, index: int, address: AddressType, private_key: str
+    ) -> "TestAccountAPI":
+        return self.test_accounts.init_test_account(index, address, private_key)

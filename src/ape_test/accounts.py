@@ -1,6 +1,6 @@
 import warnings
 from collections.abc import Iterator
-from typing import Any, Optional
+from typing import Any, Optional, cast
 
 from eip712.messages import EIP712Message
 from eth_account import Account as EthAccount
@@ -9,85 +9,84 @@ from eth_pydantic_types import HexBytes
 from eth_utils import to_bytes
 
 from ape.api import TestAccountAPI, TestAccountContainerAPI, TransactionAPI
-from ape.exceptions import SignatureError
+from ape.exceptions import ProviderNotConnectedError, SignatureError
 from ape.types import AddressType, MessageSignature, TransactionSignature
-from ape.utils import GeneratedDevAccount, generate_dev_accounts
+from ape.utils import (
+    DEFAULT_NUMBER_OF_TEST_ACCOUNTS,
+    DEFAULT_TEST_HD_PATH,
+    DEFAULT_TEST_MNEMONIC,
+    generate_dev_accounts,
+)
 
 
 class TestAccountContainer(TestAccountContainerAPI):
-    num_generated: int = 0
-    mnemonic: str = ""
-    num_of_accounts: int = 0
-    hd_path: str = ""
-    _accounts: list["TestAccount"] = []
+    generated_accounts: list["TestAccount"] = []
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.init()
-
-    def init(self):
-        self.mnemonic = self.config["mnemonic"]
-        self.num_of_accounts = self.config["number_of_accounts"]
-        self.hd_path = self.config["hd_path"]
-        self._accounts = []
-
-        for index, account in enumerate(self._dev_accounts):
-            self._accounts.append(
-                TestAccount(
-                    index=index, address_str=account.address, private_key=account.private_key
-                )
-            )
 
     def __len__(self) -> int:
-        return self.num_of_accounts
+        return self.number_of_accounts + len(self.generated_accounts)
 
     @property
     def config(self):
         return self.config_manager.get_config("test")
 
     @property
-    def _dev_accounts(self) -> list[GeneratedDevAccount]:
-        return generate_dev_accounts(
-            self.mnemonic,
-            number_of_accounts=self.num_of_accounts,
-            hd_path=self.hd_path,
-        )
+    def mnemonic(self) -> str:
+        return self.config.get("mnemonic", DEFAULT_TEST_MNEMONIC)
+
+    @property
+    def number_of_accounts(self) -> int:
+        return self.config.get("number_of_accounts", DEFAULT_NUMBER_OF_TEST_ACCOUNTS)
+
+    @property
+    def hd_path(self) -> str:
+        return self.config.get("hd_path", DEFAULT_TEST_HD_PATH)
 
     @property
     def aliases(self) -> Iterator[str]:
-        for index in range(self.num_of_accounts):
+        for index in range(self.number_of_accounts):
             yield f"TEST::{index}"
 
     @property
-    def _is_config_changed(self):
-        current_mnemonic = self.config["mnemonic"]
-        current_number = self.config["number_of_accounts"]
-        current_hd_path = self.config["hd_path"]
-        return (
-            self.mnemonic != current_mnemonic
-            or self.num_of_accounts != current_number
-            or self.hd_path != current_hd_path
-        )
-
-    @property
     def accounts(self) -> Iterator["TestAccount"]:
-        # As TestAccountManager only uses accounts property this works!
-        if self._is_config_changed:
-            self.init()
-        yield from self._accounts
+        for index in range(self.number_of_accounts):
+            yield cast(TestAccount, self.get_test_account(index))
 
-    def generate_account(self) -> "TestAccountAPI":
-        new_index = self.num_of_accounts + self.num_generated
-        self.num_generated += 1
+    def get_test_account(self, index: int) -> TestAccountAPI:
+        if index >= self.number_of_accounts:
+            new_index = index - self.number_of_accounts
+            return self.generated_accounts[new_index]
+
+        try:
+            return self.provider.get_test_account(index)
+        except (NotImplementedError, ProviderNotConnectedError):
+            return self.generate_account(index=index)
+
+    def generate_account(self, index: Optional[int] = None) -> "TestAccountAPI":
+        new_index = (
+            self.number_of_accounts + len(self.generated_accounts) if index is None else index
+        )
         generated_account = generate_dev_accounts(
             self.mnemonic, 1, hd_path=self.hd_path, start_index=new_index
         )[0]
-        acc = TestAccount(
-            index=new_index,
-            address_str=generated_account.address,
-            private_key=generated_account.private_key,
+        account = self.init_test_account(
+            new_index, generated_account.address, generated_account.private_key
         )
-        return acc
+        self.generated_accounts.append(account)
+        return account
+
+    @classmethod
+    def init_test_account(cls, index: int, address: AddressType, private_key: str) -> "TestAccount":
+        return TestAccount(
+            index=index,
+            address_str=address,
+            private_key=private_key,
+        )
+
+    def reset(self):
+        self.generated_accounts = []
 
 
 class TestAccount(TestAccountAPI):
