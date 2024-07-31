@@ -12,7 +12,7 @@ from ape.api.accounts import (
     TestAccountAPI,
     TestAccountContainerAPI,
 )
-from ape.exceptions import ConversionError
+from ape.exceptions import AccountsError, ConversionError
 from ape.managers.base import BaseManager
 from ape.types import AddressType
 from ape.utils import ManagerAccessMixin, cached_property, log_instead_of_fail, singledispatchmethod
@@ -109,28 +109,36 @@ class TestAccountManager(list, ManagerAccessMixin):
             if account.address == account_id:
                 return account
 
-        can_impersonate = False
-        err_message = message_fmt.format("address", account_id)
         try:
-            if self.network_manager.active_provider:
-                can_impersonate = self.provider.unlock_account(account_id)
-            # else: fall through to `IndexError`
-        except NotImplementedError as err:
-            raise KeyError(
-                f"Your provider does not support impersonating accounts:\n{err_message}"
-            ) from err
-
-        if not can_impersonate:
-            raise KeyError(err_message)
-
-        if account_id not in self._impersonated_accounts:
-            acct = ImpersonatedAccount(raw_address=account_id)
-            self._impersonated_accounts[account_id] = acct
-
-        return self._impersonated_accounts[account_id]
+            return self.impersonate_account(account_id)
+        except AccountsError as err:
+            err_message = message_fmt.format("address", account_id)
+            raise KeyError(f"{err}:\n{err_message}") from err
 
     def __contains__(self, address: AddressType) -> bool:  # type: ignore
         return any(address in container for container in self.containers.values())
+
+    def impersonate_account(self, address: AddressType) -> ImpersonatedAccount:
+        """
+        Impersonate an account for testing purposes.
+
+        Args:
+            address (AddressType): The address to impersonate.
+        """
+        if account := self._impersonated_accounts.get(address):
+            return account
+
+        try:
+            result = self.provider.unlock_account(address)
+        except NotImplementedError as err:
+            raise AccountsError("Your provider does not support impersonating accounts.") from err
+
+        if result:
+            account = ImpersonatedAccount(raw_address=address)
+            self._impersonated_accounts[address] = account
+            return account
+        else:
+            raise AccountsError(f"Unable to unlocked account '{address}'.")
 
     def generate_test_account(self, container_name: str = "test") -> TestAccountAPI:
         return self.containers[container_name].generate_account()
