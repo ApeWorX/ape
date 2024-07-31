@@ -648,6 +648,7 @@ class ContractEvent(BaseInterfaceModel):
                 f"'stop={stop_block}' cannot be greater than "
                 f"the chain length ({self.chain_manager.blocks.height})."
             )
+
         query: dict = {
             "columns": list(ContractLog.model_fields) if columns[0] == "*" else columns,
             "event": self.abi,
@@ -665,7 +666,11 @@ class ContractEvent(BaseInterfaceModel):
         )
         columns_ls = validate_and_expand_columns(columns, ContractLog)
         data = map(partial(extract_fields, columns=columns_ls), contract_events)
-        return pd.DataFrame(columns=columns_ls, data=data)
+        df = pd.DataFrame(columns=columns_ls, data=data)
+        if "event_arguments" in columns_ls:
+            event_arguments = df["event_arguments"].apply(pd.Series)
+            df = pd.concat([df.drop("event_arguments", axis=1), event_arguments], axis=1)
+        return df
 
     def range(
         self,
