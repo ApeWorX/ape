@@ -177,12 +177,17 @@ class Web3Provider(ProviderAPI, ABC):
 
     @property
     def http_uri(self) -> Optional[str]:
+        try:
+            web3 = self.web3
+        except ProviderNotConnectedError:
+            return None
+
         if (
-            hasattr(self.web3.provider, "endpoint_uri")
-            and isinstance(self.web3.provider.endpoint_uri, str)
-            and self.web3.provider.endpoint_uri.startswith("http")
+            hasattr(web3.provider, "endpoint_uri")
+            and isinstance(web3.provider.endpoint_uri, str)
+            and web3.provider.endpoint_uri.startswith("http")
         ):
-            return self.web3.provider.endpoint_uri
+            return web3.provider.endpoint_uri
 
         elif uri := getattr(self, "uri", None):
             # NOTE: Some providers define this
@@ -192,12 +197,17 @@ class Web3Provider(ProviderAPI, ABC):
 
     @property
     def ws_uri(self) -> Optional[str]:
+        try:
+            web3 = self.web3
+        except ProviderNotConnectedError:
+            return None
+
         if (
-            hasattr(self.web3.provider, "endpoint_uri")
-            and isinstance(self.web3.provider.endpoint_uri, str)
-            and self.web3.provider.endpoint_uri.startswith("ws")
+            hasattr(web3.provider, "endpoint_uri")
+            and isinstance(web3.provider.endpoint_uri, str)
+            and web3.provider.endpoint_uri.startswith("ws")
         ):
-            return self.web3.provider.endpoint_uri
+            return web3.provider.endpoint_uri
 
         return None
 
@@ -1239,6 +1249,27 @@ class EthereumNodeProvider(Web3Provider, ABC):
             return None
 
     @property
+    def ws_uri(self) -> Optional[str]:
+        if "ws_uri" in self.provider_settings:
+            # Use adhoc, scripted value
+            return self.provider_settings["ws_uri"]
+
+        config = self.config.model_dump().get(self.network.ecosystem.name, None)
+        if config is None:
+            return super().ws_uri
+
+        # Use value from config file
+        network_config = config.get(self.network.name) or DEFAULT_SETTINGS
+        if "ws_uri" not in network_config:
+            return super().ws_uri
+
+        settings_uri = network_config.get("ws_uri")
+        if settings_uri and _is_ws_url(settings_uri):
+            return settings_uri
+
+        return super().ws_uri
+
+    @property
     def connection_str(self) -> str:
         return self.uri or f"{self.ipc_path}"
 
@@ -1418,9 +1449,8 @@ def _get_default_data_dir() -> Path:
 
 
 def _is_url(val: str) -> bool:
-    return (
-        val.startswith("https://")
-        or val.startswith("http://")
-        or val.startswith("wss://")
-        or val.startswith("ws://")
-    )
+    return val.startswith("https://") or val.startswith("http://") or _is_ws_url(val)
+
+
+def _is_ws_url(val: str) -> bool:
+    return val.startswith("wss://") or val.startswith("ws://")

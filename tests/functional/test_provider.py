@@ -493,3 +493,13 @@ def test_account_balance_state(project, eth_tester_provider, owner):
         provider.connect()
         bal = provider.get_balance(owner.address)
         assert bal == amount
+
+
+def test_node_ws_uri(project):
+    node = project.network_manager.ethereum.sepolia.get_provider("node")
+    assert node.ws_uri is None
+
+    ws_uri = "ws://example.com"
+    with project.temp_config(node={"ethereum": {"sepolia": {"ws_uri": ws_uri}}}):
+        node = project.network_manager.ethereum.sepolia.get_provider("node")
+        assert node.ws_uri == ws_uri
