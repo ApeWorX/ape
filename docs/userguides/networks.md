@@ -365,11 +365,16 @@ To configure network URIs in `node`, you can use the `ape-config.yaml` file:
 
 ```yaml
 node:
+  # When managing or running a node, configure its IPC path directly (optional)
+  ipc_path: path/to/geth.ipc
+
   ethereum:
     mainnet:
       # For `uri`, you can use either HTTP, WS, or IPC values.
       # **Most often, you only need HTTP!**
       uri: https://foo.node.example.com
+      # uri: wss://bar.feed.example.com
+      # uri: path/to/geth.ipc
       
       # For strict HTTP connections, you can configure a http_uri directly.
       http_uri: https://foo.node.example.com

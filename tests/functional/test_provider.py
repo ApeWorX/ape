@@ -1,4 +1,5 @@
 import os
+from pathlib import Path
 from unittest import mock
 
 import pytest
@@ -518,3 +519,11 @@ def test_node_http_uri_with_ws_uri(project, http_key):
         assert node.uri == http
         assert node.http_uri == http
         assert node.ws_uri == ws
+
+
+def test_ipc_for_uri(project):
+    ipc = "path/to/example.ipc"
+    with project.temp_config(node={"ethereum": {"sepolia": {"uri": ipc}}}):
+        node = project.network_manager.ethereum.sepolia.get_provider("node")
+        assert node.uri == ipc
+        assert node.ipc_path == Path(ipc)
