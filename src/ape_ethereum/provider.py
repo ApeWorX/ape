@@ -1460,11 +1460,13 @@ def _create_web3(uri: str, ipc_path: Optional[Path] = None, ws_uri: Optional[str
     # Try ENV, then IPC, and then HTTP last.
     providers: list = [load_provider_from_environment]
     if ipc := ipc_path:
-        providers.append(IPCProvider(ipc_path=ipc))
+        providers.append(lambda: IPCProvider(ipc_path=ipc))
     if http := uri:
-        providers.append(HTTPProvider(endpoint_uri=http, request_kwargs={"timeout": 30 * 60}))
+        providers.append(
+            lambda: HTTPProvider(endpoint_uri=http, request_kwargs={"timeout": 30 * 60})
+        )
     if ws := ws_uri:
-        providers.append(WebsocketProvider(endpoint_uri=ws))
+        providers.append(lambda: WebsocketProvider(endpoint_uri=ws))
 
     provider = AutoProvider(potential_providers=providers)
     return Web3(provider)
