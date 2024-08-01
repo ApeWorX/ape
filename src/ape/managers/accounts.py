@@ -113,7 +113,7 @@ class TestAccountManager(list, ManagerAccessMixin):
             return self.impersonate_account(account_id)
         except AccountsError as err:
             err_message = message_fmt.format("address", account_id)
-            raise KeyError(f"{err}:\n{err_message}") from err
+            raise KeyError(f"{str(err).rstrip('.')}:\n{err_message}") from err
 
     def __contains__(self, address: AddressType) -> bool:  # type: ignore
         return any(address in container for container in self.containers.values())
