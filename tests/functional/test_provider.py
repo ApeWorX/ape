@@ -502,10 +502,19 @@ def test_account_balance_state(project, eth_tester_provider, owner):
 def test_node_ws_uri(project, uri, key):
     node = project.network_manager.ethereum.sepolia.get_provider("node")
     assert node.ws_uri is None
-
-    with project.temp_config(node={"ethereum": {"sepolia": {key: uri}}}):
+    config = {"ethereum": {"sepolia": {key: uri}}}
+    with project.temp_config(node=config):
         node = project.network_manager.ethereum.sepolia.get_provider("node")
         assert node.ws_uri == uri
 
-        # Even though you can configure URI to be websockets,
-        assert node.uri != uri
+
+@pytest.mark.parametrize("http_key", ("uri", "http_uri"))
+def test_node_http_uri_with_ws_uri(project, http_key):
+    http = "http://example.com"
+    ws = "ws://example.com"
+    # Showing `uri:` as an HTTP and `ws_uri`: as an additional ws.
+    with project.temp_config(node={"ethereum": {"sepolia": {http_key: http, "ws_uri": ws}}}):
+        node = project.network_manager.ethereum.sepolia.get_provider("node")
+        assert node.uri == http
+        assert node.http_uri == http
+        assert node.ws_uri == ws

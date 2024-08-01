@@ -1205,9 +1205,11 @@ class EthereumNodeProvider(Web3Provider, ABC):
     def uri(self) -> str:
         if "url" in self.provider_settings:
             raise ConfigError("Unknown provider setting 'url'. Did you mean 'uri'?")
-        elif "uri" in self.provider_settings and _is_http_url(self.provider_settings["uri"]):
-            # Use adhoc, scripted value
-            return self.provider_settings["uri"]
+        elif uri := self.provider_settings.get("uri"):
+            if _is_http_url(uri) or _is_ws_url(uri):
+                return uri
+            else:
+                raise TypeError(f"Not an URI: {uri}")
 
         config = self.config.model_dump().get(self.network.ecosystem.name, None)
         if config is None:
@@ -1222,17 +1224,21 @@ class EthereumNodeProvider(Web3Provider, ABC):
         # Use value from config file
         network_config = config.get(self.network.name) or DEFAULT_SETTINGS
 
-        key = "uri"
         if "url" in network_config:
             raise ConfigError("Unknown provider setting 'url'. Did you mean 'uri'?")
         elif "http_uri" in network_config:
             key = "http_uri"
-        elif key not in network_config:
-            if rpc := self._get_random_rpc():
-                return rpc
+        elif "uri" in network_config:
+            key = "uri"
+        elif "ws_uri" in network_config:
+            key = "ws_uri"
+        elif rpc := self._get_random_rpc():
+            return rpc
+        else:
+            key = "uri"
 
         settings_uri = network_config.get(key, DEFAULT_SETTINGS["uri"])
-        if _is_http_url(settings_uri):
+        if _is_http_url(settings_uri) or _is_ws_url(settings_uri):
             return settings_uri
 
         # Likely was an IPC Path (or websockets) and will connect that way.
