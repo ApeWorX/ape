@@ -723,6 +723,15 @@ class ProviderAPI(BaseInterfaceModel):
         """
 
     @raises_not_implemented
+    def relock_account(self, address: AddressType):
+        """
+        Stop impersonating an account.
+
+        Args:
+            address (:class:`~ape.types.address.AddressType`): The address to relock.
+        """
+
+    @raises_not_implemented
     def get_transaction_trace(  # type: ignore[empty-body]
         self, txn_hash: Union[HexBytes, str]
     ) -> TraceAPI:

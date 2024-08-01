@@ -125,20 +125,35 @@ class TestAccountManager(list, ManagerAccessMixin):
         Args:
             address (AddressType): The address to impersonate.
         """
-        if account := self._impersonated_accounts.get(address):
-            return account
-
         try:
             result = self.provider.unlock_account(address)
         except NotImplementedError as err:
             raise AccountsError("Your provider does not support impersonating accounts.") from err
 
         if result:
+            if address in self._impersonated_accounts:
+                return self._impersonated_accounts[address]
+
             account = ImpersonatedAccount(raw_address=address)
             self._impersonated_accounts[address] = account
             return account
-        else:
-            raise AccountsError(f"Unable to unlocked account '{address}'.")
+
+        raise AccountsError(f"Unable to unlocked account '{address}'.")
+
+    def stop_impersonating(self, address: AddressType):
+        """
+        End the impersonating of an account, if it is being impersonated.
+
+        Args:
+            address (AddressType): The address to stop impersonating.
+        """
+        if address in self._impersonated_accounts:
+            del self._impersonated_accounts[address]
+
+        try:
+            self.provider.relock_account(address)
+        except NotImplementedError:
+            pass
 
     def generate_test_account(self, container_name: str = "test") -> TestAccountAPI:
         return self.containers[container_name].generate_account()
