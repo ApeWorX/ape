@@ -365,7 +365,7 @@ To configure network URIs in `node`, you can use the `ape-config.yaml` file:
 
 ```yaml
 node:
-  # When managing or running a node, configure its IPC path directly (optional)
+  # When managing or running a node, configure an IPC path globally (optional)
   ipc_path: path/to/geth.ipc
 
   ethereum:
@@ -374,13 +374,16 @@ node:
       # **Most often, you only need HTTP!**
       uri: https://foo.node.example.com
       # uri: wss://bar.feed.example.com
-      # uri: path/to/geth.ipc
+      # uri: path/to/mainnet/geth.ipc
       
       # For strict HTTP connections, you can configure a http_uri directly.
       http_uri: https://foo.node.example.com
 
       # You can also configure a websockets URI (used by Silverback SDK).
       ws_uri: wss://bar.feed.example.com
+    
+      # Specify per-network IPC paths as well.
+      ipc_path: path/to/mainnet/geth.ipc
 ```
 
 ## Network Config
@@ -393,7 +396,7 @@ The following example shows how to do this.
 (note: even though this example uses `ethereum:mainnet`, you can use any of the L2 networks mentioned above, as they all have these config properties).
 
 ```yaml
-ethereum:
+ethereum: 
   mainnet:
     # Ethereum mainnet in Ape uses EIP-1559 by default,
     # but we can change that here. Note: most plugins

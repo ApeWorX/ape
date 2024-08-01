@@ -606,7 +606,7 @@ class Web3Provider(ProviderAPI, ABC):
                 transaction_hash=txn_hash, error_message=msg_str
             ) from err
 
-        ecosystem_config = self.network.ecosystem_config.model_dump(by_alias=True)
+        ecosystem_config = self.network.ecosystem_config
         network_config: dict = ecosystem_config.get(self.network.name, {})
         max_retries = network_config.get("max_get_transaction_retries", DEFAULT_MAX_RETRIES_TX)
         txn = {}
@@ -1269,8 +1269,8 @@ class EthereumNodeProvider(Web3Provider, ABC):
         elif "uri" in self.provider_settings and _is_ws_url(self.provider_settings["uri"]):
             return self.provider_settings["uri"]
 
-        config = self.config.model_dump().get(self.network.ecosystem.name, None)
-        if config is None:
+        config: dict = self.config.get(self.network.ecosystem.name, {})
+        if config == {}:
             return super().ws_uri
 
         # Use value from config file
@@ -1318,6 +1318,12 @@ class EthereumNodeProvider(Web3Provider, ABC):
         if ipc := self.settings.ipc_path:
             return ipc
 
+        config: dict = self.config.get(self.network.ecosystem.name, {})
+        network_config = config.get(self.network.name, {})
+        if ipc := network_config.get("ipc_path"):
+            return Path(ipc)
+
+        # Check `uri:` config.
         uri = self.uri
         if _is_ipc_path(uri):
             return Path(uri)

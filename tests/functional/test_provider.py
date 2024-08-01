@@ -508,6 +508,12 @@ def test_node_ws_uri(project, uri, key):
         node = project.network_manager.ethereum.sepolia.get_provider("node")
         assert node.ws_uri == uri
 
+        if key != "ws_uri":
+            assert node.uri == uri
+        # else: uri gets to set to random HTTP from default settings,
+        # but we may want to change that behavior.
+        # TODO: 0.9 investigate not using random if ws set.
+
 
 @pytest.mark.parametrize("http_key", ("uri", "http_uri"))
 def test_node_http_uri_with_ws_uri(project, http_key):
@@ -521,9 +527,15 @@ def test_node_http_uri_with_ws_uri(project, http_key):
         assert node.ws_uri == ws
 
 
-def test_ipc_for_uri(project):
+@pytest.mark.parametrize("key", ("uri", "ipc_path"))
+def test_ipc_per_network(project, key):
     ipc = "path/to/example.ipc"
-    with project.temp_config(node={"ethereum": {"sepolia": {"uri": ipc}}}):
+    with project.temp_config(node={"ethereum": {"sepolia": {key: ipc}}}):
         node = project.network_manager.ethereum.sepolia.get_provider("node")
-        assert node.uri == ipc
+        if key != "ipc_path":
+            assert node.uri == ipc
+        # else: uri gets to set to random HTTP from default settings,
+        # but we may want to change that behavior.
+        # TODO: 0.9 investigate not using random if ipc set.
+
         assert node.ipc_path == Path(ipc)
