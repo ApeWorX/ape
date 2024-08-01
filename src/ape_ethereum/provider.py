@@ -1205,7 +1205,7 @@ class EthereumNodeProvider(Web3Provider, ABC):
     def uri(self) -> str:
         if "url" in self.provider_settings:
             raise ConfigError("Unknown provider setting 'url'. Did you mean 'uri'?")
-        elif "uri" in self.provider_settings:
+        elif "uri" in self.provider_settings and _is_http_url(self.provider_settings["uri"]):
             # Use adhoc, scripted value
             return self.provider_settings["uri"]
 
@@ -1222,18 +1222,52 @@ class EthereumNodeProvider(Web3Provider, ABC):
         # Use value from config file
         network_config = config.get(self.network.name) or DEFAULT_SETTINGS
 
+        key = "uri"
         if "url" in network_config:
             raise ConfigError("Unknown provider setting 'url'. Did you mean 'uri'?")
-        elif "uri" not in network_config:
+        elif "http_uri" in network_config:
+            key = "http_uri"
+        elif key not in network_config:
             if rpc := self._get_random_rpc():
                 return rpc
 
-        settings_uri = network_config.get("uri", DEFAULT_SETTINGS["uri"])
-        if _is_url(settings_uri):
+        settings_uri = network_config.get(key, DEFAULT_SETTINGS["uri"])
+        if _is_http_url(settings_uri):
             return settings_uri
 
-        # Likely was an IPC Path and will connect that way.
-        return ""
+        # Likely was an IPC Path (or websockets) and will connect that way.
+        return super().http_uri or ""
+
+    @property
+    def http_uri(self) -> Optional[str]:
+        return self.uri
+
+    @property
+    def ws_uri(self) -> Optional[str]:
+        if "ws_uri" in self.provider_settings:
+            # Use adhoc, scripted value
+            return self.provider_settings["ws_uri"]
+
+        elif "uri" in self.provider_settings and _is_ws_url(self.provider_settings["uri"]):
+            return self.provider_settings["uri"]
+
+        config = self.config.model_dump().get(self.network.ecosystem.name, None)
+        if config is None:
+            return super().ws_uri
+
+        # Use value from config file
+        network_config = config.get(self.network.name) or DEFAULT_SETTINGS
+        if "ws_uri" not in network_config:
+            if "uri" in network_config and _is_ws_url(network_config["uri"]):
+                return network_config["uri"]
+
+            return super().ws_uri
+
+        settings_uri = network_config.get("ws_uri")
+        if settings_uri and _is_ws_url(settings_uri):
+            return settings_uri
+
+        return super().ws_uri
 
     def _get_random_rpc(self) -> Optional[str]:
         if self.network.is_dev:
@@ -1249,27 +1283,6 @@ class EthereumNodeProvider(Web3Provider, ABC):
             return None
 
     @property
-    def ws_uri(self) -> Optional[str]:
-        if "ws_uri" in self.provider_settings:
-            # Use adhoc, scripted value
-            return self.provider_settings["ws_uri"]
-
-        config = self.config.model_dump().get(self.network.ecosystem.name, None)
-        if config is None:
-            return super().ws_uri
-
-        # Use value from config file
-        network_config = config.get(self.network.name) or DEFAULT_SETTINGS
-        if "ws_uri" not in network_config:
-            return super().ws_uri
-
-        settings_uri = network_config.get("ws_uri")
-        if settings_uri and _is_ws_url(settings_uri):
-            return settings_uri
-
-        return super().ws_uri
-
-    @property
     def connection_str(self) -> str:
         return self.uri or f"{self.ipc_path}"
 
@@ -1279,7 +1292,8 @@ class EthereumNodeProvider(Web3Provider, ABC):
 
     @property
     def _clean_uri(self) -> str:
-        return sanitize_url(self.uri) if _is_url(self.uri) else self.uri
+        uri = self.uri
+        return sanitize_url(uri) if _is_http_url(uri) or _is_ws_url(uri) else uri
 
     @property
     def ipc_path(self) -> Path:
@@ -1448,8 +1462,8 @@ def _get_default_data_dir() -> Path:
         )
 
 
-def _is_url(val: str) -> bool:
-    return val.startswith("https://") or val.startswith("http://") or _is_ws_url(val)
+def _is_http_url(val: str) -> bool:
+    return val.startswith("https://") or val.startswith("http://")
 
 
 def _is_ws_url(val: str) -> bool:

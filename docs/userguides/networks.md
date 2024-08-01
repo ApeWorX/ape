@@ -367,7 +367,13 @@ To configure network URIs in `node`, you can use the `ape-config.yaml` file:
 node:
   ethereum:
     mainnet:
+      # For `uri`, you can use either HTTP, WS, or IPC values.
+      # **Most often, you only need HTTP!**
       uri: https://foo.node.example.com
+      
+      # For strict HTTP connections, you can configure a http_uri directly.
+      http_uri: https://foo.node.example.com
+
       # You can also configure a websockets URI (used by Silverback SDK).
       ws_uri: wss://bar.feed.example.com
 ```
