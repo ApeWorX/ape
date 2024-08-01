@@ -18,7 +18,7 @@ class DependencyAPI(BaseInterfaceModel):
     The package-name of the dependency.
     """
 
-    config_override: dict = Field({}, repr=False)
+    config_override: dict = Field(default_factory=dict, repr=False)
     """
     Set different config than what Ape can deduce.
     """

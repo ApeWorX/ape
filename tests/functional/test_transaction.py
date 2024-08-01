@@ -264,7 +264,7 @@ def test_data_when_contains_whitespace():
 
 
 def test_model_dump_excludes_none_values():
-    txn = StaticFeeTransaction()
+    txn = StaticFeeTransaction(sender=None)
     txn.value = 1000000
     actual = txn.model_dump()
     assert "value" in actual
@@ -285,7 +285,7 @@ def test_model_dump_access_list():
             ],
         }
     ]
-    txn = AccessListTransaction(access_list=access_list)
+    txn = AccessListTransaction(access_list=access_list, sender=None)
     actual = txn.model_dump(exclude_none=True, by_alias=True)
     assert actual is not None
 

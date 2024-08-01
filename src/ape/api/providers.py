@@ -73,7 +73,7 @@ class BlockAPI(BaseInterfaceModel):
     The preceeding block's hash.
     """
     parent_hash: Any = Field(
-        EMPTY_BYTES32, alias="parentHash"
+        default=EMPTY_BYTES32, alias="parentHash"
     )  # NOTE: genesis block has no parent hash
 
     """
