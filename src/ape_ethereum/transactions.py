@@ -115,10 +115,10 @@ class StaticFeeTransaction(BaseTransaction):
     Transactions that are pre-EIP-1559 and use the ``gasPrice`` field.
     """
 
-    gas_price: Optional[int] = Field(None, alias="gasPrice")
-    max_priority_fee: Optional[int] = Field(None, exclude=True)  # type: ignore
-    type: int = Field(TransactionType.STATIC.value, exclude=True)
-    max_fee: Optional[int] = Field(None, exclude=True)  # type: ignore
+    gas_price: Optional[int] = Field(default=None, alias="gasPrice")
+    max_priority_fee: Optional[int] = Field(default=None, exclude=True)  # type: ignore
+    type: int = Field(default=TransactionType.STATIC.value, exclude=True)
+    max_fee: Optional[int] = Field(default=None, exclude=True)  # type: ignore
 
     @model_validator(mode="before")
     @classmethod
@@ -136,8 +136,8 @@ class AccessListTransaction(StaticFeeTransaction):
     transactions are similar to legacy transaction with an added access list functionality.
     """
 
-    gas_price: Optional[int] = Field(None, alias="gasPrice")
-    type: int = Field(TransactionType.ACCESS_LIST.value)
+    gas_price: Optional[int] = Field(default=None, alias="gasPrice")
+    type: int = TransactionType.ACCESS_LIST.value
     access_list: list[AccessList] = Field(default_factory=list, alias="accessList")
 
     @field_validator("type")
@@ -152,9 +152,9 @@ class DynamicFeeTransaction(BaseTransaction):
     and ``maxPriorityFeePerGas`` fields.
     """
 
-    max_priority_fee: Optional[int] = Field(None, alias="maxPriorityFeePerGas")  # type: ignore
-    max_fee: Optional[int] = Field(None, alias="maxFeePerGas")  # type: ignore
-    type: int = Field(TransactionType.DYNAMIC.value)
+    max_priority_fee: Optional[int] = Field(default=None, alias="maxPriorityFeePerGas")
+    max_fee: Optional[int] = Field(default=None, alias="maxFeePerGas")
+    type: int = TransactionType.DYNAMIC.value
     access_list: list[AccessList] = Field(default_factory=list, alias="accessList")
 
     @field_validator("type")
@@ -168,13 +168,13 @@ class SharedBlobTransaction(DynamicFeeTransaction):
     `EIP-4844 <https://eips.ethereum.org/EIPS/eip-4844>`__ transactions.
     """
 
-    max_fee_per_blob_gas: int = Field(0, alias="maxFeePerBlobGas")
-    blob_versioned_hashes: list[HexBytes] = Field([], alias="blobVersionedHashes")
+    max_fee_per_blob_gas: int = Field(default=0, alias="maxFeePerBlobGas")
+    blob_versioned_hashes: list[HexBytes] = Field(default_factory=list, alias="blobVersionedHashes")
 
     """
     Overridden because EIP-4844 states it cannot be nil.
     """
-    receiver: AddressType = Field(ZERO_ADDRESS, alias="to")
+    receiver: AddressType = Field(default=ZERO_ADDRESS, alias="to")
 
     @field_validator("max_fee_per_blob_gas", mode="before")
     @classmethod

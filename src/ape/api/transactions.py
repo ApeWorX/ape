@@ -51,10 +51,10 @@ class TransactionAPI(BaseInterfaceModel):
     such as typed-transactions from `EIP-1559 <https://eips.ethereum.org/EIPS/eip-1559>`__.
     """
 
-    chain_id: Optional[int] = Field(0, alias="chainId")
-    receiver: Optional[AddressType] = Field(None, alias="to")
-    sender: Optional[AddressType] = Field(None, alias="from")
-    gas_limit: Optional[int] = Field(None, alias="gas")
+    chain_id: Optional[int] = Field(default=0, alias="chainId")
+    receiver: Optional[AddressType] = Field(default=None, alias="to")
+    sender: Optional[AddressType] = Field(default=None, alias="from")
+    gas_limit: Optional[int] = Field(default=None, alias="gas")
     nonce: Optional[int] = None  # NOTE: `Optional` only to denote using default behavior
     value: int = 0
     data: HexBytes = HexBytes("")
@@ -63,9 +63,9 @@ class TransactionAPI(BaseInterfaceModel):
     max_priority_fee: Optional[int] = None
 
     # If left as None, will get set to the network's default required confirmations.
-    required_confirmations: Optional[int] = Field(None, exclude=True)
+    required_confirmations: Optional[int] = Field(default=None, exclude=True)
 
-    signature: Optional[TransactionSignature] = Field(None, exclude=True)
+    signature: Optional[TransactionSignature] = Field(default=None, exclude=True)
 
     model_config = ConfigDict(populate_by_name=True)
 

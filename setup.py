@@ -22,7 +22,7 @@ extras_require = {
     ],
     "lint": [
         "black>=24.4.2,<25",  # Auto-formatter and linter
-        "mypy>=1.11.0,<2",  # Static type analyzer
+        "mypy>=1.11.1,<2",  # Static type analyzer
         "types-PyYAML",  # Needed due to mypy typeshed
         "types-requests",  # Needed due to mypy typeshed
         "types-setuptools",  # Needed due to mypy typeshed
@@ -33,6 +33,7 @@ extras_require = {
         "flake8>=7.1.0,<8",  # Style linter
         "flake8-breakpoint>=1.1.0,<2",  # Detect breakpoints left in code
         "flake8-print>=4.0.1,<5",  # Detect print statements left in code
+        "flake8-pydantic",  # For detecting issues with Pydantic models
         "isort>=5.13.2,<6",  # Import sorting linter
         "mdformat>=0.7.17",  # Auto-formatter for markdown
         "mdformat-gfm>=0.3.5",  # Needed for formatting GitHub-flavored markdown

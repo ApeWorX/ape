@@ -330,15 +330,15 @@ class Block(BlockAPI):
 
     gas_limit: int = Field(alias="gasLimit")
     gas_used: int = Field(alias="gasUsed")
-    base_fee: int = Field(0, alias="baseFeePerGas")
+    base_fee: int = Field(default=0, alias="baseFeePerGas")
     difficulty: int = 0
-    total_difficulty: int = Field(0, alias="totalDifficulty")
+    total_difficulty: int = Field(default=0, alias="totalDifficulty")
     uncles: list[HexBytes] = []
 
     # Type re-declares.
     hash: Optional[HexBytes] = None
     parent_hash: HexBytes = Field(
-        EMPTY_BYTES32, alias="parentHash"
+        default=EMPTY_BYTES32, alias="parentHash"
     )  # NOTE: genesis block has no parent hash
 
     @field_validator(

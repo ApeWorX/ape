@@ -310,7 +310,9 @@ class ApeConfig(ExtraAttributesMixin, BaseSettings, ManagerAccessMixin):
     Note: The actual dependency classes are decoded later.
     """
 
-    deployment_data: dict[str, dict[str, list[DeploymentConfig]]] = Field({}, alias="deployments")
+    deployment_data: dict[str, dict[str, list[DeploymentConfig]]] = Field(
+        default_factory=dict, alias="deployments"
+    )
     """
     Data for deployed contracts from the project.
     """
