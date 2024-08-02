@@ -1,8 +1,10 @@
+from typing import Optional
+
 import pytest
 from eth_utils import to_hex
 from ethpm_types.abi import EventABI
 from hexbytes import HexBytes
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 from ape.types import AddressType, ContractLog, HexInt, LogFilter
 from ape.utils import ZERO_ADDRESS
@@ -131,7 +133,9 @@ def test_address_type(owner):
 class TestHexInt:
     class MyModel(BaseModel):
         ual: HexInt = 0
+        ual_optional: Optional[HexInt] = Field(default=None, validate_default=True)
 
     act = MyModel.model_validate({"ual": "0x123"})
     expected = 291  # Base-10 form of 0x123.
     assert act.ual == expected
+    assert act.ual_optional is None
