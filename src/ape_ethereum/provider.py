@@ -1458,7 +1458,7 @@ class EthereumNodeProvider(Web3Provider, ABC):
         result = self.make_request("ots_getContractCreator", [address])
         if result is None:
             # NOTE: Skip the explorer part of the error message via `has_explorer=True`.
-            raise ContractNotFoundError(address, has_explorer=True, provider_name=self.name)
+            raise ContractNotFoundError(address, True, self.network_choice)
 
         return result
 

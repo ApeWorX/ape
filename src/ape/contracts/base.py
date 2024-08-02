@@ -255,16 +255,18 @@ class ContractMethodHandler(ManagerAccessMixin):
 
         raise err
 
-
-class ContractCallHandler(ContractMethodHandler):
-    def __call__(self, *args, **kwargs) -> Any:
+    def _validate_is_contract(self):
         if not self.contract.is_contract:
             raise ContractNotFoundError(
                 self.contract.address,
                 self.provider.network.explorer is not None,
-                self.provider.name,
+                self.provider.network_choice,
             )
 
+
+class ContractCallHandler(ContractMethodHandler):
+    def __call__(self, *args, **kwargs) -> Any:
+        self._validate_is_contract()
         selected_abi = _select_method_abi(self.abis, args)
         arguments = self.conversion_manager.convert_method_args(selected_abi, args)
 
@@ -429,15 +431,8 @@ class ContractTransactionHandler(ContractMethodHandler):
         return contract_transaction(*args, **kwargs)
 
     def _as_transaction(self, *args) -> ContractTransaction:
-        if not self.contract.is_contract:
-            raise ContractNotFoundError(
-                self.contract.address,
-                self.provider.network.explorer is not None,
-                self.provider.name,
-            )
-
+        self._validate_is_contract()
         selected_abi = _select_method_abi(self.abis, args)
-
         return ContractTransaction(
             abi=selected_abi,
             address=self.contract.address,
