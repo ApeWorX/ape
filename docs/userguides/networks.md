@@ -396,7 +396,7 @@ The following example shows how to do this.
 (note: even though this example uses `ethereum:mainnet`, you can use any of the L2 networks mentioned above, as they all have these config properties).
 
 ```yaml
-ethereum: 
+ethereum:
   mainnet:
     # Ethereum mainnet in Ape uses EIP-1559 by default,
     # but we can change that here. Note: most plugins
