@@ -621,10 +621,10 @@ class ImpersonatedAccount(AccountAPI):
     An account to use that does not require signing.
     """
 
+    raw_address: AddressType
     """
     The field-address of the account.
     """
-    raw_address: AddressType
 
     @property
     def address(self) -> AddressType:

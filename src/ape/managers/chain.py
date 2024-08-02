@@ -1580,7 +1580,6 @@ class ChainManager(BaseManager):
             from ape import chain
             chain.pending_timestamp += 3600
         """
-
         return self.provider.get_block("pending").timestamp
 
     @pending_timestamp.setter

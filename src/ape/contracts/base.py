@@ -361,6 +361,7 @@ class ContractTransaction(ManagerAccessMixin):
         if "sender" in kwargs and isinstance(kwargs["sender"], AccountAPI):
             return kwargs["sender"].call(txn, **kwargs)
 
+        txn = self.provider.prepare_transaction(txn)
         return (
             self.provider.send_private_transaction(txn)
             if private

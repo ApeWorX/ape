@@ -7,4 +7,8 @@ def test_get_contract(benchmark, project_with_contracts):
     )
     stats = benchmark.stats
     median = stats.get("median")
-    assert median < 0.0002
+
+    # NOTE: At one point, this was average '0.0007'.
+    # When I run locally, I tend to get 0.0001.
+    # In CI, when very busy, it can get slower
+    assert median < 0.00030
