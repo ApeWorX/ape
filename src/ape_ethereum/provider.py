@@ -19,7 +19,7 @@ from ethpm_types import EventABI
 from evmchains import get_random_rpc
 from pydantic.dataclasses import dataclass
 from requests import HTTPError
-from web3 import HTTPProvider, IPCProvider, Web3
+from web3 import HTTPProvider, IPCProvider, Web3, WebsocketProvider
 from web3.exceptions import ContractLogicError as Web3ContractLogicError
 from web3.exceptions import (
     ExtraDataLengthError,
@@ -177,27 +177,46 @@ class Web3Provider(ProviderAPI, ABC):
 
     @property
     def http_uri(self) -> Optional[str]:
-        if (
-            hasattr(self.web3.provider, "endpoint_uri")
-            and isinstance(self.web3.provider.endpoint_uri, str)
-            and self.web3.provider.endpoint_uri.startswith("http")
-        ):
-            return self.web3.provider.endpoint_uri
+        """
+        The connected HTTP URI. If using providers
+        like `ape-node`, configure your URI and that will
+        be returned here instead.
+        """
+        try:
+            web3 = self.web3
+        except ProviderNotConnectedError:
+            if uri := getattr(self, "uri", None):
+                if _is_http_url(uri):
+                    return uri
 
-        elif uri := getattr(self, "uri", None):
-            # NOTE: Some providers define this
-            return uri
+            return None
+
+        if (
+            hasattr(web3.provider, "endpoint_uri")
+            and isinstance(web3.provider.endpoint_uri, str)
+            and web3.provider.endpoint_uri.startswith("http")
+        ):
+            return web3.provider.endpoint_uri
+
+        if uri := getattr(self, "uri", None):
+            if _is_http_url(uri):
+                return uri
 
         return None
 
     @property
     def ws_uri(self) -> Optional[str]:
+        try:
+            web3 = self.web3
+        except ProviderNotConnectedError:
+            return None
+
         if (
-            hasattr(self.web3.provider, "endpoint_uri")
-            and isinstance(self.web3.provider.endpoint_uri, str)
-            and self.web3.provider.endpoint_uri.startswith("ws")
+            hasattr(web3.provider, "endpoint_uri")
+            and isinstance(web3.provider.endpoint_uri, str)
+            and web3.provider.endpoint_uri.startswith("ws")
         ):
-            return self.web3.provider.endpoint_uri
+            return web3.provider.endpoint_uri
 
         return None
 
@@ -587,7 +606,7 @@ class Web3Provider(ProviderAPI, ABC):
                 transaction_hash=txn_hash, error_message=msg_str
             ) from err
 
-        ecosystem_config = self.network.ecosystem_config.model_dump(by_alias=True)
+        ecosystem_config = self.network.ecosystem_config
         network_config: dict = ecosystem_config.get(self.network.name, {})
         max_retries = network_config.get("max_get_transaction_retries", DEFAULT_MAX_RETRIES_TX)
         txn = {}
@@ -1220,9 +1239,11 @@ class EthereumNodeProvider(Web3Provider, ABC):
     def uri(self) -> str:
         if "url" in self.provider_settings:
             raise ConfigError("Unknown provider setting 'url'. Did you mean 'uri'?")
-        elif "uri" in self.provider_settings:
-            # Use adhoc, scripted value
-            return self.provider_settings["uri"]
+        elif uri := self.provider_settings.get("uri"):
+            if _is_uri(uri):
+                return uri
+            else:
+                raise TypeError(f"Not an URI: {uri}")
 
         config = self.config.model_dump().get(self.network.ecosystem.name, None)
         if config is None:
@@ -1239,16 +1260,57 @@ class EthereumNodeProvider(Web3Provider, ABC):
 
         if "url" in network_config:
             raise ConfigError("Unknown provider setting 'url'. Did you mean 'uri'?")
-        elif "uri" not in network_config:
-            if rpc := self._get_random_rpc():
-                return rpc
+        elif "http_uri" in network_config:
+            key = "http_uri"
+        elif "uri" in network_config:
+            key = "uri"
+        elif "ipc_path" in network_config:
+            key = "ipc_path"
+        elif "ws_uri" in network_config:
+            key = "ws_uri"
+        elif rpc := self._get_random_rpc():
+            return rpc
+        else:
+            key = "uri"
 
-        settings_uri = network_config.get("uri", DEFAULT_SETTINGS["uri"])
-        if _is_url(settings_uri):
+        settings_uri = network_config.get(key, DEFAULT_SETTINGS["uri"])
+        if _is_uri(settings_uri):
             return settings_uri
 
-        # Likely was an IPC Path and will connect that way.
-        return ""
+        # Likely was an IPC Path (or websockets) and will connect that way.
+        return super().http_uri or ""
+
+    @property
+    def http_uri(self) -> Optional[str]:
+        uri = self.uri
+        return uri if _is_http_url(uri) else None
+
+    @property
+    def ws_uri(self) -> Optional[str]:
+        if "ws_uri" in self.provider_settings:
+            # Use adhoc, scripted value
+            return self.provider_settings["ws_uri"]
+
+        elif "uri" in self.provider_settings and _is_ws_url(self.provider_settings["uri"]):
+            return self.provider_settings["uri"]
+
+        config: dict = self.config.get(self.network.ecosystem.name, {})
+        if config == {}:
+            return super().ws_uri
+
+        # Use value from config file
+        network_config = config.get(self.network.name) or DEFAULT_SETTINGS
+        if "ws_uri" not in network_config:
+            if "uri" in network_config and _is_ws_url(network_config["uri"]):
+                return network_config["uri"]
+
+            return super().ws_uri
+
+        settings_uri = network_config.get("ws_uri")
+        if settings_uri and _is_ws_url(settings_uri):
+            return settings_uri
+
+        return super().ws_uri
 
     def _get_random_rpc(self) -> Optional[str]:
         if self.network.is_dev:
@@ -1273,11 +1335,26 @@ class EthereumNodeProvider(Web3Provider, ABC):
 
     @property
     def _clean_uri(self) -> str:
-        return sanitize_url(self.uri) if _is_url(self.uri) else self.uri
+        uri = self.uri
+        return sanitize_url(uri) if _is_http_url(uri) or _is_ws_url(uri) else uri
 
     @property
     def ipc_path(self) -> Path:
-        return self.settings.ipc_path or self.data_dir / "geth.ipc"
+        if ipc := self.settings.ipc_path:
+            return ipc
+
+        config: dict = self.config.get(self.network.ecosystem.name, {})
+        network_config = config.get(self.network.name, {})
+        if ipc := network_config.get("ipc_path"):
+            return Path(ipc)
+
+        # Check `uri:` config.
+        uri = self.uri
+        if _is_ipc_path(uri):
+            return Path(uri)
+
+        # Default (used by geth-process).
+        return self.data_dir / "geth.ipc"
 
     @property
     def data_dir(self) -> Path:
@@ -1305,7 +1382,10 @@ class EthereumNodeProvider(Web3Provider, ABC):
     def _set_web3(self):
         # Clear cached version when connecting to another URI.
         self._client_version = None
-        self._web3 = _create_web3(self.uri, ipc_path=self.ipc_path)
+        if uri := self.http_uri:
+            self._web3 = _create_web3(uri, ipc_path=self.ipc_path, ws_uri=self.ws_uri)
+        else:
+            raise ProviderError("Missing URI.")
 
     def _complete_connect(self):
         client_version = self.client_version.lower()
@@ -1400,25 +1480,18 @@ class EthereumNodeProvider(Web3Provider, ABC):
         self._complete_connect()
 
 
-def _create_web3(uri: str, ipc_path: Optional[Path] = None):
-    # Separated into helper method for testing purposes.
-    def http_provider():
-        return HTTPProvider(uri, request_kwargs={"timeout": 30 * 60})
-
-    def ipc_provider():
-        # NOTE: This mypy complaint seems incorrect.
-        if not (path := ipc_path):
-            raise ValueError("IPC Path required.")
-
-        return IPCProvider(ipc_path=path)
-
+def _create_web3(uri: str, ipc_path: Optional[Path] = None, ws_uri: Optional[str] = None):
     # NOTE: This list is ordered by try-attempt.
     # Try ENV, then IPC, and then HTTP last.
-    providers = [load_provider_from_environment]
-    if ipc_path:
-        providers.append(ipc_provider)
-    if uri:
-        providers.append(http_provider)
+    providers: list = [load_provider_from_environment]
+    if ipc := ipc_path:
+        providers.append(lambda: IPCProvider(ipc_path=ipc))
+    if http := uri:
+        providers.append(
+            lambda: HTTPProvider(endpoint_uri=http, request_kwargs={"timeout": 30 * 60})
+        )
+    if ws := ws_uri:
+        providers.append(lambda: WebsocketProvider(endpoint_uri=ws))
 
     provider = AutoProvider(potential_providers=providers)
     return Web3(provider)
@@ -1442,10 +1515,17 @@ def _get_default_data_dir() -> Path:
         )
 
 
-def _is_url(val: str) -> bool:
-    return (
-        val.startswith("https://")
-        or val.startswith("http://")
-        or val.startswith("wss://")
-        or val.startswith("ws://")
-    )
+def _is_uri(val: str) -> bool:
+    return _is_http_url(val) or _is_ws_url(val) or _is_ipc_path(val)
+
+
+def _is_http_url(val: str) -> bool:
+    return val.startswith("https://") or val.startswith("http://")
+
+
+def _is_ws_url(val: str) -> bool:
+    return val.startswith("wss://") or val.startswith("ws://")
+
+
+def _is_ipc_path(val: str) -> bool:
+    return val.endswith(".ipc")
