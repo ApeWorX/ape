@@ -341,21 +341,6 @@ class Block(BlockAPI):
         default=EMPTY_BYTES32, alias="parentHash"
     )  # NOTE: genesis block has no parent hash
 
-    @field_validator(
-        "base_fee",
-        "difficulty",
-        "gas_limit",
-        "gas_used",
-        "number",
-        "size",
-        "timestamp",
-        "total_difficulty",
-        mode="before",
-    )
-    @classmethod
-    def validate_ints(cls, value):
-        return to_int(value) if value else 0
-
     @computed_field()  # type: ignore[misc]
     @property
     def size(self) -> int:

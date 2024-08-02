@@ -4,8 +4,8 @@ from collections.abc import Iterator
 from datetime import datetime
 from typing import IO, TYPE_CHECKING, Any, NoReturn, Optional, Union
 
-from eth_pydantic_types import HexBytes
-from eth_utils import is_0x_prefixed, is_hex, to_hex, to_int
+from eth_pydantic_types import HexBytes, HexStr
+from eth_utils import is_hex, to_hex, to_int
 from ethpm_types.abi import EventABI, MethodABI
 from pydantic import ConfigDict, field_validator
 from pydantic.fields import Field
@@ -24,6 +24,7 @@ from ape.types import (
     AddressType,
     AutoGasLimit,
     ContractLogContainer,
+    HexInt,
     SourceTraceback,
     TransactionSignature,
 )
@@ -51,19 +52,19 @@ class TransactionAPI(BaseInterfaceModel):
     such as typed-transactions from `EIP-1559 <https://eips.ethereum.org/EIPS/eip-1559>`__.
     """
 
-    chain_id: Optional[int] = Field(default=0, alias="chainId")
+    chain_id: Optional[HexInt] = Field(default=0, alias="chainId")
     receiver: Optional[AddressType] = Field(default=None, alias="to")
     sender: Optional[AddressType] = Field(default=None, alias="from")
-    gas_limit: Optional[int] = Field(default=None, alias="gas")
-    nonce: Optional[int] = None  # NOTE: `Optional` only to denote using default behavior
-    value: int = 0
+    gas_limit: Optional[HexInt] = Field(default=None, alias="gas")
+    nonce: Optional[HexInt] = None  # NOTE: `Optional` only to denote using default behavior
+    value: HexInt = 0
     data: HexBytes = HexBytes("")
-    type: int
-    max_fee: Optional[int] = None
-    max_priority_fee: Optional[int] = None
+    type: HexInt
+    max_fee: Optional[HexInt] = None
+    max_priority_fee: Optional[HexInt] = None
 
     # If left as None, will get set to the network's default required confirmations.
-    required_confirmations: Optional[int] = Field(default=None, exclude=True)
+    required_confirmations: Optional[HexInt] = Field(default=None, exclude=True)
 
     signature: Optional[TransactionSignature] = Field(default=None, exclude=True)
 
@@ -73,20 +74,6 @@ class TransactionAPI(BaseInterfaceModel):
         raise_on_revert = kwargs.pop("raise_on_revert", True)
         super().__init__(*args, **kwargs)
         self._raise_on_revert = raise_on_revert
-
-    @field_validator("nonce", mode="before")
-    @classmethod
-    def validate_nonce(cls, value):
-        if value is None or isinstance(value, int):
-            return value
-
-        elif isinstance(value, str) and value.startswith("0x"):
-            return to_int(hexstr=value)
-
-        elif isinstance(value, str):
-            return int(value)
-
-        return to_int(value)
 
     @field_validator("gas_limit", mode="before")
     @classmethod
@@ -113,33 +100,6 @@ class TransactionAPI(BaseInterfaceModel):
             return to_int(value)
 
         return value
-
-    @field_validator("max_fee", "max_priority_fee", mode="before")
-    @classmethod
-    def convert_fees(cls, value):
-        if isinstance(value, str):
-            return cls.conversion_manager.convert(value, int)
-
-        return value
-
-    @field_validator("data", mode="before")
-    @classmethod
-    def validate_data(cls, value):
-        if isinstance(value, str):
-            return HexBytes(value)
-
-        return value
-
-    @field_validator("value", mode="before")
-    @classmethod
-    def validate_value(cls, value):
-        if isinstance(value, int):
-            return value
-
-        elif isinstance(value, str) and is_0x_prefixed(value):
-            return int(value, 16)
-
-        return int(value)
 
     @property
     def raise_on_revert(self) -> bool:
@@ -173,7 +133,6 @@ class TransactionAPI(BaseInterfaceModel):
         """
         This transaction's associated published receipt, if it exists.
         """
-
         try:
             txn_hash = to_hex(self.txn_hash)
         except SignatureError:
@@ -295,11 +254,11 @@ class ReceiptAPI(ExtraAttributesMixin, BaseInterfaceModel):
     """
 
     contract_address: Optional[AddressType] = None
-    block_number: int
-    gas_used: int
+    block_number: HexInt
+    gas_used: HexInt
     logs: list[dict] = []
-    status: int
-    txn_hash: str
+    status: HexInt
+    txn_hash: HexStr
     transaction: TransactionAPI
     _error: Optional[TransactionError] = None
 
@@ -329,11 +288,6 @@ class ReceiptAPI(ExtraAttributesMixin, BaseInterfaceModel):
             ecosystem = cls.network_manager.ethereum
 
         return ecosystem.create_transaction(**value)
-
-    @field_validator("txn_hash", mode="before")
-    @classmethod
-    def validate_txn_hash(cls, value):
-        return HexBytes(value).hex()
 
     @cached_property
     def debug_logs_typed(self) -> list[tuple[Any]]:

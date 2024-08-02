@@ -4,7 +4,7 @@ from ethpm_types.abi import EventABI
 from hexbytes import HexBytes
 from pydantic import BaseModel
 
-from ape.types import AddressType, ContractLog, LogFilter
+from ape.types import AddressType, ContractLog, HexInt, LogFilter
 from ape.utils import ZERO_ADDRESS
 
 TXN_HASH = "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa222222222222222222222222"
@@ -126,3 +126,12 @@ def test_address_type(owner):
     # Show int works.
     instance_bytes = MyModel(addr=int(owner.address, 16))
     assert instance_bytes.addr == owner.address
+
+
+class TestHexInt:
+    class MyModel(BaseModel):
+        ual: HexInt = 0
+
+    act = MyModel.model_validate({"ual": "0x123"})
+    expected = 291  # Base-10 form of 0x123.
+    assert act.ual == expected

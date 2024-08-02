@@ -1,10 +1,12 @@
 import re
 import warnings
+from typing import Optional
 
 import pytest
 from eth_pydantic_types import HexBytes
 from hexbytes import HexBytes as BaseHexBytes
 
+from ape.api import TransactionAPI
 from ape.exceptions import SignatureError
 from ape_ethereum.transactions import (
     AccessList,
@@ -380,3 +382,26 @@ class TestAccessList:
     def test_storage_keys(self, storage_key, zero_address):
         actual = AccessList(address=zero_address, storageKeys=[storage_key])
         assert actual.storage_keys == [HexBytes(storage_key)]
+
+
+def test_override_annotated_fields():
+    """
+    This test is to prove that a user may use an `int` for a base-class
+    when the API field is described as a `HexInt`.
+    """
+
+    class MyTransaction(TransactionAPI):
+        @property
+        def txn_hash(self) -> HexBytes:
+            return HexBytes("")
+
+        def serialize_transaction(self) -> bytes:
+            return b""
+
+        chain_id: Optional[int] = None  # The base type is `Optional[HexInt]`.
+
+    chain_id = 123123123123123123123123123123
+    tx_type = 120
+    my_tx = MyTransaction.model_validate({"chain_id": chain_id, "type": tx_type})
+    assert my_tx.chain_id == chain_id
+    assert my_tx.type == tx_type

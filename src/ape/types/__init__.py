@@ -1,6 +1,6 @@
 from collections.abc import Callable, Iterator, Sequence
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any, Literal, Optional, TypeVar, Union, cast, overload
+from typing import TYPE_CHECKING, Annotated, Any, Literal, Optional, TypeVar, Union, cast, overload
 
 from eth_abi.abi import encode
 from eth_abi.packed import encode_packed
@@ -19,7 +19,7 @@ from ethpm_types import (
 )
 from ethpm_types.abi import EventABI
 from ethpm_types.source import Closure
-from pydantic import BaseModel, field_validator, model_validator
+from pydantic import BaseModel, BeforeValidator, field_validator, model_validator
 from typing_extensions import TypeAlias
 from web3.types import FilterParams
 
@@ -41,7 +41,7 @@ from ape.utils import (
     ManagerAccessMixin,
     cached_property,
 )
-from ape.utils.misc import ZERO_ADDRESS, log_instead_of_fail, to_int
+from ape.utils.misc import ZERO_ADDRESS, log_instead_of_fail
 
 if TYPE_CHECKING:
     from ape.api.providers import BlockAPI
@@ -66,6 +66,15 @@ An ID representing a point in time on a blockchain, as used in the
 Providers will expect and handle snapshot IDs differently. There shouldn't be a need to change
 providers when using this feature, so there should not be confusion over this type in practical use
 cases.
+"""
+
+
+HexInt = Annotated[
+    int, BeforeValidator(lambda v, info: ManagerAccessMixin.conversion_manager.convert(v, int))
+]
+"""
+Validate any hex-str or bytes into an integer.
+To be used on pydantic-fields.
 """
 
 
@@ -229,11 +238,6 @@ class BaseContractLog(BaseInterfaceModel):
     event_arguments: dict[str, Any] = {}
     """The arguments to the event, including both indexed and non-indexed data."""
 
-    @field_validator("contract_address", mode="before")
-    @classmethod
-    def validate_address(cls, value):
-        return cls.conversion_manager.convert(value, AddressType)
-
     def __eq__(self, other: Any) -> bool:
         if self.contract_address != other.contract_address or self.event_name != other.event_name:
             return False
@@ -254,37 +258,20 @@ class ContractLog(ExtraAttributesMixin, BaseContractLog):
     transaction_hash: Any
     """The hash of the transaction containing this log."""
 
-    block_number: int
+    block_number: HexInt
     """The number of the block containing the transaction that produced this log."""
 
     block_hash: Any
     """The hash of the block containing the transaction that produced this log."""
 
-    log_index: int
+    log_index: HexInt
     """The index of the log on the transaction."""
 
-    transaction_index: Optional[int] = None
+    transaction_index: Optional[HexInt] = None
     """
     The index of the transaction's position when the log was created.
     Is `None` when from the pending block.
     """
-
-    @field_validator("block_number", "log_index", "transaction_index", mode="before")
-    @classmethod
-    def validate_hex_ints(cls, value):
-        if value is None:
-            # Should only happen for optionals.
-            return value
-
-        elif not isinstance(value, int):
-            return to_int(value)
-
-        return value
-
-    @field_validator("contract_address", mode="before")
-    @classmethod
-    def validate_address(cls, value):
-        return cls.conversion_manager.convert(value, AddressType)
 
     # NOTE: This class has an overridden `__getattr__` method, but `block` is a reserved keyword
     #       in most smart contract languages, so it is safe to use. Purposely avoid adding
@@ -524,6 +511,8 @@ __all__ = [
     "CurrencyValue",
     "CurrencyValueComparable",
     "GasReport",
+    "HexInt",
+    "HexBytes",
     "MessageSignature",
     "PackageManifest",
     "PackageMeta",

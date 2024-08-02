@@ -367,7 +367,11 @@ def _create_raises_not_implemented_error(fn):
     )
 
 
-def to_int(value) -> int:
+def to_int(value: Any) -> int:
+    """
+    Convert the given value, such as hex-strs or hex-bytes, to an integer.
+    """
+
     if isinstance(value, int):
         return value
     elif isinstance(value, str):
@@ -594,5 +598,6 @@ __all__ = [
     "run_until_complete",
     "singledispatchmethod",
     "stream_response",
+    "to_int",
     "USER_AGENT",
 ]
