@@ -398,10 +398,16 @@ Access each <a class="reference external" href="../methoddocs/api.html?highlight
 <span class="w">  </span><span class="nt">hd_path</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;m/44&#39;/60&#39;/0&#39;/0/{}&quot;</span>
 </pre></div>
 </div>
-<p>If you are using a fork-provider, such as <a class="reference external" href="https://github.com/ApeWorX/ape-hardhat">Hardhat</a>, you can use impersonated accounts by accessing random addresses off the fixture:</p>
+<p>If you are using a provider that supports impersonating accounts, such as <a class="reference external" href="https://github.com/ApeWorX/ape-foundry">Foundry</a>, use the address as the key in the test-accounts manager:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nd">@pytest</span><span class="o">.</span><span class="n">fixture</span>
 <span class="k">def</span> <span class="nf">vitalik</span><span class="p">(</span><span class="n">accounts</span><span class="p">):</span>
     <span class="k">return</span> <span class="n">accounts</span><span class="p">[</span><span class="s2">&quot;0xab5801a7d398351b8be11c439e05c5b3259aec9b&quot;</span><span class="p">]</span>
+</pre></div>
+</div>
+<p>You can also call <code class="docutils literal notranslate"><span class="pre">accounts.impersonate_account()</span></code> for improved readability and performance.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nd">@pytest</span><span class="o">.</span><span class="n">fixture</span>
+<span class="k">def</span> <span class="nf">vitalik</span><span class="p">(</span><span class="n">accounts</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">accounts</span><span class="o">.</span><span class="n">impersonate_account</span><span class="p">(</span><span class="s2">&quot;0xab5801a7d398351b8be11c439e05c5b3259aec9b&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>Using a fork-provider such as <a class="reference external" href="https://github.com/ApeWorX/ape-hardhat">Hardhat</a>, when using a contract instance as the sender in a transaction, it will be automatically impersonated:</p>

@@ -135,12 +135,20 @@ test:
   hd_path: "m/44'/60'/0'/0/{}"
 ```
 
-If you are using a fork-provider, such as [Hardhat](https://github.com/ApeWorX/ape-hardhat), you can use impersonated accounts by accessing random addresses off the fixture:
+If you are using a provider that supports impersonating accounts, such as [Foundry](https://github.com/ApeWorX/ape-foundry), use the address as the key in the test-accounts manager:
 
 ```python
 @pytest.fixture
 def vitalik(accounts):
     return accounts["0xab5801a7d398351b8be11c439e05c5b3259aec9b"]
+```
+
+You can also call `accounts.impersonate_account()` for improved readability and performance.
+
+```python
+@pytest.fixture
+def vitalik(accounts):
+    return accounts.impersonate_account("0xab5801a7d398351b8be11c439e05c5b3259aec9b")
 ```
 
 Using a fork-provider such as [Hardhat](https://github.com/ApeWorX/ape-hardhat), when using a contract instance as the sender in a transaction, it will be automatically impersonated:

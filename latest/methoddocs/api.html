@@ -231,6 +231,7 @@
 <li class="toctree-l3"><a class="reference internal" href="#ape.api.accounts.ImpersonatedAccount"><code class="docutils literal notranslate"><span class="pre">ImpersonatedAccount</span></code></a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.accounts.ImpersonatedAccount.address"><code class="docutils literal notranslate"><span class="pre">ImpersonatedAccount.address</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.accounts.ImpersonatedAccount.call"><code class="docutils literal notranslate"><span class="pre">ImpersonatedAccount.call()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ape.api.accounts.ImpersonatedAccount.raw_address"><code class="docutils literal notranslate"><span class="pre">ImpersonatedAccount.raw_address</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.accounts.ImpersonatedAccount.sign_message"><code class="docutils literal notranslate"><span class="pre">ImpersonatedAccount.sign_message()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.accounts.ImpersonatedAccount.sign_transaction"><code class="docutils literal notranslate"><span class="pre">ImpersonatedAccount.sign_transaction()</span></code></a></li>
 </ul>
@@ -479,6 +480,7 @@
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.providers.ProviderAPI.prepare_transaction"><code class="docutils literal notranslate"><span class="pre">ProviderAPI.prepare_transaction()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.providers.ProviderAPI.priority_fee"><code class="docutils literal notranslate"><span class="pre">ProviderAPI.priority_fee</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.providers.ProviderAPI.provider_settings"><code class="docutils literal notranslate"><span class="pre">ProviderAPI.provider_settings</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ape.api.providers.ProviderAPI.relock_account"><code class="docutils literal notranslate"><span class="pre">ProviderAPI.relock_account()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.providers.ProviderAPI.request_header"><code class="docutils literal notranslate"><span class="pre">ProviderAPI.request_header</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.providers.ProviderAPI.restore"><code class="docutils literal notranslate"><span class="pre">ProviderAPI.restore()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.providers.ProviderAPI.send_call"><code class="docutils literal notranslate"><span class="pre">ProviderAPI.send_call()</span></code></a></li>
@@ -1031,6 +1033,12 @@ Defaults to <code class="docutils literal notranslate"><span class="pre">False</
 <dd class="field-odd"><p><a class="reference internal" href="#ape.api.transactions.ReceiptAPI" title="ape.api.transactions.ReceiptAPI"><code class="xref py py-class docutils literal notranslate"><span class="pre">ReceiptAPI</span></code></a></p>
 </dd>
 </dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ape.api.accounts.ImpersonatedAccount.raw_address">
+<span class="sig-name descname"><span class="pre">raw_address</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ChecksumAddress</span></em><a class="headerlink" href="#ape.api.accounts.ImpersonatedAccount.raw_address" title="Permalink to this definition"></a></dt>
+<dd><p>The field-address of the account.</p>
 </dd></dl>
 
 <dl class="py method">
@@ -3318,6 +3326,17 @@ networks.</p></li>
 <dt class="sig sig-object py" id="ape.api.providers.ProviderAPI.provider_settings">
 <span class="sig-name descname"><span class="pre">provider_settings</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">dict</span></em><a class="headerlink" href="#ape.api.providers.ProviderAPI.provider_settings" title="Permalink to this definition"></a></dt>
 <dd><p>The settings for the provider, as overrides to the configuration.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ape.api.providers.ProviderAPI.relock_account">
+<span class="sig-name descname"><span class="pre">relock_account</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.api.providers.ProviderAPI.relock_account" title="Permalink to this definition"></a></dt>
+<dd><p>Stop impersonating an account.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>address</strong> (<a class="reference internal" href="types.html#ape.types.address.AddressType" title="ape.types.address.AddressType"><code class="xref py py-class docutils literal notranslate"><span class="pre">AddressType</span></code></a>) – The address to relock.</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py attribute">
