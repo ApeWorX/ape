@@ -5,9 +5,9 @@ from datetime import datetime
 from typing import IO, TYPE_CHECKING, Any, NoReturn, Optional, Union
 
 from eth_pydantic_types import HexBytes
-from eth_utils import is_0x_prefixed, is_hex, to_int
+from eth_utils import is_0x_prefixed, is_hex, to_hex, to_int
 from ethpm_types.abi import EventABI, MethodABI
-from pydantic import ConfigDict, field_validator
+from pydantic import ConfigDict, field_serializer, field_validator
 from pydantic.fields import Field
 from tqdm import tqdm  # type: ignore
 
@@ -73,6 +73,25 @@ class TransactionAPI(BaseInterfaceModel):
         raise_on_revert = kwargs.pop("raise_on_revert", True)
         super().__init__(*args, **kwargs)
         self._raise_on_revert = raise_on_revert
+
+    @field_serializer("signature", when_used="json")
+    @classmethod
+    def serialize_signature(cls, sig: TransactionSignature):
+        return {"v": sig.v, "r": to_hex(sig.r), "s": to_hex(sig.s)}
+
+    @field_validator("nonce", mode="before")
+    @classmethod
+    def validate_nonce(cls, value):
+        if value is None or isinstance(value, int):
+            return value
+
+        elif isinstance(value, str) and value.startswith("0x"):
+            return to_int(hexstr=value)
+
+        elif isinstance(value, str):
+            return int(value)
+
+        return to_int(value)
 
     @field_validator("gas_limit", mode="before")
     @classmethod
@@ -161,12 +180,12 @@ class TransactionAPI(BaseInterfaceModel):
         """
 
         try:
-            txn_hash = self.txn_hash.hex()
+            txn_hash = to_hex(self.txn_hash)
         except SignatureError:
             return None
 
         try:
-            return self.provider.get_receipt(txn_hash, required_confirmations=0, timeout=0)
+            return self.chain_manager.get_receipt(txn_hash)
         except (TransactionNotFoundError, ProviderNotConnectedError):
             return None
 
@@ -355,7 +374,6 @@ class ReceiptAPI(ExtraAttributesMixin, BaseInterfaceModel):
         Ecosystem plugins override this property when their receipts
         are able to be failing.
         """
-
         return False
 
     @property
@@ -450,6 +468,13 @@ class ReceiptAPI(ExtraAttributesMixin, BaseInterfaceModel):
         Returns:
             :class:`~ape.api.ReceiptAPI`: The receipt that is now confirmed.
         """
+        # perf: avoid *everything* if required_confirmations is 0, as this is likely a
+        #   dev environment or the user doesn't care.
+        if self.required_confirmations == 0:
+            # The transaction might not yet be confirmed but
+            # the user is aware of this. Or, this is a development environment.
+            return self
+
         try:
             self.raise_for_status()
         except TransactionError:
@@ -471,11 +496,6 @@ class ReceiptAPI(ExtraAttributesMixin, BaseInterfaceModel):
                     self.error = tx_err
                     if self.transaction.raise_on_revert:
                         raise tx_err
-
-        if self.required_confirmations == 0:
-            # The transaction might not yet be confirmed but
-            # the user is aware of this. Or, this is a development environment.
-            return self
 
         confirmations_occurred = self._confirmations_occurred
         if self.required_confirmations and confirmations_occurred >= self.required_confirmations:

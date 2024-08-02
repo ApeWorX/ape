@@ -233,7 +233,7 @@ class Web3Provider(ProviderAPI, ABC):
 
     @property
     def base_fee(self) -> int:
-        latest_block_number = self.get_block("latest").number
+        latest_block_number = self._get_latest_block_rpc().get("number")
         if latest_block_number is None:
             # Possibly no blocks yet.
             logger.debug("Latest block has no number. Using base fee of '0'.")
@@ -280,8 +280,7 @@ class Web3Provider(ProviderAPI, ABC):
             raise APINotImplementedError(str(err)) from err
 
     def _get_last_base_fee(self) -> int:
-        block = self.get_block("latest")
-        base_fee = getattr(block, "base_fee", None)
+        base_fee = self._get_latest_block_rpc().get("baseFeePerGas", None)
         if base_fee is not None:
             return base_fee
 
@@ -296,8 +295,7 @@ class Web3Provider(ProviderAPI, ABC):
 
     @property
     def max_gas(self) -> int:
-        block = self.web3.eth.get_block("latest")
-        return block["gasLimit"]
+        return int(self._get_latest_block_rpc()["gasLimit"], 16)
 
     @cached_property
     def supports_tracing(self) -> bool:
@@ -411,11 +409,15 @@ class Web3Provider(ProviderAPI, ABC):
         except Exception as err:
             raise BlockNotFoundError(block_id, reason=str(err)) from err
 
-        # Some nodes (like anvil) will not have a base fee if set to 0.
-        if "baseFeePerGas" in block_data and block_data.get("baseFeePerGas") is None:
-            block_data["baseFeePerGas"] = 0
-
         return self.network.ecosystem.decode_block(block_data)
+
+    def _get_latest_block(self) -> BlockAPI:
+        # perf: By-pass as much as possible since this is a common action.
+        data = self._get_latest_block_rpc()
+        return self.network.ecosystem.decode_block(data)
+
+    def _get_latest_block_rpc(self) -> dict:
+        return self.make_request("eth_getBlockByNumber", ["latest", False])
 
     def get_nonce(self, address: AddressType, block_id: Optional[BlockID] = None) -> int:
         return self.web3.eth.get_transaction_count(address, block_identifier=block_id)
@@ -568,6 +570,7 @@ class Web3Provider(ProviderAPI, ABC):
         txn_dict.pop("gasLimit", None)
         txn_dict.pop("maxFeePerGas", None)
         txn_dict.pop("maxPriorityFeePerGas", None)
+        txn_dict.pop("signature", None)
 
         # NOTE: Block ID is required so if given None, default to `"latest"`.
         block_identifier = kwargs.pop("block_identifier", kwargs.pop("block_id", None)) or "latest"
@@ -593,10 +596,12 @@ class Web3Provider(ProviderAPI, ABC):
         timeout = (
             timeout if timeout is not None else self.provider.network.transaction_acceptance_timeout
         )
-
         hex_hash = HexBytes(txn_hash)
+
         try:
-            receipt_data = self.web3.eth.wait_for_transaction_receipt(hex_hash, timeout=timeout)
+            receipt_data = dict(
+                self.web3.eth.wait_for_transaction_receipt(hex_hash, timeout=timeout)
+            )
         except TimeExhausted as err:
             msg_str = str(err)
             if f"HexBytes('{txn_hash}')" in msg_str:
@@ -609,17 +614,33 @@ class Web3Provider(ProviderAPI, ABC):
         ecosystem_config = self.network.ecosystem_config
         network_config: dict = ecosystem_config.get(self.network.name, {})
         max_retries = network_config.get("max_get_transaction_retries", DEFAULT_MAX_RETRIES_TX)
-        txn = {}
-        for attempt in range(max_retries):
-            try:
-                txn = dict(self.web3.eth.get_transaction(HexStr(txn_hash)))
-                break
-            except TransactionNotFound:
-                if attempt < max_retries - 1:  # if this wasn't the last attempt
-                    time.sleep(1)  # Wait for 1 second before retrying.
-                    continue  # Continue to the next iteration, effectively retrying the operation.
-                else:  # if it was the last attempt
-                    raise  # Re-raise the last exception.
+
+        if transaction := kwargs.get("transaction"):
+            # perf: If called `send_transaction()`, we should already have the data!
+            txn = (
+                transaction
+                if isinstance(transaction, dict)
+                else transaction.model_dump(by_alias=True, mode="json")
+            )
+            if "effectiveGasPrice" in receipt_data:
+                receipt_data["gasPrice"] = receipt_data["effectiveGasPrice"]
+
+        else:
+            txn = {}
+            for attempt in range(max_retries):
+                try:
+                    txn = dict(self.web3.eth.get_transaction(HexStr(txn_hash)))
+                    break
+
+                except TransactionNotFound:
+                    if attempt < max_retries - 1:
+                        # Not the last attempt. Wait and then retry.
+                        time.sleep(0.5)
+                        continue
+
+                    else:
+                        # It was the last attempt - raise the exception as-is.
+                        raise
 
         data = {"required_confirmations": required_confirmations, **txn, **receipt_data}
         receipt = self._create_receipt(**data)
@@ -754,9 +775,7 @@ class Web3Provider(ProviderAPI, ABC):
         while True:
             # The next block we want is simply 1 after the last.
             next_block = last.number + 1
-
-            head = self.get_block("latest")
-
+            head = self._get_latest_block()
             try:
                 if head.number is None or head.hash is None:
                     raise ProviderError("Head block has no number or hash.")
@@ -826,7 +845,7 @@ class Web3Provider(ProviderAPI, ABC):
             required_confirmations = self.network.required_confirmations
 
         if stop_block is not None:
-            if stop_block <= (self.provider.get_block("latest").number or 0):
+            if stop_block <= (self._get_latest_block().number or 0):
                 raise ValueError("'stop' argument must be in the future.")
 
         for block in self.poll_blocks(stop_block, required_confirmations, new_block_timeout):
@@ -936,6 +955,7 @@ class Web3Provider(ProviderAPI, ABC):
 
     def send_transaction(self, txn: TransactionAPI) -> ReceiptAPI:
         vm_err = None
+        txn_data = None
         txn_hash = None
         try:
             if txn.sender is not None and txn.signature is None:
@@ -976,7 +996,7 @@ class Web3Provider(ProviderAPI, ABC):
             if txn.required_confirmations is not None
             else self.network.required_confirmations
         )
-        txn_dict = txn.model_dump(by_alias=True, mode="json")
+        txn_data = txn_data or txn.model_dump(by_alias=True, mode="json")
         if vm_err:
             receipt = self._create_receipt(
                 block_number=-1,  # Not in a block.
@@ -984,10 +1004,14 @@ class Web3Provider(ProviderAPI, ABC):
                 required_confirmations=required_confirmations,
                 status=TransactionStatusEnum.FAILING,
                 txn_hash=txn_hash,
-                **txn_dict,
+                **txn_data,
             )
         else:
-            receipt = self.get_receipt(txn_hash, required_confirmations=required_confirmations)
+            receipt = self.get_receipt(
+                txn_hash,
+                required_confirmations=required_confirmations,
+                transaction=txn_data,
+            )
 
         # NOTE: Ensure to cache even the failed receipts.
         # NOTE: Caching must happen before error enrichment.
@@ -995,15 +1019,15 @@ class Web3Provider(ProviderAPI, ABC):
 
         if receipt.failed:
             # For some reason, some nodes have issues with integer-types.
-            if isinstance(txn_dict.get("type"), int):
-                txn_dict["type"] = to_hex(txn_dict["type"])
+            if isinstance(txn_data.get("type"), int):
+                txn_data["type"] = to_hex(txn_data["type"])
 
             # NOTE: For some reason, some providers have issues with
             #   `nonce`, it's not needed anyway.
-            txn_dict.pop("nonce", None)
+            txn_data.pop("nonce", None)
 
             # NOTE: Using JSON mode since used as request data.
-            txn_params = cast(TxParams, txn_dict)
+            txn_params = cast(TxParams, txn_data)
 
             # Replay txn to get revert reason
             try:
@@ -1112,7 +1136,7 @@ class Web3Provider(ProviderAPI, ABC):
             list[:class:`~ape_ethereum.transactions.AccessList`]
         """
         # NOTE: Using JSON mode since used in request data.
-        tx_dict = transaction.model_dump(by_alias=True, mode="json", exclude=("chain_id",))
+        tx_dict = transaction.model_dump(by_alias=True, mode="json", exclude={"chain_id"})
         tx_dict_converted = {}
         for key, val in tx_dict.items():
             if isinstance(val, int):
@@ -1402,10 +1426,12 @@ class EthereumNodeProvider(Web3Provider, ABC):
             self.concurrency = 32
             self.block_page_size = 50_000
         else:
-            client_name = client_version.split("/")[0]
+            client_name = client_version.partition("/")[0]
             logger.info(f"Connecting to a '{client_name}' node.")
 
-        self.web3.eth.set_gas_price_strategy(rpc_gas_price_strategy)
+        if not self.network.is_dev:
+            self.web3.eth.set_gas_price_strategy(rpc_gas_price_strategy)
+
         # Check for chain errors, including syncing
         try:
             chain_id = self.web3.eth.chain_id

@@ -1,11 +1,12 @@
-import copy
 from collections.abc import Iterator
 from fnmatch import fnmatch
+from functools import cached_property
 from typing import Optional
 
 import pytest
 
-from ape.api import ReceiptAPI, TestAccountAPI
+from ape.api.accounts import TestAccountAPI
+from ape.api.transactions import ReceiptAPI
 from ape.exceptions import BlockNotFoundError, ChainError
 from ape.logging import logger
 from ape.managers.chain import ChainManager
@@ -13,7 +14,8 @@ from ape.managers.networks import NetworkManager
 from ape.managers.project import ProjectManager
 from ape.pytest.config import ConfigWrapper
 from ape.types import SnapshotID
-from ape.utils import ManagerAccessMixin, allow_disconnected, cached_property
+from ape.utils.basemodel import ManagerAccessMixin
+from ape.utils.misc import allow_disconnected
 
 
 class PytestApeFixtures(ManagerAccessMixin):
@@ -30,9 +32,10 @@ class PytestApeFixtures(ManagerAccessMixin):
 
     @cached_property
     def _track_transactions(self) -> bool:
-        has_reason = self.config_wrapper.track_gas or self.config_wrapper.track_coverage
         return (
-            self.network_manager.provider is not None and self.provider.is_connected and has_reason
+            self.network_manager.provider is not None
+            and self.provider.is_connected
+            and (self.config_wrapper.track_gas or self.config_wrapper.track_coverage)
         )
 
     @pytest.fixture(scope="session")
@@ -40,7 +43,6 @@ class PytestApeFixtures(ManagerAccessMixin):
         """
         A collection of pre-funded accounts.
         """
-
         return self.account_manager.test_accounts
 
     @pytest.fixture(scope="session")
@@ -48,7 +50,6 @@ class PytestApeFixtures(ManagerAccessMixin):
         """
         Access compiler manager directly.
         """
-
         return self.compiler_manager
 
     @pytest.fixture(scope="session")
@@ -56,7 +57,6 @@ class PytestApeFixtures(ManagerAccessMixin):
         """
         Manipulate the blockchain, such as mine or change the pending timestamp.
         """
-
         return self.chain_manager
 
     @pytest.fixture(scope="session")
@@ -64,7 +64,6 @@ class PytestApeFixtures(ManagerAccessMixin):
         """
         Connect to other networks in your tests.
         """
-
         return self.network_manager
 
     @pytest.fixture(scope="session")
@@ -72,7 +71,6 @@ class PytestApeFixtures(ManagerAccessMixin):
         """
         Access contract types and dependencies.
         """
-
         return self.local_project
 
     @pytest.fixture(scope="session")
@@ -88,7 +86,6 @@ class PytestApeFixtures(ManagerAccessMixin):
         Isolation logic used to implement isolation fixtures for each pytest scope.
         When tracing support is available, will also assist in capturing receipts.
         """
-
         try:
             snapshot_id = self._snapshot()
         except BlockNotFoundError:
@@ -174,7 +171,7 @@ class ReceiptCapture(ManagerAccessMixin):
                 txn_hash = txn.txn_hash.hex()
             except Exception:
                 # Might have been from an impersonated account.
-                # Those txns need to be added separatly, same as tracing calls.
+                # Those txns need to be added separately, same as tracing calls.
                 # Likely, it was already accounted before this point.
                 continue
 
@@ -189,14 +186,14 @@ class ReceiptCapture(ManagerAccessMixin):
         if not receipt:
             return
 
-        if not (contract_address := (receipt.receiver or receipt.contract_address)):
+        elif not (contract_address := (receipt.receiver or receipt.contract_address)):
             return
 
-        if not (contract_type := self.chain_manager.contracts.get(contract_address)):
+        elif not (contract_type := self.chain_manager.contracts.get(contract_address)):
             # Not an invoke-transaction or a known address
             return
 
-        if not (source_id := (contract_type.source_id or None)):
+        elif not (source_id := (contract_type.source_id or None)):
             # Not a local or known contract type.
             return
 
@@ -229,7 +226,6 @@ class ReceiptCapture(ManagerAccessMixin):
         Helper method to determine if a certain contract / method combination should be
         excluded from the gas report.
         """
-
         for exclusion in self.config_wrapper.gas_exclusions:
             # Default to looking at all contracts
             contract_pattern = exclusion.contract_name
@@ -241,15 +237,3 @@ class ReceiptCapture(ManagerAccessMixin):
                 return True
 
         return False
-
-
-def _build_report(report: dict, contract: str, method: str, usages: list) -> dict:
-    new_dict = copy.deepcopy(report)
-    if contract not in new_dict:
-        new_dict[contract] = {method: usages}
-    elif method not in new_dict[contract]:
-        new_dict[contract][method] = usages
-    else:
-        new_dict[contract][method].extend(usages)
-
-    return new_dict

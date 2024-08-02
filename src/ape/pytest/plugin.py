@@ -1,10 +1,7 @@
 import sys
 from pathlib import Path
 
-import pytest
-
 from ape.exceptions import ConfigError
-from ape.logging import LogLevel, logger
 from ape.pytest.config import ConfigWrapper
 from ape.pytest.coverage import CoverageTracker
 from ape.pytest.fixtures import PytestApeFixtures, ReceiptCapture
@@ -64,17 +61,19 @@ def pytest_addoption(parser):
 def pytest_configure(config):
     # Do not include ape internals in tracebacks unless explicitly asked
     if not config.getoption("--show-internal"):
-        path_str = sys.modules["ape"].__file__
-        if path_str:
-            base_path = Path(path_str).parent.as_posix()
+        if path_str := sys.modules["ape"].__file__:
+            base_path = str(Path(path_str).parent)
 
             def is_module(v):
                 return getattr(v, "__file__", None) and v.__file__.startswith(base_path)
 
-            modules = [v for v in sys.modules.values() if is_module(v)]
-            for module in modules:
-                if hasattr(module, "__tracebackhide__"):
-                    setattr(module, "__tracebackhide__", True)
+            for module in (v for v in sys.modules.values() if is_module(v)):
+                # NOTE: Using try/except w/ type:ignore (over checking for attr)
+                #   for performance reasons!
+                try:
+                    module.__tracebackhide__ = True  # type: ignore[attr-defined]
+                except AttributeError:
+                    pass
 
     config_wrapper = ConfigWrapper(config)
     receipt_capture = ReceiptCapture(config_wrapper)
@@ -99,28 +98,3 @@ def pytest_configure(config):
     config.addinivalue_line(
         "markers", "use_network(choice): Run this test using the given network choice."
     )
-
-
-def pytest_load_initial_conftests(early_config):
-    """
-    Compile contracts before loading ``conftest.py``s.
-    """
-    capture_manager = early_config.pluginmanager.get_plugin("capturemanager")
-    pm = ManagerAccessMixin.local_project
-
-    # Suspend stdout capture to display compilation data
-    capture_manager.suspend()
-    try:
-        pm.load_contracts()
-    except Exception as err:
-        logger.log_debug_stack_trace()
-        message = "Unable to load project. "
-        if logger.level > LogLevel.DEBUG:
-            message = f"{message}Use `-v DEBUG` to see more info.\n"
-
-        err_type_name = getattr(type(err), "__name__", "Exception")
-        message = f"{message}Failure reason: ({err_type_name}) {err}"
-        raise pytest.UsageError(message)
-
-    finally:
-        capture_manager.resume()

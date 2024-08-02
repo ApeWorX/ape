@@ -4,12 +4,11 @@ from ethpm_types.abi import MethodABI
 from ethpm_types.source import ContractSource
 from evm_trace.gas import merge_reports
 
-from ape.api import TraceAPI
+from ape.api.trace import TraceAPI
 from ape.pytest.config import ConfigWrapper
 from ape.types import AddressType, ContractFunctionPath, GasReport
-from ape.utils import parse_gas_table
 from ape.utils.basemodel import ManagerAccessMixin
-from ape.utils.trace import _exclude_gas
+from ape.utils.trace import _exclude_gas, parse_gas_table
 
 
 class GasTracker(ManagerAccessMixin):

@@ -6,14 +6,14 @@ import pytest
 from _pytest._code.code import Traceback as PytestTraceback
 from rich import print as rich_print
 
-from ape.api import ProviderContextManager
+from ape.api.networks import ProviderContextManager
 from ape.logging import LogLevel
 from ape.pytest.config import ConfigWrapper
 from ape.pytest.coverage import CoverageTracker
 from ape.pytest.fixtures import ReceiptCapture
 from ape.pytest.gas import GasTracker
 from ape.types.coverage import CoverageReport
-from ape.utils import ManagerAccessMixin
+from ape.utils.basemodel import ManagerAccessMixin
 from ape_console._cli import console
 
 

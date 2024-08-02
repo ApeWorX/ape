@@ -7,7 +7,7 @@ from ethpm_types.abi import MethodABI
 from ethpm_types.source import ContractSource
 
 from ape.logging import logger
-from ape.managers import ProjectManager
+from ape.managers.project import ProjectManager
 from ape.pytest.config import ConfigWrapper
 from ape.types import (
     ContractFunctionPath,

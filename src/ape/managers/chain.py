@@ -67,7 +67,6 @@ class BlockContainer(BaseManager):
         """
         The latest block.
         """
-
         return self.provider.get_block("latest")
 
     @property

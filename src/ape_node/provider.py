@@ -384,7 +384,7 @@ class GethDev(EthereumNodeProvider, TestProviderAPI, SubprocessProvider):
         super().disconnect()
 
     def snapshot(self) -> SnapshotID:
-        return self.get_block("latest").number or 0
+        return self._get_latest_block().number or 0
 
     def restore(self, snapshot_id: SnapshotID):
         if isinstance(snapshot_id, int):
@@ -397,7 +397,7 @@ class GethDev(EthereumNodeProvider, TestProviderAPI, SubprocessProvider):
             block_number_hex_str = add_0x_prefix(HexStr(snapshot_id))
             block_number_int = int(snapshot_id, 16)
 
-        current_block = self.get_block("latest").number
+        current_block = self._get_latest_block().number
         if block_number_int == current_block:
             # Head is already at this block.
             return

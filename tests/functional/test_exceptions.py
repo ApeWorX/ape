@@ -71,7 +71,7 @@ class TestTransactionError:
         contract = vyper_contract_container.deploy(629, sender=owner)
 
         receipt = contract.creation_metadata.receipt
-        data = receipt.model_dump(exclude=("transaction",))
+        data = receipt.model_dump(exclude={"transaction"})
         # Show when receiver is zero_address, it still picks contract address.
         data["transaction"] = ethereum.create_transaction(receiver=zero_address)
 

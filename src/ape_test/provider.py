@@ -19,6 +19,7 @@ from web3.types import TxParams
 
 from ape.api import PluginConfig, ReceiptAPI, TestProviderAPI, TransactionAPI
 from ape.exceptions import (
+    APINotImplementedError,
     ContractLogicError,
     ProviderError,
     ProviderNotConnectedError,
@@ -90,6 +91,10 @@ class LocalProvider(TestProviderAPI, Web3Provider):
         else:
             raise TypeError("Expecting bool-value for auto_mine setter.")
 
+    @property
+    def max_gas(self) -> int:
+        return self.evm_backend.get_block_by_number("latest")["gas_limit"]
+
     def connect(self):
         if "tester" in self.__dict__:
             del self.__dict__["tester"]
@@ -119,9 +124,7 @@ class LocalProvider(TestProviderAPI, Web3Provider):
         estimate_gas = self.web3.eth.estimate_gas
 
         # NOTE: Using JSON mode since used as request data.
-        txn_dict = txn.model_dump(mode="json")
-
-        txn_dict.pop("gas", None)
+        txn_dict = txn.model_dump(by_alias=True, mode="json", exclude={"gas_limit", "chain_id"})
         txn_data = cast(TxParams, txn_dict)
 
         try:
@@ -206,6 +209,7 @@ class LocalProvider(TestProviderAPI, Web3Provider):
         data.pop("gasLimit", None)
         data.pop("maxFeePerGas", None)
         data.pop("maxPriorityFeePerGas", None)
+        data.pop("signature", None)
 
         tx_params = cast(TxParams, data)
         vm_err = None
@@ -233,8 +237,11 @@ class LocalProvider(TestProviderAPI, Web3Provider):
 
     def send_transaction(self, txn: TransactionAPI) -> ReceiptAPI:
         vm_err = None
+        txn_dict = None
         try:
-            txn_hash = self.web3.eth.send_raw_transaction(txn.serialize_transaction()).hex()
+            txn_hash = self.tester.ethereum_tester.send_raw_transaction(
+                txn.serialize_transaction().hex()
+            )
         except (ValidationError, TransactionFailed, Web3ContractLogicError) as err:
             vm_err = self.get_virtual_machine_error(err, txn=txn)
             if txn.raise_on_revert:
@@ -248,17 +255,26 @@ class LocalProvider(TestProviderAPI, Web3Provider):
                 required_confirmations=required_confirmations, error=vm_err, txn_hash=txn_hash
             )
         else:
-            receipt = self.get_receipt(txn_hash, required_confirmations=required_confirmations)
+            txn_dict = txn_dict or txn.model_dump(mode="json")
+
+            # Signature is typically excluded from the model fields,
+            # so we have to include it manually.
+            txn_dict["signature"] = txn.signature
+
+            receipt = self.get_receipt(
+                txn_hash, required_confirmations=required_confirmations, transaction=txn_dict
+            )
 
         # NOTE: Caching must happen before error enrichment.
         self.chain_manager.history.append(receipt)
 
         if receipt.failed:
             # NOTE: Using JSON mode since used as request data.
-            txn_dict = txn.model_dump(mode="json")
+            txn_dict = txn_dict or txn.model_dump(mode="json")
 
             txn_dict["nonce"] += 1
             txn_params = cast(TxParams, txn_dict)
+            txn_dict.pop("signature", None)
 
             # Replay txn to get revert reason
             try:
@@ -284,7 +300,7 @@ class LocalProvider(TestProviderAPI, Web3Provider):
 
     def restore(self, snapshot_id: SnapshotID):
         if snapshot_id:
-            current_hash = self.get_block("latest").hash
+            current_hash = self._get_latest_block_rpc().get("hash")
             if current_hash != snapshot_id:
                 try:
                     return self.evm_backend.revert_to_snapshot(snapshot_id)
@@ -292,9 +308,9 @@ class LocalProvider(TestProviderAPI, Web3Provider):
                     raise UnknownSnapshotError(snapshot_id)
 
     def set_timestamp(self, new_timestamp: int):
-        current = self.get_block("pending").timestamp
-        if new_timestamp == current:
-            # Is the same, treat as a noop.
+        current_timestamp = self.evm_backend.get_block_by_number("pending")["timestamp"]
+        if new_timestamp == current_timestamp:
+            # no change, return immediately
             return
 
         try:
@@ -316,13 +332,24 @@ class LocalProvider(TestProviderAPI, Web3Provider):
     def mine(self, num_blocks: int = 1):
         self.evm_backend.mine_blocks(num_blocks)
 
+    def get_balance(self, address: AddressType, block_id: Optional[BlockID] = None) -> int:
+        # perf: Using evm_backend directly instead of going through web3.
+        return self.evm_backend.get_balance(
+            HexBytes(address), block_number="latest" if block_id is None else block_id
+        )
+
+    def get_nonce(self, address: AddressType, block_id: Optional[BlockID] = None) -> int:
+        return self.evm_backend.get_nonce(
+            HexBytes(address), block_number="latest" if block_id is None else block_id
+        )
+
     def get_contract_logs(self, log_filter: LogFilter) -> Iterator[ContractLog]:
         from_block = max(0, log_filter.start_block)
 
         if log_filter.stop_block is None:
             to_block = None
         else:
-            latest_block = self.get_block("latest").number
+            latest_block = self._get_latest_block_rpc().get("number")
             to_block = (
                 min(latest_block, log_filter.stop_block)
                 if latest_block is not None
@@ -353,6 +380,13 @@ class LocalProvider(TestProviderAPI, Web3Provider):
 
     def add_account(self, private_key: str):
         self.evm_backend.add_account(private_key)
+
+    def _get_last_base_fee(self) -> int:
+        base_fee = self._get_latest_block_rpc().get("base_fee_per_gas", None)
+        if base_fee is not None:
+            return base_fee
+
+        raise APINotImplementedError("No base fee found in block.")
 
     def get_virtual_machine_error(self, exception: Exception, **kwargs) -> VirtualMachineError:
         if isinstance(exception, ValidationError):

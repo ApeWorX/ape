@@ -432,12 +432,12 @@ class TransactionTrace(Trace):
             TA.BASIC: self._get_basic_calltree,
         }
 
-        reason = ""
+        reason_map = {}
         for approach, fn in approaches.items():
             try:
                 call = fn()
             except Exception as err:
-                reason = f"{err}"
+                reason_map[approach.name] = f"{err}"
                 continue
 
             self._set_approach(approach)
@@ -445,7 +445,8 @@ class TransactionTrace(Trace):
 
         # Not sure this would happen, as the basic-approach should
         # always work.
-        raise ProviderError(f"Unable to create CallTreeNode. Reason: {reason}")
+        reason_str = ", ".join(f"{k}={v}" for k, v in reason_map.items())
+        raise ProviderError(f"Unable to create CallTreeNode. Reason(s): {reason_str}")
 
     def _debug_trace_transaction(self, parameters: Optional[dict] = None) -> dict:
         parameters = parameters or self.debug_trace_transaction_parameters
@@ -477,7 +478,6 @@ class TransactionTrace(Trace):
 
         # Figure out the 'returndata' using 'eth_call' RPC.
         tx = receipt.transaction.model_copy(update={"nonce": None})
-
         try:
             return_value = self.provider.send_call(tx, block_id=receipt.block_number)
         except ContractLogicError:
