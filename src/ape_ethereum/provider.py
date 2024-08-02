@@ -1382,7 +1382,9 @@ class EthereumNodeProvider(Web3Provider, ABC):
     def _set_web3(self):
         # Clear cached version when connecting to another URI.
         self._client_version = None
-        self._web3 = _create_web3(http_uri=self.http_uri, ipc_path=self.ipc_path, ws_uri=self.ws_uri)
+        self._web3 = _create_web3(
+            http_uri=self.http_uri, ipc_path=self.ipc_path, ws_uri=self.ws_uri
+        )
 
     def _complete_connect(self):
         client_version = self.client_version.lower()
@@ -1477,13 +1479,15 @@ class EthereumNodeProvider(Web3Provider, ABC):
         self._complete_connect()
 
 
-def _create_web3(http_uri: Optional[str] = None, ipc_path: Optional[Path] = None, ws_uri: Optional[str] = None):
+def _create_web3(
+    http_uri: Optional[str] = None, ipc_path: Optional[Path] = None, ws_uri: Optional[str] = None
+):
     # NOTE: This list is ordered by try-attempt.
     # Try ENV, then IPC, and then HTTP last.
     providers: list = [load_provider_from_environment]
     if ipc := ipc_path:
         providers.append(lambda: IPCProvider(ipc_path=ipc))
-    if http := http_uri :
+    if http := http_uri:
         providers.append(
             lambda: HTTPProvider(endpoint_uri=http, request_kwargs={"timeout": 30 * 60})
         )
