@@ -17,7 +17,7 @@ from web3.exceptions import ContractLogicError as Web3ContractLogicError
 from web3.providers.eth_tester.defaults import API_ENDPOINTS, static_return
 from web3.types import TxParams
 
-from ape.api import PluginConfig, ReceiptAPI, TestProviderAPI, TransactionAPI
+from ape.api import BlockAPI, PluginConfig, ReceiptAPI, TestProviderAPI, TransactionAPI
 from ape.exceptions import (
     APINotImplementedError,
     ContractLogicError,
@@ -430,3 +430,11 @@ class LocalProvider(TestProviderAPI, Web3Provider):
 
         else:
             return VirtualMachineError(base_err=exception, **kwargs)
+
+    def _get_latest_block(self) -> BlockAPI:
+        # perf: By-pass as much as possible since this is a common action.
+        data = self._get_latest_block_rpc()
+        return self.network.ecosystem.decode_block(data)
+
+    def _get_latest_block_rpc(self) -> dict:
+        return self.evm_backend.get_block_by_number("latest")

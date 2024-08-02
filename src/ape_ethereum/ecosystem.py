@@ -598,7 +598,6 @@ class Ethereum(EcosystemAPI):
         error = receipt_kwargs.pop("error", None)
         receipt = receipt_cls.model_validate(receipt_kwargs)
         receipt.error = error
-
         return receipt
 
     def decode_block(self, data: dict) -> BlockAPI:

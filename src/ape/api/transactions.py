@@ -7,7 +7,7 @@ from typing import IO, TYPE_CHECKING, Any, NoReturn, Optional, Union
 from eth_pydantic_types import HexBytes
 from eth_utils import is_0x_prefixed, is_hex, to_hex, to_int
 from ethpm_types.abi import EventABI, MethodABI
-from pydantic import ConfigDict, field_serializer, field_validator
+from pydantic import ConfigDict, field_validator
 from pydantic.fields import Field
 from tqdm import tqdm  # type: ignore
 
@@ -73,11 +73,6 @@ class TransactionAPI(BaseInterfaceModel):
         raise_on_revert = kwargs.pop("raise_on_revert", True)
         super().__init__(*args, **kwargs)
         self._raise_on_revert = raise_on_revert
-
-    @field_serializer("signature", when_used="json")
-    @classmethod
-    def serialize_signature(cls, sig: TransactionSignature):
-        return {"v": sig.v, "r": to_hex(sig.r), "s": to_hex(sig.s)}
 
     @field_validator("nonce", mode="before")
     @classmethod
