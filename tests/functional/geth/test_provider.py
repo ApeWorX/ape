@@ -217,6 +217,14 @@ def test_connect_to_chain_that_started_poa(mock_web3, web3_factory, ethereum):
 
 
 @geth_process_test
+def test_connect_using_only_ipc_for_uri(project, networks, geth_provider):
+    ipc_path = geth_provider.ipc_path
+    with project.temp_config(node={"ethereum": {"local": {"uri": f"{ipc_path}"}}}):
+        with networks.ethereum.local.use_provider("node") as node:
+            assert node.uri == f"{ipc_path}"
+
+
+@geth_process_test
 @pytest.mark.parametrize("block_id", (0, "0", "0x0", HexStr("0x0")))
 def test_get_block(geth_provider, block_id):
     block = cast(Block, geth_provider.get_block(block_id))
