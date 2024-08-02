@@ -163,7 +163,7 @@ def test_contracts_getitem_contract_not_found(chain, eth_tester_provider):
     new_address = "0x4a986a6dca6dbF99Bc3D17F8d71aFB0D60E740F9"
     expected = (
         rf"Failed to get contract type for address '{new_address}'. "
-        r"Current provider 'ethereum:local:test' has no associated explorer plugin. "
+        r"Current network 'ethereum:local:test' has no associated explorer plugin. "
         "Try installing an explorer plugin using .*ape plugins install etherscan.*, "
         r"or using a network with explorer support\."
     )
