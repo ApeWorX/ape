@@ -95,10 +95,9 @@ Ape's modular plugin system allows users to have an interoperable experience wit
 
 - Learn more about **developing** your own plugins from this [developing user guide](https://docs.apeworx.io/ape/stable/userguides/developing_plugins.html).
 
-> [!NOTE]
+> \[!NOTE\]
 > If a plugin does not originate from the [ApeWorX GitHub Organization](https://github.com/ApeWorX?q=ape&type=all), you will get a warning about installing 3rd-party plugins.
-Install 3rd party plugins at your own risk.
-
+> Install 3rd party plugins at your own risk.
 
 [accounts-guide]: https://docs.apeworx.io/ape/stable/userguides/accounts.html
 [actions-badge]: https://github.com/ApeWorX/ape/actions/workflows/test.yaml/badge.svg
