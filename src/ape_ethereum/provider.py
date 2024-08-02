@@ -936,23 +936,40 @@ class Web3Provider(ProviderAPI, ABC):
 
     def send_transaction(self, txn: TransactionAPI) -> ReceiptAPI:
         vm_err = None
+        txn_hash = None
         try:
-            if txn.signature or not txn.sender:
-                txn_hash = self.web3.eth.send_raw_transaction(txn.serialize_transaction()).hex()
-            else:
-                if txn.sender not in self.web3.eth.accounts:
-                    self.chain_manager.provider.unlock_account(txn.sender)
+            if txn.sender is not None and txn.signature is None:
+                # Missing signature, user likely trying to use an unlocked account.
+                attempt_send = True
+                if (
+                    self.network.is_dev
+                    and txn.sender not in self.account_manager.test_accounts._impersonated_accounts
+                ):
+                    try:
+                        self.account_manager.test_accounts.impersonate_account(txn.sender)
+                    except NotImplementedError:
+                        # Unable to impersonate. Try sending as raw-tx.
+                        attempt_send = False
 
-                # NOTE: Using JSON mode since used as request data.
-                txn_data = cast(TxParams, txn.model_dump(by_alias=True, mode="json"))
-                txn_hash = self.web3.eth.send_transaction(txn_data).hex()
+                if attempt_send:
+                    # For some reason, some nodes have issues with integer-types.
+                    txn_data = {
+                        k: to_hex(v) if isinstance(v, int) else v
+                        for k, v in txn.model_dump(by_alias=True, mode="json").items()
+                    }
+                    tx_params = cast(TxParams, txn_data)
+                    txn_hash = to_hex(self.web3.eth.send_transaction(tx_params))
+                # else: attempt raw tx
+
+            if txn_hash is None:
+                txn_hash = to_hex(self.web3.eth.send_raw_transaction(txn.serialize_transaction()))
 
         except (ValueError, Web3ContractLogicError) as err:
             vm_err = self.get_virtual_machine_error(err, txn=txn)
             if txn.raise_on_revert:
                 raise vm_err from err
             else:
-                txn_hash = txn.txn_hash.hex()
+                txn_hash = to_hex(txn.txn_hash)
 
         required_confirmations = (
             txn.required_confirmations
@@ -977,6 +994,14 @@ class Web3Provider(ProviderAPI, ABC):
         self.chain_manager.history.append(receipt)
 
         if receipt.failed:
+            # For some reason, some nodes have issues with integer-types.
+            if isinstance(txn_dict.get("type"), int):
+                txn_dict["type"] = to_hex(txn_dict["type"])
+
+            # NOTE: For some reason, some providers have issues with
+            #   `nonce`, it's not needed anyway.
+            txn_dict.pop("nonce", None)
+
             # NOTE: Using JSON mode since used as request data.
             txn_params = cast(TxParams, txn_dict)
 
