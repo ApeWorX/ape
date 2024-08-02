@@ -4,9 +4,11 @@ from typing import Any, Optional, cast
 
 from eip712.messages import EIP712Message
 from eth_account import Account as EthAccount
+from eth_account._utils.signing import sign_transaction_dict
 from eth_account.messages import SignableMessage, encode_defunct
+from eth_keys.datatypes import PrivateKey  # type: ignore
 from eth_pydantic_types import HexBytes
-from eth_utils import to_bytes
+from eth_utils import to_bytes, to_hex
 
 from ape.api import TestAccountAPI, TestAccountContainerAPI, TransactionAPI
 from ape.exceptions import ProviderNotConnectedError, SignatureError
@@ -126,20 +128,29 @@ class TestAccount(TestAccountAPI):
         return None
 
     def sign_transaction(self, txn: TransactionAPI, **signer_options) -> Optional[TransactionAPI]:
-        # Signs anything that's given to it
-        # NOTE: Using JSON mode since used as request data.
-        tx_data = txn.model_dump(mode="json", by_alias=True)
+        # Signs any transaction that's given to it.
+        # NOTE: Using JSON mode, as only primitive types can be signed.
+        tx_data = txn.model_dump(mode="json", by_alias=True, exclude={"sender"})
+        private_key = PrivateKey(HexBytes(self.private_key))
 
+        # NOTE: var name `sig_r` instead of `r` to avoid clashing with pdb commands.
         try:
-            signature = EthAccount.sign_transaction(tx_data, self.private_key)
+            (
+                sig_v,
+                sig_r,
+                sig_s,
+                _,
+            ) = sign_transaction_dict(private_key, tx_data)
         except TypeError as err:
             # Occurs when missing properties on the txn that are needed to sign.
             raise SignatureError(str(err)) from err
 
+        # NOTE: Using `to_bytes(hexstr=to_hex(sig_r))` instead of `to_bytes(sig_r)` as
+        #   a performance optimization.
         txn.signature = TransactionSignature(
-            v=signature.v,
-            r=to_bytes(signature.r),
-            s=to_bytes(signature.s),
+            v=sig_v,
+            r=to_bytes(hexstr=to_hex(sig_r)),
+            s=to_bytes(hexstr=to_hex(sig_s)),
         )
 
         return txn

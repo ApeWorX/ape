@@ -554,12 +554,7 @@ class ContractEvent(BaseInterfaceModel):
     def __call__(self, *args: Any, **kwargs: Any) -> MockContractLog:
         # Create a dictionary from the positional arguments
         event_args: dict[Any, Any] = dict(zip((ipt.name for ipt in self.abi.inputs), args))
-
-        overlapping_keys = set(k for k in event_args.keys() if k is not None) & set(
-            k for k in kwargs.keys() if k is not None
-        )
-
-        if overlapping_keys:
+        if overlapping_keys := set(event_args).intersection(kwargs):
             raise ValueError(
                 f"Overlapping keys found in arguments: '{', '.join(overlapping_keys)}'."
             )
@@ -1132,8 +1127,8 @@ class ContractInstance(BaseAddress, ContractTypeWrapper):
             :class:`~ape.contracts.base.ContractEvent`
         """
 
-        name_from_sig = signature.split("(")[0].strip()
-        options = self._events_.get(name_from_sig, [])
+        name_from_sig = signature.partition("(")[0].strip()
+        options = self._events_.get(name_from_sig.strip(), [])
 
         err = ContractDataError(f"No event found with signature '{signature}'.")
         if not options:
@@ -1157,7 +1152,7 @@ class ContractInstance(BaseAddress, ContractTypeWrapper):
             :class:`~ape.exceptions.CustomError`
         """
 
-        name_from_sig = signature.split("(")[0].strip()
+        name_from_sig = signature.partition("(")[0].strip()
         options = self._errors_.get(name_from_sig, [])
         err = ContractDataError(f"No error found with signature '{signature}'.")
         if not options:
@@ -1605,7 +1600,7 @@ class ContractNamespace:
                 return contract
 
             elif "." in search_name:
-                next_node = search_name.split(".")[0]
+                next_node = search_name.partition(".")[0]
                 if next_node != item:
                     continue
 

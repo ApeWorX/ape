@@ -299,17 +299,20 @@ def test_no_comma_in_rpc_url():
 
 
 def test_send_transaction_when_no_error_and_receipt_fails(
-    mock_transaction, mock_web3, eth_tester_provider, owner, vyper_contract_instance
+    mocker, mock_web3, mock_transaction, eth_tester_provider, owner, vyper_contract_instance
 ):
     start_web3 = eth_tester_provider._web3
     eth_tester_provider._web3 = mock_web3
+    mock_eth_tester = mocker.MagicMock()
+    original_tester = eth_tester_provider.tester
+    eth_tester_provider.__dict__["tester"] = mock_eth_tester
 
     try:
         # NOTE: Value is meaningless.
         tx_hash = HashBytes32.__eth_pydantic_validate__(123**36)
 
         # Sending tx "works" meaning no vm error.
-        mock_web3.eth.send_raw_transaction.return_value = tx_hash
+        mock_eth_tester.ethereum_tester.send_raw_transaction.return_value = tx_hash
 
         # Getting a receipt "works", but you get a failed one.
         receipt_data = {
@@ -334,6 +337,7 @@ def test_send_transaction_when_no_error_and_receipt_fails(
 
     finally:
         eth_tester_provider._web3 = start_web3
+        eth_tester_provider.__dict__["tester"] = original_tester
 
 
 def test_network_choice(eth_tester_provider):

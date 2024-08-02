@@ -172,7 +172,7 @@ def get_package_version(obj: Any) -> str:
 
     # Reduce module string to base package
     # NOTE: Assumed that string input is module name e.g. `__name__`
-    pkg_name = obj.split(".")[0]
+    pkg_name = obj.partition(".")[0]
 
     # NOTE: In case the distribution and package name differ
     dists = _get_distributions(pkg_name)

@@ -11,7 +11,8 @@ def test_struct_input(
     assert actual == output_from_struct_input_call
 
 
-def test_call_contract_not_found(mocker, method_abi_with_struct_input):
+def test_call_contract_not_found(mocker, method_abi_with_struct_input, networks):
+    (networks.ethereum.local.__dict__ or {}).pop("explorer", None)
     contract = mocker.MagicMock()
     contract.is_contract = False
     method = method_abi_with_struct_input
@@ -21,7 +22,8 @@ def test_call_contract_not_found(mocker, method_abi_with_struct_input):
         handler()
 
 
-def test_transact_contract_not_found(mocker, owner, method_abi_with_struct_input):
+def test_transact_contract_not_found(mocker, owner, method_abi_with_struct_input, networks):
+    (networks.ethereum.local.__dict__ or {}).pop("explorer", None)
     contract = mocker.MagicMock()
     contract.is_contract = False
     method = method_abi_with_struct_input

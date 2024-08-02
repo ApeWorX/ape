@@ -173,7 +173,6 @@ class EcosystemAPI(ExtraAttributesMixin, BaseInterfaceModel):
         Returns:
             bytes
         """
-
         if not self.signature:
             raise SignatureError("The transaction is not signed.")
 

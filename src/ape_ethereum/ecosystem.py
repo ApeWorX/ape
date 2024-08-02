@@ -550,7 +550,6 @@ class Ethereum(EcosystemAPI):
             status = self.conversion_manager.convert(status, int)
             status = TransactionStatusEnum(status)
 
-        txn_hash = None
         hash_key_choices = (
             "hash",
             "txHash",
@@ -559,18 +558,13 @@ class Ethereum(EcosystemAPI):
             "transactionHash",
             "transaction_hash",
         )
-        for choice in hash_key_choices:
-            if choice in data:
-                txn_hash = data[choice]
-                break
+        txn_hash = next((data[choice] for choice in hash_key_choices if choice in data), None)
+        if txn_hash and isinstance(txn_hash, bytes):
+            txn_hash = txn_hash.hex()
 
-        if txn_hash:
-            txn_hash = txn_hash.hex() if isinstance(txn_hash, bytes) else txn_hash
-
-        data_bytes = data.get("data", b"")
+        data_bytes = data.get("data")
         if data_bytes and isinstance(data_bytes, str):
             data["data"] = HexBytes(data_bytes)
-
         elif "input" in data and isinstance(data["input"], str):
             data["input"] = HexBytes(data["input"])
 
@@ -578,17 +572,17 @@ class Ethereum(EcosystemAPI):
         if block_number is None:
             raise ValueError("Missing block number.")
 
-        receipt_kwargs = dict(
-            block_number=block_number,
-            contract_address=data.get("contract_address") or data.get("contractAddress"),
-            gas_limit=data.get("gas", data.get("gas_limit", data.get("gasLimit"))) or 0,
-            gas_price=data.get("gas_price", data.get("gasPrice")) or 0,
-            gas_used=data.get("gas_used", data.get("gasUsed")) or 0,
-            logs=data.get("logs", []),
-            status=status,
-            txn_hash=txn_hash,
-            transaction=self.create_transaction(**data),
-        )
+        receipt_kwargs = {
+            "block_number": block_number,
+            "contract_address": data.get("contract_address", data.get("contractAddress")),
+            "gas_limit": data.get("gas", data.get("gas_limit", data.get("gasLimit"))) or 0,
+            "gas_price": data.get("gas_price", data.get("gasPrice")) or 0,
+            "gas_used": data.get("gas_used", data.get("gasUsed")) or 0,
+            "logs": data.get("logs", []),
+            "status": status,
+            "txn_hash": txn_hash,
+            "transaction": self.create_transaction(**data),
+        }
 
         receipt_cls: type[Receipt]
         if any(
@@ -631,7 +625,10 @@ class Ethereum(EcosystemAPI):
         # NOTE: An array can be an array of tuples, so we start with an array check
         if str(abi_type.type).endswith("]"):
             # remove one layer of the potential onion of array
-            new_type = "[".join(str(abi_type.type).split("[")[:-1])
+            abi_type_str = str(abi_type.type)
+            last_bracket_pos = abi_type_str.rfind("[")
+            new_type = abi_type_str[:last_bracket_pos] if last_bracket_pos != -1 else abi_type_str
+
             # create a new type with the inner type of array
             new_abi_type = ABIType(type=new_type, **abi_type.model_dump(exclude={"type"}))
             # NOTE: type for static and dynamic array is a single item list
@@ -952,7 +949,7 @@ class Ethereum(EcosystemAPI):
         if "gas" not in tx_data:
             tx_data["gas"] = None
 
-        return txn_class(**tx_data)
+        return txn_class.model_validate(tx_data)
 
     def decode_logs(self, logs: Sequence[dict], *events: EventABI) -> Iterator["ContractLog"]:
         if not logs:
@@ -1478,14 +1475,10 @@ def _correct_key(key: str, data: dict, alt_keys: tuple[str, ...]) -> dict:
     if key in data:
         return data
 
-    # Check for alternative.
     for possible_key in alt_keys:
-        if possible_key not in data:
-            continue
-
-        # Alt found: use it.
-        new_data = {k: v for k, v in data.items() if k not in alt_keys}
-        new_data[key] = data[possible_key]
-        return new_data
+        if possible_key in data:
+            new_data = data.copy()
+            new_data[key] = new_data.pop(possible_key)
+            return new_data
 
     return data

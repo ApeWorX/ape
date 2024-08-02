@@ -159,7 +159,7 @@ class StructParser:
             return values
 
         elif has_array_of_tuples_return:
-            item_type_str = str(_types[0].type).split("[")[0]
+            item_type_str = str(_types[0].type).partition("[")[0]
             data = {
                 **_types[0].model_dump(),
                 "type": item_type_str,
@@ -179,7 +179,7 @@ class StructParser:
         else:
             for output_type, value in zip(_types, values):
                 if isinstance(value, (tuple, list)):
-                    item_type_str = str(output_type.type).split("[")[0]
+                    item_type_str = str(output_type.type).partition("[")[0]
                     if item_type_str == "tuple":
                         # Either an array of structs or nested structs.
                         item_type_data = {
