@@ -605,9 +605,25 @@ The node plugin is abstract in that it represents any node.
 However, it will work best when connected to a geth node.
 To configure network URIs in <code class="docutils literal notranslate"><span class="pre">node</span></code>, you can use the <code class="docutils literal notranslate"><span class="pre">ape-config.yaml</span></code> file:</p>
 <div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">node</span><span class="p">:</span>
+<span class="w">  </span><span class="c1"># When managing or running a node, configure an IPC path globally (optional)</span>
+<span class="w">  </span><span class="nt">ipc_path</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">path/to/geth.ipc</span>
+
 <span class="w">  </span><span class="nt">ethereum</span><span class="p">:</span>
 <span class="w">    </span><span class="nt">mainnet</span><span class="p">:</span>
-<span class="w">      </span><span class="nt">uri</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">https://foo.node.bar</span>
+<span class="w">      </span><span class="c1"># For `uri`, you can use either HTTP, WS, or IPC values.</span>
+<span class="w">      </span><span class="c1"># **Most often, you only need HTTP!**</span>
+<span class="w">      </span><span class="nt">uri</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">https://foo.node.example.com</span>
+<span class="w">      </span><span class="c1"># uri: wss://bar.feed.example.com</span>
+<span class="w">      </span><span class="c1"># uri: path/to/mainnet/geth.ipc</span>
+<span class="w">      </span>
+<span class="w">      </span><span class="c1"># For strict HTTP connections, you can configure a http_uri directly.</span>
+<span class="w">      </span><span class="nt">http_uri</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">https://foo.node.example.com</span>
+
+<span class="w">      </span><span class="c1"># You can also configure a websockets URI (used by Silverback SDK).</span>
+<span class="w">      </span><span class="nt">ws_uri</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">wss://bar.feed.example.com</span>
+<span class="w">    </span>
+<span class="w">      </span><span class="c1"># Specify per-network IPC paths as well.</span>
+<span class="w">      </span><span class="nt">ipc_path</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">path/to/mainnet/geth.ipc</span>
 </pre></div>
 </div>
 </section>

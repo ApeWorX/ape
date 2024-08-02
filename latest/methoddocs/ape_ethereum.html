@@ -267,7 +267,9 @@
 <li class="toctree-l3"><a class="reference internal" href="#ape_ethereum.EthereumNodeProvider.connection_id"><code class="docutils literal notranslate"><span class="pre">EthereumNodeProvider.connection_id</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ape_ethereum.EthereumNodeProvider.connection_str"><code class="docutils literal notranslate"><span class="pre">EthereumNodeProvider.connection_str</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ape_ethereum.EthereumNodeProvider.disconnect"><code class="docutils literal notranslate"><span class="pre">EthereumNodeProvider.disconnect()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#ape_ethereum.EthereumNodeProvider.http_uri"><code class="docutils literal notranslate"><span class="pre">EthereumNodeProvider.http_uri</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ape_ethereum.EthereumNodeProvider.name"><code class="docutils literal notranslate"><span class="pre">EthereumNodeProvider.name</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#ape_ethereum.EthereumNodeProvider.ws_uri"><code class="docutils literal notranslate"><span class="pre">EthereumNodeProvider.ws_uri</span></code></a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="#ape_ethereum.ForkedNetworkConfig"><code class="docutils literal notranslate"><span class="pre">ForkedNetworkConfig</span></code></a><ul>
@@ -920,10 +922,24 @@ or an IPC path.</p>
 <dd><p>Disconnect from a provider, such as tear-down a process or quit an HTTP session.</p>
 </dd></dl>
 
+<dl class="py property">
+<dt class="sig sig-object py" id="ape_ethereum.EthereumNodeProvider.http_uri">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">http_uri</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#ape_ethereum.EthereumNodeProvider.http_uri" title="Permalink to this definition"></a></dt>
+<dd><p>The connected HTTP URI. If using providers
+like <cite>ape-node</cite>, configure your URI and that will
+be returned here instead.</p>
+</dd></dl>
+
 <dl class="py attribute">
 <dt class="sig sig-object py" id="ape_ethereum.EthereumNodeProvider.name">
 <span class="sig-name descname"><span class="pre">name</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#ape_ethereum.EthereumNodeProvider.name" title="Permalink to this definition"></a></dt>
 <dd><p>The name of the provider (should be the plugin name).</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="ape_ethereum.EthereumNodeProvider.ws_uri">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">ws_uri</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#ape_ethereum.EthereumNodeProvider.ws_uri" title="Permalink to this definition"></a></dt>
+<dd><p>Return the raw WS/WSS URI to connect to this provider, if supported.</p>
 </dd></dl>
 
 </dd></dl>
@@ -1592,7 +1608,9 @@ to trace.</p>
 <dl class="py property">
 <dt class="sig sig-object py" id="ape_ethereum.Web3Provider.http_uri">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">http_uri</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#ape_ethereum.Web3Provider.http_uri" title="Permalink to this definition"></a></dt>
-<dd><p>Return the raw HTTP/HTTPS URI to connect to this provider, if supported.</p>
+<dd><p>The connected HTTP URI. If using providers
+like <cite>ape-node</cite>, configure your URI and that will
+be returned here instead.</p>
 </dd></dl>
 
 <dl class="py property">
