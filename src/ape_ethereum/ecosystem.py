@@ -573,13 +573,18 @@ class Ethereum(EcosystemAPI):
         receipt_cls: type[Receipt]
         if any(
             x in data
-            for x in ("blobGasPrice", "blobGasUsed", "blobVersionedHashes", "maxFeePerBlobGas")
+            for x in (
+                "blobGasPrice",
+                "blobGasUsed",
+                "blobVersionedHashes",
+                "maxFeePerBlobGas",
+                "blob_gas_price",
+                "blob_gas_used",
+            )
         ):
             receipt_cls = SharedBlobReceipt
-            receipt_kwargs["blob_gas_price"] = data.get("blob_gas_price", data.get("blobGasPrice"))
-            receipt_kwargs["blob_gas_used"] = (
-                data.get("blob_gas_used", data.get("blobGasUsed")) or 0
-            )
+            receipt_kwargs["blobGasPrice"] = data.get("blob_gas_price", data.get("blobGasPrice"))
+            receipt_kwargs["blobGasUsed"] = data.get("blob_gas_used", data.get("blobGasUsed"))
         else:
             receipt_cls = Receipt
 
