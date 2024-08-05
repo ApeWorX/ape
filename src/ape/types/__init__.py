@@ -68,11 +68,10 @@ providers when using this feature, so there should not be confusion over this ty
 cases.
 """
 
-
 HexInt = Annotated[
     int,
     BeforeValidator(
-        lambda v, info: v if v is None else ManagerAccessMixin.conversion_manager.convert(v, int)
+        lambda v, info: None if v is None else ManagerAccessMixin.conversion_manager.convert(v, int)
     ),
 ]
 """

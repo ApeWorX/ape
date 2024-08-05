@@ -599,7 +599,9 @@ class Ethereum(EcosystemAPI):
         if "transaction_ids" in data:
             data["transactions"] = data.pop("transaction_ids")
         if "total_difficulty" in data:
-            data["totalDifficulty"] = data.pop("total_difficulty")
+            data["totalDifficulty"] = data.pop("total_difficulty") or 0
+        elif "totalDifficulty" in data:
+            data["totalDifficulty"] = data.pop("totalDifficulty") or 0
         if "base_fee" in data:
             data["baseFeePerGas"] = data.pop("base_fee")
         elif "baseFee" in data:
