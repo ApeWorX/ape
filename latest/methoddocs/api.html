@@ -438,6 +438,7 @@
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.providers.BlockAPI.number"><code class="docutils literal notranslate"><span class="pre">BlockAPI.number</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.providers.BlockAPI.parent_hash"><code class="docutils literal notranslate"><span class="pre">BlockAPI.parent_hash</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.providers.BlockAPI.size"><code class="docutils literal notranslate"><span class="pre">BlockAPI.size</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ape.api.providers.BlockAPI.timestamp"><code class="docutils literal notranslate"><span class="pre">BlockAPI.timestamp</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.providers.BlockAPI.transactions"><code class="docutils literal notranslate"><span class="pre">BlockAPI.transactions</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.providers.BlockAPI.validate_size"><code class="docutils literal notranslate"><span class="pre">BlockAPI.validate_size()</span></code></a></li>
 </ul>
@@ -2784,26 +2785,25 @@ Ape understands the dependencies and how to compile everything.</p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="ape.api.providers.BlockAPI.hash">
 <span class="sig-name descname"><span class="pre">hash</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Any</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#ape.api.providers.BlockAPI.hash" title="Permalink to this definition"></a></dt>
-<dd><p>The block number identifier.</p>
+<dd><p>The block hash identifier.</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="ape.api.providers.BlockAPI.num_transactions">
 <span class="sig-name descname"><span class="pre">num_transactions</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="headerlink" href="#ape.api.providers.BlockAPI.num_transactions" title="Permalink to this definition"></a></dt>
-<dd><p>The block hash identifier.</p>
+<dd><p>The number of transactions in the block.</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="ape.api.providers.BlockAPI.number">
 <span class="sig-name descname"><span class="pre">number</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#ape.api.providers.BlockAPI.number" title="Permalink to this definition"></a></dt>
-<dd><p>The preceeding block’s hash.</p>
+<dd><p>The block number identifier.</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="ape.api.providers.BlockAPI.parent_hash">
 <span class="sig-name descname"><span class="pre">parent_hash</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Any</span></em><a class="headerlink" href="#ape.api.providers.BlockAPI.parent_hash" title="Permalink to this definition"></a></dt>
-<dd><p>The timestamp the block was produced.
-NOTE: The pending block uses the current timestamp.</p>
+<dd><p>The preceeding block’s hash.</p>
 </dd></dl>
 
 <dl class="py property">
@@ -2814,6 +2814,13 @@ this field is passed to the model at validation time,
 but occassionally it is missing (like in <cite>eth_subscribe:newHeads</cite>),
 in which case it gets calculated if and only if the user
 requests it (or during serialization of this model to disk).</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ape.api.providers.BlockAPI.timestamp">
+<span class="sig-name descname"><span class="pre">timestamp</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="headerlink" href="#ape.api.providers.BlockAPI.timestamp" title="Permalink to this definition"></a></dt>
+<dd><p>The timestamp the block was produced.
+NOTE: The pending block uses the current timestamp.</p>
 </dd></dl>
 
 <dl class="py property">
@@ -3706,7 +3713,7 @@ to go back to this point. This method is for local networks only.</p>
 <h2>Transactions<a class="headerlink" href="#transactions" title="Permalink to this heading"></a></h2>
 <dl class="py class">
 <dt class="sig sig-object py" id="ape.api.transactions.ReceiptAPI">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ape.api.transactions.</span></span><span class="sig-name descname"><span class="pre">ReceiptAPI</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">contract_address</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ChecksumAddress</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">block_number</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gas_used</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">logs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">dict</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">status</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">txn_hash</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">transaction</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#ape.api.transactions.TransactionAPI" title="ape.api.transactions.TransactionAPI"><span class="pre">TransactionAPI</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.api.transactions.ReceiptAPI" title="Permalink to this definition"></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ape.api.transactions.</span></span><span class="sig-name descname"><span class="pre">ReceiptAPI</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">contract_address</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ChecksumAddress</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">block_number</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gas_used</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">logs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">dict</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">status</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">txn_hash</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">HexStr</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">transaction</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#ape.api.transactions.TransactionAPI" title="ape.api.transactions.TransactionAPI"><span class="pre">TransactionAPI</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.api.transactions.ReceiptAPI" title="Permalink to this definition"></a></dt>
 <dd><p>Bases: <a class="reference internal" href="utils.html#ape.utils.ExtraAttributesMixin" title="ape.utils.basemodel.ExtraAttributesMixin"><code class="xref py py-class docutils literal notranslate"><span class="pre">ExtraAttributesMixin</span></code></a>, <a class="reference internal" href="utils.html#ape.utils.BaseInterfaceModel" title="ape.utils.basemodel.BaseInterfaceModel"><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseInterfaceModel</span></code></a></p>
 <p>An abstract class to represent a transaction receipt. The receipt
 contains information about the transaction, such as the status
