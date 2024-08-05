@@ -462,7 +462,9 @@ class Web3Provider(ProviderAPI, ABC):
         skip_trace = kwargs.pop("skip_trace", False)
         arguments = self._prepare_call(txn, **kwargs)
         if skip_trace:
-            return self._eth_call(arguments, raise_on_revert=txn.raise_on_revert)
+            return self._eth_call(
+                arguments, raise_on_revert=txn.raise_on_revert, skip_trace=skip_trace
+            )
 
         show_gas = kwargs.pop("show_gas_report", False)
         show_trace = kwargs.pop("show_trace", False)
@@ -476,7 +478,7 @@ class Web3Provider(ProviderAPI, ABC):
 
         needs_trace = track_gas or track_coverage or show_gas or show_trace
         if not needs_trace:
-            return self._eth_call(arguments, raise_on_revert=raise_on_revert)
+            return self._eth_call(arguments, raise_on_revert=raise_on_revert, skip_trace=skip_trace)
 
         # The user is requesting information related to a call's trace,
         # such as gas usage data.
@@ -517,7 +519,9 @@ class Web3Provider(ProviderAPI, ABC):
 
         return HexBytes(trace.return_value)
 
-    def _eth_call(self, arguments: list, raise_on_revert: bool = True) -> HexBytes:
+    def _eth_call(
+        self, arguments: list, raise_on_revert: bool = True, skip_trace: bool = False
+    ) -> HexBytes:
         # Force the usage of hex-type to support a wider-range of nodes.
         txn_dict = copy(arguments[0])
         if isinstance(txn_dict.get("type"), int):
@@ -530,14 +534,27 @@ class Web3Provider(ProviderAPI, ABC):
         try:
             result = self.make_request("eth_call", arguments)
         except Exception as err:
-            trace = CallTrace(tx=arguments[0], arguments=arguments[1:], use_tokens_for_symbols=True)
-            contract_address = arguments[0]["to"]
-            contract_type = self.chain_manager.contracts.get(contract_address)
-            method_id = arguments[0].get("data", "")[:10] or None
+            trace = None
             tb = None
-            if contract_type and method_id:
-                if contract_src := self.local_project._create_contract_source(contract_type):
-                    tb = SourceTraceback.create(contract_src, trace, method_id)
+            contract_address = arguments[0].get("to")
+            if not skip_trace:
+                if address := contract_address:
+                    try:
+                        contract_type = self.chain_manager.contracts.get(address)
+                    except RecursionError:
+                        # Occurs when already in the middle of fetching this contract.
+                        contract_type = None
+                else:
+                    contract_type = None
+
+                trace = CallTrace(
+                    tx=arguments[0], arguments=arguments[1:], use_tokens_for_symbols=True
+                )
+                method_id = arguments[0].get("data", "")[:10] or None
+                tb = None
+                if contract_type and method_id:
+                    if contract_src := self.local_project._create_contract_source(contract_type):
+                        tb = SourceTraceback.create(contract_src, trace, method_id)
 
             vm_err = self.get_virtual_machine_error(
                 err, trace=trace, contract_address=contract_address, source_traceback=tb
