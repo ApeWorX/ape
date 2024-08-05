@@ -19,6 +19,7 @@ from ape.exceptions import (
     ProviderError,
     TransactionError,
     TransactionNotFoundError,
+    VirtualMachineError,
 )
 from ape.utils import to_int
 from ape_ethereum.ecosystem import Block
@@ -38,6 +39,21 @@ from tests.conftest import GETH_URI, geth_process_test
 @pytest.fixture
 def web3_factory(mocker):
     return mocker.patch("ape_ethereum.provider._create_web3")
+
+
+@pytest.fixture
+def tx_for_call(geth_contract):
+    return DynamicFeeTransaction.model_validate(
+        {
+            "chainId": 1337,
+            "to": geth_contract.address,
+            "gas": 4716984,
+            "value": 0,
+            "data": HexBytes(keccak(text="myNumber()")[:4]),
+            "type": 2,
+            "accessList": [],
+        }
+    )
 
 
 @geth_process_test
@@ -428,20 +444,79 @@ def test_send_transaction_when_no_error_and_receipt_fails(
 
 
 @geth_process_test
-def test_send_call(geth_provider, ethereum, geth_contract):
-    txn = DynamicFeeTransaction.model_validate(
-        {
-            "chainId": 1337,
-            "to": geth_contract.address,
-            "gas": 4716984,
-            "value": 0,
-            "data": HexBytes(keccak(text="myNumber()")[:4]),
-            "type": 2,
-            "accessList": [],
-        }
-    )
-    actual = geth_provider.send_call(txn)
+def test_send_call(geth_provider, ethereum, tx_for_call):
+    actual = geth_provider.send_call(tx_for_call)
     assert to_int(actual) == 0
+
+
+@geth_process_test
+def test_send_call_base_class_block_id(networks, ethereum, mocker):
+    """
+    Testing a case where was a bug in the base class for most providers.
+    Note: can't use ape-node as-is, as it overrides `send_call()`.
+    """
+
+    provider = mocker.MagicMock()
+    provider.network.name = "mainnet"
+
+    def hacked_send_call(*args, **kwargs):
+        return EthereumNodeProvider.send_call(provider, *args, **kwargs)
+
+    provider.send_call = hacked_send_call
+    tx = ethereum.create_transaction()
+    block_id = 567
+
+    orig = networks.active_provider
+    networks.active_provider = provider
+    _ = provider.send_call(tx, block_id=block_id, skip_trace=True) == HexStr("0x")
+    networks.active_provider = orig  # put back ASAP
+
+    actual = provider._prepare_call.call_args[-1]["block_identifier"]
+    assert actual == block_id
+
+
+@geth_process_test
+def test_send_call_handles_contract_type_failure(mocker, geth_provider, tx_for_call, mock_web3):
+    """
+    Fixes an issue where we would get a recursion error during
+    handling a CALL failure, which would happen during proxy detection.
+    """
+    orig_web3 = geth_provider._web3
+
+    def sfx(rpc, arguments, *args, **kwargs):
+        if rpc == "eth_call" and arguments[0]:
+            raise ContractLogicError()
+
+        return orig_web3.provider.make_request(rpc, arguments, *args, **kwargs)
+
+    # Do this to trigger re-entrancy.
+    mock_get = mocker.MagicMock()
+    mock_get.side_effect = RecursionError
+    orig = geth_provider.chain_manager.contracts.get
+    geth_provider.chain_manager.contracts.get = mock_get
+
+    mock_web3.provider.make_request.side_effect = sfx
+    geth_provider._web3 = mock_web3
+    try:
+        with pytest.raises(VirtualMachineError):
+            geth_provider.send_call(tx_for_call)
+    finally:
+        geth_provider._web3 = orig_web3
+        geth_provider.chain_manager.contracts.get = orig
+
+
+@geth_process_test
+def test_send_call_skip_trace(mocker, geth_provider, ethereum, tx_for_call):
+    """
+    When we pass skip_trace=True to `send_call` (as proxy-checking des), we should
+    also not bother with any traces in exception handling for that call, as proxy-
+    checks fail consistently and getting their traces is unnecessary.
+    """
+    eth_call_spy = mocker.spy(geth_provider, "_eth_call")
+    get_contract_spy = mocker.spy(geth_provider.chain_manager.contracts, "get")
+    geth_provider.send_call(tx_for_call, skip_trace=True)
+    assert eth_call_spy.call_args[1]["skip_trace"] is True
+    assert get_contract_spy.call_count == 0
 
 
 @geth_process_test
@@ -567,32 +642,6 @@ def test_create_access_list(geth_provider, geth_contract, geth_account):
     assert len(actual) > 0
     assert isinstance(actual[0], AccessList)
     assert len(actual[0].storage_keys) > 0
-
-
-@geth_process_test
-def test_send_call_base_class_block_id(networks, ethereum, mocker):
-    """
-    Testing a case where was a bug in the base class for most providers.
-    Note: can't use ape-node as-is, as it overrides `send_call()`.
-    """
-
-    provider = mocker.MagicMock()
-    provider.network.name = "mainnet"
-
-    def hacked_send_call(*args, **kwargs):
-        return EthereumNodeProvider.send_call(provider, *args, **kwargs)
-
-    provider.send_call = hacked_send_call
-    tx = ethereum.create_transaction()
-    block_id = 567
-
-    orig = networks.active_provider
-    networks.active_provider = provider
-    _ = provider.send_call(tx, block_id=block_id, skip_trace=True) == HexStr("0x")
-    networks.active_provider = orig  # put back ASAP
-
-    actual = provider._prepare_call.call_args[-1]["block_identifier"]
-    assert actual == block_id
 
 
 @geth_process_test
