@@ -412,12 +412,12 @@ class SharedBlobReceipt(Receipt):
     blob transaction.
     """
 
-    blob_gas_used: HexInt
+    blob_gas_used: Optional[HexInt] = Field(default=None, alias="blobGasUsed")
     """
     The total amount of blob gas consumed by the transactions within the block.
     """
 
-    blob_gas_price: HexInt
+    blob_gas_price: HexInt = Field(alias="blobGasPrice")
     """
     The blob-gas price, independent from regular gas price.
     """

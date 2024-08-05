@@ -551,8 +551,16 @@ def test_decode_receipt_from_etherscan(eth_tester_provider, ethereum):
     assert receipt.gas_price == 1499999989
 
 
-@pytest.mark.parametrize("blob_gas_used", ("0x20000", 131072, 0, None))
-def test_decode_receipt_shared_blob(ethereum, blob_gas_used):
+@pytest.mark.parametrize(
+    "blob_gas_used,blob_gas_key",
+    [
+        ("0x20000", "blobGasUsed"),
+        (131072, "blob_gas_used"),
+        (0, "blobGasUsed"),
+        (None, "blobGasUsed"),
+    ],
+)
+def test_decode_receipt_shared_blob(ethereum, blob_gas_used, blob_gas_key):
     blob_gas_price = "0x4d137e31b"
 
     data = {
@@ -582,7 +590,7 @@ def test_decode_receipt_shared_blob(ethereum, blob_gas_used):
         "s": HexBytes("0x31c98ea044c97225d83b9a3f0fa719e2299b9fbc6436e4b3eb096ea528de03ff"),
         "yParity": 0,
         "blobGasPrice": blob_gas_price,
-        "blobGasUsed": blob_gas_used,
+        blob_gas_key: blob_gas_used,
         "contractAddress": None,
         "cumulativeGasUsed": 23085827,
         "effectiveGasPrice": 1000000008,
