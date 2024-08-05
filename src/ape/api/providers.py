@@ -33,7 +33,7 @@ from ape.exceptions import (
     VirtualMachineError,
 )
 from ape.logging import LogLevel, logger
-from ape.types import AddressType, BlockID, ContractCode, ContractLog, LogFilter, SnapshotID
+from ape.types import AddressType, BlockID, ContractCode, ContractLog, HexInt, LogFilter, SnapshotID
 from ape.utils import BaseInterfaceModel, JoinableQueue, abstractmethod, cached_property, spawn
 from ape.utils.misc import (
     EMPTY_BYTES32,
@@ -54,33 +54,33 @@ class BlockAPI(BaseInterfaceModel):
     # NOTE: All fields in this class (and it's subclasses) should not be `Optional`
     #       except the edge cases noted below
 
+    num_transactions: HexInt = 0
     """
     The number of transactions in the block.
     """
-    num_transactions: int = 0
 
+    hash: Optional[Any] = None  # NOTE: pending block does not have a hash
     """
     The block hash identifier.
     """
-    hash: Optional[Any] = None  # NOTE: pending block does not have a hash
 
+    number: Optional[HexInt] = None  # NOTE: pending block does not have a number
     """
     The block number identifier.
     """
-    number: Optional[int] = None  # NOTE: pending block does not have a number
 
-    """
-    The preceeding block's hash.
-    """
     parent_hash: Any = Field(
         default=EMPTY_BYTES32, alias="parentHash"
     )  # NOTE: genesis block has no parent hash
+    """
+    The preceeding block's hash.
+    """
 
+    timestamp: HexInt
     """
     The timestamp the block was produced.
     NOTE: The pending block uses the current timestamp.
     """
-    timestamp: int
 
     _size: Optional[int] = None
 

@@ -70,7 +70,10 @@ cases.
 
 
 HexInt = Annotated[
-    int, BeforeValidator(lambda v, info: ManagerAccessMixin.conversion_manager.convert(v, int))
+    int,
+    BeforeValidator(
+        lambda v, info: v if v is None else ManagerAccessMixin.conversion_manager.convert(v, int)
+    ),
 ]
 """
 Validate any hex-str or bytes into an integer.

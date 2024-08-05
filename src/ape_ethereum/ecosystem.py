@@ -42,6 +42,7 @@ from ape.types import (
     ContractLog,
     CurrencyValueComparable,
     GasLimit,
+    HexInt,
     RawAddress,
     TransactionSignature,
 )
@@ -328,11 +329,11 @@ class Block(BlockAPI):
     Class for representing a block on a chain.
     """
 
-    gas_limit: int = Field(alias="gasLimit")
-    gas_used: int = Field(alias="gasUsed")
-    base_fee: int = Field(default=0, alias="baseFeePerGas")
-    difficulty: int = 0
-    total_difficulty: int = Field(default=0, alias="totalDifficulty")
+    gas_limit: HexInt = Field(alias="gasLimit")
+    gas_used: HexInt = Field(alias="gasUsed")
+    base_fee: HexInt = Field(default=0, alias="baseFeePerGas")
+    difficulty: HexInt = 0
+    total_difficulty: HexInt = Field(default=0, alias="totalDifficulty")
     uncles: list[HexBytes] = []
 
     # Type re-declares.
@@ -576,7 +577,9 @@ class Ethereum(EcosystemAPI):
         ):
             receipt_cls = SharedBlobReceipt
             receipt_kwargs["blob_gas_price"] = data.get("blob_gas_price", data.get("blobGasPrice"))
-            receipt_kwargs["blob_gas_used"] = data.get("blob_gas_used", data.get("blobGasUsed"))
+            receipt_kwargs["blob_gas_used"] = (
+                data.get("blob_gas_used", data.get("blobGasUsed")) or 0
+            )
         else:
             receipt_cls = Receipt
 
