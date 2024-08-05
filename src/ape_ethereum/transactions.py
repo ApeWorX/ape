@@ -417,7 +417,7 @@ class SharedBlobReceipt(Receipt):
     The total amount of blob gas consumed by the transactions within the block.
     """
 
-    blob_gas_price: int = Field(alias="blobGasPrice")
+    blob_gas_price: HexInt = Field(alias="blobGasPrice")
     """
     The blob-gas price, independent from regular gas price.
     """

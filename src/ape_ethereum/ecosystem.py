@@ -584,7 +584,7 @@ class Ethereum(EcosystemAPI):
         ):
             receipt_cls = SharedBlobReceipt
             receipt_kwargs["blobGasPrice"] = data.get("blob_gas_price", data.get("blobGasPrice"))
-            receipt_kwargs["blobGasUsed"] = data.get("blob_gas_used", data.get("blobGasUsed"))
+            receipt_kwargs["blobGasUsed"] = data.get("blob_gas_used", data.get("blobGasUsed")) or 0
         else:
             receipt_cls = Receipt
 
