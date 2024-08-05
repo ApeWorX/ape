@@ -274,6 +274,7 @@ def geth_provider(networks):
     if (
         not networks.active_provider
         or networks.provider.name != "node"
+        or networks.network.name != "local"
         or not networks.provider.is_connected
         or getattr(networks.provider, "uri", "") != GETH_URI
     ):

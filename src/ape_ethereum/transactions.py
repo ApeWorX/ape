@@ -19,7 +19,7 @@ from ape.api import ReceiptAPI, TransactionAPI
 from ape.contracts import ContractEvent
 from ape.exceptions import OutOfGasError, SignatureError, TransactionError
 from ape.logging import logger
-from ape.types import AddressType, ContractLog, ContractLogContainer, SourceTraceback
+from ape.types import AddressType, ContractLog, ContractLogContainer, HexInt, SourceTraceback
 from ape.utils import ZERO_ADDRESS
 from ape_ethereum.trace import Trace, _events_to_trees
 
@@ -115,19 +115,17 @@ class StaticFeeTransaction(BaseTransaction):
     Transactions that are pre-EIP-1559 and use the ``gasPrice`` field.
     """
 
-    gas_price: Optional[int] = Field(default=None, alias="gasPrice")
-    max_priority_fee: Optional[int] = Field(default=None, exclude=True)  # type: ignore
-    type: int = Field(default=TransactionType.STATIC.value, exclude=True)
-    max_fee: Optional[int] = Field(default=None, exclude=True)  # type: ignore
+    gas_price: Optional[HexInt] = Field(default=None, alias="gasPrice")
+    max_priority_fee: Optional[HexInt] = Field(default=None, exclude=True)  # type: ignore
+    type: HexInt = Field(default=TransactionType.STATIC.value, exclude=True)
+    max_fee: Optional[HexInt] = Field(default=None, exclude=True)  # type: ignore
 
-    @model_validator(mode="before")
+    @model_validator(mode="after")
     @classmethod
-    def calculate_read_only_max_fee(cls, values) -> dict:
-        # NOTE: Work-around, Pydantic doesn't handle calculated fields well.
-        values["max_fee"] = cls.conversion_manager.convert(
-            values.get("gas_limit", 0), int
-        ) * cls.conversion_manager.convert(values.get("gas_price", 0), int)
-        return values
+    def calculate_read_only_max_fee(cls, tx):
+        # Work-around: we cannot use a computed field to override a non-computed field.
+        tx.max_fee = (tx.gas_limit or 0) * (tx.gas_price or 0)
+        return tx
 
 
 class AccessListTransaction(StaticFeeTransaction):
@@ -152,9 +150,9 @@ class DynamicFeeTransaction(BaseTransaction):
     and ``maxPriorityFeePerGas`` fields.
     """
 
-    max_priority_fee: Optional[int] = Field(default=None, alias="maxPriorityFeePerGas")
-    max_fee: Optional[int] = Field(default=None, alias="maxFeePerGas")
-    type: int = TransactionType.DYNAMIC.value
+    max_priority_fee: Optional[HexInt] = Field(default=None, alias="maxPriorityFeePerGas")
+    max_fee: Optional[HexInt] = Field(default=None, alias="maxFeePerGas")
+    type: HexInt = TransactionType.DYNAMIC.value
     access_list: list[AccessList] = Field(default_factory=list, alias="accessList")
 
     @field_validator("type")
@@ -168,24 +166,19 @@ class SharedBlobTransaction(DynamicFeeTransaction):
     `EIP-4844 <https://eips.ethereum.org/EIPS/eip-4844>`__ transactions.
     """
 
-    max_fee_per_blob_gas: int = Field(default=0, alias="maxFeePerBlobGas")
+    max_fee_per_blob_gas: HexInt = Field(default=0, alias="maxFeePerBlobGas")
     blob_versioned_hashes: list[HexBytes] = Field(default_factory=list, alias="blobVersionedHashes")
 
+    receiver: AddressType = Field(default=ZERO_ADDRESS, alias="to")
     """
     Overridden because EIP-4844 states it cannot be nil.
     """
-    receiver: AddressType = Field(default=ZERO_ADDRESS, alias="to")
-
-    @field_validator("max_fee_per_blob_gas", mode="before")
-    @classmethod
-    def hex_to_int(cls, value):
-        return value if isinstance(value, int) else int(HexBytes(value).hex(), 16)
 
 
 class Receipt(ReceiptAPI):
-    gas_limit: int
-    gas_price: int
-    gas_used: int
+    gas_limit: HexInt
+    gas_price: HexInt
+    gas_used: HexInt
 
     @property
     def ran_out_of_gas(self) -> bool:
@@ -419,21 +412,12 @@ class SharedBlobReceipt(Receipt):
     blob transaction.
     """
 
-    blob_gas_used: int
+    blob_gas_used: HexInt
     """
     The total amount of blob gas consumed by the transactions within the block.
     """
 
-    blob_gas_price: int
+    blob_gas_price: HexInt
     """
     The blob-gas price, independent from regular gas price.
     """
-
-    @field_validator("blob_gas_used", "blob_gas_price", mode="before")
-    @classmethod
-    def validate_hex(cls, value):
-        return cls._hex_to_int(value or 0)
-
-    @classmethod
-    def _hex_to_int(cls, value) -> int:
-        return value if isinstance(value, int) else int(HexBytes(value).hex(), 16)

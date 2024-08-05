@@ -42,6 +42,7 @@ from ape.types import (
     ContractLog,
     CurrencyValueComparable,
     GasLimit,
+    HexInt,
     RawAddress,
     TransactionSignature,
 )
@@ -328,11 +329,11 @@ class Block(BlockAPI):
     Class for representing a block on a chain.
     """
 
-    gas_limit: int = Field(alias="gasLimit")
-    gas_used: int = Field(alias="gasUsed")
-    base_fee: int = Field(default=0, alias="baseFeePerGas")
-    difficulty: int = 0
-    total_difficulty: int = Field(default=0, alias="totalDifficulty")
+    gas_limit: HexInt = Field(alias="gasLimit")
+    gas_used: HexInt = Field(alias="gasUsed")
+    base_fee: HexInt = Field(default=0, alias="baseFeePerGas")
+    difficulty: HexInt = 0
+    total_difficulty: HexInt = Field(default=0, alias="totalDifficulty")
     uncles: list[HexBytes] = []
 
     # Type re-declares.
@@ -340,21 +341,6 @@ class Block(BlockAPI):
     parent_hash: HexBytes = Field(
         default=EMPTY_BYTES32, alias="parentHash"
     )  # NOTE: genesis block has no parent hash
-
-    @field_validator(
-        "base_fee",
-        "difficulty",
-        "gas_limit",
-        "gas_used",
-        "number",
-        "size",
-        "timestamp",
-        "total_difficulty",
-        mode="before",
-    )
-    @classmethod
-    def validate_ints(cls, value):
-        return to_int(value) if value else 0
 
     @computed_field()  # type: ignore[misc]
     @property
@@ -591,7 +577,9 @@ class Ethereum(EcosystemAPI):
         ):
             receipt_cls = SharedBlobReceipt
             receipt_kwargs["blob_gas_price"] = data.get("blob_gas_price", data.get("blobGasPrice"))
-            receipt_kwargs["blob_gas_used"] = data.get("blob_gas_used", data.get("blobGasUsed"))
+            receipt_kwargs["blob_gas_used"] = (
+                data.get("blob_gas_used", data.get("blobGasUsed")) or 0
+            )
         else:
             receipt_cls = Receipt
 
@@ -611,7 +599,9 @@ class Ethereum(EcosystemAPI):
         if "transaction_ids" in data:
             data["transactions"] = data.pop("transaction_ids")
         if "total_difficulty" in data:
-            data["totalDifficulty"] = data.pop("total_difficulty")
+            data["totalDifficulty"] = data.pop("total_difficulty") or 0
+        elif "totalDifficulty" in data:
+            data["totalDifficulty"] = data.pop("totalDifficulty") or 0
         if "base_fee" in data:
             data["baseFeePerGas"] = data.pop("base_fee")
         elif "baseFee" in data:

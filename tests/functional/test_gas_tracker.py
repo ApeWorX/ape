@@ -1,4 +1,4 @@
-def test_append_gas(gas_tracker, owner, vyper_contract_instance):
+def test_append_gas(gas_tracker, owner, vyper_contract_instance, eth_tester_provider):
     tx = vyper_contract_instance.setNumber(924, sender=owner)
     trace = tx.trace
     gas_tracker.append_gas(trace, vyper_contract_instance.address)

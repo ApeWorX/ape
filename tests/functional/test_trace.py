@@ -13,7 +13,7 @@ from tests.functional.data.python import (
     TRACE_WITH_SUB_CALLS,
 )
 
-# Used foundry to retrieve this partity-style trace data.
+# Used foundry to retrieve this parity-style trace data.
 FAILING_TRACE = {
     "call_type": "CALL",
     "address": "0x5fbdb2315678afecb367f032d93f642f64180aa3",

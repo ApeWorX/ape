@@ -547,7 +547,7 @@ def test_decode_receipt_from_etherscan(eth_tester_provider, ethereum):
     )
     assert type(receipt) is Receipt  # NOTE: Purposely not using isinstance()
     assert receipt.type == 0
-    assert receipt.max_fee == 0
+    assert receipt.max_fee > 0
     assert receipt.gas_price == 1499999989
 
 
