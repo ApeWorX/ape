@@ -536,16 +536,17 @@ class Web3Provider(ProviderAPI, ABC):
         except Exception as err:
             trace = None
             tb = None
-            if contract_address := arguments[0]["to"]:
-                try:
-                    contract_type = self.chain_manager.contracts.get(contract_address)
-                except RecursionError:
-                    # Occurs when already in the middle of fetching this contract.
-                    contract_type = None
-            else:
-                contract_type = None
-
+            contract_address = arguments[0].get("to")
             if not skip_trace:
+                if address := contract_address:
+                    try:
+                        contract_type = self.chain_manager.contracts.get(address)
+                    except RecursionError:
+                        # Occurs when already in the middle of fetching this contract.
+                        contract_type = None
+                else:
+                    contract_type = None
+
                 trace = CallTrace(
                     tx=arguments[0], arguments=arguments[1:], use_tokens_for_symbols=True
                 )
