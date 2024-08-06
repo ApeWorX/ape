@@ -307,3 +307,16 @@ def test_call_trace_supports_debug_trace_call(geth_contract, geth_account):
     trace = CallTrace(tx=tx)
     _ = trace._traced_call
     assert trace.supports_debug_trace_call
+
+
+@geth_process_test
+def test_return_value(geth_contract, geth_account):
+    receipt = geth_contract.getFilledArray.transact(sender=geth_account)
+    trace = receipt.trace
+    expected = [1, 2, 3]  # Hardcoded in contract
+    assert receipt.return_value == expected
+
+    # In `trace.return_value`, it is still a tuple.
+    # (unlike receipt.return_value)
+    actual = trace.return_value[0]
+    assert actual == expected

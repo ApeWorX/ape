@@ -1,13 +1,14 @@
 import json
 import sys
 from abc import abstractmethod
-from collections import defaultdict
+from collections import defaultdict, deque
 from collections.abc import Iterable, Iterator, Sequence
 from enum import Enum
 from functools import cached_property
 from typing import IO, Any, Optional, Union
 
-from eth_utils import is_0x_prefixed
+from eth_utils import is_0x_prefixed, to_hex
+from ethpm_types import ContractType, MethodABI
 from evm_trace import (
     CallTreeNode,
     CallType,
@@ -172,6 +173,27 @@ class Trace(TraceAPI):
     def addresses(self) -> Iterator[AddressType]:
         yield from self.get_addresses_used()
 
+    @cached_property
+    def root_contract_type(self) -> Optional[ContractType]:
+        if address := self.transaction.get("to"):
+            try:
+                return self.chain_manager.contracts.get(address)
+            except Exception:
+                return None
+
+        return None
+
+    @cached_property
+    def root_method_abi(self) -> Optional[MethodABI]:
+        method_id = self.transaction.get("data", b"")[:10]
+        if ct := self.root_contract_type:
+            try:
+                return ct.methods[method_id]
+            except Exception:
+                return None
+
+        return None
+
     @property
     def _ecosystem(self) -> EcosystemAPI:
         if provider := self.network_manager.active_provider:
@@ -197,15 +219,22 @@ class Trace(TraceAPI):
 
     @cached_property
     def return_value(self) -> Any:
-        calltree = self.enriched_calltree
+        if calltree := self._enriched_calltree:
+            # Only check enrichment output if was already enriched!
+            # Don't enrich ONLY for return value, as that is very bad
+            # performance.
 
-        # Check if was cached from enrichment.
-        if "return_value" in self.__dict__:
-            return self.__dict__["return_value"]
+            # Check if was cached from enrichment.
+            if "return_value" in self.__dict__:
+                return self.__dict__["return_value"]
 
-        # If enriching too much, Ethereum places regular values in a key
-        # named "unenriched_return_values".
-        return calltree.get("unenriched_return_values") or calltree.get("returndata")
+            # If enriching too much, Ethereum places regular values in a key
+            # named "unenriched_return_values".
+            return calltree.get("unenriched_return_values") or calltree.get("returndata")
+
+        elif abi := self.root_method_abi:
+            return_data = self._return_data_from_trace_frames
+            return self._ecosystem.decode_returndata(abi, return_data)
 
     @cached_property
     def revert_message(self) -> Optional[str]:
@@ -227,18 +256,35 @@ class Trace(TraceAPI):
             return message
 
         # Enrichment call-tree not available. Attempt looking in trace-frames.
+        return to_hex(self._revert_str_from_trace_frames)
+
+    @cached_property
+    def _last_frame(self) -> Optional[dict]:
         try:
-            frames = list(self.raw_trace_frames)
+            frame = deque(self.raw_trace_frames, maxlen=1)
         except Exception as err:
             logger.error(f"Failed getting traceback: {err}")
-            frames = []
+            return None
 
-        data = frames[-1] if len(frames) > 0 else {}
-        memory = data.get("memory", [])
-        if ret := "".join([x[2:] for x in memory[4:]]):
-            return HexBytes(ret).hex()
+        return frame[0] if frame else None
+
+    @cached_property
+    def _revert_str_from_trace_frames(self) -> Optional[HexBytes]:
+        if frame := self._last_frame:
+            memory = frame.get("memory", [])
+            if ret := "".join([x[2:] for x in memory[4:]]):
+                return HexBytes(ret)
 
         return None
+
+    @cached_property
+    def _return_data_from_trace_frames(self) -> HexBytes:
+        if frame := self._last_frame:
+            memory = frame["memory"]
+            start_pos = int(frame["stack"][2], 16) // 32
+            return HexBytes("".join(memory[start_pos:]))
+
+        return HexBytes("")
 
     """ API Methods """
 

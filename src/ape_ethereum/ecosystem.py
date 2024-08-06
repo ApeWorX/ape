@@ -721,15 +721,10 @@ class Ethereum(EcosystemAPI):
         ):
             # Array of structs or tuples: don't convert to list
             # Array of anything else: convert to single list
-            return (
-                (
-                    [
-                        output_values[0],
-                    ],
-                )
-                if issubclass(type(output_values[0]), Struct)
-                else ([o for o in output_values[0]],)  # type: ignore[union-attr]
-            )
+            if issubclass(type(output_values[0]), Struct):
+                return [output_values[0]]  # type: ignore
+            elif hasattr(output_values[0], "__iter__"):
+                return ([o for o in output_values[0]],)  # type: ignore[union-attr]
 
         elif returns_array(abi):
             # Tuple with single item as the array.
