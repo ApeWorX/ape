@@ -192,8 +192,8 @@ class TestCoverageTracker:
         return ConfigWrapper(pytest_config)
 
     @pytest.fixture
-    def tracker(self, pytest_config):
-        return CoverageTracker(pytest_config)
+    def tracker(self, pytest_config, project):
+        return CoverageTracker(pytest_config, project=project)
 
     def test_data(self, tracker):
         assert tracker.data is not None

@@ -59,7 +59,6 @@ from ape.utils import (
     StructParser,
     is_array,
     returns_array,
-    to_int,
 )
 from ape.utils.basemodel import _assert_not_ipython_check, only_raise_attribute_error
 from ape.utils.misc import DEFAULT_MAX_RETRIES_TX, DEFAULT_TRANSACTION_TYPE
@@ -723,10 +722,16 @@ class Ethereum(EcosystemAPI):
         ):
             # Array of structs or tuples: don't convert to list
             # Array of anything else: convert to single list
+
             if issubclass(type(output_values[0]), Struct):
-                return [output_values[0]]  # type: ignore
-            elif hasattr(output_values[0], "__iter__"):
-                return ([o for o in output_values[0]],)  # type: ignore[union-attr]
+                return ([output_values[0]],)
+
+            else:
+                try:
+                    return ([o for o in output_values[0]],)  # type: ignore[union-attr]
+                except Exception:
+                    # On-chains transaction data errors.
+                    return (output_values,)
 
         elif returns_array(abi):
             # Tuple with single item as the array.
@@ -1210,7 +1215,7 @@ class Ethereum(EcosystemAPI):
             calldata_arg = calldata
         else:
             # Already enriched.
-            return calldata
+            return call
 
         if call.get("call_type") and "CREATE" in call.get("call_type", ""):
             # Strip off bytecode
@@ -1220,7 +1225,7 @@ class Ethereum(EcosystemAPI):
                 else b""
             )
             # TODO: Handle Solidity Metadata (delegate to Compilers again?)
-            calldata_arg = HexBytes(calldata.split(bytecode)[-1])
+            calldata_arg = HexBytes(calldata_arg.split(bytecode)[-1])
 
         try:
             call["calldata"] = self.decode_calldata(method_abi, calldata_arg)
