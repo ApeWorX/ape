@@ -227,11 +227,12 @@ class Trace(TraceAPI):
 
         elif abi := self.root_method_abi:
             return_data = self._return_data_from_trace_frames
-            try:
-                return self._ecosystem.decode_returndata(abi, return_data)
-            except Exception as err:
-                logger.debug(f"Failed decoding return data from trace frames. Error: {err}")
-                # Use enrichment method. It is slow but it'll at least work.
+            if return_data is not None:
+                try:
+                    return self._ecosystem.decode_returndata(abi, return_data)
+                except Exception as err:
+                    logger.debug(f"Failed decoding return data from trace frames. Error: {err}")
+                    # Use enrichment method. It is slow but it'll at least work.
 
         return self._return_value_from_enriched_calltree
 
@@ -289,13 +290,13 @@ class Trace(TraceAPI):
         return None
 
     @cached_property
-    def _return_data_from_trace_frames(self) -> HexBytes:
+    def _return_data_from_trace_frames(self) -> Optional[HexBytes]:
         if frame := self._last_frame:
             memory = frame["memory"]
             start_pos = int(frame["stack"][2], 16) // 32
             return HexBytes("".join(memory[start_pos:]))
 
-        return HexBytes("")
+        return None
 
     """ API Methods """
 

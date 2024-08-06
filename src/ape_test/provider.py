@@ -17,7 +17,7 @@ from web3.exceptions import ContractLogicError as Web3ContractLogicError
 from web3.providers.eth_tester.defaults import API_ENDPOINTS, static_return
 from web3.types import TxParams
 
-from ape.api import BlockAPI, PluginConfig, ReceiptAPI, TestProviderAPI, TransactionAPI
+from ape.api import BlockAPI, PluginConfig, ReceiptAPI, TestProviderAPI, TraceAPI, TransactionAPI
 from ape.exceptions import (
     APINotImplementedError,
     ContractLogicError,
@@ -31,6 +31,7 @@ from ape.logging import logger
 from ape.types import AddressType, BlockID, ContractLog, LogFilter, SnapshotID
 from ape.utils import DEFAULT_TEST_CHAIN_ID, DEFAULT_TEST_HD_PATH, gas_estimation_error_message
 from ape_ethereum.provider import Web3Provider
+from ape_ethereum.trace import TraceApproach, TransactionTrace
 
 if TYPE_CHECKING:
     from ape.api.accounts import TestAccountAPI
@@ -388,6 +389,12 @@ class LocalProvider(TestProviderAPI, Web3Provider):
 
         raise APINotImplementedError("No base fee found in block.")
 
+    def get_transaction_trace(self, transaction_hash: str, **kwargs) -> TraceAPI:
+        if "call_trace_approach" not in kwargs:
+            kwargs["call_trace_approach"] = TraceApproach.BASIC
+
+        return EthTesterTransactionTrace(transaction_hash=transaction_hash, **kwargs)
+
     def get_virtual_machine_error(self, exception: Exception, **kwargs) -> VirtualMachineError:
         if isinstance(exception, ValidationError):
             match = self._CANNOT_AFFORD_GAS_PATTERN.match(str(exception))
@@ -438,3 +445,11 @@ class LocalProvider(TestProviderAPI, Web3Provider):
 
     def _get_latest_block_rpc(self) -> dict:
         return self.evm_backend.get_block_by_number("latest")
+
+
+class EthTesterTransactionTrace(TransactionTrace):
+    @cached_property
+    def return_value(self) -> Any:
+        # perf: skip trying anything else, because eth-tester doesn't
+        # yet implement any tracing RPCs.
+        return self._return_value_from_enriched_calltree
