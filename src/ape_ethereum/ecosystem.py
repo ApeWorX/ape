@@ -1120,6 +1120,7 @@ class Ethereum(EcosystemAPI):
             # Without a contract type, we can enrich no further.
             return call
 
+        kwargs["contract_type"] = contract_type
         if events := call.get("events"):
             call["events"] = self._enrich_trace_events(events, address=address, **kwargs)
 
@@ -1177,6 +1178,7 @@ class Ethereum(EcosystemAPI):
             # Without a contract type, we can enrich no further.
             return address
 
+        kwargs["contract_type"] = contract_type
         if kwargs.get("use_symbol_for_tokens") and "symbol" in contract_type.view_methods:
             # Use token symbol as name
             contract = self.chain_manager.contracts.instance_at(
@@ -1343,6 +1345,8 @@ class Ethereum(EcosystemAPI):
             # Without a contract type, we can enrich no further.
             return event
 
+        kwargs["contract_type"] = contract_type
+
         # The selector is always the first topic.
         selector = event["topics"][0]
         if not isinstance(selector, str):
@@ -1394,9 +1398,6 @@ class Ethereum(EcosystemAPI):
                 contract_type = self.chain_manager.contracts.get(address)
             except Exception as err:
                 logger.debug(f"Error getting contract type during event enrichment: {err}")
-            else:
-                # Set even if None to avoid re-checking.
-                kwargs["contract_type"] = contract_type
 
         return contract_type
 
